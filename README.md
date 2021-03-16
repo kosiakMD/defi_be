@@ -1,6 +1,6 @@
 # DeFiYield
 
-## Back-end
+## Back-End common info:
 
 ### Install
 
@@ -9,3 +9,9 @@
 ### Run
 
 ### Test
+
+## Services:
+
+### API Gateway [link](./api_gateway)
+
+### Account Service [link](./account_service)

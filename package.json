@@ -1,0 +1,38 @@
+{
+  "name": "defiyield-backend",
+  "version": "1.0.0",
+  "description": "## Back-end",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+
+    "prebuild_gateway": "npm run prebuild --prefix api_gateway",
+    "build_gateway": "npm run build --prefix api_gateway",
+    "format_gateway": "npm run format --prefix api_gateway",
+    "start_gateway": "npm run start --prefix api_gateway",
+    "start_gateway:dev": "npm run start --prefix api_gateway",
+    "start_gateway:debug": "npm run start --prefix api_gateway",
+    "start_gateway:prod": "npm run start --prefix api_gateway",
+
+    "prebuild_account": "npm run prebuild --prefix account_service",
+    "build_account": "npm run build --prefix account_service",
+    "format_account": "npm run format --prefix account_service",
+    "start_account": "npm run start --prefix account_service",
+    "start_account:dev": "npm run start --prefix account_service",
+    "start_account:debug": "npm run start --prefix account_service",
+    "start_account:prod": "npm run start --prefix account_service"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/defiyield-info/defiyield-backend-v2.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/defiyield-info/defiyield-backend-v2/issues"
+  },
+  "homepage": "https://github.com/defiyield-info/defiyield-backend-v2#readme",
+  "devDependencies": {
+    "husky": "^5.1.3"
+  }
+}

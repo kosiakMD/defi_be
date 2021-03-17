@@ -5,7 +5,6 @@ import { HealthCheck, HealthCheckService, HealthIndicatorResult } from '@nestjs/
 export class HealthController {
   constructor(
     private health: HealthCheckService,
-    // private http: HttpHealthIndicator,
   ) {
   }
 

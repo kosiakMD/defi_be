@@ -13,7 +13,7 @@ export class ServiceHealthIndicator extends HealthIndicator {
     { service: 'Price', status: 'down' },
   ];
 
-  // implement Services Health Checks
+  // TODO: implement all Services Health Checks
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
     const services = this.services.filter(service => service.status !== 'ok');
     const isHealthy = services.length === 0;

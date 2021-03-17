@@ -2,7 +2,7 @@
 
 ## Back-End common info:
 
-### Develop prcoess
+### Develop process
 
 #### Git Flow
 

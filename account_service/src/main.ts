@@ -10,10 +10,10 @@ async function bootstrap() {
   app.enableCors();
 
   const config = new DocumentBuilder()
-    .setTitle('Examples example')
-    .setDescription('The examples API description')
+    .setTitle('Account Service')
+    .setDescription('The Account Service API description')
     .setVersion('1.0')
-    .addTag('examples')
+    .addTag('account_service')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);

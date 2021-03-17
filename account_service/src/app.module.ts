@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ExamplesModule } from './examples/example.module';
+import { TerminusModule } from '@nestjs/terminus';
+import { HealthController } from '../../api_gateway/src/health/health.controller';
 
 @Module({
-    imports: [ExamplesModule],
+    controllers: [HealthController],
+    imports: [TerminusModule, ExamplesModule],
 })
 export class AppModule {}

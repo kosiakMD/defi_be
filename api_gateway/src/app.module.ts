@@ -6,8 +6,8 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ServiceHealthIndicator } from './app/app.health';
 
 @Module({
-  imports: [TerminusModule],
-  controllers: [HealthController, AppController],
-  providers: [ServiceHealthIndicator, AppService],
+	imports: [TerminusModule],
+	controllers: [HealthController, AppController],
+	providers: [ServiceHealthIndicator, AppService],
 })
 export class AppModule {}

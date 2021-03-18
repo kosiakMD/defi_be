@@ -1,0 +1,19 @@
+# Danger js
+# For more information see: https://danger.systems/js/
+# https://github.com/marketplace/actions/danger-js-action
+
+name: Danger.js CI
+
+on:
+  pull_request:
+    branches: [ master, dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Danger JS Action
+    - uses: danger/danger-js@9.1.8

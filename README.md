@@ -6,7 +6,7 @@
 
 #### Git Flow
 
-[Diagram](https://defiyield.atlassian.net/wiki/spaces/PD/pages/194641921/Git+Flow)
+[Docs](https://defiyield.atlassian.net/wiki/spaces/PD/pages/194641921/Git+Flow)
 
 ##### Branch naming conventions
 

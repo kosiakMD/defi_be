@@ -12,9 +12,11 @@ RUN ls -l
 
 RUN npm run build
 
-EXPOSE 3000 3000
+ENV PORT 3001
+
+EXPOSE 3001
 
 HEALTHCHECK --interval=60s --timeout=2s --start-period=30s --retries=2 \
-    CMD node healthcheck.js || exit 1
+    CMD node healthcheck.js
 
 CMD [ "npm", "run", "start" ]

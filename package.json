@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "prepare": "husky install",
-
     "prebuild_gateway": "npm run prebuild --prefix api_gateway",
     "build_gateway": "npm run build --prefix api_gateway",
     "format_gateway": "npm run format --prefix api_gateway",
@@ -13,7 +12,6 @@
     "start_gateway:dev": "npm run start --prefix api_gateway",
     "start_gateway:debug": "npm run start --prefix api_gateway",
     "start_gateway:prod": "npm run start --prefix api_gateway",
-
     "prebuild_account": "npm run prebuild --prefix account_service",
     "build_account": "npm run build --prefix account_service",
     "format_account": "npm run format --prefix account_service",
@@ -33,6 +31,7 @@
   },
   "homepage": "https://github.com/defiyield-info/defiyield-backend-v2#readme",
   "devDependencies": {
+    "danger": "^10.6.3",
     "husky": "^5.1.3"
   }
 }

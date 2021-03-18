@@ -7,7 +7,7 @@ services:
     build: account_service/
 
     ports:
-    - "3001:3000"
+    - "3001:3001"
 
   api_gateway:
 

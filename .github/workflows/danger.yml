@@ -15,5 +15,3 @@ jobs:
         uses: danger/danger-js@9.1.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Test printing your secret (Remove this step in production)
-        run: cat $HOME

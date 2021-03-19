@@ -6,20 +6,22 @@ import { DatabaseService } from './services/database.service';
 import { AgendaModule } from 'nestjs-agenda';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CoingeckoFirstCheckJob } from './jobs/coingecko_first_check.job'
-import { CoingeckoCurrentPricesJob } from './jobs/coingecko.job'
+import { CoingeckoCurrentPricesJob } from './jobs/coingecko_current_prices.job'
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: '.env'
+    }),
     
     NestPgpromiseModule.register({
       connection: {
-        host: '45.63.116.59',
-        port: 5432,
-        database: 'dashboard', 
-        user: 'ollie',
-        password: '(8eMPtWDt,9+rurF',
+        host: process.env.TYPEORM_HOST,
+        port: parseInt(process.env.TYPEORM_PORT),
+        database: process.env.TYPEORM_DATABASE, 
+        user: process.env.TYPEORM_USERNAME,
+        password: process.env.TYPEORM_PASSWORD
       },
     }),
     AgendaModule.register({ db: { address: 'mongodb://127.0.0.1/agenda' }})

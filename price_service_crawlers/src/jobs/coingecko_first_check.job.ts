@@ -24,7 +24,7 @@ export class CoingeckoFirstCheckJob {
   }
 
   public async crawl_new_tokens(job: any, done: any): Promise<void> {
-    console.log(this.databaseService)
+    
     try{
       
       let current_platfrom_id = await this.databaseService.getCurrentPlatform();

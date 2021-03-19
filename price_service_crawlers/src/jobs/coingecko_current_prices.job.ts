@@ -15,12 +15,11 @@ export class CoingeckoCurrentPricesJob {
     NEST_PGPROMISE_CONNECTION) public  pg: IDatabase<any>,
     private databaseService: DatabaseService
   ) {
-    console.log(databaseService)
+  
   }
 
   public async crawl(job: any, done: any): Promise<void> {
-  console.log("Started")
-  console.log(this.databaseService)
+    console.log("Current Prices Job Sarted")
     try{
       let current_platfrom_id = await this.databaseService.getCurrentPlatform();
       if(!current_platfrom_id)
@@ -30,23 +29,22 @@ export class CoingeckoCurrentPricesJob {
       if(!current_currency_id)
         throw "No current currency in DB: "+CURRENCY;
       
-      let db_assets =await this.databaseService.getTokensByPlatform(current_platfrom_id);
+      let db_assets = await this.databaseService.getTokensByPlatform(current_platfrom_id);
       
-      if(db_assets.length){
+      if (db_assets.length) {
         const db_token_addresses_chunks = createAddressChunks(db_assets);
         //NOTE: request str is too big, making chunks
         let results:any = {};
-        for(let i=0 ; i<db_token_addresses_chunks.length; i++){
+        for(let i = 0 ; i < db_token_addresses_chunks.length; i++){
           let chunk_results = await getCurrentTokenPrices(db_token_addresses_chunks[i])
           results = Object.assign(results, chunk_results);
         }
        
-        for(let i=0 ; i<db_assets.length; i++){
+        for(let i = 0; i < db_assets.length; i++){
           if(results[db_assets[i]['address']]){
             results[db_assets[i]['address']]['db_id'] = db_assets[i]['id'];
           }
         }
-        console.log("results ",results)
         await this.databaseService.addHourlyPricesToDb(results,current_currency_id);
       }
       

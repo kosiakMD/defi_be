@@ -4,7 +4,7 @@ const Agenda = require('agenda');
 import { IDatabase } from 'pg-promise';
 // const AgendaService  = require('nestjs-agenda');
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
-import { CoingeckoCurrentPricesJob } from '../jobs/coingecko.job'
+import { CoingeckoCurrentPricesJob } from '../jobs/coingecko_current_prices.job'
 import { CoingeckoFirstCheckJob } from '../jobs/coingecko_first_check.job'
 import { NEW_TOKENS_SECONDS_INTERVAL, NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
   CURRENT_PRICE_SECONDS_INTERVAL } from '../utils/constants';

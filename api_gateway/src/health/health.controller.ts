@@ -22,7 +22,7 @@ export const ServiceHealthOk: ServiceHealthStatus = {
 	},
 };
 
-@Controller('health')
+@Controller('status')
 export class HealthController {
 	constructor(
 		private health: HealthCheckService,
@@ -47,9 +47,9 @@ export class HealthController {
 			// @ts-ignore
 			// async () => {
 			// 	const options = {
-			// 		port: 3001,
+			// 		port: 3011,
 			// 		host: process.env.HOST,
-			// 		path: '/health',
+			// 		path: '/status',
 			// 	};
 			// 	return http.request(options, (res) => {
 			// 		console.log(`HEALTHCHECK STATUS: ${res.statusCode}`);

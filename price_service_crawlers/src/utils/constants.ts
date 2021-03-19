@@ -1,7 +1,11 @@
 export const ETH_DECIMALS = 18;
 // NOTE: We use this address for ethereum marking fo simplicity
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const SECONDS_INTERVAL = 5;
+export const PLATFORM = 'ethereum';
+export const NEW_TOKENS_SECONDS_INTERVAL = 60*60*24;
+export const NEW_TOKENS_HISTORY_SECONDS_INTERVAL = 5*60;
+export const CURRENT_PRICE_SECONDS_INTERVAL = 60;
+export const CURRENCY = 'usd'
 export const TEST_TOKENS = [
     ETH_ADDRESS,
     '0xB8c77482e45F1F44dE1745F52C74426C631bDD52', //BNB

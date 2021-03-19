@@ -2,34 +2,36 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import  * as dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 
-const result = dotenv.config()
+const result = dotenv.config();
 
 if (result.error) {
-  throw result.error
+	throw result.error;
 }
 
-console.log(result.parsed)
+// eslint-disable-next-line no-console
+console.info(result.parsed);
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+	const app = await NestFactory.create<NestExpressApplication>(AppModule);
+	app.enableCors();
 
-  const config = new DocumentBuilder()
-    .setTitle('Integration Service')
-    .setDescription('The Integration Service API description')
-    .setVersion('1.0')
-    .addTag('integration_service')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+	const config = new DocumentBuilder()
+		.setTitle('Integration Service')
+		.setDescription('The Integration Service API description')
+		.setVersion('1.0')
+		.addTag('integration_service')
+		.build();
+	const document = SwaggerModule.createDocument(app, config);
+	SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT || 3000;
-  const host = process.env.HOST;
-  await app.listen(port, host);
+	const port = process.env.PORT || 3000;
+	const host = process.env.HOST;
+	await app.listen(port, host);
 
-  console.log(`http://${host}:${port}`);
+	// eslint-disable-next-line no-console
+	console.log(`http://${host}:${port}`);
 }
 
 bootstrap();

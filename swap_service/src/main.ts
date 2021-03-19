@@ -4,34 +4,39 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 
-const result = dotenv.config();
+// config check
+(() => {
+	const result = dotenv.config();
+	if (result.error) {
+		throw result.error;
+	} else {
+		// eslint-disable-next-line no-console
+		console.log(result.parsed);
+	}
+})();
 
-if (result.error) {
-	throw result.error;
-}
-
-// eslint-disable-next-line no-console
-console.info(result.parsed);
+const service_name = 'Swap Service';
 
 async function bootstrap() {
-	const app = await NestFactory.create<NestExpressApplication>(AppModule);
-	app.enableCors();
+	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+		cors: true,
+	});
 
 	const config = new DocumentBuilder()
-		.setTitle('Swap Service')
-		.setDescription('The Swap Service API description')
+		.setTitle(service_name)
+		.setDescription(`${service_name} API description`)
 		.setVersion('1.0')
-		.addTag('swap_service')
+		.addTag('services')
 		.build();
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api', app, document);
 
 	const port = process.env.PORT || 3000;
-	const host = process.env.HOST;
+	const host = process.env.HOST; /*|| 'localhost'*/
 	await app.listen(port, host);
 
 	// eslint-disable-next-line no-console
-	console.log(`http://${host}:${port}`);
+	console.log(`${service_name}\nhost:${host}\nport:${port}`);
 }
 
 bootstrap();

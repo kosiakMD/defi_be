@@ -7,8 +7,8 @@ import {
 	HttpHealthIndicator,
 } from '@nestjs/terminus';
 import { ServiceHealthIndicator } from '../app/app.health';
-
-// import * as http from 'http';
+import { ApiTags } from '@nestjs/swagger';
+import { AddVersion } from '../decorators/AddVersion';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
 	[service: string]: {
@@ -22,6 +22,7 @@ export const ServiceHealthOk: ServiceHealthStatus = {
 	},
 };
 
+@ApiTags('status')
 @Controller('status')
 export class HealthController {
 	constructor(
@@ -30,6 +31,7 @@ export class HealthController {
 		private serviceHealthIndicator: ServiceHealthIndicator,
 	) {}
 
+	@AddVersion('v1')
 	@Get('/')
 	@HealthCheck()
 	check() {
@@ -38,6 +40,7 @@ export class HealthController {
 		]);
 	}
 
+	@AddVersion('v1')
 	@Get('/services')
 	@HealthCheck()
 	checkServices() {

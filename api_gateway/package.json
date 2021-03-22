@@ -27,6 +27,7 @@
     "@nestjs/platform-express": "^7.6.13",
     "@nestjs/swagger": "^4.7.16",
     "@nestjs/terminus": "^7.1.0",
+    "@nestjsx/api-version": "^0.1.1",
     "dotenv": "^8.2.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

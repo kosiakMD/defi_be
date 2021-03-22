@@ -22,11 +22,12 @@ async function bootstrap() {
 		cors: true,
 	});
 
+	app.setGlobalPrefix('v1'); // temporary global as only 1 version
+
 	const config = new DocumentBuilder()
 		.setTitle(service_name)
-		.setDescription(`${service_name} API description`)
-		.setVersion('1.0')
-		.addTag('services')
+		.setDescription(`${service_name} description`)
+		.setVersion('1.0') // temporary global as only 1 version
 		.build();
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api', app, document);

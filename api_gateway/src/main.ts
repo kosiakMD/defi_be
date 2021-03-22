@@ -26,7 +26,7 @@ async function bootstrap() {
 		.setTitle(service_name)
 		.setDescription(`${service_name} API description`)
 		.setVersion('1.0')
-		.addTag('services')
+		// .addTag('services')
 		.build();
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api', app, document);

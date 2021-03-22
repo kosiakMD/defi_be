@@ -5,10 +5,16 @@ import { HealthController } from './health/health.controller';
 import { TerminusModule } from '@nestjs/terminus';
 import { ServiceHealthIndicator } from './app/app.health';
 import { ApprovalsController } from './approvals/approvals.controller';
+import { BalancesController } from './balances/balances.controller';
 
 @Module({
 	imports: [TerminusModule],
-	controllers: [HealthController, AppController, ApprovalsController],
+	controllers: [
+		HealthController,
+		AppController,
+		ApprovalsController,
+		BalancesController,
+	],
 	providers: [ServiceHealthIndicator, AppService],
 })
 export class AppModule {}

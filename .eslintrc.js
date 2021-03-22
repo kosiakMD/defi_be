@@ -41,7 +41,7 @@ module.exports = {
 		'no-console': 'error',
 		// node
 		'node/exports-style': ['error', 'exports'],
-		'node/file-extension-in-import': ['error', 'always'],
+		'node/file-extension-in-import': 'off',
 		'node/prefer-global/buffer': ['error', 'always'],
 		'node/prefer-global/console': ['error', 'always'],
 		'node/prefer-global/process': ['error', 'always'],

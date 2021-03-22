@@ -52,6 +52,7 @@ module.exports = {
 		'node/no-unsupported-features/es-syntax': 'off',
 		'node/no-missing-import': 'off',
 		'node/no-unpublished-import': 'off',
+		'node/no-extraneous-import': 'off',
 		// jest
 		// 'jest/no-disabled-tests': 'warn',
 		// 'jest/no-focused-tests': 'warn',

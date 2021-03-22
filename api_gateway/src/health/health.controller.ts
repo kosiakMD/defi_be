@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, SetMetadata } from '@nestjs/common';
 import {
 	HealthCheck,
 	HealthCheckService,
@@ -7,8 +7,7 @@ import {
 	HttpHealthIndicator,
 } from '@nestjs/terminus';
 import { ServiceHealthIndicator } from '../app/app.health';
-
-// import * as http from 'http';
+import { ApiTags } from '@nestjs/swagger';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
 	[service: string]: {
@@ -22,6 +21,7 @@ export const ServiceHealthOk: ServiceHealthStatus = {
 	},
 };
 
+@ApiTags('status')
 @Controller('status')
 export class HealthController {
 	constructor(
@@ -38,6 +38,7 @@ export class HealthController {
 		]);
 	}
 
+	@SetMetadata('apiVersion', ['v1']) // TODO: fix @ApiVersion
 	@Get('/services')
 	@HealthCheck()
 	checkServices() {

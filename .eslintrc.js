@@ -41,7 +41,7 @@ module.exports = {
 		'no-console': 'error',
 		// node
 		'node/exports-style': ['error', 'exports'],
-		'node/file-extension-in-import': ['error', 'always'],
+		'node/file-extension-in-import': 'off',
 		'node/prefer-global/buffer': ['error', 'always'],
 		'node/prefer-global/console': ['error', 'always'],
 		'node/prefer-global/process': ['error', 'always'],
@@ -52,6 +52,7 @@ module.exports = {
 		'node/no-unsupported-features/es-syntax': 'off',
 		'node/no-missing-import': 'off',
 		'node/no-unpublished-import': 'off',
+		'node/no-extraneous-import': 'off',
 		// jest
 		// 'jest/no-disabled-tests': 'warn',
 		// 'jest/no-focused-tests': 'warn',

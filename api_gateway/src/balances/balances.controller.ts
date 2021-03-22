@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 enum EtherscanEnum {
@@ -9,11 +9,22 @@ enum EtherscanEnum {
 @ApiTags('balances')
 @Controller('balances')
 export class BalancesController {
-	@Get(':addresses')
-	@ApiQuery({ name: 'address', type: 'string', isArray: true })
-	@ApiQuery({ name: 'etherscan', enum: EtherscanEnum, required: false })
+	@Get('/')
+	@ApiQuery({
+		name: 'addresses',
+		type: 'string',
+		isArray: true,
+		description: 'comma-separated string',
+	})
+	@ApiQuery({
+		name: 'etherscan',
+		enum: EtherscanEnum,
+		required: false,
+		description: `either true or false; default is 'false'`,
+	})
 	async get(
-		@Query('address') addresses: string[],
+		@Query('addresses', new ParseArrayPipe({ items: String, separator: ',' }))
+			addresses: string[],
 		@Query('etherscan') etherscan: EtherscanEnum,
 	) {
 		const lowerCaseAddresses = addresses.map((address) =>

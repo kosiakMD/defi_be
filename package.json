@@ -43,7 +43,11 @@
     "start_price": "npm run start --prefix price_service",
     "start_price:dev": "npm run start --prefix price_service",
     "start_price:debug": "npm run start --prefix price_service",
-    "start_price:prod": "npm run start --prefix price_service"
+    "start_price:prod": "npm run start --prefix price_service",
+    "start_pancake": "npm run start --prefix pancake_service",
+    "start_pancake:dev": "npm run start --prefix pancake_service",
+    "start_pancake:debug": "npm run start --prefix pancake_service",
+    "start_pancake:prod": "npm run start --prefix pancake_service"
   },
   "repository": {
     "type": "git",

@@ -6,7 +6,7 @@ import * as dotenv from 'dotenv';
 
 // config check
 (() => {
-	const result = dotenv.config({ path: './../.env' });
+	const result = dotenv.config();
 	if (result.error) {
 		throw result.error;
 	} else {

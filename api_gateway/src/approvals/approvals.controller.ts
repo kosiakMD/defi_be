@@ -1,12 +1,17 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import EthereumAddress from '../DTO/EthereumAddress';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import EthereumAddressDto from '../DTO/EthereumAddress.dto';
+import ContractApprovalDto from '../DTO/ContractApproval.dto';
+import { ContractApproval } from 'src/interfaces';
 
 @ApiTags('approvals')
 @Controller('approvals')
 export class ApprovalsController {
 	@Get('/:address')
-	get(@Param() params: EthereumAddress): string {
-		return `${params.address}`;
+	@ApiResponse({ status: 200, type: ContractApprovalDto, isArray: true })
+	get(@Param() params: EthereumAddressDto): ContractApproval[] {
+		const contract = new ContractApprovalDto();
+		contract.token.address = params.address;
+		return [contract];
 	}
 }

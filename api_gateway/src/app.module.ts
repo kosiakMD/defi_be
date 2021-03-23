@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { ApprovalsController } from './approvals/approvals.controller';
 import { BalancesController } from './balances/balances.controller';
+import { SwapController } from './swap/swap.controller';
 
 @Module({
 	imports: [TerminusModule],
@@ -16,6 +17,7 @@ import { BalancesController } from './balances/balances.controller';
 		AppController,
 		ApprovalsController,
 		BalancesController,
+		SwapController,
 	],
 	providers: [
 		{

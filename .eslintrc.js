@@ -32,9 +32,10 @@ module.exports = {
 		indent: ['error', 'tab'],
 		//
 		'@typescript-eslint/interface-name-prefix': 'off',
-		'@typescript-eslint/explicit-function-return-type': 'off',
+		'@typescript-eslint/explicit-function-return-type': 'warn',
 		'@typescript-eslint/explicit-module-boundary-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
+		'@typescript-eslint/no-unused-vars': 'error',
 		'prettier/prettier': 'error',
 		'max-classes-per-file': ['error', 1],
 		'no-use-before-define': 'warn',

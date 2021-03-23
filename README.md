@@ -6,6 +6,10 @@
 
 #### Git Flow
 
+The main branch is `develop`, please fork from it
+
+Branch `master` is for tags only
+
 master -> develop -> ...
 
 [Docs](https://defiyield.atlassian.net/wiki/spaces/PD/pages/194641921/Git+Flow)
@@ -19,18 +23,58 @@ master -> develop -> ...
 
 branch_name = <i>$user_name</i> / <i>$type:<b>TypeEnum</b></i> / <i>$description</i>
 
-example: kosiakmd/feature/boilerplate
+example: ```dart-wader/feature/create-Death-star```
 
-### Install
+example: ```leia-organa/hotfix/rescue-humanoids-at-Alderaan```
 
-### Build
-
-### Run
-
-### Test
+example: ```luck-skywalker/bugfix/destroy-Death-star```
 
 ## Services:
 
 ### API Gateway [link](./api_gateway)
+<b>Should be run the last one as it depends on all the rest</b>
 
 ### Account Service [link](./account_service)
+
+### Price Service [link](./price_service)
+<b>!Some of other services depend on this one!</b>
+
+### Integration Service [link](./integration_service)
+
+### Swap Service [link](./swap_service)
+
+### Install dependencies
+
+```npm run install```
+
+### Update dependencies <i><small>(in rare cases)</small></i>
+
+```npm run update```
+
+### Build
+
+```npm run build```
+
+### Run
+
+The best way is to run each service separately to see correct logs:
+
+```
+cd ./${service_folder_name}
+npm start
+```
+
+start development mode ```npm start:dev```
+
+start development with watch mode ```npm start:debug```
+
+start production mode ```npm start:prod```
+
+<b>N.B! First service to run is <u>Price Service</u> because some of other services depend on it.</b>
+<b><u>API Gateway Service</u> should be run the last one as it depends on all the rest</b>
+
+### Test
+
+Run test ```npm run test```
+
+Run Linter checking ```npm run lint```

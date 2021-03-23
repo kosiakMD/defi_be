@@ -2,12 +2,36 @@ version: "3"
 
 services:
 
+  price_service:
+
+    build: price_service/
+
+    ports:
+    - "3004:3004"
+
+  integration_service:
+
+    build: integration_service/
+
+    ports:
+    - "3003:3003"
+
+    depends_on:
+      - price_service
+
+  swap_service:
+
+    build: swap_service/
+
+    ports:
+    - "3002:3002"
+
   account_service:
 
     build: account_service/
 
     ports:
-    - "3001:3000"
+    - "3001:3001"
 
   api_gateway:
 
@@ -17,4 +41,7 @@ services:
     - "3000:3000"
 
     depends_on:
+      - price_service
+      - integration_service
+      - swap_service
       - account_service

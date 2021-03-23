@@ -4,12 +4,19 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install
+RUN npm install --loglevel verbose
 
-COPY ./src ./
+COPY . .
+
+RUN ls -l
 
 RUN npm run build
 
-EXPOSE 3000
+ENV PORT 3001
 
-CMD [ "node", "dist/main.js" ]
+EXPOSE 3001
+
+HEALTHCHECK --interval=60s --timeout=2s --start-period=30s --retries=2 \
+    CMD node healthcheck.js
+
+CMD [ "npm", "run", "start" ]

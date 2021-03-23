@@ -2,23 +2,42 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
 
-console.log(process.cwd());
+const service_name = 'Account Service';
+
+// config check
+(() => {
+	const result = dotenv.config();
+	if (result.error) {
+		throw result.error;
+	} else {
+		// eslint-disable-next-line no-console
+		console.log(result.parsed);
+	}
+})();
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
-  app.enableCors();
+	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+		cors: true,
+	});
 
-  const config = new DocumentBuilder()
-    .setTitle('Examples example')
-    .setDescription('The examples API description')
-    .setVersion('1.0')
-    .addTag('examples')
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+	app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
-  await app.listen(3000);
+	const config = new DocumentBuilder()
+		.setTitle(service_name)
+		.setDescription(`${service_name} description`)
+		.setVersion('1.0') // temporary global as only 1 version
+		.build();
+	const document = SwaggerModule.createDocument(app, config);
+	SwaggerModule.setup('api', app, document);
+
+	const port = process.env.PORT || 3000;
+	const host = process.env.HOST; /*|| 'localhost'*/
+	await app.listen(port, host);
+
+	// eslint-disable-next-line no-console
+	console.log(`${service_name}\nhost:${host}\nport:${port}`);
 }
 
 bootstrap();

@@ -1,0 +1,63 @@
+module.exports = {
+	parser: '@typescript-eslint/parser',
+	parserOptions: {
+		project: 'tsconfig.json',
+		sourceType: 'module',
+		// Only ESLint 6.2.0 and later support ES2020.
+		ecmaVersion: 2020,
+	},
+	env: {
+		es6: true,
+		node: true,
+		jest: true,
+	},
+	plugins: ['@typescript-eslint/eslint-plugin', 'prettier'],
+	extends: [
+		'eslint:recommended',
+		'plugin:@typescript-eslint/recommended',
+		'plugin:node/recommended-module',
+		'plugin:prettier/recommended',
+	],
+	root: true,
+	ignorePatterns: ['.eslintrc.js', '**/*.js'],
+	rules: {
+		quotes: [
+			'error',
+			'single',
+			{
+				allowTemplateLiterals: true,
+				avoidEscape: true,
+			},
+		],
+		indent: ['error', 'tab'],
+		//
+		'@typescript-eslint/interface-name-prefix': 'off',
+		'@typescript-eslint/explicit-function-return-type': 'off',
+		'@typescript-eslint/explicit-module-boundary-types': 'off',
+		'@typescript-eslint/no-explicit-any': 'off',
+		'prettier/prettier': 'error',
+		'max-classes-per-file': ['error', 1],
+		'no-use-before-define': 'warn',
+		'no-console': 'error',
+		// node
+		'node/exports-style': ['error', 'exports'],
+		'node/file-extension-in-import': 'off',
+		'node/prefer-global/buffer': ['error', 'always'],
+		'node/prefer-global/console': ['error', 'always'],
+		'node/prefer-global/process': ['error', 'always'],
+		'node/prefer-global/url-search-params': ['error', 'always'],
+		'node/prefer-global/url': ['error', 'always'],
+		'node/prefer-promises/dns': 'error',
+		'node/prefer-promises/fs': 'error',
+		'node/no-unsupported-features/es-syntax': 'off',
+		'node/no-missing-import': 'off',
+		'node/no-unpublished-import': 'off',
+		'node/no-extraneous-import': 'off',
+		// jest
+		// 'jest/no-disabled-tests': 'warn',
+		// 'jest/no-focused-tests': 'warn',
+		// 'jest/no-identical-title': 'error',
+		// 'jest/prefer-to-have-length': 'warn',
+		// 'jest/valid-expect': 'off',
+	},
+};

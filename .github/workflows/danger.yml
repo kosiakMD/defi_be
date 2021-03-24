@@ -15,7 +15,6 @@ jobs:
       - name: Danger
 
       - run: npm install
-        name: "Install dependencies"
 
       - run: |
           DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" npx danger ci

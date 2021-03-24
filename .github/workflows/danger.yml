@@ -13,6 +13,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: Danger
         uses: danger/danger-js@9.1.6
+
+      - run: |
+          DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" yarn danger ci --text-only
         env:
-          DANGER_DISABLE_TRANSPILATION: ${{ true }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

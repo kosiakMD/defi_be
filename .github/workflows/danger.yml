@@ -11,10 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - name: Danger
-        uses: danger/danger-js@9.1.6
+      - uses: actions/setup-node@v1
+
+      - run: npm install
+        name: "Install dependencies"
 
       - run: |
-          DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" yarn danger ci --text-only
+          DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" npx danger ci
+        name: "Running danger.js"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,12 +14,12 @@ master -> develop -> ...
 
 [Docs](https://defiyield.atlassian.net/wiki/spaces/PD/pages/194641921/Git+Flow)
 
-##### Branch naming conventions
+##### Branch naming convention
 
 * <i>$user_name</i> - Git user name
 * <i>$description</i> - a short descriptor of the task <b>OR</b> JIRA ticket number
 * <i>$type</i> - type of work
-    * <i><b>TypeEnum</b></i>: feature | bugfix | hotfix
+    * <i><b>TypeEnum</b></i>: feature | bugfix | hotfix | config
 
 branch_name = <i>$user_name</i> / <i>$type:<b>TypeEnum</b></i> / <i>$description</i>
 
@@ -43,9 +43,20 @@ example: ```luck-skywalker/bugfix/destroy-Death-star```
 
 ### Swap Service [link](./swap_service)
 
+## Install
+
 ### Install dependencies
 
-```npm run install```
+To run install of all services write
+
+```npm run install_all```
+
+If prepare faze (should see message `husky - Git hooks installed`) wasn't done [do postinstall](#postinstall)
+
+### Postinstall
+
+```npx husky install```
+
 
 ### Update dependencies <i><small>(in rare cases)</small></i>
 

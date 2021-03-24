@@ -12,9 +12,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
-      - name: Danger
 
       - run: npm install
+        name: "Install dependencies"
 
       - run: |
           DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" npx danger ci

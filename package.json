@@ -2,11 +2,10 @@
   "name": "defiyield-backend",
   "version": "1.0.0",
   "description": "DeFiYield Microservices",
-  "main": "index.js",
   "type": "module",
   "scripts": {
     "prepare": "husky install",
-    "install": "npm install & npm install --prefix api_gateway & npm install --prefix account_service & npm install --prefix integration_service & npm install --prefix swap_service & npm install --prefix price_service",
+    "install_all": "npm install & npm install --prefix api_gateway & npm install --prefix account_service & npm install --prefix integration_service & npm install --prefix swap_service & npm install --prefix price_service",
     "update": "npm update & npm update --prefix api_gateway & npm update --prefix account_service & npm update --prefix integration_service & npm update --prefix swap_service & npm update --prefix price_service",
     "build": "npm run build & npm run build --prefix api_gateway & npm run build --prefix account_service & npm run build --prefix integration_service & npm run build --prefix swap_service & npm run build --prefix price_service",
     "prebuild_gateway": "npm run prebuild --prefix api_gateway",

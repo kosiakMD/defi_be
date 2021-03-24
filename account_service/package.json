@@ -2,7 +2,7 @@
   "name": "account_service",
   "version": "1.0.0",
   "description": "Account Service",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "author": "",
   "license": "ISC",
   "engines": {

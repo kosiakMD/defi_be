@@ -1,5 +1,5 @@
 /* eslint-disable */
-const { message, warn, danger } = require("danger");
+const { message, warn, danger, markdown } = require("danger");
 
 // Check which files changed
 if (danger.git.modified_files.length > 0) {
@@ -11,6 +11,13 @@ if (danger.git.modified_files.length > 0) {
 if (danger.git.created_files.length > 0) {
     const createdFiles = danger.git.created_files.join("\n- ");
     message("Created files in this PR: \n - " + createdFiles);
+}
+
+const bigPRThreshold = 600;
+const chars = danger.github.pr.additions + danger.github.pr.deletions;
+if (chars > bigPRThreshold) {
+    warn(':exclamation: Big PR (' + chars + ')');
+    markdown('> (' + chars + ') : Pull Request size seems relatively large. If Pull Request contains multiple changes, split each into separate PR will helps faster, easier review.');
 }
 
 // Check for changes to package.json
@@ -29,3 +36,4 @@ if (packageChanged && !yarnLockfileChanged) {
     const idea = "Perhaps you need to run `yarn install`?";
     warn(`${message} - <i>${idea}</i>`);
 }
+

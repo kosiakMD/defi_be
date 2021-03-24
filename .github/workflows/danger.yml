@@ -14,10 +14,10 @@ jobs:
       - uses: actions/setup-node@v1
 
       - run: npm install
-        name: "Install dependencies"
+        name: "Install root dependencies"
 
       - run: |
           DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" npx danger ci
-        name: "Running danger.js"
+        name: "Running danger ci"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

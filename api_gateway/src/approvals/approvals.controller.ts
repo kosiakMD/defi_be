@@ -4,7 +4,7 @@ import EthereumAddressDto from '../DTO/EthereumAddress.dto';
 import ContractApprovalDto from '../DTO/ContractApproval.dto';
 import { ContractApproval } from 'src/interfaces';
 
-@ApiTags('approvals')
+@ApiTags('Approvals')
 @Controller('approvals')
 export class ApprovalsController {
 	@Get('/:address')

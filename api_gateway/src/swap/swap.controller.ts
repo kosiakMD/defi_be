@@ -1,10 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiResponseProperty, ApiTags } from '@nestjs/swagger';
 
-@ApiTags('swap')
+@ApiTags('Swap')
 @Controller('swap')
 export class SwapController {
-	@ApiResponseProperty({ type: 'string' })
+	@ApiResponseProperty({ type: String })
 	@Get('availabletokens')
 	get(): string[] {
 		return [];

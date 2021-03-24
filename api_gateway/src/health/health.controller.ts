@@ -22,7 +22,7 @@ export const ServiceHealthOk: ServiceHealthStatus = {
 	},
 };
 
-@ApiTags('status')
+@ApiTags('Status')
 @Controller('status')
 export class HealthController {
 	constructor(

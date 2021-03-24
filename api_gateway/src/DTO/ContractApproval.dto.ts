@@ -4,15 +4,15 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ERC20TokenDto } from './ERC20Token.dto';
 
 export default class ContractApprovalDto implements ContractApproval {
-	@ApiProperty({ type: 'string' })
+	@ApiProperty({ type: String })
 	@IsEthereumAddress()
 	contractAddress: Address;
 
-	@ApiProperty({ type: 'string' })
+	@ApiProperty({ type: String })
 	@IsString()
 	amount: string;
 
-	@ApiProperty({ type: 'number' })
+	@ApiProperty({ type: Number })
 	@IsInt()
 	blockTimestamp: number;
 

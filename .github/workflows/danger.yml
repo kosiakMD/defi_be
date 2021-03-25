@@ -20,7 +20,13 @@ jobs:
           node-version: 14
 
       - name: "Install root dependencies"
-        run: npm install
+        run: npm ci
+
+      - name: Run linters
+        uses: wearerequired/lint-action@v1
+        with:
+          eslint: true
+          prettier: true
 
       - name: "Running danger ci"
         run: |

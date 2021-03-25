@@ -1,5 +1,4 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
 
 local_branch_name="$(git rev-parse --abbrev-ref HEAD)"
 

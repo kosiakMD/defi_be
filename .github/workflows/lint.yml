@@ -28,6 +28,8 @@ jobs:
 #        uses: wearerequired/lint-action@v1
         uses: sibiraj-s/action-eslint@v1
         with:
-          eslint: true
-          prettier: true
+#          eslint: true
+#          prettier: true
           eslint_args: "--config .eslintrc.js"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

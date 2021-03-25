@@ -59,6 +59,7 @@
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "danger": "^10.6.3",
+    "danger-plugin-eslint": "^0.1.0",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-node": "^11.1.0",

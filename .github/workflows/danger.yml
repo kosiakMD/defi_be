@@ -16,7 +16,7 @@ jobs:
 
       - name: Check out Git branch name
         run: |
-          git update-index --chmod=+x .husky/check_branch_naming.sh
+          chmod=+x .husky/check_branch_naming.sh
           .husky/check_branch_naming.sh
 
       - name: Set up Node.js

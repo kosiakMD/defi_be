@@ -5,7 +5,11 @@
   "author": "",
   "private": true,
   "license": "ISC",
-  "engine": "14",
+  "type": "module",
+  "engines": {
+    "node": "^14",
+    "npm": "^6"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",

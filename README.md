@@ -89,3 +89,19 @@ start production mode ```npm start:prod```
 Run test ```npm run test```
 
 Run Linter checking ```npm run lint```
+
+## Development
+
+### <span style='display:flex; '>Swagger <img src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg" width='100'/></span>
+
+We use OpenAPI documentation by [Swagger](https://swagger.io/)
+
+- NestJS [Docs](https://docs.nestjs.com/openapi/introduction)
+
+- Types and Parameters [Docs](https://docs.nestjs.com/openapi/types-and-parameters)
+
+- package [Docs](https://www.npmjs.com/package/@nestjs/swagger)
+
+### Access Documentation 
+
+To get API documentation of each service need to run each service and get by link path `/api`, e.g. `localhost:3000/api` 

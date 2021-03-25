@@ -1,6 +1,6 @@
 /* eslint-disable */
 const { message, warn, danger, markdown } = require('danger');
-const eslint = require('danger-plugin-eslint');
+// const eslint = require('danger-plugin-eslint');
 
 // Check which files changed
 if (danger.git.modified_files.length > 0) {
@@ -38,4 +38,4 @@ if (packageChanged && !yarnLockfileChanged) {
 	warn(`${message} - <i>${idea}</i>`);
 }
 
-eslint();
+// eslint();

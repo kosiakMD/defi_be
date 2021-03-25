@@ -19,7 +19,7 @@ module.exports = {
 		'plugin:prettier/recommended',
 	],
 	root: true,
-	ignorePatterns: ['.eslintrc.js', '**/*.js'],
+	ignorePatterns: ['.eslintrc.js', '**/*.js', 'nest-cli.json'],
 	rules: {
 		quotes: [
 			'error',
@@ -30,7 +30,6 @@ module.exports = {
 			},
 		],
 		indent: ['error', 'tab'],
-		//
 		'@typescript-eslint/interface-name-prefix': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'warn',
 		'@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -40,7 +39,6 @@ module.exports = {
 		'max-classes-per-file': ['error', 1],
 		'no-use-before-define': 'warn',
 		'no-console': 'error',
-		// node
 		'node/exports-style': ['error', 'exports'],
 		'node/file-extension-in-import': 'off',
 		'node/prefer-global/buffer': ['error', 'always'],
@@ -54,11 +52,5 @@ module.exports = {
 		'node/no-missing-import': 'off',
 		'node/no-unpublished-import': 'off',
 		'node/no-extraneous-import': 'off',
-		// jest
-		// 'jest/no-disabled-tests': 'warn',
-		// 'jest/no-focused-tests': 'warn',
-		// 'jest/no-identical-title': 'error',
-		// 'jest/prefer-to-have-length': 'warn',
-		// 'jest/valid-expect': 'off',
 	},
 };

@@ -14,6 +14,9 @@ jobs:
       - name: Check out Git repository
         uses: actions/checkout@v2
 
+      - name: Check out Git branch name
+        run: .husky/check_branch_naming.sh
+
       - name: Set up Node.js
         uses: actions/setup-node@v1
         with:
@@ -21,12 +24,6 @@ jobs:
 
       - name: "Install root dependencies"
         run: npm ci
-
-      - name: Run linters
-        uses: wearerequired/lint-action@v1
-        with:
-          eslint: true
-          prettier: true
 
       - name: "Running danger ci"
         run: |

@@ -29,6 +29,7 @@
     "axios-rate-limit": "^1.3.0",
     "es5": "^1.0.0",
     "es6": "0.0.7",
+    "inversify": "^5.0.5",
     "nestjs-agenda": "^2.0.0",
     "nestjs-config": "^1.4.7",
     "nestjs-pgpromise": "^1.4.3",

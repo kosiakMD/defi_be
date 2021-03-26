@@ -12,9 +12,9 @@ jobs:
 
       - name: Check out Git branch name
         run: |
-          chmod=+x .github/scripts/check_branch_naming.sh
-          git update-index --chmod=+x .github/scripts/check_branch_naming.sh
-          .github/scripts/check_branch_naming.sh
+          chmod=+x .scripts/check_branch_naming.sh
+          git update-index --chmod=+x .scripts/check_branch_naming.sh
+          .scripts/check_branch_naming.sh
 
       - name: Set up Node.js
         uses: actions/setup-node@v1

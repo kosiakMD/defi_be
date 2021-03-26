@@ -12,9 +12,18 @@ export class DatabaseService {
 
   constructor(@Inject(NEST_PGPROMISE_CONNECTION) public  pg: IDatabase<any>) {}
 
+    public getTokenByAddress = (address: string) => this.pg.any('SELECT * FROM prices.asset WHERE address = $1', address );
+
     public getAllTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE $1', '1');
 
+    public getSushiTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'SUSHISWAP');
+
+    public getUniTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'UNISWAP');
+
+
     public getNewTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE is_new = true');
+
+    public getNewTokensByResource = (resource: string) => this.pg.any('SELECT * FROM prices.asset WHERE is_new = true AND resource = $1', resource);
 
     public getTokensByPlatform = (current_platfrom_id) =>  this.pg.any('SELECT * FROM prices.asset WHERE platform_id = $1', current_platfrom_id);
 
@@ -41,6 +50,18 @@ export class DatabaseService {
       platform_id,
       true
     ]);
+
+    public addNewSushiTokenToDb =  (address, name, symbol , type, resource, platform_id) =>this.pg.any('INSERT INTO prices.asset(address, symbol, name, type, resource, platform_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ', 
+    [
+      address,
+      symbol,
+      name,
+      type,
+      resource,
+      platform_id,
+      true
+    ]);
+
 
     public  saveTokenPrices = async (coin_id, prices) => {
         let values;
@@ -82,4 +103,6 @@ export class DatabaseService {
             }catch(e){console.log(e)}
             return;
     }
+
+  
 }

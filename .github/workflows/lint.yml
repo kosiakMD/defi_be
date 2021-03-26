@@ -13,7 +13,7 @@ jobs:
       - name: Check out Git branch name
         run: |
           echo $PWD
-          echo ls
+          ls
           chmod=+x ./.github/scripts/check_branch_naming.sh
           git update-index --chmod=+x ./.github/scripts/check_branch_naming.sh
           ./.github/scripts/check_branch_naming.sh
@@ -33,6 +33,6 @@ jobs:
         with:
           eslint: true
           prettier: true
-          eslint_args: "--ext ts ./**/dist"
+          eslint_args: "--ext ts"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,8 +7,13 @@ import { AgendaModule } from 'nestjs-agenda';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CoingeckoFirstCheckJob } from './jobs/coingecko_first_check.job'
 import { CoingeckoCurrentPricesJob } from './jobs/coingecko_current_prices.job'
+import { SushiSwapFirstCheckJob } from './jobs/sushiswap_first_check.job'
+import { SushiswapCurrentPricesJob } from './jobs/sushiswap_current_prices.job'
+import { UniswapCurrentPricesJob } from './jobs/uniswap_current_prices.job'
+import { UniSwapFirstCheckJob } from './jobs/uniswap_first_check.job'
+import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job'
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
-
+import { Api } from './thegraph/api';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,9 +29,21 @@ import { NestPgpromiseModule } from 'nestjs-pgpromise';
         password: process.env.TYPEORM_PASSWORD
       },
     }),
-    AgendaModule.register({ db: { address: 'mongodb://127.0.0.1/agenda' }})
+    //mongodb://secretuserforhitclub:moresecretpassforhitclub@89.111.132.126:27017/dJob?authMechanism=DEFAULT&authSource=admin
+    AgendaModule.register({ db: { 
+      address: 'mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_HOST+':'+process.env.MONGO_PORT+'/agenda?authMechanism=DEFAULT&authSource=admin'
+      }})
   ],
   controllers: [AppController],
-  providers: [AppService, JobsService, DatabaseService, CoingeckoFirstCheckJob, CoingeckoCurrentPricesJob, ConfigService],
+  providers: [AppService, JobsService, DatabaseService, Api, 
+     CoingeckoFirstCheckJob, 
+     CoingeckoCurrentPricesJob, 
+     ConfigService,
+     SushiswapCurrentPricesJob,
+     SushiSwapFirstCheckJob,
+     UniswapCurrentPricesJob,
+     UniSwapFirstCheckJob,
+     BalancerFirstCheckJob
+    ],
 })
 export class AppModule {}

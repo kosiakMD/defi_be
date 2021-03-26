@@ -14,12 +14,12 @@ master -> develop -> ...
 
 [Docs](https://defiyield.atlassian.net/wiki/spaces/PD/pages/194641921/Git+Flow)
 
-##### Branch naming conventions
+##### Branch naming convention
 
 * <i>$user_name</i> - Git user name
 * <i>$description</i> - a short descriptor of the task <b>OR</b> JIRA ticket number
 * <i>$type</i> - type of work
-    * <i><b>TypeEnum</b></i>: feature | bugfix | hotfix
+    * <i><b>TypeEnum</b></i>: feature | bugfix | hotfix | config
 
 branch_name = <i>$user_name</i> / <i>$type:<b>TypeEnum</b></i> / <i>$description</i>
 
@@ -43,9 +43,20 @@ example: ```luck-skywalker/bugfix/destroy-Death-star```
 
 ### Swap Service [link](./swap_service)
 
+## Install
+
 ### Install dependencies
 
-```npm run install```
+To run install of all services write
+
+```npm run install_all```
+
+If prepare faze (should see message `husky - Git hooks installed`) wasn't done [do postinstall](#postinstall)
+
+### Postinstall
+
+```npx husky install```
+
 
 ### Update dependencies <i><small>(in rare cases)</small></i>
 
@@ -73,8 +84,33 @@ start production mode ```npm start:prod```
 <b>N.B! First service to run is <u>Price Service</u> because some of other services depend on it.</b>
 <b><u>API Gateway Service</u> should be run the last one as it depends on all the rest</b>
 
+## Development
+
+### Coding conventions
+
+We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency on [Prettier](https://prettier.io/) rules
+
+- ```npm run lint``` - run ESLint; could be run from the project root or service root pointwise;
+
+- ```npm run format``` - apply Prettier [rules](/../.prettierrc) to ```*.ts``` files;
+  could be run from the project root or service root pointwise;
+
+### <span style='display:flex; '>Swagger <img src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg" width='100'/></span>
+
+We use OpenAPI documentation by [Swagger](https://swagger.io/)
+
+- NestJS [Docs](https://docs.nestjs.com/openapi/introduction)
+
+- Types and Parameters [Docs](https://docs.nestjs.com/openapi/types-and-parameters)
+
+- package [Docs](https://www.npmjs.com/package/@nestjs/swagger)
+
 ### Test
 
 Run test ```npm run test```
 
 Run Linter checking ```npm run lint```
+
+### Access Documentation 
+
+To get API documentation of each service need to run each service and get by link path `/api`, e.g. `localhost:3000/api` 

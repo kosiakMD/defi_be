@@ -7,17 +7,23 @@ on: [pull_request]
 
 jobs:
   build:
-    name: Danger JS
+    name: Run Danger JS
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
+      - name: Check out Git repository
+        uses: actions/checkout@v2
 
-      - run: npm install
-        name: "Install dependencies"
+      - name: Set up Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
 
-      - run: |
+      - name: "Install root dependencies"
+        run: npm ci
+
+      - name: "Running danger ci"
+        run: |
           DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" npx danger ci
-        name: "Running danger.js"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

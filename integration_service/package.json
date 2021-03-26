@@ -2,9 +2,10 @@
   "name": "integration_service",
   "version": "1.0.0",
   "description": "Integration Service",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "author": "",
   "license": "ISC",
+  "type": "module",
   "engines": {
     "node": "^14",
     "npm": "^6"

@@ -19,7 +19,8 @@ module.exports = {
 		'plugin:prettier/recommended',
 	],
 	root: true,
-	ignorePatterns: ['.eslintrc.js', '**/*.js'],
+	// healthcheck & danger
+	ignorePatterns: ['.eslintrc.js', '**/*.js', 'nest-cli.json'],
 	rules: {
 		quotes: [
 			'error',

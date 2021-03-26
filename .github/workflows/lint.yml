@@ -12,6 +12,8 @@ jobs:
 
       - name: Check out Git branch name
         run: |
+          echo $PWD
+          echo ls
           chmod=+x ./scripts/check_branch_naming.sh
           git update-index --chmod=+x ./scripts/check_branch_naming.sh
           ./scripts/check_branch_naming.sh

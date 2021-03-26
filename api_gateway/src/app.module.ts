@@ -19,6 +19,7 @@ import { GasController } from './gas/gas.controller';
 import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { PricesController } from './prices/prices.controller';
+import { PoolsController } from './pool/pool.controller';
 
 @Module({
 	imports: [TerminusModule],
@@ -38,6 +39,7 @@ import { PricesController } from './prices/prices.controller';
 		TransactionsController,
 		TransfersController,
 		PricesController,
+		PoolsController,
 	],
 	providers: [
 		{

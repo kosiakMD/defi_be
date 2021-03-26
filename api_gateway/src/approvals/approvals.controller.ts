@@ -2,7 +2,7 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import EthereumAddressDto from '../DTO/EthereumAddress.dto';
 import ContractApprovalDto from '../DTO/ContractApproval.dto';
-import { ContractApproval } from 'src/interfaces';
+import { ContractApproval } from '../interfaces';
 
 @ApiTags('Approvals')
 @Controller('approvals')

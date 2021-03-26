@@ -1,9 +1,9 @@
 import EthereumAddressDto from "./EthereumAddress.dto";
 import { ApiProperty } from "@nestjs/swagger";
 import { IsDateString, IsEthereumAddress, IsNumber, IsString } from "class-validator";
-import { Address } from "../interfaces";
+import { Address, Token } from '../interfaces';
 
-export default class TokenDto {
+export default class TokenDto implements Token {
 	@ApiProperty({ type: Number })
 	@IsNumber()
 	id: number;

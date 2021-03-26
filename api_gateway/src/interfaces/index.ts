@@ -1,5 +1,7 @@
 export type Address = string;
 
+export type Symbol = string;
+
 export interface BaseData<T = string> {
 	userAddress: string;
 	protocolName: string;
@@ -39,4 +41,49 @@ export interface GasPrice {
 export interface GasHistory {
 	average: number;
 	time: string;
+}
+
+export interface PoolToken {
+	id: Address, // Ethereum,
+	name: string,
+	symbol: Symbol,
+	percentage: number,
+}
+
+export interface Token {
+	id: number;
+	is_stable: number;
+	name: string;
+	coingecko_id: string;
+	address: Address;
+	decimals: number;
+	abi_type_id: number;
+	created_at: string;
+	price: number;
+}
+
+
+export interface APY {
+	day: number,
+	week: number,
+	month: number,
+}
+
+export interface IL {
+	day: number,
+	dayUSD: number,
+	week: number,
+	weekUSD: number,
+	month: number,
+	monthUSD: number,
+}
+
+export interface Pool {
+	id: string, // Ethereum
+	projectName: string,
+	reserveUSD: number,
+	fee24h: number,
+	tokens: PoolToken[],
+	APY: APY,
+	IL: IL,
 }

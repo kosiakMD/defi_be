@@ -58,41 +58,42 @@ export class JobsService {
         await this.agenda.start();
         await this.agenda.cancel({});
         console.log('Agenda started!!!');
+
         // check for new tokens on API
         this.agenda.define('CRAWL_COINGECKO_NEW_TOKENS', { lockLifetime: 10000 }, this.coingeckoNewTokenCheckJob.crawl_new_tokens.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_COINGECKO_NEW_TOKENS', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_COINGECKO_NEW_TOKENS', {});
         // get history for new tokens
         this.agenda.define('CRAWL_COINGECKO_NEW_TOKENS_HISTORY', { lockLifetime: 10000 }, this.coingeckoNewTokenCheckJob.crawl_new_tokens_history.bind(this));
-        //this.agenda.every(NEW_TOKENS_HISTORY_SECONDS_INTERVAL+" seconds", 'CRAWL_COINGECKO_NEW_TOKENS_HISTORY', {});
+        this.agenda.every(NEW_TOKENS_HISTORY_SECONDS_INTERVAL+" seconds", 'CRAWL_COINGECKO_NEW_TOKENS_HISTORY', {});
         // get current token prices
         this.agenda.define('CRAWL_COINGECKO_CURRENT_PRICE', { lockLifetime: 10000 }, this.coingeckoCurrentPricesJob.crawl.bind(this));
-        //this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL+" seconds", 'CRAWL_COINGECKO_CURRENT_PRICE', {});
+        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL+" seconds", 'CRAWL_COINGECKO_CURRENT_PRICE', {});
 
         //SUSHI
-        //console.log('starting sushi')
+        console.log('starting sushi')
         this.agenda.define('CRAWL_SUSHI_NEW_TOKENS', { lockLifetime: 10000 }, this.sushiSwapNewTokenCheckJob.crawl_new_tokens.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_SUSHI_NEW_TOKENS', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_SUSHI_NEW_TOKENS', {});
         
         this.agenda.define('CRAWL_SUSHI_NEW_TOKENS_HISTORY', { lockLifetime: 10000 }, this.sushiSwapNewTokenCheckJob.crawl_new_tokens_history.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_SUSHI_NEW_TOKENS_HISTORY', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_SUSHI_NEW_TOKENS_HISTORY', {});
         
         this.agenda.define('CRAWL_SUSHI_CURRENT_PRICE', { lockLifetime: 10000 }, this.sushiswapCurrentPricesJob.crawl.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_SUSHI_CURRENT_PRICE', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_SUSHI_CURRENT_PRICE', {});
         
         //UNISWAP
-        //console.log('starting uniswap')
+        console.log('starting uniswap')
         this.agenda.define('CRAWL_UNISWAP_NEW_TOKENS', { lockLifetime: 10000 }, this.uniSwapFirstCheckJob.crawl_new_tokens.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_UNISWAP_NEW_TOKENS', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_UNISWAP_NEW_TOKENS', {});
         
         this.agenda.define('CRAWL_UNISWAP_NEW_TOKENS_HISTORY', { lockLifetime: 10000 }, this.uniSwapFirstCheckJob.crawl_new_tokens_history.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_UNISWAP_NEW_TOKENS_HISTORY', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_UNISWAP_NEW_TOKENS_HISTORY', {});
         
         this.agenda.define('CRAWL_UNISWAP_CURRENT_PRICE', { lockLifetime: 10000 }, this.uniswapCurrentPricesJob.crawl.bind(this));
-        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_UNISWAP_CURRENT_PRICE', {});
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_UNISWAP_CURRENT_PRICE', {});
         
         console.log('starting balancer')
         this.agenda.define('CRAWL_BALANCER_NEW_TOKENS', { lockLifetime: 10000 }, this.balancerFirstCheckJob.crawl_new_tokens.bind(this));
-        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS', {});
+        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS', {});
         
 
       })

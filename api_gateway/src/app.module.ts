@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 import { AppController } from './app/app.controller';
 import { AppService } from './app/app.service';
 import { HealthController } from './health/health.controller';
@@ -19,10 +19,12 @@ import { GasController } from './gas/gas.controller';
 import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { PricesController } from './prices/prices.controller';
-import { PoolsController } from './pool/pool.controller';
+import { PoolsController } from './pool/pools.controller';
+import { PoolsService } from './pool/pools.service';
+import { PoolsModule } from './pool/pools.module';
 
 @Module({
-	imports: [TerminusModule],
+	imports: [TerminusModule, HttpModule, PoolsModule],
 	controllers: [
 		HealthController,
 		AppController,
@@ -39,7 +41,7 @@ import { PoolsController } from './pool/pool.controller';
 		TransactionsController,
 		TransfersController,
 		PricesController,
-		PoolsController,
+		// PoolsController,
 	],
 	providers: [
 		{
@@ -48,6 +50,7 @@ import { PoolsController } from './pool/pool.controller';
 		},
 		ServiceHealthIndicator,
 		AppService,
+		// PoolsService,
 	],
 })
 export class AppModule {}

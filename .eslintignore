@@ -1,4 +1,4 @@
-.git
-.github
-.husky
-dist
+!.git
+!.github
+!.husky
+*/dist

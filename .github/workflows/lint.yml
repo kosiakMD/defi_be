@@ -12,7 +12,8 @@ jobs:
 
       - name: Check out Git branch name
         run: |
-          chmod=+x .github/scripts/check_branch_naming.sh
+          chmod=+x ./../scripts/check_branch_naming.sh
+          git update-index --chmod=+x ./../scripts/check_branch_naming.sh
           .github/scripts/check_branch_naming.sh
 
       - name: Set up Node.js
@@ -30,6 +31,7 @@ jobs:
         with:
 #          eslint: true
 #          prettier: true
-          eslint_args: "--config .eslintrc.js"
+#          eslint_args: "--config .eslintrc.js"
+          eslintArgs: "--config .eslintrc.js"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

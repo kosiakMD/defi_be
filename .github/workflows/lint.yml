@@ -28,12 +28,11 @@ jobs:
         run: npm ci
 
       - name: Run linters
-        #        uses: wearerequired/lint-action@v1
         uses: wearerequired/lint-action@v1
         with:
           eslint: true
           prettier: true
           eslint_extensions: ts
-#          eslint_args: '--ext ts'
+          eslint_args: '--config .eslintrc.js'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

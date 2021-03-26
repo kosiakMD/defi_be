@@ -32,6 +32,8 @@
     "@nestjs/swagger": "^4.8.0",
     "@nestjs/terminus": "^7.1.0",
     "@nestjsx/api-version": "^0.1.1",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
     "dotenv": "^8.2.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",

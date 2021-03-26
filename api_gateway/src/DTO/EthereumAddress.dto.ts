@@ -1,0 +1,16 @@
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+import { IsEthereumAddress } from 'class-validator';
+import { Address } from '../interfaces';
+
+@ApiExtraModels()
+export default class EthereumAddressDto extends String {
+	constructor(
+
+	) {
+		super();
+	}
+	@ApiProperty({ type: String, example: '0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7' })
+	@IsEthereumAddress({ message: 'The string is not a valid Ethereum address' })
+	address: Address;
+	// [Symbol.toPrimitive]: Address;
+}

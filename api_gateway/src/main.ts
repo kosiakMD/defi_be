@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
+import { ValidationPipe } from '@nestjs/common';
 
 // config check
 (() => {
@@ -22,6 +23,7 @@ async function bootstrap() {
 		cors: true,
 	});
 
+	app.useGlobalPipes(new ValidationPipe());
 	app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
 	const config = new DocumentBuilder()

@@ -7,8 +7,13 @@ import { AgendaModule } from 'nestjs-agenda';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CoingeckoFirstCheckJob } from './jobs/coingecko_first_check.job'
 import { CoingeckoCurrentPricesJob } from './jobs/coingecko_current_prices.job'
+import { SushiSwapFirstCheckJob } from './jobs/sushiswap_first_check.job'
+import { SushiswapCurrentPricesJob } from './jobs/sushiswap_current_prices.job'
+import { UniswapCurrentPricesJob } from './jobs/uniswap_current_prices.job'
+import { UniSwapFirstCheckJob } from './jobs/uniswap_first_check.job'
+import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job'
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
-
+import { Api } from './thegraph/api';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -27,6 +32,15 @@ import { NestPgpromiseModule } from 'nestjs-pgpromise';
     AgendaModule.register({ db: { address: 'mongodb://127.0.0.1/agenda' }})
   ],
   controllers: [AppController],
-  providers: [AppService, JobsService, DatabaseService, CoingeckoFirstCheckJob, CoingeckoCurrentPricesJob, ConfigService],
+  providers: [AppService, JobsService, DatabaseService, Api, 
+     CoingeckoFirstCheckJob, 
+     CoingeckoCurrentPricesJob, 
+     ConfigService,
+     SushiswapCurrentPricesJob,
+     SushiSwapFirstCheckJob,
+     UniswapCurrentPricesJob,
+     UniSwapFirstCheckJob,
+     BalancerFirstCheckJob
+    ],
 })
 export class AppModule {}

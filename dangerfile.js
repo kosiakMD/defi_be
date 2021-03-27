@@ -18,7 +18,11 @@ const bigPRThreshold = 600;
 const chars = danger.github.pr.additions + danger.github.pr.deletions;
 if (chars > bigPRThreshold) {
 	warn(':exclamation: Big PR (' + chars + ')');
-	markdown('> (' + chars + ') : Pull Request size seems relatively large. If Pull Request contains multiple changes, split each into separate PR will helps faster, easier review.');
+	markdown(
+		'> (' +
+			chars +
+			') : Pull Request size seems relatively large. If Pull Request contains multiple changes, split each into separate PR will helps faster, easier review.',
+	);
 }
 
 // Check for changes to package.json

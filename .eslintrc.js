@@ -19,10 +19,10 @@ module.exports = {
 		'plugin:prettier/recommended',
 	],
 	root: true,
-	// healthcheck & danger
-	ignorePatterns: ['.eslintrc.js', '**/*.js', 'nest-cli.json'],
+	// healthcheck & danger *.js
+	ignorePatterns: ['.eslintrc.js', '**/*.js', '*.json', '**/dist/', 'node_modules'],
 	rules: {
-		quotes: [
+		'quotes': [
 			'error',
 			'single',
 			{
@@ -30,17 +30,30 @@ module.exports = {
 				avoidEscape: true,
 			},
 		],
-		indent: ['error', 'tab'],
-		//
+		// temporary disabled
+		// 'sort-imports': [
+		// 	'warn',
+		// 	{
+		// 		ignoreCase: false,
+		// 		ignoreDeclarationSort: false,
+		// 		ignoreMemberSort: false,
+		// 		memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple'],
+		// 		allowSeparatedGroups: false,
+		// 	},
+		// ],
+		// temporary committed as prettier conflicts with
+		indent: ['error', 'tab', { MemberExpression: 1 }],
 		'@typescript-eslint/interface-name-prefix': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'warn',
 		'@typescript-eslint/explicit-module-boundary-types': 'off',
 		'@typescript-eslint/no-explicit-any': 'off',
-		'@typescript-eslint/no-unused-vars': 'error',
+		'@typescript-eslint/no-unused-vars': ['error'],
+		'@typescript-eslint/no-empty-function': 'warn',
 		'prettier/prettier': 'error',
 		'max-classes-per-file': ['error', 1],
 		'no-use-before-define': 'warn',
-		'no-console': 'error',
+		'no-console': ['error', { 'allow': ['warn', 'error', 'info'] }],
+		'newline-per-chained-call': 'error',
 		// node
 		'node/exports-style': ['error', 'exports'],
 		'node/file-extension-in-import': 'off',
@@ -55,7 +68,7 @@ module.exports = {
 		'node/no-missing-import': 'off',
 		'node/no-unpublished-import': 'off',
 		'node/no-extraneous-import': 'off',
-		// jest
+		// jest - temporary no tests
 		// 'jest/no-disabled-tests': 'warn',
 		// 'jest/no-focused-tests': 'warn',
 		// 'jest/no-identical-title': 'error',

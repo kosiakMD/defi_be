@@ -29,10 +29,12 @@ jobs:
 
       - name: Run linters
         uses: wearerequired/lint-action@v1
+#        uses: sibiraj-s/action-eslint@v1
         with:
           eslint: true
           prettier: true
           eslint_extensions: ts
           eslint_args: '--config .eslintrc.js'
+#          eslintArgs: "--config .eslintrc.js"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

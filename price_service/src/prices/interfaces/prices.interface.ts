@@ -1,9 +1,9 @@
 export interface CurrentPrice {
-	[key: string]: string
+	[key: string]: string;
 }
 
 export interface HistoricalPrice {
 	[key: string]: {
-		[key: string]:string
-	}
+		[key: string]: string;
+	};
 }

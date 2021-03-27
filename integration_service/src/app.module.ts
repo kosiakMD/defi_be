@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { ExamplesModule } from './examples/example.module';
 import { TerminusModule } from '@nestjs/terminus';
+
+import { ExamplesModule } from './examples/example.module';
 import { HealthController } from './health/health.controller';
 
 @Module({

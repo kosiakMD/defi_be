@@ -1,11 +1,10 @@
-import { TheGraphQuery } from "./query";
-
+import { TheGraphQuery } from './query';
 
 export function getBalancerPoolsQuery(): TheGraphQuery {
-  return {
-    operationName: 'getPairs',
-    variables: {},
-    query: `query 
+	return {
+		operationName: 'getPairs',
+		variables: {},
+		query: `query 
     checkTopPoolsDataQuery {
       pools: pools (first:1000, skip:0) {
             id
@@ -16,18 +15,17 @@ export function getBalancerPoolsQuery(): TheGraphQuery {
             }
         
       }
-    }`
-  }
+    }`,
+	};
 }
 
-
 export function getLiquidityPositionsQuery(address: string): TheGraphQuery {
-  return {
-    operationName: 'liquidityPositions',
-    variables: {
-      address: address
-    },
-    query: `
+	return {
+		operationName: 'liquidityPositions',
+		variables: {
+			address: address,
+		},
+		query: `
     query liquidityPositionQuery($address: String!) {
       poolShares(where:{user:$address}, first:1000) {
         balance
@@ -176,86 +174,86 @@ export function getLiquidityPositionsQuery(address: string): TheGraphQuery {
           }
         }
       }
-    }`
-  }
+    }`,
+	};
 }
 
 export interface BalancerLiquidityPositionsResponse {
-  data: BalancerLiquidityPositions;
+	data: BalancerLiquidityPositions;
 }
 
 export interface BalancerLiquidityPositions {
-  poolShares: BalancerPoolShare[];
-  mints: BalancerMint[];
-  burns: BalancerBurn[];
-  swaps: BalancerSwap[];
-  proxySwaps: BalancerSwap[];
+	poolShares: BalancerPoolShare[];
+	mints: BalancerMint[];
+	burns: BalancerBurn[];
+	swaps: BalancerSwap[];
+	proxySwaps: BalancerSwap[];
 }
 
 export interface BalancerPoolShare {
-  balance: string;
-  pool: BalancerPool;
+	balance: string;
+	pool: BalancerPool;
 }
 
 export interface BalancerPool {
-  id: string;
-  name: string;
-  symbol: string;
-  liquidity: string;
-  totalShares: string;
-  totalSupply: string;
-  tokens: BalancerToken[];
-  totalWeight: string
-  swapFee,
-  totalSwapFee
+	id: string;
+	name: string;
+	symbol: string;
+	liquidity: string;
+	totalShares: string;
+	totalSupply: string;
+	tokens: BalancerToken[];
+	totalWeight: string;
+	swapFee;
+	totalSwapFee;
 }
 
 export interface BalancerToken {
-  id: string;
-  address: string;
-  name: string;
-  symbol: string;
-  decimals: string;
-  totalSupply: string;
-  balance: string;
-  denormWeight: string;
+	id: string;
+	address: string;
+	name: string;
+	symbol: string;
+	decimals: string;
+	totalSupply: string;
+	balance: string;
+	denormWeight: string;
 }
 
 export interface BalancerMint {
-  tx: BalancerTransaction;
-  amount: string;
-  pool: BalancerPool;
+	tx: BalancerTransaction;
+	amount: string;
+	pool: BalancerPool;
 }
 
 export interface BalancerBurn {
-  tx: BalancerTransaction;
-  amount: string;
-  pool: BalancerPool;
+	tx: BalancerTransaction;
+	amount: string;
+	pool: BalancerPool;
 }
 
 export interface BalancerSwap {
-  tx: BalancerTransaction;
-  tokenIn: string;
-  tokenAmountIn: string;
-  tokenInSym: string;
-  tokenInName: string;
-  tokenInDecimals: string;
-  tokenOut: string;
-  tokenAmountOut: string;
-  tokenOutSym: string;
-  tokenOutName: string;
-  tokenOutDecimals: string;
-  value: string;
-  pool: BalancerPool;
+	tx: BalancerTransaction;
+	tokenIn: string;
+	tokenAmountIn: string;
+	tokenInSym: string;
+	tokenInName: string;
+	tokenInDecimals: string;
+	tokenOut: string;
+	tokenAmountOut: string;
+	tokenOutSym: string;
+	tokenOutName: string;
+	tokenOutDecimals: string;
+	value: string;
+	pool: BalancerPool;
 }
 
 export interface BalancerTransaction {
-  hash: string;
-  id: string
-  event: string;
-  block: string;
-  timestamp: string;
-  gasUsed: string;
-  gasPrice: string;
-  amount: string;
+	hash: string;
+	id: string;
+	event: string;
+	block: string;
+	timestamp: string;
+	gasUsed: string;
+	gasPrice: string;
+	amount: string;
 }

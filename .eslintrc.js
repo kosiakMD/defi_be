@@ -42,7 +42,7 @@ module.exports = {
 		// 	},
 		// ],
 		// temporary committed as prettier conflicts with
-		indent: ['error', 'tab', { MemberExpression: 1 }],
+		// indent: ['error', 'tab', { MemberExpression: 1 }],
 		'@typescript-eslint/interface-name-prefix': 'off',
 		'@typescript-eslint/explicit-function-return-type': 'warn',
 		'@typescript-eslint/explicit-module-boundary-types': 'off',

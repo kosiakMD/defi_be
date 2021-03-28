@@ -118,9 +118,9 @@ Run Linter checking `npm run lint`
 
 We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency on [Prettier](https://prettier.io/) rules
 
-- ```npm run lint``` - run ESLint; could be run from the project root or service root pointwise;
+- `npm run lint` - run ESLint; could be run from the project root or service root pointwise;
 
-- ```npm run format``` - apply Prettier [rules](/../.prettierrc) to ```*.ts``` files;
+- `npm run format` - apply Prettier [rules](/../.prettierrc) to `*.ts` files;
   could be run from the project root or service root pointwise;
 
 ### <span style='display:flex; '>Swagger <img src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg" width='100'/></span>
@@ -135,9 +135,9 @@ We use OpenAPI documentation by [Swagger](https://swagger.io/)
 
 ### Test
 
-Run test ```npm run test```
+Run test `npm run test`
 
-Run Linter checking ```npm run lint```
+Run Linter checking `npm run lint`
 
 ### Access Documentation
 

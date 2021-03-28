@@ -1,9 +1,12 @@
 {
 	"printWidth": 100,
 	"singleQuote": true,
-	"tabWidth": 2,
 	"useTabs": true,
+	"tabWidth": 2,
+	"semi": true,
 	"trailingComma": "all",
 	"bracketSpacing": true,
-	"arrowParens": "always"
+	"arrowParens": "always",
+	"importOrder": ["^@nest/(.*)$", "^common/(.*)$", "^[./]"],
+	"importOrderSeparation": true
 }

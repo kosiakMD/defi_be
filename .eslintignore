@@ -1,4 +1,6 @@
-!.git
-!.github
-!.husky
-*/dist
+node_modules
+./.git
+./.github
+./.husky
+dist
+.eslintrc.js

@@ -1,0 +1,22 @@
+name: ESLint and Prettier
+
+on: [pull_request, push]
+
+jobs:
+  lint:
+    name: Run linters
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out Git repository
+      - uses: actions/checkout@v2
+
+      - name: Run a-b-r-o-w-n/eslint-action
+      - uses: a-b-r-o-w-n/eslint-action@v2
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          files: '/**/src/**/*'
+          ignore: '*.js'
+          extensions: '..ts'
+          # working-directory: "./"
+          quiet: 'false'

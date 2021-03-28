@@ -1,0 +1,2 @@
+#!/bin/sh
+. "$(dirname "$0")/../.github/scripts/check_branch_naming.sh"

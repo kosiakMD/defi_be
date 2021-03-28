@@ -1,0 +1,23 @@
+#name: ESLint Manually
+#on: push
+#
+#jobs:
+#  run-linters:
+#    name: Run ESLint manually
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Check out Git repository
+#        uses: actions/checkout@v2
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v1
+#        with:
+#          node-version: 14
+#
+#      - name: 'Install root dependencies'
+#        run: npm ci
+#
+#      - name: 'Running Lint manually'
+#        run: |
+#          npm run lint

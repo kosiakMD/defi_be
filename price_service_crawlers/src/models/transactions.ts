@@ -1,5 +1,5 @@
-import {Base, Transaction} from './common';
+import { Base, Transaction } from './common';
 
 export interface Transactions extends Base<'transaction'> {
-  txs: Transaction[]
+	txs: Transaction[];
 }

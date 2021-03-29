@@ -1,34 +1,32 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Exclude } from 'class-transformer';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
 import AssetPrice from './asset_price.entity';
 
- 
-@Entity({name:'prices.asset'})
+@Entity({ name: 'prices.asset' })
 class Asset {
-  @PrimaryGeneratedColumn()
-  public id: number;
- 
-  @Column()
-  public symbol: string;
- 
-  @Column()
-  public address: string;
- 
-  @Column()
-  public name: string;
+	@PrimaryGeneratedColumn()
+	public id: number;
 
-  @Column()
-  public type: string;
+	@Column()
+	public symbol: string;
 
-  @Column()
-  public platform_id: number;
+	@Column()
+	public address: string;
 
-  @Column()
-  public is_new: boolean;
+	@Column()
+	public name: string;
 
-  @OneToMany(() => AssetPrice, (asset_price: AssetPrice) => asset_price.asset)
- 
-  public asset_prices: AssetPrice[];
+	@Column()
+	public type: string;
+
+	@Column()
+	public platform_id: number;
+
+	@Column()
+	public is_new: boolean;
+
+	@OneToMany(() => AssetPrice, (asset_price: AssetPrice) => asset_price.asset)
+	public asset_prices: AssetPrice[];
 }
- 
+
 export default Asset;

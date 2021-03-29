@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import {
 	HealthCheck,
 	HealthCheckService,
@@ -6,8 +7,8 @@ import {
 	HealthIndicatorStatus,
 	HttpHealthIndicator,
 } from '@nestjs/terminus';
+
 import { ServiceHealthIndicator } from '../app/app.health';
-import { ApiTags } from '@nestjs/swagger';
 import { AddVersion } from '../decorators/AddVersion';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
@@ -35,9 +36,7 @@ export class HealthController {
 	@Get('/')
 	@HealthCheck()
 	check() {
-		return this.health.check([
-			async (): Promise<HealthIndicatorResult> => ServiceHealthOk,
-		]);
+		return this.health.check([async (): Promise<HealthIndicatorResult> => ServiceHealthOk]);
 	}
 
 	@AddVersion('v1')

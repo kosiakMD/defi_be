@@ -12,6 +12,8 @@
 #
 #      - name: Check out Git branch name
 #        run: |
+#          echo $PWD
+#          ls
 #          chmod=+x .github/scripts/check_branch_naming.sh
 #          git update-index --chmod=+x .github/scripts/check_branch_naming.sh
 #          .github/scripts/check_branch_naming.sh

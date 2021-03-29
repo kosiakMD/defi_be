@@ -1,32 +1,32 @@
 export interface TokenPriceRequest {
-  tokenAddress: string;
-  timestamps: number[];
+	tokenAddress: string;
+	timestamps: number[];
 }
 
 export interface TokenPriceResponse {
-  [token: string]: number;
+	[token: string]: number;
 }
 
 export interface HistoricalTokenPricesResponse {
-  [token: string]: TokenTimestampPrices | string[];
+	[token: string]: TokenTimestampPrices | string[];
 }
 
 export interface TokenTimestampPrices {
-  [timestamp: string]: number;
+	[timestamp: string]: number;
 }
 export interface PoolPriceRequest {
-  poolAddress: string;
-  timestamps: number[];
+	poolAddress: string;
+	timestamps: number[];
 }
 
 export interface PoolPriceResponse {
-  [pool: string]: number;
+	[pool: string]: number;
 }
 
 export interface HistoricalPoolPricesResponse {
-  [pool: string]: PoolTimestampPrices | string[];
+	[pool: string]: PoolTimestampPrices | string[];
 }
 
 export interface PoolTimestampPrices {
-  [timestamp: string]: number;
+	[timestamp: string]: number;
 }

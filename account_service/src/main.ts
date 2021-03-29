@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
+
+import { AppModule } from './app.module';
 
 const service_name = 'Account Service';
 

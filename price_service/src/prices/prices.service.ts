@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
+
 //import { Example } from './interfaces/example.interface';
 
 @Injectable()
 export class PricesService {
 	//private readonly examples: Example[] = [];
-/*
+	/*
 	create(example: Example) {
 		this.examples.push(example);
 	}

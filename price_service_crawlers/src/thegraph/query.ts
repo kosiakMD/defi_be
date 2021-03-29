@@ -1,5 +1,5 @@
 export interface TheGraphQuery {
-  operationName: string
-  variables: {}
-  query: string
+	operationName: string;
+	variables: any;
+	query: string;
 }

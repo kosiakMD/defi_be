@@ -2,7 +2,6 @@
 
 <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="50" alt="Nest Logo" /></a> <span align="top"> Nest - Node.js TypeScript framework. Here is the [documentation](https://docs.nestjs.com). </span>
 
-
 ## Installation
 
 ```bash
@@ -50,4 +49,3 @@ We use OpenAPI documentation by [Swagger](https://swagger.io/)
 ### Access Documentation
 
 To get API documentation of each service need to run each service and get by link path `/api`, e.g. `localhost:3000/api`
-

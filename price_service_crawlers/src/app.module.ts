@@ -29,7 +29,10 @@ import { Api } from './thegraph/api';
         password: process.env.TYPEORM_PASSWORD
       },
     }),
-    AgendaModule.register({ db: { address: 'mongodb://127.0.0.1/agenda' }})
+    //mongodb://secretuserforhitclub:moresecretpassforhitclub@89.111.132.126:27017/dJob?authMechanism=DEFAULT&authSource=admin
+    AgendaModule.register({ db: { 
+      address: 'mongodb://'+process.env.MONGO_USER+':'+process.env.MONGO_PASS+'@'+process.env.MONGO_HOST+':'+process.env.MONGO_PORT+'/agenda?authMechanism=DEFAULT&authSource=admin'
+      }})
   ],
   controllers: [AppController],
   providers: [AppService, JobsService, DatabaseService, Api, 

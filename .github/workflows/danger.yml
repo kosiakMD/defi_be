@@ -2,7 +2,7 @@
 # For more information see: https://danger.systems/js/
 # https://github.com/marketplace/actions/danger-js-action
 
-name: "Danger JS"
+name: 'Danger JS'
 on: [pull_request]
 
 jobs:
@@ -19,10 +19,10 @@ jobs:
         with:
           node-version: 14
 
-      - name: "Install root dependencies"
+      - name: 'Install root dependencies'
         run: npm ci
 
-      - name: "Running danger ci"
+      - name: 'Running danger ci'
         run: |
           DANGER_DISABLE_TRANSPILATION="true" DEBUG="*" npx danger ci
         env:

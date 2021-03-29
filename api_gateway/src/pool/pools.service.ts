@@ -1,7 +1,4 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { AxiosResponse } from 'axios';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
 
 import { Pool } from '../interfaces';
 
@@ -15,8 +12,8 @@ export class PoolsService {
 
 	async getAll(): Promise<Pool[]> {
 		try {
-			const now = Date.now();
-			console.log('now', now);
+			// const now = Date.now();
+			// console.log('now', now);
 			const get = this.httpService.get(POOL_URL);
 			// get.pipe(
 			// 	tap(() => {
@@ -24,12 +21,12 @@ export class PoolsService {
 			// 	}),
 			// );
 			const promise = get.toPromise();
-			console.log(Date.now() - now);
-			console.log('promise', promise);
+			// console.log(Date.now() - now);
+			// console.log('promise', promise);
 			const result = await promise;
 			// console.log('result', result);
 			const { data } = result;
-			console.log('data', data);
+			// console.log('data', data);
 			return data;
 		} catch (e) {
 			console.error('er', e);

@@ -1,5 +1,7 @@
-import { Pool, PoolToken } from '../interfaces';
+// eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
+
+import { Pool, PoolToken } from '../interfaces';
 import EthereumAddressDto from './EthereumAddress.dto';
 import PoolTokenDto from './PoolToken.dto';
 
@@ -34,7 +36,6 @@ class IL implements IL {
 	monthUSD: number;
 }
 
-
 export default class PoolDto implements Pool {
 	@ApiProperty({ type: EthereumAddressDto, example: '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc' })
 	id: string;
@@ -56,5 +57,4 @@ export default class PoolDto implements Pool {
 
 	@ApiProperty({ type: PoolTokenDto, isArray: true })
 	tokens: PoolToken[];
-};
-
+}

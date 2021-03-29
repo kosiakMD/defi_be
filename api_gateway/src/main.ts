@@ -1,8 +1,8 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as dotenv from 'dotenv';
-import { ValidationPipe } from '@nestjs/common';
 
 import { AppModule } from './app.module';
 
@@ -38,7 +38,7 @@ async function bootstrap() {
 	const port = process.env.PORT || 3000;
 	// const os = require("os");
 	// const hostname = os.hostname();
-	const host = process.env.HOST /*|| hostname*/;
+	const host = process.env.HOST; /*|| hostname*/
 	await app.listen(port, host);
 
 	// eslint-disable-next-line no-console

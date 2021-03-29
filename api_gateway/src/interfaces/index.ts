@@ -1,6 +1,6 @@
 export type Address = string;
 
-export type Symbol = string;
+export type TokenSymbol = string;
 
 export interface BaseData<T = string> {
 	userAddress: string;
@@ -9,10 +9,10 @@ export interface BaseData<T = string> {
 }
 
 export interface PlatformData {
-	balancer: BaseData[],
-	curve: BaseData[],
-	sushiswap: BaseData[],
-	uniswap: BaseData[],
+	balancer: BaseData[];
+	curve: BaseData[];
+	sushiswap: BaseData[];
+	uniswap: BaseData[];
 }
 
 export interface ERC20Token {
@@ -44,10 +44,10 @@ export interface GasHistory {
 }
 
 export interface PoolToken {
-	id: Address, // Ethereum,
-	name: string,
-	symbol: Symbol,
-	percentage: number,
+	id: Address; // Ethereum,
+	name: string;
+	symbol: TokenSymbol;
+	percentage: number;
 }
 
 export interface Token {
@@ -62,28 +62,27 @@ export interface Token {
 	price: number;
 }
 
-
 export interface APY {
-	day: number,
-	week: number,
-	month: number,
+	day: number;
+	week: number;
+	month: number;
 }
 
 export interface IL {
-	day: number,
-	dayUSD: number,
-	week: number,
-	weekUSD: number,
-	month: number,
-	monthUSD: number,
+	day: number;
+	dayUSD: number;
+	week: number;
+	weekUSD: number;
+	month: number;
+	monthUSD: number;
 }
 
 export interface Pool {
-	id: string, // Ethereum
-	projectName: string,
-	reserveUSD: number,
-	fee24h: number,
-	tokens: PoolToken[],
-	APY: APY,
-	IL: IL,
+	id: string; // Ethereum
+	projectName: string;
+	reserveUSD: number;
+	fee24h: number;
+	tokens: PoolToken[];
+	APY: APY;
+	IL: IL;
 }

@@ -1,23 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEthereumAddress, IsNumber, IsString } from 'class-validator';
-import { Address, PoolToken, Symbol } from '../interfaces';
+
+import { Address, PoolToken, TokenSymbol } from '../interfaces';
 
 export default class PoolTokenDto implements PoolToken {
-
-	@ApiProperty({ type: String, example: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' })
+	@ApiProperty({ type: String, example: '0x8207c1ffc5b6804f6024322ccf34f29c3541ae26' })
 	@IsEthereumAddress()
 	id: Address;
 
-	@ApiProperty({ type: String, example: 'USD//C' })
+	@ApiProperty({ type: String, example: 'OriginToken' })
 	@IsString()
 	name: string;
 
-	@ApiProperty({ type: Number, example: 'USDC' })
+	@ApiProperty({ type: Number, example: 'OGN' })
 	@IsString()
-	symbol: Symbol;
+	symbol: TokenSymbol;
 
 	@ApiProperty({ type: Number, example: 50 })
 	@IsNumber()
 	percentage: number;
-
 }

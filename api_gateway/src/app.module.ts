@@ -42,6 +42,11 @@ import { UniswapController } from './uniswap/uniswap.controller';
 		PricesController,
 	],
 	providers: [
+		// TODO: for global auto caching
+		// {
+		// 	provide: APP_INTERCEPTOR,
+		// 	useClass: CacheInterceptor,
+		// },
 		{
 			provide: APP_GUARD,
 			useClass: ApiVersionGuard,

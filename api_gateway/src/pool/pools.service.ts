@@ -1,32 +1,25 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService, Injectable, OnModuleInit } from '@nestjs/common';
 
 import { Pool } from '../interfaces';
 
-const POOL_SERVER = 'https://dashdevapi.defiyield.info';
-const POOL_PATH = '/pools';
-const POOL_URL = POOL_SERVER + POOL_PATH;
-
 @Injectable()
-export class PoolsService {
+export class PoolsService implements OnModuleInit {
+	private pools_url: string;
+	onModuleInit = (): void => {
+		const { POOLS_SERVICE, POOLS_PATH } = process.env;
+		this.pools_url = `${POOLS_SERVICE}/${POOLS_PATH}`;
+	};
+
 	constructor(private httpService: HttpService) {}
 
-	async getAll(): Promise<Pool[]> {
+	async getAll(): Promise<Pool[][]> {
 		try {
-			// const now = Date.now();
-			// console.log('now', now);
-			const get = this.httpService.get(POOL_URL);
-			// get.pipe(
-			// 	tap(() => {
-			// 		console.log(Date.now() - now);
-			// 	}),
-			// );
+			const get = this.httpService.get(this.pools_url);
 			const promise = get.toPromise();
-			// console.log(Date.now() - now);
-			// console.log('promise', promise);
+			console.time(this.pools_url);
 			const result = await promise;
-			// console.log('result', result);
+			console.timeEnd(this.pools_url);
 			const { data } = result;
-			// console.log('data', data);
 			return data;
 		} catch (e) {
 			console.error('er', e);

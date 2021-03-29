@@ -52,7 +52,7 @@ module.exports = {
 		'prettier/prettier': 'error',
 		'max-classes-per-file': ['error', 1],
 		'no-use-before-define': 'warn',
-		'no-console': ['error', { 'allow': ['warn', 'error', 'info'] }],
+		'no-console': ['error', { 'allow': ['warn', 'error', 'info', 'time', 'timeEnd'] }],
 		'newline-per-chained-call': 'error',
 		// node
 		'node/exports-style': ['error', 'exports'],

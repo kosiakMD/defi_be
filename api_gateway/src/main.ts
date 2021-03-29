@@ -6,19 +6,19 @@ import * as dotenv from 'dotenv';
 
 import { AppModule } from './app.module';
 
-// config check
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 (() => {
 	const result = dotenv.config();
 	if (result.error) {
 		throw result.error;
 	} else {
-		// eslint-disable-next-line no-console
-		console.log(result.parsed);
+		console.info('config', result.parsed);
 	}
 })();
 
 const service_name = 'API Gateway';
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
 	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
 		cors: true,

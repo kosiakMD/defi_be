@@ -1,15 +1,16 @@
 import { Controller, Get, Res } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import PoolDto from '../DTO/Pool.dto';
-import { PoolsService } from './pools.service';
+import { AxiosResponse } from 'axios';
 import { Response } from 'express';
+
+import PoolDto from '../DTO/Pool.dto';
 import { Pool } from '../interfaces';
+import { PoolsService } from './pools.service';
 
 @ApiTags('Pools')
 @Controller('pools')
 export class PoolsController {
-	constructor(private service: PoolsService) {
-	}
+	constructor(private service: PoolsService) {}
 
 	@Get()
 	@ApiResponse({ status: 200, type: PoolDto, isArray: true })
@@ -18,15 +19,9 @@ export class PoolsController {
 		// const pool = new PoolDto();
 		// return [pool];
 		// const pools = await new PoolsService().getAll();
-		let pools = [];
-		const now = Date.now();
-		console.log('now', now);
+		// let pools = [];
 		try {
-			const getall = this.service.getAll()
-			console.log('getall', getall);
-			const promise = getall.toPromise();
-			console.log('promise', promise);
-			const result = await promise;
+			const result = await this.service.getAll();
 			// console.log('result', result);
 			return result;
 		} catch (e) {

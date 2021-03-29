@@ -36,9 +36,7 @@ async function bootstrap() {
 	SwaggerModule.setup('api', app, document);
 
 	const port = process.env.PORT || 3000;
-	// const os = require("os");
-	// const hostname = os.hostname();
-	const host = process.env.HOST; /*|| hostname*/
+	const host = process.env.HOST;
 	await app.listen(port, host);
 
 	// eslint-disable-next-line no-console

@@ -1,16 +1,18 @@
-import { HttpService, Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { Pool } from '../interfaces';
 
 @Injectable()
-export class PoolsService implements OnModuleInit {
-	private pools_url: string;
-	onModuleInit = (): void => {
-		const { POOLS_SERVICE, POOLS_PATH } = process.env;
-		this.pools_url = `${POOLS_SERVICE}/${POOLS_PATH}`;
-	};
+export class PoolsService {
+	private readonly pools_url: string;
 
-	constructor(private httpService: HttpService) {}
+	constructor(private httpService: HttpService, private configService: ConfigService) {
+		const url = this.configService.get<string>('POOLS_SERVICE_URL');
+		const path = this.configService.get<string>('POOLS_PATH');
+
+		this.pools_url = `${url}/${path}`;
+	}
 
 	async getAll(): Promise<Pool[][]> {
 		try {

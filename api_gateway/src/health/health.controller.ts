@@ -2,6 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import {
 	HealthCheck,
+	HealthCheckResult,
 	HealthCheckService,
 	HealthIndicatorResult,
 	HealthIndicatorStatus,
@@ -35,16 +36,16 @@ export class HealthController {
 	@AddVersion('v1')
 	@Get('/')
 	@HealthCheck()
-	check() {
+	check(): Promise<HealthCheckResult> {
 		return this.health.check([async (): Promise<HealthIndicatorResult> => ServiceHealthOk]);
 	}
 
 	@AddVersion('v1')
 	@Get('/services')
 	@HealthCheck()
-	checkServices() {
+	checkServices(): Promise<HealthCheckResult> {
 		return this.health.check([
-			async () => this.serviceHealthIndicator.isHealthy('service'),
+			async (): Promise<HealthIndicatorResult> => this.serviceHealthIndicator.isHealthy('service'),
 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-ignore
 			// async () => {

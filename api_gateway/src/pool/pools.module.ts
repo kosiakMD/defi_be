@@ -1,4 +1,5 @@
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 
 import { PoolsController } from './pools.controller';
 import { PoolsService } from './pools.service';
@@ -10,6 +11,7 @@ import { PoolsService } from './pools.service';
 			maxRedirects: 2,
 		}),
 		CacheModule.register(),
+		ConfigModule,
 	],
 	providers: [PoolsService],
 	controllers: [PoolsController],

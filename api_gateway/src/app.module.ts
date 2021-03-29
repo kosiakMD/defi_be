@@ -1,4 +1,5 @@
 import { HttpModule, Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
@@ -9,6 +10,7 @@ import { AppService } from './app/app.service';
 import { ApprovalsController } from './approvals/approvals.controller';
 import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
+import configuration from './config/configuration';
 import { CurveController } from './curve/curve.controller';
 import { GasController } from './gas/gas.controller';
 import { HealthController } from './health/health.controller';
@@ -23,7 +25,16 @@ import { TransfersController } from './transfers/transfers.controller';
 import { UniswapController } from './uniswap/uniswap.controller';
 
 @Module({
-	imports: [TerminusModule, HttpModule, PoolsModule],
+	imports: [
+		TerminusModule,
+		HttpModule,
+		PoolsModule,
+		ConfigModule.forRoot({
+			isGlobal: true,
+			load: [configuration],
+			envFilePath: ['.env.development.local', '.env.development', '.env.production'],
+		}),
+	],
 	controllers: [
 		HealthController,
 		AppController,

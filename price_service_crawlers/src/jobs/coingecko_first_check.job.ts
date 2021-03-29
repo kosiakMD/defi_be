@@ -33,9 +33,10 @@ export class CoingeckoFirstCheckJob {
       }
 
       let db_assets =await this.databaseService.getAllTokens();
+ 
       const db_token_addresses = db_assets.map((token) => token['address']);
       let remote_tokens = await getEtherTokens();
-
+      console.log('total tokens Coingecko ',remote_tokens.length)
       for(let i=0; i<remote_tokens.length; i++){
         if (!remote_tokens[i]['platforms'] ||  !remote_tokens[i]['platforms'][PLATFORM]) {
           continue;

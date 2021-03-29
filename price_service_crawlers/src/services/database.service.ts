@@ -14,11 +14,13 @@ export class DatabaseService {
 
     public getTokenByAddress = (address: string) => this.pg.any('SELECT * FROM prices.asset WHERE address = $1', address );
 
+    public getTokenPrice = (asset_id: string) => this.pg.any('SELECT * FROM prices.asset_price WHERE asset_id = $1 ORDER BY timestamp DESC LIMIT 1', asset_id );
+
     public getAllTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE $1', '1');
 
     public getSushiTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'SUSHISWAP');
 
-    public getUniTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'UNISWAP');
+    public getUniTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'UNISWAP'); 
 
 
     public getNewTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE is_new = true');
@@ -51,7 +53,9 @@ export class DatabaseService {
       true
     ]);
 
-    public addNewSushiTokenToDb =  (address, name, symbol , type, resource, platform_id) =>this.pg.any('INSERT INTO prices.asset(address, symbol, name, type, resource, platform_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ', 
+    public addNewSushiTokenToDb = async  (address, name, symbol , type, resource, platform_id) =>
+    {
+      let new_one = await this.pg.any('INSERT INTO prices.asset(address, symbol, name, type, resource, platform_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ', 
     [
       address,
       symbol,
@@ -61,7 +65,17 @@ export class DatabaseService {
       platform_id,
       true
     ]);
+    console.log('new one ', new_one)
+    return  new_one;
+  }
 
+    public addOnePrice = async (coin_id, timestamp, price, currency_id) => await this.pg.any('INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ($1, $2, $3, $4);',
+    [
+      coin_id,
+      currency_id,
+      timestamp,
+      price
+    ]);
 
     public  saveTokenPrices = async (coin_id, prices) => {
         let values;

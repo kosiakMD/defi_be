@@ -93,6 +93,27 @@ export class Api {
   }
 
   //BALANCER
+  public getBalancerfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(
+      endpoints.THEGRAPH_BALANCER,
+      bal.firstTxTimestamp(),
+    )
+  }
+
+  public getBalancerfirstBlockQuery(timestamp: number): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(
+      endpoints.THEGRAPH_BALANCER,
+      bal.firstBlockAfterTimestamp(timestamp),
+    )
+  }
+
+  public getBalancerDailyBlockPricesQuery(block_number: number, token: string): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(
+      endpoints.THEGRAPH_BALANCER,
+      bal.firstDailyBlockPairs(block_number, token),
+    )
+  }
+
   public getBalancerPoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
     return axios.post(
       endpoints.THEGRAPH_BALANCER,

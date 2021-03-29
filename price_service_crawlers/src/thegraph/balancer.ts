@@ -1,5 +1,64 @@
 import { TheGraphQuery } from "./query";
 
+export function firstTxTimestamp(): TheGraphQuery {
+  return {
+    operationName: 'getFirstTimestamp',
+    variables: {},
+    query: `
+    query firstQuery {
+      transactions: 
+        transactions (first:1, orderBy:timestamp, orderDirection:asc) {
+          id
+          block
+          timestamp
+        }
+    }`
+  }
+}
+
+export function firstBlockAfterTimestamp(timestamp: number): TheGraphQuery {
+  return {
+    operationName: 'getFirstBlockTimestamp',
+    variables: {
+      "timestamp": timestamp
+    },
+    query: `
+    query firstQuery {
+      blocks: 
+        transactions(first: 1, orderBy: block, orderDirection: asc, where:
+          {timestamp_gt: ${timestamp}}) {
+          block
+        }
+    }`
+  }
+}
+
+
+export function firstDailyBlockPairs(block_number: number, token: string): TheGraphQuery {
+  return {
+    operationName: 'getFirstBlockTimestamp',
+    variables: {
+      "block_number": block_number,
+      "token": token
+    },
+    query: `
+    query firstQuery {
+      pairs: 
+        pools (block:{number:${block_number}},where:{id_in:
+          ["${token}"]}) {
+            id
+            totalShares
+              tokens {
+                id
+                symbol
+                name
+                balance
+              }
+        }
+    }`
+  }
+}
+
 
 export function getBalancerPoolsQuery(): TheGraphQuery {
   return {
@@ -12,6 +71,8 @@ export function getBalancerPoolsQuery(): TheGraphQuery {
             totalShares
             tokens {
               id
+              symbol
+              name
               balance
             }
         
@@ -19,6 +80,7 @@ export function getBalancerPoolsQuery(): TheGraphQuery {
     }`
   }
 }
+
 
 
 export function getLiquidityPositionsQuery(address: string): TheGraphQuery {

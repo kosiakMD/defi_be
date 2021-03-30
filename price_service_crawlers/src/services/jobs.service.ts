@@ -92,7 +92,10 @@ export class JobsService {
         
         console.log('starting balancer')
         this.agenda.define('CRAWL_BALANCER_NEW_TOKENS', { lockLifetime: 10000 }, this.balancerFirstCheckJob.crawl_new_tokens.bind(this));
-        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS', {});
+        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS', {});
+        
+        this.agenda.define('CRAWL_BALANCER_NEW_TOKENS_HISTORY', { lockLifetime: 10000 }, this.balancerFirstCheckJob.crawl_new_tokens_history.bind(this));
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS_HISTORY', {});
         
 
       })

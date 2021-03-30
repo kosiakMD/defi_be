@@ -12,6 +12,7 @@ import {
   getCurveLiquidityPositionsQuery,
   getCurvePoolsQuery, getCurveSwapsQuery
 } from "./curve";
+import { BalancerPoolsTokensResponse } from "./balancer"
 import {TokenPriceRequest} from "../models/prices";
 
 @injectable()
@@ -107,7 +108,7 @@ export class Api {
     )
   }
 
-  public getBalancerDailyBlockPricesQuery(block_number: number, token: string): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+  public getBalancerDailyBlockPricesQuery(block_number: number, token: string): Promise<AxiosResponse<BalancerPoolsTokensResponse>> {
     return axios.post(
       endpoints.THEGRAPH_BALANCER,
       bal.firstDailyBlockPairs(block_number, token),

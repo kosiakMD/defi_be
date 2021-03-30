@@ -69,6 +69,11 @@ export class DatabaseService {
     return  new_one;
   }
 
+    public setAssetAsNotNew = async (coin_id) => await this.pg.any('UPDATE prices.asset SET is_new = false WHERE id = $1;',
+    [
+      coin_id,
+    ]);
+
     public addOnePrice = async (coin_id, timestamp, price, currency_id) => await this.pg.any('INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ($1, $2, $3, $4);',
     [
       coin_id,

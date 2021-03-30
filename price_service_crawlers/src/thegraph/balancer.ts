@@ -43,7 +43,7 @@ export function firstDailyBlockPairs(block_number: number, token: string): TheGr
     },
     query: `
     query firstQuery {
-      pairs: 
+      pools: 
         pools (block:{number:${block_number}},where:{id_in:
           ["${token}"]}) {
             id
@@ -240,6 +240,19 @@ export function getLiquidityPositionsQuery(address: string): TheGraphQuery {
       }
     }`
   }
+}
+
+export interface BalancerPoolsTokensResponse {
+  totalShares: string;
+  id: string;
+  tokens: BalancerToken[]
+}
+
+export interface BalancerToken {
+  id: string;
+  symbol: string;
+  name: string;
+  balance: string;
 }
 
 export interface BalancerLiquidityPositionsResponse {

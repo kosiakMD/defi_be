@@ -50,12 +50,39 @@ export class AssetPriceService {
     }
 
     public async getHistorical(address_array, timestamps: number[], currency_id =1, platform_id=1):Promise<HistoricalPrice[]> {
+      const entityManager = getManager();
+      //address_array = "('"+address_array.join("','")+"')";
+      //let {from,to}=this.getRangePrices(timestamps);
+      let response = {};
+      address_array.map(function(item) {
+            response[item] = {};
+      });
+
+      for(let i=0 ; i<timestamps.length; i++){
+        for(let address_i = 0; address_i < address_array.length; address_i ++  ){
+          let querystr = getNearestTimeString(address_array[address_i],platform_id, currency_id, timestamps[i] );
+          console.log(querystr)
+          let db_entities = await entityManager.query(querystr);
+          if(db_entities.length){
+            response[address_array[address_i]][timestamps[i]+''] = db_entities[0].value;
+          }
+          else{
+            response[address_array[address_i]][timestamps[i]+''] = 0 ;
+          }
+        }
+
+      }
+    
+      return response as HistoricalPrice[];
+  
+      }
+
+    public async getHistoricalOld(address_array, timestamps: number[], currency_id =1, platform_id=1):Promise<HistoricalPrice[]> {
         const entityManager = getManager();
         address_array = "('"+address_array.join("','")+"')";
         let {from,to}=this.getRangePrices(timestamps);
         let querystr = `SELECT a.*, ap.*
-        FROM prices.asset a
-        JOIN prices.asset_price ap ON (a.id = ap.asset_id)
+        FROM prices.asset a JOIN prices.asset_price ap ON (a.id = ap.asset_id)
         WHERE a.address IN `+address_array+` AND a.platform_id = `+
         platform_id+`AND ap.currency_id = `+currency_id+` AND ap.timestamp >=`+from+` AND ap.timestamp <=`+to+`ORDER BY ap.timestamp ASC;`
             console.log(querystr)
@@ -100,3 +127,13 @@ export class AssetPriceService {
             }
           }
 }
+
+let getNearestTimeString = (address, platform_id, currency_id, timestamp) => `SELECT a.*, ap.*
+FROM prices.asset a
+JOIN prices.asset_price ap ON (a.id = ap.asset_id)
+WHERE a.address = '`+address+`' AND a.platform_id = `+
+platform_id+`AND ap.currency_id = `+currency_id+`  ORDER BY ABS((DATE_PART('day', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' ) * 24 + 
+DATE_PART('hour', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' )) * 60 +
+DATE_PART('minute', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' )) * 60 +
+DATE_PART('second', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' ) LIMIT 1`;
+//ABS(DATE_DIFF(second, `+timestamp+`, ap.timestamp)) LIMIT 1;`

@@ -17,7 +17,7 @@ describe('AppController (e2e)', () => {
 
 	it('/v1/pancakes (GET)', () => {
 		return request(app.getHttpServer())
-			.get('/v1/pancakes')
+			.get('/v1/pancakes')//
 			.expect(200)
 	});
 });

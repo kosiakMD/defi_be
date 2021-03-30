@@ -1,6 +1,13 @@
 version: '3'
 
 services:
+
+  pancake_service:
+    build: pancake_service/
+
+    ports:
+      - '3005:3005'
+
   price_service:
     build: price_service/
 
@@ -35,6 +42,7 @@ services:
       - '3000:3000'
 
     depends_on:
+      - pancake_service
       - price_service
       - integration_service
       - swap_service

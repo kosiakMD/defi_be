@@ -4,9 +4,9 @@
   "description": "DeFiYield Microservices",
   "scripts": {
     "prepare": "husky install",
-    "install_all": "npm install & npm install --prefix api_gateway & npm install --prefix account_service & npm install --prefix integration_service & npm install --prefix swap_service & npm install --prefix price_service",
-    "update": "npm update & npm update --prefix api_gateway & npm update --prefix account_service & npm update --prefix integration_service & npm update --prefix swap_service & npm update --prefix price_service",
-    "build": "npm run build & npm run build --prefix api_gateway & npm run build --prefix account_service & npm run build --prefix integration_service & npm run build --prefix swap_service & npm run build --prefix price_service",
+    "install_all": "npm install & npm install --prefix api_gateway & npm install --prefix account_service & npm install --prefix integration_service & npm install --prefix swap_service & npm install --prefix price_service & npm install --prefix pancake_service",
+    "update": "npm update & npm update --prefix api_gateway & npm update --prefix account_service & npm update --prefix integration_service & npm update --prefix swap_service & npm update --prefix price_service & npm update --prefix pancake_service",
+    "build": "npm run build & npm run build --prefix api_gateway & npm run build --prefix account_service & npm run build --prefix integration_service & npm run build --prefix swap_service & npm run build --prefix price_service & npm run build --prefix pancake_service",
     "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
     "lint-fix": "eslint \"**/{src,apps,libs,test}/**/*.ts\" --fix",
     "format": "prettier --write \"./**/src/**/*.ts\" \"./**/test/**/*.ts\"",
@@ -45,7 +45,11 @@
     "start_price": "npm run start --prefix price_service",
     "start_price:dev": "npm run start --prefix price_service",
     "start_price:debug": "npm run start --prefix price_service",
-    "start_price:prod": "npm run start --prefix price_service"
+    "start_price:prod": "npm run start --prefix price_service",
+    "start_pancake": "npm run start --prefix pancake_service",
+    "start_pancake:dev": "npm run start --prefix pancake_service",
+    "start_pancake:debug": "npm run start --prefix pancake_service",
+    "start_pancake:prod": "npm run start --prefix pancake_service"
   },
   "repository": {
     "type": "git",

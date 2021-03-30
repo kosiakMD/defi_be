@@ -1,0 +1,136 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
+import { IDatabase } from 'pg-promise';
+
+import { DatabaseService } from '../services/database.service';
+import { Api } from '../thegraph/api';
+import { CURRENCY, PLATFORM } from '../utils/constants';
+
+// TODO: clean this file!
+export type TokenPrices = { [key: string]: number };
+export type TokenAddreses = { [key: string]: number };
+
+@Injectable()
+export class BalancerFirstCheckJob {
+	constructor(
+		@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
+		private databaseService: DatabaseService,
+		private theGraphService: Api,
+	) {}
+
+	public async crawl_new_tokens(job: any, done: any): Promise<void> {
+		try {
+			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
+			if (!current_platfrom_id) {
+				throw 'No current platform in DB: ' + PLATFORM;
+			}
+			console.info('request prepared');
+			const tokenRequest = await this.theGraphService.getBalancerPoolsTokens();
+			//console.info("tokens ",tokenRequest['data'][''])
+			const tokens = tokenRequest['data']['data']['pools'];
+
+			// const db_assets = await this.databaseService.getUniTokens();
+			// const db_token_addresses = db_assets.map((token) => token['address']);
+
+			for (let i = 0; i < tokens.length; i++) {
+				const pool_tokens = tokens[i]['tokens'];
+
+				// const lp_token_price = 0;
+				console.info('checking token-pool  ' + tokens[i]['id'] + ' with token length ' + pool_tokens.length);
+				if (parseInt(tokens[i]['totalShares']) === 0) {
+					for (let z = 0; z < pool_tokens.length; z++) {
+						const current_db_token = await this.databaseService.getTokenByAddress(pool_tokens[z]['id'].split('-')[1]);
+						if (current_db_token.length) console.info(pool_tokens[z]['id'].split('-')[1] + ' found in DB');
+						else console.info(pool_tokens[z]['id'].split('-')[1] + ' NOT found in DB');
+					}
+				} else {
+					console.info('totalShares is 0');
+				}
+			}
+		} catch (e) {
+			console.info(e);
+		}
+		done();
+	}
+
+	public crawl_new_tokens_history = async (job: any, done: any): Promise<void> => {
+		const current_currency_id = await this.databaseService.getCurrentCurrency();
+		if (!current_currency_id) {
+			throw 'No current currency in DB: ' + CURRENCY;
+		}
+
+		const db_assets = await this.databaseService.getNewTokensByResource('UNISWAP');
+		console.info('starting uniswap history clawler');
+
+		const first_tx_data = await this.theGraphService.getUniwapfirstTxTimestamp();
+		const first_timestamp = parseInt(first_tx_data['data']['data']['transactions'][0]['timestamp']);
+		console.info('first_tx_data ', first_tx_data['data']['data']['transactions']);
+
+		const current_day_ts = Math.round(Date.now() / 1000);
+
+		console.info(' current_day_ts ', current_day_ts);
+
+		for (let i = 0; i < db_assets.length; i++) {
+			let day_num = 0,
+				check_day_ts = getNextDayStart(first_timestamp);
+			console.info('check_day_ts ', check_day_ts);
+			const prices = [];
+			do {
+				const first_day_block_query = await this.theGraphService.getUniswapfirstBlockQuery(check_day_ts);
+				const block_number = first_day_block_query['data']['data']['blocks'][0]['blockNumber'];
+				console.info('block_number ', block_number);
+
+				const daily_price_query = await this.theGraphService.getUniswapDailyBlockPricesQuery(
+					parseInt(block_number),
+					db_assets[i]['address'],
+				);
+				console.info(daily_price_query['data']['data']);
+				if (daily_price_query['data']['data']['pairs'].length) {
+					const { reserveUSD, totalSupply } = daily_price_query['data']['data']['pairs'][0];
+
+					if (reserveUSD && totalSupply) {
+						prices.push([
+							check_day_ts,
+							Number(reserveUSD) === 0 || Number(totalSupply) === 0 ? 0 : Number(reserveUSD) / Number(totalSupply),
+						]);
+					}
+				}
+
+				day_num++;
+				console.info(check_day_ts);
+				check_day_ts = getNextDayStart(first_timestamp, day_num);
+			} while (check_day_ts < current_day_ts);
+			console.info('prices ', prices);
+			await crawlCoin(db_assets[i].id, db_assets[i], prices, current_currency_id, this.databaseService);
+		}
+
+		done();
+	};
+}
+
+async function crawlCoin(coin_id, coin, prices, currency_id, db) {
+	if (!coin.address) {
+		console.info(`Coin ${coin.id} ${coin.symbol} address not found, skipping`);
+		return;
+	}
+
+	console.info(`uniswap ${prices.length} prices found`);
+	if (prices.length) {
+		const tokenPrices = prices.map(([timestamp, price]) => ({
+			id: coin.id,
+			address: coin.address,
+			timestamp: Math.round(timestamp / 1000),
+			price: price,
+			currency_id,
+		}));
+
+		return await db.saveTokenPrices(coin_id, tokenPrices);
+	}
+	return true;
+}
+
+const getNextDayStart = (ts: number, day = 0) => {
+	const secondsInDay = 86400;
+	const dayId = Math.round(ts / secondsInDay);
+	return (dayId + day) * secondsInDay;
+};

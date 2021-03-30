@@ -3,6 +3,7 @@ import { Pancake } from './interfaces/pancake.interface';
 import { TheGraphQuery } from './interfaces/graph.interface';
 //import { Blocks } from './interfaces/blocks.interface';
 import axios from 'axios'
+require('dotenv').config()
 
 @Injectable()
 export class PancakesService {

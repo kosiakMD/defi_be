@@ -3,7 +3,6 @@ version: '3'
 services:
 
   pancake_service:
-
     build: pancake_service/
 
     ports:

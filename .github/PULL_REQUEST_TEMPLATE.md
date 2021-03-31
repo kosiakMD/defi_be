@@ -19,7 +19,7 @@ What will change as a result of your pull request? Note that sometimes this sect
 
 ### Sanity Check Steps
 
-Scope:
+Work Scope:
 
 - [ ] Common
 - [ ] API Gateway
@@ -28,14 +28,20 @@ Scope:
 - [ ] Price Service
 - [ ] Swap Service
 
-General:
+Work Checks:
 
-- [ ] Tested
+- [ ] <b>Updated/Removed</b> any component <i>(module / controller / service / etc)</i> and checked all the calls to it were updated and are still working
+- [ ] <b>Created</b> a new component <i>(module / controller / service / etc)</i> and checked no other components play the same role
+- [ ] <b>Updated/Removed/Created</b> any new <b>Common</b> component <i>(interface / DTO / module / etc)</i> and checked no other components play the same role
+- [ ] <b>Included a DB integration & Model</b> and checked error states are properly handled and all related mock data was removed
+- [ ] <b>Updated a DB interaction & Model</b> and checked <b>Migrations</b> are provided, error states are properly handled, and all related mock data was removed
+
+Rules checks:
+
+- [ ] Tested project `build` and run in production mode `npm run start:prod` with no errors;
 - [ ] Checked there are no `console.log` except Logger
-- [ ] Checked there are no console errors or warnings according to TypeScript rules
-- [ ] Checked there are no console errors according to ESLint and Prettier rules
-- [ ] Updated/Removed a common component <i>(module / controller / service / etc)</i> and checked all the calls to it were updated and are still working
-- [ ] Created a new component <i>(module / controller / service / etc)</i> and checked no other components play the same role
-- [ ] Included a DB integration and checked loading and error states are properly handled and all related mock data was removed
-- [ ] All linked JIRA tasks requirements are satisfied
-- [ ] Following all project-related conventions
+- [ ] Checked there are no console errors or warnings according to <b>TypeScript</b> rules
+- [ ] Checked there are no console errors according to <b>ESLint</b> and <b>Prettier</b> rules
+- [ ] All linked <b>JIRA</b> tasks requirements are satisfied
+- [ ] Following <b>all project-related conventions</b>
+

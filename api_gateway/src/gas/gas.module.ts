@@ -1,8 +1,8 @@
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-import { PoolsController } from './pools.controller';
-import { PoolsService } from './pools.service';
+import { GasController } from './gas.controller';
+import { GasService } from './gas.service';
 
 @Module({
 	imports: [
@@ -13,7 +13,7 @@ import { PoolsService } from './pools.service';
 		CacheModule.register(),
 		ConfigModule,
 	],
-	providers: [PoolsService],
-	controllers: [PoolsController],
+	providers: [GasService],
+	controllers: [GasController],
 })
-export class PoolsModule {}
+export class GasModule {}

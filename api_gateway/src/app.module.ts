@@ -7,19 +7,19 @@ import { ApiVersionGuard } from '@nestjsx/api-version';
 import { AppController } from './app/app.controller';
 import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
-import { ApprovalsController } from './approvals/approvals.controller';
+import { ApprovalsModule } from './approvals/approvals.module';
 import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
 import configuration from './config/configuration';
 import { CurveController } from './curve/curve.controller';
-import { GasController } from './gas/gas.controller';
+import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { PlatformController } from './platform/platform.controller';
 import { PoolsModule } from './pool/pools.module';
-import { PricesController } from './prices/prices.controller';
+import { PricesModule } from './prices/prices.module';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
-import { TokensController } from './tokens/tokens.controller';
+import { TokensModule } from './tokens/tokens.module';
 import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { UniswapController } from './uniswap/uniswap.controller';
@@ -29,16 +29,19 @@ import { UniswapController } from './uniswap/uniswap.controller';
 		TerminusModule,
 		HttpModule,
 		PoolsModule,
+		TokensModule,
+		GasModule,
+		ApprovalsModule,
+		PricesModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
 			load: [configuration],
-			envFilePath: ['.env.development.local', '.env.development', '.env.production'],
+			envFilePath: ['.env.development.local', '.env.development', '.env.production', '.env'],
 		}),
 	],
 	controllers: [
 		HealthController,
 		AppController,
-		ApprovalsController,
 		BalancesController,
 		SwapController,
 		UniswapController,
@@ -46,11 +49,8 @@ import { UniswapController } from './uniswap/uniswap.controller';
 		SushiswapController,
 		BalancerController,
 		PlatformController,
-		TokensController,
-		GasController,
 		TransactionsController,
 		TransfersController,
-		PricesController,
 	],
 	providers: [
 		// TODO: for global auto caching

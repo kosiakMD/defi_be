@@ -7,6 +7,7 @@ import PoolDto from '../DTO/Pool.dto';
 import { Pool } from '../interfaces';
 import { PoolsService } from './pools.service';
 
+// TODO: can be null as updated each time
 const POOLS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
 
 @ApiTags('Pools')
@@ -17,14 +18,14 @@ export class PoolsController {
 	@Get()
 	@ApiResponse({ status: 200, type: PoolDto, isArray: true })
 	@ApiResponse({ status: 500, type: HttpException })
-	async getPools(): Promise<Pool[]> {
+	public async getPools(): Promise<Pool[]> {
 		console.time('getPools');
 		const pools = await Promise.any([this.readPools(), this.fetchPools()]);
 		console.timeEnd('getPools');
 		return pools;
 	}
 
-	async readPools(): Promise<Pool[]> {
+	private async readPools(): Promise<Pool[]> {
 		const pools = await this.cacheManager.get<Pool[]>('pools');
 		if (pools) {
 			return pools;
@@ -33,9 +34,9 @@ export class PoolsController {
 		}
 	}
 
-	async fetchPools(): Promise<Pool[]> {
+	private async fetchPools(): Promise<Pool[]> {
 		const [pools] = await this.service.getAll();
-		// postponed in async queue
+		// postponed save in async queue
 		this.cacheManager.set<Pool[]>('pools', pools, { ttl: POOLS_CACHE_TIME });
 		return pools;
 	}

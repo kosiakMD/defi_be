@@ -27,8 +27,21 @@ export class PricesController {
 		@Query('timestamps') timestamps: number[],
 		@Query('addresses') addresses: string[],
 	): Promise<HistoricalPrice[]> {
-		if (!platform_id || !currency_id || !addresses || !addresses.length || !timestamps || !timestamps.length) return [];
+		if (
+			!platform_id ||
+			!currency_id ||
+			!addresses ||
+			!addresses.length ||
+			!timestamps ||
+			!timestamps.length
+		)
+			return [];
 
-		return await this.assetPriceService.getHistorical(addresses, timestamps, currency_id, platform_id);
+		return await this.assetPriceService.getHistorical(
+			addresses,
+			timestamps,
+			currency_id,
+			platform_id,
+		);
 	}
 }

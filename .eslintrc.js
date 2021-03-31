@@ -22,7 +22,7 @@ module.exports = {
 	// healthcheck & danger *.js
 	ignorePatterns: ['.eslintrc.js', '**/*.js', '*.json', '**/dist/', 'node_modules'],
 	rules: {
-		'quotes': [
+		quotes: [
 			'error',
 			'single',
 			{
@@ -52,7 +52,7 @@ module.exports = {
 		'prettier/prettier': 'error',
 		'max-classes-per-file': ['error', 1],
 		'no-use-before-define': 'warn',
-		'no-console': ['error', { 'allow': ['warn', 'error', 'info', 'time', 'timeEnd'] }],
+		'no-console': ['error', { allow: ['warn', 'error', 'info', 'time', 'timeEnd'] }],
 		'newline-per-chained-call': 'error',
 		// node
 		'node/exports-style': ['error', 'exports'],

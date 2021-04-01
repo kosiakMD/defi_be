@@ -3,16 +3,15 @@ import { Injectable ,Inject} from '@nestjs/common';
 import { isETH, toTimestamp } from '../utils/common';
 import rateLimit from 'axios-rate-limit';
 import axios from 'axios';
-import { getCurrentCoinPrices, getCurrentEthPrice } from '../apis/coingecko.api';
 const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
-import { IDatabase } from 'pg-promise';
 export type TokenPrices = { [key: string]: number };
 export type TokenAddreses = { [key: string]: number };
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
-import { getCoin, getCoinRangePrices, getCoins } from '../apis/coingecko.api';
+import { IDatabase } from 'pg-promise';
+
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { Console } from 'console';
+
 
 export type CoingeckoTokenPrices = { [key: string]: {value: number, db_id: any} };
 const tokens: string[] = TEST_TOKENS;
@@ -249,8 +248,8 @@ export class BalancerFirstCheckJob {
 }
 
 
-const getNextDayStart = (ts: number, day=0)=>{
-  const secondsInDay = 86400;
-  const dayId = Math.round(ts / secondsInDay);
-  return  (dayId+day) * secondsInDay;
-}
+const getNextDayStart = (ts: number, day = 0) => {
+	const secondsInDay = 86400;
+	const dayId = Math.round(ts / secondsInDay);
+	return (dayId + day) * secondsInDay;
+};

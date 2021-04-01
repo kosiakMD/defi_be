@@ -1,53 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import  AssetPrice from '../models/asset_price.entity';
-import  Asset from '../models/asset.entity';
+import { getManager, Repository } from 'typeorm';
+
+import Asset from '../models/asset.entity';
+import AssetPrice from '../models/asset_price.entity';
 import { CurrentPrice, HistoricalPrice } from '../prices/interfaces/prices.interface';
-import { In, Repository, getManager } from 'typeorm';
-enum PricesInterval { Daily, Hourly }
-import {
-    getNextDayOfDate,
-    timestampMsToSeconds,
-    timestampNow,
-    timestampOfDate,
-  } from '../utils/time';
-  const SECONDS_IN_DAY = 60*24*60;
+import { getNextDayOfDate, timestampNow, timestampOfDate } from '../utils/time';
+
+enum PricesInterval {
+	Daily,
+	Hourly,
+}
+
+const SECONDS_IN_DAY = 60 * 24 * 60;
 @Injectable()
 export class AssetPriceService {
-  constructor(
-      @InjectRepository(AssetPrice) private readonly repo: Repository<AssetPrice>,
-        @InjectRepository(Asset) private readonly asset_repo: Repository<Asset>
-  ) { }
+	constructor(
+		@InjectRepository(AssetPrice) private readonly repo: Repository<AssetPrice>,
+		@InjectRepository(Asset) private readonly asset_repo: Repository<Asset>,
+	) {}
 
-  public async getAll() {
-    return await this.repo.find();
-  }
+	public async getAll() {
+		return await this.repo.find();
+	}
 
+	public async getCurrent(address_array, currency_id = 1, platform_id = 1): Promise<CurrentPrice[]> {
+		const entityManager = getManager();
+		address_array = "('" + address_array.join("','") + "')";
 
-  public async getCurrent(address_array, currency_id =1, platform_id=1) :Promise<CurrentPrice[]>{
-    const entityManager = getManager();
-    address_array = "('"+address_array.join("','")+"')";
-
-    let querystr = `SELECT a.*, ap.*
+		const querystr =
+			`SELECT a.*, ap.*
     FROM prices.asset a
     JOIN prices.asset_price ap ON (a.id = ap.asset_id)
     LEFT OUTER JOIN prices.asset_price  ap2 ON (a.id = ap2.asset_id AND 
         (ap.timestamp < ap2.timestamp ))
-    WHERE ap2.timestamp IS NULL AND a.address IN `+address_array+` AND a.platform_id = `+
-    platform_id+`AND ap.currency_id = `+currency_id+`;`
-        console.log(querystr)
-    
-    let db_entities = await entityManager.query(querystr),
-    response = {};
-    
-    db_entities.map(function(item) {
-        response[item.address] = item.value;
-        return;
-      });
+    WHERE ap2.timestamp IS NULL AND a.address IN ` +
+			address_array +
+			` AND a.platform_id = ` +
+			platform_id +
+			`AND ap.currency_id = ` +
+			currency_id +
+			`;`;
 
-    return response as CurrentPrice[];
+		const db_entities = await entityManager.query(querystr),
+			response = {};
 
-    }
+		db_entities.map(function (item) {
+			response[item.address] = item.value;
+			return;
+		});
+
+		return response as CurrentPrice[];
+	}
 
     public async getHistorical(address_array, timestamps: number[], currency_id =1, platform_id=1):Promise<HistoricalPrice[]> {
       const entityManager = getManager();

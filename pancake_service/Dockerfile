@@ -1,0 +1,22 @@
+FROM node:14
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install --loglevel verbose
+
+COPY . .
+
+RUN ls -l
+
+RUN npm run build
+
+ENV PORT 3005
+
+EXPOSE 3005
+
+HEALTHCHECK --interval=60s --timeout=2s --start-period=30s --retries=2 \
+    CMD node healthcheck.js
+
+CMD [ "npm", "run", "start" ]

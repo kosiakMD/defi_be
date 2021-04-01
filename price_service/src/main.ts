@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
+
+import { AppModule } from './app.module';
 
 // config check
 (() => {
@@ -32,7 +33,7 @@ async function bootstrap() {
 	const document = SwaggerModule.createDocument(app, config);
 	SwaggerModule.setup('api', app, document);
 
-	const port = process.env.PORT || 3000;
+	const port = process.env.SERVER_PORT || 3000;
 	const host = process.env.HOST; /*|| 'localhost'*/
 	await app.listen(port, host);
 

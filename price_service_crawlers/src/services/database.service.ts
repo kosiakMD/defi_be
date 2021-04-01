@@ -1,11 +1,12 @@
-import { CURRENCY, TEST_TOKENS, PLATFORM } from '../utils/constants';
-import { Injectable ,Inject} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
-import { isETH, toTimestamp } from '../utils/common';
+
+import { toTimestamp } from '../utils/common';
+import { CURRENCY, PLATFORM } from '../utils/constants';
+
 export type TokenPrices = { [key: string]: number };
 export type TokenAddreses = { [key: string]: number };
-import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
-
 
 @Injectable()
 export class DatabaseService {

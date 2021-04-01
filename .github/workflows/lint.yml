@@ -1,37 +1,40 @@
-name: Lint
-on: push
-
-jobs:
-  run-linters:
-    name: Run linters
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v2
-
-      - name: Check out Git branch name
-        run: |
-          chmod=+x .github/scripts/check_branch_naming.sh
-          git update-index --chmod=+x .github/scripts/check_branch_naming.sh
-          .github/scripts/check_branch_naming.sh
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14
-
-      # ESLint and Prettier must be in `package.json`
-      - name: Install Node.js dependencies
-        run: npm ci
-
-      - name: Run linters
+#name: Lint
+#on: push
+#
+#jobs:
+#  run-linters:
+#    name: Run linters
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Check out Git repository
+#        uses: actions/checkout@v2
+#
+#      - name: Check out Git branch name
+#        run: |
+#          echo $PWD
+#          ls
+#          chmod=+x .github/scripts/check_branch_naming.sh
+#          git update-index --chmod=+x .github/scripts/check_branch_naming.sh
+#          .github/scripts/check_branch_naming.sh
+#
+#      - name: Set up Node.js
+#        uses: actions/setup-node@v1
+#        with:
+#          node-version: 14
+#
+#      # ESLint and Prettier must be in `package.json`
+#      - name: Install Node.js dependencies
+#        run: npm ci
+#
+#      - name: Run linters
 #        uses: wearerequired/lint-action@v1
-        uses: sibiraj-s/action-eslint@v1
-        with:
+##        uses: sibiraj-s/action-eslint@v1
+#        with:
 #          eslint: true
 #          prettier: true
-#          eslint_args: "--config .eslintrc.js"
-          eslintArgs: "--config .eslintrc.js"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          eslint_extensions: ts
+#          eslint_args: '--config .eslintrc.js'
+##          eslintArgs: "--config .eslintrc.js"
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -7,6 +7,7 @@ import * as sushi from './sushiswap';
 import * as curve from './curve';
 
 import endpoints from '../../config/endpoints';
+
 import {
   CurveDataResponse,
   CurvePoolsTokensResponse, CurveSwapsResponse,

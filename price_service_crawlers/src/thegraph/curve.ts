@@ -6,13 +6,19 @@ export function getCurvePoolsQuery(): TheGraphQuery {
 		variables: {},
 		query: `
     query poolsTokens {
-      {
-        pairs (first:1000, skip:0) {
-        id
-        }
-      }
-    }`,
-	};
+        pools: 
+          pools {
+            id
+            name
+            poolToken {
+            id
+            name
+            }
+            poolTokenSupply
+            virtualPrice
+          }
+      }`
+  }
 }
 
 export function getCurveLiquidityPositionsQuery(address: string): TheGraphQuery {

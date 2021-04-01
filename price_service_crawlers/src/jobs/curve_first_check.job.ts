@@ -3,21 +3,22 @@ import { Injectable ,Inject} from '@nestjs/common';
 import { isETH, toTimestamp } from '../utils/common';
 import rateLimit from 'axios-rate-limit';
 import axios from 'axios';
+import { getCurrentCoinPrices, getCurrentEthPrice } from '../apis/coingecko.api';
 const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
+import { IDatabase } from 'pg-promise';
 export type TokenPrices = { [key: string]: number };
 export type TokenAddreses = { [key: string]: number };
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
-import { IDatabase } from 'pg-promise';
-
+import { getCoin, getCoinRangePrices, getCoins } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-
+import { Console } from 'console';
 
 export type CoingeckoTokenPrices = { [key: string]: {value: number, db_id: any} };
 const tokens: string[] = TEST_TOKENS;
 
 @Injectable()
-export class BalancerFirstCheckJob {
+export class CurveFirstCheckJob {
 
   constructor(
     @Inject(NEST_PGPROMISE_CONNECTION) public  pg: IDatabase<any>,
@@ -39,9 +40,15 @@ export class BalancerFirstCheckJob {
       }
       
       console.log("request prepared")
-      let tokenRequest = await this.theGraphService.getBalancerPoolsTokens();
-      //console.log("tokens ",tokenRequest['data'][''])
-      const tokens = tokenRequest['data']['data']['pools']
+      let tokenRequest = await this.theGraphService.getCurvePoolsTokens();
+
+      let tokens = tokenRequest['data']['data']['pools'];
+      console.log("tokens ",tokens)
+      for(let i=0; i<tokens.length; i++ )
+      console.log(tokens[i]['poolToken'])
+      return;
+
+      //const tokens = tokenRequest['data']['data']['pools']
 
       let db_assets =await this.databaseService.getUniTokens();
       const db_token_addresses = db_assets.map((token) => token['address']);
@@ -248,8 +255,8 @@ export class BalancerFirstCheckJob {
 }
 
 
-const getNextDayStart = (ts: number, day = 0) => {
-	const secondsInDay = 86400;
-	const dayId = Math.round(ts / secondsInDay);
-	return (dayId + day) * secondsInDay;
-};
+const getNextDayStart = (ts: number, day=0)=>{
+  const secondsInDay = 86400;
+  const dayId = Math.round(ts / secondsInDay);
+  return  (dayId+day) * secondsInDay;
+}

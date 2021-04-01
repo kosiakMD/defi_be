@@ -129,11 +129,7 @@ export class AssetPriceService {
 }
 
 let getNearestTimeString = (address, platform_id, currency_id, timestamp) => `SELECT a.*, ap.*
-FROM prices.asset a
-JOIN prices.asset_price ap ON (a.id = ap.asset_id)
-WHERE a.address = '`+address+`' AND a.platform_id = `+
-platform_id+`AND ap.currency_id = `+currency_id+`  ORDER BY ABS((DATE_PART('day', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' ) * 24 + 
-DATE_PART('hour', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' )) * 60 +
-DATE_PART('minute', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' )) * 60 +
-DATE_PART('second', `+timestamp+`::timestamp  at time zone 'UTC' - ap.timestamp::timestamp at time zone 'UTC' ) LIMIT 1`;
-//ABS(DATE_DIFF(second, `+timestamp+`, ap.timestamp)) LIMIT 1;`
+      FROM prices.asset a
+      JOIN prices.asset_price ap ON (a.id = ap.asset_id)
+      WHERE a.address = '`+address+`' AND a.platform_id = `+
+      platform_id+`AND ap.currency_id = `+currency_id+`  ORDER BY ABS(`+timestamp+` - ap.timestamp) ASC LIMIT 1`;

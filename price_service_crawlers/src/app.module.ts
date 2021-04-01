@@ -12,6 +12,7 @@ import { SushiswapCurrentPricesJob } from './jobs/sushiswap_current_prices.job'
 import { UniswapCurrentPricesJob } from './jobs/uniswap_current_prices.job'
 import { UniSwapFirstCheckJob } from './jobs/uniswap_first_check.job'
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job'
+import { CurveFirstCheckJob } from './jobs/curve_first_check.job'
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
 import { Api } from './thegraph/api';
 @Module({
@@ -40,7 +41,8 @@ import { Api } from './thegraph/api';
      SushiSwapFirstCheckJob,
      UniswapCurrentPricesJob,
      UniSwapFirstCheckJob,
-     BalancerFirstCheckJob
+     BalancerFirstCheckJob,
+     CurveFirstCheckJob
     ],
 })
 export class AppModule {}

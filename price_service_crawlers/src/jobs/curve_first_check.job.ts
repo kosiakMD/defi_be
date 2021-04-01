@@ -18,7 +18,7 @@ export type CoingeckoTokenPrices = { [key: string]: {value: number, db_id: any} 
 const tokens: string[] = TEST_TOKENS;
 
 @Injectable()
-export class BalancerFirstCheckJob {
+export class CurveFirstCheckJob {
 
   constructor(
     @Inject(NEST_PGPROMISE_CONNECTION) public  pg: IDatabase<any>,
@@ -40,9 +40,15 @@ export class BalancerFirstCheckJob {
       }
       
       console.log("request prepared")
-      let tokenRequest = await this.theGraphService.getBalancerPoolsTokens();
-      //console.log("tokens ",tokenRequest['data'][''])
-      const tokens = tokenRequest['data']['data']['pools']
+      let tokenRequest = await this.theGraphService.getCurvePoolsTokens();
+
+      let tokens = tokenRequest['data']['data']['pools'];
+      console.log("tokens ",tokens)
+      for(let i=0; i<tokens.length; i++ )
+      console.log(tokens[i]['poolToken'])
+      return;
+
+      //const tokens = tokenRequest['data']['data']['pools']
 
       let db_assets =await this.databaseService.getUniTokens();
       const db_token_addresses = db_assets.map((token) => token['address']);

@@ -4,6 +4,7 @@ import * as uni from './uniswap';
 import {UniswapLiquidityPositionsResponse} from './uniswap';
 import * as bal from './balancer';
 import * as sushi from './sushiswap';
+import * as curve from './curve';
 
 import endpoints from '../../config/endpoints';
 import {
@@ -122,7 +123,13 @@ export class Api {
     )
   }
   
-
+  //CURVE
+  public getCurvePoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post<CurvePoolsTokensResponse>(
+      endpoints.THEGRAPH_CURVE,
+      getCurvePoolsQuery(),
+    )
+  }
 
 
   public getUniswapLiquidityPositions(address: string): Promise<AxiosResponse<uni.UniswapLiquidityPositionsResponse>> {
@@ -196,7 +203,7 @@ export class Api {
     )
   }
 
-  public getCurvePoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+  public getCurvePoolsTokensOld(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
     return axios.post<CurvePoolsTokensResponse>(
       endpoints.THEGRAPH_CURVE,
       getCurvePoolsQuery(),

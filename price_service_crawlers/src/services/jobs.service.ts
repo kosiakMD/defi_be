@@ -16,7 +16,7 @@ import { UniSwapFirstCheckJob } from '../jobs/uniswap_first_check.job'
 
 
 import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job'
-
+import {CurveFirstCheckJob} from '../jobs/curve_first_check.job'
 
 import { NEW_TOKENS_SECONDS_INTERVAL, NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
   CURRENT_PRICE_SECONDS_INTERVAL } from '../utils/constants';
@@ -45,7 +45,8 @@ export class JobsService {
     private sushiSwapNewTokenCheckJob:SushiSwapFirstCheckJob,
     private uniswapCurrentPricesJob: UniswapCurrentPricesJob,
     private uniSwapFirstCheckJob:UniSwapFirstCheckJob,
-    private balancerFirstCheckJob: BalancerFirstCheckJob
+    private balancerFirstCheckJob: BalancerFirstCheckJob,
+    private curveFirstCheckJob: CurveFirstCheckJob
   ) {
     const connectionString = 'mongodb://127.0.0.1/agenda';
     this.agenda = new Agenda({
@@ -95,7 +96,11 @@ export class JobsService {
         //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS', {});
         
         this.agenda.define('CRAWL_BALANCER_NEW_TOKENS_HISTORY', { lockLifetime: 10000 }, this.balancerFirstCheckJob.crawl_new_tokens_history.bind(this));
-        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS_HISTORY', {});
+        //this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_BALANCER_NEW_TOKENS_HISTORY', {});
+        
+        console.log('starting curve')
+        this.agenda.define('CRAWL_CURVE_NEW_TOKENS', { lockLifetime: 10000 }, this.curveFirstCheckJob.crawl_new_tokens.bind(this));
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL+" seconds", 'CRAWL_CURVE_NEW_TOKENS', {});
         
 
       })

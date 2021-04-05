@@ -1,4 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { AssetPriceService } from '../services/asset_price.service';
 import { CurrentPrice, HistoricalPrice } from './interfaces/prices.interface';
@@ -8,6 +9,7 @@ export class PricesController {
 	constructor(private assetPriceService: AssetPriceService) {}
 
 	@Get('/')
+	@ApiResponse({ status: 200, schema: {} })
 	async currentPrices(
 		@Query('platformId') platform_id: number,
 		@Query('currencyId') currency_id: number,

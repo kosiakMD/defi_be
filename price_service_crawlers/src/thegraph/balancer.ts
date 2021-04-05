@@ -1,10 +1,10 @@
-import { TheGraphQuery } from "./query";
+import { TheGraphQuery } from './query';
 
 export function firstTxTimestamp(): TheGraphQuery {
-  return {
-    operationName: 'getFirstTimestamp',
-    variables: {},
-    query: `
+	return {
+		operationName: 'getFirstTimestamp',
+		variables: {},
+		query: `
     query firstQuery {
       transactions: 
         transactions (first:1, orderBy:timestamp, orderDirection:asc) {
@@ -12,36 +12,35 @@ export function firstTxTimestamp(): TheGraphQuery {
           block
           timestamp
         }
-    }`
-  }
+    }`,
+	};
 }
 
 export function firstBlockAfterTimestamp(timestamp: number): TheGraphQuery {
-  return {
-    operationName: 'getFirstBlockTimestamp',
-    variables: {
-      "timestamp": timestamp
-    },
-    query: `
+	return {
+		operationName: 'getFirstBlockTimestamp',
+		variables: {
+			timestamp: timestamp,
+		},
+		query: `
     query firstQuery {
       blocks: 
         transactions(first: 1, orderBy: block, orderDirection: asc, where:
           {timestamp_gt: ${timestamp}}) {
           block
         }
-    }`
-  }
+    }`,
+	};
 }
 
-
 export function firstDailyBlockPairs(block_number: number, token: string): TheGraphQuery {
-  return {
-    operationName: 'getFirstBlockTimestamp',
-    variables: {
-      "block_number": block_number,
-      "token": token
-    },
-    query: `
+	return {
+		operationName: 'getFirstBlockTimestamp',
+		variables: {
+			block_number: block_number,
+			token: token,
+		},
+		query: `
     query firstQuery {
       pools: 
         pools (block:{number:${block_number}},where:{id_in:
@@ -55,10 +54,9 @@ export function firstDailyBlockPairs(block_number: number, token: string): TheGr
                 balance
               }
         }
-    }`
-  }
+    }`,
+	};
 }
-
 
 export function getBalancerPoolsQuery(): TheGraphQuery {
 	return {
@@ -80,7 +78,6 @@ export function getBalancerPoolsQuery(): TheGraphQuery {
     }`,
 	};
 }
-
 
 export function getLiquidityPositionsQuery(address: string): TheGraphQuery {
 	return {
@@ -242,16 +239,16 @@ export function getLiquidityPositionsQuery(address: string): TheGraphQuery {
 }
 
 export interface BalancerPoolsTokensResponse {
-  totalShares: string;
-  id: string;
-  tokens: BalancerToken[]
+	totalShares: string;
+	id: string;
+	tokens: BalancerToken[];
 }
 
 export interface BalancerToken {
-  id: string;
-  symbol: string;
-  name: string;
-  balance: string;
+	id: string;
+	symbol: string;
+	name: string;
+	balance: string;
 }
 
 export interface BalancerLiquidityPositionsResponse {

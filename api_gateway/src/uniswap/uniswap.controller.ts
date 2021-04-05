@@ -1,8 +1,8 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import BaseDataDto from '../DTO/BaseData.dto';
 import EthereumAddressDto from '../DTO/EthereumAddress.dto';
-
 import { BaseData } from '../interfaces';
 
 @ApiTags('Platform')

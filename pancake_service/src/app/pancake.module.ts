@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { PancakesController } from './pancake.controller';
+
 import { PancakesCachedService } from './pancake.cached.service';
+import { PancakesController } from './pancake.controller';
 import { PancakesService } from './pancake.service';
 
 @Module({

@@ -1,220 +1,221 @@
-import axios, {AxiosResponse} from 'axios'
-import {injectable} from 'inversify';
-import * as uni from './uniswap';
-import {UniswapLiquidityPositionsResponse} from './uniswap';
-import * as bal from './balancer';
-import * as sushi from './sushiswap';
-import * as curve from './curve';
+import axios, { AxiosResponse } from 'axios';
+import { injectable } from 'inversify';
 
 import endpoints from '../../config/endpoints';
-
+import { TokenPriceRequest } from '../models/prices';
+import * as bal from './balancer';
+import { BalancerPoolsTokensResponse } from './balancer';
+import * as curve from './curve';
 import {
-  CurveDataResponse,
-  CurvePoolsTokensResponse, CurveSwapsResponse,
-  getCurveLiquidityPositionsQuery,
-  getCurvePoolsQuery, getCurveSwapsQuery
-} from "./curve";
-import { BalancerPoolsTokensResponse } from "./balancer"
-import {TokenPriceRequest} from "../models/prices";
+	CurveDataResponse,
+	CurvePoolsTokensResponse,
+	CurveSwapsResponse,
+	getCurveLiquidityPositionsQuery,
+	getCurvePoolsQuery,
+	getCurveSwapsQuery,
+} from './curve';
+import * as sushi from './sushiswap';
+import * as uni from './uniswap';
+import { UniswapLiquidityPositionsResponse } from './uniswap';
 
 @injectable()
 export class Api {
+	//SUSHI
+	public getSushiswapfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_SUSHISWAP, sushi.firstTxTimestamp());
+	}
 
+	public getSushiswapfirstBlockQuery(
+		timestamp: number,
+	): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_SUSHISWAP, sushi.firstBlockAfterTimestamp(timestamp));
+	}
 
-  //SUSHI
-  public getSushiswapfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.firstTxTimestamp(),
-    )
-  }
+	public getSushiswapDailyBlockPricesQuery(
+		block_number: number,
+		token: string,
+	): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(
+			endpoints.THEGRAPH_SUSHISWAP,
+			sushi.firstDailyBlockPairs(block_number, token),
+		);
+	}
 
-  public getSushiswapfirstBlockQuery(timestamp: number): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.firstBlockAfterTimestamp(timestamp),
-    )
-  }
+	public getSushiswapPoolsTokens(skip = 0): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_SUSHISWAP, sushi.getSushiswapPoolsQuery(skip));
+	}
+	public getCurrentSushiTokenPrices(address: string): Promise<AxiosResponse> {
+		console.log(address);
+		return axios.post(endpoints.THEGRAPH_SUSHISWAP, sushi.getSushiswapCurrentPriceQuery(address));
+	}
 
-  public getSushiswapDailyBlockPricesQuery(block_number: number, token: string): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.firstDailyBlockPairs(block_number, token),
-    )
-  }
+	//UNI
+	public getUniwapfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_UNISWAP, uni.firstTxTimestamp());
+	}
 
-  public getSushiswapPoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.getSushiswapPoolsQuery(),
-    )
-  }
-  public getCurrentSushiTokenPrices(address: string): Promise<AxiosResponse> {
-    console.log(address)
-    return axios.post(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.getSushiswapCurrentPriceQuery(address),
-    )
-  }
+	public getUniswapfirstBlockQuery(
+		timestamp: number,
+	): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_UNISWAP, uni.firstBlockAfterTimestamp(timestamp));
+	}
 
+	public getUniswapDailyBlockPricesQuery(
+		block_number: number,
+		token: string,
+	): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_UNISWAP, uni.firstDailyBlockPairs(block_number, token));
+	}
 
+	public getUniswapPoolsTokens(skip = 0): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_UNISWAP, uni.getUniswapPoolsQuery(skip));
+	}
+	public getCurrentUniTokenPrices(address: string): Promise<AxiosResponse> {
+		console.log(address);
+		return axios.post(endpoints.THEGRAPH_UNISWAP, uni.getUniswapCurrentPriceQuery(address));
+	}
 
-   //UNI
-   public getUniwapfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.firstTxTimestamp(),
-    )
-  }
+	//BALANCER
+	public getBalancerfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_BALANCER, bal.firstTxTimestamp());
+	}
 
-  public getUniswapfirstBlockQuery(timestamp: number): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.firstBlockAfterTimestamp(timestamp),
-    )
-  }
+	public getBalancerfirstBlockQuery(
+		timestamp: number,
+	): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_BALANCER, bal.firstBlockAfterTimestamp(timestamp));
+	}
 
-  public getUniswapDailyBlockPricesQuery(block_number: number, token: string): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.firstDailyBlockPairs(block_number, token),
-    )
-  }
+	public getBalancerDailyBlockPricesQuery(
+		block_number: number,
+		token: string,
+	): Promise<AxiosResponse<BalancerPoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_BALANCER, bal.firstDailyBlockPairs(block_number, token));
+	}
 
-  public getUniswapPoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.getUniswapPoolsQuery(),
-    )
-  }
-  public getCurrentUniTokenPrices(address: string): Promise<AxiosResponse> {
-    console.log(address)
-    return axios.post(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.getUniswapCurrentPriceQuery(address),
-    )
-  }
+	public getBalancerPoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_BALANCER, bal.getBalancerPoolsQuery());
+	}
 
-  //BALANCER
-  public getBalancerfirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_BALANCER,
-      bal.firstTxTimestamp(),
-    )
-  }
+	//CURVE
+	public getCurvePoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post<CurvePoolsTokensResponse>(endpoints.THEGRAPH_CURVE, getCurvePoolsQuery());
+	}
 
-  public getBalancerfirstBlockQuery(timestamp: number): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_BALANCER,
-      bal.firstBlockAfterTimestamp(timestamp),
-    )
-  }
+	public getCurvefirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_CURVE, curve.firstTxTimestamp());
+	}
 
-  public getBalancerDailyBlockPricesQuery(block_number: number, token: string): Promise<AxiosResponse<BalancerPoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_BALANCER,
-      bal.firstDailyBlockPairs(block_number, token),
-    )
-  }
+	public getCurvefirstBlockQuery(
+		timestamp: number,
+	): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_CURVE, curve.firstBlockAfterTimestamp(timestamp));
+	}
 
-  public getBalancerPoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post(
-      endpoints.THEGRAPH_BALANCER,
-      bal.getBalancerPoolsQuery(),
-    )
-  }
-  
-  //CURVE
-  public getCurvePoolsTokens(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post<CurvePoolsTokensResponse>(
-      endpoints.THEGRAPH_CURVE,
-      getCurvePoolsQuery(),
-    )
-  }
+	public getCurveDailyBlockPricesQuery(
+		block_number: number,
+		token: string,
+	): Promise<AxiosResponse<BalancerPoolsTokensResponse>> {
+		return axios.post(endpoints.THEGRAPH_CURVE, curve.firstDailyBlockPairs(block_number, token));
+	}
 
+	public getUniswapLiquidityPositions(
+		address: string,
+	): Promise<AxiosResponse<uni.UniswapLiquidityPositionsResponse>> {
+		return axios.post<uni.UniswapLiquidityPositionsResponse>(
+			endpoints.THEGRAPH_UNISWAP,
+			uni.getLiquidityPositionsQuery(address),
+		);
+	}
 
-  public getUniswapLiquidityPositions(address: string): Promise<AxiosResponse<uni.UniswapLiquidityPositionsResponse>> {
-    return axios.post<uni.UniswapLiquidityPositionsResponse>(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.getLiquidityPositionsQuery(address),
-    )
-  }
+	public getUniswapliquidityPositionSnapshots(
+		address: string,
+		skipLimit: number,
+	): Promise<AxiosResponse<uni.UniswapLiquidityPositionsResponse>> {
+		return axios.post<uni.UniswapLiquidityPositionsResponse>(
+			endpoints.THEGRAPH_UNISWAP,
+			uni.getliquidityPositionSnapshotsQuery(address, skipLimit),
+		);
+	}
 
-  public getUniswapliquidityPositionSnapshots(address: string, skipLimit: number): Promise<AxiosResponse<uni.UniswapLiquidityPositionsResponse>> {
-    return axios.post<uni.UniswapLiquidityPositionsResponse>(
-      endpoints.THEGRAPH_UNISWAP,
-      uni.getliquidityPositionSnapshotsQuery(address, skipLimit),
-    )
-  }
+	public getUniswapHistoricalLPTokensPrices(
+		tokensPricesRequests: TokenPriceRequest[],
+	): Promise<AxiosResponse<uni.UniswapPairDayDatasResponse>> {
+		return axios.post(
+			endpoints.THEGRAPH_UNISWAP,
+			uni.getHistoricalLPTokensPricesQuery(tokensPricesRequests),
+		);
+	}
 
-  public getUniswapHistoricalLPTokensPrices(tokensPricesRequests: TokenPriceRequest[]): Promise<AxiosResponse<uni.UniswapPairDayDatasResponse>>{
-    return axios.post(
-        endpoints.THEGRAPH_UNISWAP,
-        uni.getHistoricalLPTokensPricesQuery(tokensPricesRequests)
-    )
-  }
+	public getUniswapCurrentLPTokensPrice(
+		addresses: string[],
+		timestamp: number,
+	): Promise<AxiosResponse<uni.UniswapPairDayDatasResponse>> {
+		return axios.post(
+			endpoints.THEGRAPH_UNISWAP,
+			uni.getCurrentLPTokensPriceQuery(addresses, timestamp),
+		);
+	}
 
-  public getUniswapCurrentLPTokensPrice(addresses: string[], timestamp: number): Promise<AxiosResponse<uni.UniswapPairDayDatasResponse>> {
-    return  axios.post(
-        endpoints.THEGRAPH_UNISWAP,
-        uni.getCurrentLPTokensPriceQuery(addresses, timestamp)
-    )
-  }
+	public getBalancerLiquidityPositions(
+		address: string,
+	): Promise<AxiosResponse<bal.BalancerLiquidityPositionsResponse>> {
+		return axios.post<bal.BalancerLiquidityPositionsResponse>(
+			endpoints.THEGRAPH_BALANCER,
+			bal.getLiquidityPositionsQuery(address),
+		);
+	}
 
-  public getBalancerLiquidityPositions(address: string): Promise<AxiosResponse<bal.BalancerLiquidityPositionsResponse>> {
-    return axios.post<bal.BalancerLiquidityPositionsResponse>(
-      endpoints.THEGRAPH_BALANCER,
-      bal.getLiquidityPositionsQuery(address),
-    )
-  }
+	public getSushiswapLiquidityPositions(
+		address: string,
+	): Promise<AxiosResponse<UniswapLiquidityPositionsResponse>> {
+		return axios.post<UniswapLiquidityPositionsResponse>(
+			endpoints.THEGRAPH_SUSHISWAP,
+			sushi.getLiquidityPositionsQuery(address),
+		);
+	}
 
-  public getSushiswapLiquidityPositions(address: string): Promise<AxiosResponse<UniswapLiquidityPositionsResponse>> {
-    return axios.post<UniswapLiquidityPositionsResponse>(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.getLiquidityPositionsQuery(address),
-    )
-  }
+	public getSushiswapliquidityPositionSnapshots(
+		address: string,
+		skipLimit: number,
+	): Promise<AxiosResponse<sushi.UniswapLiquidityPositionsResponse>> {
+		return axios.post<sushi.UniswapLiquidityPositionsResponse>(
+			endpoints.THEGRAPH_SUSHISWAP,
+			sushi.getliquidityPositionSnapshotsQuery(address, skipLimit),
+		);
+	}
 
-  public getSushiswapliquidityPositionSnapshots(address: string, skipLimit: number): Promise<AxiosResponse<sushi.UniswapLiquidityPositionsResponse>> {
-    return axios.post<sushi.UniswapLiquidityPositionsResponse>(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.getliquidityPositionSnapshotsQuery(address, skipLimit),
-    )
-  }
+	public getSushiswapHistoricalLPTokensPrices(
+		tokensPricesRequests: TokenPriceRequest[],
+	): Promise<AxiosResponse<sushi.SushiswapPairDayDatasResponse>> {
+		return axios.post(
+			endpoints.THEGRAPH_SUSHISWAP,
+			sushi.getHistoricalLPTokensPricesQuery(tokensPricesRequests),
+		);
+	}
 
-  public getSushiswapHistoricalLPTokensPrices(tokensPricesRequests: TokenPriceRequest[]): Promise<AxiosResponse<sushi.SushiswapPairDayDatasResponse>>{
-    return axios.post(
-      endpoints.THEGRAPH_SUSHISWAP,
-      sushi.getHistoricalLPTokensPricesQuery(tokensPricesRequests)
-    )
-  }
+	public getSushiswapCurrentLPTokensPrice(
+		addresses: string[],
+		timestamp: number,
+	): Promise<AxiosResponse<sushi.SushiswapPairDayDatasResponse>> {
+		return axios.post(
+			endpoints.THEGRAPH_UNISWAP,
+			sushi.getCurrentLPTokensPriceQuery(addresses, timestamp),
+		);
+	}
 
-  public getSushiswapCurrentLPTokensPrice(addresses: string[], timestamp: number): Promise<AxiosResponse<sushi.SushiswapPairDayDatasResponse>> {
-    return  axios.post(
-      endpoints.THEGRAPH_UNISWAP,
-      sushi.getCurrentLPTokensPriceQuery(addresses, timestamp)
-    )
-  }
+	public getCurveLiquidityPositions(address: string): Promise<AxiosResponse<CurveDataResponse>> {
+		return axios.post<CurveDataResponse>(
+			endpoints.THEGRAPH_CURVE,
+			getCurveLiquidityPositionsQuery(address),
+		);
+	}
 
- 
-  public getCurveLiquidityPositions(address: string): Promise<AxiosResponse<CurveDataResponse>> {
-    return axios.post<CurveDataResponse>(
-      endpoints.THEGRAPH_CURVE,
-      getCurveLiquidityPositionsQuery(address),
-    )
-  }
+	public getCurvePoolsTokensOld(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+		return axios.post<CurvePoolsTokensResponse>(endpoints.THEGRAPH_CURVE, getCurvePoolsQuery());
+	}
 
-  public getCurvePoolsTokensOld(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
-    return axios.post<CurvePoolsTokensResponse>(
-      endpoints.THEGRAPH_CURVE,
-      getCurvePoolsQuery(),
-    )
-  }
-
-  public getCurveSwaps(address: string): Promise<AxiosResponse<CurveSwapsResponse>> {
-    return axios.post<CurveSwapsResponse>(
-      endpoints.THEGRAPH_CURVE,
-      getCurveSwapsQuery(address),
-    )
-  }
+	public getCurveSwaps(address: string): Promise<AxiosResponse<CurveSwapsResponse>> {
+		return axios.post<CurveSwapsResponse>(endpoints.THEGRAPH_CURVE, getCurveSwapsQuery(address));
+	}
 }

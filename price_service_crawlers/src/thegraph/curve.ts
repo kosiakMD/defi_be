@@ -17,8 +17,66 @@ export function getCurvePoolsQuery(): TheGraphQuery {
             poolTokenSupply
             virtualPrice
           }
-      }`
-  }
+      }`,
+	};
+}
+
+export function firstTxTimestamp(): TheGraphQuery {
+	return {
+		operationName: 'getFirstTimestamp',
+		variables: {},
+		query: `
+	  query firstQuery {
+		transactions: 
+		  transactions (first:1, orderBy:timestamp, orderDirection:asc) {
+			id
+			block
+			timestamp
+		  }
+	  }`,
+	};
+}
+
+export function firstBlockAfterTimestamp(timestamp: number): TheGraphQuery {
+	return {
+		operationName: 'getFirstBlockTimestamp',
+		variables: {
+			timestamp: timestamp,
+		},
+		query: `
+	  query firstQuery {
+		blocks: 
+		  transactions(first: 1, orderBy: block, orderDirection: asc, where:
+			{timestamp_gt: ${timestamp}}) {
+			block
+		  }
+	  }`,
+	};
+}
+
+export function firstDailyBlockPairs(block_number: number, token: string): TheGraphQuery {
+	return {
+		operationName: 'getFirstBlockTimestamp',
+		variables: {
+			block_number: block_number,
+			token: token,
+		},
+		query: `
+	  query firstQuery {
+		pools: 
+		  pools (block:{number:${block_number}},where:{poolToken_in:
+			["${token}"]}) {
+				id
+				name
+				poolToken {
+				id
+				name
+				}
+				poolTokenSupply
+				virtualPrice
+		  }
+	  }`,
+	};
 }
 
 export function getCurveLiquidityPositionsQuery(address: string): TheGraphQuery {

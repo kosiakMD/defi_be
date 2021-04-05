@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
 import { CoingeckoCurrentPricesJob } from './jobs/coingecko_current_prices.job';
 import { CoingeckoFirstCheckJob } from './jobs/coingecko_first_check.job';
+import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
 import { SushiswapCurrentPricesJob } from './jobs/sushiswap_current_prices.job';
 import { SushiSwapFirstCheckJob } from './jobs/sushiswap_first_check.job';
 import { UniswapCurrentPricesJob } from './jobs/uniswap_current_prices.job';
@@ -61,6 +62,7 @@ import { Api } from './thegraph/api';
 		UniswapCurrentPricesJob,
 		UniSwapFirstCheckJob,
 		BalancerFirstCheckJob,
+		CurveFirstCheckJob,
 	],
 })
 export class AppModule {}

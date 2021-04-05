@@ -17,7 +17,10 @@ const tokens: string[] = TEST_TOKENS;
 
 @Injectable()
 export class CoingeckoFirstCheckJob {
-	constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>, private databaseService: DatabaseService) {}
+	constructor(
+		@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
+		private databaseService: DatabaseService,
+	) {}
 
 	public async crawl_new_tokens(job: any, done: any): Promise<void> {
 		try {
@@ -73,7 +76,12 @@ async function crawlCoin(coin_id, coin, currency_id, db) {
 
 	const {
 		data: { prices },
-	} = await getCoinRangePrices(http, coin.address, toTimestamp(new Date(2013)), toTimestamp(new Date()));
+	} = await getCoinRangePrices(
+		http,
+		coin.address,
+		toTimestamp(new Date(2013)),
+		toTimestamp(new Date()),
+	);
 
 	console.info(`${prices.length} prices found`);
 	if (prices.length) {

@@ -24,7 +24,11 @@ export class AssetPriceService {
 		return await this.repo.find();
 	}
 
-	public async getCurrent(address_array, currency_id = 1, platform_id = 1): Promise<CurrentPrice[]> {
+	public async getCurrent(
+		address_array,
+		currency_id = 1,
+		platform_id = 1,
+	): Promise<CurrentPrice[]> {
 		const entityManager = getManager();
 		address_array = "('" + address_array.join("','") + "')";
 
@@ -53,87 +57,117 @@ export class AssetPriceService {
 		return response as CurrentPrice[];
 	}
 
-    public async getHistorical(address_array, timestamps: number[], currency_id =1, platform_id=1):Promise<HistoricalPrice[]> {
-      const entityManager = getManager();
-      //address_array = "('"+address_array.join("','")+"')";
-      //let {from,to}=this.getRangePrices(timestamps);
-      let response = {};
-      address_array.map(function(item) {
-            response[item] = {};
-      });
+	public async getHistorical(
+		address_array,
+		timestamps: number[],
+		currency_id = 1,
+		platform_id = 1,
+	): Promise<HistoricalPrice[]> {
+		const entityManager = getManager();
+		//address_array = "('"+address_array.join("','")+"')";
+		//let {from,to}=this.getRangePrices(timestamps);
+		const response = {};
+		address_array.map(function (item) {
+			response[item] = {};
+		});
 
-      for(let i=0 ; i<timestamps.length; i++){
-        for(let address_i = 0; address_i < address_array.length; address_i ++  ){
-          let querystr = getNearestTimeString(address_array[address_i],platform_id, currency_id, timestamps[i] );
-          console.log(querystr)
-          let db_entities = await entityManager.query(querystr);
-          if(db_entities.length){
-            response[address_array[address_i]][timestamps[i]+''] = db_entities[0].value;
-          }
-          else{
-            response[address_array[address_i]][timestamps[i]+''] = 0 ;
-          }
-        }
+		for (let i = 0; i < timestamps.length; i++) {
+			for (let address_i = 0; address_i < address_array.length; address_i++) {
+				const querystr = getNearestTimeString(
+					address_array[address_i],
+					platform_id,
+					currency_id,
+					timestamps[i],
+				);
+				console.log(querystr);
+				const db_entities = await entityManager.query(querystr);
+				if (db_entities.length) {
+					response[address_array[address_i]][timestamps[i] + ''] = db_entities[0].value;
+				} else {
+					response[address_array[address_i]][timestamps[i] + ''] = 0;
+				}
+			}
+		}
 
-      }
-    
-      return response as HistoricalPrice[];
-  
-      }
+		return response as HistoricalPrice[];
+	}
 
-    public async getHistoricalOld(address_array, timestamps: number[], currency_id =1, platform_id=1):Promise<HistoricalPrice[]> {
-        const entityManager = getManager();
-        address_array = "('"+address_array.join("','")+"')";
-        let {from,to}=this.getRangePrices(timestamps);
-        let querystr = `SELECT a.*, ap.*
+	public async getHistoricalOld(
+		address_array,
+		timestamps: number[],
+		currency_id = 1,
+		platform_id = 1,
+	): Promise<HistoricalPrice[]> {
+		const entityManager = getManager();
+		address_array = "('" + address_array.join("','") + "')";
+		const { from, to } = this.getRangePrices(timestamps);
+		const querystr =
+			`SELECT a.*, ap.*
         FROM prices.asset a JOIN prices.asset_price ap ON (a.id = ap.asset_id)
-        WHERE a.address IN `+address_array+` AND a.platform_id = `+
-        platform_id+`AND ap.currency_id = `+currency_id+` AND ap.timestamp >=`+from+` AND ap.timestamp <=`+to+`ORDER BY ap.timestamp ASC;`
-            console.log(querystr)
-        
-        
-        let db_entities = await entityManager.query(querystr);
-        //return db_entities;
-        let response = {};
-        
-        db_entities.map(function(item) {
-            if(!response[item.address]){
-                response[item.address] = {};
-            }
-            response[item.address][item.timestamp+''] = item.value;
-            return;
-          });
-    
-        return response as HistoricalPrice[];
-    
-        }
+        WHERE a.address IN ` +
+			address_array +
+			` AND a.platform_id = ` +
+			platform_id +
+			`AND ap.currency_id = ` +
+			currency_id +
+			` AND ap.timestamp >=` +
+			from +
+			` AND ap.timestamp <=` +
+			to +
+			`ORDER BY ap.timestamp ASC;`;
+		console.log(querystr);
 
-        private getRangePrices(timestamps: number[]): { from: number, to: number, interval: PricesInterval } {
-            const maxHourlyPricesPeriodInDays = 10;
-            const min = Math.min(...timestamps);
-            const now = timestampNow();
-        
-            // NOTE: We load daily prices for dates over 10 days and hourly in case of shorter terms
-            if (now - min > maxHourlyPricesPeriodInDays * SECONDS_IN_DAY) {
-              return {
-                from: timestampOfDate(new Date(2013, 0, 1)),
-                to: now,
-                interval: PricesInterval.Daily,
-              };
-            } else {
-              const from = new Date();
-              from.setDate(from.getDate() - maxHourlyPricesPeriodInDays);
-              return {
-                from: timestampOfDate(getNextDayOfDate(from)),
-                to: now,
-                interval: PricesInterval.Hourly,
-              };
-            }
-          }
+		const db_entities = await entityManager.query(querystr);
+		//return db_entities;
+		const response = {};
+
+		db_entities.map(function (item) {
+			if (!response[item.address]) {
+				response[item.address] = {};
+			}
+			response[item.address][item.timestamp + ''] = item.value;
+			return;
+		});
+
+		return response as HistoricalPrice[];
+	}
+
+	private getRangePrices(
+		timestamps: number[],
+	): { from: number; to: number; interval: PricesInterval } {
+		const maxHourlyPricesPeriodInDays = 10;
+		const min = Math.min(...timestamps);
+		const now = timestampNow();
+
+		// NOTE: We load daily prices for dates over 10 days and hourly in case of shorter terms
+		if (now - min > maxHourlyPricesPeriodInDays * SECONDS_IN_DAY) {
+			return {
+				from: timestampOfDate(new Date(2013, 0, 1)),
+				to: now,
+				interval: PricesInterval.Daily,
+			};
+		} else {
+			const from = new Date();
+			from.setDate(from.getDate() - maxHourlyPricesPeriodInDays);
+			return {
+				from: timestampOfDate(getNextDayOfDate(from)),
+				to: now,
+				interval: PricesInterval.Hourly,
+			};
+		}
+	}
 }
 
-let getNearestTimeString = (address, platform_id, currency_id, timestamp) => `SELECT a.*, ap.*
+const getNearestTimeString = (address, platform_id, currency_id, timestamp) =>
+	`SELECT a.*, ap.*
       FROM prices.asset a
       JOIN prices.asset_price ap ON (a.id = ap.asset_id)
-      WHERE a.address = '`+address+`' AND a.platform_id = `+
-      platform_id+`AND ap.currency_id = `+currency_id+`  ORDER BY ABS(`+timestamp+` - ap.timestamp) ASC LIMIT 1`;
+      WHERE a.address = '` +
+	address +
+	`' AND a.platform_id = ` +
+	platform_id +
+	`AND ap.currency_id = ` +
+	currency_id +
+	`  ORDER BY ABS(` +
+	timestamp +
+	` - ap.timestamp) ASC LIMIT 1`;

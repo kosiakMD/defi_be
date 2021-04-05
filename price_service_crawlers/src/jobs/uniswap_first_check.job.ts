@@ -25,33 +25,43 @@ export class UniSwapFirstCheckJob {
 	public async crawl_new_tokens(job: any, done: any): Promise<void> {
 		try {
 			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
+
+			let tokens = [];
 			if (!current_platfrom_id) {
 				throw 'No current platform in DB: ' + PLATFORM;
 			}
 			console.info('request prepared');
-			const tokenRequest = await this.theGraphService.getUniswapPoolsTokens();
-			console.info('tokens ', tokenRequest);
-			console.info('tokens ', tokenRequest['data']['data']['dataPairs']);
-			const tokens = tokenRequest['data']['data']['dataPairs'];
+			let iteration = 0;
+			do {
+				const tokenRequest = await this.theGraphService.getUniswapPoolsTokens(iteration);
+				console.info('tokens ', tokenRequest);
+				console.info('tokens ', tokenRequest['data']['data']['dataPairs']);
+				tokens = tokenRequest['data']['data']['dataPairs'];
 
-			const db_assets = await this.databaseService.getUniTokens();
-			const db_token_addresses = db_assets.map((token) => token['address']);
+				console.log(tokens.length);
+				const db_assets = await this.databaseService.getUniTokens();
+				const db_token_addresses = db_assets.map((token) => token['address']);
 
-			for (let i = 0; i < tokens.length; i++) {
-				console.info(tokens[i]['id']);
-				if (db_token_addresses.indexOf(tokens[i]['id']) === -1)
-					await this.databaseService.addNewSushiTokenToDb(
-						tokens[i]['id'],
-						tokens[i]['token0']['name'] + '-' + tokens[i]['token1']['name'],
-						tokens[i]['token0']['symbol'] + '-' + tokens[i]['token1']['symbol'],
-						PLATFORM,
-						'UNISWAP',
-						current_platfrom_id,
-					);
-			}
+				for (let i = 0; i < tokens.length; i++) {
+					console.info(tokens[i]['id']);
+					if (db_token_addresses.indexOf(tokens[i]['id']) === -1)
+						await this.databaseService.addNewSushiTokenToDb(
+							tokens[i]['id'],
+							tokens[i]['token0']['name'] + '-' + tokens[i]['token1']['name'],
+							tokens[i]['token0']['symbol'] + '-' + tokens[i]['token1']['symbol'],
+							PLATFORM,
+							'UNISWAP',
+							current_platfrom_id,
+						);
+				}
+				iteration++;
+				console.log('tokens.length ', tokens.length);
+			} while (iteration < 5 && tokens.length);
 		} catch (e) {
 			console.error(e);
 		}
+
+		console.log('ADD Uniswap job done');
 		done();
 	}
 
@@ -78,7 +88,9 @@ export class UniSwapFirstCheckJob {
 			console.info('check_day_ts ', check_day_ts);
 			const prices = [];
 			do {
-				const first_day_block_query = await this.theGraphService.getUniswapfirstBlockQuery(check_day_ts);
+				const first_day_block_query = await this.theGraphService.getUniswapfirstBlockQuery(
+					check_day_ts,
+				);
 				const block_number = first_day_block_query['data']['data']['blocks'][0]['blockNumber'];
 				console.info('block_number ', block_number);
 
@@ -93,7 +105,9 @@ export class UniSwapFirstCheckJob {
 					if (reserveUSD && totalSupply) {
 						prices.push([
 							check_day_ts,
-							Number(reserveUSD) === 0 || Number(totalSupply) === 0 ? 0 : Number(reserveUSD) / Number(totalSupply),
+							Number(reserveUSD) === 0 || Number(totalSupply) === 0
+								? 0
+								: Number(reserveUSD) / Number(totalSupply),
 						]);
 					}
 				}
@@ -103,7 +117,13 @@ export class UniSwapFirstCheckJob {
 				check_day_ts = getNextDayStart(first_timestamp, day_num);
 			} while (check_day_ts < current_day_ts);
 			console.info('prices ', prices);
-			await crawlCoin(db_assets[i].id, db_assets[i], prices, current_currency_id, this.databaseService);
+			await crawlCoin(
+				db_assets[i].id,
+				db_assets[i],
+				prices,
+				current_currency_id,
+				this.databaseService,
+			);
 		}
 
 		done();

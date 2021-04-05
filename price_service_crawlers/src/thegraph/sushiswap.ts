@@ -1,13 +1,16 @@
 import { TokenPriceRequest } from '../models/prices';
 import { TheGraphQuery } from './query';
 
-export function getSushiswapPoolsQuery(): TheGraphQuery {
+export function getSushiswapPoolsQuery(skip): TheGraphQuery {
 	return {
 		operationName: 'getPairs',
 		variables: {},
-		query: `
+		query:
+			`
     query pairDayDataQueryw {
-      dataPairs: pairs (first:1000, skip:0) {
+      dataPairs: pairs (where:{reserveUSD_gt:"25000"}, orderBy:reserveUSD, orderDirection:desc, first:1000, skip:` +
+			skip * 1000 +
+			`) {
         id
         token0 {
           name
@@ -223,7 +226,10 @@ export function getLiquidityPositionsQuery(address: string): TheGraphQuery {
 	};
 }
 
-export function getliquidityPositionSnapshotsQuery(address: string, skipLimit: number): TheGraphQuery {
+export function getliquidityPositionSnapshotsQuery(
+	address: string,
+	skipLimit: number,
+): TheGraphQuery {
 	return {
 		operationName: 'liquidityPositions',
 		variables: {
@@ -254,7 +260,9 @@ export function getliquidityPositionSnapshotsQuery(address: string, skipLimit: n
 	};
 }
 
-export function getHistoricalLPTokensPricesQuery(tokensPricesRequests: TokenPriceRequest[]): TheGraphQuery {
+export function getHistoricalLPTokensPricesQuery(
+	tokensPricesRequests: TokenPriceRequest[],
+): TheGraphQuery {
 	let query = '';
 
 	for (const token of tokensPricesRequests) {
@@ -286,7 +294,10 @@ export function getHistoricalLPTokensPricesQuery(tokensPricesRequests: TokenPric
 	};
 }
 
-export function getCurrentLPTokensPriceQuery(addresses: string[], timestamp: number): TheGraphQuery {
+export function getCurrentLPTokensPriceQuery(
+	addresses: string[],
+	timestamp: number,
+): TheGraphQuery {
 	return {
 		operationName: 'pairDayDatas',
 		variables: {

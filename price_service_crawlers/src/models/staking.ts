@@ -1,4 +1,12 @@
-import { AmountAble, Base, ERC20Token, PoolToken, PoolTokenStaked, PriceAble, Transaction } from './common';
+import {
+	AmountAble,
+	Base,
+	ERC20Token,
+	PoolToken,
+	PoolTokenStaked,
+	PriceAble,
+	Transaction,
+} from './common';
 
 export interface Staking extends Base<'staking'> {
 	stakingPositions: StakingPosition[];

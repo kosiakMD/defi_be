@@ -33,7 +33,9 @@ export class UniswapCurrentPricesJob {
 
 				for (let i = 0; i < db_assets.length; i++) {
 					console.info(db_assets[i]['address']);
-					const one_results = await this.theGraphService.getCurrentUniTokenPrices(db_assets[i]['address']);
+					const one_results = await this.theGraphService.getCurrentUniTokenPrices(
+						db_assets[i]['address'],
+					);
 
 					if (one_results['data']['data']['dataPairs'].length) {
 						const { reserveUSD, totalSupply } = one_results['data']['data']['dataPairs'][0];
@@ -45,7 +47,9 @@ export class UniswapCurrentPricesJob {
 						results[db_assets[i]['address']] = {
 							db_id: db_assets[i]['id'],
 							value:
-								Number(reserveUSD) === 0 || Number(totalSupply) === 0 ? 0 : Number(reserveUSD) / Number(totalSupply),
+								Number(reserveUSD) === 0 || Number(totalSupply) === 0
+									? 0
+									: Number(reserveUSD) / Number(totalSupply),
 						};
 					}
 				}

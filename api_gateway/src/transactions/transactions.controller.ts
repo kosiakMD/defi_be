@@ -1,49 +1,46 @@
-import { Controller, Get, ParseArrayPipe, Query } from "@nestjs/common";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { EtherscanEnum } from "../constants";
+import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@ApiTags("Transactions")
-@Controller("transactions")
+import { EtherscanEnum } from '../constants';
+
+@ApiTags('Transactions')
+@Controller('transactions')
 export class TransactionsController {
-	@Get("/")
+	@Get('/')
 	@ApiQuery({
-		name: "addresses",
+		name: 'addresses',
 		type: String,
 		isArray: true,
-		description: "comma-separated Array String"
+		description: 'comma-separated Array String',
 	})
 	@ApiQuery({
-		name: "etherscan",
+		name: 'etherscan',
 		enum: EtherscanEnum,
 		required: false,
-		description: `either true or false; default is 'false'`
+		description: `either true or false; default is 'false'`,
 	})
 	@ApiResponse({ status: 200, type: String })
 	get(
-		@Query("addresses", new ParseArrayPipe({ items: String, separator: "," }))
-			addresses: string[],
-		@Query("etherscan") etherscan: EtherscanEnum
-	): string[]{
-		const lowerCaseAddresses = addresses.map((address) =>
-			address.toLowerCase()
-		);
+		@Query('addresses', new ParseArrayPipe({ items: String, separator: ',' }))
+		addresses: string[],
+		@Query('etherscan') etherscan: EtherscanEnum,
+	): string[] {
+		const lowerCaseAddresses = addresses.map((address) => address.toLowerCase());
 		return etherscan ? lowerCaseAddresses : lowerCaseAddresses;
 	}
 
-	@Get("/ethereum")
+	@Get('/ethereum')
 	@ApiQuery({
-		name: "addresses",
+		name: 'addresses',
 		type: String,
-		description: "comma-separated Array String"
+		description: 'comma-separated Array String',
 	})
 	@ApiResponse({ status: 200, type: String })
 	getEthereum(
-		@Query("addresses", new ParseArrayPipe({ items: String, separator: "," }))
-			addresses: string[]
+		@Query('addresses', new ParseArrayPipe({ items: String, separator: ',' }))
+		addresses: string[],
 	): string[] {
 		// TODO: plug
-		return addresses.map((address) =>
-			address.toLowerCase()
-		);
+		return addresses.map((address) => address.toLowerCase());
 	}
 }

@@ -1,6 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
+
 import { AppModule } from '../src/app.module';
 
 describe('AppController (e2e)', () => {
@@ -17,7 +18,7 @@ describe('AppController (e2e)', () => {
 
 	it('/v1/pancakes (GET)', () => {
 		return request(app.getHttpServer())
-			.get('/v1/pancakes')//
-			.expect(200)
+			.get('/v1/pancakes') //
+			.expect(200);
 	});
 });

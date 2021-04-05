@@ -36,7 +36,13 @@ export const getStartOfTheDayTimestamp = (timestamp?: number): number => {
 	const dateOfTimestamp = new Date(timestamp * 1000);
 	const startOfTheDayTimestamp = timestamp
 		? new Date(
-				Date.UTC(dateOfTimestamp.getFullYear(), dateOfTimestamp.getMonth(), dateOfTimestamp.getDate(), 0, 0),
+				Date.UTC(
+					dateOfTimestamp.getFullYear(),
+					dateOfTimestamp.getMonth(),
+					dateOfTimestamp.getDate(),
+					0,
+					0,
+				),
 		  ).getTime()
 		: new Date().setUTCHours(0, 0, 0, 0);
 	return timestampMsToSeconds(startOfTheDayTimestamp);

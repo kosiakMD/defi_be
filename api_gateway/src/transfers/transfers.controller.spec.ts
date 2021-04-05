@@ -1,18 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
 import { TransfersController } from './transfers.controller';
 
 describe('TransfersController', () => {
-  let controller: TransfersController;
+	let controller: TransfersController;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [TransfersController],
-    }).compile();
+	beforeEach(async () => {
+		const module: TestingModule = await Test.createTestingModule({
+			controllers: [TransfersController],
+		}).compile();
 
-    controller = module.get<TransfersController>(TransfersController);
-  });
+		controller = module.get<TransfersController>(TransfersController);
+	});
 
-  it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+	it('should be defined', () => {
+		expect(controller).toBeDefined();
+	});
 });

@@ -9,6 +9,11 @@ import { PricesModule } from './prices/prices.module';
 
 @Module({
 	controllers: [HealthController],
-	imports: [TypeOrmModule.forRoot(configService.getTypeOrmConfig()), PricesModule, TerminusModule, ExamplesModule],
+	imports: [
+		TypeOrmModule.forRoot(configService.getTypeOrmConfig()),
+		PricesModule,
+		TerminusModule,
+		ExamplesModule,
+	],
 })
 export class AppModule {}

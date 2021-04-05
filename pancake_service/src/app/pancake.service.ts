@@ -1,29 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { Pancake } from './interfaces/pancake.interface';
-import { TheGraphQuery } from './interfaces/graph.interface';
 //import { Blocks } from './interfaces/blocks.interface';
-import axios from 'axios'
-import * as dotenv from 'dotenv'
+import axios from 'axios';
+import * as dotenv from 'dotenv';
+
+import { TheGraphQuery } from './interfaces/graph.interface';
+import { Pancake } from './interfaces/pancake.interface';
 
 dotenv.config();
 
 @Injectable()
 export class PancakesService {
-	private readonly PROJECT_NAME: string = 'pancakeswap'
+	private readonly PROJECT_NAME: string = 'pancakeswap';
 	/* private readonly NOW_UNIX_TIMESTAMP: number = Math.trunc(Date.now() / 1000)
   private readonly YESTERDAY_UNIX_TIMESTAMP: number = Math.trunc(this.NOW_UNIX_TIMESTAMP - 86400)
   private readonly LAST_WEEK_UNIX_TIMESTAMP: number = Math.trunc(this.NOW_UNIX_TIMESTAMP - 86400 * 7)
   private readonly LAST_MONTH_UNIX_TIMESTAMP: number = Math.trunc(this.NOW_UNIX_TIMESTAMP - 86400 * 30) */
 
 	public async getPancakes(): Promise<Pancake[]> {
-		const pairs = await this.getAllPairs()
+		const pairs = await this.getAllPairs();
 
-		return this.getFormatedPancakes(pairs.currentPairs)
+		return this.getFormatedPancakes(pairs.currentPairs);
 	}
 
 	private getFormatedPancakes(currentPairs): Pancake[] {
-		return currentPairs.map(pair => {
-			const percentage: number = 50
+		return currentPairs.map((pair) => {
+			const percentage = 50;
 
 			return {
 				id: pair.id,
@@ -33,7 +34,7 @@ export class PancakesService {
 				APY: {
 					day: null,
 					week: null,
-					month: null
+					month: null,
 				},
 				IL: {
 					day: null,
@@ -41,20 +42,20 @@ export class PancakesService {
 					week: null,
 					weekUSD: null,
 					month: null,
-					monthUSD: null
+					monthUSD: null,
 				},
 				tokens: [
 					{
 						name: pair.token0.name,
-						percentage
+						percentage,
 					},
 					{
 						name: pair.token1.name,
-						percentage
-					}
-				]
-			}
-		})
+						percentage,
+					},
+				],
+			};
+		});
 	}
 
 	private async getAllPairs() {
@@ -72,10 +73,10 @@ export class PancakesService {
 		return {
 			currentPairs,
 			//historyPairs
-		}
+		};
 	}
-// NOTE: functions to get history pairs by block number
-/* 	private async getPairsByBlocksNumbers(pairsIDs: string[], blocks: Blocks): Promise<any> {
+	// NOTE: functions to get history pairs by block number
+	/* 	private async getPairsByBlocksNumbers(pairsIDs: string[], blocks: Blocks): Promise<any> {
 		const [
 			pairsAtDayAgoState,
 			pairsAtWeekAgoState,
@@ -190,12 +191,13 @@ export class PancakesService {
 	} */
 
 	private async getCurrentPairs(): Promise<any> {
-		return (await axios.post(process.env.PAIRS_REQUEST_URL, this.getSubgraphQuery())).data.data.pairs;
+		return (await axios.post(process.env.PAIRS_REQUEST_URL, this.getSubgraphQuery())).data.data
+			.pairs;
 	}
 
 	private getSubgraphQuery(): TheGraphQuery {
 		return {
-			operationName: "pairs",
+			operationName: 'pairs',
 			variables: {},
 			query: `fragment PairFields on Pair {
 				id
@@ -215,7 +217,7 @@ export class PancakesService {
 				pairs(first: 200, orderBy: trackedReserveETH, orderDirection: desc) {
 					...PairFields
 				}
-			}`
+			}`,
 		};
 	}
 }

@@ -4,10 +4,12 @@ import { ConfigModule } from '@nestjs/config';
 import { PricesController } from './prices.controller';
 import { PricesService } from './prices.service';
 
+const PRICE_TIMOUT = 60e3; // 60 sec
+
 @Module({
 	imports: [
 		HttpModule.register({
-			timeout: 5e3,
+			timeout: PRICE_TIMOUT,
 			maxRedirects: 2,
 		}),
 		ConfigModule,

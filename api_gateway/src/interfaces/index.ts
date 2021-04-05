@@ -2,6 +2,8 @@ export type Address = string;
 
 export type TokenSymbol = string;
 
+export type DateString = string;
+
 export interface BaseData<T = string> {
 	userAddress: string;
 	protocolName: string;
@@ -85,4 +87,9 @@ export interface Pool {
 	tokens: PoolToken[];
 	APY: APY;
 	IL: IL;
+}
+
+export interface PriceHistoricalRequest {
+	addresses: Address[];
+	timestamps: DateString[];
 }

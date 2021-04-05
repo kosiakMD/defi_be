@@ -66,7 +66,9 @@ export class AssetPriceService {
 		const entityManager = getManager();
 		//address_array = "('"+address_array.join("','")+"')";
 		//let {from,to}=this.getRangePrices(timestamps);
+		// TODO: (X) mutable object
 		const response = {};
+		// TODO: forEach
 		address_array.map(function (item) {
 			response[item] = {};
 		});

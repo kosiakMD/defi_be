@@ -1,8 +1,8 @@
-import { Controller, Get, Param, ParseArrayPipe, Query } from '@nestjs/common';
-import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, ParseArrayPipe, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { PlatformEnum } from '../enum';
-import { Address } from '../interfaces';
+import PriceHistoryRequestDTO from '../DTO/PriceHistoryReuqest.dto';
+import { Address, PriceHistoricalRequest } from '../interfaces';
 import { HistoricalPrice } from './prices.interface';
 import { PricesService } from './prices.service';
 
@@ -29,32 +29,19 @@ export class PricesController {
 		return this.service.getPrices(tokens, currencyId, platformId);
 	}
 
-	@Get('/historical/:key')
-	@ApiParam({
-		name: 'platform',
-		enum: PlatformEnum,
+	// TODO: response interface
+	@Post('/historical/:key')
+	@ApiBody({
+		type: PriceHistoryRequestDTO,
+		description: 'Array of price tokens with requested times as array for each price',
 	})
-	@ApiQuery({
-		name: 'tokenAddress',
-		type: String,
-		description: 'Token address',
-	})
-	@ApiQuery({
-		name: 'timestamps',
-		type: String,
-		isArray: true,
-		description: 'DateString',
-	})
-	@ApiResponse({ status: 200, type: String, isArray: true })
+	@ApiResponse({ status: 200, type: Object, isArray: true })
 	async getHistory(
-		@Param('platform') platform: PlatformEnum = PlatformEnum.tokens,
-		@Query('tokenAddress') tokenAddress: Address,
-		@Query('timestamps', new ParseArrayPipe({ items: String, separator: ',' }))
-		timestamps: string[],
+		@Body() pricesHistoricalRequest: PriceHistoricalRequest,
 	): Promise<HistoricalPrice[]> {
+		const { addresses, timestamps } = pricesHistoricalRequest;
 		const currencyId = 1;
 		const platformId = 1;
-		console.info(platform);
-		return this.service.getHistorical(tokenAddress, timestamps, currencyId, platformId);
+		return this.service.getHistorical(addresses, timestamps, currencyId, platformId);
 	}
 }

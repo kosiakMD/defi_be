@@ -1,8 +1,15 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiResponse, getSchemaPath } from '@nestjs/swagger';
 
 import { AssetPriceService } from '../services/asset_price.service';
 import { CurrentPrice, HistoricalPrice } from './interfaces/prices.interface';
+
+interface PriceHistoricalRequest {
+	addresses: string[];
+	timestamps: number[];
+	currency_id: number;
+	platform_id: number;
+}
 
 @Controller('prices')
 export class PricesController {
@@ -22,13 +29,13 @@ export class PricesController {
 		return await this.assetPriceService.getCurrent(addresses, currency_id, platform_id);
 	}
 
+	// TODO Docs body response
 	@Get('/historical')
+	@Post('/historical')
 	async historicalPrices(
-		@Query('platformId') platform_id: number,
-		@Query('currencyId') currency_id: number,
-		@Query('timestamps') timestamps: number[],
-		@Query('addresses') addresses: string[],
+		@Body() priceHistoricalRequest: PriceHistoricalRequest,
 	): Promise<HistoricalPrice[]> {
+		const { addresses, timestamps, currency_id, platform_id } = priceHistoricalRequest;
 		if (
 			!platform_id ||
 			!currency_id ||

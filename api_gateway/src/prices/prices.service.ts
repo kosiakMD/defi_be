@@ -39,22 +39,27 @@ export class PricesService {
 			const result = await promise;
 			console.timeEnd(this.get_prices_url);
 			const { data } = result;
-			return data;
+			if (data.message) {
+				console.error(data.message);
+				throw new Error(data.message);
+			} else {
+				return data;
+			}
 		} catch (e) {
 			console.error(e);
-			throw e.message;
+			throw e;
 		}
 	}
 
 	async getHistorical(
-		addresses: Address,
-		timestamps: string[],
+		addresses,
+		timestamps,
 		currencyId: number,
 		platformId: number,
 	): Promise<HistoricalPrice[]> {
 		try {
-			const get = this.httpService.get(this.get_history_url, {
-				params: {
+			const get = this.httpService.post(this.get_history_url, {
+				body: {
 					addresses,
 					timestamps,
 					currencyId,

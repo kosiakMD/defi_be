@@ -1,10 +1,10 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import BaseDataDto from '../DTO/BaseData.dto';
-import EthereumAddressDto from '../DTO/EthereumAddress.dto';
-import PlatformDataDto from '../DTO/PlatofrmData.dto';
-import { PlatformData } from '../interfaces';
+import BaseDataDto from '../common/DTO/BaseData.dto';
+import EthereumAddressDto from '../common/DTO/EthereumAddress.dto';
+import PlatformDataDto from '../common/DTO/PlatofrmData.dto';
+import { PlatformData } from '../common/interfaces';
 
 @ApiTags('Platform')
 @Controller('platform')

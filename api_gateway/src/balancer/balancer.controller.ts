@@ -1,9 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import BaseDataDto from '../DTO/BaseData.dto';
-import EthereumAddressDto from '../DTO/EthereumAddress.dto';
-import { BaseData } from '../interfaces';
+import BaseDataDto from '../common/DTO/BaseData.dto';
+import EthereumAddressDto from '../common/DTO/EthereumAddress.dto';
+import { BaseData } from '../common/interfaces';
 
 @ApiTags('Platform')
 @Controller('balancer')
@@ -12,6 +12,14 @@ export class BalancerController {
 	@ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
 	get(@Param() params: EthereumAddressDto): BaseData[] {
 		const base = new BaseDataDto();
-		return [base];
+		return [
+			base,
+			// TODO: temporary - will be just string
+			{
+				userAddress: params.address,
+				protocolName: '',
+				protocolType: '',
+			},
+		];
 	}
 }

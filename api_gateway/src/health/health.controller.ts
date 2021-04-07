@@ -10,7 +10,7 @@ import {
 } from '@nestjs/terminus';
 
 import { ServiceHealthIndicator } from '../app/app.health';
-import { AddVersion } from '../decorators/AddVersion';
+import { AddVersion } from '../common/decorators/AddVersion';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
 	[service: string]: {

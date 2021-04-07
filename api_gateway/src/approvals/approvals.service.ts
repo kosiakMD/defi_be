@@ -1,30 +1,36 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ContractApproval } from '../interfaces';
+import { Logger } from '../common/Logger/Logger.service';
+import { Asset, ContractApproval } from '../common/interfaces';
 
 @Injectable()
 export class ApprovalsService {
-	private readonly gas_url: string;
+	private readonly gasUrl: string;
 
-	constructor(private httpService: HttpService, private configService: ConfigService) {
+	constructor(
+		private httpService: HttpService,
+		private configService: ConfigService,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+	) {
 		const url = this.configService.get<string>('DEFIYIELD_INFO_MAIN_URL');
 		const path = this.configService.get<string>('APPROVALS_PATH');
 
-		this.gas_url = `${url}/${path}`;
+		this.gasUrl = `${url}/${path}`;
 	}
 
-	async getAll(address: Address): Promise<ContractApproval[]> {
+	async getAll(address: Asset): Promise<ContractApproval[]> {
 		try {
-			const get = this.httpService.get(`${this.gas_url}/${address}`);
+			const get = this.httpService.get(`${this.gasUrl}/${address}`);
 			const promise = get.toPromise();
-			console.time(this.gas_url);
+			this.logger.time(this.gasUrl);
 			const result = await promise;
-			console.timeEnd(this.gas_url);
+			this.logger.timeEnd(this.gasUrl);
 			const { data } = result;
 			return data;
 		} catch (e) {
-			console.error('er', e.message);
+			this.logger.error('er', e.message);
 			throw e;
 		}
 	}

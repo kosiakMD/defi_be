@@ -22,7 +22,7 @@ module.exports = {
 	// healthcheck & danger *.js
 	ignorePatterns: ['.eslintrc.js', '**/*.js', '*.json', '**/dist/', 'node_modules'],
 	rules: {
-		quotes: [
+		'quotes': [
 			'error',
 			'single',
 			{
@@ -51,8 +51,10 @@ module.exports = {
 		'@typescript-eslint/no-empty-function': 'warn',
 		'prettier/prettier': 'error',
 		'max-classes-per-file': ['error', 1],
+		'camelcase': ['error', { 'properties': 'always' }],
+		'no-underscore-dangle': 'error',
 		'no-use-before-define': 'warn',
-		'no-console': ['error', { allow: ['warn', 'error', 'info', 'time', 'timeEnd'] }],
+		'no-console': ['error'],
 		'newline-per-chained-call': 'error',
 		// node
 		'node/exports-style': ['error', 'exports'],

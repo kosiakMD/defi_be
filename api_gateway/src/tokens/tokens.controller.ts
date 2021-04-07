@@ -2,9 +2,11 @@ import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/c
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as Promise from 'bluebird';
 import { Cache } from 'cache-manager';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import TokenDto from '../DTO/Token.dto';
-import { Token } from '../interfaces';
+import TokenDto from '../common/DTO/Token.dto';
+import { Logger } from '../common/Logger/Logger.service';
+import { Token } from '../common/interfaces';
 import { TokensService } from './tokens.service';
 
 // TODO: can be null as updated each time
@@ -13,15 +15,19 @@ const TOKENS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
 @ApiTags('Tokens')
 @Controller('tokens')
 export class TokensController {
-	constructor(private service: TokensService, @Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+	constructor(
+		private service: TokensService,
+		@Inject(CACHE_MANAGER) private cacheManager: Cache,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+	) {}
 
 	@Get('/')
 	@ApiResponse({ status: 200, type: TokenDto, isArray: true })
 	@ApiResponse({ status: 500, type: HttpException })
 	public async get(): Promise<TokenDto[]> {
-		console.time('getTokens');
+		this.logger.time('getTokens');
 		const tokens = await Promise.any([this.readTokens(), this.fetchTokens()]);
-		console.timeEnd('getTokens');
+		this.logger.timeEnd('getTokens');
 		return tokens;
 	}
 

@@ -1,9 +1,9 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import BaseDataDto from '../DTO/BaseData.dto';
-import EthereumAddressDto from '../DTO/EthereumAddress.dto';
-import { BaseData } from '../interfaces';
+import BaseDataDto from '../common/DTO/BaseData.dto';
+import EthereumAddressDto from '../common/DTO/EthereumAddress.dto';
+import { BaseData } from '../common/interfaces';
 
 @ApiTags('Platform')
 @Controller('curve')

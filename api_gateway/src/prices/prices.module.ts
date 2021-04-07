@@ -1,6 +1,7 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+// import { LoggerModule } from '../common/Logger/LoggerModule';
 import { PricesController } from './prices.controller';
 import { PricesService } from './prices.service';
 
@@ -13,6 +14,7 @@ const PRICE_TIMOUT = 60e3; // 60 sec
 			maxRedirects: 2,
 		}),
 		ConfigModule,
+		// LoggerModule,
 	],
 	providers: [PricesService],
 	controllers: [PricesController],

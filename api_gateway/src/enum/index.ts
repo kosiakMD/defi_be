@@ -5,3 +5,8 @@ export enum PlatformEnum {
 	sushiswap = 'sushiswap',
 	uniswap = 'uniswap',
 }
+
+export enum ChainEnum {
+	Ethereum = 1,
+	Binance = 2,
+}

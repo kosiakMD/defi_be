@@ -1,30 +1,36 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Token } from '../interfaces';
+import { Logger } from '../common/Logger/Logger.service';
+import { Token } from '../common/interfaces';
 
 @Injectable()
 export class TokensService {
-	private readonly tokens_url: string;
+	private readonly tokensUrl: string;
 
-	constructor(private httpService: HttpService, private configService: ConfigService) {
+	constructor(
+		private httpService: HttpService,
+		private configService: ConfigService,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+	) {
 		const url = this.configService.get<string>('DEFIYIELD_INFO_2_URL');
 		const path = this.configService.get<string>('TOKENS_PATH');
 
-		this.tokens_url = `${url}/${path}`;
+		this.tokensUrl = `${url}/${path}`;
 	}
 
 	async getAll(): Promise<Token[]> {
 		try {
-			const get = this.httpService.get(this.tokens_url);
+			const get = this.httpService.get(this.tokensUrl);
 			const promise = get.toPromise();
-			console.time(this.tokens_url);
+			this.logger.time(this.tokensUrl);
 			const result = await promise;
-			console.timeEnd(this.tokens_url);
+			this.logger.timeEnd(this.tokensUrl);
 			const { data } = result;
 			return data;
 		} catch (e) {
-			console.error('er', e);
+			this.logger.error('er', e);
 			throw e;
 		}
 	}

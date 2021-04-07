@@ -2,19 +2,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Pool, PoolToken } from '../interfaces';
+import APY from './APY.dto';
 import EthereumAddressDto from './EthereumAddress.dto';
 import PoolTokenDto from './PoolToken.dto';
-
-class APY implements APY {
-	@ApiProperty({ type: Number, example: 42.96448987689843 })
-	day: number;
-
-	@ApiProperty({ type: Number, example: 40.23741031634904 })
-	week: number;
-
-	@ApiProperty({ type: Number, example: 41.35642187142753 })
-	month: number;
-}
 
 class IL implements IL {
 	@ApiProperty({ type: Number, example: 1.0611280730220551 })
@@ -49,11 +39,11 @@ export default class PoolDto implements Pool {
 	@ApiProperty({ type: Number, example: 312098.949 })
 	fee24h: 312098.949;
 
-	@ApiProperty({ type: Object })
-	APY = new APY();
+	@ApiProperty({ type: APY })
+	APY: APY;
 
-	@ApiProperty({ type: Object })
-	IL = new IL();
+	@ApiProperty({ type: IL })
+	IL: IL;
 
 	@ApiProperty({ type: PoolTokenDto, isArray: true })
 	tokens: PoolToken[];

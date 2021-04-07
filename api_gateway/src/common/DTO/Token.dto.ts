@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEthereumAddress, IsNumber, IsString } from 'class-validator';
 
-import { Address, Token } from '../interfaces';
+import { Asset, Token } from '../interfaces';
 import EthereumAddressDto from './EthereumAddress.dto';
 
 export default class TokenDto implements Token {
@@ -11,7 +11,7 @@ export default class TokenDto implements Token {
 
 	@ApiProperty({ type: Number })
 	@IsNumber()
-	is_stable: number;
+	isStable: number;
 
 	@ApiProperty({ type: String })
 	@IsString()
@@ -19,11 +19,11 @@ export default class TokenDto implements Token {
 
 	@ApiProperty({ type: String })
 	@IsString()
-	coingecko_id: string;
+	coingeckoId: string;
 
 	@ApiProperty({ type: EthereumAddressDto, example: '0x0bc529c00c6401aef6d220be8c6ea1667f6ad93e' })
 	@IsEthereumAddress()
-	address: Address;
+	address: Asset;
 
 	@ApiProperty({ type: Number })
 	@IsNumber()
@@ -31,11 +31,11 @@ export default class TokenDto implements Token {
 
 	@ApiProperty({ type: Number, example: null })
 	@IsNumber()
-	abi_type_id: number;
+	abiTypeId: number;
 
 	@ApiProperty({ type: String, example: '2020-09-15T10:41:11.000Z', description: 'UTC' })
 	@IsDateString()
-	created_at: string;
+	createdAt: string;
 
 	@ApiProperty({ type: Number })
 	@IsNumber()

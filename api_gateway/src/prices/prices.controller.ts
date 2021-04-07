@@ -1,9 +1,10 @@
-import { Body, Controller, Get, ParseArrayPipe, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, ParseArrayPipe, Query } from '@nestjs/common';
+import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import PriceHistoryRequestDTO from '../DTO/PriceHistoryReuqest.dto';
-import { Address, PriceHistoricalRequest } from '../interfaces';
-import { HistoricalPrice } from './prices.interface';
+import HistoricalPriceDto from '../common/DTO/HistoricalPrice.dto';
+import { Asset } from '../common/interfaces';
+import { ChainEnum } from '../enum';
+import { HistoricalPrices } from './prices.interface';
 import { PricesService } from './prices.service';
 
 @ApiTags('Prices')
@@ -11,7 +12,14 @@ import { PricesService } from './prices.service';
 export class PricesController {
 	constructor(private service: PricesService) {}
 
-	@Get('/')
+	@Get('/:chainId')
+	@ApiParam({
+		name: 'chainId',
+		enum: ChainEnum,
+		required: false,
+		description: `Chain (platform) ID`,
+		example: ChainEnum.Ethereum,
+	})
 	@ApiQuery({
 		name: 'tokens',
 		type: String,
@@ -22,26 +30,40 @@ export class PricesController {
 	@ApiResponse({ status: 200, type: String })
 	async get(
 		@Query('tokens', new ParseArrayPipe({ items: String, separator: ',' }))
-		tokens: Address[],
+		tokens: Asset[],
+		@Param('chainId') chainId: number = ChainEnum.Ethereum,
 	): Promise<any> {
 		const currencyId = 1;
-		const platformId = 1;
-		return this.service.getPrices(tokens, currencyId, platformId);
+		return this.service.getPrices(tokens, currencyId, chainId);
 	}
 
-	// TODO: response interface
-	@Post('/historical/:key')
-	@ApiBody({
-		type: PriceHistoryRequestDTO,
-		description: 'Array of price tokens with requested times as array for each price',
+	@Get('/historical/:chainId')
+	@ApiParam({
+		name: 'chainId',
+		enum: ChainEnum,
+		required: false,
+		description: `Chain (platform) ID`,
+		example: ChainEnum.Ethereum,
 	})
-	@ApiResponse({ status: 200, type: Object, isArray: true })
+	@ApiQuery({
+		name: 'tokens',
+		type: String,
+		description: 'comma-separated array of price tokens',
+		example: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984,0x66a0f676479cee1d7373f3dc2e2952778bff6',
+	})
+	@ApiQuery({
+		name: 'timestamps',
+		type: String,
+		description: 'comma-separated array of price time stamps',
+		example: '1600992000,1609459200',
+	})
+	@ApiResponse({ status: 200, type: HistoricalPriceDto, isArray: true })
 	async getHistory(
-		@Body() pricesHistoricalRequest: PriceHistoricalRequest,
-	): Promise<HistoricalPrice[]> {
-		const { addresses, timestamps } = pricesHistoricalRequest;
+		@Param('chainId') chainId: number = ChainEnum.Ethereum,
+		@Query('tokens', new ParseArrayPipe({ items: String, separator: ',' })) tokens,
+		@Query('timestamps', new ParseArrayPipe({ items: String, separator: ',' })) timestamps,
+	): Promise<HistoricalPrices> {
 		const currencyId = 1;
-		const platformId = 1;
-		return this.service.getHistorical(addresses, timestamps, currencyId, platformId);
+		return this.service.getHistorical(tokens, timestamps, currencyId, chainId);
 	}
 }

@@ -3,9 +3,11 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as Promise from 'bluebird';
 import { Cache } from 'cache-manager';
 
-import { GasHistoryDto, GasPriceDto } from '../DTO/Gas.dto';
-import { GasHistory, GasPrice } from '../interfaces';
+import { GasHistoryDto, GasPriceDto } from '../common/DTO/Gas.dto';
+import { Logger } from '../common/Logger/Logger.service';
+import { GasHistory, GasPrice } from '../common/interfaces';
 import { GasService } from './gas.service';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 // TODO: can be null as updated each time
 const GAS_CACHE_TIME = 15 * 60 * 1e3; // 15 min as Gas history updates
@@ -13,7 +15,11 @@ const GAS_CACHE_TIME = 15 * 60 * 1e3; // 15 min as Gas history updates
 @ApiTags('Gas')
 @Controller('gas')
 export class GasController {
-	constructor(private service: GasService, @Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+	constructor(
+		private service: GasService,
+		@Inject(CACHE_MANAGER) private cacheManager: Cache,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+	) {}
 
 	@Get('/current_price')
 	@ApiResponse({ status: 200, type: GasPriceDto })
@@ -24,9 +30,9 @@ export class GasController {
 	@Get('/history')
 	@ApiResponse({ status: 200, type: GasHistoryDto, isArray: true })
 	public async getHistory(): Promise<GasHistory[]> {
-		console.time('getGasHistory');
+		this.logger.time('getGasHistory');
 		const gas = await Promise.any([this.readGasHistory(), this.fetchGasHistory()]);
-		console.timeEnd('getGasHistory');
+		this.logger.timeEnd('getGasHistory');
 		return gas;
 	}
 

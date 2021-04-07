@@ -1,9 +1,16 @@
+import { Asset } from '../common/interfaces';
+
 export interface CurrentPrice {
 	[key: string]: string;
 }
 
 export interface HistoricalPrice {
-	[key: string]: {
-		[key: string]: string;
-	};
+	addresses: Asset;
+	prices: {
+		[index: number]: number;
+	}[];
+}
+
+export interface HistoricalPrices {
+	[index: number]: HistoricalPrice;
 }

@@ -1,4 +1,4 @@
-export type Address = string;
+export type Asset = string;
 
 export type TokenSymbol = string;
 
@@ -17,16 +17,19 @@ export interface PlatformData {
 	uniswap: BaseData[];
 }
 
-export interface ERC20Token {
+interface TokenCommon {
 	address: string;
 	name?: string;
 	symbol?: string;
 	decimals?: number;
+}
+
+export interface ERC20Token extends TokenCommon {
 	totalSupply?: string;
 }
 
 export interface ContractApproval {
-	contractAddress: Address;
+	contractAddress: Asset;
 	amount: string;
 	blockTimestamp: number;
 	token: ERC20Token;
@@ -46,7 +49,7 @@ export interface GasHistory {
 }
 
 export interface PoolToken {
-	id: Address; // Ethereum,
+	id: Asset;
 	name: string;
 	symbol: TokenSymbol;
 	percentage: number;
@@ -54,13 +57,13 @@ export interface PoolToken {
 
 export interface Token {
 	id: number;
-	is_stable: number;
+	isStable: number;
 	name: string;
-	coingecko_id: string;
-	address: Address;
+	coingeckoId: string;
+	address: Asset;
 	decimals: number;
-	abi_type_id: number;
-	created_at: string;
+	abiTypeId: number;
+	createdAt: string;
 	price: number;
 }
 
@@ -89,7 +92,31 @@ export interface Pool {
 	IL: IL;
 }
 
-export interface PriceHistoricalRequest {
-	addresses: Address[];
+export interface LPToken {
+	id: Asset;
+	name: string;
+}
+
+export interface RewardToken extends TokenCommon {
+	priceUSD: number;
+}
+
+export interface Vault {
+	id: Asset;
+	projectName: string; // enum e.g. 'curve'
+	name: string;
+	APY: APY;
+	TVL: number; //6974003.81675021
+	lpToken: LPToken;
+	liquidityPoolTokens: PoolToken[];
+	rewardToken: RewardToken;
+}
+
+export interface TokenHistorical {
+	addresses: Asset;
 	timestamps: DateString[];
+}
+
+export interface TokensHistorical {
+	[index: number]: TokenHistorical;
 }

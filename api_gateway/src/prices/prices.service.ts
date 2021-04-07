@@ -1,33 +1,39 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address } from '../interfaces';
+import { Logger } from '../common/Logger/Logger.service';
+import { Asset } from '../common/interfaces';
 import { CurrentPrice, HistoricalPrice } from './prices.interface';
 
 @Injectable()
 export class PricesService {
-	private readonly get_prices_url: string;
-	private readonly get_history_url: string;
+	private readonly getPricesUrl: string;
+	private readonly getHistoryUrl: string;
 
-	constructor(private httpService: HttpService, private configService: ConfigService) {
+	constructor(
+		private httpService: HttpService,
+		private configService: ConfigService,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+	) {
 		const host = this.configService.get<string>('PRICE_SERVICE_HOST');
 		const port = this.configService.get<string>('PRICE_SERVICE_PORT');
 		const url = `http://${host}:${port}`;
 
-		const get_prices_path = this.configService.get<string>('PRICES_PATH');
-		this.get_prices_url = `${url}/${get_prices_path}`;
+		const getPricesPath = this.configService.get<string>('PRICES_PATH');
+		this.getPricesUrl = `${url}/${getPricesPath}`;
 
-		const history_path = this.configService.get<string>('GAS_HISTORY_PATH');
-		this.get_history_url = `${url}/${history_path}`;
+		const historyPath = this.configService.get<string>('PRICES_HISTORICAL_PATH');
+		this.getHistoryUrl = `${url}/${historyPath}`;
 	}
 
 	async getPrices(
-		addresses: Address[],
+		addresses: Asset[],
 		currencyId: number,
 		platformId: number,
 	): Promise<CurrentPrice> {
 		try {
-			const get = this.httpService.get(this.get_prices_url, {
+			const get = this.httpService.get(this.getPricesUrl, {
 				params: {
 					addresses,
 					currencyId,
@@ -35,47 +41,48 @@ export class PricesService {
 				},
 			});
 			const promise = get.toPromise();
-			console.time(this.get_prices_url);
+			const start = new Date().getTime();
+			this.logger.time('request: ' + this.getPricesUrl);
 			const result = await promise;
-			console.timeEnd(this.get_prices_url);
+			this.logger.timeEnd('request: ' + this.getPricesUrl);
+			this.logger.log(new Date().getTime() - start, 'request: ' + this.getPricesUrl);
 			const { data } = result;
 			if (data.message) {
-				console.error(data.message);
 				throw new Error(data.message);
 			} else {
 				return data;
 			}
 		} catch (e) {
-			console.error(e);
+			this.logger.error(e.message);
 			throw e;
 		}
 	}
 
 	async getHistorical(
-		addresses,
-		timestamps,
+		tokens: Asset[],
+		timestamps: string[],
 		currencyId: number,
 		platformId: number,
 	): Promise<HistoricalPrice[]> {
 		try {
-			const get = this.httpService.post(this.get_history_url, {
+			const get = this.httpService.post(this.getHistoryUrl, {
 				body: {
-					addresses,
+					tokens,
 					timestamps,
 					currencyId,
 					platformId,
 				},
 			});
 			const promise = get.toPromise();
-			console.time(this.get_history_url);
+			this.logger.time(this.getHistoryUrl);
 			const result = await promise;
-			console.timeEnd(this.get_history_url);
+			this.logger.timeEnd(this.getHistoryUrl);
 			const {
 				data: { data },
 			} = result;
 			return data;
 		} catch (e) {
-			console.error(e);
+			this.logger.error(e);
 			throw e;
 		}
 	}

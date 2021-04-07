@@ -2,9 +2,9 @@ import { CACHE_MANAGER, Controller, Get, Inject, Param } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 
-import ContractApprovalDto from '../DTO/ContractApproval.dto';
-import EthereumAddressDto from '../DTO/EthereumAddress.dto';
-import { ContractApproval } from '../interfaces';
+import ContractApprovalDto from '../common/DTO/ContractApproval.dto';
+import EthereumAddressDto from '../common/DTO/EthereumAddress.dto';
+import { ContractApproval } from '../common/interfaces';
 import { ApprovalsService } from './approvals.service';
 
 @ApiTags('Approvals')

@@ -38,7 +38,16 @@ export class JobsService {
 		private balancerFirstCheckJob: BalancerFirstCheckJob,
 		private curveFirstCheckJob: CurveFirstCheckJob,
 	) {
-		const connectionString = 'mongodb://127.0.0.1/agenda';
+		const connectionString =
+			'mongodb://' +
+			process.env.MONGO_USER +
+			':' +
+			process.env.MONGO_PASS +
+			'@' +
+			process.env.MONGO_HOST +
+			':' +
+			process.env.MONGO_PORT +
+			'/agenda?authMechanism=DEFAULT&authSource=admin'; //'mongodb://127.0.0.1/agenda';
 		this.agenda = new Agenda({
 			db: { address: connectionString },
 			processEvery: '30 seconds',
@@ -48,7 +57,7 @@ export class JobsService {
 			.on('ready', async () => {
 				await this.agenda.start();
 				await this.agenda.cancel({});
-				console.log('Agenda started!!!');
+				console.info('Agenda started!!!');
 				// check for new tokens on API
 				this.agenda.define(
 					'CRAWL_COINGECKO_NEW_TOKENS',
@@ -102,7 +111,7 @@ export class JobsService {
 					'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
 					{},
 				);
-
+				
 				this.agenda.define(
 					'CRAWL_SUSHI_CURRENT_PRICE',
 					{ lockLifetime: 10000 },
@@ -133,7 +142,7 @@ export class JobsService {
 					'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
 					{},
 				);
-
+				
 				this.agenda.define(
 					'CRAWL_UNISWAP_CURRENT_PRICE',
 					{ lockLifetime: 10000 },
@@ -145,7 +154,7 @@ export class JobsService {
 					{},
 				);
 
-				console.log('starting balancer');
+				// console.log('starting balancer');
 				this.agenda.define(
 					'CRAWL_BALANCER_NEW_TOKENS',
 					{ lockLifetime: 10000 },
@@ -185,7 +194,8 @@ export class JobsService {
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
 					'CRAWL_CURVE_NEW_TOKENS_HISTORY',
 					{},
-				);
+        );
+        
 			})
 			.on('error', (e) => console.error('Agenda connection error!', e));
 

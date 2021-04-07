@@ -5,14 +5,6 @@ import { getManager, Repository } from 'typeorm';
 import Asset from '../models/asset.entity';
 import AssetPrice from '../models/asset_price.entity';
 import { CurrentPrice, HistoricalPrice } from '../prices/interfaces/prices.interface';
-import { getNextDayOfDate, timestampNow, timestampOfDate } from '../utils/time';
-
-enum PricesInterval {
-	Daily,
-	Hourly,
-}
-
-const SECONDS_IN_DAY = 60 * 24 * 60;
 @Injectable()
 export class AssetPriceService {
 	constructor(
@@ -25,151 +17,133 @@ export class AssetPriceService {
 	}
 
 	public async getCurrent(
-		address_array,
-		currency_id = 1,
-		platform_id = 1,
-	): Promise<CurrentPrice[]> {
+		address: string[],
+		currencyId = 1,
+		platformId = 1,
+	): Promise<CurrentPrice> {
 		const entityManager = getManager();
-		address_array = "('" + address_array.join("','") + "')";
+		const addressString = "('" + address.join("','") + "')";
 
-		const querystr =
-			`SELECT a.*, ap.*
-    FROM prices.asset a
-    JOIN prices.asset_price ap ON (a.id = ap.asset_id)
-    LEFT OUTER JOIN prices.asset_price  ap2 ON (a.id = ap2.asset_id AND 
-        (ap.timestamp < ap2.timestamp ))
-    WHERE ap2.timestamp IS NULL AND a.address IN ` +
-			address_array +
-			` AND a.platform_id = ` +
-			platform_id +
-			`AND ap.currency_id = ` +
-			currency_id +
-			`;`;
+		const response: CurrentPrice = {};
+		const FOURS_HOURS = 4 * 60 * 60;
 
-		const db_entities = await entityManager.query(querystr),
-			response = {};
+		const timeInSec = Math.round(Date.now() / 1000) - FOURS_HOURS;
 
-		db_entities.map(function (item) {
+		const querystr = `
+		SELECT a.*, ap.*
+		FROM prices.asset a
+		JOIN prices.asset_price ap ON ap.timestamp > ${timeInSec} AND (a.id = ap.asset_id)
+		LEFT OUTER JOIN prices.asset_price  ap2 ON (a.id = ap2.asset_id AND (ap.timestamp < ap2.timestamp ))
+		WHERE ap2.timestamp IS NULL AND a.address IN ${addressString} AND a.platform_id = ${platformId} AND ap.currency_id = ${currencyId}
+		`;
+
+		const dbEntities = await entityManager.query(querystr);
+
+		dbEntities.forEach((item) => {
 			response[item.address] = item.value;
 			return;
 		});
 
-		return response as CurrentPrice[];
+		return response as CurrentPrice;
 	}
 
-	public async getHistorical(
-		address_array,
+	public async getHistoricalPrices(
+		address: string[],
 		timestamps: number[],
-		currency_id = 1,
-		platform_id = 1,
-	): Promise<HistoricalPrice[]> {
+		currencyId = 1,
+		platformId = 1,
+	): Promise<HistoricalPrice> {
 		const entityManager = getManager();
-		//address_array = "('"+address_array.join("','")+"')";
-		//let {from,to}=this.getRangePrices(timestamps);
-		// TODO: (X) mutable object
+
 		const response = {};
-		// TODO: forEach
-		address_array.map(function (item) {
+		const sortedValues = [];
+		address.forEach((item) => {
 			response[item] = {};
+			sortedValues[item] = [];
 		});
 
-		for (let i = 0; i < timestamps.length; i++) {
-			for (let address_i = 0; address_i < address_array.length; address_i++) {
-				const querystr = getNearestTimeString(
-					address_array[address_i],
-					platform_id,
-					currency_id,
-					timestamps[i],
-				);
-				console.log(querystr);
-				const db_entities = await entityManager.query(querystr);
-				if (db_entities.length) {
-					response[address_array[address_i]][timestamps[i] + ''] = db_entities[0].value;
-				} else {
-					response[address_array[address_i]][timestamps[i] + ''] = 0;
-				}
-			}
-		}
+		const addressString = "('" + address.join("','") + "')";
+		const timestampsString = '(' + timestamps.join(',') + ')';
 
-		return response as HistoricalPrice[];
-	}
+		const querystr = `
+      SELECT a.*, ap.timestamp, ap.value
+		  FROM prices.asset a
+		  JOIN prices.asset_price ap ON (a.id = ap.asset_id)
+		  WHERE  ap.timestamp IN ${timestampsString} AND  a.address IN ${addressString} AND a.platform_id = ${platformId} AND ap.currency_id = ${currencyId}
+      ORDER BY ap.asset_id, ap.timestamp
+    `;
 
-	public async getHistoricalOld(
-		address_array,
-		timestamps: number[],
-		currency_id = 1,
-		platform_id = 1,
-	): Promise<HistoricalPrice[]> {
-		const entityManager = getManager();
-		address_array = "('" + address_array.join("','") + "')";
-		const { from, to } = this.getRangePrices(timestamps);
-		const querystr =
-			`SELECT a.*, ap.*
-        FROM prices.asset a JOIN prices.asset_price ap ON (a.id = ap.asset_id)
-        WHERE a.address IN ` +
-			address_array +
-			` AND a.platform_id = ` +
-			platform_id +
-			`AND ap.currency_id = ` +
-			currency_id +
-			` AND ap.timestamp >=` +
-			from +
-			` AND ap.timestamp <=` +
-			to +
-			`ORDER BY ap.timestamp ASC;`;
-		console.log(querystr);
-
-		const db_entities = await entityManager.query(querystr);
-		//return db_entities;
-		const response = {};
-
-		db_entities.map(function (item) {
-			if (!response[item.address]) {
-				response[item.address] = {};
-			}
+		const dbEntities = await entityManager.query(querystr);
+		dbEntities.forEach((item) => {
 			response[item.address][item.timestamp + ''] = item.value;
 			return;
 		});
 
-		return response as HistoricalPrice[];
+		return response as HistoricalPrice;
 	}
 
-	private getRangePrices(
+	public async getLastDaysHistoricalPrices(
+		address: string[],
 		timestamps: number[],
-	): { from: number; to: number; interval: PricesInterval } {
-		const maxHourlyPricesPeriodInDays = 10;
-		const min = Math.min(...timestamps);
-		const now = timestampNow();
+		currencyId = 1,
+		platformId = 1,
+	): Promise<HistoricalPrice> {
+		const entityManager = getManager();
 
-		// NOTE: We load daily prices for dates over 10 days and hourly in case of shorter terms
-		if (now - min > maxHourlyPricesPeriodInDays * SECONDS_IN_DAY) {
-			return {
-				from: timestampOfDate(new Date(2013, 0, 1)),
-				to: now,
-				interval: PricesInterval.Daily,
-			};
-		} else {
-			const from = new Date();
-			from.setDate(from.getDate() - maxHourlyPricesPeriodInDays);
-			return {
-				from: timestampOfDate(getNextDayOfDate(from)),
-				to: now,
-				interval: PricesInterval.Hourly,
-			};
+		const response = {};
+		const sortedValues = [];
+		address.forEach((item) => {
+			response[item] = {};
+			sortedValues[item] = [];
+		});
+
+		const addressString = "('" + address.join("','") + "')";
+		const SIDE_RANGE_SECONDS = 60 * 60 * 2;
+
+
+		const getClosestValue = (list, current) => {
+			return list.reduce(function(prev, curr) {
+				return (Math.abs(Number(curr.timestamp) - current) < Math.abs(Number(prev.timestamp) - current) ? curr : prev);
+			  });
 		}
+
+		let timestampsQueryString= '';
+		timestamps.forEach((item) => {
+			timestampsQueryString += '(ap.timestamp BETWEEN ' + (item - SIDE_RANGE_SECONDS) + ' AND ' + (item + SIDE_RANGE_SECONDS) +') OR ';
+			return;
+		});
+
+		timestampsQueryString = timestampsQueryString.substring(0,timestampsQueryString.length -3);
+
+		const querystr = `
+      SELECT a.*, ap.timestamp, ap.value
+		  FROM prices.asset a
+		  JOIN prices.asset_price ap ON (a.id = ap.asset_id)
+		  WHERE   (${timestampsQueryString}) AND  a.address IN ${addressString} AND a.platform_id = ${platformId} AND ap.currency_id = ${currencyId}
+      ORDER BY ap.asset_id, ap.timestamp
+    `;
+
+		const dbEntities = await entityManager.query(querystr);
+		dbEntities.forEach((item) => {
+			sortedValues[item.address].push(item);
+			return;
+		});
+
+		address.forEach((item) => {
+			timestamps.forEach((tsItem) => {
+				if(sortedValues[item].length)
+					response[item][tsItem.toString()] = getClosestValue(sortedValues[item], Number(tsItem))['value'];
+				else
+					response[item][tsItem.toString()] = 0;
+				return;
+			});
+			return;
+		});
+
+		return response as HistoricalPrice;
 	}
+
+	
+
 }
 
-const getNearestTimeString = (address, platform_id, currency_id, timestamp) =>
-	`SELECT a.*, ap.*
-      FROM prices.asset a
-      JOIN prices.asset_price ap ON (a.id = ap.asset_id)
-      WHERE a.address = '` +
-	address +
-	`' AND a.platform_id = ` +
-	platform_id +
-	`AND ap.currency_id = ` +
-	currency_id +
-	`  ORDER BY ABS(` +
-	timestamp +
-	` - ap.timestamp) ASC LIMIT 1`;

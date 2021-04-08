@@ -26,7 +26,7 @@ export class PricesController {
 			return {};
 		}
 
-    if (timestamps || timestamps.length) {
+    if (timestamps && timestamps.length) {
       return await this.assetPriceService.getHistoricalPrices(
         addresses,
         timestamps,

@@ -1,14 +1,18 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
-import { utilities as nestWinstonModuleUtilities } from 'nest-winston';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 
-import { WinstonModule } from '../../gateway/dist/common/Logger/WinstonModule';
 import { HealthController } from './health/health.controller';
 
 @Module({
 	controllers: [HealthController],
 	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+			envFilePath: ['.env.development.local', '.env.development', '.env.production', '.env'],
+		}),
 		WinstonModule.forRoot({
 			// options
 			level: process.env.LOG_LEVEL || 'info',

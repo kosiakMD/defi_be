@@ -1,4 +1,4 @@
-// src/config/config.service.ts
+// src/config/configuration.ts
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import dotenv from 'dotenv';
 import * as path from 'path';

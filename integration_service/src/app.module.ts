@@ -10,14 +10,14 @@ import { UniswapModule } from './uniswap/uniswap.module';
 
 @Module({
 	imports: [
+		ConfigModule.forRoot({
+			isGlobal: true,
+		}),
 		TerminusModule,
 		UniswapModule,
 		PoolsModule,
 		ThegraphModule,
-		DatabaseModule,
-		ConfigModule.forRoot({
-			isGlobal: true,
-		}),
+		DatabaseModule
 	],
 	controllers: [HealthController],
 })

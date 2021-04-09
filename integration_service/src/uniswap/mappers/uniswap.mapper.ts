@@ -19,7 +19,7 @@ import {
   ERC20Token,
   LiquidityChangeTransaction,
   PoolToken,
-  ResponseDto,
+  UniswapResponseData,
   SwapToken,
   SwapTransaction,
   Transactions,
@@ -29,7 +29,7 @@ import {
 export class UniswapMapper {
   private PERSENTAGE = 50;
 
-  public async mapData(userAddresses: string[], response: ResponseDto): Promise<Base[]> {
+  public async mapData(userAddresses: string[], response: UniswapResponseData): Promise<Base[]> {
     const base: Base[] = [];
     for (const address of userAddresses) {
       const transactions: Transactions = {

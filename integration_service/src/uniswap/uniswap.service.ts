@@ -31,8 +31,7 @@ export class UniswapService {
 	async getDataByAddress(addresses: string): Promise<Base[]> {
 		const addressesArray = addresses.split(',');
 
-		const [swapTo, swapFrom, mint, burn, snapshot, liquidityPosition] = await Promise.all([
-			this.swapsRepository.find({ toAddress: In(addressesArray) }),
+		const [swapFrom, mint, burn, snapshot, liquidityPosition] = await Promise.all([
 			this.swapsRepository.find({ fromAddress: In(addressesArray) }),
 			this.mintsRepository.find({ toAddress: In(addressesArray) }),
 			this.burnRepository.find({ toAddress: In(addressesArray) }),
@@ -44,7 +43,6 @@ export class UniswapService {
 			snapshot,
 			(uniswapSnapshot) => uniswapSnapshot.userAddress,
 		);
-		const uniswapSwapsTo = groupBy(swapTo, (swap) => swap.toAddress);
 		const uniswapSwapsFrom = groupBy(swapFrom, (swap) => swap.fromAddress);
 		const uniswapMints = groupBy(mint, (uniswapMint) => uniswapMint.toAddress);
 		const uniswapBurns = groupBy(burn, (uniswapBurn) => uniswapBurn.toAddress);
@@ -53,7 +51,6 @@ export class UniswapService {
 			(liquidityPosition) => liquidityPosition.user.id,
 		);
 		return this.mapper.mapData(addressesArray, {
-			uniswapSwapsTo,
 			uniswapSwapsFrom,
 			uniswapMints,
 			uniswapBurns,

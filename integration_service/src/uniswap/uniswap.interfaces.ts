@@ -5,7 +5,6 @@ import { UniswapSwapsEntity } from './entities/uniswap.swaps.entity';
 import { LiquidityPosition, UniswapLiquidityPosition } from './interfaces/liquidity.position.interfaces';
 
 export interface UniswapResponseData {
-	uniswapSwapsTo: Map<string, UniswapSwapsEntity[]>;
 	uniswapSwapsFrom: Map<string, UniswapSwapsEntity[]>;
 	uniswapMints: Map<string, UniswapMintsEntity[]>;
 	uniswapBurns: Map<string, UniswapBurnsEntity[]>;

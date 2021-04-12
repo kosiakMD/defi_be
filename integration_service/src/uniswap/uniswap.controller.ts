@@ -8,8 +8,8 @@ import { UniswapSwapsEntity } from './entities/uniswap.swaps.entity';
 import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
 import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
 import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
-import { Base } from './uniswap.interfaces';
 import { UniswapService } from './uniswap.service';
+import { Base } from './uniswap.interfaces';
 
 @Controller('integration')
 export class UniswapController {
@@ -23,7 +23,10 @@ export class UniswapController {
 
   @Get('/uniswap')
   @ApiResponse({ status: 200 })
-  getDataByAddresses(@Query('address') addresses: string): Promise<Base[]> {
+  getDataByAddresses(@Query('addresses') addresses: string): Promise<Base[]> {
+    if (!addresses) {
+      return Promise.resolve([]);
+    }
     return this.integrationService.getDataByAddress(addresses);
   }
 }

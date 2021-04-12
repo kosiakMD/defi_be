@@ -1,7 +1,11 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
-import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
+import {
+	utilities as nestWinstonModuleUtilities,
+	WINSTON_MODULE_NEST_PROVIDER,
+	WinstonModule,
+} from 'nest-winston';
 import * as winston from 'winston';
 
 import { HealthController } from './health/health.controller';
@@ -11,7 +15,13 @@ import { HealthController } from './health/health.controller';
 	imports: [
 		ConfigModule.forRoot({
 			isGlobal: true,
-			envFilePath: ['.env.development.local', '.env.development', '.env.production', '.env'],
+			envFilePath: [
+				'.env.development.local',
+				'.env.development',
+				'.env.production.local',
+				'.env.production',
+				'.env',
+			],
 		}),
 		WinstonModule.forRoot({
 			// options
@@ -35,4 +45,22 @@ import { HealthController } from './health/health.controller';
 		TerminusModule,
 	],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+	onModuleInit(): void {
+		const { SERVICE_NAME, PORT, HOST } = process.env;
+		this.logger.log(
+			{
+				name: SERVICE_NAME,
+				host: HOST,
+				port: PORT,
+			},
+			'SERVICE',
+		);
+		this.logger.verbose(this.configService, SERVICE_NAME);
+	}
+
+	constructor(
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+		private configService: ConfigService,
+	) {}
+}

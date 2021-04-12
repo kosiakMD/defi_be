@@ -1,11 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import pLimit from 'p-limit';
 
-import { DatabaseService } from './database.service';
-import { TheGraphQuery } from './interfaces/graph.interface';
+import { DatabaseService } from '../DB/database.service';
+import { TheGraphQuery } from '../app/interfaces/graph.interface';
 
 axiosRetry(axios, {
 	retries: 1e9,
@@ -15,10 +16,14 @@ axiosRetry(axios, {
 });
 
 @Injectable()
-export class CurveMigrationService {
-	constructor(private databaseService: DatabaseService, private configService: ConfigService) {}
+export class CurveService {
+	constructor(
+		private databaseService: DatabaseService,
+		private configService: ConfigService,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+	) {}
 
-	public async startMigration(): Promise<void> {
+	public async startJob(): Promise<void> {
 		const databaseClient = await this.databaseService.getClient();
 
 		const blockNumbers = await this.getBlocksToLoad(databaseClient);
@@ -52,29 +57,35 @@ export class CurveMigrationService {
 		const promisesPool = [];
 
 		if (mintsSqlValues) {
-			const mintsInsertQuery = this.getSeparatedByUserSqlQueryString(mintsSqlValues, 'curve_mints');
+			const mintsInsertQuery = CurveService.getSeparatedByUserSqlQueryString(
+				mintsSqlValues,
+				'curve_mints',
+			);
 			promisesPool.push(databaseClient.query(mintsInsertQuery));
 		}
 		if (burnsSqlValues) {
-			const burnsInsertQuery = this.getSeparatedByUserSqlQueryString(burnsSqlValues, 'curve_burns');
+			const burnsInsertQuery = CurveService.getSeparatedByUserSqlQueryString(
+				burnsSqlValues,
+				'curve_burns',
+			);
 			promisesPool.push(databaseClient.query(burnsInsertQuery));
 		}
 		if (burnsOneSqlValues) {
-			const swapsInsertQuery = this.getSeparatedByUserSqlQueryString(
+			const swapsInsertQuery = CurveService.getSeparatedByUserSqlQueryString(
 				burnsOneSqlValues,
 				'curve_burns_one',
 			);
 			promisesPool.push(databaseClient.query(swapsInsertQuery));
 		}
 		if (stakesSqlValues) {
-			const snapshotsInsertQuery = this.getSeparatedByFromSqlQueryString(
+			const snapshotsInsertQuery = CurveService.getSeparatedByFromSqlQueryString(
 				stakesSqlValues,
 				'curve_stakes',
 			);
 			promisesPool.push(databaseClient.query(snapshotsInsertQuery));
 		}
 		if (unStakesSqlValues) {
-			const snapshotsInsertQuery = this.getSeparatedByToSqlQueryString(
+			const snapshotsInsertQuery = CurveService.getSeparatedByToSqlQueryString(
 				unStakesSqlValues,
 				'curve_unStakes',
 			);
@@ -84,48 +95,57 @@ export class CurveMigrationService {
 		if (promisesPool.length) await Promise.all(promisesPool);
 	}
 
-	private getSeparatedByUserSqlQueryString(values: string, tableName: string): string {
+	private static getSeparatedByUserSqlQueryString(values: string, tableName: string): string {
 		return `INSERT INTO ${tableName} (user_address, information, block_number, created_at)
 						VALUES ${values}`;
 	}
 
-	private getSeparatedByFromSqlQueryString(values: string, tableName: string): string {
+	private static getSeparatedByFromSqlQueryString(values: string, tableName: string): string {
 		return `INSERT INTO ${tableName} (from_address, information, block_number, created_at)
 						VALUES ${values}`;
 	}
 
-	private getSeparatedByToSqlQueryString(values: string, tableName: string): string {
+	private static getSeparatedByToSqlQueryString(values: string, tableName: string): string {
 		return `INSERT INTO ${tableName} (to_address, information, block_number, created_at)
 						VALUES ${values}`;
 	}
 
-	private formatAllTransactions(transactions: any) {
+	private formatAllTransactions(transactions: any[]): Record<string, string> {
+		this.logger.log(`formatAllTransactions ${transactions.length}`);
 		return {
-			mintsSqlValues: this.getSeparatedByUserSqlStringValues(transactions, 'mints'),
-			burnsSqlValues: this.getSeparatedByUserSqlStringValues(transactions, 'burns'),
-			burnsOneSqlValues: this.getSeparatedByUserSqlStringValues(transactions, 'burnsOne'),
-			stakesSqlValues: this.getSeparatedByFromSqlStringValues(transactions, 'stakes'),
-			unStakesSqlValues: this.getSeparatedByToSqlStringValues(transactions, 'unStakes'),
+			mintsSqlValues: this.getSeparatedBySqlStringValues(transactions, 'mints', 'user'),
+			burnsSqlValues: this.getSeparatedBySqlStringValues(transactions, 'burns', 'user'),
+			burnsOneSqlValues: this.getSeparatedBySqlStringValues(transactions, 'burnsOne', 'user'),
+			stakesSqlValues: this.getSeparatedBySqlStringValues(transactions, 'stakes', 'from'),
+			unStakesSqlValues: this.getSeparatedBySqlStringValues(transactions, 'unStakes', 'to'),
 		};
 	}
 
 	private async getTransactionsByNumber(blockNumber: number): Promise<any> {
+		this.logger.log(`getTransactionsByNumber ${blockNumber}`);
 		return (
 			await axios.post(
 				this.configService.get<string>('CURVE_REQUEST_URL'),
-				this.getTransactionsQuery(blockNumber),
+				CurveService.getTransactionsQuery(blockNumber),
 			)
 		).data.data?.transactions;
 	}
 
-	private getSeparatedByUserSqlStringValues(transactions: any, field: string): string {
+	private getSeparatedBySqlStringValues(
+		transactions: any[],
+		transactionField: string,
+		elementField: string,
+	): string {
+		this.logger.log(
+			`getSeparatedBySqlStringValues transactionField: ${transactionField}, elementField: ${elementField}`,
+		);
 		return transactions
-			.filter((transaction) => !!transaction?.[field].length)
+			.filter((transaction) => !!transaction?.[transactionField].length)
 			.map((transaction) => {
-				return transaction[field]
+				return transaction[transactionField]
 					.map(
 						(element) =>
-							`('${element.user}','${JSON.stringify(element)}', ${parseInt(
+							`('${element[elementField]}','${JSON.stringify(element)}', ${parseInt(
 								element.transaction.block,
 							)}, to_timestamp(${parseInt(element.transaction.timestamp)}))`,
 					)
@@ -134,39 +154,7 @@ export class CurveMigrationService {
 			.join(',');
 	}
 
-	private getSeparatedByFromSqlStringValues(transactions: any, field: string): string {
-		return transactions
-			.filter((transaction) => !!transaction?.[field].length)
-			.map((transaction) => {
-				return transaction[field]
-					.map(
-						(element) =>
-							`('${element.from}','${JSON.stringify(element)}', ${parseInt(
-								element.transaction.block,
-							)}, to_timestamp(${parseInt(element.transaction.timestamp)}))`,
-					)
-					.join(',');
-			})
-			.join(',');
-	}
-
-	private getSeparatedByToSqlStringValues(transactions: any, field: string): string {
-		return transactions
-			.filter((transaction) => !!transaction?.[field].length)
-			.map((transaction) => {
-				return transaction[field]
-					.map(
-						(element) =>
-							`('${element.to}','${JSON.stringify(element)}', ${parseInt(
-								element.transaction.block,
-							)}, to_timestamp(${parseInt(element.transaction.timestamp)}))`,
-					)
-					.join(',');
-			})
-			.join(',');
-	}
-
-	private getTransactionsQuery(blockNumber: number): TheGraphQuery {
+	private static getTransactionsQuery(blockNumber: number): TheGraphQuery {
 		return {
 			operationName: 'Transactions',
 			variables: {
@@ -246,21 +234,39 @@ export class CurveMigrationService {
 	}
 
 	private async getBlocksToLoad(databaseClient): Promise<Array<number> | false> {
+		this.logger.log(`getBlocksToLoad`);
 		const [lastBlockFromDB, lastBlock] = await Promise.all([
-			(await databaseClient.query(this.queryToGetLastBlock())).rows[0]?.last_block,
+			(await databaseClient.query(CurveService.queryToGetLastBlock())).rows[0]?.last_block,
 			await this.getLastBlockNumber(),
 		]);
+		this.logger.log(`lastBlockFromDB ${lastBlockFromDB}`);
+		this.logger.log(`lastBlock ${lastBlock}`);
 
-		if (lastBlockFromDB == lastBlock) return false;
+		if (lastBlockFromDB == lastBlock) {
+			this.logger.log(`lastBlockFromDB == lastBlock`);
+			return false;
+		}
 
-		if (lastBlockFromDB)
-			return this.createArrayOfBlockNumbers(parseInt(lastBlockFromDB) + 1, parseInt(lastBlock));
+		if (lastBlockFromDB) {
+			const result = CurveService.createArrayOfBlockNumbers(
+				parseInt(lastBlockFromDB) + 1,
+				parseInt(lastBlock),
+			);
+			this.logger.log(`createArrayOfBlockNumbers ${result}`);
+			return result;
+		}
 
 		const firstBlock = await this.getFirstBlockNumber();
-		return this.createArrayOfBlockNumbers(parseInt(firstBlock), parseInt(lastBlock));
+		this.logger.log(`firstBlock ${firstBlock}`);
+		const result = CurveService.createArrayOfBlockNumbers(
+			parseInt(firstBlock),
+			parseInt(lastBlock),
+		);
+		this.logger.log(`createArrayOfBlockNumbers ${result}`);
+		return result;
 	}
 
-	private queryToGetLastBlock(): string {
+	private static queryToGetLastBlock(): string {
 		return `
 		SELECT block_number AS last_block
 		FROM (SELECT block_number FROM curve_burns WHERE block_number = (SELECT MAX(block_number) FROM curve_burns)
@@ -288,7 +294,7 @@ export class CurveMigrationService {
 				 );`;
 	}
 
-	private createArrayOfBlockNumbers(firstBlock: number, lastBlock: number): Array<number> {
+	private static createArrayOfBlockNumbers(firstBlock: number, lastBlock: number): Array<number> {
 		const blockNumbers = [];
 		for (let i = firstBlock; i <= lastBlock; i++) {
 			blockNumbers.push(i);
@@ -307,12 +313,12 @@ export class CurveMigrationService {
 		return (
 			await axios.post(
 				this.configService.get<string>('CURVE_REQUEST_URL'),
-				this.getBlockNumberQuery(orderDirection),
+				CurveService.getBlockNumberQuery(orderDirection),
 			)
 		).data.data.firssttx[0].block;
 	}
 
-	private getBlockNumberQuery(orderDirection: string): TheGraphQuery {
+	private static getBlockNumberQuery(orderDirection: string): TheGraphQuery {
 		return {
 			operationName: 'BlockNumber',
 			variables: {},

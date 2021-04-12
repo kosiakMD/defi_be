@@ -4,8 +4,8 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import pLimit from 'p-limit';
 
-import { DatabaseService } from './database.service';
-import { TheGraphQuery } from './interfaces/graph.interface';
+import { DatabaseService } from '../DB/database.service';
+import { TheGraphQuery } from '../app/interfaces/graph.interface';
 
 axiosRetry(axios, {
 	retries: 1e9,
@@ -15,7 +15,7 @@ axiosRetry(axios, {
 });
 
 @Injectable()
-export class UniswapMigrationService {
+export class SushiswapService {
 	constructor(private databaseService: DatabaseService, private configService: ConfigService) {}
 
 	public async startMigration(): Promise<void> {
@@ -45,30 +45,39 @@ export class UniswapMigrationService {
 		]);
 
 		const {
-			uniswapMintsSqlValues,
-			uniswapBurnsSqlValues,
-			uniswapSwapsSqlValues,
+			sushiswapMintsSqlValues,
+			sushiswapBurnsSqlValues,
+			sushiswapSwapsSqlValues,
 		} = this.formatAllTransactions(transactions);
-		const uniswapSnapshotsSqlValues = this.getSnapshotsSqlStringValues(snapshots);
+		const sushiswapSnapshotsSqlValues = this.getSnapshotsSqlStringValues(snapshots);
 
 		const promisesPool = [];
 
-		if (uniswapMintsSqlValues) {
-			const mintsInsertQuery = this.getSqlQueryString(uniswapMintsSqlValues, 'uniswap_mints');
+		if (sushiswapMintsSqlValues) {
+			const mintsInsertQuery = SushiswapService.getSqlQueryString(
+				sushiswapMintsSqlValues,
+				'sushiswap_mints',
+			);
 			promisesPool.push(databaseClient.query(mintsInsertQuery));
 		}
-		if (uniswapBurnsSqlValues) {
-			const burnsInsertQuery = this.getSqlQueryString(uniswapBurnsSqlValues, 'uniswap_burns');
+		if (sushiswapBurnsSqlValues) {
+			const burnsInsertQuery = SushiswapService.getSqlQueryString(
+				sushiswapBurnsSqlValues,
+				'sushiswap_burns',
+			);
 			promisesPool.push(databaseClient.query(burnsInsertQuery));
 		}
-		if (uniswapSwapsSqlValues) {
-			const swapsInsertQuery = this.getSwapsSqlQueryString(uniswapSwapsSqlValues, 'uniswap_swaps');
+		if (sushiswapSwapsSqlValues) {
+			const swapsInsertQuery = SushiswapService.getSwapsSqlQueryString(
+				sushiswapSwapsSqlValues,
+				'sushiswap_swaps',
+			);
 			promisesPool.push(databaseClient.query(swapsInsertQuery));
 		}
-		if (uniswapSnapshotsSqlValues) {
-			const snapshotsInsertQuery = this.getSnapshotsSqlQueryString(
-				uniswapSnapshotsSqlValues,
-				'uniswap_snapshots',
+		if (sushiswapSnapshotsSqlValues) {
+			const snapshotsInsertQuery = SushiswapService.getSnapshotsSqlQueryString(
+				sushiswapSnapshotsSqlValues,
+				'sushiswap_snapshots',
 			);
 			promisesPool.push(databaseClient.query(snapshotsInsertQuery));
 		}
@@ -76,34 +85,35 @@ export class UniswapMigrationService {
 		if (promisesPool.length) await Promise.all(promisesPool);
 	}
 
-	private getSqlQueryString(values: string, tableName: string): string {
+	private static getSqlQueryString(values: string, tableName: string): string {
 		return `INSERT INTO ${tableName} (sender, to_address, information, created_at, block_number)
 						VALUES ${values}`;
 	}
 
-	private getSwapsSqlQueryString(values: string, tableName: string): string {
+	private static getSwapsSqlQueryString(values: string, tableName: string): string {
 		return `INSERT INTO ${tableName} (sender, to_address, information, created_at, block_number, from_address)
 						VALUES ${values}`;
 	}
 
-	private getSnapshotsSqlQueryString(values: string, tableName: string): string {
+	private static getSnapshotsSqlQueryString(values: string, tableName: string): string {
 		return `INSERT INTO ${tableName} (user_address, information, block_number, created_at)
 						VALUES ${values}`;
 	}
 
-	private formatAllTransactions(transactions) {
+	private formatAllTransactions(transactions): Record<string, string> {
 		return {
-			uniswapMintsSqlValues: this.getSqlStringValues(transactions, 'mints'),
-			uniswapBurnsSqlValues: this.getSqlStringValues(transactions, 'burns'),
-			uniswapSwapsSqlValues: this.getSwapsSqlStringValues(transactions, 'swaps'),
+			sushiswapMintsSqlValues: this.getSqlStringValues(transactions, 'mints'),
+			sushiswapBurnsSqlValues: this.getSqlStringValues(transactions, 'burns'),
+			// sushiswapSwapsSqlValues: this.getSwapsSqlStringValues(transactions, 'swaps'),
+			sushiswapSwapsSqlValues: this.getSqlStringValues(transactions, 'swaps', true),
 		};
 	}
 
 	private async getTransactionsByNumber(blockNumber: number): Promise<any> {
 		return (
 			await axios.post(
-				this.configService.get<string>('UNISWAP_REQUEST_URL'),
-				this.getTransactionsQuery(blockNumber),
+				this.configService.get<string>('SUSHISWAP_REQUEST_URL'),
+				SushiswapService.getTransactionsQuery(blockNumber),
 			)
 		).data.data?.transactions;
 	}
@@ -111,13 +121,13 @@ export class UniswapMigrationService {
 	private async getSnapshotsByNumber(blockNumber: number): Promise<any> {
 		return (
 			await axios.post(
-				this.configService.get<string>('UNISWAP_REQUEST_URL'),
-				this.getSnapshotsQuery(blockNumber),
+				this.configService.get<string>('SUSHISWAP_REQUEST_URL'),
+				SushiswapService.getSnapshotsQuery(blockNumber),
 			)
 		).data.data?.liquidityPositionSnapshots;
 	}
 
-	private getSqlStringValues(transactions, field: string): string {
+	private getSqlStringValues(transactions, field: string, swaps?: boolean): string {
 		return transactions
 			.filter((transaction) => !!transaction[field].length)
 			.map((transaction) => {
@@ -128,25 +138,7 @@ export class UniswapMigrationService {
 								element,
 							)}',to_timestamp(${parseInt(transaction.timestamp)}), ${parseInt(
 								transaction.blockNumber,
-							)})`,
-					)
-					.join(',');
-			})
-			.join(',');
-	}
-
-	private getSwapsSqlStringValues(transactions, field: string): string {
-		return transactions
-			.filter((transaction) => !!transaction[field].length)
-			.map((transaction) => {
-				return transaction[field]
-					.map(
-						(element) =>
-							`('${element.sender}','${element.to}','${JSON.stringify(
-								element,
-							)}',to_timestamp(${parseInt(transaction.timestamp)}), ${parseInt(
-								transaction.blockNumber,
-							)}, '${element.from}')`,
+							)}${swaps ? `, '${element.from}'` : ''})`,
 					)
 					.join(',');
 			})
@@ -164,7 +156,7 @@ export class UniswapMigrationService {
 			.join(',');
 	}
 
-	private getSnapshotsQuery(blockNumber: number): TheGraphQuery {
+	private static getSnapshotsQuery(blockNumber: number): TheGraphQuery {
 		return {
 			operationName: 'Snapshots',
 			variables: {
@@ -192,7 +184,7 @@ export class UniswapMigrationService {
 		};
 	}
 
-	private getTransactionsQuery(blockNumber: number): TheGraphQuery {
+	private static getTransactionsQuery(blockNumber: number): TheGraphQuery {
 		return {
 			operationName: 'Transactions',
 			variables: {
@@ -296,44 +288,47 @@ export class UniswapMigrationService {
 
 	private async getBlocksToLoad(databaseClient): Promise<Array<number> | false> {
 		const [lastBlockFromDB, lastBlock] = await Promise.all([
-			(await databaseClient.query(this.queryToGetLastBlock())).rows[0]?.last_block,
+			(await databaseClient.query(SushiswapService.queryToGetLastBlock())).rows[0]?.last_block,
 			await this.getLastBlockNumber(),
 		]);
 
 		if (lastBlockFromDB == lastBlock) return false;
 
 		if (lastBlockFromDB)
-			return this.createArrayOfBlockNumbers(parseInt(lastBlockFromDB) + 1, parseInt(lastBlock));
+			return SushiswapService.createArrayOfBlockNumbers(
+				parseInt(lastBlockFromDB) + 1,
+				parseInt(lastBlock),
+			);
 
 		const firstBlock = await this.getFirstBlockNumber();
-		return this.createArrayOfBlockNumbers(parseInt(firstBlock), parseInt(lastBlock));
+		return SushiswapService.createArrayOfBlockNumbers(parseInt(firstBlock), parseInt(lastBlock));
 	}
 
-	private queryToGetLastBlock(): string {
+	private static queryToGetLastBlock(): string {
 		return `
 		SELECT block_number AS last_block
-		FROM (SELECT block_number FROM uniswap_swaps WHERE block_number = (SELECT MAX(block_number) FROM uniswap_swaps)
+		FROM (SELECT block_number FROM sushiswap_swaps WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_swaps)
 					UNION
-					SELECT block_number FROM uniswap_mints WHERE block_number = (SELECT MAX(block_number) FROM uniswap_mints)
+					SELECT block_number FROM sushiswap_mints WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_mints)
 					UNION
-					SELECT block_number FROM uniswap_burns WHERE block_number = (SELECT MAX(block_number) FROM uniswap_burns)
+					SELECT block_number FROM sushiswap_burns WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_burns)
 					UNION
-					SELECT block_number FROM uniswap_snapshots WHERE block_number = (SELECT MAX(block_number) FROM uniswap_snapshots)
+					SELECT block_number FROM sushiswap_snapshots WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_snapshots)
 				 ) AS M
 	 	WHERE block_number =
 				 (SELECT MAX(block_number)
-						FROM (SELECT block_number FROM uniswap_swaps WHERE block_number = (SELECT MAX(block_number) FROM uniswap_swaps)
+						FROM (SELECT block_number FROM sushiswap_swaps WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_swaps)
 									UNION
-									SELECT block_number FROM uniswap_mints WHERE block_number = (SELECT MAX(block_number) FROM uniswap_mints)
+									SELECT block_number FROM sushiswap_mints WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_mints)
 									UNION
-									SELECT block_number FROM uniswap_burns WHERE block_number = (SELECT MAX(block_number) FROM uniswap_burns)
+									SELECT block_number FROM sushiswap_burns WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_burns)
 									UNION
-									SELECT block_number FROM uniswap_snapshots WHERE block_number = (SELECT MAX(block_number) FROM uniswap_snapshots)
+									SELECT block_number FROM sushiswap_snapshots WHERE block_number = (SELECT MAX(block_number) FROM sushiswap_snapshots)
 								 ) AS M2
 				 );`;
 	}
 
-	private createArrayOfBlockNumbers(firstBlock: number, lastBlock: number): Array<number> {
+	private static createArrayOfBlockNumbers(firstBlock: number, lastBlock: number): Array<number> {
 		const blockNumbers = [];
 		for (let i = firstBlock; i <= lastBlock; i++) {
 			blockNumbers.push(i);
@@ -351,13 +346,13 @@ export class UniswapMigrationService {
 	private async getBlockNumber(orderDirection: string): Promise<string> {
 		return (
 			await axios.post(
-				this.configService.get<string>('UNISWAP_REQUEST_URL'),
-				this.getBlockNumberQuery(orderDirection),
+				this.configService.get<string>('SUSHISWAP_REQUEST_URL'),
+				SushiswapService.getBlockNumberQuery(orderDirection),
 			)
 		).data.data.firssttx[0].blockNumber;
 	}
 
-	private getBlockNumberQuery(orderDirection: string): TheGraphQuery {
+	private static getBlockNumberQuery(orderDirection: string): TheGraphQuery {
 		return {
 			operationName: 'BlockNumber',
 			variables: {},

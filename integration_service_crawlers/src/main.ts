@@ -1,7 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-import { utilities as nestWinstonModuleUtilities } from 'nest-winston/dist/winston.utilities';
+import {
+	utilities as nestWinstonModuleUtilities,
+	WINSTON_MODULE_NEST_PROVIDER,
+	WinstonModule,
+} from 'nest-winston';
 import * as winston from 'winston';
 
 import { AppModule } from './app.module';

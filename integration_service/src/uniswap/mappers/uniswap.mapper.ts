@@ -67,22 +67,30 @@ export class UniswapMapper {
       //   });
       // }
 
-      this.mapLiquidityPositions(amm, !response.uniswapLiquidityPositions.get(address)
-        ? [] : response.uniswapLiquidityPositions.get(address),
-      );
-      this.mapLiquidityLiquiditySnapshots(amm, !response.uniswapSnapshots.get(address)
-        ? [] : response.uniswapSnapshots.get(address),
+      this.mapLiquidityPositions(
+        amm,
         !response.uniswapLiquidityPositions.get(address)
-          ? [] : response.uniswapLiquidityPositions.get(address),
+          ? []
+          : response.uniswapLiquidityPositions.get(address),
       );
-      this.mapMints(transactions, !response.uniswapMints.get(address)
-        ? [] : response.uniswapMints.get(address),
+      this.mapLiquidityLiquiditySnapshots(
+        amm,
+        !response.uniswapSnapshots.get(address) ? [] : response.uniswapSnapshots.get(address),
+        !response.uniswapLiquidityPositions.get(address)
+          ? []
+          : response.uniswapLiquidityPositions.get(address),
       );
-      this.mapBurns(transactions, !response.uniswapBurns.get(address)
-        ? [] : response.uniswapBurns.get(address),
+      this.mapMints(
+        transactions,
+        !response.uniswapMints.get(address) ? [] : response.uniswapMints.get(address),
       );
-      this.mapSwaps(transactions, !response.uniswapSwapsFrom.get(address)
-        ? [] : response.uniswapSwapsFrom.get(address),
+      this.mapBurns(
+        transactions,
+        !response.uniswapBurns.get(address) ? [] : response.uniswapBurns.get(address),
+      );
+      this.mapSwaps(
+        transactions,
+        !response.uniswapSwapsFrom.get(address) ? [] : response.uniswapSwapsFrom.get(address),
       );
 
       base.push(amm);
@@ -326,8 +334,7 @@ export class UniswapMapper {
       reserve: pair === undefined ? null : pair.reserve0,
       amount:
         entity === undefined
-          ? userPoolShare.times(pair.reserve0)
-            .toString()
+          ? userPoolShare.times(pair.reserve0).toString()
           : entity.information.amount0,
       priceUSD:
         pair === undefined
@@ -345,8 +352,7 @@ export class UniswapMapper {
       reserve: pair === undefined ? null : pair.reserve1,
       amount:
         entity === undefined
-          ? userPoolShare.times(pair.reserve1)
-            .toString()
+          ? userPoolShare.times(pair.reserve1).toString()
           : entity.information.amount1,
       priceUSD:
         pair === undefined

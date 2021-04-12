@@ -8,22 +8,22 @@ import { Logger } from './Logger.service';
 
 @Global()
 @Module({
-	providers: [Logger],
-	exports: [Logger],
+  providers: [Logger],
+  exports: [Logger],
 })
 export class LoggerModule extends WinstonModule1 {
-	static forRoot(options: WinstonModuleOptions): DynamicModule {
-		const returnObj = WinstonModule1.forRoot(options);
-		returnObj.module = LoggerModule;
-		return returnObj;
-	}
+  static forRoot(options: WinstonModuleOptions): DynamicModule {
+    const returnObj = WinstonModule1.forRoot(options);
+    returnObj.module = LoggerModule;
+    return returnObj;
+  }
 
-	static createLogger(options: WinstonModuleOptions): LoggerService {
-		return LoggerModule.createNestWinstonLogger(options);
-	}
+  static createLogger(options: WinstonModuleOptions): LoggerService {
+    return LoggerModule.createNestWinstonLogger(options);
+  }
 
-	static createNestWinstonLogger(loggerOpts): WinstonLogger {
-		const logger = winston.createLogger(loggerOpts);
-		return new Logger(logger);
-	}
+  static createNestWinstonLogger(loggerOpts): WinstonLogger {
+    const logger = winston.createLogger(loggerOpts);
+    return new Logger(logger);
+  }
 }

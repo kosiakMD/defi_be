@@ -1,17 +1,32 @@
-import { Controller, Get, Param } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import BaseDataDto from '../common/DTO/BaseData.dto';
-import EthereumAddressDto from '../common/DTO/EthereumAddress.dto';
-import { BaseData } from '../common/interfaces';
+import { Logger } from '../common/Logger/Logger.service';
+import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
 @Controller('uniswap')
 export class UniswapController {
-	@Get('/:address')
-	@ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-	get(@Param() params: EthereumAddressDto): BaseData[] {
-		const base = new BaseDataDto();
-		return [base];
-	}
+  constructor(
+    private integrationService: IntegrationService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
+
+  @Get('/:address')
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'Address',
+    example:
+      '0x43e5ffd0c720b356b0b0e9f8c8178ad35dd4050c,0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2,0xa2107fa5b38d9bbd2c461d6edf11b11a50f6b974',
+  })
+  @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
+  async get(@Query('address') address: string): Promise<any> {
+    this.logger.time('getUniswap');
+    const result = this.integrationService.getUniswap(address);
+    this.logger.timeEnd('getUniswap');
+    return result;
+  }
 }

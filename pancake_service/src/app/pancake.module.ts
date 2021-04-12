@@ -5,7 +5,7 @@ import { PancakesController } from './pancake.controller';
 import { PancakesService } from './pancake.service';
 
 @Module({
-	controllers: [PancakesController],
-	providers: [PancakesCachedService, PancakesService],
+  controllers: [PancakesController],
+  providers: [PancakesCachedService, PancakesService],
 })
 export class PancakesModule {}

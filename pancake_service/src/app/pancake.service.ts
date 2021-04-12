@@ -10,73 +10,73 @@ dotenv.config();
 
 @Injectable()
 export class PancakesService {
-	private readonly PROJECT_NAME: string = 'pancakeswap';
-	/* private readonly NOW_UNIX_TIMESTAMP: number = Math.trunc(Date.now() / 1000)
+  private readonly PROJECT_NAME: string = 'pancakeswap';
+  /* private readonly NOW_UNIX_TIMESTAMP: number = Math.trunc(Date.now() / 1000)
   private readonly YESTERDAY_UNIX_TIMESTAMP: number = Math.trunc(this.NOW_UNIX_TIMESTAMP - 86400)
   private readonly LAST_WEEK_UNIX_TIMESTAMP: number = Math.trunc(this.NOW_UNIX_TIMESTAMP - 86400 * 7)
   private readonly LAST_MONTH_UNIX_TIMESTAMP: number = Math.trunc(this.NOW_UNIX_TIMESTAMP - 86400 * 30) */
 
-	public async getPancakes(): Promise<Pancake[]> {
-		const pairs = await this.getAllPairs();
+  public async getPancakes(): Promise<Pancake[]> {
+    const pairs = await this.getAllPairs();
 
-		return this.getFormatedPancakes(pairs.currentPairs);
-	}
+    return this.getFormatedPancakes(pairs.currentPairs);
+  }
 
-	private getFormatedPancakes(currentPairs): Pancake[] {
-		return currentPairs.map((pair) => {
-			const percentage = 50;
+  private getFormatedPancakes(currentPairs): Pancake[] {
+    return currentPairs.map((pair) => {
+      const percentage = 50;
 
-			return {
-				id: pair.id,
-				projectName: this.PROJECT_NAME,
-				reserveUSD: parseFloat(pair.reserveUSD),
-				fee24h: null,
-				APY: {
-					day: null,
-					week: null,
-					month: null,
-				},
-				IL: {
-					day: null,
-					dayUSD: null,
-					week: null,
-					weekUSD: null,
-					month: null,
-					monthUSD: null,
-				},
-				tokens: [
-					{
-						name: pair.token0.name,
-						percentage,
-					},
-					{
-						name: pair.token1.name,
-						percentage,
-					},
-				],
-			};
-		});
-	}
+      return {
+        id: pair.id,
+        projectName: this.PROJECT_NAME,
+        reserveUSD: parseFloat(pair.reserveUSD),
+        fee24h: null,
+        APY: {
+          day: null,
+          week: null,
+          month: null,
+        },
+        IL: {
+          day: null,
+          dayUSD: null,
+          week: null,
+          weekUSD: null,
+          month: null,
+          monthUSD: null,
+        },
+        tokens: [
+          {
+            name: pair.token0.name,
+            percentage,
+          },
+          {
+            name: pair.token1.name,
+            percentage,
+          },
+        ],
+      };
+    });
+  }
 
-	private async getAllPairs() {
-		const [
-			currentPairs,
-			//blocks
-		] = await Promise.all([
-			this.getCurrentPairs(),
-			//this.getHistoryBlocks(),
-		]);
+  private async getAllPairs() {
+    const [
+      currentPairs,
+      //blocks
+    ] = await Promise.all([
+      this.getCurrentPairs(),
+      //this.getHistoryBlocks(),
+    ]);
 
-		//const pairsIDs = currentPairs.map(pair => pair.id)
-		//const historyPairs = await this.getPairsByBlocksNumbers(pairsIDs, blocks)
+    //const pairsIDs = currentPairs.map(pair => pair.id)
+    //const historyPairs = await this.getPairsByBlocksNumbers(pairsIDs, blocks)
 
-		return {
-			currentPairs,
-			//historyPairs
-		};
-	}
-	// NOTE: functions to get history pairs by block number
-	/* 	private async getPairsByBlocksNumbers(pairsIDs: string[], blocks: Blocks): Promise<any> {
+    return {
+      currentPairs,
+      //historyPairs
+    };
+  }
+  // NOTE: functions to get history pairs by block number
+  /* 	private async getPairsByBlocksNumbers(pairsIDs: string[], blocks: Blocks): Promise<any> {
 		const [
 			pairsAtDayAgoState,
 			pairsAtWeekAgoState,
@@ -190,16 +190,16 @@ export class PancakesService {
 		};
 	} */
 
-	private async getCurrentPairs(): Promise<any> {
-		return (await axios.post(process.env.PAIRS_REQUEST_URL, this.getSubgraphQuery())).data.data
-			.pairs;
-	}
+  private async getCurrentPairs(): Promise<any> {
+    return (await axios.post(process.env.PAIRS_REQUEST_URL, this.getSubgraphQuery())).data.data
+      .pairs;
+  }
 
-	private getSubgraphQuery(): TheGraphQuery {
-		return {
-			operationName: 'pairs',
-			variables: {},
-			query: `fragment PairFields on Pair {
+  private getSubgraphQuery(): TheGraphQuery {
+    return {
+      operationName: 'pairs',
+      variables: {},
+      query: `fragment PairFields on Pair {
 				id
 				untrackedVolumeUSD
 				reserveUSD
@@ -218,6 +218,6 @@ export class PancakesService {
 					...PairFields
 				}
 			}`,
-		};
-	}
+    };
+  }
 }

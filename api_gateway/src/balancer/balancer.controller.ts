@@ -8,18 +8,18 @@ import { BaseData } from '../common/interfaces';
 @ApiTags('Platform')
 @Controller('balancer')
 export class BalancerController {
-	@Get('/:address')
-	@ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-	get(@Param() params: EthereumAddressDto): BaseData[] {
-		const base = new BaseDataDto();
-		return [
-			base,
-			// TODO: temporary - will be just string
-			{
-				userAddress: params.address,
-				protocolName: '',
-				protocolType: '',
-			},
-		];
-	}
+  @Get('/:address')
+  @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
+  get(@Param() params: EthereumAddressDto): BaseData[] {
+    const base = new BaseDataDto();
+    return [
+      base,
+      // TODO: temporary - will be just string
+      {
+        userAddress: params.address,
+        protocolName: '',
+        protocolType: '',
+      },
+    ];
+  }
 }

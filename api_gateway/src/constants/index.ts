@@ -1,4 +1,4 @@
 export enum EtherscanEnum {
-	'false',
-	'true',
+  'false',
+  'true',
 }

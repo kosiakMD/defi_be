@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {
-	utilities as nestWinstonModuleUtilities,
-	WINSTON_MODULE_NEST_PROVIDER,
-	WinstonModule,
+  utilities as nestWinstonModuleUtilities,
+  WINSTON_MODULE_NEST_PROVIDER,
+  WinstonModule,
 } from 'nest-winston';
 import * as winston from 'winston';
 
@@ -11,35 +11,35 @@ import { AppModule } from './app.module';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
-	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-		cors: true,
-		bodyParser: false,
-		logger: WinstonModule.createLogger({
-			// TODO: for custom logger
-			// logger: LoggerModule.createLogger({
-			level: process.env.LOG_LEVEL || 'info',
-			format: winston.format.json(),
-			defaultMeta: { service: process.env.SERVICE_NAME },
-			transports: [
-				// NestJS console like logs
-				new winston.transports.Console({
-					format: winston.format.combine(
-						winston.format.timestamp(),
-						nestWinstonModuleUtilities.format.nestLike(),
-					),
-				}),
-			],
-		}),
-	});
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+    bodyParser: false,
+    logger: WinstonModule.createLogger({
+      // TODO: for custom logger
+      // logger: LoggerModule.createLogger({
+      level: process.env.LOG_LEVEL || 'info',
+      format: winston.format.json(),
+      defaultMeta: { service: process.env.SERVICE_NAME },
+      transports: [
+        // NestJS console like logs
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtilities.format.nestLike(),
+          ),
+        }),
+      ],
+    }),
+  });
 
-	const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-	app.useLogger(logger);
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+  app.useLogger(logger);
 
-	app.setGlobalPrefix('v1'); // temporary global as only 1 version
+  app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
-	const port = process.env.PORT || 3000;
-	const host = process.env.HOST || 'localhost';
-	await app.listen(port, host);
+  const port = process.env.PORT || 3000;
+  const host = process.env.HOST || 'localhost';
+  await app.listen(port, host);
 }
 
 bootstrap();

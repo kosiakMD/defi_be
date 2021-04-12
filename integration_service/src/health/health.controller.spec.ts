@@ -8,14 +8,12 @@ describe('HealthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HealthController],
-    })
-      .compile();
+    }).compile();
 
     controller = module.get<HealthController>(HealthController);
   });
 
   it('should be defined', () => {
-    expect(controller)
-      .toBeDefined();
+    expect(controller).toBeDefined();
   });
 });

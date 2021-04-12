@@ -4,8 +4,8 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class PricesService {
-	//private readonly examples: Example[] = [];
-	/*
+  //private readonly examples: Example[] = [];
+  /*
 	create(example: Example) {
 		this.examples.push(example);
 	}

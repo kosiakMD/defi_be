@@ -8,15 +8,15 @@ import { PricesService } from './prices.service';
 const PRICE_TIMOUT = 60e3; // 60 sec
 
 @Module({
-	imports: [
-		HttpModule.register({
-			timeout: PRICE_TIMOUT,
-			maxRedirects: 2,
-		}),
-		ConfigModule,
-		// LoggerModule,
-	],
-	providers: [PricesService],
-	controllers: [PricesController],
+  imports: [
+    HttpModule.register({
+      timeout: PRICE_TIMOUT,
+      maxRedirects: 2,
+    }),
+    ConfigModule,
+    // LoggerModule,
+  ],
+  providers: [PricesService],
+  controllers: [PricesController],
 })
 export class PricesModule {}

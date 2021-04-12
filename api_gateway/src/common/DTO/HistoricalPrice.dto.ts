@@ -1,9 +1,9 @@
 import { HistoricalPrice } from '../../prices/prices.interface';
 
 export default class HistoricalPriceDto implements HistoricalPrice {
-	addresses: string;
+  addresses: string;
 
-	prices: {
-		[index: number]: number;
-	}[];
+  prices: {
+    [index: number]: number;
+  }[];
 }

@@ -6,13 +6,13 @@ import { AppService } from './app.service';
 
 @Controller()
 export class AppController {
-	constructor(
-		private readonly appService: AppService,
-		@Inject(NEST_PGPROMISE_CONNECTION) private pg: IDatabase<any>,
-	) {}
+  constructor(
+    private readonly appService: AppService,
+    @Inject(NEST_PGPROMISE_CONNECTION) private pg: IDatabase<any>,
+  ) {}
 
-	@Get()
-	getPing(): string {
-		return this.appService.getPing();
-	}
+  @Get()
+  getPing(): string {
+    return this.appService.getPing();
+  }
 }

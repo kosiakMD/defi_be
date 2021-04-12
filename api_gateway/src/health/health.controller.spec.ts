@@ -5,25 +5,25 @@ import { ServiceHealthIndicator } from '../app/app.health';
 import { HealthController } from './health.controller';
 
 describe('HealthController', () => {
-	let controller: HealthController;
+  let controller: HealthController;
 
-	beforeEach(async () => {
-		const module: TestingModule = await Test.createTestingModule({
-			imports: [TerminusModule],
-			controllers: [HealthController],
-			providers: [ServiceHealthIndicator],
-		}).compile();
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      imports: [TerminusModule],
+      controllers: [HealthController],
+      providers: [ServiceHealthIndicator],
+    }).compile();
 
-		controller = module.get<HealthController>(HealthController);
-	});
+    controller = module.get<HealthController>(HealthController);
+  });
 
-	it('should be defined', () => {
-		expect(controller).toBeDefined();
-		// expect(controller.check()).toBe({
-		//   'status': 'ok',
-		//   'info': ServiceHealthOk,
-		//   'error': {},
-		//   'details': ServiceHealthOk,
-		// });
-	});
+  it('should be defined', () => {
+    expect(controller).toBeDefined();
+    // expect(controller.check()).toBe({
+    //   'status': 'ok',
+    //   'info': ServiceHealthOk,
+    //   'error': {},
+    //   'details': ServiceHealthOk,
+    // });
+  });
 });

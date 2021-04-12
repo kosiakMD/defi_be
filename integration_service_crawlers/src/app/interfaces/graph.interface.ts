@@ -1,9 +1,9 @@
 interface Variables {
-	blockNumber?: number;
+  blockNumber?: number;
 }
 
 export interface TheGraphQuery {
-	operationName: string;
-	variables: Variables;
-	query: string;
+  operationName: string;
+  variables: Variables;
+  query: string;
 }

@@ -72,8 +72,10 @@ web_modules/
 
 # dotenv environment variables file
 .env
-.env.prodcution
+.env.production
+.env.production.local
 .env.test
+.env.development
 .env.development.local
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -120,7 +122,8 @@ dist
 .pnp.*
 
 # IDE
-.idea/
 .idea
+.idea/*
+.idea/codeStyles/Project.xml
 .DS_Store
 

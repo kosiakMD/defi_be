@@ -8,8 +8,8 @@ import { UniswapSwapsEntity } from './entities/uniswap.swaps.entity';
 import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
 import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
 import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
-import { UniswapService } from './uniswap.service';
 import { Base } from './uniswap.interfaces';
+import { UniswapService } from './uniswap.service';
 
 @Controller('integration')
 export class UniswapController {
@@ -18,8 +18,7 @@ export class UniswapController {
     @InjectRepository(UniswapSwapsEntity) private readonly swapsRepository: UniswapSwapsRepository,
     @InjectRepository(UniswapMintsEntity) private readonly mintsRepository: UniswapMintsRepository,
     @InjectRepository(UniswapBurnsEntity) private readonly burnRepository: UniswapBurnsRepository,
-  ) {
-  }
+  ) {}
 
   @Get('/uniswap')
   @ApiResponse({ status: 200 })

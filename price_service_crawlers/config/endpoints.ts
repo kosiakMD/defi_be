@@ -1,4 +1,4 @@
-import * as dotenv from 'dotenv'
+import * as dotenv from 'dotenv';
 
 dotenv.config();
 
@@ -10,5 +10,4 @@ export default {
   THEGRAPH_CURVE: process.env.THEGRAPH_CURVE_ENDPOINT,
   THEGRAPH_BALANCER: process.env.THEGRAPH_BALANCER_ENDPOINT,
   THEGRAPH_SUSHISWAP: process.env.THEGRAPH_SUSHISWAP_ENDPOINT,
-}
-
+};

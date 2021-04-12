@@ -11,7 +11,8 @@ import {
   getLastDayApy,
   getLastMonthApy,
   getLastWeekApy,
-  getLpTokenPrice, MIN_RESERVE,
+  getLpTokenPrice,
+  MIN_RESERVE,
   PROJECT_UNISWAP,
   TIMESTAMP_DAY_BEFORE_CURRENT,
   TIMESTAMP_MONTH_BEFORE_CURRENT,
@@ -26,8 +27,7 @@ export class PoolsServiceUniswap {
   constructor(
     @Inject(UniswapSubgraph) protected readonly uniswapSubgraph: UniswapSubgraph,
     @Inject(BlocksSubgraph) protected readonly blocksSubgraph: BlocksSubgraph,
-  ) {
-  }
+  ) {}
 
   // get up to 3k pools with all necessary calculations, processing can be up to 10 sec
   async getPoolsToHandle(): Promise<PoolDto[]> {
@@ -90,21 +90,21 @@ export class PoolsServiceUniswap {
 
       const dayAPY: number = lastDayPair
         ? getLastDayApy(
-          currentPair.reserveUSD,
-          currentPair.untrackedVolumeUSD - lastDayPair.untrackedVolumeUSD,
-        )
+            currentPair.reserveUSD,
+            currentPair.untrackedVolumeUSD - lastDayPair.untrackedVolumeUSD,
+          )
         : null;
       const weekAPY: number = lastWeekPair
         ? getLastWeekApy(
-          currentPair.reserveUSD,
-          currentPair.untrackedVolumeUSD - lastWeekPair.untrackedVolumeUSD,
-        )
+            currentPair.reserveUSD,
+            currentPair.untrackedVolumeUSD - lastWeekPair.untrackedVolumeUSD,
+          )
         : null;
       const monthAPY: number = lastMonthPair
         ? getLastMonthApy(
-          currentPair.reserveUSD,
-          currentPair.untrackedVolumeUSD - lastMonthPair.untrackedVolumeUSD,
-        )
+            currentPair.reserveUSD,
+            currentPair.untrackedVolumeUSD - lastMonthPair.untrackedVolumeUSD,
+          )
         : null;
 
       const currentLpToken: number = getLpTokenPrice(
@@ -113,21 +113,21 @@ export class PoolsServiceUniswap {
       );
       const dayIL: number = lastDayPair
         ? getImpermanentLossPercent(
-          currentLpToken,
-          getLpTokenPrice(lastDayPair.reserveUSD, lastDayPair.totalSupply),
-        )
+            currentLpToken,
+            getLpTokenPrice(lastDayPair.reserveUSD, lastDayPair.totalSupply),
+          )
         : null;
       const weekIL: number = lastWeekPair
         ? getImpermanentLossPercent(
-          currentLpToken,
-          getLpTokenPrice(lastWeekPair.reserveUSD, lastWeekPair.totalSupply),
-        )
+            currentLpToken,
+            getLpTokenPrice(lastWeekPair.reserveUSD, lastWeekPair.totalSupply),
+          )
         : null;
       const monthIL: number = lastMonthPair
         ? getImpermanentLossPercent(
-          currentLpToken,
-          getLpTokenPrice(lastMonthPair.reserveUSD, lastMonthPair.totalSupply),
-        )
+            currentLpToken,
+            getLpTokenPrice(lastMonthPair.reserveUSD, lastMonthPair.totalSupply),
+          )
         : null;
 
       const percentage = 50;

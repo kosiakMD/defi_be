@@ -14,9 +14,9 @@ import { UniswapCurrentPricesJob } from '../jobs/uniswap_current_prices.job';
 import { UniSwapFirstCheckJob } from '../jobs/uniswap_first_check.job';
 import { Api } from '../thegraph/api';
 import {
-	CURRENT_PRICE_SECONDS_INTERVAL,
-	NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
-	NEW_TOKENS_SECONDS_INTERVAL,
+  CURRENT_PRICE_SECONDS_INTERVAL,
+  NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
+  NEW_TOKENS_SECONDS_INTERVAL,
 } from '../utils/constants';
 import { DatabaseService } from './database.service';
 
@@ -24,181 +24,181 @@ import { DatabaseService } from './database.service';
 
 @Injectable()
 export class JobsService {
-	private agenda;
-	constructor(
-		@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
-		private coingeckoNewTokenCheckJob: CoingeckoFirstCheckJob,
-		private databaseService: DatabaseService,
-		private theGraphService: Api,
-		private coingeckoCurrentPricesJob: CoingeckoCurrentPricesJob,
-		private sushiswapCurrentPricesJob: SushiswapCurrentPricesJob,
-		private sushiSwapNewTokenCheckJob: SushiSwapFirstCheckJob,
-		private uniswapCurrentPricesJob: UniswapCurrentPricesJob,
-		private uniSwapFirstCheckJob: UniSwapFirstCheckJob,
-		private balancerFirstCheckJob: BalancerFirstCheckJob,
-		private curveFirstCheckJob: CurveFirstCheckJob,
-		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-	) {
-		const connectionString =
-			'mongodb://' +
-			process.env.MONGO_USER +
-			':' +
-			process.env.MONGO_PASS +
-			'@' +
-			process.env.MONGO_HOST +
-			':' +
-			process.env.MONGO_PORT +
-			'/agenda?authMechanism=DEFAULT&authSource=admin'; //'mongodb://127.0.0.1/agenda';
-		this.agenda = new Agenda({
-			db: { address: connectionString },
-			processEvery: '30 seconds',
-		});
+  private agenda;
+  constructor(
+    @Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
+    private coingeckoNewTokenCheckJob: CoingeckoFirstCheckJob,
+    private databaseService: DatabaseService,
+    private theGraphService: Api,
+    private coingeckoCurrentPricesJob: CoingeckoCurrentPricesJob,
+    private sushiswapCurrentPricesJob: SushiswapCurrentPricesJob,
+    private sushiSwapNewTokenCheckJob: SushiSwapFirstCheckJob,
+    private uniswapCurrentPricesJob: UniswapCurrentPricesJob,
+    private uniSwapFirstCheckJob: UniSwapFirstCheckJob,
+    private balancerFirstCheckJob: BalancerFirstCheckJob,
+    private curveFirstCheckJob: CurveFirstCheckJob,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+  ) {
+    const connectionString =
+      'mongodb://' +
+      process.env.MONGO_USER +
+      ':' +
+      process.env.MONGO_PASS +
+      '@' +
+      process.env.MONGO_HOST +
+      ':' +
+      process.env.MONGO_PORT +
+      '/agenda?authMechanism=DEFAULT&authSource=admin'; //'mongodb://127.0.0.1/agenda';
+    this.agenda = new Agenda({
+      db: { address: connectionString },
+      processEvery: '30 seconds',
+    });
 
-		this.agenda
-			.on('ready', async () => {
-				await this.agenda.start();
-				await this.agenda.cancel({});
-				this.logger.log('Agenda started');
-				// check for new tokens on API
-				this.agenda.define(
-					'CRAWL_COINGECKO_NEW_TOKENS',
-					{ lockLifetime: 10000 },
-					this.coingeckoNewTokenCheckJob.crawlNewTokens.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_COINGECKO_NEW_TOKENS',
-					{},
-				);
-				// get history for new tokens
-				this.agenda.define(
-					'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
-					{ lockLifetime: 10000 },
-					this.coingeckoNewTokenCheckJob.crawlNewTokensHistory.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
-					{},
-				);
-				// get current token prices
-				this.agenda.define(
-					'CRAWL_COINGECKO_CURRENT_PRICE',
-					{ lockLifetime: 10000 },
-					this.coingeckoCurrentPricesJob.crawl.bind(this),
-				);
-				this.agenda.every(
-					CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_COINGECKO_CURRENT_PRICE',
-					{},
-				);
+    this.agenda
+      .on('ready', async () => {
+        await this.agenda.start();
+        await this.agenda.cancel({});
+        this.logger.log('Agenda started');
+        // check for new tokens on API
+        this.agenda.define(
+          'CRAWL_COINGECKO_NEW_TOKENS',
+          { lockLifetime: 10e3 },
+          this.coingeckoNewTokenCheckJob.crawlNewTokens.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_COINGECKO_NEW_TOKENS',
+          {},
+        );
+        // get history for new tokens
+        this.agenda.define(
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10e3 },
+          this.coingeckoNewTokenCheckJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          {},
+        );
+        // get current token prices
+        this.agenda.define(
+          'CRAWL_COINGECKO_CURRENT_PRICE',
+          { lockLifetime: 10e3 },
+          this.coingeckoCurrentPricesJob.crawl.bind(this),
+        );
+        this.agenda.every(
+          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_COINGECKO_CURRENT_PRICE',
+          {},
+        );
 
-				//SUSHI
-				//this.logger.log('starting sushi')
-				this.agenda.define(
-					'CRAWL_SUSHI_NEW_TOKENS',
-					{ lockLifetime: 10000 },
-					this.sushiSwapNewTokenCheckJob.crawlNewTokens.bind(this),
-				);
-				this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_NEW_TOKENS', {});
+        //SUSHI
+        //this.logger.log('starting sushi')
+        this.agenda.define(
+          'CRAWL_SUSHI_NEW_TOKENS',
+          { lockLifetime: 10e3 },
+          this.sushiSwapNewTokenCheckJob.crawlNewTokens.bind(this),
+        );
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_NEW_TOKENS', {});
 
-				this.agenda.define(
-					'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-					{ lockLifetime: 10000 },
-					this.sushiSwapNewTokenCheckJob.crawlNewTokensHistory.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-					{},
-				);
+        this.agenda.define(
+          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10e3 },
+          this.sushiSwapNewTokenCheckJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+          {},
+        );
 
-				this.agenda.define(
-					'CRAWL_SUSHI_CURRENT_PRICE',
-					{ lockLifetime: 10000 },
-					this.sushiswapCurrentPricesJob.crawl.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_SUSHI_CURRENT_PRICE',
-					{},
-				);
+        this.agenda.define(
+          'CRAWL_SUSHI_CURRENT_PRICE',
+          { lockLifetime: 10e3 },
+          this.sushiswapCurrentPricesJob.crawl.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_SUSHI_CURRENT_PRICE',
+          {},
+        );
 
-				//UNISWAP
-				//this.logger.log('starting uniswap')
-				this.agenda.define(
-					'CRAWL_UNISWAP_NEW_TOKENS',
-					{ lockLifetime: 10000 },
-					this.uniSwapFirstCheckJob.crawlNewTokens.bind(this),
-				);
-				this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_UNISWAP_NEW_TOKENS', {});
+        //UNISWAP
+        //this.logger.log('starting uniswap')
+        this.agenda.define(
+          'CRAWL_UNISWAP_NEW_TOKENS',
+          { lockLifetime: 10e3 },
+          this.uniSwapFirstCheckJob.crawlNewTokens.bind(this),
+        );
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_UNISWAP_NEW_TOKENS', {});
 
-				this.agenda.define(
-					'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-					{ lockLifetime: 10000 },
-					this.uniSwapFirstCheckJob.crawlNewTokensHistory.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-					{},
-				);
+        this.agenda.define(
+          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10e3 },
+          this.uniSwapFirstCheckJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
+          {},
+        );
 
-				this.agenda.define(
-					'CRAWL_UNISWAP_CURRENT_PRICE',
-					{ lockLifetime: 10000 },
-					this.uniswapCurrentPricesJob.crawl.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_UNISWAP_CURRENT_PRICE',
-					{},
-				);
+        this.agenda.define(
+          'CRAWL_UNISWAP_CURRENT_PRICE',
+          { lockLifetime: 10e3 },
+          this.uniswapCurrentPricesJob.crawl.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_UNISWAP_CURRENT_PRICE',
+          {},
+        );
 
-				// this.logger.log('starting balancer');
-				this.agenda.define(
-					'CRAWL_BALANCER_NEW_TOKENS',
-					{ lockLifetime: 10000 },
-					this.balancerFirstCheckJob.crawlNewTokens.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_BALANCER_NEW_TOKENS',
-					{},
-				);
+        // this.logger.log('starting balancer');
+        this.agenda.define(
+          'CRAWL_BALANCER_NEW_TOKENS',
+          { lockLifetime: 10e3 },
+          this.balancerFirstCheckJob.crawlNewTokens.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_BALANCER_NEW_TOKENS',
+          {},
+        );
 
-				this.agenda.define(
-					'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
-					{ lockLifetime: 10000 },
-					this.balancerFirstCheckJob.crawlNewTokensHistory.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
-					{},
-				);
+        this.agenda.define(
+          'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10e3 },
+          this.balancerFirstCheckJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
+          {},
+        );
 
-				//this.logger.log('starting curve')
-				this.agenda.define(
-					'CRAWL_CURVE_NEW_TOKENS',
-					{ lockLifetime: 10000 },
-					this.curveFirstCheckJob.crawlNewTokens.bind(this),
-				);
-				this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_CURVE_NEW_TOKENS', {});
+        //this.logger.log('starting curve')
+        this.agenda.define(
+          'CRAWL_CURVE_NEW_TOKENS',
+          { lockLifetime: 10e3 },
+          this.curveFirstCheckJob.crawlNewTokens.bind(this),
+        );
+        this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_CURVE_NEW_TOKENS', {});
 
-				this.agenda.define(
-					'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-					{ lockLifetime: 10000 },
-					this.curveFirstCheckJob.crawlNewTokensHistory.bind(this),
-				);
-				this.agenda.every(
-					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-					'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-					{},
-				);
-			})
-			.on('error', (e) => this.logger.error('Agenda connection error!', e));
+        this.agenda.define(
+          'CRAWL_CURVE_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10e3 },
+          this.curveFirstCheckJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_CURVE_NEW_TOKENS_HISTORY',
+          {},
+        );
+      })
+      .on('error', (e) => this.logger.error('Agenda connection error!', e));
 
-		//this.agenda.start();
-	}
+    //this.agenda.start();
+  }
 }

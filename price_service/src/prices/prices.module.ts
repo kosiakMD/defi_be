@@ -8,8 +8,8 @@ import { PricesController } from './prices.controller';
 import { PricesService } from './prices.service';
 
 @Module({
-	imports: [TypeOrmModule.forFeature([AssetPrice, Asset])],
-	controllers: [PricesController],
-	providers: [PricesService, AssetPriceService],
+  imports: [TypeOrmModule.forFeature([AssetPrice, Asset])],
+  controllers: [PricesController],
+  providers: [PricesService, AssetPriceService],
 })
 export class PricesModule {}

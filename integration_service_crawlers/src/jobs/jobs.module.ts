@@ -7,7 +7,7 @@ import { SushiswapService } from './sushiswap.service';
 import { UniswapService } from './uniswap.service';
 
 @Module({
-	imports: [],
-	providers: [UniswapService, SushiswapService, CurveService, DatabaseService, JobsService],
+  imports: [],
+  providers: [UniswapService, SushiswapService, CurveService, DatabaseService, JobsService],
 })
 export class JobsModule {}

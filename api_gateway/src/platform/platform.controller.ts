@@ -9,15 +9,15 @@ import { PlatformData } from '../common/interfaces';
 @ApiTags('Platform')
 @Controller('platform')
 export class PlatformController {
-	@Get('/:address')
-	@ApiResponse({ status: 200, type: PlatformDataDto })
-	get(@Param() params: EthereumAddressDto): PlatformData {
-		const base = new BaseDataDto();
-		return {
-			balancer: [base],
-			curve: [base],
-			sushiswap: [base],
-			uniswap: [base],
-		};
-	}
+  @Get('/:address')
+  @ApiResponse({ status: 200, type: PlatformDataDto })
+  get(@Param() params: EthereumAddressDto): PlatformData {
+    const base = new BaseDataDto();
+    return {
+      balancer: [base],
+      curve: [base],
+      sushiswap: [base],
+      uniswap: [base],
+    };
+  }
 }

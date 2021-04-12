@@ -1,33 +1,41 @@
 export interface TokenPriceRequest {
-	tokenAddress: string;
-	timestamps: number[];
+  tokenAddress: string;
+  timestamps: number[];
 }
 
 export interface TokenPriceResponse {
-	[token: string]: number;
-}
-
-export interface TokenTimestampPrices {
-	[timestamp: string]: number;
+  [token: string]: number;
 }
 
 export interface HistoricalTokenPricesResponse {
-	[token: string]: TokenTimestampPrices | string[];
+  [token: string]: TokenTimestampPrices | string[];
+}
+
+export interface TokenTimestampPrices {
+  [timestamp: string]: number;
+}
+
+export interface HistoricalTokenPricesResponse {
+  [token: string]: TokenTimestampPrices | string[];
 }
 
 export interface PoolPriceRequest {
-	poolAddress: string;
-	timestamps: number[];
+  poolAddress: string;
+  timestamps: number[];
 }
 
 export interface PoolPriceResponse {
-	[pool: string]: number;
-}
-
-export interface PoolTimestampPrices {
-	[timestamp: string]: number;
+  [pool: string]: number;
 }
 
 export interface HistoricalPoolPricesResponse {
-	[pool: string]: PoolTimestampPrices | string[];
+  [pool: string]: PoolTimestampPrices | string[];
+}
+
+export interface PoolTimestampPrices {
+  [timestamp: string]: number;
+}
+
+export interface HistoricalPoolPricesResponse {
+  [pool: string]: PoolTimestampPrices | string[];
 }

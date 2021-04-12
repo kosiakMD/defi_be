@@ -7,31 +7,31 @@ import { Token } from '../common/interfaces';
 
 @Injectable()
 export class TokensService {
-	private readonly tokensUrl: string;
+  private readonly tokensUrl: string;
 
-	constructor(
-		private httpService: HttpService,
-		private configService: ConfigService,
-		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-	) {
-		const url = this.configService.get<string>('DEFIYIELD_INFO_2_URL');
-		const path = this.configService.get<string>('TOKENS_PATH');
+  constructor(
+    private httpService: HttpService,
+    private configService: ConfigService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {
+    const url = this.configService.get<string>('DEFIYIELD_INFO_2_URL');
+    const path = this.configService.get<string>('TOKENS_PATH');
 
-		this.tokensUrl = `${url}/${path}`;
-	}
+    this.tokensUrl = `${url}/${path}`;
+  }
 
-	async getAll(): Promise<Token[]> {
-		try {
-			const get = this.httpService.get(this.tokensUrl);
-			const promise = get.toPromise();
-			this.logger.time(this.tokensUrl);
-			const result = await promise;
-			this.logger.timeEnd(this.tokensUrl);
-			const { data } = result;
-			return data;
-		} catch (e) {
-			this.logger.error('er', e);
-			throw e;
-		}
-	}
+  async getAll(): Promise<Token[]> {
+    try {
+      const get = this.httpService.get(this.tokensUrl);
+      const promise = get.toPromise();
+      this.logger.time(this.tokensUrl);
+      const result = await promise;
+      this.logger.timeEnd(this.tokensUrl);
+      const { data } = result;
+      return data;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
+  }
 }

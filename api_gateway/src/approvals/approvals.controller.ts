@@ -10,19 +10,19 @@ import { ApprovalsService } from './approvals.service';
 @ApiTags('Approvals')
 @Controller('approvals')
 export class ApprovalsController {
-	constructor(
-		private service: ApprovalsService,
-		@Inject(CACHE_MANAGER) private cacheManager: Cache,
-	) {}
+  constructor(
+    private service: ApprovalsService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {}
 
-	@Get('/:address')
-	@ApiParam({
-		name: 'address',
-		type: String,
-		example: '0x0000000000000000000000000000000000000000',
-	})
-	@ApiResponse({ status: 200, type: ContractApprovalDto, isArray: true })
-	async get(@Param() params: EthereumAddressDto): Promise<ContractApproval[]> {
-		return this.service.getAll(params.address);
-	}
+  @Get('/:address')
+  @ApiParam({
+    name: 'address',
+    type: String,
+    example: '0x0000000000000000000000000000000000000000',
+  })
+  @ApiResponse({ status: 200, type: ContractApprovalDto, isArray: true })
+  async get(@Param() params: EthereumAddressDto): Promise<ContractApproval[]> {
+    return this.service.getAll(params.address);
+  }
 }

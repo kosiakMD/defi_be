@@ -7,8 +7,7 @@ import { Block } from './blocks/block.dto';
 export class BlocksSubgraph {
   private subgraphUrl: string = process.env.BLOCKS_SUBGRAPH_URL;
 
-  constructor(@Inject(HttpService) private readonly httpService: HttpService) {
-  }
+  constructor(@Inject(HttpService) private readonly httpService: HttpService) {}
 
   async getFirstAfterTimestamp(ts: number): Promise<ResponseData> {
     return this.httpService

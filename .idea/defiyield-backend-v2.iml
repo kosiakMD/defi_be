@@ -5,12 +5,21 @@
       <excludeFolder url="file://$MODULE_DIR$/temp" />
       <excludeFolder url="file://$MODULE_DIR$/.tmp" />
       <excludeFolder url="file://$MODULE_DIR$/tmp" />
-      <excludeFolder url="file://$MODULE_DIR$/api_gateway/dist" />
       <excludeFolder url="file://$MODULE_DIR$/account_service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/price_service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/integration_service/dist" />
       <excludeFolder url="file://$MODULE_DIR$/swap_service/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/integration_service_crawlers/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/integration_service_crawlers/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/price_service_crawlers/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/integration_service/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/price_service/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/api_gateway/dist" />
     </content>
+    <content url="file://$MODULE_DIR$/integration_service/node_modules" />
+    <content url="file://$MODULE_DIR$/integration_service_crawlers/node_modules" />
+    <content url="file://$MODULE_DIR$/price_service/node_modules" />
+    <content url="file://$MODULE_DIR$/price_service_crawlers/node_modules" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

@@ -11,5 +11,4 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
   imports: [ThegraphModule],
   providers: [PoolsServiceCommon, PoolsServiceUniswap, PoolsServiceSushiswap],
 })
-export class PoolsModule {
-}
+export class PoolsModule {}

@@ -8,8 +8,7 @@ import { Pair } from './uniswap/pair.dto';
 export class UniswapSubgraph {
   protected subgraphUrl: string = process.env.AMM_UNISWAP_SUBGRAPH_URL;
 
-  constructor(@Inject(HttpService) private readonly httpService: HttpService) {
-  }
+  constructor(@Inject(HttpService) private readonly httpService: HttpService) {}
 
   async getPairs(minReserve: number): Promise<ResponseData> {
     return this.httpService

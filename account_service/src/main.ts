@@ -1,44 +1,69 @@
-import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import * as dotenv from 'dotenv';
+import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TerminusModule } from '@nestjs/terminus';
+import {
+  utilities as nestWinstonModuleUtilities,
+  WINSTON_MODULE_NEST_PROVIDER,
+  WinstonModule,
+} from 'nest-winston';
+import * as winston from 'winston';
 
-import { AppModule } from './app.module';
+import { ExamplesModule } from './examples/example.module';
+import { HealthController } from './health/health.controller';
 
-const service_name = 'Account Service';
+@Module({
+  imports: [
+    ConfigModule.forRoot({
+      cache: true,
+      isGlobal: true,
+      envFilePath: [
+        '.env.development.local',
+        '.env.development',
+        '.env.production.local',
+        '.env.production',
+        '.env',
+      ],
+    }),
+    WinstonModule.forRoot({
+      // options
+      level: process.env.LOG_LEVEL || 'info',
+      format: winston.format.json(),
+      defaultMeta: { service: process.env.SERVICE_NAME },
+      transports: [
+        // NestJS console like logs
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtilities.format.nestLike(),
+          ),
+        }),
+        // - Write all logs with level `error` and below to `error.log`
+        new winston.transports.File({ filename: process.env.LOG_ERROR_FILE, level: 'error' }),
+        // - Write all logs with level `info` and below to `combined.log`
+        new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
+      ],
+    }),
+    TerminusModule,
+    ExamplesModule,
+  ],
+  controllers: [HealthController],
+})
+export class AppModule implements OnModuleInit {
+  onModuleInit(): void {
+    const { SERVICE_NAME, PORT, HOST } = process.env;
+    this.logger.log(
+      {
+        name: SERVICE_NAME,
+        host: HOST,
+        port: PORT,
+      },
+      'SERVICE',
+    );
+    this.logger.verbose(this.configService, SERVICE_NAME);
+  }
 
-// config check
-(() => {
-	const result = dotenv.config();
-	if (result.error) {
-		throw result.error;
-	} else {
-		// eslint-disable-next-line no-console
-		console.log(result.parsed);
-	}
-})();
-
-async function bootstrap() {
-	const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-		cors: true,
-	});
-
-	app.setGlobalPrefix('v1'); // temporary global as only 1 version
-
-	const config = new DocumentBuilder()
-		.setTitle(service_name)
-		.setDescription(`${service_name} description`)
-		.setVersion('1.0') // temporary global as only 1 version
-		.build();
-	const document = SwaggerModule.createDocument(app, config);
-	SwaggerModule.setup('api', app, document);
-
-	const port = process.env.PORT || 3000;
-	const host = process.env.HOST; /*|| 'localhost'*/
-	await app.listen(port, host);
-
-	// eslint-disable-next-line no-console
-	console.log(`${service_name}\nhost:${host}\nport:${port}`);
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private configService: ConfigService,
+  ) {}
 }
-
-bootstrap();

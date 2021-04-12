@@ -4,7 +4,7 @@ import { getManager, Repository } from 'typeorm';
 
 import Asset from '../models/asset.entity';
 import AssetPrice from '../models/asset_price.entity';
-import { CurrentPrice, HistoricalPrice } from '../prices/interfaces/prices.interface';
+import { CurrentPrice, HistoricalPrice, PriceFormat, TimestampMapper } from '../prices/interfaces/prices.interface';
 @Injectable()
 export class AssetPriceService {
 	constructor(
@@ -63,10 +63,9 @@ export class AssetPriceService {
 		});
 
     // prepare timestamp in needed format
-    timestamps = this.formatTimeStamps(timestamps);
-
-		const addressString = "('" + address.join("','") + "')";
-		const timestampsString = '(' + timestamps.join(',') + ')';
+    const {timestamps: roundedTimestamps, timestampMapper} = this.formatTimeStamps(timestamps);
+		const addressString = `('${address.join("','")}')`;
+		const timestampsString = `(${roundedTimestamps.join(',')})`;
 
 		const querystr = `
       SELECT a.*, ap.timestamp, ap.value
@@ -78,14 +77,14 @@ export class AssetPriceService {
 
 		const dbEntities = await entityManager.query(querystr);
 		dbEntities.forEach((item) => {
-			response[item.address][item.timestamp.toString()] = item.value;
+			response[item.address][timestampMapper[item.timestamp.toString()]] = item.value;
 			return;
 		});
 
 		return response as HistoricalPrice;
 	}
 
-  formatTimeStamps(timestamps: number[]): number[] {
+  formatTimeStamps(timestamps: number[]): PriceFormat {
     const timeInSec = Math.round(Date.now() / 1000);
 		const dayInSeconds = 24 * 60 * 60;
 		const hourInSeconds =  60 * 60;
@@ -94,19 +93,19 @@ export class AssetPriceService {
 		// be sure that timesstamps has been sorted
 		timestamps.sort((a, b) => a - b);
 
-		const historicalTimestamps: number[] = [];
+		const roundedTimestamps: number[] = [];
+		const timestampMapper: TimestampMapper = {};
 		for (let i = 0; i < timestamps.length; i++) {
-			if (timestamps[i] > weekAgoInSeconds) {
-				timestamps[i] = timestamps[i] - (timestamps[i] % hourInSeconds);
-			} else {
-				timestamps[i] = timestamps[i] - (timestamps[i] % dayInSeconds);
-			}
-			historicalTimestamps.push(timestamps[i]);
+			const timestamp = timestamps[i] > weekAgoInSeconds
+				? timestamps[i] - (timestamps[i] % hourInSeconds)
+				: timestamps[i] - (timestamps[i] % dayInSeconds);
+			
+			timestampMapper[timestamp] = timestamps[i];
+			roundedTimestamps.push(timestamp);
 		}
 
-    return timestamps;
+    return {timestamps:roundedTimestamps, timestampMapper};
   }
 
 
 }
-

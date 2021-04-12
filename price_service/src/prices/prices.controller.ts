@@ -33,8 +33,8 @@ export class PricesController {
         currencyId,
         chainId,
       ) as HistoricalPrice;
-    }
-
+		}
+		
 		return await this.assetPriceService.getCurrent(addresses, currencyId, chainId);
 	}
 }

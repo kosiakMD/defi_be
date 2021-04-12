@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
@@ -7,7 +8,7 @@ import { Api } from '../thegraph/api';
 import { CURRENCY, PLATFORM } from '../utils/constants';
 
 // TODO: clean file
-export type TokenPrices = { [key: string]: { value: number; db_id: any } };
+export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
 @Injectable()
 export class SushiswapCurrentPricesJob {
@@ -16,34 +17,35 @@ export class SushiswapCurrentPricesJob {
 		public pg: IDatabase<any>,
 		private databaseService: DatabaseService,
 		private theGraphService: Api,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
 	) {}
 
 	public async crawl(job: any, done: any): Promise<void> {
-		console.info('Current SUSHI Prices Job Sarted');
+		this.logger.log('Current SUSHI Prices Job Sarted');
 		try {
-			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-			if (!current_platfrom_id) throw 'No current platform in DB: ' + PLATFORM;
+			const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+			if (!currentPlatfromId) throw 'No current platform in DB: ' + PLATFORM;
 
-			const current_currency_id = await this.databaseService.getCurrentCurrency();
-			if (!current_currency_id) throw 'No current currency in DB: ' + CURRENCY;
+			const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+			if (!currentCurrencyId) throw 'No current currency in DB: ' + CURRENCY;
 
-			const db_assets = await this.databaseService.getSushiTokens();
+			const dbAssets = await this.databaseService.getSushiTokens();
 
-			if (db_assets.length) {
+			if (dbAssets.length) {
 				const results: any = {};
 
-				for (let i = 0; i < db_assets.length; i++) {
-					console.info(db_assets[i]['address']);
-					const one_results = await this.theGraphService.getCurrentSushiTokenPrices(
-						db_assets[i]['address'],
+				for (let i = 0; i < dbAssets.length; i++) {
+					this.logger.log(dbAssets[i]['address']);
+					const oneResults = await this.theGraphService.getCurrentSushiTokenPrices(
+						dbAssets[i]['address'],
 					);
 
-					if (one_results['data']['data']['dataPairs'].length) {
-						const { reserveUSD, totalSupply } = one_results['data']['data']['dataPairs'][0];
+					if (oneResults['data']['data']['dataPairs'].length) {
+						const { reserveUSD, totalSupply } = oneResults['data']['data']['dataPairs'][0];
 
-						//console.info("reserveUSD "+reserveUSD+" totalSupply "+totalSupply+" res ",(Number(reserveUSD) / Number(totalSupply)))
-						results[db_assets[i]['address']] = {
-							db_id: db_assets[i]['id'],
+						//this.logger.log("reserveUSD "+reserveUSD+" totalSupply "+totalSupply+" res ",(Number(reserveUSD) / Number(totalSupply)))
+						results[dbAssets[i]['address']] = {
+							['db_id']: dbAssets[i]['id'],
 							value:
 								Number(reserveUSD) === 0 || Number(totalSupply) === 0
 									? 0
@@ -52,17 +54,12 @@ export class SushiswapCurrentPricesJob {
 					}
 				}
 
-				await this.databaseService.addHourlyPricesToDb(results, current_currency_id);
+				await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId);
 			}
 		} catch (e) {
-			console.error(e);
+			this.logger.error(e);
 		}
-		console.info('Add Current SUSHI Prices Job done');
+		this.logger.log('Add Current SUSHI Prices Job done');
 		done();
 	}
 }
-
-// const getEthPrice = async (): Promise<number> => {
-// 	const { data } = await getCurrentEthPrice();
-// 	return data[0].current_price;
-// };

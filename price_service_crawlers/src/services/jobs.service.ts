@@ -1,5 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import Agenda from 'agenda';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
@@ -20,7 +21,6 @@ import {
 import { DatabaseService } from './database.service';
 
 // NOTE: We are limited to 10 bu to be safe we do 6
-//
 
 @Injectable()
 export class JobsService {
@@ -37,6 +37,7 @@ export class JobsService {
 		private uniSwapFirstCheckJob: UniSwapFirstCheckJob,
 		private balancerFirstCheckJob: BalancerFirstCheckJob,
 		private curveFirstCheckJob: CurveFirstCheckJob,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
 	) {
 		const connectionString =
 			'mongodb://' +
@@ -57,12 +58,12 @@ export class JobsService {
 			.on('ready', async () => {
 				await this.agenda.start();
 				await this.agenda.cancel({});
-				console.info('Agenda started!!!');
+				this.logger.log('Agenda started');
 				// check for new tokens on API
 				this.agenda.define(
 					'CRAWL_COINGECKO_NEW_TOKENS',
 					{ lockLifetime: 10000 },
-					this.coingeckoNewTokenCheckJob.crawl_new_tokens.bind(this),
+					this.coingeckoNewTokenCheckJob.crawlNewTokens.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
@@ -73,7 +74,7 @@ export class JobsService {
 				this.agenda.define(
 					'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
 					{ lockLifetime: 10000 },
-					this.coingeckoNewTokenCheckJob.crawl_new_tokens_history.bind(this),
+					this.coingeckoNewTokenCheckJob.crawlNewTokensHistory.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
@@ -93,25 +94,25 @@ export class JobsService {
 				);
 
 				//SUSHI
-				//console.log('starting sushi')
+				//this.logger.log('starting sushi')
 				this.agenda.define(
 					'CRAWL_SUSHI_NEW_TOKENS',
 					{ lockLifetime: 10000 },
-					this.sushiSwapNewTokenCheckJob.crawl_new_tokens.bind(this),
+					this.sushiSwapNewTokenCheckJob.crawlNewTokens.bind(this),
 				);
 				this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_NEW_TOKENS', {});
 
 				this.agenda.define(
 					'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
 					{ lockLifetime: 10000 },
-					this.sushiSwapNewTokenCheckJob.crawl_new_tokens_history.bind(this),
+					this.sushiSwapNewTokenCheckJob.crawlNewTokensHistory.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
 					'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
 					{},
 				);
-				
+
 				this.agenda.define(
 					'CRAWL_SUSHI_CURRENT_PRICE',
 					{ lockLifetime: 10000 },
@@ -124,25 +125,25 @@ export class JobsService {
 				);
 
 				//UNISWAP
-				//console.log('starting uniswap')
+				//this.logger.log('starting uniswap')
 				this.agenda.define(
 					'CRAWL_UNISWAP_NEW_TOKENS',
 					{ lockLifetime: 10000 },
-					this.uniSwapFirstCheckJob.crawl_new_tokens.bind(this),
+					this.uniSwapFirstCheckJob.crawlNewTokens.bind(this),
 				);
 				this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_UNISWAP_NEW_TOKENS', {});
 
 				this.agenda.define(
 					'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
 					{ lockLifetime: 10000 },
-					this.uniSwapFirstCheckJob.crawl_new_tokens_history.bind(this),
+					this.uniSwapFirstCheckJob.crawlNewTokensHistory.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
 					'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
 					{},
 				);
-				
+
 				this.agenda.define(
 					'CRAWL_UNISWAP_CURRENT_PRICE',
 					{ lockLifetime: 10000 },
@@ -154,11 +155,11 @@ export class JobsService {
 					{},
 				);
 
-				// console.log('starting balancer');
+				// this.logger.log('starting balancer');
 				this.agenda.define(
 					'CRAWL_BALANCER_NEW_TOKENS',
 					{ lockLifetime: 10000 },
-					this.balancerFirstCheckJob.crawl_new_tokens.bind(this),
+					this.balancerFirstCheckJob.crawlNewTokens.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
@@ -169,7 +170,7 @@ export class JobsService {
 				this.agenda.define(
 					'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
 					{ lockLifetime: 10000 },
-					this.balancerFirstCheckJob.crawl_new_tokens_history.bind(this),
+					this.balancerFirstCheckJob.crawlNewTokensHistory.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
@@ -177,27 +178,26 @@ export class JobsService {
 					{},
 				);
 
-				//console.log('starting curve')
+				//this.logger.log('starting curve')
 				this.agenda.define(
 					'CRAWL_CURVE_NEW_TOKENS',
 					{ lockLifetime: 10000 },
-					this.curveFirstCheckJob.crawl_new_tokens.bind(this),
+					this.curveFirstCheckJob.crawlNewTokens.bind(this),
 				);
 				this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_CURVE_NEW_TOKENS', {});
 
 				this.agenda.define(
 					'CRAWL_CURVE_NEW_TOKENS_HISTORY',
 					{ lockLifetime: 10000 },
-					this.curveFirstCheckJob.crawl_new_tokens_history.bind(this),
+					this.curveFirstCheckJob.crawlNewTokensHistory.bind(this),
 				);
 				this.agenda.every(
 					NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
 					'CRAWL_CURVE_NEW_TOKENS_HISTORY',
 					{},
-        );
-        
+				);
 			})
-			.on('error', (e) => console.error('Agenda connection error!', e));
+			.on('error', (e) => this.logger.error('Agenda connection error!', e));
 
 		//this.agenda.start();
 	}

@@ -1,27 +1,28 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import axios from 'axios';
 import rateLimit from 'axios-rate-limit';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import {
-	getCurrentCoinPrices,
-	getCurrentEthPrice,
-	getCurrentBtcPrice,
 	getCoinHistoricalRangePrices,
+	getCurrentBtcPrice,
+	getCurrentEthPrice,
 } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { isETH, toTimestamp } from '../utils/common';
-import { ETH_ADDRESS, CURRENCY, TEST_TOKENS, PLATFORM } from '../utils/constants';
+import { toTimestamp } from '../utils/common';
+import { CURRENCY, PLATFORM } from '../utils/constants';
+import { getNextDayStart } from '../utils/time';
 
 const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
 
-export type TokenPrices = { [key: string]: number };
+// TODO: for what?
+// export type TokenPrices = { [key: string]: number };
+// export type CoingeckoTokenPrices = { [key: string]: { value: number; db_id: any } };
+// const tokens: string[] = TEST_TOKENS;
 export type TokenAddreses = { [key: string]: number };
-
-export type CoingeckoTokenPrices = { [key: string]: { value: number; db_id: any } };
-const tokens: string[] = TEST_TOKENS;
 
 @Injectable()
 export class CurveFirstCheckJob {
@@ -29,207 +30,202 @@ export class CurveFirstCheckJob {
 		@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
 		private databaseService: DatabaseService,
 		private theGraphService: Api,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
 	) {}
 
-	public async crawl_new_tokens(job: any, done: any): Promise<void> {
+	public async crawlNewTokens(job: any, done: any): Promise<void> {
 		try {
-			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-			if (!current_platfrom_id) {
+			const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+			if (!currentPlatfromId) {
 				throw 'No current platform in DB: ' + PLATFORM;
 			}
 
-			const current_currency_id = await this.databaseService.getCurrentCurrency();
-			if (!current_currency_id) {
+			const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+			if (!currentCurrencyId) {
 				throw 'No current currency in DB: ' + CURRENCY;
 			}
 
-			console.log('request prepared');
+			this.logger.log('request prepared');
 			const poolsRequest = await this.theGraphService.getCurvePoolsTokens();
 
 			const pools = poolsRequest['data']['data']['pools'];
-			console.log('tokens ', pools);
+			this.logger.log(pools, 'tokens');
 			for (let i = 0; i < pools.length; i++) {
-				const { virtualPrice, name, id, poolToken } = pools[i];
+				const { virtualPrice, name, /*id,// TODO: for what?*/ poolToken } = pools[i];
 
 				//let pool_token_supply = Math.pow(10, -18) * Number(poolTokenSupply);
-				//console.log("pool_token_supply ",pool_token_supply)
+				//this.logger.log("pool_token_supply ",pool_token_supply)
 
-				let pool_lp_token_price;
+				let poolLpTokenPrice;
 
 				if (poolToken.name.toLowerCase().indexOf('usd') > -1) {
-					console.log('usd');
-					pool_lp_token_price = Number(virtualPrice);
+					this.logger.log('usd');
+					poolLpTokenPrice = Number(virtualPrice);
 				} else if (poolToken.name.toLowerCase().indexOf('btc') > -1) {
-					console.log('btc');
+					this.logger.log('btc');
 					const { data } = await getCurrentBtcPrice();
-					pool_lp_token_price = Number(virtualPrice) * data[0].current_price;
+					poolLpTokenPrice = Number(virtualPrice) * data[0].currentPrice;
 				} else if (poolToken.name.toLowerCase().indexOf('eth') > -1) {
-					console.log('eth');
+					this.logger.log('eth');
 					const { data } = await getCurrentEthPrice();
-					pool_lp_token_price = Number(virtualPrice) * data[0].current_price;
+					poolLpTokenPrice = Number(virtualPrice) * data[0].current_price;
 				} else {
-					console.log(' No current value, skipping... ' + poolToken.name);
+					this.logger.log(' No current value, skipping... ' + poolToken.name);
 					continue;
 				}
 
-				console.log('LP Price ', pool_lp_token_price);
+				this.logger.log(poolLpTokenPrice, 'LP Price');
 
-				let db_pool = await this.databaseService.getTokenByAddress(poolToken.id);
-				console.log('db_pool ', db_pool);
-				if (!db_pool.length) {
-					const new_entity = await this.databaseService.addNewSushiTokenToDb(
+				let dbPool = await this.databaseService.getTokenByAddress(poolToken.id);
+				this.logger.log(dbPool, 'dbPool');
+				if (!dbPool.length) {
+					// TODO: for what?
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const newEntity = await this.databaseService.addNewSushiTokenToDb(
 						poolToken.id,
 						name,
 						name,
 						PLATFORM,
 						'CURVE',
-						current_platfrom_id,
+						currentPlatfromId,
 					);
 
-					db_pool = await this.databaseService.getTokenByAddress(poolToken.id);
+					dbPool = await this.databaseService.getTokenByAddress(poolToken.id);
 				}
 
 				await this.databaseService.addOnePrice(
-					db_pool[0]['id'],
+					dbPool[0]['id'],
 					toTimestamp(new Date()),
-					pool_lp_token_price,
-					current_currency_id,
+					poolLpTokenPrice,
+					currentCurrencyId,
 				);
 			}
 		} catch (e) {
-			console.log(e);
+			this.logger.error(e);
 		}
-		console.log('Jot current curve prices done!');
+		this.logger.log('Jot current curve prices done!');
 		done();
 	}
 
-	public crawl_new_tokens_history = async (job: any, done: any): Promise<void> => {
-		const current_currency_id = await this.databaseService.getCurrentCurrency();
-		if (!current_currency_id) {
+	public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
+		const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+		if (!currentCurrencyId) {
 			throw 'No current currency in DB: ' + CURRENCY;
 		}
 
-		const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-		if (!current_platfrom_id) {
+		const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+		if (!currentPlatfromId) {
 			throw 'No current platform in DB: ' + PLATFORM;
 		}
 
-		const db_assets = await this.databaseService.getNewTokensByResource('CURVE');
-		console.log('starting uniswap history clawler');
+		const dbAssets = await this.databaseService.getNewTokensByResource('CURVE');
+		this.logger.log('starting uniswap history clawler');
 
-		const first_tx_data = await this.theGraphService.getCurvefirstTxTimestamp();
-		const first_timestamp = parseInt(first_tx_data['data']['data']['transactions'][0]['timestamp']);
-		console.log('first_tx_data ', first_tx_data['data']['data']['transactions']);
+		const firstTxData = await this.theGraphService.getCurvefirstTxTimestamp();
+		const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
+		this.logger.log(firstTxData['data']['data']['transactions'], 'firstTxData');
 
-		const current_day_ts = Math.round(Date.now() / 1000);
+		const currentDayTs = Math.round(Date.now() / 1000);
 		const secondsInDay = 86400;
 
-		console.log(' current_day_ts ', current_day_ts);
+		this.logger.log(currentDayTs, ' currentDayTs');
 
-		for (let i = 0; i < db_assets.length; i++) {
-			let day_num = 0,
-				check_day_ts = getNextDayStart(first_timestamp);
-			console.log('check_day_ts ', check_day_ts);
-			let prices_count = 0;
+		for (let i = 0; i < dbAssets.length; i++) {
+			let dayNum = 0,
+				checkDayTs = getNextDayStart(firstTimestamp);
+			this.logger.log(checkDayTs, 'checkDayTs');
+			let pricesCount = 0;
 			do {
-				const first_day_block_query = await this.theGraphService.getCurvefirstBlockQuery(
-					check_day_ts,
+				const firstDayBlockQuery = await this.theGraphService.getCurvefirstBlockQuery(checkDayTs);
+				const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['block'];
+				this.logger.log(blockNumber, 'blockNumber');
+
+				const dailyPriceQuery = await this.theGraphService.getCurveDailyBlockPricesQuery(
+					parseInt(blockNumber),
+					dbAssets[i]['address'],
 				);
-				const block_number = first_day_block_query['data']['data']['blocks'][0]['block'];
-				console.log('block_number ', block_number);
+				//this.logger.log(daily_price_query['data']['data']['pools'][0])
 
-				const daily_price_query = await this.theGraphService.getCurveDailyBlockPricesQuery(
-					parseInt(block_number),
-					db_assets[i]['address'],
-				);
-				//console.log(daily_price_query['data']['data']['pools'][0])
+				if (dailyPriceQuery['data']['data']['pools'].length) {
+					const { virtualPrice, /*name, id, TODO: fpr what?*/ poolToken } = dailyPriceQuery['data'][
+						'data'
+					]['pools'][0];
 
-				if (daily_price_query['data']['data']['pools'].length) {
-					const { virtualPrice, name, id, poolToken } = daily_price_query['data']['data'][
-						'pools'
-					][0];
-
-					let pool_lp_token_price;
+					let poolLpTokenPrice;
 
 					if (poolToken.name.toLowerCase().indexOf('usd') > -1) {
-						console.log('usd');
-						pool_lp_token_price = Number(virtualPrice);
+						this.logger.log('usd');
+						poolLpTokenPrice = Number(virtualPrice);
 					} else if (poolToken.name.toLowerCase().indexOf('btc') > -1) {
-						console.log('btc');
+						this.logger.log('btc');
 						const {
 							data: { prices },
 						} = await getCoinHistoricalRangePrices(
 							http,
 							'bitcoin',
-							check_day_ts,
-							check_day_ts + secondsInDay,
+							checkDayTs,
+							checkDayTs + secondsInDay,
 						);
 
-						console.log('hist BTC price ', prices);
-						pool_lp_token_price = Number(virtualPrice) * prices[0][1];
+						this.logger.log(prices, 'hist BTC price');
+						poolLpTokenPrice = Number(virtualPrice) * prices[0][1];
 					} else if (poolToken.name.toLowerCase().indexOf('eth') > -1) {
-						console.log('eth');
+						this.logger.log('eth');
 						try {
 							const {
 								data: { prices },
 							} = await getCoinHistoricalRangePrices(
 								http,
 								'ethereum',
-								check_day_ts,
-								check_day_ts + secondsInDay,
+								checkDayTs,
+								checkDayTs + secondsInDay,
 							);
-							console.log('hist ETH price ', prices);
-							pool_lp_token_price = Number(virtualPrice) * prices[0][1];
+							this.logger.log(prices, 'hist ETH price');
+							poolLpTokenPrice = Number(virtualPrice) * prices[0][1];
 						} catch (e) {
-							console.log(e);
+							this.logger.error(e);
 						}
 					} else {
-						console.log(' No current value, skipping... ' + poolToken.name);
-						day_num++;
+						this.logger.log(' No current value, skipping... ' + poolToken.name);
+						dayNum++;
 						continue;
 					}
 
-					console.log('LP Price ', pool_lp_token_price);
+					this.logger.log(poolLpTokenPrice, 'LP Price');
 					try {
-						console.log(
-							db_assets[i]['id'] +
+						this.logger.log(
+							dbAssets[i]['id'] +
 								' ' +
-								check_day_ts +
+								checkDayTs +
 								' ' +
-								pool_lp_token_price +
+								poolLpTokenPrice +
 								' ' +
-								current_currency_id,
+								currentCurrencyId,
 						);
 						await this.databaseService.addOnePrice(
-							db_assets[i]['id'],
-							check_day_ts,
-							pool_lp_token_price,
-							current_currency_id,
+							dbAssets[i]['id'],
+							checkDayTs,
+							poolLpTokenPrice,
+							currentCurrencyId,
 						);
 					} catch (e) {
-						console.log(e);
+						this.logger.error(e);
 					}
-					console.log('added new price');
-					prices_count++;
+					this.logger.log('added new price');
+					pricesCount++;
 				}
 
-				day_num++;
-				console.log(check_day_ts);
-				check_day_ts = getNextDayStart(first_timestamp, day_num);
-			} while (check_day_ts < current_day_ts);
+				dayNum++;
+				this.logger.log(checkDayTs);
+				checkDayTs = getNextDayStart(firstTimestamp, dayNum);
+			} while (checkDayTs < currentDayTs);
 
-			if (prices_count) {
-				await this.databaseService.setAssetAsNotNew(db_assets[i]['id']);
-				console.log('Updated pool ' + db_assets[i]['id'] + ' to OLD from NEW');
+			if (pricesCount) {
+				await this.databaseService.setAssetAsNotNew(dbAssets[i]['id']);
+				this.logger.log('Updated pool ' + dbAssets[i]['id'] + ' to OLD from NEW');
 			}
 		}
 
 		done();
 	};
 }
-
-const getNextDayStart = (ts: number, day = 0) => {
-	const secondsInDay = 86400;
-	const dayId = Math.round(ts / secondsInDay);
-	return (dayId + day) * secondsInDay;
-};

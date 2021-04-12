@@ -19,13 +19,13 @@ export const getStartDayOfTimestamp = (timestamp: number) => {
 	return new Date(timestampDate.getFullYear(), timestampDate.getMonth(), timestampDate.getDate());
 };
 
+export const getNextDayOfDate = (date: Date) => {
+	return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+};
+
 export const getNextDayOfTimestamp = (timestamp: number) => {
 	const timestampDate = new Date(timestamp * 1000);
 	return getNextDayOfDate(timestampDate);
-};
-
-export const getNextDayOfDate = (date: Date) => {
-	return new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
 };
 
 /**
@@ -46,4 +46,10 @@ export const getStartOfTheDayTimestamp = (timestamp?: number): number => {
 		  ).getTime()
 		: new Date().setUTCHours(0, 0, 0, 0);
 	return timestampMsToSeconds(startOfTheDayTimestamp);
+};
+
+export const getNextDayStart = (ts: number, day = 0) => {
+	const secondsInDay = 86400;
+	const dayId = Math.round(ts / secondsInDay);
+	return (dayId + day) * secondsInDay;
 };

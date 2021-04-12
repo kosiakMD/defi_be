@@ -54,17 +54,17 @@ export function firstBlockAfterTimestamp(timestamp: number): TheGraphQuery {
 	};
 }
 
-export function firstDailyBlockPairs(block_number: number, token: string): TheGraphQuery {
+export function firstDailyBlockPairs(blockNumber: number, token: string): TheGraphQuery {
 	return {
 		operationName: 'getFirstBlockTimestamp',
 		variables: {
-			block_number: block_number,
+			blockNumber: blockNumber,
 			token: token,
 		},
 		query: `
 	  query firstQuery {
 		pools: 
-		  pools (block:{number:${block_number}},where:{poolToken_in:
+		  pools (block:{number:${blockNumber}},where:{poolToken_in:
 			["${token}"]}) {
 				id
 				name

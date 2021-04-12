@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
@@ -6,7 +7,7 @@ import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { CURRENCY, PLATFORM } from '../utils/constants';
 
-export type TokenPrices = { [key: string]: { value: number; db_id: any } };
+export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
 @Injectable()
 export class UniswapCurrentPricesJob {
@@ -15,37 +16,38 @@ export class UniswapCurrentPricesJob {
 		public pg: IDatabase<any>,
 		private databaseService: DatabaseService,
 		private theGraphService: Api,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
 	) {}
 
 	public async crawl(job: any, done: any): Promise<void> {
-		console.info('Current UNISWAP Prices Job Sarted');
+		this.logger.log('Current UNISWAP Prices Job Sarted');
 		try {
-			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-			if (!current_platfrom_id) throw 'No current platform in DB: ' + PLATFORM;
+			const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+			if (!currentPlatfromId) throw 'No current platform in DB: ' + PLATFORM;
 
-			const current_currency_id = await this.databaseService.getCurrentCurrency();
-			if (!current_currency_id) throw 'No current currency in DB: ' + CURRENCY;
+			const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+			if (!currentCurrencyId) throw 'No current currency in DB: ' + CURRENCY;
 
-			const db_assets = await this.databaseService.getUniTokens();
+			const dbAssets = await this.databaseService.getUniTokens();
 
-			if (db_assets.length) {
+			if (dbAssets.length) {
 				const results: any = {};
 
-				for (let i = 0; i < db_assets.length; i++) {
-					console.info(db_assets[i]['address']);
-					const one_results = await this.theGraphService.getCurrentUniTokenPrices(
-						db_assets[i]['address'],
+				for (let i = 0; i < dbAssets.length; i++) {
+					this.logger.log(dbAssets[i]['address']);
+					const oneResults = await this.theGraphService.getCurrentUniTokenPrices(
+						dbAssets[i]['address'],
 					);
 
-					if (one_results['data']['data']['dataPairs'].length) {
-						const { reserveUSD, totalSupply } = one_results['data']['data']['dataPairs'][0];
+					if (oneResults['data']['data']['dataPairs'].length) {
+						const { reserveUSD, totalSupply } = oneResults['data']['data']['dataPairs'][0];
 
-						console.info(
-							'reserveUSD ' + reserveUSD + ' totalSupply ' + totalSupply + ' res ',
+						this.logger.log(
 							Number(reserveUSD) / Number(totalSupply),
+							'reserveUSD ' + reserveUSD + ' totalSupply ' + totalSupply + ' res ',
 						);
-						results[db_assets[i]['address']] = {
-							db_id: db_assets[i]['id'],
+						results[dbAssets[i]['address']] = {
+							['db_id']: dbAssets[i]['id'],
 							value:
 								Number(reserveUSD) === 0 || Number(totalSupply) === 0
 									? 0
@@ -54,12 +56,12 @@ export class UniswapCurrentPricesJob {
 					}
 				}
 
-				await this.databaseService.addHourlyPricesToDb(results, current_currency_id);
+				await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId);
 			}
 		} catch (e) {
-			console.error(e);
+			this.logger.error(e);
 		}
-		console.info('Add Current UNISWAP Prices Job done');
+		this.logger.log('Add Current UNISWAP Prices Job done');
 		done();
 	}
 }

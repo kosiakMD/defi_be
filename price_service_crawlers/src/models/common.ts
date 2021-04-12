@@ -14,20 +14,19 @@ export interface ERC20Token {
 	totalSupply?: string;
 }
 
-export interface PoolTokenStaked extends ERC20Token, AmountAble {}
-
-export interface PriceAbleToken extends ERC20Token, PriceAble {}
-
-export interface PoolToken extends ERC20Token, PriceAble, AmountAble {
-	reserve: string;
-}
-
 export interface PriceAble {
 	priceUSD?: number;
 }
 
 export interface AmountAble {
 	amount?: string;
+}
+export interface PoolTokenStaked extends ERC20Token, AmountAble {}
+
+export interface PriceAbleToken extends ERC20Token, PriceAble {}
+
+export interface PoolToken extends ERC20Token, PriceAble, AmountAble {
+	reserve: string;
 }
 
 export interface Transaction<T = string> {

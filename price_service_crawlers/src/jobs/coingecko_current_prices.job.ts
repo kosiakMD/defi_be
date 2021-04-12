@@ -1,4 +1,5 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
@@ -7,50 +8,7 @@ import { DatabaseService } from '../services/database.service';
 import { isETH } from '../utils/common';
 import { CURRENCY, ETH_ADDRESS, PLATFORM } from '../utils/constants';
 
-export type TokenPrices = { [key: string]: { value: number; db_id: any } };
-
-@Injectable()
-export class CoingeckoCurrentPricesJob {
-	constructor(
-		@Inject(NEST_PGPROMISE_CONNECTION)
-		public pg: IDatabase<any>,
-		private databaseService: DatabaseService,
-	) {}
-
-	public async crawl(job: any, done: any): Promise<void> {
-		console.info('Current Prices Job Sarted');
-		try {
-			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-			if (!current_platfrom_id) throw 'No current platform in DB: ' + PLATFORM;
-
-			const current_currency_id = await this.databaseService.getCurrentCurrency();
-			if (!current_currency_id) throw 'No current currency in DB: ' + CURRENCY;
-
-			const db_assets = await this.databaseService.getTokensByPlatform(current_platfrom_id);
-
-			if (db_assets.length) {
-				const db_token_addresses_chunks = createAddressChunks(db_assets);
-				//NOTE: request str is too big, making chunks
-				let results: any = {};
-				for (let i = 0; i < db_token_addresses_chunks.length; i++) {
-					const chunk_results = await getCurrentTokenPrices(db_token_addresses_chunks[i]);
-					results = Object.assign(results, chunk_results);
-				}
-
-				for (let i = 0; i < db_assets.length; i++) {
-					if (results[db_assets[i]['address']]) {
-						results[db_assets[i]['address']]['db_id'] = db_assets[i]['id'];
-					}
-				}
-				await this.databaseService.addHourlyPricesToDb(results, current_currency_id);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-		console.info('Add Current Prices Job done');
-		done();
-	}
-}
+export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
 const createAddressChunks = (addresses: any[]): string[][] => {
 	let i, j, temparray;
@@ -58,36 +16,87 @@ const createAddressChunks = (addresses: any[]): string[][] => {
 	const result = [];
 	for (i = 0, j = addresses.length; i < j; i += chunk) {
 		temparray = addresses.slice(i, i + chunk);
-		const db_token_addresses = temparray.map((token) => token['address']);
-		result.push(db_token_addresses);
+		const dbTokenAddresses = temparray.map((token) => token['address']);
+		result.push(dbTokenAddresses);
 	}
 	return result;
 };
 
-const getEthPrice = async (): Promise<number> => {
-	const { data } = await getCurrentEthPrice();
-	return data[0].current_price;
-};
+@Injectable()
+export class CoingeckoCurrentPricesJob {
+	static readonly ethAddress = ETH_ADDRESS;
 
-const getCurrentTokenPrices = async (tokens: string[]): Promise<TokenPrices> => {
-	if (!tokens.length) {
-		return {};
+	constructor(
+		@Inject(NEST_PGPROMISE_CONNECTION)
+		public pg: IDatabase<any>,
+		private databaseService: DatabaseService,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+	) {}
+
+	static getEthPrice = async (): Promise<number> => {
+		const { data } = await getCurrentEthPrice();
+		return data[0].currentPrice;
+	};
+
+	static getCurrentTokenPrices = async (tokens: string[]): Promise<TokenPrices> => {
+		if (!tokens.length) {
+			return {};
+		}
+		const response: TokenPrices = {};
+
+		// NOTE: Special handling of ETH
+		if (tokens.includes(CoingeckoCurrentPricesJob.ethAddress)) {
+			response[CoingeckoCurrentPricesJob.ethAddress] = {
+				value: await CoingeckoCurrentPricesJob.getEthPrice(),
+				['db_id']: null,
+			};
+		}
+
+		const addresses = tokens.filter((token) => !isETH(token)).join(',');
+		const { data } = await getCurrentCoinPrices(addresses);
+
+		return Object.keys(data).reduce(
+			(response, key) => ({
+				...response,
+				[key]: { value: data[key].usd, ['db_id']: null },
+			}),
+			response,
+		);
+	};
+
+	public async crawl(job: any, done: any): Promise<void> {
+		this.logger.log('Current Prices Job Sarted');
+		try {
+			const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+			if (!currentPlatfromId) throw 'No current platform in DB: ' + PLATFORM;
+
+			const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+			if (!currentCurrencyId) throw 'No current currency in DB: ' + CURRENCY;
+
+			const dbAssets = await this.databaseService.getTokensByPlatform(currentPlatfromId);
+
+			if (dbAssets.length) {
+				const dbTokenAddressesChunks = createAddressChunks(dbAssets);
+				//NOTE: request str is too big, making chunks
+				let results: any = {};
+				for (let i = 0; i < dbTokenAddressesChunks.length; i++) {
+					const chunkResults = await CoingeckoCurrentPricesJob.getCurrentTokenPrices(
+						dbTokenAddressesChunks[i],
+					);
+					results = Object.assign(results, chunkResults);
+				}
+
+				for (let i = 0; i < dbAssets.length; i++) {
+					if (results[dbAssets[i]['address']]) {
+						results[dbAssets[i]['address']]['db_Id'] = dbAssets[i]['id'];
+					}
+				}
+				await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId);
+			}
+		} catch (e) {
+			this.logger.error(e);
+		}
+		this.logger.log('Add Current Prices Job done');
+		done();
 	}
-	const response: TokenPrices = {};
-
-	// NOTE: Special handling of ETH
-	if (tokens.includes(ETH_ADDRESS)) {
-		response[ETH_ADDRESS] = { value: await getEthPrice(), db_id: null };
-	}
-
-	const addresses = tokens.filter((token) => !isETH(token)).join(',');
-	const { data } = await getCurrentCoinPrices(addresses);
-
-	return Object.keys(data).reduce(
-		(response, key) => ({
-			...response,
-			[key]: { value: data[key].usd, db_id: null },
-		}),
-		response,
-	);
-};
+}

@@ -1,26 +1,6 @@
 import { AmountAble, Base, ERC20Token, PoolToken, PriceAble, Transaction } from './common';
 
-export interface AutomaticMarketMaker extends Base<'amm'> {
-	isTransferSupported?: boolean;
-	liquidityPositions: LiquidityPosition[];
-}
-
-export interface LiquidityPosition {
-	lpToken: ERC20Token;
-	pool?: LiquidityPool;
-	lpTokenBalance: string;
-	exitedAt: number;
-	earnedFeeUSD?: number;
-	poolTokens: PoolToken[];
-	transactions?: AMMTransaction[];
-}
-
-export interface LiquidityPool {
-	address: string;
-	name?: string;
-}
-
-type AMMTransaction = LiquidityChangeTransaction | SwapTransaction | TransferTransaction;
+export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
 
 export interface LiquidityChangeTransaction extends Transaction {
 	type: 'addLiquidity' | 'removeLiquidity';
@@ -42,4 +22,24 @@ export interface TransferTransaction extends Transaction {
 	token: SwapToken[];
 }
 
-export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
+type AMMTransaction = LiquidityChangeTransaction | SwapTransaction | TransferTransaction;
+
+export interface LiquidityPool {
+	address: string;
+	name?: string;
+}
+
+export interface LiquidityPosition {
+	lpToken: ERC20Token;
+	pool?: LiquidityPool;
+	lpTokenBalance: string;
+	exitedAt: number;
+	earnedFeeUSD?: number;
+	poolTokens: PoolToken[];
+	transactions?: AMMTransaction[];
+}
+
+export interface AutomaticMarketMaker extends Base<'amm'> {
+	isTransferSupported?: boolean;
+	liquidityPositions: LiquidityPosition[];
+}

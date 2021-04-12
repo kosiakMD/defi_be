@@ -21,15 +21,15 @@ export const getCurrentCoinPrices = (addresses) =>
 		`${baseUrl}/simple/token_price/ethereum?contract_addresses=${addresses}&vs_currencies=${CURRENCY}`,
 	);
 
-export const getCoinRangePrices = (http_client, token, from, to) =>
-	http_client.get(
+export const getCoinRangePrices = (httpClient, token, from, to) =>
+	httpClient.get(
 		`${baseUrl}/coins/ethereum/contract/${token}/market_chart/range?vs_currency=` +
 			CURRENCY +
 			`&from=${from}&to=${to}`,
 	);
 
-export const getCoinHistoricalRangePrices = (http_client, coin, from, to) =>
-	http_client.get(
+export const getCoinHistoricalRangePrices = (httpClient, coin, from, to) =>
+	httpClient.get(
 		`${baseUrl}/coins/${coin}/market_chart/range?vs_currency=` +
 			CURRENCY +
 			`&from=${from}&to=${to}`,

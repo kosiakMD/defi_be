@@ -1,7 +1,13 @@
 import { ERC20Token } from './common';
 
-export interface TransactionsResponse {
-	[userAddress: string]: Transaction[];
+export interface ERC20Transfer {
+	fromAddress: string;
+	toAddress: string;
+	amount: string;
+	token: ERC20Token;
+	tokenPriceUSD?: number;
+	totalPriceUSD?: number;
+	logIndex?: number;
 }
 
 export interface Transaction {
@@ -14,12 +20,6 @@ export interface Transaction {
 	erc20Transfers: ERC20Transfer[];
 }
 
-export interface ERC20Transfer {
-	fromAddress: string;
-	toAddress: string;
-	amount: string;
-	token: ERC20Token;
-	tokenPriceUSD?: number;
-	totalPriceUSD?: number;
-	logIndex?: number;
+export interface TransactionsResponse {
+	[userAddress: string]: Transaction[];
 }

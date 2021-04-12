@@ -1,6 +1,13 @@
 import axios from 'axios';
 import { injectable } from 'inversify';
 
+import {
+	EtherscanErc20Transfer,
+	EtherscanGasOracleResponse,
+	EtherscanResponse,
+	EtherscanTransaction,
+} from './interfaces';
+
 // FIXME: This should be in config
 const ETHERSCAN_KEY = 'UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G';
 const baseUrl = 'https://api.etherscan.io/api';
@@ -52,60 +59,3 @@ export class EtherscanApi {
 		return result || [];
 	}
 }
-
-type EtherscanResponse<T> = {
-	status: '1' | '0';
-	message?: string;
-	result?: T;
-};
-
-export type EtherscanTransaction = {
-	blockNumber: string;
-	timeStamp: string;
-	hash: string;
-	nonce: string;
-	blockHash: string;
-	transactionIndex: string;
-	from: string;
-	to: string;
-	value: string;
-	gas: string;
-	gasPrice: string;
-	isError: string;
-	txreceipt_status: string;
-	input: string;
-	contractAddress: string;
-	cumulativeGasUsed: string;
-	gasUsed: string;
-	confirmations: string;
-	ethPriceUSD?: number;
-	totalPriceUSD?: number;
-};
-
-export type EtherscanErc20Transfer = {
-	blockNumber: string;
-	timeStamp: string;
-	hash: string;
-	nonce: string;
-	blockHash: string;
-	from: string;
-	contractAddress: string;
-	to: string;
-	value: string;
-	tokenName: string;
-	tokenSymbol: string;
-	tokenDecimal: string;
-	transactionIndex: string;
-	gas: string;
-	gasPrice: string;
-	gasUsed: string;
-	cumulativeGasUsed: string;
-	confirmations: string;
-};
-
-type EtherscanGasOracleResponse = {
-	LastBlock: string;
-	SafeGasPrice: string;
-	ProposeGasPrice: string;
-	FastGasPrice: string;
-};

@@ -1,4 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+/* eslint-disable camelcase*/
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
@@ -10,7 +12,10 @@ export type TokenAddreses = { [key: string]: number };
 
 @Injectable()
 export class DatabaseService {
-	constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>) {}
+	constructor(
+		@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+	) {}
 
 	public getTokenByAddress = (address: string) =>
 		this.pg.any('SELECT * FROM prices.asset WHERE address = $1', address);
@@ -94,8 +99,8 @@ export class DatabaseService {
 
 			return true;
 		} catch (e) {
-			console.log('coin error ' + coin_id + ' ', values);
-			console.error('Token save error:', e);
+			this.logger.error(coin_id, 'coin error');
+			this.logger.error('Token save error:', e);
 			return false;
 		}
 	};
@@ -104,16 +109,17 @@ export class DatabaseService {
 		const current_timestamp = toTimestamp(new Date());
 		try {
 			for (const address in prices) {
+				// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 				// @ts-ignore
 				if (prices[address].db_id && (prices[address].value || prices[address]['value'] === 0)) {
 					await this.pg.any(
 						'INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ($1, $2, $3, $4); ',
 						[prices[address].db_id, currency_id, current_timestamp, prices[address].value],
 					);
-				} else console.log('some error with ', prices[address]);
+				} else this.logger.error(prices[address], 'some error with');
 			}
 		} catch (e) {
-			console.log(e);
+			this.logger.error(e);
 		}
 		return;
 	};

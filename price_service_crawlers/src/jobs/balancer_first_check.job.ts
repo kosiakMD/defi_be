@@ -1,20 +1,20 @@
-import { Injectable, Inject } from '@nestjs/common';
-import axios from 'axios';
-import rateLimit from 'axios-rate-limit';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { isETH, toTimestamp } from '../utils/common';
-import { ETH_ADDRESS, CURRENCY, TEST_TOKENS, PLATFORM } from '../utils/constants';
+import { toTimestamp } from '../utils/common';
+import { CURRENCY, PLATFORM } from '../utils/constants';
+import { getNextDayStart } from '../utils/time';
 
-const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
-export type TokenPrices = { [key: string]: number };
 export type TokenAddreses = { [key: string]: number };
-
-export type CoingeckoTokenPrices = { [key: string]: { value: number; db_id: any } };
-const tokens: string[] = TEST_TOKENS;
+// TODO: fpr what?
+// const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
+// export type TokenPrices = { [key: string]: number };
+// export type CoingeckoTokenPrices = { [key: string]: { value: number; db_id: any } };
+// const tokens: string[] = TEST_TOKENS;
 
 @Injectable()
 export class BalancerFirstCheckJob {
@@ -22,247 +22,237 @@ export class BalancerFirstCheckJob {
 		@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
 		private databaseService: DatabaseService,
 		private theGraphService: Api,
+		@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
 	) {}
 
-	public async crawl_new_tokens(job: any, done: any): Promise<void> {
+	public async crawlNewTokens(job: any, done: any): Promise<void> {
 		try {
-			const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-			if (!current_platfrom_id) {
+			const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+			if (!currentPlatfromId) {
 				throw 'No current platform in DB: ' + PLATFORM;
 			}
 
-			const current_currency_id = await this.databaseService.getCurrentCurrency();
-			if (!current_currency_id) {
+			const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+			if (!currentCurrencyId) {
 				throw 'No current currency in DB: ' + CURRENCY;
 			}
 
-			console.log('request prepared');
+			this.logger.log('request prepared');
 			const tokenRequest = await this.theGraphService.getBalancerPoolsTokens();
-			//console.log("tokens ",tokenRequest['data'][''])
+			//this.logger.log("tokens ",tokenRequest['data'][''])
 			const tokens = tokenRequest['data']['data']['pools'];
 
-			const db_assets = await this.databaseService.getUniTokens();
-			const db_token_addresses = db_assets.map((token) => token['address']);
+			const dbAssets = await this.databaseService.getUniTokens();
+			// TODO: fpr what?
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			const dbTokenAddresses = dbAssets.map((token) => token['address']);
 
 			for (let i = 0; i < tokens.length; i++) {
-				//console.log(i + " of "+tokens.length)
+				const poolTokens = tokens[i]['tokens'];
 
-				const pool_tokens = tokens[i]['tokens'];
-
-				let lp_token_price = 0;
-				console.log(
-					'checking token-pool  ' + tokens[i]['id'] + ' with token length ' + pool_tokens.length,
+				let lpTokenPrice = 0;
+				this.logger.log(
+					'checking token-pool  ' + tokens[i]['id'] + ' with token length ' + poolTokens.length,
 				);
 				if (parseInt(tokens[i]['totalShares']) !== 0) {
-					let no_token_price = false,
-						total_value_locked = 0,
-						total_name = '',
-						total_symbol = '';
-					for (let z = 0; z < pool_tokens.length; z++) {
+					let noTokenPrice = false,
+						totalValueLocked = 0,
+						totalName = '',
+						totalSymbol = '';
+					for (let z = 0; z < poolTokens.length; z++) {
 						try {
-							let token_price;
-							console.log('pool_tokens[z] ', pool_tokens[z]);
-							total_name += (total_name.length ? '-' : '') + pool_tokens[z]['name'];
-							total_symbol += (total_symbol.length ? '-' : '') + pool_tokens[z]['symbol'];
+							let tokenPrice;
+							this.logger.log(poolTokens[z], `poolTokens[${z}]`);
+							totalName += (totalName.length ? '-' : '') + poolTokens[z]['name'];
+							totalSymbol += (totalSymbol.length ? '-' : '') + poolTokens[z]['symbol'];
 
-							const current_db_token = await this.databaseService.getTokenByAddress(
-								pool_tokens[z]['id'].split('-')[1],
+							const currentDbToken = await this.databaseService.getTokenByAddress(
+								poolTokens[z]['id'].split('-')[1],
 							);
-							if (current_db_token.length) {
-								const current_db_token_price = await this.databaseService.getTokenPrice(
-									current_db_token[0]['id'],
+							if (currentDbToken.length) {
+								const currentDbTokenPrice = await this.databaseService.getTokenPrice(
+									currentDbToken[0]['id'],
 								);
-								if (current_db_token_price.length) {
-									console.log('price_found');
-									token_price = current_db_token_price[0]['value'];
-									console.log(current_db_token_price[0]['asset_id'] + ' --- ', token_price);
+								if (currentDbTokenPrice.length) {
+									this.logger.log('priceFound');
+									tokenPrice = currentDbTokenPrice[0]['value'];
+									this.logger.log(tokenPrice, currentDbTokenPrice[0]['asset_id']);
 								} else {
-									console.log('price_not_found');
+									this.logger.log('price_not_found');
 								}
 							}
 
-							if (!token_price) {
-								console.log('no_token_price');
-								no_token_price = true;
+							if (!tokenPrice) {
+								this.logger.log('noTokenPrice');
+								noTokenPrice = true;
 								break;
 							}
 
-							total_value_locked += Number(pool_tokens[z]['balance']) * Number(token_price);
+							totalValueLocked += Number(poolTokens[z]['balance']) * Number(tokenPrice);
 						} catch (e) {
-							console.log('Balancer token parse ERROR ', e);
+							// TODO: create extended Error
+							this.logger.error(e, 'Balancer token parse ERROR');
 						}
 					}
-					if (no_token_price) {
+					if (noTokenPrice) {
 						continue;
 					}
 
-					lp_token_price = total_value_locked / Number(tokens[i]['totalShares']);
-					console.log(
-						'lp_token_price ----------------------------------------------------------------',
-						lp_token_price,
-					);
+					lpTokenPrice = totalValueLocked / Number(tokens[i]['totalShares']);
+					this.logger.log(lpTokenPrice, 'lpTokenPrice');
 
-					let db_pool = await this.databaseService.getTokenByAddress(tokens[i]['id']);
-					console.log('db_pool ', db_pool);
-					if (!db_pool.length) {
-						const new_entity = await this.databaseService.addNewSushiTokenToDb(
+					let dbPool = await this.databaseService.getTokenByAddress(tokens[i]['id']);
+					this.logger.log(dbPool, 'dbPool');
+					if (!dbPool.length) {
+						// TODO: for what?
+						// eslint-disable-next-line @typescript-eslint/no-unused-vars
+						const newEntity = await this.databaseService.addNewSushiTokenToDb(
 							tokens[i]['id'],
-							total_name,
-							total_symbol,
+							totalName,
+							totalSymbol,
 							PLATFORM,
 							'BALANCER',
-							current_platfrom_id,
+							currentPlatfromId,
 						);
 
-						db_pool = await this.databaseService.getTokenByAddress(tokens[i]['id']);
+						dbPool = await this.databaseService.getTokenByAddress(tokens[i]['id']);
 					}
 
 					await this.databaseService.addOnePrice(
-						db_pool[0]['id'],
+						dbPool[0]['id'],
 						toTimestamp(new Date()),
-						lp_token_price,
-						current_currency_id,
+						lpTokenPrice,
+						currentCurrencyId,
 					);
 				} else {
-					//console.log('totalShares is 0')
+					//this.logger.log('totalShares is 0')
 					continue;
 				}
 			}
 		} catch (e) {
-			console.log(e);
+			this.logger.error(e);
 		}
 		done();
 	}
 
-	public crawl_new_tokens_history = async (job: any, done: any): Promise<void> => {
-		const current_currency_id = await this.databaseService.getCurrentCurrency();
-		if (!current_currency_id) {
+	public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
+		const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+		if (!currentCurrencyId) {
 			throw 'No current currency in DB: ' + CURRENCY;
 		}
 
-		const current_platfrom_id = await this.databaseService.getCurrentPlatform();
-		if (!current_platfrom_id) {
+		const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+		if (!currentPlatfromId) {
 			throw 'No current platform in DB: ' + PLATFORM;
 		}
 
-		const db_assets = await this.databaseService.getNewTokensByResource('BALANCER');
-		console.log('starting uniswap history clawler');
+		const dbAssets = await this.databaseService.getNewTokensByResource('BALANCER');
+		this.logger.log('starting uniswap history clawler');
 
-		const first_tx_data = await this.theGraphService.getBalancerfirstTxTimestamp();
-		const first_timestamp = parseInt(first_tx_data['data']['data']['transactions'][0]['timestamp']);
-		console.log('first_tx_data ', first_tx_data['data']['data']['transactions']);
+		const firstTxData = await this.theGraphService.getBalancerfirstTxTimestamp();
+		const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
+		this.logger.log(firstTxData['data']['data']['transactions'], 'firstTxData');
 
-		const current_day_ts = Math.round(Date.now() / 1000);
+		const currentDayTs = Math.round(Date.now() / 1000);
 
-		console.log(' current_day_ts ', current_day_ts);
+		this.logger.log(currentDayTs, ' currentDayTs');
 
-		for (let i = 0; i < db_assets.length; i++) {
-			let day_num = 0,
-				check_day_ts = getNextDayStart(first_timestamp);
-			console.log('check_day_ts ', check_day_ts);
-			let prices_count = 0;
+		for (let i = 0; i < dbAssets.length; i++) {
+			let dayNum = 0,
+				checkDayTs = getNextDayStart(firstTimestamp);
+			this.logger.log(checkDayTs, 'checkDayTs');
+			let pricesCount = 0;
 			do {
-				const first_day_block_query = await this.theGraphService.getBalancerfirstBlockQuery(
-					check_day_ts,
+				const firstDayBlockQuery = await this.theGraphService.getBalancerfirstBlockQuery(
+					checkDayTs,
 				);
-				const block_number = first_day_block_query['data']['data']['blocks'][0]['block'];
-				console.log('block_number ', block_number);
+				const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['block'];
+				this.logger.log(blockNumber, 'blockNumber');
 
-				const daily_price_query = await this.theGraphService.getBalancerDailyBlockPricesQuery(
-					parseInt(block_number),
-					db_assets[i]['address'],
+				const dailyPriceQuery = await this.theGraphService.getBalancerDailyBlockPricesQuery(
+					parseInt(blockNumber),
+					dbAssets[i]['address'],
 				);
-				console.log(daily_price_query['data']['data']);
-				if (daily_price_query['data']['data']['pools'].length) {
-					const { totalShares, tokens } = daily_price_query['data']['data']['pools'][0];
+				this.logger.log(dailyPriceQuery['data']['data']);
+				if (dailyPriceQuery['data']['data']['pools'].length) {
+					const { totalShares, tokens } = dailyPriceQuery['data']['data']['pools'][0];
 
-					const pool_tokens = tokens;
-					let lp_token_price = 0;
+					const poolTokens = tokens;
+					let lpTokenPrice = 0;
 
-					console.log(
-						'checking token-pool  ' +
-							db_assets[i]['address'] +
-							' with token length ' +
-							pool_tokens.length,
+					this.logger.log(
+						dbAssets[i]['address'] + ' with token length ' + poolTokens.length,
+						'checking token-pool',
 					);
 					if (parseInt(totalShares) !== 0) {
-						let no_token_price = false,
-							total_value_locked = 0,
-							total_name = '',
-							total_symbol = '';
+						let noTokenPrice = false,
+							totalValueLocked = 0,
+							totalName = '',
+							totalSymbol = '';
 
-						for (let z = 0; z < pool_tokens.length; z++) {
-							let token_price;
-							console.log('z ', z);
-							total_name += (total_name.length ? '-' : '') + pool_tokens[z]['name'];
-							total_symbol += (total_symbol.length ? '-' : '') + pool_tokens[z]['symbol'];
+						for (let z = 0; z < poolTokens.length; z++) {
+							let tokenPrice;
+							this.logger.log(z, 'z');
+							totalName += (totalName.length ? '-' : '') + poolTokens[z]['name'];
+							totalSymbol += (totalSymbol.length ? '-' : '') + poolTokens[z]['symbol'];
 
-							const current_db_token = await this.databaseService.getTokenByAddress(
-								pool_tokens[z]['id'].split('-')[1],
+							const currentDbToken = await this.databaseService.getTokenByAddress(
+								poolTokens[z]['id'].split('-')[1],
 							);
-							if (current_db_token.length) {
-								const current_db_token_price = await this.databaseService.getTokenPrice(
-									current_db_token[0]['id'],
+							if (currentDbToken.length) {
+								const currentDbTokenPrice = await this.databaseService.getTokenPrice(
+									currentDbToken[0]['id'],
 								);
 
-								if (current_db_token_price.length) {
-									token_price = current_db_token_price[0]['value'];
-									console.log(current_db_token_price[0]['asset_id'] + ' --- ', token_price);
+								if (currentDbTokenPrice.length) {
+									tokenPrice = currentDbTokenPrice[0]['value'];
+									this.logger.log(tokenPrice, currentDbTokenPrice[0]['asset_id']);
 								} else {
 									/*price not found */
 								}
 							}
 
-							if (!token_price) {
-								no_token_price = true;
+							if (!tokenPrice) {
+								noTokenPrice = true;
 								break;
 							}
 
-							total_value_locked += Number(pool_tokens[z]['balance']) * Number(token_price);
-							//console.log("total_value_locked ",total_value_locked)
+							totalValueLocked += Number(poolTokens[z]['balance']) * Number(tokenPrice);
+							//this.logger.log("totalValueLocked ",totalValueLocked)
 						}
-						if (no_token_price) {
-							console.log('no token price...NEXT');
+						if (noTokenPrice) {
+							this.logger.log('no token price...NEXT');
 							continue;
 						}
 
-						lp_token_price = total_value_locked / Number(totalShares);
-						console.log(
-							'lp_token_price ----------------------------------------------------------------',
-							lp_token_price,
-						);
+						lpTokenPrice = totalValueLocked / Number(totalShares);
+						this.logger.log(lpTokenPrice, 'lpTokenPrice');
 
 						await this.databaseService.addOnePrice(
-							db_assets[i]['id'],
-							check_day_ts,
-							lp_token_price,
-							current_currency_id,
+							dbAssets[i]['id'],
+							checkDayTs,
+							lpTokenPrice,
+							currentCurrencyId,
 						);
-						prices_count++;
+						pricesCount++;
 					} else {
-						//console.log('totalShares is 0')
-						day_num++;
+						//this.logger.log('totalShares is 0')
+						dayNum++;
 						continue;
 					}
 				}
 
-				day_num++;
-				console.log(check_day_ts);
-				check_day_ts = getNextDayStart(first_timestamp, day_num);
-			} while (check_day_ts < current_day_ts);
+				dayNum++;
+				this.logger.log(checkDayTs);
+				checkDayTs = getNextDayStart(firstTimestamp, dayNum);
+			} while (checkDayTs < currentDayTs);
 
-			if (prices_count) {
-				await this.databaseService.setAssetAsNotNew(db_assets[i]['id']);
-				console.log('Updated pool to OLD from NEW');
+			if (pricesCount) {
+				await this.databaseService.setAssetAsNotNew(dbAssets[i]['id']);
+				this.logger.log('Updated pool to OLD from NEW');
 			}
 		}
 
 		done();
 	};
 }
-
-const getNextDayStart = (ts: number, day = 0) => {
-	const secondsInDay = 86400;
-	const dayId = Math.round(ts / secondsInDay);
-	return (dayId + day) * secondsInDay;
-};

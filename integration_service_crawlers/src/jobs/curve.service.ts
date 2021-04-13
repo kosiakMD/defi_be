@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import pLimit from 'p-limit';
 
 import { DatabaseService } from '../DB/database.service';
-import { TheGraphQuery } from '../app/interfaces/graph.interface';
+import { TheGraphQuery } from './interfaces/graph.interface';
 
 axiosRetry(axios, {
   retries: 1e9,

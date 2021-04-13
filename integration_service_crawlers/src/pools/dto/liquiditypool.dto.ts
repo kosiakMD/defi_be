@@ -1,0 +1,15 @@
+import { APY } from './apy.dto';
+import { Token } from './token.dto';
+import { ImpermanentLoss } from './impermanentloss.dto';
+
+export class LiquidityPool {
+	id: string;
+	chain: string;
+	project: string;
+	reserveUSD: number;
+	fee24h: number;
+	apy: APY;
+	il?: ImpermanentLoss;
+	poolToken: Token;
+	tokens: Token[];
+}

@@ -1,11 +1,7 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
-import {
-  utilities as nestWinstonModuleUtilities,
-  WINSTON_MODULE_NEST_PROVIDER,
-  WinstonModule,
-} from 'nest-winston';
+import { utilities as nestWinstonModuleUtilities, WINSTON_MODULE_NEST_PROVIDER, WinstonModule, } from 'nest-winston';
 import * as winston from 'winston';
 
 import { DatabaseModule } from './database/database.module';
@@ -13,6 +9,7 @@ import { HealthController } from './health/health.controller';
 import { PoolsModule } from './pools/pools.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
+import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
   imports: [
@@ -46,11 +43,12 @@ import { UniswapModule } from './uniswap/uniswap.module';
         new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
       ],
     }),
-    TerminusModule,
-    UniswapModule,
-    PoolsModule,
-    ThegraphModule,
-    DatabaseModule,
+		TerminusModule,
+		UniswapModule,
+		PoolsModule,
+		ThegraphModule,
+		DatabaseModule,
+		VaultsModule,
   ],
   controllers: [HealthController],
 })

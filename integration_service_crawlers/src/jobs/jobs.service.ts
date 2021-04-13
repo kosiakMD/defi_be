@@ -6,6 +6,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CurveService } from './curve.service';
 import { SushiswapService } from './sushiswap.service';
 import { UniswapService } from './uniswap.service';
+import { PoolsService } from 'src/pools/pools.service';
+import { VaultsService } from 'src/vaults/vaults.service';
 
 enum NetworkEnum {
   uniswap = 'uniswap',
@@ -45,11 +47,29 @@ export class JobsService {
     });
   }
 
+	private poolsJob(job: any, done: any): Promise<void> {
+		this.logger.log(`Start ${'pools'} job`);
+		return this.poolsService.savePools().then(() => {
+			this.logger.log(`End ${'pools'} job`);
+			done();
+		});
+	}
+
+	private vaultsJob(job: any, done: any): Promise<void> {
+		this.logger.log(`Start ${'vaults'} job`);
+		return this.vaultsService.saveVaults().then(() => {
+			this.logger.log(`End ${'vaults'} job`);
+			done();
+		});
+	}
+
   constructor(
     private configService: ConfigService,
     private uniswapMigrationService: UniswapService,
     private sushiswapMigrationService: SushiswapService,
     private curveMigrationService: CurveService,
+		private poolsService: PoolsService,
+		private vaultsService: VaultsService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {
     this.services = {
@@ -104,6 +124,30 @@ export class JobsService {
         `${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
         this.configService.get<string>('CURVE_JOB_NAME'),
       );
+
+			this.logger.log('agenda.define: POOLS_JOB_NAME', 'Agenda');
+			await this.agenda.define(
+				this.configService.get<string>('POOLS_JOB_NAME'),
+				this.poolsJob.bind(this),
+			);
+
+			this.logger.log('agenda.every: POOLS_JOB_NAME', 'Agenda');
+			await this.agenda.every(
+				`${this.configService.get<string>('POOLS_EVERY_SECONDS')} seconds`,
+				this.configService.get<string>('POOLS_JOB_NAME'),
+			);
+
+			this.logger.log('agenda.define: VAULTS_JOB_NAME', 'Agenda');
+			await this.agenda.define(
+				this.configService.get<string>('VAULTS_JOB_NAME'),
+				this.vaultsJob.bind(this),
+			);
+
+			this.logger.log('agenda.every: VAULTS_JOB_NAME', 'Agenda');
+			await this.agenda.every(
+				`${this.configService.get<string>('VAULTS_EVERY_SECONDS')} seconds`,
+				this.configService.get<string>('VAULTS_JOB_NAME'),
+			);
     });
   }
 }

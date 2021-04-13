@@ -1,15 +1,15 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import Asset from '../models/asset.entity';
-import AssetPrice from '../models/asset_price.entity';
-import { AssetPriceService } from '../services/asset_price.service';
+import { LookupModule } from '../lookup/lookup.module';
+import { Asset, AssetPrice } from './models';
 import { PricesController } from './prices.controller';
-import { PricesService } from './prices.service';
+import { PriceService } from './prices.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssetPrice, Asset])],
+  imports: [CacheModule.register(), TypeOrmModule.forFeature([AssetPrice, Asset]), LookupModule],
   controllers: [PricesController],
-  providers: [PricesService, AssetPriceService],
+  providers: [PriceService],
+  exports: [TypeOrmModule],
 })
 export class PricesModule {}

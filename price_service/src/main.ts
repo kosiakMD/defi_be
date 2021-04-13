@@ -1,56 +1,36 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {
-  utilities as nestWinstonModuleUtilities,
-  WINSTON_MODULE_NEST_PROVIDER,
-  WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
 
 import { AppModule } from './app.module';
+import { createLogger } from './utils/winston';
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+const serviceName = 'Price Service';
+
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+  const app = await NestFactory.create(AppModule, {
     cors: true,
-    bodyParser: false,
-    logger: WinstonModule.createLogger({
-      // TODO: for custom logger
-      // logger: LoggerModule.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
-      format: winston.format.json(),
-      defaultMeta: { service: process.env.SERVICE_NAME },
-      transports: [
-        // NestJS console like logs
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike(),
-          ),
-        }),
-      ],
-    }),
+    logger: createLogger(),
   });
 
-  app.useGlobalPipes(new ValidationPipe());
-  app.setGlobalPrefix('v1'); // temporary global as only 1 version
+  app.setGlobalPrefix('v1');
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-
-  app.useLogger(logger);
-
-  const { SERVICE_NAME, PORT, HOST } = process.env;
   const config = new DocumentBuilder()
-    .setTitle(SERVICE_NAME)
-    .setDescription(`${SERVICE_NAME} service description`)
-    .setVersion('1.0') // temporary global as only 1 version
+    .setTitle(serviceName)
+    .setDescription(`${serviceName} description`)
+    .setVersion('1.0')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(PORT, HOST);
+  const port = process.env.SERVER_PORT || 3000;
+  const host = process.env.HOST || '127.0.0.1';
+  await app.listen(port, host);
+
+  // eslint-disable-next-line no-console
+  console.log(`${serviceName} running: http://${host}:${port}/api`);
 }
 
 bootstrap();

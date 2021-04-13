@@ -1,9 +1,15 @@
 import { Controller, Get } from '@nestjs/common';
 import { HealthCheck, HealthCheckService, HealthIndicatorResult } from '@nestjs/terminus';
+import { InjectConnection } from '@nestjs/typeorm';
+import { Connection } from 'typeorm';
 
 @Controller('status')
 export class HealthController {
-  constructor(private health: HealthCheckService) {}
+  constructor(
+    @InjectConnection()
+    private readonly connection: Connection,
+    private readonly health: HealthCheckService,
+  ) {}
 
   @Get()
   @HealthCheck()
@@ -13,9 +19,8 @@ export class HealthController {
         server: {
           status: 'up',
         },
-        // TODO: ? add DB health check ?
         db: {
-          status: 'down',
+          status: this.connection.isConnected ? 'up' : 'down',
         },
       }),
     ]);

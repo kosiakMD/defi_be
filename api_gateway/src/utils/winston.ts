@@ -8,6 +8,9 @@ export const winstonParams = (
   serviceName: string,
   level = 'info',
 ): WinstonModuleOptions => ({
+  // TODO: left for custom logger
+  // LoggerModule.forRoot({
+  // options
   level: level,
   format: winston.format.json(),
   defaultMeta: { service: serviceName },
@@ -17,7 +20,7 @@ export const winstonParams = (
       format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
     }),
     // - Write all logs with level `error` and below to `error.log`
-    new winston.transports.File({ level: 'error', filename: logErrorFile }),
+    new winston.transports.File({ filename: logErrorFile, level: 'error' }),
     // - Write all logs with level `info` and below to `combined.log`
     new winston.transports.File({ filename: logCombineLog }),
   ],
@@ -29,5 +32,5 @@ export const createLogger = (
   serviceName: string,
   level?: string,
 ): LoggerService => {
-  return WinstonModule.createLogger(winstonParams(logErrorFile, logCombineLog, serviceName, level));
+  return WinstonModule.createLogger(winstonParams(logErrorFile, serviceName, logCombineLog, level));
 };

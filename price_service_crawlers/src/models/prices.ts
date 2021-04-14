@@ -7,10 +7,6 @@ export interface TokenPriceResponse {
   [token: string]: number;
 }
 
-export interface HistoricalTokenPricesResponse {
-  [token: string]: TokenTimestampPrices | string[];
-}
-
 export interface TokenTimestampPrices {
   [timestamp: string]: number;
 }
@@ -26,10 +22,6 @@ export interface PoolPriceRequest {
 
 export interface PoolPriceResponse {
   [pool: string]: number;
-}
-
-export interface HistoricalPoolPricesResponse {
-  [pool: string]: PoolTimestampPrices | string[];
 }
 
 export interface PoolTimestampPrices {

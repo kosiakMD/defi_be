@@ -1,7 +1,9 @@
-import { HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { map } from 'rxjs/operators';
 
+import { Logger } from '../common/Logger/Logger.service';
 import { GasHistory, GasPrice } from '../common/interfaces';
 
 interface GasServiceResponse {
@@ -17,7 +19,7 @@ export class GasService {
   constructor(
     private httpService: HttpService,
     private configService: ConfigService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     const curEntUrl = this.configService.get<string>('GAS_API_URL');
     const currentPath = this.configService.get<string>('GAS_CURRENT_PATH');
@@ -30,14 +32,12 @@ export class GasService {
 
   async getGasCurrent(): Promise<GasServiceResponse> {
     try {
-      const get = this.httpService.get(this.gasCurrentUrl);
-      const promise = get.toPromise();
-      const start = new Date().getTime();
-      const result = await promise;
-      this.logger.log(new Date().getTime() - start, this.gasCurrentUrl);
-      const {
-        data: { data },
-      } = result;
+      this.logger.time(this.gasCurrentUrl);
+      const data = this.httpService
+        .get(this.gasCurrentUrl)
+        .pipe(map((r) => r.data.data))
+        .toPromise();
+      this.logger.timeEnd(this.gasCurrentUrl);
       return data;
     } catch (e) {
       this.logger.error(e);
@@ -47,12 +47,12 @@ export class GasService {
 
   async getGasHistory(): Promise<GasHistory[]> {
     try {
-      const get = this.httpService.get(this.gasHistoryUrl);
-      const promise = get.toPromise();
-      const start = new Date().getTime();
-      const result = await promise;
-      this.logger.log(new Date().getTime() - start, this.gasHistoryUrl);
-      const { data } = result;
+      this.logger.time(this.gasHistoryUrl);
+      const data = this.httpService
+        .get(this.gasHistoryUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.gasHistoryUrl);
       return data;
     } catch (e) {
       this.logger.error(e);

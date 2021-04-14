@@ -1,7 +1,17 @@
 import { Controller, Get } from '@nestjs/common';
-import { HealthCheck, HealthCheckService, HealthIndicatorResult } from '@nestjs/terminus';
+import {
+  HealthCheck,
+  HealthCheckResult,
+  HealthCheckService,
+  HealthIndicatorResult,
+} from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
+
+enum StatusEnum {
+  up = 'up',
+  down = 'down',
+}
 
 @Controller('status')
 export class HealthController {
@@ -13,14 +23,16 @@ export class HealthController {
 
   @Get()
   @HealthCheck()
-  check() {
+  check(): Promise<HealthCheckResult> {
     return this.health.check([
       async (): Promise<HealthIndicatorResult> => ({
-        server: {
-          status: 'up',
+        priceService: {
+          status: StatusEnum.up,
         },
-        db: {
-          status: this.connection.isConnected ? 'up' : 'down',
+      }),
+      async (): Promise<HealthIndicatorResult> => ({
+        priceDatabase: {
+          status: this.connection.isConnected ? StatusEnum.up : StatusEnum.down,
         },
       }),
     ]);

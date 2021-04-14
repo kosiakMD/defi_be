@@ -124,6 +124,6 @@ dist
 # IDE
 .idea
 .idea/*
-.idea/codeStyles/Project.xml
+Project.xml
 .DS_Store
 

@@ -45,7 +45,8 @@ export class HealthController {
   @HealthCheck()
   checkServices(): Promise<HealthCheckResult> {
     return this.health.check([
-      async (): Promise<HealthIndicatorResult> => this.serviceHealthIndicator.isHealthy('service'),
+      async (): Promise<HealthIndicatorResult> => this.serviceHealthIndicator.isPriceHealthy(),
+      async (): Promise<HealthIndicatorResult> => this.serviceHealthIndicator.isPriceHealthy(),
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       // async () => {

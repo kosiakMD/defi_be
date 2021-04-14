@@ -1,20 +1,30 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { createLogger } from './utils/winston';
 
-const serviceName = 'Price Service';
-
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: true,
-    logger: createLogger(),
   });
+
+  const configService = app.get<ConfigService>(ConfigService);
+  const logger = createLogger(
+    configService.get<string>('LOG_ERROR_FILE'),
+    configService.get<string>('LOG_COMBINED_FILE'),
+    configService.get<string>('SERVICE_NAME'),
+    configService.get<string>('LOG_LEVEL'),
+  );
+  app.useLogger(logger);
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const serviceName = configService.get<string>('SERVICE_NAME');
 
   const config = new DocumentBuilder()
     .setTitle(serviceName)
@@ -28,9 +38,6 @@ async function bootstrap() {
   const port = process.env.SERVER_PORT || 3000;
   const host = process.env.HOST || '127.0.0.1';
   await app.listen(port, host);
-
-  // eslint-disable-next-line no-console
-  console.log(`${serviceName} running: http://${host}:${port}/api`);
 }
 
 bootstrap();

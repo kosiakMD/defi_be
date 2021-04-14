@@ -32,9 +32,11 @@
     "@nestjs/terminus": "^7.1.0",
     "@nestjsx/api-version": "^0.1.1",
     "dotenv": "^8.2.0",
+    "nest-winston": "^1.4.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^6.6.6",
-    "swagger-ui-express": "^4.1.6"
+    "swagger-ui-express": "^4.1.6",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.6",

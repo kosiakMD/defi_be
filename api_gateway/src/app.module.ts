@@ -10,12 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
-import {
-  utilities as nestWinstonModuleUtilities,
-  WINSTON_MODULE_NEST_PROVIDER,
-  WinstonModule,
-} from 'nest-winston';
-import * as winston from 'winston';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AppController } from './app/app.controller';
 import { ServiceHealthIndicator } from './app/app.health';
@@ -33,12 +28,14 @@ import { IntegrationService } from './integration/integration.service';
 import { PlatformController } from './platform/platform.controller';
 import { PoolsModule } from './pool/pools.module';
 import { PricesModule } from './prices/prices.module';
+import { PricesService } from './prices/prices.service';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
 import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { UniswapController } from './uniswap/uniswap.controller';
+import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
@@ -55,26 +52,16 @@ import { VaultsModule } from './vaults/vaults.module';
         '.env',
       ],
     }),
-    WinstonModule.forRoot({
-      // TODO: left for custom logger
-      // LoggerModule.forRoot({
-      // options
-      level: process.env.LOG_LEVEL || 'info',
-      format: winston.format.json(),
-      defaultMeta: { service: process.env.SERVICE_NAME },
-      transports: [
-        // NestJS console like logs
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike(),
-          ),
-        }),
-        // - Write all logs with level `error` and below to `error.log`
-        new winston.transports.File({ filename: process.env.LOG_ERROR_FILE, level: 'error' }),
-        // - Write all logs with level `info` and below to `combined.log`
-        new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
-      ],
+    WinstonModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) =>
+        winstonParams(
+          configService.get<string>('LOG_ERROR_FILE'),
+          configService.get<string>('LOG_COMBINED_FILE'),
+          configService.get<string>('SERVICE_NAME'),
+          configService.get<string>('LOG_LEVEL'),
+        ),
     }),
     TerminusModule,
     HttpModule,
@@ -120,12 +107,12 @@ import { VaultsModule } from './vaults/vaults.module';
     ServiceHealthIndicator,
     AppService,
     IntegrationService,
+    PricesService,
   ],
 })
 export class AppModule implements NestModule, OnModuleInit {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware).forRoutes('/');
-    // consumer.apply(ProxyMiddleware).forRoutes('/vaults');
   }
 
   onModuleInit(): void {

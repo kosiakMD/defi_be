@@ -23,17 +23,3 @@ export interface Transaction {
 export interface TransactionsResponse {
   [userAddress: string]: Transaction[];
 }
-
-export interface Transaction {
-  hash: string;
-  blockNumber: number;
-  blockTimeStamp: number;
-  gas: string;
-  gasPrice: string;
-  gasUsedEther: string;
-  erc20Transfers: ERC20Transfer[];
-}
-
-export interface TransactionsResponse {
-  [userAddress: string]: Transaction[];
-}

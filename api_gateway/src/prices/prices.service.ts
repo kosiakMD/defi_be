@@ -1,15 +1,19 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HealthIndicatorResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
-import { Address } from '../common/interfaces';
-import { CurrentPrice, HistoricalPrice } from './prices.interface';
+import { ChainDto, CurrencyDto, PriceResponseDto } from './dto/price.dto';
+import { PriceQuery, PricesPayload } from './interfaces/price.interfaces';
 
 @Injectable()
 export class PricesService {
+  private readonly getHealthyUrl: string;
   private readonly getPricesUrl: string;
-  private readonly getHistoryUrl: string;
+  private readonly getChainsUrl: string;
+  private readonly getCurrenciesUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -18,71 +22,95 @@ export class PricesService {
   ) {
     const host = this.configService.get<string>('PRICE_SERVICE_HOST');
     const port = this.configService.get<string>('PRICE_SERVICE_PORT');
-    const url = `http://${host}:${port}`;
+    const url = `${host}${port ? ':' + port : ''}`;
+
+    const getStatusPath = this.configService.get<string>('PRICE_STATUS');
+    this.getHealthyUrl = `${url}/${getStatusPath}`;
 
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
     this.getPricesUrl = `${url}/${getPricesPath}`;
 
-    const historyPath = this.configService.get<string>('PRICES_HISTORICAL_PATH');
-    this.getHistoryUrl = `${url}/${historyPath}`;
+    const chainsPath = this.configService.get<string>('PRICES_CHAINS_PATH');
+    this.getChainsUrl = `${url}/${chainsPath}`;
+
+    const currenciesPath = this.configService.get<string>('PRICES_CURRENCIES_PATH');
+    this.getCurrenciesUrl = `${url}/${currenciesPath}`;
+  }
+
+  async isHealthy(): Promise<HealthIndicatorResult> {
+    try {
+      this.logger.time('request: ' + this.getHealthyUrl);
+      const data = await this.httpService
+        .get(this.getHealthyUrl)
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd('request: ' + this.getHealthyUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
   }
 
   async getPrices(
-    addresses: Address[],
-    currencyId: number,
-    platformId: number,
-  ): Promise<CurrentPrice> {
+    addresses: PriceQuery['addresses'],
+    timestamps: PriceQuery['timestamps'],
+    chain: PriceQuery['chain'],
+    currency: PriceQuery['currency'],
+  ): Promise<PriceResponseDto<PricesPayload>> {
     try {
-      const get = this.httpService.get(this.getPricesUrl, {
-        params: {
-          addresses,
-          currencyId,
-          platformId,
-        },
-      });
-      const promise = get.toPromise();
-      const start = new Date().getTime();
       this.logger.time('request: ' + this.getPricesUrl);
-      const result = await promise;
+      const data = await this.httpService
+        .get(this.getPricesUrl, {
+          params: {
+            addresses,
+            timestamps,
+            currency,
+            chain,
+          },
+        })
+        .pipe(map((response) => response.data))
+        .toPromise();
       this.logger.timeEnd('request: ' + this.getPricesUrl);
-      this.logger.log(new Date().getTime() - start, 'request: ' + this.getPricesUrl);
-      const { data } = result;
       if (data.message) {
+        // For some Price Service errors
         throw new Error(data.message);
       } else {
         return data;
       }
     } catch (e) {
-      this.logger.error(e.message);
+      e.response && this.logger.error(e.response.data);
       throw e;
     }
   }
 
-  async getHistorical(
-    tokens: Address[],
-    timestamps: string[],
-    currencyId: number,
-    platformId: number,
-  ): Promise<HistoricalPrice[]> {
+  async getChains(): Promise<ChainDto[]> {
     try {
-      const get = this.httpService.post(this.getHistoryUrl, {
-        body: {
-          tokens,
-          timestamps,
-          currencyId,
-          platformId,
-        },
-      });
-      const promise = get.toPromise();
-      this.logger.time(this.getHistoryUrl);
-      const result = await promise;
-      this.logger.timeEnd(this.getHistoryUrl);
-      const {
-        data: { data },
-      } = result;
+      this.logger.time('request: ' + this.getChainsUrl);
+      const data = await this.httpService
+        .get(this.getChainsUrl)
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd('request: ' + this.getChainsUrl);
       return data;
     } catch (e) {
-      this.logger.error(e);
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getCurrencies(): Promise<CurrencyDto[]> {
+    try {
+      this.logger.log(this.getCurrenciesUrl, 'URL');
+      this.logger.time('request: ' + this.getCurrenciesUrl);
+      const data = await this.httpService
+        .get(this.getCurrenciesUrl)
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd('request: ' + this.getCurrenciesUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
       throw e;
     }
   }

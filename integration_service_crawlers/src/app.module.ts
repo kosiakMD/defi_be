@@ -11,6 +11,7 @@ import * as winston from 'winston';
 import { HealthController } from './health/health.controller';
 import { PoolsModule } from './pools/pools.module';
 import { VaultsModule } from './vaults/vaults.module';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   controllers: [HealthController],
@@ -45,6 +46,10 @@ import { VaultsModule } from './vaults/vaults.module';
         new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
       ],
     }),
+		TerminusModule,
+		PoolsModule,
+    VaultsModule,
+    JobsModule,
     TerminusModule,
     PoolsModule,
     VaultsModule,

@@ -8,7 +8,7 @@ import { PoolsServiceCurve } from './pools.service.curve';
 import { ConfigModule } from '@nestjs/config';
 import { ApisModule } from '../apis/apis.module';
 import { PoolsServicePancake } from './pools.service.pancake';
-import { JobsModule } from '../jobs/migration.jobs.module';
+import { JobsModule } from '../jobs/jobs.module';
 
 @Module({
 	imports: [

@@ -1,18 +1,18 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { DatabaseManagerSushiswap } from './db/database.manager.sushiswap';
-import { SushiswapSubgraph } from '../thegraph/sushiswap/sushiswap.subgraph';
+import { DatabaseManagerPancake } from './db/database.manager.pancake';
+import { PancakeSubgraph } from '../thegraph/pancake/pancake.subgraph';
 import { UniswapService } from './uniswap.service';
 import { DatabaseTransactionManager } from './db/database.transaction.manager';
 
 @Injectable()
-export class SushiswapService extends UniswapService {
-  protected integrationName: string = 'sushiswap'
+export class PancakeService extends UniswapService {
+  protected integrationName: string = 'pancake'
   constructor(
     protected configService: ConfigService,
-    protected databaseManager: DatabaseManagerSushiswap,
-    protected subgraph: SushiswapSubgraph,
+    protected databaseManager: DatabaseManagerPancake,
+    protected subgraph: PancakeSubgraph,
     protected dbTransactionManager: DatabaseTransactionManager,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
   ) {

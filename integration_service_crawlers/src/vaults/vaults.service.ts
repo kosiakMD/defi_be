@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { VaultsServiceCurve } from './curve/vaults.service.curve';
 import { VaultsServiceSushiswap } from './sushiswap/vaults.service.curve';
 import { Vault } from './dto/vault.dto';
-import { DatabaseService } from '../jobs/database.service';
+import { DatabaseService } from '../jobs/db/database.service';
 
 
 @Injectable()

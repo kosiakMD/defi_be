@@ -7,7 +7,7 @@ import { GaugeRewards } from './curve/gauge.rewards';
 import { Web3Provider } from './web3.provider';
 import { ApisModule } from '../apis/apis.module';
 import { VaultsServiceSushiswap } from './sushiswap/vaults.service.curve';
-import { JobsModule } from '../jobs/migration.jobs.module';
+import { JobsModule } from '../jobs/jobs.module';
 import { VaultsService } from './vaults.service';
 
 @Module({

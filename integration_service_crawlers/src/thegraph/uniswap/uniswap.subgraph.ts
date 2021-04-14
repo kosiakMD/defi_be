@@ -2,6 +2,8 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { map } from 'rxjs/operators';
 import { Pair } from './pair.interface';
 import { ConfigService } from '@nestjs/config';
+import { Transaction } from './transaction';
+import { LiquidityPositionSnapshot } from './liquidity.position.snapshot';
 
 @Injectable()
 export class UniswapSubgraph {
@@ -189,7 +191,172 @@ export class UniswapSubgraph {
 		}).pipe(map(response => response.data))
 			.toPromise()
 	}
+
+	async getBlock(direction: string): Promise<ResponseTransactionData> {
+		return this.httpService.post(this.subgraphUrl,
+			{
+				operationName: 'BlockNumber',
+				variables: {},
+				query: `query {
+					transactions (first:1, orderBy:timestamp, orderDirection:${direction}) {
+						blockNumber
+					}
+				}`,
+			})
+			.pipe(map(response => response.data))
+			.toPromise()
+	}
+
+	async getShapshotsByBlockNumber(blockNumber: number): Promise<ResponseSnapshotsData> {
+		return this.httpService.post<ResponseSnapshotsData>(this.subgraphUrl,
+			{
+				operationName: 'snapshots',
+				variables: {
+					blockNumber: blockNumber,
+				},
+				query: `query liquidityPositionSnapshots($blockNumber: Int!) {
+					snapshots: liquidityPositionSnapshots(first: 1000 block:{number: $blockNumber}, where:{block: $blockNumber}) {
+						user {
+							id
+						}
+						block
+						timestamp
+						pair {
+							id
+						}
+						token0PriceUSD
+						token1PriceUSD
+						liquidityTokenTotalSupply
+						reserveUSD
+						reserve0
+						reserve1
+						liquidityTokenBalance
+					}
+				}`,
+			})
+			.pipe(map(response => response.data))
+			.toPromise()
+	}
+
+	async getTransactionsByBlockNumber(blockNumber: number): Promise<ResponseTransactionData> {
+		return this.httpService.post<ResponseTransactionData>(this.subgraphUrl,
+			{
+				operationName: 'transactions',
+				variables: {
+					blockNumber: blockNumber,
+				},
+				query: `query transactions($blockNumber: Int!) {
+					transactions (first: 1000 block:{number: $blockNumber} where: {blockNumber: $blockNumber}) {
+						blockNumber
+						timestamp
+						mints {
+							sender
+							to
+							transaction {
+								id
+								timestamp
+								blockNumber
+							}
+							liquidity
+							amount0
+							amount1
+							amountUSD
+							pair {
+								id
+								token0 {
+									id
+									name
+									symbol
+									decimals
+								}
+								token1 {
+									id
+									name
+									symbol
+									decimals
+								}
+							}
+						}
+						burns {
+							sender
+							to
+							transaction {
+								 id
+								 timestamp
+								 blockNumber
+							}
+							liquidity
+							amount0
+							amount1
+							amountUSD
+							pair {
+								id
+								token0 {
+									id
+									name
+									symbol
+									decimals
+								}
+								token1 {
+									id
+									name
+									symbol
+									decimals
+								}
+							}
+						}
+						swaps {
+							sender
+							from
+							to
+							transaction {
+								 id
+								 timestamp
+								 blockNumber
+							}
+							amount0In
+							amount1In
+							amount0Out
+							amount1Out
+							amountUSD
+							logIndex
+							pair {
+								id
+								token0 {
+									id
+									name
+									symbol
+									decimals
+								}
+								token1 {
+									id
+									name
+									symbol
+									decimals
+								}
+							}
+						}
+					}
+				}`,
+			})
+			.pipe(map(response => response.data))
+			.toPromise()
+	}
 }
+
+
+interface ResponseTransactionData {
+	data: {
+		transactions: Transaction[]
+	}
+}
+
+interface ResponseSnapshotsData {
+	data: {
+		snapshots: LiquidityPositionSnapshot[]
+	}
+}
+
 
 export interface ResponseData {
 	data: {

@@ -1,7 +1,11 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
-import { utilities as nestWinstonModuleUtilities, WINSTON_MODULE_NEST_PROVIDER, WinstonModule, } from 'nest-winston';
+import {
+  utilities as nestWinstonModuleUtilities,
+  WINSTON_MODULE_NEST_PROVIDER,
+  WinstonModule,
+} from 'nest-winston';
 import * as winston from 'winston';
 
 import { DatabaseModule } from './database/database.module';
@@ -43,27 +47,27 @@ import { VaultsModule } from './vaults/vaults.module';
         new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
       ],
     }),
-		TerminusModule,
-		UniswapModule,
-		PoolsModule,
-		ThegraphModule,
-		DatabaseModule,
-		VaultsModule,
+    TerminusModule,
+    UniswapModule,
+    PoolsModule,
+    ThegraphModule,
+    DatabaseModule,
+    VaultsModule,
   ],
   controllers: [HealthController],
 })
 export class AppModule implements OnModuleInit {
   onModuleInit(): void {
-    const { SERVICE_NAME, PORT, HOST } = process.env;
+    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         name: SERVICE_NAME,
-        host: HOST,
-        port: PORT,
+        host: SERVICE_HOST,
+        port: SERVICE_PORT,
       },
-      'SERVICE',
+      'App',
     );
-    this.logger.verbose(this.configService, SERVICE_NAME);
+    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

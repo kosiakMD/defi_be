@@ -41,7 +41,7 @@ async function bootstrap() {
 
   app.useLogger(logger);
 
-  const { SERVICE_NAME, PORT, HOST } = process.env;
+  const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
   const config = new DocumentBuilder()
     .setTitle(SERVICE_NAME)
@@ -51,7 +51,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  await app.listen(PORT, HOST);
+  await app.listen(SERVICE_PORT, SERVICE_HOST);
 }
 
 bootstrap();

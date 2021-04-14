@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { In } from 'typeorm';
 
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
-import { groupBy } from '../util/util';
+import { groupBy } from '../utils/util';
 import { UniswapBurnsEntity } from './entities/uniswap.burns.entity';
 import { UniswapMintsEntity } from './entities/uniswap.mints.entity';
 import { UniswapSnapshotsEntity } from './entities/uniswap.snapshots.entity';

@@ -1,8 +1,8 @@
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { IntegrationService } from '../integration/integration.service';
 import { VaultsController } from './vaults.controller';
-import { VaultsService } from './vaults.service';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { VaultsService } from './vaults.service';
     CacheModule.register(),
     ConfigModule,
   ],
-  providers: [VaultsService],
+  providers: [IntegrationService],
   controllers: [VaultsController],
 })
 export class VaultsModule {}

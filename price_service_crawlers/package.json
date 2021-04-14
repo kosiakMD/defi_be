@@ -30,14 +30,16 @@
     "es5": "^1.0.0",
     "es6": "0.0.7",
     "inversify": "^5.0.5",
-    "tor-axios": "^1.0.9",
+    "nest-winston": "^1.4.1",
     "nestjs-agenda": "^2.0.0",
     "nestjs-config": "^1.4.7",
     "nestjs-pgpromise": "^1.4.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.6",
-    "typeorm": "^0.2.31"
+    "tor-axios": "^1.0.9",
+    "typeorm": "^0.2.31",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.6",

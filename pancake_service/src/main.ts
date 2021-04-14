@@ -33,8 +33,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT || 3000;
-  const host = process.env.HOST || 'localhost';
+  const port = process.env.SERVICE_PORT || 3000;
+  const host = process.env.SERVICE_HOST;
   await app.listen(port, host);
 
   // eslint-disable-next-line no-console

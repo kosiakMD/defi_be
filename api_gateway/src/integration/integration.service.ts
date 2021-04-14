@@ -1,13 +1,18 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HealthIndicatorResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
-import { Address, BaseData } from '../common/interfaces';
+import { Address, BaseData, Pool, Vault } from '../common/interfaces';
 
 @Injectable()
 export class IntegrationService {
-  private readonly uniswapUrl;
+  private readonly getStatusUrl: string;
+  private readonly getUniswapUrl: string;
+  private readonly getPoolsUrl: string;
+  private readonly getVaultsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -16,23 +21,87 @@ export class IntegrationService {
   ) {
     const host = this.configService.get<string>('INTEGRATION_SERVICE_HOST');
     const port = this.configService.get<string>('INTEGRATION_SERVICE_PORT');
+    const url = `${host}${port ? ':' + port : ''}`;
+
+    const getStatusUrl = this.configService.get<string>('INTEGRATION_STATUS');
+    this.getStatusUrl = `${url}/${getStatusUrl}`;
 
     const uniswapPath = this.configService.get<string>('INTEGRATION_UNISWAP');
+    this.getUniswapUrl = `${url}/${uniswapPath}`;
 
-    this.uniswapUrl = `${host}:${port}/${uniswapPath}`;
+    const poolsPath = this.configService.get<string>('POOLS_PATH');
+    this.getPoolsUrl = `${url}/${poolsPath}`;
+
+    const vaultsPath = this.configService.get<string>('VAULTS_PATH');
+    this.getVaultsUrl = `${url}/${vaultsPath}`;
+  }
+
+  async isHealthy(): Promise<HealthIndicatorResult> {
+    try {
+      this.logger.time('request: ' + this.getStatusUrl);
+      const data = await this.httpService
+        .get(this.getStatusUrl)
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd('request: ' + this.getStatusUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
   }
 
   async getUniswap(address: Address): Promise<BaseData[]> {
     try {
-      const get = this.httpService.get(this.uniswapUrl, { params: { address } });
-      const promise = get.toPromise();
-      this.logger.time(this.uniswapUrl);
-      const result = await promise;
-      this.logger.timeEnd(this.uniswapUrl);
-      const { data } = result;
+      this.logger.time(this.getUniswapUrl);
+      const data = await this.httpService
+        .get(this.getUniswapUrl, { params: { address } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getUniswapUrl);
       return data;
     } catch (e) {
-      this.logger.error(e);
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getPools(): Promise<Pool[]> {
+    try {
+      this.logger.time(this.getPoolsUrl);
+      const data = await this.httpService
+        .get(this.getPoolsUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getPoolsUrl);
+      return data;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(e.config.url);
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
+      throw e;
+    }
+  }
+
+  async getVaults(): Promise<Vault[]> {
+    try {
+      this.logger.time(this.getVaultsUrl);
+      const data = await this.httpService
+        .get(this.getVaultsUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getVaultsUrl);
+      return data;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(e.config.url);
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
       throw e;
     }
   }

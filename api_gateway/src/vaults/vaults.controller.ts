@@ -7,7 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import VaultDto from '../common/DTO/Vault.dto';
 import { Logger } from '../common/Logger/Logger.service';
 import { Vault } from '../common/interfaces';
-import { VaultsService } from './vaults.service';
+import { IntegrationService } from '../integration/integration.service';
 
 // TODO: can be null as updated each time
 const VAULTS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
@@ -16,7 +16,7 @@ const VAULTS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
 @Controller('vaults')
 export class VaultsController {
   constructor(
-    private service: VaultsService,
+    private integrationService: IntegrationService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
@@ -41,7 +41,7 @@ export class VaultsController {
   }
 
   private async fetchVaults(): Promise<Vault[]> {
-    const [vaults] = await this.service.getAll();
+    const vaults = await this.integrationService.getVaults();
     // postponed save in async queue
     this.cacheManager.set<Vault[]>('vaults', vaults, { ttl: VAULTS_CACHE_TIME });
     return vaults;

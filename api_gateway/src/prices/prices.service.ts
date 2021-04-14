@@ -10,7 +10,7 @@ import { PriceQuery, PricesPayload } from './interfaces/price.interfaces';
 
 @Injectable()
 export class PricesService {
-  private readonly getHealthyUrl: string;
+  private readonly getStatusUrl: string;
   private readonly getPricesUrl: string;
   private readonly getChainsUrl: string;
   private readonly getCurrenciesUrl: string;
@@ -25,7 +25,7 @@ export class PricesService {
     const url = `${host}${port ? ':' + port : ''}`;
 
     const getStatusPath = this.configService.get<string>('PRICE_STATUS');
-    this.getHealthyUrl = `${url}/${getStatusPath}`;
+    this.getStatusUrl = `${url}/${getStatusPath}`;
 
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
     this.getPricesUrl = `${url}/${getPricesPath}`;
@@ -39,12 +39,12 @@ export class PricesService {
 
   async isHealthy(): Promise<HealthIndicatorResult> {
     try {
-      this.logger.time('request: ' + this.getHealthyUrl);
+      this.logger.time('request: ' + this.getStatusUrl);
       const data = await this.httpService
-        .get(this.getHealthyUrl)
+        .get(this.getStatusUrl)
         .pipe(map((response) => response.data))
         .toPromise();
-      this.logger.timeEnd('request: ' + this.getHealthyUrl);
+      this.logger.timeEnd('request: ' + this.getStatusUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);

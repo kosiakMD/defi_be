@@ -1,8 +1,8 @@
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { IntegrationService } from '../integration/integration.service';
 import { PoolsController } from './pools.controller';
-import { PoolsService } from './pools.service';
 
 @Module({
   imports: [
@@ -13,7 +13,7 @@ import { PoolsService } from './pools.service';
     CacheModule.register(),
     ConfigModule,
   ],
-  providers: [PoolsService],
+  providers: [IntegrationService],
   controllers: [PoolsController],
 })
 export class PoolsModule {}

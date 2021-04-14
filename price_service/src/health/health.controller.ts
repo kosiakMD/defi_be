@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import {
   HealthCheck,
   HealthCheckResult,
@@ -7,6 +8,8 @@ import {
 } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
 import { Connection } from 'typeorm';
+
+import { camelize } from '../utils/string';
 
 enum StatusEnum {
   up = 'up',
@@ -19,6 +22,7 @@ export class HealthController {
     @InjectConnection()
     private readonly connection: Connection,
     private readonly health: HealthCheckService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Get()
@@ -26,12 +30,12 @@ export class HealthController {
   check(): Promise<HealthCheckResult> {
     return this.health.check([
       async (): Promise<HealthIndicatorResult> => ({
-        priceService: {
+        [camelize(this.configService.get<string>('SERVICE_NAME'))]: {
           status: StatusEnum.up,
         },
       }),
       async (): Promise<HealthIndicatorResult> => ({
-        priceDatabase: {
+        [camelize(this.configService.get<string>('SERVICE_NAME'), 'Database')]: {
           status: this.connection.isConnected ? StatusEnum.up : StatusEnum.down,
         },
       }),

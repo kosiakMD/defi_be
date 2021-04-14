@@ -16,6 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/price_service/node_modules" />
       <excludeFolder url="file://$MODULE_DIR$/api_gateway/dist" />
       <excludeFolder url="file://$MODULE_DIR$/api_gateway/node_modules" />
+      <excludeFolder url="file://$MODULE_DIR$/pancake_service/dist" />
     </content>
     <content url="file://$MODULE_DIR$/api_gateway/node_modules" />
     <content url="file://$MODULE_DIR$/integration_service/node_modules" />

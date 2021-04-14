@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import {
@@ -31,14 +32,15 @@ async function bootstrap() {
       ],
     }),
   });
+  const configService = app.get<ConfigService>(ConfigService);
 
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
-  const port = process.env.PORT || 3000;
-  const host = process.env.HOST || 'localhost';
+  const port = configService.get<string>('SERVICE_PORT') || 3000;
+  const host = configService.get<string>('SERVICE_HOST');
   await app.listen(port, host);
 }
 

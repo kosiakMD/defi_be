@@ -50,16 +50,16 @@ import { HealthController } from './health/health.controller';
 })
 export class AppModule implements OnModuleInit {
   onModuleInit(): void {
-    const { SERVICE_NAME, PORT, HOST } = process.env;
+    const { SERVICE_NAME, SERVICE_HOST, SERVICE_PORT } = process.env;
     this.logger.log(
       {
         name: SERVICE_NAME,
-        host: HOST,
-        port: PORT,
+        host: SERVICE_HOST,
+        port: SERVICE_PORT,
       },
-      'SERVICE',
+      'App',
     );
-    this.logger.verbose(this.configService, SERVICE_NAME);
+    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

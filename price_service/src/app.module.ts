@@ -59,16 +59,16 @@ export class AppModule {
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, PORT, HOST } = process.env;
+    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         name: SERVICE_NAME,
-        host: HOST,
-        port: PORT,
+        host: SERVICE_HOST,
+        port: SERVICE_PORT,
       },
       'App',
     );
-    this.logger.verbose(this.configService, SERVICE_NAME);
+    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

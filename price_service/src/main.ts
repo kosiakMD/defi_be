@@ -13,6 +13,7 @@ async function bootstrap(): Promise<void> {
   });
 
   const configService = app.get<ConfigService>(ConfigService);
+
   const logger = createLogger(
     configService.get<string>('LOG_ERROR_FILE'),
     configService.get<string>('LOG_COMBINED_FILE'),
@@ -35,8 +36,8 @@ async function bootstrap(): Promise<void> {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.SERVER_PORT || 3000;
-  const host = process.env.HOST || '127.0.0.1';
+  const port = configService.get<string>('SERVICE_PORT') || 3000;
+  const host = configService.get<string>('SERVICE_HOST');
   await app.listen(port, host);
 }
 

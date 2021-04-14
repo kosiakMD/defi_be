@@ -12,7 +12,7 @@ RUN ls -l
 
 RUN npm run build
 
-ENV PORT 3002
+ENV SERVICE_PORT 3002
 
 EXPOSE 3002
 

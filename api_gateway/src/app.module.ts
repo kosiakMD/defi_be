@@ -110,22 +110,22 @@ import { VaultsModule } from './vaults/vaults.module';
     PricesService,
   ],
 })
-export class AppModule implements NestModule, OnModuleInit {
+export class AppModule implements OnModuleInit, NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware).forRoutes('/');
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, PORT, HOST } = process.env;
+    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         name: SERVICE_NAME,
-        host: HOST,
-        port: PORT,
+        host: SERVICE_HOST,
+        port: SERVICE_PORT,
       },
-      'SERVICE',
+      'App',
     );
-    this.logger.verbose(this.configService, SERVICE_NAME);
+    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

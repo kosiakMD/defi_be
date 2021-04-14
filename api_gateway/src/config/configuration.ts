@@ -4,6 +4,6 @@ export default (): any => {
     process.env.SERVICE_NAME = SERVICE_NAME;
   }
   return {
-    port: parseInt(process.env.PORT, 10) || 3000,
+    port: parseInt(process.env.SERVICE_PORT, 10) || 3000,
   };
 };

@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckResult,
@@ -43,23 +43,36 @@ export class HealthController {
   @AddVersion('v1')
   @Get('/services')
   @HealthCheck()
-  checkServices(): Promise<HealthCheckResult> {
-    return this.health.check([
-      async (): Promise<HealthIndicatorResult> => this.serviceHealthIndicator.isPriceHealthy(),
-      async (): Promise<HealthIndicatorResult> => this.serviceHealthIndicator.isPriceHealthy(),
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // async () => {
-      // 	const options = {
-      // 		port: 3011,
-      // 		host: process.env.HOST,
-      // 		path: '/status',
-      // 	};
-      // 	return http.request(options, (res) => {
-      // 		console.log(`HEALTHCHECK STATUS: ${res.statusCode}`);
-      // 		console.log(res);
-      // 	});
-      // },
+  @ApiResponse({
+    type: Object,
+    status: 200,
+  })
+  async checkServices(): Promise<any> {
+    const result = {
+      status: 'ok',
+      info: {},
+      error: {},
+      details: {},
+    };
+    const statuses = await Promise.all([
+      this.serviceHealthIndicator.isIntegrationHealthy(),
+      this.serviceHealthIndicator.isPriceHealthy(),
     ]);
+    statuses.forEach((service) => {
+      // TODO: For short variant of info: { [serviceName]: [status: 'ok' | 'error']}
+      // Object.keys(service.info).forEach((key) => {
+      //   Object.assign(result.info, {
+      //     [key]: service.info[key].status === 'up' ? 'ok' : 'error',
+      //   });
+      // });
+      Object.assign(result.info, service.info);
+      Object.assign(result.error, service.error);
+      Object.assign(result.details, service.details);
+    });
+    if (Object.keys(result.error).length) {
+      result.status = 'error';
+    }
+    return result;
+    // throw new HealthCheckError('Services check failed', result);
   }
 }

@@ -30,10 +30,10 @@ export class PricesService {
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
     this.getPricesUrl = `${url}/${getPricesPath}`;
 
-    const chainsPath = this.configService.get<string>('PRICES_CHAINS_PATH');
+    const chainsPath = this.configService.get<string>('PRICE_CHAINS_PATH');
     this.getChainsUrl = `${url}/${chainsPath}`;
 
-    const currenciesPath = this.configService.get<string>('PRICES_CURRENCIES_PATH');
+    const currenciesPath = this.configService.get<string>('PRICE_CURRENCIES_PATH');
     this.getCurrenciesUrl = `${url}/${currenciesPath}`;
   }
 

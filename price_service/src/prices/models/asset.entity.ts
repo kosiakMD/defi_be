@@ -19,12 +19,12 @@ export class Asset {
   @Column()
   public type: string;
 
-  @Column()
-  public platform_id: number;
+  @Column({ name: 'platform_id' })
+  public platformId: number;
 
-  @Column()
-  public is_new: boolean;
+  @Column({ name: 'is_new' })
+  public isNew: boolean;
 
-  @OneToMany(() => AssetPrice, (asset_price: AssetPrice) => asset_price.asset)
-  public asset_prices: AssetPrice[];
+  @OneToMany(() => AssetPrice, (assetPrice: AssetPrice) => assetPrice.asset)
+  public assetPrices: AssetPrice[];
 }

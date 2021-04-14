@@ -5,18 +5,21 @@ import { Asset } from './asset.entity';
 @Entity({ name: 'prices.asset_price' })
 export class AssetPrice {
   @PrimaryColumn()
-  public asset_id: number;
+  @Column({ name: 'asset_id', primary: true })
+  public assetId: number;
 
-  @Column()
-  public currency_id: number;
+  @PrimaryColumn()
+  @Column({ name: 'currency_id', primary: true })
+  public currencyId: number;
 
   @Column()
   public value: number;
 
-  @Column()
+  @PrimaryColumn()
+  @Column({ primary: true })
   public timestamp: number;
 
-  @ManyToOne(() => Asset, (asset: Asset) => asset.asset_prices)
+  @ManyToOne(() => Asset, (asset: Asset) => asset.assetPrices)
   @JoinColumn({ name: 'asset_id' })
   public asset: Asset;
 }

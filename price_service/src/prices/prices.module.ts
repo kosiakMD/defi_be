@@ -7,9 +7,9 @@ import { PricesController } from './prices.controller';
 import { PriceService } from './prices.service';
 
 @Module({
-	imports: [CacheModule.register(), TypeOrmModule.forFeature([AssetPrice, Asset]), LookupModule],
-	controllers: [PricesController],
-	providers: [PriceService],
-	exports: [TypeOrmModule],
+  imports: [CacheModule.register(), TypeOrmModule.forFeature([AssetPrice, Asset]), LookupModule],
+  controllers: [PricesController],
+  providers: [PriceService],
+  exports: [TypeOrmModule],
 })
 export class PricesModule {}

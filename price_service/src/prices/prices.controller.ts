@@ -10,7 +10,6 @@ export class PricesController {
   constructor(private priceService: PriceService) {}
 
   @Get('/')
-  // TODO: Swagger documentation is not complete...
   @ApiOkResponse({ type: PriceResponseDto })
   currentPrices(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = query;

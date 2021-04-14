@@ -1,10 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { splitToArray, splitToNumberArray } from '../../utils/transform';
 
-// TODO: Validation not finished here...
 export class PriceQueryDto {
   @Type(() => Number)
   @IsInt()
@@ -41,7 +40,7 @@ export class PriceQueryDto {
   addresses: string[];
 
   @IsOptional()
-  @IsArray()
+  @IsInt({ each: true })
   @Transform(({ value }) => splitToNumberArray(value))
   @ApiProperty({
     type: String,

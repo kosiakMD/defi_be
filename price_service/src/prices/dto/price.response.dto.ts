@@ -17,12 +17,12 @@ export interface CurrentPricesPayload {
   [key: string]: number;
 }
 
-export interface HistoricalPricesPayload {
-  [key: string]: TimestampPrice;
+export interface TimestampKeyPrice {
+  [key: string]: number;
 }
 
-export interface TimestampPrice {
-  [key: string]: number;
+export interface HistoricalPricesPayload {
+  [key: string]: TimestampKeyPrice;
 }
 
 export type PricesPayload = CurrentPricesPayload | HistoricalPricesPayload;

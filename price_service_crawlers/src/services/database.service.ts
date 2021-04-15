@@ -1,21 +1,17 @@
 /* eslint-disable camelcase*/
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Inject, Injectable } from '@nestjs/common';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS } from '../utils/constants';
 
 export type TokenPrices = { [key: string]: number };
 export type TokenAddresses = { [key: string]: number };
-
+export type TokenPricesExtended = { [key: string]: { value: number; ['db_id']: any } };
 @Injectable()
 export class DatabaseService {
-  constructor(
-    @Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-  ) {}
+  constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>) {}
 
   public getTokenByAddress = (address: string) =>
     this.pg.any('SELECT * FROM prices.asset WHERE address = $1', address);
@@ -29,21 +25,97 @@ export class DatabaseService {
   public getAllTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE $1', '1');
 
   public getSushiTokens = () =>
-    this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'SUSHISWAP');
+    this.pg.any('SELECT * FROM prices.asset WHERE platform = $1', 'SUSHISWAP');
 
   public getUniTokens = () =>
-    this.pg.any('SELECT * FROM prices.asset WHERE resource = $1', 'UNISWAP');
+    this.pg.any('SELECT * FROM prices.asset WHERE platform = $1', 'UNISWAP');
 
   public getNewTokens = () => this.pg.any('SELECT * FROM prices.asset WHERE is_new = true');
 
-  public getNewTokensByResource = (resource: string) =>
-    this.pg.any('SELECT * FROM prices.asset WHERE is_new = true AND resource = $1', resource);
+  public getNewTokensByPlatform = (platform: string) =>
+    this.pg.any(
+      'SELECT * FROM prices.asset WHERE is_new = true AND platform = $1 AND is_dead = false',
+      platform,
+    );
+  public getTokensByPlatformAndLastHistoryTimestamp = (platform: string, last_history_timestamp: number) =>
+    this.pg.any(
+      'SELECT * FROM prices.asset WHERE platform = $1 AND (last_history_timestamp < $2 OR last_history_timestamp IS NULL) AND is_dead = false',
+      [platform, last_history_timestamp]
+    );
 
-  public getTokensByPlatform = (current_platfrom_id) =>
-    this.pg.any('SELECT * FROM prices.asset WHERE platform_id = $1', current_platfrom_id);
+  public getTokenPricesForLastDay = (assetId: number, timestamp: number) =>
+    this.pg.any(
+      'SELECT * FROM prices.asset_price WHERE asset_id = $1 AND timestamp >= $2 AND timestamp < $3',
+      [assetId, timestamp - SECONDS_IN_HOUR * 24, timestamp]
+    );
 
-  public getCurrentPlatform = async () => {
-    const platforms = await this.pg.any('SELECT * FROM prices.platform WHERE name = $1', PLATFORM);
+  public updateAssetHistoryTimestamp = (assetId: number, timestamp: number) =>
+    this.pg.any(
+      'UPDATE prices.asset SET last_history_timestamp = $1 WHERE id = $2',
+      [ timestamp, assetId]
+    );
+  
+
+  public setTokenIsDead = (assetId: number) =>
+    this.pg.any(
+    'UPDATE prices.asset SET is_dead = true WHERE id = $1',
+    [ assetId ]
+  );
+
+  public clearTokenPricesForPeriod = (assetId: number, timestampFrom: number, timestampTo: number) =>
+    this.pg.any(
+      'DELETE FROM prices.asset_price WHERE asset_id = $1 AND timestamp >= $2 AND timestamp < $3',
+      [assetId, timestampFrom, timestampTo]
+    );
+  public clearTokenPricesForLastDay = (assetId: number, timestamp: number) =>
+    this.pg.any(
+      'DELETE FROM prices.asset_price WHERE asset_id = $1 AND timestamp >= $2 AND timestamp < $3',
+      [assetId, timestamp - SECONDS_IN_HOUR * 24, timestamp]
+    );
+  public getTokensByChain = (currentChainId) =>
+    this.pg.any('SELECT * FROM prices.asset WHERE chain_id = $1', currentChainId);
+
+  public checkEthToken = async () => {
+    const ethEntities = await this.pg.any('SELECT * FROM prices.asset WHERE address = $1', [
+      ETH_ADDRESS,
+    ]);
+    if (!ethEntities.length) {
+      const chainId = await this.getCurrentChain();
+      await this.pg.any(
+        'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
+        [ETH_ADDRESS, 'eth', 'ethereum', CHAIN, 'COINGECKO', chainId, true],
+      );
+    }
+    return;
+  };
+
+  public getTokensByChainAndPlatform = (currentChainId, platform, timestamp?) => {
+    if (timestamp) {
+      return this.pg.any(
+        'SELECT * FROM prices.asset WHERE chain_id = $1 AND platform = $2 AND is_dead = false AND id not IN (SELECT asset_id FROM prices.asset_price WHERE timestamp = $3)',
+        [currentChainId, platform, timestamp],
+      );
+    }
+
+    return this.pg.any('SELECT * FROM prices.asset WHERE chain_id = $1 AND platform = $2', [
+      currentChainId,
+      platform,
+    ]);
+  };
+
+  public getLastTokenPriceByChainAndPlatform = (currentChainId, platform) => {
+    return this.pg.any(
+      'SELECT asset_id, max(timestamp) AS timestamp FROM prices.asset_price INNER JOIN prices.asset ON prices.asset.id = prices.asset_price.asset_id AND prices.asset.platform = $1 WHERE currency_id = $2 GROUP BY asset_id ORDER BY asset_id',
+      [platform, currentChainId],
+    );
+  };
+
+  public removeToken = (assetId: number) => {
+    return this.pg.any('UPDATE prices.asset SET is_dead = true WHERE id = $1', assetId);
+  };
+
+  public getCurrentChain = async () => {
+    const platforms = await this.pg.any('SELECT * FROM prices.chain WHERE name = $1', CHAIN);
     if (!platforms.length) return null;
     return platforms[0].id;
   };
@@ -54,16 +126,16 @@ export class DatabaseService {
     return curencies[0].id;
   };
 
-  public addNewTokenToDb = (token: any, platform_id) =>
+  public addNewTokenToDb = (token: any, chainId, platform = 'COINGECKO') =>
     this.pg.any(
-      'INSERT INTO prices.asset(address, symbol, name, type, platform_id, is_new) VALUES ($1, $2, $3, $4, $5, true); ',
-      [token['platforms'][PLATFORM], token['symbol'], token['name'], PLATFORM, platform_id, true],
+      'INSERT INTO prices.asset(address, symbol, name, type, chain_id, is_new, platform) VALUES ($1, $2, $3, $4, $5, true, $7); ',
+      [token['platforms'][CHAIN], token['symbol'], token['name'], CHAIN, chainId, true, platform],
     );
 
-  public addNewSushiTokenToDb = async (address, name, symbol, type, resource, platform_id) => {
+  public addTokenToDb = async (address, name, symbol, type, platform, chainId) => {
     const new_one = await this.pg.any(
-      'INSERT INTO prices.asset(address, symbol, name, type, resource, platform_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
-      [address, symbol, name, type, resource, platform_id, true],
+      'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
+      [address, symbol, name, type, platform, chainId, true],
     );
 
     return new_one;
@@ -83,43 +155,59 @@ export class DatabaseService {
     try {
       values = prices
         .map(
-          ({ id, timestamp, price, currency_id }) =>
-            `('${id}',${currency_id},${timestamp},${price})`,
+          ({ id, timestamp, price, currencyId }) => `('${id}',${currencyId},${timestamp},${price})`,
         )
         .join(',');
 
       if (values) {
-        await this.pg.any(
-          'INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ' +
-            values +
-            '',
-        );
+        try {
+          await this.pg.any(
+            'INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ' +
+              values +
+              '',
+          );
+        } catch (e) {
+          // console.log('duplicate error ', e);
+        }
         await this.pg.any('UPDATE prices.asset SET is_new = false WHERE id = $1', coin_id + '');
       }
 
       return true;
     } catch (e) {
-      this.logger.error(coin_id, 'coin error');
-      this.logger.error(e, 'Token save error');
+      // console.log('coin error ' + coin_id + ' ', values);
+      // console.error('Token save error:', e);
       return false;
     }
   };
 
-  public addHourlyPricesToDb = async (prices: TokenPrices[], currency_id: any) => {
-    const current_timestamp = toTimestamp(new Date());
+  public addHourlyPricesToDb = async (prices: TokenPricesExtended, currencyId: any) => {
+    const currentTimestamp = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+
     try {
       for (const address in prices) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-ignore
         if (prices[address].db_id && (prices[address].value || prices[address]['value'] === 0)) {
-          await this.pg.any(
-            'INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ($1, $2, $3, $4); ',
-            [prices[address].db_id, currency_id, current_timestamp, prices[address].value],
-          );
-        } else this.logger.error(prices[address], 'some error with');
+          try {
+            // console.log("inserting "+address+" price with ts "+currentTimestamp)
+            await this.pg.any(
+              'INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ($1, $2, $3, $4); ',
+              [prices[address].db_id, currencyId, currentTimestamp, prices[address].value],
+            );
+          } catch (dbErr) {
+            // console.info(
+            //   `skipped unique pair as duplicate : asset_id-timestamp ${prices[address].db_id}-${currentTimestamp}`,
+            // );
+          }
+        } else {
+          try {
+            await this.removeToken(prices[address].db_id);
+          } catch (dbErr) {
+            // console.info(`can not set is_dead for asset: ${prices[address].db_id}`);
+          }
+          // console.log('some error with ', prices[address]);
+        }
       }
     } catch (e) {
-      this.logger.error(e);
+      // console.log(e);
     }
     return;
   };

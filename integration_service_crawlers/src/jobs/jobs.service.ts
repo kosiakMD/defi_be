@@ -2,10 +2,10 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Agenda from 'agenda';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { CurveService } from './curve.service';
 import { PoolsService } from 'src/pools/pools.service';
 import { VaultsService } from 'src/vaults/vaults.service';
+
+import { CurveService } from './curve.service';
 import { UniswapService } from './uniswap.service';
 import { SushiswapService } from './sushiswap.service';
 import { PancakeService } from './pancake.service';
@@ -37,21 +37,21 @@ export class JobsService {
 		});
 	}
 
-	private poolsJob(job: any, done: any): Promise<void> {
-		this.logger.log(`Start ${'pools'} job`);
-		return this.poolsService.savePools().then(() => {
-			this.logger.log(`End ${'pools'} job`);
-			done();
-		});
-	}
+  private poolsJob(job: any, done: any): Promise<void> {
+    this.logger.log(`Start ${'pools'} job`);
+    return this.poolsService.savePools().then(() => {
+      this.logger.log(`End ${'pools'} job`);
+      done();
+    });
+  }
 
-	private vaultsJob(job: any, done: any): Promise<void> {
-		this.logger.log(`Start ${'vaults'} job`);
-		return this.vaultsService.saveVaults().then(() => {
-			this.logger.log(`End ${'vaults'} job`);
-			done();
-		});
-	}
+  private vaultsJob(job: any, done: any): Promise<void> {
+    this.logger.log(`Start ${'vaults'} job`);
+    return this.vaultsService.saveVaults().then(() => {
+      this.logger.log(`End ${'vaults'} job`);
+      done();
+    });
+  }
 
 	constructor(
 		private configService: ConfigService,

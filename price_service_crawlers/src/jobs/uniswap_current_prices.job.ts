@@ -5,7 +5,7 @@ import { IDatabase } from 'pg-promise';
 
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN } from '../utils/constants';
 
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
@@ -22,8 +22,8 @@ export class UniswapCurrentPricesJob {
   public async crawl(job: any, done: any): Promise<void> {
     this.logger.log('Current UNISWAP Prices Job Sarted');
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
-      if (!currentPlatfromId) throw 'No current platform in DB: ' + PLATFORM;
+      const currentPlatfromId = await this.databaseService.getCurrentChain();
+      if (!currentPlatfromId) throw 'No current CHAIN in DB: ' + CHAIN;
 
       const currentCurrencyId = await this.databaseService.getCurrentCurrency();
       if (!currentCurrencyId) throw 'No current currency in DB: ' + CURRENCY;

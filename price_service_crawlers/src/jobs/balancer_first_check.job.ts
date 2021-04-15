@@ -2,11 +2,12 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
+import { SECONDS_IN_DAY } from 'src/utils/constants copy';
 
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN, SECONDS_IN_HOUR, PlatformEnum } from '../utils/constants';
 import { getNextDayStart } from '../utils/time';
 
 export type TokenAddresses = { [key: string]: number };
@@ -27,9 +28,9 @@ export class BalancerFirstCheckJob {
 
   public async crawlNewTokens(job: any, done: any): Promise<void> {
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+      const currentPlatfromId = await this.databaseService.getCurrentChain();
       if (!currentPlatfromId) {
-        throw 'No current platform in DB: ' + PLATFORM;
+        throw 'No current CHAIN in DB: ' + CHAIN;
       }
 
       const currentCurrencyId = await this.databaseService.getCurrentCurrency();
@@ -39,13 +40,7 @@ export class BalancerFirstCheckJob {
 
       this.logger.log('request prepared');
       const tokenRequest = await this.theGraphService.getBalancerPoolsTokens();
-      //this.logger.log("tokens ",tokenRequest['data'][''])
       const tokens = tokenRequest['data']['data']['pools'];
-
-      const dbAssets = await this.databaseService.getUniTokens();
-      // TODO: fpr what?
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const dbTokenAddresses = dbAssets.map((token) => token['address']);
 
       for (let i = 0; i < tokens.length; i++) {
         const poolTokens = tokens[i]['tokens'];
@@ -106,24 +101,30 @@ export class BalancerFirstCheckJob {
           if (!dbPool.length) {
             // TODO: for what?
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const newEntity = await this.databaseService.addNewSushiTokenToDb(
+            await this.databaseService.addTokenToDb(
               tokens[i]['id'],
               totalName,
               totalSymbol,
-              PLATFORM,
-              'BALANCER',
+              CHAIN,
+              PlatformEnum.balancer,
               currentPlatfromId,
             );
 
             dbPool = await this.databaseService.getTokenByAddress(tokens[i]['id']);
           }
+          try {
+            const currentTimestamp =
+              toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
 
-          await this.databaseService.addOnePrice(
-            dbPool[0]['id'],
-            toTimestamp(new Date()),
-            lpTokenPrice,
-            currentCurrencyId,
-          );
+            await this.databaseService.addOnePrice(
+              dbPool[0]['id'],
+              currentTimestamp,
+              lpTokenPrice,
+              currentCurrencyId,
+            );
+          } catch (e) {
+            this.logger.log('duplicate? skipping');
+          }
         } else {
           //this.logger.log('totalShares is 0')
           continue;
@@ -132,6 +133,8 @@ export class BalancerFirstCheckJob {
     } catch (e) {
       this.logger.error(e);
     }
+
+    this.logger.log('New tokens Balancer job one ');
     done();
   }
 
@@ -141,12 +144,12 @@ export class BalancerFirstCheckJob {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+    const currentPlatfromId = await this.databaseService.getCurrentChain();
     if (!currentPlatfromId) {
-      throw 'No current platform in DB: ' + PLATFORM;
+      throw 'No current platform in DB: ' + CHAIN;
     }
 
-    const dbAssets = await this.databaseService.getNewTokensByResource('BALANCER');
+    const dbAssets = await this.databaseService.getNewTokensByPlatform(PlatformEnum.balancer);
     this.logger.log('starting uniswap history clawler');
 
     const firstTxData = await this.theGraphService.getBalancerfirstTxTimestamp();
@@ -228,12 +231,18 @@ export class BalancerFirstCheckJob {
             lpTokenPrice = totalValueLocked / Number(totalShares);
             this.logger.log(lpTokenPrice, 'lpTokenPrice');
 
-            await this.databaseService.addOnePrice(
-              dbAssets[i]['id'],
-              checkDayTs,
-              lpTokenPrice,
-              currentCurrencyId,
-            );
+            const currentTimestamp = checkDayTs - (checkDayTs % SECONDS_IN_DAY);
+            try {
+              await this.databaseService.addOnePrice(
+                dbAssets[i]['id'],
+                currentTimestamp,
+                lpTokenPrice,
+                currentCurrencyId,
+              );
+            } catch (e) {
+              this.logger.log('skipping, duplicate ', e);
+            }
+
             pricesCount++;
           } else {
             //this.logger.log('totalShares is 0')

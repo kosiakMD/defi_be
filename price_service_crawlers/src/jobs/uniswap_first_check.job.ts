@@ -5,7 +5,7 @@ import { IDatabase } from 'pg-promise';
 
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN, PlatformEnum } from '../utils/constants';
 import { crawlCoin } from '../utils/crawlCoin';
 import { getNextDayStart } from '../utils/time';
 
@@ -26,11 +26,11 @@ export class UniSwapFirstCheckJob {
 
   public async crawlNewTokens(job: any, done: any): Promise<void> {
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+      const currentPlatfromId = await this.databaseService.getCurrentChain();
 
       let tokens = [];
       if (!currentPlatfromId) {
-        throw 'No current platform in DB: ' + PLATFORM;
+        throw 'No current platform in DB: ' + CHAIN;
       }
       this.logger.log('request prepared');
       let iteration = 0;
@@ -47,12 +47,12 @@ export class UniSwapFirstCheckJob {
         for (let i = 0; i < tokens.length; i++) {
           this.logger.log(tokens[i]['id']);
           if (dbTokenAddresses.indexOf(tokens[i]['id']) === -1)
-            await this.databaseService.addNewSushiTokenToDb(
+            await this.databaseService.addTokenToDb(
               tokens[i]['id'],
               tokens[i]['token0']['name'] + '-' + tokens[i]['token1']['name'],
               tokens[i]['token0']['symbol'] + '-' + tokens[i]['token1']['symbol'],
-              PLATFORM,
-              'UNISWAP',
+              CHAIN,
+              PlatformEnum.uniswap,
               currentPlatfromId,
             );
         }
@@ -73,7 +73,7 @@ export class UniSwapFirstCheckJob {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const dbAssets = await this.databaseService.getNewTokensByResource('UNISWAP');
+    const dbAssets = await this.databaseService.getNewTokensByPlatform(PlatformEnum.uniswap);
     this.logger.log('starting uniswap history clawler');
 
     const firstTxData = await this.theGraphService.getUniwapfirstTxTimestamp();
@@ -124,7 +124,7 @@ export class UniSwapFirstCheckJob {
         currentCurrencyId,
         this.databaseService,
         this.logger,
-        'uniswap',
+        PlatformEnum.uniswap,
       );
     }
 

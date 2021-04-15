@@ -1,25 +1,27 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { map } from 'rxjs/operators';
-import { Pool } from './pool.interface';
-import { LiquidityPosition } from './liquidity.position.interface';
 import { ConfigService } from '@nestjs/config';
+import { map } from 'rxjs/operators';
+
+import { LiquidityPosition } from './liquidity.position.interface';
+import { Pool } from './pool.interface';
 
 @Injectable()
 export class CurveSubgraph {
-	protected subgraphUrl: string;
+  protected subgraphUrl: string;
 
-	constructor(
-		private readonly httpService: HttpService,
-		private readonly configService: ConfigService
-	) {
-		this.subgraphUrl = this.configService.get<string>('AMM_CURVE_SUBGRAPH_URL');
-	}
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    this.subgraphUrl = this.configService.get<string>('AMM_CURVE_SUBGRAPH_URL');
+  }
 
-	async getAllPools(): Promise<ResponseData> {
-		return this.httpService.post<ResponseData>(this.subgraphUrl, {
-			operationName: 'pairs',
-			variables: {},
-			query: `
+  async getAllPools(): Promise<ResponseData> {
+    return this.httpService
+      .post<ResponseData>(this.subgraphUrl, {
+        operationName: 'pairs',
+        variables: {},
+        query: `
         {
 					pools (first: 1000) {
 						id
@@ -44,18 +46,20 @@ export class CurveSubgraph {
 						assignedCoins
         	}
 				}`,
-		}).pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 
-	async getLiquidityPositions(usersAddresses: string[]): Promise<LPData> {
-		return this.httpService.post<LPData>(this.subgraphUrl, {
-			operationName: 'liquidityPositions',
-			variables: {
-				userAddresses: usersAddresses
-			},
-			// query can be updated as necessary with no affect to current values
-			query: `
+  async getLiquidityPositions(usersAddresses: string[]): Promise<LPData> {
+    return this.httpService
+      .post<LPData>(this.subgraphUrl, {
+        operationName: 'liquidityPositions',
+        variables: {
+          userAddresses: usersAddresses,
+        },
+        // query can be updated as necessary with no affect to current values
+        query: `
         query liquidityPositions($userAddresses: [String]!){
           liquidityPositions (where:{user_in: $userAddresses}) {
             pool {
@@ -65,19 +69,20 @@ export class CurveSubgraph {
             poolTokenBalance
           }
         }`,
-		}).pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 }
 
 export interface LPData {
-	data: {
-		liquidityPositions: LiquidityPosition[]
-	}
+  data: {
+    liquidityPositions: LiquidityPosition[];
+  };
 }
 
 export interface ResponseData {
-	data: {
-		pools: Pool[]
-	}
+  data: {
+    pools: Pool[];
+  };
 }

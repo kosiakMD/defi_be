@@ -1,22 +1,24 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { map } from 'rxjs/operators';
-import { Pool } from './pool.interface';
 import { ConfigService } from '@nestjs/config';
+import { map } from 'rxjs/operators';
+
+import { Pool } from './pool.interface';
 
 @Injectable()
 export class BalancerSubgraph {
-	protected subgraphUrl: string;
-	constructor(
-		private readonly httpService: HttpService,
-		protected readonly configService: ConfigService
-	) {
-		this.subgraphUrl = this.configService.get<string>('AMM_BALANCER_SUBGRAPH_URL')
-	}
-	async getPairs(minReserve: number): Promise<ResponseData> {
-		return this.httpService.post<ResponseData>(this.subgraphUrl, {
-			operationName: 'pairs',
-			variables: {},
-			query: `
+  protected subgraphUrl: string;
+  constructor(
+    private readonly httpService: HttpService,
+    protected readonly configService: ConfigService,
+  ) {
+    this.subgraphUrl = this.configService.get<string>('AMM_BALANCER_SUBGRAPH_URL');
+  }
+  async getPairs(minReserve: number): Promise<ResponseData> {
+    return this.httpService
+      .post<ResponseData>(this.subgraphUrl, {
+        operationName: 'pairs',
+        variables: {},
+        query: `
         {
 					from0to1000: pools(where: 
 						{
@@ -44,14 +46,16 @@ export class BalancerSubgraph {
 										}
 									}
 				}`,
-		}).pipe(map(response => response.data))
-			.toPromise()
-	}
-	async getPairsInBlockState(minReserve: number, blockNumber: number): Promise<ResponseData> {
-		return this.httpService.post<ResponseData>(this.subgraphUrl, {
-			operationName: 'pairs',
-			variables: {},
-			query: `
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
+  async getPairsInBlockState(minReserve: number, blockNumber: number): Promise<ResponseData> {
+    return this.httpService
+      .post<ResponseData>(this.subgraphUrl, {
+        operationName: 'pairs',
+        variables: {},
+        query: `
         {
 					from0to1000: pools(where: 
 						{
@@ -80,13 +84,14 @@ export class BalancerSubgraph {
 										}
 									}
 				}`,
-		}).pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 }
 
 export interface ResponseData {
-	data: {
-		from0to1000: Pool[]
-	}
+  data: {
+    from0to1000: Pool[];
+  };
 }

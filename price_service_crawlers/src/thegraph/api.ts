@@ -50,7 +50,6 @@ export class Api {
     return axios.post(sushiswapUrl, sushi.getSushiswapPoolsQuery(skip));
   }
   public getCurrentSushiTokenPrices(address: string): Promise<AxiosResponse> {
-    this.logger.log(address);
     return axios.post(sushiswapUrl, sushi.getSushiswapCurrentPriceQuery(address));
   }
 

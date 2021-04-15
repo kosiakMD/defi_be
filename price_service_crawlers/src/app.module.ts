@@ -12,6 +12,7 @@ import * as winston from 'winston';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
+import { CoingeckoJob } from './jobs/coingecko.job';
 import { CoingeckoCurrentPricesJob } from './jobs/coingecko_current_prices.job';
 import { CoingeckoFirstCheckJob } from './jobs/coingecko_first_check.job';
 import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
@@ -86,6 +87,7 @@ import { Api } from './thegraph/api';
     AppService,
     JobsService,
     DatabaseService,
+    CoingeckoJob,
     CoingeckoFirstCheckJob,
     CoingeckoCurrentPricesJob,
     SushiswapCurrentPricesJob,

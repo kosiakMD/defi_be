@@ -9,33 +9,33 @@ import { PoolsServiceCurve } from './pools.service.curve';
 
 @Injectable()
 export class PoolsService {
-	constructor(private readonly poolsServiceUniswap: PoolsServiceUniswap,
-							private readonly poolsServiceSushiswap: PoolsServiceSushiswap,
-							private readonly poolsServicePancake: PoolsServicePancake,
-							private readonly poolsServiceBalancer: PoolsServiceBalancer,
-							private readonly poolsServiceCurve: PoolsServiceCurve,
-							private databaseService: DatabaseService
-	) {
-	}
+  constructor(
+    private readonly poolsServiceUniswap: PoolsServiceUniswap,
+    private readonly poolsServiceSushiswap: PoolsServiceSushiswap,
+    private readonly poolsServicePancake: PoolsServicePancake,
+    private readonly poolsServiceBalancer: PoolsServiceBalancer,
+    private readonly poolsServiceCurve: PoolsServiceCurve,
+    private databaseService: DatabaseService,
+  ) {}
 
-	async savePools(): Promise<any> {
-		const databaseClient = await this.databaseService.getClient();
-		// add pools one by one to avoid subgraph overload:
-		let pools: LiquidityPool[] = []
-			.concat(await this.poolsServiceUniswap.getPoolsToHandle())
-			.concat(await this.poolsServiceSushiswap.getPoolsToHandle())
-			.concat(await this.poolsServicePancake.getPoolsToHandle())
-			// temporary disable
-			// .concat(await this.poolsServiceBalancer.getPoolsToHandle())
-			// .concat(await this.poolsServiceCurve.getPoolsToHandle())
+  async savePools(): Promise<any> {
+    const databaseClient = await this.databaseService.getClient();
+    // add pools one by one to avoid subgraph overload:
+    const pools: LiquidityPool[] = []
+      .concat(await this.poolsServiceUniswap.getPoolsToHandle())
+      .concat(await this.poolsServiceSushiswap.getPoolsToHandle())
+      .concat(await this.poolsServicePancake.getPoolsToHandle());
+    // temporary disable
+    // .concat(await this.poolsServiceBalancer.getPoolsToHandle())
+    // .concat(await this.poolsServiceCurve.getPoolsToHandle())
 
-		const query = this.buildInsertPoolsQuery(pools)
-		await databaseClient.query(query)
-		return pools
-	}
+    const query = this.buildInsertPoolsQuery(pools);
+    await databaseClient.query(query);
+    return pools;
+  }
 
-	buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {
-		const queryStart = `
+  buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {
+    const queryStart = `
         INSERT INTO public.liquidity_pools
         (id,
          address,
@@ -48,10 +48,11 @@ export class PoolsService {
          pool_tokens,
          created_at,
          updated_at)
-        VALUES`
+        VALUES`;
 
-		const valuesConcatenated = liquidityPools.map(lp => {
-			return `(
+    const valuesConcatenated = liquidityPools
+      .map((lp) => {
+        return `(
 				default, 
 				'${lp.id}', 
 				'${lp.chain}', 
@@ -63,10 +64,11 @@ export class PoolsService {
 				'${JSON.stringify(lp.tokens).replace("'", "''")}',
 				current_timestamp,
 				current_timestamp
-				)`
-		}).join(',')
+				)`;
+      })
+      .join(',');
 
-		const queryEnd = `
+    const queryEnd = `
 			on conflict (chain, address) do update
 			set address = excluded.address,
 					chain = excluded.chain,
@@ -77,18 +79,7 @@ export class PoolsService {
 					token = excluded.token,
 					pool_tokens = excluded.pool_tokens,
 					updated_at = current_timestamp
-		`
-		return queryStart.concat(valuesConcatenated).concat(queryEnd)
-
-	}
+		`;
+    return queryStart.concat(valuesConcatenated).concat(queryEnd);
+  }
 }
-
-
-
-
-
-
-
-
-
-

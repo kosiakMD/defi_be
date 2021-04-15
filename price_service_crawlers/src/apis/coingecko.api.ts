@@ -1,10 +1,13 @@
-import axios from 'axios';
-import rateLimit from 'axios-rate-limit';
+import retry from 'async-retry';
 
+import { isETH } from '../utils/common';
 import { CURRENCY } from '../utils/constants';
+import { createHttpClient } from '../utils/tor';
+
+const { http, refreshIpAddress } = createHttpClient();
 
 const baseUrl = 'https://api.coingecko.com/api/v3';
-const http = rateLimit(axios.create(), { maxRPS: 2, perMilliseconds: 1000 });
+//const http = rateLimit(axios.create(), { maxRPS: 2, perMilliseconds: 1000 });
 
 export const getCoins = () => http.get(`${baseUrl}/coins/list?include_platform=true`);
 
@@ -16,17 +19,31 @@ export const getCurrentEthPrice = () =>
 export const getCurrentBtcPrice = () =>
   http.get(`${baseUrl}/coins/markets?vs_currency=usd&ids=bitcoin`);
 
-export const getCurrentCoinPrices = (addresses) =>
-  http.get(
-    `${baseUrl}/simple/token_price/ethereum?contract_addresses=${addresses}&vs_currencies=${CURRENCY}`,
-  );
+export const getCurrentCoinPrices: any = async (addresses) =>
+  axiosRetry(async () => {
+    const { data } = await http.get(
+      `${baseUrl}/simple/token_price/ethereum?contract_addresses=${addresses}&vs_currencies=${CURRENCY}`,
+    );
+    return { data };
+  });
 
-export const getCoinRangePrices = (httpClient, token, from, to) =>
-  httpClient.get(
-    `${baseUrl}/coins/ethereum/contract/${token}/market_chart/range?vs_currency=` +
-      CURRENCY +
-      `&from=${from}&to=${to}`,
-  );
+export const getCoinRangePrices = (token, from, to) =>
+  axiosRetry(async () => {
+    if (isETH(token)) {
+      const result = await http.get(
+        `${baseUrl}/coins/ethereum/market_chart/range?vs_currency=usd&from=${from}&to=${to}`,
+      );
+      return result;
+    }
+
+    const result = http.get(
+      `${baseUrl}/coins/ethereum/contract/${token}/market_chart/range?vs_currency=` +
+        CURRENCY +
+        `&from=${from}&to=${to}`,
+    );
+
+    return result;
+  });
 
 export const getCoinHistoricalRangePrices = (httpClient, coin, from, to) =>
   httpClient.get(
@@ -34,3 +51,47 @@ export const getCoinHistoricalRangePrices = (httpClient, coin, from, to) =>
       CURRENCY +
       `&from=${from}&to=${to}`,
   );
+
+export const handleHttpError = async (error, bail: (e: Error) => void = null) => {
+  const { response } = error;
+  if (response) {
+    // handle too many requests
+    if (response.status === 429) {
+      await refreshIpAddress();
+    }
+    // handle Gateway Time-out
+    if (response.status === 504) {
+      await refreshIpAddress();
+    }
+    if (response.status === 403) {
+      await refreshIpAddress();
+    }
+    // Not retry on 404
+    if (response.status === 404) {
+      if (bail) {
+        return bail(error);
+      }
+    }
+  }
+  throw error;
+};
+
+export const axiosRetry = <T>(action: () => T): Promise<T> => {
+  return retry(
+    async (bail) => {
+      try {
+        return await action();
+      } catch (error) {
+        //console.log("handled retry error ",error )
+        await handleHttpError(error, bail);
+      }
+    },
+    {
+      retries: 6,
+      randomize: true,
+      shouldResetTimeout: true,
+      minTimeout: 1000,
+      maxRetryTime: 100000,
+    },
+  );
+};

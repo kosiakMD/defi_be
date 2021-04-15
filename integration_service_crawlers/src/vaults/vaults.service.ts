@@ -1,32 +1,32 @@
 import { Injectable } from '@nestjs/common';
+
+import { DatabaseService } from '../jobs/database.service';
 import { VaultsServiceCurve } from './curve/vaults.service.curve';
-import { VaultsServiceSushiswap } from './sushiswap/vaults.service.curve';
 import { Vault } from './dto/vault.dto';
-import { DatabaseService } from '../jobs/db/database.service';
+import { VaultsServiceSushiswap } from './sushiswap/vaults.service.curve';
 
 
 @Injectable()
 export class VaultsService {
-	constructor(private readonly curveVaultsService: VaultsServiceCurve,
-							private readonly sushiswapVaultsService: VaultsServiceSushiswap,
-							private readonly databaseService: DatabaseService
-	) {
-	}
+  constructor(
+    private readonly curveVaultsService: VaultsServiceCurve,
+    private readonly sushiswapVaultsService: VaultsServiceSushiswap,
+    private readonly databaseService: DatabaseService,
+  ) {}
 
-	async saveVaults(): Promise<Vault[]> {
-		const databaseClient = await this.databaseService.getClient();
-		let vaults: Vault[] = []
-			.concat(await this.curveVaultsService.getVauts())
-			.concat(await this.sushiswapVaultsService.getVauts())
+  async saveVaults(): Promise<Vault[]> {
+    const databaseClient = await this.databaseService.getClient();
+    const vaults: Vault[] = []
+      .concat(await this.curveVaultsService.getVauts())
+      .concat(await this.sushiswapVaultsService.getVauts());
 
-		const query = this.buildInsertVaultsQuery(vaults)
-		await databaseClient.query(query)
-		return vaults
-	}
+    const query = this.buildInsertVaultsQuery(vaults);
+    await databaseClient.query(query);
+    return vaults;
+  }
 
-	private buildInsertVaultsQuery(vaults: Vault[]): string {
-
-		const queryStart = `
+  private buildInsertVaultsQuery(vaults: Vault[]): string {
+    const queryStart = `
         INSERT INTO public.vaults
         (id,
          vault_id,
@@ -40,12 +40,12 @@ export class VaultsService {
          reward_token,
          created_at,
          updated_at)
-        VALUES`
+        VALUES`;
 
-		const valuesConcatenated = vaults
-			.filter(value => value !== undefined)
-			.map(v => {
-				return `(
+    const valuesConcatenated = vaults
+      .filter((value) => value !== undefined)
+      .map((v) => {
+        return `(
 					default, 
 					'${v.id}', 
 					'${v.name}', 
@@ -58,11 +58,11 @@ export class VaultsService {
 					'${JSON.stringify(v.rewardToken).replace("'", "''")}',
 					current_timestamp,
 					current_timestamp
-					)`
-			})
-			.join(',')
+					)`;
+      })
+      .join(',');
 
-		const queryEnd = `
+    const queryEnd = `
 			on conflict (vault_id) do update
 			set
         vault_name = excluded.vault_name,
@@ -74,17 +74,7 @@ export class VaultsService {
         liquidity_pool_tokens = excluded.liquidity_pool_tokens,
         reward_token = excluded.reward_token,
 				updated_at = current_timestamp
-		`
-		return queryStart.concat(valuesConcatenated).concat(queryEnd)
-	}
+		`;
+    return queryStart.concat(valuesConcatenated).concat(queryEnd);
+  }
 }
-
-
-
-
-
-
-
-
-
-

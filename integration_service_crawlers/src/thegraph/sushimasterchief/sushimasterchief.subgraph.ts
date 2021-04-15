@@ -1,25 +1,25 @@
 import { HttpService, Injectable } from '@nestjs/common';
-import { map } from 'rxjs/operators';
-import { Pool } from './pool.interface';
-import { Chief } from './chief.interface';
 import { ConfigService } from '@nestjs/config';
+import { map } from 'rxjs/operators';
+
+import { Chief } from './chief.interface';
+import { Pool } from './pool.interface';
 
 @Injectable()
 export class SushimasterchiefSubgraph {
-	protected subgraphUrl: string;
-	constructor(
-		protected readonly httpService: HttpService,
-		protected readonly configService: ConfigService
-	) {
-		this.subgraphUrl = this.configService.get<string>('VAULT_SUSHISWAP_SUBGRAPH_URL')
-	}
-	async getActiveVaults(): Promise<PoolsData> {
-		return this.httpService.post<PoolsData>(this.subgraphUrl, {
-			operationName: 'poolsForVaults',
-			variables: {
-
-			},
-			query: `{
+  protected subgraphUrl: string;
+  constructor(
+    protected readonly httpService: HttpService,
+    protected readonly configService: ConfigService,
+  ) {
+    this.subgraphUrl = this.configService.get<string>('VAULT_SUSHISWAP_SUBGRAPH_URL');
+  }
+  async getActiveVaults(): Promise<PoolsData> {
+    return this.httpService
+      .post<PoolsData>(this.subgraphUrl, {
+        operationName: 'poolsForVaults',
+        variables: {},
+        query: `{
 				pools (where:{allocPoint_not:"0"}, first: 200) {
 					id
 					pair
@@ -32,14 +32,15 @@ export class SushimasterchiefSubgraph {
 					totalAllocPoint
 				}
 			}`,
-		}).pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 }
 
 export interface PoolsData {
-	data: {
-		pools: Pool[],
-		chief: Chief
-	}
+  data: {
+    pools: Pool[];
+    chief: Chief;
+  };
 }

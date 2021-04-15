@@ -1,6 +1,4 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import axios from 'axios';
-import rateLimit from 'axios-rate-limit';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
@@ -8,10 +6,9 @@ import { IDatabase } from 'pg-promise';
 import { getCoinRangePrices, getCoins } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, PLATFORM, TEST_TOKENS } from '../utils/constants';
+import { CURRENCY, CHAIN, TEST_TOKENS, TOKEN_START_DATE } from '../utils/constants';
 import { crawlCoin } from '../utils/crawlCoin';
 
-const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
 export type TokenPrices = { [key: string]: number };
 export type TokenAddresses = { [key: string]: number };
 
@@ -35,45 +32,52 @@ export class CoingeckoFirstCheckJob {
 
   public async crawlNewTokens(job: any, done: any): Promise<void> {
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
-      if (!currentPlatfromId) {
-        throw 'No current platform in DB: ' + PLATFORM;
+      this.logger.log('coingecko new tokens started');
+      const currentChainId = await this.databaseService.getCurrentChain();
+      if (!currentChainId) {
+        throw 'No current platform in DB: ' + CHAIN;
       }
 
-      const dbAssets = await this.databaseService.getAllTokens();
+      await this.databaseService.checkEthToken();
+      const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
+        currentChainId,
+        'COINGECKO',
+      );
       const dbTokenAddresses = dbAssets.map((token) => token['address']);
       const remoteTokens = await getEtherTokens();
 
       for (let i = 0; i < remoteTokens.length; i++) {
-        if (!remoteTokens[i]['platforms'] || !remoteTokens[i]['platforms'][PLATFORM]) {
+        if (!remoteTokens[i]['platforms'] || !remoteTokens[i]['platforms'][CHAIN]) {
           continue;
         }
-        if (dbTokenAddresses.indexOf(remoteTokens[i]['platforms'][PLATFORM]) === -1)
-          await this.databaseService.addNewTokenToDb(remoteTokens[i], currentPlatfromId);
+        if (dbTokenAddresses.indexOf(remoteTokens[i]['platforms'][CHAIN]) === -1)
+          await this.databaseService.addNewTokenToDb(remoteTokens[i], currentChainId);
       }
       this.logger.log('Add new tokens Job done');
     } catch (e) {
       this.logger.error(e);
     }
+
+    this.logger.log('coingecko new tokens finished');
     done();
   }
 
   public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
+    this.logger.log('coingecko new tokens history started');
     const currentCurrencyId = await this.databaseService.getCurrentCurrency();
     if (!currentCurrencyId) {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const dbAssets = await this.databaseService.getNewTokens();
+    const dbAssets = await this.databaseService.getNewTokensByPlatform('COINGECKO');
 
     for (const coin of dbAssets) {
       try {
         const {
           data: { prices },
         } = await getCoinRangePrices(
-          http,
           coin.address,
-          toTimestamp(new Date(2013)),
+          toTimestamp(new Date(TOKEN_START_DATE)),
           toTimestamp(new Date()),
         );
 
@@ -92,6 +96,7 @@ export class CoingeckoFirstCheckJob {
         break;
       }
     }
+    this.logger.log('coingecko new tokens history finished');
     done();
   };
 }

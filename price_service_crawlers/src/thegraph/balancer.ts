@@ -58,13 +58,16 @@ export function firstDailyBlockPairs(blockNumber: number, token: string): TheGra
   };
 }
 
-export function getBalancerPoolsQuery(): TheGraphQuery {
+export function getBalancerPoolsQuery(skip = 0): TheGraphQuery {
   return {
     operationName: 'getPairs',
     variables: {},
-    query: `query 
+    query:
+      `query 
     checkTopPoolsDataQuery {
-      pools: pools (first:1000, skip:0) {
+      pools: pools (first:1000,  skip:` +
+      skip * 1000 +
+      `) {
             id
             totalShares
             tokens {

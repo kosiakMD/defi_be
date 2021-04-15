@@ -11,10 +11,6 @@ export interface TokenTimestampPrices {
   [timestamp: string]: number;
 }
 
-export interface HistoricalTokenPricesResponse {
-  [token: string]: TokenTimestampPrices | string[];
-}
-
 export interface PoolPriceRequest {
   poolAddress: string;
   timestamps: number[];
@@ -26,8 +22,4 @@ export interface PoolPriceResponse {
 
 export interface PoolTimestampPrices {
   [timestamp: string]: number;
-}
-
-export interface HistoricalPoolPricesResponse {
-  [pool: string]: PoolTimestampPrices | string[];
 }

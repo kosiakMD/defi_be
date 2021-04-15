@@ -6,7 +6,7 @@ import { IDatabase } from 'pg-promise';
 import { getCurrentCoinPrices, getCurrentEthPrice } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
 import { isETH } from '../utils/common';
-import { CURRENCY, ETH_ADDRESS, PLATFORM } from '../utils/constants';
+import { CURRENCY, ETH_ADDRESS, CHAIN } from '../utils/constants';
 
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
@@ -35,13 +35,14 @@ export class CoingeckoCurrentPricesJob {
 
   static getEthPrice = async (): Promise<number> => {
     const { data } = await getCurrentEthPrice();
-    return data[0].currentPrice;
+    return data[0].current_price;
   };
 
   static getCurrentTokenPrices = async (tokens: string[]): Promise<TokenPrices> => {
     if (!tokens.length) {
       return {};
     }
+
     const response: TokenPrices = {};
 
     // NOTE: Special handling of ETH
@@ -67,13 +68,16 @@ export class CoingeckoCurrentPricesJob {
   public async crawl(job: any, done: any): Promise<void> {
     this.logger.log('Current Prices Job Sarted');
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
-      if (!currentPlatfromId) throw 'No current platform in DB: ' + PLATFORM;
+      const currentChainId = await this.databaseService.getCurrentChain();
+      if (!currentChainId) throw 'No current platform in DB: ' + CHAIN;
 
       const currentCurrencyId = await this.databaseService.getCurrentCurrency();
       if (!currentCurrencyId) throw 'No current currency in DB: ' + CURRENCY;
 
-      const dbAssets = await this.databaseService.getTokensByPlatform(currentPlatfromId);
+      const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
+        currentChainId,
+        'COINGECKO',
+      );
 
       if (dbAssets.length) {
         const dbTokenAddressesChunks = createAddressChunks(dbAssets);
@@ -83,12 +87,13 @@ export class CoingeckoCurrentPricesJob {
           const chunkResults = await CoingeckoCurrentPricesJob.getCurrentTokenPrices(
             dbTokenAddressesChunks[i],
           );
+          this.logger.log('chunk ' + i + ' ');
           results = Object.assign(results, chunkResults);
         }
 
         for (let i = 0; i < dbAssets.length; i++) {
           if (results[dbAssets[i]['address']]) {
-            results[dbAssets[i]['address']]['db_Id'] = dbAssets[i]['id'];
+            results[dbAssets[i]['address']]['db_id'] = dbAssets[i]['id'];
           }
         }
         await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId);

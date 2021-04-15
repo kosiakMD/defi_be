@@ -6,14 +6,14 @@ import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import {
-  getCoinHistoricalRangePrices,
-  getCurrentBtcPrice,
   getCurrentEthPrice,
+  getCurrentBtcPrice,
+  getCoinHistoricalRangePrices,
 } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN, PlatformEnum } from '../utils/constants';
 import { getNextDayStart } from '../utils/time';
 
 const http = rateLimit(axios.create(), { maxRPS: 1, perMilliseconds: 5000 });
@@ -35,9 +35,9 @@ export class CurveFirstCheckJob {
 
   public async crawlNewTokens(job: any, done: any): Promise<void> {
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+      const currentPlatfromId = await this.databaseService.getCurrentChain();
       if (!currentPlatfromId) {
-        throw 'No current platform in DB: ' + PLATFORM;
+        throw 'No current chain in DB: ' + CHAIN;
       }
 
       const currentCurrencyId = await this.databaseService.getCurrentCurrency();
@@ -81,12 +81,12 @@ export class CurveFirstCheckJob {
         if (!dbPool.length) {
           // TODO: for what?
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const newEntity = await this.databaseService.addNewSushiTokenToDb(
+          await this.databaseService.addTokenToDb(
             poolToken.id,
             name,
             name,
-            PLATFORM,
-            'CURVE',
+            CHAIN,
+            PlatformEnum.curve,
             currentPlatfromId,
           );
 
@@ -113,12 +113,12 @@ export class CurveFirstCheckJob {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+    const currentPlatfromId = await this.databaseService.getCurrentChain();
     if (!currentPlatfromId) {
-      throw 'No current platform in DB: ' + PLATFORM;
+      throw 'No current platform in DB: ' + CHAIN;
     }
 
-    const dbAssets = await this.databaseService.getNewTokensByResource('CURVE');
+    const dbAssets = await this.databaseService.getNewTokensByPlatform(PlatformEnum.curve);
     this.logger.log('starting uniswap history clawler');
 
     const firstTxData = await this.theGraphService.getCurvefirstTxTimestamp();

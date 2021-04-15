@@ -5,6 +5,7 @@ import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job';
+import { CoingeckoJob } from '../jobs/coingecko.job';
 import { CoingeckoCurrentPricesJob } from '../jobs/coingecko_current_prices.job';
 import { CoingeckoFirstCheckJob } from '../jobs/coingecko_first_check.job';
 import { CurveFirstCheckJob } from '../jobs/curve_first_check.job';
@@ -30,6 +31,7 @@ export class JobsService {
     private coingeckoNewTokenCheckJob: CoingeckoFirstCheckJob,
     private databaseService: DatabaseService,
     private theGraphService: Api,
+    private coingeckoJob: CoingeckoJob,
     private coingeckoCurrentPricesJob: CoingeckoCurrentPricesJob,
     private sushiswapCurrentPricesJob: SushiswapCurrentPricesJob,
     private sushiSwapNewTokenCheckJob: SushiSwapFirstCheckJob,
@@ -57,24 +59,14 @@ export class JobsService {
     this.agenda
       .on('ready', async () => {
         await this.agenda.start();
-        await this.agenda.cancel({});
+        // await this.agenda.cancel({});
         this.logger.log('Agenda started');
-        // check for new tokens on API
-        this.agenda.define(
-          'CRAWL_COINGECKO_NEW_TOKENS',
-          { lockLifetime: 10e3 },
-          this.coingeckoNewTokenCheckJob.crawlNewTokens.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_NEW_TOKENS',
-          {},
-        );
+        
         // get history for new tokens
         this.agenda.define(
           'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
           { lockLifetime: 10e3 },
-          this.coingeckoNewTokenCheckJob.crawlNewTokensHistory.bind(this),
+          this.coingeckoJob.crawlNewTokensHistory.bind(this),
         );
         this.agenda.every(
           NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
@@ -85,13 +77,14 @@ export class JobsService {
         this.agenda.define(
           'CRAWL_COINGECKO_CURRENT_PRICE',
           { lockLifetime: 10e3 },
-          this.coingeckoCurrentPricesJob.crawl.bind(this),
+          this.coingeckoJob.getCurrentPrices.bind(this),
         );
         this.agenda.every(
           CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
           'CRAWL_COINGECKO_CURRENT_PRICE',
           {},
         );
+
 
         //SUSHI
         //this.logger.log('starting sushi')

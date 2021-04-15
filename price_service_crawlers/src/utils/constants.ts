@@ -1,10 +1,11 @@
 export const ETH_DECIMALS = 18;
 // NOTE: We use this address for ethereum marking fo simplicity
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const PLATFORM = 'ethereum';
+export const CHAIN = 'ethereum';
 export const NEW_TOKENS_SECONDS_INTERVAL = 60 * 60 * 24;
 export const NEW_TOKENS_HISTORY_SECONDS_INTERVAL = 5 * 60;
-export const CURRENT_PRICE_SECONDS_INTERVAL = 60;
+export const CURRENT_PRICE_SECONDS_INTERVAL = 60 * 60;
+export const SECONDS_IN_HOUR = 60 * 60;
 export const CURRENCY = 'usd';
 export const TEST_TOKENS = [
   ETH_ADDRESS,
@@ -21,3 +22,13 @@ export const TEST_TOKENS = [
   '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2',
   '0x07e3c70653548b04f0a75970c1f81b4cbbfb606f',
 ]; // Theta Token
+
+export enum PlatformEnum {
+  balancer = 'BALANCER',
+  coingecko = 'COINGECKO',
+  curve = 'CURVE',
+  sushiswap = 'SUSHISWAP',
+  uniswap = 'UNISWAP',
+}
+
+export const TOKEN_START_DATE = new Date('2013');

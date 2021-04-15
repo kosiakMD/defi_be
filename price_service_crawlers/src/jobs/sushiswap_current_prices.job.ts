@@ -5,7 +5,7 @@ import { IDatabase } from 'pg-promise';
 
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN } from '../utils/constants';
 
 // TODO: clean file
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
@@ -23,8 +23,8 @@ export class SushiswapCurrentPricesJob {
   public async crawl(job: any, done: any): Promise<void> {
     this.logger.log('Current SUSHI Prices Job Sarted');
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
-      if (!currentPlatfromId) throw 'No current platform in DB: ' + PLATFORM;
+      const currentPlatfromId = await this.databaseService.getCurrentChain();
+      if (!currentPlatfromId) throw 'No current Chain in DB: ' + CHAIN;
 
       const currentCurrencyId = await this.databaseService.getCurrentCurrency();
       if (!currentCurrencyId) throw 'No current currency in DB: ' + CURRENCY;

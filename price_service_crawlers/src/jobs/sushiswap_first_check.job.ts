@@ -5,7 +5,7 @@ import { IDatabase } from 'pg-promise';
 
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
-import { CURRENCY, PLATFORM } from '../utils/constants';
+import { CURRENCY, CHAIN, PlatformEnum } from '../utils/constants';
 import { crawlCoin } from '../utils/crawlCoin';
 import { getNextDayStart } from '../utils/time';
 
@@ -28,11 +28,11 @@ export class SushiSwapFirstCheckJob {
 
   public async crawlNewTokens(job: any, done: any): Promise<void> {
     try {
-      const currentPlatfromId = await this.databaseService.getCurrentPlatform();
+      const currentChainId = await this.databaseService.getCurrentChain();
 
       let tokens = [];
-      if (!currentPlatfromId) {
-        throw 'No current platform in DB: ' + PLATFORM;
+      if (!currentChainId) {
+        throw 'No current CHAIN in DB: ' + CHAIN;
       }
 
       let iteration = 0;
@@ -47,13 +47,13 @@ export class SushiSwapFirstCheckJob {
         for (let i = 0; i < tokens.length; i++) {
           this.logger.log(tokens[i]['id']);
           if (dbTokenAddresses.indexOf(tokens[i]['id']) === -1)
-            await this.databaseService.addNewSushiTokenToDb(
+            await this.databaseService.addTokenToDb(
               tokens[i]['id'],
               tokens[i]['token0']['name'] + '-' + tokens[i]['token1']['name'],
               tokens[i]['token0']['symbol'] + '-' + tokens[i]['token1']['symbol'],
-              PLATFORM,
-              'SUSHISWAP',
-              currentPlatfromId,
+              CHAIN,
+              PlatformEnum.sushiswap,
+              currentChainId,
             );
         }
 
@@ -72,7 +72,7 @@ export class SushiSwapFirstCheckJob {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const dbAssets = await this.databaseService.getNewTokensByResource('SUSHISWAP');
+    const dbAssets = await this.databaseService.getNewTokensByPlatform(PlatformEnum.sushiswap);
     this.logger.log('starting');
 
     const firstTxData = await this.theGraphService.getSushiswapfirstTxTimestamp();
@@ -125,7 +125,7 @@ export class SushiSwapFirstCheckJob {
         currentCurrencyId,
         this.databaseService,
         this.logger,
-        'sushiswap',
+        PlatformEnum.sushiswap,
       );
     }
 

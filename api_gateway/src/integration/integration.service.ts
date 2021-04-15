@@ -11,6 +11,9 @@ import { BaseData, Pool, Vault } from '../common/interfaces';
 export class IntegrationService {
   private readonly getStatusUrl: string;
   private readonly getUniswapUrl: string;
+  private readonly getSushiswapUrl: string;
+  private readonly getBalancerUrl: string;
+  private readonly getCurveUrl: string;
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
 
@@ -28,6 +31,15 @@ export class IntegrationService {
 
     const uniswapPath = this.configService.get<string>('INTEGRATION_UNISWAP');
     this.getUniswapUrl = `${url}/${uniswapPath}`;
+
+    const sushiswapPath = this.configService.get<string>('INTEGRATION_SUSHISWAP');
+    this.getSushiswapUrl = `${url}/${sushiswapPath}`;
+
+    const balancerPath = this.configService.get<string>('INTEGRATION_BALANCER');
+    this.getBalancerUrl = `${url}/${balancerPath}`;
+
+    const curvePath = this.configService.get<string>('INTEGRATION_CURVE');
+    this.getCurveUrl = `${url}/${curvePath}`;
 
     const poolsPath = this.configService.get<string>('POOLS_PATH');
     this.getPoolsUrl = `${url}/${poolsPath}`;
@@ -59,6 +71,51 @@ export class IntegrationService {
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getUniswapUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getSushiswap(addresses: string): Promise<BaseData[]> {
+    try {
+      this.logger.time(this.getSushiswapUrl);
+      const data = await this.httpService
+        .get(this.getSushiswapUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getSushiswapUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getBalancer(addresses: string): Promise<BaseData[]> {
+    try {
+      this.logger.time(this.getBalancerUrl);
+      const data = await this.httpService
+        .get(this.getBalancerUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getBalancerUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getCurve(addresses: string): Promise<BaseData[]> {
+    try {
+      this.logger.time(this.getCurveUrl);
+      const data = await this.httpService
+        .get(this.getCurveUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getCurveUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);

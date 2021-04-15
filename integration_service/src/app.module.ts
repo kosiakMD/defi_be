@@ -1,4 +1,5 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import {
@@ -10,6 +11,7 @@ import * as winston from 'winston';
 
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
+import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { PoolsModule } from './pools/pools.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
@@ -57,6 +59,10 @@ import { VaultsModule } from './vaults/vaults.module';
   controllers: [HealthController],
 })
 export class AppModule implements OnModuleInit {
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LoggerMiddleware).forRoutes('/');
+  }
+
   onModuleInit(): void {
     const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(

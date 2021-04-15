@@ -1,13 +1,19 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 
 import { Block } from './blocks/block.dto';
 
 @Injectable()
 export class BlocksSubgraph {
-  private subgraphUrl: string = process.env.BLOCKS_SUBGRAPH_URL;
+  private readonly subgraphUrl: string;
 
-  constructor(@Inject(HttpService) private readonly httpService: HttpService) {}
+  constructor(
+    protected readonly configService: ConfigService,
+    @Inject(HttpService) private readonly httpService: HttpService,
+  ) {
+    this.subgraphUrl = configService.get<string>('BLOCKS_SUBGRAPH_URL');
+  }
 
   async getFirstAfterTimestamp(ts: number): Promise<ResponseData> {
     return this.httpService

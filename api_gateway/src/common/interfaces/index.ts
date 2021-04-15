@@ -17,7 +17,7 @@ export interface PlatformData {
   uniswap: BaseData[];
 }
 
-interface TokenCommon {
+export interface TokenCommon {
   address: string;
   name?: string;
   symbol?: string;
@@ -25,7 +25,7 @@ interface TokenCommon {
 }
 
 export interface ERC20Token extends TokenCommon {
-  totalSupply?: string;
+  totalSupply?: number;
 }
 
 export interface ContractApproval {
@@ -71,10 +71,16 @@ export interface Token {
   price: number;
 }
 
-export interface APY {
+export interface PoolAPY {
   day: number;
   week: number;
   month: number;
+}
+
+export interface VaultAPY {
+  year: number;
+  month: number;
+  day: number;
 }
 
 export interface IL {
@@ -86,31 +92,47 @@ export interface IL {
   monthUSD: number;
 }
 
+export interface PoolTokenId {
+  id: Address;
+  totalSupply: number;
+}
+
 export interface Pool {
-  id: string; // Ethereum
-  projectName: string;
-  reserveUSD: number;
-  fee24h: number;
-  tokens: PoolToken[];
-  APY: APY;
-  IL: IL;
+  id: string;
+  address: Address;
+  chain: string;
+  project: string;
+  apy: PoolAPY;
+  il: IL;
+  token: PoolTokenId;
+  poolTokens: PoolToken[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface LPToken {
   id: Address;
-  name: string;
+  // name: string;
 }
 
 export interface RewardToken extends TokenCommon {
+  id: Address;
+  address: Address;
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: number;
   priceUSD: number;
 }
 
 export interface Vault {
-  id: Address;
-  projectName: string; // enum e.g. 'curve'
-  name: string;
-  APY: APY;
-  TVL: number; //6974003.81675021
+  id: string;
+  vaultId: string;
+  vaultName: string;
+  project: string;
+  chain: string;
+  apy: VaultAPY;
+  tvl: number; //6974003.81675021
   lpToken: LPToken;
   liquidityPoolTokens: PoolToken[];
   rewardToken: RewardToken;

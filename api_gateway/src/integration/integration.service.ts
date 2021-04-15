@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
-import { Address, BaseData, Pool, Vault } from '../common/interfaces';
+import { BaseData, Pool, Vault } from '../common/interfaces';
 
 @Injectable()
 export class IntegrationService {
@@ -51,11 +51,11 @@ export class IntegrationService {
     }
   }
 
-  async getUniswap(address: Address): Promise<BaseData[]> {
+  async getUniswap(addresses: string): Promise<BaseData[]> {
     try {
       this.logger.time(this.getUniswapUrl);
       const data = await this.httpService
-        .get(this.getUniswapUrl, { params: { address } })
+        .get(this.getUniswapUrl, { params: { addresses } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getUniswapUrl);

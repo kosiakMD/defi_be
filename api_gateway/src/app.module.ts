@@ -26,7 +26,7 @@ import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationService } from './integration/integration.service';
 import { PlatformController } from './platform/platform.controller';
-import { PoolsModule } from './pool/pools.module';
+import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
 import { SushiswapController } from './sushiswap/sushiswap.controller';

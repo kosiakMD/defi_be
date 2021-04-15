@@ -14,18 +14,18 @@ export class UniswapController {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
 
-  @Get('/:address')
+  @Get('/:addresses')
   @ApiQuery({
-    name: 'address',
+    name: 'addresses',
     type: String,
-    description: 'Address',
+    description: 'Array of Addresses (comma separated)',
     example:
       '0x43e5ffd0c720b356b0b0e9f8c8178ad35dd4050c,0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2,0xa2107fa5b38d9bbd2c461d6edf11b11a50f6b974',
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  async get(@Query('address') address: string): Promise<any> {
+  async get(@Query('addresses') addresses: string): Promise<any> {
     this.logger.time('getUniswap');
-    const result = this.integrationService.getUniswap(address);
+    const result = this.integrationService.getUniswap(addresses);
     this.logger.timeEnd('getUniswap');
     return result;
   }

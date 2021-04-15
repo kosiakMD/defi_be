@@ -1,9 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Pool, PoolToken } from '../interfaces';
-import APY from './APY.dto';
-import EthereumAddressDto from './EthereumAddress.dto';
+import { Address, Pool, PoolAPY, PoolToken, PoolTokenId } from '../interfaces';
+import { PoolAPYDTO } from './APY.dto';
 import PoolTokenDto from './PoolToken.dto';
 
 class IL implements IL {
@@ -26,25 +25,42 @@ class IL implements IL {
   monthUSD: number;
 }
 
+class PoolTokenIdDTO implements PoolTokenId {
+  @ApiProperty({ type: String, example: '0x08d22e98d3024c1af130536e0e175ee38c13957b' })
+  id: Address;
+
+  @ApiProperty({ type: Number, example: 92077.06746043958 })
+  totalSupply: number;
+}
+
 export default class PoolDto implements Pool {
-  @ApiProperty({ type: EthereumAddressDto, example: '0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc' })
+  @ApiProperty({ type: String, example: '150958' })
   id: string;
 
-  @ApiProperty({ type: String, example: 'Uniswap' })
-  projectName: string;
+  @ApiProperty({ type: String, example: '0x08d22e98d3024c1af130536e0e175ee38c13957b' })
+  address: Address;
 
-  @ApiProperty({ type: Number, example: 242137132 })
-  reserveUSD: 242137132;
+  @ApiProperty({ type: String, example: 'eth' })
+  chain: string;
 
-  @ApiProperty({ type: Number, example: 312098.949 })
-  fee24h: 312098.949;
+  @ApiProperty({ type: String, example: 'uniswap' })
+  project: string;
 
-  @ApiProperty({ type: APY })
-  APY: APY;
+  @ApiProperty({ type: PoolAPYDTO })
+  apy: PoolAPY;
 
   @ApiProperty({ type: IL })
-  IL: IL;
+  il: IL;
+
+  @ApiProperty({ type: PoolTokenIdDTO })
+  token: PoolTokenIdDTO;
 
   @ApiProperty({ type: PoolTokenDto, isArray: true })
-  tokens: PoolToken[];
+  poolTokens: PoolToken[];
+
+  @ApiProperty({ type: String, example: '2021-04-13T12:17:14.583Z', description: 'UTC DateString' })
+  createdAt: string;
+
+  @ApiProperty({ type: String, example: '2021-04-13T16:00:30.395Z', description: 'UTC DateString' })
+  updatedAt: string;
 }

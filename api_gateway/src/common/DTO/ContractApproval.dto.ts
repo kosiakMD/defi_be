@@ -18,5 +18,5 @@ export default class ContractApprovalDto implements ContractApproval {
   blockTimestamp: number;
 
   @ApiProperty({ type: ERC20TokenDto })
-  token: ERC20Token = new ERC20TokenDto();
+  token: ERC20Token;
 }

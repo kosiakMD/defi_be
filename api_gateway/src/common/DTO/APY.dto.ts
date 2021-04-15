@@ -1,6 +1,9 @@
+// eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-export default class APY implements APY {
+import { PoolAPY, VaultAPY } from '../interfaces';
+
+export class PoolAPYDTO implements PoolAPY {
   @ApiProperty({ type: Number, example: 42.96448987689843 })
   day: number;
 
@@ -9,4 +12,15 @@ export default class APY implements APY {
 
   @ApiProperty({ type: Number, example: 41.35642187142753 })
   month: number;
+}
+
+export class VaultAPYDTO implements VaultAPY {
+  @ApiProperty({ type: Number, example: 38.82604263085921 })
+  year: number;
+
+  @ApiProperty({ type: Number, example: 3.235503552571601 })
+  month: number;
+
+  @ApiProperty({ type: Number, example: 0.10637271953660059 })
+  day: number;
 }

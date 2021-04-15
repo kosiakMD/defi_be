@@ -35,7 +35,7 @@ async function bootstrap() {
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
-  await app.listen(process.env.SERVER_PORT || 3000);
+  await app.listen(process.env.SERVICE_PORT || 3000);
 }
 
 bootstrap();

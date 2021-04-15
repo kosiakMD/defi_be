@@ -6,7 +6,7 @@ import { Example } from './interfaces/example.interface';
 export class ExamplesService {
   private readonly examples: Example[] = [];
 
-  create(example: Example) {
+  create(example: Example): void {
     this.examples.push(example);
   }
 

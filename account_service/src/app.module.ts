@@ -1,6 +1,7 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
@@ -8,8 +9,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
-import { ExamplesModule } from './examples/example.module';
-import { HealthController } from './health/health.controller';
+import { ApprovalsModule } from './modules/approvals/approvals.module';
+import { ExamplesModule } from './modules/examples/example.module';
+import { HealthController } from './modules/health/health.controller';
 
 @Module({
   imports: [
@@ -43,8 +45,24 @@ import { HealthController } from './health/health.controller';
         new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
       ],
     }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('TYPEORM_HOST'),
+        port: configService.get<number>('TYPEORM_PORT'),
+        username: configService.get<string>('TYPEORM_USERNAME'),
+        password: configService.get<string>('TYPEORM_PASSWORD'),
+        database: configService.get<string>('TYPEORM_DATABASE'),
+        schema: configService.get<string>('TYPEORM_SCHEMA'),
+        autoLoadEntities: true,
+        logging: true,
+      }),
+    }),
     TerminusModule,
     ExamplesModule,
+    ApprovalsModule,
   ],
   controllers: [HealthController],
 })

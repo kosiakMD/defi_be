@@ -1,31 +1,24 @@
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import {
-  utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
   WinstonModule,
+  utilities as nestWinstonModuleUtilities,
 } from 'nest-winston';
 import * as winston from 'winston';
 
-import { ExamplesModule } from './examples/example.module';
-import { HealthController } from './health/health.controller';
+import { AppModule } from './app.module';
 
-@Module({
-  imports: [
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
-      envFilePath: [
-        '.env.development.local',
-        '.env.development',
-        '.env.production.local',
-        '.env.production',
-        '.env',
-      ],
-    }),
-    WinstonModule.forRoot({
-      // options
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+    bodyParser: false,
+    logger: WinstonModule.createLogger({
+      // TODO: for custom logger
+      // logger: LoggerModule.createLogger({
       level: process.env.LOG_LEVEL || 'info',
       format: winston.format.json(),
       defaultMeta: { service: process.env.SERVICE_NAME },
@@ -37,33 +30,28 @@ import { HealthController } from './health/health.controller';
             nestWinstonModuleUtilities.format.nestLike(),
           ),
         }),
-        // - Write all logs with level `error` and below to `error.log`
-        new winston.transports.File({ filename: process.env.LOG_ERROR_FILE, level: 'error' }),
-        // - Write all logs with level `info` and below to `combined.log`
-        new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
       ],
     }),
-    TerminusModule,
-    ExamplesModule,
-  ],
-  controllers: [HealthController],
-})
-export class AppModule implements OnModuleInit {
-  onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
-    this.logger.log(
-      {
-        name: SERVICE_NAME,
-        host: SERVICE_HOST,
-        port: SERVICE_PORT,
-      },
-      'App',
-    );
-    this.logger.log(this.configService, SERVICE_NAME);
-  }
+  });
 
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private configService: ConfigService,
-  ) {}
+  app.useGlobalPipes(new ValidationPipe());
+  app.setGlobalPrefix('v1'); // temporary global as only 1 version
+
+  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
+
+  app.useLogger(logger);
+
+  const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+
+  const config = new DocumentBuilder()
+    .setTitle(SERVICE_NAME)
+    .setDescription(`${SERVICE_NAME} service description`)
+    .setVersion('1.0') // temporary global as only 1 version
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
+  await app.listen(SERVICE_PORT, SERVICE_HOST);
 }
+
+bootstrap();

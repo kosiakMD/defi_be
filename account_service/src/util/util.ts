@@ -1,0 +1,30 @@
+import { BigNumber as BN } from 'bignumber.js';
+
+export const DEFAULT_MULTIPLIER = 1e-18;
+export const ETH_DECIMALS = 18;
+export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+
+export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
+  const temp: string[] = [];
+  array.forEach((el) => {
+    if (!temp.includes(el.toLowerCase())) {
+      temp.push(el.toLowerCase());
+    }
+  });
+  return temp;
+}
+
+type Decimals = string | number;
+
+export const decimalsDivider = (decimals: Decimals) => new BN(10).pow(decimals);
+
+export const decimalsAmount = (amount: string, decimals: Decimals): number =>
+  new BN(amount) //
+    .div(decimalsDivider(decimals))
+    .toNumber();
+
+export const totalPrice = (amount: string, price: number, decimals: string | number): number =>
+  new BN(amount) //
+    .times(price)
+    .div(decimalsDivider(decimals))
+    .toNumber();

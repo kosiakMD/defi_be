@@ -14,7 +14,7 @@ export class UniswapController {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
 
-  @Get('/:addresses')
+  @Get('/')
   @ApiQuery({
     name: 'addresses',
     type: String,

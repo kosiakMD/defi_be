@@ -73,8 +73,6 @@ export class JobsService {
 		this.agenda.on('ready', async () => {
 			await this.agenda.start();
 
-			await this.agenda.cancel({});
-
 			this.logger.log(`agenda.define: ${this.configService.get<string>('UNISWAP_JOB_NAME')}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`, 'Agenda');
 			await this.agenda.define(
 				this.configService.get<string>('UNISWAP_JOB_NAME'),

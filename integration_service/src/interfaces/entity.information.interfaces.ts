@@ -45,7 +45,6 @@ export interface InformationSwap {
   from: string;
   logIndex: string;
   pair: Pair;
-  id: string;
   sender: string;
   to: string;
   transaction: InformationTransaction;
@@ -71,4 +70,40 @@ export interface InformationBurn {
   sender: string;
   to: string;
   transaction: InformationTransaction;
+}
+
+export interface BurnsInterface {
+  id: number;
+  blockNumber: number;
+  createdAt: Date;
+  information: InformationBurn;
+  sender: string;
+  toAddress: string;
+}
+
+export interface MintsInterface {
+  id: number;
+  blockNumber: number;
+  createdAt: Date;
+  information: InformationMint;
+  sender: string;
+  toAddress: string;
+}
+
+export interface SnapshotsInterface {
+  id: number;
+  userAddress: string;
+  information: InformationSnapshot;
+  blockNumber: number;
+  createdAt: Date;
+}
+
+export interface SwapsInterface {
+  id: number;
+  blockNumber: number;
+  createdAt: Date;
+  information: InformationSwap;
+  sender: string;
+  toAddress: string;
+  fromAddress: string;
 }

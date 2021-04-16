@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber as BN } from 'bignumber.js';
 
-import { UniswapBurnsEntity } from '../entities/uniswap.burns.entity';
-import { UniswapMintsEntity } from '../entities/uniswap.mints.entity';
-import { UniswapSnapshotsEntity } from '../entities/uniswap.snapshots.entity';
-import { UniswapSwapsEntity } from '../entities/uniswap.swaps.entity';
-import { UniswapToken } from '../interfaces/entity.information.interfaces';
+import {
+  BurnsInterface,
+  MintsInterface,
+  SnapshotsInterface,
+  SwapsInterface,
+  UniswapToken,
+} from '../interfaces/entity.information.interfaces';
 import { FeesSn1Data, FeesSn2Data } from '../interfaces/fee.interfaces';
 import {
   LiquidityPool,
@@ -19,53 +21,40 @@ import {
   ERC20Token,
   LiquidityChangeTransaction,
   PoolToken,
-  UniswapResponseData,
   SwapToken,
   SwapTransaction,
   Transactions,
-} from '../uniswap.interfaces';
+  UniswapResponseData,
+} from '../interfaces/transactions.interfaces';
 
 @Injectable()
-export class UniswapMapper {
+export class Mapper {
   private PERSENTAGE = 50;
 
-  public async mapData(userAddresses: string[], response: UniswapResponseData): Promise<Base[]> {
+  public async mapData(
+    userAddresses: string[],
+    response: UniswapResponseData,
+    protocolName: string,
+  ): Promise<Base[]> {
     const base: Base[] = [];
+
+    const chainId = protocolName === 'pancake' ? 2 : 1;
     for (const address of userAddresses) {
       const transactions: Transactions = {
+        chainId: chainId,
         protocolType: 'transaction',
-        protocolName: 'uniswap',
+        protocolName: protocolName,
         userAddress: address,
         txs: [],
       };
 
       const amm: AutomaticMarketMaker = {
+        chainId: chainId,
         protocolType: 'amm',
-        protocolName: 'uniswap',
+        protocolName: protocolName,
         userAddress: address,
         liquidityPositions: [],
       };
-
-      // TODO: functional for getting liquidityPositions from uniswapSnapshot array
-      // const pairMap = UniswapService.groupBy(
-      //   response.uniswapSnapshots.get(address) == undefined
-      //     ? []
-      //     : response.uniswapSnapshots.get(address),
-      //   (snapshot) => snapshot.information.pair.id,
-      // );
-      // for (const item of pairMap.values()) {
-      //   const sorted = await item.sort((a, b) => a.information.timestamp - b.information.timestamp);
-      //   const currentLiquidityPostion = sorted[sorted.length - 1];
-      //   amm.liquidityPositions.push({
-      //     id: currentLiquidityPostion.information.pair.id,
-      //     balance: currentLiquidityPostion.information.liquidityTokenBalance,
-      //     earnedFeeUSD: 0,
-      //     exitedAt:
-      //       currentLiquidityPostion.information.liquidityTokenBalance === '0'
-      //         ? currentLiquidityPostion.information.timestamp
-      //         : 0,
-      //   });
-      // }
 
       this.mapLiquidityPositions(
         amm,
@@ -99,40 +88,42 @@ export class UniswapMapper {
     return base;
   }
 
-  private mapMints(transactions: Transactions, mints: UniswapMintsEntity[]): void {
+  private mapMints(transactions: Transactions, mints: MintsInterface[]): void {
     for (const mint of mints) {
       const { token0, token1 } = mint.information.pair;
       const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(token0, token1, mint);
 
-      const ammMint: LiquidityChangeTransaction = this.createLiquidityChangeTransaction(mint, [
-        poolToken0,
-        poolToken1,
-      ]);
+      const ammMint: LiquidityChangeTransaction = this.createLiquidityChangeTransaction(
+        mint,
+        [poolToken0, poolToken1],
+        true,
+      );
 
       transactions.txs.push(ammMint);
     }
   }
 
-  private mapBurns(transactions: Transactions, burns: UniswapBurnsEntity[]) {
+  private mapBurns(transactions: Transactions, burns: BurnsInterface[]): void {
     for (const burn of burns) {
       const { token0, token1 } = burn.information.pair;
 
       const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(token0, token1, burn);
 
-      const ammBurn: LiquidityChangeTransaction = this.createLiquidityChangeTransaction(burn, [
-        poolToken0,
-        poolToken1,
-      ]);
+      const ammBurn: LiquidityChangeTransaction = this.createLiquidityChangeTransaction(
+        burn,
+        [poolToken0, poolToken1],
+        false,
+      );
 
       transactions.txs.push(ammBurn);
     }
   }
 
-  private mapSwaps(transactions: Transactions, swapFrom: UniswapSwapsEntity[]) {
+  private mapSwaps(transactions: Transactions, swapFrom: SwapsInterface[]): void {
     for (const swap of swapFrom) {
       const ammSwap: SwapTransaction = {
         type: 'swap',
-        hash: swap.information.id,
+        hash: swap.information.transaction.id,
         timestamp: Number(swap.information.transaction.timestamp),
         blockNumber: Number(swap.blockNumber),
         gasPrice: null,
@@ -182,7 +173,7 @@ export class UniswapMapper {
 
       // handle swap with more then 1 pair i such way
       const existedSwap = transactions.txs.find(
-        (t) => t.type == 'swap' && t.hash == swap.information.id,
+        (t) => t.type == 'swap' && t.hash == swap.information.transaction.id,
       ) as SwapTransaction;
       if (existedSwap) {
         // can be used logIndex here, but as subgraph returns data in the same order this works too
@@ -202,7 +193,7 @@ export class UniswapMapper {
       .toNumber();
   }
 
-  private getFeeBetweenTwoSnapshots(sn1: FeesSn1Data, sn2: FeesSn2Data) {
+  private getFeeBetweenTwoSnapshots(sn1: FeesSn1Data, sn2: FeesSn2Data): number {
     if (sn2.tokenSupply === 0 || sn1.tokenSupply === 0) {
       return 0;
     }
@@ -229,7 +220,7 @@ export class UniswapMapper {
 
   private mapLiquidityLiquiditySnapshots(
     amm: AutomaticMarketMaker,
-    lpSnapshots: UniswapSnapshotsEntity[],
+    lpSnapshots: SnapshotsInterface[],
     lpPositions: UniswapLiquidityPosition[],
   ): void {
     lpSnapshots = lpSnapshots.sort((a, b) => a.information.timestamp - b.information.timestamp);
@@ -367,9 +358,10 @@ export class UniswapMapper {
   private createLiquidityChangeTransaction(
     entity: UniversalEntity,
     uniswapTokens: PoolToken[],
+    flag: boolean,
   ): LiquidityChangeTransaction {
     return {
-      type: entity instanceof UniswapMintsEntity ? 'addLiquidity' : 'removeLiquidity',
+      type: flag ? 'addLiquidity' : 'removeLiquidity',
       hash: entity.information.transaction.id,
       blockNumber: Number(entity.blockNumber),
       timestamp: Number(entity.information.transaction.timestamp),
@@ -384,4 +376,4 @@ export class UniswapMapper {
   }
 }
 
-type UniversalEntity = UniswapBurnsEntity | UniswapMintsEntity;
+type UniversalEntity = BurnsInterface | MintsInterface;

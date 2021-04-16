@@ -1,21 +1,21 @@
-import { UniswapBurnsEntity } from './entities/uniswap.burns.entity';
-import { UniswapMintsEntity } from './entities/uniswap.mints.entity';
-import { UniswapSnapshotsEntity } from './entities/uniswap.snapshots.entity';
-import { UniswapSwapsEntity } from './entities/uniswap.swaps.entity';
 import {
-  LiquidityPosition,
-  UniswapLiquidityPosition,
-} from './interfaces/liquidity.position.interfaces';
+  BurnsInterface,
+  MintsInterface,
+  SnapshotsInterface,
+  SwapsInterface,
+} from './entity.information.interfaces';
+import { LiquidityPosition, UniswapLiquidityPosition } from './liquidity.position.interfaces';
 
 export interface UniswapResponseData {
-  uniswapSwapsFrom: Map<string, UniswapSwapsEntity[]>;
-  uniswapMints: Map<string, UniswapMintsEntity[]>;
-  uniswapBurns: Map<string, UniswapBurnsEntity[]>;
-  uniswapSnapshots: Map<string, UniswapSnapshotsEntity[]>;
+  uniswapSwapsFrom: Map<string, SwapsInterface[]>;
+  uniswapMints: Map<string, MintsInterface[]>;
+  uniswapBurns: Map<string, BurnsInterface[]>;
+  uniswapSnapshots: Map<string, SnapshotsInterface[]>;
   uniswapLiquidityPositions: Map<string, UniswapLiquidityPosition[]>;
 }
 
 export interface Base<T = string> {
+  chainId: number;
   userAddress: string;
   protocolName: string;
   protocolType: T;
@@ -71,20 +71,6 @@ export interface SwapTransaction extends Transaction {
   tokenIn: SwapToken;
   tokenOut: SwapToken;
 }
-
-//TODO: interfaces for liquidityPositions that were obtained from uniswapSnapshot
-
-// export interface LiquidityTest {
-// 	id: string;
-// 	balance: string;
-// 	earnedFeeUSD?: number;
-// 	exitedAt: number;
-// }
-
-// export interface AutomaticMarketMakerTest extends Base<'amm'> {
-// 	isTransferSupported?: boolean;
-// 	liquidityPositions: LiquidityTest[];
-// }
 
 export interface AutomaticMarketMaker extends Base<'amm'> {
   isTransferSupported?: boolean;

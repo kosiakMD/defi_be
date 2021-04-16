@@ -2,8 +2,8 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { InformationSnapshot } from '../../interfaces/entity.information.interfaces';
 
-@Entity('uniswap_snapshots')
-export class UniswapSnapshotsEntity {
+@Entity('sushiswap_snapshots')
+export class SushiswapSnapshotsEntity {
   @PrimaryColumn()
   id: number;
 

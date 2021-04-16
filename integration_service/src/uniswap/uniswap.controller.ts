@@ -9,8 +9,8 @@ import { UniswapSwapsEntity } from './entities/uniswap.swaps.entity';
 import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
 import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
 import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
-import { Base } from './uniswap.interfaces';
 import { UniswapService } from './uniswap.service';
+import {Base} from "../interfaces/transactions.interfaces";
 
 @Controller('integration')
 export class UniswapController {

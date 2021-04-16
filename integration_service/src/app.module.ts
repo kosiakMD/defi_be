@@ -12,7 +12,9 @@ import * as winston from 'winston';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
+import { PancakeModule } from './pancake/pancake.module';
 import { PoolsModule } from './pools/pools.module';
+import { SushiswapModule } from './sushiswap/sushiswap.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
 import { VaultsModule } from './vaults/vaults.module';
@@ -55,6 +57,8 @@ import { VaultsModule } from './vaults/vaults.module';
     ThegraphModule,
     DatabaseModule,
     VaultsModule,
+    SushiswapModule,
+    PancakeModule,
   ],
   controllers: [HealthController],
 })

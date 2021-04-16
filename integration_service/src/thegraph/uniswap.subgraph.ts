@@ -2,7 +2,7 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 
-import { LiquidityPositionResponseData } from '../uniswap/interfaces/liquidity.position.interfaces';
+import { LiquidityPositionResponseData } from '../interfaces/liquidity.position.interfaces';
 import { Pair } from './uniswap/pair.dto';
 
 @Injectable()

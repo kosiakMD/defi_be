@@ -1,3 +1,4 @@
+import { UniswapToken } from './entity.information.interfaces';
 import {
   ERC20Token,
   LiquidityChangeTransaction,
@@ -5,8 +6,7 @@ import {
   SwapToken,
   SwapTransaction,
   Transaction,
-} from '../uniswap.interfaces';
-import { UniswapToken } from './entity.information.interfaces';
+} from './transactions.interfaces';
 
 export interface UniswapLiquidityPositionPair {
   id: string;

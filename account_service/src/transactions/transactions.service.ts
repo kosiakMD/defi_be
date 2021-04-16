@@ -10,6 +10,7 @@ export class TransactionsService {
   addresses: string;
   addressesArray: string[];
   manager;
+
   constructor(private readonly web3Provider: Web3Provider) {}
 
   public async getTransactions(addresses: string[]): Promise<TransactionsResponse> {
@@ -45,7 +46,7 @@ export class TransactionsService {
   }
 
   private convertAddresses(addresses: string[]): string {
-    return addresses.map((address) => `'${address}'`).join(',');
+    return addresses.map(address => `'${address}'`).join(',');
   }
 
   private getUniqueAndToLowerCase(array: string[]): string[] {
@@ -68,13 +69,13 @@ export class TransactionsService {
 
       return {
         ...response,
-        [address]: userTransactions,
+        [address]: userTransactions
       };
     }, {});
   }
 
   private calculateFields(transactions, chainId): Transaction[] {
-    return transactions.map((transaction) => {
+    return transactions.map(transaction => {
       return {
         chainId,
         hash: transaction.hash,

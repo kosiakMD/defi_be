@@ -1,5 +1,12 @@
-export interface TransactionsResponse {
-  [address: number]: Transaction[];
+interface amount {
+  eth: number;
+  usd: number;
+}
+
+interface gas {
+  price: number;
+  eth: number;
+  usd: number;
 }
 
 export interface Transaction {
@@ -14,13 +21,6 @@ export interface Transaction {
   timeStamp: string;
 }
 
-interface amount {
-  eth: number;
-  usd: number;
-}
-
-interface gas {
-  price: number;
-  eth: number;
-  usd: number;
+export interface TransactionsResponse {
+  [address: number]: Transaction[];
 }

@@ -1,9 +1,10 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HealthIndicatorResult } from '@nestjs/terminus';
+import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
+import { BalancesResponse } from '../account/account.interfaces';
 import { Logger } from '../common/Logger/Logger.service';
 import { BaseData, Pool, Vault } from '../common/interfaces';
 
@@ -48,7 +49,7 @@ export class IntegrationService {
     this.getVaultsUrl = `${url}/${vaultsPath}`;
   }
 
-  async isHealthy(): Promise<HealthIndicatorResult> {
+  async isHealthy(): Promise<HealthCheckResult> {
     try {
       this.logger.time('request: ' + this.getStatusUrl);
       const data = await this.httpService
@@ -93,11 +94,11 @@ export class IntegrationService {
     }
   }
 
-  async getBalancer(addresses: string): Promise<BaseData[]> {
+  async getBalancer(addresses: string, chains?: string): Promise<BalancesResponse> {
     try {
       this.logger.time(this.getBalancerUrl);
       const data = await this.httpService
-        .get(this.getBalancerUrl, { params: { addresses } })
+        .get(this.getBalancerUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getBalancerUrl);

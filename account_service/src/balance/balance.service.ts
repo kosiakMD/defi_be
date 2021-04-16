@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Web3Provider } from '../chain/web3.provider';
-import { decimalsAmount, ETH_ADDRESS, ETH_DECIMALS, totalPrice } from '../util/util';
+import Web3 from 'web3';
 
+import { Web3Provider } from '../chain/web3.provider';
+import { decimalsAmount, ETH_ADDRESS, ETH_DECIMALS, totalPrice } from '../utils/utils';
 import {
   AccountTokenBalance,
   BalancesResponse,

@@ -18,10 +18,22 @@ export class TransactionsController {
     name: 'addresses',
     type: String,
     description: 'Array of Addresses (comma separated)',
-    example: '0x0000000000000000000000000000000000000000',
+    example:
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: String,
+    required: false,
+    description: `Array of chains' IDs (comma separated)`,
+    // example: '1,2',
+    example: '',
   })
   @ApiResponse({ status: 200, type: Object, isArray: true })
-  public getTransactions(@Query('addresses') addresses: string): Promise<any[]> {
-    return this.service.getTransactions(addresses);
+  public getTransactions(
+    @Query('addresses') addresses: string,
+    @Query('chains') chains: string,
+  ): Promise<any[]> {
+    return this.service.getTransactions(addresses, chains);
   }
 }

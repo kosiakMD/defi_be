@@ -43,5 +43,3 @@ export interface LiquidityPool {
     percentage: number;
   }[];
 }
-
-export type BalancesResponse = { [key: string]: AccountBalance };

@@ -1,8 +1,8 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { BalancesResponse } from 'src/account/account.interfaces';
 
-import BaseDataDto from '../common/DTO/BaseData.dto';
 import { Logger } from '../common/Logger/Logger.service';
 import { IntegrationService } from '../integration/integration.service';
 
@@ -22,11 +22,19 @@ export class BalancerController {
     example:
       '0x43e5ffd0c720b356b0b0e9f8c8178ad35dd4050c,0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2,0xa2107fa5b38d9bbd2c461d6edf11b11a50f6b974',
   })
-  @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  async get(@Query('addresses') addresses: string): Promise<any> {
-    this.logger.time('getBalancer');
-    const result = this.integrationService.getBalancer(addresses);
-    this.logger.timeEnd('getBalancer');
-    return result;
+  @ApiQuery({
+    name: 'chains',
+    type: String,
+    required: false,
+    description: `Array of chains' IDs (comma separated)`,
+    // example: '1,2',
+    example: '',
+  })
+  @ApiResponse({ status: 200, type: Object })
+  async get(
+    @Query('addresses') addresses: string,
+    @Query('chains') chains: string,
+  ): Promise<BalancesResponse> {
+    return this.integrationService.getBalancer(addresses, chains);
   }
 }

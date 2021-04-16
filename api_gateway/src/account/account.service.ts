@@ -1,17 +1,18 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HealthIndicatorResult } from '@nestjs/terminus';
+import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
 import { ApprovalBscDTO } from './account.dto';
-import { AllBalancesResponse } from './account.interfaces';
+import { BalancesResponse } from './account.interfaces';
 
 @Injectable()
 export class AccountService {
   private readonly getStatusUrl: string;
   private readonly getTransactionsUrl: string;
+  private readonly getTransfersUrl: string;
   private readonly getBalanceUrl: string;
   private readonly getApprovalsUrl: string;
 
@@ -30,6 +31,9 @@ export class AccountService {
     const transactionsPath = this.configService.get<string>('ACCOUNT_TRANSACTIONS');
     this.getTransactionsUrl = `${url}/${transactionsPath}`;
 
+    const transfersPath = this.configService.get<string>('ACCOUNT_TRANSFERS');
+    this.getTransfersUrl = `${url}/${transfersPath}`;
+
     const balancePath = this.configService.get<string>('ACCOUNT_BALANCE');
     this.getBalanceUrl = `${url}/${balancePath}`;
 
@@ -37,7 +41,7 @@ export class AccountService {
     this.getApprovalsUrl = `${url}/${approvalsPath}`;
   }
 
-  async isHealthy(): Promise<HealthIndicatorResult> {
+  async isHealthy(): Promise<HealthCheckResult> {
     try {
       this.logger.time('request: ' + this.getStatusUrl);
       const data = await this.httpService
@@ -52,11 +56,11 @@ export class AccountService {
     }
   }
 
-  async getTransactions(addresses: string): Promise<any[]> {
+  async getTransactions(addresses: string, chains?: string): Promise<any[]> {
     try {
       this.logger.time(this.getTransactionsUrl);
       const data = await this.httpService
-        .get(this.getTransactionsUrl, { params: { addresses } })
+        .get(this.getTransactionsUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getTransactionsUrl);
@@ -67,11 +71,26 @@ export class AccountService {
     }
   }
 
-  async getBalance(addresses: string): Promise<AllBalancesResponse> {
+  async getTransfers(addresses: string, chains?: string): Promise<any[]> {
+    try {
+      this.logger.time(this.getTransfersUrl);
+      const data = await this.httpService
+        .get(this.getTransfersUrl, { params: { addresses, chains } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getTransfersUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getBalances(addresses: string, chains?: string): Promise<BalancesResponse> {
     try {
       this.logger.time(this.getBalanceUrl);
       const data = await this.httpService
-        .get(this.getBalanceUrl, { params: { addresses } })
+        .get(this.getBalanceUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getBalanceUrl);

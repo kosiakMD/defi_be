@@ -1,6 +1,6 @@
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HealthIndicatorResult } from '@nestjs/terminus';
+import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
@@ -37,7 +37,7 @@ export class PricesService {
     this.getCurrenciesUrl = `${url}/${currenciesPath}`;
   }
 
-  async isHealthy(): Promise<HealthIndicatorResult> {
+  async isHealthy(): Promise<HealthCheckResult> {
     try {
       this.logger.time('request: ' + this.getStatusUrl);
       const data = await this.httpService

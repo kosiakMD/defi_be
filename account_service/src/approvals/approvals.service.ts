@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
 import { Address, ContractApprovalResponse } from '../interfaces';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../util/util';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../utils/utils';
 import ApprovalMapper from './utils/approvalMapper';
 
 @Injectable()

@@ -12,10 +12,11 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { AccountModule } from './account/account.module';
+import { AccountService } from './account/account.service';
 import { AppController } from './app/app.controller';
 import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
-import { ApprovalsModule } from './approvals/approvals.module';
 import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
 import { Logger } from './common/Logger/Logger.service';
@@ -25,7 +26,7 @@ import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationService } from './integration/integration.service';
-import { PlatformController } from './platform/platform.controller';
+// import { PlatformController } from './platform/platform.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
@@ -65,7 +66,7 @@ import { VaultsModule } from './vaults/vaults.module';
     }),
     TerminusModule,
     HttpModule,
-    ApprovalsModule,
+    AccountModule,
     PoolsModule,
     VaultsModule,
     TokensModule,
@@ -81,7 +82,7 @@ import { VaultsModule } from './vaults/vaults.module';
     CurveController,
     SushiswapController,
     BalancerController,
-    PlatformController,
+    // PlatformController,
     TransactionsController,
     TransfersController,
   ],
@@ -106,8 +107,10 @@ import { VaultsModule } from './vaults/vaults.module';
     // },
     ServiceHealthIndicator,
     AppService,
+    AccountService,
     IntegrationService,
     PricesService,
+    // AccountService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

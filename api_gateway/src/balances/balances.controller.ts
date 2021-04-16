@@ -1,29 +1,28 @@
-import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { EtherscanEnum } from '../constants';
+import { AllBalancesResponse } from '../account/account.interfaces';
+import { AccountService } from '../account/account.service';
+import { Logger } from '../common/Logger/Logger.service';
 
-@ApiTags('User')
+@ApiTags('Balances')
 @Controller('balances')
 export class BalancesController {
+  constructor(
+    private service: AccountService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
+
   @Get('/')
   @ApiQuery({
     name: 'addresses',
     type: String,
-    description: 'comma-separated Array String',
+    description: 'Array of Addresses (comma separated)',
+    example: '0x0000000000000000000000000000000000000000',
   })
-  @ApiQuery({
-    name: 'etherscan',
-    enum: EtherscanEnum,
-    required: false,
-    description: `either true or false; default is 'false'`,
-  })
-  get(
-    @Query('addresses', new ParseArrayPipe({ items: String, separator: ',' }))
-    addresses: string[],
-    @Query('etherscan') etherscan: EtherscanEnum,
-  ): string[] {
-    const lowerCaseAddresses = addresses.map((address) => address.toLowerCase());
-    return etherscan ? lowerCaseAddresses : lowerCaseAddresses;
+  @ApiResponse({ status: 200, type: Object })
+  public getBalance(@Query('addresses') addresses: string): Promise<AllBalancesResponse> {
+    return this.service.getBalance(addresses);
   }
 }

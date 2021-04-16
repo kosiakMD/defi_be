@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber as BN } from 'bignumber.js';
 
-import { DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData } from '../util/util';
+import { DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import {
   ERC20Token,
   ERC20Transfer,

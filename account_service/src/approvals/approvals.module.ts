@@ -8,7 +8,7 @@ import { ApprovalsService } from './approvals.service';
 @Module({
   imports: [
     HttpModule.register({
-      timeout: 5e3,
+      timeout: 30e3,
       maxRedirects: 2,
     }),
     TypeOrmModule.forFeature(),

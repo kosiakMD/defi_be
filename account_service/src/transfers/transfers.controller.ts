@@ -1,13 +1,15 @@
 import { Controller, Get, Query } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
 import { TransfersService } from './transfers.service';
 
-@Controller('account-service')
+@ApiTags('Transactions')
+@Controller('transactions')
 export class TransfersController {
   constructor(private readonly transactionService: TransfersService) {}
 
-  @Get('/transactions')
-  getTransactionsByAddresses(@Query('addresses') addresses: string) {
+  @Get('/')
+  getTransactionsByAddresses(@Query('addresses') addresses: string): Promise<any> {
     if (!addresses) {
       return Promise.resolve([]);
     }

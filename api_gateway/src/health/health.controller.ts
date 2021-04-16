@@ -55,6 +55,7 @@ export class HealthController {
       details: {},
     };
     const statuses = await Promise.all([
+      this.serviceHealthIndicator.isAccountHealthy(),
       this.serviceHealthIndicator.isIntegrationHealthy(),
       this.serviceHealthIndicator.isPriceHealthy(),
     ]);

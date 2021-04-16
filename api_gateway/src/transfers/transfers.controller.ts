@@ -3,7 +3,7 @@ import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { EtherscanEnum } from '../constants';
 
-@ApiTags('Transactions')
+@ApiTags('Transfers')
 @Controller('transfers')
 export class TransfersController {
   @Get('/')

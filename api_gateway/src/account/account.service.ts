@@ -1,0 +1,99 @@
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { HealthIndicatorResult } from '@nestjs/terminus';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { map } from 'rxjs/operators';
+
+import { Logger } from '../common/Logger/Logger.service';
+import { ApprovalBscDTO } from './account.dto';
+import { AllBalancesResponse } from './account.interfaces';
+
+@Injectable()
+export class AccountService {
+  private readonly getStatusUrl: string;
+  private readonly getTransactionsUrl: string;
+  private readonly getBalanceUrl: string;
+  private readonly getApprovalsUrl: string;
+
+  constructor(
+    private httpService: HttpService,
+    private configService: ConfigService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {
+    const host = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
+    const port = this.configService.get<string>('ACCOUNT_SERVICE_PORT');
+    const url = `${host}${port ? ':' + port : ''}`;
+
+    const getStatusUrl = this.configService.get<string>('ACCOUNT_STATUS');
+    this.getStatusUrl = `${url}/${getStatusUrl}`;
+
+    const transactionsPath = this.configService.get<string>('ACCOUNT_TRANSACTIONS');
+    this.getTransactionsUrl = `${url}/${transactionsPath}`;
+
+    const balancePath = this.configService.get<string>('ACCOUNT_BALANCE');
+    this.getBalanceUrl = `${url}/${balancePath}`;
+
+    const approvalsPath = this.configService.get<string>('ACCOUNT_APPROVALS');
+    this.getApprovalsUrl = `${url}/${approvalsPath}`;
+  }
+
+  async isHealthy(): Promise<HealthIndicatorResult> {
+    try {
+      this.logger.time('request: ' + this.getStatusUrl);
+      const data = await this.httpService
+        .get(this.getStatusUrl)
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd('request: ' + this.getStatusUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getTransactions(addresses: string): Promise<any[]> {
+    try {
+      this.logger.time(this.getTransactionsUrl);
+      const data = await this.httpService
+        .get(this.getTransactionsUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getTransactionsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getBalance(addresses: string): Promise<AllBalancesResponse> {
+    try {
+      this.logger.time(this.getBalanceUrl);
+      const data = await this.httpService
+        .get(this.getBalanceUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getBalanceUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getApprovals(addresses: string, chains?: string): Promise<ApprovalBscDTO[]> {
+    try {
+      this.logger.time(this.getApprovalsUrl);
+      const data = await this.httpService
+        .get(this.getApprovalsUrl, { params: { addresses, chains } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getApprovalsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+}

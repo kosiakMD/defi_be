@@ -2,7 +2,7 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { map } from 'rxjs/operators';
 import { getManager } from 'typeorm';
 
-import { ETH_ADDRESS } from '../../util/util';
+import { ETH_ADDRESS } from '../../../../price_service_crawlers/dist/src/utils/constants';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 import { TokenRow } from '../interfaces/balance.interfaces';
 

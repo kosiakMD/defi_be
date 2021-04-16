@@ -1,46 +1,27 @@
-import { Controller, Get, ParseArrayPipe, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { EtherscanEnum } from '../constants';
+import { AccountService } from '../account/account.service';
+import { Logger } from '../common/Logger/Logger.service';
 
 @ApiTags('Transactions')
 @Controller('transactions')
 export class TransactionsController {
+  constructor(
+    private service: AccountService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
+
   @Get('/')
   @ApiQuery({
     name: 'addresses',
     type: String,
-    isArray: true,
-    description: 'comma-separated Array String',
+    description: 'Array of Addresses (comma separated)',
+    example: '0x0000000000000000000000000000000000000000',
   })
-  @ApiQuery({
-    name: 'etherscan',
-    enum: EtherscanEnum,
-    required: false,
-    description: `either true or false; default is 'false'`,
-  })
-  @ApiResponse({ status: 200, type: String })
-  get(
-    @Query('addresses', new ParseArrayPipe({ items: String, separator: ',' }))
-    addresses: string[],
-    @Query('etherscan') etherscan: EtherscanEnum,
-  ): string[] {
-    const lowerCaseAddresses = addresses.map((address) => address.toLowerCase());
-    return etherscan ? lowerCaseAddresses : lowerCaseAddresses;
-  }
-
-  @Get('/ethereum')
-  @ApiQuery({
-    name: 'addresses',
-    type: String,
-    description: 'comma-separated Array String',
-  })
-  @ApiResponse({ status: 200, type: String })
-  getEthereum(
-    @Query('addresses', new ParseArrayPipe({ items: String, separator: ',' }))
-    addresses: string[],
-  ): string[] {
-    // TODO: plug
-    return addresses.map((address) => address.toLowerCase());
+  @ApiResponse({ status: 200, type: Object, isArray: true })
+  public getTransactions(@Query('addresses') addresses: string): Promise<any[]> {
+    return this.service.getTransactions(addresses);
   }
 }

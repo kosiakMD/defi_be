@@ -4,6 +4,9 @@ export const DEFAULT_MULTIPLIER = 1e-18;
 export const ETH_DECIMALS = 18;
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
 
+export const CHAIN_ID_ETH: number = 1
+export const CHAIN_ID_BSC: number = 2
+
 export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
   const temp: string[] = [];
   array.forEach((el) => {

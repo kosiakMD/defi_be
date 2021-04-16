@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
-import { Address, ContractApprovalResponse } from '../../interfaces';
-import ApprovalMapper from '../utils/approvalMapper';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../../../integration_service/src/pools/pools.utils';
+import { Address, ContractApprovalResponse } from '../interfaces';
+import ApprovalMapper from './utils/approvalMapper';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../util/util';
 
 @Injectable()
 export class ApprovalsService {

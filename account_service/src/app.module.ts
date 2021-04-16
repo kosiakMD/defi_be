@@ -10,8 +10,8 @@ import * as winston from 'winston';
 
 import { BalanceModule } from './balance/balance.module';
 import { DatabaseModule } from './database/database.module';
-import { ApprovalsModule } from './modules/approvals/approvals.module';
-import { HealthController } from './modules/health/health.controller';
+import { ApprovalsModule } from './approvals/approvals.module';
+import { HealthController } from './health/health.controller';
 import { TransfersModule } from './transfers/transfers.module';
 
 @Module({

@@ -26,10 +26,15 @@ export interface ERC20Token {
 }
 
 export interface ContractApproval {
+  chainId: number;
   contractAddress: Address;
   amount: string;
   blockTimestamp: number;
   tokenAddress: ERC20Token;
+}
+
+export class ContractApprovalResponse {
+  [key: string]: ContractApproval[];
 }
 
 export interface GasPrice {

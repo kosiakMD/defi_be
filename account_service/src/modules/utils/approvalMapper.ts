@@ -1,14 +1,15 @@
-const ApprovalMapper = (approvals: Array<any>): Array<any> => {
+const ApprovalMapper = (approvals: Array<any>, chainId: number): Array<any> => {
   const resp = [];
   let i = 0;
   for (const row of approvals) {
     i++;
     const tmp: any = {
+      chainId: chainId,
       allowance: row.amount,
       blockNumber: Number(row.block_number),
       blockTimestamp: Number(row.block_timestamp),
       project: {
-        id: Number(row.project_id),
+        id: row.project_id ? Number(row.project_id) : row.project_id,
         name: row.project_name,
         icon: row.icon,
         description: row.description,

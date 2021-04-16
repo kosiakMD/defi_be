@@ -5,6 +5,10 @@ import { Address, ContractApproval, ERC20Token } from '../interfaces';
 import { ERC20TokenDto } from './ERC20Token.dto';
 
 export default class ContractApprovalDto implements ContractApproval {
+  @ApiProperty({ type: Number })
+  @IsEthereumAddress()
+  chainId: number;
+
   @ApiProperty({ type: String })
   @IsEthereumAddress()
   contractAddress: Address;

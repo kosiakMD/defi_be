@@ -1,10 +1,7 @@
-import { CACHE_MANAGER, Controller, Get, Inject, Param } from '@nestjs/common';
+import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
-
-import ContractApprovalDto from '../../dto/ContractApproval.dto';
-import EthereumAddressDto from '../../dto/EthereumAddress.dto';
-import { ContractApproval } from '../../interfaces';
+import { ContractApprovalResponse } from '../../interfaces';
 import { ApprovalsService } from './approvals.service';
 
 @ApiTags('Approvals')
@@ -15,25 +12,14 @@ export class ApprovalsController {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
-  @Get('/:address')
+  @Get('/')
   @ApiParam({
-    name: 'address',
+    name: 'addresses',
     type: String,
     example: '0x0000000000000000000000000000000000000000',
   })
-  @ApiResponse({ status: 200, type: ContractApprovalDto, isArray: true })
-  async getBscApproval(@Param() params: EthereumAddressDto): Promise<ContractApproval[]> {
-    return this.service.getEthApprovals(params.address);
-  }
-
-  @Get('/bsc/:address')
-  @ApiParam({
-    name: 'address',
-    type: String,
-    example: '0x0000000000000000000000000000000000000000',
-  })
-  @ApiResponse({ status: 200, type: ContractApprovalDto, isArray: true })
-  async getEthApproval(@Param() params: EthereumAddressDto): Promise<ContractApproval[]> {
-    return this.service.getEthApprovals(params.address);
+  @ApiResponse({ status: 200, type: ContractApprovalResponse, isArray: true })
+  async getBscApproval(@Query('addresses') addresses: string): Promise<ContractApprovalResponse> {
+    return this.service.getAllApprovals(addresses);
   }
 }

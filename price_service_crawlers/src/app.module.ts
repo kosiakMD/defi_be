@@ -58,11 +58,11 @@ import { Api } from './thegraph/api';
 
     NestPgpromiseModule.register({
       connection: {
-        host: process.env.TYPEORM_HOST,
-        port: parseInt(process.env.TYPEORM_PORT),
-        database: process.env.TYPEORM_DATABASE,
-        user: process.env.TYPEORM_USERNAME,
-        password: process.env.TYPEORM_PASSWORD,
+        host: process.env.DB_HOST,
+        port: parseInt(process.env.DB_PORT),
+        database: process.env.DB_DATABASE,
+        user: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
       },
     }),
     AgendaModule.register({

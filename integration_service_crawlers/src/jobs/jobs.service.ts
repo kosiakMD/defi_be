@@ -67,7 +67,9 @@ export class JobsService {
 			db: {address: this.configService.get<string>('MONGO_CONNECTION_STRING')},
 			processEvery: '30 seconds',
 			lockLimit: 0,
-			defaultLockLimit: 0
+			defaultLockLimit: 0,
+			// lock time default is 1 month
+			defaultLockLifetime: 1000*60*60*24*30
 		});
 
 		this.agenda.on('ready', async () => {

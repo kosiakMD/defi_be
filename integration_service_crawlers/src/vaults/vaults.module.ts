@@ -2,7 +2,7 @@ import { forwardRef, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { ApisModule } from '../apis/apis.module';
-import { JobsModule } from '../jobs/migration.jobs.module';
+import { JobsModule } from '../jobs/jobs.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { GaugeRewards } from './curve/gauge.rewards';
 import { VaultsServiceCurve } from './curve/vaults.service.curve';

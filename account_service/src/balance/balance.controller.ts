@@ -1,9 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiQuery } from '@nestjs/swagger';
 
 import { BalanceService } from './balance.service';
 import { BalancesResponse } from './interfaces/balance.interfaces';
 
+@ApiTags('Balances')
 @Controller('balances')
 export class BalanceController {
   constructor(private readonly balanceService: BalanceService) {}

@@ -12,6 +12,7 @@ import { ApprovalsModule } from './approvals/approvals.module';
 import { BalanceModule } from './balance/balance.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
+import { TransactionsModule } from './transactions/transcations.module';
 import { TransfersModule } from './transfers/transfers.module';
 
 @Module({
@@ -50,6 +51,7 @@ import { TransfersModule } from './transfers/transfers.module';
     TransfersModule,
     DatabaseModule,
     BalanceModule,
+    TransactionsModule,
     ApprovalsModule,
   ],
   controllers: [HealthController],

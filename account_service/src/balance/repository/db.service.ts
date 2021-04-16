@@ -32,10 +32,9 @@ export class DbService {
       });
   }
 
-  public loadErc20Balances = (accounts: string[], bsc?: string): Promise<TokenRow[]> => {
-    const [transactionTable, tokenTable] = bsc
-      ? ['bsc_transfers', 'bsc_token']
-      : ['transactions', 'token'];
+  public loadErc20Balances = (accounts: string[], chainId: number): Promise<TokenRow[]> => {
+    const [transactionTable, tokenTable] =
+      chainId == 1 ? ['transactions', 'token'] : ['bsc_transfers', 'bsc_token'];
 
     const manager = getManager();
     // NOTE: We join addresses as there seems to be no better way to do IN query

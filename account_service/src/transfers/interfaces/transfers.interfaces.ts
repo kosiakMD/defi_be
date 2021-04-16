@@ -1,5 +1,6 @@
 export interface ERC20Token {
   address: string;
+  chainId?: number;
   name?: string;
   symbol?: string;
   decimals?: number;

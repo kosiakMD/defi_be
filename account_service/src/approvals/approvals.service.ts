@@ -9,6 +9,10 @@ import ApprovalMapper from './utils/approvalMapper';
 export class ApprovalsService {
   async getAllApprovals(addresses: Address): Promise<ContractApprovalResponse> {
     const allApprovals = {};
+    if (!addresses) {
+      return allApprovals;
+    }
+
     const [ethApprovals, bscApprovals] = await Promise.all([
       this.getApprovals(addresses, CHAIN_ID_ETH),
       this.getApprovals(addresses, CHAIN_ID_BSC),

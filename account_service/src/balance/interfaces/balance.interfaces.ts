@@ -23,17 +23,11 @@ export interface AccountTokenBalance extends TokenBalance {
 }
 
 export interface AccountBalance {
-  chainId: number;
   account: string;
   totalUsd: number;
   tokens: TokenBalance[];
 }
 
 export type BalancesResponse = { [key: string]: AccountBalance };
-
-export interface AllBalancesResponse {
-  bscBalance: BalancesResponse;
-  balance: BalancesResponse;
-}
 
 export type TokenPrices = { [key: string]: number };

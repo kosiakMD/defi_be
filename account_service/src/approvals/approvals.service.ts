@@ -2,43 +2,37 @@ import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
 import { Address, ContractApprovalResponse } from '../interfaces';
-import ApprovalMapper from './utils/approvalMapper';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../util/util';
+import ApprovalMapper from './utils/approvalMapper';
 
 @Injectable()
 export class ApprovalsService {
-
   async getAllApprovals(addresses: Address): Promise<ContractApprovalResponse> {
-    const allApprovals = {}
+    const allApprovals = {};
     const [ethApprovals, bscApprovals] = await Promise.all([
       this.getApprovals(addresses, CHAIN_ID_ETH),
       this.getApprovals(addresses, CHAIN_ID_BSC),
-    ])
+    ]);
 
-    Object.keys(ethApprovals).map(key => {
-      allApprovals[key] = [
-        ...ethApprovals[key],
-        ...bscApprovals[key]
-      ]
-    })
+    Object.keys(ethApprovals).map((key) => {
+      allApprovals[key] = [...ethApprovals[key], ...bscApprovals[key]];
+    });
 
-    return allApprovals
+    return allApprovals;
   }
 
   async getApprovals(addresses: Address, chainId: number): Promise<ContractApprovalResponse> {
-
-    let approvalsTableName, approvalsTokensTableName
+    let approvalsTableName, approvalsTokensTableName;
     if (chainId == 1) {
-      approvalsTableName = 'approvals'
-      approvalsTokensTableName = 'approvals_tokens'
+      approvalsTableName = 'approvals';
+      approvalsTokensTableName = 'approvals_tokens';
     } else {
-      approvalsTableName = 'bsc_approvals'
-      approvalsTokensTableName = 'bsc_approvals_tokens'
+      approvalsTableName = 'bsc_approvals';
+      approvalsTokensTableName = 'bsc_approvals_tokens';
     }
 
     const addressesArray: string[] = addresses.split(',');
-    const addressesJoined: string = addressesArray.map((a) => `'${a}'`)
-      .join(',');
+    const addressesJoined: string = addressesArray.map((a) => `'${a}'`).join(',');
     const entityManager = getManager();
     const approvals: any[] = await entityManager.query(`
             select 
@@ -69,7 +63,9 @@ export class ApprovalsService {
             )`);
 
     return addressesArray.reduce((response, address) => {
-      let singleAddressApprovals = approvals.filter(approval => approval['user_address'] == address);
+      const singleAddressApprovals = approvals.filter(
+        (approval) => approval['user_address'] == address,
+      );
       return {
         ...response,
         [address]: ApprovalMapper(singleAddressApprovals, chainId),

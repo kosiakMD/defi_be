@@ -8,9 +8,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
+import { ApprovalsModule } from './approvals/approvals.module';
 import { BalanceModule } from './balance/balance.module';
 import { DatabaseModule } from './database/database.module';
-import { ApprovalsModule } from './approvals/approvals.module';
 import { HealthController } from './health/health.controller';
 import { TransfersModule } from './transfers/transfers.module';
 

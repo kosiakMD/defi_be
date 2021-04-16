@@ -1,6 +1,7 @@
 import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
+
 import { ContractApprovalResponse } from '../interfaces';
 import { ApprovalsService } from './approvals.service';
 

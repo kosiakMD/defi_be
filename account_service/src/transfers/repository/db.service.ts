@@ -20,12 +20,14 @@ export class DbService {
         ${transactionTable}."gasPrice" AS "gasPrice",
         ${transactionTable}."amount" AS "amount",
         ${transactionTable}."tokenAddress" AS "tokenAddress",
+        ${transactionTable}."tokenprice" AS "tokenPrice",
+        ${transactionTable}."ethprice" AS "ethPrice",
         ${tokenTable}.name AS "tokenName",
         ${tokenTable}.symbol AS "tokenSymbol",
         ${tokenTable}.decimals AS "tokenDecimals",
         ${tokenTable}."totalSupply" AS "tokenTotalSupply" 
       from ${transactionTable} 
-      left join token 
+      left join ${tokenTable} 
       on ${transactionTable}."tokenAddress" = ${tokenTable}.address
     where ${transactionTable}."fromAddress" IN (${addresses})
     or ${transactionTable}."toAddress" IN (${addresses})

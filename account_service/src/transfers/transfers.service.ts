@@ -1,17 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { BigNumber as BN } from 'bignumber.js';
+import {Injectable} from '@nestjs/common';
 
-import { DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import {DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData} from '../utils/utils';
 import {
-  ERC20Token,
+  ERC20TokenTransfer,
   ERC20Transfer,
   FinallyResponse,
-  Transaction,
-  TransactionsResponse,
+  TransactionsResponseTransfers,
   TransactionWithToken,
   TransactionWithTokenAndPrices,
+  Transfers,
 } from './interfaces/transfers.interfaces';
-import { DbService } from './repository/db.service';
+import {DbService} from './repository/db.service';
 
 @Injectable()
 export class TransfersService {
@@ -26,7 +25,7 @@ export class TransfersService {
     return { transfers, bscTransaction };
   }
 
-  async getTransactionByAddresses(addresses: string, bsc?: string): Promise<TransactionsResponse> {
+  async getTransactionByAddresses(addresses: string, bsc?: string): Promise<TransactionsResponseTransfers> {
     const addressArray = addresses.split(',');
 
     const formattedAddresses = addressArray.map((address) => `'${address}'`).join(',');
@@ -40,38 +39,22 @@ export class TransfersService {
   private async getTransfersWithTokenPrices(
     transactions: TransactionWithToken[],
   ): Promise<TransactionWithTokenAndPrices[]> {
-    const transactionWithTokenPrice = await Promise.all(
-      transactions.map(async (transaction) => {
-        try {
-          return {
-            ...transaction,
-            tokenPriceUSD: 0,
-            totalPriceUSD: 0,
-          };
-          // TODO: get price
-        } catch (_) {
-          return {
-            ...transaction,
-            tokenPriceUSD: 0,
-            totalPriceUSD: 0,
-          };
-        }
-      }),
-    );
-
     return await Promise.all(
-      transactionWithTokenPrice.map(async (transaction) => {
+      transactions.map(async (transaction) => {
+        const decimals = transaction.tokenDecimals
+            ? Math.pow(10, -`${transaction.tokenDecimals}`) : DEFAULT_MULTIPLIER;
         try {
           return {
             ...transaction,
-            gasPriceUSD: 0,
+            tokenPriceUSD: transaction.tokenPrice,
+            totalPriceUSD: transaction.amount
+                * decimals * transaction.tokenPrice,
           };
-
-          // TODO: get price
         } catch (_) {
           return {
             ...transaction,
-            gasPriceUSD: 0,
+            tokenPriceUSD: 0,
+            totalPriceUSD: 0,
           };
         }
       }),
@@ -81,8 +64,9 @@ export class TransfersService {
   private toTransfersResponse(
     transactions: TransactionWithTokenAndPrices[],
     addresses: string[],
-  ): TransactionsResponse {
-    return addresses.reduce<TransactionsResponse>((response, address) => {
+  ): TransactionsResponseTransfers {
+
+    return addresses.reduce<TransactionsResponseTransfers>((response, address) => {
       const userTransactions = transactions.filter(
         (transaction) => transaction.toAddress === address || transaction.fromAddress === address,
       );
@@ -91,40 +75,47 @@ export class TransfersService {
         userTransactions.map((transaction) => transaction.hash),
       );
 
-      const transactionWithTransfers = uniqueUserHashes.map<Transaction>((hash) => {
+      const transactionWithTransfers = uniqueUserHashes.map<Transfers>((hash) => {
         const hashTransfers = userTransactions.filter((transaction) => transaction.hash === hash);
-
         const erc20Transfers: ERC20Transfer[] = hashTransfers.map((transfer) => {
-          const tokenErc20: ERC20Token = {
-            address: transfer.tokenAddress,
-            name: transfer.tokenName,
-            symbol: transfer.tokenSymbol,
-            decimals: transfer.tokenDecimals,
-            totalSupply: transfer.tokenTotalSupply,
-          };
-          // NOTE: Change log
-          return {
-            fromAddress: transfer.fromAddress,
-            toAddress: transfer.toAddress,
-            amount: transfer.amount,
-            token: tokenErc20,
-            tokenPriceUSD: transfer.tokenPriceUSD,
-            totalPriceUSD: transfer.totalPriceUSD,
-            logIndex: 0,
-          };
-        });
+          const decimals = !transfer.tokenDecimals
+              ? DEFAULT_MULTIPLIER : Math.pow(10, -`${transfer.tokenDecimals}`);
+
+            const tokenErc20: ERC20TokenTransfer = {
+              address: transfer.tokenAddress,
+              name: transfer.tokenName,
+              symbol: transfer.tokenSymbol,
+              decimals: transfer.tokenDecimals,
+              totalSupply: transfer.tokenTotalSupply,
+              amount: {
+                decimals: transfer.amount * decimals,
+                usd: transfer.amount * decimals * transfer.tokenPrice
+              }
+            };
+            // NOTE: Change log
+            return {
+              fromAddress: transfer.fromAddress,
+              toAddress: transfer.toAddress,
+              amount: transfer.amount,
+              token: tokenErc20,
+              tokenPriceUSD: transfer.tokenPriceUSD,
+              totalPriceUSD: transfer.totalPriceUSD,
+            };
+          });
+
+        const decimals = !hashTransfers[0].tokenDecimals
+            ? DEFAULT_MULTIPLIER : Math.pow(10, -`${hashTransfers[0].tokenDecimals}`);
 
         return {
           hash: hashTransfers[0].hash,
           blockNumber: hashTransfers[0].blockNumber,
           blockTimeStamp: hashTransfers[0].blockTimeStamp,
           gasUsed: hashTransfers[0].gasUsed,
-          gasPrice: hashTransfers[0].gasPrice,
-          gasUsedEther: this.getGasUsedEther(hashTransfers[0].gasPrice, hashTransfers[0].gasUsed),
-          gasUsedUSD: this.getGasUsedUSD(
-            hashTransfers[0].gasPriceUSD,
-            hashTransfers[0].gasUsed * +hashTransfers[0].gasPrice,
-          ),
+          gas: {
+            price:  hashTransfers[0].gasPrice * decimals,
+            eth: hashTransfers[0].gasUsed * decimals * hashTransfers[0].gasPrice,
+            usd: hashTransfers[0].gasUsed * decimals * hashTransfers[0].tokenPrice * hashTransfers[0].gasPrice
+          },
           erc20Transfers,
         };
       });
@@ -134,19 +125,5 @@ export class TransfersService {
         [address]: transactionWithTransfers,
       };
     }, {});
-  }
-
-  private getGasUsedEther(gasPrice: number, gasUsed: number): number {
-    return new BN(gasPrice)
-      .multipliedBy(gasUsed) //
-      .multipliedBy(DEFAULT_MULTIPLIER)
-      .toNumber();
-  }
-
-  private getGasUsedUSD(gasPrice: number, gasUsed: number): number {
-    return new BN(gasPrice)
-      .multipliedBy(gasUsed) //
-      .multipliedBy(DEFAULT_MULTIPLIER)
-      .toNumber();
   }
 }

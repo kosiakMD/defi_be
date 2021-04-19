@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable} from '@nestjs/common';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';

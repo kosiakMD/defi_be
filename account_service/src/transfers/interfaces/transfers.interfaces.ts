@@ -23,12 +23,13 @@ export interface ERC20Transfer {
   fromAddress: string;
   toAddress: string;
   amount: number;
-  token: ERC20Token;
+  token: ERC20TokenTransfer;
   tokenPriceUSD?: number;
   totalPriceUSD?: number;
 }
 
 export interface Transfers {
+  chainId: number;
   hash: string;
   blockNumber: number;
   blockTimeStamp: number;

@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
+import {CHAIN_ID_BSC} from "../../utils/utils";
 
 @Injectable()
 export class DbService {
-  async getTransfersDataFromDb(addresses: string, bsc?: string) {
-    const [transactionTable, tokenTable] = bsc
+  async getTransfersDataFromDb(addresses: string, chainId: number) {
+    const [transactionTable, tokenTable] = chainId === CHAIN_ID_BSC
       ? ['bsc_transfers', 'bsc_token']
       : ['transactions', 'token'];
 

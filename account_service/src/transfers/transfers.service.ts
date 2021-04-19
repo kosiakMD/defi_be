@@ -1,10 +1,9 @@
 import {Injectable} from '@nestjs/common';
 
-import {DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData} from '../utils/utils';
+import {CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData} from '../utils/utils';
 import {
   ERC20TokenTransfer,
   ERC20Transfer,
-  FinallyResponse,
   TransactionsResponseTransfers,
   TransactionWithToken,
   TransactionWithTokenAndPrices,
@@ -16,24 +15,30 @@ import {DbService} from './repository/db.service';
 export class TransfersService {
   constructor(private readonly dbService: DbService) {}
 
-  async getAllTransactionDataByAddress(addreses: string): Promise<FinallyResponse> {
+  async getAllTransactionDataByAddress(addreses: string): Promise<TransactionsResponseTransfers> {
     const [transfers, bscTransaction] = await Promise.all([
-      this.getTransactionByAddresses(addreses),
-      this.getTransactionByAddresses(addreses, 'bsc'),
+      this.getTransactionByAddresses(addreses, CHAIN_ID_ETH),
+      this.getTransactionByAddresses(addreses, CHAIN_ID_BSC),
     ]);
 
-    return { transfers, bscTransaction };
+    const allTransfersResponse: TransactionsResponseTransfers = {};
+
+    Object.keys(transfers).forEach(key => {
+      allTransfersResponse[key] = [...transfers[key], ...bscTransaction[key]]
+    })
+
+    return allTransfersResponse;
   }
 
-  async getTransactionByAddresses(addresses: string, bsc?: string): Promise<TransactionsResponseTransfers> {
+  async getTransactionByAddresses(addresses: string, chainId: number): Promise<TransactionsResponseTransfers> {
     const addressArray = addresses.split(',');
 
     const formattedAddresses = addressArray.map((address) => `'${address}'`).join(',');
 
-    const transferRows = await this.dbService.getTransfersDataFromDb(formattedAddresses, bsc);
+    const transferRows = await this.dbService.getTransfersDataFromDb(formattedAddresses, chainId);
     const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
 
-    return this.toTransfersResponse(transferRowsWithTokenPrices, addressArray);
+    return this.toTransfersResponse(transferRowsWithTokenPrices, addressArray, chainId);
   }
 
   private async getTransfersWithTokenPrices(
@@ -64,6 +69,7 @@ export class TransfersService {
   private toTransfersResponse(
     transactions: TransactionWithTokenAndPrices[],
     addresses: string[],
+    chainId: number,
   ): TransactionsResponseTransfers {
 
     return addresses.reduce<TransactionsResponseTransfers>((response, address) => {
@@ -107,6 +113,7 @@ export class TransfersService {
             ? DEFAULT_MULTIPLIER : Math.pow(10, -`${hashTransfers[0].tokenDecimals}`);
 
         return {
+          chainId: chainId,
           hash: hashTransfers[0].hash,
           blockNumber: hashTransfers[0].blockNumber,
           blockTimeStamp: hashTransfers[0].blockTimeStamp,

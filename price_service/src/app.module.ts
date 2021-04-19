@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger, WinstonModule } from 'nest-winston';
 
+import configuration from './config/configuration';
 import { HealthModule } from './health/health.module';
 import { LookupModule } from './lookup/lookup.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
@@ -11,17 +12,7 @@ import { winstonParams } from './utils/winston';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
-      envFilePath: [
-        '.env.development.local',
-        '.env.development',
-        '.env.production.local',
-        '.env.production',
-        '.env',
-      ],
-    }),
+    ConfigModule.forRoot(configuration),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

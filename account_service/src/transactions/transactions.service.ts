@@ -13,10 +13,26 @@ export class TransactionsService {
 
   constructor(private readonly web3Provider: Web3Provider) {}
 
-  public async getTransactions(addresses: string[]): Promise<TransactionsResponse> {
-    if (this.isAdderessesNotCorrect(addresses)) return [];
+  private static convertAddresses(addresses: string[]): string {
+    return addresses.map((address) => `'${address}'`).join(',');
+  }
 
-    this.prepareAdderesses(addresses);
+  private static getUniqueAndToLowerCase(array: string[]): string[] {
+    const temp: string[] = [];
+
+    array.forEach((el) => {
+      if (!temp.includes(el.toLowerCase())) {
+        temp.push(el.toLowerCase());
+      }
+    });
+
+    return temp;
+  }
+
+  public async getTransactions(addresses: string[]): Promise<TransactionsResponse> {
+    if (this.isAddressesNotCorrect(addresses)) return [];
+
+    this.prepareAddresses(addresses);
     this.manager = getManager();
 
     const ethTransactions = await this.loadETHTransactions();
@@ -29,36 +45,17 @@ export class TransactionsService {
     return this.toTransactionsResponse(allTransactions);
   }
 
-  private isAdderessesNotCorrect(addresses: string[]): boolean {
+  private isAddressesNotCorrect(addresses: string[]): boolean {
     if (!addresses.length) {
       return true;
     }
-    if (!addresses.every(this.web3Provider.instanceEth().utils.isAddress)) {
-      return true;
-    }
-    return false;
+    return !addresses.every(this.web3Provider.instanceEth().utils.isAddress);
   }
 
-  private prepareAdderesses(addresses: string[]): void {
-    addresses = this.getUniqueAndToLowerCase(addresses);
-    this.addresses = this.convertAddresses(addresses);
-    this.addressesArray = addresses;
-  }
-
-  private convertAddresses(addresses: string[]): string {
-    return addresses.map(address => `'${address}'`).join(',');
-  }
-
-  private getUniqueAndToLowerCase(array: string[]): string[] {
-    const temp: string[] = [];
-
-    array.forEach((el) => {
-      if (!temp.includes(el.toLowerCase())) {
-        temp.push(el.toLowerCase());
-      }
-    });
-
-    return temp;
+  private prepareAddresses(addresses: string[]): void {
+    const uniqAddresses = TransactionsService.getUniqueAndToLowerCase(addresses);
+    this.addresses = TransactionsService.convertAddresses(uniqAddresses);
+    this.addressesArray = uniqAddresses;
   }
 
   private toTransactionsResponse(transactions): TransactionsResponse {
@@ -69,13 +66,13 @@ export class TransactionsService {
 
       return {
         ...response,
-        [address]: userTransactions
+        [address]: userTransactions,
       };
     }, {});
   }
 
   private calculateFields(transactions, chainId): Transaction[] {
-    return transactions.map(transaction => {
+    return transactions.map((transaction) => {
       return {
         chainId,
         hash: transaction.hash,

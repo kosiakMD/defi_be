@@ -41,18 +41,7 @@ import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
-      load: [configuration],
-      envFilePath: [
-        '.env.development.local',
-        '.env.development',
-        '.env.production.local',
-        '.env.production',
-        '.env',
-      ],
-    }),
+    ConfigModule.forRoot(configuration),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

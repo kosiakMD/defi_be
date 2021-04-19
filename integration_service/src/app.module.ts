@@ -9,6 +9,7 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
+import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
@@ -21,17 +22,7 @@ import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
-      envFilePath: [
-        '.env.development.local',
-        '.env.development',
-        '.env.production.local',
-        '.env.production',
-        '.env',
-      ],
-    }),
+    ConfigModule.forRoot(configuration),
     WinstonModule.forRoot({
       // options
       level: process.env.LOG_LEVEL || 'info',

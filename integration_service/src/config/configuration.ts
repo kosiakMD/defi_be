@@ -1,4 +1,4 @@
-import validationSchema from './env.validation';
+import validationSchema, { validationOptions } from './env.validation';
 
 export const configuration = {
   cache: true,
@@ -11,6 +11,7 @@ export const configuration = {
     '.env',
   ],
   validationSchema,
+  validationOptions,
 };
 
 export default configuration;

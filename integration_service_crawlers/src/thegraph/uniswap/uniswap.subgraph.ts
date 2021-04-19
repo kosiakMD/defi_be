@@ -2,9 +2,9 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 
+import { LiquidityPositionSnapshot } from './liquidity.position.snapshot';
 import { Pair } from './pair.interface';
 import { Transaction } from './transaction';
-import { LiquidityPositionSnapshot } from './liquidity.position.snapshot';
 
 @Injectable()
 export class UniswapSubgraph {
@@ -192,33 +192,34 @@ export class UniswapSubgraph {
             }
           }
         }`,
-		}).pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 
-	async getBlock(direction: string): Promise<ResponseTransactionData> {
-		return this.httpService.post(this.subgraphUrl,
-			{
-				operationName: 'BlockNumber',
-				variables: {},
-				query: `query {
+  async getBlock(direction: string): Promise<ResponseTransactionData> {
+    return this.httpService
+      .post(this.subgraphUrl, {
+        operationName: 'BlockNumber',
+        variables: {},
+        query: `query {
 					transactions (first:1, orderBy:timestamp, orderDirection:${direction}) {
 						blockNumber
 					}
 				}`,
-			})
-			.pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 
-	async getShapshotsByBlockNumber(blockNumber: number): Promise<ResponseSnapshotsData> {
-		return this.httpService.post<ResponseSnapshotsData>(this.subgraphUrl,
-			{
-				operationName: 'snapshots',
-				variables: {
-					blockNumber: blockNumber,
-				},
-				query: `query liquidityPositionSnapshots($blockNumber: Int!) {
+  async getShapshotsByBlockNumber(blockNumber: number): Promise<ResponseSnapshotsData> {
+    return this.httpService
+      .post<ResponseSnapshotsData>(this.subgraphUrl, {
+        operationName: 'snapshots',
+        variables: {
+          blockNumber: blockNumber,
+        },
+        query: `query liquidityPositionSnapshots($blockNumber: Int!) {
 					snapshots: liquidityPositionSnapshots(first: 1000 block:{number: $blockNumber}, where:{block: $blockNumber}) {
 						user {
 							id
@@ -237,19 +238,19 @@ export class UniswapSubgraph {
 						liquidityTokenBalance
 					}
 				}`,
-			})
-			.pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 
-	async getTransactionsByBlockNumber(blockNumber: number): Promise<ResponseTransactionData> {
-		return this.httpService.post<ResponseTransactionData>(this.subgraphUrl,
-			{
-				operationName: 'transactions',
-				variables: {
-					blockNumber: blockNumber,
-				},
-				query: `query transactions($blockNumber: Int!) {
+  async getTransactionsByBlockNumber(blockNumber: number): Promise<ResponseTransactionData> {
+    return this.httpService
+      .post<ResponseTransactionData>(this.subgraphUrl, {
+        operationName: 'transactions',
+        variables: {
+          blockNumber: blockNumber,
+        },
+        query: `query transactions($blockNumber: Int!) {
 					transactions (first: 1000 block:{number: $blockNumber} where: {blockNumber: $blockNumber}) {
 						blockNumber
 						timestamp
@@ -342,25 +343,23 @@ export class UniswapSubgraph {
 						}
 					}
 				}`,
-			})
-			.pipe(map(response => response.data))
-			.toPromise()
-	}
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 }
 
-
 interface ResponseTransactionData {
-	data: {
-		transactions: Transaction[]
-	}
+  data: {
+    transactions: Transaction[];
+  };
 }
 
 interface ResponseSnapshotsData {
-	data: {
-		snapshots: LiquidityPositionSnapshot[]
-	}
+  data: {
+    snapshots: LiquidityPositionSnapshot[];
+  };
 }
-
 
 export interface ResponseData {
   data: {

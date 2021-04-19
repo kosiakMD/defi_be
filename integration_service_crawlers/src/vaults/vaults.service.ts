@@ -5,7 +5,6 @@ import { Vault } from './dto/vault.dto';
 import { VaultsServiceSushiswap } from './sushiswap/vaults.service.curve';
 import { DatabaseService } from '../jobs/db/database.service';
 
-
 @Injectable()
 export class VaultsService {
   constructor(

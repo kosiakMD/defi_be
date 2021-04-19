@@ -1,14 +1,15 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { DatabaseManagerSushiswap } from './db/database.manager.sushiswap';
+
 import { SushiswapSubgraph } from '../thegraph/sushiswap/sushiswap.subgraph';
-import { UniswapService } from './uniswap.service';
+import { DatabaseManagerSushiswap } from './db/database.manager.sushiswap';
 import { DatabaseTransactionManager } from './db/database.transaction.manager';
+import { UniswapService } from './uniswap.service';
 
 @Injectable()
 export class SushiswapService extends UniswapService {
-  protected integrationName: string = 'sushiswap'
+  protected integrationName = 'sushiswap';
   constructor(
     protected configService: ConfigService,
     protected databaseManager: DatabaseManagerSushiswap,
@@ -16,6 +17,6 @@ export class SushiswapService extends UniswapService {
     protected dbTransactionManager: DatabaseTransactionManager,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
   ) {
-    super(configService, databaseManager, subgraph, dbTransactionManager, logger)
+    super(configService, databaseManager, subgraph, dbTransactionManager, logger);
   }
 }

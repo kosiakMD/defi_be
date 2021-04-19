@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { PoolsServiceUniswap } from './pools.service.uniswap';
-import { PoolsServiceSushiswap } from './pools.service.sushiswap';
-import { PoolsServicePancake } from './pools.service.pancake';
-import { PoolsServiceBalancer } from './pools.service.balancer';
+
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from './dto/liquiditypool.dto';
+import { PoolsServiceBalancer } from './pools.service.balancer';
 import { PoolsServiceCurve } from './pools.service.curve';
+import { PoolsServicePancake } from './pools.service.pancake';
+import { PoolsServiceSushiswap } from './pools.service.sushiswap';
+import { PoolsServiceUniswap } from './pools.service.uniswap';
 
 @Injectable()
 export class PoolsService {

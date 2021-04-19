@@ -13,13 +13,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
 import { CoingeckoJob } from './jobs/coingecko.job';
-import { CoingeckoCurrentPricesJob } from './jobs/coingecko_current_prices.job';
-import { CoingeckoFirstCheckJob } from './jobs/coingecko_first_check.job';
 import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
-import { SushiswapCurrentPricesJob } from './jobs/sushiswap_current_prices.job';
-import { SushiSwapFirstCheckJob } from './jobs/sushiswap_first_check.job';
-import { UniswapCurrentPricesJob } from './jobs/uniswap_current_prices.job';
-import { UniSwapFirstCheckJob } from './jobs/uniswap_first_check.job';
+import { SushiswapJob } from './jobs/sushiswap.job';
+import { UniswapJob } from './jobs/uniswap.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
 import { Api } from './thegraph/api';
@@ -88,12 +84,8 @@ import { Api } from './thegraph/api';
     JobsService,
     DatabaseService,
     CoingeckoJob,
-    CoingeckoFirstCheckJob,
-    CoingeckoCurrentPricesJob,
-    SushiswapCurrentPricesJob,
-    SushiSwapFirstCheckJob,
-    UniswapCurrentPricesJob,
-    UniSwapFirstCheckJob,
+    SushiswapJob,
+    UniswapJob,
     BalancerFirstCheckJob,
     CurveFirstCheckJob,
   ],

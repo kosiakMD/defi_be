@@ -6,36 +6,36 @@ import { PoolsService } from 'src/pools/pools.service';
 import { VaultsService } from 'src/vaults/vaults.service';
 
 import { CurveService } from './curve.service';
-import { UniswapService } from './uniswap.service';
-import { SushiswapService } from './sushiswap.service';
 import { PancakeService } from './pancake.service';
+import { SushiswapService } from './sushiswap.service';
+import { UniswapService } from './uniswap.service';
 
 @Injectable()
 export class JobsService {
-	private agenda;
+  private agenda;
 
-	private uniswapJob(job: any, done: any): Promise<void> {
-		this.logger.log(`Start ${'uniswap'} job`);
-		return this.uniswapService.startMigration().then(() => {
-			this.logger.log(`End ${'uniswap'} job`);
-			done();
-		});
-	}
+  private uniswapJob(job: any, done: any): Promise<void> {
+    this.logger.log(`Start ${'uniswap'} job`);
+    return this.uniswapService.startMigration().then(() => {
+      this.logger.log(`End ${'uniswap'} job`);
+      done();
+    });
+  }
 
-	private sushiswapJob(job: any, done: any): Promise<void> {
-		this.logger.log(`Start ${'sushiswap'} job`);
-		return this.sushiswapService.startMigration().then(() => {
-			this.logger.log(`End ${'sushiswap'} job`);
-			done();
-		});
-	}
+  private sushiswapJob(job: any, done: any): Promise<void> {
+    this.logger.log(`Start ${'sushiswap'} job`);
+    return this.sushiswapService.startMigration().then(() => {
+      this.logger.log(`End ${'sushiswap'} job`);
+      done();
+    });
+  }
 
-	private pancakeJob(job: any, done: any): Promise<void> {
-		return this.pancakeService.startMigration().then(() => {
-			this.logger.log(`End ${'pancake'} job`);
-			done();
-		});
-	}
+  private pancakeJob(job: any, done: any): Promise<void> {
+    return this.pancakeService.startMigration().then(() => {
+      this.logger.log(`End ${'pancake'} job`);
+      done();
+    });
+  }
 
   private poolsJob(job: any, done: any): Promise<void> {
     this.logger.log(`Start ${'pools'} job`);
@@ -72,58 +72,83 @@ export class JobsService {
 			defaultLockLifetime: 1000*60*60*24*30
 		});
 
-		this.agenda.on('ready', async () => {
-			await this.agenda.start();
+    this.agenda.on('ready', async () => {
+      await this.agenda.start();
 
-			this.logger.log(`agenda.define: ${this.configService.get<string>('UNISWAP_JOB_NAME')}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`, 'Agenda');
-			await this.agenda.define(
-				this.configService.get<string>('UNISWAP_JOB_NAME'),
-				this.uniswapJob.bind(this),
-			);
-			await this.agenda.every(
-				`${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
-				this.configService.get<string>('UNISWAP_JOB_NAME'),
-			);
+      this.logger.log(
+        `agenda.define: ${this.configService.get<string>(
+          'UNISWAP_JOB_NAME',
+        )}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        'Agenda',
+      );
+      await this.agenda.define(
+        this.configService.get<string>('UNISWAP_JOB_NAME'),
+        this.uniswapJob.bind(this),
+      );
+      await this.agenda.every(
+        `${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        this.configService.get<string>('UNISWAP_JOB_NAME'),
+      );
 
-			this.logger.log(`agenda.define: ${this.configService.get<string>('SUSHISWAP_JOB_NAME')}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')}`, 'Agenda');
-			await this.agenda.define(
-				this.configService.get<string>('SUSHISWAP_JOB_NAME'),
-				this.sushiswapJob.bind(this),
-			);
-			await this.agenda.every(
-				`${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
-				this.configService.get<string>('SUSHISWAP_JOB_NAME'),
-			);
+      this.logger.log(
+        `agenda.define: ${this.configService.get<string>(
+          'SUSHISWAP_JOB_NAME',
+        )}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')}`,
+        'Agenda',
+      );
+      await this.agenda.define(
+        this.configService.get<string>('SUSHISWAP_JOB_NAME'),
+        this.sushiswapJob.bind(this),
+      );
+      await this.agenda.every(
+        `${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        this.configService.get<string>('SUSHISWAP_JOB_NAME'),
+      );
 
-			this.logger.log(`agenda.define: ${this.configService.get<string>('PANCAKE_JOB_NAME')}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`, 'Agenda');
-			await this.agenda.define(
-				this.configService.get<string>('PANCAKE_JOB_NAME'),
-				this.pancakeJob.bind(this),
-			);
-			await this.agenda.every(
-				`${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
-				this.configService.get<string>('PANCAKE_JOB_NAME'),
-			);
+      this.logger.log(
+        `agenda.define: ${this.configService.get<string>(
+          'PANCAKE_JOB_NAME',
+        )}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        'Agenda',
+      );
+      await this.agenda.define(
+        this.configService.get<string>('PANCAKE_JOB_NAME'),
+        this.pancakeJob.bind(this),
+      );
+      await this.agenda.every(
+        `${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        this.configService.get<string>('PANCAKE_JOB_NAME'),
+      );
 
-			this.logger.log(`agenda.define: ${this.configService.get<string>('POOLS_JOB_NAME')}, agenda.every: ${this.configService.get<string>('POOLS_EVERY_SECONDS')} seconds`, 'Agenda');
-			await this.agenda.define(
-				this.configService.get<string>('POOLS_JOB_NAME'),
-				this.poolsJob.bind(this),
-			);
-			await this.agenda.every(
-				`${this.configService.get<string>('POOLS_EVERY_SECONDS')} seconds`,
-				this.configService.get<string>('POOLS_JOB_NAME'),
-			);
+      this.logger.log(
+        `agenda.define: ${this.configService.get<string>(
+          'POOLS_JOB_NAME',
+        )}, agenda.every: ${this.configService.get<string>('POOLS_EVERY_SECONDS')} seconds`,
+        'Agenda',
+      );
+      await this.agenda.define(
+        this.configService.get<string>('POOLS_JOB_NAME'),
+        this.poolsJob.bind(this),
+      );
+      await this.agenda.every(
+        `${this.configService.get<string>('POOLS_EVERY_SECONDS')} seconds`,
+        this.configService.get<string>('POOLS_JOB_NAME'),
+      );
 
-			this.logger.log(`agenda.define: ${this.configService.get<string>('VAULTS_JOB_NAME')}, agenda.every ${this.configService.get<string>('VAULTS_EVERY_SECONDS')} seconds`, 'Agenda');
-			await this.agenda.define(
-				this.configService.get<string>('VAULTS_JOB_NAME'),
-				this.vaultsJob.bind(this),
-			);
-			await this.agenda.every(
-				`${this.configService.get<string>('VAULTS_EVERY_SECONDS')} seconds`,
-				this.configService.get<string>('VAULTS_JOB_NAME'),
-			);
-		});
-	}
+      this.logger.log(
+        `agenda.define: ${this.configService.get<string>(
+          'VAULTS_JOB_NAME',
+        )}, agenda.every ${this.configService.get<string>('VAULTS_EVERY_SECONDS')} seconds`,
+        'Agenda',
+      );
+      await this.agenda.define(
+        this.configService.get<string>('VAULTS_JOB_NAME'),
+        this.vaultsJob.bind(this),
+      );
+      await this.agenda.every(
+        `${this.configService.get<string>('VAULTS_EVERY_SECONDS')} seconds`,
+        this.configService.get<string>('VAULTS_JOB_NAME'),
+      );
+    });
+  }
 }

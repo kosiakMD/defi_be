@@ -9,6 +9,7 @@ import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS } from '../utils/constant
 export type TokenPrices = { [key: string]: number };
 export type TokenAddresses = { [key: string]: number };
 export type TokenPricesExtended = { [key: string]: { value: number; ['db_id']: any } };
+
 @Injectable()
 export class DatabaseService {
   constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>) {}
@@ -37,40 +38,43 @@ export class DatabaseService {
       'SELECT * FROM prices.asset WHERE is_new = true AND platform = $1 AND is_dead = false',
       platform,
     );
-  public getTokensByPlatformAndLastHistoryTimestamp = (platform: string, last_history_timestamp: number) =>
+  public getTokensByPlatformAndLastHistoryTimestamp = (
+    platform: string,
+    last_history_timestamp: number,
+  ) =>
     this.pg.any(
       'SELECT * FROM prices.asset WHERE platform = $1 AND (last_history_timestamp < $2 OR last_history_timestamp IS NULL) AND is_dead = false',
-      [platform, last_history_timestamp]
+      [platform, last_history_timestamp],
     );
 
   public getTokenPricesForLastDay = (assetId: number, timestamp: number) =>
     this.pg.any(
       'SELECT * FROM prices.asset_price WHERE asset_id = $1 AND timestamp >= $2 AND timestamp < $3',
-      [assetId, timestamp - SECONDS_IN_HOUR * 24, timestamp]
+      [assetId, timestamp - SECONDS_IN_HOUR * 24, timestamp],
     );
 
   public updateAssetHistoryTimestamp = (assetId: number, timestamp: number) =>
-    this.pg.any(
-      'UPDATE prices.asset SET last_history_timestamp = $1 WHERE id = $2',
-      [ timestamp, assetId]
-    );
-  
+    this.pg.any('UPDATE prices.asset SET last_history_timestamp = $1 WHERE id = $2', [
+      timestamp,
+      assetId,
+    ]);
 
   public setTokenIsDead = (assetId: number) =>
-    this.pg.any(
-    'UPDATE prices.asset SET is_dead = true WHERE id = $1',
-    [ assetId ]
-  );
+    this.pg.any('UPDATE prices.asset SET is_dead = true WHERE id = $1', [assetId]);
 
-  public clearTokenPricesForPeriod = (assetId: number, timestampFrom: number, timestampTo: number) =>
+  public clearTokenPricesForPeriod = (
+    assetId: number,
+    timestampFrom: number,
+    timestampTo: number,
+  ) =>
     this.pg.any(
       'DELETE FROM prices.asset_price WHERE asset_id = $1 AND timestamp >= $2 AND timestamp < $3',
-      [assetId, timestampFrom, timestampTo]
+      [assetId, timestampFrom, timestampTo],
     );
   public clearTokenPricesForLastDay = (assetId: number, timestamp: number) =>
     this.pg.any(
       'DELETE FROM prices.asset_price WHERE asset_id = $1 AND timestamp >= $2 AND timestamp < $3',
-      [assetId, timestamp - SECONDS_IN_HOUR * 24, timestamp]
+      [assetId, timestamp - SECONDS_IN_HOUR * 24, timestamp],
     );
   public getTokensByChain = (currentChainId) =>
     this.pg.any('SELECT * FROM prices.asset WHERE chain_id = $1', currentChainId);
@@ -167,7 +171,7 @@ export class DatabaseService {
               '',
           );
         } catch (e) {
-          // console.log('duplicate error ', e);
+         // console.log('duplicate error ', e);
         }
         await this.pg.any('UPDATE prices.asset SET is_new = false WHERE id = $1', coin_id + '');
       }
@@ -180,34 +184,42 @@ export class DatabaseService {
     }
   };
 
-  public addHourlyPricesToDb = async (prices: TokenPricesExtended, currencyId: any) => {
-    const currentTimestamp = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+  public addHourlyPricesToDb = async (
+    prices: TokenPricesExtended,
+    currencyId: any,
+    currentTimestamp = null,
+  ) => {
+    if (!currentTimestamp)
+      currentTimestamp = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
 
     try {
       for (const address in prices) {
         if (prices[address].db_id && (prices[address].value || prices[address]['value'] === 0)) {
           try {
-            // console.log("inserting "+address+" price with ts "+currentTimestamp)
+            //console.log('inserting ' + address + ' price with ts ' + currentTimestamp);
             await this.pg.any(
               'INSERT INTO prices.asset_price(asset_id, currency_id, "timestamp", value) VALUES ($1, $2, $3, $4); ',
               [prices[address].db_id, currencyId, currentTimestamp, prices[address].value],
             );
           } catch (dbErr) {
+            //console.log(dbErr);
             // console.info(
             //   `skipped unique pair as duplicate : asset_id-timestamp ${prices[address].db_id}-${currentTimestamp}`,
             // );
           }
         } else {
+          //console.log('removing prices ', prices[address]);
+          //console.log(prices);
           try {
             await this.removeToken(prices[address].db_id);
           } catch (dbErr) {
-            // console.info(`can not set is_dead for asset: ${prices[address].db_id}`);
+            //console.info(`can not set is_dead for asset: ${prices[address].db_id}`);
           }
-          // console.log('some error with ', prices[address]);
+          //console.log('some error with ', prices[address]);
         }
       }
     } catch (e) {
-      // console.log(e);
+      //console.log(e);
     }
     return;
   };

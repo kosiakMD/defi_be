@@ -1,0 +1,455 @@
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import PromisePool from 'es6-promise-pool';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
+import { IDatabase } from 'pg-promise';
+import { DatabaseService } from '../services/database.service';
+import { Api } from '../thegraph/api';
+import { crawlCoin, getRequiredHistoryStartDate } from '../utils/crawlCoin';
+import { getNextDayStart, getNextHourStart } from '../utils/time';
+
+// TODO: clean file
+export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
+
+@Injectable()
+export class UniswapJob {
+  constructor(
+    @Inject(NEST_PGPROMISE_CONNECTION)
+    public pg: IDatabase<any>,
+    private databaseService: DatabaseService,
+    private theGraphService: Api,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+  ) {}
+
+  public async checkHourlyPrices(
+    dbAssets,
+    lastPricesObj,
+    currentTimestamp,
+    currentCurrencyId,
+  ): Promise<void> {
+    this.logger.log('check hourly prices');
+    const beginOfDay = currentTimestamp - (currentTimestamp % 86400);
+
+    const getCoinRangePrices = async (
+      token: string,
+      lastSavedTimestamp: number,
+      currentTimestamp: number,
+      beginOfDay: number,
+    ) => {
+      const prices = [];
+      let hourNum = 0;
+      if (!lastSavedTimestamp) lastSavedTimestamp = beginOfDay - 7 * 24 * SECONDS_IN_HOUR;
+      this.logger.log(`lastSavedTimestamp ${lastSavedTimestamp}`);
+      const firstTimestamp = lastSavedTimestamp;
+      do {
+        const firstDayBlockQuery = await this.theGraphService.getUniswapfirstBlockQuery(
+          lastSavedTimestamp,
+        );
+        const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
+        this.logger.log(blockNumber, 'blockNumber');
+
+        const dailyPriceQuery = await this.theGraphService.getUniswapDailyBlockPricesQuery(
+          parseInt(blockNumber),
+          token,
+        );
+        this.logger.log(dailyPriceQuery['data']['data']);
+        if (dailyPriceQuery['data']['data']['pairs'].length) {
+          const { reserveUSD, totalSupply } = dailyPriceQuery['data']['data']['pairs'][0];
+
+          if (reserveUSD && totalSupply) {
+            prices.push([
+              lastSavedTimestamp,
+              Number(reserveUSD) === 0 || Number(totalSupply) === 0
+                ? 0
+                : Number(reserveUSD) / Number(totalSupply),
+            ]);
+          }
+        }
+
+        hourNum++;
+        this.logger.log(lastSavedTimestamp);
+        lastSavedTimestamp = getNextHourStart(firstTimestamp, hourNum);
+      } while (lastSavedTimestamp <= currentTimestamp);
+
+      this.logger.log('current range prices for '+token)
+      this.logger.log(prices);
+
+      return prices;
+    };
+
+    const delayValue = (
+      index,
+      coin,
+      databaseService,
+      beginOfDay,
+      lastPricesObj,
+      currentTimestamp,
+      logger,
+    ) => {
+      return new Promise(async (resolve) => {
+        const startParseTime = toTimestamp(new Date());
+        const lastSavedTimestamp = lastPricesObj[coin.id] || 0;
+
+        if (!lastSavedTimestamp || currentTimestamp - lastSavedTimestamp > SECONDS_IN_HOUR) {
+          logger.log('coin ? : ' + coin.id + ' - ' + currentTimestamp + ' - ' + lastSavedTimestamp);
+          try {
+            const prices = await getCoinRangePrices(
+              coin.address,
+              lastSavedTimestamp,
+              currentTimestamp,
+              beginOfDay,
+            );
+            //logger.log("prices")
+            //logger.log(prices)
+            if (prices.length) {
+              const tokenPrices = prices.filter(([timestamp]) => {
+                const roundTimestamp = Math.round(timestamp);
+                if (
+                  roundTimestamp > lastSavedTimestamp &&
+                  roundTimestamp > beginOfDay - 7 * 24 * SECONDS_IN_HOUR &&
+                  roundTimestamp < currentTimestamp
+                ) {
+                  return true;
+                }
+                return false;
+              });
+              logger.log('tokenPrices')
+              logger.log(tokenPrices);
+              const preparedTimestamp = {};
+              tokenPrices.forEach(([timestamp, price]) => {
+                const roundTimestamp =
+                  Math.round(timestamp) - (Math.round(timestamp) % SECONDS_IN_HOUR);
+                if (!preparedTimestamp[roundTimestamp]) {
+                  preparedTimestamp[roundTimestamp] = price;
+                }
+              });
+              logger.log('preparedTimestamp')
+              logger.log(preparedTimestamp);
+
+              const preparedPrices = [];
+              for (const property in preparedTimestamp) {
+                preparedPrices.push([property, preparedTimestamp[property]]);
+              }
+
+              await crawlCoin(
+                coin.id,
+                coin,
+                preparedPrices,
+                currentCurrencyId,
+                databaseService,
+                logger,
+                PlatformEnum.uniswap,
+                false,
+              );
+            }
+          } catch (e) {
+            logger.log(e);
+            if (e?.response?.status === 404) {
+              logger.log(`removing token ${coin.symbol}`);
+              await this.databaseService.removeToken(coin.id);
+            }
+          }
+        }
+        logger.log(
+          `Last 7 days check coin ${coin.id} parsed in ${
+            toTimestamp(new Date()) - startParseTime
+          } seconds`,
+        );
+        resolve(index);
+      });
+    };
+
+    let count = -1;
+    const promiseProducer = () => {
+      if (count < dbAssets.length - 1) {
+        count++;
+        return delayValue(
+          count,
+          dbAssets[count],
+          this.databaseService,
+          beginOfDay,
+          lastPricesObj,
+          currentTimestamp,
+          this.logger,
+        );
+      } else {
+        return null;
+      }
+    };
+
+    const pool = new PromisePool(promiseProducer, 20);
+    const poolPromise = pool.start();
+    await poolPromise;
+  }
+
+  public async getCurrentPrices(job: any, done: any): Promise<void> {
+    this.logger.log('Current UNI Prices Job Sarted');
+    try {
+      const currentChainId = await this.databaseService.getCurrentChain();
+      if (!currentChainId) {
+        throw 'No current platform in DB: ' + CHAIN;
+      }
+
+      const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+      if (!currentCurrencyId) {
+        throw 'No current currency in DB: ' + CURRENCY;
+      }
+      //cheking existing tokens in DB and adding new
+      this.logger.log('checking for new tokens')
+      await this.databaseService.checkEthToken();
+      const uniswapTokensAssets = await this.databaseService.getTokensByChainAndPlatform(
+        currentChainId,
+        PlatformEnum.uniswap,
+      );
+
+      const dbTokenAddresses = uniswapTokensAssets.map((token) => token['address']);
+      // adding new tokens
+      let iteration = 0;
+      let tokens = [];
+      do {
+        const tokenRequest = await this.theGraphService.getUniswapPoolsTokens(iteration);
+        tokens = tokenRequest['data']['data']['dataPairs'];
+
+        for (let i = 0; i < tokens.length; i++) {
+          this.logger.log(tokens[i]['id']);
+          if (dbTokenAddresses.indexOf(tokens[i]['id']) === -1)
+            await this.databaseService.addTokenToDb(
+              tokens[i]['id'],
+              tokens[i]['token0']['name'] + '-' + tokens[i]['token1']['name'],
+              tokens[i]['token0']['symbol'] + '-' + tokens[i]['token1']['symbol'],
+              CHAIN,
+              PlatformEnum.uniswap,
+              currentChainId,
+            );
+        }
+
+        iteration++;
+        this.logger.log(tokens.length, 'new tokens.length');
+      } while (iteration < 5 && tokens.length);
+
+      this.logger.log('new uni tokens checked');
+
+      const currentTimestamp =
+        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+      const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
+        currentChainId,
+        PlatformEnum.uniswap,
+        currentTimestamp,
+      );
+      this.logger.log(`token total: ${dbAssets.length}`);
+
+      const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
+        currentChainId,
+        PlatformEnum.uniswap,
+      );
+      const lastPricesObj = {};
+      lastPrices.forEach((price) => {
+        lastPricesObj[price.asset_id] = price.timestamp;
+      });
+
+      this.logger.log(lastPricesObj);
+
+      await (this as any).uniswapJob.checkHourlyPrices(
+        dbAssets,
+        lastPricesObj,
+        currentTimestamp,
+        currentCurrencyId,
+      );
+
+      // get current price
+      if (dbAssets.length) {
+        this.logger.log(`dbAssets.length ${dbAssets.length}`);
+        const results: any = {};
+
+        const delayValue = (index, coin, logger) => {
+          return new Promise(async (resolve) => {
+            logger.log('coin ? : ' + coin.id + ' - ');
+            try {
+              logger.log(coin['address']);
+              const oneResults = await this.theGraphService.getCurrentUniTokenPrices(
+                coin['address'],
+              );
+              if (oneResults['data']['data']['dataPairs'].length) {
+                const { reserveUSD, totalSupply } = oneResults['data']['data']['dataPairs'][0];
+
+                //this.logger.log("reserveUSD "+reserveUSD+" totalSupply "+totalSupply+" res ",(Number(reserveUSD) / Number(totalSupply)))
+                results[coin['address']] = {
+                  ['db_id']: dbAssets[index]['id'],
+                  value:
+                    Number(reserveUSD) === 0 || Number(totalSupply) === 0
+                      ? 0
+                      : Number(reserveUSD) / Number(totalSupply),
+                };
+              }
+            } catch (e) {
+              logger.log(e);
+            }
+            resolve(index);
+          });
+        };
+
+        let count = -1;
+        const promiseProducer = () => {
+          if (count < dbAssets.length - 1) {
+            count++;
+            return delayValue(count, dbAssets[count], this.logger);
+          } else {
+            return null;
+          }
+        };
+
+        const pool = new PromisePool(promiseProducer, 500);
+        const poolPromise = pool.start();
+        await poolPromise;
+        // result is collected here
+        await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId);
+
+        done();
+      } else {
+        done();
+      }
+    } catch (e) {
+      this.logger.error(e);
+    }
+    this.logger.log('Add Current Prices Job done');
+  }
+
+  public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
+    this.logger.log('uniswap new tokens history started')
+    const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+    if (!currentCurrencyId) {
+      throw 'No current currency in DB: ' + CURRENCY;
+    }
+
+    const firstTxData = await this.theGraphService.getUniwapfirstTxTimestamp();
+    const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
+    this.logger.log(firstTxData['data']['data']['transactions'], 'firstTxData');
+
+    const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % 86400);
+    const toTs = beginOfDay - 7 * 24 * SECONDS_IN_HOUR;
+
+    this.logger.log(`beginOfDay ${beginOfDay}`);
+    this.logger.log(`toTs ${toTs}`);
+
+    const dbAssets = await this.databaseService.getTokensByPlatformAndLastHistoryTimestamp(
+      PlatformEnum.uniswap,
+      toTs,
+    );
+
+    const prices = [];
+
+    const delayValue = (index, coin, logger, databaseService,currentCurrencyId) => {
+      return new Promise(async (resolve) => {
+        const startParseTime = toTimestamp(new Date());
+
+        try {
+          let dayNum = 0;
+
+          //logger.log("coin.last_history_timestamp ",coin.last_history_timestamp )
+          let fromTs = await getRequiredHistoryStartDate(
+            coin,
+            toTs,
+            this.databaseService,
+            this.logger,
+          );
+
+          if (fromTs === toTs) {
+            //this.logger.log('fromTs === toTs');
+            await this.databaseService.updateAssetHistoryTimestamp(coin.id, toTs);
+            return resolve(index);
+          }
+
+          // logger.log(`fromTs ${fromTs}`);
+          do {
+            logger.log(`making for timestamp ${fromTs} with coin ${coin.id}`);
+
+            const firstDayBlockQuery = await this.theGraphService.getUniswapfirstBlockQuery(fromTs);
+            const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
+            //logger.log(blockNumber, `blockNumber ${coin.id}` );
+
+            const dailyPriceQuery = await this.theGraphService.getUniswapDailyBlockPricesQuery(
+              parseInt(blockNumber),
+              coin['address'],
+            );
+            //this.logger.log(dailyPriceQuery['data']['data']);
+            if (dailyPriceQuery['data']['data']['pairs'].length) {
+              const { reserveUSD, totalSupply } = dailyPriceQuery['data']['data']['pairs'][0];
+
+              if (reserveUSD && totalSupply) {
+                // this.databaseService
+                prices.push([
+                  fromTs,
+                  Number(reserveUSD) === 0 || Number(totalSupply) === 0
+                    ? 0
+                    : Number(reserveUSD) / Number(totalSupply),
+                ]);
+
+                await databaseService.updateAssetHistoryTimestamp(coin.id, fromTs);
+                await databaseService.addOnePrice(
+                  coin.id,
+                  fromTs,
+                  Number(reserveUSD) === 0 || Number(totalSupply) === 0
+                    ? 0
+                    : Number(reserveUSD) / Number(totalSupply),
+                  currentCurrencyId,
+                );
+              }
+            }
+
+            dayNum++;
+            this.logger.log(fromTs);
+            fromTs = getNextDayStart(firstTimestamp, dayNum);
+          } while (fromTs <= toTs);
+
+          //logger.log(prices)
+          logger.log(
+            `${prices.length} new prices for coin ${coin.address} with asset_id ${coin.id}`,
+          );
+          /* const result = await crawlCoinHistory(
+              coin.id,
+              coin,
+              prices,
+              currentCurrencyId,
+              this.databaseService,
+              this.logger,
+              PlatformEnum.uniswap,
+              false,
+              toTs
+            );*/
+        } catch (err) {
+          logger.error(err, `Token ${coin.id} price checking error`);
+          return resolve(null);
+        }
+        logger.log(
+          `Historical coin ${coin.id} parsed in ${
+            toTimestamp(new Date()) - startParseTime
+          } seconds`,
+        );
+        resolve(index);
+      });
+    };
+
+    let count = -1;
+    const promiseProducer = () => {
+      if (count < dbAssets.length - 1) {
+        count++;
+        return delayValue(
+          count,
+          dbAssets[count],
+          this.logger,
+          this.databaseService,
+          currentCurrencyId,
+        );
+      } else {
+        return null;
+      }
+    };
+
+    const pool = new PromisePool(promiseProducer, 30);
+    const poolPromise = pool.start();
+    await poolPromise;
+
+    this.logger.log(`uniswap new tokens history finished`);
+    done();
+  };
+}

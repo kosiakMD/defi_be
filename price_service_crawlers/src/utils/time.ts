@@ -53,3 +53,9 @@ export const getNextDayStart = (ts: number, day = 0) => {
   const dayId = Math.round(ts / secondsInDay);
   return (dayId + day) * secondsInDay;
 };
+
+export const getNextHourStart = (ts: number, hour = 0) => {
+  const secondsInHour = 86400 / 24;
+  const dayId = Math.round(ts / secondsInHour);
+  return (dayId + hour) * secondsInHour;
+};

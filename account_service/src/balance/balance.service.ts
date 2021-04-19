@@ -2,7 +2,7 @@ import {Injectable} from '@nestjs/common';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
-import { decimalsAmount, ETH_ADDRESS, ETH_DECIMALS, totalPrice } from '../utils/utils';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, decimalsAmount, ETH_ADDRESS, ETH_DECIMALS, totalPrice } from '../utils/utils';
 import {
   AccountTokenBalance,
   BalancesResponse,
@@ -46,7 +46,7 @@ export class BalanceService {
       return {};
     }
     const accountsArray = accounts.split(',');
-    const chainId = 1;
+    const chainId = CHAIN_ID_ETH;
 
     const chainProvider: Web3 = this.chainProvider.instanceEth();
 
@@ -100,7 +100,7 @@ export class BalanceService {
       return {};
     }
     const accountsArray = accounts.split(',');
-    const chainId = 2;
+    const chainId = CHAIN_ID_BSC;
 
     const chainProvider: Web3 = this.chainProvider.instanceBsc();
 
@@ -163,6 +163,7 @@ export class BalanceService {
       tokenPriceUSD: ethPrice,
       totalPriceUSD: totalPrice(amount, ethPrice, ETH_DECIMALS),
       token: {
+        chainId: CHAIN_ID_ETH,
         decimals: 18,
         symbol: 'ETH',
         name: 'Ether',
@@ -187,7 +188,7 @@ export class BalanceService {
       tokenPriceUSD: bnbPrice,
       totalPriceUSD: totalPrice(amount, bnbPrice, ETH_DECIMALS),
       token: {
-        chainId: 2,
+        chainId: CHAIN_ID_BSC,
         decimals: 18,
         symbol: 'BNB',
         name: 'BNB',
@@ -213,7 +214,7 @@ export class BalanceService {
   }) => ({
     account: address,
     amount,
-    decimalsAmount: decimalsAmount(amount, tokenDecimals),
+    decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
     tokenPriceUSD: prices[tokenAddress] || undefined,
     totalPriceUSD: prices[tokenAddress]
       ? totalPrice(amount, prices[tokenAddress], tokenDecimals)

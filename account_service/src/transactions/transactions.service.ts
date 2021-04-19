@@ -6,7 +6,7 @@ import { Transaction, TransactionsResponse } from './interfaces/transactions.int
 
 @Injectable()
 export class TransactionsService {
-  DEFAULT_MULTIPLIER = 10e-18;
+  DEFAULT_MULTIPLIER = 1e-18;
   addresses: string;
   addressesArray: string[];
   manager;

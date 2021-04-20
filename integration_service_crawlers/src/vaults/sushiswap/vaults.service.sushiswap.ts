@@ -54,7 +54,7 @@ export class VaultsServiceSushiswap {
           ((vault.balance * 10 ** -18) / Number(liquidityPool.totalSupply)) *
           Number(liquidityPool.reserveUSD);
 
-        const yearlyAPY = this.calculateAPY({
+        let yearlyAPY = this.calculateAPY({
           allocPoints: vault.allocPoint,
           totalAllocPoints: masterChief.totalAllocPoint,
           rewardTokenPerBlock: masterChief.sushiPerBlock * 10 ** -rewardToken.decimals,
@@ -62,6 +62,8 @@ export class VaultsServiceSushiswap {
           farmingPoolTVL: vaultTVL,
           blockTime: avgBlockTime,
         });
+        // because 2/3 of total rewards are locked for 6 months
+        yearlyAPY = yearlyAPY / 3;
         const returned: Vault = {
           id: masterChief.id + '-' + vault.id,
           project: 'sushiswap',

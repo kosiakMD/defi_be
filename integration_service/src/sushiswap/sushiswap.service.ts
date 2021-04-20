@@ -33,10 +33,14 @@ export class SushiswapService {
       this.mintsRepository,
       this.burnRepository,
       this.snapshotsRepository,
-        originAddressesArray,
+      originAddressesArray,
       this.sushiswapSubgraph,
     );
-    return this.mapper.mapData(result.userAddresses, originAddressesArray,
-        result.response, 'sushiswap');
+    return this.mapper.mapData(
+      result.userAddresses,
+      originAddressesArray,
+      result.response,
+      'sushiswap',
+    );
   }
 }

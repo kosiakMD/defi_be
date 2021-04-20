@@ -57,6 +57,7 @@ export class UniswapService {
   protected async handleConcurrently(blockNumbers: Array<number>): Promise<string> {
     let chunksArray: Array<number>;
     const chunkSize = parseInt(this.configService.get<string>('CONCURRENCY_PROMISES_LIMIT'));
+
     for (let i = 0, j = blockNumbers.length; i < j; i += chunkSize) {
       chunksArray = blockNumbers.slice(i, i + chunkSize);
       await this.dbTransactionManager.begin();

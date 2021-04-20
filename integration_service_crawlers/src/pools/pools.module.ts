@@ -1,4 +1,4 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { forwardRef, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { ApisModule } from '../apis/apis.module';
@@ -17,7 +17,7 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
       timeout: 60000,
       maxRedirects: 5,
     }),
-    JobsModule,
+    forwardRef(() => JobsModule),
     ConfigModule,
     ThegraphModule,
     ApisModule,

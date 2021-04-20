@@ -2,6 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { Base } from '../interfaces/transactions.interfaces';
 import BaseDataDto from './dto/BaseData.dto';
 import { UniswapBurnsEntity } from './entities/uniswap.burns.entity';
 import { UniswapMintsEntity } from './entities/uniswap.mints.entity';
@@ -10,7 +11,6 @@ import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
 import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
 import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
 import { UniswapService } from './uniswap.service';
-import {Base} from "../interfaces/transactions.interfaces";
 
 @Controller('integration')
 export class UniswapController {

@@ -33,10 +33,14 @@ export class PancakeService {
       this.mintsRepository,
       this.burnsRepository,
       this.snapshotsRepository,
-        originAddressesArray,
+      originAddressesArray,
       this.pancakeSubgraph,
     );
-    return this.mapper.mapData(result.userAddresses, originAddressesArray,
-        result.response, 'pancake');
+    return this.mapper.mapData(
+      result.userAddresses,
+      originAddressesArray,
+      result.response,
+      'pancake',
+    );
   }
 }

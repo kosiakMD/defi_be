@@ -21,20 +21,32 @@ export class DatabaseManagerUniswap {
   async getLastDatabaseBlock(): Promise<number | null> {
     const databaseClient = await this.databaseService.getClient();
     const query = `
-			select max(lastest_block)
-			from (
-							 select max(block_number) as lastest_block
-							 from ${this.mintsTableName}
-							 union
-							 select max(block_number) as lastest_block
-							 from ${this.burnsTableName}
-							 union
-							 select max(block_number) as lastest_block
-							 from ${this.swapsTableName}
-							 union
-							 select max(block_number) as lastest_block
-							 from ${this.snapshotsTableName}
-					 ) sushi_blocks`;
+        select max(latest_block)
+        from (
+                 select max(mints.block) as latest_block
+                 from ((select block_number as block
+                        from ${this.mintsTableName}
+                        order by id desc
+                        limit 100)) mints
+                 union
+                 select max(burns.block) as latest_block
+                 from ((select block_number as block
+                        from ${this.burnsTableName}
+                        order by id desc
+                        limit 100)) burns
+                 union 
+                 select max(swaps.block) as latest_block
+                 from ((select block_number as block
+                        from ${this.swapsTableName}
+                        order by id desc
+                        limit 100)) swaps
+                 union 
+                 select max(snapshots.block) as latest_block
+                 from ((select block_number as block
+                        from ${this.snapshotsTableName}
+                        order by id desc
+                        limit 100)) snapshots
+             ) uni_blocks`;
     const res = await databaseClient.query(query);
     const maxBlock = res.rows[0]?.max;
     return maxBlock ? Number(maxBlock) : null;
@@ -51,7 +63,7 @@ export class DatabaseManagerUniswap {
               `(
 							'${element.sender}',
 							'${element.to}',
-							'${JSON.stringify(element)}',
+							'${JSON.stringify(element).replace("'", "''")}',
 							current_timestamp, 
 							${transaction.blockNumber}
 							${isSwap ? `, '${element.from}'` : ''}
@@ -68,7 +80,7 @@ export class DatabaseManagerUniswap {
         (snapshot) =>
           `(
 					'${snapshot.user.id}', 
-					'${JSON.stringify(snapshot)}', 
+					'${JSON.stringify(snapshot).replace("'", "''")}', 
 					${snapshot.block}, 
 					current_timestamp
 					)`,

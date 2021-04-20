@@ -26,9 +26,6 @@ export class PoolsService {
       .concat(await this.poolsServiceUniswap.getPoolsToHandle())
       .concat(await this.poolsServiceSushiswap.getPoolsToHandle())
       .concat(await this.poolsServicePancake.getPoolsToHandle());
-    // temporary disable
-    // .concat(await this.poolsServiceBalancer.getPoolsToHandle())
-    // .concat(await this.poolsServiceCurve.getPoolsToHandle())
 
     const query = this.buildInsertPoolsQuery(pools);
     await databaseClient.query(query);

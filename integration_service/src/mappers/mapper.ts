@@ -26,7 +26,7 @@ import {
   Transactions,
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
-import {PROTOCOL_NAME} from "../utils/util";
+import { PROTOCOL_NAME } from '../utils/util';
 
 @Injectable()
 export class Mapper {
@@ -378,8 +378,7 @@ export class Mapper {
   }
 
   private getOriginAddress(originArray: string[], address: string): string {
-    return originArray
-        .find(origin => origin.toLowerCase() === address);
+    return originArray.find((origin) => origin.toLowerCase() === address);
   }
 }
 

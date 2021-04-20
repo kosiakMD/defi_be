@@ -12,13 +12,6 @@ export const TIMESTAMP_MONTH_BEFORE_CURRENT: number = Math.trunc(
   TIMESTAMP_CURRENT - ONE_DAY_SECONDS * 30,
 );
 
-export const CHAIN_ETH = 'eth';
-export const CHAIN_ID_ETH = 1;
-export const CHAIN_BSC = 'bsc';
-export const CHAIN_ID_BSC = 2;
-export const PROJECT_UNISWAP = 'uniswap';
-export const PROJECT_SUSHISWAP = 'sushiwap';
-
 export function getImpermanentLossUSD(reserveUSD: number, percent: number): number {
   return reserveUSD * (percent / 100);
 }

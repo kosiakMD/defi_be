@@ -6,7 +6,6 @@ import { VaultsRepository } from './repository/vaults.repository';
 
 @Injectable()
 export class VaultsService {
-  private minReserveUdsToDisplay = 100000;
   constructor(
     @InjectRepository(VaultsEntity) private readonly vaultsRepository: VaultsRepository,
   ) {}
@@ -14,7 +13,7 @@ export class VaultsService {
   getPoolsToDisplay(): Promise<VaultsEntity[]> {
     return this.vaultsRepository
       .createQueryBuilder('vaults')
-      .andWhere('vaults.tvl > :minReserveUsd', { minReserveUsd: this.minReserveUdsToDisplay })
+      .where('vaults.updated_at = (select max(updated_at) from vaults)')
       .getMany();
   }
 }

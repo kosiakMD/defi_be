@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { Base } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 import { getDataByAddresses } from '../utils/util';
@@ -12,7 +13,6 @@ import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
 import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
 import { UniswapSnapshotsRepository } from './repository/uniswap.snapshots.repository';
 import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
-import {Base} from "../interfaces/transactions.interfaces";
 
 @Injectable()
 export class UniswapService {
@@ -34,11 +34,15 @@ export class UniswapService {
       this.mintsRepository,
       this.burnRepository,
       this.snapshotsRepository,
-        originAddressesArray,
+      originAddressesArray,
       this.uniswapSubgraph,
     );
 
-    return this.mapper.mapData(result.userAddresses, originAddressesArray,
-        result.response, 'uniswap');
+    return this.mapper.mapData(
+      result.userAddresses,
+      originAddressesArray,
+      result.response,
+      'uniswap',
+    );
   }
 }

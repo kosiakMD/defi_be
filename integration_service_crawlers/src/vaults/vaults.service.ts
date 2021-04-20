@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { DatabaseService } from '../jobs/db/database.service';
 import { VaultsServiceCurve } from './curve/vaults.service.curve';
 import { Vault } from './dto/vault.dto';
-import { VaultsServiceSushiswap } from './sushiswap/vaults.service.curve';
-import { DatabaseService } from '../jobs/db/database.service';
+import { VaultsServiceSushiswap } from './sushiswap/vaults.service.sushiswap';
 
 @Injectable()
 export class VaultsService {
@@ -15,9 +15,7 @@ export class VaultsService {
 
   async saveVaults(): Promise<Vault[]> {
     const databaseClient = await this.databaseService.getClient();
-    const vaults: Vault[] = []
-      .concat(await this.curveVaultsService.getVauts())
-      .concat(await this.sushiswapVaultsService.getVauts());
+    const vaults: Vault[] = [].concat(await this.sushiswapVaultsService.getVauts());
 
     const query = this.buildInsertVaultsQuery(vaults);
     await databaseClient.query(query);

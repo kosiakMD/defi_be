@@ -1,6 +1,6 @@
 import {Injectable} from '@nestjs/common';
 
-import {CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData} from '../utils/utils';
+import {CHAIN_ID_BSC, CHAIN_ID_ETH, getTokenDecimals, getUniqueAndToLowerCaseArrayData} from '../utils/utils';
 import {
   ERC20TokenTransfer,
   ERC20Transfer,
@@ -15,10 +15,13 @@ import {DbService} from './repository/db.service';
 export class TransfersService {
   constructor(private readonly dbService: DbService) {}
 
-  async getAllTransactionDataByAddress(addreses: string): Promise<TransactionsResponseTransfers> {
+  async getAllTransactionDataByAddress(addresses: string): Promise<TransactionsResponseTransfers> {
+
+    const addressArray = getUniqueAndToLowerCaseArrayData(addresses.split(','));
+
     const [transfers, bscTransaction] = await Promise.all([
-      this.getTransactionByAddresses(addreses, CHAIN_ID_ETH),
-      this.getTransactionByAddresses(addreses, CHAIN_ID_BSC),
+      this.getTransactionByAddresses(addressArray, CHAIN_ID_ETH),
+      this.getTransactionByAddresses(addressArray, CHAIN_ID_BSC),
     ]);
 
     const allTransfersResponse: TransactionsResponseTransfers = {};
@@ -30,8 +33,7 @@ export class TransfersService {
     return allTransfersResponse;
   }
 
-  async getTransactionByAddresses(addresses: string, chainId: number): Promise<TransactionsResponseTransfers> {
-    const addressArray = addresses.split(',');
+  async getTransactionByAddresses(addressArray: string[], chainId: number): Promise<TransactionsResponseTransfers> {
 
     const formattedAddresses = addressArray.map((address) => `'${address}'`).join(',');
 
@@ -46,8 +48,8 @@ export class TransfersService {
   ): Promise<TransactionWithTokenAndPrices[]> {
     return await Promise.all(
       transactions.map(async (transaction) => {
-        const decimals = transaction.tokenDecimals
-            ? Math.pow(10, -`${transaction.tokenDecimals}`) : DEFAULT_MULTIPLIER;
+        const decimals = getTokenDecimals(transaction.tokenDecimals);
+
         try {
           return {
             ...transaction,
@@ -84,8 +86,7 @@ export class TransfersService {
       const transactionWithTransfers = uniqueUserHashes.map<Transfers>((hash) => {
         const hashTransfers = userTransactions.filter((transaction) => transaction.hash === hash);
         const erc20Transfers: ERC20Transfer[] = hashTransfers.map((transfer) => {
-          const decimals = !transfer.tokenDecimals
-              ? DEFAULT_MULTIPLIER : Math.pow(10, -`${transfer.tokenDecimals}`);
+          const decimals = getTokenDecimals(transfer.tokenDecimals);
 
             const tokenErc20: ERC20TokenTransfer = {
               address: transfer.tokenAddress,
@@ -109,8 +110,7 @@ export class TransfersService {
             };
           });
 
-        const decimals = !hashTransfers[0].tokenDecimals
-            ? DEFAULT_MULTIPLIER : Math.pow(10, -`${hashTransfers[0].tokenDecimals}`);
+        const decimals = getTokenDecimals(hashTransfers[0].tokenDecimals);
 
         return {
           chainId: chainId,

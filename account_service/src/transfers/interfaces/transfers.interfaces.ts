@@ -23,7 +23,7 @@ export interface ERC20Transfer {
   fromAddress: string;
   toAddress: string;
   amount: number;
-  token: ERC20TokenTransfer;
+  token: ERC20Token;
   tokenPriceUSD?: number;
   totalPriceUSD?: number;
 }

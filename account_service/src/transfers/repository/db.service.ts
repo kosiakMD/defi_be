@@ -32,6 +32,6 @@ export class DbService {
       on ${transactionTable}."tokenAddress" = ${tokenTable}.address
     where ${transactionTable}."fromAddress" IN (${addresses})
     or ${transactionTable}."toAddress" IN (${addresses})
-      `);
+    limit 5000`);
   }
 }

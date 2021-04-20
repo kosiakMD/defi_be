@@ -2,7 +2,15 @@ import {Injectable} from '@nestjs/common';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, decimalsAmount, ETH_ADDRESS, ETH_DECIMALS, totalPrice } from '../utils/utils';
+import {
+  CHAIN_ID_BSC,
+  CHAIN_ID_ETH,
+  decimalsAmount,
+  ETH_ADDRESS,
+  ETH_DECIMALS,
+  getUniqueAndToLowerCaseArrayData,
+  totalPrice
+} from '../utils/utils';
 import {
   AccountTokenBalance,
   BalancesResponse,
@@ -99,7 +107,8 @@ export class BalanceService {
     if (!accounts) {
       return {};
     }
-    const accountsArray = accounts.split(',');
+
+    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','))
     const chainId = CHAIN_ID_BSC;
 
     const chainProvider: Web3 = this.chainProvider.instanceBsc();

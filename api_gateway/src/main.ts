@@ -12,6 +12,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     bodyParser: false,
+    logger: true,
   });
   // TODO: adding time logs features [HACK]
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));

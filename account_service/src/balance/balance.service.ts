@@ -224,17 +224,17 @@ export class BalanceService {
     account: address,
     amount,
     decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-    tokenPriceUSD: prices[tokenAddress] || undefined,
+    tokenPriceUSD: prices[tokenAddress] || 0,
     totalPriceUSD: prices[tokenAddress]
       ? totalPrice(amount, prices[tokenAddress], tokenDecimals)
-      : undefined,
+      : 0,
     token: {
       chainId: chainId,
       address: tokenAddress,
-      name: tokenName || undefined,
-      symbol: tokenSymbol || undefined,
+      name: tokenName || null,
+      symbol: tokenSymbol || null,
       decimals: parseInt(tokenDecimals),
-      totalSupply: +tokenTotalSupply || undefined,
+      totalSupply: +tokenTotalSupply || 0,
     },
   });
 }

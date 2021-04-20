@@ -34,20 +34,21 @@ export class JobsService {
   ) {
     this.agenda = new Agenda({
       db: { address: this.configService.get<string>('MONGO_CONNECTION_STRING') },
-      processEvery: '30 seconds',
+      processEvery: '60 seconds',
       lockLimit: 0,
       defaultLockLimit: 0,
+      defaultLockLifetime: 1000 * 60 * 60 * 24 * 30,
     });
 
     this.agenda.on('ready', async () => {
       await this.agenda.start();
 
-      await this.agenda.cancel({});
+      await this.cancel(this.configService.get<string>('ETH_TOKEN_USD_PRICE_JOB_NAME'));
 
       this.logger.log(
         `agenda.define: ${this.configService.get<string>(
           'ETH_TOKEN_USD_PRICE_JOB_NAME',
-        )}, agenda.every: ${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        )}, agenda.every: 60 seconds`,
         'Agenda',
       );
       await this.agenda.define(
@@ -56,9 +57,18 @@ export class JobsService {
         this.ethTransactionPriceUpdateJob.bind(this),
       );
       await this.agenda.every(
-        `${this.configService.get<string>('AGENDA_EVERY_SECONDS')} seconds`,
+        `60 seconds`,
         this.configService.get<string>('ETH_TOKEN_USD_PRICE_JOB_NAME'),
       );
     });
+  }
+
+  async cancel(jobName: string) {
+    const cancelResult = await this.agenda.cancel({ name: jobName });
+    this.logger.log(
+      `agenda.cancel: [${jobName}], result: [${cancelResult == 1 ? 'cancelled' : 'not cancelled'}]`,
+      'Agenda',
+    );
+    return cancelResult;
   }
 }

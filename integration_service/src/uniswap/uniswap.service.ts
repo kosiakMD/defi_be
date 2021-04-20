@@ -27,15 +27,18 @@ export class UniswapService {
   ) {}
 
   async getDataByAddress(addresses: string): Promise<Base[]> {
+    const originAddressesArray = addresses.split(',');
+
     const result = await getDataByAddresses(
       this.swapsRepository,
       this.mintsRepository,
       this.burnRepository,
       this.snapshotsRepository,
-      addresses,
+        originAddressesArray,
       this.uniswapSubgraph,
     );
 
-    return this.mapper.mapData(result.userAddresses, result.response, 'uniswap');
+    return this.mapper.mapData(result.userAddresses, originAddressesArray,
+        result.response, 'uniswap');
   }
 }

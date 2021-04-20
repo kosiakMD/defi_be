@@ -26,14 +26,17 @@ export class SushiswapService {
   ) {}
 
   async getSushiswapDataByAddresses(addresses: string) {
+    const originAddressesArray = addresses.split(',');
+
     const result = await getDataByAddresses(
       this.swapsRepository,
       this.mintsRepository,
       this.burnRepository,
       this.snapshotsRepository,
-      addresses,
+        originAddressesArray,
       this.sushiswapSubgraph,
     );
-    return this.mapper.mapData(result.userAddresses, result.response, 'sushiswap');
+    return this.mapper.mapData(result.userAddresses, originAddressesArray,
+        result.response, 'sushiswap');
   }
 }

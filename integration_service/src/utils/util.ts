@@ -23,10 +23,10 @@ export async function getDataByAddresses<T, K, V, E>(
   repository2: Repository<K>,
   repository3: Repository<V>,
   repository4: Repository<E>,
-  addresses: string,
+  addresses: string[],
   subgraph: UniswapSubgraph,
 ) {
-  const addressesArray = getUniqueAndToLowerCaseArrayData(addresses.split(','));
+  const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
 
   const [swapFrom, mint, burn, snapshot, liquidityPosition] = await Promise.all([
     repository1

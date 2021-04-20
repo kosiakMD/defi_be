@@ -34,6 +34,7 @@ export class Mapper {
 
   public async mapData(
     userAddresses: string[],
+    originAddresses: string[],
     response: UniswapResponseData,
     protocolName: string,
   ): Promise<Base[]> {
@@ -45,7 +46,7 @@ export class Mapper {
         chainId: chainId,
         protocolType: 'transaction',
         protocolName: protocolName,
-        userAddress: address,
+        userAddress: this.getOriginAddress(originAddresses, address),
         txs: [],
       };
 
@@ -53,7 +54,7 @@ export class Mapper {
         chainId: chainId,
         protocolType: 'amm',
         protocolName: protocolName,
-        userAddress: address,
+        userAddress: this.getOriginAddress(originAddresses, address),
         liquidityPositions: [],
       };
 
@@ -374,6 +375,11 @@ export class Mapper {
       lpTokenAddress: entity.information.pair.id,
       tokens: [uniswapTokens[0], uniswapTokens[1]],
     };
+  }
+
+  private getOriginAddress(originArray: string[], address: string): string {
+    return originArray
+        .find(origin => origin.toLowerCase() === address);
   }
 }
 

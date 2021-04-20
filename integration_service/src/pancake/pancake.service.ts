@@ -26,14 +26,17 @@ export class PancakeService {
     private readonly pancakeSubgraph: PancakeSubgraph,
   ) {}
   async getData(addresses: string): Promise<Base[]> {
+    const originAddressesArray = addresses.split(',');
+
     const result = await getDataByAddresses(
       this.swapsRepository,
       this.mintsRepository,
       this.burnsRepository,
       this.snapshotsRepository,
-      addresses,
+        originAddressesArray,
       this.pancakeSubgraph,
     );
-    return this.mapper.mapData(result.userAddresses, result.response, 'pancake');
+    return this.mapper.mapData(result.userAddresses, originAddressesArray,
+        result.response, 'pancake');
   }
 }

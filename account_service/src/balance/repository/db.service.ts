@@ -2,7 +2,10 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { map } from 'rxjs/operators';
 import { getManager } from 'typeorm';
 
-import {ADDITIONAL_TOKEN, ETH_ADDRESS} from '../../utils/utils';
+import {
+  WETH_ADDRESS,
+  CHAIN_ID_ETH,
+  ETH_ADDRESS} from '../../utils/utils';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 import { TokenRow } from '../interfaces/balance.interfaces';
 
@@ -14,8 +17,12 @@ export class DbService {
     addresses: string[],
     chainId: number,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    addresses.push(ETH_ADDRESS);
-    addresses.push(ADDITIONAL_TOKEN);
+
+    if (chainId === CHAIN_ID_ETH) {
+      addresses.push(ETH_ADDRESS.toLowerCase());
+      addresses.push(WETH_ADDRESS.toLowerCase())
+    }
+
     const tokenAddresses = await addresses.join(',');
 
     return this.httpService

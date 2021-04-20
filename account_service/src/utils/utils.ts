@@ -3,7 +3,7 @@ import { BigNumber as BN } from 'bignumber.js';
 export const DEFAULT_MULTIPLIER = 1e-18;
 export const ETH_DECIMALS = 18;
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const ADDITIONAL_TOKEN = '0x13a340107b2b3bd22601e1aee313d55a819437f5';
+export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 
 export const CHAIN_ID_ETH = 1;
 export const CHAIN_ID_BSC = 2;

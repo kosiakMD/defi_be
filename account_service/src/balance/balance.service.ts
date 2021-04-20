@@ -9,7 +9,8 @@ import {
   ETH_ADDRESS,
   ETH_DECIMALS,
   getUniqueAndToLowerCaseArrayData,
-  totalPrice
+  totalPrice,
+  WETH_ADDRESS
 } from '../utils/utils';
 import {
   AccountTokenBalance,
@@ -19,6 +20,7 @@ import {
   TokenRow,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
+import {CurrentPricesPayload} from "./dto/price.response.dto";
 
 @Injectable()
 export class BalanceService {
@@ -53,13 +55,13 @@ export class BalanceService {
     if (!accounts) {
       return {};
     }
-    const accountsArray = accounts.split(',');
+    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','));
     const chainId = CHAIN_ID_ETH;
 
     const chainProvider: Web3 = this.chainProvider.instanceEth();
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);
-    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress);
+    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, ethBalances] = await Promise.all([
       this.dbService.getTokenPrices(tokensAddresses, chainId),
@@ -71,20 +73,22 @@ export class BalanceService {
       ),
     ]);
 
-    const ethPrice = Object.prototype.hasOwnProperty.call(tokenPrices.prices, ETH_ADDRESS)
-      ? tokenPrices.prices[`${ETH_ADDRESS}`]
-      : 0;
+    const ethPrice = this.getUtilTokenPrice(ETH_ADDRESS, tokenPrices.prices);
+    const wethPrice = this.getUtilTokenPrice(WETH_ADDRESS, tokenPrices.prices);
 
-    const etherBalances = ethBalances.map((balance) =>
-      this.mapEthBalance({ ...balance, ethPrice }),
+    const etherBalances = [];
+    ethBalances.forEach((balance) => {
+          etherBalances.push(this.mapEthBalance({...balance, ethPrice}));
+          etherBalances.push(this.mapEthBalance({...balance, ethPrice:undefined, wethPrice}));
+        }
     );
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
     return accountsArray.reduce((response, account) => {
-      const ether = etherBalances.find((balance) => balance.account === account);
+      const ether = etherBalances.filter((balance) => balance.account === account);
       const erc20 = erc20Balances.filter((balance) => balance.account === account);
 
-      const tokens = [ether].concat(erc20).map((t) => {
+      const tokens = ether.concat(erc20).map((t) => {
         return {
           ...t,
           account: account,
@@ -114,7 +118,7 @@ export class BalanceService {
     const chainProvider: Web3 = this.chainProvider.instanceBsc();
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);
-    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress);
+    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, ethBalances] = await Promise.all([
       this.dbService.getTokenPrices(tokensAddresses, chainId),
@@ -160,23 +164,26 @@ export class BalanceService {
     account,
     amount,
     ethPrice,
+    wethPrice,
   }: {
     account: string;
     amount: string;
-    ethPrice: number;
+    ethPrice?: number;
+    wethPrice?: number;
   }): AccountTokenBalance => {
+      const price = ethPrice === undefined ? wethPrice : ethPrice;
     return {
       amount,
       account,
       decimalsAmount: decimalsAmount(amount, ETH_DECIMALS),
-      tokenPriceUSD: ethPrice,
-      totalPriceUSD: totalPrice(amount, ethPrice, ETH_DECIMALS),
+      tokenPriceUSD: price,
+      totalPriceUSD: totalPrice(amount, price, ETH_DECIMALS),
       token: {
         chainId: CHAIN_ID_ETH,
         decimals: 18,
-        symbol: 'ETH',
-        name: 'Ether',
-        address: ETH_ADDRESS,
+        symbol: ethPrice === undefined ? 'WETH' : 'ETH',
+        name: ethPrice === undefined ? 'Wrapped Ether' : 'Ether',
+        address: ethPrice === undefined ?WETH_ADDRESS : ETH_ADDRESS,
       },
     };
   };
@@ -237,4 +244,9 @@ export class BalanceService {
       totalSupply: +tokenTotalSupply || 0,
     },
   });
+
+  private getUtilTokenPrice(token: string, prices: CurrentPricesPayload) {
+    return Object.prototype.hasOwnProperty.call(prices, token.toLowerCase())
+        ? (prices[`${token.toLowerCase()}`] === null ? 0 : prices[`${token.toLowerCase()}`]): 0;
+  }
 }

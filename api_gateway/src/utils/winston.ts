@@ -37,6 +37,6 @@ export const createLogger = (
   // TODO: for custom logger
   // LoggerModule.createLogger({
   return WinstonModule.createLogger(
-    winstonParams(logErrorFile, serviceName, logCombineLog, level, meta),
+    winstonParams(logErrorFile, logCombineLog, serviceName, level, meta),
   );
 };

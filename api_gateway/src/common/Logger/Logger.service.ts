@@ -54,15 +54,10 @@ export class Logger extends WinstonLogger implements NestLoggerService {
 
 // TODO: temporary
 export const addTimeLogFeature = (logger: WinstonLogger | LoggerService): Logger => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  Logger.logger = logger;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  logger.time = Logger.time;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  logger.timeEnd = Logger.timeEnd;
-
+  Object.assign(Logger, { logger: logger });
+  Object.assign(logger, {
+    time: Logger.time,
+    timeEnd: Logger.timeEnd,
+  });
   return logger as Logger;
 };

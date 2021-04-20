@@ -119,15 +119,31 @@ export class PriceService {
     }
 
     const query = `
-      SELECT a.address, ap.timestamp, ap.value
-      FROM prices.asset a
-      JOIN prices.asset_price ap
-        ON a.id = ap.asset_id
-      WHERE
-        a.address IN ('${notCached.join("','")}') AND
-        a.chain_id = ${chain} AND
-        ap.currency_id = ${currency}
-      ORDER BY ap.asset_id, ap.timestamp
+      (
+        SELECT a.address, ap.timestamp, ap.value
+        FROM prices.asset a
+        JOIN prices.asset_price ap
+          ON a.id = ap.asset_id
+        WHERE
+          a.address IN ('${notCached.join("','")}') AND
+          a.chain_id = ${chain} AND
+          ap.currency_id = ${currency}
+        ORDER BY ap.asset_id, ap.timestamp
+      )
+      UNION ALL
+      (
+        SELECT w.address, ap.timestamp, ap.value
+        FROM prices.wrapped_asset w
+        JOIN prices.asset a
+          ON w.asset_id = a.id
+        JOIN prices.asset_price ap
+          ON a.id = ap.asset_id
+        WHERE
+          w.address IN ('${notCached.join("','")}') AND
+          w.chain_id = ${chain} AND
+          ap.currency_id = ${currency}
+        ORDER BY ap.asset_id, ap.timestamp
+      )
     `;
 
     const rows: PriceRow[] = await this.entityManager.query(query);

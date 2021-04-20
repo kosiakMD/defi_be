@@ -34,7 +34,7 @@
     "@nestjsx/api-version": "^0.1.1",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
-    "joi": "^17.0.2",
+    "joi": "^17.4.0",
     "nest-winston": "^1.4.1",
     "pg": "^8.5.1",
     "postgres": "^1.0.2",

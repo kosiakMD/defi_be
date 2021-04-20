@@ -22,6 +22,7 @@ import { winstonParams } from './utils/winston';
           configService.get<string>('LOG_COMBINED_FILE'),
           configService.get<string>('SERVICE_NAME'),
           configService.get<string>('LOG_LEVEL'),
+          { env: configService.get<string>('ENV') },
         ),
     }),
     TypeOrmModule.forRootAsync({

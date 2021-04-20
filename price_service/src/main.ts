@@ -19,6 +19,7 @@ async function bootstrap(): Promise<void> {
     configService.get<string>('LOG_COMBINED_FILE'),
     configService.get<string>('SERVICE_NAME'),
     configService.get<string>('LOG_LEVEL'),
+    { env: configService.get<string>('ENV') },
   );
   app.useLogger(logger);
 

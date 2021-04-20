@@ -1,43 +1,72 @@
 import * as Joi from 'joi';
 
+const logFileRE = /[a-zA-Z1-9_.]\.log/;
+
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .equal('development', 'production', 'test', 'provision')
     .default('development'),
-  ENV: Joi.string().equal(
-    '.env',
-    '.env.production',
-    '.env.production.local',
-    '.env.development',
-    '.env.development.local',
-  ),
-  SERVICE_NAME: Joi.string(),
-  SERVICE_HOST: Joi.string().empty(''),
-  SERVICE_PORT: Joi.number().default(3000),
-  LOG_ERROR_FILE: Joi.string().pattern(/[a-z,A-Z,1-9_.]\.log/),
-  LOG_COMBINED_FILE: Joi.string().pattern(/[a-z,A-Z,1-9_.]\.log/),
+  ENV: Joi.string()
+    .equal(
+      '.env',
+      '.env.production',
+      '.env.production.local',
+      '.env.development',
+      '.env.development.local',
+    )
+    .required(),
+  SERVICE_NAME: Joi.string().required(),
+  SERVICE_HOST: Joi.string() //
+    .allow('')
+    .required(),
+  SERVICE_PORT: Joi.number() //
+    .default(3000)
+    .required(),
+  LOG_ERROR_FILE: Joi.string() //
+    .pattern(logFileRE)
+    .required(),
+  LOG_COMBINED_FILE: Joi.string() //
+    .pattern(logFileRE)
+    .required(),
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
-    .default('info'),
-  DB_CONNECTION: Joi.string(),
-  DB_HOST: Joi.string(),
-  DB_USERNAME: Joi.string(),
-  DB_PORT: Joi.number().default(5432),
-  DB_PASSWORD: Joi.string(),
-  DB_DATABASE: Joi.string(),
-  DB_SYNCHRONIZE: Joi.boolean(),
-  DB_LOGGING: Joi.boolean(),
-  AMM_SUSHISWAP_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
-  AMM_UNISWAP_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
-  BLOCKS_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
-  AMM_PANCAKE_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
-  AMM_CURVE_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
-  BLOCKS_BSC_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
-  VAULT_SUSHISWAP_SUBGRAPH_URL: Joi.string().empty(''), // TODO: not empty
+    .default('info')
+    .required(),
+  DB_CONNECTION: Joi.string().required(),
+  DB_HOST: Joi.string().required(),
+  DB_USERNAME: Joi.string().required(),
+  DB_PORT: Joi.number() //
+    .default(5432)
+    .required(),
+  DB_PASSWORD: Joi.string().required(),
+  DB_DATABASE: Joi.string().required(),
+  DB_SYNCHRONIZE: Joi.boolean().required(),
+  DB_LOGGING: Joi.boolean().required(),
+  AMM_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  AMM_UNISWAP_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  BLOCKS_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  AMM_PANCAKE_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  AMM_CURVE_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  BLOCKS_BSC_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  VAULT_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
 });
 
 export const validationOptions = {
-  // allowUnknown: false,
+  abortEarly: false,
 };
 
 export default validationSchema;

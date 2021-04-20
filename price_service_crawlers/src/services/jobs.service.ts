@@ -8,6 +8,7 @@ import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job';
 import { CoingeckoJob } from '../jobs/coingecko.job';
 import { CurveFirstCheckJob } from '../jobs/curve_first_check.job';
 import { SushiswapJob } from '../jobs/sushiswap.job';
+import { PancakeJob } from '../jobs/pancake.job';
 import { UniswapJob } from '../jobs/uniswap.job';
 import { Api } from '../thegraph/api';
 import {
@@ -29,6 +30,7 @@ export class JobsService {
     private coingeckoJob: CoingeckoJob,
     private sushiswapJob: SushiswapJob,
     private uniswapJob: UniswapJob,
+    private pancakeJob: PancakeJob,
     private balancerFirstCheckJob: BalancerFirstCheckJob,
     private curveFirstCheckJob: CurveFirstCheckJob,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
@@ -96,6 +98,26 @@ export class JobsService {
           {},
         );
 
+         //PANCAKE
+        this.agenda.define(
+          'CRAWL_PANCAKE_CURRENT_PRICE',
+          { lockLifetime: 10e3 },
+          this.pancakeJob.getCurrentPrices.bind(this),
+        );
+        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
+
+        this.agenda.define(
+          'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10e3 },
+          this.pancakeJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
+          {},
+        );
+
+
         //UNI
         this.logger.log('starting sushi');
         this.agenda.define(
@@ -110,13 +132,13 @@ export class JobsService {
         );
 
         this.agenda.define(
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
+          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
           { lockLifetime: 10e3 },
           this.uniswapJob.crawlNewTokensHistory.bind(this),
         );
         this.agenda.every(
           NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
+          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
           {},
         );
 

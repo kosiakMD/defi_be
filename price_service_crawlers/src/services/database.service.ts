@@ -171,15 +171,13 @@ export class DatabaseService {
               '',
           );
         } catch (e) {
-         // console.log('duplicate error ', e);
+          //console.log(dbErr);
         }
         await this.pg.any('UPDATE prices.asset SET is_new = false WHERE id = $1', coin_id + '');
       }
 
       return true;
     } catch (e) {
-      // console.log('coin error ' + coin_id + ' ', values);
-      // console.error('Token save error:', e);
       return false;
     }
   };

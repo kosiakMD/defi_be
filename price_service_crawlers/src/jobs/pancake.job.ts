@@ -14,7 +14,7 @@ import { toTimestamp } from '../utils/common';
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
 @Injectable()
-export class SushiswapJob {
+export class PancakeJob {
   constructor(
     @Inject(NEST_PGPROMISE_CONNECTION)
     public pg: IDatabase<any>,
@@ -44,13 +44,13 @@ export class SushiswapJob {
       this.logger.log(`lastSavedTimestamp ${lastSavedTimestamp}`);
       const firstTimestamp = lastSavedTimestamp;
       do {
-        const firstDayBlockQuery = await this.theGraphService.getSushiswapfirstBlockQuery(
+        const firstDayBlockQuery = await this.theGraphService.getPancakefirstBlockQuery(
           lastSavedTimestamp,
         );
         const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
         this.logger.log(blockNumber, 'blockNumber');
 
-        const dailyPriceQuery = await this.theGraphService.getSushiswapDailyBlockPricesQuery(
+        const dailyPriceQuery = await this.theGraphService.getPancakeDailyBlockPricesQuery(
           parseInt(blockNumber),
           token,
         );
@@ -140,7 +140,7 @@ export class SushiswapJob {
                 currentCurrencyId,
                 databaseService,
                 logger,
-                PlatformEnum.sushiswap,
+                PlatformEnum.pancake,
                 false,
               );
             }
@@ -185,7 +185,7 @@ export class SushiswapJob {
   }
 
   public async getCurrentPrices(job: any, done: any): Promise<void> {
-    this.logger.log('Current SUSHI Prices Job Sarted');
+    this.logger.log('Current PANCAKE Prices Job Sarted');
     try {
       const currentChainId = await this.databaseService.getCurrentChain();
       if (!currentChainId) {
@@ -199,17 +199,17 @@ export class SushiswapJob {
       //cheking existing tokens in DB and adding new
       this.logger.log('checking for new tokens')
       await this.databaseService.checkEthToken();
-      const sushiswapTokensAssets = await this.databaseService.getTokensByChainAndPlatform(
+      const pancakeTokensAssets = await this.databaseService.getTokensByChainAndPlatform(
         currentChainId,
-        PlatformEnum.sushiswap,
+        PlatformEnum.pancake,
       );
 
-      const dbTokenAddresses = sushiswapTokensAssets.map((token) => token['address']);
+      const dbTokenAddresses = pancakeTokensAssets.map((token) => token['address']);
       // adding new tokens
       let iteration = 0;
       let tokens = [];
       do {
-        const tokenRequest = await this.theGraphService.getSushiswapPoolsTokens(iteration);
+        const tokenRequest = await this.theGraphService.getPancakePoolsTokens(iteration);
         tokens = tokenRequest['data']['data']['dataPairs'];
 
         for (let i = 0; i < tokens.length; i++) {
@@ -220,7 +220,7 @@ export class SushiswapJob {
               tokens[i]['token0']['name'] + '-' + tokens[i]['token1']['name'],
               tokens[i]['token0']['symbol'] + '-' + tokens[i]['token1']['symbol'],
               CHAIN,
-              PlatformEnum.sushiswap,
+              PlatformEnum.pancake,
               currentChainId,
             );
         }
@@ -229,20 +229,20 @@ export class SushiswapJob {
         this.logger.log(tokens.length, 'new tokens.length');
       } while (iteration < 5 && tokens.length);
 
-      this.logger.log('new sushi tokens checked');
+      this.logger.log('new pancake tokens checked');
 
       const currentTimestamp =
         toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
       const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
         currentChainId,
-        PlatformEnum.sushiswap,
+        PlatformEnum.pancake,
         currentTimestamp,
       );
       this.logger.log(`token total: ${dbAssets.length}`);
 
       const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
         currentChainId,
-        PlatformEnum.sushiswap,
+        PlatformEnum.pancake,
       );
       const lastPricesObj = {};
       lastPrices.forEach((price) => {
@@ -251,7 +251,7 @@ export class SushiswapJob {
 
       this.logger.log(lastPricesObj);
 
-      await (this as any).sushiswapJob.checkHourlyPrices(
+      await (this as any).pancakeJob.checkHourlyPrices(
         dbAssets,
         lastPricesObj,
         currentTimestamp,
@@ -268,7 +268,7 @@ export class SushiswapJob {
             logger.log('coin ? : ' + coin.id + ' - ');
             try {
               logger.log(coin['address']);
-              const oneResults = await this.theGraphService.getCurrentSushiTokenPrices(
+              const oneResults = await this.theGraphService.getCurrentPancakeTokenPrices(
                 coin['address'],
               );
               if (oneResults['data']['data']['dataPairs'].length) {
@@ -317,13 +317,13 @@ export class SushiswapJob {
   }
 
   public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
-    this.logger.log('sushiswap new tokens history started')
+    this.logger.log('Pancake new tokens history started')
     const currentCurrencyId = await this.databaseService.getCurrentCurrency();
     if (!currentCurrencyId) {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const firstTxData = await this.theGraphService.getSushiswapfirstTxTimestamp();
+    const firstTxData = await this.theGraphService.getPancakefirstTxTimestamp();
     const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
 
     const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % 86400);
@@ -332,7 +332,7 @@ export class SushiswapJob {
     this.logger.log(`toTs ${toTs}`);
 
     const dbAssets = await this.databaseService.getTokensByPlatformAndLastHistoryTimestamp(
-      PlatformEnum.sushiswap,
+      PlatformEnum.pancake,
       toTs,
     );
     const prices = [];
@@ -361,13 +361,15 @@ export class SushiswapJob {
           do {
             logger.log(`making for timestamp ${fromTs} with coin ${coin.id}`);
 
-            const firstDayBlockQuery = await this.theGraphService.getSushiswapfirstBlockQuery(
+            const firstDayBlockQuery = await this.theGraphService.getPancakefirstBlockQuery(
               fromTs,
             );
+            this.logger.log("firstDayBlockQuery['data']['data']['blocks']")
+            this.logger.log(firstDayBlockQuery['data']['data']['blocks'])
             const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
             //logger.log(blockNumber, `blockNumber ${coin.id}` );
 
-            const dailyPriceQuery = await this.theGraphService.getSushiswapDailyBlockPricesQuery(
+            const dailyPriceQuery = await this.theGraphService.getPancakeDailyBlockPricesQuery(
               parseInt(blockNumber),
               coin['address'],
             );
@@ -442,7 +444,7 @@ export class SushiswapJob {
     const poolPromise = pool.start();
     await poolPromise;
 
-    this.logger.log(`sushiswap new tokens history finished`);
+    this.logger.log(`Pancake new tokens history finished`);
     done();
   };
 }

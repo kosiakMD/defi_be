@@ -6,6 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import endpoints from '../../config/endpoints';
 import { TokenPriceRequest } from '../models/prices';
 import * as bal from './balancer';
+import * as pancake from './pancake'
 import { BalancerPoolsTokensResponse } from './balancer';
 import * as curve from './curve';
 import {
@@ -23,6 +24,7 @@ import { UniswapLiquidityPositionsResponse } from './uniswap';
 // TODO: use config service
 const sushiswapUrl = endpoints.THEGRAPH_SUSHISWAP;
 const uniswapUrl = endpoints.THEGRAPH_UNISWAP;
+const pancakeUrl = endpoints.THEGRAPH_PANCAKE;
 const balancerUrl = endpoints.THEGRAPH_BALANCER;
 const curveUrl = endpoints.THEGRAPH_CURVE;
 
@@ -77,6 +79,33 @@ export class Api {
   public getCurrentUniTokenPrices(address: string): Promise<AxiosResponse> {
     this.logger.log(address);
     return axios.post(uniswapUrl, uni.getUniswapCurrentPriceQuery(address));
+  }
+
+
+  //PANCAKE
+  public getPancakefirstTxTimestamp(): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(pancakeUrl, pancake.firstTxTimestamp());
+  }
+
+  public getPancakefirstBlockQuery(
+    timestamp: number,
+  ): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(pancakeUrl, pancake.firstBlockAfterTimestamp(timestamp));
+  }
+
+  public getPancakeDailyBlockPricesQuery(
+    blockNumber: number,
+    token: string,
+  ): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(pancakeUrl, pancake.firstDailyBlockPairs(blockNumber, token));
+  }
+
+  public getPancakePoolsTokens(skip = 0): Promise<AxiosResponse<CurvePoolsTokensResponse>> {
+    return axios.post(pancakeUrl, pancake.getPancakePoolsQuery(skip));
+  }
+  public getCurrentPancakeTokenPrices(address: string): Promise<AxiosResponse> {
+    this.logger.log(address);
+    return axios.post(pancakeUrl, pancake.getPancakeCurrentPriceQuery(address));
   }
 
   //BALANCER

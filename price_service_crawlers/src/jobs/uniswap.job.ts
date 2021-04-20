@@ -7,7 +7,8 @@ import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { crawlCoin, getRequiredHistoryStartDate } from '../utils/crawlCoin';
 import { getNextDayStart, getNextHourStart } from '../utils/time';
-
+import { SECONDS_IN_HOUR, PlatformEnum, CHAIN, CURRENCY } from '../utils/constants';
+import { toTimestamp } from '../utils/common';
 // TODO: clean file
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 
@@ -316,26 +317,27 @@ export class UniswapJob {
 
   public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
     this.logger.log('uniswap new tokens history started')
-    const currentCurrencyId = await this.databaseService.getCurrentCurrency();
+    let currentCurrencyId
+    try{
+      currentCurrencyId= await this.databaseService.getCurrentCurrency();
     if (!currentCurrencyId) {
       throw 'No current currency in DB: ' + CURRENCY;
     }
-
+  }catch(e){
+    this.logger.error(e)
+  }
     const firstTxData = await this.theGraphService.getUniwapfirstTxTimestamp();
     const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
-    this.logger.log(firstTxData['data']['data']['transactions'], 'firstTxData');
 
     const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % 86400);
     const toTs = beginOfDay - 7 * 24 * SECONDS_IN_HOUR;
 
-    this.logger.log(`beginOfDay ${beginOfDay}`);
     this.logger.log(`toTs ${toTs}`);
 
     const dbAssets = await this.databaseService.getTokensByPlatformAndLastHistoryTimestamp(
       PlatformEnum.uniswap,
       toTs,
     );
-
     const prices = [];
 
     const delayValue = (index, coin, logger, databaseService,currentCurrencyId) => {
@@ -345,7 +347,6 @@ export class UniswapJob {
         try {
           let dayNum = 0;
 
-          //logger.log("coin.last_history_timestamp ",coin.last_history_timestamp )
           let fromTs = await getRequiredHistoryStartDate(
             coin,
             toTs,
@@ -363,7 +364,9 @@ export class UniswapJob {
           do {
             logger.log(`making for timestamp ${fromTs} with coin ${coin.id}`);
 
-            const firstDayBlockQuery = await this.theGraphService.getUniswapfirstBlockQuery(fromTs);
+            const firstDayBlockQuery = await this.theGraphService.getUniswapfirstBlockQuery(
+              fromTs,
+            );
             const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
             //logger.log(blockNumber, `blockNumber ${coin.id}` );
 
@@ -405,21 +408,14 @@ export class UniswapJob {
           logger.log(
             `${prices.length} new prices for coin ${coin.address} with asset_id ${coin.id}`,
           );
-          /* const result = await crawlCoinHistory(
-              coin.id,
-              coin,
-              prices,
-              currentCurrencyId,
-              this.databaseService,
-              this.logger,
-              PlatformEnum.uniswap,
-              false,
-              toTs
-            );*/
+
+          if (prices.length === 0)
+            await databaseService.updateAssetHistoryTimestamp(coin.id, fromTs);
         } catch (err) {
           logger.error(err, `Token ${coin.id} price checking error`);
           return resolve(null);
         }
+
         logger.log(
           `Historical coin ${coin.id} parsed in ${
             toTimestamp(new Date()) - startParseTime
@@ -445,11 +441,11 @@ export class UniswapJob {
       }
     };
 
-    const pool = new PromisePool(promiseProducer, 30);
+    const pool = new PromisePool(promiseProducer, 20);
     const poolPromise = pool.start();
     await poolPromise;
 
-    this.logger.log(`uniswap new tokens history finished`);
+    this.logger.log(`uni new tokens history finished`);
     done();
   };
 }

@@ -15,6 +15,7 @@ import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
 import { CoingeckoJob } from './jobs/coingecko.job';
 import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
 import { SushiswapJob } from './jobs/sushiswap.job';
+import { PancakeJob } from './jobs/pancake.job';
 import { UniswapJob } from './jobs/uniswap.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
@@ -85,6 +86,7 @@ import { Api } from './thegraph/api';
     DatabaseService,
     CoingeckoJob,
     SushiswapJob,
+    PancakeJob,
     UniswapJob,
     BalancerFirstCheckJob,
     CurveFirstCheckJob,

@@ -82,7 +82,6 @@ export const axiosRetry = <T>(action: () => T): Promise<T> => {
       try {
         return await action();
       } catch (error) {
-        //console.log("handled retry error ",error )
         await handleHttpError(error, bail);
       }
     },

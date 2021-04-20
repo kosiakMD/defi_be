@@ -2,6 +2,8 @@ import { Repository } from 'typeorm';
 
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
+export const PROTOCOL_NAME = 'pancake';
+
 export function groupBy(list, keyGetter): Map<any, any> {
   const map = new Map();
   list.forEach((item) => {
@@ -24,7 +26,7 @@ export async function getDataByAddresses<T, K, V, E>(
   addresses: string,
   subgraph: UniswapSubgraph,
 ) {
-  const addressesArray = addresses.split(',');
+  const addressesArray = getUniqueAndToLowerCaseArrayData(addresses.split(','));
 
   const [swapFrom, mint, burn, snapshot, liquidityPosition] = await Promise.all([
     repository1
@@ -71,4 +73,14 @@ export async function getDataByAddresses<T, K, V, E>(
       uniswapLiquidityPositions,
     },
   };
+}
+
+export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
+  const temp: string[] = [];
+  array.forEach((el) => {
+    if (!temp.includes(el.toLowerCase())) {
+      temp.push(el.toLowerCase());
+    }
+  });
+  return temp;
 }

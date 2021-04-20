@@ -26,6 +26,7 @@ import {
   Transactions,
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
+import {PROTOCOL_NAME} from "../utils/util";
 
 @Injectable()
 export class Mapper {
@@ -38,7 +39,7 @@ export class Mapper {
   ): Promise<Base[]> {
     const base: Base[] = [];
 
-    const chainId = protocolName === 'pancake' ? 2 : 1;
+    const chainId = protocolName === PROTOCOL_NAME ? 2 : 1;
     for (const address of userAddresses) {
       const transactions: Transactions = {
         chainId: chainId,

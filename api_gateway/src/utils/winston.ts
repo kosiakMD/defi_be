@@ -7,13 +7,14 @@ export const winstonParams = (
   logCombineLog: string,
   serviceName: string,
   level = 'info',
+  meta?: Record<string, any>,
 ): WinstonModuleOptions => ({
   // TODO: left for custom logger
   // LoggerModule.forRoot({
   // options
   level: level,
   format: winston.format.json(),
-  defaultMeta: { service: serviceName },
+  defaultMeta: Object.assign({ service: serviceName }, meta),
   transports: [
     // NestJS console like logs
     new winston.transports.Console({
@@ -31,6 +32,11 @@ export const createLogger = (
   logCombineLog: string,
   serviceName: string,
   level?: string,
+  meta?: Record<string, any>,
 ): LoggerService => {
-  return WinstonModule.createLogger(winstonParams(logErrorFile, serviceName, logCombineLog, level));
+  // TODO: for custom logger
+  // LoggerModule.createLogger({
+  return WinstonModule.createLogger(
+    winstonParams(logErrorFile, serviceName, logCombineLog, level, meta),
+  );
 };

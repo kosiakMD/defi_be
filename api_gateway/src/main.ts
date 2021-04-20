@@ -1,46 +1,34 @@
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import {
-  WINSTON_MODULE_NEST_PROVIDER,
-  WinstonModule,
-  utilities as nestWinstonModuleUtilities,
-} from 'nest-winston';
-import * as winston from 'winston';
 
 import { AppModule } from './app.module';
 import { addTimeLogFeature } from './common/Logger/Logger.service';
+import { createLogger } from './utils/winston';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     bodyParser: false,
-    logger: WinstonModule.createLogger({
-      // TODO: for custom logger
-      // logger: LoggerModule.createLogger({
-      level: process.env.LOG_LEVEL || 'info',
-      format: winston.format.json(),
-      defaultMeta: { service: process.env.SERVICE_NAME },
-      transports: [
-        // NestJS console like logs
-        new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike(),
-          ),
-        }),
-      ],
-    }),
+    logger: true,
   });
-
+  const configService = app.get<ConfigService>(ConfigService);
+  const logger = createLogger(
+    configService.get<string>('LOG_ERROR_FILE'),
+    configService.get<string>('LOG_COMBINED_FILE'),
+    configService.get<string>('SERVICE_NAME'),
+    configService.get<string>('LOG_LEVEL'),
+    { env: configService.get<string>('ENV') },
+  );
   // TODO: adding time logs features [HACK]
-  const logger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-
+  // const logger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const enhancedLogger = addTimeLogFeature(logger);
   // TODO: left for custom logger
   // app.useLogger(app.get(Logger));
-  app.useLogger(logger);
+  app.useLogger(enhancedLogger);
 
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('v1'); // temporary global as only 1 version

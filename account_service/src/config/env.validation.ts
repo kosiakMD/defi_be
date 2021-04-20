@@ -21,7 +21,7 @@ export const validationSchema = Joi.object({
     .default('info'),
   DB_HOST: Joi.string(),
   DB_PORT: Joi.number().default(5432),
-  DB_USER: Joi.string(),
+  DB_USERNAME: Joi.string(),
   DB_PASSWORD: Joi.string(),
   DB_DATABASE: Joi.string(),
   ETH_URL: Joi.string().empty(''), // TODO: not empty

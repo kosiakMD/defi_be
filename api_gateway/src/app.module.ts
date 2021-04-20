@@ -36,6 +36,8 @@ import { TokensModule } from './tokens/tokens.module';
 import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { UniswapController } from './uniswap/uniswap.controller';
+import { filterObjectKeys } from './utils/object';
+import { isAllUppercase } from './utils/string';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
 
@@ -51,6 +53,7 @@ import { VaultsModule } from './vaults/vaults.module';
           configService.get<string>('LOG_COMBINED_FILE'),
           configService.get<string>('SERVICE_NAME'),
           configService.get<string>('LOG_LEVEL'),
+          { env: configService.get<string>('ENV') },
         ),
     }),
     TerminusModule,
@@ -108,16 +111,22 @@ export class AppModule implements OnModuleInit, NestModule {
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+    this.logger.log(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      // eslint-disable-next-line no-underscore-dangle
+      filterObjectKeys(this.configService.internalConfig._PROCESS_ENV_VALIDATED, isAllUppercase),
+      SERVICE_NAME,
+    );
     this.logger.log(
       {
-        name: SERVICE_NAME,
+        env: ENV,
         host: SERVICE_HOST,
         port: SERVICE_PORT,
       },
       'App',
     );
-    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

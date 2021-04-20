@@ -23,7 +23,7 @@ export class DatabaseService {
     this.logger.log('Connecting to database with connection pool...');
     return new Pool({
       host: this.configService.get<string>('DB_HOST'),
-      user: this.configService.get<string>('DB_USER'),
+      user: this.configService.get<string>('DB_USERNAME'),
       password: this.configService.get<string>('DB_PASS'),
       database: this.configService.get<string>('DB_DATABASE'),
       port: +this.configService.get<string>('DB_PORT'),

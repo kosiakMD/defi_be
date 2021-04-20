@@ -1,4 +1,4 @@
-import { LoggerService as NestLoggerService } from '@nestjs/common';
+import { LoggerService, LoggerService as NestLoggerService } from '@nestjs/common';
 import { WinstonLogger } from 'nest-winston';
 import { Logger as WinstonLoggerInterface } from 'winston';
 
@@ -53,7 +53,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
 }
 
 // TODO: temporary
-export const addTimeLogFeature = (logger: WinstonLogger): Logger => {
+export const addTimeLogFeature = (logger: WinstonLogger | LoggerService): Logger => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   Logger.logger = logger;

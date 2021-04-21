@@ -6,7 +6,7 @@ import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   decimalsAmount,
-  ETH_ADDRESS,
+  ETH_BNB_ADDRESS,
   ETH_DECIMALS,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
@@ -73,14 +73,16 @@ export class BalanceService {
       ),
     ]);
 
-    const ethPrice = this.getUtilTokenPrice(ETH_ADDRESS, tokenPrices.prices);
+    const ethPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
     const wethPrice = this.getUtilTokenPrice(WETH_ADDRESS, tokenPrices.prices);
 
     const etherBalances = [];
     ethBalances.forEach((balance) => {
-          etherBalances.push(this.mapEthBalance({...balance, ethPrice}));
-          etherBalances.push(this.mapEthBalance({...balance, ethPrice:undefined, wethPrice}));
+        etherBalances.push(this.mapEthBalance({...balance, ethPrice}));
+        if (balance.amount != '0') {
+            etherBalances.push(this.mapEthBalance({...balance, ethPrice:undefined, wethPrice}));
         }
+      }
     );
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
@@ -130,7 +132,7 @@ export class BalanceService {
       ),
     ]);
 
-    const bnbPrice = 0;
+    const bnbPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
 
     const etherBalances = ethBalances.map((balance) =>
       this.mapBnbBalance({ ...balance, bnbPrice }),
@@ -183,7 +185,7 @@ export class BalanceService {
         decimals: 18,
         symbol: ethPrice === undefined ? 'WETH' : 'ETH',
         name: ethPrice === undefined ? 'Wrapped Ether' : 'Ether',
-        address: ethPrice === undefined ?WETH_ADDRESS : ETH_ADDRESS,
+        address: ethPrice === undefined ? WETH_ADDRESS : ETH_BNB_ADDRESS,
       },
     };
   };
@@ -208,7 +210,7 @@ export class BalanceService {
         decimals: 18,
         symbol: 'BNB',
         name: 'BNB',
-        address: ETH_ADDRESS,
+        address: ETH_BNB_ADDRESS,
       },
     };
   };
@@ -233,14 +235,14 @@ export class BalanceService {
     decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
     tokenPriceUSD: prices[tokenAddress] || 0,
     totalPriceUSD: prices[tokenAddress]
-      ? totalPrice(amount, prices[tokenAddress], tokenDecimals)
+      ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
       : 0,
     token: {
       chainId: chainId,
       address: tokenAddress,
       name: tokenName || null,
       symbol: tokenSymbol || null,
-      decimals: parseInt(tokenDecimals),
+      decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
       totalSupply: +tokenTotalSupply || 0,
     },
   });

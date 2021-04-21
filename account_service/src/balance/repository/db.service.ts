@@ -5,7 +5,7 @@ import { getManager } from 'typeorm';
 import {
   WETH_ADDRESS,
   CHAIN_ID_ETH,
-  ETH_ADDRESS} from '../../utils/utils';
+  ETH_BNB_ADDRESS} from '../../utils/utils';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 import { TokenRow } from '../interfaces/balance.interfaces';
 
@@ -19,9 +19,9 @@ export class DbService {
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
 
     if (chainId === CHAIN_ID_ETH) {
-      addresses.push(ETH_ADDRESS.toLowerCase());
       addresses.push(WETH_ADDRESS.toLowerCase())
     }
+    addresses.push(ETH_BNB_ADDRESS.toLowerCase());
 
     const tokenAddresses = await addresses.join(',');
 
@@ -76,7 +76,7 @@ export class DbService {
         ) as reduced
       group by address, "tokenAddress") as balances
       join ${tokenTable} on "tokenAddress" = ${tokenTable}."address"
-      where amount > 0 and ${tokenTable}.decimals is not null
+      where amount > 0
     `);
   };
 }

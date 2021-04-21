@@ -54,7 +54,7 @@ export class JobsService {
       await this.agenda.define(
         this.configService.get<string>('ETH_TOKEN_USD_PRICE_JOB_NAME'),
         this.ethTokenPriceUpdateJob.bind(this),
-        this.ethTransactionPriceUpdateJob.bind(this),
+        // this.ethTransactionPriceUpdateJob.bind(this),
       );
       await this.agenda.every(
         `60 seconds`,

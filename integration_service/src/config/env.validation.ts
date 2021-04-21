@@ -32,7 +32,6 @@ export const validationSchema = Joi.object({
     .equal('debug', 'info')
     .default('info')
     .required(),
-  DB_CONNECTION: Joi.string().required(),
   DB_HOST: Joi.string().required(),
   DB_USERNAME: Joi.string().required(),
   DB_PORT: Joi.number() //

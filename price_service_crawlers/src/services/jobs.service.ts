@@ -50,36 +50,51 @@ export class JobsService {
       processEvery: '30 seconds',
     });
 
+    
     this.agenda
       .on('ready', async () => {
         await this.agenda.start();
         // await this.agenda.cancel({});
+        
+        const cancel = async (jobName: string) => {
+
+          const cancelResult = await this.agenda.cancel({ name: jobName });
+          this.logger.log(
+            `agenda.cancel: [${jobName}], result: [${cancelResult == 1 ? 'cancelled' : 'not cancelled'}]`,
+            'Agenda',
+          );
+          return cancelResult;
+        }
+
         this.logger.log('Agenda started');
 
         // get current token prices
-        this.agenda.define(
+        await cancel('CRAWL_COINGECKO_CURRENT_PRICE');
+        await this.agenda.define(
           'CRAWL_COINGECKO_CURRENT_PRICE',
           { lockLifetime: 10e3 },
           this.coingeckoJob.getCurrentPrices.bind(this),
         );
-        this.agenda.every(
+        await this.agenda.every(
           CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
           'CRAWL_COINGECKO_CURRENT_PRICE',
           {},
         );
 
-        this.agenda.define(
+        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
+        await this.agenda.define(
           'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
           { lockLifetime: 10e3 },
           this.coingeckoJob.crawlNewTokensHistory.bind(this),
         );
-        this.agenda.every(
+        await this.agenda.every(
           NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
           'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
           {},
         );
 
         //SUSHI
+        await cancel('CRAWL_SUSHI_CURRENT_PRICE');
         this.agenda.define(
           'CRAWL_SUSHI_CURRENT_PRICE',
           { lockLifetime: 10e3 },
@@ -87,6 +102,7 @@ export class JobsService {
         );
         this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
 
+        await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
         this.agenda.define(
           'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
           { lockLifetime: 10e3 },
@@ -99,6 +115,7 @@ export class JobsService {
         );
 
          //PANCAKE
+        await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
         this.agenda.define(
           'CRAWL_PANCAKE_CURRENT_PRICE',
           { lockLifetime: 10e3 },
@@ -106,6 +123,7 @@ export class JobsService {
         );
         this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
 
+        await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
         this.agenda.define(
           'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
           { lockLifetime: 10e3 },
@@ -119,6 +137,7 @@ export class JobsService {
 
 
         //UNI
+        await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
         this.logger.log('starting sushi');
         this.agenda.define(
           'CRAWL_UNISWAP_CURRENT_PRICE',
@@ -131,6 +150,7 @@ export class JobsService {
           {},
         );
 
+        await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW');
         this.agenda.define(
           'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
           { lockLifetime: 10e3 },
@@ -183,9 +203,11 @@ export class JobsService {
         //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
         //   {},
         // );
+
       })
       .on('error', (e) => this.logger.error('Agenda connection error!', e));
 
+      
     //this.agenda.start();
   }
 }

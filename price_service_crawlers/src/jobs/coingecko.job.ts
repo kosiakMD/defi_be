@@ -7,15 +7,16 @@ import { IDatabase } from 'pg-promise';
 import {
   getCurrentCoinPrices,
   getCurrentEthPrice,
+  getCurrentBnbPrice,
   getCoinRangePrices,
   getCoins,
 } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
-import { isETH } from '../utils/common';
+import { isBSC, isChainCurrency, isETH } from '../utils/common';
 import { toTimestamp } from '../utils/common';
 import {
   CURRENCY,
-  ETH_ADDRESS,
+  CHAIN_CURRENCY_ADDRESS,
   CHAIN,
   SECONDS_IN_HOUR,
   TEST_TOKENS,
@@ -41,7 +42,15 @@ const createAddressChunks = (addresses: any[]): string[][] => {
   const result = [];
   for (i = 0, j = addresses.length; i < j; i += chunk) {
     temparray = addresses.slice(i, i + chunk);
-    const dbTokenAddresses = temparray.map((token) => token['address']);
+    const dbTokenAddresses = temparray.map((token) => {
+      if(isChainCurrency(token['address'])){
+        if(token['chain_id'] === 1)
+          return token['address']+'ETH';
+        if(token['chain_id'] === 2)
+          return token['address']+'BNB';
+      }
+      return token['address'];
+    });
     result.push(dbTokenAddresses);
   }
   return result;
@@ -49,7 +58,7 @@ const createAddressChunks = (addresses: any[]): string[][] => {
 
 @Injectable()
 export class CoingeckoJob {
-  static readonly ethAddress = ETH_ADDRESS;
+  static readonly chainCurrencyAddress = CHAIN_CURRENCY_ADDRESS;
 
   constructor(
     @Inject(NEST_PGPROMISE_CONNECTION)
@@ -63,6 +72,11 @@ export class CoingeckoJob {
     return data[0]['current_price'];
   };
 
+  static getBnbPrice = async (): Promise<number> => {
+    const { data } = await getCurrentBnbPrice();
+    return data[0]['current_price'];
+  };
+
   static getCurrentTokenPrices = async (tokens: string[]): Promise<TokenPrices> => {
     if (!tokens.length) {
       return {};
@@ -71,14 +85,21 @@ export class CoingeckoJob {
     const response: TokenPrices = {};
 
     // NOTE: Special handling of ETH
-    if (tokens.includes(CoingeckoJob.ethAddress)) {
-      response[CoingeckoJob.ethAddress] = {
+    if (tokens.includes(CoingeckoJob.chainCurrencyAddress+'ETH')) {
+      response[CoingeckoJob.chainCurrencyAddress+'ETH'] = {
         value: await CoingeckoJob.getEthPrice(),
         ['db_id']: null,
       };
     }
 
-    const addresses = tokens.filter((token) => !isETH(token)).join(',');
+    if (tokens.includes(CoingeckoJob.chainCurrencyAddress+'BNB')) {
+      response[CoingeckoJob.chainCurrencyAddress+'BNB'] = {
+        value: await CoingeckoJob.getBnbPrice(),
+        ['db_id']: null,
+      };
+    }
+
+    const addresses = tokens.filter((token) => !isChainCurrency(token)).join(',');
     const { data } = await getCurrentCoinPrices(addresses);
 
     return Object.keys(data).reduce(
@@ -116,7 +137,7 @@ export class CoingeckoJob {
           try {
             const {
               data: { prices },
-            } = await getCoinRangePrices(coin.address, lastSavedTimestamp, currentTimestamp);
+            } = await getCoinRangePrices(coin, lastSavedTimestamp, currentTimestamp);
 
             if (prices.length) {
               const tokenPrices = prices.filter(([timestamp]) => {
@@ -216,6 +237,7 @@ export class CoingeckoJob {
       //cheking existing tokens in DB and adding new
       this.logger.log('checking for new COINGECKO tokens');
       await this.databaseService.checkEthToken();
+      await this.databaseService.checkBnbToken();
       const coingeckoTokensAssets = await this.databaseService.getTokensByChainAndPlatform(
         currentChainId,
         PlatformEnum.coingecko,
@@ -234,16 +256,24 @@ export class CoingeckoJob {
 
       const currentTimestamp =
         toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
-      const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
-        currentChainId,
+      // const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
+      //   currentChainId,
+      //   PlatformEnum.coingecko,
+      //   currentTimestamp,
+      // );
+      const dbAssets = await this.databaseService.getTokensByPlatform(
         PlatformEnum.coingecko,
         currentTimestamp,
       );
+
       this.logger.log(`tokens total: ${dbAssets.length}`);
 
-      const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
-        currentChainId,
-        PlatformEnum.coingecko,
+      // const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
+      //   currentChainId,
+      //   PlatformEnum.coingecko,
+      // );
+      const lastPrices = await this.databaseService.getLastTokenPriceByPlatform(
+        PlatformEnum.coingecko
       );
       const lastPricesObj = {};
       lastPrices.forEach((price) => {
@@ -274,6 +304,18 @@ export class CoingeckoJob {
               for (let i = 0; i < dbAssets.length; i++) {
                 if (chunkResults[dbAssets[i]['address']]) {
                   chunkResults[dbAssets[i]['address']]['db_id'] = dbAssets[i]['id'];
+                } 
+                else 
+                if(isETH(dbAssets[i])){
+                  if (chunkResults[dbAssets[i]['address']+'ETH']) {
+                    chunkResults[dbAssets[i]['address']+'ETH']['db_id'] = dbAssets[i]['id'];
+                  } 
+                }
+                else
+                if(isBSC(dbAssets[i])){
+                  if (chunkResults[dbAssets[i]['address']+'BNB']) {
+                    chunkResults[dbAssets[i]['address']+'BNB']['db_id'] = dbAssets[i]['id'];
+                  } 
                 }
               }
 
@@ -338,14 +380,29 @@ export class CoingeckoJob {
             }
 
             logger.log(`fromTs ${fromTs}`);
-            const {
-              data: { prices },
-            } = await getCoinRangePrices(coin.address, fromTs, toTs);
-            logger.log(`${prices.length} new prices`);
+            let allPrices = [];
+            let chunkFromTs = fromTs;
+            do {
+              const hundredDaysTs = SECONDS_IN_HOUR * 24 * 100;
+              const {
+                data: { prices },
+              } = await getCoinRangePrices(coin, chunkFromTs, (toTs - chunkFromTs > hundredDaysTs) ? (chunkFromTs + hundredDaysTs) : toTs );
+              
+              this.logger.log(`from ${chunkFromTs} to ${(toTs - chunkFromTs > hundredDaysTs) ? (chunkFromTs + hundredDaysTs) : toTs} for token ${coin.address}`)
+              this.logger.log(prices)
+              chunkFromTs = (toTs - chunkFromTs > hundredDaysTs) ? (chunkFromTs + hundredDaysTs) : toTs;
+
+              allPrices = [].concat(allPrices, prices);
+            }while( chunkFromTs < toTs )
+            // const {
+            //   data: { prices },
+            // } = await getCoinRangePrices(coin, fromTs, toTs);
+
+            logger.log(`${allPrices.length} new prices`);
             await crawlCoinHistory(
               coin.id,
               coin,
-              prices,
+              allPrices,
               currentCurrencyId,
               this.databaseService,
               this.logger,

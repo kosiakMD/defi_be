@@ -4,7 +4,7 @@ import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS } from '../utils/constants';
+import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS, BNB_CHAIN, BNB_ADDRESS } from '../utils/constants';
 
 export type TokenPrices = { [key: string]: number };
 export type TokenAddresses = { [key: string]: number };
@@ -93,6 +93,22 @@ export class DatabaseService {
     return;
   };
 
+  public checkBnbToken = async () => {
+    const chainId = await this.getCurrentChain(BNB_CHAIN);
+
+    const bnbEntities = await this.pg.any('SELECT * FROM prices.asset WHERE address = $1 AND chain_id = $2 ', [
+      BNB_ADDRESS, chainId
+    ]);
+
+    if (!bnbEntities.length) {
+      await this.pg.any(
+        'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
+        [BNB_ADDRESS, 'bnb', 'binancecoin', BNB_CHAIN, 'COINGECKO', chainId, true],
+      );
+    }
+    return;
+  };
+
   public getTokensByChainAndPlatform = (currentChainId, platform, timestamp?) => {
     if (timestamp) {
       return this.pg.any(
@@ -106,6 +122,19 @@ export class DatabaseService {
       platform,
     ]);
   };
+  
+  public getTokensByPlatform = ( platform, timestamp?) => {
+    if (timestamp) {
+      return this.pg.any(
+        'SELECT * FROM prices.asset WHERE platform = $1 AND is_dead = false AND id not IN (SELECT asset_id FROM prices.asset_price WHERE timestamp = $2)',
+        [ platform, timestamp],
+      );
+    }
+
+    return this.pg.any('SELECT * FROM prices.asset WHERE platform = $1', [
+      platform,
+    ]);
+  };
 
   public getLastTokenPriceByChainAndPlatform = (currentChainId, platform) => {
     return this.pg.any(
@@ -114,12 +143,19 @@ export class DatabaseService {
     );
   };
 
+  public getLastTokenPriceByPlatform = (platform) => {
+    return this.pg.any(
+      'SELECT asset_id, max(timestamp) AS timestamp FROM prices.asset_price INNER JOIN prices.asset ON prices.asset.id = prices.asset_price.asset_id AND prices.asset.platform = $1 WHERE true GROUP BY asset_id ORDER BY asset_id',
+      [platform],
+    );
+  };
+
   public removeToken = (assetId: number) => {
     return this.pg.any('UPDATE prices.asset SET is_dead = true WHERE id = $1', assetId);
   };
 
-  public getCurrentChain = async () => {
-    const platforms = await this.pg.any('SELECT * FROM prices.chain WHERE name = $1', CHAIN);
+  public getCurrentChain = async (chainName = CHAIN) => {
+    const platforms = await this.pg.any('SELECT * FROM prices.chain WHERE name = $1', chainName);
     if (!platforms.length) return null;
     return platforms[0].id;
   };

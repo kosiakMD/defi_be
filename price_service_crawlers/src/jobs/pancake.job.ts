@@ -47,6 +47,7 @@ export class PancakeJob {
         const firstDayBlockQuery = await this.theGraphService.getPancakefirstBlockQuery(
           lastSavedTimestamp,
         );
+        this.logger.log(firstDayBlockQuery['data']['data']['blocks'])
         const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
         this.logger.log(blockNumber, 'blockNumber');
 

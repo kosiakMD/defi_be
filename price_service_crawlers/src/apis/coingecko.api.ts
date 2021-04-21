@@ -1,6 +1,6 @@
 import retry from 'async-retry';
 
-import { isETH } from '../utils/common';
+import { isETH, isBSC } from '../utils/common';
 import { CURRENCY } from '../utils/constants';
 import { createHttpClient } from '../utils/tor';
 
@@ -16,6 +16,9 @@ export const getCoin = (id) => http.get(`${baseUrl}/coins/${id}`);
 export const getCurrentEthPrice = () =>
   http.get(`${baseUrl}/coins/markets?vs_currency=usd&ids=ethereum`);
 
+export const getCurrentBnbPrice = () =>
+  http.get(`${baseUrl}/coins/markets?vs_currency=usd&ids=binancecoin`);
+
 export const getCurrentBtcPrice = () =>
   http.get(`${baseUrl}/coins/markets?vs_currency=usd&ids=bitcoin`);
 
@@ -27,17 +30,24 @@ export const getCurrentCoinPrices: any = async (addresses) =>
     return { data };
   });
 
-export const getCoinRangePrices = (token, from, to) =>
+export const getCoinRangePrices = (coin, from, to) =>
   axiosRetry(async () => {
-    if (isETH(token)) {
+    if (isETH(coin)) {
       const result = await http.get(
         `${baseUrl}/coins/ethereum/market_chart/range?vs_currency=usd&from=${from}&to=${to}`,
       );
       return result;
     }
+    else
+    if (isBSC(coin)) {
+      const result = await http.get(
+        `${baseUrl}/coins/binancecoin/market_chart/range?vs_currency=usd&from=${from}&to=${to}`,
+      );
+      return result;
+    }
 
     const result = http.get(
-      `${baseUrl}/coins/ethereum/contract/${token}/market_chart/range?vs_currency=` +
+      `${baseUrl}/coins/ethereum/contract/${coin.address}/market_chart/range?vs_currency=` +
         CURRENCY +
         `&from=${from}&to=${to}`,
     );

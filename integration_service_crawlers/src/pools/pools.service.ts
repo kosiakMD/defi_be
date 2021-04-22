@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from './dto/liquiditypool.dto';
@@ -17,19 +18,30 @@ export class PoolsService {
     private readonly poolsServiceBalancer: PoolsServiceBalancer,
     private readonly poolsServiceCurve: PoolsServiceCurve,
     private databaseService: DatabaseService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
   ) {}
 
   async savePools(): Promise<any> {
-    const databaseClient = await this.databaseService.getClient();
-    // add pools one by one to avoid subgraph overload:
-    const pools: LiquidityPool[] = []
-      .concat(await this.poolsServiceUniswap.getPoolsToHandle())
-      .concat(await this.poolsServiceSushiswap.getPoolsToHandle())
-      .concat(await this.poolsServicePancake.getPoolsToHandle());
+    try {
+      const databaseClient = await this.databaseService.getClient();
+      // add pools one by one to avoid subgraph overload:
+      const pools: LiquidityPool[] = []
+        .concat(await this.poolsServiceUniswap.getPoolsToHandle())
+        .concat(await this.poolsServiceSushiswap.getPoolsToHandle())
+        .concat(await this.poolsServicePancake.getPoolsToHandle());
 
-    const query = this.buildInsertPoolsQuery(pools);
-    await databaseClient.query(query);
-    return pools;
+      const query = this.buildInsertPoolsQuery(pools);
+      await databaseClient.query(query);
+      this.logger.log(
+        `liquidity pools import completed in total [${pools.length}]`,
+        'PoolsService',
+      );
+      return pools;
+    } catch (e) {
+      this.logger.error(e, 'PoolsService');
+      this.logger.log(`pools import failed`, 'PoolsService');
+      return [];
+    }
   }
 
   buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {

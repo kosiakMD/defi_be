@@ -116,13 +116,13 @@ export class JobsService {
         // );
 
         //  //PANCAKE
-        // await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
-        // this.agenda.define(
-        //   'CRAWL_PANCAKE_CURRENT_PRICE',
-        //   { lockLifetime: 10e3 },
-        //   this.pancakeJob.getCurrentPrices.bind(this),
-        // );
-        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
+        //await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
+        this.agenda.define(
+          'CRAWL_PANCAKE_CURRENT_PRICE',
+          { lockLifetime: 10000 },
+          this.pancakeJob.getCurrentPrices.bind(this),
+        );
+        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
 
         // await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
         // this.agenda.define(
@@ -138,18 +138,18 @@ export class JobsService {
 
 
         // //UNI
-        // await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
-        // this.logger.log('starting sushi');
-        // this.agenda.define(
-        //   'CRAWL_UNISWAP_CURRENT_PRICE',
-        //   { lockLifetime: 10e3 },
-        //   this.uniswapJob.getCurrentPrices.bind(this),
-        // );
-        // this.agenda.every(
-        //   CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_UNISWAP_CURRENT_PRICE',
-        //   {},
-        // );
+        await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
+        this.logger.log('starting sushi');
+        this.agenda.define(
+          'CRAWL_UNISWAP_CURRENT_PRICE',
+          { lockLifetime: 10000 },
+          this.uniswapJob.getCurrentPrices.bind(this),
+        );
+        this.agenda.every(
+          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_UNISWAP_CURRENT_PRICE',
+          {},
+        );
 
         //await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW');
         // this.agenda.define(

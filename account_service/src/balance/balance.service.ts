@@ -1,8 +1,10 @@
-import {Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import Web3 from 'web3';
+import { AbiItem } from 'web3-utils';
 
 import { Web3Provider } from '../chain/web3.provider';
 import {
+  abi,
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   decimalsAmount,
@@ -10,8 +12,9 @@ import {
   ETH_DECIMALS,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
-  WETH_ADDRESS
+  WETH_ADDRESS,
 } from '../utils/utils';
+import { CurrentPricesPayload } from './dto/price.response.dto';
 import {
   AccountTokenBalance,
   BalancesResponse,
@@ -20,7 +23,6 @@ import {
   TokenRow,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
-import {CurrentPricesPayload} from "./dto/price.response.dto";
 
 @Injectable()
 export class BalanceService {
@@ -76,14 +78,23 @@ export class BalanceService {
     const ethPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
     const wethPrice = this.getUtilTokenPrice(WETH_ADDRESS, tokenPrices.prices);
 
+    const tokenInst = await new chainProvider.eth.Contract(abi as AbiItem[], WETH_ADDRESS);
+
     const etherBalances = [];
-    ethBalances.forEach((balance) => {
-        etherBalances.push(this.mapEthBalance({...balance, ethPrice}));
-        if (balance.amount != '0') {
-            etherBalances.push(this.mapEthBalance({...balance, ethPrice:undefined, wethPrice}));
-        }
+    for (const balance of ethBalances) {
+      etherBalances.push(this.mapEthBalance({ ...balance, ethPrice }));
+      const wethAmount = await tokenInst.methods.balanceOf(balance.account).call();
+      if (wethAmount && balance.amount != '0') {
+        etherBalances.push(
+          this.mapEthBalance({
+            account: balance.account,
+            amount: wethAmount,
+            ethPrice: undefined,
+            wethPrice,
+          }),
+        );
       }
-    );
+    }
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
     return accountsArray.reduce((response, account) => {
@@ -114,7 +125,7 @@ export class BalanceService {
       return {};
     }
 
-    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','))
+    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','));
     const chainId = CHAIN_ID_BSC;
 
     const chainProvider: Web3 = this.chainProvider.instanceBsc();
@@ -173,7 +184,7 @@ export class BalanceService {
     ethPrice?: number;
     wethPrice?: number;
   }): AccountTokenBalance => {
-      const price = ethPrice === undefined ? wethPrice : ethPrice;
+    const price = ethPrice === undefined ? wethPrice : ethPrice;
     return {
       amount,
       account,
@@ -249,6 +260,9 @@ export class BalanceService {
 
   private getUtilTokenPrice(token: string, prices: CurrentPricesPayload) {
     return Object.prototype.hasOwnProperty.call(prices, token.toLowerCase())
-        ? (prices[`${token.toLowerCase()}`] === null ? 0 : prices[`${token.toLowerCase()}`]): 0;
+      ? prices[`${token.toLowerCase()}`] === null
+        ? 0
+        : prices[`${token.toLowerCase()}`]
+      : 0;
   }
 }

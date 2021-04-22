@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
-import {CHAIN_ID_BSC} from "../../utils/utils";
+
+import { CHAIN_ID_BSC } from '../../utils/utils';
 
 @Injectable()
 export class DbService {
   async getTransfersDataFromDb(addresses: string, chainId: number) {
-    const [transactionTable, tokenTable] = chainId === CHAIN_ID_BSC
-      ? ['bsc_transfers', 'bsc_token']
-      : ['transactions', 'token'];
+    const [transactionTable, tokenTable] =
+      chainId === CHAIN_ID_BSC ? ['bsc_transfers', 'bsc_token'] : ['transactions', 'token'];
 
     const manager = getManager();
     return await manager.query(`
@@ -32,6 +32,7 @@ export class DbService {
       on ${transactionTable}."tokenAddress" = ${tokenTable}.address
     where ${transactionTable}."fromAddress" IN (${addresses})
     or ${transactionTable}."toAddress" IN (${addresses})
+    order by ${transactionTable}.id DESC
     limit 5000`);
   }
 }

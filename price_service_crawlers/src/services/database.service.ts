@@ -153,6 +153,9 @@ export class DatabaseService {
   public removeToken = (assetId: number, reason: string = '') => {
     return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE id = $1', [assetId, reason]);
   };
+  public removeTokenByAddressAndPlatform = (address: string, platform: string, reason: string) => {
+    return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE address = $1 AND platform = $3', [address, reason, platform]);
+  }
 
   public getCurrentChain = async (chainName = CHAIN) => {
     const platforms = await this.pg.any('SELECT * FROM prices.chain WHERE name = $1', chainName);

@@ -78,7 +78,7 @@ export class CoingeckoJob {
     return data[0]['current_price'];
   };
 
-  static getCurrentTokenPrices = async (tokens: string[]): Promise<TokenPrices> => {
+  public getCurrentTokenPrices = async (tokens: string[]): Promise<TokenPrices> => {
     if (!tokens.length) {
       return {};
     }
@@ -102,6 +102,11 @@ export class CoingeckoJob {
 
     const addresses = tokens.filter((token) => !isChainCurrency(token)).join(',');
     const { data } = await getCurrentCoinPrices(addresses);
+    
+    tokens.map((token)=>{
+      if(!isChainCurrency(token) && !data[token])
+          this.databaseService.removeTokenByAddressAndPlatform(token, 'COINGECKO', 'no data from recuest for current time');
+    })
 
     return Object.keys(data).reduce(
       (response, key) => ({

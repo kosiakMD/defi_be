@@ -115,8 +115,8 @@ export class JobsService {
         //   {},
         // );
 
-        //  //PANCAKE
-        //await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
+        //PANCAKE
+        await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
         this.agenda.define(
           'CRAWL_PANCAKE_CURRENT_PRICE',
           { lockLifetime: 10000 },

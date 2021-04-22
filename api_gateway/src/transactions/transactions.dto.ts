@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Transaction } from '../interfaces/transactions.interfaces';
+import { Transaction } from './transactions.interfaces';
 
 class GasDto {
   @ApiProperty({ example: 1.1900000000000001e-7 })
@@ -40,7 +40,7 @@ class TransactionDto implements Transaction {
 
 export class TransactionsResponseDto {
   @ApiProperty({
-    description: 'User address which comes as param',
+    description: 'Address which comes as param',
     example: [
       {
         chainId: 1,

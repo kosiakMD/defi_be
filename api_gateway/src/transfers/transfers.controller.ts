@@ -5,6 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
+import { TransfersResponseDto } from './transfers.dto';
+import { TransfersResponse } from './transfers.interfaces';
 
 @ApiTags('Transfers')
 @Controller('transfers')
@@ -29,8 +31,11 @@ export class TransfersController {
     // example: '1,2',
     example: '',
   })
-  @ApiResponse({ status: 200, type: String })
-  get(@Query('addresses') addresses: string, @Query('chains') chains: string): Promise<any> {
+  @ApiResponse({ status: 200, type: TransfersResponseDto })
+  get(
+    @Query('addresses') addresses: string,
+    @Query('chains') chains: string,
+  ): Promise<TransfersResponse> {
     return this.service.getTransfers(addresses, chains);
   }
 }

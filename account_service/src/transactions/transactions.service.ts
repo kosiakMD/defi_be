@@ -29,7 +29,7 @@ export class TransactionsService {
     return temp;
   }
 
-  public async getTransactions(addresses: string[]): Promise<TransactionsResponse> {
+  public async getTransactions(addresses: string[]): Promise<TransactionsResponse | []> {
     if (this.isAddressesNotCorrect(addresses)) return [];
 
     this.prepareAddresses(addresses);

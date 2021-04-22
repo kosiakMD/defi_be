@@ -1,6 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { TransfersResponseDto } from './dto/transfers.dto';
+import { TransfersResponse } from './interfaces/transfers.interfaces';
 import { TransfersService } from './transfers.service';
 
 @ApiTags('Transfers')
@@ -16,9 +18,12 @@ export class TransfersController {
     example:
       '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
   })
-  getTransfersByAddresses(@Query('addresses') addresses: string): Promise<any> {
+  @ApiResponse({ status: 200, type: TransfersResponseDto })
+  async getTransfersByAddresses(
+    @Query('addresses') addresses: string,
+  ): Promise<TransfersResponse | []> {
     if (!addresses) {
-      return Promise.resolve([]);
+      return [];
     }
     return this.transactionService.getAllTransactionDataByAddress(addresses);
   }

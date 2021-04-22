@@ -22,4 +22,5 @@ export interface Transaction {
 
 export interface TransactionsResponse {
   [address: string]: Transaction[];
+  // address: Transaction[];
 }

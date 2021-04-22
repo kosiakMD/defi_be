@@ -13,8 +13,8 @@ import { UniswapJob } from '../jobs/uniswap.job';
 import { Api } from '../thegraph/api';
 import {
   CURRENT_PRICE_SECONDS_INTERVAL,
-  NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
-  NEW_TOKENS_SECONDS_INTERVAL,
+  // NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
+  // NEW_TOKENS_SECONDS_INTERVAL,
 } from '../utils/constants';
 import { DatabaseService } from './database.service';
 
@@ -46,6 +46,7 @@ export class JobsService {
       process.env.MONGO_PORT +
       '/agenda?authMechanism=DEFAULT&authSource=admin'; //'mongodb://127.0.0.1/agenda';
     this.agenda = new Agenda({
+      defaultLockLifetime: 10000,
       db: { address: connectionString },
       processEvery: '30 seconds',
     });
@@ -72,7 +73,7 @@ export class JobsService {
         await cancel('CRAWL_COINGECKO_CURRENT_PRICE');
         await this.agenda.define(
           'CRAWL_COINGECKO_CURRENT_PRICE',
-          { lockLifetime: 10e3 },
+          { lockLifetime: 10000 },
           this.coingeckoJob.getCurrentPrices.bind(this),
         );
         await this.agenda.every(
@@ -81,86 +82,86 @@ export class JobsService {
           {},
         );
 
-        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
-        await this.agenda.define(
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10e3 },
-          this.coingeckoJob.crawlNewTokensHistory.bind(this),
-        );
-        await this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
-          {},
-        );
+        //await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
+        // await this.agenda.define(
+        //   'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
+        //   { lockLifetime: 10e3 },
+        //   this.coingeckoJob.crawlNewTokensHistory.bind(this),
+        // );
+        // await this.agenda.every(
+        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
+        //   {},
+        // );
 
-        //SUSHI
-        await cancel('CRAWL_SUSHI_CURRENT_PRICE');
-        this.agenda.define(
-          'CRAWL_SUSHI_CURRENT_PRICE',
-          { lockLifetime: 10e3 },
-          this.sushiswapJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
+        // //SUSHI
+        // await cancel('CRAWL_SUSHI_CURRENT_PRICE');
+        // this.agenda.define(
+        //   'CRAWL_SUSHI_CURRENT_PRICE',
+        //   { lockLifetime: 10e3 },
+        //   this.sushiswapJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
 
-        await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
-        this.agenda.define(
-          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10e3 },
-          this.sushiswapJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-          {},
-        );
+        // await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
+        // this.agenda.define(
+        //   'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+        //   { lockLifetime: 10e3 },
+        //   this.sushiswapJob.crawlNewTokensHistory.bind(this),
+        // );
+        // this.agenda.every(
+        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+        //   {},
+        // );
 
-         //PANCAKE
-        await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
-        this.agenda.define(
-          'CRAWL_PANCAKE_CURRENT_PRICE',
-          { lockLifetime: 10e3 },
-          this.pancakeJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
+        //  //PANCAKE
+        // await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
+        // this.agenda.define(
+        //   'CRAWL_PANCAKE_CURRENT_PRICE',
+        //   { lockLifetime: 10e3 },
+        //   this.pancakeJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
 
-        await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
-        this.agenda.define(
-          'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10e3 },
-          this.pancakeJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
-          {},
-        );
+        // await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
+        // this.agenda.define(
+        //   'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
+        //   { lockLifetime: 10e3 },
+        //   this.pancakeJob.crawlNewTokensHistory.bind(this),
+        // );
+        // this.agenda.every(
+        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
+        //   {},
+        // );
 
 
-        //UNI
-        await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
-        this.logger.log('starting sushi');
-        this.agenda.define(
-          'CRAWL_UNISWAP_CURRENT_PRICE',
-          { lockLifetime: 10e3 },
-          this.uniswapJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(
-          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_UNISWAP_CURRENT_PRICE',
-          {},
-        );
+        // //UNI
+        // await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
+        // this.logger.log('starting sushi');
+        // this.agenda.define(
+        //   'CRAWL_UNISWAP_CURRENT_PRICE',
+        //   { lockLifetime: 10e3 },
+        //   this.uniswapJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(
+        //   CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_UNISWAP_CURRENT_PRICE',
+        //   {},
+        // );
 
-        await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW');
-        this.agenda.define(
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
-          { lockLifetime: 10e3 },
-          this.uniswapJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
-          {},
-        );
+        //await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW');
+        // this.agenda.define(
+        //   'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
+        //   { lockLifetime: 10e3 },
+        //   this.uniswapJob.crawlNewTokensHistory.bind(this),
+        // );
+        // this.agenda.every(
+        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
+        //   {},
+        // );
 
         // // this.logger.log('starting balancer');
         // this.agenda.define(

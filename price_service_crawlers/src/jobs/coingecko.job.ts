@@ -18,6 +18,7 @@ import {
   CURRENCY,
   CHAIN_CURRENCY_ADDRESS,
   CHAIN,
+  SECONDS_IN_TEN_MINUTES,
   SECONDS_IN_HOUR,
   TEST_TOKENS,
   PlatformEnum,
@@ -223,8 +224,9 @@ export class CoingeckoJob {
     this.logger.log('Current Prices Job Sarted');
     try {
       const currentTimeStamp =
-        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_TEN_MINUTES);
 
+      this.logger.log(`currentTimeStamp ${currentTimeStamp}`)
       const currentChainId = await this.databaseService.getCurrentChain();
       if (!currentChainId) {
         throw 'No current platform in DB: ' + CHAIN;
@@ -254,40 +256,32 @@ export class CoingeckoJob {
       }
       this.logger.log('new COINGECKO tokens checked');
 
-      const currentTimestamp =
-        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
-      // const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
-      //   currentChainId,
-      //   PlatformEnum.coingecko,
-      //   currentTimestamp,
-      // );
       const dbAssets = await this.databaseService.getTokensByPlatform(
         PlatformEnum.coingecko,
-        currentTimestamp,
+        currentTimeStamp,
       );
 
       this.logger.log(`tokens total: ${dbAssets.length}`);
 
-      // const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
-      //   currentChainId,
-      //   PlatformEnum.coingecko,
+      // const lastPrices = await this.databaseService.getLastTokenPriceByPlatform(
+      //   PlatformEnum.coingecko
       // );
-      const lastPrices = await this.databaseService.getLastTokenPriceByPlatform(
-        PlatformEnum.coingecko
-      );
-      const lastPricesObj = {};
-      lastPrices.forEach((price) => {
-        lastPricesObj[price.asset_id] = price.timestamp;
-      });
+      // const lastPricesObj = {};
+      // lastPrices.forEach((price) => {
+      //   lastPricesObj[price.asset_id] = price.timestamp;
+      // });
 
-      await (this as any).coingeckoJob.checkHourlyPrices(
-        dbAssets,
-        lastPricesObj,
-        currentTimestamp,
-        currentCurrencyId,
-      );
+      // await (this as any).coingeckoJob.checkHourlyPrices(
+      //   dbAssets,
+      //   lastPricesObj,
+      //   currentTimestamp,
+      //   currentCurrencyId,
+      // );
 
       // get current price
+      const totalCount = dbAssets.length;
+      let currentCount = 0;
+
       if (dbAssets.length) {
         const dbTokenAddressesChunks = createAddressChunks(dbAssets);
         const chunksCount: number = dbTokenAddressesChunks.length;
@@ -324,12 +318,17 @@ export class CoingeckoJob {
                 currentCurrencyId,
                 currentTimeStamp,
               );
+
+              currentCount += dbTokenAddressesChunks[i].length;
+              
+              this.logger.log(`GOT SUCCESS PRICES FOR ${Object.keys(chunkResults).length} OF ${dbTokenAddressesChunks[i].length} IN CHUNK  ${i} `)
+              this.logger.log(`GOT CURRENT PRICES FOR ${currentCount} OF ${totalCount} COINGECKO TOKENS `)
               resolve(chunkResults);
             }),
           );
         }
         Promise.all(promises).then(async () => {
-          this.logger.log('ALL CHUNKS DONE');
+          this.logger.log('ALL COINGECO CURRENT PRICES CHUNKS DONE');
           done();
         });
       } else {
@@ -411,7 +410,7 @@ export class CoingeckoJob {
               toTs,
             );
           } catch (err) {
-            logger.error(err, `Token ${coin.id} price checking error`);
+            logger.error(err, `Token ${coin.id} price checking error. Setting is dead`);
             this.databaseService.setTokenIsDead(coin.id);
           }
           resolve(index);

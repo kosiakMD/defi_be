@@ -18,8 +18,14 @@ export class UniswapService {
   ) {}
 
   public async startMigration(): Promise<any> {
-    const blockNumbersToMigrate = await this.buildBlockNumberArray();
-    return await this.handleConcurrently(blockNumbersToMigrate);
+    try {
+      const blockNumbersToMigrate = await this.buildBlockNumberArray();
+      return await this.handleConcurrently(blockNumbersToMigrate);
+    } catch (e) {
+      this.logger.error(e, 'UniswapService');
+      this.logger.log(`${this.integrationName} import failed`, 'UniswapService');
+      return 'import failed';
+    }
   }
 
   private async buildBlockNumberArray(): Promise<Array<number>> {
@@ -64,10 +70,12 @@ export class UniswapService {
       try {
         await Promise.all(chunksArray.map((number) => this.migrateBlockData(number)));
       } catch (e) {
+        this.logger.error(e, 'UniswapService');
         this.logger.log(
           `error during processing ${this.integrationName} blocks from [${chunksArray[0]}] to [${
             chunksArray[chunksArray.length - 1]
           }]`,
+          'UniswapService',
         );
         await this.dbTransactionManager.rollback();
         return blockNumbers.length.toString().concat(' imported with error');
@@ -76,6 +84,7 @@ export class UniswapService {
         `blocks processing done ${this.integrationName} blocks from [${chunksArray[0]}] to [${
           chunksArray[chunksArray.length - 1]
         }] count [${chunksArray[chunksArray.length - 1] - chunksArray[0] + 1}]`,
+        'UniswapService',
       );
       await this.dbTransactionManager.commit();
     }

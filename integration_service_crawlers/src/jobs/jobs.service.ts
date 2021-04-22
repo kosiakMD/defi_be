@@ -35,10 +35,10 @@ export class JobsService {
 
     this.agenda.on('ready', async () => {
       await this.agenda.start();
-      await this.startUniswapJob()
-      await this.startSushiswapJob()
-      await this.startPancakeJob()
-      await this.startPoolsJob()
+      await this.startUniswapJob();
+      await this.startSushiswapJob();
+      await this.startPancakeJob();
+      await this.startPoolsJob();
       await this.startVaultsJob();
     });
   }
@@ -56,7 +56,7 @@ export class JobsService {
         done();
       });
     });
-    await this.agenda.every(UNISWAP_JOB.seconds, UNISWAP_JOB.name);
+    await this.agenda.every(UNISWAP_JOB.seconds + ' seconds', UNISWAP_JOB.name);
   }
 
   async startSushiswapJob() {
@@ -72,7 +72,7 @@ export class JobsService {
         done();
       });
     });
-    await this.agenda.every(SUSHISWAP_JOB.seconds, SUSHISWAP_JOB.name);
+    await this.agenda.every(SUSHISWAP_JOB.seconds + ' seconds', SUSHISWAP_JOB.name);
   }
 
   async startPancakeJob() {
@@ -88,7 +88,7 @@ export class JobsService {
         done();
       });
     });
-    await this.agenda.every(PANCAKE_JOB.seconds, PANCAKE_JOB.name);
+    await this.agenda.every(PANCAKE_JOB.seconds + ' seconds', PANCAKE_JOB.name);
   }
 
   async startPoolsJob() {
@@ -104,7 +104,7 @@ export class JobsService {
         done();
       });
     });
-    await this.agenda.every(POOLS_JOB.seconds, POOLS_JOB.name);
+    await this.agenda.every(POOLS_JOB.seconds + ' seconds', POOLS_JOB.name);
   }
 
   async startVaultsJob() {
@@ -120,7 +120,7 @@ export class JobsService {
         done();
       });
     });
-    await this.agenda.every(VAULTS_JOB.seconds, VAULTS_JOB.name);
+    await this.agenda.every(VAULTS_JOB.seconds + ' seconds', VAULTS_JOB.name);
   }
 
   async cancel(jobName: string) {

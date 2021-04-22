@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber as BN } from 'bignumber.js';
+import { AbiItem } from 'web3-utils';
 
+import { Web3Provider } from '../chain/web3.provider';
 import {
   BurnsInterface,
   MintsInterface,
@@ -15,6 +17,7 @@ import {
   UniswapLiquidityPosition,
   UniswapLiquidityPositionPair,
 } from '../interfaces/liquidity.position.interfaces';
+import { Staking } from '../interfaces/staking.position.interfaces';
 import {
   AutomaticMarketMaker,
   Base,
@@ -26,11 +29,17 @@ import {
   Transactions,
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
-import { PROTOCOL_NAME } from '../utils/util';
+import { PriceService } from '../price/price.service';
+import { abi, PROTOCOL_NAME } from '../utils/util';
 
 @Injectable()
 export class Mapper {
   private PERSENTAGE = 50;
+
+  constructor(
+    private readonly chainProvider: Web3Provider,
+    private readonly priceService: PriceService,
+  ) {}
 
   public async mapData(
     userAddresses: string[],
@@ -57,6 +66,24 @@ export class Mapper {
         userAddress: this.getOriginAddress(originAddresses, address),
         liquidityPositions: [],
       };
+
+      if (response.sushiswapStakingPosition) {
+        const staking: Staking = {
+          chainId: chainId,
+          protocolType: 'staking',
+          protocolName: protocolName,
+          userAddress: this.getOriginAddress(originAddresses, address),
+          stakingPositions: [],
+        };
+
+        await this.mapStakingPositions(
+          staking,
+          response.uniswapLiquidityPositions.get(address),
+          response.sushiswapStakingPosition.get(address),
+        );
+
+        base.push(staking);
+      }
 
       this.mapLiquidityPositions(
         amm,
@@ -231,6 +258,10 @@ export class Mapper {
       const currentPairSnapshots = lpSnapshots.filter(
         (s) => s.information.pair.id === l.lpToken.address,
       );
+
+      if (l.lpTokenBalance === '0') {
+        l.exitedAt = currentPairSnapshots[currentPairSnapshots.length - 1].information.timestamp;
+      }
       const uniswapLpPosition = lpPositions.find((u) => u.pair.id == l.lpToken.address);
       // liquidity snapshots is already ordered
       for (let i = 0; i < currentPairSnapshots.length; i++) {
@@ -379,6 +410,101 @@ export class Mapper {
 
   private getOriginAddress(originArray: string[], address: string): string {
     return originArray.find((origin) => origin.toLowerCase() === address);
+  }
+
+  protected async mapStakingPositions(
+    staking: Staking,
+    liquidityPositions: UniswapLiquidityPosition[],
+    stakingPositions,
+  ) {
+    const StakingPositionsToPush = [];
+    const address = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2';
+    const usdPriceOfRewardToken = await this.priceService.getTokenPrices([address], 1);
+
+    for (const element of stakingPositions) {
+      if (element.pool) {
+        const lpToken = {
+          address: '',
+          name: null,
+          symbol: null,
+          decimals: 18,
+          totalSupply: '',
+        };
+
+        const index = element.id.indexOf('0x');
+
+        const splitted = element.id.split('-');
+        const poolId = splitted[0];
+
+        const position = {
+          address: element.id.slice(index),
+          staked: element.amount * 10 ** -18,
+          lpToken: lpToken,
+          rewardToken: {
+            address: address,
+            name: 'SushiToken',
+            symbol: 'SUSHI',
+            decimals: 18,
+            totalSupply: null,
+            claimable: (await this.getPendingSushi(poolId, staking.userAddress)) * 10 ** -18,
+            priceUSD: usdPriceOfRewardToken.prices[address],
+          },
+          exitedAt: null,
+          liquidityPoolTokens: [],
+        };
+
+        liquidityPositions.forEach((element1) => {
+          if (element1.pair.id == element.pool.pair) {
+            lpToken.address = element1.pair.id;
+            lpToken.totalSupply = element1.pair.totalSupply;
+
+            const userPoolShare = new BN(element1.liquidityTokenBalance).div(
+              element1.pair.totalSupply,
+            );
+
+            const token0 = element1.pair.token0;
+            const token1 = element1.pair.token1;
+            const reserve0 = element1.pair.reserve0;
+            const reserve1 = element1.pair.reserve1;
+
+            const poolToken0 = {
+              address: token0.id,
+              decimals: Number(token0.decimals),
+              name: token0.name,
+              symbol: token0.symbol,
+              totalSupply: null,
+              amount: userPoolShare.times(reserve0).toString(),
+              reserve: reserve0,
+              priceUSD: this.priceInUSD(element1.pair.reserveUSD, reserve0),
+              percentage: this.PERSENTAGE,
+            };
+
+            const poolToken1 = {
+              address: token1.id,
+              decimals: Number(token1.decimals),
+              name: token1.name,
+              symbol: token1.symbol,
+              totalSupply: null,
+              amount: userPoolShare.times(reserve1).toString(),
+              reserve: reserve1,
+              priceUSD: this.priceInUSD(element1.pair.reserveUSD, reserve1),
+              percentage: this.PERSENTAGE,
+            };
+            position.liquidityPoolTokens.push(poolToken0, poolToken1);
+          }
+        });
+
+        StakingPositionsToPush.push(position);
+      }
+    }
+    staking.stakingPositions.push(...StakingPositionsToPush);
+  }
+
+  private async getPendingSushi(poolId, userId) {
+    const masterChiefAddress = '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd';
+    const provider = this.chainProvider.instanceEth();
+    const contract = await new provider.eth.Contract(abi as AbiItem[], masterChiefAddress);
+    return await contract.methods.pendingSushi(poolId, userId).call();
   }
 }
 

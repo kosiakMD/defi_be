@@ -27,7 +27,6 @@ export class SushiswapService {
 
   async getSushiswapDataByAddresses(addresses: string) {
     const originAddressesArray = addresses.split(',');
-
     const result = await getDataByAddresses(
       this.swapsRepository,
       this.mintsRepository,

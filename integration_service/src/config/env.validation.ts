@@ -62,6 +62,11 @@ export const validationSchema = Joi.object({
   VAULT_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  ETH_URL: Joi.string() //
+    .required(),
+  PRICE_SERVICE_HOST: Joi.string().required(),
+  PRICE_SERVICE_PORT: Joi.number().required(),
+  PRICES_PATH: Joi.string().required(),
 });
 
 export const validationOptions = {

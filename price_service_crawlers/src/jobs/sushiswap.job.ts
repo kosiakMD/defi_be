@@ -7,7 +7,7 @@ import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { crawlCoin, getRequiredHistoryStartDate } from '../utils/crawlCoin';
 import { getNextDayStart, getNextHourStart } from '../utils/time';
-import { SECONDS_IN_HOUR, PlatformEnum, CHAIN, CURRENCY } from '../utils/constants';
+import { SECONDS_IN_HOUR, SECONDS_IN_TEN_MINUTES, PlatformEnum, CHAIN, CURRENCY } from '../utils/constants';
 import { toTimestamp } from '../utils/common';
 
 // TODO: clean file
@@ -232,7 +232,10 @@ export class SushiswapJob {
       this.logger.log('new sushi tokens checked');
 
       const currentTimestamp =
-        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_TEN_MINUTES);
+
+        this.logger.log(`SUSHI currentTimestamp ${currentTimestamp}`)
+
       const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
         currentChainId,
         PlatformEnum.sushiswap,
@@ -240,23 +243,23 @@ export class SushiswapJob {
       );
       this.logger.log(`token total: ${dbAssets.length}`);
 
-      const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
-        currentChainId,
-        PlatformEnum.sushiswap,
-      );
-      const lastPricesObj = {};
-      lastPrices.forEach((price) => {
-        lastPricesObj[price.asset_id] = price.timestamp;
-      });
+      // const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
+      //   currentChainId,
+      //   PlatformEnum.sushiswap,
+      // );
+      // const lastPricesObj = {};
+      // lastPrices.forEach((price) => {
+      //   lastPricesObj[price.asset_id] = price.timestamp;
+      // });
 
-      this.logger.log(lastPricesObj);
+      // this.logger.log(lastPricesObj);
 
-      await (this as any).sushiswapJob.checkHourlyPrices(
-        dbAssets,
-        lastPricesObj,
-        currentTimestamp,
-        currentCurrencyId,
-      );
+      // await (this as any).sushiswapJob.checkHourlyPrices(
+      //   dbAssets,
+      //   lastPricesObj,
+      //   currentTimestamp,
+      //   currentCurrencyId,
+      // );
 
       // get current price
       if (dbAssets.length) {

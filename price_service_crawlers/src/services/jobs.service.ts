@@ -69,7 +69,7 @@ export class JobsService {
 
         this.logger.log('Agenda started');
 
-        // get current token prices
+        // // get current token prices
         await cancel('CRAWL_COINGECKO_CURRENT_PRICE');
         await this.agenda.define(
           'CRAWL_COINGECKO_CURRENT_PRICE',
@@ -95,13 +95,13 @@ export class JobsService {
         // );
 
         // //SUSHI
-        // await cancel('CRAWL_SUSHI_CURRENT_PRICE');
-        // this.agenda.define(
-        //   'CRAWL_SUSHI_CURRENT_PRICE',
-        //   { lockLifetime: 10e3 },
-        //   this.sushiswapJob.getCurrentPrices.bind(this),
-        // );
-        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
+        await cancel('CRAWL_SUSHI_CURRENT_PRICE');
+        this.agenda.define(
+          'CRAWL_SUSHI_CURRENT_PRICE',
+          { lockLifetime: 10000 },
+          this.sushiswapJob.getCurrentPrices.bind(this),
+        );
+        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
 
         // await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
         // this.agenda.define(

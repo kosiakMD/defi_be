@@ -338,7 +338,7 @@ export async function getDataByAddresses<T, K, V, E>(
     liquidityPosition.data.liquidityPositions,
     (liquidityPosition) => liquidityPosition.user.id,
   );
-  const sushiswapStakingPosition = stakingPositions
+  const sushiswapStakingPosition = flag
     ? groupBy(stakingPositions.data.users, (staking) => {
         const array = staking.id.split('-');
         return array[1];

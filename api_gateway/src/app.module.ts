@@ -26,6 +26,7 @@ import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationService } from './integration/integration.service';
+import { PancakeController } from './pancake/pancake.controller';
 // import { PlatformController } from './platform/platform.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
@@ -71,6 +72,7 @@ import { VaultsModule } from './vaults/vaults.module';
     BalancesController,
     SwapController,
     UniswapController,
+    PancakeController,
     CurveController,
     SushiswapController,
     BalancerController,

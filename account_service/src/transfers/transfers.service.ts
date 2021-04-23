@@ -19,6 +19,7 @@ import { DbService } from './repository/db.service';
 @Injectable()
 export class TransfersService {
   constructor(private readonly dbService: DbService) {}
+  private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   async getAllTransactionDataByAddress(addresses: string): Promise<TransfersResponse> {
     const addressArray = getUniqueAndToLowerCaseArrayData(addresses.split(','));
@@ -90,20 +91,14 @@ export class TransfersService {
       const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash) => {
         const hashTransfers = userTransactions.filter((transaction) => transaction.hash === hash);
         const erc20Transfers: ERC20Transfer[] = hashTransfers.map((transfer) => {
-          const decimals = getTokenDecimals(transfer.tokenDecimals);
-
           const tokenErc20: ERC20TokenTransfer = {
             address: transfer.tokenAddress,
             name: transfer.tokenName,
             symbol: transfer.tokenSymbol,
             decimals: transfer.tokenDecimals,
             totalSupply: transfer.tokenTotalSupply,
-            amount: {
-              decimals: transfer.amount * decimals,
-              usd: transfer.amount * decimals * transfer.tokenPrice,
-            },
           };
-          // NOTE: Change log
+
           return {
             fromAddress: transfer.fromAddress,
             toAddress: transfer.toAddress,
@@ -114,23 +109,14 @@ export class TransfersService {
           };
         });
 
-        const decimals = getTokenDecimals(hashTransfers[0].tokenDecimals);
-
         return {
-          chainId: chainId,
+          chainId,
           hash: hashTransfers[0].hash,
           blockNumber: hashTransfers[0].blockNumber,
           blockTimeStamp: hashTransfers[0].blockTimeStamp,
-          gasUsed: hashTransfers[0].gasUsed,
-          gas: {
-            price: hashTransfers[0].gasPrice * decimals,
-            eth: hashTransfers[0].gasUsed * decimals * hashTransfers[0].gasPrice,
-            usd:
-              hashTransfers[0].gasUsed *
-              decimals *
-              hashTransfers[0].tokenPrice *
-              hashTransfers[0].gasPrice,
-          },
+          gas: hashTransfers[0].gas,
+          gasPrice: hashTransfers[0].gasPrice,
+          gasUsedEther: hashTransfers[0].gas * hashTransfers[0].gasPrice * this.DEFAULT_MULTIPLIER,
           erc20Transfers,
         };
       });

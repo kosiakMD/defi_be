@@ -1,12 +1,17 @@
 name: ReviewDog
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   reviewdog:
     name: runner / eslint
     runs-on: ubuntu-latest
     steps:
+      - name: 'Check out Git repository'
       - uses: actions/checkout@v1
+
+      - name: 'Install root dependencies'
+        run: npm ci
+
       - name: eslint
         uses: reviewdog/action-eslint@v1
         with:

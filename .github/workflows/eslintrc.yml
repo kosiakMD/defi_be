@@ -1,12 +1,15 @@
 name: eslintrc.yml
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   eslintrc:
     runs-on: ubuntu-latest
     steps:
+      - name: 'Check out Git repository'
       - uses: actions/checkout@v2
+
+      - name: 'ES Lint mrdivyansh/eslint-action@1.0.7'
       - uses: mrdivyansh/eslint-action@1.0.7
         # GITHUB_TOKEN in forked repositories is read-only
         # https://help.github.com/en/actions/reference/events-that-trigger-workflows#pull-request-event-pull_request
@@ -14,5 +17,4 @@ jobs:
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
           eslint-rc: .eslintrc.js
-#          execute-on-files:
-#            - ./packages
+          execute-on-files: '**/src/**.*'

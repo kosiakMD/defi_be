@@ -13,8 +13,8 @@ import { UniswapJob } from '../jobs/uniswap.job';
 import { Api } from '../thegraph/api';
 import {
   CURRENT_PRICE_SECONDS_INTERVAL,
-  // NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
-  // NEW_TOKENS_SECONDS_INTERVAL,
+  NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
+  //NEW_TOKENS_SECONDS_INTERVAL,
 } from '../utils/constants';
 import { DatabaseService } from './database.service';
 
@@ -69,7 +69,7 @@ export class JobsService {
 
         this.logger.log('Agenda started');
 
-        // // get current token prices
+        // get current token prices
         await cancel('CRAWL_COINGECKO_CURRENT_PRICE');
         await this.agenda.define(
           'CRAWL_COINGECKO_CURRENT_PRICE',
@@ -82,17 +82,17 @@ export class JobsService {
           {},
         );
 
-        //await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
-        // await this.agenda.define(
-        //   'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
-        //   { lockLifetime: 10e3 },
-        //   this.coingeckoJob.crawlNewTokensHistory.bind(this),
-        // );
-        // await this.agenda.every(
-        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
-        //   {},
-        // );
+        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
+        await this.agenda.define(
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10000 },
+          this.coingeckoJob.crawlNewTokensHistory.bind(this),
+        );
+        await this.agenda.every(
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          {},
+        );
 
         // //SUSHI
         await cancel('CRAWL_SUSHI_CURRENT_PRICE');
@@ -103,17 +103,17 @@ export class JobsService {
         );
         this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
 
-        // await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
-        // this.agenda.define(
-        //   'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-        //   { lockLifetime: 10e3 },
-        //   this.sushiswapJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
+        await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
+        this.agenda.define(
+          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10000 },
+          this.sushiswapJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+          {},
+        );
 
         //PANCAKE
         await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
@@ -124,17 +124,17 @@ export class JobsService {
         );
         this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
 
-        // await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
-        // this.agenda.define(
-        //   'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
-        //   { lockLifetime: 10e3 },
-        //   this.pancakeJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
+        await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
+        this.agenda.define(
+          'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
+          { lockLifetime: 10000 },
+          this.pancakeJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
+          {},
+        );
 
 
         // //UNI
@@ -158,7 +158,7 @@ export class JobsService {
         //   this.uniswapJob.crawlNewTokensHistory.bind(this),
         // );
         // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
         //   'CRAWL_UNISWAP_NEW_TOKENS_HISTORY_NEW',
         //   {},
         // );

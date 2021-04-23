@@ -42,7 +42,7 @@ export class TransactionsController {
       '0x7Aa3e6a7933971423a2B7141B9a8cA5e5B2E8686,0xE76aA6064f08E3BE86ad7d28971bEfb45d356d17,0x1c29731b09d39864a0d7e68df114e97a764eb290',
   })
   @ApiResponse({ status: 200, type: ApiTransactionsResponseDto })
-  async getEtherscanTransactions(@Query('address') addresses: string): Promise<ApiTransactionsResponse | []> {
+  async getEtherscanTransactions(@Query('addresses') addresses: string): Promise<ApiTransactionsResponse | []> {
     if(!addresses) return [];
     
     const addressesSplited: string[] = addresses.split(',');

@@ -3,22 +3,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ERC20Token, ERC20Transfer } from '../interfaces/transfers.interfaces';
 
-class GasDto {
-  @ApiProperty({ example: 1.01e-9 })
-  price: number;
-  @ApiProperty({ example: null })
-  eth: number;
-  @ApiProperty({ example: null })
-  usd: number;
-}
-
-export class AmountDto {
-  @ApiProperty({ example: 0.0362313268178732 })
-  eth: number;
-  @ApiProperty({ example: 0 })
-  usd: number;
-}
-
 export class ERC20TokenDto {
   @ApiProperty({ example: '0xbddab785b306bcd9fb056da189615cc8ece1d823' })
   address: string;
@@ -30,8 +14,6 @@ export class ERC20TokenDto {
   decimals: number;
   @ApiProperty({ type: Number, example: 92077.06746043958 })
   totalSupply: number;
-  @ApiProperty({ type: AmountDto })
-  amount: AmountDto;
 }
 
 export class ERC20TransferDto {
@@ -58,8 +40,12 @@ export class TransferDto {
   blockNumber: number;
   @ApiProperty({ example: '1570019740' })
   blockTimeStamp: number;
-  @ApiProperty({ type: GasDto })
-  gas: GasDto;
+  @ApiProperty({ example: '50000' })
+  gas: number;
+  @ApiProperty({ example: '500' })
+  gasPrice: number;
+  @ApiProperty({ example: '10000' })
+  gasUsedEther: number;
   @ApiProperty({ type: ERC20TransferDto })
   erc20Transfers: ERC20Transfer[];
 }

@@ -13,6 +13,7 @@ export class IntegrationService {
   private readonly getStatusUrl: string;
   private readonly getUniswapUrl: string;
   private readonly getSushiswapUrl: string;
+  private readonly getPancakeUrl: string;
   private readonly getBalancerUrl: string;
   private readonly getCurveUrl: string;
   private readonly getPoolsUrl: string;
@@ -38,6 +39,9 @@ export class IntegrationService {
 
     const balancerPath = this.configService.get<string>('INTEGRATION_BALANCER');
     this.getBalancerUrl = `${url}/${balancerPath}`;
+
+    const pancakePath = this.configService.get<string>('INTEGRATION_PANCAKE');
+    this.getPancakeUrl = `${url}/${pancakePath}`;
 
     const curvePath = this.configService.get<string>('INTEGRATION_CURVE');
     this.getCurveUrl = `${url}/${curvePath}`;
@@ -102,6 +106,21 @@ export class IntegrationService {
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getBalancerUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getPancake(addresses: string, chains?: string): Promise<BalancesResponse> {
+    try {
+      this.logger.time(this.getPancakeUrl);
+      const data = await this.httpService
+        .get(this.getPancakeUrl, { params: { addresses, chains } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getPancakeUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);

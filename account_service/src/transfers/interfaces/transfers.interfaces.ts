@@ -13,10 +13,6 @@ export interface ERC20TokenTransfer {
   symbol?: string;
   decimals?: number;
   totalSupply?: number;
-  amount: {
-    decimals: number;
-    usd: number;
-  };
 }
 
 export interface ERC20Transfer {
@@ -33,12 +29,9 @@ export interface Transfer {
   hash: string;
   blockNumber: number;
   blockTimeStamp: number;
-  gasUsed: number;
-  gas: {
-    price: number;
-    eth: number;
-    usd: number;
-  };
+  gas: number;
+  gasPrice: number;
+  gasUsedEther: number;
   erc20Transfers: ERC20Transfer[];
 }
 
@@ -57,6 +50,7 @@ export interface TransactionWithToken {
   fromAddress: string;
   toAddress: string;
   blockTimeStamp: number;
+  gas: number;
   gasUsed: number;
   gasPrice: number;
   amount: number;
@@ -75,6 +69,7 @@ export interface TransactionWithTokenAndPrices {
   fromAddress: string;
   toAddress: string;
   blockTimeStamp: number;
+  gas: number;
   gasUsed: number;
   gasPrice: number;
   amount: number;

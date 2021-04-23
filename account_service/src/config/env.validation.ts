@@ -47,6 +47,10 @@ export const validationSchema = Joi.object({
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),
+  BSCSCAN_URL: Joi.string().required(),
+  BSCSCAN_KEY: Joi.string().required(),
+  ETHERSCAN_URL: Joi.string().required(),
+  ETHERSCAN_KEY: Joi.string().required(),
 });
 
 export const validationOptions = {

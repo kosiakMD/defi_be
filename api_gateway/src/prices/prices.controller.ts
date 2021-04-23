@@ -1,8 +1,7 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ChainDto, CurrencyDto, PriceQueryDto, PriceRequestDto, PriceResponseDto, PricesPayload } from './dto';
 
-import { ChainDto, CurrencyDto, PriceDto, PriceQueryDto } from './dto/price.dto';
-import { PricesPayload } from './interfaces/price.interfaces';
 import { PricesService } from './prices.service';
 
 @ApiTags('Prices')
@@ -11,12 +10,15 @@ export class PricesController {
   constructor(private service: PricesService) {}
 
   @Get('/')
-  @ApiOkResponse({ status: 200, type: PriceDto })
-  getPrices(@Query() query: PriceQueryDto): Promise<PriceDto<PricesPayload>> {
-    const currency = query.currency || 1;
-    const chain = query.chain || 1;
+  @ApiOkResponse({ type: PriceResponseDto })
+  getPrices(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
+    return this.service.getPrices(query);
+  }
 
-    return this.service.getPrices(query.addresses, query.timestamps, chain, currency);
+  @Post('/')
+  @ApiOkResponse({ type: PriceResponseDto })
+  currentPricesWithPost(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayload>> {
+    return this.service.getPrices(request);
   }
 
   @Get('/chains')
@@ -26,7 +28,7 @@ export class PricesController {
   }
 
   @Get('/currencies')
-  @ApiOkResponse({ type: ChainDto, isArray: true })
+  @ApiOkResponse({ type: CurrencyDto, isArray: true })
   getCurrencies(): Promise<CurrencyDto[]> {
     return this.service.getCurrencies();
   }

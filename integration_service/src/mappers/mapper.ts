@@ -462,9 +462,7 @@ export class Mapper {
             lpToken.address = element1.pair.id;
             lpToken.totalSupply = element1.pair.totalSupply;
 
-            const userPoolShare = new BN(element1.liquidityTokenBalance).div(
-              element1.pair.totalSupply,
-            );
+            const userPoolShare = new BN(position.staked).div(element1.pair.totalSupply);
 
             const token0 = element1.pair.token0;
             const token1 = element1.pair.token1;

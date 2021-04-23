@@ -7,7 +7,7 @@ import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { crawlCoin, getRequiredHistoryStartDate } from '../utils/crawlCoin';
 import { getNextDayStart, getNextHourStart } from '../utils/time';
-import { SECONDS_IN_HOUR, PlatformEnum, CHAIN, CURRENCY } from '../utils/constants';
+import { SECONDS_IN_HOUR, SECONDS_IN_TEN_MINUTES, PlatformEnum, CHAIN, CURRENCY } from '../utils/constants';
 import { toTimestamp } from '../utils/common';
 
 // TODO: clean file
@@ -233,7 +233,7 @@ export class PancakeJob {
       this.logger.log('new pancake tokens checked');
 
       const currentTimestamp =
-        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_TEN_MINUTES);
       const dbAssets = await this.databaseService.getTokensByChainAndPlatform(
         currentChainId,
         PlatformEnum.pancake,
@@ -241,23 +241,23 @@ export class PancakeJob {
       );
       this.logger.log(`token total: ${dbAssets.length}`);
 
-      const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
-        currentChainId,
-        PlatformEnum.pancake,
-      );
-      const lastPricesObj = {};
-      lastPrices.forEach((price) => {
-        lastPricesObj[price.asset_id] = price.timestamp;
-      });
+      // const lastPrices = await this.databaseService.getLastTokenPriceByChainAndPlatform(
+      //   currentChainId,
+      //   PlatformEnum.pancake,
+      // );
+      // const lastPricesObj = {};
+      // lastPrices.forEach((price) => {
+      //   lastPricesObj[price.asset_id] = price.timestamp;
+      // });
 
-      this.logger.log(lastPricesObj);
+      // this.logger.log(lastPricesObj);
 
-      await (this as any).pancakeJob.checkHourlyPrices(
-        dbAssets,
-        lastPricesObj,
-        currentTimestamp,
-        currentCurrencyId,
-      );
+      // await (this as any).pancakeJob.checkHourlyPrices(
+      //   dbAssets,
+      //   lastPricesObj,
+      //   currentTimestamp,
+      //   currentCurrencyId,
+      // );
 
       // get current price
       if (dbAssets.length) {
@@ -305,7 +305,7 @@ export class PancakeJob {
         const poolPromise = pool.start();
         await poolPromise;
         // result is collected here
-        await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId);
+        await this.databaseService.addHourlyPricesToDb(results, currentCurrencyId, currentTimestamp);
 
         done();
       } else {

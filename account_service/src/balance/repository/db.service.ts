@@ -1,40 +1,51 @@
 import { HttpService, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 import { getManager } from 'typeorm';
 
-import {
-  WETH_ADDRESS,
-  CHAIN_ID_ETH,
-  ETH_BNB_ADDRESS} from '../../utils/utils';
+import { WETH_ADDRESS, CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../../utils/utils';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 import { TokenRow } from '../interfaces/balance.interfaces';
 
 @Injectable()
 export class DbService {
-  constructor(private readonly httpService: HttpService) {}
+  private readonly getPricesUrl: string;
+
+  constructor(
+    private readonly httpService: HttpService,
+    private readonly configService: ConfigService,
+  ) {
+    const host = this.configService.get<string>('PRICE_SERVICE_HOST');
+    const port = this.configService.get<string>('PRICE_SERVICE_PORT');
+    const url = `${host}${port ? ':' + port : ''}`;
+    const getPricesPath = this.configService.get<string>('PRICES_PATH');
+    this.getPricesUrl = `${url}/${getPricesPath}`;
+  }
 
   async getTokenPrices(
-    addresses: string[],
-    chainId: number,
+    addressesArray: string[],
+    chain: number,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-
-    if (chainId === CHAIN_ID_ETH) {
-      addresses.push(WETH_ADDRESS.toLowerCase())
+    if (chain === CHAIN_ID_ETH) {
+      addressesArray.push(WETH_ADDRESS.toLowerCase());
     }
-    addresses.push(ETH_BNB_ADDRESS.toLowerCase());
+    addressesArray.push(ETH_BNB_ADDRESS.toLowerCase());
 
-    const tokenAddresses = await addresses.join(',');
+    const addresses = await addressesArray.join(',');
 
     return this.httpService
-      .get<PriceResponseDto<CurrentPricesPayload>>(
-        `https://price.dfyield.xyz/v1/prices?chain=${chainId}&addresses=${tokenAddresses}`,
-      )
+      .get<PriceResponseDto<CurrentPricesPayload>>(this.getPricesUrl, {
+        params: {
+          chain,
+          addresses,
+        },
+      })
       .pipe(map((response) => response.data))
       .toPromise()
       .catch(() => {
         const pricePayload: CurrentPricesPayload = {};
 
-        addresses.forEach((item) => {
+        addressesArray.forEach((item) => {
           pricePayload[`${item}`] = 0;
         });
         return { chain: undefined, currency: undefined, prices: pricePayload };
@@ -80,3 +91,19 @@ export class DbService {
     `);
   };
 }
+
+// return this.httpService
+//     .get<PriceResponseDto<CurrentPricesPayload>>(
+//         `https://price.dfyield.xyz/v1/prices?chain=${chain}&addresses=${addresses}`,
+//     )
+//     .pipe(map((response) => response.data))
+//     .toPromise()
+//     .catch(() => {
+//       const pricePayload: CurrentPricesPayload = {};
+//
+//       addressesArray.forEach((item) => {
+//         pricePayload[`${item}`] = 0;
+//       });
+//       return { chain: undefined, currency: undefined, prices: pricePayload };
+//     });
+// }

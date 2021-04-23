@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 
 import { LiquidityPositionResponseData } from '../interfaces/liquidity.position.interfaces';
+import { StakingPositionResponse } from '../interfaces/staking.position.interfaces';
 import { Pair } from './uniswap/pair.dto';
 
 @Injectable()
@@ -199,7 +200,7 @@ export class UniswapSubgraph {
       .toPromise();
   }
 
-  async getUniswapLiquidityPositions(addresses: string[]) {
+  async getUniswapLiquidityPositions(addresses: string[]): Promise<LiquidityPositionResponseData> {
     return this.httpService
       .post<LiquidityPositionResponseData>(this.subgraphUrl, {
         operationName: 'liquidityPositions',
@@ -237,6 +238,30 @@ export class UniswapSubgraph {
         }
       }
 	  }`,
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
+
+  async getStakingPositions(addresses: string[]): Promise<StakingPositionResponse> {
+    const url = this.configService.get<string>('THEGRAPH_SUSHISWAP_STAKING_POSITIONS');
+    const addressesString = addresses.map((address) => `"${address}"`).join(',');
+    return this.httpService
+      .post(url, {
+        operationName: 'stakingPositions',
+        variables: {
+          addresses: addresses,
+        },
+        query: `{
+                users (where: {address_in:[${addressesString}], pool_not:null, amount_not:0}) {
+                id
+                pool {
+                    id
+                    pair
+                }
+                amount
+                }
+            }`,
       })
       .pipe(map((response) => response.data))
       .toPromise();

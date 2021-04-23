@@ -9,8 +9,9 @@ export const ETH_CHAIN_ID = 1;
 export const BNB_CHAIN_ID = 2;
 export const NEW_TOKENS_SECONDS_INTERVAL = 60 * 60 * 24;
 export const NEW_TOKENS_HISTORY_SECONDS_INTERVAL = 5 * 60;
-export const CURRENT_PRICE_SECONDS_INTERVAL = 60 * 60;
+export const CURRENT_PRICE_SECONDS_INTERVAL = 10 * 60;
 export const SECONDS_IN_HOUR = 60 * 60;
+export const SECONDS_IN_TEN_MINUTES = 10 * 60;
 export const CURRENCY = 'usd';
 export const TEST_TOKENS = [
   ETH_ADDRESS,

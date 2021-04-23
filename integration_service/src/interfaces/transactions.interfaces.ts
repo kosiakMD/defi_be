@@ -12,6 +12,7 @@ export interface UniswapResponseData {
   uniswapBurns: Map<string, BurnsInterface[]>;
   uniswapSnapshots: Map<string, SnapshotsInterface[]>;
   uniswapLiquidityPositions: Map<string, UniswapLiquidityPosition[]>;
+  sushiswapStakingPosition?: Map<string, any>;
 }
 
 export interface Base<T = string> {

@@ -4,7 +4,7 @@ import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS, BNB_CHAIN, BNB_ADDRESS } from '../utils/constants';
+import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS, BNB_CHAIN, BNB_ADDRESS, SECONDS_IN_TEN_MINUTES } from '../utils/constants';
 
 export type TokenPrices = { [key: string]: number };
 export type TokenAddresses = { [key: string]: number };
@@ -150,9 +150,12 @@ export class DatabaseService {
     );
   };
 
-  public removeToken = (assetId: number) => {
-    return this.pg.any('UPDATE prices.asset SET is_dead = true WHERE id = $1', assetId);
+  public removeToken = (assetId: number, reason: string = '') => {
+    return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE id = $1', [assetId, reason]);
   };
+  public removeTokenByAddressAndPlatform = (address: string, platform: string, reason: string) => {
+    return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE address = $1 AND platform = $3', [address, reason, platform]);
+  }
 
   public getCurrentChain = async (chainName = CHAIN) => {
     const platforms = await this.pg.any('SELECT * FROM prices.chain WHERE name = $1', chainName);
@@ -224,7 +227,7 @@ export class DatabaseService {
     currentTimestamp = null,
   ) => {
     if (!currentTimestamp)
-      currentTimestamp = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_HOUR);
+      currentTimestamp = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_TEN_MINUTES);
 
     try {
       for (const address in prices) {
@@ -245,7 +248,7 @@ export class DatabaseService {
           //console.log('removing prices ', prices[address]);
           //console.log(prices);
           try {
-            await this.removeToken(prices[address].db_id);
+            await this.removeToken(prices[address].db_id, `address = ${address} prices[address].db_id = ${prices[address].db_id} prices[address].value  = ${prices[address].value } `);
           } catch (dbErr) {
             //console.info(`can not set is_dead for asset: ${prices[address].db_id}`);
           }

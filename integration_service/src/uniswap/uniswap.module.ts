@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { ChainModule } from '../chain/chain.module';
 import { Mapper } from '../mappers/mapper';
+import { PriceModule } from '../price/price.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { UniswapBurnsEntity } from './entities/uniswap.burns.entity';
 import { UniswapMintsEntity } from './entities/uniswap.mints.entity';
@@ -19,6 +21,8 @@ import { UniswapService } from './uniswap.service';
       UniswapSnapshotsEntity,
     ]),
     ThegraphModule,
+    ChainModule,
+    PriceModule,
   ],
   controllers: [UniswapController],
   providers: [UniswapService, Mapper],

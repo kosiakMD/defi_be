@@ -19,6 +19,11 @@ jobs:
         with:
           node-version: 14
 
+      - name: 'Install Nest CLI'
+        run: |
+          npm install -g @nestjs/cli
+          npm install -g
+
       - name: 'Install dependencies'
         run: npm run-script install_all_prod
 

@@ -1,13 +1,16 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { TransactionsResponseDto } from './dto/transactions.dto';
-import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
-import { TransactionsResponse } from './interfaces/transactions.interfaces';
-import { TransactionsResponse as ApiTransactionsResponse, Transaction } from './interfaces/api.transactions.interfaces';
-import { TransactionsService } from './transactions.service';
-import { EtherscanTransactionsService } from './etherscan.transactions.service';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
+import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
+import { TransactionsResponseDto } from './dto/transactions.dto';
+import { EtherscanTransactionsService } from './etherscan.transactions.service';
+import {
+  TransactionsResponse as ApiTransactionsResponse,
+  Transaction,
+} from './interfaces/api.transactions.interfaces';
+import { TransactionsResponse } from './interfaces/transactions.interfaces';
+import { TransactionsService } from './transactions.service';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -42,9 +45,11 @@ export class TransactionsController {
       '0x7Aa3e6a7933971423a2B7141B9a8cA5e5B2E8686,0xE76aA6064f08E3BE86ad7d28971bEfb45d356d17,0x1c29731b09d39864a0d7e68df114e97a764eb290',
   })
   @ApiResponse({ status: 200, type: ApiTransactionsResponseDto })
-  async getEtherscanTransactions(@Query('addresses') addresses: string): Promise<ApiTransactionsResponse | []> {
-    if(!addresses) return [];
-    
+  async getEtherscanTransactions(
+    @Query('addresses') addresses: string,
+  ): Promise<ApiTransactionsResponse | []> {
+    if (!addresses) return [];
+
     const addressesSplited: string[] = addresses.split(',');
 
     const transactions: any[] = await Promise.all([
@@ -55,11 +60,14 @@ export class TransactionsController {
     ]);
 
     return addressesSplited.reduce((acc, address) => {
-      const transactionsFromAll: Transaction[] = transactions.reduce((acc, transaction) => [...acc, ...transaction[address]], []);
+      const transactionsFromAll: Transaction[] = transactions.reduce(
+        (acc, transaction) => [...acc, ...transaction[address]],
+        [],
+      );
 
       return {
         ...acc,
-        [address]: transactionsFromAll
+        [address]: transactionsFromAll,
       };
     }, {});
   }

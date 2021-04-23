@@ -78,8 +78,12 @@ export class Mapper {
 
         await this.mapStakingPositions(
           staking,
-          response.uniswapLiquidityPositions.get(address),
-          response.sushiswapStakingPosition.get(address),
+          !response.uniswapLiquidityPositions.get(address)
+            ? []
+            : response.uniswapLiquidityPositions.get(address),
+          !response.sushiswapStakingPosition.get(address)
+            ? []
+            : response.sushiswapStakingPosition.get(address),
         );
 
         base.push(staking);

@@ -1,6 +1,6 @@
 name: eslintrc.yml
 
-on: pull_request
+on: [push, pull_request]
 
 jobs:
   eslintrc:
@@ -14,5 +14,5 @@ jobs:
         with:
           repo-token: ${{secrets.GITHUB_TOKEN}}
           eslint-rc: .eslintrc.js
-          execute-on-files:
-            - ./packages
+#          execute-on-files:
+#            - ./packages

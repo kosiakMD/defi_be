@@ -5,8 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
-import { ChainDto, CurrencyDto, PriceResponseDto } from './dto/price.dto';
-import { PriceQuery, PricesPayload } from './interfaces/price.interfaces';
+import { ChainDto, CurrencyDto, PriceQueryDto, PriceResponseDto, PricesPayload } from './dto';
 
 @Injectable()
 export class PricesService {
@@ -52,32 +51,18 @@ export class PricesService {
     }
   }
 
-  async getPrices(
-    addresses: PriceQuery['addresses'],
-    timestamps: PriceQuery['timestamps'],
-    chain: PriceQuery['chain'],
-    currency: PriceQuery['currency'],
-  ): Promise<PriceResponseDto<PricesPayload>> {
+  async getPrices(query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
     try {
       this.logger.time('request: ' + this.getPricesUrl);
+
       const data = await this.httpService
-        .get(this.getPricesUrl, {
-          params: {
-            addresses,
-            timestamps,
-            currency,
-            chain,
-          },
-        })
+        .post(this.getPricesUrl, query)
         .pipe(map((response) => response.data))
         .toPromise();
+
       this.logger.timeEnd('request: ' + this.getPricesUrl);
-      if (data.message) {
-        // For some Price Service errors
-        throw new Error(data.message);
-      } else {
-        return data;
-      }
+
+      return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
       throw e;

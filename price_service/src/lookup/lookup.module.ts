@@ -11,6 +11,7 @@ import { CurrencyService } from './services/currency.service';
   imports: [
     CacheModule.register({
       ttl: 60 * 60 * 24,
+      max: 1000,
     }),
     TypeOrmModule.forFeature([Chain, Currency]),
   ],

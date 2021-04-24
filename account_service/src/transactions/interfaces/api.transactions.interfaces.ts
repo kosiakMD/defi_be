@@ -19,7 +19,7 @@ export interface Transaction {
   confirmations: string;
   chainId?: number;
   isInternal?: boolean;
-};
+}
 export interface TransactionsResponse {
   [userAddress: string]: Transaction[];
 }

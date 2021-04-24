@@ -1,6 +1,6 @@
-import axios from 'axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
 
 import { Transaction } from '../interfaces/api.transactions.interfaces';
 
@@ -15,15 +15,19 @@ export class BscscanApi {
   }
 
   public async getTransactions(address: string): Promise<Transaction[]> {
-    const { data: { result } } = await axios.get(
-      `${this.BSCSCAN_URL}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=asc&apikey=${this.BSCSCAN_KEY}`
+    const {
+      data: { result },
+    } = await axios.get(
+      `${this.BSCSCAN_URL}?module=account&action=txlist&address=${address}&startblock=0&endblock=99999999&sort=asc&apikey=${this.BSCSCAN_KEY}`,
     );
     return result || [];
   }
 
   public async getInternalTransactions(address: string): Promise<Transaction[]> {
-    const { data: { result } } = await axios.get(
-      `${this.BSCSCAN_URL}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=2702578&sort=asc&apikey=${this.BSCSCAN_KEY}`
+    const {
+      data: { result },
+    } = await axios.get(
+      `${this.BSCSCAN_URL}?module=account&action=txlistinternal&address=${address}&startblock=0&endblock=2702578&sort=asc&apikey=${this.BSCSCAN_KEY}`,
     );
     return result || [];
   }

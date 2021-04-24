@@ -19,6 +19,10 @@ import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
 import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
+import { ChainApiController } from './chain-api/chain-api.controller';
+import { ChainApiModule } from './chain-api/chain-api.module';
+import { BscscanService } from './chain-api/modules/bscscan/bscscan.service';
+import { EtherscanService } from './chain-api/modules/etherscan/etherscan.service';
 import { Logger } from './common/Logger/Logger.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import configuration from './config/configuration';
@@ -34,7 +38,7 @@ import { PricesService } from './prices/prices.service';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
-import { TransactionsController } from './transactions/transactions.controller';
+// import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { UniswapController } from './uniswap/uniswap.controller';
 import { filterObjectKeys } from './utils/object';
@@ -65,6 +69,7 @@ import { VaultsModule } from './vaults/vaults.module';
     TokensModule,
     GasModule,
     PricesModule,
+    ChainApiModule
   ],
   controllers: [
     HealthController,
@@ -77,8 +82,9 @@ import { VaultsModule } from './vaults/vaults.module';
     SushiswapController,
     BalancerController,
     // PlatformController,
-    TransactionsController,
+    // TransactionsController,
     TransfersController,
+    ChainApiController,
   ],
   providers: [
     // TODO: for global auto caching
@@ -105,6 +111,8 @@ import { VaultsModule } from './vaults/vaults.module';
     IntegrationService,
     PricesService,
     // AccountService,
+    EtherscanService,
+    BscscanService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

@@ -416,8 +416,8 @@ export class CoingeckoJob {
               toTs,
             );
           } catch (err) {
-            logger.error(err, `Token ${coin.id} price checking error. Setting is dead`);
-            this.databaseService.setTokenIsDead(coin.id);
+            logger.error(err, `Token ${coin.id} price checking error. Setting is dead(just log)`);
+            //this.databaseService.setTokenIsDead(coin.id);
           }
           resolve(index);
         });

@@ -45,7 +45,9 @@ export const validationSchema = Joi.object({
     .allow('')
     .required(), // TODO: not empty
   PRICE_SERVICE_HOST: Joi.string().required(),
-  PRICE_SERVICE_PORT: Joi.number().required(),
+  PRICE_SERVICE_PORT: Joi.number() //
+    .allow('')
+    .required(),
   PRICES_PATH: Joi.string().required(),
   BSCSCAN_URL: Joi.string().required(),
   BSCSCAN_KEY: Joi.string().required(),

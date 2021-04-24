@@ -10,7 +10,7 @@ import { DbService } from './repository/db.service';
   imports: [
     TypeOrmModule.forFeature(),
     HttpModule.register({
-      timeout: 3000,
+      timeout: 30e3,
     }),
     ChainModule,
   ],

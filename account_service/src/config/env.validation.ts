@@ -38,18 +38,10 @@ export const validationSchema = Joi.object({
   DB_USERNAME: Joi.string().required(),
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
-  ETH_URL: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
-  BSC_URL: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
-  PRICE_SERVICE_HOST: Joi.string() //
-    .allow('')
-    .required(),
-  PRICE_SERVICE_PORT: Joi.number() //
-    .allow('')
-    .required(),
+  ETH_URL: Joi.string().required(),
+  BSC_URL: Joi.string().required(),
+  PRICE_SERVICE_HOST: Joi.string().required(),
+  PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),
   BSCSCAN_URL: Joi.string().required(),
   BSCSCAN_KEY: Joi.string().required(),

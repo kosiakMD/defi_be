@@ -17,7 +17,7 @@ export class BalanceController {
     example: '0x0000000000000000000000000000000000000000',
   })
   @ApiQuery({
-    name: 'chain',
+    name: 'chains',
     type: Number,
     example: 1,
     required: false,
@@ -26,8 +26,8 @@ export class BalanceController {
   // TODO: add pipe transform
   getUserBalanceByAddresses(
     @Query('addresses') addresses: string,
-    @Query('chain') chain: number,
+    @Query('chains') chains: number,
   ): Promise<BalancesResponse> {
-    return this.balanceService.getAllBalanceData(addresses, Number(chain));
+    return this.balanceService.getAllBalanceData(addresses, Number(chains));
   }
 }

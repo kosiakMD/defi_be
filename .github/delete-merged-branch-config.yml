@@ -1,6 +1,6 @@
 # Config for delete-merged-branch.yml
 exclude:
-  - development
+  - develop
   - master
   - qa
 delete_closed_pr: true

@@ -4,8 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../../../common/Logger/Logger.service';
-import { PriceServiceResponse } from '../../models/interfaces/priceServiceResponse.interface';
-import { totalPrice, CHAIN_ID_ETH } from '../utils/utils';
+import { CHAIN_ID_ETH, totalPrice } from '../utils/utils';
 
 @Injectable()
 export class EtherscanService {
@@ -33,14 +32,13 @@ export class EtherscanService {
     this.chainId = CHAIN_ID_ETH;
   }
 
-  async getEtherScanTransactions(address: string): Promise<PriceServiceResponse> {
-    this.logger.time(`request: ${this.etherScanUrl}`);
-
-    const ethTx = await this.httpService
+  private getTransactions(address, internal = false): Promise<any> {
+    const action = internal ? 'txlistinternal' : 'tokentx';
+    return this.httpService
       .get(this.etherScanUrl, {
         params: {
           module: 'account',
-          action: 'tokentx',
+          action: action,
           address: address,
           startblock: 0,
           endblock: 99999999,
@@ -50,8 +48,29 @@ export class EtherscanService {
       })
       .pipe(map((response) => response.data))
       .toPromise();
+  }
 
-    const txTimestamps = ethTx.result.map((tx) => tx['timeStamp']);
+  async getEtherScanTransactions(address: string): Promise<any[]> {
+    this.logger.time(`request: tokentx & txlistinternal ${this.etherScanUrl}`);
+    const [ethTx, ethTxInternal] = await Promise.all([
+      this.getTransactions(address),
+      this.getTransactions(address, true),
+    ]);
+    this.logger.timeEnd(`request: tokentx & txlistinternal ${this.etherScanUrl}`);
+
+    const normalTx =
+      ethTx && ethTx.result
+        ? ethTx.result.map((tx) => Object.assign(tx, { isInternal: false, isError: 0 }))
+        : [];
+    const internalTx =
+      ethTxInternal && ethTxInternal.result
+        ? ethTxInternal.result.map((tx) => Object.assign(tx, { isInternal: true }))
+        : [];
+    const transactions = [].concat(normalTx, internalTx);
+
+    if (!transactions.length) return transactions;
+
+    const txTimestamps = transactions.map((tx) => tx.timeStamp);
 
     this.logger.time(`request: ${this.getPricesUrl}`);
     const ethTimestampPrices = await this.httpService
@@ -65,15 +84,18 @@ export class EtherscanService {
       })
       .pipe(map((response) => response.data))
       .toPromise();
+    this.logger.timeEnd(`request: ${this.getPricesUrl}`);
 
-    ethTx.result.forEach((tx) => {
+    transactions.forEach((tx) => {
       if (!Number(tx.value)) return false;
       const ethPriceUSD = ethTimestampPrices.prices[this.mainCoinAddress][tx.timeStamp];
-      tx.ethPriceUSD = ethPriceUSD;
-      tx.totalPriceUSD = totalPrice(tx.value.toString(), ethPriceUSD, 18);
-      tx.chainId = this.chainId;
+      Object.assign(tx, {
+        ethPriceUSD: ethPriceUSD,
+        totalPriceUSD: totalPrice(tx.value.toString(), ethPriceUSD, 18),
+        chainId: this.chainId,
+      });
     });
 
-    return ethTx.result;
+    return transactions;
   }
 }

@@ -33,49 +33,49 @@ export class BscscanService {
 
     this.chainId = CHAIN_ID_BSC;
   }
+  private getTransactions(address, internal = false): Promise<any> {
+    const action = internal ? 'txlistinternal' : 'txlist';
+    return this.httpService
+      .get(this.bscScanUrl, {
+        params: {
+          module: 'account',
+          action: action,
+          address: address,
+          startblock: 0,
+          endblock: 99999999,
+          sort: 'asc',
+          apikey: this.bscScanKey,
+        },
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 
-  async getBscScanTransactions(address: string): Promise<PriceServiceResponse> {
-    this.logger.time(`request: ${this.bscScanUrl}`);
-
+  async getBscScanTransactions(address: string): Promise<any[]> {
+    this.logger.time(`request: 2x ${this.bscScanUrl}`);
     const [bscTx, bscTxInternal] = await Promise.all([
-      this.httpService
-        .get(this.bscScanUrl, {
-          params: {
-            module: 'account',
-            action: 'txlist',
-            address: address,
-            startblock: 1,
-            endblock: 99999999,
-            sort: 'asc',
-            apikey: this.bscScanKey,
-          },
-        })
-        .pipe(map((response) => response.data))
-        .toPromise(),
-      this.httpService
-        .get(this.bscScanUrl, {
-          params: {
-            module: 'account',
-            action: 'txlistinternal',
-            address: address,
-            startblock: 1,
-            endblock: 99999999,
-            sort: 'asc',
-            apikey: this.bscScanKey,
-          },
-        })
-        .pipe(map((response) => response.data))
-        .toPromise(),
+      this.getTransactions(address),
+      this.getTransactions(address, true),
     ]);
+    this.logger.timeEnd(`request: 2x ${this.bscScanUrl}`);
 
-    if (Number(bscTxInternal.status) && Number(bscTx.status)) {
-      bscTx.result.concat(bscTxInternal.result);
-    }
+    const normalTx =
+      bscTx && bscTx.result
+        ? bscTx.result.map((tx) => Object.assign(tx, { isInternal: false, isError: 0 }))
+        : [];
+    const internalTx =
+      bscTxInternal && bscTxInternal.result
+        ? bscTxInternal.result.map((tx) => Object.assign(tx, { isInternal: true }))
+        : [];
 
-    const txTimestamps = bscTx.result.map((tx) => tx['timeStamp']);
+    const transactions = [].concat(normalTx, internalTx);
+
+    if (!transactions.length) return transactions;
+
+    const txTimestamps = transactions.map((tx) => tx.timeStamp);
+
     this.logger.time(`request: ${this.getPricesUrl}/chain=2`);
-
-    const bscTimestampPrices = await this.httpService
+    const bscTimestampPrices: PriceServiceResponse = await this.httpService
       .get(this.getPricesUrl, {
         params: {
           currency: 1,
@@ -86,15 +86,18 @@ export class BscscanService {
       })
       .pipe(map((response) => response.data))
       .toPromise();
+    this.logger.timeEnd(`request: ${this.getPricesUrl}/chain=2`);
 
-    bscTx.result.forEach((tx) => {
+    transactions.forEach((tx) => {
       if (!Number(tx.value)) return false;
       const bscPriceUSD = bscTimestampPrices.prices[this.mainCoinAddress][tx.timeStamp];
-      tx.bscPriceUSD = bscPriceUSD;
-      tx.totalPriceUSD = totalPrice(tx.value.toString(), bscPriceUSD, 18);
-      tx.chainId = this.chainId;
+      Object.assign(tx, {
+        bscPriceUSD: bscPriceUSD,
+        totalPriceUSD: totalPrice(tx.value.toString(), bscPriceUSD, 18),
+        chainId: this.chainId,
+      });
     });
 
-    return bscTx.result;
+    return transactions;
   }
 }

@@ -2,11 +2,11 @@ import { CacheModule, Module, HttpModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { ChainApiController } from './chain-api.controller';
-import { EtherscanService } from './modules/etherscan/etherscan.service'
-import { BscscanService } from './modules/bscscan/bscscan.service'
+import { BscscanService } from './modules/bscscan/bscscan.service';
+import { EtherscanService } from './modules/etherscan/etherscan.service';
 
 @Module({
-  imports:[
+  imports: [
     HttpModule.register({
       timeout: 30e3,
       maxRedirects: 2,
@@ -14,7 +14,7 @@ import { BscscanService } from './modules/bscscan/bscscan.service'
     CacheModule.register(),
     ConfigModule,
   ],
-  providers: [EtherscanService, BscscanService],
+  providers: [BscscanService, EtherscanService],
   controllers: [ChainApiController],
 })
 export class ChainApiModule {}

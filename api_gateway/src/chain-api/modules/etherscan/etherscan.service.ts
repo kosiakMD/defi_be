@@ -2,10 +2,10 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
-import { Logger } from '../../../common/Logger/Logger.service';
 
-import { totalPrice, CHAIN_ID_ETH } from '../utils/utils';
+import { Logger } from '../../../common/Logger/Logger.service';
 import { PriceServiceResponse } from '../../models/interfaces/priceServiceResponse.interface';
+import { totalPrice, CHAIN_ID_ETH } from '../utils/utils';
 
 @Injectable()
 export class EtherscanService {
@@ -29,48 +29,46 @@ export class EtherscanService {
 
     this.etherScanUrl = this.configService.get<string>('ETHERSCAN_API_URL');
     this.etherScanKey = this.configService.get<string>('ETHERSCAN_API_KEY');
-    this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS')
+    this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
     this.chainId = CHAIN_ID_ETH;
   }
 
   async getEtherScanTransactions(address: string): Promise<PriceServiceResponse> {
-    this.logger.time('request: ' + this.etherScanUrl);
+    this.logger.time(`request: ${this.etherScanUrl}`);
 
-    const ethTx = await this.httpService.get(
-      `${this.etherScanUrl}`,
-        {
-          params: {
-            module: 'account',
-            action: 'tokentx',
-            address: address,
-            startblock: 0,
-            endblock: 99999999,
-            sort: 'asc',
-            apikey: this.etherScanKey
-          }
-        }
-      ).pipe(map((response) => response.data)).toPromise()
+    const ethTx = await this.httpService
+      .get(this.etherScanUrl, {
+        params: {
+          module: 'account',
+          action: 'tokentx',
+          address: address,
+          startblock: 0,
+          endblock: 99999999,
+          sort: 'asc',
+          apikey: this.etherScanKey,
+        },
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
 
     const txTimestamps = ethTx.result.map((tx) => tx['timeStamp']);
 
-    this.logger.time('request: ' + this.getPricesUrl);
-      const ethTimestampPrices = await this.httpService.get(
-        `${this.getPricesUrl}`,
-        {
-          params: {
-            currency: 1,
-            chain: this.chainId,
-            addresses: this.mainCoinAddress,
-            timestamps: txTimestamps.toString()
-          }
-        }
-     ).pipe(map((response) => response.data)).toPromise();
+    this.logger.time(`request: ${this.getPricesUrl}`);
+    const ethTimestampPrices = await this.httpService
+      .get(this.getPricesUrl, {
+        params: {
+          currency: 1,
+          chain: this.chainId,
+          addresses: this.mainCoinAddress,
+          timestamps: txTimestamps.toString(),
+        },
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
 
     ethTx.result.forEach((tx) => {
       if (!Number(tx.value)) return false;
-      const ethPriceUSD = ethTimestampPrices.prices[this.mainCoinAddress][
-          tx.timeStamp
-        ];
+      const ethPriceUSD = ethTimestampPrices.prices[this.mainCoinAddress][tx.timeStamp];
       tx.ethPriceUSD = ethPriceUSD;
       tx.totalPriceUSD = totalPrice(tx.value.toString(), ethPriceUSD, 18);
     });

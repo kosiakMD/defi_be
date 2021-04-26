@@ -60,6 +60,7 @@ export const validationSchema = Joi.object({
   PRICES_PATH: Joi.string().required(),
   PRICE_CHAINS_PATH: Joi.string().required(),
   PRICE_CURRENCIES_PATH: Joi.string().required(),
+  PRICE_SERVICE_MAIN_COIN_ADDRESS: Joi.string().required(),
   // INTEGRATION
   INTEGRATION_SERVICE_HOST: Joi.string().required(),
   INTEGRATION_SERVICE_PORT: Joi.number() //
@@ -70,6 +71,11 @@ export const validationSchema = Joi.object({
   INTEGRATION_SUSHISWAP: Joi.string().required(),
   INTEGRATION_BALANCER: Joi.string().required(),
   INTEGRATION_CURVE: Joi.string().required(),
+  // EXTERNAL API'S
+  ETHERSCAN_API_URL: Joi.string().required(),
+  ETHERSCAN_API_KEY: Joi.string().required(),
+  BSCSCAN_API_URL: Joi.string().required(),
+  BSCSCAN_API_KEY: Joi.string().required(),
 });
 
 export const validationOptions = {

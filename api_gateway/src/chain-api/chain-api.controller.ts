@@ -2,10 +2,10 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { EtherscanService } from './modules/etherscan/etherscan.service'
-import { BscscanService } from './modules/bscscan/bscscan.service'
 import { Logger } from '../common/Logger/Logger.service';
-import { TransactionsResponseDto } from './models/dto/transactions.dto'
+import { TransactionsResponseDto } from './models/dto/transactions.dto';
+import { BscscanService } from './modules/bscscan/bscscan.service';
+import { EtherscanService } from './modules/etherscan/etherscan.service';
 import { CHAIN_ID_ETH, CHAIN_ID_BSC } from './modules/utils/utils';
 
 @ApiTags('Transactions')
@@ -16,11 +16,11 @@ export class ChainApiController {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private etherscanService:EtherscanService,
-    private bscscanService:BscscanService
+    private etherscanService: EtherscanService,
+    private bscscanService: BscscanService,
   ) {
     this.ethChainId = CHAIN_ID_ETH;
-    this.bscChainId = CHAIN_ID_BSC
+    this.bscChainId = CHAIN_ID_BSC;
   }
 
   @Get('/')
@@ -75,19 +75,19 @@ export class ChainApiController {
         ),
       ]);
 
-      const checkFulfillment = (txResultarray):any => {
-        const result = []
-        for(let txArray of txResultarray){
-          if(txArray.status == "fulfilled"){
-            for(let tx of txArray.value[0]){
-              result.push(tx)
+      const checkFulfillment = (txResultarray): any => {
+        const result = [];
+        for (const txArray of txResultarray) {
+          if (txArray.status == 'fulfilled') {
+            for (const tx of txArray.value[0]) {
+              result.push(tx);
             }
           }
         }
         return result;
-      }
+      };
 
-      const result = checkFulfillment([ethTransactions, bscTransactions])
+      const result = checkFulfillment([ethTransactions, bscTransactions]);
 
       return result;
     }

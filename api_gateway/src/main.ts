@@ -1,10 +1,11 @@
-import { AppModule } from './app.module';
-import { addTimeLogFeature } from './common/Logger/Logger.service';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { AppModule } from './app.module';
+import { addTimeLogFeature } from './common/Logger/Logger.service';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
@@ -14,9 +15,7 @@ async function bootstrap() {
     logger: true,
   });
   // TODO: adding time logs features [HACK]
-  const enhancedLogger = addTimeLogFeature(
-    app.get(WINSTON_MODULE_NEST_PROVIDER),
-  );
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   // TODO: left for custom logger
   // app.useLogger(app.get(Logger));
   app.useLogger(enhancedLogger);

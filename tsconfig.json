@@ -1,21 +1,13 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "es2020",
-    "baseUrl": "./",
-    "incremental": true,
-    "paths": {
-      "common/common": [
-        "libs/common/src"
-      ],
-      "common/common/*": [
-        "libs/common/src/*"
-      ]
-    }
-  }
+	"compilerOptions": {
+		"module": "commonjs",
+		"declaration": true,
+		"removeComments": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"allowSyntheticDefaultImports": true,
+		"target": "es2017",
+		"baseUrl": "./",
+		"incremental": true
+	}
 }

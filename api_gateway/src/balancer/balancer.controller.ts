@@ -1,8 +1,8 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { BalancesResponse } from 'src/account/account.interfaces';
 
-import { BalancesResponse } from '../account/account.interfaces';
 import { Logger } from '../common/Logger/Logger.service';
 import { IntegrationService } from '../integration/integration.service';
 

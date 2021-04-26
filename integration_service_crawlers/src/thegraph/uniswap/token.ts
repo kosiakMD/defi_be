@@ -3,11 +3,11 @@ export interface Token {
   symbol: string;
   name: string;
   decimals: number;
-  totalSupply: number;
-  tradeVolume: number;
-  tradeVolumeUSD: number;
-  untrackedVolumeUSD: number;
-  txCount: number;
-  totalLiquidity: number;
-  derivedETH: number;
+  totalSupply?: number;
+  tradeVolume?: number;
+  tradeVolumeUSD?: number;
+  untrackedVolumeUSD?: number;
+  txCount?: number;
+  totalLiquidity?: number;
+  derivedETH?: number;
 }

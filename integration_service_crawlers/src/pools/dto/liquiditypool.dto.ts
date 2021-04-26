@@ -4,7 +4,7 @@ import { Token } from './token.dto';
 
 export class LiquidityPool {
   id: string;
-  chain: string;
+  chain: number;
   project: string;
   reserveUSD: number;
   fee24h: number;

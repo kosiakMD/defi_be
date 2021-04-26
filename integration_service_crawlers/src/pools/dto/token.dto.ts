@@ -6,4 +6,5 @@ export interface Token {
   percentage?: number;
   reserve?: number;
   totalSupply?: number;
+  positionInPool?: number;
 }

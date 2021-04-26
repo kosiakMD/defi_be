@@ -2,6 +2,7 @@ import { forwardRef, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { ApisModule } from '../apis/apis.module';
+import { ChainModule } from '../chain/chain.module';
 import { JobsModule } from '../jobs/jobs.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { PoolsService } from './pools.service';
@@ -10,6 +11,7 @@ import { PoolsServiceCurve } from './pools.service.curve';
 import { PoolsServicePancake } from './pools.service.pancake';
 import { PoolsServiceSushiswap } from './pools.service.sushiswap';
 import { PoolsServiceUniswap } from './pools.service.uniswap';
+import { LiquidityPoolsRepository } from './repository/liquidity.pools.repository';
 
 @Module({
   imports: [
@@ -21,6 +23,7 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
     ConfigModule,
     ThegraphModule,
     ApisModule,
+    ChainModule,
   ],
   providers: [
     PoolsService,
@@ -29,6 +32,7 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
     PoolsServiceBalancer,
     PoolsServiceCurve,
     PoolsServicePancake,
+    LiquidityPoolsRepository,
   ],
   exports: [PoolsService],
 })

@@ -28,7 +28,7 @@ export class PoolsService {
       const pools: LiquidityPool[] = []
         .concat(await this.poolsServiceUniswap.getPoolsToHandle())
         .concat(await this.poolsServiceSushiswap.getPoolsToHandle())
-        .concat(await this.poolsServicePancake.getPoolsToHandle());
+        .concat(await this.poolsServicePancake.getCurrentPairs());
 
       const query = this.buildInsertPoolsQuery(pools);
       await databaseClient.query(query);

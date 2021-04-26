@@ -4,7 +4,7 @@ import { Token } from './token.dto';
 export interface Vault {
   id: string;
   project: string;
-  chain: string;
+  chain: number;
   name?: string;
   apy: APY;
   tvl: number;

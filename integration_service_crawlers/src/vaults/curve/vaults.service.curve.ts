@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { CoingeckoApi } from '../../apis/api/coingecko.api';
-import { CHAIN_ETH, PROJECT_CURVE } from '../../pools/pools.utils';
+import { CHAIN_ID_ETH, PROJECT_CURVE } from '../../pools/pools.utils';
 import { CurveSubgraph } from '../../thegraph/curve/curve.subgraph';
 import { Token } from '../dto/token.dto';
 import { Vault } from '../dto/vault.dto';
@@ -10,7 +10,7 @@ import { CRV } from './tokens/CRV';
 
 @Injectable()
 export class VaultsServiceCurve {
-  protected chain: string = CHAIN_ETH;
+  protected chain: number = CHAIN_ID_ETH;
   protected project: string = PROJECT_CURVE;
   constructor(
     protected readonly curveSubgraph: CurveSubgraph,

@@ -12,7 +12,9 @@ export const TIMESTAMP_MONTH_BEFORE_CURRENT: number = Math.trunc(
 );
 
 export const CHAIN_ETH = 'eth';
+export const CHAIN_ID_ETH = 1;
 export const CHAIN_BSC = 'bsc';
+export const CHAIN_ID_BSC = 2;
 export const PROJECT_UNISWAP = 'uniswap';
 export const PROJECT_SUSHISWAP = 'sushiswap';
 export const PROJECT_PANCAKE = 'pancake';

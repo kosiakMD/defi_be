@@ -4,11 +4,11 @@ import { CoingeckoApi } from '../apis/api/coingecko.api';
 import { CurveApi } from '../apis/api/curve.api';
 import { CurveSubgraph } from '../thegraph/curve/curve.subgraph';
 import { LiquidityPool } from './dto/liquiditypool.dto';
-import { CHAIN_ETH, PROJECT_CURVE } from './pools.utils';
+import { CHAIN_ID_ETH, PROJECT_CURVE } from './pools.utils';
 
 @Injectable()
 export class PoolsServiceCurve {
-  protected chain: string = CHAIN_ETH;
+  protected chain: number = CHAIN_ID_ETH;
   protected project: string = PROJECT_CURVE;
 
   constructor(
@@ -31,7 +31,6 @@ export class PoolsServiceCurve {
       poolsApy,
       [...etalonPricesUSD, ...eurPrice],
       this.project,
-      this.chain,
     );
   }
 
@@ -40,7 +39,6 @@ export class PoolsServiceCurve {
     historicalPools,
     prices,
     projectName: string,
-    chain: string,
   ): LiquidityPool[] {
     const DECIMAL = 18;
 
@@ -75,7 +73,7 @@ export class PoolsServiceCurve {
       });
       const liquidityPool: LiquidityPool = {
         id: pool.id,
-        chain: chain,
+        chain: this.chain,
         project: projectName,
         reserveUSD: reserveUSD,
         fee24h: fee24h,

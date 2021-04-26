@@ -5,7 +5,7 @@ import { Pool } from '../thegraph/balancer/pool.interface';
 import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
 import { LiquidityPool } from './dto/liquiditypool.dto';
 import {
-  CHAIN_ETH,
+  CHAIN_ID_ETH,
   getImpermanentLossPercent,
   getImpermanentLossUSD,
   getLastDayApy,
@@ -20,7 +20,7 @@ import {
 
 @Injectable()
 export class PoolsServiceBalancer {
-  protected chain: string = CHAIN_ETH;
+  protected chain: number = CHAIN_ID_ETH;
   protected project: string = PROJECT_BALANCER;
   protected minTVL = 50000;
   constructor(

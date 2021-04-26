@@ -7,12 +7,10 @@ import { ThegraphModule } from '../thegraph/thegraph.module';
 import { GaugeRewards } from './curve/gauge.rewards';
 import { VaultsServiceCurve } from './curve/vaults.service.curve';
 import { VaultsServiceSushiswap } from './sushiswap/vaults.service.sushiswap';
-import { VaultsController } from './vaults.controller';
 import { VaultsService } from './vaults.service';
 import { Web3Provider } from './web3.provider';
 
 @Module({
-  controllers: [VaultsController],
   imports: [
     HttpModule.register({
       timeout: 60000,

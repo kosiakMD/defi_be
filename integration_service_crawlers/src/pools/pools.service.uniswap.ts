@@ -6,7 +6,7 @@ import { UniswapSubgraph } from '../thegraph/uniswap/uniswap.subgraph';
 import { LiquidityPool } from './dto/liquiditypool.dto';
 import { Token } from './dto/token.dto';
 import {
-  CHAIN_ETH,
+  CHAIN_ID_ETH,
   getImpermanentLossPercent,
   getImpermanentLossUSD,
   getLastDayApy,
@@ -22,7 +22,7 @@ import {
 
 @Injectable()
 export class PoolsServiceUniswap {
-  protected chain: string = CHAIN_ETH;
+  protected chain: number = CHAIN_ID_ETH;
   protected project: string = PROJECT_UNISWAP;
   protected minTVL = 50000;
   constructor(

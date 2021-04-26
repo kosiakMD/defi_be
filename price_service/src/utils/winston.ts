@@ -1,14 +1,36 @@
 import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
+import os from 'os';
 import * as winston from 'winston';
+import CloudWatchTransport from 'winston-aws-cloudwatch';
+import * as Transport from 'winston-transport';
 
-export const winstonParams = (
-  logErrorFile: string,
-  logCombineLog: string,
-  serviceName: string,
+type LogConfig = {
+  logErrorFile: string;
+  logCombineLog: string;
+  serviceName: string;
+  level?: string;
+  meta?: Record<string, any>;
+  awsConfig: {
+    accessKeyId: string;
+    secretAccessKey: string;
+    region: string;
+  };
+};
+
+const formatLog = (item) =>
+  item.message
+    ? `${item.level}: ${item.message} ${JSON.stringify(item.meta)}`
+    : `${item.level}: ${JSON.stringify(item.meta)}`;
+
+export const winstonParams = ({
+  logErrorFile,
+  logCombineLog,
+  serviceName,
   level = 'info',
-  meta?: Record<string, any>,
-): WinstonModuleOptions => ({
+  awsConfig,
+  meta,
+}: LogConfig): WinstonModuleOptions => ({
   level: level,
   format: winston.format.json(),
   defaultMeta: Object.assign({ service: serviceName }, meta),
@@ -21,17 +43,20 @@ export const winstonParams = (
     new winston.transports.File({ level: 'error', filename: logErrorFile }),
     // - Write all logs with level `info` and below to `combined.log`
     new winston.transports.File({ filename: logCombineLog }),
+    new CloudWatchTransport({
+      logGroupName: 'services/price',
+      logStreamName: `${os.hostname()}_${Date.now()}`,
+      createLogGroup: true,
+      createLogStream: true,
+      submissionInterval: 2000,
+      submissionRetryCount: 1,
+      batchSize: 20,
+      awsConfig,
+      formatLog,
+    }) as Transport,
   ],
 });
 
-export const createLogger = (
-  logErrorFile: string,
-  logCombineLog: string,
-  serviceName: string,
-  level?: string,
-  meta?: Record<string, any>,
-): LoggerService => {
-  return WinstonModule.createLogger(
-    winstonParams(logErrorFile, logCombineLog, serviceName, level, meta),
-  );
+export const createLogger = (config: LogConfig): LoggerService => {
+  return WinstonModule.createLogger(winstonParams(config));
 };

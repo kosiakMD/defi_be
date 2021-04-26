@@ -14,13 +14,18 @@ async function bootstrap(): Promise<void> {
 
   const configService = app.get<ConfigService>(ConfigService);
 
-  const logger = createLogger(
-    configService.get<string>('LOG_ERROR_FILE'),
-    configService.get<string>('LOG_COMBINED_FILE'),
-    configService.get<string>('SERVICE_NAME'),
-    configService.get<string>('LOG_LEVEL'),
-    { env: configService.get<string>('ENV') },
-  );
+  const logger = createLogger({
+    logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
+    logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
+    serviceName: configService.get<string>('SERVICE_NAME'),
+    level: configService.get<string>('LOG_LEVEL'),
+    meta: { env: configService.get<string>('ENV') },
+    awsConfig: {
+      region: configService.get<string>('AWS_REGION'),
+      accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
+      secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+    },
+  });
   app.useLogger(logger);
 
   app.setGlobalPrefix('v1');

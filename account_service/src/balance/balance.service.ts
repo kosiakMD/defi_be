@@ -31,26 +31,28 @@ export class BalanceService {
     private readonly chainProvider: Web3Provider,
   ) {}
 
-  public async getAllBalanceData(accounts: string): Promise<BalancesResponse> {
+  public async getAllBalanceData(accounts: string, chain: number): Promise<BalancesResponse> {
     const allBalances: BalancesResponse = {};
     if (!accounts) {
       return allBalances;
     }
 
     const [ethBalances, bscBalances] = await Promise.all([
-      this.getEthBalances(accounts),
-      this.getBscBalances(accounts),
+      chain == 1 || !chain ? this.getEthBalances(accounts) : null,
+      chain == 2 || !chain ? this.getBscBalances(accounts) : null,
     ]);
 
-    Object.keys(ethBalances).map((key) => {
-      allBalances[key] = {
-        account: key,
-        totalUsd: ethBalances[key].totalUsd + bscBalances[key].totalUsd,
-        tokens: [...ethBalances[key].tokens, ...bscBalances[key].tokens],
-      };
-    });
+    if (ethBalances && bscBalances) {
+      Object.keys(ethBalances).map((key) => {
+        allBalances[key] = {
+          totalUsd: ethBalances[key].totalUsd + bscBalances[key].totalUsd,
+          tokens: [...ethBalances[key].tokens, ...bscBalances[key].tokens],
+        };
+      });
 
-    return allBalances;
+      return allBalances;
+    }
+    return ethBalances || bscBalances;
   }
 
   public async getEthBalances(accounts: string): Promise<BalancesResponse> {

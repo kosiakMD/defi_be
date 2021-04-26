@@ -60,7 +60,7 @@ export class TransfersService {
         try {
           return {
             ...transaction,
-            tokenPriceUSD: transaction.tokenPrice,
+            tokenPriceUSD: transaction.tokenPrice || 0,
             totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
           };
         } catch (_) {

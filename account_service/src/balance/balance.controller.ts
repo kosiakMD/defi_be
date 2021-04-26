@@ -16,8 +16,17 @@ export class BalanceController {
     type: String,
     example: '0x0000000000000000000000000000000000000000',
   })
+  @ApiQuery({
+    name: 'chain',
+    type: Number,
+    example: 1,
+    required: false,
+  })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
-  getUserBalanceByAddresses(@Query('addresses') addresses: string): Promise<BalancesResponse> {
-    return this.balanceService.getAllBalanceData(addresses);
+  getUserBalanceByAddresses(
+    @Query('addresses') addresses: string,
+    @Query('chain') chain: number,
+  ): Promise<BalancesResponse> {
+    return this.balanceService.getAllBalanceData(addresses, chain);
   }
 }

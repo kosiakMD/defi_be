@@ -37,7 +37,6 @@ export interface AccountTokenBalance extends TokenBalance {
 }
 
 export interface AccountBalance {
-  account: string;
   totalUsd: number;
   tokens: AccountTokenBalance[];
 }

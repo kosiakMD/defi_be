@@ -3,7 +3,7 @@
 		"module": "commonjs",
 		"declaration": true,
 		"removeComments": true,
-		"emitDecoratorMetadata": true,
+		`"emitDecoratorMetadata": true,`
 		"experimentalDecorators": true,
 		"allowSyntheticDefaultImports": true,
 		"lib": ["es5", "es6", "es2019", "es2020"],

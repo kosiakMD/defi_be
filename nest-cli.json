@@ -1,0 +1,47 @@
+{
+  "monorepo": true,
+  "root": "apps/defiyield-backend",
+  "sourceRoot": "apps/defiyield-backend/src",
+  "compilerOptions": {
+    "webpack": true,
+    "tsConfigPath": "apps/defiyield-backend/tsconfig.app.json"
+  },
+  "projects": {
+    "api_gateway": {
+      "type": "application",
+      "root": "apps/api_gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api_gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api_gateway/tsconfig.app.json"
+      }
+    },
+    "defiyield-backend": {
+      "type": "application",
+      "root": "apps/defiyield-backend",
+      "entryFile": "main",
+      "sourceRoot": "apps/defiyield-backend/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/defiyield-backend/tsconfig.app.json"
+      }
+    },
+    "defi": {
+      "type": "application",
+      "root": "apps/defi",
+      "entryFile": "main",
+      "sourceRoot": "apps/defi/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/defi/tsconfig.app.json"
+      }
+    },
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    }
+  }
+}

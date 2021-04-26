@@ -56,6 +56,7 @@ module.exports = {
     "no-console": ["error"],
     "newline-per-chained-call": "error",
     "no-multi-spaces": ["error"],
+    "eqeqeq": ["error", "always"],
     // change to error
     "no-use-before-define": ["warn", { "functions": true, "classes": true }],
     "space-before-blocks": ["warn"],

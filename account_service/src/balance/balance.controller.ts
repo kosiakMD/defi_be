@@ -23,10 +23,11 @@ export class BalanceController {
     required: false,
   })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
+  // TODO: add pipe transform
   getUserBalanceByAddresses(
     @Query('addresses') addresses: string,
     @Query('chain') chain: number,
   ): Promise<BalancesResponse> {
-    return this.balanceService.getAllBalanceData(addresses, chain);
+    return this.balanceService.getAllBalanceData(addresses, Number(chain));
   }
 }

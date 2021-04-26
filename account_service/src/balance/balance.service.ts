@@ -26,10 +26,23 @@ import { DbService } from './repository/db.service';
 
 @Injectable()
 export class BalanceService {
-  constructor(
-    private readonly dbService: DbService,
-    private readonly chainProvider: Web3Provider,
-  ) {}
+  private readonly instanceChainProvider: Web3;
+
+  constructor(private readonly dbService: DbService, private readonly chainProvider: Web3Provider) {
+    this.instanceChainProvider = this.chainProvider.instanceEth();
+  }
+
+  private getPricesAndBalances(tokensAddresses, chainId, accountsArray): Promise<any[]> {
+    return Promise.all([
+      this.dbService.getTokenPrices(tokensAddresses, chainId),
+      Promise.all(
+        accountsArray.map(async (account) => ({
+          account,
+          amount: await this.instanceChainProvider.eth.getBalance(account),
+        })),
+      ),
+    ]);
+  }
 
   public async getAllBalanceData(accounts: string, chain: number): Promise<BalancesResponse> {
     const allBalances: BalancesResponse = {};
@@ -38,8 +51,8 @@ export class BalanceService {
     }
 
     const [ethBalances, bscBalances] = await Promise.all([
-      chain == 1 || !chain ? this.getEthBalances(accounts) : null,
-      chain == 2 || !chain ? this.getBscBalances(accounts) : null,
+      +chain === 1 || !chain ? this.getEthBalances(accounts) : null,
+      +chain === 2 || !chain ? this.getBscBalances(accounts) : null,
     ]);
 
     if (ethBalances && bscBalances) {
@@ -62,31 +75,28 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','));
     const chainId = CHAIN_ID_ETH;
 
-    const chainProvider: Web3 = this.chainProvider.instanceEth();
-
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
-    const [tokenPrices, ethBalances] = await Promise.all([
-      this.dbService.getTokenPrices(tokensAddresses, chainId),
-      Promise.all(
-        accountsArray.map(async (account) => ({
-          account,
-          amount: await chainProvider.eth.getBalance(account),
-        })),
-      ),
-    ]);
+    const [tokenPrices, ethBalances] = await this.getPricesAndBalances(
+      tokensAddresses,
+      chainId,
+      accountsArray,
+    );
 
     const ethPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
     const wethPrice = this.getUtilTokenPrice(WETH_ADDRESS, tokenPrices.prices);
 
-    const tokenInst = await new chainProvider.eth.Contract(abi as AbiItem[], WETH_ADDRESS);
+    const tokenInst = await new this.instanceChainProvider.eth.Contract(
+      abi as AbiItem[],
+      WETH_ADDRESS,
+    );
 
     const etherBalances = [];
     for (const balance of ethBalances) {
       etherBalances.push(this.mapEthBalance({ ...balance, ethPrice }));
       const wethAmount = await tokenInst.methods.balanceOf(balance.account).call();
-      if (wethAmount && balance.amount != '0') {
+      if (wethAmount && balance.amount !== '0') {
         etherBalances.push(
           this.mapEthBalance({
             account: balance.account,
@@ -100,8 +110,9 @@ export class BalanceService {
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
     return accountsArray.reduce((response, account) => {
-      const ether = etherBalances.filter((balance) => balance.account === account);
-      const erc20 = erc20Balances.filter((balance) => balance.account === account);
+      const accountFilter = (balance): boolean => balance.account === account;
+      const ether = etherBalances.filter(accountFilter);
+      const erc20 = erc20Balances.filter(accountFilter);
 
       const tokens = ether.concat(erc20).map((t) => {
         return {
@@ -130,20 +141,14 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','));
     const chainId = CHAIN_ID_BSC;
 
-    const chainProvider: Web3 = this.chainProvider.instanceBsc();
-
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
-    const [tokenPrices, ethBalances] = await Promise.all([
-      this.dbService.getTokenPrices(tokensAddresses, chainId),
-      Promise.all(
-        accountsArray.map(async (account) => ({
-          account,
-          amount: await chainProvider.eth.getBalance(account),
-        })),
-      ),
-    ]);
+    const [tokenPrices, ethBalances] = await this.getPricesAndBalances(
+      tokensAddresses,
+      chainId,
+      accountsArray,
+    );
 
     const bnbPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
 

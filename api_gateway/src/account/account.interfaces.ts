@@ -40,7 +40,7 @@ export interface AccountBalance {
   chainId: number;
   account: string;
   totalUsd: number;
-  tokens: TokenBalance[];
+  token: TokenBalance;
 }
 
 export type BalancesResponse = { [key: string]: AccountBalance };

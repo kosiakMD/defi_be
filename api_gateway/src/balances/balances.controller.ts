@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { BalancesResponse } from '../account/account.interfaces';
 import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
+import { BalancesResponseDto } from './balances.dto';
 
 @ApiTags('Balances')
 @Controller('balances')
@@ -30,7 +31,7 @@ export class BalancesController {
     // example: '1,2',
     example: '',
   })
-  @ApiResponse({ status: 200, type: Object })
+  @ApiResponse({ status: 200, type: BalancesResponseDto })
   public getBalance(
     @Query('addresses') addresses: string,
     @Query('chains') chains: string,

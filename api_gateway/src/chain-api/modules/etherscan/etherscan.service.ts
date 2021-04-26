@@ -71,6 +71,7 @@ export class EtherscanService {
       const ethPriceUSD = ethTimestampPrices.prices[this.mainCoinAddress][tx.timeStamp];
       tx.ethPriceUSD = ethPriceUSD;
       tx.totalPriceUSD = totalPrice(tx.value.toString(), ethPriceUSD, 18);
+      tx.chainId = this.chainId;
     });
 
     return ethTx.result;

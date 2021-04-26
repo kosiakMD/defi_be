@@ -92,6 +92,7 @@ export class BscscanService {
       const bscPriceUSD = bscTimestampPrices.prices[this.mainCoinAddress][tx.timeStamp];
       tx.bscPriceUSD = bscPriceUSD;
       tx.totalPriceUSD = totalPrice(tx.value.toString(), bscPriceUSD, 18);
+      tx.chainId = this.chainId;
     });
 
     return bscTx.result;

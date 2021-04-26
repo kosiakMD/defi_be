@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ERC20Token } from '../../../account_service/src/transfers/interfaces/transfers.interfaces';
 import { AccountTokenBalance } from '../account/account.interfaces';
+import { ERC20Token } from '../common/interfaces';
 import { Balance, BalanceToken } from './balances.interfaces';
 
 export class BalanceTokenDto implements BalanceToken {

@@ -1,5 +1,4 @@
-import { ERC20Token } from '../../../account_service/src/transfers/interfaces/transfers.interfaces';
-import { Address } from '../common/interfaces';
+import { Address, ERC20Token } from '../common/interfaces';
 
 export interface TokenBalance {
   amount: string;

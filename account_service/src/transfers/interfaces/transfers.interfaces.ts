@@ -31,7 +31,7 @@ export interface Transfer {
   blockTimeStamp: number;
   gas: number;
   gasPrice: number;
-  gasUsedEther: number;
+  gasUsed: number;
   erc20Transfers: ERC20Transfer[];
 }
 

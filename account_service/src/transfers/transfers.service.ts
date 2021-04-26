@@ -116,7 +116,7 @@ export class TransfersService {
           blockTimeStamp: hashTransfers[0].blockTimeStamp,
           gas: hashTransfers[0].gas,
           gasPrice: hashTransfers[0].gasPrice,
-          gasUsedEther: hashTransfers[0].gas * hashTransfers[0].gasPrice * this.DEFAULT_MULTIPLIER,
+          gasUsed: hashTransfers[0].gas * hashTransfers[0].gasPrice * this.DEFAULT_MULTIPLIER,
           erc20Transfers,
         };
       });

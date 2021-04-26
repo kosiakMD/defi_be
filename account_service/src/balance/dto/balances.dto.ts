@@ -27,7 +27,7 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
   tokenPriceUSD?;
   @ApiProperty({ example: 0 })
   totalPriceUSD?;
-  @ApiProperty({ isArray: true, type: BalanceTokenDto })
+  @ApiProperty({ type: BalanceTokenDto })
   token;
 }
 

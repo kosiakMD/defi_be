@@ -54,7 +54,7 @@ export class ChainApiController {
 
     const concatTxs = (newTxs) => (result.transactions = result.transactions.concat(newTxs));
 
-    if (chains) {
+    if (chains && chains.length) {
       const handleChain = async (chainId, service: ScanService): Promise<any> => {
         if (chains.includes(chainId)) {
           const txs = await Promise.allSettled(

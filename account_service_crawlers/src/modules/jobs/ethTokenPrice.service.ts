@@ -63,17 +63,16 @@ export class EthTokenPriceService {
 
       const usdPrices = [];
       const ethPrices = [];
-      for (const token of Object.keys(tokenPrices.prices)) {
+      const pricesKeys = Object.keys(tokenPrices.prices);
+      const start3 = new Date().getTime();
+      for (const token of pricesKeys) {
         if (tokenPrices.prices[token] !== null) {
-          const start1 = new Date().getTime();
           const txTimestamp = await unpricedTokens.find((upricedTx) => {
             // console.log('upricedTx.tokenaddress', upricedTx.tokenaddress);
             // console.log('token', token);
             // console.log('upricedTx.tokenaddress == token', upricedTx.tokenaddress == token);
             return upricedTx.tokenaddress == token;
           });
-          this.logger.log((new Date().getTime() - start1) / 1000, 'Query find: unpricedTokens');
-
           const tokenPrice = tokenPrices.prices[token][txTimestamp.blocktimestamp];
           const ethPriceTimestamp = ethPrice.prices[ethAddress][txTimestamp.blocktimestamp];
           if (tokenPrice) {
@@ -84,14 +83,18 @@ export class EthTokenPriceService {
           }
         }
       }
+      this.logger.log(
+        (new Date().getTime() - start3) / 1000,
+        `Query find: unpricedTokens of ${pricesKeys.length}`,
+      );
 
-      const start3 = new Date().getTime();
+      const start4 = new Date().getTime();
       await Promise.all([
         entityManager.query(updateTokenUsdPrices(usdPrices)),
         entityManager.query(updateTokenEthPrices(ethPrices)),
       ]);
       this.logger.log(
-        (new Date().getTime() - start3) / 1000,
+        (new Date().getTime() - start4) / 1000,
         'Query: updateTokenUsdPrices & updateTokenEthPrices',
       );
     } catch (e) {
@@ -103,13 +106,18 @@ export class EthTokenPriceService {
     let offset;
     const entityManager = getManager();
 
+    // const ids = await entityManager.query(`SELECT * FROM transactions LIMIT 100`);
+    // this.logger.log(ids, 'ids');
+
     const start = new Date().getTime();
     const lastTransactionId = await entityManager.query(getLastTransactionId());
     this.logger.log((new Date().getTime() - start) / 1000, 'Query: getLastTransactionId');
 
     this.logger.log(lastTransactionId, 'lastTransactionId');
+    this.logger.log(lastTransactionId[0], 'lastTransactionId');
+    this.logger.log(lastTransactionId[0].id, 'lastTransactionId');
 
-    for (offset = 0; offset < Number(lastTransactionId[0].id); offset += 500) {
+    for (offset = 0; offset < Number(lastTransactionId[0].id); offset = offset + 500) {
       this.logger.log(offset, 'offset');
       this.logger.log(new Date().toLocaleTimeString(), 'Start: updateEthUsdTokenPrices');
 

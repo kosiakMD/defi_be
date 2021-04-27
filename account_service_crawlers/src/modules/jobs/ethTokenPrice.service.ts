@@ -37,7 +37,9 @@ export class EthTokenPriceService {
   async updateEthUsdTokenPrices(entityManager, offset): Promise<void> {
     const ethAddress = this.configService.get<string>('PRICE_SERVICE_ETH_ADDRESS');
     try {
+      const start1 = new Date().getTime();
       const unpricedTokens = await entityManager.query(getUnPricedTokens(offset));
+      this.logger.log((new Date().getTime() - start1) / 1000, 'Query: getUnPricedTokens');
 
       const tokens = {
         addresses: [],
@@ -49,18 +51,29 @@ export class EthTokenPriceService {
           tokens.timestamps.push(token.blocktimestamp);
         }
       }
+      const start2 = new Date().getTime();
       const [tokenPrices, ethPrice] = await Promise.all([
         this.getTokenPrices(tokens.addresses, tokens.timestamps),
         this.getTokenPrices([ethAddress], tokens.timestamps),
       ]);
+      this.logger.log(
+        (new Date().getTime() - start2) / 1000,
+        'Get: getTokenPrices & getTokenPrices',
+      );
 
       const usdPrices = [];
       const ethPrices = [];
       for (const token of Object.keys(tokenPrices.prices)) {
         if (tokenPrices.prices[token] !== null) {
-          const txTimestamp = await unpricedTokens.find(
-            (upricedTx) => upricedTx.tokenaddress == token,
-          );
+          const start1 = new Date().getTime();
+          const txTimestamp = await unpricedTokens.find((upricedTx) => {
+            // console.log('upricedTx.tokenaddress', upricedTx.tokenaddress);
+            // console.log('token', token);
+            // console.log('upricedTx.tokenaddress == token', upricedTx.tokenaddress == token);
+            return upricedTx.tokenaddress == token;
+          });
+          this.logger.log((new Date().getTime() - start1) / 1000, 'Query find: unpricedTokens');
+
           const tokenPrice = tokenPrices.prices[token][txTimestamp.blocktimestamp];
           const ethPriceTimestamp = ethPrice.prices[ethAddress][txTimestamp.blocktimestamp];
           if (tokenPrice) {
@@ -71,10 +84,16 @@ export class EthTokenPriceService {
           }
         }
       }
+
+      const start3 = new Date().getTime();
       await Promise.all([
         entityManager.query(updateTokenUsdPrices(usdPrices)),
         entityManager.query(updateTokenEthPrices(ethPrices)),
       ]);
+      this.logger.log(
+        (new Date().getTime() - start3) / 1000,
+        'Query: updateTokenUsdPrices & updateTokenEthPrices',
+      );
     } catch (e) {
       this.logger.error(e, 'Token price update error');
     }
@@ -83,9 +102,20 @@ export class EthTokenPriceService {
   public async updateTokenPrices(): Promise<void> {
     let offset;
     const entityManager = getManager();
+
+    const start = new Date().getTime();
     const lastTransactionId = await entityManager.query(getLastTransactionId());
-    for (offset = 0; offset < Number(lastTransactionId[0].id); offset = offset + 500) {
+    this.logger.log((new Date().getTime() - start) / 1000, 'Query: getLastTransactionId');
+
+    this.logger.log(lastTransactionId, 'lastTransactionId');
+
+    for (offset = 0; offset < Number(lastTransactionId[0].id); offset += 500) {
+      this.logger.log(offset, 'offset');
+      this.logger.log(new Date().toLocaleTimeString(), 'Start: updateEthUsdTokenPrices');
+
+      const start = new Date().getTime();
       await this.updateEthUsdTokenPrices(entityManager, offset);
+      this.logger.log((new Date().getTime() - start) / 1000, 'Query: updateEthUsdTokenPrices');
     }
   }
 }

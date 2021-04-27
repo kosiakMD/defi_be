@@ -27,14 +27,16 @@ import { DbService } from './repository/db.service';
 
 @Injectable()
 export class BalanceService {
-  private readonly instanceChainProvider: Web3;
+  private readonly instanceChainProviderEth: Web3;
+  private readonly instanceChainProviderBsc: Web3;
 
   constructor(
     private readonly dbService: DbService,
     private readonly chainProvider: Web3Provider,
     private readonly priceService: PriceService,
   ) {
-    this.instanceChainProvider = this.chainProvider.instanceEth();
+    this.instanceChainProviderEth = this.chainProvider.instanceEth();
+    this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
   }
 
   private getPricesAndBalances(tokensAddresses, chainId, accountsArray): Promise<any[]> {
@@ -43,7 +45,9 @@ export class BalanceService {
       Promise.all(
         accountsArray.map(async (account) => ({
           account,
-          amount: await this.instanceChainProvider.eth.getBalance(account),
+          amount: chainId === 1
+            ? await this.instanceChainProviderEth.eth.getBalance(account)
+            : await this.instanceChainProviderBsc.eth.getBalance(account)
         })),
       ),
     ]);
@@ -92,7 +96,7 @@ export class BalanceService {
     const ethPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
     const wethPrice = this.getUtilTokenPrice(WETH_ADDRESS, tokenPrices.prices);
 
-    const tokenInst = await new this.instanceChainProvider.eth.Contract(
+    const tokenInst = await new this.instanceChainProviderEth.eth.Contract(
       abi as AbiItem[],
       WETH_ADDRESS,
     );

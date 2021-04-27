@@ -9,11 +9,12 @@ import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';
 import { SECONDS_IN_DAY, SECONDS_IN_HOUR, timestampNow } from '../utils/time';
 import {
+  PriceBatchRequestDto,
   CurrentPricesPayload,
   HistoricalPricesPayload,
   PriceResponseDto,
   TimestampKeyPrice,
-} from './dto/price.response.dto';
+} from './dto';
 import { CurrentPricesRequest, HistoricalPricesRequest } from './interfaces';
 import { AssetPrice } from './models';
 
@@ -90,6 +91,34 @@ export class PriceService {
     const allPrices = await this.getAllAssetPrices(chain, currency, addresses);
     const response = addresses.reduce<{ [address: string]: TimestampKeyPrice }>((map, address) => {
       const assetPrices = allPrices.find((asset) => asset.address === address);
+      const prices = assetPrices?.prices || [];
+      return {
+        ...map,
+        [address]: this.matchPrices(
+          this.allowedHistoricalPriceThresholdInSeconds,
+          timestamps,
+          prices,
+        ),
+      };
+    }, {});
+
+    return {
+      prices: response,
+      chain: await this.chainService.getById(chain),
+      currency: await this.currencyService.getById(currency),
+    };
+  }
+
+  public async getPricesInBatches(
+    query: PriceBatchRequestDto,
+  ): Promise<PriceResponseDto<HistoricalPricesPayload>> {
+    const { chain, currency, assets } = query;
+    const addresses = assets.map(({ address }) => address);
+
+    const allPrices = await this.getAllAssetPrices(chain, currency, addresses);
+    const response = addresses.reduce<{ [address: string]: TimestampKeyPrice }>((map, address) => {
+      const assetPrices = allPrices.find((asset) => asset.address === address);
+      const timestamps = assets.find((asset) => asset.address === address)?.timestamps || [];
       const prices = assetPrices?.prices || [];
       return {
         ...map,

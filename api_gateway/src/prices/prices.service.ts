@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
 import { ChainDto, CurrencyDto, PriceQueryDto, PriceResponseDto, PricesPayload } from './dto';
+import { PriceBatchRequestDto } from './dto/priceBatch.request.dto';
 
 @Injectable()
 export class PricesService {
@@ -57,6 +58,25 @@ export class PricesService {
 
       const data = await this.httpService
         .post(this.getPricesUrl, query)
+        .pipe(map((response) => response.data))
+        .toPromise();
+
+      this.logger.timeEnd('request: ' + this.getPricesUrl);
+
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getPricesInBatch(query: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {
+    try {
+      this.logger.time('request: ' + this.getPricesUrl);
+
+      const data = await this.httpService
+        // TODO: Path should be in config. Just quick fix.
+        .post(`${this.getPricesUrl}/batch`, query)
         .pipe(map((response) => response.data))
         .toPromise();
 

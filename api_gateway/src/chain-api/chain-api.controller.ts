@@ -52,55 +52,57 @@ export class ChainApiController {
       transactions: [],
     };
 
-    const handle = async (chainId, service: ScanService): Promise<any> => {
-      if (chains.includes(chainId)) {
-        const txs = await Promise.allSettled(
-          addresses.map((address) => service.getScanTransactions(address)),
-        );
-        txs.forEach((tx) => {
-          if (tx.status === 'fulfilled') {
-            result.transactions.push(tx.value.transactions);
-            if (tx.value.error) result.errors.push(tx.value.error);
-          } else {
-            result.errors.push(tx.reason);
-          }
-        });
-      }
-    };
+    const concatTxs = (newTxs) => (result.transactions = result.transactions.concat(newTxs));
 
     if (chains) {
+      const handleChain = async (chainId, service: ScanService): Promise<any> => {
+        if (chains.includes(chainId)) {
+          const txs = await Promise.allSettled(
+            addresses.map((address) => service.getScanTransactions(address)),
+          );
+          txs.forEach((tx) => {
+            if (tx.status === 'fulfilled') {
+              concatTxs(tx.value.transactions);
+              if (tx.value.error) result.errors.push(tx.value.error);
+            } else {
+              result.errors.push(tx.reason);
+            }
+          });
+        }
+      };
       await Promise.all([
-        handle(this.ethChainId, this.etherscanService),
-        handle(this.bscChainId, this.bscscanService),
+        handleChain(this.ethChainId, this.etherscanService),
+        handleChain(this.bscChainId, this.bscscanService),
       ]);
-      if (result.errors.length) {
-        result.status = ResultStatus.error;
-      }
-      return result;
     } else {
       const [ethTransactions, bscTransactions] = await Promise.allSettled([
         Promise.all(addresses.map((address) => this.etherscanService.getScanTransactions(address))),
         Promise.all(addresses.map((address) => this.bscscanService.getScanTransactions(address))),
       ]);
 
-      const checkFulfillment = (txResultArray): any => {
-        for (const chainTxsResult of txResultArray) {
+      const checkFulfillment = (chainsTxResults): any => {
+        chainsTxResults.forEach((chainTxsResult) => {
           if (chainTxsResult.status === 'fulfilled') {
             chainTxsResult.value.forEach((tx) => {
-              result.transactions.push(tx.transactions);
+              concatTxs(tx.transactions);
               if (tx.error) result.errors.push(tx.error);
             });
           } else {
             result.errors.push(chainTxsResult.reason);
           }
-        }
-
+        });
         if (result.errors.length) {
           result.status = ResultStatus.error;
         }
         return result;
       };
-      return checkFulfillment([ethTransactions, bscTransactions]);
+
+      checkFulfillment([ethTransactions, bscTransactions]);
     }
+
+    if (result.errors.length) {
+      result.status = ResultStatus.error;
+    }
+    return result;
   }
 }

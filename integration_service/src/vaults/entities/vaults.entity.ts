@@ -18,7 +18,7 @@ export class VaultsEntity {
   project: string;
 
   @Column({ name: 'chain', nullable: true })
-  chain: string;
+  chain: number;
 
   @Column({ name: 'apy', nullable: true, type: 'json' })
   apy: APY;

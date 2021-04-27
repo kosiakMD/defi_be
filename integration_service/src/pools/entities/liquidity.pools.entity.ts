@@ -13,7 +13,7 @@ export class LiquidityPoolsEntity {
   address: string;
 
   @Column({ name: 'chain', nullable: true })
-  chain: string;
+  chain: number;
 
   @Column({ name: 'project', nullable: true })
   project: string;

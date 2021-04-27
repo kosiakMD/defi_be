@@ -6,7 +6,7 @@ import { splitToArray } from '../utils/transform';
 
 export class TransactionQueryDto {
   @IsOptional()
-  @Transform(({ value }) => splitToArray(value))
+  @Transform(({ value }) => splitToArray(value).map((x) => parseInt(x, 10)))
   @IsInt({ each: true })
   @ApiProperty({
     type: Number,

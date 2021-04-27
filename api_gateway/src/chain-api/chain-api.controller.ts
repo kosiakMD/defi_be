@@ -5,8 +5,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '../common/Logger/Logger.service';
 import { TransactionQueryDto } from './chain-api.dto';
 import { TransactionsResponseDto } from './models/dto/transactions.dto';
+import { ResultStatus } from './models/interfaces/transactions.interfaces';
 import { BscscanService } from './modules/bscscan/bscscan.service';
 import { EtherscanService } from './modules/etherscan/etherscan.service';
+import { ScanService } from './modules/scan.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from './modules/utils/utils';
 
 @ApiTags('Transactions')
@@ -44,45 +46,60 @@ export class ChainApiController {
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
     const { chains, addresses } = query;
 
+    const result = {
+      status: ResultStatus.ok,
+      errors: [],
+      transactions: [],
+    };
+
+    const handle = async (chainId, service: ScanService): Promise<any> => {
+      if (chains.includes(chainId)) {
+        const txs = await Promise.allSettled(
+          addresses.map((address) => service.getScanTransactions(address)),
+        );
+        txs.forEach((tx) => {
+          if (tx.status === 'fulfilled') {
+            result.transactions.push(tx.value.transactions);
+            if (tx.value.error) result.errors.push(tx.value.error);
+          } else {
+            result.errors.push(tx.reason);
+          }
+        });
+      }
+    };
+
     if (chains) {
-      const response = [];
-      if (chains.includes(this.ethChainId.toString())) {
-        const ethTransactions = await Promise.allSettled(
-          addresses.map((address) => this.etherscanService.getEtherScanTransactions(address)),
-        );
-        response.push(ethTransactions[0]['value']);
+      await Promise.all([
+        handle(this.ethChainId, this.etherscanService),
+        handle(this.bscChainId, this.bscscanService),
+      ]);
+      if (result.errors.length) {
+        result.status = ResultStatus.error;
       }
-      if (chains.includes(this.bscChainId.toString())) {
-        const bscTransactions = await Promise.allSettled(
-          addresses.map((address) => this.bscscanService.getBscScanTransactions(address)),
-        );
-        if (bscTransactions[0].status == 'fulfilled') {
-          response.push(bscTransactions[0]['value']);
-        }
-      }
-      return response[0];
+      return result;
     } else {
       const [ethTransactions, bscTransactions] = await Promise.allSettled([
-        Promise.all(
-          addresses.map((address) => this.etherscanService.getEtherScanTransactions(address)),
-        ),
-        Promise.all(
-          addresses.map((address) => this.bscscanService.getBscScanTransactions(address)),
-        ),
+        Promise.all(addresses.map((address) => this.etherscanService.getScanTransactions(address))),
+        Promise.all(addresses.map((address) => this.bscscanService.getScanTransactions(address))),
       ]);
 
       const checkFulfillment = (txResultArray): any => {
-        const result = [];
-        for (const txArray of txResultArray) {
-          if (txArray.status == 'fulfilled') {
-            for (const tx of txArray.value[0]) {
-              result.push(tx);
-            }
+        for (const chainTxsResult of txResultArray) {
+          if (chainTxsResult.status === 'fulfilled') {
+            chainTxsResult.value.forEach((tx) => {
+              result.transactions.push(tx.transactions);
+              if (tx.error) result.errors.push(tx.error);
+            });
+          } else {
+            result.errors.push(chainTxsResult.reason);
           }
+        }
+
+        if (result.errors.length) {
+          result.status = ResultStatus.error;
         }
         return result;
       };
-
       return checkFulfillment([ethTransactions, bscTransactions]);
     }
   }

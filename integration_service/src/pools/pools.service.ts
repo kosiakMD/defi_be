@@ -28,20 +28,27 @@ export class PoolsService {
 
     const uniswapPools = dbPools.filter((p) => {
       return (
-        p.project == PROJECT_UNISWAP &&
+        p.project === PROJECT_UNISWAP &&
         p.reserveUsd > UNI_MIN_RESERVE &&
-        !UNI_PAIRS_BLACKLIST.find((address) => address == p.address)
+        !UNI_PAIRS_BLACKLIST.find((address) => address === p.address)
       );
     });
 
     const sushiswapPools = dbPools.filter((p) => {
-      return p.project == PROJECT_SUSHISWAP && p.reserveUsd > SUSHISWAP_MIN_RESERVE;
+      return p.project === PROJECT_SUSHISWAP && p.reserveUsd > SUSHISWAP_MIN_RESERVE;
     });
 
     const pancakePools = dbPools.filter((p) => {
-      return p.project == PROJECT_PANCAKE && p.reserveUsd > PANCAKE_MIN_RESERVE;
+      return p.project === PROJECT_PANCAKE && p.reserveUsd > PANCAKE_MIN_RESERVE;
     });
 
     return [...uniswapPools, ...sushiswapPools, ...pancakePools];
+  }
+
+  async getProjectPools(project: string): Promise<LiquidityPoolsEntity[]> {
+    return this.liquidityPoolsRepository
+      .createQueryBuilder('pools')
+      .where('pools.project = :project', {project: project})
+      .getMany();
   }
 }

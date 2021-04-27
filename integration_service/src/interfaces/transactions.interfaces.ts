@@ -7,10 +7,10 @@ import {
 import { LiquidityPosition, UniswapLiquidityPosition } from './liquidity.position.interfaces';
 
 export interface UniswapResponseData {
-  uniswapSwapsFrom: Map<string, SwapsInterface[]>;
-  uniswapMints: Map<string, MintsInterface[]>;
-  uniswapBurns: Map<string, BurnsInterface[]>;
-  uniswapSnapshots: Map<string, SnapshotsInterface[]>;
+  uniswapSwapsFrom?: Map<string, SwapsInterface[]>;
+  uniswapMints?: Map<string, MintsInterface[]>;
+  uniswapBurns?: Map<string, BurnsInterface[]>;
+  uniswapSnapshots?: Map<string, SnapshotsInterface[]>;
   uniswapLiquidityPositions: Map<string, UniswapLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
 }

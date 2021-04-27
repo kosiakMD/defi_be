@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
+import { UniswapLiquidityPosition } from '../interfaces/liquidity.position.interfaces';
 
 export const PROTOCOL_NAME = 'pancake';
 export const abi = [
@@ -293,13 +294,66 @@ export function groupBy(list, keyGetter): Map<any, any> {
   return map;
 }
 
+// will be changed
+export async function getDbDataByAddresses<T, K, V, E>(
+  repository1: Repository<T>,
+  repository2: Repository<K>,
+  repository3: Repository<V>,
+  repository4: Repository<E>,
+  addresses: string[],
+) {
+  const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
+  const [swapFrom, mint, burn, snapshot] = await Promise.all([
+    repository1
+      .createQueryBuilder()
+      .where(`from_address IN (:...fields)`, { fields: addressesArray })
+      .orderBy('block_number', 'DESC')
+      .limit(2000)
+      .getMany(),
+    repository2
+      .createQueryBuilder()
+      .where(`to_address IN (:...fields)`, { fields: addressesArray })
+      .orderBy('block_number', 'DESC')
+      .limit(2000)
+      .getMany(),
+    repository3
+      .createQueryBuilder()
+      .where(`to_address IN (:...fields)`, { fields: addressesArray })
+      .orderBy('block_number', 'DESC')
+      .limit(2000)
+      .getMany(),
+    repository4
+      .createQueryBuilder()
+      .where(`user_address IN (:...fields)`, { fields: addressesArray })
+      .getMany(),
+  ]);
+
+  const uniswapSnapshots = groupBy(snapshot, (uniswapSnapshot) => uniswapSnapshot.userAddress);
+  const uniswapSwapsFrom = groupBy(swapFrom, (swap) => swap.fromAddress);
+  const uniswapMints = groupBy(mint, (uniswapMint) => uniswapMint.toAddress);
+  const uniswapBurns = groupBy(burn, (uniswapBurn) => uniswapBurn.toAddress);
+
+  return {
+    userAddresses: addressesArray,
+    response: {
+      uniswapSwapsFrom,
+      uniswapMints,
+      uniswapBurns,
+      uniswapSnapshots,
+      uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
+      sushiswapStakingPosition: new Map<string, any>()
+    },
+  };
+}
+
+
 export async function getDataByAddresses<T, K, V, E>(
   repository1: Repository<T>,
   repository2: Repository<K>,
   repository3: Repository<V>,
   repository4: Repository<E>,
   addresses: string[],
-  subgraph: UniswapSubgraph,
+  subgraph: UniswapSubgraph = null,
 ) {
   const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
   const flag = subgraph.constructor.name === 'SushiswapSubgraph';

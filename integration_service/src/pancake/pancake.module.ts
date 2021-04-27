@@ -11,6 +11,8 @@ import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PancakeController } from './pancake.controller';
 import { PancakeService } from './pancake.service';
+import { AccountModule } from '../account/account.module';
+import { PoolsModule } from '../pools/pools.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { PancakeService } from './pancake.service';
     ThegraphModule,
     ChainModule,
     PriceModule,
+    AccountModule,
+    PoolsModule,
   ],
   controllers: [PancakeController],
   providers: [PancakeService, Mapper],

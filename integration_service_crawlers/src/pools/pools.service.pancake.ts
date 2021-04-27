@@ -4,6 +4,7 @@ import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
 import { Web3Provider } from '../chain/web3.provider';
+import { DatabaseService } from '../jobs/db/database.service';
 import { BlocksBscSubgraph } from '../thegraph/blocks/blocks.bsc.subgraph';
 import { PancakeSubgraph } from '../thegraph/pancake/pancake.subgraph';
 import { LiquidityPool } from './dto/liquiditypool.dto';
@@ -15,7 +16,6 @@ import {
   TIMESTAMP_MONTH_BEFORE_CURRENT,
   TIMESTAMP_WEEK_BEFORE_CURRENT,
 } from './pools.utils';
-import { BUSD } from './tokens/BUSD';
 import { UNISWAP_PAIR_ABI } from './utils/pair';
 
 @Injectable()
@@ -32,20 +32,19 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
     protected readonly pancakeSubgraph: PancakeSubgraph,
     protected readonly blocksBscSubgraph: BlocksBscSubgraph,
     protected readonly web3Provider: Web3Provider,
+    protected readonly databaseService: DatabaseService,
   ) {
     super(pancakeSubgraph, blocksBscSubgraph);
     this.web3ProviderBSC = web3Provider.instanceBsc();
   }
 
   async getCurrentPairs(): Promise<LiquidityPool[]> {
-    const pairsData = await this.uniswapSubgraph.getPairs(this.minTVL);
-    const subgraphPairs = pairsData.data.from0to1000;
-    subgraphPairs.forEach((sPair) => {
-      // this pair is saved with wrong token in the subgraph:
-      if (sPair.id == '0x1b96b92314c44b159149f7e0303511fb2fc4774f') {
-        sPair.token1 = BUSD;
-      }
-    });
+    const pools = await this.findPancakePools();
+
+    // getting data from the subgraph
+    // const subgraphPairs = pairsData.data.from0to1000;
+    // const pairsData = await this.uniswapSubgraph.getPairs(this.minTVL);
+    const subgraphPairs = this.poolsToPairs(pools);
 
     const allReserves: Array<PairReserves> = await Promise.all(
       subgraphPairs.map((p) => {
@@ -61,8 +60,8 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
 
     // change pairs values because subgraph is not synced yet:
     subgraphPairs.map((p) => {
-      const reserves = allReserves.find((r) => r.pair == p.id);
-      const supply = allSupplies.find((r) => r.pair == p.id);
+      const reserves = allReserves.find((r) => r.pair === p.id);
+      const supply = allSupplies.find((r) => r.pair === p.id);
       p.totalSupply = supply.supply * Math.pow(10, -18);
       p.reserve0 = reserves.reserve0 * Math.pow(10, -p.token0.decimals);
       p.reserve1 = reserves.reserve1 * Math.pow(10, -p.token0.decimals);
@@ -73,10 +72,10 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
     subgraphPairs.reduce((prices, p) => {
       let token0PriceUSD = 0;
       let token1PriceUSD = 0;
-      if (p.token0.id == this.WBNB_TOKEN) {
+      if (p.token0.id === this.WBNB_TOKEN) {
         token0PriceUSD = pancakeBNBPrice;
       }
-      if (p.token1.id == this.WBNB_TOKEN) {
+      if (p.token1.id === this.WBNB_TOKEN) {
         token1PriceUSD = pancakeBNBPrice;
       }
       if (token0PriceUSD === 0) {
@@ -128,10 +127,12 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
           {
             ...p.token0,
             positionInPool: 0,
+            reserve: p.reserve0,
           },
           {
             ...p.token1,
             positionInPool: 1,
+            reserve: p.reserve1,
           },
         ],
       };
@@ -140,15 +141,22 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
     }, []);
   }
 
+  async findPancakePools() {
+    const q = `select * from defi.public.liquidity_pools where project = 'pancake'`;
+    const databaseClient = await this.databaseService.getClient();
+    const result = await databaseClient.query(q);
+    return result.rows;
+  }
+
   private findBNBPriceForToken(token: string, pairs: Pair[]) {
-    let bnbPair = pairs.find((p) => p.token0.id == token && p.token1.id == this.WBNB_TOKEN);
+    let bnbPair = pairs.find((p) => p.token0.id === token && p.token1.id === this.WBNB_TOKEN);
     if (!bnbPair) {
-      bnbPair = pairs.find((p) => p.token1.id == token && p.token0.id == this.WBNB_TOKEN);
+      bnbPair = pairs.find((p) => p.token1.id === token && p.token0.id === this.WBNB_TOKEN);
     }
     if (!bnbPair) {
       return 0;
     }
-    if (bnbPair.token0.id == token) {
+    if (bnbPair.token0.id === token) {
       return bnbPair.reserve1 / bnbPair.reserve0;
     } else {
       return bnbPair.reserve0 / bnbPair.reserve1;
@@ -156,8 +164,8 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
   }
 
   private deriveBNBPrice(pools: Pair[]) {
-    const BUSD_BNB_PAIR = pools.find((p) => p.id == this.BUSD_BNB_PAIR);
-    const USDT_BNB_PAIR = pools.find((p) => p.id == this.USDT_BNB_PAIR);
+    const BUSD_BNB_PAIR = pools.find((p) => p.id === this.BUSD_BNB_PAIR);
+    const USDT_BNB_PAIR = pools.find((p) => p.id === this.USDT_BNB_PAIR);
 
     const totalLiquidityBNB = Number(BUSD_BNB_PAIR.reserve0) + Number(USDT_BNB_PAIR.reserve1);
 
@@ -227,6 +235,25 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
       allPairsDataWeekBefore,
       allPairsDataMonthBefore,
     ]);
+  }
+
+  private poolsToPairs(pools: Array<any>): Pair[] {
+    return pools.reduce((reduced, pool) => {
+      const token0 = pool.pool_tokens.find((p) => p.positionInPool === 0);
+      const token1 = pool.pool_tokens.find((p) => p.positionInPool === 1);
+      return [
+        ...reduced,
+        {
+          id: pool.address,
+          token0: token0,
+          token1: token1,
+          reserve0: token0.reserve,
+          reserve1: token1.reserve,
+          totalSupply: pool.token.totalSupply,
+          reserveUSD: pool.reserve_usd,
+        },
+      ];
+    }, []);
   }
 }
 

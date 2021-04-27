@@ -206,11 +206,11 @@ export class Mapper {
 
       // handle swap with more then 1 pair i such way
       const existedSwap = transactions.txs.find(
-        (t) => t.type == 'swap' && t.hash == swap.information.transaction.id,
+        (t) => t.type === 'swap' && t.hash === swap.information.transaction.id,
       ) as SwapTransaction;
       if (existedSwap) {
         // can be used logIndex here, but as subgraph returns data in the same order this works too
-        if (ammSwap.tokenIn.address == existedSwap.tokenOut.address) {
+        if (ammSwap.tokenIn.address === existedSwap.tokenOut.address) {
           existedSwap.tokenOut = ammSwap.tokenOut;
         }
       } else {
@@ -263,10 +263,10 @@ export class Mapper {
         (s) => s.information.pair.id === l.lpToken.address,
       );
 
-      if (l.lpTokenBalance === '0') {
+      if (l.lpTokenBalance === '0' && currentPairSnapshots[currentPairSnapshots.length - 1]) {
         l.exitedAt = currentPairSnapshots[currentPairSnapshots.length - 1].information.timestamp;
       }
-      const uniswapLpPosition = lpPositions.find((u) => u.pair.id == l.lpToken.address);
+      const uniswapLpPosition = lpPositions.find((u) => u.pair.id === l.lpToken.address);
       // liquidity snapshots is already ordered
       for (let i = 0; i < currentPairSnapshots.length; i++) {
         const sn1Data: FeesSn1Data = {
@@ -281,7 +281,7 @@ export class Mapper {
         };
 
         let sn2Data: FeesSn2Data = null;
-        if (currentPairSnapshots[i + 1] != undefined) {
+        if (currentPairSnapshots[i + 1] !== undefined) {
           sn2Data = {
             tokenSupply: new BN(
               currentPairSnapshots[i + 1].information.liquidityTokenTotalSupply,
@@ -458,7 +458,7 @@ export class Mapper {
         };
 
         liquidityPositions.forEach((element1) => {
-          if (element1.pair.id == element.pool.pair) {
+          if (element1.pair.id === element.pool.pair) {
             lpToken.address = element1.pair.id;
             lpToken.totalSupply = element1.pair.totalSupply;
 

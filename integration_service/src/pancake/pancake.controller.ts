@@ -17,7 +17,7 @@ export class PancakeController {
     example: '',
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  getDataByAddresses(@Query('addresses') addresses: string): Promise<Base[]> {
-    return this.pancakeService.getData(addresses);
+  getDataByAddresses(@Query('addresses') addresses: string, @Query('internal') internal: number = 1): Promise<Base[]> {
+    return internal === 1 ? this.pancakeService.getDataInternal(addresses) : this.pancakeService.getDataExternal(addresses)
   }
 }

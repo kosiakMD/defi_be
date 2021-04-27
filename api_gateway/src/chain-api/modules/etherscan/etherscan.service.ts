@@ -33,7 +33,7 @@ export class EtherscanService {
   }
 
   private getTransactions(address, internal = false): Promise<any> {
-    const action = internal ? 'txlistinternal' : 'tokentx';
+    const action = internal ? 'txlistinternal' : 'txlist';
     return this.httpService
       .get(this.etherScanUrl, {
         params: {
@@ -51,16 +51,17 @@ export class EtherscanService {
   }
 
   async getEtherScanTransactions(address: string): Promise<any[]> {
-    this.logger.time(`request: tokentx & txlistinternal ${this.etherScanUrl}`);
+    this.logger.time(`request: txlist & txlistinternal ${this.etherScanUrl}`);
     const [ethTx, ethTxInternal] = await Promise.all([
       this.getTransactions(address),
       this.getTransactions(address, true),
     ]);
-    this.logger.timeEnd(`request: tokentx & txlistinternal ${this.etherScanUrl}`);
+    this.logger.timeEnd(`request: txlist & txlistinternal ${this.etherScanUrl}`);
 
+    // TODO: format with no map but forEach and better check with default [] value
     const normalTx =
       ethTx && ethTx.result
-        ? ethTx.result.map((tx) => Object.assign(tx, { isInternal: false, isError: 0 }))
+        ? ethTx.result.map((tx) => Object.assign(tx, { isInternal: false }))
         : [];
     const internalTx =
       ethTxInternal && ethTxInternal.result

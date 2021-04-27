@@ -1,5 +1,5 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../common/Logger/Logger.service';
@@ -25,31 +25,24 @@ export class ChainApiController {
   }
 
   @Get('/')
-  // @ApiQuery({
-  //   name: 'addresses',
-  //   type: String,
-  //   description: 'Array of Addresses (comma separated)',
-  //   example:
-  //     '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
-  // })
-  // @ApiQuery({
-  //   name: 'chains',
-  //   type: String,
-  //   required: false,
-  //   description: `Array of chains' IDs (comma separated)`,
-  //   // example: '1,2',
-  //   example: '',
-  // })
-  // @ApiResponse({ status: 200, type: Object, isArray: true })
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    description: 'Array of Addresses (comma separated)',
+    example:
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: String,
+    required: false,
+    description: `Array of chains' IDs (comma separated)`,
+    // example: '1,2',
+    example: '',
+  })
   @ApiResponse({ status: 200, type: TransactionsResponseDto, isArray: true })
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
     const { chains, addresses } = query;
-
-    console.log(chains);
-    console.log(addresses);
-    // if (!addresses) {
-    //   return [];
-    // }
 
     if (chains) {
       const response = [];
@@ -57,14 +50,12 @@ export class ChainApiController {
         const ethTransactions = await Promise.allSettled(
           addresses.map((address) => this.etherscanService.getEtherScanTransactions(address)),
         );
-        console.log('ethTransactions', ethTransactions);
         response.push(ethTransactions[0]['value']);
       }
       if (chains.includes(this.bscChainId.toString())) {
         const bscTransactions = await Promise.allSettled(
           addresses.map((address) => this.bscscanService.getBscScanTransactions(address)),
         );
-        console.log('bscTransactions', bscTransactions);
         if (bscTransactions[0].status == 'fulfilled') {
           response.push(bscTransactions[0]['value']);
         }
@@ -79,8 +70,6 @@ export class ChainApiController {
           addresses.map((address) => this.bscscanService.getBscScanTransactions(address)),
         ),
       ]);
-      console.log('ethTransactions', ethTransactions);
-      console.log('bscTransactions', bscTransactions);
 
       const checkFulfillment = (txResultArray): any => {
         const result = [];

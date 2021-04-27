@@ -61,7 +61,7 @@ export class BscscanService {
 
     const normalTx =
       bscTx && bscTx.result
-        ? bscTx.result.map((tx) => Object.assign(tx, { isInternal: false, isError: 0 }))
+        ? bscTx.result.map((tx) => Object.assign(tx, { isInternal: false }))
         : [];
     const internalTx =
       bscTxInternal && bscTxInternal.result

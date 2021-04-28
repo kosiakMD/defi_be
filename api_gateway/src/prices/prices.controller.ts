@@ -1,8 +1,15 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { ChainDto, CurrencyDto, PriceQueryDto, PriceRequestDto, PriceResponseDto, PricesPayload } from './dto';
-import { PriceBatchRequestDto } from './dto/priceBatch.request.dto';
 
+import {
+  ChainDto,
+  CurrencyDto,
+  PriceQueryDto,
+  PriceRequestDto,
+  PriceResponseDto,
+  PricesPayload,
+} from './dto';
+import { PriceBatchRequestDto } from './dto/priceBatch.request.dto';
 import { PricesService } from './prices.service';
 
 @ApiTags('Prices')
@@ -24,7 +31,9 @@ export class PricesController {
 
   @Post('/batch')
   @ApiOkResponse({ type: PriceResponseDto })
-  getPricesInBatch(@Body() request: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {
+  getPricesInBatch(
+    @Body() request: PriceBatchRequestDto,
+  ): Promise<PriceResponseDto<PricesPayload>> {
     return this.service.getPricesInBatch(request);
   }
 

@@ -32,7 +32,7 @@ export class PancakeController {
     @Query('addresses') addresses: string,
     @Query('internal') internal,
   ): Promise<Base[]> {
-    return Number(internal) === 1
+    return (internal === undefined || Number(internal) === 1)
       ? this.pancakeService.getDataInternal(addresses)
       : this.pancakeService.getDataExternal(addresses);
   }

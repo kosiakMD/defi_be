@@ -17,6 +17,7 @@ export class ArrayValidationParseIntPipe implements PipeTransform<string[], numb
         if (!Number.isInteger(result)) {
           throw new BadRequestException(this.errMsg(this.field));
         }
+        return result;
       });
     } catch (e) {
       throw new BadRequestException(this.errMsg(this.field));

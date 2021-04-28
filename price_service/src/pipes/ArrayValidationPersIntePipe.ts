@@ -8,6 +8,7 @@ export class ArrayValidationParseIntPipe implements PipeTransform<string[], numb
   constructor(private readonly field: string, private readonly radix: number = 10) {}
 
   transform(value: any): number[] {
+    if (!value[this.field]) return value;
     if (!Array.isArray(value[this.field])) {
       throw new BadRequestException(this.errMsg(this.field));
     }

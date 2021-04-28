@@ -58,7 +58,7 @@ export class EtherscanTransactionsService {
     if (type === 'normal') {
       transactions = await this.etherscan.getTransactions(address.toLowerCase());
     }
-    if (typeof transactions != 'object') {
+    if (typeof transactions !== 'object') {
       transactions = [];
     }
 

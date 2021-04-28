@@ -7,7 +7,7 @@ export interface Balance {
 }
 
 export interface BalanceToken {
-  chainId: number;
+  chainId?: number;
   decimals: number;
   symbol: string;
   name: string;
@@ -32,6 +32,16 @@ export interface TokenBalance {
   token: ERC20Token | BalanceToken;
 }
 
+export interface NoDbTokenPrice {
+  address: string;
+  price: number;
+}
+
+export interface Web3TokenBalance {
+  account: string;
+  amount: string;
+}
+
 export interface AccountTokenBalance extends TokenBalance {
   account: string;
 }
@@ -39,6 +49,10 @@ export interface AccountTokenBalance extends TokenBalance {
 export interface AccountBalance {
   totalUsd: number;
   tokens: AccountTokenBalance[];
+}
+
+export interface EthTokenBalance {
+  [key: string]: BalanceToken;
 }
 
 export type BalancesResponse = { [key: string]: AccountBalance };

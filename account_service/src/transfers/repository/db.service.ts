@@ -33,6 +33,6 @@ export class DbService {
     where ${transactionTable}."fromAddress" IN (${addresses})
     or ${transactionTable}."toAddress" IN (${addresses})
     order by ${transactionTable}.id DESC
-    limit 5000`);
+    limit 1000`);
   }
 }

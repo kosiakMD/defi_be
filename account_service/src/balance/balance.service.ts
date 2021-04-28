@@ -10,7 +10,6 @@ import {
   CHAIN_ID_ETH,
   decimalsAmount,
   ETH_BNB_ADDRESS,
-  ETH_DECIMALS,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
   WETH_ADDRESS,
@@ -19,11 +18,15 @@ import { CurrentPricesPayload } from './dto/price.response.dto';
 import {
   AccountTokenBalance,
   BalancesResponse,
+  BalanceToken,
+  NoDbTokenPrice,
   TokenBalance,
   TokenPrices,
   TokenRow,
+  Web3TokenBalance,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
+import { bnbToken, ETH_TOKEN_ARRAY } from './tokens/tokens';
 
 @Injectable()
 export class BalanceService {
@@ -45,12 +48,55 @@ export class BalanceService {
       Promise.all(
         accountsArray.map(async (account) => ({
           account,
-          amount: chainId === 1
-            ? await this.instanceChainProviderEth.eth.getBalance(account)
-            : await this.instanceChainProviderBsc.eth.getBalance(account)
+          amount:
+            +chainId === 1
+              ? await this.instanceChainProviderEth.eth.getBalance(account)
+              : await this.instanceChainProviderBsc.eth.getBalance(account),
         })),
       ),
     ]);
+  }
+
+  private async getArrayOfTokenBalances(
+    ethBalances: Web3TokenBalance[],
+    priceArray: NoDbTokenPrice[],
+    balanceArray: BalanceToken[],
+    chain: number,
+  ) {
+    const etherBalances = [];
+    for (const balance of ethBalances) {
+      for (let i = 0; i < balanceArray.length; i++) {
+        const price = priceArray.find((item) => item.address === balanceArray[i].address);
+        if (balanceArray[i].address === ETH_BNB_ADDRESS) {
+          const temporary = this.mapTokenBalances({
+            ...balance,
+            token: balanceArray[i],
+            chainId: chain,
+            price: price.price,
+          });
+          etherBalances.push(temporary);
+          continue;
+        }
+
+        const tokenInst = await new this.instanceChainProviderEth.eth.Contract(
+          abi as AbiItem[],
+          balanceArray[i].address,
+        );
+        const tokenAmount = await tokenInst.methods.balanceOf(balance.account).call();
+        if (+tokenAmount !== 0) {
+          etherBalances.push(
+            this.mapTokenBalances({
+              account: balance.account,
+              amount: tokenAmount,
+              token: balanceArray[i],
+              chainId: chain,
+              price: price.price,
+            }),
+          );
+        }
+      }
+    }
+    return etherBalances;
   }
 
   public async getAllBalanceData(accounts: string, chains: number): Promise<BalancesResponse> {
@@ -93,29 +139,15 @@ export class BalanceService {
       accountsArray,
     );
 
-    const ethPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
-    const wethPrice = this.getUtilTokenPrice(WETH_ADDRESS, tokenPrices.prices);
+    const priceArray = this.getUtilTokenPrice(ETH_TOKEN_ARRAY, tokenPrices.prices);
 
-    const tokenInst = await new this.instanceChainProviderEth.eth.Contract(
-      abi as AbiItem[],
-      WETH_ADDRESS,
+    const etherBalances = await this.getArrayOfTokenBalances(
+      ethBalances,
+      priceArray,
+      ETH_TOKEN_ARRAY,
+      chainId,
     );
 
-    const etherBalances = [];
-    for (const balance of ethBalances) {
-      etherBalances.push(this.mapEthBalance({ ...balance, ethPrice }));
-      const wethAmount = await tokenInst.methods.balanceOf(balance.account).call();
-      if (+wethAmount !== 0) {
-        etherBalances.push(
-          this.mapEthBalance({
-            account: balance.account,
-            amount: wethAmount,
-            ethPrice: undefined,
-            wethPrice,
-          }),
-        );
-      }
-    }
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
     return accountsArray.reduce((response, account) => {
@@ -159,11 +191,15 @@ export class BalanceService {
       accountsArray,
     );
 
-    const bnbPrice = this.getUtilTokenPrice(ETH_BNB_ADDRESS, tokenPrices.prices);
+    const priceArray = this.getUtilTokenPrice([bnbToken], tokenPrices.prices);
 
-    const etherBalances = ethBalances.map((balance) =>
-      this.mapBnbBalance({ ...balance, bnbPrice }),
+    const etherBalances = await this.getArrayOfTokenBalances(
+      ethBalances,
+      priceArray,
+      [bnbToken],
+      chainId,
     );
+
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
     return accountsArray.reduce((response, account) => {
@@ -189,55 +225,31 @@ export class BalanceService {
     }, {});
   }
 
-  private mapEthBalance = ({
+  private mapTokenBalances = ({
     account,
     amount,
-    ethPrice,
-    wethPrice,
+    token,
+    chainId,
+    price,
   }: {
     account: string;
     amount: string;
-    ethPrice?: number;
-    wethPrice?: number;
+    token: BalanceToken;
+    chainId: number;
+    price?: number;
   }): AccountTokenBalance => {
-    const price = ethPrice === undefined ? wethPrice : ethPrice;
     return {
       amount,
       account,
-      decimalsAmount: decimalsAmount(amount, ETH_DECIMALS),
+      decimalsAmount: decimalsAmount(amount, token.decimals),
       tokenPriceUSD: price,
-      totalPriceUSD: totalPrice(amount, price, ETH_DECIMALS),
+      totalPriceUSD: totalPrice(amount, price, token.decimals),
       token: {
-        chainId: CHAIN_ID_ETH,
-        decimals: 18,
-        symbol: ethPrice === undefined ? 'WETH' : 'ETH',
-        name: ethPrice === undefined ? 'Wrapped Ether' : 'Ether',
-        address: ethPrice === undefined ? WETH_ADDRESS : ETH_BNB_ADDRESS,
-      },
-    };
-  };
-
-  private mapBnbBalance = ({
-    account,
-    amount,
-    bnbPrice,
-  }: {
-    account: string;
-    amount: string;
-    bnbPrice: number;
-  }): AccountTokenBalance => {
-    return {
-      amount,
-      account,
-      decimalsAmount: decimalsAmount(amount, ETH_DECIMALS),
-      tokenPriceUSD: bnbPrice,
-      totalPriceUSD: totalPrice(amount, bnbPrice, ETH_DECIMALS),
-      token: {
-        chainId: CHAIN_ID_BSC,
-        decimals: 18,
-        symbol: 'BNB',
-        name: 'BNB',
-        address: ETH_BNB_ADDRESS,
+        chainId: chainId,
+        decimals: token.decimals,
+        symbol: token.symbol,
+        name: token.name,
+        address: token.address,
       },
     };
   };
@@ -274,11 +286,13 @@ export class BalanceService {
     },
   });
 
-  private getUtilTokenPrice(token: string, prices: CurrentPricesPayload) {
-    return Object.prototype.hasOwnProperty.call(prices, token.toLowerCase())
-      ? prices[`${token.toLowerCase()}`] === null
-        ? 0
-        : prices[`${token.toLowerCase()}`]
-      : 0;
+  private getUtilTokenPrice(tokens: BalanceToken[], prices: CurrentPricesPayload) {
+    return tokens.map((token) =>
+      Object.prototype.hasOwnProperty.call(prices, token.address)
+        ? prices[`${token.address}`] === null
+          ? { address: token.address, price: 0 }
+          : { address: token.address, price: prices[`${token.address}`] }
+        : { address: token.address, price: 0 },
+    );
   }
 }

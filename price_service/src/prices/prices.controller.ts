@@ -1,7 +1,6 @@
-import { Body, Controller, Get, Post, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 
-import { ArrayValidationParseIntPipe } from '../pipes/ArrayValidationPersIntePipe';
 import {
   PriceBatchRequestDto,
   PriceQueryDto,
@@ -27,7 +26,7 @@ export class PricesController {
   }
 
   @Post('/')
-  @UsePipes(new ArrayValidationParseIntPipe('timestamps'))
+  // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: PriceResponseDto })
   post(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = request;

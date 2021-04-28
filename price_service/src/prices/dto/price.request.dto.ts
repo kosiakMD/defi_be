@@ -1,5 +1,6 @@
+import { BadRequestException } from '@nestjs/common/exceptions';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class PriceRequestDto {
@@ -39,6 +40,13 @@ export class PriceRequestDto {
   addresses: string[];
 
   @IsOptional()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    return value.map((x) => parseInt(x));
+  })
+  @IsInt({ each: true })
   @ApiProperty({
     type: () => [Number],
     required: false,

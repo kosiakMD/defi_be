@@ -85,12 +85,18 @@ export class ScanService {
     try {
       this.logger.time(`request: ${this.getPricesUrl}/chain=${this.chainId}`);
 
+      const assets = [
+        {
+          address: this.mainCoinAddress,
+          timestamps: txTimestamps,
+        },
+      ];
+
       prices = await this.httpService
         .post(this.getPricesUrl, {
           currency: 1,
           chain: this.chainId,
-          addresses: [this.mainCoinAddress],
-          timestamps: txTimestamps,
+          assets: assets,
         })
         .pipe(map((response) => response.data))
         .toPromise();

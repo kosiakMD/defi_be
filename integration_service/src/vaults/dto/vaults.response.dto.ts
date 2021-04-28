@@ -1,6 +1,6 @@
+import { VaultsEntity } from '../entities/vaults.entity';
 import { APY } from './apy.dto';
 import { Token } from './token.dto';
-import { VaultsEntity } from '../entities/vaults.entity';
 
 export class VaultsResponseDto {
   id: number;

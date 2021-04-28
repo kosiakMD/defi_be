@@ -1,7 +1,7 @@
+import { LiquidityPoolsEntity } from '../entities/liquidity.pools.entity';
 import { APY } from './apy.dto';
 import { ImpermanentLoss } from './impermanentloss.dto';
 import { Token } from './token.dto';
-import { LiquidityPoolsEntity } from '../entities/liquidity.pools.entity';
 
 export class LiquidityPoolsResponseDto {
   id: number;

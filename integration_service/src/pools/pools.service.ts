@@ -48,7 +48,7 @@ export class PoolsService {
   async getProjectPools(project: string): Promise<LiquidityPoolsEntity[]> {
     return this.liquidityPoolsRepository
       .createQueryBuilder('pools')
-      .where('pools.project = :project', {project: project})
+      .where('pools.project = :project', { project: project })
       .getMany();
   }
 }

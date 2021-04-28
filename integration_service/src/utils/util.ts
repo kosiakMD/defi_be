@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
 
-import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 import { UniswapLiquidityPosition } from '../interfaces/liquidity.position.interfaces';
+import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
 export const PROTOCOL_NAME = 'pancake';
 export const abi = [
@@ -341,11 +341,10 @@ export async function getDbDataByAddresses<T, K, V, E>(
       uniswapBurns,
       uniswapSnapshots,
       uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
-      sushiswapStakingPosition: new Map<string, any>()
+      sushiswapStakingPosition: new Map<string, any>(),
     },
   };
 }
-
 
 export async function getDataByAddresses<T, K, V, E>(
   repository1: Repository<T>,

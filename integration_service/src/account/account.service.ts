@@ -5,10 +5,7 @@ import { ConfigService } from '@nestjs/config';
 export class AccountService {
   private getBalanceUrl: string;
 
-  constructor(
-    private httpService: HttpService,
-    private configService: ConfigService,
-  ) {
+  constructor(private httpService: HttpService, private configService: ConfigService) {
     const host = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
     const port = this.configService.get<string>('ACCOUNT_SERVICE_PORT');
     const url = `${host}${port ? ':' + port : ''}`;
@@ -27,9 +24,9 @@ export class AccountService {
 
 export interface BalancesResponse {
   [address: string]: {
-    totalUsd: number,
-    tokens: BalanceToken[]
-  }
+    totalUsd: number;
+    tokens: BalanceToken[];
+  };
 }
 
 export interface BalanceToken {
@@ -37,7 +34,7 @@ export interface BalanceToken {
   decimalsAmount: number;
   tokenPriceUSD: number;
   totalPriceUSD: number;
-  token: Token
+  token: Token;
 }
 
 export interface Token {

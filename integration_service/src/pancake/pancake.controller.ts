@@ -14,10 +14,21 @@ export class PancakeController {
     name: 'addresses',
     type: String,
     description: 'Array of Addresses (comma separated)',
-    example: '',
+    example: '0x05ff2b0db69458a0750badebc4f9e13add608c7f',
+  })
+  @ApiQuery({
+    name: 'internal',
+    type: Number,
+    description: 'internal -> from local database, instead of subgraph call, default 1',
+    example: 1
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  getDataByAddresses(@Query('addresses') addresses: string, @Query('internal') internal): Promise<Base[]> {
-    return Number(internal) === 1 ? this.pancakeService.getDataInternal(addresses) : this.pancakeService.getDataExternal(addresses)
+  getDataByAddresses(
+    @Query('addresses') addresses: string,
+    @Query('internal') internal,
+  ): Promise<Base[]> {
+    return Number(internal) === 1
+      ? this.pancakeService.getDataInternal(addresses)
+      : this.pancakeService.getDataExternal(addresses);
   }
 }

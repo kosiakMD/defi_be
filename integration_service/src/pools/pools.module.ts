@@ -9,6 +9,6 @@ import { PoolsService } from './pools.service';
   controllers: [PoolsController],
   imports: [TypeOrmModule.forFeature([LiquidityPoolsEntity])],
   providers: [PoolsService],
-  exports: [PoolsService]
+  exports: [PoolsService],
 })
 export class PoolsModule {}

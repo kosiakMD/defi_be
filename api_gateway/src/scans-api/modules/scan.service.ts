@@ -79,7 +79,7 @@ export class ScanService {
 
     if (!transactions.length) return { status: ResultStatus.ok, transactions };
 
-    const txTimestamps = transactions.map((tx) => tx.timeStamp);
+    const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
 
     let prices: PriceServiceResponse;
     try {
@@ -212,11 +212,11 @@ export class ScanService {
           (unpricedContract) => unpricedContract.address === transfer['contractAddress'],
         );
         if (transferInArray) {
-          transferInArray.timestamps.push(transfer['timeStamp']);
+          transferInArray.timestamps.push(Number(transfer['timeStamp']));
         } else {
           unpricedContracts.push({
             address: transfer['contractAddress'],
-            timestamps: [transfer['timeStamp']],
+            timestamps: [Number(transfer['timeStamp'])],
           });
         }
       }

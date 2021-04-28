@@ -7,7 +7,7 @@ import { AccountService } from './account.service';
   imports: [
     TypeOrmModule.forFeature(),
     HttpModule.register({
-      timeout: 3000,
+      timeout: 5000,
     }),
   ],
   providers: [AccountService],

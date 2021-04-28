@@ -13,6 +13,7 @@ import { PancakeController } from './pancake.controller';
 import { PancakeService } from './pancake.service';
 import { AccountModule } from '../account/account.module';
 import { PoolsModule } from '../pools/pools.module';
+import { EtherscanModule } from '../etherscan/etherscan.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PoolsModule } from '../pools/pools.module';
     PriceModule,
     AccountModule,
     PoolsModule,
+    EtherscanModule,
   ],
   controllers: [PancakeController],
   providers: [PancakeService, Mapper],

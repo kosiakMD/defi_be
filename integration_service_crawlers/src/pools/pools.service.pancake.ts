@@ -128,11 +128,13 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
             ...p.token0,
             positionInPool: 0,
             reserve: p.reserve0,
+            percentage: 50,
           },
           {
             ...p.token1,
             positionInPool: 1,
             reserve: p.reserve1,
+            percentage: 50,
           },
         ],
       };

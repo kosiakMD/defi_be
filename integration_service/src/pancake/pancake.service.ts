@@ -12,9 +12,9 @@ import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { AccountService, BalanceToken } from '../account/account.service';
 import { getDataByAddresses, getDbDataByAddresses } from '../utils/util';
 import { PoolsService } from '../pools/pools.service';
-import { CHAIN_ID_BSC } from '../pools/pools.setting';
 import { UniswapLiquidityPosition, UniswapLiquidityPositionPair } from '../interfaces/liquidity.position.interfaces';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
+import { EtherscanService } from '../etherscan/etherscan.service';
 
 @Injectable()
 export class PancakeService {
@@ -31,11 +31,13 @@ export class PancakeService {
     private readonly pancakeSubgraph: PancakeSubgraph,
     private readonly accountService: AccountService,
     private readonly poolsService: PoolsService,
+    private readonly etherscanService: EtherscanService,
   ) {}
 
   async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
+    const addressesArray: string[] = addresses.split(',')
     const [balances, pools] = await Promise.all([
-      this.accountService.getBalances(addresses, CHAIN_ID_BSC),
+      this.etherscanService.getBalances(addressesArray),
       this.poolsService.getProjectPools('pancake')
     ])
 
@@ -44,7 +46,8 @@ export class PancakeService {
     }
     Object.keys(balances).map((key) => {
       balances[key].tokens.map(t => {
-        let pool = pools.find(p => p.address === t.token.address)
+
+        let pool = pools.find(p => p.address === t.token.token.address)
         if (pool) {
           if (!liquidityPositions.uniswapLiquidityPositions.has(key)) {
             liquidityPositions.uniswapLiquidityPositions.set(key, [])
@@ -58,7 +61,6 @@ export class PancakeService {
 
     return liquidityPositions
   }
-
 
   private static createLiquidityPosition(user: string, pool: LiquidityPoolsEntity, balance: BalanceToken): UniswapLiquidityPosition  {
     const token0 = pool.poolTokens.find(t => t.positionInPool === 0)
@@ -95,7 +97,6 @@ export class PancakeService {
 
   async getDataExternal(addresses: string): Promise<Base[]> {
     const originAddressesArray = addresses.split(',');
-
     const result = await getDataByAddresses(
       this.swapsRepository,
       this.mintsRepository,

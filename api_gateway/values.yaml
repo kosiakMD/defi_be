@@ -1,0 +1,46 @@
+ingress:
+  enabled: true
+  host: api.defyield.xyz
+
+configMaps:
+  common:
+    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+  gas:
+    GAS_API_URL: https://www.gasnow.org/api/v3
+    GAS_CURRENT_PATH: gas/price?utm_source=defi
+    GAS_HISTORY_PATH: gas-hist
+  portal:
+    DEFIYIELD_INFO_2_URL: https://api2.defiyield.info
+    TOKENS_PATH: tokens
+    DEFIYIELD_INFO_MAIN_URL: https://apimain.defiyield.info
+    APPROVALS_PATH: tool/approvals/eth
+  endpoints:
+    PRICE_SERVICE_HOST: price-service
+    PRICE_SERVICE_PORT: 80
+    PRICE_STATUS: v1/status
+    PRICES_PATH: v1/prices
+    PRICE_CHAINS_PATH: v1/chains
+    PRICE_CURRENCIES_PATH: v1/currencies
+    INTEGRATION_SERVICE_HOST: integration-service
+    INTEGRATION_SERVICE_PORT: 80
+    INTEGRATION_STATUS: v1/status
+    INTEGRATION_UNISWAP: v1/integration/uniswap
+    INTEGRATION_SUSHISWAP: v1/integration/sushiswap
+    INTEGRATION_BALANCER: v1/integration/balancer
+    INTEGRATION_CURVE: v1/integration/curve
+    INTEGRATION_PANCAKE: v1/integration/pancake
+    ACCOUNT_SERVICE_HOST: account-service
+    ACCOUNT_SERVICE_PORT: 80
+    ACCOUNT_STATUS: v1/status
+    ACCOUNT_TRANSACTIONS: v1/transactions
+    ACCOUNT_BALANCE: v1/balances
+    ACCOUNT_APPROVALS: v1/approvals
+    ACCOUNT_TRANSFERS: v1/transfers
+    POOLS_SERVICE_URL: "http://:80"
+    POOLS_PATH: v1/pools
+    VAULTS_SERVICE_URL: "http://:80"
+    VAULTS_PATH: v1/vaults
+
+secrets:
+- etherscan
+- bscscan

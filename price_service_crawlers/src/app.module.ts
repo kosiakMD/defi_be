@@ -1,5 +1,6 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TerminusModule } from '@nestjs/terminus';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
@@ -20,6 +21,7 @@ import { UniswapJob } from './jobs/uniswap.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
 import { Api } from './thegraph/api';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { Api } from './thegraph/api';
       ],
     }),
 
+    TerminusModule,
     NestPgpromiseModule.register({
       connection: {
         host: process.env.DB_HOST,
@@ -77,7 +80,7 @@ import { Api } from './thegraph/api';
       },
     }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     ConfigService,
     Api,

@@ -27,7 +27,7 @@ export class EthTokenPriceService {
     return this.httpService
       .get(
         `${this.configService.get<string>(
-          'PRICE_SERIVCE_ENDPOINT',
+          'PRICE_SERVICE_ENDPOINT',
         )}?currencyId=1&chainId=1&addresses=${unpricedTokens.toString()}&timestamps=${timestamps}`,
       )
       .pipe(map((response) => response.data))

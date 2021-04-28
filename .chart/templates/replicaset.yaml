@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: {{ include "defiyield-service.fullname" . }}
+  labels:
+    {{- include "defiyield-service.labels" . | nindent 4 }}
+  annotations:
+    strategy.spinnaker.io/max-version-history: {{ .Values.application.maxVersions | quote }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      {{- include "defiyield-service.labels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "defiyield-service.labels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: application
+        image: {{ include "defiyield-service.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: SERVICE_NAME
+          value: "{{ .Values.application.name | replace "-" " " | title }}"
+        - name: SERVICE_HOST
+          value: {{ .Values.service.host | quote }}
+        - name: SERVICE_PORT
+          value: {{ .Values.service.port | quote }}
+        envFrom:
+        {{- range $name, $keys := .Values.configMaps }}
+        - configMapRef:
+            name: {{ include "defiyield-service.fullname" $ }}-{{ $name }}-config
+        {{- end }}
+        {{- range $name := .Values.secrets }}
+        - secretRef:
+            name: {{ $name }}-secret
+        {{- end }}
+        ports:
+        - name: http
+          protocol: TCP
+          containerPort: {{ .Values.service.port }}
+        readinessProbe:
+          {{- toYaml .Values.readinessProbe | nindent 10 }}
+        livenessProbe:
+          {{- toYaml (.Values.livenessProbe | default .Values.readinessProbe) | nindent 10 }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}

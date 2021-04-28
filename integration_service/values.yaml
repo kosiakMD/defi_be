@@ -1,0 +1,28 @@
+configMaps:
+  amm:
+    AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
+    AMM_UNISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/uniswap-v2
+    AMM_BALANCER_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
+    AMM_PANCAKE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
+    AMM_CURVE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
+  blocks:
+    BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
+    BLOCKS_BSC_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/pancakeswap/blocks
+  links:
+    VAULT_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/xavier59/masterchef
+    CURVE_API_URL: https://stats.curve.fi/
+    COINGECKO_API_URL: https://api.coingecko.com/api/v3/
+    THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/xavier59/masterchef
+    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    BSC_URL: https://bsc-dataseed.binance.org
+  endpoints:
+    PRICE_SERVICE_HOST: price-service
+    PRICE_SERVICE_PORT: 80
+    PRICES_PATH: v1/prices
+    ACCOUNT_SERVICE_HOST: account-service
+    ACCOUNT_SERVICE_PORT: 80
+    ACCOUNT_BALANCE: v1/balances
+
+secrets:
+- db
+- bscscan

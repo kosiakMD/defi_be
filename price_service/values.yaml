@@ -1,0 +1,13 @@
+configMaps:
+  db:
+    DB_SCHEMA: prices
+  thegraph:
+    THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/uniswap-v2
+    THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
+    THEGRAPH_CURVE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
+    THEGRAPH_BALANCER_ENDPOINT: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
+    THEGRAPH_PANCAKE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
+  links:
+    SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
+    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    BSC_URL: https://bsc-dataseed.binance.org

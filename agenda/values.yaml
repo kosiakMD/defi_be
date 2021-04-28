@@ -1,0 +1,20 @@
+imageOverride: docker.io/agenda/agendash:latest
+
+readinessProbe:
+  httpGet:
+    path: /
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 200Mi
+  limits:
+    cpu: 600m
+    memory: 600Mi
+
+ingress:
+  enabled: true
+  host: agenda.defyield.xyz
+
+secrets:
+- mongo

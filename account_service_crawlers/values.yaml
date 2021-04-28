@@ -1,0 +1,14 @@
+configMaps:
+  common:
+    ETH_TOKEN_USD_PRICE_JOB_NAME: ETH_TOKEN_USD_PRICE_UPDATE
+    PRICE_SERVICE_ETH_ADDRESS: "0x0000000000000000000000000000000000000000"
+  db:
+    PGHOST: pg-main.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
+    PGPORT: 5432
+    PGDATABASE: defi
+  endpoints:
+    PRICE_SERVICE_ENDPOINT: http://price-service/v1/prices
+
+secrets:
+- db
+- mongo

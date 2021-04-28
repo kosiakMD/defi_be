@@ -23,7 +23,7 @@ export class EthTransactionPriceService {
     return this.httpService
       .get(
         `${this.configService.get<string>(
-          'PRICE_SERIVCE_ENDPOINT',
+          'PRICE_SERVICE_ENDPOINT',
         )}?currencyId=1&chainId=1&addresses=${this.configService.get<string>(
           'PRICE_SERVICE_ETH_ADDRESS',
         )}&timestamps=${timestamps}`,

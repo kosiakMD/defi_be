@@ -9,11 +9,13 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
+import { HealthController } from './modules/health/health.controller';
 import { ExamplesModule } from './modules/examples/example.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { JobsService } from './modules/jobs/jobs.service';
 
 @Module({
+  controllers: [HealthController],
   imports: [
     ConfigModule.forRoot({
       cache: true,

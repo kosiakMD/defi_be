@@ -1,0 +1,13 @@
+{{- range $name, $keys := .Values.configMaps }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "defiyield-service.fullname" $ }}-{{ $name }}-config
+  labels:
+    {{- include "defiyield-service.labels" $ | nindent 4 }}
+data:
+  {{- range $key, $value := $keys }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}
+---
+{{- end }}

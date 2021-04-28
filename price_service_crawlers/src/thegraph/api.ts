@@ -3,7 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import { injectable } from 'inversify';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import endpoints from '../../config/endpoints';
+import endpoints from '../config/endpoints';
 import { TokenPriceRequest } from '../models/prices';
 import * as bal from './balancer';
 import * as pancake from './pancake'

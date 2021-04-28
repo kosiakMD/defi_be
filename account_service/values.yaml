@@ -1,0 +1,23 @@
+configMaps:
+  db:
+    PGHOST: pg-main.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
+    PGPORT: 5432
+    PGDATABASE: defi
+  amm:
+    AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
+    AMM_UNISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/uniswap-v2
+    AMM_BALANCER_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
+  blocks:
+    BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
+  links:
+    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    BSC_URL: https://bsc-dataseed.binance.org
+  endpoints:
+    PRICE_SERVICE_HOST: price-service
+    PRICE_SERVICE_PORT: 80
+    PRICES_PATH: v1/prices
+
+secrets:
+- db
+- etherscan
+- bscscan

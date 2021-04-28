@@ -1,0 +1,30 @@
+readinessProbe:
+  httpGet:
+    path: /status
+
+configMaps:
+  db:
+    DB_ENTITIES: entities/**/*.ts
+  thegraph:
+    THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/uniswap-v2
+    THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
+    THEGRAPH_CURVE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
+    THEGRAPH_BALANCER_ENDPOINT: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
+    THEGRAPH_PANCAKE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
+  links:
+    SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
+    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    BSC_URL: https://bsc-dataseed.binance.org
+  tor:
+    TOR_ENABLED: true
+    TOR_HOST: "35.158.109.74"
+    TOR_PORT: 9550
+    TOR_CONTROL_PORT: 9551
+  mongo:
+    MONGO_HOST: "18.159.107.117"
+    MONGO_PORT: 27017
+
+secrets:
+- db
+- mongo
+- tor

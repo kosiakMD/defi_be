@@ -33,7 +33,7 @@ export class ScanService {
     const url = `${host}${port ? ':' + port : ''}`;
 
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
-    this.getPricesUrl = `${url}/${getPricesPath}`;
+    this.getPricesUrl = `${url}/${getPricesPath}/batch`;
   }
 
   protected getTransactions(address, internal = false): Promise<any> {
@@ -84,6 +84,7 @@ export class ScanService {
     let prices: PriceServiceResponse;
     try {
       this.logger.time(`request: ${this.getPricesUrl}/chain=${this.chainId}`);
+
       prices = await this.httpService
         .post(this.getPricesUrl, {
           currency: 1,
@@ -199,14 +200,18 @@ export class ScanService {
   ): Promise<TransfersResponse> {
     try {
       const unpricedContracts = [];
-      const transferTimestamps = [];
 
       for (const transfer of transactions) {
-        if (!unpricedContracts.includes(transfer['contractAddress'])) {
-          unpricedContracts.push(transfer['contractAddress']);
-        }
-        if (!transferTimestamps.includes(transfer['timeStamp'])) {
-          transferTimestamps.push(transfer['timeStamp']);
+        const transferInArray = await unpricedContracts.find(
+          (unpricedContract) => unpricedContract.address === transfer['contractAddress'],
+        );
+        if (transferInArray) {
+          transferInArray.timestamps.push(transfer['timeStamp']);
+        } else {
+          unpricedContracts.push({
+            address: transfer['contractAddress'],
+            timestamps: [transfer['timeStamp']],
+          });
         }
       }
 
@@ -214,10 +219,9 @@ export class ScanService {
 
       const contractTimestampPrices = await this.httpService
         .post(this.getPricesUrl, {
-          currencyId: 1,
-          chainId: this.chainId,
-          addresses: unpricedContracts,
-          timestamps: transferTimestamps,
+          currency: 1,
+          chain: this.chainId,
+          assets: unpricedContracts,
         })
         .pipe(map((response) => response.data))
         .toPromise();

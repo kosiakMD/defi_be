@@ -4,10 +4,15 @@ import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { Base } from '../interfaces/transactions.interfaces';
 import BaseDataDto from '../uniswap/dto/BaseData.dto';
 import { PancakeService } from './pancake.service';
+import { PancakePriceService } from './pancake.price.service';
+import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
 
 @Controller('integration')
 export class PancakeController {
-  constructor(private readonly pancakeService: PancakeService) {}
+  constructor(
+    private readonly pancakeService: PancakeService,
+    private readonly pancakePriceService: PancakePriceService,
+  ) {}
 
   @Get('/pancake')
   @ApiQuery({
@@ -30,5 +35,11 @@ export class PancakeController {
     return Number(internal) === 1
       ? this.pancakeService.getDataInternal(addresses)
       : this.pancakeService.getDataExternal(addresses);
+  }
+
+  @Get('/pancake/prices')
+  @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
+  getIntegrationPrices():  Promise<PriceResponseDto<PricesPayload>> {
+    return this.pancakePriceService.liquidityPoolsPrices()
   }
 }

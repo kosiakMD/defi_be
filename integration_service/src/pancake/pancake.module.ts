@@ -14,6 +14,7 @@ import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PancakeController } from './pancake.controller';
 import { PancakeService } from './pancake.service';
+import { PancakePriceService } from './pancake.price.service';
 
 @Module({
   imports: [
@@ -31,6 +32,6 @@ import { PancakeService } from './pancake.service';
     EtherscanModule,
   ],
   controllers: [PancakeController],
-  providers: [PancakeService, Mapper],
+  providers: [PancakeService, PancakePriceService, Mapper],
 })
 export class PancakeModule {}

@@ -22,17 +22,9 @@ export class BscscanService extends ScanService {
   ) {
     super(logger, httpService, configService);
 
-    const host = this.configService.get<string>('PRICE_SERVICE_HOST');
-    const port = this.configService.get<string>('PRICE_SERVICE_PORT');
-    const url = `${host}${port ? ':' + port : ''}`;
-
-    const getPricesPath = this.configService.get<string>('PRICES_PATH');
-    this.getPricesUrl = `${url}/${getPricesPath}`;
-
     this.scanServiceUrl = this.configService.get<string>('BSCSCAN_API_URL');
     this.scanServiceKey = this.configService.get<string>('BSCSCAN_API_KEY');
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
-
     this.chainId = CHAIN_ID_BSC;
     this.servicePrefix = 'bsc';
   }

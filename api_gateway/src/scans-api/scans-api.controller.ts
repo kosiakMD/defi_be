@@ -3,17 +3,17 @@ import { ApiResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../common/Logger/Logger.service';
-import { TransactionQueryDto } from './chain-api.dto';
 import { TransactionsResponseDto } from './models/dto/transactions.dto';
-import { ResultStatus } from './models/interfaces/transactions.interfaces';
+import { ResultStatus, TransactionsResult } from './models/interfaces/transactions.interfaces';
 import { BscscanService } from './modules/bscscan/bscscan.service';
 import { EtherscanService } from './modules/etherscan/etherscan.service';
 import { ScanService } from './modules/scan.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from './modules/utils/utils';
+import { TransactionQueryDto } from './scans-api.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
-export class ChainApiController {
+export class ScansApiController {
   private readonly ethChainId: number;
   private readonly bscChainId: number;
 
@@ -51,8 +51,9 @@ export class ChainApiController {
       errors: [],
       transactions: [],
     };
-
-    const concatTxs = (newTxs) => (result.transactions = result.transactions.concat(newTxs));
+    //
+    const concatTxs = (newTxs): TransactionsResult[] =>
+      (result.transactions = result.transactions.concat(newTxs));
 
     if (chains && chains.length) {
       const handleChain = async (chainId, service: ScanService): Promise<any> => {

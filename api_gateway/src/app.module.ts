@@ -19,10 +19,6 @@ import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
 import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
-import { ChainApiController } from './chain-api/chain-api.controller';
-import { ChainApiModule } from './chain-api/chain-api.module';
-import { BscscanService } from './chain-api/modules/bscscan/bscscan.service';
-import { EtherscanService } from './chain-api/modules/etherscan/etherscan.service';
 import { Logger } from './common/Logger/Logger.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import configuration from './config/configuration';
@@ -35,6 +31,11 @@ import { PancakeController } from './pancake/pancake.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
+import { BscscanService } from './scans-api/modules/bscscan/bscscan.service';
+import { EtherscanService } from './scans-api/modules/etherscan/etherscan.service';
+// import { ScanService } from './scans-api/scan.service';
+import { ScansApiController } from './scans-api/scans-api.controller';
+import { ScansApiModule } from './scans-api/scans-api.module';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
@@ -69,7 +70,7 @@ import { VaultsModule } from './vaults/vaults.module';
     TokensModule,
     GasModule,
     PricesModule,
-    ChainApiModule
+    ScansApiModule,
   ],
   controllers: [
     HealthController,
@@ -84,7 +85,7 @@ import { VaultsModule } from './vaults/vaults.module';
     // PlatformController,
     // TransactionsController,
     TransfersController,
-    ChainApiController,
+    ScansApiController,
   ],
   providers: [
     // TODO: for global auto caching
@@ -113,6 +114,7 @@ import { VaultsModule } from './vaults/vaults.module';
     // AccountService,
     EtherscanService,
     BscscanService,
+    // ScanService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

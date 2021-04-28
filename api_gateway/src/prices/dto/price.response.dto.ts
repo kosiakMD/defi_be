@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { ChainDto } from './chain.dto';
 import { CurrencyDto } from './currency.dto';
 

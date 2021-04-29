@@ -38,7 +38,7 @@ configMaps:
     ACCOUNT_TRANSFERS: v1/transfers
     POOLS_SERVICE_URL: https://integration.dfyield.xyz/
     POOLS_PATH: v1/pools
-    VAULTS_SERVICE_URL: https://integration.dfyield.xyz/api/
+    VAULTS_SERVICE_URL: https://integration.dfyield.xyz/
     VAULTS_PATH: v1/vaults
 
 secrets:

@@ -21,7 +21,7 @@ configMaps:
     PRICES_PATH: v1/prices
     PRICE_CHAINS_PATH: v1/chains
     PRICE_CURRENCIES_PATH: v1/currencies
-    INTEGRATION_SERVICE_HOST: https://integration.dfyield.xyz/
+    INTEGRATION_SERVICE_HOST: https://integration.dfyield.xyz
     INTEGRATION_SERVICE_PORT: 443
     INTEGRATION_STATUS: v1/status
     INTEGRATION_UNISWAP: v1/integration/uniswap
@@ -36,9 +36,9 @@ configMaps:
     ACCOUNT_BALANCE: v1/balances
     ACCOUNT_APPROVALS: v1/approvals
     ACCOUNT_TRANSFERS: v1/transfers
-    POOLS_SERVICE_URL: https://integration.dfyield.xyz/
+    POOLS_SERVICE_URL: https://integration.dfyield.xyz
     POOLS_PATH: v1/pools
-    VAULTS_SERVICE_URL: https://integration.dfyield.xyz/
+    VAULTS_SERVICE_URL: https://integration.dfyield.xyz
     VAULTS_PATH: v1/vaults
 
 secrets:

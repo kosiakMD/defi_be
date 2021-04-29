@@ -55,7 +55,7 @@ export class BscscanTransactionsService {
     if (type === 'normal') {
       transactions = await this.bscscan.getTransactions(address.toLowerCase());
     }
-    if (typeof transactions != 'object') {
+    if (typeof transactions !== 'object') {
       transactions = [];
     }
 

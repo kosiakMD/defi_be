@@ -5,7 +5,8 @@ import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
 import { CurrentPricesPayload, PriceResponseDto } from '../balance/dto/price.response.dto';
-import { CHAIN_ID_ETH, ETH_BNB_ADDRESS, WETH_ADDRESS } from '../utils/utils';
+import { ETH_TOKEN_ARRAY } from '../balance/tokens/tokens';
+import { CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../utils/utils';
 
 @Injectable()
 export class PriceService {
@@ -28,10 +29,10 @@ export class PriceService {
     chain: number,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     if (chain === CHAIN_ID_ETH) {
-      addressesArray.push(WETH_ADDRESS.toLowerCase());
+      ETH_TOKEN_ARRAY.forEach((token) => addressesArray.push(token.address));
+    } else {
+      addressesArray.push(ETH_BNB_ADDRESS.toLowerCase());
     }
-    addressesArray.push(ETH_BNB_ADDRESS.toLowerCase());
-
     const addresses = await addressesArray.join(',');
 
     let result;

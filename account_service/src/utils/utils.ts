@@ -1,9 +1,10 @@
 import { BigNumber as BN } from 'bignumber.js';
 
 export const DEFAULT_MULTIPLIER = 1e-18;
-export const ETH_DECIMALS = 18;
 export const ETH_BNB_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+export const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+export const ESD_ADDRESS = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
 
 export const CHAIN_ID_ETH = 1;
 export const CHAIN_ID_BSC = 2;
@@ -187,5 +188,92 @@ export const abi = [
     ],
     name: 'Withdrawal',
     type: 'event',
+  },
+];
+
+export const multicallAbi = [
+  {
+    constant: true,
+    inputs: [],
+    name: 'getCurrentBlockTimestamp',
+    outputs: [{ name: 'timestamp', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [
+      {
+        components: [
+          { name: 'target', type: 'address' },
+          { name: 'callData', type: 'bytes' },
+        ],
+        name: 'calls',
+        type: 'tuple[]',
+      },
+    ],
+    name: 'aggregate',
+    outputs: [
+      { name: 'blockNumber', type: 'uint256' },
+      { name: 'returnData', type: 'bytes[]' },
+    ],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'getLastBlockHash',
+    outputs: [{ name: 'blockHash', type: 'bytes32' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ name: 'addr', type: 'address' }],
+    name: 'getEthBalance',
+    outputs: [{ name: 'balance', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'getCurrentBlockDifficulty',
+    outputs: [{ name: 'difficulty', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'getCurrentBlockGasLimit',
+    outputs: [{ name: 'gaslimit', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [],
+    name: 'getCurrentBlockCoinbase',
+    outputs: [{ name: 'coinbase', type: 'address' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    constant: true,
+    inputs: [{ name: 'blockNumber', type: 'uint256' }],
+    name: 'getBlockHash',
+    outputs: [{ name: 'blockHash', type: 'bytes32' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
   },
 ];

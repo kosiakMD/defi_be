@@ -16,10 +16,10 @@ configMaps:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
   endpoints:
-    PRICE_SERVICE_HOST: price-service
+    PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
-    ACCOUNT_SERVICE_HOST: account-service
+    ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_BALANCE: v1/balances
 

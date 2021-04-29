@@ -37,6 +37,7 @@ ingress:
   enabled: false
   host: defyield.xyz
   certificate_arn: arn:aws:acm:eu-central-1:625623467395:certificate/3a16d612-0761-4f64-82f9-2f3892d2faf1
+  wafv2_acl_arn: arn:aws:wafv2:eu-central-1:625623467395:regional/webacl/defiyield-backend-production/9eadcd76-96cb-4761-aaf4-5b4320f4d249
 
 configMaps:
   common:

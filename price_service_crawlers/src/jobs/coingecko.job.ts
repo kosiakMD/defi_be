@@ -369,7 +369,7 @@ export class CoingeckoJob {
     if (dbAssets.length) {
       const delayValue = (index, coin, logger) => {
         return new Promise(async (resolve) => {
-          logger.log('coin ? : ' + coin.id + ' - ');
+          logger.log('coin id : ' + coin.id + ' - ');
           try {
             logger.log('coin.last_history_timestamp ', coin.last_history_timestamp);
             const fromTs = await getRequiredHistoryStartDate(
@@ -379,7 +379,7 @@ export class CoingeckoJob {
               this.logger,
             );
             if (fromTs === toTs) {
-              logger.log(`fromTs === toTs for coin ${coin.address}`);
+              logger.log(`fromTs === toTs for coin ${coin.address} => ${fromTs} - ${toTs}`);
               await this.databaseService.updateAssetHistoryTimestamp(coin.id, toTs);
               resolve(index);
             }
@@ -404,17 +404,20 @@ export class CoingeckoJob {
             // } = await getCoinRangePrices(coin, fromTs, toTs);
 
             logger.log(`${allPrices.length} new prices`);
-            await crawlCoinHistory(
-              coin.id,
-              coin,
-              allPrices,
-              currentCurrencyId,
-              this.databaseService,
-              this.logger,
-              PlatformEnum.coingecko,
-              true,
-              toTs,
-            );
+
+            if(allPrices?.length)
+              await crawlCoinHistory(
+                coin.id,
+                coin,
+                allPrices,
+                currentCurrencyId,
+                this.databaseService,
+                this.logger,
+                PlatformEnum.coingecko,
+                true,
+                toTs,
+              );
+
           } catch (err) {
             logger.error(err, `Token ${coin.id} price checking error. Setting is dead(just log)`);
             //this.databaseService.setTokenIsDead(coin.id);

@@ -114,9 +114,11 @@ export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logge
     //   await db.setTokenIsDead(coin.id);
     // }
 
-    if (prices.length > 1) {
+    if (prices.length !== 1) {
       // clearing this day and checking next day
-      await db.clearTokenPricesForLastDay(coin.id, startTimestamp);
+      if (prices.length > 1)
+        await db.clearTokenPricesForLastDay(coin.id, startTimestamp);
+        
       startTimestamp -= SECONDS_IN_HOUR * 24;
     }
     //logger.log("prices.length ");

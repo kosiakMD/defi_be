@@ -69,7 +69,7 @@ export class JobsService {
 
         this.logger.log('Agenda started');
 
-        // get current token prices
+        // // get current token prices
         await cancel('CRAWL_COINGECKO_CURRENT_PRICE');
         await this.agenda.define(
           'CRAWL_COINGECKO_CURRENT_PRICE',
@@ -82,15 +82,15 @@ export class JobsService {
           {},
         );
 
-        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
+        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW');
         await this.agenda.define(
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
           { lockLifetime: 10000 },
           this.coingeckoJob.crawlNewTokensHistory.bind(this),
         );
         await this.agenda.every(
           NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
           {},
         );
 

@@ -14,7 +14,7 @@ resources:
 
 ingress:
   enabled: true
-  host: agenda.defyield.xyz
+  host: agenda.defiyield.app
 
 secrets:
 - mongo

@@ -35,4 +35,8 @@ export const bnbToken = {
   decimals: 18,
 };
 
-export const ETH_TOKEN_ARRAY = [ethToken, wethToken, daiToken, esdToken];
+export const NO_DB_ETH_TOKENS = [ethToken, wethToken, daiToken, esdToken];
+
+export const NO_SCAN_ETH_TOKEN = [ethToken, wethToken];
+
+export const BNB_TOKEN_ARRAY = [bnbToken];

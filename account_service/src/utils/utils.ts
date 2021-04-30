@@ -21,6 +21,10 @@ export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
 
 type Decimals = string | number;
 
+export function toDecimals(amount: number, decimals: number) {
+  return amount * Math.pow(10, -decimals);
+}
+
 export const decimalsDivider = (decimals: Decimals) => new BN(10).pow(decimals);
 
 export const decimalsAmount = (amount: string, decimals: Decimals): number =>
@@ -188,92 +192,5 @@ export const abi = [
     ],
     name: 'Withdrawal',
     type: 'event',
-  },
-];
-
-export const multicallAbi = [
-  {
-    constant: true,
-    inputs: [],
-    name: 'getCurrentBlockTimestamp',
-    outputs: [{ name: 'timestamp', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [
-      {
-        components: [
-          { name: 'target', type: 'address' },
-          { name: 'callData', type: 'bytes' },
-        ],
-        name: 'calls',
-        type: 'tuple[]',
-      },
-    ],
-    name: 'aggregate',
-    outputs: [
-      { name: 'blockNumber', type: 'uint256' },
-      { name: 'returnData', type: 'bytes[]' },
-    ],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getLastBlockHash',
-    outputs: [{ name: 'blockHash', type: 'bytes32' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [{ name: 'addr', type: 'address' }],
-    name: 'getEthBalance',
-    outputs: [{ name: 'balance', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getCurrentBlockDifficulty',
-    outputs: [{ name: 'difficulty', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getCurrentBlockGasLimit',
-    outputs: [{ name: 'gaslimit', type: 'uint256' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [],
-    name: 'getCurrentBlockCoinbase',
-    outputs: [{ name: 'coinbase', type: 'address' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
-    constant: true,
-    inputs: [{ name: 'blockNumber', type: 'uint256' }],
-    name: 'getBlockHash',
-    outputs: [{ name: 'blockHash', type: 'bytes32' }],
-    payable: false,
-    stateMutability: 'view',
-    type: 'function',
   },
 ];

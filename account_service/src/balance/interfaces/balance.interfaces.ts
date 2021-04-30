@@ -32,7 +32,7 @@ export interface TokenBalance {
   token: ERC20Token | BalanceToken;
 }
 
-export interface NoDbTokenPrice {
+export interface DbTokenPrice {
   address: string;
   price: number;
 }
@@ -40,6 +40,10 @@ export interface NoDbTokenPrice {
 export interface Web3TokenBalance {
   account: string;
   amount: string;
+}
+
+export interface TokenPriceInterface {
+  address: string;
 }
 
 export interface AccountTokenBalance extends TokenBalance {
@@ -58,3 +62,5 @@ export interface EthTokenBalance {
 export type BalancesResponse = { [key: string]: AccountBalance };
 
 export type TokenPrices = { [key: string]: number };
+
+export type NoDbTokenBalances = { [key: string]: number };

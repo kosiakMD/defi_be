@@ -64,6 +64,10 @@ pipeline {
     post {
         always {
             cleanWs()
+            script {
+                currentBuild.displayName = "${env.JOB_BASE_NAME} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
+                currentBuild.description = DOCKER_IMAGE.imageName()
+            }
             sh """
                 docker rmi --force \
                   ${DOCKER_IMAGE.imageName()} \

@@ -32,8 +32,8 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 RUN touch .env
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
-COPY --from=development /usr/src/app/dist ./
+COPY --from=development /usr/src/app/dist ./dist
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["main"]
+CMD ["dist/main"]

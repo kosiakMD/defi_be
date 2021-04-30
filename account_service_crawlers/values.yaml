@@ -8,6 +8,10 @@ configMaps:
     PGDATABASE: defi
   endpoints:
     PRICE_SERVICE_ENDPOINT: http://price-service/v1/prices
+    PRICE_SERVICE_HOST: http://price-service
+    PRICE_SERVICE_PORT: 80
+    PRICE_STATUS: v1/status
+    PRICES_PATH: v1/prices
 
 secrets:
 - db

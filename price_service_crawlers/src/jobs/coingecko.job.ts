@@ -415,6 +415,7 @@ export class CoingeckoJob {
                 this.logger,
                 PlatformEnum.coingecko,
                 true,
+                fromTs,
                 toTs,
               );
 

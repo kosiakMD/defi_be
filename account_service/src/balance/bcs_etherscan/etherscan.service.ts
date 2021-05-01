@@ -12,6 +12,7 @@ import {
   toDecimals,
   totalPrice,
   WBNB_ADDRESS,
+  WETH_ADDRESS,
 } from '../../utils/utils';
 import { getUtilTokenPrice, mapTokenBalances } from '../balance_util/balance.util';
 import { CurrentPricesPayload } from '../dto/price.response.dto';
@@ -90,7 +91,11 @@ export class EtherscanService {
       const priceResponseDto = await this.priceService.getTokenPrices(uniqueTokenAddresses, chain);
 
       transfersAll[address]
-        .filter((transfer) => transfer.contractAddress !== WBNB_ADDRESS.toLowerCase())
+        .filter(
+          (transfer) =>
+            transfer.contractAddress !== WBNB_ADDRESS.toLowerCase() &&
+            transfer.contractAddress !== WETH_ADDRESS.toLowerCase(),
+        )
         .map((transfer) => {
           const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;
 

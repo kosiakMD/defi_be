@@ -12,6 +12,10 @@ export function getUtilTokenPrice(tokens: BalanceToken[], prices: CurrentPricesP
   );
 }
 
+export function changeTokenArray(fromArray: BalanceToken[], toArray: string[]) {
+  fromArray.forEach((token) => toArray.push(token.address));
+}
+
 export const mapTokenBalances = ({
   account,
   amount,

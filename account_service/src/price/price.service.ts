@@ -4,6 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
+import { changeTokenArray } from '../balance/balance_util/balance.util';
 import { CurrentPricesPayload, PriceResponseDto } from '../balance/dto/price.response.dto';
 import {
   NO_DB_BNB_TOKENS,
@@ -73,17 +74,17 @@ export class PriceService {
 
   private addressArrayToStringInternal(addresses: string[], chain: number): void {
     if (chain === CHAIN_ID_ETH) {
-      NO_DB_ETH_TOKENS.forEach((token) => addresses.push(token.address));
+      changeTokenArray(NO_DB_ETH_TOKENS, addresses);
     } else {
-      NO_DB_BNB_TOKENS.forEach((token) => addresses.push(token.address));
+      changeTokenArray(NO_DB_BNB_TOKENS, addresses);
     }
   }
 
   private addressArrayToStringExternal(addresses: string[], chain: number): void {
     if (chain === CHAIN_ID_ETH) {
-      NO_SCAN_ETH_TOKENS.forEach((token) => addresses.push(token.address));
+      changeTokenArray(NO_SCAN_ETH_TOKENS, addresses);
     } else {
-      NO_SCAN_BNB_TOKENS.forEach((token) => addresses.push(token.address));
+      changeTokenArray(NO_SCAN_BNB_TOKENS, addresses);
     }
     addresses.push(ETH_BNB_ADDRESS.toLowerCase());
   }

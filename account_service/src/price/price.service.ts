@@ -5,8 +5,13 @@ import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
 import { CurrentPricesPayload, PriceResponseDto } from '../balance/dto/price.response.dto';
-import { NO_DB_ETH_TOKENS } from '../balance/tokens/tokens';
-import { CHAIN_ID_ETH, ETH_BNB_ADDRESS, WETH_ADDRESS } from '../utils/utils';
+import {
+  NO_DB_BNB_TOKENS,
+  NO_DB_ETH_TOKENS,
+  NO_SCAN_BNB_TOKENS,
+  NO_SCAN_ETH_TOKENS,
+} from '../balance/tokens/tokens';
+import { CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../utils/utils';
 
 @Injectable()
 export class PriceService {
@@ -70,13 +75,15 @@ export class PriceService {
     if (chain === CHAIN_ID_ETH) {
       NO_DB_ETH_TOKENS.forEach((token) => addresses.push(token.address));
     } else {
-      addresses.push(ETH_BNB_ADDRESS.toLowerCase());
+      NO_DB_BNB_TOKENS.forEach((token) => addresses.push(token.address));
     }
   }
 
   private addressArrayToStringExternal(addresses: string[], chain: number): void {
     if (chain === CHAIN_ID_ETH) {
-      addresses.push(WETH_ADDRESS.toLowerCase());
+      NO_SCAN_ETH_TOKENS.forEach((token) => addresses.push(token.address));
+    } else {
+      NO_SCAN_BNB_TOKENS.forEach((token) => addresses.push(token.address));
     }
     addresses.push(ETH_BNB_ADDRESS.toLowerCase());
   }

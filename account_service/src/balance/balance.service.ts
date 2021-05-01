@@ -25,13 +25,14 @@ import {
   Web3TokenBalance,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
-import { bnbToken, NO_DB_ETH_TOKENS } from './tokens/tokens';
+import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
 
 @Injectable()
 export class BalanceService {
   private readonly instanceChainProviderEth: Web3;
   private readonly instanceChainProviderBsc: Web3;
   private readonly noDbTokensEth: string[];
+  private readonly noDbTokensBsc: string[];
 
   constructor(
     private readonly dbService: DbService,
@@ -42,6 +43,7 @@ export class BalanceService {
     this.instanceChainProviderEth = this.chainProvider.instanceEth();
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
     this.noDbTokensEth = NO_DB_ETH_TOKENS.map((token) => token.address);
+    this.noDbTokensBsc = NO_DB_BNB_TOKENS.map((token) => token.address);
   }
 
   private getPricesAndBalances(tokensAddresses, chainId, accountsArray): Promise<any[]> {
@@ -146,25 +148,25 @@ export class BalanceService {
 
     const priceArray = getUtilTokenPrice(NO_DB_ETH_TOKENS, tokenPrices.prices);
 
-    const multicallPrices = await this.multicallSevice.multicall(
+    const multicallBalances = await this.multicallSevice.multicall(
       this.noDbTokensEth,
       accountsArray,
       this.instanceChainProviderEth,
     );
 
-    const etherBalances = await this.getArrayOfTokenBalances(
+    const etherTokenBalances = await this.getArrayOfTokenBalances(
       ethBalances,
       priceArray,
       NO_DB_ETH_TOKENS,
       CHAIN_ID_ETH,
-      multicallPrices,
+      multicallBalances,
     );
 
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_ETH));
 
     return accountsArray.reduce((response, account) => {
       const accountFilter = (balance): boolean => balance.account === account;
-      const ether = etherBalances.filter(accountFilter);
+      const ether = etherTokenBalances.filter(accountFilter);
       const erc20 = erc20Balances.filter(accountFilter);
 
       const tokens = ether.concat(erc20).map((t) => {
@@ -196,29 +198,35 @@ export class BalanceService {
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_BSC);
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
-    const [tokenPrices, ethBalances] = await this.getPricesAndBalances(
+    const [tokenPrices, bscBalances] = await this.getPricesAndBalances(
       tokensAddresses,
       CHAIN_ID_BSC,
       accountsArray,
     );
 
-    const priceArray = await getUtilTokenPrice([bnbToken], tokenPrices.prices);
+    const priceArray = await getUtilTokenPrice(NO_DB_BNB_TOKENS, tokenPrices.prices);
 
-    const etherBalances = await this.getArrayOfTokenBalances(
-      ethBalances,
+    const multicallBalances = await this.multicallSevice.multicall(
+      this.noDbTokensBsc,
+      accountsArray,
+      this.instanceChainProviderBsc,
+    );
+
+    const bscTokenBalances = await this.getArrayOfTokenBalances(
+      bscBalances,
       priceArray,
-      [bnbToken],
+      NO_DB_BNB_TOKENS,
       CHAIN_ID_BSC,
-      undefined,
+      multicallBalances,
     );
 
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_BSC));
 
     return accountsArray.reduce((response, account) => {
-      const ether = etherBalances.find((balance) => balance.account === account);
+      const bsc = bscTokenBalances.filter((balance) => balance.account === account);
       const erc20 = erc20Balances.filter((balance) => balance.account === account);
 
-      const tokens = [ether].concat(erc20).map((t) => {
+      const tokens = bsc.concat(erc20).map((t) => {
         return {
           ...t,
           account: account,

@@ -11,6 +11,7 @@ import {
   ETH_BNB_ADDRESS,
   toDecimals,
   totalPrice,
+  WBNB_ADDRESS,
 } from '../../utils/utils';
 import { getUtilTokenPrice, mapTokenBalances } from '../balance_util/balance.util';
 import { CurrentPricesPayload } from '../dto/price.response.dto';
@@ -20,7 +21,7 @@ import {
   TokenBalance,
 } from '../interfaces/balance.interfaces';
 import { Transfers } from '../interfaces/etherscan.interfaces';
-import { bnbToken, NO_SCAN_ETH_TOKEN } from '../tokens/tokens';
+import { NO_SCAN_BNB_TOKENS, NO_SCAN_ETH_TOKENS } from '../tokens/tokens';
 import { EtherscanApi } from './etherscan.api';
 
 @Injectable()
@@ -88,45 +89,48 @@ export class EtherscanService {
       const uniqueTokenAddresses = [...new Set(addressTokens)];
       const priceResponseDto = await this.priceService.getTokenPrices(uniqueTokenAddresses, chain);
 
-      transfersAll[address].map((transfer) => {
-        const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;
-        const decimalAmountToAdd: number = toDecimals(amountToAdd, transfer.tokenDecimal);
-        const existedAccountBalance: AccountTokenBalance = allBalances[address].tokens.find(
-          (tok) => tok.token.address === transfer.contractAddress,
-        );
-        if (existedAccountBalance === undefined) {
-          const tokenBalance: AccountTokenBalance = {
-            account: address,
-            amount: amountToAdd.toString(),
-            decimalsAmount: decimalAmountToAdd,
-            tokenPriceUSD: priceResponseDto.prices[transfer.contractAddress],
-            totalPriceUSD: totalPrice(
-              amountToAdd.toString(),
-              priceResponseDto.prices[transfer.contractAddress],
-              transfer.tokenDecimal,
-            ),
-            token: {
-              chainId: chain,
-              name: transfer.tokenName,
-              address: transfer.contractAddress,
-              decimals: transfer.tokenDecimal,
-              symbol: transfer.tokenSymbol,
-            },
-          };
-          allBalances[address].tokens.push(tokenBalance);
-        } else {
-          existedAccountBalance.amount = (
-            Number(existedAccountBalance.amount) + Number(amountToAdd)
-          ).toString();
-          existedAccountBalance.decimalsAmount =
-            existedAccountBalance.decimalsAmount + decimalAmountToAdd;
-          existedAccountBalance.totalPriceUSD = totalPrice(
-            existedAccountBalance.amount,
-            existedAccountBalance.tokenPriceUSD,
-            transfer.tokenDecimal,
+      transfersAll[address]
+        .filter((transfer) => transfer.contractAddress !== WBNB_ADDRESS.toLowerCase())
+        .map((transfer) => {
+          const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;
+
+          const decimalAmountToAdd: number = toDecimals(amountToAdd, transfer.tokenDecimal);
+          const existedAccountBalance: AccountTokenBalance = allBalances[address].tokens.find(
+            (tok) => tok.token.address === transfer.contractAddress,
           );
-        }
-      });
+          if (existedAccountBalance === undefined) {
+            const tokenBalance: AccountTokenBalance = {
+              account: address,
+              amount: amountToAdd.toString(),
+              decimalsAmount: decimalAmountToAdd,
+              tokenPriceUSD: priceResponseDto.prices[transfer.contractAddress],
+              totalPriceUSD: totalPrice(
+                amountToAdd.toString(),
+                priceResponseDto.prices[transfer.contractAddress],
+                transfer.tokenDecimal,
+              ),
+              token: {
+                chainId: chain,
+                name: transfer.tokenName,
+                address: transfer.contractAddress,
+                decimals: transfer.tokenDecimal,
+                symbol: transfer.tokenSymbol,
+              },
+            };
+            allBalances[address].tokens.push(tokenBalance);
+          } else {
+            existedAccountBalance.amount = (
+              Number(existedAccountBalance.amount) + Number(amountToAdd)
+            ).toString();
+            existedAccountBalance.decimalsAmount =
+              existedAccountBalance.decimalsAmount + decimalAmountToAdd;
+            existedAccountBalance.totalPriceUSD = totalPrice(
+              existedAccountBalance.amount,
+              existedAccountBalance.tokenPriceUSD,
+              transfer.tokenDecimal,
+            );
+          }
+        });
 
       const tokenBalanceArray = await this.getArrayOfTokenBalances(
         address,
@@ -146,8 +150,8 @@ export class EtherscanService {
   ): Promise<AccountTokenBalance[]> {
     const [provider, balanceArray] =
       chain === CHAIN_ID_ETH
-        ? [this.instanceEthProvider, NO_SCAN_ETH_TOKEN]
-        : [this.instanceBscProvider, [bnbToken]];
+        ? [this.instanceEthProvider, NO_SCAN_ETH_TOKENS]
+        : [this.instanceBscProvider, NO_SCAN_BNB_TOKENS];
 
     const etherBalances = [];
     for (let i = 0; i < balanceArray.length; i++) {

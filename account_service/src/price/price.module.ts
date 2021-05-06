@@ -4,12 +4,7 @@ import { LoggerModule } from '../Logger/LoggerModule';
 import { PriceService } from './price.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 30e3,
-    }),
-    LoggerModule,
-  ],
+  imports: [HttpModule, LoggerModule],
   providers: [PriceService],
   exports: [PriceService],
 })

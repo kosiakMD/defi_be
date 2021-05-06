@@ -146,19 +146,17 @@ export class IntegrationService {
   async getPools(): Promise<Pool[]> {
     try {
       this.logger.time(this.getPoolsUrl);
-      const data = await this.httpService
-        .get(this.getPoolsUrl)
-        .pipe(map((r) => r.data))
-        .toPromise();
+      const response = await this.httpService.get(this.getPoolsUrl).toPromise();
       this.logger.timeEnd(this.getPoolsUrl);
-      return data;
+      return response.data;
     } catch (e) {
       if (e.isAxiosError) {
-        this.logger.error(e.config.url);
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
         if (e.response) {
           this.logger.error(e.response.data);
         }
       }
+      this.logger.error(e);
       throw e;
     }
   }

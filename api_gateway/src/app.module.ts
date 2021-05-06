@@ -63,7 +63,14 @@ import { VaultsModule } from './vaults/vaults.module';
         ),
     }),
     TerminusModule,
-    HttpModule,
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
+        maxRedirects: configService.get<number>('HTTP_MAX_REDIRECTS') || 2,
+      }),
+      inject: [ConfigService],
+    }),
     AccountModule,
     PoolsModule,
     VaultsModule,

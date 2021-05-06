@@ -5,14 +5,7 @@ import { IntegrationService } from '../integration/integration.service';
 import { VaultsController } from './vaults.controller';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 5e3,
-      maxRedirects: 2,
-    }),
-    CacheModule.register(),
-    ConfigModule,
-  ],
+  imports: [ConfigModule, HttpModule, CacheModule.register()],
   providers: [IntegrationService],
   controllers: [VaultsController],
 })

@@ -1,5 +1,6 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { MiddlewareConsumer } from '@nestjs/common';
+import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import {
@@ -41,6 +42,14 @@ import { VaultsModule } from './vaults/vaults.module';
         // - Write all logs with level `info` and below to `combined.log`
         new winston.transports.File({ filename: process.env.LOG_COMBINED_FILE }),
       ],
+    }),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
+        maxRedirects: configService.get<number>('HTTP_MAX_REDIRECTS') || 2,
+      }),
+      inject: [ConfigService],
     }),
     TerminusModule,
     UniswapModule,

@@ -11,15 +11,7 @@ import { EtherscanService } from './bcs_etherscan/etherscan.service';
 import { DbService } from './repository/db.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature(),
-    HttpModule.register({
-      timeout: 30e3,
-    }),
-    ChainModule,
-    PriceModule,
-    MulticallModule,
-  ],
+  imports: [TypeOrmModule.forFeature(), HttpModule, ChainModule, PriceModule, MulticallModule],
   controllers: [BalanceController],
   providers: [BalanceService, DbService, EtherscanService, EtherscanApi],
 })

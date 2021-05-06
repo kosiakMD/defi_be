@@ -4,11 +4,7 @@ import { EtherscanApi } from './etherscan.api';
 import { EtherscanService } from './etherscan.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 3000,
-    }),
-  ],
+  imports: [HttpModule],
   providers: [EtherscanApi, EtherscanService],
   exports: [EtherscanApi, EtherscanService],
 })

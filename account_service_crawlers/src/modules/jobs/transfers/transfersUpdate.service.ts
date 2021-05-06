@@ -5,7 +5,6 @@ import { getManager } from 'typeorm';
 
 import { TokenPriceRequest } from '../../../models/dto/priceBatch.request.dto';
 import { PriceServiceResponse } from '../../../models/interfaces/priceServiceResponse.interface';
-import getLastTransferId from '../../../models/queries/GET_LAST_ID';
 import getUnPricedTokens from '../../../models/queries/GET_UPRICED_TRANSACTIONS';
 import updateTransferNativeCoinPrices from '../../../models/queries/UPDATE_TRANSFERS_NATIVE_COIN_PRICES';
 import updateTransferUsdPrices from '../../../models/queries/UPDATE_TRANSFER_USD_PRICES';
@@ -50,13 +49,16 @@ export class TransfersUpdateService {
       .toPromise();
   }
 
-  public async updatePrices(entityManager, offset): Promise<void> {
+  public async updatePrices(entityManager): Promise<void> {
     try {
       const start1 = new Date().getTime();
       this.logger.log((new Date().getTime() - start1) / 1000, 'Query: getUnPricedTokens');
       const unpricedTransfers = await entityManager.query(
-        getUnPricedTokens(offset, this.nativeAssetColumn, this.startCrawlDate),
+        getUnPricedTokens(this.transferTable, this.nativeAssetColumn, this.startCrawlDate),
       );
+      if (!unpricedTransfers.length) {
+        return;
+      }
 
       const assets = [];
       const timestamps: number[] = [];
@@ -132,17 +134,14 @@ export class TransfersUpdateService {
         (new Date().getTime() - start4) / 1000,
         'Query: updateTransferUsdPrices & updateTransferNativeCoinPrices',
       );
+      return;
     } catch (e) {
       this.logger.error(e, 'Token price update error');
     }
   }
 
   public async updateTransferPrices(): Promise<void> {
-    let offset;
     const entityManager = getManager();
-    const lastTransactionId = await entityManager.query(getLastTransferId(this.transferTable));
-    for (offset = 0; offset < Number(lastTransactionId[0].id); offset = offset + 500) {
-      await this.updatePrices(entityManager, offset);
-    }
+    return this.updatePrices(entityManager);
   }
 }

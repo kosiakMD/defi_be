@@ -258,7 +258,7 @@ export class Mapper {
   ): void {
     lpSnapshots = lpSnapshots.sort((a, b) => a.information.timestamp - b.information.timestamp);
 
-    amm.liquidityPositions.map(async (l) => {
+    amm.liquidityPositions.map((l) => {
       const currentPairSnapshots = lpSnapshots.filter(
         (s) => s.information.pair.id === l.lpToken.address,
       );
@@ -298,7 +298,7 @@ export class Mapper {
             reserve1: new BN(l.poolTokens[1].reserve).toNumber(),
           };
         }
-        l.earnedFeeUSD += await this.getFeeBetweenTwoSnapshots(sn1Data, sn2Data);
+        l.earnedFeeUSD += this.getFeeBetweenTwoSnapshots(sn1Data, sn2Data);
       }
     });
   }

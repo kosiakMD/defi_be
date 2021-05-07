@@ -222,30 +222,35 @@ export class ScanService {
     return transfers;
   }
 
-  protected getTransfersWithTokenPrices(transactions): Promise<TransactionWithTokenAndPrices[]> {
-    return transactions.map((transaction) => {
-      const decimals = getTokenDecimals(transaction.tokenDecimals);
+  protected async getTransfersWithTokenPrices(
+    transactions,
+  ): Promise<TransactionWithTokenAndPrices[]> {
+    return await Promise.all(
+      transactions.map(async (transaction) => {
+        const decimals = getTokenDecimals(transaction.tokenDecimals);
 
-      try {
-        return {
-          ...transaction,
-          tokenPriceUSD: transaction.tokenPrice || 0,
-          totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
-        };
-      } catch (_) {
-        return {
-          ...transaction,
-          tokenPriceUSD: 0,
-          totalPriceUSD: 0,
-        };
-      }
-    });
+        try {
+          return {
+            ...transaction,
+            tokenPriceUSD: transaction.tokenPrice || 0,
+            totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
+          };
+        } catch (_) {
+          return {
+            ...transaction,
+            tokenPriceUSD: 0,
+            totalPriceUSD: 0,
+          };
+        }
+      }),
+    );
   }
 
   // TODO: toTransfersResponse is not async!!!
   public async checkTransferResponse(resp, addresses): Promise<TransfersResponse> {
     if (Number(resp['status'])) {
-      return this.toTransfersResponse(resp['result'], addresses);
+      const transferResponse = await this.toTransfersResponse(resp['result'], addresses);
+      return transferResponse;
     } else {
       return this.toTransfersResponse([], []);
     }
@@ -271,7 +276,8 @@ export class ScanService {
       const unpricedContracts = [];
 
       for (const transfer of transactions) {
-        const transferInArray = unpricedContracts.find(
+        // TODO: remove await
+        const transferInArray = await unpricedContracts.find(
           (unpricedContract) => unpricedContract.address === transfer['contractAddress'],
         );
         if (transferInArray) {

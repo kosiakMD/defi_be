@@ -13,7 +13,7 @@ export class BscScanService extends ScanService {
   protected readonly scanServiceKey: string;
   protected readonly mainCoinAddress: string;
   protected readonly chainId: number;
-  protected readonly servicePrefix: string;
+  protected readonly chainPrefix: string;
 
   constructor(
     httpService: HttpService,
@@ -27,6 +27,6 @@ export class BscScanService extends ScanService {
     this.scanServiceKey = this.configService.get<string>('BSCSCAN_API_KEY');
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
     this.chainId = CHAIN_ID_BSC;
-    this.servicePrefix = 'bsc';
+    this.chainPrefix = 'bsc';
   }
 }

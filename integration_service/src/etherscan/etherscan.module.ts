@@ -2,8 +2,8 @@ import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import * as redisStore from 'cache-manager-redis-store';
 
-import { EtherscanApi } from './etherscan.api';
 import { EtherscanService } from './etherscan.service';
+import { ScanApi } from './scan-api.service';
 
 @Module({
   imports: [
@@ -21,7 +21,7 @@ import { EtherscanService } from './etherscan.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [EtherscanApi, EtherscanService],
-  exports: [EtherscanApi, EtherscanService],
+  providers: [ScanApi, EtherscanService],
+  exports: [ScanApi, EtherscanService],
 })
 export class EtherscanModule {}

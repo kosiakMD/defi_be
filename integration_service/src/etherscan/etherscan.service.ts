@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
 import { CHAIN_ID_BSC } from '../pools/pools.setting';
-import { EtherscanApi, EtherscanTransfer } from './etherscan.api';
+import { ScanApi, EtherscanTransfer } from './scan-api.service';
 
 @Injectable()
 export class EtherscanService {
-  constructor(private etherscanApi: EtherscanApi) {}
+  constructor(private etherscanApi: ScanApi) {}
 
   async getBalances(addresses: string[]): Promise<any> {
     const transfersAll: Transfers = {};

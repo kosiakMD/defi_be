@@ -6,9 +6,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 
 @Injectable()
-export class EtherscanApi {
+export class ScanApi {
   private url: string;
   private apiKey: string;
+  private readonly chainPrefix: 'bsc'; // | 'eth';
 
   constructor(
     private httpService: HttpService,
@@ -22,7 +23,8 @@ export class EtherscanApi {
 
   async getTransfers(address: string): Promise<any> {
     const action = 'tokentx';
-    const transfersCacheKey = `transfers_${action}_${address}`;
+    // TODO: create function keys generator
+    const transfersCacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
     const logString = `Cache ${action} transfers of: ${address} is `;
 
     // TODO: if CHAIN will be modified ADD CHAIN_ID to CACHE KEY

@@ -27,7 +27,7 @@ export class ScanService {
   protected readonly scanServiceKey: string;
   protected readonly mainCoinAddress: string;
   protected readonly chainId: number;
-  protected readonly servicePrefix: string;
+  protected readonly chainPrefix: 'bsc' | 'eth';
   private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   constructor(
@@ -46,8 +46,8 @@ export class ScanService {
 
   protected async getTransactions(address, internal = false): Promise<any> {
     const action = internal ? 'txlistinternal' : 'txlist';
-    const transactionCacheKey = `${this.servicePrefix}_transactions_${action}_${address}`;
-    const logString = `Cache ${this.servicePrefix} ${action} transactions of: ${address} is `;
+    const transactionCacheKey = `${this.chainPrefix}_transactions_${action}_${address}`;
+    const logString = `Cache ${this.chainPrefix} ${action} transactions of: ${address} is `;
 
     let transactions = await this.cacheManager.get<any[]>(transactionCacheKey);
 
@@ -91,7 +91,7 @@ export class ScanService {
   private normalizeTxsResp = (txsResp, chainId, isInternal = false): Transaction[] => {
     txsResp.forEach((tx) =>
       Object.assign(tx, {
-        [`${this.servicePrefix}PriceUSD`]: null,
+        [`${this.chainPrefix}PriceUSD`]: null,
         tokenPriceUSD: null,
         totalPriceUSD: null,
         chainId: this.chainId,
@@ -159,7 +159,7 @@ export class ScanService {
       // tx.tokenPriceUSD = priceUSD || null;
       // tx.totalPriceUSD = totalPrice(tx.value.toString(), priceUSD, 18) || null;
       Object.assign(tx, {
-        [`${this.servicePrefix}PriceUSD`]: priceUSD || null,
+        [`${this.chainPrefix}PriceUSD`]: priceUSD || null,
         tokenPriceUSD: priceUSD || null,
         totalPriceUSD: totalPrice(tx.value.toString(), priceUSD, 18) || null,
       });
@@ -179,8 +179,9 @@ export class ScanService {
 
   protected async getTransfers(address, ECR20 = false): Promise<any> {
     const action = ECR20 ? 'tokennfttx' : 'tokentx';
-    const transfersCacheKey = `${this.servicePrefix}_transfers_${action}_${address}`;
-    const logString = `Cache ${this.servicePrefix} ${action} transfers of: ${address} is `;
+    // TODO: create function keys generator
+    const transfersCacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
+    const logString = `Cache ${this.chainPrefix} ${action} transfers of: ${address} is `;
 
     let transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
 

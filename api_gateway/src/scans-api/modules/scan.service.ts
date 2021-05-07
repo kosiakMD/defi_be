@@ -17,7 +17,7 @@ import {
 import { getTokenDecimals, getUniqueAndToLowerCaseArrayData, totalPrice } from './utils/utils';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
-const TRANSFERS_CACHE_TIME = 30; // 30 sec
+// const TRANSFERS_CACHE_TIME = 30; // 30 sec
 const MAX_RETRY = 2;
 
 export class ScanService {
@@ -224,28 +224,22 @@ export class ScanService {
     // return transfers;
   }
 
-  protected async getTransfersWithTokenPrices(
-    transactions,
-  ): Promise<TransactionWithTokenAndPrices[]> {
-    return await Promise.all(
-      transactions.map(async (transaction) => {
-        const decimals = getTokenDecimals(transaction.tokenDecimals);
+  protected async getTransfersWithTokenPrices(transfers): Promise<TransactionWithTokenAndPrices[]> {
+    return transfers.map((transfer) => {
+      const decimals = getTokenDecimals(transfer.tokenDecimals);
 
-        try {
-          return {
-            ...transaction,
-            tokenPriceUSD: transaction.tokenPrice || 0,
-            totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
-          };
-        } catch (_) {
-          return {
-            ...transaction,
-            tokenPriceUSD: 0,
-            totalPriceUSD: 0,
-          };
-        }
-      }),
-    );
+      try {
+        return Object.assign(transfer, {
+          tokenPriceUSD: transfer.tokenPrice || 0,
+          totalPriceUSD: transfer.amount * decimals * transfer.tokenPrice,
+        });
+      } catch (_) {
+        return Object.assign(transfer, {
+          tokenPriceUSD: 0,
+          totalPriceUSD: 0,
+        });
+      }
+    });
   }
 
   // TODO: toTransfersResponse is not async!!!

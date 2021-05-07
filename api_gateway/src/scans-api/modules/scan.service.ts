@@ -66,7 +66,7 @@ export class ScanService {
           isInternal,
         }),
       );
-      return txsResp;
+      return txsResp.result;
     }
     return [];
   };

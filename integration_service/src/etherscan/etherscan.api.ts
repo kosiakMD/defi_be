@@ -21,28 +21,42 @@ export class EtherscanApi {
   }
 
   async getTransfers(address: string): Promise<any> {
-    let transfers = await this.cacheManager.get<any[]>(`transfers_${address}`);
+    const action = 'tokentx';
+    const transfersCacheKey = `transfers_${action}_${address}`;
+    const logString = `Cache ${action} transfers of: ${address} is `;
+
+    // TODO: if CHAIN will be modified ADD CHAIN_ID to CACHE KEY
+    let transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+
     if (!transfers) {
-      this.logger.debug(`Cache transfers of: ${address} is not - fetching`);
-      const resp = await this.httpService
-        .get(this.url, {
-          params: {
-            module: 'account',
-            action: 'tokentx',
-            address: address,
-            apikey: this.apiKey,
-          },
-        })
-        .toPromise();
-      transfers = resp.data.result;
-      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-      (async () => {
-        await this.cacheManager.set<any[]>(`transfers_${address}`, transfers, {
-          ttl: TRANSFERS_CACHE_TIME,
-        });
-      })().then(() => this.logger.debug(`Cache transfers of: ${address} is saved`));
+      try {
+        this.logger.debug(logString + 'fetching');
+        const resp = await this.httpService
+          .get(this.url, {
+            params: {
+              module: 'account',
+              action: action,
+              address: address,
+              apikey: this.apiKey,
+            },
+          })
+          .toPromise();
+        transfers = resp.data.result;
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        (async () => {
+          await this.cacheManager.set<any[]>(transfersCacheKey, transfers, {
+            ttl: TRANSFERS_CACHE_TIME,
+          });
+        })().then(() => this.logger.debug(logString + 'saved'));
+      } catch (e) {
+        // if no data and request failed - m.b. data was wrote by another process
+        transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+        if (!transfers) {
+          throw e;
+        }
+      }
     } else {
-      this.logger.debug(`Cache transfers of: ${address} is ok`);
+      this.logger.debug(logString + 'ok');
     }
     return transfers;
   }

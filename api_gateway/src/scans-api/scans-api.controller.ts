@@ -5,8 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '../common/Logger/Logger.service';
 import { TransactionsResponseDto } from './models/dto/transactions.dto';
 import { ResultStatus, TransactionsResult } from './models/interfaces/transactions.interfaces';
-import { BscscanService } from './modules/bscscan/bscscan.service';
-import { EtherscanService } from './modules/etherscan/etherscan.service';
+import { BscScanService } from './modules/bscscan/bsc-scan.service';
+import { EtherScanService } from './modules/etherscan/ether-scan.service';
 import { ScanService } from './modules/scan.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from './modules/utils/utils';
 import { TransactionQueryDto } from './scans-api.dto';
@@ -19,8 +19,8 @@ export class ScansApiController {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private etherscanService: EtherscanService,
-    private bscscanService: BscscanService,
+    private etherScanService: EtherScanService,
+    private bscScanService: BscScanService,
   ) {
     this.ethChainId = CHAIN_ID_ETH;
     this.bscChainId = CHAIN_ID_BSC;
@@ -72,13 +72,13 @@ export class ScansApiController {
         }
       };
       await Promise.all([
-        handleChain(this.ethChainId, this.etherscanService),
-        handleChain(this.bscChainId, this.bscscanService),
+        handleChain(this.ethChainId, this.etherScanService),
+        handleChain(this.bscChainId, this.bscScanService),
       ]);
     } else {
       const [ethTransactions, bscTransactions] = await Promise.allSettled([
-        Promise.all(addresses.map((address) => this.etherscanService.getScanTransactions(address))),
-        Promise.all(addresses.map((address) => this.bscscanService.getScanTransactions(address))),
+        Promise.all(addresses.map((address) => this.etherScanService.getScanTransactions(address))),
+        Promise.all(addresses.map((address) => this.bscScanService.getScanTransactions(address))),
       ]);
 
       const checkFulfillment = (chainsTxResults): any => {

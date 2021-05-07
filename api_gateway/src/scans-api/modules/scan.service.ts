@@ -1,5 +1,6 @@
 import { HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cache } from 'cache-manager';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../../common/Logger/Logger.service';
@@ -7,15 +8,20 @@ import { Transaction } from '../../transactions/transactions.interfaces';
 import { PriceServiceResponse } from '../models/interfaces/priceServiceResponse.interface';
 import { ResultStatus, TransactionsResult } from '../models/interfaces/transactions.interfaces';
 import {
-  TransactionWithTokenAndPrices,
-  TransfersResponse,
   ERC20TokenTransfer,
   ERC20Transfer,
+  TransactionWithTokenAndPrices,
   Transfer,
+  TransfersResponse,
 } from '../models/interfaces/transfers.interfaces';
-import { totalPrice, getTokenDecimals, getUniqueAndToLowerCaseArrayData } from './utils/utils';
+import { getTokenDecimals, getUniqueAndToLowerCaseArrayData, totalPrice } from './utils/utils';
+
+const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
+const TRANSFERS_CACHE_TIME = 30; // 30 sec
+const MAX_RETRY = 2;
 
 export class ScanService {
+  private retries: 0;
   protected readonly getPricesUrl: string;
   protected readonly scanServiceUrl: string;
   protected readonly scanServiceKey: string;
@@ -25,9 +31,10 @@ export class ScanService {
   private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   constructor(
-    protected readonly logger: Logger,
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
+    protected readonly cacheManager: Cache,
+    protected readonly logger: Logger,
   ) {
     const host = this.configService.get<string>('PRICE_SERVICE_HOST');
     const port = this.configService.get<string>('PRICE_SERVICE_PORT');
@@ -37,38 +44,61 @@ export class ScanService {
     this.getPricesUrl = `${url}/${getPricesPath}/batch`;
   }
 
-  protected getTransactions(address, internal = false): Promise<any> {
+  protected async getTransactions(address, internal = false): Promise<any> {
     const action = internal ? 'txlistinternal' : 'txlist';
-    return this.httpService
-      .get(this.scanServiceUrl, {
-        params: {
-          module: 'account',
-          action: action,
-          address: address,
-          startblock: 0,
-          endblock: 99999999,
-          sort: 'asc',
-          apikey: this.scanServiceKey,
-        },
-      })
-      .pipe(map((response) => response.data))
-      .toPromise();
+    const transactionCacheKey = `${this.servicePrefix}_transactions_${action}_${address}`;
+    const logString = `Cache ${this.servicePrefix} ${action} transactions of: ${address} is `;
+
+    let transactions = await this.cacheManager.get<any[]>(transactionCacheKey);
+
+    if (!transactions) {
+      try {
+        this.logger.debug(logString + 'fetching');
+        const txsResp = await this.httpService
+          .get(this.scanServiceUrl, {
+            params: {
+              module: 'account',
+              action: action,
+              address: address,
+              startblock: 0,
+              endblock: 99999999,
+              sort: 'asc',
+              apikey: this.scanServiceKey,
+            },
+          })
+          .pipe(map((response) => response.data))
+          .toPromise();
+        transactions = txsResp && txsResp.result ? txsResp.result : [];
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        (async () => {
+          await this.cacheManager.set<any[]>(transactionCacheKey, transactions, {
+            ttl: TRANSACTIONS_CACHE_TIME,
+          });
+        })().then(() => this.logger.debug(logString + 'saved'));
+      } catch (e) {
+        // if no data and request failed - m.b. data was wrote by another process
+        transactions = await this.cacheManager.get<any[]>(transactionCacheKey);
+        if (!transactions) {
+          throw e;
+        }
+      }
+    } else {
+      this.logger.debug(logString + 'ok');
+    }
+    return transactions;
   }
 
   private normalizeTxsResp = (txsResp, chainId, isInternal = false): Transaction[] => {
-    if (txsResp && txsResp.result) {
-      txsResp.result.forEach((tx) =>
-        Object.assign(tx, {
-          [`${this.servicePrefix}PriceUSD`]: null,
-          tokenPriceUSD: null,
-          totalPriceUSD: null,
-          chainId: this.chainId,
-          isInternal,
-        }),
-      );
-      return txsResp.result;
-    }
-    return [];
+    txsResp.forEach((tx) =>
+      Object.assign(tx, {
+        [`${this.servicePrefix}PriceUSD`]: null,
+        tokenPriceUSD: null,
+        totalPriceUSD: null,
+        chainId: this.chainId,
+        isInternal,
+      }),
+    );
+    return txsResp;
   };
 
   public async getScanTransactions(address: string): Promise<TransactionsResult> {
@@ -124,6 +154,10 @@ export class ScanService {
     transactions.forEach((tx) => {
       if (!Number(tx.value)) return false;
       const priceUSD = prices.prices[this.mainCoinAddress][tx.timeStamp];
+      // TODO: measure
+      // tx[`${this.servicePrefix}PriceUSD`] = priceUSD || null;
+      // tx.tokenPriceUSD = priceUSD || null;
+      // tx.totalPriceUSD = totalPrice(tx.value.toString(), priceUSD, 18) || null;
       Object.assign(tx, {
         [`${this.servicePrefix}PriceUSD`]: priceUSD || null,
         tokenPriceUSD: priceUSD || null,
@@ -138,57 +172,79 @@ export class ScanService {
     const transferRows = await Promise.all(
       addressArray.map((address) => this.getTransfers(address)),
     );
-    const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
+    const transferRowsWithTokenPrices = this.getTransfersWithTokenPrices(transferRows);
 
     return transferRowsWithTokenPrices[0];
   }
 
-  protected getTransfers(address, ECR20 = false): Promise<any> {
-    const protocol = ECR20 ? 'tokennfttx' : 'tokentx';
-    return this.httpService
-      .get(this.scanServiceUrl, {
-        params: {
-          module: 'account',
-          action: protocol,
-          address: address,
-          startblock: 0,
-          endblock: 99999999,
-          sort: 'asc',
-          apikey: this.scanServiceKey,
-        },
-      })
-      .pipe(map((response) => response.data))
-      .toPromise();
-  }
+  protected async getTransfers(address, ECR20 = false): Promise<any> {
+    const action = ECR20 ? 'tokennfttx' : 'tokentx';
+    const transfersCacheKey = `${this.servicePrefix}_transfers_${action}_${address}`;
+    const logString = `Cache ${this.servicePrefix} ${action} transfers of: ${address} is `;
 
-  protected async getTransfersWithTokenPrices(
-    transactions,
-  ): Promise<TransactionWithTokenAndPrices[]> {
-    return await Promise.all(
-      transactions.map(async (transaction) => {
-        const decimals = getTokenDecimals(transaction.tokenDecimals);
+    let transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
 
-        try {
-          return {
-            ...transaction,
-            tokenPriceUSD: transaction.tokenPrice || 0,
-            totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
-          };
-        } catch (_) {
-          return {
-            ...transaction,
-            tokenPriceUSD: 0,
-            totalPriceUSD: 0,
-          };
+    if (!transfers) {
+      try {
+        this.logger.debug(logString + 'fetching');
+        const transfersResp = await this.httpService
+          .get(this.scanServiceUrl, {
+            params: {
+              module: 'account',
+              action: action,
+              address: address,
+              startblock: 0,
+              endblock: 99999999,
+              sort: 'asc',
+              apikey: this.scanServiceKey,
+            },
+          })
+          .pipe(map((response) => response.data))
+          .toPromise();
+        transfers = transfersResp && transfersResp.result ? transfersResp.result : [];
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        (async () => {
+          await this.cacheManager.set<any[]>(transfersCacheKey, transfers, {
+            ttl: TRANSFERS_CACHE_TIME,
+          });
+        })().then(() => this.logger.debug(logString + 'saved'));
+      } catch (e) {
+        // if no data and request failed - m.b. data was wrote by another process
+        transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+        if (!transfers) {
+          throw e;
         }
-      }),
-    );
+      }
+    } else {
+      this.logger.debug(logString + 'ok');
+    }
+    return transfers;
   }
 
+  protected getTransfersWithTokenPrices(transactions): Promise<TransactionWithTokenAndPrices[]> {
+    return transactions.map((transaction) => {
+      const decimals = getTokenDecimals(transaction.tokenDecimals);
+
+      try {
+        return {
+          ...transaction,
+          tokenPriceUSD: transaction.tokenPrice || 0,
+          totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
+        };
+      } catch (_) {
+        return {
+          ...transaction,
+          tokenPriceUSD: 0,
+          totalPriceUSD: 0,
+        };
+      }
+    });
+  }
+
+  // TODO: toTransfersResponse is not async!!!
   public async checkTransferResponse(resp, addresses): Promise<TransfersResponse> {
     if (Number(resp['status'])) {
-      const transferResponse = await this.toTransfersResponse(resp['result'], addresses);
-      return transferResponse;
+      return this.toTransfersResponse(resp['result'], addresses);
     } else {
       return this.toTransfersResponse([], []);
     }
@@ -214,7 +270,7 @@ export class ScanService {
       const unpricedContracts = [];
 
       for (const transfer of transactions) {
-        const transferInArray = await unpricedContracts.find(
+        const transferInArray = unpricedContracts.find(
           (unpricedContract) => unpricedContract.address === transfer['contractAddress'],
         );
         if (transferInArray) {
@@ -239,7 +295,8 @@ export class ScanService {
         .toPromise();
       this.logger.timeEnd(`request: ${this.getPricesUrl}`);
 
-      return addresses.reduce<TransfersResponse>((response, address) => {
+      // TODO too hard logic - divide in methods and analysis for performance
+      const result = addresses.reduce<TransfersResponse>((response, address) => {
         const userTransactions = transactions.filter(
           (transaction) => transaction['to'] === address || transaction['from'] === address,
         );
@@ -289,13 +346,21 @@ export class ScanService {
           [address]: transactionWithTransfers,
         };
       }, {});
+
+      this.retries = 0;
+      return result;
     } catch (e) {
       if (e.response) {
         this.logger.error(e.response.data);
       }
       this.logger.error(e.message);
-      if (e.response.status === 403) {
-        this.toTransfersResponse(transactions, addresses);
+      // TODO: when this cycle should be stopped?
+      if (e.response.status === 403 && this.retries < MAX_RETRY) {
+        this.retries++;
+        return await this.toTransfersResponse(transactions, addresses);
+      } else {
+        this.retries = 0;
+        throw e;
       }
     }
   }

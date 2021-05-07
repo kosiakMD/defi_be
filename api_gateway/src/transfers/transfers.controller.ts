@@ -1,5 +1,4 @@
-import { Inject } from '@nestjs/common';
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -7,7 +6,6 @@ import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
 import { BscScanService } from '../scans-api/modules/bscscan/bsc-scan.service';
 import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.service';
-import { ScanService } from '../scans-api/modules/scan.service';
 import { TransfersResponseDto } from './transfers.dto';
 import { TransfersResponse } from './transfers.interfaces';
 
@@ -80,35 +78,36 @@ export class TransfersController {
         }
       } else {
         // TODO: move logic into Service!
-        const handleScan = async (service: ScanService): Promise<boolean> => {
-          const transfersResponse = await service.getTransfersByAddresses(addressArray);
-          const transfersResult = await service.checkTransferResponse(
-            transfersResponse,
-            addressArray,
-          );
-          service.combineResults(transfersResult, transfers);
-          return true;
-        };
+        // TODO: test new logic
+        // const handleScan = async (service: ScanService): Promise<boolean> => {
+        //   const transfersResponse = await service.getTransfersByAddresses(addressArray);
+        //   const transfersResult = await service.checkTransferResponse(
+        //     transfersResponse,
+        //     addressArray,
+        //   );
+        //   service.combineResults(transfersResult, transfers);
+        //   return true;
+        // };
+        //
+        // await Promise.allSettled([
+        //   handleScan(this.etherScanService),
+        //   handleScan(this.bscScanService),
+        // ]);
 
-        await Promise.allSettled([
-          handleScan(this.etherScanService),
-          handleScan(this.bscScanService),
+        const [ethTransfers, bscTransfers] = await Promise.all([
+          this.etherScanService.getTransfersByAddresses(addressArray),
+          this.bscScanService.getTransfersByAddresses(addressArray),
         ]);
 
-        // const [ethTransfers, bscTransfers] = await Promise.all([
-        //   this.etherScanService.getTransfersByAddresses(addressArray),
-        //   this.bscScanService.getTransfersByAddresses(addressArray),
-        // ]);
-        //
-        // const [ethTransfersResponse, bscTransfersResponse] = await Promise.all([
-        //   this.etherScanService.checkTransferResponse(ethTransfers, addressArray),
-        //   this.bscScanService.checkTransferResponse(bscTransfers, addressArray),
-        // ]);
-        //
-        // await Promise.all([
-        //   this.etherScanService.combineResults(transfers, ethTransfersResponse),
-        //   this.bscScanService.combineResults(transfers, bscTransfersResponse),
-        // ]);
+        const [ethTransfersResponse, bscTransfersResponse] = await Promise.all([
+          this.etherScanService.checkTransferResponse(ethTransfers, addressArray),
+          this.bscScanService.checkTransferResponse(bscTransfers, addressArray),
+        ]);
+
+        await Promise.all([
+          this.etherScanService.combineResults(transfers, ethTransfersResponse),
+          this.bscScanService.combineResults(transfers, bscTransfersResponse),
+        ]);
       }
 
       const allTransfersResponse: TransfersResponse = {};

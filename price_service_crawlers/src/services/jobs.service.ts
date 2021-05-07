@@ -60,6 +60,9 @@ export class JobsService {
         // await this.agenda.cancel({});
         
         const cancel = async (jobName: string) => {
+          if (!jobName) {
+            return null;
+          }
 
           const cancelResult = await this.agenda.cancel({ name: jobName });
           this.logger.log(

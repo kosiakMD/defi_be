@@ -5,14 +5,7 @@ import { TokensController } from './tokens.controller';
 import { TokensService } from './tokens.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 5e3,
-      maxRedirects: 2,
-    }),
-    CacheModule.register(),
-    ConfigModule,
-  ],
+  imports: [ConfigModule, HttpModule, CacheModule.register()],
   providers: [TokensService],
   controllers: [TokensController],
 })

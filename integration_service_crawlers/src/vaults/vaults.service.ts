@@ -33,7 +33,7 @@ export class VaultsService {
 
   private buildInsertVaultsQuery(vaults: Vault[]): string {
     const queryStart = `
-        INSERT INTO public.vaults
+        INSERT INTO vaults
         (id,
          vault_id,
          vault_name,

@@ -4,12 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AccountService } from './account.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature(),
-    HttpModule.register({
-      timeout: 5000,
-    }),
-  ],
+  imports: [TypeOrmModule.forFeature(), HttpModule],
   providers: [AccountService],
   exports: [AccountService],
 })

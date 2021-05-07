@@ -18,6 +18,7 @@ import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
 import { SushiswapJob } from './jobs/sushiswap.job';
 import { PancakeJob } from './jobs/pancake.job';
 import { UniswapJob } from './jobs/uniswap.job';
+import { CurveJob } from './jobs/curve.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
 import { Api } from './thegraph/api';
@@ -91,6 +92,7 @@ import { HealthController } from './health/health.controller';
     SushiswapJob,
     PancakeJob,
     UniswapJob,
+    CurveJob,
     BalancerFirstCheckJob,
     CurveFirstCheckJob,
   ],

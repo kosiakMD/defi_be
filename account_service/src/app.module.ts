@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/common';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
@@ -27,6 +28,14 @@ import { winstonParams } from './utils/winston';
           configService.get<string>('LOG_LEVEL'),
           { env: configService.get<string>('ENV') },
         ),
+    }),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
+        maxRedirects: configService.get<number>('HTTP_MAX_REDIRECTS') || 2,
+      }),
+      inject: [ConfigService],
     }),
     TerminusModule,
     TransfersModule,

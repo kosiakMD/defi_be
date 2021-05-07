@@ -5,14 +5,7 @@ import { GasController } from './gas.controller';
 import { GasService } from './gas.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 5e3,
-      maxRedirects: 2,
-    }),
-    CacheModule.register(),
-    ConfigModule,
-  ],
+  imports: [ConfigModule, HttpModule, CacheModule.register()],
   providers: [GasService],
   controllers: [GasController],
 })

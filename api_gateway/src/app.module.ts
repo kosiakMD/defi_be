@@ -27,13 +27,9 @@ import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationService } from './integration/integration.service';
 import { PancakeController } from './pancake/pancake.controller';
-// import { PlatformController } from './platform/platform.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
-import { BscscanService } from './scans-api/modules/bscscan/bscscan.service';
-import { EtherscanService } from './scans-api/modules/etherscan/etherscan.service';
-// import { ScanService } from './scans-api/scan.service';
 import { ScansApiController } from './scans-api/scans-api.controller';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
@@ -62,8 +58,15 @@ import { VaultsModule } from './vaults/vaults.module';
           { env: configService.get<string>('ENV') },
         ),
     }),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
+        maxRedirects: configService.get<number>('HTTP_MAX_REDIRECTS') || 2,
+      }),
+      inject: [ConfigService],
+    }),
     TerminusModule,
-    HttpModule,
     AccountModule,
     PoolsModule,
     VaultsModule,
@@ -112,9 +115,7 @@ import { VaultsModule } from './vaults/vaults.module';
     IntegrationService,
     PricesService,
     // AccountService,
-    EtherscanService,
-    BscscanService,
-    // ScanService,
+    ScansApiModule,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

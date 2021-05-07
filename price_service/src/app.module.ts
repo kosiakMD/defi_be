@@ -1,4 +1,5 @@
 import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonLogger, WinstonModule } from 'nest-winston';
@@ -44,6 +45,14 @@ import { winstonParams } from './utils/winston';
         autoLoadEntities: true,
         logging: true,
       }),
+    }),
+    HttpModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
+        maxRedirects: configService.get<number>('HTTP_MAX_REDIRECTS') || 2,
+      }),
+      inject: [ConfigService],
     }),
     PricesModule,
     HealthModule,

@@ -2,6 +2,7 @@ import { BigNumber as BN } from 'bignumber.js';
 
 export const DEFAULT_MULTIPLIER = 1e-18;
 export const ETH_BNB_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const WBNB_ADDRESS = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
 export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
 export const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
 export const ESD_ADDRESS = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
@@ -20,6 +21,10 @@ export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
 }
 
 type Decimals = string | number;
+
+export function toDecimals(amount: number, decimals: number) {
+  return amount * Math.pow(10, -decimals);
+}
 
 export const decimalsDivider = (decimals: Decimals) => new BN(10).pow(decimals);
 

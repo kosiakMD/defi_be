@@ -68,6 +68,10 @@ export const validationSchema = Joi.object({
   PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),
   THEGRAPH_SUSHISWAP_STAKING_POSITIONS: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().required(),
+  REDIS_AUTH: Joi.string().required(),
+  REDIS_CACHE_TTL: Joi.number(),
 });
 
 export const validationOptions = {

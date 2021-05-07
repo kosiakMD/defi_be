@@ -4,8 +4,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
+import { changeTokenArray } from '../balance/balance_util/balance.util';
 import { CurrentPricesPayload, PriceResponseDto } from '../balance/dto/price.response.dto';
-import { ETH_TOKEN_ARRAY } from '../balance/tokens/tokens';
+import {
+  NO_DB_BNB_TOKENS,
+  NO_DB_ETH_TOKENS,
+  NO_SCAN_BNB_TOKENS,
+  NO_SCAN_ETH_TOKENS,
+} from '../balance/tokens/tokens';
 import { CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../utils/utils';
 
 @Injectable()
@@ -27,24 +33,21 @@ export class PriceService {
   async getTokenPrices(
     addressesArray: string[],
     chain: number,
+    internal?: number,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    if (chain === CHAIN_ID_ETH) {
-      ETH_TOKEN_ARRAY.forEach((token) => addressesArray.push(token.address));
-    } else {
-      addressesArray.push(ETH_BNB_ADDRESS.toLowerCase());
-    }
-    const addresses = await addressesArray.join(',');
+    this.mapAddressArray(addressesArray, chain, internal);
+
+    const request = {
+      chain: chain,
+      currency: undefined,
+      addresses: addressesArray,
+    };
 
     let result;
     try {
       this.logger.time(this.getPricesUrl);
       result = await this.httpService
-        .get<PriceResponseDto<CurrentPricesPayload>>(this.getPricesUrl, {
-          params: {
-            chain,
-            addresses,
-          },
-        })
+        .post(this.getPricesUrl, request)
         .pipe(map((response) => response.data))
         .toPromise();
 
@@ -61,5 +64,28 @@ export class PriceService {
       return { chain: undefined, currency: undefined, prices: pricePayload };
     }
     return result;
+  }
+
+  private mapAddressArray(addresses: string[], chain: number, internal?: number): void {
+    internal
+      ? this.addressArrayToStringInternal(addresses, chain)
+      : this.addressArrayToStringExternal(addresses, chain);
+  }
+
+  private addressArrayToStringInternal(addresses: string[], chain: number): void {
+    if (chain === CHAIN_ID_ETH) {
+      changeTokenArray(NO_DB_ETH_TOKENS, addresses);
+    } else {
+      changeTokenArray(NO_DB_BNB_TOKENS, addresses);
+    }
+  }
+
+  private addressArrayToStringExternal(addresses: string[], chain: number): void {
+    if (chain === CHAIN_ID_ETH) {
+      changeTokenArray(NO_SCAN_ETH_TOKENS, addresses);
+    } else {
+      changeTokenArray(NO_SCAN_BNB_TOKENS, addresses);
+    }
+    addresses.push(ETH_BNB_ADDRESS.toLowerCase());
   }
 }

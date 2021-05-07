@@ -13,11 +13,12 @@ export class SushiswapSubgraph extends UniswapSubgraph {
   ) {
     super(httpService, configService);
     this.subgraphUrl = this.configService.get<string>('AMM_SUSHISWAP_SUBGRAPH_URL');
+    this.subgraphNativeUrl = this.configService.get<string>('AMM_SUSHISWAP_NATIVE_SUBGRAPH_URL');
   }
 
   async getVaultsData(poolsIds: string[]): Promise<ResponseData> {
     return this.httpService
-      .post<ResponseData>(this.subgraphUrl, {
+      .post<ResponseData>(this.subgraphNativeUrl, {
         operationName: 'pairs',
         variables: {
           poolsIds: poolsIds,

@@ -77,6 +77,11 @@ export const validationSchema = Joi.object({
   ETHERSCAN_API_KEY: Joi.string().required(),
   BSCSCAN_API_URL: Joi.string().required(),
   BSCSCAN_API_KEY: Joi.string().required(),
+  //  TODO: temporary
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().required(),
+  REDIS_AUTH: Joi.string().required(),
+  REDIS_CACHE_TTL: Joi.number(),
 });
 
 export const validationOptions = {

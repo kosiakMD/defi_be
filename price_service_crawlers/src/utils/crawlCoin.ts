@@ -42,6 +42,7 @@ export async function crawlCoinHistory(
   logger: LoggerService,
   platform: string,
   isRoundingNeeded = true,
+  firstTimestamp = null,
   lastTimestamp = null,
 ) {
   if (!coin.address) {
@@ -59,7 +60,7 @@ export async function crawlCoinHistory(
         (isRoundingNeeded ? Math.round(timestamp / 1000) : timestamp) -
         ((isRoundingNeeded ? Math.round(timestamp / 1000) : timestamp) % 86400);
 
-      if (haveTimestamps.indexOf(dayTs) < 0) {
+      if (haveTimestamps.indexOf(dayTs) < 0 && dayTs !== firstTimestamp) {
         tokenPrices.push({
           id: coin.id,
           address: coin.address,
@@ -94,6 +95,7 @@ export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logge
     logger.log(`Coin ${coin.id} ${coin.symbol} address not found, skipping`);
     return;
   }
+  let startTimestamp;
   // if no last_history_timestamp - parsing from 2013
   if (!coin['last_history_timestamp']) {
     await db.clearTokenPricesForPeriod(
@@ -101,27 +103,33 @@ export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logge
       toTimestamp(new Date(TOKEN_START_DATE)),
       lastTimestamp,
     );
+    startTimestamp = toTimestamp(new Date(TOKEN_START_DATE));
     //logger.log("removing all");
     return toTimestamp(new Date(TOKEN_START_DATE));
   }
-  let startTimestamp = lastTimestamp;
+  else{
+    startTimestamp = coin['last_history_timestamp'];
+  }
+  
+  let tmpStartTimestamp = lastTimestamp;
   let prices: any[];
   //logger.log("checking asset " + coin.id);
   do {
-    prices = await db.getTokenPricesForLastDay(coin.id, startTimestamp);
+    prices = await db.getTokenPricesForLastDay(coin.id, tmpStartTimestamp);
     // logger.log("got prices length for coin " + coin.address + " : " + prices.length + " for range " + (startTimestamp - SECONDS_IN_HOUR * 24) + ' - ' + startTimestamp);
-    // if (!prices.length) {
-    //   await db.setTokenIsDead(coin.id);
-    // }
 
-    if (prices.length > 1) {
+    if (prices.length !== 1) {
       // clearing this day and checking next day
-      await db.clearTokenPricesForLastDay(coin.id, startTimestamp);
-      startTimestamp -= SECONDS_IN_HOUR * 24;
+      if (prices.length > 1)
+        await db.clearTokenPricesForLastDay(coin.id, tmpStartTimestamp);
+
+        tmpStartTimestamp -= SECONDS_IN_HOUR * 24;
     }
-    //logger.log("prices.length ");
-    //logger.log(prices.length);
+
   } while (prices.length > 1); // if prices.length = 1 - stop checking days and return start date
+
+  if(startTimestamp > tmpStartTimestamp)
+    startTimestamp = tmpStartTimestamp;
 
   return startTimestamp;
 }

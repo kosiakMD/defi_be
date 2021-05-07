@@ -2,13 +2,17 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 import { BalanceService } from './balance.service';
+import { EtherscanService } from './bcs_etherscan/etherscan.service';
 import { BalancesResponseDto } from './dto/balances.dto';
 import { BalancesResponse } from './interfaces/balance.interfaces';
 
 @ApiTags('Balances')
 @Controller('balances')
 export class BalanceController {
-  constructor(private readonly balanceService: BalanceService) {}
+  constructor(
+    private readonly balanceService: BalanceService,
+    private readonly etherscanService: EtherscanService,
+  ) {}
 
   @Get('')
   @ApiQuery({
@@ -22,12 +26,20 @@ export class BalanceController {
     example: 1,
     required: false,
   })
+  @ApiQuery({
+    name: 'internal',
+    type: Number,
+    example: 1,
+    required: false,
+  })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
-  // TODO: add pipe transform
   getUserBalanceByAddresses(
     @Query('addresses') addresses: string,
     @Query('chains') chains: number,
+    @Query('internal') internal: number,
   ): Promise<BalancesResponse> {
-    return this.balanceService.getAllBalanceData(addresses, Number(chains));
+    return internal
+      ? this.balanceService.getAllBalanceData(addresses, Number(chains))
+      : this.etherscanService.getAllBalanceData(addresses, chains);
   }
 }

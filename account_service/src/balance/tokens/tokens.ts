@@ -1,4 +1,10 @@
-import { DAI_ADDRESS, ESD_ADDRESS, ETH_BNB_ADDRESS, WETH_ADDRESS } from '../../utils/utils';
+import {
+  DAI_ADDRESS,
+  ESD_ADDRESS,
+  ETH_BNB_ADDRESS,
+  WBNB_ADDRESS,
+  WETH_ADDRESS,
+} from '../../utils/utils';
 
 export const esdToken = {
   address: ESD_ADDRESS.toLowerCase(),
@@ -35,4 +41,17 @@ export const bnbToken = {
   decimals: 18,
 };
 
-export const ETH_TOKEN_ARRAY = [ethToken, wethToken, daiToken, esdToken];
+export const wbnbToken = {
+  address: WBNB_ADDRESS.toLowerCase(),
+  symbol: 'WBNB',
+  name: 'Wrapped BNB',
+  decimals: 18,
+};
+
+export const NO_DB_ETH_TOKENS = [ethToken, wethToken, daiToken, esdToken];
+
+export const NO_SCAN_ETH_TOKENS = [ethToken, wethToken];
+
+export const NO_SCAN_BNB_TOKENS = [bnbToken, wbnbToken];
+
+export const NO_DB_BNB_TOKENS = [bnbToken, wbnbToken];

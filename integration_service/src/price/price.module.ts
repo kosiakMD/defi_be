@@ -3,11 +3,7 @@ import { HttpModule, Module } from '@nestjs/common';
 import { PriceService } from './price.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 3000,
-    }),
-  ],
+  imports: [HttpModule],
   providers: [PriceService],
   exports: [PriceService],
 })

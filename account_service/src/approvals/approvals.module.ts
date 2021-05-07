@@ -6,15 +6,7 @@ import { ApprovalsController } from './approvals.controller';
 import { ApprovalsService } from './approvals.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 30e3,
-      maxRedirects: 2,
-    }),
-    TypeOrmModule.forFeature(),
-    CacheModule.register(),
-    ConfigModule,
-  ],
+  imports: [ConfigModule, HttpModule, TypeOrmModule.forFeature(), CacheModule.register()],
   providers: [ApprovalsService],
   controllers: [ApprovalsController],
 })

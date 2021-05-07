@@ -11,8 +11,7 @@ export class EtherscanService {
     const transfersAll: Transfers = {};
     await Promise.all(
       addresses.map(async (a) => {
-        const rsp = await this.etherscanApi.getTransfers(a);
-        transfersAll[a] = rsp.data.result;
+        return await this.etherscanApi.getTransfers(a);
       }),
     );
     const allBalances: BalancesResponse = {};

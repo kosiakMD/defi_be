@@ -10,6 +10,7 @@ import { CurveFirstCheckJob } from '../jobs/curve_first_check.job';
 import { SushiswapJob } from '../jobs/sushiswap.job';
 import { PancakeJob } from '../jobs/pancake.job';
 import { UniswapJob } from '../jobs/uniswap.job';
+import { CurveJob } from '../jobs/curve.job';
 import { Api } from '../thegraph/api';
 import {
   CURRENT_PRICE_SECONDS_INTERVAL,
@@ -31,6 +32,7 @@ export class JobsService {
     private sushiswapJob: SushiswapJob,
     private uniswapJob: UniswapJob,
     private pancakeJob: PancakeJob,
+    private curveJob: CurveJob,
     private balancerFirstCheckJob: BalancerFirstCheckJob,
     private curveFirstCheckJob: CurveFirstCheckJob,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
@@ -58,6 +60,9 @@ export class JobsService {
         // await this.agenda.cancel({});
         
         const cancel = async (jobName: string) => {
+          if (!jobName) {
+            return null;
+          }
 
           const cancelResult = await this.agenda.cancel({ name: jobName });
           this.logger.log(
@@ -82,15 +87,15 @@ export class JobsService {
           {},
         );
 
-        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
+        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW');
         await this.agenda.define(
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
           { lockLifetime: 10000 },
           this.coingeckoJob.crawlNewTokensHistory.bind(this),
         );
         await this.agenda.every(
           NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
+          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
           {},
         );
 
@@ -141,7 +146,7 @@ export class JobsService {
         await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY');
         this.agenda.define(
           'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10e3 },
+          {},
           this.uniswapJob.crawlNewTokensHistory.bind(this),
         );
         this.agenda.every(
@@ -149,20 +154,30 @@ export class JobsService {
           'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
           {},
         );
+        
+        //CURVE
+        this.logger.log('starting curve')
+        await cancel('CRAWL_CURVE_NEW_TOKENS');
+        this.agenda.define(
+          'CRAWL_CURVE_NEW_TOKENS',
+          {},
+          this.curveJob.getCurrentPrices.bind(this),
+        );
+        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 
+          'CRAWL_CURVE_NEW_TOKENS',
+          {});
 
-
-
-                // await cancel('CRAWL_PANCAKE_NEW_TOKENS_HISTORY');
-        // this.agenda.define(
-        //   'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
-        //   { lockLifetime: 10000 },
-        //   this.pancakeJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_PANCAKE_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
+        await cancel('CRAWL_CURVE_NEW_TOKENS_HISTORY');
+        this.agenda.define(
+          'CRAWL_CURVE_NEW_TOKENS_HISTORY',
+          {},
+          this.curveJob.crawlNewTokensHistory.bind(this),
+        );
+        this.agenda.every(
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_CURVE_NEW_TOKENS_HISTORY',
+          {},
+        );
 
         // // this.logger.log('starting balancer');
         // this.agenda.define(
@@ -187,24 +202,7 @@ export class JobsService {
         //   {},
         // );
 
-        // //this.logger.log('starting curve')
-        // this.agenda.define(
-        //   'CRAWL_CURVE_NEW_TOKENS',
-        //   { lockLifetime: 10e3 },
-        //   this.curveFirstCheckJob.crawlNewTokens.bind(this),
-        // );
-        // this.agenda.every(NEW_TOKENS_SECONDS_INTERVAL + ' seconds', 'CRAWL_CURVE_NEW_TOKENS', {});
-
-        // this.agenda.define(
-        //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-        //   { lockLifetime: 10e3 },
-        //   this.curveFirstCheckJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
+       
 
       })
       .on('error', (e) => this.logger.error('Agenda connection error!', e));

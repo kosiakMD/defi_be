@@ -6,7 +6,7 @@ import { IDatabase } from 'pg-promise';
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { crawlCoin, getRequiredHistoryStartDate } from '../utils/crawlCoin';
-import { getNextDayStart, getNextHourStart } from '../utils/time';
+import { getNextHourStart } from '../utils/time';
 import { SECONDS_IN_HOUR, PlatformEnum, CHAIN, CURRENCY, SECONDS_IN_TEN_MINUTES } from '../utils/constants';
 import { toTimestamp } from '../utils/common';
 // TODO: clean file
@@ -328,9 +328,7 @@ export class UniswapJob {
   }catch(e){
     this.logger.error(e)
   }
-    const firstTxData = await this.theGraphService.getUniwapfirstTxTimestamp();
-    const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
-
+  
     const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % 86400);
     const toTs = beginOfDay - 7 * 24 * SECONDS_IN_HOUR;
 
@@ -347,7 +345,6 @@ export class UniswapJob {
         const startParseTime = toTimestamp(new Date());
 
         try {
-          let dayNum = 0;
 
           let fromTs = await getRequiredHistoryStartDate(
             coin,
@@ -401,9 +398,8 @@ export class UniswapJob {
               }
             }
 
-            dayNum++;
             this.logger.log(fromTs);
-            fromTs = getNextDayStart(firstTimestamp, dayNum);
+            fromTs += 86400;
           } while (fromTs <= toTs);
 
           //logger.log(prices)

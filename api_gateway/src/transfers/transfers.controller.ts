@@ -5,8 +5,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
-import { BscscanService } from '../scans-api/modules/bscscan/bscscan.service';
-import { EtherscanService } from '../scans-api/modules/etherscan/etherscan.service';
+import { BscScanService } from '../scans-api/modules/bscscan/bsc-scan.service';
+import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.service';
+import { ScanService } from '../scans-api/modules/scan.service';
 import { TransfersResponseDto } from './transfers.dto';
 import { TransfersResponse } from './transfers.interfaces';
 
@@ -15,8 +16,8 @@ import { TransfersResponse } from './transfers.interfaces';
 export class TransfersController {
   constructor(
     private service: AccountService,
-    private etherscanService: EtherscanService,
-    private bscscanService: BscscanService,
+    private etherScanService: EtherScanService,
+    private bscScanService: BscScanService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
 
@@ -50,48 +51,64 @@ export class TransfersController {
       if (chains && chains !== '') {
         const chainIds = chains.split(',');
         if (chainIds.includes('1')) {
-          const ethTransfers = await this.etherscanService.getTransfersByAddresses(addressArray);
+          const ethTransfers = await this.etherScanService.getTransfersByAddresses(addressArray);
 
           if (!Number(ethTransfers['status'])) {
-            this.bscscanService.combineResults(transfers, {});
+            this.bscScanService.combineResults(transfers, {});
           }
 
-          const response = await this.etherscanService.toTransfersResponse(
+          const response = await this.etherScanService.toTransfersResponse(
             ethTransfers['result'],
             addressArray,
           );
 
-          this.etherscanService.combineResults(transfers, response);
+          this.etherScanService.combineResults(transfers, response);
         }
 
         if (chainIds.includes('2')) {
-          const bscTransfers = await this.bscscanService.getTransfersByAddresses(addressArray);
+          const bscTransfers = await this.bscScanService.getTransfersByAddresses(addressArray);
 
           if (!Number(bscTransfers['status'])) {
-            this.bscscanService.combineResults(transfers, {});
+            this.bscScanService.combineResults(transfers, {});
           }
-          const response = await this.bscscanService.toTransfersResponse(
+          const response = await this.bscScanService.toTransfersResponse(
             bscTransfers['result'],
             addressArray,
           );
 
-          this.bscscanService.combineResults(transfers, response);
+          this.bscScanService.combineResults(transfers, response);
         }
       } else {
-        const [ethTransfers, bscTransfers] = await Promise.all([
-          this.etherscanService.getTransfersByAddresses(addressArray),
-          this.bscscanService.getTransfersByAddresses(addressArray),
+        // TODO: move logic into Service!
+        const handleScan = async (service: ScanService): Promise<boolean> => {
+          const transfersResponse = await service.getTransfersByAddresses(addressArray);
+          const transfersResult = await service.checkTransferResponse(
+            transfersResponse,
+            addressArray,
+          );
+          service.combineResults(transfersResult, transfers);
+          return true;
+        };
+
+        await Promise.allSettled([
+          handleScan(this.etherScanService),
+          handleScan(this.bscScanService),
         ]);
 
-        const [ethTransfersResponse, bscTransfersResponse] = await Promise.all([
-          this.etherscanService.checkTransferResponse(ethTransfers, addressArray),
-          this.bscscanService.checkTransferResponse(bscTransfers, addressArray),
-        ]);
-
-        await Promise.all([
-          this.etherscanService.combineResults(transfers, ethTransfersResponse),
-          this.bscscanService.combineResults(transfers, bscTransfersResponse),
-        ]);
+        // const [ethTransfers, bscTransfers] = await Promise.all([
+        //   this.etherScanService.getTransfersByAddresses(addressArray),
+        //   this.bscScanService.getTransfersByAddresses(addressArray),
+        // ]);
+        //
+        // const [ethTransfersResponse, bscTransfersResponse] = await Promise.all([
+        //   this.etherScanService.checkTransferResponse(ethTransfers, addressArray),
+        //   this.bscScanService.checkTransferResponse(bscTransfers, addressArray),
+        // ]);
+        //
+        // await Promise.all([
+        //   this.etherScanService.combineResults(transfers, ethTransfersResponse),
+        //   this.bscScanService.combineResults(transfers, bscTransfersResponse),
+        // ]);
       }
 
       const allTransfersResponse: TransfersResponse = {};

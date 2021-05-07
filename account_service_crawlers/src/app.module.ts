@@ -66,7 +66,7 @@ import { JobsService } from './modules/jobs/jobs.service';
     TerminusModule,
     ExamplesModule,
     HttpModule.register({
-      timeout: 5e3,
+      timeout: 60e3,
       maxRedirects: 2,
     }),
     JobsModule,

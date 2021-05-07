@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-const TRANSFERS_CACHE_TIME = 30 * 1e3;
+const TRANSFERS_CACHE_TIME = 30; // 30 sec
 
 @Injectable()
 export class EtherscanApi {
@@ -23,7 +23,7 @@ export class EtherscanApi {
   async getTransfers(address: string): Promise<any> {
     let transfers = await this.cacheManager.get<any[]>(`transfers_${address}`);
     if (!transfers) {
-      this.logger.log(`Cache transfers_${address} is not`);
+      this.logger.debug(`Cache transfers of: ${address} is not - fetching`);
       const resp = await this.httpService
         .get(this.url, {
           params: {
@@ -35,12 +35,15 @@ export class EtherscanApi {
         })
         .toPromise();
       transfers = resp.data.result;
-      this.cacheManager.set<any[]>(`transfers_${address}`, transfers, {
-        ttl: TRANSFERS_CACHE_TIME,
-      });
-      return transfers;
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+      (async () => {
+        await this.cacheManager.set<any[]>(`transfers_${address}`, transfers, {
+          ttl: TRANSFERS_CACHE_TIME,
+        });
+      })().then(() => this.logger.debug(`Cache transfers of: ${address} is saved`));
+    } else {
+      this.logger.debug(`Cache transfers of: ${address} is ok`);
     }
-    this.logger.log(`Cache transfers_${address} is ok`);
     return transfers;
   }
 }

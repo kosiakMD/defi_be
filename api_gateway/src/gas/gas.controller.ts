@@ -10,7 +10,8 @@ import { GasHistory, GasPrice } from '../common/interfaces';
 import { GasService } from './gas.service';
 
 // TODO: can be null as updated each time
-const GAS_CACHE_TIME = 15 * 60 * 1e3; // 15 min as Gas history updates
+const GAS_CURRENT_CACHE_TIME = 30; // 30 sec as Gas current updates
+const GAS_HISTORY_CACHE_TIME = 15 * 60; // 15 min as Gas history updates
 
 @ApiTags('Gas')
 @Controller('gas')
@@ -23,32 +24,85 @@ export class GasController {
 
   @Get('/')
   @ApiResponse({ status: 200, type: GasPriceDto })
-  public getCurrentPrice(): Promise<GasPrice> {
-    return this.service.getGasCurrent();
+  public async getCurrentPrice(): Promise<GasPrice> {
+    const cacheKey = 'gas_current';
+    const logString = `Cache ${cacheKey} is `;
+    let gas = await this.cacheManager.get<any>(cacheKey);
+
+    if (!gas) {
+      try {
+        this.logger.debug(logString + 'fetching');
+
+        this.logger.time('getGasCurrent');
+        gas = await this.service.getGasCurrent();
+        this.logger.timeEnd('getGasCurrent');
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        (async () => {
+          await this.cacheManager.set<any>(cacheKey, gas, {
+            ttl: GAS_CURRENT_CACHE_TIME,
+          });
+        })().then(() => this.logger.debug(logString + 'saved'));
+      } catch (e) {
+        // if no data and request failed - m.b. data was wrote by another process
+        gas = await this.cacheManager.get<any>(cacheKey);
+        if (!gas) {
+          throw e;
+        }
+      }
+    } else {
+      this.logger.debug(logString + 'ok');
+    }
+
+    return gas;
   }
 
   @Get('/history')
   @ApiResponse({ status: 200, type: GasHistoryDto, isArray: true })
   public async getHistory(): Promise<GasHistory[]> {
-    this.logger.time('getGasHistory');
-    const gas = await Promise.any([this.readGasHistory(), this.fetchGasHistory()]);
-    this.logger.timeEnd('getGasHistory');
-    return gas;
-  }
+    const cacheKey = 'gas_history';
+    const logString = `Cache ${cacheKey} is `;
+    let gas = await this.cacheManager.get<any>(cacheKey);
 
-  private async readGasHistory(): Promise<GasHistory[]> {
-    const gas = await this.cacheManager.get<GasHistory[]>('gas');
-    if (gas) {
-      return gas;
+    if (!gas) {
+      try {
+        this.logger.debug(logString + 'fetching');
+
+        this.logger.time('getGasHistory');
+        gas = await this.service.getGasHistory();
+        // gas = await Promise.any([this.readGasHistory(), this.fetchGasHistory()]);
+        this.logger.timeEnd('getGasHistory');
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        (async () => {
+          await this.cacheManager.set<any>(cacheKey, gas, {
+            ttl: GAS_HISTORY_CACHE_TIME,
+          });
+        })().then(() => this.logger.debug(logString + 'saved'));
+      } catch (e) {
+        // if no data and request failed - m.b. data was wrote by another process
+        gas = await this.cacheManager.get<any>(cacheKey);
+        if (!gas) {
+          throw e;
+        }
+      }
     } else {
-      throw new Error('empty');
+      this.logger.debug(logString + 'ok');
     }
-  }
-
-  private async fetchGasHistory(): Promise<GasHistory[]> {
-    const gas = await this.service.getGasHistory();
-    // postponed save in async queue
-    this.cacheManager.set<GasHistory[]>('gas', gas, { ttl: GAS_CACHE_TIME });
     return gas;
   }
+
+  // private async readGasHistory(): Promise<GasHistory[]> {
+  //   const gas = await this.cacheManager.get<GasHistory[]>('gas');
+  //   if (gas) {
+  //     return gas;
+  //   } else {
+  //     throw new Error('empty');
+  //   }
+  // }
+  //
+  // private async fetchGasHistory(): Promise<GasHistory[]> {
+  //   const gas = await this.service.getGasHistory();
+  //   // postponed save in async queue
+  //   this.cacheManager.set<GasHistory[]>('gas', gas, { ttl: GAS_CACHE_TIME });
+  //   return gas;
+  // }
 }

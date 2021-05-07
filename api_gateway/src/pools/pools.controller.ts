@@ -26,7 +26,7 @@ export class PoolsController {
   @ApiResponse({ status: 500, type: HttpException })
   public async getPools(): Promise<Pool[]> {
     const cacheKey = 'pools';
-    const logString = `Cache pools is `;
+    const logString = `Cache ${cacheKey} is `;
     let pools = await this.cacheManager.get<any[]>(cacheKey);
 
     if (!pools) {

@@ -47,10 +47,10 @@ export class ScanService {
 
   protected async getTransactions(address, internal = false): Promise<any> {
     const action = internal ? 'txlistinternal' : 'txlist';
-    const transactionCacheKey = `${this.chainPrefix}_transactions_${action}_${address}`;
-    const logString = `Cache ${this.chainPrefix} ${action} transactions of: ${address} is `;
+    const cacheKey = `${this.chainPrefix}_transactions_${action}_${address}`;
+    const logString = `Cache ${cacheKey} is `;
 
-    let transactions = await this.cacheManager.get<any[]>(transactionCacheKey);
+    let transactions = await this.cacheManager.get<any[]>(cacheKey);
 
     if (!transactions) {
       try {
@@ -72,13 +72,13 @@ export class ScanService {
         transactions = txsResp && txsResp.result ? txsResp.result : [];
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         (async () => {
-          await this.cacheManager.set<any[]>(transactionCacheKey, transactions, {
+          await this.cacheManager.set<any[]>(cacheKey, transactions, {
             ttl: TRANSACTIONS_CACHE_TIME,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
       } catch (e) {
         // if no data and request failed - m.b. data was wrote by another process
-        transactions = await this.cacheManager.get<any[]>(transactionCacheKey);
+        transactions = await this.cacheManager.get<any[]>(cacheKey);
         if (!transactions) {
           throw e;
         }

@@ -25,7 +25,7 @@ export class ScanApi {
     const action = 'tokentx';
     // TODO: create function keys generator
     const cacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
-    const logString = `Cache ${action} transfers of: ${address} is `;
+    const logString = `Cache ${cacheKey} is `;
 
     // TODO: if CHAIN will be modified ADD CHAIN_ID to CACHE KEY
     let transfers = await this.cacheManager.get<any[]>(cacheKey);

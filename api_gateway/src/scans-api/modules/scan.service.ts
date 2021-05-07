@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../../common/Logger/Logger.service';
+import { Transaction } from '../../transactions/transactions.interfaces';
 import { PriceServiceResponse } from '../models/interfaces/priceServiceResponse.interface';
 import { ResultStatus, TransactionsResult } from '../models/interfaces/transactions.interfaces';
 import {
@@ -54,6 +55,22 @@ export class ScanService {
       .toPromise();
   }
 
+  private normalizeTxsResp = (txsResp, chainId, isInternal = false): Transaction[] => {
+    if (txsResp && txsResp.result) {
+      txsResp.result.forEach((tx) =>
+        Object.assign(tx, {
+          [`${this.servicePrefix}PriceUSD`]: null,
+          tokenPriceUSD: null,
+          totalPriceUSD: null,
+          chainId: this.chainId,
+          isInternal,
+        }),
+      );
+      return txsResp;
+    }
+    return [];
+  };
+
   public async getScanTransactions(address: string): Promise<TransactionsResult> {
     this.logger.time(`request: txlist & txlistinternal ${this.scanServiceUrl}`);
     const [normalTxResp, internalTxResp] = await Promise.all([
@@ -62,19 +79,8 @@ export class ScanService {
     ]);
     this.logger.timeEnd(`request: txlist & txlistinternal ${this.scanServiceUrl}`);
 
-    // TODO: format with no map but forEach and better check with default [] value
-    const normalTx =
-      normalTxResp && normalTxResp.result
-        ? normalTxResp.result.map((tx) =>
-            Object.assign(tx, { chainId: this.chainId, isInternal: false }),
-          )
-        : [];
-    const internalTx =
-      internalTxResp && internalTxResp.result
-        ? internalTxResp.result.map((tx) =>
-            Object.assign(tx, { chainId: this.chainId, isInternal: true }),
-          )
-        : [];
+    const normalTx: Transaction[] = this.normalizeTxsResp(normalTxResp, false);
+    const internalTx: Transaction[] = this.normalizeTxsResp(internalTxResp, true);
     const transactions = [].concat(normalTx, internalTx);
 
     if (!transactions.length) return { status: ResultStatus.ok, transactions };
@@ -119,9 +125,9 @@ export class ScanService {
       if (!Number(tx.value)) return false;
       const priceUSD = prices.prices[this.mainCoinAddress][tx.timeStamp];
       Object.assign(tx, {
-        [`${this.servicePrefix}PriceUSD`]: priceUSD,
-        tokenPriceUSD: priceUSD,
-        totalPriceUSD: totalPrice(tx.value.toString(), priceUSD, 18),
+        [`${this.servicePrefix}PriceUSD`]: priceUSD || null,
+        tokenPriceUSD: priceUSD || null,
+        totalPriceUSD: totalPrice(tx.value.toString(), priceUSD, 18) || null,
       });
     });
 

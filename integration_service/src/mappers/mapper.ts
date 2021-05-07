@@ -323,7 +323,8 @@ export class Mapper {
       const { pair } = uniswapPosition;
       const { token0, token1 } = pair;
 
-      const userPoolShare = new BN(uniswapPosition.liquidityTokenBalance).div(pair.totalSupply);
+      const userPoolShare =
+        Number(uniswapPosition.liquidityTokenBalance) / Number(pair.totalSupply);
 
       const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(
         token0,
@@ -351,7 +352,7 @@ export class Mapper {
     token1: UniswapToken,
     entity?: UniversalEntity,
     pair?: UniswapLiquidityPositionPair,
-    userPoolShare?: BN,
+    userPoolShare?: number,
   ) {
     const poolToken0 = {
       address: token0.id,
@@ -362,7 +363,7 @@ export class Mapper {
       reserve: pair === undefined ? null : pair.reserve0,
       amount:
         entity === undefined
-          ? userPoolShare.times(pair.reserve0).toString()
+          ? (userPoolShare * Number(pair.reserve0)).toString()
           : entity.information.amount0,
       priceUSD:
         pair === undefined
@@ -380,7 +381,7 @@ export class Mapper {
       reserve: pair === undefined ? null : pair.reserve1,
       amount:
         entity === undefined
-          ? userPoolShare.times(pair.reserve1).toString()
+          ? (userPoolShare * Number(pair.reserve1)).toString()
           : entity.information.amount1,
       priceUSD:
         pair === undefined

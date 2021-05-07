@@ -11,7 +11,7 @@ import { ScanApi } from './scan-api.service';
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        ttl: configService.get('REDIS_CACHE_TTL') || 30e3,
+        ttl: configService.get('REDIS_CACHE_TTL') || 30,
         store: redisStore,
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),

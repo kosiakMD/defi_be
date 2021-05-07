@@ -24,11 +24,11 @@ export class ScanApi {
   async getTransfers(address: string): Promise<any> {
     const action = 'tokentx';
     // TODO: create function keys generator
-    const transfersCacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
+    const cacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
     const logString = `Cache ${action} transfers of: ${address} is `;
 
     // TODO: if CHAIN will be modified ADD CHAIN_ID to CACHE KEY
-    let transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+    let transfers = await this.cacheManager.get<any[]>(cacheKey);
 
     if (!transfers) {
       try {
@@ -46,13 +46,13 @@ export class ScanApi {
         transfers = resp.data.result;
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         (async () => {
-          await this.cacheManager.set<any[]>(transfersCacheKey, transfers, {
+          await this.cacheManager.set<any[]>(cacheKey, transfers, {
             ttl: TRANSFERS_CACHE_TIME,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
       } catch (e) {
         // if no data and request failed - m.b. data was wrote by another process
-        transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+        transfers = await this.cacheManager.get<any[]>(cacheKey);
         if (!transfers) {
           throw e;
         }

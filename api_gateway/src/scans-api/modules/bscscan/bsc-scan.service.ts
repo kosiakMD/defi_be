@@ -13,7 +13,7 @@ export class BscScanService extends ScanService {
   protected readonly scanServiceKey: string;
   protected readonly mainCoinAddress: string;
   protected readonly chainId: number;
-  protected readonly chainPrefix: string;
+  protected readonly chainPrefix: 'bsc' | 'eth';
 
   constructor(
     httpService: HttpService,

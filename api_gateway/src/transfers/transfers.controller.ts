@@ -49,32 +49,44 @@ export class TransfersController {
       if (chains && chains !== '') {
         const chainIds = chains.split(',');
         if (chainIds.includes('1')) {
+          // const ethTransfers = await this.etherScanService.getTransfersByAddresses(addressArray);
+          //
+          // if (!Number(ethTransfers['status'])) {
+          //   this.etherScanService.combineResults(transfers, {});
+          // }
+          //
+          // const response = await this.etherScanService.toTransfersResponse(
+          //   ethTransfers['result'],
+          //   addressArray,
+          // );
+          //
+          // this.etherScanService.combineResults(transfers, response);
           const ethTransfers = await this.etherScanService.getTransfersByAddresses(addressArray);
-
-          if (!Number(ethTransfers['status'])) {
-            this.etherScanService.combineResults(transfers, {});
-          }
-
-          const response = await this.etherScanService.toTransfersResponse(
-            ethTransfers['result'],
+          const ethTransfersResponse = await this.etherScanService.checkTransferResponse(
+            ethTransfers,
             addressArray,
           );
-
-          this.etherScanService.combineResults(transfers, response);
+          await this.etherScanService.combineResults(transfers, ethTransfersResponse);
         }
 
         if (chainIds.includes('2')) {
+          // const bscTransfers = await this.bscScanService.getTransfersByAddresses(addressArray);
+          //
+          // if (!Number(bscTransfers['status'])) {
+          //   this.bscScanService.combineResults(transfers, {});
+          // }
+          // const response = await this.bscScanService.toTransfersResponse(
+          //   bscTransfers['result'],
+          //   addressArray,
+          // );
+          //
+          // this.bscScanService.combineResults(transfers, response);
           const bscTransfers = await this.bscScanService.getTransfersByAddresses(addressArray);
-
-          if (!Number(bscTransfers['status'])) {
-            this.bscScanService.combineResults(transfers, {});
-          }
-          const response = await this.bscScanService.toTransfersResponse(
-            bscTransfers['result'],
+          const bscTransfersResponse = await this.bscScanService.checkTransferResponse(
+            bscTransfers,
             addressArray,
           );
-
-          this.bscScanService.combineResults(transfers, response);
+          this.bscScanService.combineResults(transfers, bscTransfersResponse);
         }
       } else {
         // TODO: move logic into Service!

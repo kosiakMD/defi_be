@@ -9,15 +9,17 @@ import { Transaction } from './transaction';
 @Injectable()
 export class UniswapSubgraph {
   protected subgraphUrl: string;
+  protected subgraphNativeUrl: string;
   constructor(
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
   ) {
     this.subgraphUrl = this.configService.get<string>('AMM_UNISWAP_SUBGRAPH_URL');
+    this.subgraphNativeUrl = this.configService.get<string>('AMM_UNISWAP_SUBGRAPH_URL');
   }
   async getPairs(minReserve: number): Promise<ResponseData> {
     return this.httpService
-      .post<ResponseData>(this.subgraphUrl, {
+      .post<ResponseData>(this.subgraphNativeUrl, {
         operationName: 'pairs',
         variables: {},
         query: `
@@ -107,7 +109,7 @@ export class UniswapSubgraph {
   }
   async getPairsInBlockState(minReserve: number, blockNumber: number): Promise<ResponseData> {
     return this.httpService
-      .post<ResponseData>(this.subgraphUrl, {
+      .post<ResponseData>(this.subgraphNativeUrl, {
         operationName: 'pairs',
         variables: {},
         query: `

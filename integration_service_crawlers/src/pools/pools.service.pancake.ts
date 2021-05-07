@@ -144,7 +144,7 @@ export class PoolsServicePancake extends PoolsServiceUniswap {
   }
 
   async findPancakePools() {
-    const q = `select * from defi.public.liquidity_pools where project = 'pancake'`;
+    const q = `select * from liquidity_pools where project = 'pancake'`;
     const databaseClient = await this.databaseService.getClient();
     const result = await databaseClient.query(q);
     return result.rows;

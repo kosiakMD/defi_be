@@ -46,7 +46,7 @@ export class PoolsService {
 
   buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {
     const queryStart = `
-        INSERT INTO public.liquidity_pools
+        INSERT INTO liquidity_pools
         (id,
          address,
          chain,

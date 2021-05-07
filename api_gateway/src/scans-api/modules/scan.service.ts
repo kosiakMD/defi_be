@@ -37,10 +37,11 @@ export class ScanService {
     protected readonly logger: Logger,
   ) {
     const host = this.configService.get<string>('PRICE_SERVICE_HOST');
-    const port = this.configService.get<string>('PRICE_SERVICE_PORT');
+    const port = this.configService.get<number>('PRICE_SERVICE_PORT');
     const url = `${host}${port ? ':' + port : ''}`;
 
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
+    // TODO: /batch - new Env var of path
     this.getPricesUrl = `${url}/${getPricesPath}/batch`;
   }
 
@@ -155,13 +156,15 @@ export class ScanService {
       if (!Number(tx.value)) return false;
       const priceUSD = prices.prices[this.mainCoinAddress][tx.timeStamp];
       // TODO: measure
-      // tx[`${this.servicePrefix}PriceUSD`] = priceUSD || null;
-      // tx.tokenPriceUSD = priceUSD || null;
-      // tx.totalPriceUSD = totalPrice(tx.value.toString(), priceUSD, 18) || null;
+      // tx[`${this.servicePrefix}PriceUSD`] = token;
+      // tx.tokenPriceUSD = token;
+      // tx.totalPriceUSD = Number.isInteger(total) ? total : null;
+      const token = Number.isInteger(priceUSD) ? priceUSD : null;
+      const total = totalPrice(tx.value.toString(), priceUSD, 18);
       Object.assign(tx, {
-        [`${this.chainPrefix}PriceUSD`]: priceUSD || null,
-        tokenPriceUSD: priceUSD || null,
-        totalPriceUSD: totalPrice(tx.value.toString(), priceUSD, 18) || null,
+        [`${this.chainPrefix}PriceUSD`]: token,
+        tokenPriceUSD: token,
+        totalPriceUSD: Number.isInteger(total) ? total : null,
       });
     });
 
@@ -172,7 +175,9 @@ export class ScanService {
     const transferRows = await Promise.all(
       addressArray.map((address) => this.getTransfers(address)),
     );
+    // console.debug('transferRows', transferRows);
     const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
+    // console.debug('transferRowsWithTokenPrices', transferRowsWithTokenPrices);
     return transferRowsWithTokenPrices[0];
   }
 
@@ -225,25 +230,20 @@ export class ScanService {
   }
 
   protected async getTransfersWithTokenPrices(transfers): Promise<TransactionWithTokenAndPrices[]> {
+    // console.debug('getTransfersWithTokenPrices', transfers);
     return transfers.map((transfer) => {
       const decimals = getTokenDecimals(transfer.tokenDecimals);
-
-      try {
-        return Object.assign(transfer, {
-          tokenPriceUSD: transfer.tokenPrice || 0,
-          totalPriceUSD: transfer.amount * decimals * transfer.tokenPrice,
-        });
-      } catch (_) {
-        return Object.assign(transfer, {
-          tokenPriceUSD: 0,
-          totalPriceUSD: 0,
-        });
-      }
+      // TODO: TBD null or 0 ?!?
+      return Object.assign(transfer, {
+        tokenPriceUSD: transfer.tokenPrice || 0,
+        totalPriceUSD: transfer.amount * decimals * transfer.tokenPrice || 0,
+      });
     });
   }
 
   // TODO: toTransfersResponse is not async!!!
   public async checkTransferResponse(resp, addresses): Promise<TransfersResponse> {
+    // console.debug('checkTransferResponse', resp);
     if (Number(resp['status'])) {
       const transferResponse = await this.toTransfersResponse(resp['result'], addresses);
       return transferResponse;
@@ -253,8 +253,9 @@ export class ScanService {
   }
 
   public combineResults = (resultArray, chainArray): any => {
-    if (chainArray && Object.keys(chainArray).length > 0) {
-      for (const transfer of Object.keys(chainArray)) {
+    const chainKeys = Object.keys(chainArray);
+    if (chainArray && chainKeys.length > 0) {
+      for (const transfer of chainKeys) {
         if (Object.keys(resultArray).includes(transfer)) {
           resultArray[transfer] = resultArray[transfer].concat(chainArray[transfer]);
         } else {

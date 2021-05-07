@@ -48,7 +48,6 @@ export class TransfersController {
   async get(@Query() query: TransferQueryDto): Promise<TransfersResponse> {
     const { chains, addresses } = query;
     // return this.service.getTransfers(addresses, chains);
-
     // TODO: move logic into Service!
     const transfers: TransfersResponse = {};
     const handleScan = async (service: ScanService, addresses: Address[]): Promise<boolean> => {
@@ -64,7 +63,6 @@ export class TransfersController {
     } else {
       scans = Object.values(this.chainToScan);
     }
-
     await Promise.allSettled(scans.map((scan) => handleScan(scan, addresses)));
 
     return transfers;

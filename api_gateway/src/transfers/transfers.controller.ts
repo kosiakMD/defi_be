@@ -52,7 +52,7 @@ export class TransfersController {
           const ethTransfers = await this.etherScanService.getTransfersByAddresses(addressArray);
 
           if (!Number(ethTransfers['status'])) {
-            this.bscScanService.combineResults(transfers, {});
+            this.etherScanService.combineResults(transfers, {});
           }
 
           const response = await this.etherScanService.toTransfersResponse(

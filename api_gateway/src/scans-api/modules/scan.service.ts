@@ -172,54 +172,56 @@ export class ScanService {
     const transferRows = await Promise.all(
       addressArray.map((address) => this.getTransfers(address)),
     );
-    const transferRowsWithTokenPrices = this.getTransfersWithTokenPrices(transferRows);
-
+    const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
     return transferRowsWithTokenPrices[0];
   }
 
   protected async getTransfers(address, ECR20 = false): Promise<any> {
     const action = ECR20 ? 'tokennfttx' : 'tokentx';
     // TODO: create function keys generator
-    const transfersCacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
-    const logString = `Cache ${this.chainPrefix} ${action} transfers of: ${address} is `;
+    // const transfersCacheKey = `_${this.chainPrefix}_transfers_${action}_${address}`;
+    // const logString = `Cache ${this.chainPrefix} ${action} transfers of: ${address} is `;
 
-    let transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+    // let transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
 
-    if (!transfers) {
-      try {
-        this.logger.debug(logString + 'fetching');
-        const transfersResp = await this.httpService
-          .get(this.scanServiceUrl, {
-            params: {
-              module: 'account',
-              action: action,
-              address: address,
-              startblock: 0,
-              endblock: 99999999,
-              sort: 'asc',
-              apikey: this.scanServiceKey,
-            },
-          })
-          .pipe(map((response) => response.data))
-          .toPromise();
-        transfers = transfersResp && transfersResp.result ? transfersResp.result : [];
-        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-        (async () => {
-          await this.cacheManager.set<any[]>(transfersCacheKey, transfers, {
-            ttl: TRANSFERS_CACHE_TIME,
-          });
-        })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
-        // if no data and request failed - m.b. data was wrote by another process
-        transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
-        if (!transfers) {
-          throw e;
-        }
-      }
-    } else {
-      this.logger.debug(logString + 'ok');
-    }
-    return transfers;
+    // if (!transfers) {
+    //   try {
+    //     this.logger.debug(logString + 'fetching');
+    const transfersResp = await this.httpService
+      .get(this.scanServiceUrl, {
+        params: {
+          module: 'account',
+          action: action,
+          address: address,
+          startblock: 0,
+          endblock: 99999999,
+          sort: 'asc',
+          apikey: this.scanServiceKey,
+        },
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+    return transfersResp;
+    //   // TODO: refactor
+    //   // transfers = transfersResp && transfersResp.result ? transfersResp.result : [];
+    //   transfers = transfersResp;
+    //   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+    //   (async () => {
+    //     await this.cacheManager.set<any[]>(transfersCacheKey, transfers, {
+    //       ttl: TRANSFERS_CACHE_TIME,
+    //     });
+    //   })().then(() => this.logger.debug(logString + 'saved'));
+    // } catch (e) {
+    //   // if no data and request failed - m.b. data was wrote by another process
+    //   transfers = await this.cacheManager.get<any[]>(transfersCacheKey);
+    //   if (!transfers) {
+    //     throw e;
+    //   }
+    // }
+    // } else {
+    //   this.logger.debug(logString + 'ok');
+    // }
+    // return transfers;
   }
 
   protected async getTransfersWithTokenPrices(

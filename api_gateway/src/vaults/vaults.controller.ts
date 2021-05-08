@@ -10,7 +10,7 @@ import { Vault } from '../common/interfaces';
 import { IntegrationService } from '../integration/integration.service';
 
 // TODO: can be null as updated each time
-const VAULTS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
+const VAULTS_CACHE_TIME = 60; // 1 min
 
 @ApiTags('Vaults')
 @Controller('vaults')

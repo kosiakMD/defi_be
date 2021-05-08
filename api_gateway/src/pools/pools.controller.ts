@@ -10,7 +10,7 @@ import { Pool } from '../common/interfaces';
 import { IntegrationService } from '../integration/integration.service';
 
 // TODO: can be null as updated each time
-const POOLS_CACHE_TIME = 5 * 60; // 5 min
+const POOLS_CACHE_TIME = 60; // 1 min
 
 @ApiTags('Pools')
 @Controller('pools')

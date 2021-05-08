@@ -7,22 +7,22 @@ export interface ERC20Token {
   totalSupply?: number;
 }
 
-export interface ERC20TokenTransfer {
-  address: string;
-  name?: string;
-  symbol?: string;
-  decimals?: number;
-  totalSupply?: number;
-  amount: {
-    decimals: number;
-    usd: number;
-  };
-}
+// export interface ERC20TokenTransfer {
+//   address: string;
+//   name?: string;
+//   symbol?: string;
+//   decimals?: number;
+//   totalSupply?: number;
+// amount: {
+//   decimals: number;
+//   usd: number;
+// };
+// }
 
 export interface ERC20Transfer {
   fromAddress: string;
   toAddress: string;
-  amount: number;
+  amount: string; // number!!!
   token: ERC20Token;
   tokenPriceUSD?: number;
   totalPriceUSD?: number;
@@ -31,14 +31,11 @@ export interface ERC20Transfer {
 export interface Transfer {
   chainId: number;
   hash: string;
-  blockNumber: number;
+  blockNumber: string;
   blockTimeStamp: number;
+  gas: number;
+  gasPrice: number;
   gasUsed: number;
-  gas: {
-    price: number;
-    eth: number;
-    usd: number;
-  };
   erc20Transfers: ERC20Transfer[];
 }
 
@@ -53,10 +50,10 @@ export interface FinallyResponse {
 
 export interface TransactionWithToken {
   hash: string;
-  blockNumber: number;
+  blockNumber: string; // number
   fromAddress: string;
   toAddress: string;
-  blockTimeStamp: number;
+  blockTimeStamp: string; // number
   gasUsed: number;
   gasPrice: number;
   amount: number;
@@ -69,12 +66,34 @@ export interface TransactionWithToken {
   tokenTotalSupply: number;
 }
 
-export interface TransactionWithTokenAndPrices {
+export interface EtherscanTransfer {
+  blockNumber: string; // number
+  timeStamp: number;
   hash: string;
-  blockNumber: number;
+  nonce: number;
+  blockHash: string;
+  from: string;
+  contractAddress: string;
+  to: string;
+  value: number;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenDecimal: number;
+  transactionIndex: number;
+  gas: number;
+  gasPrice: number;
+  gasUsed: number;
+  cumulativeGasUsed: number;
+  input: string;
+  confirmations: number;
+}
+
+export interface TransactionWithTokenAndPrices extends EtherscanTransfer {
+  hash: string;
+  blockNumber: string; // number
   fromAddress: string;
   toAddress: string;
-  blockTimeStamp: number;
+  blockTimeStamp: string; // number
   gasUsed: number;
   gasPrice: number;
   amount: number;
@@ -88,3 +107,56 @@ export interface TransactionWithTokenAndPrices {
   tokenPriceUSD: number;
   totalPriceUSD: number;
 }
+
+export interface ERC20TokenTransfer {
+  address: string;
+  name?: string;
+  symbol?: string;
+  decimals?: number;
+  totalSupply?: number;
+}
+
+// export interface FinallyResponse {
+//   transfers: TransfersResponse;
+//   bscTransaction: TransfersResponse;
+// }
+
+// export interface TransactionWithToken {
+//   hash: string;
+//   blockNumber: number;
+//   fromAddress: string;
+//   toAddress: string;
+//   blockTimeStamp: number;
+//   gas: number;
+//   gasUsed: number;
+//   gasPrice: number;
+//   amount: number;
+//   tokenAddress: string;
+//   tokenPrice: number;
+//   ethPrice: number;
+//   tokenName: string;
+//   tokenSymbol: string;
+//   tokenDecimals: number;
+//   tokenTotalSupply: number;
+// }
+
+// export interface TransactionWithTokenAndPrices extends EtherscanTransfer {
+//   hash: string;
+//   blockNumber: number;
+//   fromAddress: string;
+//   toAddress: string;
+//   blockTimeStamp: number;
+//   gas: number;
+//   gasUsed: number;
+//   gasPrice: number;
+//   amount: number;
+//   tokenAddress: string;
+//   tokenPrice: number;
+//   ethPrice: number;
+//   tokenName: string;
+//   tokenSymbol: string;
+//   tokenDecimals: number;
+//   tokenTotalSupply: number;
+//   tokenPriceUSD: number;
+//   totalPriceUSD: number;
+// }

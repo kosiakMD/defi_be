@@ -2,6 +2,13 @@ import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 import * as winston from 'winston';
 
+// const errorStackTracerFormat = winston.format((info) => {
+//   if (info.meta && info.meta instanceof Error) {
+//     info.message = `${info.message} ${info.meta.stack}`;
+//   }
+//   return info;
+// });
+
 export const winstonParams = (
   logErrorFile: string,
   logCombineLog: string,
@@ -18,7 +25,11 @@ export const winstonParams = (
   transports: [
     // NestJS console like logs
     new winston.transports.Console({
-      format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        utilities.format.nestLike(),
+        // errorStackTracerFormat(),
+      ),
     }),
     // - Write all logs with level `error` and below to `error.log`
     new winston.transports.File({ filename: logErrorFile, level: 'error' }),

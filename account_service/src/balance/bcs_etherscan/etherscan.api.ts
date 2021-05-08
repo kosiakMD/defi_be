@@ -3,9 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
-
-import { Logger } from '../../../../api_gateway/src/common/Logger/Logger.service';
-import { EtherscanTransfer } from '../../../../api_gateway/src/transfers/transfers.interfaces';
+import { Logger } from '../../Logger/Logger.service';
+import { EtherscanTransfer } from '../interfaces/etherscan.interfaces';
 
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 

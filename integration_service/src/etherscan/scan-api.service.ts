@@ -9,7 +9,7 @@ const TRANSFERS_CACHE_TIME = 30; // 30 sec
 export class ScanApi {
   private url: string;
   private apiKey: string;
-  private readonly chainPrefix: 'bsc'; // | 'eth';
+  private readonly chainPrefix = 'bsc'; // | 'eth';
 
   constructor(
     private httpService: HttpService,

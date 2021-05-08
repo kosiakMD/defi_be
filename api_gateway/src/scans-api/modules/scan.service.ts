@@ -236,10 +236,10 @@ export class ScanService {
   protected async getTransfers(address, ECR20 = false): Promise<any> {
     const action = ECR20 ? 'tokennfttx' : 'tokentx';
     // TODO: create function keys generator
-    const transfersCacheKey = `_${this.chainPrefix}_transfers_${action}_${address}`;
-    const logString = `Cache ${this.chainPrefix} ${action} transfers of: ${address} is `;
+    const cacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
+    const logString = `Cache ${cacheKey} is `;
 
-    let transfers = await this.cacheManager.get<EtherscanTransfer[]>(transfersCacheKey);
+    let transfers = await this.cacheManager.get<EtherscanTransfer[]>(cacheKey);
 
     if (!transfers || !Array.isArray(transfers)) {
       try {
@@ -267,13 +267,13 @@ export class ScanService {
         transfers = transfersResp && transfersResp.result ? transfersResp.result : [];
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         (async () => {
-          await this.cacheManager.set<EtherscanTransfer[]>(transfersCacheKey, transfers, {
+          await this.cacheManager.set<EtherscanTransfer[]>(cacheKey, transfers, {
             ttl: TRANSFERS_CACHE_TIME,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
       } catch (e) {
         // if no data and request failed - m.b. data was wrote by another process
-        transfers = await this.cacheManager.get<EtherscanTransfer[]>(transfersCacheKey);
+        transfers = await this.cacheManager.get<EtherscanTransfer[]>(cacheKey);
         if (!transfers || !Array.isArray(transfers)) {
           throw e;
         }

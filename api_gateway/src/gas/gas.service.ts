@@ -1,5 +1,6 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
@@ -20,6 +21,7 @@ export class GasService {
     private httpService: HttpService,
     private configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     const curEntUrl = this.configService.get<string>('GAS_API_URL');
     const currentPath = this.configService.get<string>('GAS_CURRENT_PATH');

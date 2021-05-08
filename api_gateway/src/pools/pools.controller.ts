@@ -10,7 +10,7 @@ import { Pool } from '../common/interfaces';
 import { IntegrationService } from '../integration/integration.service';
 
 // TODO: can be null as updated each time
-const POOLS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
+const POOLS_CACHE_TIME = 5 * 60; // 5 min
 
 @ApiTags('Pools')
 @Controller('pools')
@@ -25,12 +25,38 @@ export class PoolsController {
   @ApiResponse({ status: 200, type: PoolDto, isArray: true })
   @ApiResponse({ status: 500, type: HttpException })
   public async getPools(): Promise<Pool[]> {
-    this.logger.time('getPools');
-    const pools = await Promise.any([this.readPools(), this.fetchPools()]);
-    this.logger.timeEnd('getPools');
+    const cacheKey = 'pools';
+    const logString = `Cache ${cacheKey} is `;
+    let pools = await this.cacheManager.get<any[]>(cacheKey);
+
+    if (!pools) {
+      try {
+        this.logger.debug(logString + 'fetching');
+
+        this.logger.time('getPools');
+        // const pools = await Promise.any([this.readPools(), this.fetchPools()]);
+        pools = await this.integrationService.getPools();
+        this.logger.timeEnd('getPools');
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        (async () => {
+          await this.cacheManager.set<any[]>(cacheKey, pools, {
+            ttl: POOLS_CACHE_TIME,
+          });
+        })().then(() => this.logger.debug(logString + 'saved'));
+      } catch (e) {
+        // if no data and request failed - m.b. data was wrote by another process
+        pools = await this.cacheManager.get<any[]>(cacheKey);
+        if (!pools) {
+          throw e;
+        }
+      }
+    } else {
+      this.logger.debug(logString + 'ok');
+    }
     return pools;
   }
 
+  // TODO: delete
   private async readPools(): Promise<Pool[]> {
     const pools = await this.cacheManager.get<Pool[]>('pools');
     if (pools) {
@@ -40,6 +66,7 @@ export class PoolsController {
     }
   }
 
+  // TODO: delete
   private async fetchPools(): Promise<Pool[]> {
     const pools = await this.integrationService.getPools();
     // postponed save in async queue

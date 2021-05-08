@@ -36,6 +36,7 @@
     "@nestjsx/api-version": "^0.1.1",
     "axios": "^0.21.1",
     "cache-manager": "^3.4.3",
+    "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^8.2.0",

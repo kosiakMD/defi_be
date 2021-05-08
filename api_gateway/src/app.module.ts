@@ -37,6 +37,7 @@ import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
 // import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
+import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
 import { filterObjectKeys } from './utils/object';
 import { isAllUppercase } from './utils/string';
@@ -114,6 +115,7 @@ import { VaultsModule } from './vaults/vaults.module';
     AccountService,
     IntegrationService,
     PricesService,
+    TransfersService,
     // AccountService,
     ScansApiModule,
   ],

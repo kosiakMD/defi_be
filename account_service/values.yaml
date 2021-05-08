@@ -3,6 +3,9 @@ configMaps:
     PGHOST: pg-main.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
     PGPORT: 5432
     PGDATABASE: defi
+    REDIS_HOST: 18.185.19.11
+    REDIS_PORT: 6379
+    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
   amm:
     AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
     AMM_UNISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2

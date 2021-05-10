@@ -42,7 +42,7 @@ export class UniswapService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      'uniswap',
+      'Uniswap V2',
     );
   }
 }

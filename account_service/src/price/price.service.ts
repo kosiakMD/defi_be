@@ -13,10 +13,12 @@ import {
   NO_SCAN_ETH_TOKENS,
 } from '../balance/tokens/tokens';
 import { CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../utils/utils';
+import { PriceServiceResponse } from './price.interfaces';
 
 @Injectable()
 export class PriceService {
   private readonly getPricesUrl: string;
+  private readonly getBatchPriceUrl: string;
 
   constructor(
     private readonly httpService: HttpService,
@@ -28,6 +30,7 @@ export class PriceService {
     const url = `${host}${port ? ':' + port : ''}`;
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
     this.getPricesUrl = `${url}/${getPricesPath}`;
+    this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
   }
 
   async getTokenPrices(
@@ -64,6 +67,31 @@ export class PriceService {
       return { chain: undefined, currency: undefined, prices: pricePayload };
     }
     return result;
+  }
+
+  async getHistoricalPrices(assets, chainId: number): Promise<PriceServiceResponse> {
+    try {
+      this.logger.time(`request: chain=${chainId} ${this.getPricesUrl}`);
+      const prices = await this.httpService
+        .post(this.getBatchPriceUrl, {
+          currency: 1,
+          chain: chainId,
+          assets: assets,
+        })
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd(`request: chain=${chainId} ${this.getPricesUrl}`);
+      return prices;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
+      this.logger.error(e.message, 'getPrices');
+      throw e;
+    }
   }
 
   private mapAddressArray(addresses: string[], chain: number, internal?: number): void {

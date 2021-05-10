@@ -2,7 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
 import { Web3Provider } from '../chain/web3.provider';
-import { Transaction, TransactionsResponse } from './interfaces/transactions.interfaces';
+import { BscScanService } from '../scan_api/bsc-scan.service';
+import { EtherScanService } from '../scan_api/ether-scan.service';
+import { ScanService } from '../scan_api/scan.service';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../utils/utils';
+import {
+  ResultStatus,
+  Transaction,
+  TransactionsResponse,
+  TransactionsResult,
+} from './interfaces/transactions.interfaces';
 
 @Injectable()
 export class TransactionsService {
@@ -11,7 +20,11 @@ export class TransactionsService {
   addressesArray: string[];
   manager;
 
-  constructor(private readonly web3Provider: Web3Provider) {}
+  constructor(
+    private readonly web3Provider: Web3Provider,
+    private readonly bscScanService: BscScanService,
+    private readonly etherScanService: EtherScanService,
+  ) {}
 
   private static convertAddresses(addresses: string[]): string {
     return addresses.map((address) => `'${address}'`).join(',');
@@ -133,5 +146,67 @@ export class TransactionsService {
     WHERE t."fromAddress" IN (${this.addresses})
     OR t."toAddress" IN (${this.addresses})
     `);
+  }
+
+  async getTransaction(addresses: string[], chains: number) {
+    const result = {
+      status: ResultStatus.ok,
+      errors: [],
+      transactions: [],
+    };
+    //
+    const concatTxs = (newTxs): TransactionsResult[] =>
+      (result.transactions = result.transactions.concat(newTxs));
+
+    if (chains) {
+      const handleChain = async (chainId, service: ScanService): Promise<any> => {
+        if (+chains === +chainId) {
+          const txs = await Promise.allSettled(
+            addresses.map((address) => service.getScanTransactions(address)),
+          );
+          txs.forEach((tx) => {
+            if (tx.status === 'fulfilled') {
+              concatTxs(tx.value.transactions);
+              if (tx.value.error) result.errors.push(tx.value.error);
+            } else {
+              result.errors.push(tx.reason);
+            }
+          });
+        }
+      };
+      await Promise.all([
+        handleChain(CHAIN_ID_ETH, this.etherScanService),
+        handleChain(CHAIN_ID_BSC, this.bscScanService),
+      ]);
+    } else {
+      const [ethTransactions, bscTransactions] = await Promise.allSettled([
+        Promise.all(addresses.map((address) => this.etherScanService.getScanTransactions(address))),
+        Promise.all(addresses.map((address) => this.bscScanService.getScanTransactions(address))),
+      ]);
+
+      const checkFulfillment = (chainsTxResults): any => {
+        chainsTxResults.forEach((chainTxsResult) => {
+          if (chainTxsResult.status === 'fulfilled') {
+            chainTxsResult.value.forEach((tx) => {
+              concatTxs(tx.transactions);
+              if (tx.error) result.errors.push(tx.error);
+            });
+          } else {
+            result.errors.push(chainTxsResult.reason);
+          }
+        });
+        if (result.errors.length) {
+          result.status = ResultStatus.error;
+        }
+        return result;
+      };
+
+      checkFulfillment([ethTransactions, bscTransactions]);
+    }
+
+    if (result.errors.length) {
+      result.status = ResultStatus.error;
+    }
+    return result;
   }
 }

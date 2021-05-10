@@ -21,10 +21,14 @@ export class TransfersController {
   @ApiResponse({ status: 200, type: TransfersResponseDto })
   async getTransfersByAddresses(
     @Query('addresses') addresses: string,
+    @Query('chains') chains: number,
+    @Query('internal') internal: string,
   ): Promise<TransfersResponse | []> {
     if (!addresses) {
       return [];
     }
-    return this.transactionService.getAllTransactionDataByAddress(addresses);
+    return internal
+      ? this.transactionService.getAllTransactionDataByAddress(addresses)
+      : this.transactionService.getExternalTransfers(addresses, chains);
   }
 }

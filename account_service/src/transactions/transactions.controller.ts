@@ -1,13 +1,15 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
-import { TransactionsResponseDto } from './dto/transactions.dto';
+import { TransactionQueryDto } from './dto/transaction.query.dto';
+import { TransactionsResponseDto, TransactionsScanResponseDto } from './dto/transactions.dto';
 import { EtherscanTransactionsService } from './etherscan.transactions.service';
 import {
-  TransactionsResponse as ApiTransactionsResponse,
   Transaction,
+  TransactionsResponse as ApiTransactionsResponse,
 } from './interfaces/api.transactions.interfaces';
 import { TransactionsResponse } from './interfaces/transactions.interfaces';
 import { TransactionsService } from './transactions.service';
@@ -21,7 +23,7 @@ export class TransactionsController {
     private bscscanTransactionsService: BscscanTransactionsService,
   ) {}
 
-  @Get('/')
+  @Get('/internal')
   @ApiQuery({
     name: 'addresses',
     type: String,
@@ -70,5 +72,29 @@ export class TransactionsController {
         [address]: transactionsFromAll,
       };
     }, {});
+  }
+
+  @Get('/')
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    description: 'Array of Addresses (comma separated)',
+    example:
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: String,
+    required: false,
+    description: `Array of chains' IDs (comma separated)`,
+    // example: '1,2',
+    example: '',
+  })
+  @ApiResponse({ status: 200, type: TransactionsScanResponseDto, isArray: true })
+  public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
+    const { chains, addresses } = query;
+    const modifiedAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
+
+    return this.transactionsService.getTransaction(modifiedAddresses, chains);
   }
 }

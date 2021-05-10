@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
+import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
+import { BscScanService } from '../scan_api/bsc-scan.service';
+import { EtherScanService } from '../scan_api/ether-scan.service';
+import { ScanService } from '../scan_api/scan.service';
 import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
@@ -18,7 +22,18 @@ import { DbService } from './repository/db.service';
 
 @Injectable()
 export class TransfersService {
-  constructor(private readonly dbService: DbService) {}
+  private readonly chainToScan: Record<number, ScanService>;
+
+  constructor(
+    private etherScanService: EtherScanService,
+    private bscScanService: BscScanService,
+    private readonly dbService: DbService,
+  ) {
+    this.chainToScan = {
+      [CHAIN_ID_ETH]: this.etherScanService,
+      [CHAIN_ID_BSC]: this.bscScanService,
+    };
+  }
   private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   async getAllTransactionDataByAddress(addresses: string): Promise<TransfersResponse> {
@@ -126,5 +141,46 @@ export class TransfersService {
         [address]: transactionWithTransfers,
       };
     }, {});
+  }
+
+  public combineResults = (resultArray, chainArray): any => {
+    const chainKeys = Object.keys(chainArray);
+    if (chainArray && chainKeys.length > 0) {
+      for (const transfer of chainKeys) {
+        if (Object.keys(resultArray).includes(transfer)) {
+          resultArray[transfer] = resultArray[transfer].concat(chainArray[transfer]);
+        } else {
+          resultArray[transfer] = chainArray[transfer];
+        }
+      }
+    }
+  };
+
+  async getExternalTransfers(addresses: string, chains: number): Promise<TransfersResponse> {
+    // return this.service.getTransfers(addresses, chains);
+    const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
+    const transfers: TransfersResponse = {};
+    const handleScan = async (service: ScanService, addresses: string[]): Promise<boolean> => {
+      const transfersResponse = await Promise.all<EtherscanTransfer[]>(
+        addresses.map((address) => service.getTransfers(address)),
+      );
+
+      const singleArray: EtherscanTransfer[] = transfersResponse.flat();
+
+      // const transfersResult = await service.checkTransferResponse(transfersResponse, addresses);
+      const transfersResult = await service.toTransfersResponse(singleArray, addresses);
+      this.combineResults(transfers, transfersResult);
+      return true;
+    };
+
+    let scans: ScanService[];
+    if (chains) {
+      scans = [this.chainToScan[chains]];
+    } else {
+      scans = Object.values(this.chainToScan);
+    }
+    await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
+
+    return transfers;
   }
 }

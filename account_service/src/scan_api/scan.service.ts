@@ -269,15 +269,13 @@ export class ScanService {
     }
 
     transactions.forEach((tx) => {
-      if (!Number(tx.value)) return false;
-      const priceUSD = prices.prices[this.mainCoinAddress][tx.timeStamp];
-      const token = priceUSD ? priceUSD : null;
-      const total = totalPrice(tx.value.toString(), priceUSD, 18);
-      const feeUSD = transactionFeeUSD(tx.gasPrice, tx.gasUsed, 18, token);
+      const price = prices.prices[this.mainCoinAddress][tx.timeStamp];
+      const valueUSD = totalPrice(tx.value.toString(), price, 18);
+      const feeUSD = transactionFeeUSD(tx.gasPrice, tx.gasUsed, 18, price);
       Object.assign(tx, {
-        feeUSD: feeUSD ? feeUSD : null,
-        coinPriceUSD: token,
-        valueUSD: total ? total : null,
+        feeUSD: feeUSD ? feeUSD : 0,
+        coinPriceUSD: price ? price : 0,
+        valueUSD: valueUSD ? valueUSD : 0,
       });
     });
 

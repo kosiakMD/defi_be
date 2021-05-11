@@ -70,22 +70,19 @@ export function mergeTransfersResponse(
   response1: TransfersResponse,
   response2: TransfersResponse,
 ): TransfersResponse {
-  console.log(response1)
-  console.log(response2)
   const finalTransfersResponse: TransfersResponse = {};
   addresses.map((a) => {
     const rsp1: Transfer[] = response1[a];
     const rsp2: Transfer[] = response2[a];
     if (!rsp1 && !rsp2) {
-      finalTransfersResponse[a] = []
+      finalTransfersResponse[a] = [];
     } else if (rsp1 && !rsp2) {
-      finalTransfersResponse[a] = rsp1
+      finalTransfersResponse[a] = rsp1;
     } else if (!rsp1 && rsp2) {
-      finalTransfersResponse[a] = rsp2
+      finalTransfersResponse[a] = rsp2;
     } else {
       // get all transaction hashes for current address
-      let transactionHashes = rsp1.map((t) => t.hash)
-        .concat(rsp2.map((t2) => t2.hash));
+      let transactionHashes = rsp1.map((t) => t.hash).concat(rsp2.map((t2) => t2.hash));
       // get unique
       transactionHashes = transactionHashes.reduce((a, c) => {
         if (!a.some((h) => h === c)) {
@@ -100,7 +97,9 @@ export function mergeTransfersResponse(
 
         let mergedTransfer: Transfer;
         if (rsp1TxTransfer && rsp2TxTransfer) {
-          const transfersERC20 = rsp1TxTransfer.erc20Transfers.concat(rsp2TxTransfer.erc20Transfers);
+          const transfersERC20 = rsp1TxTransfer.erc20Transfers.concat(
+            rsp2TxTransfer.erc20Transfers,
+          );
           mergedTransfer = {
             chainId: rsp2TxTransfer.chainId,
             hash: rsp2TxTransfer.hash,

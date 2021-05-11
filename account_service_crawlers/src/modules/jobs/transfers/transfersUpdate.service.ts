@@ -120,16 +120,26 @@ export class TransfersUpdateService {
       this.logger.log(`${new Date()}: Eth token price job - update token prices in DB`);
 
       const start4 = new Date().getTime();
-      await Promise.all([
-        entityManager.query(updateTransferUsdPrices(this.transferTable, usdPrices)),
-        entityManager.query(
-          updateTransferNativeCoinPrices(
-            this.transferTable,
-            this.nativeAssetColumn,
-            nativeAssetPrices,
+
+      const updateQueries = [];
+      if (usdPrices.length) {
+        updateQueries.push(
+          entityManager.query(updateTransferUsdPrices(this.transferTable, usdPrices)),
+        );
+      }
+      if (nativeAssetPrices.length) {
+        updateQueries.push(
+          entityManager.query(
+            updateTransferNativeCoinPrices(
+              this.transferTable,
+              this.nativeAssetColumn,
+              nativeAssetPrices,
+            ),
           ),
-        ),
-      ]);
+        );
+      }
+
+      await Promise.all(updateQueries);
       this.logger.log(
         (new Date().getTime() - start4) / 1000,
         'Query: updateTransferUsdPrices & updateTransferNativeCoinPrices',

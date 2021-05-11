@@ -5,8 +5,6 @@ import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
-import { PriceServiceResponse } from '../price/price.interfaces';
-import { PriceService } from '../price/price.service';
 import {
   ResultStatus,
   Transaction,
@@ -18,7 +16,7 @@ import {
   Transfer,
   TransfersResponse,
 } from '../transfers/interfaces/transfers.interfaces';
-import { DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData, totalPrice } from '../utils/utils';
+import { DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
@@ -37,10 +35,9 @@ export class ScanService {
     protected readonly configService: ConfigService,
     protected readonly cacheManager: Cache,
     protected readonly logger: Logger,
-    protected readonly priceService: PriceService,
   ) {}
 
-  private formatTransfersDto(hashTransfers, contractTimestampPrices): ERC20Transfer[] {
+  private formatTransfersDto(hashTransfers): ERC20Transfer[] {
     return hashTransfers.map((transfer) => {
       const tokenErc20: ERC20TokenTransfer = {
         address: transfer.contractAddress,
@@ -49,16 +46,14 @@ export class ScanService {
         decimals: Number(transfer.tokenDecimal),
         totalSupply: transfer.tokenTotalSupply,
       };
-      const tokenPriceUsd =
-        contractTimestampPrices.prices[transfer.contractAddress][transfer.timeStamp];
 
       return {
         fromAddress: transfer.from,
         toAddress: transfer.to,
         amount: transfer.value,
         token: tokenErc20,
-        tokenPriceUSD: tokenPriceUsd,
-        totalPriceUSD: totalPrice(transfer.value.toString(), tokenPriceUsd, 18),
+        tokenPriceUSD: null,
+        totalPriceUSD: null,
       };
     });
   }
@@ -121,8 +116,6 @@ export class ScanService {
     addresses: string[],
   ): Promise<TransfersResponse> {
     try {
-      const contractTimestampPrices = await this.getTransfersPrices(transfers);
-
       // TODO too hard logic - divide in methods and analysis for performance
       const result = addresses.reduce<TransfersResponse>((response, address) => {
         const userTransfers = transfers.filter(
@@ -136,10 +129,7 @@ export class ScanService {
         const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash) => {
           const hashTransfers = userTransfers.filter((transaction) => transaction.hash === hash);
 
-          const erc20Transfers: ERC20Transfer[] = this.formatTransfersDto(
-            hashTransfers,
-            contractTimestampPrices,
-          );
+          const erc20Transfers: ERC20Transfer[] = this.formatTransfersDto(hashTransfers);
 
           return {
             chainId: this.chainId,
@@ -173,31 +163,6 @@ export class ScanService {
         this.retries = 0;
         throw e;
       }
-    }
-  }
-
-  private async getTransfersPrices(transfers: EtherscanTransfer[]): Promise<PriceServiceResponse> {
-    try {
-      const unpricedContracts = [];
-
-      for (const transfer of transfers) {
-        // TODO: remove await
-        const transferInArray = unpricedContracts.find(
-          (unpricedContract) => unpricedContract.address === transfer.contractAddress,
-        );
-        if (transferInArray) {
-          transferInArray.timestamps.push(Number(transfer.timeStamp));
-        } else {
-          unpricedContracts.push({
-            address: transfer.contractAddress,
-            timestamps: [Number(transfer.timeStamp)],
-          });
-        }
-      }
-      return await this.priceService.getHistoricalPrices(unpricedContracts, this.chainId);
-    } catch (e) {
-      this.logger.error(e, 'getTransactionPrices');
-      throw e;
     }
   }
 

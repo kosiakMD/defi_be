@@ -1,5 +1,7 @@
 import { BigNumber as BN } from 'bignumber.js';
 
+import { Transfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
+
 export const DEFAULT_MULTIPLIER = 1e-18;
 export const ETH_BNB_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const WBNB_ADDRESS = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
@@ -48,6 +50,63 @@ export function splitToArray(value: string): string[] {
   }
 
   return value.toLowerCase().split(',');
+}
+
+// notice: not best performant function imo
+export function mergeTransfersResponse(
+  addresses: string[],
+  response1: TransfersResponse,
+  response2: TransfersResponse,
+): TransfersResponse {
+  const finalTransfersResponse: TransfersResponse = {};
+  addresses.map((a) => {
+    const rsp1: Transfer[] = response1[a];
+    const rsp2: Transfer[] = response2[a];
+
+    // get all transaction hashes for current address
+    let transactionHashes = rsp1.map((t) => t.hash).concat(rsp2.map((t2) => t2.hash));
+    // get unique
+    transactionHashes = transactionHashes.reduce((a, c) => {
+      if (!a.some((h) => h === c)) {
+        a.push(c);
+      }
+      return a;
+    }, []);
+
+    transactionHashes.map((hash) => {
+      const rsp1TxTransfer: Transfer = rsp1.find((t) => t.hash === hash);
+      const rsp2TxTransfer: Transfer = rsp2.find((t) => t.hash === hash);
+
+      let mergedTransfer: Transfer;
+      if (rsp1TxTransfer && rsp2TxTransfer) {
+        const transfersERC20 = rsp1TxTransfer.erc20Transfers.concat(rsp2TxTransfer.erc20Transfers);
+        mergedTransfer = {
+          chainId: rsp2TxTransfer.chainId,
+          hash: rsp2TxTransfer.hash,
+          blockNumber: rsp2TxTransfer.blockNumber,
+          blockTimeStamp: rsp2TxTransfer.blockTimeStamp
+            ? rsp2TxTransfer.blockTimeStamp
+            : rsp1TxTransfer.blockTimeStamp,
+          gas: rsp2TxTransfer.gas ? rsp2TxTransfer.gas : rsp1TxTransfer.gas,
+          gasPrice: rsp2TxTransfer.gasPrice ? rsp2TxTransfer.gasPrice : rsp1TxTransfer.gasPrice,
+          gasUsed: rsp2TxTransfer.gasUsed ? rsp2TxTransfer.gasUsed : rsp1TxTransfer.gasUsed,
+          erc20Transfers: transfersERC20,
+        };
+      } else if (rsp1TxTransfer) {
+        mergedTransfer = rsp1TxTransfer;
+      } else {
+        mergedTransfer = rsp2TxTransfer;
+      }
+
+      if (!finalTransfersResponse[a]) {
+        finalTransfersResponse[a] = [mergedTransfer];
+      } else {
+        finalTransfersResponse[a] = [...finalTransfersResponse[a], mergedTransfer];
+      }
+    });
+  });
+
+  return finalTransfersResponse;
 }
 
 export const abi = [

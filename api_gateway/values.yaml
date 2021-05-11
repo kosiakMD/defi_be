@@ -44,6 +44,7 @@ configMaps:
     REDIS_PORT: 6379
     REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
     BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
+    BSCSCAN_URL: https://api.bscscan.com/api
 
 secrets:
 - etherscan

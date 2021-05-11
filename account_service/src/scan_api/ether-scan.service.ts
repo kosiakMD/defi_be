@@ -4,6 +4,7 @@ import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
+import { PriceService } from '../price/price.service';
 import { CHAIN_ID_ETH } from '../utils/utils';
 import { ScanService } from './scan.service';
 
@@ -20,8 +21,9 @@ export class EtherScanService extends ScanService {
     configService: ConfigService,
     @Inject(CACHE_MANAGER) cacheManager: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) logger: Logger,
+    priceService: PriceService,
   ) {
-    super(httpService, configService, cacheManager, logger);
+    super(httpService, configService, cacheManager, logger, priceService);
 
     this.url = this.configService.get<string>('ETHERSCAN_URL');
     this.apiKey = this.configService.get<string>('ETHERSCAN_KEY');

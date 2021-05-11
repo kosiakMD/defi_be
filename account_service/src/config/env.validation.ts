@@ -47,6 +47,8 @@ export const validationSchema = Joi.object({
   BSCSCAN_KEY: Joi.string().required(),
   ETHERSCAN_URL: Joi.string().required(),
   ETHERSCAN_KEY: Joi.string().required(),
+  PRICE_SERVICE_MAIN_COIN_ADDRESS: Joi.string().required(),
+  BLOCKS_SUBGRAPH_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

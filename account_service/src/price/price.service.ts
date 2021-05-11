@@ -71,7 +71,7 @@ export class PriceService {
 
   async getHistoricalPrices(assets, chainId: number): Promise<PriceServiceResponse> {
     try {
-      this.logger.time(`request: chain=${chainId} ${this.getPricesUrl}`);
+      this.logger.time(`request: chain=${chainId} ${this.getBatchPriceUrl}`);
       const prices = await this.httpService
         .post(this.getBatchPriceUrl, {
           currency: 1,
@@ -80,7 +80,7 @@ export class PriceService {
         })
         .pipe(map((response) => response.data))
         .toPromise();
-      this.logger.timeEnd(`request: chain=${chainId} ${this.getPricesUrl}`);
+      this.logger.timeEnd(`request: chain=${chainId} ${this.getBatchPriceUrl}`);
       return prices;
     } catch (e) {
       if (e.isAxiosError) {

@@ -5,6 +5,8 @@ import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
+import { PriceServiceResponse } from '../price/price.interfaces';
+import { PriceService } from '../price/price.service';
 import {
   ResultStatus,
   Transaction,
@@ -16,7 +18,12 @@ import {
   Transfer,
   TransfersResponse,
 } from '../transfers/interfaces/transfers.interfaces';
-import { DEFAULT_MULTIPLIER, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import {
+  DEFAULT_MULTIPLIER,
+  getUniqueAndToLowerCaseArrayData,
+  totalPrice,
+  transactionFeeUSD,
+} from '../utils/utils';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
@@ -35,6 +42,7 @@ export class ScanService {
     protected readonly configService: ConfigService,
     protected readonly cacheManager: Cache,
     protected readonly logger: Logger,
+    protected readonly priceService: PriceService,
   ) {}
 
   private formatTransfersDto(hashTransfers): ERC20Transfer[] {
@@ -61,6 +69,9 @@ export class ScanService {
   private normalizeTxsResp = (txsResp, chainId, isInternal = false): Transaction[] => {
     txsResp.forEach((tx) =>
       Object.assign(tx, {
+        feeUSD: null,
+        coinPriceUSD: null,
+        valueUSD: null,
         chainId: this.chainId,
         isInternal,
       }),
@@ -210,21 +221,20 @@ export class ScanService {
     return transactions;
   }
 
-  // TODO: transaction prices are not yet required
-  // private async getTransactionPrices(timestamps): Promise<PriceServiceResponse> {
-  //   try {
-  //     const assets = [
-  //       {
-  //         address: this.mainCoinAddress,
-  //         timestamps: timestamps,
-  //       },
-  //     ];
-  //     return await this.priceService.getHistoricalPrices(assets, this.chainId);
-  //   } catch (e) {
-  //     this.logger.error(e.message, 'getTransactionPrices');
-  //     throw e;
-  //   }
-  // }
+  private async getTransactionPrices(timestamps): Promise<PriceServiceResponse> {
+    try {
+      const assets = [
+        {
+          address: this.mainCoinAddress,
+          timestamps: timestamps,
+        },
+      ];
+      return await this.priceService.getHistoricalPrices(assets, this.chainId);
+    } catch (e) {
+      this.logger.error(e.message, 'getTransactionPrices');
+      throw e;
+    }
+  }
 
   public async getScanTransactions(address: string): Promise<TransactionsResult> {
     this.logger.time(`request: txlist & txlistinternal ${this.url}`);
@@ -240,35 +250,36 @@ export class ScanService {
 
     if (!transactions.length) return { status: ResultStatus.ok, transactions };
 
-    // TODO: transaction prices are not yet required
-    // let prices: PriceServiceResponse;
-    // try {
-    //   const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
-    //   prices = await this.getTransactionPrices(txTimestamps);
-    // } catch (e) {
-    //   let error = `Price Service Error: ${e.message}`;
-    //   if (e.response) {
-    //     this.logger.error(e.response.data);
-    //     error += ' - ' + e.response.data.message;
-    //   }
-    //   this.logger.error(e.message);
-    //   return {
-    //     status: ResultStatus.error,
-    //     error: error,
-    //     transactions,
-    //   };
-    // }
+    let prices: PriceServiceResponse;
+    try {
+      const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
+      prices = await this.getTransactionPrices(txTimestamps);
+    } catch (e) {
+      let error = `Price Service Error: ${e.message}`;
+      if (e.response) {
+        this.logger.error(e.response.data);
+        error += ' - ' + e.response.data.message;
+      }
+      this.logger.error(e.message);
+      return {
+        status: ResultStatus.error,
+        error: error,
+        transactions,
+      };
+    }
 
-    // transactions.forEach((tx) => {
-    //   if (!Number(tx.value)) return false;
-    //   const priceUSD = prices.prices[this.mainCoinAddress][tx.timeStamp];
-    // const token = Number.isInteger(priceUSD) ? priceUSD : null;
-    // const total = totalPrice(tx.value.toString(), priceUSD, 18);
-    // Object.assign(tx, {
-    //   tokenPriceUSD: token,
-    //   totalPriceUSD: Number.isInteger(total) ? total : null,
-    // });
-    // });
+    transactions.forEach((tx) => {
+      if (!Number(tx.value)) return false;
+      const priceUSD = prices.prices[this.mainCoinAddress][tx.timeStamp];
+      const token = priceUSD ? priceUSD : null;
+      const total = totalPrice(tx.value.toString(), priceUSD, 18);
+      const feeUSD = transactionFeeUSD(tx.gasPrice, tx.gasUsed, 18, token);
+      Object.assign(tx, {
+        feeUSD: feeUSD ? feeUSD : null,
+        coinPriceUSD: token,
+        valueUSD: total ? total : null,
+      });
+    });
 
     return { status: ResultStatus.ok, transactions };
   }

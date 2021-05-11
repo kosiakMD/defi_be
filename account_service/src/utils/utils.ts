@@ -35,6 +35,18 @@ export const decimalsAmount = (amount: string, decimals: Decimals): number =>
     .div(decimalsDivider(decimals))
     .toNumber();
 
+export const transactionFeeUSD = (
+  gasPrice: number,
+  gasUsed: number,
+  decimals: string | number,
+  ethPrice: number,
+): number =>
+  new BN(gasPrice) //
+    .times(gasUsed)
+    .div(decimalsDivider(decimals))
+    .times(ethPrice)
+    .toNumber();
+
 export const totalPrice = (amount: string, price: number, decimals: string | number): number =>
   new BN(amount) //
     .times(price)
@@ -58,52 +70,62 @@ export function mergeTransfersResponse(
   response1: TransfersResponse,
   response2: TransfersResponse,
 ): TransfersResponse {
+  console.log(response1)
+  console.log(response2)
   const finalTransfersResponse: TransfersResponse = {};
   addresses.map((a) => {
     const rsp1: Transfer[] = response1[a];
     const rsp2: Transfer[] = response2[a];
+    if (!rsp1 && !rsp2) {
+      finalTransfersResponse[a] = []
+    } else if (rsp1 && !rsp2) {
+      finalTransfersResponse[a] = rsp1
+    } else if (!rsp1 && rsp2) {
+      finalTransfersResponse[a] = rsp2
+    } else {
+      // get all transaction hashes for current address
+      let transactionHashes = rsp1.map((t) => t.hash)
+        .concat(rsp2.map((t2) => t2.hash));
+      // get unique
+      transactionHashes = transactionHashes.reduce((a, c) => {
+        if (!a.some((h) => h === c)) {
+          a.push(c);
+        }
+        return a;
+      }, []);
 
-    // get all transaction hashes for current address
-    let transactionHashes = rsp1.map((t) => t.hash).concat(rsp2.map((t2) => t2.hash));
-    // get unique
-    transactionHashes = transactionHashes.reduce((a, c) => {
-      if (!a.some((h) => h === c)) {
-        a.push(c);
-      }
-      return a;
-    }, []);
+      transactionHashes.map((hash) => {
+        const rsp1TxTransfer: Transfer = rsp1.find((t) => t.hash === hash);
+        const rsp2TxTransfer: Transfer = rsp2.find((t) => t.hash === hash);
 
-    transactionHashes.map((hash) => {
-      const rsp1TxTransfer: Transfer = rsp1.find((t) => t.hash === hash);
-      const rsp2TxTransfer: Transfer = rsp2.find((t) => t.hash === hash);
+        let mergedTransfer: Transfer;
+        if (rsp1TxTransfer && rsp2TxTransfer) {
+          const transfersERC20 = rsp1TxTransfer.erc20Transfers.concat(rsp2TxTransfer.erc20Transfers);
+          mergedTransfer = {
+            chainId: rsp2TxTransfer.chainId,
+            hash: rsp2TxTransfer.hash,
+            blockNumber: rsp2TxTransfer.blockNumber,
+            blockTimeStamp: rsp2TxTransfer.blockTimeStamp
+              ? rsp2TxTransfer.blockTimeStamp
+              : rsp1TxTransfer.blockTimeStamp,
+            gas: rsp2TxTransfer.gas ? rsp2TxTransfer.gas : rsp1TxTransfer.gas,
+            gasPrice: rsp2TxTransfer.gasPrice ? rsp2TxTransfer.gasPrice : rsp1TxTransfer.gasPrice,
+            gasUsed: rsp2TxTransfer.gasUsed ? rsp2TxTransfer.gasUsed : rsp1TxTransfer.gasUsed,
+            erc20Transfers: transfersERC20,
+          };
+        } else if (rsp1TxTransfer) {
+          mergedTransfer = rsp1TxTransfer;
+        } else {
+          mergedTransfer = rsp2TxTransfer;
+        }
 
-      let mergedTransfer: Transfer;
-      if (rsp1TxTransfer && rsp2TxTransfer) {
-        const transfersERC20 = rsp1TxTransfer.erc20Transfers.concat(rsp2TxTransfer.erc20Transfers);
-        mergedTransfer = {
-          chainId: rsp2TxTransfer.chainId,
-          hash: rsp2TxTransfer.hash,
-          blockNumber: rsp2TxTransfer.blockNumber,
-          blockTimeStamp: rsp2TxTransfer.blockTimeStamp
-            ? rsp2TxTransfer.blockTimeStamp
-            : rsp1TxTransfer.blockTimeStamp,
-          gas: rsp2TxTransfer.gas ? rsp2TxTransfer.gas : rsp1TxTransfer.gas,
-          gasPrice: rsp2TxTransfer.gasPrice ? rsp2TxTransfer.gasPrice : rsp1TxTransfer.gasPrice,
-          gasUsed: rsp2TxTransfer.gasUsed ? rsp2TxTransfer.gasUsed : rsp1TxTransfer.gasUsed,
-          erc20Transfers: transfersERC20,
-        };
-      } else if (rsp1TxTransfer) {
-        mergedTransfer = rsp1TxTransfer;
-      } else {
-        mergedTransfer = rsp2TxTransfer;
-      }
-
-      if (!finalTransfersResponse[a]) {
-        finalTransfersResponse[a] = [mergedTransfer];
-      } else {
-        finalTransfersResponse[a] = [...finalTransfersResponse[a], mergedTransfer];
-      }
-    });
+        if (!finalTransfersResponse[a]) {
+          finalTransfersResponse[a] = [mergedTransfer];
+        } else {
+          finalTransfersResponse[a] = [...finalTransfersResponse[a], mergedTransfer];
+        }
+      });
+    }
   });
 
   return finalTransfersResponse;

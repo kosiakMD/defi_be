@@ -148,7 +148,7 @@ export class TransactionsService {
     `);
   }
 
-  async getTransaction(addresses: string[], chains: number) {
+  async getTransaction(addresses: string[], chains: number[]) {
     const result = {
       status: ResultStatus.ok,
       errors: [],
@@ -158,9 +158,9 @@ export class TransactionsService {
     const concatTxs = (newTxs): TransactionsResult[] =>
       (result.transactions = result.transactions.concat(newTxs));
 
-    if (chains) {
+    if (chains && chains.length) {
       const handleChain = async (chainId, service: ScanService): Promise<any> => {
-        if (+chains === +chainId) {
+        if (chains.includes(chainId)) {
           const txs = await Promise.allSettled(
             addresses.map((address) => service.getScanTransactions(address)),
           );

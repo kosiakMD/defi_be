@@ -17,7 +17,7 @@ export class TransactionQueryDto {
 
   @IsNotEmpty()
   @IsString({ each: true })
-  // @Transform(({ value }) => splitToArray(value))
+  @Transform(({ value }) => splitToArray(value))
   @ApiProperty({
     type: String,
     required: true,
@@ -25,5 +25,5 @@ export class TransactionQueryDto {
     default:
       '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
   })
-  addresses: string;
+  addresses: string[];
 }

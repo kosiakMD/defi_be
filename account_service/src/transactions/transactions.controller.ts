@@ -1,7 +1,6 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
 import { TransactionQueryDto } from './dto/transaction.query.dto';
@@ -91,10 +90,10 @@ export class TransactionsController {
     example: '',
   })
   @ApiResponse({ status: 200, type: TransactionsScanResponseDto, isArray: true })
+  @UsePipes(new ValidationPipe({ transform: true }))
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
-    const { chains, addresses } = query;
-    const modifiedAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
-
-    return this.transactionsService.getTransaction(modifiedAddresses, chains);
+    const { addresses, chains } = query;
+    if (!query.addresses && query.addresses.length) return [];
+    return this.transactionsService.getTransaction(addresses, chains);
   }
 }

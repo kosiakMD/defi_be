@@ -17,6 +17,10 @@ export interface CurrentPricesPayload {
   [key: string]: number;
 }
 
+export interface CurrentPricesPayloadV2 {
+  [key: string]: {price: number, platform: string, isLp: boolean};
+}
+
 export interface TimestampKeyPrice {
   [key: string]: number;
 }
@@ -24,5 +28,9 @@ export interface TimestampKeyPrice {
 export interface HistoricalPricesPayload {
   [key: string]: TimestampKeyPrice;
 }
+export interface HistoricalPricesPayloadV2 {
+  [key: string]: {prices:TimestampKeyPrice, platform: string, isLp: boolean};
+}
 
+export type PricesPayloadV2 = CurrentPricesPayloadV2 | HistoricalPricesPayloadV2;
 export type PricesPayload = CurrentPricesPayload | HistoricalPricesPayload;

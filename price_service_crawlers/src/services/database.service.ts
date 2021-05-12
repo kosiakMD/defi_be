@@ -86,8 +86,8 @@ export class DatabaseService {
     if (!ethEntities.length) {
       const chainId = await this.getCurrentChain();
       await this.pg.any(
-        'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
-        [ETH_ADDRESS, 'eth', 'ethereum', CHAIN, 'COINGECKO', chainId, true],
+        'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new, isLp) VALUES ($1, $2, $3, $4, $5, $6, true); ',
+        [ETH_ADDRESS, 'eth', 'ethereum', CHAIN, 'COINGECKO', chainId, true, false],
       );
     }
     return;
@@ -102,8 +102,8 @@ export class DatabaseService {
 
     if (!bnbEntities.length) {
       await this.pg.any(
-        'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
-        [BNB_ADDRESS, 'bnb', 'binancecoin', BNB_CHAIN, 'COINGECKO', chainId, true],
+        'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new, isLp) VALUES ($1, $2, $3, $4, $5, $6, true); ',
+        [BNB_ADDRESS, 'bnb', 'binancecoin', BNB_CHAIN, 'COINGECKO', chainId, true, false],
       );
     }
     return;
@@ -169,16 +169,16 @@ export class DatabaseService {
     return curencies[0].id;
   };
 
-  public addNewTokenToDb = (token: any, chainId, platform = 'COINGECKO') =>
+  public addNewTokenToDb = (token: any, chainId, platform = 'COINGECKO', isLp = true) =>
     this.pg.any(
-      'INSERT INTO prices.asset(address, symbol, name, type, chain_id, is_new, platform) VALUES ($1, $2, $3, $4, $5, true, $7); ',
-      [token['platforms'][CHAIN], token['symbol'], token['name'], CHAIN, chainId, true, platform],
+      'INSERT INTO prices.asset(address, symbol, name, type, chain_id, is_new, platform, isLp) VALUES ($1, $2, $3, $4, $5, true, $7, $8); ',
+      [token['platforms'][CHAIN], token['symbol'], token['name'], CHAIN, chainId, true, platform, isLp],
     );
 
-  public addTokenToDb = async (address, name, symbol, type, platform, chainId) => {
+  public addTokenToDb = async (address, name, symbol, type, platform, chainId, isLp = true) => {
     const new_one = await this.pg.any(
-      'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true); ',
-      [address, symbol, name, type, platform, chainId, true],
+      'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true, $7); ',
+      [address, symbol, name, type, platform, chainId, true, isLp],
     );
 
     return new_one;

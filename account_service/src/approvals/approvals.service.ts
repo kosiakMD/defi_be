@@ -27,7 +27,7 @@ export class ApprovalsService {
 
   async getApprovals(addresses: Address, chainId: number): Promise<ContractApprovalResponse> {
     let approvalsTableName, approvalsTokensTableName;
-    if (chainId == 1) {
+    if (chainId === 1) {
       approvalsTableName = 'approvals';
       approvalsTokensTableName = 'approvals_tokens';
     } else {
@@ -68,7 +68,7 @@ export class ApprovalsService {
 
     return addressesArray.reduce((response, address) => {
       const singleAddressApprovals = approvals.filter(
-        (approval) => approval['user_address'] == address,
+        (approval) => approval['user_address'] === address,
       );
       return {
         ...response,

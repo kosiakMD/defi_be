@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
+
 import { Logger } from '../../Logger/Logger.service';
 import { EtherscanTransfer } from '../interfaces/etherscan.interfaces';
 

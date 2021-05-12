@@ -1,24 +1,54 @@
 import { Injectable } from '@nestjs/common';
 
+import { Logger } from '../Logger/Logger.service';
+import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
+import { AssetService } from '../chain/asset.service';
+import { PriceServiceResponse } from '../price/price.interfaces';
+import { PriceService } from '../price/price.service';
+import { BscScanService } from '../scan_api/bsc-scan.service';
+import { EtherScanService } from '../scan_api/ether-scan.service';
+import { ScanService } from '../scan_api/scan.service';
+import {
+  BlocksSubgraph,
+  ResponseData as BlocksResponseData,
+} from '../thegraph/blocks/blocks.subgraph';
 import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   getTokenDecimals,
   getUniqueAndToLowerCaseArrayData,
+  mergeTransfersResponse,
+  totalPrice,
 } from '../utils/utils';
 import {
   ERC20TokenTransfer,
   ERC20Transfer,
-  TransfersResponse,
   TransactionWithToken,
   TransactionWithTokenAndPrices,
   Transfer,
+  TransfersResponse,
 } from './interfaces/transfers.interfaces';
 import { DbService } from './repository/db.service';
 
 @Injectable()
 export class TransfersService {
-  constructor(private readonly dbService: DbService) {}
+  private readonly chainToScan: Record<number, ScanService>;
+
+  constructor(
+    private etherScanService: EtherScanService,
+    private bscScanService: BscScanService,
+    private readonly dbService: DbService,
+    protected readonly priceService: PriceService,
+    private readonly assetService: AssetService,
+    private readonly blocksSubgraph: BlocksSubgraph,
+    protected readonly logger: Logger,
+  ) {
+    this.chainToScan = {
+      [CHAIN_ID_ETH]: this.etherScanService,
+      [CHAIN_ID_BSC]: this.bscScanService,
+    };
+  }
+
   private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   async getAllTransactionDataByAddress(addresses: string): Promise<TransfersResponse> {
@@ -126,5 +156,157 @@ export class TransfersService {
         [address]: transactionWithTransfers,
       };
     }, {});
+  }
+
+  public combineResults = (resultArray, chainArray): any => {
+    const chainKeys = Object.keys(chainArray);
+    if (chainArray && chainKeys.length > 0) {
+      for (const transfer of chainKeys) {
+        if (Object.keys(resultArray).includes(transfer)) {
+          resultArray[transfer] = resultArray[transfer].concat(chainArray[transfer]);
+        } else {
+          resultArray[transfer] = chainArray[transfer];
+        }
+      }
+    }
+  };
+
+  async getExternalTransfers(addresses: string, chains: number): Promise<TransfersResponse> {
+    const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
+    const transfers: TransfersResponse = {};
+    const handleScan = async (service: ScanService, addresses: string[]): Promise<boolean> => {
+      const transfersResponse = await Promise.all<EtherscanTransfer[]>(
+        addresses.map((address) => service.getTransfers(address)),
+      );
+
+      const singleArray: EtherscanTransfer[] = transfersResponse.flat();
+
+      const transfersResult = await service.toTransfersResponse(singleArray, addresses);
+      this.combineResults(transfers, transfersResult);
+      return true;
+    };
+
+    let scans: ScanService[];
+    if (chains) {
+      scans = [this.chainToScan[chains]];
+    } else {
+      scans = Object.values(this.chainToScan);
+    }
+    await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
+
+    // this call works pretty fast, but there is no block timestamp fuck!
+    const additionalTransfers = await this.assetService.getConvertedTransfers(
+      uniqueLowerCaseAddresses,
+    );
+
+    let allTransfers = mergeTransfersResponse(
+      uniqueLowerCaseAddresses,
+      transfers,
+      additionalTransfers,
+    );
+
+    allTransfers = await this.addTimestampsToTransfers(allTransfers);
+    allTransfers = await this.addPricesToTransfers(allTransfers);
+
+    return allTransfers;
+  }
+
+  private async addTimestampsToTransfers(
+    transfersResponse: TransfersResponse,
+  ): Promise<TransfersResponse> {
+    try {
+      const missedBlocks: number[] = [];
+      Object.keys(transfersResponse).map((k) => {
+        const transfers: Transfer[] = transfersResponse[k];
+        transfers.map((t) => {
+          if (t.chainId === CHAIN_ID_ETH && t.blockTimeStamp === null) {
+            const isMissed = missedBlocks.find((blockNumber) => blockNumber === t.blockNumber);
+            if (!isMissed) {
+              missedBlocks.push(Number(t.blockNumber));
+            }
+          }
+        });
+      });
+      if (!missedBlocks) {
+        return transfersResponse;
+      }
+
+      const blocksDataTimestamps: BlocksResponseData = await this.blocksSubgraph.getBlocksTimestamps(
+        missedBlocks,
+      );
+      const blocks = blocksDataTimestamps.data.blocks;
+
+      Object.keys(transfersResponse).map((k) => {
+        const transfers: Transfer[] = transfersResponse[k];
+        transfers.map((t) => {
+          if (t.chainId === CHAIN_ID_ETH && t.blockTimeStamp === null) {
+            const blockTimestamp = blocks.find((b) => Number(b.number) === Number(t.blockNumber));
+            if (blockTimestamp) {
+              t.blockTimeStamp = blockTimestamp.timestamp;
+            }
+          }
+        });
+      });
+    } catch (e) {
+      this.logger.warn('error fetching block timestamps for transfers');
+    }
+    return transfersResponse;
+  }
+
+  private async getTransfersPrices(
+    transfersResponse: TransfersResponse,
+    chainId: number,
+  ): Promise<PriceServiceResponse> {
+    try {
+      const unpricedContracts = [];
+      Object.keys(transfersResponse).map((k) => {
+        const transfers: Transfer[] = transfersResponse[k];
+        transfers.map((t) => {
+          if (t.chainId === chainId) {
+            for (const transfer of t.erc20Transfers) {
+              const transferInArray = unpricedContracts.find(
+                (unpricedContract) => unpricedContract.address === transfer.token.address,
+              );
+              if (transferInArray) {
+                transferInArray.timestamps.push(Number(t.blockTimeStamp));
+              } else {
+                unpricedContracts.push({
+                  address: transfer.token.address,
+                  timestamps: [Number(t.blockTimeStamp)],
+                });
+              }
+            }
+          }
+        });
+      });
+      return await this.priceService.getHistoricalPrices(unpricedContracts, chainId);
+    } catch (e) {
+      this.logger.warn('error fetching token prices for transfers');
+      throw e;
+    }
+  }
+
+  private async addPricesToTransfers(allTransfers: TransfersResponse): Promise<TransfersResponse> {
+    const [ethPrices, bscPrices] = await Promise.all([
+      this.getTransfersPrices(allTransfers, CHAIN_ID_ETH),
+      this.getTransfersPrices(allTransfers, CHAIN_ID_BSC),
+    ]);
+    Object.keys(allTransfers).map((address) => {
+      allTransfers[address].map((transfer) => {
+        transfer.erc20Transfers.map((erc20Transfer) => {
+          const tokenPriceUsd =
+            transfer.chainId === CHAIN_ID_ETH
+              ? ethPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp]
+              : bscPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp];
+          erc20Transfer.tokenPriceUSD = tokenPriceUsd;
+          erc20Transfer.totalPriceUSD = totalPrice(
+            erc20Transfer.amount.toString(),
+            tokenPriceUsd,
+            erc20Transfer.token.decimals ? erc20Transfer.token.decimals : 18,
+          );
+        });
+      });
+    });
+    return allTransfers;
   }
 }

@@ -23,3 +23,14 @@ export interface Transaction {
 export interface TransactionsResponse {
   [address: string]: Transaction[];
 }
+
+export enum ResultStatus {
+  ok = 'ok',
+  error = 'error',
+}
+
+export interface TransactionsResult {
+  status: ResultStatus;
+  error?: Error | string;
+  transactions: any[];
+}

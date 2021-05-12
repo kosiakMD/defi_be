@@ -65,3 +65,34 @@ export class TransactionsResponseDto {
   // [address: string]: TransactionDto[];
   '0x782629c9578889a9b8464f051f23843734f72599': TransactionDto[];
 }
+
+class TransactionScanDto {
+  @ApiProperty()
+  eth: number;
+  @ApiProperty()
+  usd: number;
+
+  @ApiProperty()
+  chainId: number;
+  @ApiProperty()
+  hash: string;
+  @ApiProperty()
+  blockNumber: string;
+  @ApiProperty()
+  from: string;
+  @ApiProperty()
+  to: string;
+  @ApiProperty({ type: AmountDto })
+  amount: AmountDto;
+  @ApiProperty({ type: GasDto })
+  gas: GasDto;
+  @ApiProperty()
+  gasPrice: string;
+  @ApiProperty()
+  timeStamp: string;
+}
+
+export class TransactionsScanResponseDto {
+  @ApiProperty({ type: TransactionDto, isArray: true })
+  address: TransactionScanDto;
+}

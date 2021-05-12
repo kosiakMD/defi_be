@@ -30,12 +30,12 @@ import { PancakeController } from './pancake/pancake.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
-import { ScansApiController } from './scans-api/scans-api.controller';
+// import { ScansApiController } from './scans-api/scans-api.controller';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
-// import { TransactionsController } from './transactions/transactions.controller';
+import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
@@ -87,9 +87,9 @@ import { VaultsModule } from './vaults/vaults.module';
     SushiswapController,
     BalancerController,
     // PlatformController,
-    // TransactionsController,
+    TransactionsController,
     TransfersController,
-    ScansApiController,
+    // ScansApiController,
   ],
   providers: [
     // TODO: for global auto caching
@@ -116,8 +116,7 @@ import { VaultsModule } from './vaults/vaults.module';
     IntegrationService,
     PricesService,
     TransfersService,
-    // AccountService,
-    ScansApiModule,
+    AccountService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

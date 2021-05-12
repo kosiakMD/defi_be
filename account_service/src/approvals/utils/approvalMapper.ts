@@ -41,7 +41,7 @@ const ApprovalMapper = (approvals: Array<any>, chainId: number): Array<any> => {
           x = false;
         }
       }
-      if (x != false) {
+      if (x !== false) {
         resp.push(tmp);
       }
     }

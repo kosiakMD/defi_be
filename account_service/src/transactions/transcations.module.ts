@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChainModule } from '../chain/chain.module';
+import { ScanApiModule } from '../scan_api/scan.api.module';
 import { BscscanApi } from './api/bscscan.api';
 import { EtherscanApi } from './api/etherscan.api';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
@@ -11,7 +12,7 @@ import { TransactionsService } from './transactions.service';
 import { Web3Service } from './web3.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature(), ChainModule],
+  imports: [TypeOrmModule.forFeature(), ChainModule, ScanApiModule],
   controllers: [TransactionsController],
   providers: [
     TransactionsService,

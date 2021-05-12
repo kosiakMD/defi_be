@@ -338,6 +338,7 @@ export class Mapper {
         pool: pool,
         lpToken,
         lpTokenBalance: uniswapPosition.liquidityTokenBalance,
+        project: amm.protocolName === 'uniswap' ? 'Uniswap V2' : amm.protocolName,
         poolTokens: [poolToken0, poolToken1],
         earnedFeeUSD: 0,
         exitedAt: null,

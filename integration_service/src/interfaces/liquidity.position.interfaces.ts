@@ -47,6 +47,7 @@ export interface LiquidityPosition {
   earnedFeeUSD?: number;
   poolTokens: PoolToken[];
   transactions?: AMMTransaction[];
+  project?: string;
 }
 
 export interface LiquidityPositionResponseData {

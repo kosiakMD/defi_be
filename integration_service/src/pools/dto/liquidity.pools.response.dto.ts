@@ -20,7 +20,7 @@ export class LiquidityPoolsResponseDto {
     this.id = +entity.id;
     this.address = entity.address;
     this.chain = +entity.chain;
-    this.project = entity.project;
+    this.project = entity.project === 'uniswap' ? 'Uniswap V2' : entity.project;
     this.reserveUsd = +entity.reserveUsd;
     this.apy = entity.apy;
     this.il = entity.il;

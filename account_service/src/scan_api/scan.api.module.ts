@@ -1,17 +1,15 @@
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { PriceModule } from '../price/price.module';
-import { AssetService } from './asset.service';
-import { WETH } from './contracts/WETH';
-import { Web3Provider } from './web3.provider';
+import { BscScanService } from './bsc-scan.service';
+import { EtherScanService } from './ether-scan.service';
 
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature(),
+    // ConfigModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -26,7 +24,7 @@ import { Web3Provider } from './web3.provider';
     }),
     PriceModule,
   ],
-  providers: [Web3Provider, WETH, AssetService],
-  exports: [Web3Provider, WETH, AssetService],
+  providers: [BscScanService, EtherScanService],
+  exports: [BscScanService, EtherScanService],
 })
-export class ChainModule {}
+export class ScanApiModule {}

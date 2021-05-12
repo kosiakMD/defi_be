@@ -8,12 +8,13 @@ import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.serv
 import { TransferQueryDto, TransfersResponseDto } from './transfers.dto';
 import { TransfersResponse } from './transfers.interfaces';
 import { TransfersService } from './transfers.service';
+import { AccountService } from '../account/account.service';
 
 @ApiTags('Transfers')
 @Controller('transfers')
 export class TransfersController {
   constructor(
-    // private service: AccountService,
+    private service: AccountService,
     private transfersService: TransfersService,
     private etherScanService: EtherScanService,
     private bscScanService: BscScanService,
@@ -39,8 +40,8 @@ export class TransfersController {
   async get(@Query() query: TransferQueryDto): Promise<TransfersResponse> {
     try {
       const { chains, addresses } = query;
-      // return this.service.getTransfers(addresses, chains);
-      return await this.transfersService.getTransfers(addresses, chains);
+      return this.service.getTransfers(addresses, chains);
+      // return await this.transfersService.getTransfers(addresses, chains);
     } catch (e) {
       this.logger.error(e, 'TransfersController.get');
       throw e;

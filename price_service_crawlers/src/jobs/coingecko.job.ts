@@ -257,7 +257,7 @@ export class CoingeckoJob {
           continue;
         }
         if (dbTokenAddresses.indexOf(remoteTokens[i]['platforms'][CHAIN]) === -1)
-          await this.databaseService.addNewTokenToDb(remoteTokens[i], currentChainId);
+          await this.databaseService.addNewTokenToDb(remoteTokens[i], currentChainId, 'COINGECKO', false);
       }
       this.logger.log('new COINGECKO tokens checked');
 

@@ -23,7 +23,7 @@ export class PancakeJob {
 
 
   public async getCurrentPrices(job: any, done: any): Promise<void> {
-    this.logger.log('Current PANCAKE Prices Job Sarted');
+    this.logger.log('Current PANCAKE Prices Job Started');
     try {
       const currentChainId = BNB_CHAIN_ID;
 

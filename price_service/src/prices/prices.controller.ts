@@ -6,6 +6,7 @@ import {
   PriceQueryDto,
   PriceRequestDto,
   PriceResponseDto,
+  PricesPayloadV2,
   PricesPayload,
 } from './dto';
 import { PriceService } from './prices.service';
@@ -23,6 +24,17 @@ export class PricesController {
     return isHistoricalPricesRequest
       ? this.priceService.getHistoricalPrices(query)
       : this.priceService.getCurrentPrices(query);
+  }
+
+  @Get('/v2')
+  @ApiOkResponse({ type: PriceResponseDto })
+  getV2(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayloadV2>> {
+    const { timestamps } = query;
+    const isHistoricalPricesRequest = timestamps && timestamps.length;
+
+    return isHistoricalPricesRequest
+      ? this.priceService.getHistoricalPricesV2(query)
+      : this.priceService.getCurrentPricesV2(query);
   }
 
   @Post('/')

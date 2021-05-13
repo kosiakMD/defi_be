@@ -172,13 +172,18 @@ export class TransfersService {
   };
 
   async getExternalTransfers(addresses: string, chains: number): Promise<TransfersResponse> {
-    // let chainsSplitted = chains.toString().split(',')
-    const chainNumbers: number[] = chains.toString().split(',').reduce((a, c) => {
-      return [
-        ...a,
-        Number(c)
-      ]
-    }, [])
+    let chainNumbers: number[] = [1, 2]
+    if (chains !== undefined) {
+      chainNumbers = []
+      chainNumbers = chains.toString()
+        .split(',')
+        .reduce((a, c) => {
+          return [
+            ...a,
+            Number(c)
+          ]
+        }, [])
+    }
     const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
     const transfers: TransfersResponse = {};
     const handleScan = async (service: ScanService, addresses: string[]): Promise<boolean> => {
@@ -199,7 +204,8 @@ export class TransfersService {
         scans.push(this.chainToScan[n])
       })
     } else {
-      scans = Object.values(this.chainToScan);
+      scans.push(this.chainToScan[CHAIN_ID_ETH])
+      scans.push(this.chainToScan[CHAIN_ID_BSC])
     }
     await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
 

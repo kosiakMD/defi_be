@@ -172,6 +172,13 @@ export class TransfersService {
   };
 
   async getExternalTransfers(addresses: string, chains: number): Promise<TransfersResponse> {
+    // let chainsSplitted = chains.toString().split(',')
+    const chainNumbers: number[] = chains.toString().split(',').reduce((a, c) => {
+      return [
+        ...a,
+        Number(c)
+      ]
+    }, [])
     const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
     const transfers: TransfersResponse = {};
     const handleScan = async (service: ScanService, addresses: string[]): Promise<boolean> => {
@@ -186,27 +193,32 @@ export class TransfersService {
       return true;
     };
 
-    let scans: ScanService[];
-    if (chains) {
-      scans = [this.chainToScan[chains]];
+    let scans: ScanService[] = []
+    if (chainNumbers) {
+      chainNumbers.map(n => {
+        scans.push(this.chainToScan[n])
+      })
     } else {
       scans = Object.values(this.chainToScan);
     }
     await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
 
-    // this call works pretty fast, but there is no block timestamp fuck!
-    const additionalTransfers = await this.assetService.getConvertedTransfers(
-      uniqueLowerCaseAddresses,
-    );
+    let allTransfers = transfers
+    if (chainNumbers.filter(n => n === 1)) {
+      // this call works pretty fast, but there is no block timestamp fuck!
+      const additionalTransfers = await this.assetService.getConvertedTransfers(
+        uniqueLowerCaseAddresses,
+      );
 
-    let allTransfers = mergeTransfersResponse(
-      uniqueLowerCaseAddresses,
-      transfers,
-      additionalTransfers,
-    );
+      let allTransfers = mergeTransfersResponse(
+        uniqueLowerCaseAddresses,
+        transfers,
+        additionalTransfers,
+      );
 
-    allTransfers = await this.addTimestampsToTransfers(allTransfers);
-    allTransfers = await this.addPricesToTransfers(allTransfers);
+      allTransfers = await this.addTimestampsToTransfers(allTransfers);
+      allTransfers = await this.addPricesToTransfers(allTransfers);
+    }
 
     return allTransfers;
   }

@@ -61,6 +61,10 @@ export class PricesController {
       : this.priceService.getCurrentPricesV2(request);
   }
 
+  @Post('/nonLpTokens')
+  getNonLpTokens(): Promise<string[]> {
+    return this.priceService.getNonLpTokens();
+  }
 
   @Post('/batch')
   @ApiOkResponse({ type: PriceResponseDto })

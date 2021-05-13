@@ -78,6 +78,7 @@ export class EtherscanService {
         transfersAll[a] = await this.etherscanApi.getEthTransfers(a, chain);
       }),
     );
+    const allNonLpTokens: string[] = await this.priceService.getNonLpTokens();
     const allBalances: BalancesResponse = {};
     for (const address of Object.keys(transfersAll)) {
       if (allBalances[address] === undefined) {
@@ -90,14 +91,16 @@ export class EtherscanService {
       const addressTokens = transfersAll[address].map((transfer) =>
         transfer.contractAddress.toLowerCase(),
       );
-      const uniqueTokenAddresses = [...new Set(addressTokens)];
+      const filteredAddressTokens = addressTokens.filter((token) => allNonLpTokens.indexOf(token) >= 0 )
+      const uniqueTokenAddresses = [...new Set(filteredAddressTokens)];
       const priceResponseDto = await this.priceService.getTokenPrices(uniqueTokenAddresses, chain);
       const excludeAddresses = Array.of(...EXCLUDE_TRANSFER_TOKEN_ADDRESSES);
       excludeAddresses.push(WETH_ADDRESS);
 
       transfersAll[address]
         .filter(
-          (transfer) => transferTokenAddressNotIn(transfer.contractAddress, excludeAddresses),
+          (transfer) => transferTokenAddressNotIn(transfer.contractAddress, excludeAddresses)
+          &&  allNonLpTokens.indexOf( transfer.contractAddress ) >= 0,
         )
         .map((transfer) => {
           const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;

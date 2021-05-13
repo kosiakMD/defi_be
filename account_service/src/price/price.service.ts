@@ -18,6 +18,7 @@ import { PriceServiceResponse } from './price.interfaces';
 @Injectable()
 export class PriceService {
   private readonly getPricesUrl: string;
+  private readonly getNonLpTokensUrl: string;
   private readonly getBatchPriceUrl: string;
 
   constructor(
@@ -30,6 +31,7 @@ export class PriceService {
     const url = `${host}${port ? ':' + port : ''}`;
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
     this.getPricesUrl = `${url}/${getPricesPath}/v2`;
+    this.getNonLpTokensUrl = `${url}/${getPricesPath}/nonLpTokens`;
     this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
   }
 
@@ -68,6 +70,21 @@ export class PriceService {
       return { chain: undefined, currency: undefined, prices: pricePayload };
     }
     return result;
+  }
+
+  async getNonLpTokens(): Promise<string[]> {
+    let result;
+    try {
+      this.logger.time(this.getPricesUrl);
+      result = await this.httpService
+        .post(this.getNonLpTokensUrl, {})
+        .pipe(map((response) => response.data))
+        .toPromise();
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      this.logger.error(e);
+    }
+    return result || [];
   }
 
   filterNonLpTokensAndFormat(prices) {

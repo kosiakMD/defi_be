@@ -74,10 +74,10 @@ export class PriceService {
     const result = {
       chain: prices.chain,
       currency: prices.currency,
-      prices: {}
+      prices: {},
     };
     for (const address in prices.prices) {
-      if(!prices.prices[address]['isLp']){
+      if (!prices.prices[address]['isLp']) {
         result.prices[address] = prices.prices[address].price;
       }
     }

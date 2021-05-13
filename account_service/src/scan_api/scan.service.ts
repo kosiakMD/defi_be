@@ -20,9 +20,11 @@ import {
 } from '../transfers/interfaces/transfers.interfaces';
 import {
   DEFAULT_MULTIPLIER,
+  EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
   transactionFeeUSD,
+  transferTokenAddressNotIn,
 } from '../utils/utils';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
@@ -130,7 +132,12 @@ export class ScanService {
       // TODO too hard logic - divide in methods and analysis for performance
       const result = addresses.reduce<TransfersResponse>((response, address) => {
         const userTransfers = transfers.filter(
-          (transaction) => transaction.to === address || transaction.from === address,
+          (transaction) =>
+            (transaction.to === address || transaction.from === address) &&
+            transferTokenAddressNotIn(
+              transaction.contractAddress,
+              EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
+            ),
         );
 
         const uniqueUserHashes: string[] = getUniqueAndToLowerCaseArrayData(

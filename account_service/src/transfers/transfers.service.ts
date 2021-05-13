@@ -172,17 +172,15 @@ export class TransfersService {
   };
 
   async getExternalTransfers(addresses: string, chains: number): Promise<TransfersResponse> {
-    let chainNumbers: number[] = [1, 2]
+    let chainNumbers: number[] = [1, 2];
     if (chains !== undefined) {
-      chainNumbers = []
-      chainNumbers = chains.toString()
+      chainNumbers = [];
+      chainNumbers = chains
+        .toString()
         .split(',')
         .reduce((a, c) => {
-          return [
-            ...a,
-            Number(c)
-          ]
-        }, [])
+          return [...a, Number(c)];
+        }, []);
     }
     const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
     const transfers: TransfersResponse = {};
@@ -198,19 +196,19 @@ export class TransfersService {
       return true;
     };
 
-    let scans: ScanService[] = []
+    const scans: ScanService[] = [];
     if (chainNumbers) {
-      chainNumbers.map(n => {
-        scans.push(this.chainToScan[n])
-      })
+      chainNumbers.map((n) => {
+        scans.push(this.chainToScan[n]);
+      });
     } else {
-      scans.push(this.chainToScan[CHAIN_ID_ETH])
-      scans.push(this.chainToScan[CHAIN_ID_BSC])
+      scans.push(this.chainToScan[CHAIN_ID_ETH]);
+      scans.push(this.chainToScan[CHAIN_ID_BSC]);
     }
     await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
 
-    let allTransfers = transfers
-    if (chainNumbers.filter(n => n === 1)) {
+    const allTransfers = transfers;
+    if (chainNumbers.filter((n) => n === 1)) {
       // this call works pretty fast, but there is no block timestamp fuck!
       const additionalTransfers = await this.assetService.getConvertedTransfers(
         uniqueLowerCaseAddresses,
@@ -223,7 +221,7 @@ export class TransfersService {
       );
 
       allTransfers = await this.addTimestampsToTransfers(allTransfers);
-      allTransfers = await this.addPricesToTransfers(allTransfers);
+      await this.addPricesToTransfers(allTransfers);
     }
 
     return allTransfers;

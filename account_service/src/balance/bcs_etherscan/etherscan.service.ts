@@ -9,9 +9,10 @@ import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   ETH_BNB_ADDRESS,
+  EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
   toDecimals,
   totalPrice,
-  WBNB_ADDRESS,
+  transferTokenAddressNotIn,
   WETH_ADDRESS,
 } from '../../utils/utils';
 import { getUtilTokenPrice, mapTokenBalances } from '../balance_util/balance.util';
@@ -39,7 +40,10 @@ export class EtherscanService {
     this.instanceEthProvider = web3Provider.instanceEth();
   }
 
-  public async getBalanceDataFromChains(accounts: string, chains: number): Promise<BalancesResponse> {
+  public async getBalanceDataFromChains(
+    accounts: string,
+    chains: number,
+  ): Promise<BalancesResponse> {
     const allBalances: BalancesResponse = {};
     if (!accounts) {
       return allBalances;
@@ -88,12 +92,12 @@ export class EtherscanService {
       );
       const uniqueTokenAddresses = [...new Set(addressTokens)];
       const priceResponseDto = await this.priceService.getTokenPrices(uniqueTokenAddresses, chain);
+      const excludeAddresses = Array.of(...EXCLUDE_TRANSFER_TOKEN_ADDRESSES);
+      excludeAddresses.push(WETH_ADDRESS);
 
       transfersAll[address]
         .filter(
-          (transfer) =>
-            transfer.contractAddress !== WBNB_ADDRESS.toLowerCase() &&
-            transfer.contractAddress !== WETH_ADDRESS.toLowerCase(),
+          (transfer) => transferTokenAddressNotIn(transfer.contractAddress, excludeAddresses),
         )
         .map((transfer) => {
           const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;

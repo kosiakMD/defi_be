@@ -29,7 +29,7 @@ export class PriceService {
     const port = this.configService.get<string>('PRICE_SERVICE_PORT');
     const url = `${host}${port ? ':' + port : ''}`;
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
-    this.getPricesUrl = `${url}/${getPricesPath}`;
+    this.getPricesUrl = `${url}/${getPricesPath}/v2`;
     this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
   }
 
@@ -54,6 +54,7 @@ export class PriceService {
         .pipe(map((response) => response.data))
         .toPromise();
 
+      result = this.filterNonLpTokensAndFormat(result);
       this.logger.timeEnd(this.getPricesUrl);
     } catch (e) {
       e.response && this.logger.error(e.response.data);
@@ -65,6 +66,20 @@ export class PriceService {
         pricePayload[`${item}`] = 0;
       });
       return { chain: undefined, currency: undefined, prices: pricePayload };
+    }
+    return result;
+  }
+
+  filterNonLpTokensAndFormat(prices) {
+    const result = {
+      chain: prices.chain,
+      currency: prices.currency,
+      prices: {}
+    };
+    for (const address in prices.prices) {
+      if(!prices.prices[address]['isLp']){
+        result.prices[address] = prices.prices[address].price;
+      }
     }
     return result;
   }

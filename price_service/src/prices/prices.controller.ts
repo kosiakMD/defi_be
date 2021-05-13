@@ -49,6 +49,19 @@ export class PricesController {
       : this.priceService.getCurrentPrices(request);
   }
 
+  @Post('/v2')
+  // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
+  @ApiOkResponse({ type: PriceResponseDto })
+  postV2(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayloadV2>> {
+    const { timestamps } = request;
+    const isHistoricalPricesRequest = timestamps && timestamps.length;
+
+    return isHistoricalPricesRequest
+      ? this.priceService.getHistoricalPricesV2(request)
+      : this.priceService.getCurrentPricesV2(request);
+  }
+
+
   @Post('/batch')
   @ApiOkResponse({ type: PriceResponseDto })
   postBatch(@Body() request: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {

@@ -103,7 +103,7 @@ export class BalanceService {
     return etherBalances;
   }
 
-  public async getAllBalanceData(accounts: string, chains: number): Promise<BalancesResponse> {
+  public async getBalanceDataFromDb(accounts: string, chains: number): Promise<BalancesResponse> {
     const allBalances: BalancesResponse = {};
     if (!accounts) {
       return allBalances;

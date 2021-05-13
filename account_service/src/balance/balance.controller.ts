@@ -39,7 +39,7 @@ export class BalanceController {
     @Query('internal') internal: number,
   ): Promise<BalancesResponse> {
     return internal
-      ? this.balanceService.getAllBalanceData(addresses, Number(chains))
-      : this.etherscanService.getAllBalanceData(addresses, chains);
+      ? this.balanceService.getBalanceDataFromDb(addresses, Number(chains))
+      : this.etherscanService.getBalanceDataFromChains(addresses, chains);
   }
 }

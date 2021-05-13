@@ -39,7 +39,7 @@ export class EtherscanService {
     this.instanceEthProvider = web3Provider.instanceEth();
   }
 
-  public async getAllBalanceData(accounts: string, chains: number): Promise<BalancesResponse> {
+  public async getBalanceDataFromChains(accounts: string, chains: number): Promise<BalancesResponse> {
     const allBalances: BalancesResponse = {};
     if (!accounts) {
       return allBalances;

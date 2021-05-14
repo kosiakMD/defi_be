@@ -209,6 +209,7 @@ export class TransfersService {
 
     const allTransfers = transfers;
     if (chainNumbers.filter((n) => n === 1)) {
+      console.log('adding transfers')
       // this call works pretty fast, but there is no block timestamp fuck!
       const additionalTransfers = await this.assetService.getConvertedTransfers(
         uniqueLowerCaseAddresses,
@@ -221,7 +222,7 @@ export class TransfersService {
       );
 
       allTransfers = await this.addTimestampsToTransfers(allTransfers);
-      await this.addPricesToTransfers(allTransfers);
+      return await this.addPricesToTransfers(allTransfers);
     }
 
     return allTransfers;

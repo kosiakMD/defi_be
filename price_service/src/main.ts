@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { createLogger } from './utils/winston';
+import { urlencoded, json } from 'express';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap(): Promise<void> {
@@ -30,6 +31,8 @@ async function bootstrap(): Promise<void> {
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
+  app.use(urlencoded({ extended: true, limit: configService.get<string>('BODY_LIMIT') }));
 
   const serviceName = configService.get<string>('SERVICE_NAME');
 

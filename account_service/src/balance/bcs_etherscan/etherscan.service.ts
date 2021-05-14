@@ -9,9 +9,10 @@ import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   ETH_BNB_ADDRESS,
+  EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
   toDecimals,
   totalPrice,
-  WBNB_ADDRESS,
+  transferTokenAddressNotIn,
   WETH_ADDRESS,
 } from '../../utils/utils';
 import { getUtilTokenPrice, mapTokenBalances } from '../balance_util/balance.util';
@@ -39,7 +40,10 @@ export class EtherscanService {
     this.instanceEthProvider = web3Provider.instanceEth();
   }
 
-  public async getAllBalanceData(accounts: string, chains: number): Promise<BalancesResponse> {
+  public async getBalanceDataFromChains(
+    accounts: string,
+    chains: number,
+  ): Promise<BalancesResponse> {
     const allBalances: BalancesResponse = {};
     if (!accounts) {
       return allBalances;
@@ -74,6 +78,7 @@ export class EtherscanService {
         transfersAll[a] = await this.etherscanApi.getEthTransfers(a, chain);
       }),
     );
+    const allNonLpTokens: string[] = await this.priceService.getNonLpTokens();
     const allBalances: BalancesResponse = {};
     for (const address of Object.keys(transfersAll)) {
       if (allBalances[address] === undefined) {
@@ -86,14 +91,16 @@ export class EtherscanService {
       const addressTokens = transfersAll[address].map((transfer) =>
         transfer.contractAddress.toLowerCase(),
       );
-      const uniqueTokenAddresses = [...new Set(addressTokens)];
+      const filteredAddressTokens = addressTokens.filter((token) => allNonLpTokens.indexOf(token) >= 0 )
+      const uniqueTokenAddresses = [...new Set(filteredAddressTokens)];
       const priceResponseDto = await this.priceService.getTokenPrices(uniqueTokenAddresses, chain);
+      const excludeAddresses = Array.of(...EXCLUDE_TRANSFER_TOKEN_ADDRESSES);
+      excludeAddresses.push(WETH_ADDRESS);
 
       transfersAll[address]
         .filter(
-          (transfer) =>
-            transfer.contractAddress !== WBNB_ADDRESS.toLowerCase() &&
-            transfer.contractAddress !== WETH_ADDRESS.toLowerCase(),
+          (transfer) => transferTokenAddressNotIn(transfer.contractAddress, excludeAddresses)
+          &&  allNonLpTokens.indexOf( transfer.contractAddress ) >= 0,
         )
         .map((transfer) => {
           const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;

@@ -24,6 +24,10 @@ type TimestampPrice = {
   price: number;
 };
 
+type TokenAddress = {
+  address: string;
+};
+
 type TokenDetails = {
   isLp: boolean;
   platform: string;
@@ -98,6 +102,12 @@ export class PriceService {
     };
   }
 
+  async getNonLpTokens(): Promise<string[]> {
+    const list = await this.getNonLpTokenList();
+    const addresses = list.map(({ address }) => address);
+    return addresses;
+  }
+  
   async getCurrentPricesV2(
     query: CurrentPricesRequest,
   ): Promise<PriceResponseDto<CurrentPricesPayloadV2>> {
@@ -256,6 +266,18 @@ export class PriceService {
     this.updateCachedPrices(chain, currency, addresses, prices);
 
     return cached.concat(prices);
+  }
+
+  private async getNonLpTokenList(): Promise<TokenAddress[]> {
+    const query = `
+      (
+        SELECT address
+        FROM prices.asset 
+        WHERE "isLp" = false
+      )
+    `;
+    const rows: TokenAddress[] = await this.entityManager.query(query);
+    return rows;
   }
 
   private async getAllAssetPricesV2(

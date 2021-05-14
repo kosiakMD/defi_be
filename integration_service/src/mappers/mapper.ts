@@ -334,11 +334,12 @@ export class Mapper {
         userPoolShare,
       );
 
+      const project = amm.protocolName === 'uniswap' ? 'Uniswap V2' : amm.protocolName
       const liquidityPosition: LiquidityPosition = {
         pool: pool,
         lpToken,
         lpTokenBalance: uniswapPosition.liquidityTokenBalance,
-        project: amm.protocolName === 'uniswap' ? 'Uniswap V2' : amm.protocolName,
+        project: project,
         poolTokens: [poolToken0, poolToken1],
         earnedFeeUSD: 0,
         exitedAt: null,

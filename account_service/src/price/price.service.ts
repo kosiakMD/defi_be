@@ -18,6 +18,7 @@ import { PriceServiceResponse } from './price.interfaces';
 @Injectable()
 export class PriceService {
   private readonly getPricesUrl: string;
+  private readonly getNonLpTokensUrl: string;
   private readonly getBatchPriceUrl: string;
 
   constructor(
@@ -29,7 +30,8 @@ export class PriceService {
     const port = this.configService.get<string>('PRICE_SERVICE_PORT');
     const url = `${host}${port ? ':' + port : ''}`;
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
-    this.getPricesUrl = `${url}/${getPricesPath}`;
+    this.getPricesUrl = `${url}/${getPricesPath}/v2`;
+    this.getNonLpTokensUrl = `${url}/${getPricesPath}/nonLpTokens`;
     this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
   }
 
@@ -54,6 +56,7 @@ export class PriceService {
         .pipe(map((response) => response.data))
         .toPromise();
 
+      result = this.filterNonLpTokensAndFormat(result);
       this.logger.timeEnd(this.getPricesUrl);
     } catch (e) {
       e.response && this.logger.error(e.response.data);
@@ -65,6 +68,35 @@ export class PriceService {
         pricePayload[`${item}`] = 0;
       });
       return { chain: undefined, currency: undefined, prices: pricePayload };
+    }
+    return result;
+  }
+
+  async getNonLpTokens(): Promise<string[]> {
+    let result;
+    try {
+      this.logger.time(this.getPricesUrl);
+      result = await this.httpService
+        .post(this.getNonLpTokensUrl, {})
+        .pipe(map((response) => response.data))
+        .toPromise();
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      this.logger.error(e);
+    }
+    return result || [];
+  }
+
+  filterNonLpTokensAndFormat(prices) {
+    const result = {
+      chain: prices.chain,
+      currency: prices.currency,
+      prices: {},
+    };
+    for (const address in prices.prices) {
+      if (!prices.prices[address]['isLp']) {
+        result.prices[address] = prices.prices[address].price;
+      }
     }
     return result;
   }

@@ -18,6 +18,7 @@ import { PancakeBurnsEntity } from './entity/pancake.burns.entity';
 import { PancakeMintsEntity } from './entity/pancake.mints.entity';
 import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
+import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
 
 @Injectable()
 export class PancakeService {
@@ -39,10 +40,12 @@ export class PancakeService {
 
   async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
     const addressesArray: string[] = addresses.split(',');
-    const [balances, pools] = await Promise.all([
+    let [balances, pools, poolsV2] = await Promise.all([
       this.etherscanService.getBalances(addressesArray),
-      this.poolsService.getProjectPools('pancake'),
+      this.poolsService.getProjectPools(PANCAKE_PROJECT),
+      this.poolsService.getProjectPools(PANCAKE_V2_PROJECT),
     ]);
+    pools = pools.concat(poolsV2)
 
     const liquidityPositions: UniswapResponseData = {
       uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
@@ -133,6 +136,7 @@ export class PancakeService {
     const internalSubgraphData = await this.getDbLiquidityPositions(addresses);
 
     result.response.uniswapLiquidityPositions = internalSubgraphData.uniswapLiquidityPositions;
+    result.response.sushiswapStakingPosition = undefined
     return this.mapper.mapData(
       result.userAddresses,
       originAddressesArray,

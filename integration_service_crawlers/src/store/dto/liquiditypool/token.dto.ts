@@ -2,9 +2,9 @@ export interface Token {
   id: string;
   name?: string;
   symbol?: string;
-  decimals?: number;
+  decimals?: any;
   percentage?: number;
-  reserve?: number;
-  totalSupply?: number;
+  reserve?: any;
+  totalSupply?: any;
   positionInPool?: number;
 }

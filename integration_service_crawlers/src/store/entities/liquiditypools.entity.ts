@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { APY } from '../dto/apy.dto';
-import { ImpermanentLoss } from '../dto/impermanentloss.dto';
-import { Token } from '../dto/token.dto';
+import { APY } from '../dto/liquiditypool/apy.dto';
+import { ImpermanentLoss } from '../dto/liquiditypool/impermanentloss.dto';
+import { Token } from '../dto/liquiditypool/token.dto';
 
 @Entity('liquidity_pools')
 export class LiquidityPoolsEntity {

@@ -10,6 +10,7 @@ import {
   SUSHISWAP_MIN_RESERVE,
   UNI_MIN_RESERVE,
   UNI_PAIRS_BLACKLIST,
+  PROJECT_PANCAKE_V2
 } from './pools.setting';
 import { LiquidityPoolsRepository } from './repository/liquidity.pools.repository';
 
@@ -23,7 +24,8 @@ export class PoolsService {
   async getPoolsToDisplay(): Promise<LiquidityPoolsEntity[]> {
     const dbPools = await this.liquidityPoolsRepository
       .createQueryBuilder('pools')
-      .where('pools.updated_at = (select max(updated_at) from liquidity_pools)')
+      .orWhere('pools.updated_at = (select max(updated_at) from liquidity_pools)')
+      .orWhere("pools.project = 'Pancake V2'")
       .getMany();
 
     const uniswapPools = dbPools.filter((p) => {
@@ -42,7 +44,11 @@ export class PoolsService {
       return p.project === PROJECT_PANCAKE && p.reserveUsd > PANCAKE_MIN_RESERVE;
     });
 
-    return [...uniswapPools, ...sushiswapPools, ...pancakePools];
+    const pancakeV2Pools = dbPools.filter((p) => {
+      return p.project === PROJECT_PANCAKE_V2 && p.reserveUsd > PANCAKE_MIN_RESERVE;
+    });
+
+    return [...uniswapPools, ...sushiswapPools, ...pancakePools, ...pancakeV2Pools];
   }
 
   async getProjectPools(project: string): Promise<LiquidityPoolsEntity[]> {

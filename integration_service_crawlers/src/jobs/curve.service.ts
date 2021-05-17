@@ -243,7 +243,7 @@ export class CurveService {
     this.logger.log(`lastBlockFromDB ${lastBlockFromDB}`);
     this.logger.log(`lastBlock ${lastBlock}`);
 
-    if (lastBlockFromDB == lastBlock) {
+    if (lastBlockFromDB === lastBlock) {
       this.logger.log(`lastBlockFromDB == lastBlock`);
       return false;
     }

@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 
+import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
 import { BalancerSubgraph } from '../thegraph/balancer/balancer.subgraph';
 import { Pool } from '../thegraph/balancer/pool.interface';
 import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
-import { LiquidityPool } from './dto/liquiditypool.dto';
 import {
   CHAIN_ID_ETH,
   getImpermanentLossPercent,

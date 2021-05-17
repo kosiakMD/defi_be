@@ -32,7 +32,7 @@ export class UniswapService {
     let migrationStartBlock: number = await this.databaseManager.getLastDatabaseBlock();
 
     // if last block not found, get it from the subgraph, in other way need toad one to db block
-    if (migrationStartBlock == null) {
+    if (migrationStartBlock === null) {
       const firstTransactionInSubgraph = await this.subgraph.getBlock('asc');
       migrationStartBlock = Number(firstTransactionInSubgraph.data.transactions[0].blockNumber);
       this.logger.log(

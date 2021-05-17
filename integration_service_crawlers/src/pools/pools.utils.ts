@@ -18,6 +18,7 @@ export const CHAIN_ID_BSC = 2;
 export const PROJECT_UNISWAP = 'uniswap';
 export const PROJECT_SUSHISWAP = 'sushiswap';
 export const PROJECT_PANCAKE = 'pancake';
+export const PROJECT_PANCAKE_V2 = 'Pancake V2';
 export const PROJECT_BALANCER = 'balancer';
 export const PROJECT_CURVE = 'curve';
 

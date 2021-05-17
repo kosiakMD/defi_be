@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
+import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
+import { Token } from '../store/dto/liquiditypool/token.dto';
 import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
 import { Pair } from '../thegraph/uniswap/pair.interface';
 import { UniswapSubgraph } from '../thegraph/uniswap/uniswap.subgraph';
-import { LiquidityPool } from './dto/liquiditypool.dto';
-import { Token } from './dto/token.dto';
 import {
   CHAIN_ID_ETH,
   getImpermanentLossPercent,

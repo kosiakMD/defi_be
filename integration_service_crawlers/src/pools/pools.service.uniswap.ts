@@ -7,12 +7,10 @@ import { Pair } from '../thegraph/uniswap/pair.interface';
 import { UniswapSubgraph } from '../thegraph/uniswap/uniswap.subgraph';
 import {
   CHAIN_ID_ETH,
-  getImpermanentLossPercent,
-  getImpermanentLossUSD,
+  getIl,
   getLastDayApy,
   getLastMonthApy,
   getLastWeekApy,
-  getLpTokenPrice,
   mergeUniswapData,
   PROJECT_UNISWAP,
   TIMESTAMP_DAY_BEFORE_CURRENT,
@@ -85,6 +83,16 @@ export class PoolsServiceUniswap {
         : null;
       const fee24h: number = volume24hrsUSD ? volume24hrsUSD * 0.003 : null;
 
+      const [dayILPercent, dayIlUSD] = lastDayPair
+        ? getIl(currentPair, lastDayPair)
+        : [null, null]
+      const [weekILPercent, weekIlUSD] = lastWeekPair
+        ? getIl(currentPair, lastWeekPair)
+        : [null, null]
+      const [monthILPercent, monthIlUSD] = lastMonthPair
+        ? getIl(currentPair, lastMonthPair)
+        : [null, null]
+
       const dayAPY: number = lastDayPair
         ? getLastDayApy(
             currentPair.reserveUSD,
@@ -104,27 +112,14 @@ export class PoolsServiceUniswap {
           )
         : null;
 
-      const currentLpToken: number = getLpTokenPrice(
-        currentPair.reserveUSD,
-        currentPair.totalSupply,
-      );
       const dayIL: number = lastDayPair
-        ? getImpermanentLossPercent(
-            currentLpToken,
-            getLpTokenPrice(lastDayPair.reserveUSD, lastDayPair.totalSupply),
-          )
+        ? dayILPercent
         : null;
       const weekIL: number = lastWeekPair
-        ? getImpermanentLossPercent(
-            currentLpToken,
-            getLpTokenPrice(lastWeekPair.reserveUSD, lastWeekPair.totalSupply),
-          )
+        ? weekILPercent
         : null;
       const monthIL: number = lastMonthPair
-        ? getImpermanentLossPercent(
-            currentLpToken,
-            getLpTokenPrice(lastMonthPair.reserveUSD, lastMonthPair.totalSupply),
-          )
+        ? monthILPercent
         : null;
 
       const percentage = 50;
@@ -156,11 +151,11 @@ export class PoolsServiceUniswap {
         },
         il: {
           day: dayIL,
-          dayUSD: getImpermanentLossUSD(currentPair.reserveUSD, dayIL),
+          dayUSD: dayIlUSD,
           week: weekIL,
-          weekUSD: getImpermanentLossUSD(currentPair.reserveUSD, weekIL),
+          weekUSD: weekIlUSD,
           month: monthIL,
-          monthUSD: getImpermanentLossUSD(currentPair.reserveUSD, monthIL),
+          monthUSD: monthIlUSD,
         },
         poolToken: {
           id: currentPair.id,

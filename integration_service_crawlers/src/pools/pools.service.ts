@@ -3,7 +3,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
-import { LiquidityPoolsEntity } from '../store/entities/liquiditypools.entity';
 import { LiquidityPoolsStore } from '../store/liquiditypools.store';
 import { PoolsServiceBalancer } from './pools.service.balancer';
 import { PoolsServiceCurve } from './pools.service.curve';
@@ -24,16 +23,16 @@ export class PoolsService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
   ) {}
 
-  async savePancakeV2Pols(): Promise<void> {
-    try {
-      const pools: LiquidityPoolsEntity[] = await this.poolsServicePancake.getCurrentPairs();
-      this.logger.log(`found pancake v2 pools in total [${pools.length}]`, 'PoolsService');
-      await this.liquidityPoolsStore.insertEntitiesBulk(pools);
-    } catch (e) {
-      this.logger.error(e, 'PoolsService');
-      this.logger.log(`pools import failed`, 'PoolsService');
-    }
-  }
+  // async savePancakeV2Pols(): Promise<void> {
+  //   try {
+  //     const pools: LiquidityPoolsEntity[] = await this.poolsServicePancake.fillPairsData();
+  //     this.logger.log(`found pancake v2 pools in total [${pools.length}]`, 'PoolsService');
+  //     await this.liquidityPoolsStore.insertEntitiesBulk(pools);
+  //   } catch (e) {
+  //     this.logger.error(e, 'PoolsService');
+  //     this.logger.log(`pools import failed`, 'PoolsService');
+  //   }
+  // }
 
   async savePools(): Promise<any> {
     try {

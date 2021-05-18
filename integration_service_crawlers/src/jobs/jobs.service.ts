@@ -6,14 +6,7 @@ import { PoolsService } from 'src/pools/pools.service';
 import { VaultsService } from 'src/vaults/vaults.service';
 
 import { CurveService } from './curve.service';
-import {
-  PANCAKE_JOB,
-  PANCAKE_V2_JOB,
-  POOLS_JOB,
-  SUSHISWAP_JOB,
-  UNISWAP_JOB,
-  VAULTS_JOB,
-} from './jobs.setting';
+import { PANCAKE_JOB, POOLS_JOB, SUSHISWAP_JOB, UNISWAP_JOB, VAULTS_JOB } from './jobs.setting';
 import { PancakeService } from './pancake.service';
 import { SushiswapService } from './sushiswap.service';
 import { UniswapService } from './uniswap.service';
@@ -44,8 +37,6 @@ export class JobsService {
       await this.agenda.start();
       await this.startUniswapJob();
       await this.startSushiswapJob();
-      await this.startPancakeJob();
-      await this.startPancakeV2Job();
       await this.startPoolsJob();
       await this.startVaultsJob();
     });
@@ -84,6 +75,7 @@ export class JobsService {
   }
 
   async startPancakeJob() {
+    // notice: no sense to have this job because data is outdated
     await this.cancel(PANCAKE_JOB.name);
     this.logger.log(
       `agenda.define: [${PANCAKE_JOB.name}], agenda.every: [${PANCAKE_JOB.seconds}] seconds`,
@@ -97,22 +89,6 @@ export class JobsService {
       });
     });
     await this.agenda.every(PANCAKE_JOB.seconds + ' seconds', PANCAKE_JOB.name);
-  }
-
-  async startPancakeV2Job() {
-    await this.cancel(PANCAKE_V2_JOB.name);
-    this.logger.log(
-      `agenda.define: [${PANCAKE_V2_JOB.name}], agenda.every: [${PANCAKE_V2_JOB.seconds}] seconds`,
-      'Agenda',
-    );
-    await this.agenda.define(PANCAKE_V2_JOB.name, (job, done) => {
-      this.logger.log(`agenda.start [${PANCAKE_V2_JOB.name}] job`, 'Agenda');
-      this.poolsService.savePancakeV2Pols().then(() => {
-        this.logger.log(`agenda.complete [${PANCAKE_V2_JOB.name}] job`, 'Agenda');
-        done();
-      });
-    });
-    await this.agenda.every(PANCAKE_V2_JOB.seconds + ' seconds', PANCAKE_V2_JOB.name);
   }
 
   async startPoolsJob() {

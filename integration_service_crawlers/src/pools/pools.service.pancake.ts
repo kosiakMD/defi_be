@@ -28,10 +28,30 @@ export class PoolsServicePancake {
   }
 
   async getCurrentPairs(): Promise<LiquidityPoolsEntity[]> {
-    // extract project pools from the database:
-    const pools: LiquidityPoolsEntity[] = await this.liquidityPoolsStore.getProjectPools(
+    const poolsV1: LiquidityPoolsEntity[] = await this.liquidityPoolsStore.getProjectPools(
+      PROJECT_PANCAKE,
+    );
+    const poolsV2: LiquidityPoolsEntity[] = await this.liquidityPoolsStore.getProjectPools(
       PROJECT_PANCAKE_V2,
     );
+    const allPairs = await this.fillPairsData([...poolsV1, ...poolsV2])
+    return allPairs.reduce((a, c) => {
+      let liquidityPool: LiquidityPool = {
+        id: c.address,
+        chain: Number(c.chain),
+        project: c.project,
+        reserveUSD: c.reserveUsd,
+        fee24h: null,
+        apy: c.apy,
+        il: c.il,
+        poolToken: c.token,
+        tokens: c.poolTokens
+      }
+      return [...a, liquidityPool]
+    }, [])
+  }
+
+  async fillPairsData(pools: LiquidityPoolsEntity[]): Promise<LiquidityPoolsEntity[]> {
     const poolsAddresses: string[] = [];
     pools.map((p) => poolsAddresses.push(p.address));
 
@@ -54,7 +74,7 @@ export class PoolsServicePancake {
       p.token.totalSupply = BNToDecimals(totalSupply).toString();
     });
 
-    const bnbUsdPrice = deriveBNBPrice(pools);
+    const bnbUsdPrice = deriveBNBPrice(pools)
     pools.map((p) => {
       p.reserveUsd = 0;
       p.poolTokens.map((pt) => {

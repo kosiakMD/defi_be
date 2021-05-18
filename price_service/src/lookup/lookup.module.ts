@@ -1,6 +1,8 @@
 import { CacheModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import * as redisStore from 'cache-manager-redis-store';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ChainController } from './chain.controller';
 import { CurrencyController } from './currency.controller';
 import { Chain, Currency } from './models';
@@ -9,9 +11,17 @@ import { CurrencyService } from './services/currency.service';
 
 @Module({
   imports: [
-    CacheModule.register({
-      ttl: 60 * 60 * 24,
-      max: 1000,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
+        ttl: configService.get('REDIS_CACHE_TTL') || 300,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        // eslint-disable-next-line camelcase
+        auth_pass: configService.get('REDIS_AUTH'),
+      }),
+      inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([Chain, Currency]),
   ],

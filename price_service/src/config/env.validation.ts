@@ -32,6 +32,12 @@ export const validationSchema = Joi.object({
     .equal('debug', 'info')
     .default('info')
     .required(),
+  REDIS_HOST: Joi.string() //
+    .required(),
+  REDIS_PORT: Joi.string() //
+    .required(),
+  REDIS_AUTH: Joi.string() //
+    .required(),
   DB_HOST: Joi.string().required(),
   DB_USERNAME: Joi.string().required(),
   DB_PORT: Joi.number() //

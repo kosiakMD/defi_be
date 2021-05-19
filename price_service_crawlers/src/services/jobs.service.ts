@@ -87,120 +87,120 @@ export class JobsService {
           {},
         );
 
-        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW');
-        await this.agenda.define(
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
-          { lockLifetime: 10000 },
-          this.coingeckoJob.crawlNewTokensHistory.bind(this),
-        );
-        await this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
-          {},
-        );
+        // await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW');
+        // await this.agenda.define(
+        //   'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
+        //   { lockLifetime: 10000 },
+        //   this.coingeckoJob.crawlNewTokensHistory.bind(this),
+        // );
+        // await this.agenda.every(
+        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_COINGECKO_NEW_TOKENS_HISTORY_NEW',
+        //   {},
+        // );
 
-        //SUSHI
-        await cancel('CRAWL_SUSHI_CURRENT_PRICE');
-        this.agenda.define(
-          'CRAWL_SUSHI_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.sushiswapJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
+        // //SUSHI
+        // await cancel('CRAWL_SUSHI_CURRENT_PRICE');
+        // this.agenda.define(
+        //   'CRAWL_SUSHI_CURRENT_PRICE',
+        //   { lockLifetime: 10000 },
+        //   this.sushiswapJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
 
-        await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
-        this.agenda.define(
-          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10000 },
-          this.sushiswapJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-          {},
-        );
+        // await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
+        // this.agenda.define(
+        //   'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+        //   { lockLifetime: 10000 },
+        //   this.sushiswapJob.crawlNewTokensHistory.bind(this),
+        // );
+        // this.agenda.every(
+        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
+        //   {},
+        // );
 
-        //PANCAKE
-        await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
-        this.agenda.define(
-          'CRAWL_PANCAKE_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.pancakeJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
+        // //PANCAKE
+        // await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
+        // this.agenda.define(
+        //   'CRAWL_PANCAKE_CURRENT_PRICE',
+        //   { lockLifetime: 10000 },
+        //   this.pancakeJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_PANCAKE_CURRENT_PRICE', {});
 
-        //UNI
-        await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
-        this.logger.log('starting sushi');
-        this.agenda.define(
-          'CRAWL_UNISWAP_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.uniswapJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(
-          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_UNISWAP_CURRENT_PRICE',
-          {},
-        );
+        // //UNI
+        // await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
+        // this.logger.log('starting sushi');
+        // this.agenda.define(
+        //   'CRAWL_UNISWAP_CURRENT_PRICE',
+        //   { lockLifetime: 10000 },
+        //   this.uniswapJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(
+        //   CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_UNISWAP_CURRENT_PRICE',
+        //   {},
+        // );
 
-        await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY');
-        this.agenda.define(
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-          {},
-          this.uniswapJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-          {},
-        );
+        // await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY');
+        // this.agenda.define(
+        //   'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
+        //   {},
+        //   this.uniswapJob.crawlNewTokensHistory.bind(this),
+        // );
+        // this.agenda.every(
+        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
+        //   {},
+        // );
         
-        //CURVE
-        this.logger.log('starting curve')
-        await cancel('CRAWL_CURVE_NEW_TOKENS');
-        this.agenda.define(
-          'CRAWL_CURVE_NEW_TOKENS',
-          {},
-          this.curveJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 
-          'CRAWL_CURVE_NEW_TOKENS',
-          {});
-
-        await cancel('CRAWL_CURVE_NEW_TOKENS_HISTORY');
-        this.agenda.define(
-          'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-          {},
-          this.curveJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-          {},
-        );
-
-        // // this.logger.log('starting balancer');
+        // //CURVE
+        // this.logger.log('starting curve')
+        // await cancel('CRAWL_CURVE_NEW_TOKENS');
         // this.agenda.define(
-        //   'CRAWL_BALANCER_NEW_TOKENS',
-        //   { lockLifetime: 10e3 },
-        //   this.balancerFirstCheckJob.crawlNewTokens.bind(this),
+        //   'CRAWL_CURVE_NEW_TOKENS',
+        //   {},
+        //   this.curveJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 
+        //   'CRAWL_CURVE_NEW_TOKENS',
+        //   {});
+
+        // await cancel('CRAWL_CURVE_NEW_TOKENS_HISTORY');
+        // this.agenda.define(
+        //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
+        //   {},
+        //   this.curveJob.crawlNewTokensHistory.bind(this),
         // );
         // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_BALANCER_NEW_TOKENS',
+        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
         //   {},
         // );
 
-        // this.agenda.define(
-        //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
-        //   { lockLifetime: 10e3 },
-        //   this.balancerFirstCheckJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
+        // // // this.logger.log('starting balancer');
+        // // this.agenda.define(
+        // //   'CRAWL_BALANCER_NEW_TOKENS',
+        // //   { lockLifetime: 10e3 },
+        // //   this.balancerFirstCheckJob.crawlNewTokens.bind(this),
+        // // );
+        // // this.agenda.every(
+        // //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+        // //   'CRAWL_BALANCER_NEW_TOKENS',
+        // //   {},
+        // // );
+
+        // // this.agenda.define(
+        // //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
+        // //   { lockLifetime: 10e3 },
+        // //   this.balancerFirstCheckJob.crawlNewTokensHistory.bind(this),
+        // // );
+        // // this.agenda.every(
+        // //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
+        // //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
+        // //   {},
+        // // );
 
        
 

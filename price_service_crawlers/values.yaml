@@ -5,6 +5,9 @@ readinessProbe:
 configMaps:
   db:
     DB_ENTITIES: entities/**/*.ts
+    REDIS_HOST: 18.185.19.11
+    REDIS_PORT: 6379
+    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
   thegraph:
     THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/uniswap-v2
     THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2

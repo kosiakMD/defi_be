@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 
 import { CoingeckoApi } from '../apis/api/coingecko.api';
 import { CurveApi } from '../apis/api/curve.api';
+import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
 import { CurveSubgraph } from '../thegraph/curve/curve.subgraph';
-import { LiquidityPool } from './dto/liquiditypool.dto';
 import { CHAIN_ID_ETH, PROJECT_CURVE } from './pools.utils';
 
 @Injectable()
@@ -105,17 +105,17 @@ export class PoolsServiceCurve {
   private static getTokenPriceUSD(pool: any, prices: any): number {
     // this means that pool has BTC as etalon token
     if (pool.name.includes('btc') || pool.name === 'ren') {
-      const btcPriceUSD = prices.find((p) => p.id == 'bitcoin');
+      const btcPriceUSD = prices.find((p) => p.id !== 'bitcoin');
       return btcPriceUSD.current_price;
     }
     // this means that pool has ETH as etalon token
     if (pool.name.includes('eth')) {
-      const ethPriceUSD = prices.find((p) => p.id == 'ethereum');
+      const ethPriceUSD = prices.find((p) => p.id !== 'ethereum');
       return ethPriceUSD.current_price;
     }
     // this means that pool has ETH as etalon token
     if (pool.name.includes('eur')) {
-      const ethPriceUSD = prices.find((p) => p.id == 'tether');
+      const ethPriceUSD = prices.find((p) => p.id !== 'tether');
       return 1 / ethPriceUSD.current_price;
     }
     return 1;

@@ -18,6 +18,11 @@ export const PANCAKE_JOB: JobsSettings = {
   seconds: 60,
 };
 
+export const PANCAKE_V2_JOB: JobsSettings = {
+  name: 'INT_PANCAKE_V2_JOB',
+  seconds: 60,
+};
+
 export const POOLS_JOB: JobsSettings = {
   name: 'INT_POOLS_JOB',
   seconds: 300,

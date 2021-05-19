@@ -4,8 +4,8 @@ export interface Pair {
   id: string;
   token0: Token;
   token1: Token;
-  reserve0: number;
-  reserve1: number;
+  reserve0: any;
+  reserve1: any;
   totalSupply: number;
   reserveETH: number;
   reserveUSD: number;

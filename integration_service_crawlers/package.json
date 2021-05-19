@@ -23,6 +23,7 @@
     "test:e2e": "jest --config test/jest-e2e.json"
   },
   "dependencies": {
+    "@indexed-finance/multicall": "^2.0.0",
     "@nestjs/common": "^7.6.14",
     "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.6.14",
@@ -33,6 +34,7 @@
     "agenda": "^4.1.2",
     "axios": "^0.21.1",
     "axios-retry": "^3.1.9",
+    "bn.js": "^4.12.0",
     "nest-winston": "^1.4.1",
     "p-limit": "^3.1.0",
     "pg": "^8.5.1",

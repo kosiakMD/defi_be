@@ -55,12 +55,8 @@ export class PancakePriceService {
         token1PriceUSD = bnbTokenPrice * pancakeBNBPrice;
       }
 
-      const tvl = p.reserve0 * token0PriceUSD + p.reserve1 * token1PriceUSD;
-      const lpTokenPrice = tvl / p.totalSupply;
-
       priceResponse.prices[p.token0.id] = token0PriceUSD
       priceResponse.prices[p.token1.id] = token1PriceUSD
-      priceResponse.prices[p.id] = lpTokenPrice
     });
 
     return priceResponse

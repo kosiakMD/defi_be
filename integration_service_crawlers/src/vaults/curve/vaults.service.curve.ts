@@ -76,7 +76,7 @@ export class VaultsServiceCurve {
   }
 
   private getAPYYear(pool, rewards): number {
-    const reward = rewards.find((value) => value.name == pool.name);
+    const reward = rewards.find((value) => value.name === pool.name);
     return reward ? reward.data.apy : null;
   }
 
@@ -108,17 +108,17 @@ export class VaultsServiceCurve {
   private static getTokenPriceUSD(poolName: any, prices: any): number {
     // this means that pool has BTC as etalon token
     if (poolName.includes('btc') || poolName === 'ren') {
-      const btcPriceUSD = prices.find((p) => p.id == 'bitcoin');
+      const btcPriceUSD = prices.find((p) => p.id === 'bitcoin');
       return btcPriceUSD.current_price;
     }
     // this means that pool has ETH as etalon token
     if (poolName.includes('eth')) {
-      const ethPriceUSD = prices.find((p) => p.id == 'ethereum');
+      const ethPriceUSD = prices.find((p) => p.id === 'ethereum');
       return ethPriceUSD.current_price;
     }
     // this means that pool has ETH as etalon token
     if (poolName.includes('eur')) {
-      const ethPriceUSD = prices.find((p) => p.id == 'tether');
+      const ethPriceUSD = prices.find((p) => p.id === 'tether');
       return 1 / ethPriceUSD.current_price;
     }
     return 1;

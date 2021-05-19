@@ -171,7 +171,7 @@ export class DatabaseService {
 
   public addNewTokenToDb = (token: any, chainId, platform = 'COINGECKO', isLp = true) =>
     this.pg.any(
-      'INSERT INTO prices.asset(address, symbol, name, type, chain_id, is_new, platform, isLp) VALUES ($1, $2, $3, $4, $5, true, $7, $8); ',
+      'INSERT INTO prices.asset(address, symbol, name, type, chain_id, is_new, platform, "isLp") VALUES ($1, $2, $3, $4, $5, true, $7, $8); ',
       [token['platforms'][CHAIN], token['symbol'], token['name'], CHAIN, chainId, true, platform, isLp],
     );
 

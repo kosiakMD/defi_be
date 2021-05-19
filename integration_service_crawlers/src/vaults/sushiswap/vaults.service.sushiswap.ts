@@ -39,9 +39,9 @@ export class VaultsServiceSushiswap {
       1000;
 
     return vaultsData.data.pools.map((vault) => {
-      const liquidityPool = liquidityPools.data.pairs.find((p) => p.id == vault.pair);
+      const liquidityPool = liquidityPools.data.pairs.find((p) => p.id === vault.pair);
       // only sushiswap liquidity pools in this case:
-      if (liquidityPool != undefined) {
+      if (liquidityPool !== undefined) {
         const token0 = {
           ...liquidityPool.token0,
           percentage: 50,

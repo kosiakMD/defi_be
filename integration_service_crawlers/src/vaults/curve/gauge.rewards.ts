@@ -56,8 +56,8 @@ export class GaugeRewards {
       .aggregate(ratesCalls.reduce((acc, val) => acc.concat(val), []))
       .call();
     const decodedRate = aggRates[1].map((hex) => this.web3.eth.abi.decodeParameter('uint256', hex));
-    const gaugeRates = decodedRate.filter((_, i) => i % 2 == 0).map((v) => v / 1e18);
-    const workingSupplies = decodedRate.filter((_, i) => i % 2 == 1).map((v) => v / 1e18);
+    const gaugeRates = decodedRate.filter((_, i) => i % 2 === 0).map((v) => v / 1e18);
+    const workingSupplies = decodedRate.filter((_, i) => i % 2 === 1).map((v) => v / 1e18);
     const virtualPriceCalls = Object.keys(poolInfo)
       .map((key) => poolInfo[key])
       .map((v) => [v.swap, '0xbb7b8b80']);
@@ -75,11 +75,11 @@ export class GaugeRewards {
       const pool = Object.keys(poolInfo)
         .map((key) => poolInfo[key])
         .find(
-          (value) => value.gauge.toLowerCase() == '0x' + weightCalls[i][1].slice(34).toLowerCase(),
+          (value) => value.gauge.toLowerCase() === '0x' + weightCalls[i][1].slice(34).toLowerCase(),
         ).name;
       result['swap_address'] = poolInfo[pool].swap;
       result['virtual_price'] = decodedVirtualPrices.find(
-        (price) => price[0].toLowerCase() == result['swap_address'].toLowerCase(),
+        (price) => price[0].toLowerCase() === result['swap_address'].toLowerCase(),
       )[1];
       result['working_supply'] = ['ren', 'sbtc', 'hbtc', 'tbtc'].includes(pool)
         ? (workingSupplies[i] *= bitcoinPriceUSD)

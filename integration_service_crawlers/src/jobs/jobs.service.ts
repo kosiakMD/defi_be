@@ -37,7 +37,6 @@ export class JobsService {
       await this.agenda.start();
       await this.startUniswapJob();
       await this.startSushiswapJob();
-      await this.startPancakeJob();
       await this.startPoolsJob();
       await this.startVaultsJob();
     });
@@ -76,6 +75,7 @@ export class JobsService {
   }
 
   async startPancakeJob() {
+    // notice: no sense to have this job because data is outdated
     await this.cancel(PANCAKE_JOB.name);
     this.logger.log(
       `agenda.define: [${PANCAKE_JOB.name}], agenda.every: [${PANCAKE_JOB.seconds}] seconds`,
@@ -126,7 +126,9 @@ export class JobsService {
   async cancel(jobName: string) {
     const cancelResult = await this.agenda.cancel({ name: jobName });
     this.logger.log(
-      `agenda.cancel: [${jobName}], result: [${cancelResult == 1 ? 'cancelled' : 'not cancelled'}]`,
+      `agenda.cancel: [${jobName}], result: [${
+        cancelResult === 1 ? 'cancelled' : 'not cancelled'
+      }]`,
       'Agenda',
     );
     return cancelResult;

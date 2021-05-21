@@ -4,7 +4,15 @@ import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, CHAIN, SECONDS_IN_HOUR, ETH_ADDRESS, BNB_CHAIN, BNB_ADDRESS, SECONDS_IN_TEN_MINUTES } from '../utils/constants';
+import {
+  CURRENCY,
+  CHAIN,
+  SECONDS_IN_HOUR,
+  ETH_ADDRESS,
+  BNB_CHAIN,
+  BNB_ADDRESS,
+  SECONDS_IN_TEN_MINUTES,
+} from '../utils/constants';
 
 export type TokenPrices = { [key: string]: number };
 export type TokenAddresses = { [key: string]: number };
@@ -12,7 +20,12 @@ export type TokenPricesExtended = { [key: string]: { value: number; ['db_id']: a
 
 @Injectable()
 export class DatabaseService {
-  constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>) {}
+  private CURRENT_PRICE_SECONDS_INTERVAL;
+  constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>) {
+    this.CURRENT_PRICE_SECONDS_INTERVAL = process.env.CURRENT_PRICE_SECONDS_INTERVAL
+      ? parseInt(process.env.CURRENT_PRICE_SECONDS_INTERVAL)
+      : SECONDS_IN_TEN_MINUTES;
+  }
 
   public getTokenByAddress = (address: string) =>
     this.pg.any('SELECT * FROM prices.asset WHERE address = $1', address);
@@ -96,9 +109,10 @@ export class DatabaseService {
   public checkBnbToken = async () => {
     const chainId = await this.getCurrentChain(BNB_CHAIN);
 
-    const bnbEntities = await this.pg.any('SELECT * FROM prices.asset WHERE address = $1 AND chain_id = $2 ', [
-      BNB_ADDRESS, chainId
-    ]);
+    const bnbEntities = await this.pg.any(
+      'SELECT * FROM prices.asset WHERE address = $1 AND chain_id = $2 ',
+      [BNB_ADDRESS, chainId],
+    );
 
     if (!bnbEntities.length) {
       await this.pg.any(
@@ -122,18 +136,16 @@ export class DatabaseService {
       platform,
     ]);
   };
-  
-  public getTokensByPlatform = ( platform, timestamp?) => {
+
+  public getTokensByPlatform = (platform, timestamp?) => {
     if (timestamp) {
       return this.pg.any(
         'SELECT * FROM prices.asset WHERE platform = $1 AND is_dead = false AND id not IN (SELECT asset_id FROM prices.asset_price WHERE timestamp = $2)',
-        [ platform, timestamp],
+        [platform, timestamp],
       );
     }
 
-    return this.pg.any('SELECT * FROM prices.asset WHERE platform = $1', [
-      platform,
-    ]);
+    return this.pg.any('SELECT * FROM prices.asset WHERE platform = $1', [platform]);
   };
 
   public getLastTokenPriceByChainAndPlatform = (currentChainId, platform) => {
@@ -150,12 +162,18 @@ export class DatabaseService {
     );
   };
 
-  public removeToken = (assetId: number, reason: string = '') => {
-    return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE id = $1', [assetId, reason]);
+  public removeToken = (assetId: number, reason = '') => {
+    return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE id = $1', [
+      assetId,
+      reason,
+    ]);
   };
   public removeTokenByAddressAndPlatform = (address: string, platform: string, reason: string) => {
-    return this.pg.any('UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE address = $1 AND platform = $3', [address, reason, platform]);
-  }
+    return this.pg.any(
+      'UPDATE prices.asset SET is_dead = true, death_reason = $2 WHERE address = $1 AND platform = $3',
+      [address, reason, platform],
+    );
+  };
 
   public getCurrentChain = async (chainName = CHAIN) => {
     const platforms = await this.pg.any('SELECT * FROM prices.chain WHERE name = $1', chainName);
@@ -172,7 +190,16 @@ export class DatabaseService {
   public addNewTokenToDb = (token: any, chainId, platform = 'COINGECKO', isLp = true) =>
     this.pg.any(
       'INSERT INTO prices.asset(address, symbol, name, type, chain_id, is_new, platform, "isLp") VALUES ($1, $2, $3, $4, $5, true, $7, $8); ',
-      [token['platforms'][CHAIN], token['symbol'], token['name'], CHAIN, chainId, true, platform, isLp],
+      [
+        token['platforms'][CHAIN],
+        token['symbol'],
+        token['name'],
+        CHAIN,
+        chainId,
+        true,
+        platform,
+        isLp,
+      ],
     );
 
   public addTokenToDb = async (address, name, symbol, type, platform, chainId, isLp = true) => {
@@ -227,7 +254,8 @@ export class DatabaseService {
     currentTimestamp = null,
   ) => {
     if (!currentTimestamp)
-      currentTimestamp = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_TEN_MINUTES);
+      currentTimestamp =
+        toTimestamp(new Date()) - (toTimestamp(new Date()) % this.CURRENT_PRICE_SECONDS_INTERVAL);
 
     try {
       for (const address in prices) {
@@ -248,7 +276,10 @@ export class DatabaseService {
           //console.log('removing prices ', prices[address]);
           //console.log(prices);
           try {
-            await this.removeToken(prices[address].db_id, `address = ${address} prices[address].db_id = ${prices[address].db_id} prices[address].value  = ${prices[address].value } `);
+            await this.removeToken(
+              prices[address].db_id,
+              `address = ${address} prices[address].db_id = ${prices[address].db_id} prices[address].value  = ${prices[address].value} `,
+            );
           } catch (dbErr) {
             //console.info(`can not set is_dead for asset: ${prices[address].db_id}`);
           }

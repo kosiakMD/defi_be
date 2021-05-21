@@ -6,12 +6,13 @@ export const CHAIN_CURRENCY_ADDRESS = '0x000000000000000000000000000000000000000
 export const CHAIN = 'ethereum';
 export const BNB_CHAIN = 'bsc';
 export const ETH_CHAIN_ID = 1;
+export const SECONDS_IN_DAY = 86400;
+export const SECONDS_IN_HUNDRED_DAYS = SECONDS_IN_DAY * 100;
+export const SECONDS_IN_WEEK = 86400 * 24;
 export const BNB_CHAIN_ID = 2;
 export const NEW_TOKENS_SECONDS_INTERVAL = 60 * 60 * 24;
-export const NEW_TOKENS_HISTORY_SECONDS_INTERVAL = 60 * 60;
-export const CURRENT_PRICE_SECONDS_INTERVAL = 10 * 60;
 export const SECONDS_IN_HOUR = 60 * 60;
-export const SECONDS_IN_TEN_MINUTES = 10 * 60;
+export const SECONDS_IN_TEN_MINUTES = 300;
 export const CURRENCY = 'usd';
 export const TEST_TOKENS = [
   ETH_ADDRESS,

@@ -1,7 +1,6 @@
-import { LoggerService } from '@nestjs/common';
-
+import { Logger } from '../Logger/Logger.service';
 import { toTimestamp } from '../utils/common';
-import { SECONDS_IN_HOUR, TOKEN_START_DATE } from '../utils/constants';
+import { TOKEN_START_DATE, SECONDS_IN_DAY } from '../utils/constants';
 
 export async function crawlCoin(
   coinId,
@@ -9,7 +8,7 @@ export async function crawlCoin(
   prices,
   currencyId,
   db,
-  logger: LoggerService,
+  logger: Logger,
   platform: string,
   isRoundingNeeded = true,
 ) {
@@ -39,7 +38,7 @@ export async function crawlCoinHistory(
   prices,
   currencyId,
   db,
-  logger: LoggerService,
+  logger: Logger,
   platform: string,
   isRoundingNeeded = true,
   firstTimestamp = null,
@@ -58,7 +57,7 @@ export async function crawlCoinHistory(
     prices.map(([timestamp, price]) => {
       const dayTs =
         (isRoundingNeeded ? Math.round(timestamp / 1000) : timestamp) -
-        ((isRoundingNeeded ? Math.round(timestamp / 1000) : timestamp) % 86400);
+        ((isRoundingNeeded ? Math.round(timestamp / 1000) : timestamp) % SECONDS_IN_DAY);
 
       if (haveTimestamps.indexOf(dayTs) < 0 && dayTs !== firstTimestamp) {
         tokenPrices.push({
@@ -90,7 +89,7 @@ export async function crawlCoinHistory(
   return true;
 }
 
-export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logger: LoggerService) {
+export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logger: Logger) {
   if (!coin.address) {
     logger.log(`Coin ${coin.id} ${coin.symbol} address not found, skipping`);
     return;
@@ -106,11 +105,10 @@ export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logge
     startTimestamp = toTimestamp(new Date(TOKEN_START_DATE));
     //logger.log("removing all");
     return toTimestamp(new Date(TOKEN_START_DATE));
-  }
-  else{
+  } else {
     startTimestamp = coin['last_history_timestamp'];
   }
-  
+
   let tmpStartTimestamp = lastTimestamp;
   let prices: any[];
   //logger.log("checking asset " + coin.id);
@@ -120,16 +118,13 @@ export async function getRequiredHistoryStartDate(coin, lastTimestamp, db, logge
 
     if (prices.length !== 1) {
       // clearing this day and checking next day
-      if (prices.length > 1)
-        await db.clearTokenPricesForLastDay(coin.id, tmpStartTimestamp);
+      if (prices.length > 1) await db.clearTokenPricesForLastDay(coin.id, tmpStartTimestamp);
 
-        tmpStartTimestamp -= SECONDS_IN_HOUR * 24;
+      tmpStartTimestamp -= SECONDS_IN_DAY;
     }
-
   } while (prices.length > 1); // if prices.length = 1 - stop checking days and return start date
 
-  if(startTimestamp > tmpStartTimestamp)
-    startTimestamp = tmpStartTimestamp;
+  if (startTimestamp > tmpStartTimestamp) startTimestamp = tmpStartTimestamp;
 
   return startTimestamp;
 }

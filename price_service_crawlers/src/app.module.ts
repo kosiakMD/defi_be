@@ -1,4 +1,4 @@
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { Inject, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   utilities as nestWinstonModuleUtilities,
@@ -9,6 +9,8 @@ import { AgendaModule } from 'nestjs-agenda';
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
 import * as winston from 'winston';
 
+import { Logger } from './Logger/Logger.service';
+import { LoggerModule } from './Logger/LoggerModule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
@@ -24,6 +26,7 @@ import { Api } from './thegraph/api';
 
 @Module({
   imports: [
+    LoggerModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
@@ -108,7 +111,7 @@ export class AppModule implements OnModuleInit {
   }
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private configService: ConfigService,
   ) {}
 }

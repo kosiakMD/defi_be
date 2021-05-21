@@ -13,11 +13,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
 import { CoingeckoJob } from './jobs/coingecko.job';
-import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
-import { SushiswapJob } from './jobs/sushiswap.job';
-import { PancakeJob } from './jobs/pancake.job';
-import { UniswapJob } from './jobs/uniswap.job';
 import { CurveJob } from './jobs/curve.job';
+import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
+import { PancakeJob } from './jobs/pancake.job';
+import { SushiswapJob } from './jobs/sushiswap.job';
+import { UniswapJob } from './jobs/uniswap.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
 import { Api } from './thegraph/api';
@@ -105,7 +105,6 @@ export class AppModule implements OnModuleInit {
       },
       'App',
     );
-    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

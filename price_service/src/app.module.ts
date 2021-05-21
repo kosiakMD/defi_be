@@ -74,7 +74,6 @@ export class AppModule {
       },
       'App',
     );
-    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

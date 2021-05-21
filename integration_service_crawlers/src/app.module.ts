@@ -66,7 +66,6 @@ export class AppModule implements OnModuleInit {
       },
       'App',
     );
-    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

@@ -3,7 +3,6 @@ import { Repository } from 'typeorm';
 import { UniswapLiquidityPosition } from '../interfaces/liquidity.position.interfaces';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
-export const PROTOCOL_NAME = 'pancake';
 export const abi = [
   {
     inputs: [

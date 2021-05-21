@@ -21,6 +21,6 @@ export const PROJECT_SUSHISWAP = 'sushiswap';
 export const SUSHISWAP_MIN_RESERVE = 500000;
 export const SUSHISWAP_PAIRS_BLACKLIST: Array<string> = [];
 
-export const PROJECT_PANCAKE = 'pancake';
+export const PROJECT_PANCAKE = 'Pancake V1';
 export const PROJECT_PANCAKE_V2 = 'Pancake V2';
 export const PANCAKE_MIN_RESERVE = 100000;

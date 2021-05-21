@@ -26,6 +26,9 @@ configMaps:
   mongo:
     MONGO_HOST: "18.159.107.117"
     MONGO_PORT: 27017
+  params:
+    CURRENT_PRICE_SECONDS_INTERVAL: 300
+    HISTORY_PRICE_SECONDS_INTERVAL: 3600
 
 secrets:
 - db

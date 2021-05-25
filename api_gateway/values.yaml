@@ -5,6 +5,11 @@ ingress:
 configMaps:
   common:
     PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+    MAILER_HOST: smtp.gmail.com
+    MAILER_USER: mail@defiyield.app
+    MAILER_PASS: gpBG5tqfjp7LQkAc
+    MAIL_HIRE_FROM: hr@defiyield.app
+    MAIL_HIRE_TO: hr@defiyield.app
   gas:
     GAS_API_URL: https://www.gasnow.org/api/v3
     GAS_CURRENT_PATH: gas/price?utm_source=defi

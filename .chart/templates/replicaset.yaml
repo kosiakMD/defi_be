@@ -16,6 +16,18 @@ spec:
       labels:
         {{- include "defiyield-service.labels" . | nindent 8 }}
     spec:
+      initContainers:
+      - name: secrets-compose
+        image: stedolan/jq
+        workingDir: /mnt
+        command: ["sh", "-c"]
+        args: ["jq -r 'to_entries|map(\"\\(.key)=\\(.value|tostring)\") | .[]' secrets-manager/* > secrets/.env"]
+        volumeMounts:
+        - name: secrets-manager
+          mountPath: /mnt/secrets-manager
+          readOnly: true
+        - name: secrets
+          mountPath: /mnt/secrets
       containers:
       - name: application
         image: {{ include "defiyield-service.image" . }}
@@ -27,15 +39,13 @@ spec:
           value: {{ .Values.service.host | quote }}
         - name: SERVICE_PORT
           value: {{ .Values.service.port | quote }}
+        - name: ENV
+          value: .env
+        - name: LOG_LEVEL
+          value: {{ .Values.application.log_level | quote }}
         envFrom:
-        {{- range $name, $keys := .Values.configMaps }}
         - configMapRef:
-            name: {{ include "defiyield-service.fullname" $ }}-{{ $name }}-config
-        {{- end }}
-        {{- range $name := .Values.secrets }}
-        - secretRef:
-            name: {{ $name }}-secret
-        {{- end }}
+            name: {{ include "defiyield-service.fullname" . }}-configs
         ports:
         - name: http
           protocol: TCP
@@ -46,3 +56,26 @@ spec:
           {{- toYaml (.Values.livenessProbe | default .Values.readinessProbe) | nindent 10 }}
         resources:
           {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts:
+        - name: secrets
+          mountPath: /usr/src/app/.env
+          subPath: .env
+          readOnly: true
+      {{- with .Values.extraContainers }}
+      {{ tpl . $ | nindent 6 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.securityContext | nindent 10 }}
+      {{- if .Values.serviceAccount.create }}
+      serviceAccountName: {{ include "defiyield-service.fullname" . }}
+      {{- end }}
+      volumes:
+      - name: secrets-manager
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ include "defiyield-service.fullname" . }}-secrets
+      - name: secrets
+        emptyDir:
+          medium: Memory

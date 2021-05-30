@@ -5,9 +5,6 @@ ingress:
 configMaps:
   common:
     PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
-    MAILER_HOST: smtp.gmail.com
-    MAILER_USER: mail@defiyield.app
-    MAILER_PASS: gpBG5tqfjp7LQkAc
     MAIL_HIRE_FROM: hr@defiyield.app
     MAIL_HIRE_TO: hr@defiyield.app
   gas:
@@ -45,11 +42,9 @@ configMaps:
     POOLS_PATH: v1/pools
     VAULTS_SERVICE_URL: https://integration.dfyield.xyz
     VAULTS_PATH: v1/vaults
-    REDIS_HOST: 18.185.19.11
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
 
 secrets:
+- mailer
+- redis
+- bscscan
 - etherscan

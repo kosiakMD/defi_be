@@ -1,8 +1,4 @@
 configMaps:
-  db:
-    PGHOST: pg-main.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    PGPORT: 5432
-    PGDATABASE: defi
   common:
     CONCURRENCY_PROMISES_LIMIT: 20
   amm:
@@ -27,5 +23,5 @@ configMaps:
     PRICES_PATH: v1/prices
 
 secrets:
-- db
+- database
 - mongo

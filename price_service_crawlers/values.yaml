@@ -2,12 +2,21 @@ readinessProbe:
   httpGet:
     path: /status
 
+extraContainers: |
+  - name: tor-proxy
+    image: dperson/torproxy:latest
+    env:
+    - name: PASSWORD
+      value: tor
+    ports:
+    - name: proxy
+      containerPort: 9050
+    - name: control
+      containerPort: 9051
+
 configMaps:
   db:
     DB_ENTITIES: entities/**/*.ts
-    REDIS_HOST: 18.185.19.11
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
   thegraph:
     THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/uniswap-v2
     THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
@@ -20,17 +29,18 @@ configMaps:
     BSC_URL: https://bsc-dataseed.binance.org
   tor:
     TOR_ENABLED: true
-    TOR_HOST: "35.158.109.74"
-    TOR_PORT: 9550
-    TOR_CONTROL_PORT: 9551
-  mongo:
-    MONGO_HOST: "18.159.107.117"
-    MONGO_PORT: 27017
+    TOR_HOST: "localhost"
+    TOR_PORT: 9050
+    TOR_CONTROL_PORT: 9051
+    TOR_CONTROL_USER: tor
+    TOR_CONTROL_PASWORD: tor
   params:
     CURRENT_PRICE_SECONDS_INTERVAL: 300
     HISTORY_PRICE_SECONDS_INTERVAL: 3600
 
 secrets:
-- db
+- database
+- redis
 - mongo
-- tor
+- bscscan
+- etherscan

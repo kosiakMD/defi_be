@@ -3,8 +3,44 @@ application:
   version: ""
   environment: ""
   maxVersions: 5
+  log_level: info
 
 replicas: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+      - type: Pods
+        value: 4
+        periodSeconds: 15
+      selectPolicy: Max
 
 service:
   host: "0.0.0.0"
@@ -33,25 +69,35 @@ resources:
     cpu: "2"
     memory: 2Gi
 
+serviceAccount:
+  create: true
+  iam_role_arn: arn:aws:iam::625623467395:role/AWSSecretsStoreCSIDriverIAMRole
+
+securityContext:
+  runAsUser: 0
+  fsGroup: 65534
+
+extraContainers: |
+
+podDisruptionBudget:
+#  minAvailable: 1
+  maxUnavailable: 1
+
 ingress:
   enabled: false
   host: defiyield.app
+  annotations: {}
   certificate_arn: arn:aws:acm:eu-central-1:625623467395:certificate/0451fee0-71c4-4989-b584-189e73945b0b
   wafv2_acl_arn: arn:aws:wafv2:eu-central-1:625623467395:regional/webacl/defiyield-backend-production/9eadcd76-96cb-4761-aaf4-5b4320f4d249
 
 configMaps:
   common:
-    ENV: .env
     LOG_ERROR_FILE: error.log
     LOG_COMBINED_FILE: combined.log
-    LOG_LEVEL: info
   db:
     DB_CONNECTION: postgres
-    DB_HOST: pg-main.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    DB_PORT: 5432
-    DB_DATABASE: defi
     DB_SYNCHRONIZE: false
     DB_LOGGING: true
 
 secrets:
-- db
+- database

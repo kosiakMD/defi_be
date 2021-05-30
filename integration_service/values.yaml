@@ -15,8 +15,6 @@ configMaps:
     THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/xavier59/masterchef
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_URL: https://api.bscscan.com/api
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
@@ -24,9 +22,9 @@ configMaps:
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_BALANCE: v1/balances
-    REDIS_HOST: 18.185.19.11
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
 
 secrets:
-- db
+- database
+- redis
+- bscscan
+- etherscan

@@ -75,6 +75,7 @@ export const totalPrice = (amount: string, price: number, decimals: string | num
 export const getTokenDecimals = (decimals: number): number =>
   decimals ? Math.pow(10, -decimals) : DEFAULT_MULTIPLIER;
 
+// TODO: could be validation added
 export function splitToArray(value: string): string[] {
   if (!value) {
     return [];

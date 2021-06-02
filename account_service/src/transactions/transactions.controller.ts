@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';
@@ -90,7 +90,6 @@ export class TransactionsController {
     example: '',
   })
   @ApiResponse({ status: 200, type: TransactionsScanResponseDto, isArray: true })
-  @UsePipes(new ValidationPipe({ transform: true }))
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
     const { addresses, chains } = query;
     if (!query.addresses && query.addresses.length) return [];

@@ -20,7 +20,7 @@ async function bootstrap() {
   // app.useLogger(app.get(Logger));
   app.useLogger(enhancedLogger);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
   const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;

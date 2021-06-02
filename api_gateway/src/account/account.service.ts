@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../common/Logger/Logger.service';
+import { Address, Chains } from '../common/interfaces';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
 import { ApprovalBscDTO } from './account.dto';
@@ -73,7 +74,7 @@ export class AccountService {
     }
   }
 
-  async getTransfers(addresses: string, chains?: string): Promise<TransfersResponse> {
+  async getTransfers(addresses: Address[], chains?: Chains): Promise<TransfersResponse> {
     try {
       this.logger.time(this.getTransfersUrl);
       const data = await this.httpService
@@ -88,7 +89,7 @@ export class AccountService {
     }
   }
 
-  async getBalances(addresses: string, chains?: string): Promise<BalancesResponse> {
+  async getBalances(addresses: Address[], chains?: Chains): Promise<BalancesResponse> {
     try {
       this.logger.time(this.getBalanceUrl);
       const data = await this.httpService

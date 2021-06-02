@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 
-import { MulticallSevice } from './multicall.sevice';
+import { MulticallService } from './multicall.service';
 
 @Module({
-  providers: [MulticallSevice],
-  exports: [MulticallSevice],
+  providers: [MulticallService],
+  exports: [MulticallService],
 })
 export class MulticallModule {}

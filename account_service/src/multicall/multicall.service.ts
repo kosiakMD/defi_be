@@ -6,13 +6,19 @@ import Web3 from 'web3';
 import { Logger } from '../Logger/Logger.service';
 import { TokenPrices } from '../balance/interfaces/balance.interfaces';
 
+export type TokenPricesMap = Map<string, TokenPrices[]>;
+
 @Injectable()
-export class MulticallSevice {
+export class MulticallService {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger) {}
 
-  public async multicall(tokens: string[], addresses: string[], provider: Web3) {
+  public async multicall(
+    tokens: string[],
+    addresses: string[],
+    provider: Web3,
+  ): Promise<TokenPricesMap> {
     const multi = new MultiCall(provider);
-    const map: Map<string, TokenPrices[]> = new Map<string, TokenPrices[]>();
+    const map: TokenPricesMap = new Map<string, TokenPrices[]>();
     for (const address of addresses) {
       const [blockNumber, balances] = await multi.getBalances(tokens, address);
       this.logger.log('Received data via multicall with blockNumber ' + blockNumber);

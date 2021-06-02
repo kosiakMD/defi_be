@@ -3,18 +3,20 @@ import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
 import { Web3Provider } from '../../chain/web3.provider';
+import { Address } from '../../common/interfaces';
+import { Chain, Chains } from '../../common/types';
 import { PriceService } from '../../price/price.service';
 import {
   abi,
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
-  ETH_BNB_ADDRESS,
   EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
   toDecimals,
   totalPrice,
   transferTokenAddressNotIn,
   WETH_ADDRESS,
 } from '../../utils/utils';
+import { isBnbAddress, isEthChain } from '../../utils/web3';
 import { getUtilTokenPrice, mapTokenBalances } from '../balance_util/balance.util';
 import { CurrentPricesPayload } from '../dto/price.response.dto';
 import {
@@ -24,15 +26,16 @@ import {
 } from '../interfaces/balance.interfaces';
 import { Transfers } from '../interfaces/etherscan.interfaces';
 import { NO_SCAN_BNB_TOKENS, NO_SCAN_ETH_TOKENS } from '../tokens/tokens';
-import { EtherscanApi } from './etherscan.api';
+import { ScanApi } from './scan.api';
 
+// TODO: Refactor to Factory or Abstract class extends
 @Injectable()
-export class EtherscanService {
-  private instanceEthProvider: Web3;
-  private instanceBscProvider: Web3;
+export class ScanService {
+  private readonly instanceEthProvider: Web3;
+  private readonly instanceBscProvider: Web3;
 
   constructor(
-    private etherscanApi: EtherscanApi,
+    private etherscanApi: ScanApi,
     private priceService: PriceService,
     private web3Provider: Web3Provider,
   ) {
@@ -41,22 +44,34 @@ export class EtherscanService {
   }
 
   public async getBalanceDataFromChains(
-    accounts: string,
-    chains: number,
+    accounts: Address[],
+    chains: Chains,
   ): Promise<BalancesResponse> {
+    // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
-    if (!accounts) {
-      return allBalances;
-    }
-    const lowerCaseAccounts = accounts.split(',').map((account) => account.toLowerCase());
+    // TODO: replace with utility
+    const lowerCaseAccounts = accounts.map((account) => account.toLowerCase());
 
-    const [ethBalances, bscBalances] = await Promise.all([
-      +chains !== CHAIN_ID_BSC ? this.getBalances(lowerCaseAccounts, CHAIN_ID_ETH) : null,
-      +chains !== CHAIN_ID_ETH ? this.getBalances(lowerCaseAccounts, CHAIN_ID_BSC) : null,
-    ]);
+    // TODO refactor ot unify
+    const scanHandlers = [];
+    if (!chains || !chains.length) {
+      scanHandlers.push(
+        this.getBalances(lowerCaseAccounts, CHAIN_ID_ETH),
+        this.getBalances(lowerCaseAccounts, CHAIN_ID_BSC),
+      );
+    } else {
+      // chains.forEach((chainId) => scanHandlers.push(this.getBalances(lowerCaseAccounts, chainId)));
+      scanHandlers.push(
+        chains.includes(CHAIN_ID_ETH) ? this.getBalances(lowerCaseAccounts, CHAIN_ID_ETH) : null,
+      );
+      scanHandlers.push(
+        chains.includes(CHAIN_ID_BSC) ? this.getBalances(lowerCaseAccounts, CHAIN_ID_BSC) : null,
+      );
+    }
+    const [ethBalances, bscBalances] = await Promise.all(scanHandlers);
 
     if (ethBalances && bscBalances) {
-      Object.keys(ethBalances).map((key) => {
+      Object.keys(ethBalances).forEach((key) => {
         allBalances[key] = {
           totalUsd: ethBalances[key].totalUsd + bscBalances[key].totalUsd,
           tokens: [...ethBalances[key].tokens, ...bscBalances[key].tokens],
@@ -71,7 +86,7 @@ export class EtherscanService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  async getBalances(addresses: string[], chain: number): Promise<any> {
+  async getBalances(addresses: Address[], chain: Chain): Promise<any> {
     const transfersAll: Transfers = {};
     await Promise.all(
       addresses.map(async (a) => {
@@ -91,7 +106,9 @@ export class EtherscanService {
       const addressTokens = transfersAll[address].map((transfer) =>
         transfer.contractAddress.toLowerCase(),
       );
-      const filteredAddressTokens = addressTokens.filter((token) => allNonLpTokens.indexOf(token) >= 0 )
+      const filteredAddressTokens = addressTokens.filter(
+        (token) => allNonLpTokens.indexOf(token) >= 0,
+      );
       const uniqueTokenAddresses = [...new Set(filteredAddressTokens)];
       const priceResponseDto = await this.priceService.getTokenPrices(uniqueTokenAddresses, chain);
       const excludeAddresses = Array.of(...EXCLUDE_TRANSFER_TOKEN_ADDRESSES);
@@ -99,8 +116,9 @@ export class EtherscanService {
 
       transfersAll[address]
         .filter(
-          (transfer) => transferTokenAddressNotIn(transfer.contractAddress, excludeAddresses)
-          &&  allNonLpTokens.indexOf( transfer.contractAddress ) >= 0,
+          (transfer) =>
+            transferTokenAddressNotIn(transfer.contractAddress, excludeAddresses) &&
+            allNonLpTokens.indexOf(transfer.contractAddress) >= 0,
         )
         .map((transfer) => {
           const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;
@@ -159,20 +177,18 @@ export class EtherscanService {
     currentPrice: CurrentPricesPayload,
     chain: number,
   ): Promise<AccountTokenBalance[]> {
-    const [provider, balanceArray] =
-      chain === CHAIN_ID_ETH
-        ? [this.instanceEthProvider, NO_SCAN_ETH_TOKENS]
-        : [this.instanceBscProvider, NO_SCAN_BNB_TOKENS];
+    const [provider, balanceArray] = isEthChain(chain)
+      ? [this.instanceEthProvider, NO_SCAN_ETH_TOKENS]
+      : [this.instanceBscProvider, NO_SCAN_BNB_TOKENS];
 
     const etherBalances = [];
     for (let i = 0; i < balanceArray.length; i++) {
-      const priceArray = await getUtilTokenPrice(balanceArray, currentPrice);
+      const priceArray = getUtilTokenPrice(balanceArray, currentPrice);
       const tokenInst = await new provider.eth.Contract(abi as AbiItem[], balanceArray[i].address);
 
-      const tokenAmount =
-        balanceArray[i].address === ETH_BNB_ADDRESS
-          ? await provider.eth.getBalance(address)
-          : await tokenInst.methods.balanceOf(address).call();
+      const tokenAmount = isBnbAddress(balanceArray[i].address)
+        ? await provider.eth.getBalance(address)
+        : await tokenInst.methods.balanceOf(address).call();
 
       const price = priceArray.find((item) => item.address === balanceArray[i].address);
       if (Number(tokenAmount) !== 0) {

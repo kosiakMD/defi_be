@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { BalancesResponse } from '../account/account.interfaces';
 import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
-import { BalancesResponseDto } from './balances.dto';
+import { BalancesQueryDto, BalancesResponseDto } from './balances.dto';
 
 @ApiTags('Balances')
 @Controller('balances')
@@ -27,15 +27,14 @@ export class BalancesController {
     name: 'chains',
     type: String,
     required: false,
-    description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
-    example: '',
+    description: 'Array of chain ID (comma separated)',
+    example: '1,2',
+    // example: '',
   })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
-  public getBalance(
-    @Query('addresses') addresses: string,
-    @Query('chains') chains: string,
-  ): Promise<BalancesResponse> {
+  public getBalance(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
+    const { addresses, chains } = query;
+
     return this.service.getBalances(addresses, chains);
   }
 }

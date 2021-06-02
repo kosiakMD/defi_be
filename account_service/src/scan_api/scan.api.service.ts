@@ -31,7 +31,7 @@ const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 const MAX_RETRY = 2;
 
-export class ScanService {
+export class ScanApiService {
   private retries: 0;
   protected readonly url: string;
   protected readonly apiKey: string;

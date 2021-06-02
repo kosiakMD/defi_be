@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ERC20Token } from 'src/interfaces';
+import { ERC20Token } from 'src/common/interfaces';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 

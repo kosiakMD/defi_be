@@ -5,16 +5,20 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../../Logger/Logger.service';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../utils/utils';
+import { isEthChain } from '../../utils/web3';
 import { EtherscanTransfer } from '../interfaces/etherscan.interfaces';
 
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 
+// TODO refactor to ScanFactory depends on network
 @Injectable()
-export class EtherscanApi {
+export class ScanApi {
   private readonly bscUrl: string;
-  private bscApiKey: string;
+  private readonly bscApiKey: string;
   private readonly ethUrl: string;
-  private ethApiKey: string;
+  private readonly ethApiKey: string;
+  private readonly networks: Record<number, string>;
 
   constructor(
     private readonly httpService: HttpService,
@@ -26,12 +30,16 @@ export class EtherscanApi {
     this.bscApiKey = this.configService.get<string>('BSCSCAN_KEY');
     this.ethUrl = this.configService.get<string>('ETHERSCAN_URL');
     this.ethApiKey = this.configService.get<string>('ETHERSCAN_KEY');
+    this.networks = {
+      [CHAIN_ID_ETH]: 'eth',
+      [CHAIN_ID_BSC]: 'bsc',
+    };
   }
 
   async getEthTransfers(address: string, chain: number): Promise<any> {
-    const url = Number(chain) === 1 ? this.ethUrl : this.bscUrl;
+    const url = isEthChain(chain) ? this.ethUrl : this.bscUrl;
     const action = 'tokentx';
-    const chainPrefix = chain === 1 ? 'eth' : 'bsc';
+    const chainPrefix = this.networks[chain];
 
     const cacheKey = `${chainPrefix}_transfers_${action}_${address}`;
     const logString = `Cache ${cacheKey} is `;
@@ -47,7 +55,7 @@ export class EtherscanApi {
               module: 'account',
               action: action,
               address: address,
-              apikey: Number(chain) === 1 ? this.ethApiKey : this.bscApiKey,
+              apikey: isEthChain(chain) ? this.ethApiKey : this.bscApiKey,
             },
           })
           .pipe(map((response) => response.data))

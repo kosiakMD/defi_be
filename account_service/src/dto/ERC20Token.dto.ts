@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNumber, IsNotEmpty } from 'class-validator';
 
-import { ERC20Token } from '../interfaces';
+import { ERC20Token } from '../common/interfaces';
 
 export class ERC20TokenDto implements ERC20Token {
   @ApiProperty({ type: String, required: true })

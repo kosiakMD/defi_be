@@ -6,10 +6,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '../Logger/Logger.service';
 import { PriceService } from '../price/price.service';
 import { CHAIN_ID_ETH } from '../utils/utils';
-import { ScanService } from './scan.service';
+import { ScanApiService } from './scan.api.service';
 
 @Injectable()
-export class EtherScanService extends ScanService {
+export class EtherScanService extends ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
   protected readonly chainPrefix: 'bsc' | 'eth';

@@ -1,4 +1,4 @@
-import { Address } from '../../interfaces';
+import { Address } from '../../common/interfaces';
 import { ERC20Token } from '../../transfers/interfaces/transfers.interfaces';
 
 export interface Balance {

@@ -1,11 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 import { Web3Provider } from '../chain/web3.provider';
+import { Address } from '../common/interfaces';
+import { Chains } from '../common/types';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
-import { ScanService } from '../scan_api/scan.service';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../utils/utils';
+import { ScanApiService } from '../scan_api/scan.api.service';
+import {
+  CHAIN_ID_BSC,
+  CHAIN_ID_ETH,
+  DEFAULT_MULTIPLIER,
+  getUniqueAndToLowerCaseArrayData,
+} from '../utils/utils';
 import {
   ResultStatus,
   Transaction,
@@ -15,10 +23,9 @@ import {
 
 @Injectable()
 export class TransactionsService {
-  DEFAULT_MULTIPLIER = 1e-18;
   addresses: string;
-  addressesArray: string[];
-  manager;
+  addressesArray: Address[];
+  manager: EntityManager;
 
   constructor(
     private readonly web3Provider: Web3Provider,
@@ -28,18 +35,6 @@ export class TransactionsService {
 
   private static convertAddresses(addresses: string[]): string {
     return addresses.map((address) => `'${address}'`).join(',');
-  }
-
-  private static getUniqueAndToLowerCase(array: string[]): string[] {
-    const temp: string[] = [];
-
-    array.forEach((el) => {
-      if (!temp.includes(el.toLowerCase())) {
-        temp.push(el.toLowerCase());
-      }
-    });
-
-    return temp;
   }
 
   public async getTransactions(addresses: string[]): Promise<TransactionsResponse | []> {
@@ -66,7 +61,7 @@ export class TransactionsService {
   }
 
   private prepareAddresses(addresses: string[]): void {
-    const uniqAddresses = TransactionsService.getUniqueAndToLowerCase(addresses);
+    const uniqAddresses = getUniqueAndToLowerCaseArrayData(addresses);
     this.addresses = TransactionsService.convertAddresses(uniqAddresses);
     this.addressesArray = uniqAddresses;
   }
@@ -94,17 +89,13 @@ export class TransactionsService {
         to: transaction.toaddress,
         blockTimestamp: transaction.blocktimestamp,
         amount: {
-          eth: transaction.amount * this.DEFAULT_MULTIPLIER,
-          usd: transaction.amount * this.DEFAULT_MULTIPLIER * transaction.price,
+          eth: transaction.amount * DEFAULT_MULTIPLIER,
+          usd: transaction.amount * DEFAULT_MULTIPLIER * transaction.price,
         },
         gas: {
-          price: transaction.gasprice * this.DEFAULT_MULTIPLIER,
-          eth: transaction.gasused * this.DEFAULT_MULTIPLIER * transaction.gasprice,
-          usd:
-            transaction.gasused *
-            this.DEFAULT_MULTIPLIER *
-            transaction.price *
-            transaction.gasprice,
+          price: transaction.gasprice * DEFAULT_MULTIPLIER,
+          eth: transaction.gasused * DEFAULT_MULTIPLIER * transaction.gasprice,
+          usd: transaction.gasused * DEFAULT_MULTIPLIER * transaction.price * transaction.gasprice,
         },
       };
     });
@@ -148,7 +139,7 @@ export class TransactionsService {
     `);
   }
 
-  async getTransaction(addresses: string[], chains: number[]) {
+  async getTransaction(addresses: string[], chains: Chains) {
     const result = {
       status: ResultStatus.ok,
       errors: [],
@@ -159,7 +150,7 @@ export class TransactionsService {
       (result.transactions = result.transactions.concat(newTxs));
 
     if (chains && chains.length) {
-      const handleChain = async (chainId, service: ScanService): Promise<any> => {
+      const handleChain = async (chainId, service: ScanApiService): Promise<any> => {
         if (chains.includes(chainId)) {
           const txs = await Promise.allSettled(
             addresses.map((address) => service.getScanTransactions(address)),

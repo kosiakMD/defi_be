@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Web3 from 'web3';
 
+// TODO: refactor - should be one provider
 @Injectable()
 export class Web3Provider {
   private readonly web3Eth;

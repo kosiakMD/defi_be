@@ -1,6 +1,9 @@
-import * as dotenv from 'dotenv';
-import Web3 from 'web3';
+import { Address } from '../common/interfaces';
+import { Chain } from '../common/types';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, ETH_BNB_ADDRESS } from './utils';
 
-dotenv.config();
+export const isBnbAddress = (address: Address): boolean => address === ETH_BNB_ADDRESS;
 
-export const web3 = new Web3(process.env.ETH_URL);
+export const isEthChain = (chain: Chain): boolean => chain === CHAIN_ID_ETH;
+
+export const isBscChain = (chain: Chain): boolean => chain === CHAIN_ID_BSC;

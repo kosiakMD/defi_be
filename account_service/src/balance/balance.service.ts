@@ -2,17 +2,19 @@ import { Injectable } from '@nestjs/common';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
-import { MulticallSevice } from '../multicall/multicall.sevice';
+import { Address } from '../common/interfaces';
+import { Chain, Chains } from '../common/types';
+import { MulticallService } from '../multicall/multicall.service';
 import { PriceService } from '../price/price.service';
 import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   decimalsAmount,
-  ETH_BNB_ADDRESS,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
   WETH_ADDRESS,
 } from '../utils/utils';
+import { isBnbAddress } from '../utils/web3';
 import { getUtilTokenPrice, mapTokenBalances } from './balance_util/balance.util';
 import {
   AccountTokenBalance,
@@ -27,6 +29,7 @@ import {
 import { DbService } from './repository/db.service';
 import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
 
+// TODO refactor from 1 class to Factory / Abstract
 @Injectable()
 export class BalanceService {
   private readonly instanceChainProviderEth: Web3;
@@ -38,7 +41,7 @@ export class BalanceService {
     private readonly dbService: DbService,
     private readonly chainProvider: Web3Provider,
     private readonly priceService: PriceService,
-    private readonly multicallSevice: MulticallSevice,
+    private readonly multicallService: MulticallService,
   ) {
     this.instanceChainProviderEth = this.chainProvider.instanceEth();
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
@@ -46,9 +49,9 @@ export class BalanceService {
     this.noDbTokensBsc = NO_DB_BNB_TOKENS.map((token) => token.address);
   }
 
-  private getPricesAndBalances(tokensAddresses, chainId, accountsArray): Promise<any[]> {
+  private getPricesAndBalances(tokensAddresses, chainId: Chain, accountsArray): Promise<any[]> {
     return Promise.all([
-      this.priceService.getTokenPrices(tokensAddresses, Number(chainId), 1),
+      this.priceService.getTokenPrices(tokensAddresses, chainId, 1),
       Promise.all(
         accountsArray.map(async (account) => ({
           account,
@@ -75,7 +78,7 @@ export class BalanceService {
         : [];
       for (let i = 0; i < balanceArray.length; i++) {
         const price = priceArray.find((item) => item.address === balanceArray[i].address);
-        if (balanceArray[i].address === ETH_BNB_ADDRESS) {
+        if (isBnbAddress(balanceArray[i].address)) {
           const temporary = mapTokenBalances({
             ...balance,
             token: balanceArray[i],
@@ -103,19 +106,26 @@ export class BalanceService {
     return etherBalances;
   }
 
-  public async getBalanceDataFromDb(accounts: string, chains: number): Promise<BalancesResponse> {
+  public async getBalanceDataFromDb(
+    accounts: Address[],
+    chains?: Chains,
+  ): Promise<BalancesResponse> {
+    // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
-    if (!accounts) {
-      return allBalances;
+
+    // TODO refactor to unify logic
+    const scanHandlers = [];
+    if (!chains || !chains.length) {
+      scanHandlers.push(this.getEthBalances(accounts), this.getBscBalances(accounts));
+    } else {
+      scanHandlers.push(chains.includes(CHAIN_ID_ETH) ? this.getEthBalances(accounts) : null);
+      scanHandlers.push(chains.includes(CHAIN_ID_BSC) ? this.getBscBalances(accounts) : null);
     }
 
-    const [ethBalances, bscBalances] = await Promise.all([
-      +chains !== CHAIN_ID_BSC ? this.getEthBalances(accounts) : null,
-      +chains !== CHAIN_ID_ETH ? this.getBscBalances(accounts) : null,
-    ]);
+    const [ethBalances, bscBalances] = await Promise.all(scanHandlers);
 
     if (ethBalances && bscBalances) {
-      Object.keys(ethBalances).map((key) => {
+      Object.keys(ethBalances).forEach((key) => {
         allBalances[key] = {
           totalUsd: ethBalances[key].totalUsd + bscBalances[key].totalUsd,
           tokens: [...ethBalances[key].tokens, ...bscBalances[key].tokens],
@@ -127,20 +137,13 @@ export class BalanceService {
     return ethBalances || bscBalances;
   }
 
-  public async getEthBalances(accounts: string): Promise<BalancesResponse> {
-    if (!accounts) {
-      return {};
-    }
-    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','));
+  public async getEthBalances(accounts: Address[]): Promise<BalancesResponse> {
+    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
-    const tokenRows = await this.dbService.loadErc20Balances(
-      accountsArray,
-      CHAIN_ID_ETH,
-      WETH_ADDRESS,
-    );
+    const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_ETH);
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
-    const [tokenPrices, ethBalances] = await this.getPricesAndBalances(
+    const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,
       CHAIN_ID_ETH,
       accountsArray,
@@ -148,14 +151,14 @@ export class BalanceService {
 
     const priceArray = getUtilTokenPrice(NO_DB_ETH_TOKENS, tokenPrices.prices);
 
-    const multicallBalances = await this.multicallSevice.multicall(
+    const multicallBalances = await this.multicallService.multicall(
       this.noDbTokensEth,
       accountsArray,
       this.instanceChainProviderEth,
     );
 
     const etherTokenBalances = await this.getArrayOfTokenBalances(
-      ethBalances,
+      balances,
       priceArray,
       NO_DB_ETH_TOKENS,
       CHAIN_ID_ETH,
@@ -188,32 +191,28 @@ export class BalanceService {
     }, {});
   }
 
-  public async getBscBalances(accounts: string): Promise<BalancesResponse> {
-    if (!accounts) {
-      return {};
-    }
-
-    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts.split(','));
+  public async getBscBalances(accounts: Address[]): Promise<BalancesResponse> {
+    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_BSC);
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
-    const [tokenPrices, bscBalances] = await this.getPricesAndBalances(
+    const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,
       CHAIN_ID_BSC,
       accountsArray,
     );
 
-    const priceArray = await getUtilTokenPrice(NO_DB_BNB_TOKENS, tokenPrices.prices);
+    const priceArray = getUtilTokenPrice(NO_DB_BNB_TOKENS, tokenPrices.prices);
 
-    const multicallBalances = await this.multicallSevice.multicall(
+    const multicallBalances = await this.multicallService.multicall(
       this.noDbTokensBsc,
       accountsArray,
       this.instanceChainProviderBsc,
     );
 
     const bscTokenBalances = await this.getArrayOfTokenBalances(
-      bscBalances,
+      balances,
       priceArray,
       NO_DB_BNB_TOKENS,
       CHAIN_ID_BSC,

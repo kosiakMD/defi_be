@@ -14,6 +14,9 @@ async function bootstrap() {
     bodyParser: false,
     logger: true,
   });
+
+  app.enableShutdownHooks();
+
   // TODO: adding time logs features [HACK]
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   // TODO: left for custom logger

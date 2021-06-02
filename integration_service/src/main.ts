@@ -34,6 +34,8 @@ async function bootstrap() {
     }),
   });
 
+  app.enableShutdownHooks();
+
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 

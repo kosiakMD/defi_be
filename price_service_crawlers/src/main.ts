@@ -33,6 +33,8 @@ async function bootstrap() {
     }),
   });
 
+  app.enableShutdownHooks();
+
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   // TODO: left for custom logger
   // app.useLogger(app.get(Logger));

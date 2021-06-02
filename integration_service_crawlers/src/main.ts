@@ -32,6 +32,9 @@ async function bootstrap() {
       ],
     }),
   });
+
+  app.enableShutdownHooks();
+
   const configService = app.get<ConfigService>(ConfigService);
 
   const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);

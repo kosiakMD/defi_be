@@ -42,7 +42,7 @@ export class BalanceController {
   })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
   getUserBalanceByAddresses(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
-    const { addresses, chains, internal = 1 } = query;
+    const { addresses, chains, internal } = query;
 
     return internal
       ? this.balanceService.getBalanceDataFromDb(addresses, chains)

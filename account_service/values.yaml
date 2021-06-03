@@ -15,7 +15,7 @@ configMaps:
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000
 
 secrets:
-- database
+- database-read
 - redis
 - bscscan
 - etherscan

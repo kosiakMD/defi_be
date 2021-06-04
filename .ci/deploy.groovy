@@ -2,6 +2,12 @@
 
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 
+properties([
+    parameters([
+        [ $class: "WHideParameterDefinition", name: "STACK_ID", description: "Stack unique ID", defaultValue: "" ]
+    ])
+])
+
 pipeline {
     agent any
     parameters {
@@ -16,6 +22,7 @@ pipeline {
             selectedValue: "DEFAULT",
             listSize: "0"
         )
+        booleanParam(name: "DRY_RUN", description: "Generate stack manifest only", defaultValue: false)
     }
     options {
         buildDiscarder(
@@ -30,14 +37,14 @@ pipeline {
     environment {
         AWS_REGION      = "eu-central-1"
         AWS_CREDENTIALS = "defiyield-aws"
-        STACK_ID        = UUID.randomUUID().toString()
+        STACK_ID        = "${params.STACK_ID ?: UUID.randomUUID().toString()}"
         OWNER           = ""
         BRANCH          = ""
         BUILD_JOBS      = ""
         MISSED_IMAGES   = ""
     }
     stages {
-        stage("Approval") {
+        stage("Initialization") {
             steps {
                 wrap([$class: "BuildUser"]) {
                     script {
@@ -45,6 +52,17 @@ pipeline {
                         OWNER = env.BUILD_USER_EMAIL
                         currentBuild.displayName = "${BRANCH} - ${params.ENVIRONMENT}-${STACK_ID}"
                     }
+                }
+            }
+        }
+        stage("Approval") {
+            when {
+                not {
+                    triggeredBy "UpstreamCause"
+                }
+            }
+            steps {
+                wrap([$class: "BuildUser"]) {
                     timeout(time: 30, unit: "MINUTES") {
                         input(
                             message: "Bake stack for ${params.ENVIRONMENT} from ${BRANCH}(${GIT_COMMIT})?\n\nWaiting for approval from ${env.BUILD_USER_ID}",
@@ -185,6 +203,7 @@ pipeline {
         }
         success {
             script {
+                currentBuild.result = params.DRY_RUN ? "NOT_BUILT" : "SUCCESS"
                 currentBuild.description = "<a href=\"https://${params.ENVIRONMENT}-${STACK_ID}.defyield.xyz\">https://${params.ENVIRONMENT}-${STACK_ID}.defyield.xyz</a>"
             }
         }

@@ -16,8 +16,6 @@ pipeline {
         )
     }
     environment {
-        AWS_REGION      = "eu-central-1"
-        AWS_CREDENTIALS = "defiyield-aws"
         ENVIRONMENT     = ""
         STACK_ID        = ""
         OWNER           = ""
@@ -37,8 +35,7 @@ pipeline {
                         .last() \
                         .split("-", 2)
 
-                    OWNER = DEPLOY_JOB_RUN \
-                        .getCause(Cause.UserIdCause) \
+                    OWNER = (DEPLOY_JOB_RUN.getCause(Cause.UserIdCause) ?: DEPLOY_JOB_RUN.getCause(Cause.UpstreamCause).getUpstreamCauses()[0]) \
                         .getUserId()
 
                     currentBuild.displayName = "${ENVIRONMENT}-${STACK_ID}"

@@ -1,0 +1,39 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/migration_consumer/src",
+  "monorepo": true,
+  "root": "apps/migration_consumer",
+  "compilerOptions": {
+    "webpack": false,
+    "tsConfigPath": "apps/migration_consumer/tsconfig.app.json"
+  },
+  "projects": {
+    "migration-consumer": {
+      "type": "application",
+      "root": "apps/migration_consumer",
+      "entryFile": "main",
+      "sourceRoot": "apps/migration_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/migration_consumer/tsconfig.app.json"
+      }
+    },
+    "migration-history-consumer": {
+      "type": "application",
+      "root": "apps/migration_history_consumer",
+      "entryFile": "main",
+      "sourceRoot": "apps/migration_history_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/migration_history_consumer/tsconfig.app.json"
+      }
+    },
+    "shared": {
+      "type": "library",
+      "root": "libs/shared",
+      "entryFile": "index",
+      "sourceRoot": "libs/shared/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/shared/tsconfig.lib.json"
+      }
+    }
+  }
+}

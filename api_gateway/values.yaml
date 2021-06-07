@@ -7,6 +7,8 @@ configMaps:
     PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
     MAIL_HIRE_FROM: hr@defiyield.app
     MAIL_HIRE_TO: hr@defiyield.app
+    MAIL_HIRE_FROM: hr@defiyield.app
+    MAIL_HIRE_TO: hr@defiyield.app
   gas:
     GAS_API_URL: https://www.gasnow.org/api/v3
     GAS_CURRENT_PATH: gas/price?utm_source=defi

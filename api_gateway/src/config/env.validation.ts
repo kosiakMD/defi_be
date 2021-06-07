@@ -98,6 +98,12 @@ export const validationSchema = Joi.object({
   MAIL_HIRE_TO: Joi.string() //
     .allow('')
     .required(),
+  MAIL_QUESTION_FROM: Joi.string() //
+    .allow('')
+    .required(),
+  MAIL_QUESTION_TO: Joi.string() //
+    .allow('')
+    .required(),
 });
 
 export const validationOptions = {

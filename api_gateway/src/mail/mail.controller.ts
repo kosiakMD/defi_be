@@ -30,4 +30,17 @@ export class MailController {
       throw e;
     }
   }
+
+  @Post('/question')
+  @ApiCreatedResponse({ type: EmailResponseDto }) // 201
+  @ApiBadRequestResponse({ type: HireEmailValidationErrorResponseDto }) // 400
+  sendQuestionMail(@Body() request: HireEmailRequestDto): Promise<any> {
+    try {
+      const { email, name, letter } = request;
+      return this.hireService.sendQuestionMail(email, name, letter);
+    } catch (e) {
+      this.logger.error(e, 'MailController sendHireMail');
+      throw e;
+    }
+  }
 }

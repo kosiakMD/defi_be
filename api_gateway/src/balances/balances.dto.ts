@@ -1,9 +1,31 @@
 // eslint-disable-next-line max-classes-per-file
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { AccountTokenBalance } from '../account/account.interfaces';
-import { ERC20Token } from '../common/interfaces';
+import { Address, Chains, ERC20Token } from '../common/interfaces';
+import { splitToArray } from '../utils/transform';
 import { Balance, BalanceToken } from './balances.interfaces';
+
+export class BalancesQueryDto {
+  @IsNotEmpty()
+  @Transform(({ value }) => splitToArray(value))
+  @IsString({ each: true })
+  addresses: Address[];
+
+  @IsOptional()
+  @Transform(({ value, key }) => {
+    if (key && !value) {
+      throw new BadRequestException(`Empty param '${key}' is not allowed`)
+    }
+    return splitToArray(value).map((x) => parseInt(x, 10))
+  })
+  @IsArray()
+  @IsInt({ each: true })
+  chains: Chains;
+}
 
 export class BalanceTokenDto implements BalanceToken {
   @ApiProperty({ example: 1 })

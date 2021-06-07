@@ -7,6 +7,7 @@ export interface ERC20Token {
   totalSupply?: number;
 }
 
+// TODO: change '?' to mandatory ?
 export interface ERC20TokenTransfer {
   address: string;
   name?: string;

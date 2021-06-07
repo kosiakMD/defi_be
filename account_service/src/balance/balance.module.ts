@@ -8,9 +8,9 @@ import { MulticallModule } from '../multicall/multicall.module';
 import { PriceModule } from '../price/price.module';
 import { BalanceController } from './balance.controller';
 import { BalanceService } from './balance.service';
-import { EtherscanApi } from './bcs_etherscan/etherscan.api';
-import { EtherscanService } from './bcs_etherscan/etherscan.service';
 import { DbService } from './repository/db.service';
+import { ScanApi } from './scan/scan.api';
+import { ScanService } from './scan/scan.service';
 
 @Module({
   imports: [
@@ -33,6 +33,6 @@ import { DbService } from './repository/db.service';
     }),
   ],
   controllers: [BalanceController],
-  providers: [BalanceService, DbService, EtherscanService, EtherscanApi],
+  providers: [BalanceService, DbService, ScanService, ScanApi],
 })
 export class BalanceModule {}

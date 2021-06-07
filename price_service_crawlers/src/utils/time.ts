@@ -55,7 +55,7 @@ export const getNextDayStart = (ts: number, day = 0) => {
 };
 
 export const getNextHourStart = (ts: number, hour = 0) => {
-  const secondsInHour = 86400 / 24;
+  const secondsInHour = 3600;
   const dayId = Math.round(ts / secondsInHour);
   return (dayId + hour) * secondsInHour;
 };

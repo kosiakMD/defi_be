@@ -4,10 +4,7 @@ import { Repository } from 'typeorm';
 
 import { AccountService, BalanceToken } from '../account/account.service';
 import { EtherscanService } from '../etherscan/etherscan.service';
-import {
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
-} from '../interfaces/liquidity.position.interfaces';
+import { UniswapLiquidityPosition, UniswapLiquidityPositionPair } from '../interfaces/liquidity.position.interfaces';
 import { Base, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
@@ -19,6 +16,7 @@ import { PancakeMintsEntity } from './entity/pancake.mints.entity';
 import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
+import { PROJECT_PANCAKE } from '../pools/pools.setting';
 
 @Injectable()
 export class PancakeService {
@@ -40,19 +38,22 @@ export class PancakeService {
 
   async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
     const addressesArray: string[] = addresses.split(',');
-    let [balances, pools, poolsV2] = await Promise.all([
+    let allPools: LiquidityPoolsEntity[] = []
+    const [balances, pools, poolsV2] = await Promise.all([
       this.etherscanService.getBalances(addressesArray),
       this.poolsService.getProjectPools(PANCAKE_PROJECT),
       this.poolsService.getProjectPools(PANCAKE_V2_PROJECT),
     ]);
-    pools = pools.concat(poolsV2)
+    allPools = allPools
+      .concat(pools)
+      .concat(poolsV2)
 
     const liquidityPositions: UniswapResponseData = {
       uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
     };
     Object.keys(balances).map((key) => {
       balances[key].tokens.map((t) => {
-        const pool = pools.find((p) => p.address === t.token.token.address);
+        const pool = allPools.find((p) => p.address === t.token.token.address);
         if (pool) {
           if (!liquidityPositions.uniswapLiquidityPositions.has(key)) {
             liquidityPositions.uniswapLiquidityPositions.set(key, []);
@@ -118,7 +119,7 @@ export class PancakeService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      'pancake',
+      PROJECT_PANCAKE,
     );
   }
 
@@ -141,7 +142,7 @@ export class PancakeService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      'pancake',
+      PROJECT_PANCAKE,
     );
   }
 }

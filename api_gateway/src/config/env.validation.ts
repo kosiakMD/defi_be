@@ -82,6 +82,22 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  // e-mails
+  MAILER_HOST: Joi.string() //
+    .allow('')
+    .required(),
+  MAILER_USER: Joi.string() //
+    .allow('')
+    .required(),
+  MAILER_PASS: Joi.string() //
+    .allow('')
+    .required(),
+  MAIL_HIRE_FROM: Joi.string() //
+    .allow('')
+    .required(),
+  MAIL_HIRE_TO: Joi.string() //
+    .allow('')
+    .required(),
 });
 
 export const validationOptions = {

@@ -1,29 +1,30 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { BadRequestException } from '@nestjs/common';
+import { Chains } from '../../common/types';
 
-import { splitToArray } from '../../utils/utils';
+interface TransactionQuery {
+  addresses: string[];
+  chains: Chains;
+}
 
-export class TransactionQueryDto {
+export class TransactionQueryDto implements TransactionQuery{
   @IsOptional()
-  @Transform(({ value }) => splitToArray(value).map((x) => parseInt(x, 10)))
-  @IsInt({ each: true })
-  @ApiProperty({
-    type: Number,
-    required: false,
-    description: `Array of chains' IDs (comma separated)`,
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    return value.map((x) => parseInt(x, 10));
   })
+  @IsArray()
+  @IsInt({ each: true })
   chains;
 
   @IsNotEmpty()
   @IsString({ each: true })
-  @Transform(({ value }) => splitToArray(value))
-  @ApiProperty({
-    type: String,
-    required: true,
-    description: 'Array of token / coin addresses (comma separated)',
-    default:
-      '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
-  })
   addresses: string[];
+
+  constructor(data: TransactionQueryDto) {
+    Object.assign(this, data);
+  }
 }

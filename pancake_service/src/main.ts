@@ -25,16 +25,20 @@ async function bootstrap() {
 
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
-  const config = new DocumentBuilder()
-    .setTitle(serviceName)
-    .setDescription(`${serviceName} description`)
-    .setVersion('1.0') // temporary global as only 1 version
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
-  const port = process.env.SERVICE_PORT || 3000;
-  const host = process.env.SERVICE_HOST;
+  if (NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle(SERVICE_NAME)
+      .setDescription(`${SERVICE_NAME} service description`)
+      .setVersion('1.0') // temporary global as only 1 version
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
+
+  const port = SERVICE_PORT || 3000;
+  const host = SERVICE_HOST;
   await app.listen(port, host);
 
   // eslint-disable-next-line no-console

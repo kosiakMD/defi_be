@@ -1,45 +1,51 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiQuery, ApiResponse } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { BalancesQueryDto, BalancesResponseDto } from './balance.dto';
 import { BalanceService } from './balance.service';
-import { EtherscanService } from './bcs_etherscan/etherscan.service';
-import { BalancesResponseDto } from './dto/balances.dto';
 import { BalancesResponse } from './interfaces/balance.interfaces';
+import { ScanService } from './scan/scan.service';
 
 @ApiTags('Balances')
 @Controller('balances')
 export class BalanceController {
   constructor(
     private readonly balanceService: BalanceService,
-    private readonly etherscanService: EtherscanService,
+    private readonly scanService: ScanService,
   ) {}
 
   @Get('')
   @ApiQuery({
-    name: 'addresses',
-    type: String,
-    example: '0x0000000000000000000000000000000000000000',
+    name: 'internal',
+    type: Number,
+    description: 'either internal data or not',
+    example: 1,
+    required: false,
   })
   @ApiQuery({
     name: 'chains',
     type: Number,
-    example: 1,
+    isArray: true,
+    description: 'Array of chain ID',
+    example: [1, 2],
     required: false,
   })
   @ApiQuery({
-    name: 'internal',
-    type: Number,
-    example: 1,
-    required: false,
+    name: 'addresses',
+    type: String,
+    isArray: true,
+    description: 'Array of address',
+    example: [
+      '0x0000000000000000000000000000000000000000',
+      '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
+    ],
   })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
-  getUserBalanceByAddresses(
-    @Query('addresses') addresses: string,
-    @Query('chains') chains: number,
-    @Query('internal') internal: number,
-  ): Promise<BalancesResponse> {
+  getUserBalanceByAddresses(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
+    const { addresses, chains, internal } = query;
+
     return internal
-      ? this.balanceService.getBalanceDataFromDb(addresses, Number(chains))
-      : this.etherscanService.getBalanceDataFromChains(addresses, chains);
+      ? this.balanceService.getBalanceDataFromDb(addresses, chains)
+      : this.scanService.getBalanceDataFromChains(addresses, chains);
   }
 }

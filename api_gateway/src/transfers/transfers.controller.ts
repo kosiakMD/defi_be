@@ -2,13 +2,13 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
 import { BscScanService } from '../scans-api/modules/bscscan/bsc-scan.service';
 import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.service';
 import { TransferQueryDto, TransfersResponseDto } from './transfers.dto';
 import { TransfersResponse } from './transfers.interfaces';
 import { TransfersService } from './transfers.service';
-import { AccountService } from '../account/account.service';
 
 @ApiTags('Transfers')
 @Controller('transfers')
@@ -23,18 +23,19 @@ export class TransfersController {
 
   @Get('/')
   @ApiQuery({
-    name: 'addresses',
-    type: String,
-    description: 'Array of Addresses (comma separated)',
-    example: '0x0000000000000000000000000000000000000000',
-  })
-  @ApiQuery({
     name: 'chains',
     type: String,
     required: false,
-    description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
-    example: '',
+    description: 'Array of chain ID (comma separated)',
+    example: '1,2',
+    // example: '',
+  })
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    description: 'Array of Address (comma separated)',
+    example:
+      '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
   })
   @ApiResponse({ status: 200, type: TransfersResponseDto })
   async get(@Query() query: TransferQueryDto): Promise<TransfersResponse> {

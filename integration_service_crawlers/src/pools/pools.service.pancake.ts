@@ -124,7 +124,7 @@ export class PoolsServicePancake {
     const lPoolChainData: LiquidityPool = {
       id: address.toLowerCase(),
       chain: CHAIN_ID_BSC,
-      project: 'Pancake V2',
+      project: PROJECT_PANCAKE_V2,
       reserveUSD: 0,
       fee24h: null,
       apy: {

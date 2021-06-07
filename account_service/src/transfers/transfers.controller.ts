@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { TransfersResponseDto } from './dto/transfers.dto';
+import { TransfersQueryDto, TransfersResponseDto } from './dto/transfers.dto';
 import { TransfersResponse } from './interfaces/transfers.interfaces';
 import { TransfersService } from './transfers.service';
 
@@ -12,21 +12,35 @@ export class TransfersController {
 
   @Get('/')
   @ApiQuery({
+    name: 'internal',
+    type: Number,
+    description: 'either internal data or not',
+    example: 1,
+    required: false,
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: Number,
+    isArray: true,
+    description: 'Array of chain ID',
+    example: [1, 2],
+    required: false,
+  })
+  @ApiQuery({
     name: 'addresses',
     type: String,
-    description: 'Array of Addresses (comma separated)',
-    example:
-      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
+    isArray: true,
+    description: 'Array of address',
+    example: [
+      '0x0000000000000000000000000000000000000000',
+      '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
+    ],
   })
   @ApiResponse({ status: 200, type: TransfersResponseDto })
   async getTransfersByAddresses(
-    @Query('addresses') addresses: string,
-    @Query('chains') chains: number,
-    @Query('internal') internal: string,
+    @Query() query: TransfersQueryDto,
   ): Promise<TransfersResponse | []> {
-    if (!addresses) {
-      return [];
-    }
+    const { addresses, chains, internal } = query;
     return internal
       ? this.transactionService.getAllTransactionDataByAddress(addresses)
       : this.transactionService.getExternalTransfers(addresses, chains);

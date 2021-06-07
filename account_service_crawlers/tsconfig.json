@@ -5,7 +5,9 @@
 		"lib": [
 			"es5",
 			"es6",
-			"dom"
+			"dom",
+			"es2019",
+			"es2020"
 		],
 		"declaration": true,
 		"removeComments": true,

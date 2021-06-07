@@ -1,13 +1,13 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
-import { SECONDS_IN_DAY } from 'src/utils/constants copy';
 
+import { Logger } from '../Logger/Logger.service';
 import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { toTimestamp } from '../utils/common';
-import { CURRENCY, CHAIN, SECONDS_IN_HOUR, PlatformEnum } from '../utils/constants';
+import { CURRENCY, CHAIN, SECONDS_IN_HOUR, SECONDS_IN_DAY, PlatformEnum } from '../utils/constants';
 import { getNextDayStart } from '../utils/time';
 
 export type TokenAddresses = { [key: string]: number };
@@ -23,7 +23,7 @@ export class BalancerFirstCheckJob {
     @Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>,
     private databaseService: DatabaseService,
     private theGraphService: Api,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
 
   public async crawlNewTokens(job: any, done: any): Promise<void> {

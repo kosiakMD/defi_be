@@ -12,7 +12,8 @@ import {
   NO_SCAN_BNB_TOKENS,
   NO_SCAN_ETH_TOKENS,
 } from '../balance/tokens/tokens';
-import { CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../utils/utils';
+import { ETH_BNB_ADDRESS } from '../utils/utils';
+import { isEthChain } from '../utils/web3';
 import { PriceServiceResponse } from './price.interfaces';
 
 @Injectable()
@@ -133,7 +134,7 @@ export class PriceService {
   }
 
   private addressArrayToStringInternal(addresses: string[], chain: number): void {
-    if (chain === CHAIN_ID_ETH) {
+    if (isEthChain(chain)) {
       changeTokenArray(NO_DB_ETH_TOKENS, addresses);
     } else {
       changeTokenArray(NO_DB_BNB_TOKENS, addresses);
@@ -141,7 +142,7 @@ export class PriceService {
   }
 
   private addressArrayToStringExternal(addresses: string[], chain: number): void {
-    if (chain === CHAIN_ID_ETH) {
+    if (isEthChain(chain)) {
       changeTokenArray(NO_SCAN_ETH_TOKENS, addresses);
     } else {
       changeTokenArray(NO_SCAN_BNB_TOKENS, addresses);

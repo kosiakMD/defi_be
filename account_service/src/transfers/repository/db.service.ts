@@ -1,38 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
-import { CHAIN_ID_BSC } from '../../utils/utils';
+import { Address } from '../../common/interfaces';
+import { TransactionWithToken } from '../interfaces/transfers.interfaces';
 
 @Injectable()
 export class DbService {
-  async getTransfersDataFromDb(addresses: string, chainId: number) {
-    const [transactionTable, tokenTable] =
-      chainId === CHAIN_ID_BSC ? ['bsc_transfers', 'bsc_token'] : ['transactions', 'token'];
-
+  async getTransfersDataFromDb(addresses: Address[]): Promise<TransactionWithToken[]> {
+    const addressesString = addresses.map((address) => `'${address}'`).join(',');
     const manager = getManager();
+
     return await manager.query(`
-      select 
-      ${transactionTable}.hash AS hash,
-        ${transactionTable}."blockNumber" AS "blockNumber",
-        ${transactionTable}."fromAddress" AS "fromAddress",
-        ${transactionTable}."toAddress" AS "toAddress",
-        ${transactionTable}."blockTimestamp" AS "blockTimeStamp",
-        ${transactionTable}."gasUsed" AS "gas",
-        ${transactionTable}."gasPrice" AS "gasPrice",
-        ${transactionTable}."amount" AS "amount",
-        ${transactionTable}."tokenAddress" AS "tokenAddress",
-        ${transactionTable}."tokenprice" AS "tokenPrice",
-        ${transactionTable}."ethprice" AS "ethPrice",
-        ${tokenTable}.name AS "tokenName",
-        ${tokenTable}.symbol AS "tokenSymbol",
-        ${tokenTable}.decimals AS "tokenDecimals",
-        ${tokenTable}."totalSupply" AS "tokenTotalSupply" 
-      from ${transactionTable} 
-      left join ${tokenTable} 
-      on ${transactionTable}."tokenAddress" = ${tokenTable}.address
-    where ${transactionTable}."fromAddress" IN (${addresses})
-    or ${transactionTable}."toAddress" IN (${addresses})
-    order by ${transactionTable}.id DESC
-    limit 1000`);
+      select
+        asset_transfers.tx_hash AS hash,
+        asset_transfers.from AS fromAddress,
+        asset_transfers.to AS toAddress,
+        asset_transfers.timestamp AS blockTimeStamp,
+        assets.name AS tokenName,
+        assets.symbol AS tokenSymbol,
+        assets.decimals AS tokenDecimals
+      from asset_transfers
+      left join assets on asset_transfers.asset_id = assets.id
+      where asset_transfers.from IN (${addressesString})
+      or asset_transfers.to IN (${addressesString})
+      order by asset_transfers.id DESC
+      limit 1000
+    `);
   }
 }

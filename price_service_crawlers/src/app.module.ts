@@ -1,4 +1,4 @@
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { Inject, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import {
@@ -10,15 +10,17 @@ import { AgendaModule } from 'nestjs-agenda';
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
 import * as winston from 'winston';
 
+import { Logger } from './Logger/Logger.service';
+import { LoggerModule } from './Logger/LoggerModule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
 import { CoingeckoJob } from './jobs/coingecko.job';
-import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
-import { SushiswapJob } from './jobs/sushiswap.job';
-import { PancakeJob } from './jobs/pancake.job';
-import { UniswapJob } from './jobs/uniswap.job';
 import { CurveJob } from './jobs/curve.job';
+import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
+import { PancakeJob } from './jobs/pancake.job';
+import { SushiswapJob } from './jobs/sushiswap.job';
+import { UniswapJob } from './jobs/uniswap.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
 import { Api } from './thegraph/api';
@@ -26,6 +28,7 @@ import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
+    LoggerModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
@@ -108,11 +111,10 @@ export class AppModule implements OnModuleInit {
       },
       'App',
     );
-    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private configService: ConfigService,
   ) {}
 }

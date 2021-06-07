@@ -3,11 +3,13 @@ import { Injectable } from '@nestjs/common';
 import { Logger } from '../Logger/Logger.service';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
+import { Address } from '../common/interfaces';
+import { Chain, Chains } from '../common/types';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
-import { ScanService } from '../scan_api/scan.service';
+import { ScanApiService } from '../scan_api/scan.api.service';
 import {
   BlocksSubgraph,
   ResponseData as BlocksResponseData,
@@ -15,11 +17,13 @@ import {
 import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
+  DEFAULT_MULTIPLIER,
   getTokenDecimals,
   getUniqueAndToLowerCaseArrayData,
   mergeTransfersResponse,
   totalPrice,
 } from '../utils/utils';
+import { isEthChain } from '../utils/web3';
 import {
   ERC20TokenTransfer,
   ERC20Transfer,
@@ -32,7 +36,7 @@ import { DbService } from './repository/db.service';
 
 @Injectable()
 export class TransfersService {
-  private readonly chainToScan: Record<number, ScanService>;
+  private readonly chainToScan: Record<Chain, ScanApiService>;
 
   constructor(
     private etherScanService: EtherScanService,
@@ -49,53 +53,61 @@ export class TransfersService {
     };
   }
 
-  private readonly DEFAULT_MULTIPLIER: number = 1e-18;
+  async getAllTransactionDataByAddress(addresses: Address[]): Promise<TransfersResponse> {
+    const addressArray = getUniqueAndToLowerCaseArrayData(addresses);
 
-  async getAllTransactionDataByAddress(addresses: string): Promise<TransfersResponse> {
-    const addressArray = getUniqueAndToLowerCaseArrayData(addresses.split(','));
-
-    const [transfers, bscTransaction] = await Promise.all([
-      this.getTransactionByAddresses(addressArray, CHAIN_ID_ETH),
-      this.getTransactionByAddresses(addressArray, CHAIN_ID_BSC),
+    const [ethTransfers, bscTransfers] = await Promise.all([
+      this.getTransfersByAddresses(addressArray, CHAIN_ID_ETH),
+      this.getTransfersByAddresses(addressArray, CHAIN_ID_BSC),
     ]);
 
     const allTransfersResponse: TransfersResponse = {};
 
-    Object.keys(transfers).forEach((key) => {
-      allTransfersResponse[key] = [...transfers[key], ...bscTransaction[key]];
+    // TODO refactor to unify logic
+    Object.keys(ethTransfers).forEach((key) => {
+      allTransfersResponse[key] = [...ethTransfers[key], ...bscTransfers[key]];
     });
 
     return allTransfersResponse;
   }
 
-  async getTransactionByAddresses(
-    addressArray: string[],
-    chainId: number,
-  ): Promise<TransfersResponse> {
-    const formattedAddresses = addressArray.map((address) => `'${address}'`).join(',');
+  async queryTransfers(addresses: Address[]): Promise<TransactionWithToken[]> {
+    try {
+      return await this.dbService.getTransfersDataFromDb(addresses);
+    } catch (e) {
+      this.logger.error(e, 'queryTransfers');
+      throw e;
+    }
+  }
 
-    const transferRows = await this.dbService.getTransfersDataFromDb(formattedAddresses, chainId);
+  async getTransfersByAddresses(
+    addressArray: Address[],
+    chainId: Chain,
+  ): Promise<TransfersResponse> {
+    const transferRows = await this.queryTransfers(addressArray);
     const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
 
     return this.toTransfersResponse(transferRowsWithTokenPrices, addressArray, chainId);
   }
 
   private async getTransfersWithTokenPrices(
-    transactions: TransactionWithToken[],
+    transfers: TransactionWithToken[],
   ): Promise<TransactionWithTokenAndPrices[]> {
     return await Promise.all(
-      transactions.map(async (transaction) => {
-        const decimals = getTokenDecimals(transaction.tokenDecimals);
+      transfers.map(async (transfer) => {
+        const decimals = getTokenDecimals(transfer.tokenDecimals);
 
+        // TODO try/catch why do we need here?
         try {
           return {
-            ...transaction,
-            tokenPriceUSD: transaction.tokenPrice || 0,
-            totalPriceUSD: transaction.amount * decimals * transaction.tokenPrice,
+            ...transfer,
+            tokenPriceUSD: transfer.tokenPrice || 0,
+            totalPriceUSD: transfer.amount * decimals * transfer.tokenPrice,
           };
-        } catch (_) {
+        } catch (e) {
+          this.logger.error(e);
           return {
-            ...transaction,
+            ...transfer,
             tokenPriceUSD: 0,
             totalPriceUSD: 0,
           };
@@ -121,6 +133,10 @@ export class TransfersService {
       const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash) => {
         const hashTransfers = userTransactions.filter((transaction) => transaction.hash === hash);
         const erc20Transfers: ERC20Transfer[] = hashTransfers.map((transfer) => {
+          // TODO use DTO but TBD about validation
+          // const tokenErc20: ERC20TokenTransfer = new ERC20TokenDto(transfer);
+          // console.log('___tokenErc20', tokenErc20);
+
           const tokenErc20: ERC20TokenTransfer = {
             address: transfer.tokenAddress,
             name: transfer.tokenName,
@@ -146,7 +162,7 @@ export class TransfersService {
           blockTimeStamp: hashTransfers[0].blockTimeStamp,
           gas: hashTransfers[0].gas,
           gasPrice: hashTransfers[0].gasPrice,
-          gasUsed: hashTransfers[0].gas * hashTransfers[0].gasPrice * this.DEFAULT_MULTIPLIER,
+          gasUsed: hashTransfers[0].gas * hashTransfers[0].gasPrice * DEFAULT_MULTIPLIER,
           erc20Transfers,
         };
       });
@@ -171,20 +187,10 @@ export class TransfersService {
     }
   };
 
-  async getExternalTransfers(addresses: string, chains: number): Promise<TransfersResponse> {
-    let chainNumbers: number[] = [1, 2];
-    if (chains !== undefined) {
-      chainNumbers = [];
-      chainNumbers = chains
-        .toString()
-        .split(',')
-        .reduce((a, c) => {
-          return [...a, Number(c)];
-        }, []);
-    }
-    const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses.split(','));
+  async getExternalTransfers(addresses: Address[], chains: Chains): Promise<TransfersResponse> {
+    const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses);
     const transfers: TransfersResponse = {};
-    const handleScan = async (service: ScanService, addresses: string[]): Promise<boolean> => {
+    const handleScan = async (service: ScanApiService, addresses: string[]): Promise<boolean> => {
       const transfersResponse = await Promise.all<EtherscanTransfer[]>(
         addresses.map((address) => service.getTransfers(address)),
       );
@@ -196,20 +202,18 @@ export class TransfersService {
       return true;
     };
 
-    const scans: ScanService[] = [];
-    if (chainNumbers) {
-      chainNumbers.map((n) => {
+    const scans: ScanApiService[] = [];
+    if (chains) {
+      chains.map((n) => {
         scans.push(this.chainToScan[n]);
       });
     } else {
-      scans.push(this.chainToScan[CHAIN_ID_ETH]);
-      scans.push(this.chainToScan[CHAIN_ID_BSC]);
+      scans.push(this.chainToScan[CHAIN_ID_ETH], this.chainToScan[CHAIN_ID_BSC]);
     }
     await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
 
     const allTransfers = transfers;
-    if (chainNumbers.filter((n) => n === 1)) {
-      console.log('adding transfers')
+    if (chains && chains.length && chains.filter((n) => isEthChain(n))) {
       // this call works pretty fast, but there is no block timestamp fuck!
       const additionalTransfers = await this.assetService.getConvertedTransfers(
         uniqueLowerCaseAddresses,
@@ -236,7 +240,7 @@ export class TransfersService {
       Object.keys(transfersResponse).map((k) => {
         const transfers: Transfer[] = transfersResponse[k];
         transfers.map((t) => {
-          if (t.chainId === CHAIN_ID_ETH && t.blockTimeStamp === null) {
+          if (isEthChain(t.chainId) && t.blockTimeStamp === null) {
             const isMissed = missedBlocks.find((blockNumber) => blockNumber === t.blockNumber);
             if (!isMissed) {
               missedBlocks.push(Number(t.blockNumber));
@@ -256,7 +260,7 @@ export class TransfersService {
       Object.keys(transfersResponse).map((k) => {
         const transfers: Transfer[] = transfersResponse[k];
         transfers.map((t) => {
-          if (t.chainId === CHAIN_ID_ETH && t.blockTimeStamp === null) {
+          if (isEthChain(t.chainId) && t.blockTimeStamp === null) {
             const blockTimestamp = blocks.find((b) => Number(b.number) === Number(t.blockNumber));
             if (blockTimestamp) {
               t.blockTimeStamp = blockTimestamp.timestamp;
@@ -311,10 +315,9 @@ export class TransfersService {
     Object.keys(allTransfers).map((address) => {
       allTransfers[address].map((transfer) => {
         transfer.erc20Transfers.map((erc20Transfer) => {
-          const tokenPriceUsd =
-            transfer.chainId === CHAIN_ID_ETH
-              ? ethPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp]
-              : bscPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp];
+          const tokenPriceUsd = isEthChain(transfer.chainId)
+            ? ethPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp]
+            : bscPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp];
           erc20Transfer.tokenPriceUSD = tokenPriceUsd;
           erc20Transfer.totalPriceUSD = totalPrice(
             erc20Transfer.amount.toString(),

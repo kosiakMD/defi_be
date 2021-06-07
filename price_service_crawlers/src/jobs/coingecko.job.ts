@@ -1,9 +1,10 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import PromisePool from 'es6-promise-pool';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
 
+import { Logger } from '../Logger/Logger.service';
 import {
   getCurrentCoinPrices,
   getCurrentEthPrice,
@@ -19,11 +20,13 @@ import {
   CHAIN_CURRENCY_ADDRESS,
   CHAIN,
   SECONDS_IN_TEN_MINUTES,
-  SECONDS_IN_HOUR,
+  SECONDS_IN_HUNDRED_DAYS,
   TEST_TOKENS,
   PlatformEnum,
+  SECONDS_IN_DAY,
+  SECONDS_IN_WEEK,
 } from '../utils/constants';
-import { crawlCoin, getRequiredHistoryStartDate, crawlCoinHistory } from '../utils/crawlCoin';
+import { getRequiredHistoryStartDate, crawlCoinHistory } from '../utils/crawlCoin';
 
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 export type TokenPricesShort = { [key: string]: number };
@@ -44,11 +47,9 @@ const createAddressChunks = (addresses: any[]): string[][] => {
   for (i = 0, j = addresses.length; i < j; i += chunk) {
     temparray = addresses.slice(i, i + chunk);
     const dbTokenAddresses = temparray.map((token) => {
-      if(isChainCurrency(token['address'])){
-        if(token['chain_id'] === 1)
-          return token['address']+'ETH';
-        if(token['chain_id'] === 2)
-          return token['address']+'BNB';
+      if (isChainCurrency(token['address'])) {
+        if (token['chain_id'] === 1) return token['address'] + 'ETH';
+        if (token['chain_id'] === 2) return token['address'] + 'BNB';
       }
       return token['address'];
     });
@@ -60,13 +61,18 @@ const createAddressChunks = (addresses: any[]): string[][] => {
 @Injectable()
 export class CoingeckoJob {
   static readonly chainCurrencyAddress = CHAIN_CURRENCY_ADDRESS;
+  private CURRENT_PRICE_SECONDS_INTERVAL;
 
   constructor(
     @Inject(NEST_PGPROMISE_CONNECTION)
     public pg: IDatabase<any>,
     private databaseService: DatabaseService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-  ) {}
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {
+    this.CURRENT_PRICE_SECONDS_INTERVAL = process.env.CURRENT_PRICE_SECONDS_INTERVAL
+      ? parseInt(process.env.CURRENT_PRICE_SECONDS_INTERVAL)
+      : SECONDS_IN_TEN_MINUTES;
+  }
 
   static getEthPrice = async (): Promise<number> => {
     const { data } = await getCurrentEthPrice();
@@ -78,7 +84,10 @@ export class CoingeckoJob {
     return data[0]['current_price'];
   };
 
-  static getCurrentTokenPrices = async (tokens: string[], databaseService): Promise<TokenPrices> => {
+  static getCurrentTokenPrices = async (
+    tokens: string[],
+    databaseService,
+  ): Promise<TokenPrices> => {
     if (!tokens.length) {
       return {};
     }
@@ -86,15 +95,15 @@ export class CoingeckoJob {
     const response: TokenPrices = {};
 
     // NOTE: Special handling of ETH
-    if (tokens.includes(CoingeckoJob.chainCurrencyAddress+'ETH')) {
-      response[CoingeckoJob.chainCurrencyAddress+'ETH'] = {
+    if (tokens.includes(CoingeckoJob.chainCurrencyAddress + 'ETH')) {
+      response[CoingeckoJob.chainCurrencyAddress + 'ETH'] = {
         value: await CoingeckoJob.getEthPrice(),
         ['db_id']: null,
       };
     }
 
-    if (tokens.includes(CoingeckoJob.chainCurrencyAddress+'BNB')) {
-      response[CoingeckoJob.chainCurrencyAddress+'BNB'] = {
+    if (tokens.includes(CoingeckoJob.chainCurrencyAddress + 'BNB')) {
+      response[CoingeckoJob.chainCurrencyAddress + 'BNB'] = {
         value: await CoingeckoJob.getBnbPrice(),
         ['db_id']: null,
       };
@@ -102,11 +111,15 @@ export class CoingeckoJob {
 
     const addresses = tokens.filter((token) => !isChainCurrency(token)).join(',');
     const { data } = await getCurrentCoinPrices(addresses);
-    
-    tokens.map((token)=>{
-      if(!isChainCurrency(token) && !data[token])
-          databaseService.removeTokenByAddressAndPlatform(token, 'COINGECKO', 'no data from recuest for current time');
-    })
+
+    tokens.map((token) => {
+      if (!isChainCurrency(token) && !data[token])
+        databaseService.removeTokenByAddressAndPlatform(
+          token,
+          'COINGECKO',
+          'no data from recuest for current time',
+        );
+    });
 
     return Object.keys(data).reduce(
       (response, key) => ({
@@ -117,121 +130,124 @@ export class CoingeckoJob {
     );
   };
 
-  public async checkHourlyPrices(
-    dbAssets,
-    lastPricesObj,
-    currentTimestamp,
-    currentCurrencyId,
-  ): Promise<void> {
-    this.logger.log('check hourly prices');
-    const beginOfDay = currentTimestamp - (currentTimestamp % 86400);
+  // public async checkHourlyPrices(
+  //   dbAssets,
+  //   lastPricesObj,
+  //   currentTimestamp,
+  //   currentCurrencyId,
+  // ): Promise<void> {
+  //   this.logger.log('check hourly prices');
+  //   const beginOfDay = currentTimestamp - (currentTimestamp % SECONDS_IN_DAY);
 
-    const delayValue = (
-      index,
-      coin,
-      databaseService,
-      beginOfDay,
-      lastPricesObj,
-      currentTimestamp,
-      logger,
-    ) => {
-      return new Promise(async (resolve) => {
-        const lastSavedTimestamp = lastPricesObj[coin.id] || 0;
+  //   const delayValue = (
+  //     index,
+  //     coin,
+  //     databaseService,
+  //     beginOfDay,
+  //     lastPricesObj,
+  //     currentTimestamp,
+  //     logger,
+  //   ) => {
+  //     return new Promise(async (resolve) => {
+  //       const lastSavedTimestamp = lastPricesObj[coin.id] || 0;
 
-        if (!lastSavedTimestamp || currentTimestamp - lastSavedTimestamp > SECONDS_IN_HOUR) {
-          logger.log('coin: ' + coin.id + ' - ' + currentTimestamp + ' - ' + lastSavedTimestamp);
-          try {
-            const {
-              data: { prices },
-            } = await getCoinRangePrices(coin, lastSavedTimestamp, currentTimestamp);
+  //       if (!lastSavedTimestamp || currentTimestamp - lastSavedTimestamp > SECONDS_IN_HOUR) {
+  //         logger.log('coin: ' + coin.id + ' - ' + currentTimestamp + ' - ' + lastSavedTimestamp);
+  //         try {
+  //           const {
+  //             data: { prices },
+  //           } = await getCoinRangePrices(coin, lastSavedTimestamp, currentTimestamp);
 
-            if (prices.length) {
-              const tokenPrices = prices.filter(([timestamp]) => {
-                const roundTimestamp =
-                  Math.round(timestamp / 1000) - (Math.round(timestamp / 1000) % SECONDS_IN_HOUR);
+  //           if (prices.length) {
+  //             const tokenPrices = prices.filter(([timestamp]) => {
+  //               const roundTimestamp =
+  //                 Math.round(timestamp / 1000) - (Math.round(timestamp / 1000) % SECONDS_IN_HOUR);
 
-                if (
-                  roundTimestamp > lastSavedTimestamp &&
-                  roundTimestamp > beginOfDay - 7 * 24 * SECONDS_IN_HOUR &&
-                  roundTimestamp < currentTimestamp
-                ) {
-                  return true;
-                }
-                return false;
-              });
+  //               if (
+  //                 roundTimestamp > lastSavedTimestamp &&
+  //                 roundTimestamp > beginOfDay - SECONDS_IN_WEEK &&
+  //                 roundTimestamp < currentTimestamp
+  //               ) {
+  //                 return true;
+  //               }
+  //               return false;
+  //             });
 
-              this.logger.log('tokenPrices');
-              this.logger.log(tokenPrices);
+  //             this.logger.log('tokenPrices');
+  //             this.logger.log(tokenPrices);
 
-              const preparedTimestamp = {};
-              tokenPrices.forEach(([timestamp, price]) => {
-                const roundTimestamp =
-                  Math.round(timestamp / 1000) - (Math.round(timestamp / 1000) % SECONDS_IN_HOUR);
-                if (!preparedTimestamp[roundTimestamp]) {
-                  preparedTimestamp[roundTimestamp] = price;
-                }
-              });
+  //             const preparedTimestamp = {};
+  //             tokenPrices.forEach(([timestamp, price]) => {
+  //               const roundTimestamp =
+  //                 Math.round(timestamp / 1000) - (Math.round(timestamp / 1000) % SECONDS_IN_HOUR);
+  //               if (!preparedTimestamp[roundTimestamp]) {
+  //                 preparedTimestamp[roundTimestamp] = price;
+  //               }
+  //             });
 
-              const preparedPrices = [];
-              for (const property in preparedTimestamp) {
-                preparedPrices.push([property, preparedTimestamp[property]]);
-              }
+  //             const preparedPrices = [];
+  //             for (const property in preparedTimestamp) {
+  //               preparedPrices.push([property, preparedTimestamp[property]]);
+  //             }
 
-              await crawlCoin(
-                coin.id,
-                coin,
-                preparedPrices,
-                currentCurrencyId,
-                databaseService,
-                logger,
-                PlatformEnum.coingecko,
-                false,
-              );
-            }
-          } catch (e) {
-            if (e?.response?.status === 404) {
-              this.logger.log(`removing token ${coin.symbol}`);
-              await this.databaseService.removeToken(coin.id);
-            } else {
-              this.logger.error(e);
-            }
-          }
-        }
+  //             await crawlCoin(
+  //               coin.id,
+  //               coin,
+  //               preparedPrices,
+  //               currentCurrencyId,
+  //               databaseService,
+  //               logger,
+  //               PlatformEnum.coingecko,
+  //               false,
+  //             );
+  //           }
+  //         } catch (e) {
+  //           if (e?.response?.status === 404) {
+  //             this.logger.log(`removing token ${coin.symbol}`);
+  //             await this.databaseService.removeToken(coin.id);
+  //           } else {
+  //             this.logger.error(e);
+  //           }
+  //         }
+  //       }
 
-        resolve(index);
-      });
-    };
+  //       resolve(index);
+  //     });
+  //   };
 
-    let count = -1;
-    const promiseProducer = () => {
-      if (count < dbAssets.length - 1) {
-        count++;
-        return delayValue(
-          count,
-          dbAssets[count],
-          this.databaseService,
-          beginOfDay,
-          lastPricesObj,
-          currentTimestamp,
-          this.logger,
-        );
-      } else {
-        return null;
-      }
-    };
+  //   let count = -1;
+  //   const promiseProducer = () => {
+  //     if (count < dbAssets.length - 1) {
+  //       count++;
+  //       return delayValue(
+  //         count,
+  //         dbAssets[count],
+  //         this.databaseService,
+  //         beginOfDay,
+  //         lastPricesObj,
+  //         currentTimestamp,
+  //         this.logger,
+  //       );
+  //     } else {
+  //       return null;
+  //     }
+  //   };
 
-    const pool = new PromisePool(promiseProducer, 20);
-    const poolPromise = pool.start();
-    await poolPromise;
-  }
+  //   const pool = new PromisePool(promiseProducer, 20);
+  //   const poolPromise = pool.start();
+  //   await poolPromise;
+  // }
 
   public async getCurrentPrices(job: any, done: any): Promise<void> {
-    this.logger.log('Current Prices Job Sarted');
+    this.logger.log('COINGECKO: Current Prices Job Sarted');
+    this.logger.time('COINGECKO: Current Prices');
     try {
+      this.logger.time('COINGECKO: Current Prices');
       const currentTimeStamp =
-        toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_TEN_MINUTES);
+        toTimestamp(new Date()) - (toTimestamp(new Date()) % this.CURRENT_PRICE_SECONDS_INTERVAL);
 
-      this.logger.log(`currentTimeStamp ${currentTimeStamp}`)
+      this.logger.log('this.CURRENT_PRICE_SECONDS_INTERVAL ', this.CURRENT_PRICE_SECONDS_INTERVAL);
+      this.logger.log(`currentTimeStamp ${currentTimeStamp}`);
       const currentChainId = await this.databaseService.getCurrentChain();
       if (!currentChainId) {
         throw 'No current platform in DB: ' + CHAIN;
@@ -257,7 +273,12 @@ export class CoingeckoJob {
           continue;
         }
         if (dbTokenAddresses.indexOf(remoteTokens[i]['platforms'][CHAIN]) === -1)
-          await this.databaseService.addNewTokenToDb(remoteTokens[i], currentChainId, 'COINGECKO', false);
+          await this.databaseService.addNewTokenToDb(
+            remoteTokens[i],
+            currentChainId,
+            'COINGECKO',
+            false,
+          );
       }
       this.logger.log('new COINGECKO tokens checked');
 
@@ -294,47 +315,51 @@ export class CoingeckoJob {
         const promises = [];
         for (let i = 0; i < dbTokenAddressesChunks.length; i++) {
           promises.push(
-            new Promise(async (resolve) => {
-              const chunkResults = await CoingeckoJob.getCurrentTokenPrices(
+            new Promise((resolve) => {
+              CoingeckoJob.getCurrentTokenPrices(
                 dbTokenAddressesChunks[i],
-                this.databaseService
-              );
-              this.logger.log(`chunk ${i + 1}/${chunksCount}`);
+                this.databaseService,
+              ).then(async (chunkResults) => {
+                this.logger.log(`chunk ${i + 1}/${chunksCount}`);
 
-              for (let i = 0; i < dbAssets.length; i++) {
-                if (chunkResults[dbAssets[i]['address']]) {
-                  chunkResults[dbAssets[i]['address']]['db_id'] = dbAssets[i]['id'];
-                } 
-                else 
-                if(isETH(dbAssets[i])){
-                  if (chunkResults[dbAssets[i]['address']+'ETH']) {
-                    chunkResults[dbAssets[i]['address']+'ETH']['db_id'] = dbAssets[i]['id'];
-                  } 
+                for (let i = 0; i < dbAssets.length; i++) {
+                  if (chunkResults[dbAssets[i]['address']]) {
+                    chunkResults[dbAssets[i]['address']]['db_id'] = dbAssets[i]['id'];
+                  } else if (isETH(dbAssets[i])) {
+                    if (chunkResults[dbAssets[i]['address'] + 'ETH']) {
+                      chunkResults[dbAssets[i]['address'] + 'ETH']['db_id'] = dbAssets[i]['id'];
+                    }
+                  } else if (isBSC(dbAssets[i])) {
+                    if (chunkResults[dbAssets[i]['address'] + 'BNB']) {
+                      chunkResults[dbAssets[i]['address'] + 'BNB']['db_id'] = dbAssets[i]['id'];
+                    }
+                  }
                 }
-                else
-                if(isBSC(dbAssets[i])){
-                  if (chunkResults[dbAssets[i]['address']+'BNB']) {
-                    chunkResults[dbAssets[i]['address']+'BNB']['db_id'] = dbAssets[i]['id'];
-                  } 
-                }
-              }
 
-              await this.databaseService.addHourlyPricesToDb(
-                chunkResults,
-                currentCurrencyId,
-                currentTimeStamp,
-              );
+                this.databaseService.addHourlyPricesToDb(
+                  chunkResults,
+                  currentCurrencyId,
+                  currentTimeStamp,
+                );
 
-              currentCount += dbTokenAddressesChunks[i].length;
-              
-              this.logger.log(`GOT SUCCESS PRICES FOR ${Object.keys(chunkResults).length} OF ${dbTokenAddressesChunks[i].length} IN CHUNK  ${i} `)
-              this.logger.log(`GOT CURRENT PRICES FOR ${currentCount} OF ${totalCount} COINGECKO TOKENS `)
-              resolve(chunkResults);
+                currentCount += dbTokenAddressesChunks[i].length;
+
+                this.logger.log(
+                  `GOT SUCCESS PRICES FOR ${Object.keys(chunkResults).length} OF ${
+                    dbTokenAddressesChunks[i].length
+                  } IN CHUNK  ${i} `,
+                );
+                this.logger.log(
+                  `GOT CURRENT PRICES FOR ${currentCount} OF ${totalCount} COINGECKO TOKENS `,
+                );
+                resolve(chunkResults);
+              });
             }),
           );
         }
-        Promise.all(promises).then(async () => {
+        Promise.all(promises).then(() => {
           this.logger.log('ALL COINGECO CURRENT PRICES CHUNKS DONE');
+          this.logger.timeEnd('COINGECKO: Current Prices');
           done();
         });
       } else {
@@ -343,18 +368,20 @@ export class CoingeckoJob {
     } catch (e) {
       this.logger.error(e);
     }
-    this.logger.log('Add Current Prices Job done');
   }
 
   public crawlNewTokensHistory = async (job: any, done: any): Promise<void> => {
-    this.logger.log('coingecko new tokens history started');
+    const hundredDaysTs = SECONDS_IN_HUNDRED_DAYS;
+    this.logger.log('COINGECKO: Historical Prices Job Sarted');
+    this.logger.time('COINGECKO: Historical Prices');
+
     const currentCurrencyId = await this.databaseService.getCurrentCurrency();
     if (!currentCurrencyId) {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % 86400);
-    const toTs = beginOfDay - 7 * 24 * SECONDS_IN_HOUR;
+    const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_DAY);
+    const toTs = beginOfDay - SECONDS_IN_WEEK;
 
     this.logger.log(`beginOfDay ${beginOfDay}`);
     this.logger.log(`toTs toTs`);
@@ -368,62 +395,94 @@ export class CoingeckoJob {
 
     if (dbAssets.length) {
       const delayValue = (index, coin, logger) => {
-        return new Promise(async (resolve) => {
-          logger.log('coin id : ' + coin.id + ' - ');
-          try {
-            logger.log('coin.last_history_timestamp ', coin.last_history_timestamp);
-            const fromTs = await getRequiredHistoryStartDate(
-              coin,
-              toTs,
-              this.databaseService,
-              this.logger,
-            );
-            if (fromTs === toTs) {
-              logger.log(`fromTs === toTs for coin ${coin.address} => ${fromTs} - ${toTs}`);
-              await this.databaseService.updateAssetHistoryTimestamp(coin.id, toTs);
-              resolve(index);
-            }
+        return new Promise((resolve) => {
+          getRequiredHistoryStartDate(coin, toTs, this.databaseService, this.logger).then(
+            async (fromTs) => {
+              try {
+                if (fromTs === toTs) {
+                  logger.log(`fromTs === toTs for coin ${coin.address} => ${fromTs} - ${toTs}`);
+                  this.databaseService.updateAssetHistoryTimestamp(coin.id, toTs);
+                  return resolve(index);
+                }
 
-            logger.log(`fromTs ${fromTs}`);
-            let allPrices = [];
-            let chunkFromTs = fromTs;
-            do {
-              const hundredDaysTs = SECONDS_IN_HOUR * 24 * 100;
-              const {
-                data: { prices },
-              } = await getCoinRangePrices(coin, chunkFromTs, (toTs - chunkFromTs > hundredDaysTs) ? (chunkFromTs + hundredDaysTs) : toTs );
-              
-              this.logger.log(`from ${chunkFromTs} to ${(toTs - chunkFromTs > hundredDaysTs) ? (chunkFromTs + hundredDaysTs) : toTs} for token ${coin.address}`)
-              this.logger.log(prices)
-              chunkFromTs = (toTs - chunkFromTs > hundredDaysTs) ? (chunkFromTs + hundredDaysTs) : toTs;
+                logger.log(`STARTS ${coin.id} fromTs ${fromTs} toTs ${toTs}`);
+                logger.log('coin.last_history_timestamp ', coin.last_history_timestamp);
 
-              allPrices = [].concat(allPrices, prices);
-            }while( chunkFromTs < toTs )
-            // const {
-            //   data: { prices },
-            // } = await getCoinRangePrices(coin, fromTs, toTs);
+                let allPrices = [];
+                let chunkFromTs = fromTs;
+                const chunkPrices = [];
 
-            logger.log(`${allPrices.length} new prices`);
+                const crawlChunk = () => {
+                  return new Promise((innerResolve) => {
+                    //console.log('running ' + coin.id + ' for date ' + chunkFromTs);
+                    getCoinRangePrices(
+                      coin,
+                      chunkFromTs,
+                      toTs - chunkFromTs > hundredDaysTs ? chunkFromTs + hundredDaysTs : toTs,
+                    ).then(async (response) => {
+                      const {
+                        data: { prices },
+                      } = await response;
+                      this.logger.log(`chunkFromTs ${chunkFromTs}`);
+                      this.logger.log(`toTs ${toTs}`);
+                      this.logger.log(
+                        `chunkFromTs > hundredDaysTs ${
+                          toTs - chunkFromTs > hundredDaysTs ? true : false
+                        }`,
+                      );
+                      this.logger.log(
+                        `from ${chunkFromTs} to ${
+                          toTs - chunkFromTs > hundredDaysTs ? chunkFromTs + hundredDaysTs : toTs
+                        } for token ${coin.address}`,
+                      );
+                      this.logger.log(prices);
 
-            if(allPrices?.length)
-              await crawlCoinHistory(
-                coin.id,
-                coin,
-                allPrices,
-                currentCurrencyId,
-                this.databaseService,
-                this.logger,
-                PlatformEnum.coingecko,
-                true,
-                fromTs,
-                toTs,
-              );
+                      chunkPrices.push(prices);
+                      innerResolve(prices);
+                    });
+                  });
+                };
+                // const checkOneCoinHistory = (index, coin, logger) => {
 
-          } catch (err) {
-            logger.error(err, `Token ${coin.id} price checking error. Setting is dead(just log)`);
-            //this.databaseService.setTokenIsDead(coin.id);
-          }
-          resolve(index);
+                // }
+                do {
+                  await crawlChunk();
+                  chunkPrices.push(await crawlChunk());
+                  chunkFromTs =
+                    toTs - chunkFromTs > hundredDaysTs ? chunkFromTs + hundredDaysTs : toTs;
+                } while (chunkFromTs < toTs);
+
+                //concating all prices to one array
+                for (let p = 0; p < chunkPrices.length; p++) {
+                  allPrices = [].concat(allPrices, chunkPrices[p]);
+                }
+
+                logger.log(`${allPrices.length} new prices for one coin ${coin.id}`);
+
+                if (allPrices) {
+                  await crawlCoinHistory(
+                    coin.id,
+                    coin,
+                    allPrices,
+                    currentCurrencyId,
+                    this.databaseService,
+                    this.logger,
+                    PlatformEnum.coingecko,
+                    true,
+                    fromTs,
+                    toTs,
+                  );
+                  return resolve(index);
+                } else return resolve(index);
+              } catch (err) {
+                logger.error(
+                  err,
+                  `Token ${coin.id} price checking error. Setting is dead(just log)`,
+                );
+                return resolve(index);
+              }
+            },
+          );
         });
       };
 
@@ -441,8 +500,8 @@ export class CoingeckoJob {
       const poolPromise = pool.start();
       await poolPromise;
     }
-
-    this.logger.log(`coingecko new tokens history finished`);
+    this.logger.timeEnd('COINGECKO: Historical Prices');
+    this.logger.log(`COINGECKO: Historical Prices Job Done`);
     done();
   };
 }

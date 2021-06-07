@@ -25,6 +25,7 @@ import configuration from './config/configuration';
 import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
+import { HireModule } from './hire/hire.module';
 import { IntegrationService } from './integration/integration.service';
 import { PancakeController } from './pancake/pancake.controller';
 import { PoolsModule } from './pools/pools.module';
@@ -75,6 +76,7 @@ import { VaultsModule } from './vaults/vaults.module';
     GasModule,
     PricesModule,
     ScansApiModule,
+    HireModule,
   ],
   controllers: [
     HealthController,

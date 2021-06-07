@@ -7,6 +7,7 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
+import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -32,8 +33,13 @@ async function bootstrap() {
     }),
   });
 
-  const logger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-  app.useLogger(logger);
+  app.enableShutdownHooks();
+
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  // TODO: left for custom logger
+  // app.useLogger(app.get(Logger));
+  app.useLogger(enhancedLogger);
+  //app.useLogger(logger);
 
   await app.listen(process.env.SERVICE_PORT || 3000);
 }

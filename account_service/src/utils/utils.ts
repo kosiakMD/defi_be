@@ -1,20 +1,23 @@
-import { BigNumber as BN } from 'bignumber.js';
+import BigNumber, { BigNumber as BN } from 'bignumber.js';
+import { AbiItem } from 'web3-utils';
 
+import { Address } from '../common/interfaces';
+import { Chain } from '../common/types';
 import { Transfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
 
 export const DEFAULT_MULTIPLIER = 1e-18;
-export const ETH_BNB_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const WBNB_ADDRESS = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
-export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-export const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-export const ESD_ADDRESS = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
-export const imBTC = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
-export const SNX = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
+export const ETH_BNB_ADDRESS: Address = '0x0000000000000000000000000000000000000000';
+export const WBNB_ADDRESS: Address = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
+export const WETH_ADDRESS: Address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+export const DAI_ADDRESS: Address = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+export const ESD_ADDRESS: Address = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
+export const imBTC: Address = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
+export const SNX: Address = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
 
 export const EXCLUDE_TRANSFER_TOKEN_ADDRESSES = [WBNB_ADDRESS, imBTC, SNX];
 
-export const CHAIN_ID_ETH = 1;
-export const CHAIN_ID_BSC = 2;
+export const CHAIN_ID_ETH: Chain = 1;
+export const CHAIN_ID_BSC: Chain = 2;
 
 export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
   const temp: string[] = [];
@@ -40,11 +43,11 @@ export function transferTokenAddressNotIn(
 
 type Decimals = string | number;
 
-export function toDecimals(amount: number, decimals: number) {
+export function toDecimals(amount: number, decimals: number): number {
   return amount * Math.pow(10, -decimals);
 }
 
-export const decimalsDivider = (decimals: Decimals) => new BN(10).pow(decimals);
+export const decimalsDivider = (decimals: Decimals): BigNumber => new BN(10).pow(decimals);
 
 export const decimalsAmount = (amount: string, decimals: Decimals): number =>
   new BN(amount) //
@@ -72,6 +75,7 @@ export const totalPrice = (amount: string, price: number, decimals: string | num
 export const getTokenDecimals = (decimals: number): number =>
   decimals ? Math.pow(10, -decimals) : DEFAULT_MULTIPLIER;
 
+// TODO: could be validation added
 export function splitToArray(value: string): string[] {
   if (!value) {
     return [];
@@ -146,7 +150,8 @@ export function mergeTransfersResponse(
   return finalTransfersResponse;
 }
 
-export const abi = [
+// TODO todo move to dummy data folder!
+export const abi: AbiItem[] = [
   {
     constant: true,
     inputs: [],

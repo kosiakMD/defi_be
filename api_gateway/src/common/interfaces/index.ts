@@ -4,6 +4,10 @@ export type TokenSymbol = string;
 
 export type DateString = string;
 
+export type Chain = number;
+
+export type Chains = Chain[];
+
 export interface BaseData<T = string> {
   userAddress: string;
   protocolName: string;

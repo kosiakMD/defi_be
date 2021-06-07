@@ -1,19 +1,80 @@
 // eslint-disable-next-line max-classes-per-file
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
+import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
-import { ERC20Token, ERC20Transfer } from '../interfaces/transfers.interfaces';
+import { Address } from '../../common/interfaces';
+import { Chains } from '../../common/types';
+import {
+  ERC20Token,
+  ERC20Transfer,
+  TransactionWithTokenAndPrices,
+} from '../interfaces/transfers.interfaces';
+
+interface TransfersQuery {
+  addresses: Address[];
+  chains: Chains;
+  internal: number;
+}
+
+export class TransfersQueryDto implements TransfersQuery {
+  @IsNotEmpty()
+  @IsString({ each: true })
+  addresses: Address[];
+
+  @IsOptional()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    return value.map((x) => parseInt(x, 10));
+  })
+  @IsArray()
+  @IsInt({ each: true })
+  chains;
+
+  @IsOptional()
+  @Transform(({ value }) => parseInt(value, 10))
+  @IsInt()
+  internal: number;
+
+  constructor(data: TransfersQueryDto) {
+    Object.assign(this, data);
+  }
+}
 
 export class ERC20TokenDto {
+  // TODO: add isEthAddress ?
   @ApiProperty({ example: '0xbddab785b306bcd9fb056da189615cc8ece1d823' })
+  @IsString()
   address: string;
+
   @ApiProperty({ example: null })
+  @IsString()
   name: string;
+
   @ApiProperty({ type: String, example: 'SushiToken' })
+  @IsString()
   symbol: string;
+
+  @IsInt()
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
+  // TODO change to decimal
+  @IsNumber()
   @ApiProperty({ type: Number, example: 92077.06746043958 })
   totalSupply: number;
+
+  constructor(transfer: TransactionWithTokenAndPrices) {
+    Object.assign(this, {
+      address: transfer.tokenAddress,
+      name: transfer.tokenName,
+      symbol: transfer.tokenSymbol,
+      decimals: transfer.tokenDecimals,
+      totalSupply: transfer.tokenTotalSupply,
+    });
+  }
 }
 
 export class ERC20TransferDto {

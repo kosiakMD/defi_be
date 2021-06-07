@@ -34,6 +34,8 @@ async function bootstrap() {
     }),
   });
 
+  app.enableShutdownHooks();
+
   app.useGlobalPipes(new ValidationPipe());
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
@@ -41,15 +43,17 @@ async function bootstrap() {
 
   app.useLogger(logger);
 
-  const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+  const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
-  const config = new DocumentBuilder()
-    .setTitle(SERVICE_NAME)
-    .setDescription(`${SERVICE_NAME} service description`)
-    .setVersion('1.0') // temporary global as only 1 version
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  if (NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle(SERVICE_NAME)
+      .setDescription(`${SERVICE_NAME} service description`)
+      .setVersion('1.0') // temporary global as only 1 version
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
 
   await app.listen(SERVICE_PORT, SERVICE_HOST);
 }

@@ -30,7 +30,8 @@ import {
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
-import { abi, PROTOCOL_NAME } from '../utils/util';
+import { abi } from '../utils/util';
+import { PROJECT_PANCAKE } from '../pools/pools.setting';
 
 @Injectable()
 export class Mapper {
@@ -49,7 +50,7 @@ export class Mapper {
   ): Promise<Base[]> {
     const base: Base[] = [];
 
-    const chainId = protocolName === PROTOCOL_NAME ? 2 : 1;
+    const chainId = protocolName === PROJECT_PANCAKE ? 2 : 1;
     for (const address of userAddresses) {
       const transactions: Transactions = {
         chainId: chainId,

@@ -1,10 +1,10 @@
-import { HttpModule } from '@nestjs/common';
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { ApprovalsModule } from './approvals/approvals.module';
+import { AssetsModule } from './assets/assets.module';
 import { BalanceModule } from './balance/balance.module';
 import { ChainModule } from './chain/chain.module';
 import configuration from './config/configuration';
@@ -44,6 +44,7 @@ import { winstonParams } from './utils/winston';
     TransactionsModule,
     ApprovalsModule,
     ChainModule,
+    AssetsModule,
   ],
   controllers: [HealthController],
 })

@@ -4,6 +4,7 @@ import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
+import { AssetsDto } from '../assets/assets.dto';
 import { Logger } from '../common/Logger/Logger.service';
 import { Address, Chains } from '../common/interfaces';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
@@ -18,6 +19,7 @@ export class AccountService {
   private readonly getTransfersUrl: string;
   private readonly getBalanceUrl: string;
   private readonly getApprovalsUrl: string;
+  private readonly getAssetsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -42,6 +44,9 @@ export class AccountService {
 
     const approvalsPath = this.configService.get<string>('ACCOUNT_APPROVALS');
     this.getApprovalsUrl = `${url}/${approvalsPath}`;
+
+    const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
+    this.getAssetsUrl = `${url}/${assetsPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -115,6 +120,22 @@ export class AccountService {
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getAssets(): Promise<AssetsDto[]> {
+    try {
+      this.logger.time(this.getAssetsUrl);
+      const data = await this.httpService
+        .get(this.getAssetsUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getAssetsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      this.logger.error(e, 'AccountService.getAssets');
       throw e;
     }
   }

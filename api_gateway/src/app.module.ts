@@ -44,6 +44,8 @@ import { filterObjectKeys } from './utils/object';
 import { isAllUppercase } from './utils/string';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
+import { AssetsController } from './assets/assets.controller';
+import { AssetsService } from './assets/assets.service';
 
 @Module({
   imports: [
@@ -91,6 +93,7 @@ import { VaultsModule } from './vaults/vaults.module';
     // PlatformController,
     TransactionsController,
     TransfersController,
+    AssetsController,
     // ScansApiController,
   ],
   providers: [
@@ -119,6 +122,7 @@ import { VaultsModule } from './vaults/vaults.module';
     PricesService,
     TransfersService,
     AccountService,
+    AssetsService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

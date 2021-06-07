@@ -6,6 +6,7 @@ import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
 import { TransactionsResponseDto } from './transactions.dto';
 import { TransactionsResponse } from './transactions.interfaces';
+import { TransactionQueryDto } from './transaction.query.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -33,9 +34,9 @@ export class TransactionsController {
   })
   @ApiResponse({ status: 200, type: TransactionsResponseDto })
   public getTransactions(
-    @Query('addresses') addresses: string,
-    @Query('chains') chains: string,
+    @Query() query: TransactionQueryDto,
   ): Promise<TransactionsResponse[]> {
+    const {addresses, chains} = query;
     return this.service.getTransactions(addresses, chains);
   }
 }

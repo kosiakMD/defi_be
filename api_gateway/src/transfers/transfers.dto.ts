@@ -1,7 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { Address, Chains } from '../common/interfaces';
 import { splitToArray } from '../utils/transform';
@@ -106,10 +107,16 @@ export class TransferQueryDto implements TransferQuery {
   @IsNotEmpty()
   @Transform(({ value }) => splitToArray(value))
   @IsString({ each: true })
-  addresses;
+  addresses: Address[];
 
   @IsOptional()
-  @Transform(({ value }) => splitToArray(value).map((x) => parseInt(x, 10)))
+  @Transform(({ value, key }) => {
+    if (key && !value) {
+      throw new BadRequestException(`Empty param '${key}' is not allowed`)
+    }
+    return splitToArray(value).map((x) => parseInt(x, 10))
+  })
+  @IsArray()
   @IsInt({ each: true })
-  chains;
+  chains: Chains;
 }

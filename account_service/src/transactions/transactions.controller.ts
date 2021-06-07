@@ -77,17 +77,19 @@ export class TransactionsController {
   @ApiQuery({
     name: 'addresses',
     type: String,
-    description: 'Array of Addresses (comma separated)',
-    example:
-      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
+    description: 'Array of Addresses',
+    example: [
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac'
+      ],
   })
   @ApiQuery({
     name: 'chains',
-    type: String,
+    type: Number,
+    isArray: true,
     required: false,
-    description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
-    example: '',
+    description: `Array of chains' ID`,
+    example: [1,2],
+    // example: '',
   })
   @ApiResponse({ status: 200, type: TransactionsScanResponseDto, isArray: true })
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {

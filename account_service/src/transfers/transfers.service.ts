@@ -213,7 +213,7 @@ export class TransfersService {
     await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
 
     const allTransfers = transfers;
-    if (chains.filter((n) => isEthChain(n))) {
+    if (chains && chains.length && chains.filter((n) => isEthChain(n))) {
       // this call works pretty fast, but there is no block timestamp fuck!
       const additionalTransfers = await this.assetService.getConvertedTransfers(
         uniqueLowerCaseAddresses,

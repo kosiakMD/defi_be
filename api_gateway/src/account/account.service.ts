@@ -59,7 +59,7 @@ export class AccountService {
     }
   }
 
-  async getTransactions(addresses: string, chains?: string): Promise<TransactionsResponse[]> {
+  async getTransactions(addresses: Address[], chains?: Chains): Promise<TransactionsResponse[]> {
     try {
       this.logger.time(this.getTransactionsUrl);
       const data = await this.httpService

@@ -2,8 +2,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { HireController } from './hire.controller';
-import { HireService } from './hire.service';
+import { MailController } from './mail.controller';
+import { MailService } from './mail.service';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { HireService } from './hire.service';
       }),
     }),
   ],
-  controllers: [HireController],
-  providers: [HireService],
+  controllers: [MailController],
+  providers: [MailService],
 })
-export class HireModule {}
+export class MailModule {}

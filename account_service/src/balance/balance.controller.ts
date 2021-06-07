@@ -45,7 +45,7 @@ export class BalanceController {
     const { addresses, chains, internal } = query;
 
     return internal
-      ? this.balanceService.getBalanceDataFromDb(addresses, chains)
-      : this.scanService.getBalanceDataFromChains(addresses, chains);
+      ? this.scanService.getBalanceDataFromChains(addresses, chains)
+      : this.balanceService.getBalanceDataFromDb(addresses, chains)
   }
 }

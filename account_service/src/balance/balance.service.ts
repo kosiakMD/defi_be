@@ -12,7 +12,6 @@ import {
   decimalsAmount,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
-  WETH_ADDRESS,
 } from '../utils/utils';
 import { isBnbAddress } from '../utils/web3';
 import { getUtilTokenPrice, mapTokenBalances } from './balance_util/balance.util';
@@ -141,7 +140,7 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_ETH);
-    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
+    const tokensAddresses = tokenRows.map(({ address }) => address.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,
@@ -195,7 +194,7 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_BSC);
-    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
+    const tokensAddresses = tokenRows.map(({ address }) => address.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,

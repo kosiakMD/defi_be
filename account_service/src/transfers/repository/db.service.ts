@@ -16,6 +16,7 @@ export class DbService {
         asset_transfers.from AS fromaddress,
         asset_transfers.to AS toaddress,
         asset_transfers.timestamp AS blocktimestamp,
+        asset_transfers.value as amount,
         assets.address as assetaddress,
         assets.name AS tokenname,
         assets.symbol AS tokensymbol,

@@ -76,6 +76,7 @@ export class TransfersService {
         convertedDbTransfers.push({
           tokenAddress: dbTransfer.assetaddress.toLowerCase(),
           hash: dbTransfer.hash,
+          amount: dbTransfer.amount,
           fromAddress: dbTransfer.fromaddress,
           toAddress: dbTransfer.toaddress,
           blockTimeStamp: dbTransfer.blocktimestamp,
@@ -84,6 +85,7 @@ export class TransfersService {
           tokenDecimals: dbTransfer.tokendecimals
         })
       })
+
       return convertedDbTransfers
     } catch (e) {
       this.logger.error(e, 'queryTransfers');

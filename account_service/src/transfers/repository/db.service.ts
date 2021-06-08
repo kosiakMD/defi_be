@@ -5,8 +5,9 @@ import { Address } from '../../common/interfaces';
 
 @Injectable()
 export class DbService {
-  async getTransfersDataFromDb(addresses: Address[],  chainId: number): Promise<any> {
-    const addressesString = addresses.map((address) => `'${address}'`).join(',');
+  async getTransfersDataFromDb(addresses: Address[], chainId: number): Promise<any> {
+    const addressesString = addresses.map((address) => `'${address}'`)
+      .join(',');
     const manager = getManager();
 
     return await manager.query(`
@@ -15,6 +16,7 @@ export class DbService {
         asset_transfers.from AS fromaddress,
         asset_transfers.to AS toaddress,
         asset_transfers.timestamp AS blocktimestamp,
+        assets.address as assetaddress,
         assets.name AS tokenname,
         assets.symbol AS tokensymbol,
         assets.decimals AS tokendecimals

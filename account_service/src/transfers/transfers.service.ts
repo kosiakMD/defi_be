@@ -74,6 +74,7 @@ export class TransfersService {
       let convertedDbTransfers: TransactionWithToken[] = []
       dbTransfers.map(dbTransfer => {
         convertedDbTransfers.push({
+          tokenAddress: dbTransfer.assetaddress.toLowerCase(),
           hash: dbTransfer.hash,
           fromAddress: dbTransfer.fromaddress,
           toAddress: dbTransfer.toaddress,

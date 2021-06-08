@@ -15,6 +15,7 @@ export class DbService {
 
     return manager.query(`
       select balances.*,
+        assets.address as "tokenAddress",
         assets.name as "tokenName",
         assets.symbol as "tokenSymbol",
         assets.decimals as "tokenDecimals"

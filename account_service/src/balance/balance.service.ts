@@ -134,7 +134,11 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_ETH);
-    const tokensAddresses = tokenRows.map(({ address }) => address.toLowerCase());
+    tokenRows.forEach(t => {
+      t.address = t.address.toLowerCase();
+      t.tokenAddress = t.tokenAddress.toLowerCase()
+    })
+    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,
@@ -181,7 +185,11 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_BSC);
-    const tokensAddresses = tokenRows.map(({ address }) => address.toLowerCase());
+    tokenRows.forEach(t => {
+      t.address = t.address.toLowerCase();
+      t.tokenAddress = t.tokenAddress.toLowerCase()
+    })
+    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,

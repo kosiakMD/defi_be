@@ -24,7 +24,7 @@ export class DbService {
       where asset_transfers.from IN (${addressesString})
       or asset_transfers.to IN (${addressesString})
       order by asset_transfers.id DESC
-      limit 1000
+      limit 10000
     `);
   }
 }

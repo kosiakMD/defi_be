@@ -111,9 +111,16 @@ export class AssetsTransfersStore {
     return await this.repository.query(queryStart.concat(valuesConcatenated));
   }
 
-  async insertFromSelect(tokenAddress: string, tokenId: number, fromBlock: number, toBlock: number): Promise<number> {
-    const query = `select migrate_erc20(${tokenId}, '${tokenAddress}', ${fromBlock}, ${toBlock}) as inserted_rows;`
-    const queryResult = await this.repository.query(query)
-    return queryResult[0].inserted_rows
+  async insertFromSelect(tokenAddress: string, chainId: number, tokenId: number, fromBlock: number, toBlock: number): Promise<number> {
+    if (chainId === 1) {
+      const query = `select migrate_erc20(${tokenId}, '${tokenAddress}', ${fromBlock}, ${toBlock}) as inserted_rows;`
+      const queryResult = await this.repository.query(query)
+      return queryResult[0].inserted_rows
+    } else if (chainId === 2) {
+      const query = `select migrate_erc20_bsc(${tokenId}, '${tokenAddress}', ${fromBlock}, ${toBlock}) as inserted_rows;`
+      const queryResult = await this.repository.query(query)
+      return queryResult[0].inserted_rows
+    }
+    throw Error(`chain id ${chainId} is not correct for migration query`)
   }
 }

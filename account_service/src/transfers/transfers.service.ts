@@ -10,10 +10,7 @@ import { PriceService } from '../price/price.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
-import {
-  BlocksSubgraph,
-  ResponseData as BlocksResponseData,
-} from '../thegraph/blocks/blocks.subgraph';
+import { BlocksSubgraph, ResponseData as BlocksResponseData } from '../thegraph/blocks/blocks.subgraph';
 import {
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
@@ -71,9 +68,22 @@ export class TransfersService {
     return allTransfersResponse;
   }
 
-  async queryTransfers(addresses: Address[]): Promise<TransactionWithToken[]> {
+  async queryTransfers(addresses: Address[], chainId): Promise<TransactionWithToken[]> {
     try {
-      return await this.dbService.getTransfersDataFromDb(addresses);
+      const dbTransfers = await this.dbService.getTransfersDataFromDb(addresses, chainId);
+      let convertedDbTransfers: TransactionWithToken[] = []
+      dbTransfers.map(dbTransfer => {
+        convertedDbTransfers.push({
+          hash: dbTransfer.hash,
+          fromAddress: dbTransfer.fromaddress,
+          toAddress: dbTransfer.toaddress,
+          blockTimeStamp: dbTransfer.blocktimestamp,
+          tokenName: dbTransfer.tokenname,
+          tokenSymbol: dbTransfer.tokensymbol,
+          tokenDecimals: dbTransfer.tokendecimals
+        })
+      })
+      return convertedDbTransfers
     } catch (e) {
       this.logger.error(e, 'queryTransfers');
       throw e;
@@ -84,9 +94,8 @@ export class TransfersService {
     addressArray: Address[],
     chainId: Chain,
   ): Promise<TransfersResponse> {
-    const transferRows = await this.queryTransfers(addressArray);
+    const transferRows = await this.queryTransfers(addressArray, chainId);
     const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
-
     return this.toTransfersResponse(transferRowsWithTokenPrices, addressArray, chainId);
   }
 
@@ -125,7 +134,6 @@ export class TransfersService {
       const userTransactions = transactions.filter(
         (transaction) => transaction.toAddress === address || transaction.fromAddress === address,
       );
-
       const uniqueUserHashes: string[] = getUniqueAndToLowerCaseArrayData(
         userTransactions.map((transaction) => transaction.hash),
       );

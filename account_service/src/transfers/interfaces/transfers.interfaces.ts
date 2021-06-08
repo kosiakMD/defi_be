@@ -47,40 +47,40 @@ export interface FinallyResponse {
 
 export interface TransactionWithToken {
   hash: string;
-  blockNumber: number;
+  blockNumber?: number;
   fromAddress: string;
   toAddress: string;
   blockTimeStamp: number;
-  gas: number;
-  gasUsed: number;
-  gasPrice: number;
-  amount: number;
-  tokenAddress: string;
-  tokenPrice: number;
-  ethPrice: number;
+  gas?: number;
+  gasUsed?: number;
+  gasPrice?: number;
+  amount?: number;
+  tokenAddress?: string;
+  tokenPrice?: number;
+  ethPrice?: number;
   tokenName: string;
   tokenSymbol: string;
   tokenDecimals: number;
-  tokenTotalSupply: number;
+  tokenTotalSupply?: number;
 }
 
 export interface TransactionWithTokenAndPrices {
   hash: string;
-  blockNumber: number;
+  blockNumber?: number;
   fromAddress: string;
   toAddress: string;
   blockTimeStamp: number;
-  gas: number;
-  gasUsed: number;
-  gasPrice: number;
-  amount: number;
-  tokenAddress: string;
-  tokenPrice: number;
-  ethPrice: number;
+  gas?: number;
+  gasUsed?: number;
+  gasPrice?: number;
+  amount?: number;
+  tokenAddress?: string;
+  tokenPrice?: number;
+  ethPrice?: number;
   tokenName: string;
   tokenSymbol: string;
   tokenDecimals: number;
-  tokenTotalSupply: number;
+  tokenTotalSupply?: number;
   tokenPriceUSD: number;
   totalPriceUSD: number;
 }

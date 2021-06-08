@@ -504,7 +504,9 @@ export class Mapper {
           }
         });
 
-        StakingPositionsToPush.push(position);
+        if (position.liquidityPoolTokens && position.liquidityPoolTokens.length) {
+          StakingPositionsToPush.push(position);
+        }
       }
     }
     staking.stakingPositions.push(...StakingPositionsToPush);

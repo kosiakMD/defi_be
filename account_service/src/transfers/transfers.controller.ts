@@ -40,9 +40,7 @@ export class TransfersController {
   async getTransfersByAddresses(
     @Query() query: TransfersQueryDto,
   ): Promise<TransfersResponse | []> {
-    const { addresses, chains, internal } = query;
-    return internal
-      ? this.transactionService.getAllTransactionDataByAddress(addresses)
-      : this.transactionService.getExternalTransfers(addresses, chains);
+    const { addresses } = query;
+    return this.transactionService.getAllTransactionDataByAddress(addresses)
   }
 }

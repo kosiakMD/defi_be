@@ -4,7 +4,6 @@ import Web3 from 'web3';
 import { Web3Provider } from '../chain/web3.provider';
 import { Address } from '../common/interfaces';
 import { Chain, Chains } from '../common/types';
-import { MulticallService } from '../multicall/multicall.service';
 import { PriceService } from '../price/price.service';
 import {
   CHAIN_ID_BSC,
@@ -33,19 +32,14 @@ import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
 export class BalanceService {
   private readonly instanceChainProviderEth: Web3;
   private readonly instanceChainProviderBsc: Web3;
-  private readonly noDbTokensEth: string[];
-  private readonly noDbTokensBsc: string[];
 
   constructor(
     private readonly dbService: DbService,
     private readonly chainProvider: Web3Provider,
     private readonly priceService: PriceService,
-    private readonly multicallService: MulticallService,
   ) {
     this.instanceChainProviderEth = this.chainProvider.instanceEth();
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
-    this.noDbTokensEth = NO_DB_ETH_TOKENS.map((token) => token.address);
-    this.noDbTokensBsc = NO_DB_BNB_TOKENS.map((token) => token.address);
   }
 
   private getPricesAndBalances(tokensAddresses, chainId: Chain, accountsArray): Promise<any[]> {
@@ -150,18 +144,11 @@ export class BalanceService {
 
     const priceArray = getUtilTokenPrice(NO_DB_ETH_TOKENS, tokenPrices.prices);
 
-    const multicallBalances = await this.multicallService.multicall(
-      this.noDbTokensEth,
-      accountsArray,
-      this.instanceChainProviderEth,
-    );
-
     const etherTokenBalances = await this.getArrayOfTokenBalances(
       balances,
       priceArray,
       NO_DB_ETH_TOKENS,
-      CHAIN_ID_ETH,
-      multicallBalances,
+      CHAIN_ID_ETH
     );
 
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_ETH));
@@ -204,18 +191,12 @@ export class BalanceService {
 
     const priceArray = getUtilTokenPrice(NO_DB_BNB_TOKENS, tokenPrices.prices);
 
-    const multicallBalances = await this.multicallService.multicall(
-      this.noDbTokensBsc,
-      accountsArray,
-      this.instanceChainProviderBsc,
-    );
 
     const bscTokenBalances = await this.getArrayOfTokenBalances(
       balances,
       priceArray,
       NO_DB_BNB_TOKENS,
       CHAIN_ID_BSC,
-      multicallBalances,
     );
 
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_BSC));

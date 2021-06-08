@@ -5,32 +5,29 @@ import { AssetsEntity } from './assets.entity';
 import { AssetState } from './assets.interface';
 
 export class AssetsDto {
-  @ApiProperty({ type: String, example: 13 })
-  id;
+  @ApiProperty({ type: Number, example: 13 })
+  id: number;
   @ApiProperty({ type: String, example: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9' })
-  address;
+  address: string;
   @ApiProperty({ type: String, example: 'Aave' })
-  name;
+  name: string;
   @ApiProperty({ type: String, example: 'AAVE' })
-  symbol;
+  symbol: string;
   @ApiProperty({ type: Number, example: 1 })
-  chain;
+  chain: number;
   @ApiProperty({ type: Number, example: 18 })
-  decimals;
+  decimals: number;
 
   @Exclude()
-  @ApiProperty({ type: Boolean, example: true })
-  isReadyToMigrate;
-
+  isReadyToMigrate: boolean;
   @Exclude()
-  @ApiProperty({ type: Boolean, example: false })
-  isHistoricalDataMigrated;
+  isMigrated: boolean;
 
   @ApiProperty({ type: String, example: AssetState.processing })
   @Expose()
   get status(): AssetState {
     return this.isReadyToMigrate // if not - processing not started = pending, f yes ->
-      ? this.isHistoricalDataMigrated // if not - processing started if yes - finished = ready,
+      ? this.isMigrated // if not - processing started if yes - finished = ready,
         ? AssetState.ready
         : AssetState.processing
       : AssetState.pending;

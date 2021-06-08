@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { AssetState } from './assets.interface';
 
 export class AssetsDto {
-  @ApiProperty({ type: String, example: 13 })
+  @ApiProperty({ type: Number, example: 13 })
   id: number;
   @ApiProperty({ type: String, example: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9' })
   address: string;

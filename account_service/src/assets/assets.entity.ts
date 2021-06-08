@@ -26,6 +26,6 @@ export class AssetsEntity {
   @Column({ name: 'is_ready_to_migrate' })
   isReadyToMigrate: boolean;
 
-  @Column({ name: 'is_historical_data_migrated' })
-  isHistoricalDataMigrated: boolean;
+  @Column({ name: 'is_migrated' })
+  isMigrated: boolean;
 }

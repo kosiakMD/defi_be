@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
 import { Address } from '../../common/interfaces';
-import { TransactionWithToken } from '../interfaces/transfers.interfaces';
 
 @Injectable()
 export class DbService {

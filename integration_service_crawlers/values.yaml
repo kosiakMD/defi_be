@@ -7,6 +7,7 @@ configMaps:
     AMM_BALANCER_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
     AMM_PANCAKE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
     AMM_CURVE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
+    AMM_SUSHISWAP_NATIVE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/exchange
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
     BLOCKS_BSC_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/pancakeswap/blocks

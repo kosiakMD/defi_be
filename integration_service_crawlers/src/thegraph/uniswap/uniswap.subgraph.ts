@@ -349,6 +349,80 @@ export class UniswapSubgraph {
       .pipe(map((response) => response.data))
       .toPromise();
   }
+
+  async getUniswapTransactionsByBlockNumber(blockNumber: number): Promise<ResponseTransactionData> {
+    return this.httpService
+      .post<ResponseTransactionData>(this.subgraphUrl, {
+        operationName: 'transactions',
+        variables: {
+          blockNumber: blockNumber,
+        },
+        query: `query transactions($blockNumber: Int!) {
+					transactions (first: 1000 block:{number: $blockNumber} where: {blockNumber: $blockNumber}) {
+						blockNumber
+						timestamp
+						mints {
+							sender
+							to
+							transaction {
+								id
+								timestamp
+								blockNumber
+							}
+							liquidity
+							amount0
+							amount1
+							amountUSD
+							pair {
+								id
+								token0 {
+									id
+									name
+									symbol
+									decimals
+								}
+								token1 {
+									id
+									name
+									symbol
+									decimals
+								}
+							}
+						}
+						burns {
+							sender
+							to
+							transaction {
+								 id
+								 timestamp
+								 blockNumber
+							}
+							liquidity
+							amount0
+							amount1
+							amountUSD
+							pair {
+								id
+								token0 {
+									id
+									name
+									symbol
+									decimals
+								}
+								token1 {
+									id
+									name
+									symbol
+									decimals
+								}
+							}
+						}
+					}
+				}`,
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
 }
 
 interface ResponseTransactionData {

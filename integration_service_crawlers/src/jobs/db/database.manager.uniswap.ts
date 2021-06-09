@@ -55,7 +55,7 @@ export class DatabaseManagerUniswap {
   static getSqlValuesToInsert(transactions: Transaction[], field: string): string {
     const isSwap = field === 'swaps';
     return transactions
-      .filter((transaction) => !!transaction[field].length)
+      .filter((transaction) => transaction[field] && transaction[field].length)
       .map((transaction) => {
         return transaction[field]
           .map(

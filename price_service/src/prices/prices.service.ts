@@ -4,6 +4,7 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import _ from 'lodash';
 import { EntityManager, Repository } from 'typeorm';
+
 import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';
 import { SECONDS_IN_DAY, SECONDS_IN_HOUR, timestampNow } from '../utils/time';
@@ -41,7 +42,7 @@ type AssetPrices = {
 type AssetV2Additional = {
   platform: string;
   isLp: boolean;
-}
+};
 
 type AssetPricesV2 = AssetPrices & AssetV2Additional;
 
@@ -107,16 +108,18 @@ export class PriceService {
     const addresses = list.map(({ address }) => address);
     return addresses;
   }
-  
+
   async getCurrentPricesV2(
     query: CurrentPricesRequest,
   ): Promise<PriceResponseDto<CurrentPricesPayloadV2>> {
     const { chain, currency, addresses } = query;
 
     const allPrices = await this.getAllAssetPricesV2(chain, currency, addresses);
-    const response = addresses.reduce<{ [address: string]: { price: number, platform: string, isLp: boolean } }>((map, address) => {
-      const assetPrices = allPrices.find((asset) => { 
-        return  asset.address === address;
+    const response = addresses.reduce<{
+      [address: string]: { price: number; platform: string; isLp: boolean };
+    }>((map, address) => {
+      const assetPrices = allPrices.find((asset) => {
+        return asset.address === address;
       });
       const prices = assetPrices?.prices || [];
       const price = this.getCurrentPrice(prices);
@@ -125,7 +128,7 @@ export class PriceService {
         [address]: {
           price,
           platform: allPrices[0].platform,
-          isLp: allPrices[0].isLp
+          isLp: allPrices[0].isLp,
         },
       };
     }, {});
@@ -169,21 +172,24 @@ export class PriceService {
     const { chain, currency, addresses, timestamps } = query;
 
     const allPrices = await this.getAllAssetPricesV2(chain, currency, addresses);
-    const response = addresses.reduce<{ [address: string]: { prices: TimestampKeyPrice, platform: string, isLp: boolean } }>((map, address) => {
+    const response = addresses.reduce<{
+      [address: string]: { prices: TimestampKeyPrice; platform: string; isLp: boolean };
+    }>((map, address) => {
       const assetPrices = allPrices.find((asset) => asset.address === address);
       const prices = assetPrices?.prices || [];
-      const { platform, isLp } = assetPrices || { platform:'', isLp: false };
+      const { platform, isLp } = assetPrices || { platform: '', isLp: false };
 
       return {
         ...map,
-        [address]: {prices: this.matchPrices(
+        [address]: {
+          prices: this.matchPrices(
             this.allowedHistoricalPriceThresholdInSeconds,
             timestamps,
             prices,
           ),
           platform: platform,
-          isLp: isLp
-        }
+          isLp: isLp,
+        },
       };
     }, {});
 
@@ -353,8 +359,13 @@ export class PriceService {
       const cachedPrices = await this.cache.get<TimestampPrice[]>(cacheKey);
       const cacheDetailsKey = this.getDetailsCacheKey(chain, currency, address);
       const cachedDetailsPrices = await this.cache.get<TokenDetails>(cacheDetailsKey);
-      if (cachedPrices && cachedDetailsPrices) {
-        cached.push({ address, prices: cachedPrices, isLp: cachedDetailsPrices['isLp'], platform: cachedDetailsPrices['platform'] });
+      if (!_.isEmpty(cachedPrices) && cachedDetailsPrices) {
+        cached.push({
+          address,
+          prices: cachedPrices,
+          isLp: cachedDetailsPrices['isLp'],
+          platform: cachedDetailsPrices['platform'],
+        });
       } else {
         notCached.push(address);
       }
@@ -362,7 +373,6 @@ export class PriceService {
 
     return { cached, notCached };
   }
-
 
   private mapRowsToAssetPricesV2(rows: PriceRowV2[]): AssetPricesV2[] {
     const pricesMap = rows.reduce<{ [address: string]: TimestampPrice[] }>(
@@ -375,7 +385,7 @@ export class PriceService {
       }),
       {},
     );
-    
+
     return Object.keys(pricesMap).map<AssetPricesV2>((address) => ({
       address,
       platform: rows[0].platform,

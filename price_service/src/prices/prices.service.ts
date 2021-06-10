@@ -333,7 +333,7 @@ export class PriceService {
     for (const address of addresses) {
       const cacheKey = this.getCacheKey(chain, currency, address);
       const cachedPrices = await this.cache.get<TimestampPrice[]>(cacheKey);
-      if (cachedPrices) {
+      if (cachedPrices?.length) {
         cached.push({ address, prices: cachedPrices });
       } else {
         notCached.push(address);

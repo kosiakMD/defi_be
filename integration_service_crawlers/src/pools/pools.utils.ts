@@ -51,17 +51,21 @@ export function getIl(pairCurrent: Pair, pairPast: Pair): [number, number] {
   const t0PricePast = pairPast.reserveUSD / 2 / pairPast.reserve0
   const t1PricePast = pairPast.reserveUSD / 2 / pairPast.reserve1
 
+  const lpRatio = pairPast.reserveUSD/pairCurrent.reserveUSD - 1;
+
   let t0PriceChange = t0PriceCurrent/t0PricePast
   let t1PriceChange = t1PriceCurrent/t1PricePast
 
-  const valueOfPool = Math.pow(t0PriceChange, 50/100) * Math.pow(t1PriceChange, 50/100)
-  const holdValue = t0PriceChange * (50/100) + t1PriceChange * (50/100)
-  const impermanentLoss = (valueOfPool / holdValue - 1) * 100
+  const valueOfPool = Math.pow(t0PriceChange, 50/100) * Math.pow(t1PriceChange, 50/100);
+  const assetValue = t0PriceChange * (50/100) + t1PriceChange * (50/100);
+  const impermanentLoss = (valueOfPool / assetValue - 1) * 100;
+  const poolIlPercent = impermanentLoss * lpRatio;
 
   const holdValueUSD = pairPast.reserve0 * t0PriceCurrent + pairPast.reserve1 * t1PriceCurrent
-  const impermanentLossUSD = impermanentLoss * holdValueUSD
+  const impermanentLossUSD = poolIlPercent * holdValueUSD
+
   return [
-    impermanentLoss,
+    poolIlPercent,
     impermanentLossUSD
   ]
 }

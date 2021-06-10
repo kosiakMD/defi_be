@@ -39,7 +39,7 @@ export class DbService {
         ) as reduced
       group by address, asset_id) as balances
       join assets on asset_id = assets.id
-      where assets.chain_id = ${chainId} and amount > 0
+      where assets.is_migrated = true and assets.chain_id = ${chainId} and amount > 0
     `);
   };
 }

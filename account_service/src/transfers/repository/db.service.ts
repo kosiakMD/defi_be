@@ -23,7 +23,9 @@ export class DbService {
         assets.decimals AS tokendecimals
       from asset_transfers
       left join assets on asset_transfers.asset_id = assets.id
-      where assets.chain_id = ${chainId} and (
+      where assets.chain_id = ${chainId}
+        and assets.is_migrated = true
+        and (
           asset_transfers.from IN (${addressesString})
             or asset_transfers.to IN (${addressesString})
           )

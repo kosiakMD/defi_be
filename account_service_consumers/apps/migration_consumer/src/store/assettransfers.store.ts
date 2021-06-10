@@ -71,13 +71,13 @@ export class AssetsTransfersStore {
     return eventsDto
   }
 
-  async insert(transfer: AssetTransfersEntity): Promise<any> {
+  async insert(transfer: AssetTransfersEntity, logIndex: number): Promise<any> {
     if (!transfer) {
       return;
     }
     const insertQuery = `insert into asset_transfers (id, asset_id, "from", "to", value, timestamp, tx_hash) 
         values (
-                default, 
+                '${transfer.txHash + '-' + logIndex}', 
                 ${transfer.assetId}, 
                 ` + (transfer.from ? `'${transfer.from}'` : null) + `,
                 ` + (transfer.to ? `'${transfer.to}'` : null) + `,

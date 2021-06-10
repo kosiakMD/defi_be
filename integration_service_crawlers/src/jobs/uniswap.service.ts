@@ -93,7 +93,9 @@ export class UniswapService {
 
   protected async migrateBlockData(number: number): Promise<any> {
     const [transactions, snapshots] = await Promise.all([
-      this.subgraph.getTransactionsByBlockNumber(Number(number)),
+      this.constructor.name === 'UniswapService'
+        ? this.subgraph.getUniswapTransactionsByBlockNumber(Number(number))
+        : this.subgraph.getTransactionsByBlockNumber(Number(number)),
       this.subgraph.getShapshotsByBlockNumber(Number(number)),
     ]);
 

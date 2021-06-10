@@ -1,8 +1,4 @@
-export interface HireRequest {
-  address: string;
-}
-
-export interface HireEmailResponse {
+export interface EmailResponse {
   accepted: string[];
   rejected: any[];
   envelopeTime: number;
@@ -14,4 +10,15 @@ export interface HireEmailResponse {
     to: string[];
   };
   messageId: string;
+}
+export interface HireRequest {
+  email: string;
+  name: string;
+  letter: string;
+}
+
+export interface QuestionRequest {
+  email: string;
+  name: string;
+  letter: string;
 }

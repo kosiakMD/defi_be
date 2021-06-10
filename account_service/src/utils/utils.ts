@@ -19,7 +19,12 @@ export const EXCLUDE_TRANSFER_TOKEN_ADDRESSES = [WBNB_ADDRESS, imBTC, SNX];
 export const CHAIN_ID_ETH: Chain = 1;
 export const CHAIN_ID_BSC: Chain = 2;
 
-export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
+export function getUniqueAndToLowerCaseArrayData(array: any): string[] {
+
+  if (typeof array === 'string') {
+     return [array.toLowerCase()]
+  }
+
   const temp: string[] = [];
   array.forEach((el) => {
     if (!temp.includes(el.toLowerCase())) {

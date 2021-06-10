@@ -25,6 +25,6 @@ export class MigrationService {
 
   protected async migrateExistedData(migrationDto: HistoricalMigrationEvent, fromBlock, toBlock): Promise<number> {
     const asset: AssetsEntity = await this.assetsStore.findOne(migrationDto.assetId)
-    return this.assetsTransfersStore.insertFromSelect(asset.address, migrationDto.assetId, fromBlock, toBlock)
+    return this.assetsTransfersStore.insertFromSelect(asset.address, asset.chainId, migrationDto.assetId, fromBlock, toBlock)
   }
 }

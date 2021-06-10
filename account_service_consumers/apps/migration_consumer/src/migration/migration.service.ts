@@ -23,8 +23,7 @@ export class MigrationService {
         'migration.service',
       );
 
-      await this.assetsTransfersStore.insert(transfer)
-      await this.assetsStore.incrementTransfersCount(event.assetId, 1)
+      await this.assetsTransfersStore.insert(transfer, event.logIndex)
       return 1
     }
     return 0

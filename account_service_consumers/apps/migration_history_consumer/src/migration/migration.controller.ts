@@ -32,6 +32,7 @@ export class MigrationController {
       context.getChannelRef().ack(context.getMessage())
       await this.utilsDatabase.dbTransactionCommit()
     } catch (e) {
+      await this.utilsDatabase.dbTransactionRollback()
       this.logger.error(e)
       this.logger.error('error during asset data migration ' + JSON.stringify(data))
       // make delay in order to avoid next consumer overloading

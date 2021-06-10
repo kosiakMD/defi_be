@@ -30,7 +30,7 @@ import {
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
-import { abi } from '../utils/util';
+import { abi, decimalsDivider } from '../utils/util';
 import { PROJECT_PANCAKE } from '../pools/pools.setting';
 
 @Injectable()
@@ -446,7 +446,9 @@ export class Mapper {
 
         const position = {
           address: element.id.slice(index),
-          staked: element.amount * 10 ** -18,
+          staked: new BN(element.amount) //
+            .div(decimalsDivider(18))
+            .toString(),
           lpToken: lpToken,
           rewardToken: {
             address: address,
@@ -454,7 +456,9 @@ export class Mapper {
             symbol: 'SUSHI',
             decimals: 18,
             totalSupply: null,
-            claimable: (await this.getPendingSushi(poolId, staking.userAddress)) * 10 ** -18,
+            claimable: new BN(await this.getPendingSushi(poolId, staking.userAddress)) //
+              .div(decimalsDivider(18))
+              .toNumber(),
             priceUSD: usdPriceOfRewardToken.prices[address],
           },
           exitedAt: null,
@@ -500,7 +504,9 @@ export class Mapper {
           }
         });
 
-        StakingPositionsToPush.push(position);
+        if (position.liquidityPoolTokens && position.liquidityPoolTokens.length) {
+          StakingPositionsToPush.push(position);
+        }
       }
     }
     staking.stakingPositions.push(...StakingPositionsToPush);

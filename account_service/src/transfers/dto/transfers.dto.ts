@@ -25,8 +25,11 @@ export class TransfersQueryDto implements TransfersQuery {
 
   @IsOptional()
   @Transform(({ value, key }) => {
+    if (key && !value) {
+      throw new BadRequestException(`Empty param '${key}' is not allowed`);
+    }
     if (!Array.isArray(value)) {
-      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+      throw new BadRequestException(`Wrong format of '${key}' - is not an Array`);
     }
     return value.map((x) => parseInt(x, 10));
   })

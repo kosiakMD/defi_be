@@ -1,7 +1,11 @@
 import { Repository } from 'typeorm';
-
+import BigNumber, { BigNumber as BN } from 'bignumber.js';
 import { UniswapLiquidityPosition } from '../interfaces/liquidity.position.interfaces';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
+
+type Decimals = string | number;
+
+export const decimalsDivider = (decimals: Decimals): BigNumber => new BN(10).pow(decimals);
 
 export const abi = [
   {
@@ -354,7 +358,7 @@ export async function getDataByAddresses<T, K, V, E>(
   subgraph: UniswapSubgraph = null,
 ) {
   const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
-  const flag = subgraph.constructor.name === 'SushiswapSubgraph';
+  const flag = subgraph && subgraph.constructor.name === 'SushiswapSubgraph';
   const [swapFrom, mint, burn, snapshot, liquidityPosition, stakingPositions] = await Promise.all([
     repository1
       .createQueryBuilder()

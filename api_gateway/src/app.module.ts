@@ -25,8 +25,8 @@ import configuration from './config/configuration';
 import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
-import { HireModule } from './hire/hire.module';
 import { IntegrationService } from './integration/integration.service';
+import { MailModule } from './mail/mail.module';
 import { PancakeController } from './pancake/pancake.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
@@ -44,6 +44,8 @@ import { filterObjectKeys } from './utils/object';
 import { isAllUppercase } from './utils/string';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
+import { AssetsController } from './assets/assets.controller';
+import { AssetsService } from './assets/assets.service';
 
 @Module({
   imports: [
@@ -76,7 +78,7 @@ import { VaultsModule } from './vaults/vaults.module';
     GasModule,
     PricesModule,
     ScansApiModule,
-    HireModule,
+    MailModule,
   ],
   controllers: [
     HealthController,
@@ -91,6 +93,7 @@ import { VaultsModule } from './vaults/vaults.module';
     // PlatformController,
     TransactionsController,
     TransfersController,
+    AssetsController,
     // ScansApiController,
   ],
   providers: [
@@ -119,6 +122,7 @@ import { VaultsModule } from './vaults/vaults.module';
     PricesService,
     TransfersService,
     AccountService,
+    AssetsService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

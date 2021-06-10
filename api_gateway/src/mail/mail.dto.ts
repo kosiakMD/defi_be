@@ -2,7 +2,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 
-import { HireEmailResponse, HireRequest } from './hire.interface';
+import { EmailResponse, HireRequest } from './mail.interface';
 
 export class HireEmailRequestDto implements HireRequest {
   @IsNotEmpty()
@@ -13,7 +13,7 @@ export class HireEmailRequestDto implements HireRequest {
     description: 'Email address',
     default: 'test@gmail.com',
   })
-  address: string;
+  email: string;
 
   @IsNotEmpty()
   @IsString()
@@ -36,7 +36,7 @@ export class HireEmailRequestDto implements HireRequest {
   letter: string;
 }
 
-export class HireEmailResponseDto implements HireEmailResponse {
+export class EmailResponseDto implements EmailResponse {
   @ApiProperty({ type: String, isArray: true, example: ['hr@defiyield.app'] })
   'accepted';
 

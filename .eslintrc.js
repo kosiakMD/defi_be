@@ -30,6 +30,7 @@ module.exports = {
         "avoidEscape": true
       }
     ],
+    "quote-props": ["warn", "as-needed"],
     // temporary disabled
     // 'sort-imports': [
     // 	'warn',

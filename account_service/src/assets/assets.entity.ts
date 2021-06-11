@@ -28,4 +28,7 @@ export class AssetsEntity {
 
   @Column({ name: 'is_migrated' })
   isMigrated: boolean;
+
+  @Column({ name: 'is_lp' })
+  isLp: boolean;
 }

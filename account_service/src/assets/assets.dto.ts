@@ -22,6 +22,8 @@ export class AssetsDto {
   isReadyToMigrate: boolean;
   @Exclude()
   isMigrated: boolean;
+  @Exclude()
+  isLp: boolean;
 
   @ApiProperty({ type: String, example: AssetState.processing })
   @Expose()

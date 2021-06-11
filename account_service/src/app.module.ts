@@ -38,13 +38,14 @@ import { winstonParams } from './utils/winston';
       inject: [ConfigService],
     }),
     TerminusModule,
-    TransfersModule,
     DatabaseModule,
+    ChainModule,
+    // with controllers A-Z sort for Swagger API page
+    ApprovalsModule,
+    AssetsModule,
     BalanceModule,
     TransactionsModule,
-    ApprovalsModule,
-    ChainModule,
-    AssetsModule,
+    TransfersModule,
   ],
   controllers: [HealthController],
 })

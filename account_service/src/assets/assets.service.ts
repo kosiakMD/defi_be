@@ -15,7 +15,8 @@ export class AssetsService {
   ) {}
   async queryAllAssets(): Promise<AssetsDto[]> {
     try {
-      const storedAssets = await this.assetRepository.find();
+      const storedAssets = await this.assetRepository.find({ where: { isLp: false } });
+      // const storedAssets = await this.assetRepository.find();
       // TODO: fix TS problems - it works, but type not!
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

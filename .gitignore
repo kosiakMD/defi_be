@@ -119,11 +119,5 @@ dist
 .pnp.*
 
 # IDE
-.idea/
 .idea
-.idea/*
-Project.xml
-.idea/defiyield-backend-v2.iml
-.idea/codeStyles/Project.xml
 .DS_Store
-

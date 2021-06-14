@@ -1,6 +1,6 @@
 {
   "name": "defiyield-backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DeFiYield Microservices",
   "scripts": {
     "pre-commit": "npm run lint && npm run format-check",

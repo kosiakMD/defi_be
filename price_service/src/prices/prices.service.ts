@@ -292,6 +292,15 @@ export class PriceService {
     addresses: string[],
   ): Promise<AssetPricesV2[]> {
     const { cached, notCached } = await this.getCachedPricesV2(chain, currency, addresses);
+
+    // be sure that data is fresh and do not depends on service parameters
+    cached.forEach((asset) => {
+      const price = this.getCurrentPrice(asset?.prices || []);
+      if (!price) {
+        notCached.push(asset.address);
+      }
+    });
+
     if (!notCached.length) {
       return cached;
     }

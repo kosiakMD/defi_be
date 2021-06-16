@@ -31,7 +31,6 @@ export class JobsService {
     this.agenda.on('ready', async () => {
       await this.agenda.start();
       await this.startEthMigrationJob();
-      await this.startBscMigrationJob();
     });
   }
 

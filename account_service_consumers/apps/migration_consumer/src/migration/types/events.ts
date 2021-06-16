@@ -18,6 +18,4 @@ export interface MigrationEvent {
   blockNumber: number
   blockTimestamp: number
   logIndex: number
-  assetId: number
-  template: string
 }

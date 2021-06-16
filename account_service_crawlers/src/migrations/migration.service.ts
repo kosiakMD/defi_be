@@ -5,16 +5,12 @@ import { getManager } from 'typeorm';
 
 import { BscService } from '../node/bsc.service';
 import { EthService } from '../node/eth.service';
-import { BSC_NETWORK, CHAIN_ID_BSC, CHAIN_ID_ETH, ETH_NETWORK } from '../utils/utils';
+import { BSC_NETWORK, ETH_NETWORK } from '../utils/utils';
 import { MigrationBlockResponse } from './interfaces/migration.block.response';
-import {
-  MigrationEventResponse,
-  MigrationEventServiceResponse,
-} from './interfaces/migration.event.interfaces';
+import { MigrationEventResponse, MigrationEventServiceResponse } from './interfaces/migration.event.interfaces';
 import { MigrationEventService } from './migration.event.service';
 import { AssetPublisherService } from './asset.publisher.service';
 import { MigrationEvent } from './types/events';
-import { AssetsService } from './assets.service';
 
 @Injectable()
 export class MigrationService {
@@ -25,22 +21,17 @@ export class MigrationService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private logger: LoggerService,
     private migrationEventService: MigrationEventService,
     private assetPublisherService: AssetPublisherService,
-    private assetsService: AssetsService
   ) {}
 
   private async sendAssetEventsToQueue(migrationEvents: MigrationEvent[]) {
-    if (migrationEvents && migrationEvents.length) {
-      for (const item of migrationEvents) {
-        await this.assetPublisherService.publishTrackedAssetEvent(item);
-      }
-    }
+    await Promise.all(migrationEvents.map(async e => {
+      await this.assetPublisherService.publishTrackedAssetEvent(e)
+    }))
     this.logger.log(`${migrationEvents.length} - events was sent to queue`);
   }
 
   async bscWeb3Migration(): Promise<void> {
     try {
-      await this.assetsService.sendReadyForMigrationAssets(CHAIN_ID_BSC, this.bscService);
-
       const bscResponse: MigrationEventServiceResponse = await this.migrationEventService.getSqlStringsForDataFromNetwork(
         this.bscService,
         BSC_NETWORK,
@@ -58,7 +49,6 @@ export class MigrationService {
 
   async ethWeb3Migration(): Promise<void> {
     try {
-      await this.assetsService.sendReadyForMigrationAssets(CHAIN_ID_ETH, this.ethService);
       const ethResponse: MigrationEventServiceResponse = await this.migrationEventService.getSqlStringsForDataFromNetwork(
         this.ethService,
         ETH_NETWORK,

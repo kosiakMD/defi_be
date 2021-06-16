@@ -14,6 +14,7 @@ import { AssetsEntity } from './entities/assets.entity';
 import { ClientProxyFactory, Transport, ClientProxy } from '@nestjs/microservices';
 import { AssetPublisherService } from './asset.publisher.service';
 import { AssetsService } from './assets.service';
+import { SettingsEntity } from './entities/settings.entity';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AssetsService } from './assets.service';
       EthBlockEntity,
       EthTransactionsEntity,
       AssetsEntity,
+      SettingsEntity,
     ]),
     HttpModule,
     NodeModule

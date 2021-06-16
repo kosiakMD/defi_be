@@ -23,12 +23,12 @@ export class AssetPublisherService {
     return await this.historicalClient.emit<any>(ASSET_HISTORICAL_MIGRATION_PATTERN, event);
   }
 
-  async publishTrackedAssetEvent(event: MigrationEvent): Promise<Observable<any>> {
+  async publishTrackedAssetEvent(event: MigrationEvent): Promise<any> {
     // considered to use debug here in order to avoid to much logging
     this.logger.debug(
       `publishing asset event event ${JSON.stringify(event)} to [${this.configService.get<string>('ASSET_MIGRATION_QUEUE')}]`,
       `asset.publisher.service`
     );
-    return await this.client.emit<any>(ASSET_EVENT_MIGRATION_PATTERN, event);
+    return await this.client.emit<any>(ASSET_EVENT_MIGRATION_PATTERN, event).toPromise();
   }
 }

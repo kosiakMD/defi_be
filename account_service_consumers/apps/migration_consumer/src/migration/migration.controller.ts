@@ -24,7 +24,7 @@ export class MigrationController {
   ) {
     try {
       this.logger.debug(
-        `consumed migration data for asset [${data.assetId}]`,
+        `consumed migration data for event has [${data.topic1}]`,
         'migration.controller'
       )
       await this.utilsDatabase.dbTransactionBegin()
@@ -32,6 +32,7 @@ export class MigrationController {
       context.getChannelRef().ack(context.getMessage())
       await this.utilsDatabase.dbTransactionCommit()
     } catch (e) {
+      await this.utilsDatabase.dbTransactionRollback()
       this.logger.error(e)
       this.logger.error('error during event migration ' + JSON.stringify(data))
       // make delay in order to avoid next consumer overloading

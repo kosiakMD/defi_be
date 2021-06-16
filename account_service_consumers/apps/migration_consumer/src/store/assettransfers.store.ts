@@ -71,19 +71,20 @@ export class AssetsTransfersStore {
     return eventsDto
   }
 
-  async insert(transfer: AssetTransfersEntity, logIndex: number): Promise<any> {
+  async save(transfer: AssetTransfersEntity): Promise<any> {
     if (!transfer) {
       return;
     }
-    const insertQuery = `insert into asset_transfers (id, asset_id, "from", "to", value, timestamp, tx_hash) 
+    const insertQuery = `insert into asset_transfers_new (asset_id, "from", "to", value, timestamp, tx_hash, block_number, log_index) 
         values (
-                '${transfer.txHash + '-' + logIndex}', 
                 ${transfer.assetId}, 
                 ` + (transfer.from ? `'${transfer.from}'` : null) + `,
                 ` + (transfer.to ? `'${transfer.to}'` : null) + `,
                  '${transfer.value}', 
                  ${transfer.timestamp},
-                 '${transfer.txHash}'
+                 '${transfer.txHash}',
+                 ${transfer.blockNumber},
+                 ${transfer.logIndex}
                  )`;
 
     return await this.repository.query(insertQuery);

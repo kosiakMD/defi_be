@@ -127,8 +127,8 @@ export class PriceService {
         ...map,
         [address]: {
           price,
-          platform: allPrices[0].platform,
-          isLp: allPrices[0].isLp,
+          platform: assetPrices.platform,
+          isLp: assetPrices.isLp,
         },
       };
     }, {});
@@ -384,22 +384,25 @@ export class PriceService {
   }
 
   private mapRowsToAssetPricesV2(rows: PriceRowV2[]): AssetPricesV2[] {
-    const pricesMap = rows.reduce<{ [address: string]: TimestampPrice[] }>(
-      (map, { address, timestamp, value }) => ({
+    const pricesMap = rows.reduce<{ [address: string]: AssetPricesV2 }>(
+      (map, { address, timestamp, value, isLp, platform }) => ({
         ...map,
-        [address]: [
+        [address]: {
           ...(map[address] || []),
-          { timestamp: Number(timestamp), price: Number(value) },
-        ],
+          isLp,
+          platform,
+          address,
+          prices: [{ timestamp: Number(timestamp), price: Number(value) }],
+        },
       }),
       {},
     );
 
     return Object.keys(pricesMap).map<AssetPricesV2>((address) => ({
       address,
-      platform: rows[0].platform,
-      isLp: rows[0]['isLp'],
-      prices: _.orderBy(pricesMap[address], 'timestamp'),
+      platform: pricesMap[address].platform,
+      isLp: pricesMap[address].isLp,
+      prices: _.orderBy(pricesMap[address].prices, 'timestamp'),
     }));
   }
 

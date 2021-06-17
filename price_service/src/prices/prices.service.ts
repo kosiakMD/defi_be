@@ -127,8 +127,8 @@ export class PriceService {
         ...map,
         [address]: {
           price,
-          platform: assetPrices.platform,
-          isLp: assetPrices.isLp,
+          platform: assetPrices?.platform || null,
+          isLp: assetPrices?.isLp || null,
         },
       };
     }, {});

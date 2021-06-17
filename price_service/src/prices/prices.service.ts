@@ -392,7 +392,7 @@ export class PriceService {
           platform,
           address,
           prices: [
-            ...(map[address].prices || []),
+            ...(map[address]?.prices || []),
             { timestamp: Number(timestamp), price: Number(value) },
           ],
         },

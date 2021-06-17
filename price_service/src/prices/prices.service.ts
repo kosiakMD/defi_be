@@ -388,11 +388,13 @@ export class PriceService {
       (map, { address, timestamp, value, isLp, platform }) => ({
         ...map,
         [address]: {
-          ...(map[address] || []),
           isLp,
           platform,
           address,
-          prices: [{ timestamp: Number(timestamp), price: Number(value) }],
+          prices: [
+            ...(map[address].prices || []),
+            { timestamp: Number(timestamp), price: Number(value) },
+          ],
         },
       }),
       {},

@@ -22,10 +22,4 @@ export class AssetsStore {
   async findByAddressAndChainId(address: string, chainId: number): Promise<AssetsEntity> {
     return await this.repository.findOne({where:{address: address, chainId: chainId}})
   }
-
-  async incrementTransfersCount(assetId: number, transfersCount: number): Promise<AssetsEntity>  {
-    return await this.repository.query(
-      `update assets set total_transfers_count = total_transfers_count + ${transfersCount} where id = ${assetId}`
-    )
-  }
 }

@@ -23,12 +23,12 @@ export class AssetsEntity {
   @Column({ name: 'chain_id', nullable: true })
   chainId: number;
 
-  @Column({ name: 'template', nullable: true })
-  template: string;
-
   @Column({ name: 'is_lp', nullable: true })
   isLp: boolean;
 
   @Column({ name: 'project_id', nullable: true })
   projectId: boolean;
+
+  @Column({ name: 'is_display', nullable: true, default: false })
+  isDisplay: boolean;
 }

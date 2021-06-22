@@ -7,10 +7,13 @@ import { UtilsDatabase } from './utils.database';
 import { AssetsTransfersStore } from './assettransfers.store';
 import { AssetTransfersRepository } from './repositories/assettransfers.repository';
 import { AssetTransfersEntity } from './entities/assettransfers.entity';
+import { ApprovalsEntity } from './entities/approvals.entity';
+import { ApprovalsRepository } from './repositories/approvals.repository';
+import { ApprovalsStore } from './approvals.store';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssetsEntity, AssetTransfersEntity])],
-  providers: [AssetsRepository, AssetTransfersRepository, AssetsStore, UtilsDatabase, AssetsTransfersStore],
-  exports: [AssetsStore, UtilsDatabase, AssetsTransfersStore],
+  imports: [TypeOrmModule.forFeature([AssetsEntity, AssetTransfersEntity, ApprovalsEntity])],
+  providers: [UtilsDatabase, AssetsRepository, AssetTransfersRepository, ApprovalsRepository, AssetsStore, ApprovalsStore, AssetsTransfersStore],
+  exports: [AssetsStore, AssetsTransfersStore, ApprovalsStore],
 })
 export class StoreModule {}

@@ -85,7 +85,7 @@ export class AssetsTransfersStore {
                  '${transfer.txHash}',
                  ${transfer.blockNumber},
                  ${transfer.logIndex}
-                 )`;
+                 ) on conflict (tx_hash, log_index) do nothing`;
 
     return await this.repository.query(insertQuery);
   }

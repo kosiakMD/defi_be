@@ -12,9 +12,9 @@ import {
   ERC20Token,
   ERC20Transfer,
   ScanTransfer,
-  TransferWithTokenAndPrices,
   Transfer,
   TransfersResponse,
+  TransferWithTokenAndPrices,
 } from '../interfaces/transfers.interfaces';
 import { exampleResponse } from './transfers.dto.examples';
 
@@ -158,8 +158,9 @@ export class TransferDto implements Transfer {
   @ApiProperty({ type: String, example: '1570019740' })
   blockTimeStamp: string;
 
-  @ApiProperty({ type: String, example: '21000' })
-  gasUsed: string;
+  // TODO: until no gas in DB
+  // @ApiProperty({ type: String, example: '21000' })
+  // gasUsed: string;
 
   @ApiProperty({ type: ERC20TransferDto })
   erc20Transfers: ERC20Transfer[];
@@ -188,7 +189,7 @@ export class TransfersDetailedResponseDto extends DetailedResponseDto<TransfersR
   @ApiProperty({
     example: ['connect ECONNREFUSED ...'],
   })
-  errors: Error[] | string[];
+  errors: Array<Error | string>;
 
   @ApiProperty({
     type: Object,
@@ -201,4 +202,9 @@ export class TransfersDetailedResponseDto extends DetailedResponseDto<TransfersR
     example: exampleResponse,
   })
   data: TransfersResponseDto;
+
+  error(error?: Error | string): void {
+    this.status = ResultStatus.error;
+    error && this.errors.push(error);
+  }
 }

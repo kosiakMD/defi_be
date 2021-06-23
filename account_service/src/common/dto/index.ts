@@ -20,7 +20,7 @@ export abstract class DetailedResponseDto<T> implements DetailedResponse<T> {
   @ApiProperty({
     example: ['connect ECONNREFUSED ...'],
   })
-  errors: Error[] | string[];
+  errors: Array<Error | string>;
 
   // @ApiProperty({
   // isArray: true,

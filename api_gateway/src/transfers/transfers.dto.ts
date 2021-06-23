@@ -96,11 +96,12 @@ export class TransfersResponseDto {
         hash: '0x6277ad9a3302420a63d01f8c26a3e4c810ba5c6a44138253abf03c5b7cccd29b',
         blockNumber: '11020705',
         blockTimeStamp: '1602239613',
-        gas: {
-          price: 65000.001459,
-          eth: null,
-          usd: null,
-        },
+        // TODO: until no gas in DB
+        // gas: {
+        //   price: 65000.001459,
+        //   eth: null,
+        //   usd: null,
+        // },
         erc20Transfers: [
           {
             fromAddress: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',

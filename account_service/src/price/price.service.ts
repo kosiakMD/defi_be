@@ -7,7 +7,7 @@ import { Logger } from '../Logger/Logger.service';
 import { changeTokenArray } from '../balance/balance_util/balance.util';
 import {
   CurrentPricesPayload,
-  HistoricalPrice,
+  HistoricalPricesMap,
   PriceResponseDto,
   PricesDto,
 } from '../balance/dto/price.response.dto';
@@ -63,8 +63,8 @@ export class PriceService {
 
   private static filterHistoricalNonLpTokensAndFormat(
     pricesResp: PricesDto,
-  ): PriceResponseDto<HistoricalPrice> {
-    const resultPrices = new Map<string, HistoricalPrice>();
+  ): PriceResponseDto<HistoricalPricesMap> {
+    const resultPrices = new Map<string, HistoricalPricesMap>();
     const prices = Object.entries(pricesResp.prices);
     prices.forEach(([address, priceData]) => {
       if (!priceData.isLp) {
@@ -72,7 +72,7 @@ export class PriceService {
       }
     });
 
-    const result = new PriceResponseDto<HistoricalPrice>(
+    const result = new PriceResponseDto<HistoricalPricesMap>(
       pricesResp.chain,
       pricesResp.currency,
       resultPrices, // TODO TBD? Object.fromEntries(resultPrices),
@@ -139,7 +139,7 @@ export class PriceService {
     timestamps: Timestamp[],
     chainId: ChainId,
     // internal = 1,
-  ): Promise<PriceResponseDto<HistoricalPrice>> {
+  ): Promise<PriceResponseDto<HistoricalPricesMap>> {
     const timeMark = `${this.getPricesUrl} chainId:${chainId}`;
     try {
       // TODO: do we need this?
@@ -183,7 +183,7 @@ export class PriceService {
   async getHistoricalPrices(
     assets,
     chainId: number,
-  ): Promise<PriceServiceResponse<HistoricalPrice>> {
+  ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       this.logger.time(`request: chain=${chainId} ${this.getBatchPriceUrl}`);
       const prices = await this.httpService

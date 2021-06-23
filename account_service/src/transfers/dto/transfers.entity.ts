@@ -1,41 +1,17 @@
 // eslint-disable-next-line max-classes-per-file
-import { Transform } from 'class-transformer';
-import { Column, Connection, Entity, PrimaryColumn, ViewEntity } from 'typeorm';
+import { Exclude, Transform } from 'class-transformer';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 // TODO  use Entity columns with @View aggregation and delete mapping at db service
-@ViewEntity({
-  expression: (connection: Connection) =>
-    connection
-      .createQueryBuilder()
-      // .select('tsf.tx_hash'/*, 'hash'*/)
-      // .addSelect('tsf.from'/*, 'fromAddress'*/)
-      // .addSelect('tsf.to'/*, 'toAddress'*/)
-      // .addSelect('tsf.timestamp'/*, 'blockTimestamp'*/)
-      // .addSelect('tsf.value'/*, 'amount'*/)
-      // .addSelect('as.address'/*, 'tokenAddress'*/)
-      // .addSelect('as.name', 'tokenName')
-      // .addSelect('as.symbol'/*, 'tokenSymbol'*/)
-      // .addSelect('as.decimals'/*, 'tokenDecimals'*/)
-      // .leftJoin(AssetsEntity, 'as', 'tsf.asset_id = as.id')
-      // .leftJoinAndSelect("tsf.tokenAddress", "address")
-      .leftJoinAndSelect(TransferTokenEntity, 'asset', 'tsf.asset_id = asset.id')
-      // .where('as.chain_id = :chainId', { chainId: chainId })
-      // .where(`asset.chain_id = ${chainId}`)
-      .andWhere('asset.is_migrated = true')
-      // .andWhere(
-      //   new Brackets((qb) => {
-      //     qb.where(`tsf.from IN (${addressesString})`).orWhere(`tsf.to IN (${addressesString})`);
-      //   }),
-      // )
-      .orderBy('tsf.id', 'DESC')
-      .limit(10e3),
-})
 @Entity({ name: 'asset_transfers' })
 export class TransferEntity {
-  @PrimaryColumn()
-  id: number;
+  // @PrimaryColumn()
+  // id: number;
+  @Exclude()
+  @PrimaryColumn({ name: 'log_index' })
+  logIndex: string;
 
-  @Column({ name: 'tx_hash' })
+  @PrimaryColumn({ name: 'tx_hash' })
   hash: string;
 
   @Column({ name: 'from' })
@@ -67,6 +43,9 @@ export class TransferEntity {
   // @ViewColumn({ name: 'decimals' })
   @Column({ name: 'asset_decimals' })
   tokenDecimals: number;
+
+  @Exclude()
+  assetId: string;
 
   tokenPrice = null;
 

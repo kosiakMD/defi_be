@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
-import { HistoricalPrice } from '../balance/dto/price.response.dto';
+import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../common/constatnt';
@@ -78,7 +78,7 @@ export class TransfersService {
     };
   }
 
-  private async queryTransfers(addresses: Address[], chainId): Promise<TransferEntity[]> {
+  private async queryTransfers(addresses: Address[], chainId: ChainId): Promise<TransferEntity[]> {
     try {
       const dbTransfers: TransferEntity[] = await this.dbService.getTransfersDataFromDb(
         addresses,
@@ -95,7 +95,7 @@ export class TransfersService {
   private async getPrices(
     transferRows: TransferEntity[],
     chainId: ChainId,
-  ): Promise<HistoricalPrice> {
+  ): Promise<HistoricalPricesMap> {
     // form request params
     const timestamps: string[] = [];
     const tokenAddresses: string[] = [];
@@ -103,6 +103,8 @@ export class TransfersService {
       timestamps.push(ts.blockTimeStamp);
       tokenAddresses.push(ts.tokenAddress);
     });
+    this.logger.debug(`timestamps: ${timestamps.length} chainId: ${chainId}`);
+    this.logger.debug(`tokenAddresses: ${tokenAddresses.length} chainId: ${chainId}`);
     // request
     const dataPrices = await this.priceService.getTokenHistoricalPrices(
       tokenAddresses,
@@ -114,12 +116,12 @@ export class TransfersService {
     return priceData;
   }
 
-  private addPrices(transferRows, priceData): any {
+  private addPrices(transferRows, priceData: HistoricalPricesMap): any {
     try {
       // add Token price to each Transfer
       transferRows.forEach((ts) => {
         const prices = priceData.get(ts.tokenAddress);
-        const price = prices[ts.blockTimeStamp];
+        const price = prices ? prices[ts.blockTimeStamp] : null;
 
         const decimals = getTokenDecimals(ts.tokenDecimals);
         const tokenPrice = price !== undefined ? price : null;
@@ -188,13 +190,16 @@ export class TransfersService {
   ): Promise<TransfersDetailedResponseDto> {
     const result = new TransfersDetailedResponseDto(ResultStatus.ok, [], null);
     const transferRows: TransferEntity[] = await this.queryTransfers(addressArray, chainId);
-    try {
-      const priceData: HistoricalPrice = await this.getPrices(transferRows, chainId);
-      this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
-    } catch (e) {
-      this.logger.error(e);
-      result.status = ResultStatus.error;
-      result.errors.push(e.message);
+    this.logger.debug(`transferRows: ${transferRows.length} chainId: ${chainId}`);
+    if (transferRows.length) {
+      try {
+        const priceData: HistoricalPricesMap = await this.getPrices(transferRows, chainId);
+        this.logger.debug(`priceData: ${priceData.entries.length} chainId: ${chainId}`);
+        if (priceData.size) this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
+      } catch (e) {
+        this.logger.error(e);
+        result.error(e.message);
+      }
     }
     result.data = this.toTransfersResponse(transferRows, addressArray, chainId);
     return result;
@@ -203,6 +208,7 @@ export class TransfersService {
   public async getAllTransactionDataByAddress(
     addresses: Address[],
   ): Promise<TransfersDetailedResponseDto> {
+    this.logger.time('getAllTransactionDataByAddress');
     const allTransfersResponse: TransfersDetailedResponseDto = new TransfersDetailedResponseDto(
       ResultStatus.ok,
       [],
@@ -211,21 +217,28 @@ export class TransfersService {
 
     const addressArray = getUniqueAndToLowerCaseArrayData(addresses);
 
+    this.logger.time('Promise.all<TransfersDetailedResponseDto>');
     const [ethTransfers, bscTransfers] = await Promise.all<TransfersDetailedResponseDto>([
       this.getTransfersByAddresses(addressArray, CHAIN_ID_ETH),
       this.getTransfersByAddresses(addressArray, CHAIN_ID_BSC),
     ]);
+    this.logger.timeEnd('Promise.all<TransfersDetailedResponseDto>');
 
+    this.logger.time('mergeTransfersByAddress');
     allTransfersResponse.data = TransfersService.mergeTransfersByAddress(
       ethTransfers.data,
       bscTransfers.data,
     );
+    this.logger.timeEnd('mergeTransfersByAddress');
 
+    this.logger.time('allTransfersResponse');
     allTransfersResponse.errors = [].concat(ethTransfers.errors, bscTransfers.errors);
     if (allTransfersResponse.errors.length) {
       allTransfersResponse.status = ResultStatus.error;
     }
+    this.logger.timeEnd('allTransfersResponse');
 
+    this.logger.timeEnd('getAllTransactionDataByAddress');
     return allTransfersResponse;
   }
 
@@ -334,7 +347,7 @@ export class TransfersService {
   private async getTransfersPrices(
     transfersResponse: TransfersResponse<ScanTransfer>,
     chainId: number,
-  ): Promise<PriceServiceResponse<HistoricalPrice>> {
+  ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       const unpricedContracts = [];
       Object.keys(transfersResponse).map((k) => {

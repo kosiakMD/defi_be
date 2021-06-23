@@ -29,7 +29,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     const finish = new Date().getTime();
     Logger.times.delete(message);
     const diff = finish - start;
-    Logger.logger.log(`${message}: ${diff / 100} ms`, 'Time');
+    Logger.logger.debug(`${message}: ${diff} ms (${diff / 1000} s)`, 'Time');
     return diff;
   }
 
@@ -47,7 +47,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     const finish = new Date().getTime();
     this.times.delete(message);
     const diff = finish - start;
-    super.log(diff / 100, `Time: ${message}`);
+    super.debug(diff / 100, `Time: ${message}`);
     return diff;
   }
 }

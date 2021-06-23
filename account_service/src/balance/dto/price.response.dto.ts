@@ -30,10 +30,12 @@ export type Platform = string;
 
 export type Timestamp = string;
 
-export type HistoricalPrice = Map<Timestamp, number | null>;
+export type HistoricalPrices = Record<Timestamp, number | null>;
+
+export type HistoricalPricesMap = Map<Address, HistoricalPrices>;
 
 export interface PlatformHistoricalPrices {
-  prices: HistoricalPrice;
+  prices: HistoricalPricesMap;
   platform: Platform;
   isLp: boolean;
 }

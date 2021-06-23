@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
-import { HistoricalPrice } from '../balance/dto/price.response.dto';
+import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { DEFAULT_MULTIPLIER } from '../common/constatnt';
 import { ResultStatus } from '../common/enum';
@@ -230,7 +230,9 @@ export class ScanApiService {
     return transactions;
   }
 
-  private async getTransactionPrices(timestamps): Promise<PriceServiceResponse<HistoricalPrice>> {
+  private async getTransactionPrices(
+    timestamps,
+  ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       const assets = [
         {
@@ -259,7 +261,7 @@ export class ScanApiService {
 
     if (!transactions.length) return { status: ResultStatus.ok, data: transactions };
 
-    let prices: PriceServiceResponse<HistoricalPrice>;
+    let prices: PriceServiceResponse<HistoricalPricesMap>;
     try {
       const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
       prices = await this.getTransactionPrices(txTimestamps);

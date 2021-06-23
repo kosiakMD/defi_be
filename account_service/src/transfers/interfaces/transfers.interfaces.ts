@@ -39,10 +39,10 @@ export interface Transfer {
   chainId: number;
   hash: string;
   blockTimeStamp: string;
-  // blockNumber?: number;
+  // TODO: until no gas in DB
   // gas?: number;
   // gasPrice?: number;
-  gasUsed: string;
+  // gasUsed: string;
   erc20Transfers: ERC20Transfer[];
 }
 

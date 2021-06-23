@@ -104,6 +104,6 @@ export interface PriceHistoricalRequest {
 
 export interface DetailedResponse<T> {
   status: ResultStatus;
-  errors: Error[] | string[];
+  errors: Array<Error | string>;
   data: T;
 }

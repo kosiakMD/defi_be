@@ -317,6 +317,20 @@ export class PriceService {
           ap.currency_id = ${currency}
         ORDER BY ap.asset_id, ap.timestamp
       )
+      UNION ALL
+      (
+        SELECT w.address, a.platform, a."isLp", ap.timestamp, ap.value
+        FROM prices.wrapped_asset w
+        JOIN prices.asset a
+          ON w.asset_id = a.id
+        JOIN prices.asset_price ap
+          ON a.id = ap.asset_id
+        WHERE
+          w.address IN ('${addresses.join("','")}') AND
+          w.chain_id = ${chain} AND
+          ap.currency_id = ${currency}
+        ORDER BY ap.asset_id, ap.timestamp
+      )
     `;
 
     const rows: PriceRowV2[] = await this.entityManager.query(query);

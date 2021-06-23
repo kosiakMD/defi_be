@@ -1,4 +1,4 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../utils/utils';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../constatnt';
 
 export enum ChainEnum {
   'ETH' = CHAIN_ID_ETH,
@@ -8,4 +8,9 @@ export enum ChainEnum {
 export enum ChainPrefixEnum {
   'eth' = CHAIN_ID_ETH,
   'bsc' = CHAIN_ID_BSC,
+}
+
+export enum ResultStatus {
+  ok = 'ok',
+  error = 'error',
 }

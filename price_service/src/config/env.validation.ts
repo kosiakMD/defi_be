@@ -22,6 +22,14 @@ export const validationSchema = Joi.object({
   SERVICE_PORT: Joi.number() //
     .default(3000)
     .required(),
+  BODY_LIMIT: Joi.string() //
+    .default('1mb')
+    .allow('')
+    .required(),
+  URL_LIMIT: Joi.string() //
+    .default('1mb')
+    .allow('')
+    .required(),
   LOG_ERROR_FILE: Joi.string() //
     .pattern(logFileRE)
     .required(),

@@ -15,6 +15,7 @@ import { PriceService } from './prices.service';
 export class PricesController {
   constructor(private priceService: PriceService) {}
 
+  // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/')
   @ApiOkResponse({ type: PriceResponseDto })
   get(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
@@ -26,6 +27,7 @@ export class PricesController {
       : this.priceService.getCurrentPrices(query);
   }
 
+  // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/v2')
   @ApiOkResponse({ type: PriceResponseDto })
   getV2(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayloadV2>> {
@@ -37,24 +39,26 @@ export class PricesController {
       : this.priceService.getCurrentPricesV2(query);
   }
 
+  // TODO: divide method because we have 2 different DTO for History and Current
   @Post('/')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: PriceResponseDto })
   post(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = request;
-    const isHistoricalPricesRequest = timestamps && timestamps.length;
+    const isHistoricalPricesRequest = timestamps?.length;
 
     return isHistoricalPricesRequest
       ? this.priceService.getHistoricalPrices(request)
       : this.priceService.getCurrentPrices(request);
   }
 
+  // TODO: divide method because we have 2 different DTO for History and Current
   @Post('/v2')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: PriceResponseDto })
   postV2(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayloadV2>> {
     const { timestamps } = request;
-    const isHistoricalPricesRequest = timestamps && timestamps.length;
+    const isHistoricalPricesRequest = timestamps?.length;
 
     return isHistoricalPricesRequest
       ? this.priceService.getHistoricalPricesV2(request)

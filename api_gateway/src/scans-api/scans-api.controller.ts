@@ -1,15 +1,14 @@
 import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { ApiResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../common/Logger/Logger.service';
-import { TransactionsResponseDto } from './models/dto/transactions.dto';
-import { ResultStatus, TransactionsResult } from './models/interfaces/transactions.interfaces';
+import { ResultStatus } from '../common/enum';
 import { BscScanService } from './modules/bscscan/bsc-scan.service';
 import { EtherScanService } from './modules/etherscan/ether-scan.service';
 import { ScanService } from './modules/scan.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from './modules/utils/utils';
-import { TransactionQueryDto } from './scans-api.dto';
+import { TransactionQueryDto, TransactionsDetailedResponseDto } from './scans-api.dto';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -39,10 +38,9 @@ export class ScansApiController {
     type: String,
     required: false,
     description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
-    example: '',
+    example: '1,2',
   })
-  @ApiResponse({ status: 200, type: TransactionsResponseDto, isArray: true })
+  @ApiResponse({ status: 200, type: TransactionsDetailedResponseDto, isArray: true })
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
     const { chains, addresses } = query;
 
@@ -52,7 +50,7 @@ export class ScansApiController {
       transactions: [],
     };
     //
-    const concatTxs = (newTxs): TransactionsResult[] =>
+    const concatTxs = (newTxs): TransactionsDetailedResponseDto[] =>
       (result.transactions = result.transactions.concat(newTxs));
 
     if (chains && chains.length) {
@@ -63,8 +61,8 @@ export class ScansApiController {
           );
           txs.forEach((tx) => {
             if (tx.status === 'fulfilled') {
-              concatTxs(tx.value.transactions);
-              if (tx.value.error) result.errors.push(tx.value.error);
+              concatTxs(tx.value.data);
+              if (tx.value.errors) result.errors.push(tx.value.errors);
             } else {
               result.errors.push(tx.reason);
             }

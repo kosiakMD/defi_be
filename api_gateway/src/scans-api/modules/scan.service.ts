@@ -4,6 +4,7 @@ import { Cache } from 'cache-manager';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../../common/Logger/Logger.service';
+import { ResultStatus } from '../../common/enum';
 import { Transaction } from '../../transactions/transactions.interfaces';
 import {
   ERC20TokenTransfer,
@@ -12,8 +13,8 @@ import {
   Transfer,
   TransfersResponse,
 } from '../../transfers/transfers.interfaces';
-import { PriceServiceResponse } from '../models/interfaces/priceServiceResponse.interface';
-import { ResultStatus, TransactionsResult } from '../models/interfaces/transactions.interfaces';
+import { PriceServiceResponse } from '../interfaces/priceServiceResponse.interface';
+import { TransactionsDetailedResponseDto } from '../scans-api.dto';
 import { getUniqueAndToLowerCaseArrayData, totalPrice } from './utils/utils';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
@@ -169,7 +170,7 @@ export class ScanService {
   };
 
   // TODO: Transaction service
-  public async getScanTransactions(address: string): Promise<TransactionsResult> {
+  public async getScanTransactions(address: string): Promise<TransactionsDetailedResponseDto> {
     this.logger.time(`request: txlist & txlistinternal ${this.scanServiceUrl}`);
     const [normalTxResp, internalTxResp] = await Promise.all([
       this.getTransactions(address),
@@ -181,7 +182,8 @@ export class ScanService {
     const internalTx: Transaction[] = this.normalizeTxsResp(internalTxResp, true);
     const transactions = [].concat(normalTx, internalTx);
 
-    if (!transactions.length) return { status: ResultStatus.ok, transactions };
+    if (!transactions.length)
+      return new TransactionsDetailedResponseDto(ResultStatus.ok, [], transactions);
 
     let prices: PriceServiceResponse;
     try {
@@ -194,11 +196,7 @@ export class ScanService {
         error += ' - ' + e.response.data.message;
       }
       this.logger.error(e.message);
-      return {
-        status: ResultStatus.error,
-        error: error,
-        transactions,
-      };
+      return new TransactionsDetailedResponseDto(ResultStatus.error, [error], transactions);
     }
 
     transactions.forEach((tx) => {
@@ -215,7 +213,7 @@ export class ScanService {
       });
     });
 
-    return { status: ResultStatus.ok, transactions };
+    return new TransactionsDetailedResponseDto(ResultStatus.ok, [], transactions);
   }
 
   // TODO: Transfers service

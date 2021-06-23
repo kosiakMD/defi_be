@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
-import { TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
+import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
 import { mergeTransfersResponse } from '../utils/utils';
 import { WETH } from './contracts/WETH';
 
@@ -10,11 +11,11 @@ import { WETH } from './contracts/WETH';
 export class AssetService {
   constructor(
     protected readonly configService: ConfigService,
-    protected readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     protected readonly wrappedEther: WETH,
   ) {}
 
-  async getConvertedTransfers(addresses: string[]): Promise<TransfersResponse> {
+  async getConvertedTransfers(addresses: string[]): Promise<TransfersResponse<ScanTransfer>> {
     // TODO: add try catch, add caching
     const [deposits, withdrawals] = await Promise.all([
       this.wrappedEther.depositEvents(addresses),

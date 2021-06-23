@@ -5,12 +5,12 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { Address } from '../common/interfaces';
-import { Chains } from '../common/types';
+import { ChainsIds } from '../common/types';
 import { AccountTokenBalance, Balance, BalanceToken } from './interfaces/balance.interfaces';
 
 interface BalancesQuery {
   addresses: Address[];
-  chains: Chains;
+  chains: ChainsIds;
   internal: number;
 }
 

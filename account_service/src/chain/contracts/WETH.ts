@@ -3,12 +3,12 @@ import { ERC20Token } from 'src/common/interfaces';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
+import { CHAIN_ID_ETH } from '../../common/constatnt';
 import {
   ERC20Transfer,
-  Transfer,
+  ScanTransfer,
   TransfersResponse,
 } from '../../transfers/interfaces/transfers.interfaces';
-import { CHAIN_ID_ETH } from '../../utils/utils';
 import { Web3Provider } from '../web3.provider';
 
 // events: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
@@ -223,8 +223,8 @@ export class WETH {
     });
   }
 
-  static depositsToTransfersResponse(deposits: DepositEvent[]): TransfersResponse {
-    const transferResponse: TransfersResponse = {};
+  static depositsToTransfersResponse(deposits: DepositEvent[]): TransfersResponse<ScanTransfer> {
+    const transferResponse: TransfersResponse<ScanTransfer> = {};
     deposits.map((deposit) => {
       const userAddress = deposit.returnValues.dst.toLowerCase();
 
@@ -234,7 +234,7 @@ export class WETH {
       const erc20Transfer: ERC20Transfer = {
         fromAddress: WETH.token.address,
         toAddress: userAddress,
-        amount: Number(deposit.returnValues.wad),
+        amount: deposit.returnValues.wad,
         tokenPriceUSD: null,
         totalPriceUSD: null,
         token: {
@@ -246,7 +246,7 @@ export class WETH {
         },
       };
 
-      let transactionTransfer: Transfer = transferResponse[userAddress].find(
+      let transactionTransfer: ScanTransfer = transferResponse[userAddress].find(
         (t) => t.hash === deposit.transactionHash,
       );
       if (!transactionTransfer) {
@@ -270,8 +270,10 @@ export class WETH {
     return transferResponse;
   }
 
-  static withdrawalsToTransfersResponse(withdrawals: WithdrawalEvent[]): TransfersResponse {
-    const transferResponse: TransfersResponse = {};
+  static withdrawalsToTransfersResponse(
+    withdrawals: WithdrawalEvent[],
+  ): TransfersResponse<ScanTransfer> {
+    const transferResponse: TransfersResponse<ScanTransfer> = {};
     withdrawals.map((withdrawal) => {
       const userAddress = withdrawal.returnValues.src.toLowerCase();
       if (!transferResponse[userAddress]) {
@@ -281,7 +283,7 @@ export class WETH {
       const erc20Transfer: ERC20Transfer = {
         fromAddress: userAddress,
         toAddress: WETH.token.address,
-        amount: Number(withdrawal.returnValues.wad),
+        amount: withdrawal.returnValues.wad,
         tokenPriceUSD: null,
         totalPriceUSD: null,
         token: {
@@ -293,7 +295,7 @@ export class WETH {
         },
       };
 
-      let transactionTransfer: Transfer = transferResponse[userAddress].find(
+      let transactionTransfer: ScanTransfer = transferResponse[userAddress].find(
         (t) => t.hash === withdrawal.transactionHash,
       );
       if (!transactionTransfer) {

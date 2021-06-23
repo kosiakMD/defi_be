@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
+import { CHAIN_ID_ETH } from '../common/constatnt';
 import { Address, ContractApprovalResponse } from '../common/interfaces';
-import { CHAIN_ID_ETH } from '../utils/utils';
 import ApprovalMapper from './utils/approvalMapper';
 
 @Injectable()
@@ -13,9 +13,7 @@ export class ApprovalsService {
       return allApprovals;
     }
 
-    const [ethApprovals] = await Promise.all([
-      this.getApprovals(addresses, CHAIN_ID_ETH),
-    ]);
+    const [ethApprovals] = await Promise.all([this.getApprovals(addresses, CHAIN_ID_ETH)]);
 
     return ethApprovals;
   }

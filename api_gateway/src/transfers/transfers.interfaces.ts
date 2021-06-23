@@ -7,35 +7,22 @@ export interface ERC20Token {
   totalSupply?: number;
 }
 
-// export interface ERC20TokenTransfer {
-//   address: string;
-//   name?: string;
-//   symbol?: string;
-//   decimals?: number;
-//   totalSupply?: number;
-// amount: {
-//   decimals: number;
-//   usd: number;
-// };
-// }
-
 export interface ERC20Transfer {
   fromAddress: string;
   toAddress: string;
   amount: string; // number!!!
   token: ERC20Token;
-  tokenPriceUSD?: number;
-  totalPriceUSD?: number;
+  tokenPriceUSD: number;
+  totalPriceUSD: number;
 }
 
 export interface Transfer {
   chainId: number;
   hash: string;
-  blockNumber: string;
   blockTimeStamp: number;
-  gas: number;
-  gasPrice: number;
-  gasUsed: number;
+  // gas: number;
+  // gasPrice: number;
+  // gasUsed: number;
   erc20Transfers: ERC20Transfer[];
 }
 
@@ -115,48 +102,3 @@ export interface ERC20TokenTransfer {
   decimals?: number;
   totalSupply?: number;
 }
-
-// export interface FinallyResponse {
-//   transfers: TransfersResponse;
-//   bscTransaction: TransfersResponse;
-// }
-
-// export interface TransactionWithToken {
-//   hash: string;
-//   blockNumber: number;
-//   fromAddress: string;
-//   toAddress: string;
-//   blockTimeStamp: number;
-//   gas: number;
-//   gasUsed: number;
-//   gasPrice: number;
-//   amount: number;
-//   tokenAddress: string;
-//   tokenPrice: number;
-//   ethPrice: number;
-//   tokenName: string;
-//   tokenSymbol: string;
-//   tokenDecimals: number;
-//   tokenTotalSupply: number;
-// }
-
-// export interface TransactionWithTokenAndPrices extends EtherscanTransfer {
-//   hash: string;
-//   blockNumber: number;
-//   fromAddress: string;
-//   toAddress: string;
-//   blockTimeStamp: number;
-//   gas: number;
-//   gasUsed: number;
-//   gasPrice: number;
-//   amount: number;
-//   tokenAddress: string;
-//   tokenPrice: number;
-//   ethPrice: number;
-//   tokenName: string;
-//   tokenSymbol: string;
-//   tokenDecimals: number;
-//   tokenTotalSupply: number;
-//   tokenPriceUSD: number;
-//   totalPriceUSD: number;
-// }

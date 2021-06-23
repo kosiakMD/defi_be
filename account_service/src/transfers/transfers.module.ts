@@ -7,10 +7,17 @@ import { ScanApiModule } from '../scan_api/scan.api.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { DbService } from './repository/db.service';
 import { TransfersController } from './transfers.controller';
+import { TransferEntity } from './dto/transfers.entity';
 import { TransfersService } from './transfers.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature(), ChainModule, ScanApiModule, PriceModule, ThegraphModule],
+  imports: [
+    TypeOrmModule.forFeature([TransferEntity]),
+    ChainModule,
+    ScanApiModule,
+    PriceModule,
+    ThegraphModule,
+  ],
   controllers: [TransfersController],
   providers: [TransfersService, DbService],
 })

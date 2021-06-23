@@ -15,7 +15,7 @@ export interface Transaction {
   input: string;
   contractAddress: string;
   cumulativeGasUsed: string;
-  gasUsed: string;
+  gasUsed: number;
   confirmations: string;
   chainId?: number;
   isInternal?: boolean;

@@ -2,16 +2,11 @@ import { Injectable } from '@nestjs/common';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../common/constatnt';
 import { Address } from '../common/interfaces';
-import { Chain, Chains } from '../common/types';
+import { ChainId, ChainsIds } from '../common/types';
 import { PriceService } from '../price/price.service';
-import {
-  CHAIN_ID_BSC,
-  CHAIN_ID_ETH,
-  decimalsAmount,
-  getUniqueAndToLowerCaseArrayData,
-  totalPrice,
-} from '../utils/utils';
+import { decimalsAmount, getUniqueAndToLowerCaseArrayData, totalPrice } from '../utils/utils';
 import { isBnbAddress } from '../utils/web3';
 import { getUtilTokenPrice, mapTokenBalances } from './balance_util/balance.util';
 import {
@@ -42,7 +37,7 @@ export class BalanceService {
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
   }
 
-  private getPricesAndBalances(tokensAddresses, chainId: Chain, accountsArray): Promise<any[]> {
+  private getPricesAndBalances(tokensAddresses, chainId: ChainId, accountsArray): Promise<any[]> {
     return Promise.all([
       this.priceService.getTokenPrices(tokensAddresses, chainId, 1),
       Promise.all(
@@ -101,7 +96,7 @@ export class BalanceService {
 
   public async getBalanceDataFromDb(
     accounts: Address[],
-    chains?: Chains,
+    chains?: ChainsIds,
   ): Promise<BalancesResponse> {
     // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
@@ -134,10 +129,10 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_ETH);
-    tokenRows.forEach(t => {
+    tokenRows.forEach((t) => {
       t.address = t.address.toLowerCase();
-      t.tokenAddress = t.tokenAddress.toLowerCase()
-    })
+      t.tokenAddress = t.tokenAddress.toLowerCase();
+    });
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
@@ -152,7 +147,7 @@ export class BalanceService {
       balances,
       priceArray,
       NO_DB_ETH_TOKENS,
-      CHAIN_ID_ETH
+      CHAIN_ID_ETH,
     );
 
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_ETH));
@@ -185,10 +180,10 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_BSC);
-    tokenRows.forEach(t => {
+    tokenRows.forEach((t) => {
       t.address = t.address.toLowerCase();
-      t.tokenAddress = t.tokenAddress.toLowerCase()
-    })
+      t.tokenAddress = t.tokenAddress.toLowerCase();
+    });
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
@@ -198,7 +193,6 @@ export class BalanceService {
     );
 
     const priceArray = getUtilTokenPrice(NO_DB_BNB_TOKENS, tokenPrices.prices);
-
 
     const bscTokenBalances = await this.getArrayOfTokenBalances(
       balances,
@@ -235,32 +229,31 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance = (
-    prices: TokenPrices,
-    chainId: number,
-  ): ((row: TokenRow) => AccountTokenBalance) => ({
-    address,
-    amount,
-    tokenAddress,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    tokenTotalSupply,
-  }) => ({
-    account: address,
-    amount,
-    decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-    tokenPriceUSD: prices[tokenAddress] || 0,
-    totalPriceUSD: prices[tokenAddress]
-      ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
-      : 0,
-    token: {
-      chainId: chainId,
-      address: tokenAddress,
-      name: tokenName || null,
-      symbol: tokenSymbol || null,
-      decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-      totalSupply: +tokenTotalSupply || 0,
-    },
-  });
+  private mapErc20Balance =
+    (prices: TokenPrices, chainId: number): ((row: TokenRow) => AccountTokenBalance) =>
+    ({
+      address,
+      amount,
+      tokenAddress,
+      tokenName,
+      tokenSymbol,
+      tokenDecimals,
+      tokenTotalSupply,
+    }) => ({
+      account: address,
+      amount,
+      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+      tokenPriceUSD: prices[tokenAddress] || 0,
+      totalPriceUSD: prices[tokenAddress]
+        ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
+        : 0,
+      token: {
+        chainId: chainId,
+        address: tokenAddress,
+        name: tokenName || null,
+        symbol: tokenSymbol || null,
+        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+        totalSupply: +tokenTotalSupply || 0,
+      },
+    });
 }

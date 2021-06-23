@@ -4,7 +4,7 @@ import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
 import { TransactionQueryDto } from './dto/transaction.query.dto';
-import { TransactionsResponseDto, TransactionsScanResponseDto } from './dto/transactions.dto';
+import { TransactionsDetailedResponseDto, TransactionsResponseDto } from './dto/transactions.dto';
 import { EtherscanTransactionsService } from './etherscan.transactions.service';
 import {
   Transaction,
@@ -21,6 +21,33 @@ export class TransactionsController {
     private etherscanTransactionsService: EtherscanTransactionsService,
     private bscscanTransactionsService: BscscanTransactionsService,
   ) {}
+
+  @Get('/')
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    isArray: true,
+    description: 'Array of Addresses',
+    example: [
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b',
+      '0x07471d0262b17529a489d0c696eef988f89464ac',
+    ],
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: Number,
+    isArray: true,
+    required: false,
+    description: `Array of chains' ID`,
+    example: [1, 2],
+  })
+  @ApiResponse({ status: 200, type: TransactionsDetailedResponseDto, isArray: true })
+  public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
+    const { addresses, chains } = query;
+    // TODO: delete this check as we have @validation
+    if (!query.addresses && query.addresses.length) return [];
+    return this.transactionsService.getTransactionsFromScan(addresses, chains);
+  }
 
   @Get('/internal')
   @ApiQuery({
@@ -71,30 +98,5 @@ export class TransactionsController {
         [address]: transactionsFromAll,
       };
     }, {});
-  }
-
-  @Get('/')
-  @ApiQuery({
-    name: 'addresses',
-    type: String,
-    description: 'Array of Addresses',
-    example: [
-      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac'
-      ],
-  })
-  @ApiQuery({
-    name: 'chains',
-    type: Number,
-    isArray: true,
-    required: false,
-    description: `Array of chains' ID`,
-    example: [1,2],
-    // example: '',
-  })
-  @ApiResponse({ status: 200, type: TransactionsScanResponseDto, isArray: true })
-  public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
-    const { addresses, chains } = query;
-    if (!query.addresses && query.addresses.length) return [];
-    return this.transactionsService.getTransaction(addresses, chains);
   }
 }

@@ -34,7 +34,7 @@ async function bootstrap(): Promise<void> {
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
-  app.use(urlencoded({ extended: true, limit: configService.get<string>('BODY_LIMIT') }));
+  app.use(urlencoded({ extended: true, limit: configService.get<string>('URL_LIMIT') }));
 
   const SERVICE_NAME = configService.get<string>('SERVICE_NAME');
   const NODE_ENV = configService.get<string>('NODE_ENV');

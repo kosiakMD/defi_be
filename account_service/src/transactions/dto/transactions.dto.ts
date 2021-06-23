@@ -1,7 +1,11 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
+import { DetailedResponseDto } from '../../common/dto';
+import { ResultStatus } from '../../common/enum';
+import { DetailedResponse } from '../../common/interfaces';
 import { Transaction } from '../interfaces/transactions.interfaces';
+import { TransactionDto as TransactionFromScanDto } from './api.transactions.dto';
 
 class GasDto {
   @ApiProperty({ example: 1.1900000000000001e-7 })
@@ -95,4 +99,33 @@ class TransactionScanDto {
 export class TransactionsScanResponseDto {
   @ApiProperty({ type: TransactionDto, isArray: true })
   address: TransactionScanDto;
+}
+
+export interface TransactionsDetailedResponse extends DetailedResponse<TransactionFromScanDto[]> {
+  status: ResultStatus;
+  errors: Error[] | string[];
+  data: TransactionFromScanDto[];
+}
+
+export class TransactionsDetailedResponseDto
+  extends DetailedResponseDto<TransactionFromScanDto[]>
+  implements TransactionsDetailedResponse
+{
+  @ApiProperty({
+    enum: ResultStatus,
+    enumName: 'ResultStatus',
+    example: ResultStatus.ok,
+  })
+  status: ResultStatus;
+
+  @ApiProperty({
+    example: ['connect ECONNREFUSED ...'],
+  })
+  errors: Error[] | string[];
+
+  @ApiProperty({
+    isArray: true,
+    type: TransactionFromScanDto,
+  })
+  data: TransactionFromScanDto[];
 }

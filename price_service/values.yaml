@@ -14,7 +14,7 @@ configMaps:
     BODY_LIMIT: 50mb
 
 secrets:
-- database-read
+- database
 - redis
 - bscscan
 - etherscan

@@ -13,18 +13,35 @@ pipeline {
     parameters {
         choice(name: "ENVIRONMENT", description: "Environment for bake", choices: ["development", "testing"])
         gitParameter(
-            name: "BRANCH_NAME",
-            description: "Git branch to bake",
-            defaultValue: "origin/master",
+            name: "BACKEND_BRANCH_NAME",
+            description: "Git branch for backend to bake",
+            useRepository: ".*defiyield-backend-v2.git",
+            defaultValue: "backend/master",
             type: "PT_BRANCH",
-            branchFilter: "origin/.*",
+            branchFilter: "backend/.*",
             sortMode: "ASCENDING",
             selectedValue: "DEFAULT",
-            listSize: "0"
+            listSize: "0",
+            quickFilterEnabled: true
         )
-        booleanParam(name: "DRY_RUN", description: "Generate stack manifest only", defaultValue: false)
+        gitParameter(
+            name: "FRONTEND_BRANCH_NAME",
+            description: "Git branch for frontend to bake",
+            useRepository: ".*defiyield-website.git",
+            defaultValue: "frontend/main",
+            type: "PT_BRANCH",
+            branchFilter: "frontend/.*",
+            sortMode: "ASCENDING",
+            selectedValue: "DEFAULT",
+            listSize: "0",
+            quickFilterEnabled: true
+        )
+        booleanParam(name: "DEPLOY_FRONTEND", description: "Deploy frontend service?", defaultValue: true)
+        booleanParam(name: "DRY_RUN", description: "Generate stack manifest only?", defaultValue: false)
     }
     options {
+        timeout(time: 1, unit: "HOURS")
+        parallelsAlwaysFailFast()
         buildDiscarder(
             logRotator(
                 numToKeepStr: "100",
@@ -35,22 +52,28 @@ pipeline {
         )
     }
     environment {
-        AWS_REGION      = "eu-central-1"
-        AWS_CREDENTIALS = "defiyield-aws"
-        STACK_ID        = "${params.STACK_ID ?: UUID.randomUUID().toString()}"
-        OWNER           = ""
-        BRANCH          = ""
-        BUILD_JOBS      = ""
-        MISSED_IMAGES   = ""
+        AWS_REGION        = "eu-central-1"
+        AWS_CREDENTIALS   = "defiyield-aws"
+        STACK_ID          = "${params.STACK_ID ?: UUID.randomUUID().toString()}"
+        OWNER             = ""
+        BACKEND_BRANCH    = ""
+        FRONTEND_BRANCH   = ""
+        BUILD_JOBS        = ""
+        MISSED_IMAGES     = ""
+        BACKEND_REVISION  = ""
+        FRONTEND_REVISION = ""
     }
     stages {
         stage("Initialization") {
             steps {
                 wrap([$class: "BuildUser"]) {
                     script {
-                        BRANCH = params.BRANCH_NAME.replaceFirst("^origin\\/", "")
+                        FRONTEND_BRANCH = params.FRONTEND_BRANCH_NAME.replaceFirst("^frontend\\/", "")
+                        BACKEND_BRANCH = params.BACKEND_BRANCH_NAME.replaceFirst("^backend\\/", "")
+                        FRONTEND_REVISION = sh(script: "git rev-parse ${params.FRONTEND_BRANCH_NAME}", returnStdout: true).trim()
+                        BACKEND_REVISION = sh(script: "git rev-parse ${params.BACKEND_BRANCH_NAME}", returnStdout: true).trim()
                         OWNER = env.BUILD_USER_EMAIL
-                        currentBuild.displayName = "${BRANCH} - ${params.ENVIRONMENT}-${STACK_ID}"
+                        currentBuild.displayName = "${FRONTEND_BRANCH} - ${BACKEND_BRANCH} - ${params.ENVIRONMENT}-${STACK_ID}"
                     }
                 }
             }
@@ -65,7 +88,7 @@ pipeline {
                 wrap([$class: "BuildUser"]) {
                     timeout(time: 30, unit: "MINUTES") {
                         input(
-                            message: "Bake stack for ${params.ENVIRONMENT} from ${BRANCH}(${GIT_COMMIT})?\n\nWaiting for approval from ${env.BUILD_USER_ID}",
+                            message: "Bake stack for ${params.ENVIRONMENT} from\nFrontend: ${FRONTEND_BRANCH}(${FRONTEND_REVISION})\nBackend: ${BACKEND_BRANCH}(${BACKEND_REVISION})\n?\n\nWaiting for approval from ${env.BUILD_USER_ID}",
                             ok: "Bake",
                             submitter: env.BUILD_USER_ID
                         )
@@ -81,15 +104,18 @@ pipeline {
 
                     withAWS(region: AWS_REGION, credentials: AWS_CREDENTIALS) {
                         SERVICES = sh(
-                            script: "find . -maxdepth 1 -type d ! -name '.*' ! -name 'agenda' ! -name 'common' ! -name 'swap_service' -printf '%f\n' | sort",
+                            script: "find . -maxdepth 1 -type d ! -name '.*' ! -name 'agenda' ! -name 'common' ! -name 'swap_service' ! -name 'frontend_service' ! -name '*_crawlers' ! -name '*_consumers' -printf '%f\n' | sort",
                             returnStdout: true
                         ).trim().split("\n").collectEntries{ folder ->
                             def SERVICE = folder.replace("_", "-")
-                            def REVISION = sh(script: "git log --pretty=tformat:'%h' -n1 ./${folder}", returnStdout: true).trim()
+                            def REVISION = sh(script: "git log --pretty=tformat:'%h' -n1 ./${folder}", returnStdout: true).trim().take(7)
                             if (!ecrListImages(repositoryName: SERVICE).any{image -> image.imageTag == REVISION}) {
                                 MISSED_SERVICES.add(SERVICE)
                             }
                             [(SERVICE): REVISION]
+                        }
+                        if (params.DEPLOY_FRONTEND) {
+                            SERVICES["frontend-service"] = FRONTEND_REVISION.take(7)
                         }
                         MISSED_IMAGES = MISSED_SERVICES.join(",")
                         BUILD_JOBS = (SERVICES.keySet() as List).join(",")
@@ -100,8 +126,14 @@ pipeline {
                         json: [
                             "stack_id": STACK_ID,
                             "environment": params.ENVIRONMENT,
-                            "branch": BRANCH,
-                            "revision": GIT_COMMIT,
+                            "frontend": [
+                                "branch": FRONTEND_BRANCH,
+                                "revision": FRONTEND_REVISION
+                            ],
+                            "backend": [
+                                "branch": BACKEND_BRANCH,
+                                "revision": BACKEND_REVISION
+                            ],
                             "owner": OWNER,
                             "owner_id": slackUserIdFromEmail(OWNER),
                             "services": SERVICES
@@ -128,15 +160,30 @@ pipeline {
                     BUILD_JOBS.split(",").each{ service ->
                         STAGES["Build ${service}"] = {
                             stage("Build ${service}") {
-                                if (service in MISSED_IMAGES.split(",")) {
-                                    build(
-                                        job: "/services/${service}",
-                                        wait: true,
-                                        propagate: true,
-                                        parameters: [
-                                            string(name: "BRANCH_NAME", value: GIT_COMMIT)
-                                        ]
-                                    )
+                                if (service in MISSED_IMAGES.split(",") || service in ["frontend-service"]) {
+                                    switch(service) {
+                                        case "frontend-service":
+                                            build(
+                                                job: "/services/${service}",
+                                                wait: true,
+                                                propagate: true,
+                                                parameters: [
+                                                    string(name: "BRANCH_NAME", value: FRONTEND_REVISION),
+                                                    string(name: "API_GATEWAY", value: "https://${params.ENVIRONMENT}-api-${STACK_ID}.defyield.xyz/v1")
+                                                ]
+                                            )
+                                            break
+                                        default:
+                                            build(
+                                                job: "/services/${service}",
+                                                wait: true,
+                                                propagate: true,
+                                                parameters: [
+                                                    string(name: "BRANCH_NAME", value: BACKEND_REVISION)
+                                                ]
+                                            )
+                                            break
+                                    }
                                 } else {
                                     Utils.markStageSkippedForConditional("Build ${service}")
                                 }
@@ -185,11 +232,19 @@ pipeline {
                             ],
                             [
                                 "type": "mrkdwn",
-                                "text": "*Branch*: ${BRANCH}"
+                                "text": "*Frontend Branch*: ${FRONTEND_BRANCH}"
                             ],
                             [
                                 "type": "mrkdwn",
-                                "text": "*Revision*: ${GIT_COMMIT}"
+                                "text": "*Frontend Revision*: ${FRONTEND_REVISION}"
+                            ],
+                            [
+                                "type": "mrkdwn",
+                                "text": "*Backend Branch*: ${BACKEND_BRANCH}"
+                            ],
+                            [
+                                "type": "mrkdwn",
+                                "text": "*Backend Revision*: ${BACKEND_REVISION}"
                             ],
                             [
                                 "type": "mrkdwn",

@@ -39,10 +39,8 @@ pipeline {
                     OWNER = (DEPLOY_JOB_RUN.getCause(Cause.UserIdCause) ?: DEPLOY_JOB_RUN.getCause(Cause.UpstreamCause).getUpstreamCauses()[0]) \
                         .getUserId()
 
-                    BRANCH = DEPLOY_JOB_RUN \
-                        .getDisplayName() \
-                        .split(" - ") \
-                        .first()
+                    FRONTEND_BRANCH_NAME = DEPLOY_JOB_RUN.getDisplayName().split(" - ")[0]
+                    BACKEND_BRANCH_NAME  = DEPLOY_JOB_RUN.getDisplayName().split(" - ")[1]
 
                     currentBuild.displayName = "${ENVIRONMENT}-${STACK_ID}"
                 }
@@ -68,7 +66,8 @@ pipeline {
                         propagate: true,
                         parameters: [
                             string(name: "ENVIRONMENT", value: ENVIRONMENT),
-                            gitParameter(name: "BRANCH_NAME", value: BRANCH),
+                            gitParameter(name: "BACKEND_BRANCH_NAME", value: BACKEND_BRANCH_NAME),
+                            gitParameter(name: "FRONTEND_BRANCH_NAME", value: FRONTEND_BRANCH_NAME),
                             [ $class: "WHideParameterValue", name: "STACK_ID", value: STACK_ID ]
                         ]
                     )

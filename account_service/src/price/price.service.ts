@@ -142,11 +142,7 @@ export class PriceService {
   ): Promise<PriceResponseDto<HistoricalPricesMap>> {
     const timeMark = `${this.getPricesUrl} chainId:${chainId}`;
     try {
-      // TODO: do we need this?
-      // PriceService.mapAddressArray(addressesArray, chainId, internal);
-
       const request = new PriceHistoricalRequestDto(addressesArray, timestamps, chainId, undefined);
-
       this.logger.time(timeMark);
       const priceResult: PricesDto = await this.httpService
         .post(this.getPricesUrl, request)

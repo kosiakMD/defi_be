@@ -97,18 +97,18 @@ export class TransfersService {
     chainId: ChainId,
   ): Promise<HistoricalPricesMap> {
     // form request params
-    const timestamps: string[] = [];
-    const tokenAddresses: string[] = [];
+    const timestamps: Set<string> = new Set<string>();
+    const tokenAddresses: Set<string> = new Set<string>();
     transferRows.forEach((ts) => {
-      timestamps.push(ts.blockTimeStamp);
-      tokenAddresses.push(ts.tokenAddress);
+      timestamps.add(ts.blockTimeStamp);
+      tokenAddresses.add(ts.tokenAddress);
     });
-    this.logger.debug(`timestamps: ${timestamps.length} chainId: ${chainId}`);
-    this.logger.debug(`tokenAddresses: ${tokenAddresses.length} chainId: ${chainId}`);
+    this.logger.debug(`timestamps: ${timestamps.size} chainId: ${chainId}`);
+    this.logger.debug(`tokenAddresses: ${tokenAddresses.size} chainId: ${chainId}`);
     // request
     const dataPrices = await this.priceService.getTokenHistoricalPrices(
-      tokenAddresses,
-      timestamps,
+      Array.from(tokenAddresses),
+      Array.from(timestamps),
       chainId,
     );
     // handle response
@@ -151,31 +151,22 @@ export class TransfersService {
         userTransactions.map((transaction) => transaction.hash),
       );
 
-      const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash): Transfer => {
-        const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
+      const transactionWithTransfers = uniqueUserHashes.map<Transfer>(
+        (hash): Transfer => {
+          const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
 
-        const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
-          (transfer) => new ERC20TransferDto(transfer),
-        );
+          const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
+            (transfer) => new ERC20TransferDto(transfer),
+          );
 
-        // TODO: add when gas will be added
-        // const gasUsed =
-        //   hashTransfers[0].gas && hashTransfers[0].gasPrice
-        //     ? String(hashTransfers[0].gas * hashTransfers[0].gasPrice * DEFAULT_MULTIPLIER)
-        //     : null;
-
-        return new TransferDto({
-          chainId: chainId,
-          hash: hashTransfers[0].hash,
-          blockTimeStamp: hashTransfers[0].blockTimeStamp,
-          // TODO: add when gas will be added
-          // gas: hashTransfers[0].gas,
-          // gasPrice: hashTransfers[0].gasPrice,
-          // gasUsed: gasUsed,
-          //
-          erc20Transfers,
-        });
-      });
+          return new TransferDto({
+            chainId: chainId,
+            hash: hashTransfers[0].hash,
+            blockTimeStamp: hashTransfers[0].blockTimeStamp,
+            erc20Transfers,
+          });
+        },
+      );
 
       return {
         ...response,
@@ -195,7 +186,9 @@ export class TransfersService {
       try {
         const priceData: HistoricalPricesMap = await this.getPrices(transferRows, chainId);
         this.logger.debug(`priceData: ${priceData.entries.length} chainId: ${chainId}`);
-        if (priceData.size) this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
+        if (priceData.size) {
+          this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
+        }
       } catch (e) {
         this.logger.error(e);
         result.error(e.message);
@@ -323,8 +316,9 @@ export class TransfersService {
         return transfersResponse;
       }
 
-      const blocksDataTimestamps: BlocksResponseData =
-        await this.blocksSubgraph.getBlocksTimestamps(missedBlocks);
+      const blocksDataTimestamps: BlocksResponseData = await this.blocksSubgraph.getBlocksTimestamps(
+        missedBlocks,
+      );
       const blocks = blocksDataTimestamps.data.blocks;
 
       Object.keys(transfersResponse).map((k) => {

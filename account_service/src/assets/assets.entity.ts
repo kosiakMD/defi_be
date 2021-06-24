@@ -4,7 +4,7 @@ import { AfterLoad, Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { AssetState } from './assets.interface';
 
-@Entity({ name: 'assets', orderBy: { name: 'ASC' } })
+@Entity({ name: 'assets_new', orderBy: { name: 'ASC' } })
 export class AssetsEntity {
   @AfterLoad()
   idToNumber(): void {
@@ -55,10 +55,8 @@ export class AssetsEntity {
   @ApiProperty({ type: String, example: AssetState.processing })
   @Expose()
   get status(): AssetState {
-    return this.isReadyToMigrate // if not - processing not started = pending, f yes ->
-      ? this.isMigrated // if not - processing started if yes - finished = ready,
-        ? AssetState.ready
-        : AssetState.processing
-      : AssetState.pending;
+    return this.isMigrated // if not - processing started if yes - finished = ready,
+      ? AssetState.ready
+      : AssetState.processing;
   }
 }

@@ -97,20 +97,23 @@ export class TransfersService {
     chainId: ChainId,
   ): Promise<HistoricalPricesMap> {
     // form request params
-    const timestamps: Set<string> = new Set<string>();
     const tokenAddresses: Set<string> = new Set<string>();
-    transferRows.forEach((ts) => {
-      timestamps.add(ts.blockTimeStamp);
-      tokenAddresses.add(ts.tokenAddress);
+    const assetsForPrices = [];
+    transferRows.map((tr) => {
+      tokenAddresses.add(tr.tokenAddress);
     });
-    this.logger.debug(`timestamps: ${timestamps.size} chainId: ${chainId}`);
+    tokenAddresses.forEach((a) => {
+      const tokenTransfersRows: TransferEntity[] = transferRows.filter(
+        (tr) => tr.tokenAddress === a,
+      );
+      assetsForPrices.push({
+        address: a,
+        timestamps: tokenTransfersRows.map((ttr) => ttr.blockTimeStamp),
+      });
+    });
     this.logger.debug(`tokenAddresses: ${tokenAddresses.size} chainId: ${chainId}`);
     // request
-    const dataPrices = await this.priceService.getTokenHistoricalPrices(
-      Array.from(tokenAddresses),
-      Array.from(timestamps),
-      chainId,
-    );
+    const dataPrices = await this.priceService.getHistoricalPrices(assetsForPrices, chainId);
     // handle response
     const { prices: priceData } = dataPrices;
     return priceData;
@@ -185,7 +188,7 @@ export class TransfersService {
     if (transferRows.length) {
       try {
         const priceData: HistoricalPricesMap = await this.getPrices(transferRows, chainId);
-        this.logger.debug(`priceData: ${priceData.entries.length} chainId: ${chainId}`);
+        this.logger.debug(`priceData: ${priceData.size} chainId: ${chainId}`);
         if (priceData.size) {
           this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
         }

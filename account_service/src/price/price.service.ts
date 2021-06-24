@@ -7,6 +7,7 @@ import { Logger } from '../Logger/Logger.service';
 import { changeTokenArray } from '../balance/balance_util/balance.util';
 import {
   CurrentPricesPayload,
+  HistoricalPrices,
   HistoricalPricesMap,
   PriceResponseDto,
   PricesDto,
@@ -19,9 +20,9 @@ import {
 } from '../balance/tokens/tokens';
 import { ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
-import { ChainId, Timestamp } from '../common/types';
+import { ChainId } from '../common/types';
 import { isEthChain } from '../utils/web3';
-import { PriceCurrentRequestDto, PriceHistoricalRequestDto } from './price.dto';
+import { PriceCurrentRequestDto } from './price.dto';
 import { PriceServiceResponse } from './price.interfaces';
 
 @Injectable()
@@ -64,20 +65,16 @@ export class PriceService {
   private static filterHistoricalNonLpTokensAndFormat(
     pricesResp: PricesDto,
   ): PriceResponseDto<HistoricalPricesMap> {
-    const resultPrices = new Map<string, HistoricalPricesMap>();
     const prices = Object.entries(pricesResp.prices);
+    const resultPrices = new Map<string, HistoricalPrices>();
     prices.forEach(([address, priceData]) => {
-      if (!priceData.isLp) {
-        resultPrices.set(address, priceData.prices);
-      }
+      resultPrices.set(address, priceData);
     });
-
-    const result = new PriceResponseDto<HistoricalPricesMap>(
+    return new PriceResponseDto<HistoricalPricesMap>(
       pricesResp.chain,
       pricesResp.currency,
       resultPrices, // TODO TBD? Object.fromEntries(resultPrices),
     );
-    return result;
   }
 
   private static mapAddressArray(addresses: string[], chain: number, internal?: number): void {
@@ -134,33 +131,6 @@ export class PriceService {
     return result;
   }
 
-  public async getTokenHistoricalPrices(
-    addressesArray: Address[],
-    timestamps: Timestamp[],
-    chainId: ChainId,
-    // internal = 1,
-  ): Promise<PriceResponseDto<HistoricalPricesMap>> {
-    const timeMark = `${this.getPricesUrl} chainId:${chainId}`;
-    try {
-      const request = new PriceHistoricalRequestDto(addressesArray, timestamps, chainId, undefined);
-      this.logger.time(timeMark);
-      const priceResult: PricesDto = await this.httpService
-        .post(this.getPricesUrl, request)
-        .pipe(map((response) => response.data))
-        .toPromise();
-      this.logger.timeEnd(timeMark);
-
-      const priceData = PriceService.filterHistoricalNonLpTokensAndFormat(priceResult);
-      return priceData;
-    } catch (e) {
-      this.logger.timeEnd(timeMark);
-      e.response
-        ? this.logger.error(e.response.data, 'getTokenHistoricalPrices')
-        : this.logger.error(e, 'getTokenHistoricalPrices');
-      throw e;
-    }
-  }
-
   async getNonLpTokens(): Promise<string[]> {
     let result;
     try {
@@ -190,8 +160,9 @@ export class PriceService {
         })
         .pipe(map((response) => response.data))
         .toPromise();
+      const priceData = PriceService.filterHistoricalNonLpTokensAndFormat(prices);
       this.logger.timeEnd(`request: chain=${chainId} ${this.getBatchPriceUrl}`);
-      return prices;
+      return priceData;
     } catch (e) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}`));

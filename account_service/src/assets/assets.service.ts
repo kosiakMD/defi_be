@@ -14,8 +14,9 @@ export class AssetsService {
   ) {}
   async queryAllAssets(): Promise<AssetsEntity[]> {
     try {
+      // db query works very fast
       const storedAssets: AssetsEntity[] = await this.assetRepository.find({
-        where: { isLp: false },
+        where: { isMigrated: true },
       });
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

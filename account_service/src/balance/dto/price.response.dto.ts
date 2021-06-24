@@ -26,21 +26,13 @@ export interface CurrentPricesPayload {
   [key: string]: number;
 }
 
-export type Platform = string;
-
 export type Timestamp = string;
 
 export type HistoricalPrices = Record<Timestamp, number | null>;
 
 export type HistoricalPricesMap = Map<Address, HistoricalPrices>;
 
-export interface PlatformHistoricalPrices {
-  prices: HistoricalPricesMap;
-  platform: Platform;
-  isLp: boolean;
-}
-
-export type TokenHistoricalPrice = Record<Address, PlatformHistoricalPrices>;
+export type TokenHistoricalPrice = Record<Address, HistoricalPrices>;
 
 export interface PricesDto {
   chain: {

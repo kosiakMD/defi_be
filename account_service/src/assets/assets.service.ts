@@ -16,7 +16,7 @@ export class AssetsService {
     try {
       // db query works very fast
       const storedAssets: AssetsEntity[] = await this.assetRepository.find({
-        where: { isMigrated: true },
+        where: { isReadyToMigrate: true },
       });
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

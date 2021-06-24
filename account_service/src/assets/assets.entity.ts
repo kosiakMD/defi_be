@@ -55,8 +55,6 @@ export class AssetsEntity {
   @ApiProperty({ type: String, example: AssetState.processing })
   @Expose()
   get status(): AssetState {
-    return this.isMigrated // if not - processing started if yes - finished = ready,
-      ? AssetState.ready
-      : AssetState.processing;
+    return this.isReadyToMigrate && this.isMigrated ? AssetState.ready : AssetState.pending;
   }
 }

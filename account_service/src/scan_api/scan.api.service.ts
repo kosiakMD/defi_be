@@ -280,8 +280,8 @@ export class ScanApiService {
     }
 
     transactions.forEach((tx) => {
-      const price = prices.prices[this.mainCoinAddress]
-        ? prices.prices[this.mainCoinAddress][tx.timeStamp]
+      const price = prices.prices.has(this.mainCoinAddress)
+        ? prices.prices.get(this.mainCoinAddress)[tx.timeStamp]
         : 0;
       const valueUSD = totalPrice(tx.value.toString(), price, 18);
       const feeUSD = transactionFeeUSD(tx.gasPrice, tx.gasUsed, 18, price);

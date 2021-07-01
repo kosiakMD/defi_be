@@ -2,7 +2,15 @@
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsInt,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 import { DetailedResponseDto } from '../../common/dto';
 import { ResultStatus } from '../../common/enum';
@@ -77,6 +85,10 @@ export class ERC20TokenDto {
   @ApiProperty({ type: Number, example: 92077.06746043958 })
   totalSupply: number;
 
+  @IsBoolean()
+  @ApiProperty({ type: Boolean, example: true })
+  isIncludedToGraph: number;
+
   // constructor(data: Partial<ERC20TokenDto>) {
   constructor(transfer: TransferWithTokenAndPrices) {
     Object.assign(this, {
@@ -85,6 +97,7 @@ export class ERC20TokenDto {
       symbol: transfer.tokenSymbol,
       decimals: transfer.tokenDecimals,
       totalSupply: transfer.tokenTotalSupply,
+      isIncludedToGraph: transfer.isIncludedToGraph,
     });
   }
 }

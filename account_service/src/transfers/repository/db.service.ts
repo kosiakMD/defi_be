@@ -71,7 +71,8 @@ export class DbService {
            assets_new.address  AS "tokenAddress",
            assets_new.name     AS "tokenName",
            assets_new.symbol   AS "tokenSymbol",
-           assets_new.decimals AS "tokenDecimals"
+           assets_new.decimals AS "tokenDecimals",
+           assets_new.is_migrated as "isIncludedToGraph"
         FROM (
              SELECT fromAddress AS "fromAddress",
                     toAddress AS "toAddress",
@@ -98,7 +99,7 @@ export class DbService {
              ) AS reduced
         ) AS balances
         JOIN assets_new ON assetId = assets_new.id
-        WHERE assets_new.is_migrated = true AND assets_new.chain_id = ${chainId}
+        WHERE assets_new.chain_id = ${chainId}
         LIMIT ${limit}
     `;
     return manager.query(stringQuery);

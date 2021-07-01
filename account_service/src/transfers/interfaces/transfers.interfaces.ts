@@ -5,6 +5,7 @@ export interface ERC20Token {
   symbol?: string;
   decimals?: number;
   totalSupply?: number;
+  isIncludedToGraph?: boolean;
 }
 
 export interface ERC20TokenTransfer {
@@ -93,6 +94,7 @@ export interface TransferWithTokenAndPrices {
   tokenTotalSupply?: number;
   tokenPriceUSD: number;
   totalPriceUSD: number;
+  isIncludedToGraph?: boolean;
 }
 
 export interface TransferRawFromDb {

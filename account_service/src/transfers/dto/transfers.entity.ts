@@ -44,6 +44,10 @@ export class TransferEntity {
   @Column({ name: 'asset_decimals' })
   tokenDecimals: number;
 
+  // @ViewColumn({ name: 'asset_is_migrated' })
+  @Column({ name: 'asset_is_migrated' })
+  isIncludedToGraph: boolean;
+
   @Exclude()
   assetId: string;
 

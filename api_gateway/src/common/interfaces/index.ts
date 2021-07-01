@@ -1,3 +1,5 @@
+import { ResultStatus } from '../enum';
+
 export type Address = string;
 
 export type TokenSymbol = string;
@@ -149,4 +151,10 @@ export interface TokenHistorical {
 
 export interface TokensHistorical {
   [index: number]: TokenHistorical;
+}
+
+export interface DetailedResponse<T> {
+  status: ResultStatus;
+  errors: Error[] | string[];
+  data: T;
 }

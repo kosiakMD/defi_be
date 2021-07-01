@@ -1,14 +1,15 @@
+import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { BadRequestException } from '@nestjs/common';
-import { Chains } from '../../common/types';
+
+import { ChainsIds } from '../../common/types';
 
 interface TransactionQuery {
   addresses: string[];
-  chains: Chains;
+  chains: ChainsIds;
 }
 
-export class TransactionQueryDto implements TransactionQuery{
+export class TransactionQueryDto implements TransactionQuery {
   @IsOptional()
   @Transform(({ value, key }) => {
     if (!Array.isArray(value)) {

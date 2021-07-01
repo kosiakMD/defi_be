@@ -5,27 +5,27 @@ export interface ERC20Token {
   symbol?: string;
   decimals?: number;
   totalSupply?: number;
+  isIncludedToGraph?: boolean;
 }
 
-// TODO: change '?' to mandatory ?
 export interface ERC20TokenTransfer {
   address: string;
-  name?: string;
-  symbol?: string;
-  decimals?: number;
-  totalSupply?: number;
+  name: string;
+  symbol: string;
+  decimals: number;
+  totalSupply: number;
 }
 
 export interface ERC20Transfer {
   fromAddress: string;
   toAddress: string;
-  amount: number;
+  amount: string;
   token: ERC20Token;
-  tokenPriceUSD?: number;
-  totalPriceUSD?: number;
+  tokenPriceUSD: number;
+  totalPriceUSD: number;
 }
 
-export interface Transfer {
+export interface ScanTransfer {
   chainId: number;
   hash: string;
   blockNumber: number;
@@ -36,8 +36,19 @@ export interface Transfer {
   erc20Transfers: ERC20Transfer[];
 }
 
-export interface TransfersResponse {
-  [userAddress: string]: Transfer[];
+export interface Transfer {
+  chainId: number;
+  hash: string;
+  blockTimeStamp: string;
+  // TODO: until no gas in DB
+  // gas?: number;
+  // gasPrice?: number;
+  // gasUsed: string;
+  erc20Transfers: ERC20Transfer[];
+}
+
+export interface TransfersResponse<T = Transfer | ScanTransfer> {
+  [userAddress: string]: T[];
 }
 
 export interface FinallyResponse {
@@ -47,33 +58,33 @@ export interface FinallyResponse {
 
 export interface TransactionWithToken {
   hash: string;
-  blockNumber?: number;
+  // blockNumber?: number;
   fromAddress: string;
   toAddress: string;
-  blockTimeStamp: number;
-  gas?: number;
-  gasUsed?: number;
-  gasPrice?: number;
-  amount?: number;
+  blockTimeStamp: string;
+  // gas?: number;
+  // gasUsed?: number;
+  // gasPrice?: number;
+  amount?: string;
   tokenAddress?: string;
-  tokenPrice?: number;
-  ethPrice?: number;
+  // tokenPrice?: number; //
+  // ethPrice?: number;
   tokenName: string;
   tokenSymbol: string;
   tokenDecimals: number;
-  tokenTotalSupply?: number;
+  // tokenTotalSupply?: number;
 }
 
-export interface TransactionWithTokenAndPrices {
+export interface TransferWithTokenAndPrices {
   hash: string;
-  blockNumber?: number;
   fromAddress: string;
   toAddress: string;
-  blockTimeStamp: number;
-  gas?: number;
+  blockTimeStamp: string;
+  blockNumber?: number; //
+  gas?: number; //
+  gasPrice?: number; //
   gasUsed?: number;
-  gasPrice?: number;
-  amount?: number;
+  amount?: string;
   tokenAddress?: string;
   tokenPrice?: number;
   ethPrice?: number;
@@ -83,4 +94,32 @@ export interface TransactionWithTokenAndPrices {
   tokenTotalSupply?: number;
   tokenPriceUSD: number;
   totalPriceUSD: number;
+  isIncludedToGraph?: boolean;
+}
+
+export interface TransferRawFromDb {
+  id: number;
+  // eslint-disable-next-line camelcase
+  tx_hash: string;
+  from: string;
+  to: string;
+  timestamp: string;
+  value: string;
+  address: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+}
+
+export interface TransferFromDb {
+  id: number;
+  hash: string;
+  fromAddress: string;
+  toAddress: string;
+  blockTimeStamp: string;
+  amount: string;
+  tokenAddress: string;
+  tokenName: string;
+  tokenSymbol: string;
+  tokenDecimals: number;
 }

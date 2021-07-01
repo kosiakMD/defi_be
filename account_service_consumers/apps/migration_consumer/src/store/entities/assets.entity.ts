@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity('assets')
+@Entity('assets_new')
 export class AssetsEntity {
   @PrimaryColumn()
   id: number;
@@ -20,27 +20,15 @@ export class AssetsEntity {
   @Column({ name: 'icon', nullable: true })
   icon: string;
 
-  @Column({ name: 'is_import_started', nullable: true })
-  isImportStarted: boolean;
-
-  @Column({ name: 'is_historical_data_migrated', nullable: true })
-  isHistoricalDataMigrated: boolean;
-
-  @Column({ name: 'from_block', nullable: false })
-  fromBlock: number;
-
-  @Column({ name: 'to_block', nullable: false })
-  toBlock: number;
-
-  @Column({ name: 'migration_chunk_size', nullable: false })
-  migrationChunkSize: number;
-
   @Column({ name: 'chain_id', nullable: true })
   chainId: number;
 
-  @Column({ name: 'template', nullable: true })
-  template: string;
+  @Column({ name: 'is_lp', nullable: true })
+  isLp: boolean;
 
-  @Column({ name: 'total_transfers_count', nullable: false, type: 'numeric', default: 0 })
-  totalTransfersCount: number;
+  @Column({ name: 'project_id', nullable: true })
+  projectId: boolean;
+
+  @Column({ name: 'is_display', nullable: true, default: false })
+  isDisplay: boolean;
 }

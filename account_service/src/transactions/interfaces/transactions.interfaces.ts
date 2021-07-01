@@ -1,3 +1,5 @@
+import { ResultStatus } from '../../common/enum';
+
 interface amount {
   eth: number;
   usd: number;
@@ -24,13 +26,8 @@ export interface TransactionsResponse {
   [address: string]: Transaction[];
 }
 
-export enum ResultStatus {
-  ok = 'ok',
-  error = 'error',
-}
-
 export interface TransactionsResult {
   status: ResultStatus;
-  error?: Error | string;
-  transactions: any[];
+  errors?: Error | string;
+  data: Transaction[];
 }

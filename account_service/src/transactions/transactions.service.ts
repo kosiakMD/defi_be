@@ -3,19 +3,15 @@ import { getManager } from 'typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 import { Web3Provider } from '../chain/web3.provider';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from '../common/constatnt';
+import { ResultStatus } from '../common/enum';
 import { Address } from '../common/interfaces';
-import { Chains } from '../common/types';
+import { ChainsIds } from '../common/types';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
+import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import {
-  CHAIN_ID_BSC,
-  CHAIN_ID_ETH,
-  DEFAULT_MULTIPLIER,
-  getUniqueAndToLowerCaseArrayData,
-} from '../utils/utils';
-import {
-  ResultStatus,
   Transaction,
   TransactionsResponse,
   TransactionsResult,
@@ -139,17 +135,16 @@ export class TransactionsService {
     `);
   }
 
-  async getTransaction(addresses: string[], chains: Chains) {
+  async getTransactionsFromScan(addresses: string[], chains: ChainsIds) {
     const result = {
       status: ResultStatus.ok,
       errors: [],
-      transactions: [],
+      data: [],
     };
     //
-    const concatTxs = (newTxs): TransactionsResult[] =>
-      (result.transactions = result.transactions.concat(newTxs));
+    const concatTxs = (newTxs): TransactionsResult[] => (result.data = result.data.concat(newTxs));
 
-    if (chains && chains.length) {
+    if (chains?.length) {
       const handleChain = async (chainId, service: ScanApiService): Promise<any> => {
         if (chains.includes(chainId)) {
           const txs = await Promise.allSettled(
@@ -157,8 +152,8 @@ export class TransactionsService {
           );
           txs.forEach((tx) => {
             if (tx.status === 'fulfilled') {
-              concatTxs(tx.value.transactions);
-              if (tx.value.error) result.errors.push(tx.value.error);
+              concatTxs(tx.value.data);
+              if (tx.value.errors) result.errors.push(tx.value.errors);
             } else {
               result.errors.push(tx.reason);
             }
@@ -171,8 +166,8 @@ export class TransactionsService {
       ]);
     } else {
       const [ethTransactions, bscTransactions] = await Promise.allSettled([
-        Promise.all(addresses.map((address) => this.etherScanService.getScanTransactions(address))),
-        Promise.all(addresses.map((address) => this.bscScanService.getScanTransactions(address))),
+        Promise.all(addresses.map(this.etherScanService.getScanTransactions)),
+        Promise.all(addresses.map(this.bscScanService.getScanTransactions)),
       ]);
 
       const checkFulfillment = (chainsTxResults): any => {

@@ -1,20 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
+import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../common/constatnt';
+import { ResultStatus } from '../common/enum';
 import { Address } from '../common/interfaces';
-import { Chain, Chains } from '../common/types';
+import { ChainId, ChainsIds } from '../common/types';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
-import { BlocksSubgraph, ResponseData as BlocksResponseData } from '../thegraph/blocks/blocks.subgraph';
 import {
-  CHAIN_ID_BSC,
-  CHAIN_ID_ETH,
-  DEFAULT_MULTIPLIER,
+  BlocksSubgraph,
+  ResponseData as BlocksResponseData,
+} from '../thegraph/blocks/blocks.subgraph';
+import {
   getTokenDecimals,
   getUniqueAndToLowerCaseArrayData,
   mergeTransfersResponse,
@@ -22,18 +26,42 @@ import {
 } from '../utils/utils';
 import { isEthChain } from '../utils/web3';
 import {
-  ERC20TokenTransfer,
+  ERC20TransferDto,
+  TransferDto,
+  TransfersDetailedResponseDto,
+  TransfersResponseDto,
+} from './dto/transfers.dto';
+import { TransferEntity } from './dto/transfers.entity';
+import {
   ERC20Transfer,
-  TransactionWithToken,
-  TransactionWithTokenAndPrices,
+  ScanTransfer,
   Transfer,
   TransfersResponse,
+  TransferWithTokenAndPrices,
 } from './interfaces/transfers.interfaces';
 import { DbService } from './repository/db.service';
 
+// TODO: delete redundant methods
 @Injectable()
 export class TransfersService {
-  private readonly chainToScan: Record<Chain, ScanApiService>;
+  static mergeTransfersByAddress(
+    transfers1: TransfersResponseDto,
+    transfers2: TransfersResponseDto,
+  ): TransfersResponseDto {
+    const result = new Map<string, Transfer[]>(Object.entries(transfers1));
+    Object.entries(transfers2).forEach(([key, value]) => {
+      const t1Value = result.get(key);
+      if (t1Value) {
+        const transfers = t1Value.concat(value);
+        result.set(key, transfers);
+      } else {
+        result.set(key, value);
+      }
+    });
+    return Object.fromEntries<Transfer[]>(result);
+  }
+
+  private readonly chainToScan: Record<ChainId, ScanApiService>;
 
   constructor(
     private etherScanService: EtherScanService,
@@ -42,7 +70,7 @@ export class TransfersService {
     protected readonly priceService: PriceService,
     private readonly assetService: AssetService,
     private readonly blocksSubgraph: BlocksSubgraph,
-    protected readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.chainToScan = {
       [CHAIN_ID_ETH]: this.etherScanService,
@@ -50,139 +78,164 @@ export class TransfersService {
     };
   }
 
-  async getAllTransactionDataByAddress(addresses: Address[]): Promise<TransfersResponse> {
-    const addressArray = getUniqueAndToLowerCaseArrayData(addresses);
-
-    const [ethTransfers, bscTransfers] = await Promise.all([
-      this.getTransfersByAddresses(addressArray, CHAIN_ID_ETH),
-      this.getTransfersByAddresses(addressArray, CHAIN_ID_BSC),
-    ]);
-
-    const allTransfersResponse: TransfersResponse = {};
-
-    // TODO refactor to unify logic
-    Object.keys(ethTransfers).forEach((key) => {
-      allTransfersResponse[key] = [...ethTransfers[key], ...bscTransfers[key]];
-    });
-
-    return allTransfersResponse;
-  }
-
-  async queryTransfers(addresses: Address[], chainId): Promise<TransactionWithToken[]> {
+  private async queryTransfers(addresses: Address[], chainId: ChainId): Promise<TransferEntity[]> {
     try {
-      const dbTransfers = await this.dbService.getTransfersDataFromDb(addresses, chainId);
-      let convertedDbTransfers: TransactionWithToken[] = []
-      dbTransfers.map(dbTransfer => {
-        convertedDbTransfers.push({
-          tokenAddress: dbTransfer.assetaddress.toLowerCase(),
-          hash: dbTransfer.hash,
-          amount: dbTransfer.amount,
-          fromAddress: dbTransfer.fromaddress,
-          toAddress: dbTransfer.toaddress,
-          blockTimeStamp: dbTransfer.blocktimestamp,
-          tokenName: dbTransfer.tokenname,
-          tokenSymbol: dbTransfer.tokensymbol,
-          tokenDecimals: dbTransfer.tokendecimals
-        })
-      })
+      const dbTransfers: TransferEntity[] = await this.dbService.getTransfersDataFromDb(
+        addresses,
+        chainId,
+      );
 
-      return convertedDbTransfers
+      return dbTransfers;
     } catch (e) {
       this.logger.error(e, 'queryTransfers');
       throw e;
     }
   }
 
-  async getTransfersByAddresses(
-    addressArray: Address[],
-    chainId: Chain,
-  ): Promise<TransfersResponse> {
-    const transferRows = await this.queryTransfers(addressArray, chainId);
-    const transferRowsWithTokenPrices = await this.getTransfersWithTokenPrices(transferRows);
-    return this.toTransfersResponse(transferRowsWithTokenPrices, addressArray, chainId);
+  private async getPrices(
+    transferRows: TransferEntity[],
+    chainId: ChainId,
+  ): Promise<HistoricalPricesMap> {
+    // form request params
+    const tokenAddresses: Set<string> = new Set<string>();
+    const assetsForPrices = [];
+    transferRows.map((tr) => {
+      tokenAddresses.add(tr.tokenAddress);
+    });
+    tokenAddresses.forEach((a) => {
+      const tokenTransfersRows: TransferEntity[] = transferRows.filter(
+        (tr) => tr.tokenAddress === a,
+      );
+      assetsForPrices.push({
+        address: a,
+        timestamps: tokenTransfersRows.map((ttr) => ttr.blockTimeStamp),
+      });
+    });
+    this.logger.debug(`tokenAddresses: ${tokenAddresses.size} chainId: ${chainId}`);
+    // request
+    const dataPrices = await this.priceService.getHistoricalPrices(assetsForPrices, chainId);
+    // handle response
+    const { prices: priceData } = dataPrices;
+    return priceData;
   }
 
-  private async getTransfersWithTokenPrices(
-    transfers: TransactionWithToken[],
-  ): Promise<TransactionWithTokenAndPrices[]> {
-    return await Promise.all(
-      transfers.map(async (transfer) => {
-        const decimals = getTokenDecimals(transfer.tokenDecimals);
+  private addPrices(transferRows, priceData: HistoricalPricesMap): any {
+    try {
+      // add Token price to each Transfer
+      transferRows.forEach((ts) => {
+        const prices = priceData.get(ts.tokenAddress);
+        const price = prices ? prices[ts.blockTimeStamp] : null;
 
-        // TODO try/catch why do we need here?
-        try {
-          return {
-            ...transfer,
-            tokenPriceUSD: transfer.tokenPrice || 0,
-            totalPriceUSD: transfer.amount * decimals * transfer.tokenPrice,
-          };
-        } catch (e) {
-          this.logger.error(e);
-          return {
-            ...transfer,
-            tokenPriceUSD: 0,
-            totalPriceUSD: 0,
-          };
-        }
-      }),
-    );
+        const decimals = getTokenDecimals(ts.tokenDecimals);
+        const tokenPrice = price !== undefined ? price : null;
+
+        ts.tokenPrice = tokenPrice;
+        ts.tokenPriceUSD = tokenPrice;
+        ts.totalPriceUSD = tokenPrice ? Number(ts.amount) * decimals * tokenPrice : tokenPrice;
+      });
+      return transferRows;
+    } catch (e) {
+      this.logger.error(e, 'addPrices');
+      throw e;
+    }
   }
 
   private toTransfersResponse(
-    transactions: TransactionWithTokenAndPrices[],
-    addresses: string[],
-    chainId: number,
-  ): TransfersResponse {
-    return addresses.reduce<TransfersResponse>((response, address) => {
-      const userTransactions = transactions.filter(
+    transfers: TransferWithTokenAndPrices[],
+    addresses: Address[],
+    chainId: ChainId,
+  ): TransfersResponse<Transfer> {
+    return addresses.reduce<TransfersResponse<Transfer>>((response, address) => {
+      const userTransactions = transfers.filter(
         (transaction) => transaction.toAddress === address || transaction.fromAddress === address,
       );
+      // get uniq hashes List in low register
       const uniqueUserHashes: string[] = getUniqueAndToLowerCaseArrayData(
         userTransactions.map((transaction) => transaction.hash),
       );
 
-      const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash) => {
-        const hashTransfers = userTransactions.filter((transaction) => transaction.hash === hash);
-        const erc20Transfers: ERC20Transfer[] = hashTransfers.map((transfer) => {
-          // TODO use DTO but TBD about validation
-          // const tokenErc20: ERC20TokenTransfer = new ERC20TokenDto(transfer);
-          // console.log('___tokenErc20', tokenErc20);
+      const transactionWithTransfers = uniqueUserHashes.map<Transfer>(
+        (hash): Transfer => {
+          const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
 
-          const tokenErc20: ERC20TokenTransfer = {
-            address: transfer.tokenAddress,
-            name: transfer.tokenName,
-            symbol: transfer.tokenSymbol,
-            decimals: transfer.tokenDecimals,
-            totalSupply: transfer.tokenTotalSupply,
-          };
+          const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
+            (transfer) => new ERC20TransferDto(transfer),
+          );
 
-          return {
-            fromAddress: transfer.fromAddress,
-            toAddress: transfer.toAddress,
-            amount: transfer.amount,
-            token: tokenErc20,
-            tokenPriceUSD: transfer.tokenPriceUSD,
-            totalPriceUSD: transfer.totalPriceUSD,
-          };
-        });
-
-        return {
-          chainId,
-          hash: hashTransfers[0].hash,
-          blockNumber: hashTransfers[0].blockNumber,
-          blockTimeStamp: hashTransfers[0].blockTimeStamp,
-          gas: hashTransfers[0].gas,
-          gasPrice: hashTransfers[0].gasPrice,
-          gasUsed: hashTransfers[0].gas * hashTransfers[0].gasPrice * DEFAULT_MULTIPLIER,
-          erc20Transfers,
-        };
-      });
+          return new TransferDto({
+            chainId: chainId,
+            hash: hashTransfers[0].hash,
+            blockTimeStamp: hashTransfers[0].blockTimeStamp,
+            erc20Transfers,
+          });
+        },
+      );
 
       return {
         ...response,
         [address]: transactionWithTransfers,
       };
     }, {});
+  }
+
+  public async getTransfersByAddresses(
+    addressArray: Address[],
+    chainId: ChainId,
+  ): Promise<TransfersDetailedResponseDto> {
+    const result = new TransfersDetailedResponseDto(ResultStatus.ok, [], null);
+    const transferRows: TransferEntity[] = await this.queryTransfers(addressArray, chainId);
+    this.logger.debug(`transferRows: ${transferRows.length} chainId: ${chainId}`);
+    if (transferRows.length) {
+      try {
+        const priceData: HistoricalPricesMap = await this.getPrices(transferRows, chainId);
+        this.logger.debug(`priceData: ${priceData.size} chainId: ${chainId}`);
+        if (priceData.size) {
+          this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
+        }
+      } catch (e) {
+        this.logger.error(e);
+        result.error(e.message);
+      }
+    }
+    result.data = this.toTransfersResponse(transferRows, addressArray, chainId);
+    return result;
+  }
+
+  public async getAllTransactionDataByAddress(
+    addresses: Address[],
+  ): Promise<TransfersDetailedResponseDto> {
+    this.logger.time('getAllTransactionDataByAddress');
+    const allTransfersResponse: TransfersDetailedResponseDto = new TransfersDetailedResponseDto(
+      ResultStatus.ok,
+      [],
+      null,
+    );
+
+    const addressArray = getUniqueAndToLowerCaseArrayData(addresses);
+
+    this.logger.time('Promise.all<TransfersDetailedResponseDto>');
+    const [ethTransfers, bscTransfers] = await Promise.all<TransfersDetailedResponseDto>([
+      this.getTransfersByAddresses(addressArray, CHAIN_ID_ETH),
+      this.getTransfersByAddresses(addressArray, CHAIN_ID_BSC),
+    ]);
+    this.logger.timeEnd('Promise.all<TransfersDetailedResponseDto>');
+
+    this.logger.time('mergeTransfersByAddress');
+    allTransfersResponse.data = TransfersService.mergeTransfersByAddress(
+      ethTransfers.data,
+      bscTransfers.data,
+    );
+    this.logger.timeEnd('mergeTransfersByAddress');
+
+    this.logger.time('allTransfersResponse');
+    allTransfersResponse.errors = [].concat(ethTransfers.errors, bscTransfers.errors);
+    if (allTransfersResponse.errors.length) {
+      allTransfersResponse.status = ResultStatus.error;
+    }
+    this.logger.timeEnd('allTransfersResponse');
+
+    this.logger.timeEnd('getAllTransactionDataByAddress');
+    return allTransfersResponse;
   }
 
   public combineResults = (resultArray, chainArray): any => {
@@ -198,9 +251,12 @@ export class TransfersService {
     }
   };
 
-  async getExternalTransfers(addresses: Address[], chains: Chains): Promise<TransfersResponse> {
+  async getExternalTransfers(
+    addresses: Address[],
+    chains: ChainsIds,
+  ): Promise<TransfersResponse<ScanTransfer>> {
     const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses);
-    const transfers: TransfersResponse = {};
+    const transfers: TransfersResponse<ScanTransfer> = {};
     const handleScan = async (service: ScanApiService, addresses: string[]): Promise<boolean> => {
       const transfersResponse = await Promise.all<EtherscanTransfer[]>(
         addresses.map((address) => service.getTransfers(address)),
@@ -244,12 +300,12 @@ export class TransfersService {
   }
 
   private async addTimestampsToTransfers(
-    transfersResponse: TransfersResponse,
-  ): Promise<TransfersResponse> {
+    transfersResponse: TransfersResponse<ScanTransfer>,
+  ): Promise<TransfersResponse<ScanTransfer>> {
     try {
       const missedBlocks: number[] = [];
       Object.keys(transfersResponse).map((k) => {
-        const transfers: Transfer[] = transfersResponse[k];
+        const transfers: ScanTransfer[] = transfersResponse[k];
         transfers.map((t) => {
           if (isEthChain(t.chainId) && t.blockTimeStamp === null) {
             const isMissed = missedBlocks.find((blockNumber) => blockNumber === t.blockNumber);
@@ -269,7 +325,7 @@ export class TransfersService {
       const blocks = blocksDataTimestamps.data.blocks;
 
       Object.keys(transfersResponse).map((k) => {
-        const transfers: Transfer[] = transfersResponse[k];
+        const transfers: ScanTransfer[] = transfersResponse[k];
         transfers.map((t) => {
           if (isEthChain(t.chainId) && t.blockTimeStamp === null) {
             const blockTimestamp = blocks.find((b) => Number(b.number) === Number(t.blockNumber));
@@ -286,13 +342,13 @@ export class TransfersService {
   }
 
   private async getTransfersPrices(
-    transfersResponse: TransfersResponse,
+    transfersResponse: TransfersResponse<ScanTransfer>,
     chainId: number,
-  ): Promise<PriceServiceResponse> {
+  ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       const unpricedContracts = [];
       Object.keys(transfersResponse).map((k) => {
-        const transfers: Transfer[] = transfersResponse[k];
+        const transfers: ScanTransfer[] = transfersResponse[k];
         transfers.map((t) => {
           if (t.chainId === chainId) {
             for (const transfer of t.erc20Transfers) {
@@ -318,7 +374,9 @@ export class TransfersService {
     }
   }
 
-  private async addPricesToTransfers(allTransfers: TransfersResponse): Promise<TransfersResponse> {
+  private async addPricesToTransfers(
+    allTransfers: TransfersResponse<ScanTransfer>,
+  ): Promise<TransfersResponse<ScanTransfer>> {
     const [ethPrices, bscPrices] = await Promise.all([
       this.getTransfersPrices(allTransfers, CHAIN_ID_ETH),
       this.getTransfersPrices(allTransfers, CHAIN_ID_BSC),

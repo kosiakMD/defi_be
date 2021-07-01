@@ -6,7 +6,7 @@ import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
 import { BscScanService } from '../scans-api/modules/bscscan/bsc-scan.service';
 import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.service';
-import { TransferQueryDto, TransfersResponseDto } from './transfers.dto';
+import { TransferQueryDto, TransfersDetailedResponseDto } from './transfers.dto';
 import { TransfersResponse } from './transfers.interfaces';
 import { TransfersService } from './transfers.service';
 
@@ -28,7 +28,6 @@ export class TransfersController {
     required: false,
     description: 'Array of chain ID (comma separated)',
     example: '1,2',
-    // example: '',
   })
   @ApiQuery({
     name: 'addresses',
@@ -37,7 +36,7 @@ export class TransfersController {
     example:
       '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
   })
-  @ApiResponse({ status: 200, type: TransfersResponseDto })
+  @ApiResponse({ status: 200, type: TransfersDetailedResponseDto })
   async get(@Query() query: TransferQueryDto): Promise<TransfersResponse> {
     try {
       const { chains, addresses } = query;

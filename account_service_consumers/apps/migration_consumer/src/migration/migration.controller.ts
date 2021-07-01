@@ -6,15 +6,13 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '../logger/logger.service';
 import { delay } from '../util/time';
 import { ASSET_EVENT_MIGRATION_PATTERN } from '../config/queues/event.patterns';
-import { UtilsDatabase } from '../store/utils.database';
 
 @Controller()
 export class MigrationController {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly migrationService: MigrationService,
-    private readonly utilsDatabase: UtilsDatabase,
+    private readonly migrationService: MigrationService
   ) {
   }
 
@@ -24,13 +22,11 @@ export class MigrationController {
   ) {
     try {
       this.logger.debug(
-        `consumed migration data for asset [${data.assetId}]`,
+        `consumed migration data for event has [${data.topic1}]`,
         'migration.controller'
       )
-      await this.utilsDatabase.dbTransactionBegin()
       await this.migrationService.migrateEvent(data)
       context.getChannelRef().ack(context.getMessage())
-      await this.utilsDatabase.dbTransactionCommit()
     } catch (e) {
       this.logger.error(e)
       this.logger.error('error during event migration ' + JSON.stringify(data))

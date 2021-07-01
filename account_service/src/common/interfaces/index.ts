@@ -1,3 +1,5 @@
+import { ResultStatus } from '../enum';
+
 export type Address = string;
 
 export type TokenSymbol = string;
@@ -98,4 +100,10 @@ export interface Pool {
 export interface PriceHistoricalRequest {
   addresses: Address[];
   timestamps: DateString[];
+}
+
+export interface DetailedResponse<T> {
+  status: ResultStatus;
+  errors: Array<Error | string>;
+  data: T;
 }

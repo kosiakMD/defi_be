@@ -17,6 +17,8 @@ import { AccountService } from './account/account.service';
 import { AppController } from './app/app.controller';
 import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
+import { AssetsController } from './assets/assets.controller';
+import { AssetsService } from './assets/assets.service';
 import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
 import { Logger } from './common/Logger/Logger.service';
@@ -44,8 +46,6 @@ import { filterObjectKeys } from './utils/object';
 import { isAllUppercase } from './utils/string';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
-import { AssetsController } from './assets/assets.controller';
-import { AssetsService } from './assets/assets.service';
 
 @Module({
   imports: [
@@ -83,17 +83,18 @@ import { AssetsService } from './assets/assets.service';
   controllers: [
     HealthController,
     AppController,
-    BalancesController,
-    SwapController,
-    UniswapController,
-    PancakeController,
+    AssetsController,
     CurveController,
-    SushiswapController,
-    BalancerController,
-    // PlatformController,
+    BalancesController,
     TransactionsController,
     TransfersController,
-    AssetsController,
+    // Platforms
+    BalancerController,
+    PancakeController,
+    SushiswapController,
+    UniswapController,
+    SwapController,
+    // PlatformController,
     // ScansApiController,
   ],
   providers: [

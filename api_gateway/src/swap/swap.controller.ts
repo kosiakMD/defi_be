@@ -23,6 +23,7 @@ export class SwapController {
   @ApiQuery({
     name: 'network',
     enum: NetworkEnum,
+    enumName: 'NetworkEnum',
     required: false,
     example: NetworkEnum.true,
     description: 'default = 1',

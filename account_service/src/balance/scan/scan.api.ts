@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../../Logger/Logger.service';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../utils/utils';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../common/constatnt';
 import { isEthChain } from '../../utils/web3';
 import { EtherscanTransfer } from '../interfaces/etherscan.interfaces';
 

@@ -127,8 +127,8 @@ export class PriceService {
         ...map,
         [address]: {
           price,
-          platform: allPrices[0].platform,
-          isLp: allPrices[0].isLp,
+          platform: assetPrices?.platform || null,
+          isLp: assetPrices?.isLp || null,
         },
       };
     }, {});
@@ -292,6 +292,15 @@ export class PriceService {
     addresses: string[],
   ): Promise<AssetPricesV2[]> {
     const { cached, notCached } = await this.getCachedPricesV2(chain, currency, addresses);
+
+    // be sure that data is fresh and do not depends on service parameters
+    cached.forEach((asset) => {
+      const price = this.getCurrentPrice(asset?.prices || []);
+      if (!price) {
+        notCached.push(asset.address);
+      }
+    });
+
     if (!notCached.length) {
       return cached;
     }
@@ -305,6 +314,20 @@ export class PriceService {
         WHERE
           a.address IN ('${addresses.join("','")}') AND
           a.chain_id = ${chain} AND
+          ap.currency_id = ${currency}
+        ORDER BY ap.asset_id, ap.timestamp
+      )
+      UNION ALL
+      (
+        SELECT w.address, a.platform, a."isLp", ap.timestamp, ap.value
+        FROM prices.wrapped_asset w
+        JOIN prices.asset a
+          ON w.asset_id = a.id
+        JOIN prices.asset_price ap
+          ON a.id = ap.asset_id
+        WHERE
+          w.address IN ('${addresses.join("','")}') AND
+          w.chain_id = ${chain} AND
           ap.currency_id = ${currency}
         ORDER BY ap.asset_id, ap.timestamp
       )
@@ -375,22 +398,27 @@ export class PriceService {
   }
 
   private mapRowsToAssetPricesV2(rows: PriceRowV2[]): AssetPricesV2[] {
-    const pricesMap = rows.reduce<{ [address: string]: TimestampPrice[] }>(
-      (map, { address, timestamp, value }) => ({
+    const pricesMap = rows.reduce<{ [address: string]: AssetPricesV2 }>(
+      (map, { address, timestamp, value, isLp, platform }) => ({
         ...map,
-        [address]: [
-          ...(map[address] || []),
-          { timestamp: Number(timestamp), price: Number(value) },
-        ],
+        [address]: {
+          isLp,
+          platform,
+          address,
+          prices: [
+            ...(map[address]?.prices || []),
+            { timestamp: Number(timestamp), price: Number(value) },
+          ],
+        },
       }),
       {},
     );
 
     return Object.keys(pricesMap).map<AssetPricesV2>((address) => ({
       address,
-      platform: rows[0].platform,
-      isLp: rows[0]['isLp'],
-      prices: _.orderBy(pricesMap[address], 'timestamp'),
+      platform: pricesMap[address].platform,
+      isLp: pricesMap[address].isLp,
+      prices: _.orderBy(pricesMap[address].prices, 'timestamp'),
     }));
   }
 

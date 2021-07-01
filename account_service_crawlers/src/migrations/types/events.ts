@@ -18,6 +18,6 @@ export interface MigrationEvent {
   blockTimestamp: number;
   chainId: number;
   logIndex: number;
-  assetId: number;
-  template: string;
+  assetId?: number;
+  template?: string;
 }

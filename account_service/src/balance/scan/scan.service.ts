@@ -3,18 +3,16 @@ import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
 import { Web3Provider } from '../../chain/web3.provider';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, WETH_ADDRESS } from '../../common/constatnt';
 import { Address } from '../../common/interfaces';
-import { Chain, Chains } from '../../common/types';
+import { ChainId, ChainsIds } from '../../common/types';
 import { PriceService } from '../../price/price.service';
 import {
   abi,
-  CHAIN_ID_BSC,
-  CHAIN_ID_ETH,
   EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
   toDecimals,
   totalPrice,
   transferTokenAddressNotIn,
-  WETH_ADDRESS,
 } from '../../utils/utils';
 import { isBnbAddress, isEthChain } from '../../utils/web3';
 import { getUtilTokenPrice, mapTokenBalances } from '../balance_util/balance.util';
@@ -45,7 +43,7 @@ export class ScanService {
 
   public async getBalanceDataFromChains(
     accounts: Address[],
-    chains: Chains,
+    chains: ChainsIds,
   ): Promise<BalancesResponse> {
     // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
@@ -86,7 +84,7 @@ export class ScanService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  async getBalances(addresses: Address[], chain: Chain): Promise<any> {
+  async getBalances(addresses: Address[], chain: ChainId): Promise<any> {
     const transfersAll: Transfers = {};
     await Promise.all(
       addresses.map(async (a) => {

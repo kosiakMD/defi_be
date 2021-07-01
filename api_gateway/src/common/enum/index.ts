@@ -10,3 +10,8 @@ export enum ChainEnum {
   Ethereum = 1,
   Binance = 2,
 }
+
+export enum ResultStatus {
+  ok = 'ok',
+  error = 'error',
+}

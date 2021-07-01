@@ -1,42 +1,29 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
+import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
-import { Chain } from '../common/types';
-import { Transfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
-
-export const DEFAULT_MULTIPLIER = 1e-18;
-export const ETH_BNB_ADDRESS: Address = '0x0000000000000000000000000000000000000000';
-export const WBNB_ADDRESS: Address = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
-export const WETH_ADDRESS: Address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
-export const DAI_ADDRESS: Address = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
-export const ESD_ADDRESS: Address = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
-export const imBTC: Address = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
-export const SNX: Address = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
+import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
 
 export const EXCLUDE_TRANSFER_TOKEN_ADDRESSES = [WBNB_ADDRESS, imBTC, SNX];
 
-export const CHAIN_ID_ETH: Chain = 1;
-export const CHAIN_ID_BSC: Chain = 2;
+// TODO refactor - transform toLowerCase in DTO instead of here?
+export function getUniqueAndToLowerCaseArrayData(input: string | string[]): string[] {
+  const set: Set<string> = new Set();
+  const add = (string): typeof set => set.add(string.toLowerCase());
 
-export function getUniqueAndToLowerCaseArrayData(array: any): string[] {
-
-  if (typeof array === 'string') {
-     return [array.toLowerCase()]
+  if (typeof input === 'string') {
+    add(input);
+  } else {
+    input.forEach(add);
   }
 
-  const temp: string[] = [];
-  array.forEach((el) => {
-    if (!temp.includes(el.toLowerCase())) {
-      temp.push(el.toLowerCase());
-    }
-  });
-  return temp;
+  return Array.from(set);
 }
 
 export function transferTokenAddressNotIn(
-  tokenAddress: string,
-  excludesAddresses: string[],
+  tokenAddress: Address,
+  excludesAddresses: Address[],
 ): boolean {
   for (const address of excludesAddresses) {
     if (address.toLowerCase() === tokenAddress) {
@@ -92,13 +79,13 @@ export function splitToArray(value: string): string[] {
 // notice: not best performant function imo
 export function mergeTransfersResponse(
   addresses: string[],
-  response1: TransfersResponse,
-  response2: TransfersResponse,
-): TransfersResponse {
-  const finalTransfersResponse: TransfersResponse = {};
+  response1: TransfersResponse<ScanTransfer>,
+  response2: TransfersResponse<ScanTransfer>,
+): TransfersResponse<ScanTransfer> {
+  const finalTransfersResponse: TransfersResponse<ScanTransfer> = {};
   addresses.map((a) => {
-    const rsp1: Transfer[] = response1[a];
-    const rsp2: Transfer[] = response2[a];
+    const rsp1: ScanTransfer[] = response1[a];
+    const rsp2: ScanTransfer[] = response2[a];
     if (!rsp1 && !rsp2) {
       finalTransfersResponse[a] = [];
     } else if (rsp1 && !rsp2) {
@@ -117,10 +104,10 @@ export function mergeTransfersResponse(
       }, []);
 
       transactionHashes.map((hash) => {
-        const rsp1TxTransfer: Transfer = rsp1.find((t) => t.hash === hash);
-        const rsp2TxTransfer: Transfer = rsp2.find((t) => t.hash === hash);
+        const rsp1TxTransfer: ScanTransfer = rsp1.find((t) => t.hash === hash);
+        const rsp2TxTransfer: ScanTransfer = rsp2.find((t) => t.hash === hash);
 
-        let mergedTransfer: Transfer;
+        let mergedTransfer: ScanTransfer;
         if (rsp1TxTransfer && rsp2TxTransfer) {
           const transfersERC20 = rsp1TxTransfer.erc20Transfers.concat(
             rsp2TxTransfer.erc20Transfers,
@@ -128,12 +115,12 @@ export function mergeTransfersResponse(
           mergedTransfer = {
             chainId: rsp2TxTransfer.chainId,
             hash: rsp2TxTransfer.hash,
-            blockNumber: rsp2TxTransfer.blockNumber,
+            blockNumber: rsp2TxTransfer.blockNumber, // ?
             blockTimeStamp: rsp2TxTransfer.blockTimeStamp
               ? rsp2TxTransfer.blockTimeStamp
               : rsp1TxTransfer.blockTimeStamp,
-            gas: rsp2TxTransfer.gas ? rsp2TxTransfer.gas : rsp1TxTransfer.gas,
-            gasPrice: rsp2TxTransfer.gasPrice ? rsp2TxTransfer.gasPrice : rsp1TxTransfer.gasPrice,
+            gas: rsp2TxTransfer.gas ? rsp2TxTransfer.gas : rsp1TxTransfer.gas, // ?
+            gasPrice: rsp2TxTransfer.gasPrice ? rsp2TxTransfer.gasPrice : rsp1TxTransfer.gasPrice, // ?
             gasUsed: rsp2TxTransfer.gasUsed ? rsp2TxTransfer.gasUsed : rsp1TxTransfer.gasUsed,
             erc20Transfers: transfersERC20,
           };

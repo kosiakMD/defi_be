@@ -1,25 +1,27 @@
-import { HttpService } from '@nestjs/common';
+import { HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { Logger } from '../Logger/Logger.service';
+import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
+import { DEFAULT_MULTIPLIER } from '../common/constatnt';
+import { ResultStatus } from '../common/enum';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import {
-  ResultStatus,
   Transaction,
   TransactionsResult,
 } from '../transactions/interfaces/transactions.interfaces';
 import {
   ERC20TokenTransfer,
   ERC20Transfer,
-  Transfer,
+  ScanTransfer,
   TransfersResponse,
 } from '../transfers/interfaces/transfers.interfaces';
 import {
-  DEFAULT_MULTIPLIER,
   EXCLUDE_TRANSFER_TOKEN_ADDRESSES,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
@@ -43,7 +45,7 @@ export class ScanApiService {
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
     protected readonly cacheManager: Cache,
-    protected readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     protected readonly priceService: PriceService,
   ) {}
 
@@ -144,7 +146,7 @@ export class ScanApiService {
           userTransfers.map((transaction) => transaction.hash),
         );
 
-        const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash) => {
+        const transactionWithTransfers = uniqueUserHashes.map<ScanTransfer>((hash) => {
           const hashTransfers = userTransfers.filter((transaction) => transaction.hash === hash);
 
           const erc20Transfers: ERC20Transfer[] = this.formatTransfersDto(hashTransfers);
@@ -184,7 +186,7 @@ export class ScanApiService {
     }
   }
 
-  protected async getTransactions(address, internal = false): Promise<any> {
+  protected async fetchTransactions(address, internal = false): Promise<any> {
     const action = internal ? 'txlistinternal' : 'txlist';
     const cacheKey = `${this.chainPrefix}_transactions_${action}_${address}`;
     const logString = `Cache ${cacheKey} is `;
@@ -228,7 +230,9 @@ export class ScanApiService {
     return transactions;
   }
 
-  private async getTransactionPrices(timestamps): Promise<PriceServiceResponse> {
+  private async getTransactionPrices(
+    timestamps,
+  ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       const assets = [
         {
@@ -246,8 +250,8 @@ export class ScanApiService {
   public async getScanTransactions(address: string): Promise<TransactionsResult> {
     this.logger.time(`request: txlist & txlistinternal ${this.url}`);
     const [normalTxResp, internalTxResp] = await Promise.all([
-      this.getTransactions(address),
-      this.getTransactions(address, true),
+      this.fetchTransactions(address),
+      this.fetchTransactions(address, true),
     ]);
     this.logger.timeEnd(`request: txlist & txlistinternal ${this.url}`);
 
@@ -255,9 +259,9 @@ export class ScanApiService {
     const internalTx: Transaction[] = this.normalizeTxsResp(internalTxResp, true);
     const transactions = [].concat(normalTx, internalTx);
 
-    if (!transactions.length) return { status: ResultStatus.ok, transactions };
+    if (!transactions.length) return { status: ResultStatus.ok, data: transactions };
 
-    let prices: PriceServiceResponse;
+    let prices: PriceServiceResponse<HistoricalPricesMap>;
     try {
       const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
       prices = await this.getTransactionPrices(txTimestamps);
@@ -270,22 +274,24 @@ export class ScanApiService {
       this.logger.error(e.message);
       return {
         status: ResultStatus.error,
-        error: error,
-        transactions,
+        errors: error,
+        data: transactions,
       };
     }
 
     transactions.forEach((tx) => {
-      const price = prices.prices[this.mainCoinAddress][tx.timeStamp];
+      const price = prices.prices.has(this.mainCoinAddress)
+        ? prices.prices.get(this.mainCoinAddress)[tx.timeStamp]
+        : 0;
       const valueUSD = totalPrice(tx.value.toString(), price, 18);
       const feeUSD = transactionFeeUSD(tx.gasPrice, tx.gasUsed, 18, price);
       Object.assign(tx, {
-        feeUSD: feeUSD ? feeUSD : 0,
-        coinPriceUSD: price ? price : 0,
-        valueUSD: valueUSD ? valueUSD : 0,
+        feeUSD: feeUSD ? feeUSD : null,
+        coinPriceUSD: price ? price : null,
+        valueUSD: valueUSD ? valueUSD : null,
       });
     });
 
-    return { status: ResultStatus.ok, transactions };
+    return { status: ResultStatus.ok, data: transactions };
   }
 }

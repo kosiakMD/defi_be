@@ -1,46 +1,58 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-class TransactionDto {
-  @ApiProperty()
+export class TransactionDto {
+  @ApiProperty({ example: '10266704', type: String })
   blockNumber: string;
-  @ApiProperty()
+  @ApiProperty({ example: '1592175374', type: String })
   timeStamp: string;
-  @ApiProperty()
+  @ApiProperty({
+    example: '0x6e4095c452687edc2d4a3446036131786eb1a57264c8eb332663a66f45649465',
+    type: String,
+  })
   hash: string;
-  @ApiProperty()
+  @ApiProperty({ example: '1', type: String })
   nonce: string;
-  @ApiProperty()
+  @ApiProperty({
+    example: '0x09cf6f9840af268c4e47a6c6ae2d8465dcded1718af0e7041a75ace165978b3c',
+    type: String,
+  })
   blockHash: string;
-  @ApiProperty()
-  transactionIndex: string;
-  @ApiProperty()
+  @ApiProperty({ example: '56', type: Number })
+  transactionIndex: number;
+  @ApiProperty({ example: '0xc4b5c60672ae9e714add00eed9325c4a583e4cbd', type: String })
   from: string;
-  @ApiProperty()
+  @ApiProperty({ example: '0xcff17036c5ae141f2244f480fc16ba244ffab33b', type: String })
   to: string;
-  @ApiProperty()
+  @ApiProperty({ example: '424342961679074563', type: String })
   value: string;
-  @ApiProperty()
+  @ApiProperty({ example: '25200', type: String })
   gas: string;
-  @ApiProperty()
+  @ApiProperty({ example: '13200000000', type: String })
   gasPrice: string;
-  @ApiProperty()
+  @ApiProperty({ example: '0', type: String })
   isError: string;
-  @ApiProperty()
+  @ApiProperty({ example: '1', type: String })
   txreceiptStatus: string;
-  @ApiProperty()
+  @ApiProperty({ example: '0x', type: String })
   input: string;
-  @ApiProperty()
+  @ApiProperty({ example: '', type: String })
   contractAddress: string;
-  @ApiProperty()
+  @ApiProperty({ example: '3696510', type: String })
   cumulativeGasUsed: string;
-  @ApiProperty()
+  @ApiProperty({ example: '21000', type: String })
   gasUsed: string;
-  @ApiProperty()
+  @ApiProperty({ example: '2390490', type: String })
   confirmations: string;
-  @ApiProperty()
+  @ApiProperty({ example: null, type: Number })
+  feeUSD: number;
+  @ApiProperty({ example: null, type: Number })
+  coinPriceUSD: number;
+  @ApiProperty({ example: null, type: Number })
+  valueUSD: number;
+  @ApiProperty({ example: 1, type: Number })
   chainId: number;
-  @ApiProperty()
+  @ApiProperty({ example: false, type: Boolean })
   isInternal?: boolean;
 }
 

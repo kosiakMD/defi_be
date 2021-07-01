@@ -1,0 +1,15 @@
+import { Address } from '../interfaces';
+import { ChainId } from '../types';
+
+export const DEFAULT_MULTIPLIER = 1e-18;
+
+export const CHAIN_ID_ETH: ChainId = 1;
+export const CHAIN_ID_BSC: ChainId = 2;
+
+export const ETH_BNB_ADDRESS: Address = '0x0000000000000000000000000000000000000000';
+export const WBNB_ADDRESS: Address = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
+export const WETH_ADDRESS: Address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+export const DAI_ADDRESS: Address = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+export const ESD_ADDRESS: Address = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
+export const imBTC: Address = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
+export const SNX: Address = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';

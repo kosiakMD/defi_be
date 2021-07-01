@@ -4,7 +4,7 @@ import {
   ETH_BNB_ADDRESS,
   WBNB_ADDRESS,
   WETH_ADDRESS,
-} from '../../utils/utils';
+} from '../../common/constatnt';
 
 export const esdToken = {
   address: ESD_ADDRESS.toLowerCase(),

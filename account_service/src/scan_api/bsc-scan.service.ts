@@ -4,8 +4,8 @@ import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
+import { CHAIN_ID_BSC } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
-import { CHAIN_ID_BSC } from '../utils/utils';
 import { ScanApiService } from './scan.api.service';
 
 @Injectable()

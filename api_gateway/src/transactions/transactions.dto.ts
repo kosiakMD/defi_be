@@ -1,6 +1,9 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
+import { DetailedResponseDto } from '../common/DTO';
+import { ResultStatus } from '../common/enum';
+import { TransactionScanDto } from '../scans-api/scans-api.dto';
 import { Transaction } from './transactions.interfaces';
 
 class GasDto {
@@ -64,4 +67,24 @@ export class TransactionsResponseDto {
   // eslint-disable-next-line prettier/prettier
   // [address: string]: TransactionDto[];
   '0x782629c9578889a9b8464f051f23843734f72599': TransactionDto[];
+}
+
+export class TransactionsDetailedResponseDto extends DetailedResponseDto<TransactionScanDto[]> {
+  @ApiProperty({
+    enum: ResultStatus,
+    enumName: 'ResultStatus',
+    example: ResultStatus.ok,
+  })
+  status: ResultStatus;
+
+  @ApiProperty({
+    example: ['connect ECONNREFUSED ...'],
+  })
+  errors: Error[] | string[];
+
+  @ApiProperty({
+    isArray: true,
+    type: TransactionScanDto,
+  })
+  data: TransactionScanDto[];
 }

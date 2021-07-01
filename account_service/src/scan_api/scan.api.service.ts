@@ -286,9 +286,9 @@ export class ScanApiService {
       const valueUSD = totalPrice(tx.value.toString(), price, 18);
       const feeUSD = transactionFeeUSD(tx.gasPrice, tx.gasUsed, 18, price);
       Object.assign(tx, {
-        feeUSD: feeUSD ? feeUSD : 0,
-        coinPriceUSD: price ? price : 0,
-        valueUSD: valueUSD ? valueUSD : 0,
+        feeUSD: feeUSD ? feeUSD : null,
+        coinPriceUSD: price ? price : null,
+        valueUSD: valueUSD ? valueUSD : null,
       });
     });
 

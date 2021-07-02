@@ -18,7 +18,8 @@ export class DbService {
         assets_new.address as "tokenAddress",
         assets_new.name as "tokenName",
         assets_new.symbol as "tokenSymbol",
-        assets_new.decimals as "tokenDecimals"
+        assets_new.decimals as "tokenDecimals",
+        assets_new.is_lp as "isLp"
       from (
         select
           address,

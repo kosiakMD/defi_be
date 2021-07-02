@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 import { TokenCommon } from '../interfaces';
 
@@ -24,4 +24,8 @@ export class TokenCommonDTO implements TokenCommon {
   @ApiProperty({ type: Number, required: false, example: 18 })
   @IsNumber()
   decimals?: number;
+
+  @ApiProperty({ type: Boolean, required: false, example: true })
+  @IsBoolean()
+  isLp?: boolean;
 }

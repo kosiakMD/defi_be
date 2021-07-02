@@ -28,6 +28,7 @@ export interface TokenCommon {
   name?: string;
   symbol?: string;
   decimals?: number;
+  isLp?: boolean;
 }
 
 export interface ERC20Token extends TokenCommon {

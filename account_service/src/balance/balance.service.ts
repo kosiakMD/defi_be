@@ -239,6 +239,7 @@ export class BalanceService {
       tokenSymbol,
       tokenDecimals,
       tokenTotalSupply,
+      isLp,
     }) => ({
       account: address,
       amount,
@@ -254,6 +255,7 @@ export class BalanceService {
         symbol: tokenSymbol || null,
         decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
         totalSupply: +tokenTotalSupply || 0,
+        isLp: isLp,
       },
     });
 }

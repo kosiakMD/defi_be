@@ -22,6 +22,7 @@ export interface TokenRow {
   tokenSymbol?: string;
   tokenDecimals?: string;
   tokenTotalSupply?: string;
+  isLp?: boolean;
 }
 
 export interface TokenBalance {

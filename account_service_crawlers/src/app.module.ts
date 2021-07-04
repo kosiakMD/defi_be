@@ -9,10 +9,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
-import { HealthController } from './modules/health/health.controller';
-import { ExamplesModule } from './modules/examples/example.module';
-import { JobsModule } from './modules/jobs/jobs.module';
-import { JobsService } from './modules/jobs/jobs.service';
+import { HealthController } from './health/health.controller';
+import { JobsModule } from './jobs/jobs.module';
+import { JobsService } from './jobs/jobs.service';
 
 @Module({
   controllers: [HealthController],
@@ -64,7 +63,6 @@ import { JobsService } from './modules/jobs/jobs.service';
       }),
     }),
     TerminusModule,
-    ExamplesModule,
     HttpModule.register({
       timeout: 60e3,
       maxRedirects: 2,

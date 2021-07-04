@@ -28,6 +28,7 @@
     "@nestjs/common": "^7.6.15",
     "@nestjs/config": "^0.6.3",
     "@nestjs/core": "^7.6.15",
+    "@nestjs/microservices": "^7.6.18",
     "@nestjs/platform-express": "^7.6.15",
     "@nestjs/swagger": "^4.8.0",
     "@nestjs/terminus": "^7.1.0",
@@ -41,6 +42,7 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^8.2.0",
+    "joi": "^17.4.0",
     "nest-winston": "^1.4.1",
     "nestjs-agenda": "^2.0.0",
     "pg": "^8.6.0",
@@ -48,6 +50,7 @@
     "rxjs": "^6.6.6",
     "swagger-ui-express": "^4.1.6",
     "typeorm": "^0.2.32",
+    "web3": "^1.4.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {

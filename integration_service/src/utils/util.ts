@@ -1,11 +1,23 @@
-import { Repository } from 'typeorm';
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
+import { Repository } from 'typeorm';
+
 import { UniswapLiquidityPosition } from '../interfaces/liquidity.position.interfaces';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
 type Decimals = string | number;
+export type Chain = number;
+
+export const CHAIN_ID_ETH: Chain = 1;
 
 export const decimalsDivider = (decimals: Decimals): BigNumber => new BN(10).pow(decimals);
+
+export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ETH_TRANSFER_TOPIC =
+  '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+export const ETH_DEPOSIT_TOPIC =
+  '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c';
+export const ETH_WITHDRAWAL_TOPIC =
+  '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65';
 
 export const abi = [
   {

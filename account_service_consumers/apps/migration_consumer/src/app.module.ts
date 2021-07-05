@@ -1,17 +1,20 @@
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { utilities as nestWinstonModuleUtilities, WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-import * as winston from 'winston';
-import { MigrationController } from './migration/migration.controller';
-import configModuleConfiguration from './config/config.module';
-import { MigrationModule } from './migration/migration.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import {
+  utilities as nestWinstonModuleUtilities,
+  WINSTON_MODULE_NEST_PROVIDER,
+  WinstonModule,
+} from 'nest-winston';
+import * as winston from 'winston';
+
+import configModuleConfiguration from './config/config.module';
+import { MigrationController } from './migration/migration.controller';
+import { MigrationModule } from './migration/migration.module';
 import { StoreModule } from './store/store.module';
 
 @Module({
-  controllers: [
-    MigrationController,
-  ],
+  controllers: [MigrationController],
   imports: [
     ConfigModule.forRoot(configModuleConfiguration),
     WinstonModule.forRoot({
@@ -49,10 +52,9 @@ import { StoreModule } from './store/store.module';
       }),
     }),
     MigrationModule,
-    StoreModule
+    StoreModule,
   ],
 })
-
 export class AppModule implements OnModuleInit {
   onModuleInit(): void {
     const { SERVICE_NAME, SERVICE_HOST, SERVICE_PORT } = process.env;
@@ -70,6 +72,5 @@ export class AppModule implements OnModuleInit {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private configService: ConfigService,
-  ) {
-  }
+  ) {}
 }

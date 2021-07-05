@@ -1,15 +1,30 @@
-import { MigrationBlockResponse } from './migration.block.response';
 import { MigrationEvent } from '../types/events';
+import { MigrationBlockResponse } from './migration.block.response';
 
 export interface MigrationEventResponse {
   blocksInfoSql?: string;
   eventsSql?: string;
 }
 
+export interface MigrationTransaction {
+  hash: string;
+  blockNumber: number;
+  from: string;
+  to: string;
+  input: string;
+  value: string;
+  gas: number;
+  gasPrice: string;
+  index: string;
+  timestamp: string;
+  events?: MigrationEvent[];
+}
+
 export interface MigrationEventServiceResponse {
   eventsResponse: MigrationEventResponse;
   blocksResponse: MigrationBlockResponse;
   migrationEvents?: MigrationEvent[];
+  migrationTransactions?: MigrationTransaction[];
 }
 
 export interface LogInfo {

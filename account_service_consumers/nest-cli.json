@@ -17,13 +17,13 @@
         "tsConfigPath": "apps/migration_consumer/tsconfig.app.json"
       }
     },
-    "migration-history-consumer": {
+    "migration-transactions-consumer": {
       "type": "application",
-      "root": "apps/migration_history_consumer",
+      "root": "apps/migration_transactions_consumer",
       "entryFile": "main",
-      "sourceRoot": "apps/migration_history_consumer/src",
+      "sourceRoot": "apps/migration_transactions_consumer/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/migration_history_consumer/tsconfig.app.json"
+        "tsConfigPath": "apps/migration_transactions_consumer/tsconfig.app.json"
       }
     },
     "shared": {

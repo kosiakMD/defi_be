@@ -1,22 +1,13 @@
 import { Module } from '@nestjs/common';
+
+import { StoreModule } from '../store/store.module';
 import { MigrationController } from './migration.controller';
 import { MigrationService } from './migration.service';
-import { StoreModule } from '../store/store.module';
 
 @Module({
-  imports: [
-    StoreModule,
-  ],
-  controllers: [
-    MigrationController,
-  ],
-  providers: [
-    MigrationService,
-  ],
-  exports: [
-    MigrationService,
-  ],
+  imports: [StoreModule],
+  controllers: [MigrationController],
+  providers: [MigrationService],
+  exports: [MigrationService],
 })
-export class MigrationModule {
-
-}
+export class MigrationModule {}

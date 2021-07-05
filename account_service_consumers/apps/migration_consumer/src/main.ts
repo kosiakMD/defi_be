@@ -7,12 +7,14 @@ import { queueOptions } from './config/queues/asset.migration.queue';
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     ...queueOptions.migrationQueueOptions,
-  })
+  });
   const logger = await app.get(WINSTON_MODULE_NEST_PROVIDER);
 
   app.useLogger(logger);
 
-  await app.listen(() => logger.log("microservice consumer started", process.env.ASSET_MIGRATION_QUEUE));
+  await app.listen(() =>
+    logger.log('microservice consumer started', process.env.ASSET_MIGRATION_QUEUE),
+  );
 }
 
 bootstrap();

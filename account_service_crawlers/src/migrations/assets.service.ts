@@ -1,17 +1,18 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { Log } from './interfaces/migration.event.interfaces';
-import { AssetsEntity } from './entities/assets.entity';
-import { MigrationEvent } from './types/events';
 import { InjectRepository } from '@nestjs/typeorm';
-import { getManager, Repository } from 'typeorm';
-import { AssetPublisherService } from './asset.publisher.service';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { BlockTransactionObject } from './interfaces/web3.interfaces';
-import { NodeService } from '../node/node.service';
-import { SqlService } from './sql.service';
-import { SettingsEntity } from './entities/settings.entity';
+import { getManager, Repository } from 'typeorm';
 
-const MIGRATION_CHUNK_SIZE: number = 100000;
+import { NodeService } from '../node/node.service';
+import { AssetPublisherService } from './asset.publisher.service';
+import { AssetsEntity } from './entities/assets.entity';
+import { SettingsEntity } from './entities/settings.entity';
+import { Log } from './interfaces/migration.event.interfaces';
+import { BlockTransactionObject } from './interfaces/web3.interfaces';
+import { SqlService } from './sql.service';
+import { MigrationEvent } from './types/events';
+
+const MIGRATION_CHUNK_SIZE = 100000;
 
 @Injectable()
 export class AssetsService {
@@ -23,34 +24,38 @@ export class AssetsService {
     private readonly assetPublisherService: AssetPublisherService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private logger: LoggerService,
     private sqlService: SqlService,
-  ) {
-  }
+  ) {}
 
-  async getAssetEventsArray(eventArray: Log[], blockTransactionObjects: BlockTransactionObject[], chainId: number): Promise<MigrationEvent[]> {
+  async getAssetEventsArray(
+    eventArray: Log[],
+    blockTransactionObjects: BlockTransactionObject[],
+    chainId: number,
+  ): Promise<MigrationEvent[]> {
     const parsingEventSettings: SettingsEntity = await this.settingsRepository.findOne({
       where: { name: 'tracked_events' },
     });
-    const isSettingsExists = parsingEventSettings?.value?.length > 0
+    const isSettingsExists = parsingEventSettings?.value?.length > 0;
     // make sure setting is present in the database in other case return empty array
     if (!isSettingsExists) {
       this.logger.warn(`not found setting for events async parsing`);
       return [];
     }
 
-    let migrationEvents: MigrationEvent[] = [];
-    parsingEventSettings.value.map(eventHash => {
-      const events: Log[] = eventArray.filter(event => {
+    const migrationEvents: MigrationEvent[] = [];
+    parsingEventSettings.value.map((eventHash) => {
+      const events: Log[] = eventArray.filter((event) => {
         return event.topics[0] === eventHash;
       });
       if (events.length) {
         this.logger.log(`${events.length} events on hash - ${eventHash}`);
       }
 
-      events.map(event => {
-        const currentBlock = blockTransactionObjects.find(block => block.number === event.blockNumber);
+      events.map((event) => {
+        const currentBlock = blockTransactionObjects.find(
+          (block) => block.number === event.blockNumber,
+        );
         const otherTopicsString =
-          event.topics && event.topics.length > 3 ? `'${event.topics.slice(3)
-            .join(', ')}'` : null;
+          event.topics && event.topics.length > 3 ? `'${event.topics.slice(3).join(', ')}'` : null;
 
         migrationEvents.push({
           transactionHash: event.transactionHash,
@@ -78,20 +83,28 @@ export class AssetsService {
       chainId: chainId,
     });
 
-    const dbEventLastBlock = await getManager()
-      .query(
-        this.sqlService.getBlockInfoSelectString(nodeService.getBlockIfoTable()));
+    const dbEventLastBlock = await getManager().query(
+      this.sqlService.getBlockInfoSelectString(nodeService.getBlockIfoTable()),
+    );
 
-    assetsReadyToMigrate.map(async asset => {
-      await this.sendHistoricalMigrationChunks(asset, asset.fromBlock, dbEventLastBlock[0].to_block);
+    assetsReadyToMigrate.map(async (asset) => {
+      await this.sendHistoricalMigrationChunks(
+        asset,
+        asset.fromBlock,
+        dbEventLastBlock[0].to_block,
+      );
       asset.isHistoricalDataMigrated = true;
       asset.toBlock = dbEventLastBlock[0].to_block;
       await this.assetsRepository.save(asset);
     });
   }
 
-  async sendHistoricalMigrationChunks(asset: AssetsEntity, fromBlock: number, toBlock: number): Promise<void> {
-    let blockNumbers: number[] = [];
+  async sendHistoricalMigrationChunks(
+    asset: AssetsEntity,
+    fromBlock: number,
+    toBlock: number,
+  ): Promise<void> {
+    const blockNumbers: number[] = [];
     for (let i = Number(fromBlock); i <= Number(toBlock); i++) {
       blockNumbers.push(i);
     }

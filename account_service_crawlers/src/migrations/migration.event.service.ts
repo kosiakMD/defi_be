@@ -8,19 +8,25 @@ import Web3 from 'web3';
 import { NodeService } from '../node/node.service';
 import {
   BSC_LAST_BLOCKS,
-  BSC_NETWORK, CHAIN_ID_BSC,
+  BSC_NETWORK,
+  CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   ETH_BSC_MIGRATION_STEP,
   ETH_LAST_BLOCKS,
   ETH_NETWORK,
 } from '../utils/utils';
-import { Log, MigrationEventResponse, MigrationEventServiceResponse } from './interfaces/migration.event.interfaces';
+import { AssetsService } from './assets.service';
+import { AssetsEntity } from './entities/assets.entity';
+import {
+  Log,
+  MigrationEventResponse,
+  MigrationEventServiceResponse,
+  MigrationTransaction,
+} from './interfaces/migration.event.interfaces';
+import { BlockTransactionObject } from './interfaces/web3.interfaces';
 import { emptyResult, range, successfulResult } from './migration.utils';
 import { SqlService } from './sql.service';
-import { AssetsEntity } from './entities/assets.entity';
 import { MigrationEvent } from './types/events';
-import { AssetsService } from './assets.service';
-import { BlockTransactionObject } from './interfaces/web3.interfaces';
 
 @Injectable()
 export class MigrationEventService {
@@ -33,8 +39,7 @@ export class MigrationEventService {
     private assetsRepository: Repository<AssetsEntity>,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private logger: LoggerService,
     private sqlService: SqlService,
-    private assetsService: AssetsService
-
+    private assetsService: AssetsService,
   ) {
     this.ethBlockStep = configService.get('ETH_BLOCKS_MIGRATION_STEP');
     this.bscBlockStep = configService.get('BSC_BLOCKS_MIGRATION_STEP');
@@ -154,11 +159,19 @@ export class MigrationEventService {
     const eventsResults = await Promise.all(eventsPromiseArray);
     const logsArray: Log[] = eventsResults.flat();
 
-    const blockTransactionObjects: BlockTransactionObject[] =
-      await this.getBlocksAndTransactionFromNetwork(fromBlock, toBlock, nodeService);
-
-    const migrationEvents: MigrationEvent[] = await
-      this.assetsService.getAssetEventsArray(logsArray, blockTransactionObjects, network === ETH_NETWORK ? CHAIN_ID_ETH : CHAIN_ID_BSC);
+    const blockTransactionObjects: BlockTransactionObject[] = await this.getBlocksAndTransactionFromNetwork(
+      fromBlock,
+      toBlock,
+      nodeService,
+    );
+    const migrationTransactions: MigrationTransaction[] = this.getMigrationTransactions(
+      blockTransactionObjects,
+    );
+    const migrationEvents: MigrationEvent[] = await this.assetsService.getAssetEventsArray(
+      logsArray,
+      blockTransactionObjects,
+      network === ETH_NETWORK ? CHAIN_ID_ETH : CHAIN_ID_BSC,
+    );
 
     this.logger.log(`${network.toUpperCase()} -- Events array length = ${logsArray.length}`);
 
@@ -181,7 +194,8 @@ export class MigrationEventService {
     return {
       eventsResponse: { blocksInfoSql, eventsSql },
       blocksResponse: { transactionsInsertSql, blocksInsertSql },
-      migrationEvents: migrationEvents
+      migrationEvents: migrationEvents,
+      migrationTransactions: migrationTransactions,
     };
   }
 
@@ -191,5 +205,26 @@ export class MigrationEventService {
   ): Promise<MigrationEventServiceResponse> {
     const { fromBlock, toBlock } = await this.getFromBlockAndToBlockValues(nodeService, network);
     return await this.getDataFromNetworkWithBlocksNum(nodeService, network, fromBlock, toBlock);
+  }
+
+  private getMigrationTransactions(blocks: BlockTransactionObject[]): MigrationTransaction[] {
+    const result: MigrationTransaction[] = [];
+    blocks.forEach((block) => {
+      block.transactions.forEach((transaction) => {
+        result.push({
+          hash: transaction.hash,
+          blockNumber: block.number,
+          from: transaction.from,
+          to: transaction.to,
+          input: transaction.input,
+          value: transaction.value,
+          gas: transaction.gas,
+          gasPrice: transaction.gasPrice,
+          index: String(transaction.transactionIndex),
+          timestamp: String(block.timestamp),
+        });
+      });
+    });
+    return result;
   }
 }

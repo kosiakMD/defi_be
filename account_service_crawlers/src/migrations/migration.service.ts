@@ -6,10 +6,13 @@ import { getManager } from 'typeorm';
 import { BscService } from '../node/bsc.service';
 import { EthService } from '../node/eth.service';
 import { BSC_NETWORK, ETH_NETWORK } from '../utils/utils';
-import { MigrationBlockResponse } from './interfaces/migration.block.response';
-import { MigrationEventResponse, MigrationEventServiceResponse } from './interfaces/migration.event.interfaces';
-import { MigrationEventService } from './migration.event.service';
 import { AssetPublisherService } from './asset.publisher.service';
+import { MigrationBlockResponse } from './interfaces/migration.block.response';
+import {
+  MigrationEventResponse,
+  MigrationEventServiceResponse,
+} from './interfaces/migration.event.interfaces';
+import { MigrationEventService } from './migration.event.service';
 import { MigrationEvent } from './types/events';
 
 @Injectable()
@@ -23,20 +26,40 @@ export class MigrationService {
     private assetPublisherService: AssetPublisherService,
   ) {}
 
-  private async sendAssetEventsToQueue(migrationEvents: MigrationEvent[]) {
-    await Promise.all(migrationEvents.map(async e => {
-      await this.assetPublisherService.publishTrackedAssetEvent(e)
-    }))
+  private async sendAssetEventsToQueue(migrationEvents: MigrationEvent[]): Promise<void> {
+    await Promise.all(
+      migrationEvents.map(async (e) => {
+        await this.assetPublisherService.publishTrackedAssetEvent(e);
+      }),
+    );
     this.logger.log(`${migrationEvents.length} - events was sent to queue`);
+  }
+
+  private async sendTransactionEventsToQueue(
+    ethResponse: MigrationEventServiceResponse,
+  ): Promise<void> {
+    if (ethResponse?.migrationTransactions) {
+      await Promise.all(
+        ethResponse.migrationTransactions.map(async (transaction) => {
+          transaction.events = ethResponse.migrationEvents.filter(
+            (event) => event.transactionHash === transaction.hash,
+          );
+          await this.assetPublisherService.publishTransactionWithEvents(transaction);
+        }),
+      );
+    }
   }
 
   async bscWeb3Migration(): Promise<void> {
     try {
-      const bscResponse: MigrationEventServiceResponse = await this.migrationEventService.getSqlStringsForDataFromNetwork(
-        this.bscService,
-        BSC_NETWORK,
-      );
+      const bscResponse: MigrationEventServiceResponse =
+        await this.migrationEventService.getSqlStringsForDataFromNetwork(
+          this.bscService,
+          BSC_NETWORK,
+        );
 
+      await this.sendAssetEventsToQueue(bscResponse.migrationEvents);
+      await this.sendTransactionEventsToQueue(bscResponse);
       this.logger.log('BSC ----> Start saving data to DB!!!');
       await this.saveDataToDb(bscResponse.eventsResponse, bscResponse.blocksResponse);
       this.logger.log('BSC -----> Data successfully saved to DB!!!');
@@ -49,16 +72,17 @@ export class MigrationService {
 
   async ethWeb3Migration(): Promise<void> {
     try {
-      const ethResponse: MigrationEventServiceResponse = await this.migrationEventService.getSqlStringsForDataFromNetwork(
-        this.ethService,
-        ETH_NETWORK,
-      );
+      const ethResponse: MigrationEventServiceResponse =
+        await this.migrationEventService.getSqlStringsForDataFromNetwork(
+          this.ethService,
+          ETH_NETWORK,
+        );
 
+      await this.sendAssetEventsToQueue(ethResponse.migrationEvents);
+      await this.sendTransactionEventsToQueue(ethResponse);
       this.logger.log('ETH ----> Start saving data to DB!!!');
       await this.saveDataToDb(ethResponse.eventsResponse, ethResponse.blocksResponse);
       this.logger.log('ETH -----> Data successfully saved to DB!!!');
-
-      await this.sendAssetEventsToQueue(ethResponse.migrationEvents);
     } catch (e) {
       this.logger.error(e);
     }
@@ -66,12 +90,13 @@ export class MigrationService {
 
   async ethWeb3MigrationWithBlocks(fromBlock: number, toBlock: number): Promise<void> {
     try {
-      const ethResponse: MigrationEventServiceResponse = await this.migrationEventService.getDataFromNetworkWithBlocksNum(
-        this.ethService,
-        ETH_NETWORK,
-        fromBlock,
-        toBlock,
-      );
+      const ethResponse: MigrationEventServiceResponse =
+        await this.migrationEventService.getDataFromNetworkWithBlocksNum(
+          this.ethService,
+          ETH_NETWORK,
+          fromBlock,
+          toBlock,
+        );
       this.logger.log('ETH ----> Start saving data to DB!!!');
       await this.saveDataToDb(ethResponse.eventsResponse, ethResponse.blocksResponse);
       this.logger.log('ETH -----> Data successfully saved to DB!!!');
@@ -82,12 +107,13 @@ export class MigrationService {
 
   async bscMigrationWithBlocks(fromBlock: number, toBlock: number): Promise<void> {
     try {
-      const ethResponse: MigrationEventServiceResponse = await this.migrationEventService.getDataFromNetworkWithBlocksNum(
-        this.bscService,
-        BSC_NETWORK,
-        fromBlock,
-        toBlock,
-      );
+      const ethResponse: MigrationEventServiceResponse =
+        await this.migrationEventService.getDataFromNetworkWithBlocksNum(
+          this.bscService,
+          BSC_NETWORK,
+          fromBlock,
+          toBlock,
+        );
       this.logger.log('ETH ----> Start saving data to DB!!!');
       await this.saveDataToDb(ethResponse.eventsResponse, ethResponse.blocksResponse);
       this.logger.log('ETH -----> Data successfully saved to DB!!!');

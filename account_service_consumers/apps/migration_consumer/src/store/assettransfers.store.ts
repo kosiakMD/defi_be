@@ -1,19 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { AssetTransfersEntity } from './entities/assettransfers.entity';
 import { AssetTransfersRepository } from './repositories/assettransfers.repository';
 import { EventDto } from './types/event.dto';
 
 @Injectable()
 export class AssetsTransfersStore {
-
   constructor(
     @InjectRepository(AssetTransfersEntity) private readonly repository: AssetTransfersRepository,
-  ) {
-  }
+  ) {}
 
-  async getEventsBetweenBlocks(assetId: number, chainId: number, fromBlock: number, toBlock: number): Promise<EventDto[]> {
-    let contractEventsQuery: string
+  async getEventsBetweenBlocks(
+    assetId: number,
+    chainId: number,
+    fromBlock: number,
+    toBlock: number,
+  ): Promise<EventDto[]> {
+    let contractEventsQuery: string;
     if (chainId === 1) {
       contractEventsQuery = `
         select
@@ -51,35 +55,42 @@ export class AssetsTransfersStore {
         )
     `;
     } else {
-      throw Error(`not possible to build query for asset transfers migration for chain id [${chainId}]`)
+      throw Error(
+        `not possible to build query for asset transfers migration for chain id [${chainId}]`,
+      );
     }
     const dbEvents = await this.repository.query(contractEventsQuery);
-    let eventsDto: EventDto[] = []
-    dbEvents.map(e => {
+    const eventsDto: EventDto[] = [];
+    dbEvents.map((e) => {
       eventsDto.push({
-          txHash: e.transactionhash,
-          topic1: e.topic1,
-          topic2: e.topic2,
-          topic3: e.topic3,
-          topics: e.topics,
-          data: e.data,
-          blockNumber: Number(e.blocknumber),
-          blockTimestamp: Number(e.blocktimestamp),
-          logIndex: Number(e.logindex),
-        })
+        txHash: e.transactionhash,
+        topic1: e.topic1,
+        topic2: e.topic2,
+        topic3: e.topic3,
+        topics: e.topics,
+        data: e.data,
+        blockNumber: Number(e.blocknumber),
+        blockTimestamp: Number(e.blocktimestamp),
+        logIndex: Number(e.logindex),
+      });
     });
-    return eventsDto
+    return eventsDto;
   }
 
   async save(transfer: AssetTransfersEntity): Promise<any> {
     if (!transfer) {
       return;
     }
-    const insertQuery = `insert into asset_transfers_new (asset_id, "from", "to", value, timestamp, tx_hash, block_number, log_index) 
+    const insertQuery =
+      `insert into asset_transfers_new (asset_id, "from", "to", value, timestamp, tx_hash, block_number, log_index) 
         values (
                 ${transfer.assetId}, 
-                ` + (transfer.from ? `'${transfer.from}'` : null) + `,
-                ` + (transfer.to ? `'${transfer.to}'` : null) + `,
+                ` +
+      (transfer.from ? `'${transfer.from}'` : null) +
+      `,
+                ` +
+      (transfer.to ? `'${transfer.to}'` : null) +
+      `,
                  '${transfer.value}', 
                  ${transfer.timestamp},
                  '${transfer.txHash}',
@@ -99,15 +110,21 @@ export class AssetsTransfersStore {
 
     const valuesConcatenated = transfers
       .map((t) => {
-        return `(
+        return (
+          `(
         default,
 				${t.assetId}, 
-				` + (t.from ? `'${t.from}'` : null) + `,
-				` + (t.to ? `'${t.to}'` : null) + `,
+				` +
+          (t.from ? `'${t.from}'` : null) +
+          `,
+				` +
+          (t.to ? `'${t.to}'` : null) +
+          `,
 				'${t.value}',
 				${t.timestamp},
 				'${t.txHash}'
-				)`;
+				)`
+        );
       })
       .join(',');
 

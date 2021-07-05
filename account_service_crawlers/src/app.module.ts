@@ -2,7 +2,11 @@ import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { utilities as nestWinstonModuleUtilities, WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
+import {
+  utilities as nestWinstonModuleUtilities,
+  WINSTON_MODULE_NEST_PROVIDER,
+  WinstonModule,
+} from 'nest-winston';
 import * as winston from 'winston';
 
 import configuration from './config/configuration';

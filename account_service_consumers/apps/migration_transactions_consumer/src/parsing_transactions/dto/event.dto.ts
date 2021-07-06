@@ -14,11 +14,11 @@ export class EventDto implements MigrationEvent {
   topic1?: string;
   @ApiProperty()
   @Expose({ name: 'from' })
-  @Transform(({ value }) => value.toLowerCase())
+  @Transform(({ value }) => value?.toLowerCase())
   topic2?: string;
   @ApiProperty()
   @Expose({ name: 'to' })
-  @Transform(({ value }) => value.toLowerCase())
+  @Transform(({ value }) => value?.toLowerCase())
   topic3?: string;
   @ApiProperty()
   @Exclude()

@@ -53,8 +53,8 @@ export class TransactionsParsingService {
     );
 
     if (!transactionTransfers.length && Number(transaction.value)) {
-      uniqueAddresses.add(transaction.from.toLowerCase());
-      uniqueAddresses.add(transaction.to.toLowerCase());
+      TransactionsParsingService.addToSetAddress(transaction.from?.toLowerCase(), uniqueAddresses);
+      TransactionsParsingService.addToSetAddress(transaction.to?.toLowerCase(), uniqueAddresses);
       transactionTransfers.push(TransactionsParsingService.getEthTransactionTransfer(transaction));
     }
 
@@ -156,10 +156,10 @@ export class TransactionsParsingService {
     });
 
     for (const item of events) {
-      if (item?.data === ZERO_DATA) {
+      const currentAssetEntity = assetsEntities.find((asset) => asset.address === item.address);
+      if (item?.data === ZERO_DATA || !currentAssetEntity) {
         continue;
       }
-      const currentAssetEntity = assetsEntities.find((asset) => asset.address === item.address);
 
       if (!assetsPrices) {
         throw Error('Price-service is not working correctly!');

@@ -1,19 +1,19 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { ParsedTransfers } from '../transactions.parsing.interfaces';
 
 @Entity('transactions')
 export class TransactionsEntity {
-  @PrimaryGeneratedColumn({ name: 'id' })
+  @Column({ name: 'id' })
   id?: number;
 
-  @Column({ name: 'hash' })
+  @PrimaryColumn({ name: 'hash' })
   hash: string;
 
   @Column({ name: 'block_number' })
   blockNumber: number;
 
-  @Column({ name: 'address' })
+  @PrimaryColumn({ name: 'address' })
   address: string;
 
   @Column({ name: 'timestamp' })

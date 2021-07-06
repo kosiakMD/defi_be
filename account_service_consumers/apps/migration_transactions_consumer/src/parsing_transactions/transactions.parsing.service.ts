@@ -2,18 +2,23 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BigNumber as BN } from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
-import { In, Repository } from 'typeorm';
+import { getManager, In, Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { PriceService } from '../price/price.service';
-import { CHAIN_ID_ETH, decimalsDivider, ETH_ADDRESS, ETH_TRANSFER_TOPIC } from '../util/util';
+import {
+  CHAIN_ID_ETH,
+  decimalsDivider,
+  ETH_ADDRESS,
+  ETH_TRANSFER_TOPIC,
+  ZERO_DATA,
+} from '../util/util';
 import { EventDto } from './dto/event.dto';
 import { ParsedTransfersDto } from './dto/parsed.transfers.dto';
 import { SubTransactionDto } from './dto/sub.transaction.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsNewEntity } from './entities/assets.new.entity';
-import { TransactionsEntity } from './entities/transactions.entity';
 import { TokenOperations } from './enums/token.operations';
 import { TokenTypes } from './enums/token.types';
 import {
@@ -31,15 +36,13 @@ export class TransactionsParsingService {
     private assetsRepository: Repository<AssetsEntity>,
     @InjectRepository(AssetsNewEntity)
     private assetsNewRepository: Repository<AssetsNewEntity>,
-    @InjectRepository(TransactionsEntity)
-    private transactionRepository: Repository<TransactionsEntity>,
     private priceService: PriceService,
     private web3Provider: Web3Provider,
   ) {
     this.ethProvider = web3Provider.instanceEth();
   }
 
-  async parseTransactions(transaction: MigrationTransaction): Promise<TransactionsEntity[]> {
+  async parseTransactions(transaction: MigrationTransaction): Promise<void> {
     const uniqueAddresses: Set<string> = new Set();
 
     await this.modifyTransaction(transaction);
@@ -61,32 +64,31 @@ export class TransactionsParsingService {
       uniqueAddresses,
       subTransactions,
     );
-    const transactionEntities: TransactionsEntity[] = this.getTransactionsEntities(
-      parsedTransfers,
-      transaction,
-    );
-    await this.transactionRepository.save(transactionEntities);
-    return transactionEntities;
+    const transactionSqlString: string = this.getTransactionSqlString(parsedTransfers, transaction);
+    await getManager().query(transactionSqlString);
+    return;
   }
 
-  private getTransactionsEntities(
+  private getTransactionSqlString(
     parsedTransactions: ParsedTransfersDto[],
     transaction: MigrationTransaction,
-  ): TransactionsEntity[] {
-    const transactionEntities: TransactionsEntity[] = [];
+  ): string {
+    const sqlValues: string[] = [];
     parsedTransactions.forEach((parsedTransaction) => {
-      transactionEntities.push(
-        new TransactionsEntity(
-          parsedTransaction.hash,
-          transaction.blockNumber,
-          parsedTransaction.address,
-          transaction.timestamp,
-          parsedTransaction,
-        ),
+      sqlValues.push(
+        `('${parsedTransaction.hash}', ${transaction.blockNumber}, '${
+          parsedTransaction.address
+        }', '${transaction.timestamp}', '${JSON.stringify(parsedTransaction)}')`,
       );
     });
 
-    return transactionEntities;
+    return `insert into transactions(hash, block_number, address, timestamp, transaction_data) 
+        values ${sqlValues.join(',')}
+        on conflict(hash, address) 
+        do update set 
+        block_number = EXCLUDED.block_number,
+        timestamp = EXCLUDED.timestamp,
+        transaction_data = EXCLUDED.transaction_data`;
   }
 
   private async getParsedTransfers(
@@ -100,6 +102,11 @@ export class TransactionsParsingService {
       const addressSubTransactions = subTransactions.filter(
         (subTransaction) => address === subTransaction.address,
       );
+
+      if (!addressSubTransactions?.length) {
+        continue;
+      }
+
       const from = addressSubTransactions.find((x) => x.type === TokenTypes.OUT);
       const to = addressSubTransactions.find((x) => x.type === TokenTypes.IN);
       const name = from
@@ -142,6 +149,9 @@ export class TransactionsParsingService {
     });
 
     for (const item of events) {
+      if (item?.data === ZERO_DATA) {
+        continue;
+      }
       const currentAssetEntity = assetsEntities.find((asset) => asset.address === item.address);
 
       if (!assetsPrices) {

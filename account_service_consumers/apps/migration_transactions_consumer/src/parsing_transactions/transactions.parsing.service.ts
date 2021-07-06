@@ -81,6 +81,13 @@ export class TransactionsParsingService {
         }', '${transaction.timestamp}', '${JSON.stringify(parsedTransaction)}')`,
       );
     });
+    return this.getInsertSql(sqlValues);
+  }
+
+  private getInsertSql(sqlValues: string[]): string {
+    if (!sqlValues.length) {
+      return '';
+    }
 
     return `insert into transactions(hash, block_number, address, timestamp, transaction_data) 
         values ${sqlValues.join(',')}

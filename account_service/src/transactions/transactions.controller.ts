@@ -1,10 +1,15 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { Address } from '../common/interfaces';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
 import { TransactionQueryDto } from './dto/transaction.query.dto';
-import { TransactionsDetailedResponseDto, TransactionsResponseDto } from './dto/transactions.dto';
+import {
+  TransactionsDetailedResponseDto,
+  TransactionsNewDetailedResponseDto,
+  TransactionsResponseDto,
+} from './dto/transactions.dto';
 import { EtherscanTransactionsService } from './etherscan.transactions.service';
 import {
   Transaction,
@@ -47,6 +52,24 @@ export class TransactionsController {
     // TODO: delete this check as we have @validation
     if (!query.addresses && query.addresses.length) return [];
     return this.transactionsService.getTransactionsFromScan(addresses, chains);
+  }
+
+  @Get('/new')
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    isArray: true,
+    description: 'Array of Addresses',
+    example: [
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b',
+      '0x07471d0262b17529a489d0c696eef988f89464ac',
+    ],
+  })
+  @ApiResponse({ status: 200, type: TransactionsNewDetailedResponseDto })
+  public async getTransactionsNew(@Query('addresses') addresses: Address[]): Promise<any> {
+    // TODO: delete this check as we have @validation
+    if (!addresses && addresses.length) return [];
+    return this.transactionsService.getTransactionsNew(addresses);
   }
 
   @Get('/internal')

@@ -3,6 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { DetailedResponseDto } from '../common/DTO';
 import { ResultStatus } from '../common/enum';
+import { Address } from '../common/interfaces';
 import { TransactionScanDto } from '../scans-api/scans-api.dto';
 import { Transaction } from './transactions.interfaces';
 
@@ -87,4 +88,77 @@ export class TransactionsDetailedResponseDto extends DetailedResponseDto<Transac
     type: TransactionScanDto,
   })
   data: TransactionScanDto[];
+}
+
+export class SubTransactionDto {
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  address: Address;
+
+  @ApiProperty({ type: String, example: '605271.935' })
+  amount: string;
+
+  @ApiProperty({ type: Number, example: 19789 })
+  gasUsed: number;
+
+  @ApiProperty({ type: Number, example: 0.70202506528 })
+  gasUsedUsd: number;
+
+  @ApiProperty({ type: Number, example: 0.00950568 })
+  price: number;
+
+  @ApiProperty({ type: String, example: 'LYM' })
+  symbol: string;
+
+  @ApiProperty({ type: String, example: '0xc690f7c7fcffa6a82b79fab7508c466fefdfc8c5' })
+  tokenAddress: string;
+
+  @ApiProperty({ type: String, example: 'incoming' })
+  type: string;
+}
+
+export class TransactionNewDto {
+  @ApiProperty({ type: String, example: '83' })
+  id: string;
+  @ApiProperty({
+    type: String,
+    example: '0x1583b096aa28d7c047cc321e9bef1c2a23857637fdc797626cbce5e216f75e8e',
+  })
+  hash: string;
+  @ApiProperty({ type: String, example: '12768337' })
+  blockNumber: string;
+  @ApiProperty({ type: String, example: '1625499513' })
+  timestamp: string;
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  address: Address;
+  @ApiProperty({ type: Number, example: 95000 })
+  gas: number;
+  @ApiProperty({ type: String, example: '16000000000' })
+  gasPrice: string;
+  @ApiProperty({ type: String, example: 'receive' })
+  name: string;
+  @ApiProperty({
+    type: SubTransactionDto,
+    isArray: true,
+  })
+  subTransactions: SubTransactionDto[];
+}
+
+export class TransactionsNewDetailedResponseDto extends DetailedResponseDto<TransactionNewDto[]> {
+  @ApiProperty({
+    enum: ResultStatus,
+    enumName: 'ResultStatus',
+    example: ResultStatus.ok,
+  })
+  status: ResultStatus;
+
+  @ApiProperty({
+    example: ['connect ECONNREFUSED ...'],
+  })
+  errors: Error[] | string[];
+
+  @ApiProperty({
+    isArray: true,
+    type: TransactionNewDto,
+  })
+  data: TransactionNewDto[];
 }

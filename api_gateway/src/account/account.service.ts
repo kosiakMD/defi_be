@@ -16,6 +16,7 @@ import { BalancesResponse } from './account.interfaces';
 export class AccountService {
   private readonly getStatusUrl: string;
   private readonly getTransactionsUrl: string;
+  private readonly getTransactionsNewUrl: string;
   private readonly getTransfersUrl: string;
   private readonly getBalanceUrl: string;
   private readonly getApprovalsUrl: string;
@@ -35,6 +36,7 @@ export class AccountService {
 
     const transactionsPath = this.configService.get<string>('ACCOUNT_TRANSACTIONS');
     this.getTransactionsUrl = `${url}/${transactionsPath}`;
+    this.getTransactionsNewUrl = `${url}/${transactionsPath}/new`;
 
     const transfersPath = this.configService.get<string>('ACCOUNT_TRANSFERS');
     this.getTransfersUrl = `${url}/${transfersPath}`;
@@ -72,6 +74,21 @@ export class AccountService {
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getTransactionsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getTransactionsNew(addresses: Address[]): Promise<TransactionsResponse[]> {
+    try {
+      this.logger.time(this.getTransactionsNewUrl);
+      const data = await this.httpService
+        .get(this.getTransactionsNewUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getTransactionsNewUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);

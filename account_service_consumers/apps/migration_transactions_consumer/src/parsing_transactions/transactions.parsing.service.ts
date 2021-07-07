@@ -6,6 +6,7 @@ import { getManager, In, Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
+import { CurrentPrices, PriceResponseDto } from '../price/dto/price.response.dto';
 import { PriceService } from '../price/price.service';
 import {
   CHAIN_ID_ETH,
@@ -44,8 +45,6 @@ export class TransactionsParsingService {
 
   async parseTransactions(transaction: MigrationTransaction): Promise<void> {
     const uniqueAddresses: Set<string> = new Set();
-
-    await this.modifyTransaction(transaction);
 
     const transactionTransfers: MigrationEvent[] = this.getModifiedTransactionTransfers(
       transaction,
@@ -135,13 +134,10 @@ export class TransactionsParsingService {
     return parseTransactions;
   }
 
-  private async getArrayOfSubTransactions(
-    events: MigrationEvent[],
+  private async getAssetsPricesAndModifyTransaction(
     transaction: MigrationTransaction,
-  ): Promise<SubTransactions[]> {
-    const subTransactions: SubTransactionDto[] = [];
-    const tokenAddresses = new Set(events.map((event) => event.address));
-
+    tokenAddresses: Set<string>,
+  ): Promise<PriceResponseDto<CurrentPrices>> {
     const requestAssets = Array.from(tokenAddresses).map((token) => {
       return {
         address: token,
@@ -149,7 +145,32 @@ export class TransactionsParsingService {
       };
     });
 
-    const assetsPrices = await this.priceService.getHistoricalPrices(requestAssets, CHAIN_ID_ETH);
+    const [assetsPrices, { gasUsed }] = await Promise.all([
+      this.priceService.getHistoricalPrices(requestAssets, CHAIN_ID_ETH),
+      this.ethProvider.eth.getTransactionReceipt(transaction.hash),
+    ]);
+
+    this.modifyTransactionV2(
+      transaction,
+      assetsPrices.prices[ETH_ADDRESS][transaction.timestamp],
+      gasUsed,
+    );
+
+    return assetsPrices;
+  }
+
+  private async getArrayOfSubTransactions(
+    events: MigrationEvent[],
+    transaction: MigrationTransaction,
+  ): Promise<SubTransactions[]> {
+    const subTransactions: SubTransactionDto[] = [];
+    const tokenAddresses = new Set(events.map((event) => event.address));
+    tokenAddresses.add(ETH_ADDRESS);
+
+    const assetsPrices = await this.getAssetsPricesAndModifyTransaction(
+      transaction,
+      tokenAddresses,
+    );
 
     const assetsEntities: AssetsNewEntity[] = await this.assetsNewRepository.find({
       where: { address: In(Array.from(tokenAddresses)) },
@@ -234,17 +255,12 @@ export class TransactionsParsingService {
     return transactionTransfers;
   }
 
-  private async modifyTransaction(transaction: MigrationTransaction): Promise<void> {
-    const asset = {
-      address: ETH_ADDRESS,
-      timestamps: [Number(transaction.timestamp)],
-    };
-    const [{ gasUsed }, priceResponse] = await Promise.all([
-      this.ethProvider.eth.getTransactionReceipt(transaction.hash),
-      this.priceService.getHistoricalPrices([asset], CHAIN_ID_ETH),
-    ]);
-
-    if (!priceResponse) {
+  private modifyTransactionV2(
+    transaction: MigrationTransaction,
+    ethPrice: number,
+    gasUsed: number,
+  ): void {
+    if (!ethPrice) {
       throw Error('Price-service is not working correctly!');
     }
 
@@ -252,7 +268,7 @@ export class TransactionsParsingService {
     transaction.gasUsedUsd = new BN(gasUsed)
       .times(transaction.gasPrice)
       .div(decimalsDivider(18))
-      .times(priceResponse.prices[ETH_ADDRESS][Number(transaction.timestamp)])
+      .times(ethPrice)
       .toNumber();
   }
 

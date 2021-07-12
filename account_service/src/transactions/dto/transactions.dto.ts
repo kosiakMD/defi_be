@@ -1,5 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
+import { plainToClass } from 'class-transformer';
 
 import { DetailedResponseDto } from '../../common/dto';
 import { ResultStatus } from '../../common/enum';
@@ -155,6 +156,10 @@ export class SubTransactionDto {
 
   @ApiProperty({ type: String, example: 'incoming' })
   type: string;
+
+  constructor(transferEntity: Partial<SubTransactionDto>) {
+    Object.assign(this, transferEntity);
+  }
 }
 
 export class TransactionNewDto {
@@ -184,7 +189,9 @@ export class TransactionNewDto {
   subTransactions: SubTransactionDto[];
 
   constructor(tsx: TransactionsEntity) {
-    Object.assign(this, {
+    // console.log('tsx', tsx);
+
+    Object.assign(this, tsx, {
       id: tsx.id,
       address: tsx.address,
       hash: tsx.hash,
@@ -193,7 +200,7 @@ export class TransactionNewDto {
       name: tsx.data.name,
       gas: tsx.data.gas,
       gasPrice: tsx.data.gasPrice,
-      subTransactions: tsx.data.subTransactions,
+      subTransactions: plainToClass(SubTransactionDto, tsx.data.subTransactions),
     });
   }
 }

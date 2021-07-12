@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -8,11 +9,14 @@ import { Web3Provider } from '../chain/web3.provider';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from '../common/constatnt';
 import { ResultStatus } from '../common/enum';
 import { Address, DetailedResponse } from '../common/interfaces';
-import { ChainsIds } from '../common/types';
+import { ChainId, ChainsIds } from '../common/types';
+import { CovalentTsx } from '../covalent/covalent.interface';
+import { CovalentService } from '../covalent/covalent.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
 import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import { TransactionDto } from './dto/api.transactions.dto';
 import { TransactionNewDto } from './dto/transactions.dto';
 import { TransactionsEntity } from './entity/transactions.entity';
 import {
@@ -33,6 +37,7 @@ export class TransactionsService {
     private readonly web3Provider: Web3Provider,
     private readonly bscScanService: BscScanService,
     private readonly etherScanService: EtherScanService,
+    private readonly covalentService: CovalentService,
     @InjectRepository(TransactionsEntity) private readonly repository: TransactionsRepository,
   ) {}
 
@@ -164,6 +169,7 @@ export class TransactionsService {
         .orderBy('tsx.timestamp')
         .getMany();*/
       response.data = dbTsx.map((tsx) => new TransactionNewDto(tsx));
+      // response.data = dbTsx.map((tsx) => plainToClass(TransactionNewDto, { ...tsx }));
       // TODO: strange but doesn't receive data in the constructor
       // response.data = plainToClass(TransactionNewDto, dbTsx);
       return response;
@@ -235,6 +241,76 @@ export class TransactionsService {
     if (response.errors.length) {
       response.status = ResultStatus.error;
     }
+    return response;
+  }
+
+  private transformCovalentToInternal(data: CovalentTsx, chainId: ChainId): TransactionDto[] {
+    const { quote_currency: currency, items } = data;
+    return items.map(
+      (tsx) =>
+        new TransactionDto({
+          chainId: chainId,
+          // @ts-ignore
+          blockNumber: tsx.block_height,
+          blockHash: tsx.tx_hash,
+          hash: tsx.tx_hash,
+          timeStamp: tsx.block_signed_at,
+          // @ts-ignore
+          from: tsx.from_adress,
+          // @ts-ignore
+          to: tsx.to_adress,
+          // @ts-ignore
+          value: tsx.value,
+          // @ts-ignore
+          valueInCurrency: tsx.value_quote,
+          // @ts-ignore
+          currency: currency,
+          // @ts-ignore
+          gasPrice: tsx.gas_price,
+          // @ts-ignore
+          gasUsed: tsx.gas_spent,
+          isError: tsx.successful ? '0' : '1',
+        }),
+    );
+  }
+
+  async getTransactionsFromCovalent(
+    addresses: Address[],
+    // TODO: Covalent doesn't support BSC (2)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    chains: ChainId[],
+  ): Promise<DetailedResponse<TransactionsResult[]>> {
+    const response = {
+      status: ResultStatus.ok,
+      errors: [],
+      data: [],
+    };
+
+    // TODO: Covalent doesn't support BSC (2)
+    const chainsToHandle = [CHAIN_ID_ETH]; /*chains*/
+
+    const promises = [];
+    addresses.forEach((address) => {
+      chainsToHandle.forEach((chain) => {
+        promises.push(this.covalentService.getTransactions(address, chain));
+      });
+    });
+
+    const results = await Promise.allSettled(promises);
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        const intTsx = this.transformCovalentToInternal(result.value, chainsToHandle[index]);
+        response.data = response.data.concat(intTsx);
+      } else {
+        response.errors.push(result.reason?.message || result.reason);
+      }
+    });
+
+    if (response.errors.length) {
+      response.status = ResultStatus.error;
+    }
+
     return response;
   }
 }

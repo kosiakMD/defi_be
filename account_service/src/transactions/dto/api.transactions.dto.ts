@@ -54,6 +54,10 @@ export class TransactionDto {
   chainId: number;
   @ApiProperty({ example: false, type: Boolean })
   isInternal?: boolean;
+
+  constructor(transaction: Partial<TransactionDto>) {
+    Object.assign(this, transaction);
+  }
 }
 
 export class ApiTransactionsResponseDto {

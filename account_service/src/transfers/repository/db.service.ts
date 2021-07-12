@@ -82,16 +82,16 @@ export class DbService {
                     asset_id AS assetId
              FROM (
                   SELECT "from" AS fromAddress,
-                         asset_id, -VALUE AS amount,
+                         asset_id, VALUE AS amount,
                          "to" AS toAddress,
                          "tx_hash" AS "tx_hash",
                          "timestamp" AS "timestamp"
                   FROM asset_transfers_new
                   WHERE "from" IN (${addressesString})
                   UNION ALL
-                  SELECT "to" AS toAddress,
+                  SELECT "from" AS fromAddress,
                          asset_id, VALUE AS amount,
-                         "from" AS fromAddress,
+                         "to" AS toAddress,
                          "tx_hash" AS "tx_hash",
                          "timestamp" AS "timestamp"
                   FROM asset_transfers_new

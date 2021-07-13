@@ -54,6 +54,8 @@ export class BalanceTokenDto implements BalanceToken {
   name;
   @ApiProperty({ example: '0x0000000000000000000000000000000000000000' })
   address;
+  @ApiProperty({ type: Boolean, example: false, required: false })
+  isLp?: boolean;
 }
 
 export class AccountTokenBalanceDto implements AccountTokenBalance {

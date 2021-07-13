@@ -23,4 +23,5 @@ export interface BalanceToken {
   symbol: string;
   name: string;
   address: string;
+  isLp?: boolean;
 }

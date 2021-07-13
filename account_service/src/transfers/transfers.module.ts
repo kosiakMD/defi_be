@@ -5,9 +5,9 @@ import { ChainModule } from '../chain/chain.module';
 import { PriceModule } from '../price/price.module';
 import { ScanApiModule } from '../scan_api/scan.api.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
+import { TransferEntity } from './dto/transfers.entity';
 import { DbService } from './repository/db.service';
 import { TransfersController } from './transfers.controller';
-import { TransferEntity } from './dto/transfers.entity';
 import { TransfersService } from './transfers.service';
 
 @Module({

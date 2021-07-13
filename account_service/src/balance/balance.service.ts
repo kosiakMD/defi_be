@@ -229,33 +229,34 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance =
-    (prices: TokenPrices, chainId: number): ((row: TokenRow) => AccountTokenBalance) =>
-    ({
-      address,
-      amount,
-      tokenAddress,
-      tokenName,
-      tokenSymbol,
-      tokenDecimals,
-      tokenTotalSupply,
-      isLp,
-    }) => ({
-      account: address,
-      amount,
-      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-      tokenPriceUSD: prices[tokenAddress] || 0,
-      totalPriceUSD: prices[tokenAddress]
-        ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
-        : 0,
-      token: {
-        chainId: chainId,
-        address: tokenAddress,
-        name: tokenName || null,
-        symbol: tokenSymbol || null,
-        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-        totalSupply: +tokenTotalSupply || 0,
-        isLp: isLp,
-      },
-    });
+  private mapErc20Balance = (
+    prices: TokenPrices,
+    chainId: number,
+  ): ((row: TokenRow) => AccountTokenBalance) => ({
+    address,
+    amount,
+    tokenAddress,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
+    tokenTotalSupply,
+    isLp,
+  }) => ({
+    account: address,
+    amount,
+    decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+    tokenPriceUSD: prices[tokenAddress] || 0,
+    totalPriceUSD: prices[tokenAddress]
+      ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
+      : 0,
+    token: {
+      chainId: chainId,
+      address: tokenAddress,
+      name: tokenName || null,
+      symbol: tokenSymbol || null,
+      decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+      totalSupply: +tokenTotalSupply || 0,
+      isLp: isLp,
+    },
+  });
 }

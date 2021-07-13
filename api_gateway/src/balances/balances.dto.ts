@@ -18,9 +18,9 @@ export class BalancesQueryDto {
   @IsOptional()
   @Transform(({ value, key }) => {
     if (key && !value) {
-      throw new BadRequestException(`Empty param '${key}' is not allowed`)
+      throw new BadRequestException(`Empty param '${key}' is not allowed`);
     }
-    return splitToArray(value).map((x) => parseInt(x, 10))
+    return splitToArray(value).map((x) => parseInt(x, 10));
   })
   @IsArray()
   @IsInt({ each: true })
@@ -38,6 +38,8 @@ export class BalanceTokenDto implements BalanceToken {
   name;
   @ApiProperty({ example: '0x0000000000000000000000000000000000000000' })
   address;
+  @ApiProperty({ type: Boolean, example: false, required: false })
+  isLp: boolean;
 }
 
 export class AccountTokenBalanceDto implements AccountTokenBalance {

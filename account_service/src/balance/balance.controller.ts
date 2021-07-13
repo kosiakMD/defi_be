@@ -44,6 +44,6 @@ export class BalanceController {
   getUserBalanceByAddresses(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
     const { addresses, chains } = query;
 
-    return this.balanceService.getBalanceDataFromDb(addresses, chains)
+    return this.balanceService.getBalanceDataFromDb(addresses, chains);
   }
 }

@@ -9,12 +9,12 @@ async function bootstrap() {
   const app = await NestFactory.createMicroservice(AppModule, {
     ...queueOptions.migrationQueueOptions,
   });
-  const logger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const logger = addTimeLogFeature(await app.get(WINSTON_MODULE_NEST_PROVIDER));
 
   app.useLogger(logger);
 
   await app.listen(() =>
-    logger.log('microservice transaction started', process.env.ASSET_MIGRATION_QUEUE),
+    logger.log('microservice token consumer started', process.env.ASSET_MIGRATION_QUEUE),
   );
 }
 

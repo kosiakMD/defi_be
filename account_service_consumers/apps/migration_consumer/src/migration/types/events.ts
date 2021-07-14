@@ -19,3 +19,9 @@ export interface MigrationEvent {
   blockTimestamp: number;
   logIndex: number;
 }
+
+export interface MigrationAddNewAsset {
+  chainId: number;
+  userAddress: string;
+  contractAddress: string;
+}

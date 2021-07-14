@@ -2,7 +2,7 @@ import { Controller, Inject } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ASSET_EVENT_MIGRATION_PATTERN } from '../config/queues/event.patterns';
+import { NEW_ASSET_ADDED_EVENT_PATTERN } from '../config/queues/event.patterns';
 import { Logger } from '../logger/logger.service';
 import { delay } from '../util/time';
 import { MigrationService } from './migration.service';
@@ -15,11 +15,11 @@ export class MigrationController {
     private readonly migrationService: MigrationService,
   ) {}
 
-  @EventPattern(ASSET_EVENT_MIGRATION_PATTERN)
+  @EventPattern(NEW_ASSET_ADDED_EVENT_PATTERN)
   public async handleEvent(@Payload() data: MigrationEvent, @Ctx() context: RmqContext) {
     try {
       this.logger.debug(
-        `consumed migration data for event has [${data.topic1}]`,
+        `consumed migration data for event has [${data.contractAddress}]`,
         'migration.controller',
       );
       await this.migrationService.migrateEvent(data);

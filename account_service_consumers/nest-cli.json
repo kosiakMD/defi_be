@@ -26,6 +26,15 @@
         "tsConfigPath": "apps/migration_transactions_consumer/tsconfig.app.json"
       }
     },
+    "migration-token-consumer": {
+      "type": "application",
+      "root": "apps/migration_token_consumer",
+      "entryFile": "main",
+      "sourceRoot": "apps/migration_token_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/migration_token_consumer/tsconfig.app.json"
+      }
+    },
     "shared": {
       "type": "library",
       "root": "libs/shared",

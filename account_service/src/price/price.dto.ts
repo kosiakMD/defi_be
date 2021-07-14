@@ -13,8 +13,20 @@ export class PriceCurrentRequestDto {
     this.chain = chain;
     this.currency = currency;
   }
+
+  @ApiProperty({
+    type: [String],
+    example: [
+      '0xf5d669627376ebd411e34b98f19c868c8aba5ada',
+      '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    ],
+  })
   addresses: Address[];
+
+  @ApiProperty({ type: Number, example: 1 })
   chain: ChainId;
+
+  @ApiProperty({ type: Number, example: 1 })
   currency?: CurrencyId;
 }
 
@@ -23,19 +35,33 @@ export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
     super(addresses, chain, currency);
     this.timestamps = timestamps;
   }
+
+  @ApiProperty({
+    type: [String],
+    example: [
+      '0xf5d669627376ebd411e34b98f19c868c8aba5ada',
+      '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    ],
+  })
   addresses: Address[];
+
+  @ApiProperty({ type: Number, example: 1 })
   chain: ChainId;
+
+  @ApiProperty({ type: Number, example: 1 })
   currency?: CurrencyId;
+
+  @ApiProperty({ type: [String], example: ['1626178227726', '1626178458384'] })
   timestamps: Timestamp[];
 }
 
 export class PriceResponseDto<T> implements PriceServiceResponse<T> {
-  @ApiProperty()
+  @ApiProperty({ type: ChainDto, required: false })
   chain?: ChainDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: CurrencyDto, required: false })
   currency?: CurrencyDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: Object })
   prices: T;
 }

@@ -9,6 +9,7 @@ export class TokenPriceRequest {
     type: () => String,
     required: true,
     description: 'Asset / token address',
+    example: '0xf5d669627376ebd411e34b98f19c868c8aba5ada',
   })
   address: string;
 
@@ -18,6 +19,7 @@ export class TokenPriceRequest {
     type: () => [Number],
     required: true,
     description: 'Array of timestamps for historical prices',
+    example: [1626180883227],
   })
   timestamps: number[];
 }

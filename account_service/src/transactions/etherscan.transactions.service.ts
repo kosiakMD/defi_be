@@ -77,7 +77,7 @@ export class EtherscanTransactionsService {
         gasPrice,
         isError,
         // eslint-disable-next-line
-      txreceipt_status,
+        txreceipt_status,
         input,
         contractAddress,
         cumulativeGasUsed,
@@ -98,7 +98,7 @@ export class EtherscanTransactionsService {
           gasPrice,
           isError,
           // eslint-disable-next-line
-        txreceiptStatus: txreceipt_status,
+          txreceiptStatus: txreceipt_status,
           input,
           contractAddress,
           cumulativeGasUsed,

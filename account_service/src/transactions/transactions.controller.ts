@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';
-import { ApiTransactionsResponseDto } from './dto/api.transactions.dto';
+import { ApiTransactionsAllResponseDto } from './dto/api.transactions.all.dto';
 import { TransactionQueryDto } from './dto/transaction.query.dto';
 import {
   TransactionsDetailedResponseDto,
@@ -45,7 +45,7 @@ export class TransactionsController {
     description: `Array of chains' ID`,
     example: [1, 2],
   })
-  @ApiResponse({ status: 200, type: TransactionsDetailedResponseDto, isArray: true })
+  @ApiResponse({ status: 200, type: TransactionsDetailedResponseDto })
   public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
     const { addresses, chains } = query;
     // TODO: delete this check as we have @validation
@@ -119,22 +119,22 @@ export class TransactionsController {
     example:
       '0x7Aa3e6a7933971423a2B7141B9a8cA5e5B2E8686,0xE76aA6064f08E3BE86ad7d28971bEfb45d356d17,0x1c29731b09d39864a0d7e68df114e97a764eb290',
   })
-  @ApiResponse({ status: 200, type: ApiTransactionsResponseDto })
+  @ApiResponse({ status: 200, type: ApiTransactionsAllResponseDto })
   async getEtherscanTransactions(
     @Query('addresses') addresses: string,
   ): Promise<ApiTransactionsResponse | []> {
     if (!addresses) return [];
 
-    const addressesSplited: string[] = addresses.split(',');
+    const addressesSplitted: string[] = addresses.split(',');
 
     const transactions: any[] = await Promise.all([
-      this.bscscanTransactionsService.getTransactions(addressesSplited),
-      this.bscscanTransactionsService.getInternalTransactions(addressesSplited),
-      this.etherscanTransactionsService.getTransactions(addressesSplited),
-      this.etherscanTransactionsService.getInternalTransactions(addressesSplited),
+      this.bscscanTransactionsService.getTransactions(addressesSplitted),
+      this.bscscanTransactionsService.getInternalTransactions(addressesSplitted),
+      this.etherscanTransactionsService.getTransactions(addressesSplitted),
+      this.etherscanTransactionsService.getInternalTransactions(addressesSplitted),
     ]);
 
-    return addressesSplited.reduce((acc, address) => {
+    return addressesSplitted.reduce((acc, address) => {
       const transactionsFromAll: Transaction[] = transactions.reduce(
         (acc, transaction) => [...acc, ...transaction[address]],
         [],

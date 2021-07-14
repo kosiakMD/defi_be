@@ -4,13 +4,13 @@ import { ChainDto } from './chain.dto';
 import { CurrencyDto } from './currency.dto';
 
 export class PriceResponseDto<T> {
-  @ApiProperty()
+  @ApiProperty({ type: ChainDto, required: false })
   chain?: ChainDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: CurrencyDto, required: false })
   currency?: CurrencyDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: Object })
   prices: T;
 }
 

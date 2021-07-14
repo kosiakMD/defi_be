@@ -4,6 +4,7 @@ import { Cache } from 'cache-manager';
 
 import { ContractApprovalResponse } from '../common/interfaces';
 import { ApprovalsService } from './approvals.service';
+import { ContractApprovalResponseDto } from './dto';
 
 @ApiTags('Approvals')
 @Controller('approvals')
@@ -17,9 +18,9 @@ export class ApprovalsController {
   @ApiQuery({
     name: 'addresses',
     type: String,
-    example: '0x0000000000000000000000000000000000000000',
+    example: '0x94dfce828c3daaf6492f1b6f66f9a1825254d24b',
   })
-  @ApiResponse({ status: 200, type: ContractApprovalResponse, isArray: true })
+  @ApiResponse({ status: 200, type: ContractApprovalResponseDto })
   async getBscApproval(@Query('addresses') addresses: string): Promise<ContractApprovalResponse> {
     return this.service.getAllApprovals(addresses);
   }

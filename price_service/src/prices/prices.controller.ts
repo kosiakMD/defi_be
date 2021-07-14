@@ -9,6 +9,9 @@ import {
   PricesPayloadV2,
   PricesPayload,
 } from './dto';
+import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
+import { CurrentPriceV2ResponseDto } from './dto/price.response.v2.current.dto';
+import { HistoricalPriceV2ResponseDto } from './dto/price.response.v2.historical.dto';
 import { PriceService } from './prices.service';
 
 @Controller('prices')
@@ -17,7 +20,7 @@ export class PricesController {
 
   // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/')
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: CurrentPriceResponseDto })
   get(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps && timestamps.length;
@@ -29,7 +32,7 @@ export class PricesController {
 
   // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/v2')
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: CurrentPriceV2ResponseDto })
   getV2(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayloadV2>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps && timestamps.length;
@@ -42,7 +45,7 @@ export class PricesController {
   // TODO: divide method because we have 2 different DTO for History and Current
   @Post('/')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: CurrentPriceResponseDto })
   post(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = request;
     const isHistoricalPricesRequest = timestamps?.length;
@@ -55,7 +58,7 @@ export class PricesController {
   // TODO: divide method because we have 2 different DTO for History and Current
   @Post('/v2')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: CurrentPriceV2ResponseDto })
   postV2(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayloadV2>> {
     const { timestamps } = request;
     const isHistoricalPricesRequest = timestamps?.length;
@@ -66,12 +69,13 @@ export class PricesController {
   }
 
   @Post('/nonLpTokens')
+  @ApiOkResponse({ type: String, isArray: true })
   getNonLpTokens(): Promise<string[]> {
     return this.priceService.getNonLpTokens();
   }
 
   @Post('/batch')
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: HistoricalPriceV2ResponseDto })
   postBatch(@Body() request: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     return this.priceService.getPricesInBatches(request);
   }

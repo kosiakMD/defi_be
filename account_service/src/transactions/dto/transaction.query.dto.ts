@@ -19,7 +19,7 @@ export class TransactionQueryDto implements TransactionQuery {
   })
   @IsArray()
   @IsInt({ each: true })
-  chains;
+  chains: ChainsIds;
 
   @IsNotEmpty()
   @IsString({ each: true })

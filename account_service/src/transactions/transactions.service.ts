@@ -16,7 +16,7 @@ import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
 import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
-import { TransactionDto } from './dto/api.transactions.dto';
+import { TransactionDto } from './dto/transaction.dto';
 import { TransactionNewDto } from './dto/transactions.dto';
 import { TransactionsEntity } from './entity/transactions.entity';
 import {

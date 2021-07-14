@@ -28,6 +28,11 @@ export class AssetsEntity {
   @Column({ name: 'symbol' })
   symbol: string;
 
+  @ApiProperty({
+    type: String,
+    example:
+      'https://c.files.bbci.co.uk/16620/production/_91408619_55df76d5-2245-41c1-8031-07a4da3f313f.jpg',
+  })
   @Column({ name: 'icon' })
   @Exclude()
   icon: string;
@@ -40,14 +45,17 @@ export class AssetsEntity {
   @Column({ name: 'decimals' })
   decimals: number;
 
+  @ApiProperty({ type: Boolean, example: true })
   @Column({ name: 'is_ready_to_migrate' })
   @Exclude()
   isReadyToMigrate: boolean;
 
+  @ApiProperty({ type: Boolean, example: false })
   @Column({ name: 'is_migrated' })
   @Exclude()
   isMigrated: boolean;
 
+  @ApiProperty({ type: Boolean, example: false })
   @Exclude()
   @Column({ name: 'is_lp' })
   isLp: boolean;

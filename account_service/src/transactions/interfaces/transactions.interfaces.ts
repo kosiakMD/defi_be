@@ -1,5 +1,5 @@
 import { ResultStatus } from '../../common/enum';
-import { TransactionDto } from '../dto/api.transactions.dto';
+import { TransactionDto } from '../dto/transaction.dto';
 
 interface amount {
   eth: number;

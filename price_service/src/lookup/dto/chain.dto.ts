@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ChainDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 1 })
   id: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: String, example: 'ethereum' })
   name: string;
 }

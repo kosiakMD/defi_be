@@ -11,6 +11,7 @@ export abstract class DetailedResponseDto<T> implements DetailedResponse<T> {
   }
 
   @ApiProperty({
+    type: String,
     enum: ResultStatus,
     enumName: 'ResultStatus',
     example: ResultStatus.ok,
@@ -18,6 +19,7 @@ export abstract class DetailedResponseDto<T> implements DetailedResponse<T> {
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Array<Error | string>;

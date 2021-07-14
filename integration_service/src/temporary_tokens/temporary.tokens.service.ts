@@ -21,8 +21,7 @@ export class TemporaryTokensService {
 
   async getTemporaryTokens(): Promise<string> {
     try {
-      const coinMarketCapResponse: CoinMarketCapResponse =
-        await this.coingeckoService.getCoinsListFromCoinMarketCap();
+      const coinMarketCapResponse: CoinMarketCapResponse = await this.coingeckoService.getCoinsListFromCoinMarketCap();
       const coinsList: Coin[] = await this.coingeckoService.getCoinsList();
       const ethCoinMarketCap: CoinMarketCapData[] = this.getFilteredEthCoins(
         coinsList,

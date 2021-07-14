@@ -1,8 +1,8 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { APY } from '../dto/apy.dto';
-import { ImpermanentLoss } from '../dto/impermanentloss.dto';
-import { Token } from '../dto/token.dto';
+import { APYDto } from '../dto/apy.dto';
+import { ImpermanentLossDto } from '../dto/impermanentloss.dto';
+import { TokenDto } from '../dto/token.dto';
 
 @Entity('liquidity_pools')
 export class LiquidityPoolsEntity {
@@ -22,16 +22,16 @@ export class LiquidityPoolsEntity {
   reserveUsd: number;
 
   @Column({ name: 'apy', nullable: true, type: 'json' })
-  apy: APY;
+  apy: APYDto;
 
   @Column({ name: 'il', nullable: true, type: 'json' })
-  il: ImpermanentLoss;
+  il: ImpermanentLossDto;
 
   @Column({ name: 'token', nullable: true, type: 'json' })
-  token: Token;
+  token: TokenDto;
 
   @Column({ name: 'pool_tokens', nullable: true, type: 'json' })
-  poolTokens: Token[];
+  poolTokens: TokenDto[];
 
   @Column({ name: 'created_at', nullable: true, type: 'timestamp' })
   createdAt: Date;

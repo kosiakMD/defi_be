@@ -3,9 +3,9 @@ import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
 import { Base } from '../interfaces/transactions.interfaces';
 import BaseDataDto from '../uniswap/dto/BaseData.dto';
-import { PancakeService } from './pancake.service';
-import { PancakePriceService } from './pancake.price.service';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
+import { PancakePriceService } from './pancake.price.service';
+import { PancakeService } from './pancake.service';
 
 @Controller('integration')
 export class PancakeController {
@@ -25,21 +25,21 @@ export class PancakeController {
     name: 'internal',
     type: Number,
     description: 'internal -> from local database, instead of subgraph call, default 1',
-    example: 1
+    example: 1,
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
   getDataByAddresses(
     @Query('addresses') addresses: string,
     @Query('internal') internal,
   ): Promise<Base[]> {
-    return (internal === undefined || Number(internal) === 1)
+    return internal === undefined || Number(internal) === 1
       ? this.pancakeService.getDataInternal(addresses)
       : this.pancakeService.getDataExternal(addresses);
   }
 
   @Get('/pancake/prices')
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  getIntegrationPrices():  Promise<PriceResponseDto<PricesPayload>> {
-    return this.pancakePriceService.liquidityPoolsPrices()
+  getIntegrationPrices(): Promise<PriceResponseDto<PricesPayload>> {
+    return this.pancakePriceService.liquidityPoolsPrices();
   }
 }

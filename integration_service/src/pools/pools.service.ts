@@ -10,7 +10,7 @@ import {
   SUSHISWAP_MIN_RESERVE,
   UNI_MIN_RESERVE,
   UNI_PAIRS_BLACKLIST,
-  PROJECT_PANCAKE_V2
+  PROJECT_PANCAKE_V2,
 } from './pools.setting';
 import { LiquidityPoolsRepository } from './repository/liquidity.pools.repository';
 

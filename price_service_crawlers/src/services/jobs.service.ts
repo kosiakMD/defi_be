@@ -119,18 +119,14 @@ export class JobsService {
           {},
         );
 
-        //SUSHI
-        await cancel('CRAWL_SUSHI_CURRENT_PRICE');
-        this.agenda.define(
-          'CRAWL_SUSHI_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.sushiswapJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(
-          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_SUSHI_CURRENT_PRICE',
-          {},
-        );
+        // //SUSHI
+        // await cancel('CRAWL_SUSHI_CURRENT_PRICE');
+        // this.agenda.define(
+        //   'CRAWL_SUSHI_CURRENT_PRICE',
+        //   { lockLifetime: 10000 },
+        //   this.sushiswapJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
 
         await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
         this.agenda.define(
@@ -145,18 +141,18 @@ export class JobsService {
         );
 
         // //UNI
-        await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
-        this.logger.log('starting sushi');
-        this.agenda.define(
-          'CRAWL_UNISWAP_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.uniswapJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(
-          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_UNISWAP_CURRENT_PRICE',
-          {},
-        );
+        // await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
+        // this.logger.log('starting sushi');
+        // this.agenda.define(
+        //   'CRAWL_UNISWAP_CURRENT_PRICE',
+        //   { lockLifetime: 10000 },
+        //   this.uniswapJob.getCurrentPrices.bind(this),
+        // );
+        // this.agenda.every(
+        //   CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
+        //   'CRAWL_UNISWAP_CURRENT_PRICE',
+        //   {},
+        // );
 
         await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY');
         this.agenda.define(

@@ -17,6 +17,7 @@ export interface MigrationTransaction {
   gasPrice: string;
   index: string;
   timestamp: string;
+  chainId: number;
   events?: MigrationEvent[];
 }
 

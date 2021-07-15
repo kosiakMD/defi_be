@@ -26,5 +26,8 @@ export class AssetsNewEntity {
   @Column({ name: 'is_lp' })
   isLp: boolean;
 
+  @Column({ name: 'is_data_present' })
+  isDataPresent: boolean;
+
   price?: number;
 }

@@ -158,31 +158,28 @@ export class MigrationEventService {
     const eventsPromiseArray = this.getEventsPromisesArray(nodeService, fromBlock, toBlock);
     const eventsResults = await Promise.all(eventsPromiseArray);
     const logsArray: Log[] = eventsResults.flat();
+    const chainId = network === ETH_NETWORK ? CHAIN_ID_ETH : CHAIN_ID_BSC;
 
-    const blockTransactionObjects: BlockTransactionObject[] = await this.getBlocksAndTransactionFromNetwork(
-      fromBlock,
-      toBlock,
-      nodeService,
-    );
+    const blockTransactionObjects: BlockTransactionObject[] =
+      await this.getBlocksAndTransactionFromNetwork(fromBlock, toBlock, nodeService);
     const migrationTransactions: MigrationTransaction[] = this.getMigrationTransactions(
       blockTransactionObjects,
+      chainId,
     );
     const migrationEvents: MigrationEvent[] = await this.assetsService.getAssetEventsArray(
       logsArray,
       blockTransactionObjects,
-      network === ETH_NETWORK ? CHAIN_ID_ETH : CHAIN_ID_BSC,
+      chainId,
     );
 
     this.logger.log(`${network.toUpperCase()} -- Events array length = ${logsArray.length}`);
 
-    const {
-      blocksInsertSql,
-      transactionsInsertSql,
-    } = this.sqlService.getBlocksAndTransactionsSqlStrings(
-      blockTransactionObjects,
-      nodeService.getTransactionsTable(),
-      nodeService.getBlockTable(),
-    );
+    const { blocksInsertSql, transactionsInsertSql } =
+      this.sqlService.getBlocksAndTransactionsSqlStrings(
+        blockTransactionObjects,
+        nodeService.getTransactionsTable(),
+        nodeService.getBlockTable(),
+      );
 
     const { blocksInfoSql, eventsSql } = this.getEventsAndBlockInfoSqlStrings(
       logsArray,
@@ -207,7 +204,10 @@ export class MigrationEventService {
     return await this.getDataFromNetworkWithBlocksNum(nodeService, network, fromBlock, toBlock);
   }
 
-  private getMigrationTransactions(blocks: BlockTransactionObject[]): MigrationTransaction[] {
+  private getMigrationTransactions(
+    blocks: BlockTransactionObject[],
+    chainId: number,
+  ): MigrationTransaction[] {
     const result: MigrationTransaction[] = [];
     blocks.forEach((block) => {
       block.transactions.forEach((transaction) => {
@@ -222,6 +222,7 @@ export class MigrationEventService {
           gasPrice: transaction.gasPrice,
           index: String(transaction.transactionIndex),
           timestamp: String(block.timestamp),
+          chainId: chainId,
         });
       });
     });

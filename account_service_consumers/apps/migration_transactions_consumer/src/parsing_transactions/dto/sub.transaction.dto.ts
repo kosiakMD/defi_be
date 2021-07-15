@@ -16,7 +16,5 @@ export class SubTransactionDto implements SubTransactions {
   @ApiProperty({ type: Number })
   price?: number;
   @ApiProperty({ type: Number })
-  gasUsed?: number;
-  @ApiProperty({ type: Number })
-  gasUsedUsd?: number;
+  chainId?: number;
 }

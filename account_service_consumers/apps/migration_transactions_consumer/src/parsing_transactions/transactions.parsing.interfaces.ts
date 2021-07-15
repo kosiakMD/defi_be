@@ -5,8 +5,7 @@ export interface SubTransactions {
   type: string;
   tokenAddress?: string;
   price?: number;
-  gasUsed?: number;
-  gasUsedUsd?: number;
+  chainId?: number;
 }
 
 export interface ParsedTransfers {
@@ -48,4 +47,5 @@ export interface MigrationTransaction {
   events?: MigrationEvent[];
   gasUsed?: number;
   gasUsedUsd?: number;
+  chainId: number;
 }

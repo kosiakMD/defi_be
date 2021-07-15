@@ -1,6 +1,6 @@
 import { AfterLoad, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-import { TransactionsParsingService } from '../transactions.parsing.service';
+import { fromHexToAddress } from '../../util/util';
 
 @Entity('eth_events')
 export class EthEventsEntity {
@@ -36,8 +36,8 @@ export class EthEventsEntity {
 
   @AfterLoad()
   topicsToString(): void {
-    this.topic2 = TransactionsParsingService.fromHexToAddress(this.topic2);
-    this.topic3 = TransactionsParsingService.fromHexToAddress(this.topic3);
+    this.topic2 = fromHexToAddress(this.topic2);
+    this.topic3 = fromHexToAddress(this.topic3);
     this.address = this.address.toLowerCase();
   }
 }

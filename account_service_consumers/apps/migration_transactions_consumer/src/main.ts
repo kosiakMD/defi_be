@@ -14,7 +14,7 @@ async function bootstrap() {
   app.useLogger(logger);
 
   await app.listen(() =>
-    logger.log('microservice transaction started', process.env.ASSET_MIGRATION_QUEUE),
+    logger.log('microservice transaction started', process.env.TRANSACTION_EVENTS_MIGRATION_QUEUE),
   );
 }
 

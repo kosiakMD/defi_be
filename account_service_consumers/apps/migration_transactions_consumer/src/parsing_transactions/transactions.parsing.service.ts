@@ -90,9 +90,8 @@ export class TransactionsParsingService {
           transaction.timestamp
         }', '${transaction.gasPrice}', ${transaction.gasUsed}, ${
           transaction.gasUsedUsd
-        }, '${name}', ${transaction.chainId}, ${Boolean(
-          addressSubTransactions?.length,
-        )}, '${JSON.stringify(addressSubTransactions)}')`,
+        }, '${name}', ${transaction.chainId || 1}, ${Boolean(addressSubTransactions?.length)}, 
+        '${JSON.stringify(addressSubTransactions)}')`,
       );
     }
     return this.getInsertSql(sqlData);
@@ -231,7 +230,7 @@ export class TransactionsParsingService {
     uniqueAddresses: Set<string>,
   ): MigrationEvent[] {
     const transactionTransfers: MigrationEvent[] = [];
-    transaction.events.forEach((event) => {
+    transaction?.events.forEach((event) => {
       if (event.topic1 === ETH_TRANSFER_TOPIC) {
         const temporaryEvent: MigrationEvent = JSON.parse(JSON.stringify(event));
         temporaryEvent.topic2 = fromHexToAddress(temporaryEvent.topic2);

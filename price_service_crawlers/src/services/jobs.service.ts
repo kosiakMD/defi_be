@@ -58,6 +58,7 @@ export class JobsService {
     const NEW_TOKENS_HISTORY_SECONDS_INTERVAL =
       process.env.HISTORY_PRICE_SECONDS_INTERVAL || 60 * 60;
     const CURRENT_PRICE_SECONDS_INTERVAL = process.env.CURRENT_PRICE_SECONDS_INTERVAL || 5 * 60;
+    const LOCK_LIFE_TIME = 10000;
 
     this.agenda
       .on('ready', async () => {
@@ -79,91 +80,76 @@ export class JobsService {
           return cancelResult;
         };
 
+        const setAgendaTask = async (
+          taskName: string,
+          method: string,
+          job: CoingeckoJob | SushiswapJob | UniswapJob | PancakeJob,
+          interval: string | number = CURRENT_PRICE_SECONDS_INTERVAL,
+        ): Promise<void> => {
+          await cancel(taskName);
+          this.agenda.define(
+            taskName,
+            {
+              lockLifetime: LOCK_LIFE_TIME,
+            },
+            job[method].bind(this),
+          );
+          this.agenda.every(interval + ' seconds', taskName, {});
+        };
+
         this.logger.log('Agenda started');
 
-        // get current token prices
-        await cancel('CRAWL_COINGECKO_CURRENT_PRICE');
-        await this.agenda.define(
-          'CRAWL_COINGECKO_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.coingeckoJob.getCurrentPrices.bind(this),
-        );
-        await this.agenda.every(
-          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_CURRENT_PRICE',
-          {},
+        // COINGECKO
+        setAgendaTask(
+          'CRAWL_COINGECKO_CURRENT_PRICE1',
+          'getCurrentPrices',
+          this.coingeckoJob,
+          CURRENT_PRICE_SECONDS_INTERVAL,
         );
 
-        await cancel('CRAWL_COINGECKO_NEW_TOKENS_HISTORY');
-        await this.agenda.define(
+        setAgendaTask(
           'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10000 },
-          this.coingeckoJob.crawlNewTokensHistory.bind(this),
-        );
-        await this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_COINGECKO_NEW_TOKENS_HISTORY',
-          {},
+          'crawlNewTokensHistory',
+          this.coingeckoJob,
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
         );
 
         //PANCAKE
-        await cancel('CRAWL_PANCAKE_CURRENT_PRICE');
-        this.agenda.define(
+        setAgendaTask(
           'CRAWL_PANCAKE_CURRENT_PRICE',
-          { lockLifetime: 10000 },
-          this.pancakeJob.getCurrentPrices.bind(this),
-        );
-        this.agenda.every(
-          CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_PANCAKE_CURRENT_PRICE',
-          {},
+          'getCurrentPrices',
+          this.pancakeJob,
+          CURRENT_PRICE_SECONDS_INTERVAL,
         );
 
-        // //SUSHI
-        // await cancel('CRAWL_SUSHI_CURRENT_PRICE');
-        // this.agenda.define(
-        //   'CRAWL_SUSHI_CURRENT_PRICE',
-        //   { lockLifetime: 10000 },
-        //   this.sushiswapJob.getCurrentPrices.bind(this),
-        // );
-        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds', 'CRAWL_SUSHI_CURRENT_PRICE', {});
+        //SUSHI
+        setAgendaTask(
+          'CRAWL_SUSHI_CURRENT_PRICE',
+          'getCurrentPrices',
+          this.sushiswapJob,
+          CURRENT_PRICE_SECONDS_INTERVAL,
+        );
 
-        await cancel('CRAWL_SUSHI_NEW_TOKENS_HISTORY');
-        this.agenda.define(
+        setAgendaTask(
           'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-          { lockLifetime: 10000 },
-          this.sushiswapJob.crawlNewTokensHistory.bind(this),
-        );
-        this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
-          {},
+          'crawlNewTokensHistory',
+          this.sushiswapJob,
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
         );
 
-        // //UNI
-        // await cancel('CRAWL_UNISWAP_CURRENT_PRICE');
-        // this.logger.log('starting sushi');
-        // this.agenda.define(
-        //   'CRAWL_UNISWAP_CURRENT_PRICE',
-        //   { lockLifetime: 10000 },
-        //   this.uniswapJob.getCurrentPrices.bind(this),
-        // );
-        // this.agenda.every(
-        //   CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_UNISWAP_CURRENT_PRICE',
-        //   {},
-        // );
-
-        await cancel('CRAWL_UNISWAP_NEW_TOKENS_HISTORY');
-        this.agenda.define(
-          'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-          {},
-          this.uniswapJob.crawlNewTokensHistory.bind(this),
+        // UNI
+        setAgendaTask(
+          'CRAWL_UNISWAP_CURRENT_PRICE',
+          'getCurrentPrices',
+          this.uniswapJob,
+          CURRENT_PRICE_SECONDS_INTERVAL,
         );
-        this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+
+        setAgendaTask(
           'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
-          {},
+          'crawlNewTokensHistory',
+          this.uniswapJob,
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
         );
 
         // //CURVE

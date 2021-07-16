@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import fetch from 'node-fetch';
 
+import { AssetService } from '../chain/asset.service';
 import { Logger } from '../logger/logger.service';
 import { AssetsStore } from '../store/assets.store';
 import { AssetsEntity } from '../store/entities/assets.entity';
@@ -13,14 +14,17 @@ import { MigrationEvent } from './types/events';
 export class MigrationService {
   private readonly covalentUrl: string;
   private readonly covalentKey: string;
+  private readonly ethplorerUrl: string;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly assetsStore: AssetsStore,
     private readonly configService: ConfigService,
+    private readonly assetService: AssetService,
   ) {
     this.covalentUrl = this.configService.get<string>('COVALENT_URL');
     this.covalentKey = this.configService.get<string>('COVALENT_KEY');
+    this.ethplorerUrl = this.configService.get<string>('ETHPLORER_URL');
   }
 
   async migrateEvent(event: MigrationEvent): Promise<number> {
@@ -56,6 +60,46 @@ export class MigrationService {
     contractAddress: string,
     chainId: number,
   ): Promise<Partial<AssetsEntity>> {
+    const tokenInfoTimeMark = `Trying to get token information for tokenAddress: ${contractAddress}`;
+    this.logger.time(tokenInfoTimeMark);
+
+    // try to get token info from covalent
+    try {
+      return await this.getCovalentToken(userAddress, contractAddress, chainId);
+    } catch (e) {
+      //
+    }
+
+    // try to get token info from web3.js
+    const web3TimeMark = `Request to web3.js for tokenAddress: ${contractAddress}`;
+    try {
+      this.logger.time(web3TimeMark);
+      return await this.assetService.getTokenInfo(contractAddress);
+    } catch (e) {
+      //
+    } finally {
+      this.logger.timeEnd(web3TimeMark);
+    }
+
+    // try to get token info from ethplorer
+    const ethplorerTimeMark = `Request to ${this.ethplorerUrl} for tokenAddress: ${contractAddress}`;
+    try {
+      this.logger.time(ethplorerTimeMark);
+      return await this.getEthplorerToken(contractAddress);
+    } catch (e) {
+      //
+    } finally {
+      this.logger.timeEnd(ethplorerTimeMark);
+    }
+
+    this.logger.timeEnd(tokenInfoTimeMark);
+  }
+
+  async getCovalentToken(
+    userAddress: string,
+    contractAddress: string,
+    chainId: number,
+  ): Promise<Partial<AssetsEntity>> {
     const timeMark = `Request to ${this.covalentUrl} for tokenAddress: ${contractAddress}`;
     try {
       this.logger.time(timeMark);
@@ -87,6 +131,28 @@ export class MigrationService {
         return 56;
       default:
         1;
+    }
+  }
+
+  async getEthplorerToken(contractAddress: string): Promise<Partial<AssetsEntity>> {
+    try {
+      const data = await fetch(
+        `${this.ethplorerUrl}/getTokenInfo/${contractAddress}?apiKey=freekey`,
+      );
+      if (!data.ok) {
+        throw new Error('response is not 200');
+      }
+      const json = await data.json();
+
+      return {
+        name: json?.name,
+        decimals: json?.decimals,
+        symbol: json?.symbol,
+        icon: `https://ethplorer.io${json?.image}`,
+      };
+    } catch (e) {
+      this.logger.error(e, 'getTokenInfo - from ethplorer');
+      throw e;
     }
   }
 }

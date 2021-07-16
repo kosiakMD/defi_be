@@ -8,10 +8,10 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
+import { ChainModule } from './chain/chain.module';
 import configModuleConfiguration from './config/config.module';
 import { MigrationController } from './migration/migration.controller';
 import { MigrationModule } from './migration/migration.module';
-// import { StoreModule } from './store/store.module';
 
 @Module({
   controllers: [MigrationController],
@@ -51,8 +51,8 @@ import { MigrationModule } from './migration/migration.module';
         logging: false,
       }),
     }),
+    ChainModule,
     MigrationModule,
-    // StoreModule,
   ],
 })
 export class AppModule implements OnModuleInit {

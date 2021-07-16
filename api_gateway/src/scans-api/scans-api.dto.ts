@@ -52,7 +52,7 @@ export class TransactionScanDto {
   confirmations: string;
   @ApiProperty({ example: null, type: Number })
   chainId: number;
-  @ApiProperty({ example: null, type: Boolean })
+  @ApiProperty({ example: null, type: Boolean, required: false })
   isInternal?: boolean;
 }
 
@@ -64,8 +64,9 @@ export class TransactionQueryDto {
     type: Number,
     required: false,
     description: `Array of chains' IDs (comma separated)`,
+    example: '1,2',
   })
-  chains;
+  chains: number[];
 
   @IsNotEmpty()
   @IsString({ each: true })
@@ -74,51 +75,54 @@ export class TransactionQueryDto {
     type: String,
     required: true,
     description: 'Array of token / coin addresses (comma separated)',
-    default:
+    example:
       '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
   })
   addresses: string[];
 }
 
 class GasDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 33 })
   price: number;
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 0.0007 })
   eth: number;
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 1.37 })
   usd: number;
 }
 
 class AmountDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 0.0088 })
   eth: number;
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 17.2422 })
   usd: number;
 }
 
 class TransactionDto {
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 0.0707 })
   eth: number;
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 138.54 })
   usd: number;
 
-  @ApiProperty()
+  @ApiProperty({ type: Number, example: 1 })
   chainId: number;
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    example: '0xa479c47d03cdca402a5920d2a8dcdb4393100f5d821b47a964771db6baa052fe',
+  })
   hash: string;
-  @ApiProperty()
+  @ApiProperty({ type: String, example: '12830695' })
   blockNumber: string;
-  @ApiProperty()
+  @ApiProperty({ type: String, example: '0x4b775a143d8284c3c6a163c09ca8847e4885e930' })
   from: string;
-  @ApiProperty()
+  @ApiProperty({ type: String, example: '0xdac17f958d2ee523a2206206994597c13d831ec7' })
   to: string;
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;
   @ApiProperty({ type: GasDto })
   gas: GasDto;
-  @ApiProperty()
+  @ApiProperty({ type: String, example: '33' })
   gasPrice: string;
-  @ApiProperty()
+  @ApiProperty({ type: String, example: '1626341227657' })
   timeStamp: string;
 }
 
@@ -142,6 +146,7 @@ export class TransactionsDetailedResponseDto extends DetailedResponseDto<Transac
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[];

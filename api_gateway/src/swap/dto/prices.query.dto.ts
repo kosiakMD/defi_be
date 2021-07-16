@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { NetworkEnum } from '../const';
 import { SwapPricesQuery } from '../interfaces';
 

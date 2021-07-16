@@ -8,33 +8,36 @@ import { TransactionScanDto } from '../scans-api/scans-api.dto';
 import { Transaction } from './transactions.interfaces';
 
 class GasDto {
-  @ApiProperty({ example: 1.1900000000000001e-7 })
+  @ApiProperty({ type: Number, example: 1.1900000000000001e-7 })
   price: number;
-  @ApiProperty({ example: 0.0024990000000000004 })
+  @ApiProperty({ type: Number, example: 0.0024990000000000004 })
   eth: number;
-  @ApiProperty({ example: 0 })
+  @ApiProperty({ type: Number, example: 0 })
   usd: number;
 }
 
 class AmountDto {
-  @ApiProperty({ example: 0.0362313268178732 })
+  @ApiProperty({ type: Number, example: 0.0362313268178732 })
   eth: number;
-  @ApiProperty({ example: 0 })
+  @ApiProperty({ type: Number, example: 0 })
   usd: number;
 }
 
 class TransactionDto implements Transaction {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ type: Number, example: 1 })
   chainId: number;
-  @ApiProperty({ example: '0xc343e8f4f3109390d62c4004b814df4d68747c8b6b6d60d1b4c33436aa8d93e0' })
+  @ApiProperty({
+    type: String,
+    example: '0xc343e8f4f3109390d62c4004b814df4d68747c8b6b6d60d1b4c33436aa8d93e0',
+  })
   hash: string;
-  @ApiProperty({ example: '11932496' })
+  @ApiProperty({ type: String, example: '11932496' })
   blockNumber: string;
-  @ApiProperty({ example: '0xf90dce9671765d8cf9634122cd2306cd094c777c' })
+  @ApiProperty({ type: String, example: '0xf90dce9671765d8cf9634122cd2306cd094c777c' })
   from: string;
-  @ApiProperty({ example: '0x782629c9578889a9b8464f051f23843734f72599' })
+  @ApiProperty({ type: String, example: '0x782629c9578889a9b8464f051f23843734f72599' })
   to: string;
-  @ApiProperty({ example: '1614338271' })
+  @ApiProperty({ type: String, example: '1614338271' })
   blockTimestamp: string;
   @ApiProperty({ type: AmountDto })
   amount: AmountDto;
@@ -79,6 +82,7 @@ export class TransactionsDetailedResponseDto extends DetailedResponseDto<Transac
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[];
@@ -152,6 +156,7 @@ export class TransactionsNewDetailedResponseDto extends DetailedResponseDto<Tran
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[];

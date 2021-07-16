@@ -9,6 +9,8 @@ import {
   PriceResponseDto,
   PricesPayload,
 } from './dto';
+import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
+import { HistoricalPriceResponseDto } from './dto/price.response.historical.dto';
 import { PriceBatchRequestDto } from './dto/priceBatch.request.dto';
 import { PricesService } from './prices.service';
 
@@ -18,19 +20,19 @@ export class PricesController {
   constructor(private service: PricesService) {}
 
   @Get('/')
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: CurrentPriceResponseDto })
   getPrices(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
     return this.service.getPrices(query);
   }
 
   @Post('/')
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: HistoricalPriceResponseDto })
   getPricesWithPost(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     return this.service.getPrices(request);
   }
 
   @Post('/batch')
-  @ApiOkResponse({ type: PriceResponseDto })
+  @ApiOkResponse({ type: HistoricalPriceResponseDto })
   getPricesInBatch(
     @Body() request: PriceBatchRequestDto,
   ): Promise<PriceResponseDto<PricesPayload>> {

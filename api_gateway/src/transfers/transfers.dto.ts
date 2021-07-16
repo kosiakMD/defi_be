@@ -11,47 +11,50 @@ import { splitToArray } from '../utils/transform';
 import { ERC20Token, ERC20Transfer, Transfer } from './transfers.interfaces';
 
 export class AmountDto {
-  @ApiProperty({ example: 0.0362313268178732 })
+  @ApiProperty({ type: Number, example: 0.0362313268178732 })
   eth: number;
-  @ApiProperty({ example: 0 })
+  @ApiProperty({ type: Number, example: 0 })
   usd: number;
 }
 
 export class ERC20TokenDto implements ERC20Token {
-  @ApiProperty({ example: '0xbddab785b306bcd9fb056da189615cc8ece1d823' })
+  @ApiProperty({ type: String, example: '0xbddab785b306bcd9fb056da189615cc8ece1d823' })
   address: string;
-  @ApiProperty({ example: null })
+  @ApiProperty({ type: String, example: null })
   name: string;
   @ApiProperty({ type: String, example: 'SushiToken' })
   symbol: string;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
-  @ApiProperty({ type: Number, example: 92077.06746043958, required: false })
+  @ApiProperty({ type: Number, example: 92077.06746043958 })
   totalSupply: number;
 }
 
 export class ERC20TransferDto {
-  @ApiProperty({ example: '0xe5ccfca59acd6a3dea18a97a8d12a1fc5be09b13' })
+  @ApiProperty({ type: String, example: '0xe5ccfca59acd6a3dea18a97a8d12a1fc5be09b13' })
   fromAddress: string;
-  @ApiProperty({ example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85' })
+  @ApiProperty({ type: String, example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85' })
   toAddress: string;
-  @ApiProperty({ example: '20000000000000000000' })
+  @ApiProperty({ type: String, example: '20000000000000000000' })
   amount: number;
   @ApiProperty({ type: ERC20TokenDto })
   token: ERC20Token;
-  @ApiProperty({ example: null })
+  @ApiProperty({ type: Number, example: null, required: false })
   tokenPriceUSD?: number;
-  @ApiProperty({ example: 0 })
+  @ApiProperty({ type: Number, example: 0, required: false })
   totalPriceUSD?: number;
 }
 
 export class TransferDto implements Transfer {
   // TODO: add Chains Enum
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ type: Number, example: 1 })
   chainId: number;
-  @ApiProperty({ example: '0x0e91ee6e298b4856a7d58e77c7926453cf46edc147a78e4d5cfe2e4c1c675499' })
+  @ApiProperty({
+    type: String,
+    example: '0x0e91ee6e298b4856a7d58e77c7926453cf46edc147a78e4d5cfe2e4c1c675499',
+  })
   hash: string;
-  @ApiProperty({ example: 1570019740 })
+  @ApiProperty({ type: Number, example: 1570019740 })
   blockTimeStamp: number;
   // TODO: uncomment when gas will be added to DB
   // @ApiProperty({ example: 164980 })
@@ -89,6 +92,7 @@ export class TransferQueryDto implements TransferQuery {
 
 export class TransfersResponseDto {
   @ApiProperty({
+    type: [TransferDto],
     description: 'User address which comes as param',
     example: [
       {
@@ -164,6 +168,7 @@ export class TransfersDetailedResponseDto extends DetailedResponseDto<TransfersR
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[];

@@ -9,7 +9,7 @@ import { Logger } from '../common/Logger/Logger.service';
 import { Address, Chains } from '../common/interfaces';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
-import { ApprovalBscDTO } from './account.dto';
+import { ApprovalDTO } from './account.dto';
 import { BalancesResponse } from './account.interfaces';
 
 @Injectable()
@@ -126,7 +126,7 @@ export class AccountService {
     }
   }
 
-  async getApprovals(addresses: string, chains?: string): Promise<ApprovalBscDTO[]> {
+  async getApprovals(addresses: string, chains?: string): Promise<ApprovalDTO[]> {
     try {
       this.logger.time(this.getApprovalsUrl);
       const data = await this.httpService

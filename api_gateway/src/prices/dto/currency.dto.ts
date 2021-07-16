@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CurrencyDto {
-  @ApiProperty({ example: 1 })
+  @ApiProperty({ type: Number, example: 1 })
   id: number;
 
-  @ApiProperty({ example: 'usd' })
+  @ApiProperty({ type: String, example: 'usd' })
   name: string;
 }

@@ -27,8 +27,7 @@ export class BalancerController {
     type: String,
     required: false,
     description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
-    example: '',
+    example: '1,2',
   })
   @ApiResponse({ status: 200, type: Object })
   async get(

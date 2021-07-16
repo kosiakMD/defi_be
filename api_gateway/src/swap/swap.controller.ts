@@ -10,7 +10,7 @@ import { SwapPricesQuery } from './interfaces';
 @Controller('swap')
 export class SwapController {
   @Get('availabletokens')
-  @ApiResponse({ status: 200, type: String, isArray: true })
+  @ApiResponse({ status: 200, type: [String] })
   get(): string[] {
     return [];
   }

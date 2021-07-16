@@ -9,7 +9,15 @@ export class PriceResponseDto<T> {
   @ApiProperty({ type: CurrencyDto })
   currency: CurrencyDto;
 
-  @ApiProperty({ type: Object })
+  @ApiProperty({
+    type: Object,
+    example: {
+      '0xbddab785b306bcd9fb056da189615cc8ece1d823': {
+        1617138000: 0.001164317707510157,
+        1617224400: 0.001164317707510157,
+      },
+    },
+  })
   prices: T;
 }
 

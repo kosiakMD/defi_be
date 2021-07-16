@@ -90,7 +90,8 @@ export class TransactionsParsingService {
           transaction.timestamp
         }', '${transaction.gasPrice}', ${transaction.gasUsed}, ${
           transaction.gasUsedUsd
-        }, '${name}', ${transaction.chainId || 1}, ${Boolean(addressSubTransactions?.length)}, 
+        }, '${name}', ${transaction.chainId || CHAIN_ID_ETH}, 
+        ${Boolean(addressSubTransactions?.length)}, 
         '${JSON.stringify(addressSubTransactions)}')`,
       );
     }

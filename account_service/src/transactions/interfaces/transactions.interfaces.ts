@@ -32,3 +32,12 @@ export interface TransactionsResult {
   errors?: Error | string;
   data: TransactionDto[];
 }
+
+export interface SubTransaction {
+  address: string;
+  amount: string;
+  symbol: string;
+  type: string;
+  tokenAddress?: string;
+  price?: number;
+}

@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { getManager, In } from 'typeorm';
+import { getManager, In, Repository } from 'typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 import { Web3Provider } from '../chain/web3.provider';
@@ -18,13 +19,12 @@ import { ScanApiService } from '../scan_api/scan.api.service';
 import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import { TransactionDto } from './dto/transaction.dto';
 import { TransactionNewDto } from './dto/transactions.dto';
-import { TransactionsEntity } from './entity/transactions.entity';
+import { TransactionNewEntity } from './entity/transaction.new.entity';
 import {
   Transaction,
   TransactionsResponse,
   TransactionsResult,
 } from './interfaces/transactions.interfaces';
-import { TransactionsRepository } from './repository/transactions.repository';
 
 @Injectable()
 export class TransactionsService {
@@ -38,7 +38,8 @@ export class TransactionsService {
     private readonly bscScanService: BscScanService,
     private readonly etherScanService: EtherScanService,
     private readonly covalentService: CovalentService,
-    @InjectRepository(TransactionsEntity) private readonly repository: TransactionsRepository,
+    @InjectRepository(TransactionNewEntity)
+    private readonly transactionRepository: Repository<TransactionNewEntity>,
   ) {}
 
   private static convertAddresses(addresses: string[]): string {
@@ -149,7 +150,7 @@ export class TransactionsService {
 
   public async getTransactionsNew(
     addresses: Address[],
-    // chains: ChainsIds,
+    chains: ChainsIds,
   ): Promise<DetailedResponse<TransactionNewDto[]>> {
     const response = {
       status: ResultStatus.ok,
@@ -158,8 +159,8 @@ export class TransactionsService {
     };
 
     try {
-      const dbTsx = await this.repository.find({
-        where: { address: In(addresses) },
+      const dbTsxNew = await this.transactionRepository.find({
+        where: { address: In(addresses), isVisible: true, chainId: In(chains) },
         order: { timestamp: 'ASC' },
       });
       // TODO: choose later
@@ -168,10 +169,7 @@ export class TransactionsService {
         .where(`tsx.address IN ('${addresses.join("','")}')`)
         .orderBy('tsx.timestamp')
         .getMany();*/
-      response.data = dbTsx.map((tsx) => new TransactionNewDto(tsx));
-      // response.data = dbTsx.map((tsx) => plainToClass(TransactionNewDto, { ...tsx }));
-      // TODO: strange but doesn't receive data in the constructor
-      // response.data = plainToClass(TransactionNewDto, dbTsx);
+      response.data = dbTsxNew.map((tsx) => plainToClass(TransactionNewDto, tsx));
       return response;
     } catch (e) {
       this.logger.error(e, 'getTransactionsNew');

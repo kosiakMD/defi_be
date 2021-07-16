@@ -92,8 +92,8 @@ export class TransactionsController {
   @ApiResponse({ status: 200, type: TransactionsNewDetailedResponseDto })
   // TODO rename after finished
   public async getInternalV2(@Query() query: TransactionQueryDto): Promise<any> {
-    const { addresses } = query;
-    return this.transactionsService.getTransactionsNew(addresses);
+    const { addresses, chains } = query;
+    return this.transactionsService.getTransactionsNew(addresses, chains);
   }
 
   @Get('/internal_v1')

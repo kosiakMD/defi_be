@@ -1,11 +1,10 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
-import { plainToClass } from 'class-transformer';
 
 import { DetailedResponseDto } from '../../common/dto';
 import { ResultStatus } from '../../common/enum';
 import { Address, DetailedResponse } from '../../common/interfaces';
-import { TransactionsEntity } from '../entity/transactions.entity';
+import { ChainId } from '../../common/types';
 import { Transaction } from '../interfaces/transactions.interfaces';
 import { TransactionDto as TransactionFromScanDto } from './transaction.dto';
 
@@ -118,7 +117,8 @@ export interface TransactionsDetailedResponse extends DetailedResponse<Transacti
 
 export class TransactionsDetailedResponseDto
   extends DetailedResponseDto<TransactionFromScanDto[]>
-  implements TransactionsDetailedResponse {
+  implements TransactionsDetailedResponse
+{
   @ApiProperty({
     type: String,
     enum: ResultStatus,
@@ -147,23 +147,17 @@ export class SubTransactionDto {
   @ApiProperty({ type: String, example: '605271.935' })
   amount: string;
 
-  @ApiProperty({ type: Number, example: 19789 })
-  gasUsed: number;
-
-  @ApiProperty({ type: Number, example: 0.70202506528 })
-  gasUsedUsd: number;
-
-  @ApiProperty({ type: Number, example: 0.00950568 })
-  price: number;
-
   @ApiProperty({ type: String, example: 'LYM' })
   symbol: string;
+
+  @ApiProperty({ type: String, example: 'incoming' })
+  type: string;
 
   @ApiProperty({ type: String, example: '0xc690f7c7fcffa6a82b79fab7508c466fefdfc8c5' })
   tokenAddress: string;
 
-  @ApiProperty({ type: String, example: 'incoming' })
-  type: string;
+  @ApiProperty({ type: Number, example: 0.00950568 })
+  price: number;
 
   constructor(transferEntity: Partial<SubTransactionDto>) {
     Object.assign(this, transferEntity);
@@ -171,45 +165,37 @@ export class SubTransactionDto {
 }
 
 export class TransactionNewDto {
-  @ApiProperty({ type: String, example: '83' })
-  id: string;
   @ApiProperty({
     type: String,
     example: '0x1583b096aa28d7c047cc321e9bef1c2a23857637fdc797626cbce5e216f75e8e',
   })
   hash: string;
-  @ApiProperty({ type: String, example: '12768337' })
-  blockNumber: string;
-  @ApiProperty({ type: String, example: '1625499513' })
-  timestamp: string;
   @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
   address: Address;
-  @ApiProperty({ type: Number, example: 95000 })
-  gas: number;
+  @ApiProperty({ type: Number, example: 12768337 })
+  blockNumber: number;
+  @ApiProperty({ type: String, example: '1625499513' })
+  timestamp: string;
   @ApiProperty({ type: String, example: '16000000000' })
   gasPrice: string;
+  @ApiProperty({ type: Number, example: 95000 })
+  gasUsed: number;
+  @ApiProperty({ type: Number, example: 95000 })
+  feeUsd: number;
   @ApiProperty({ type: String, example: 'receive' })
   name: string;
+  @ApiProperty({ type: Number, example: 1 })
+  chainId: ChainId;
+  @ApiProperty({ type: Boolean, example: true })
+  isVisible: boolean;
   @ApiProperty({
     type: SubTransactionDto,
     isArray: true,
   })
   subTransactions: SubTransactionDto[];
 
-  constructor(tsx: TransactionsEntity) {
-    // console.log('tsx', tsx);
-
-    Object.assign(this, tsx, {
-      id: tsx.id,
-      address: tsx.address,
-      hash: tsx.hash,
-      blockNumber: tsx.blockNumber,
-      timestamp: tsx.timestamp,
-      name: tsx.data.name,
-      gas: tsx.data.gas,
-      gasPrice: tsx.data.gasPrice,
-      subTransactions: plainToClass(SubTransactionDto, tsx.data.subTransactions),
-    });
+  constructor(tsx: TransactionNewDto) {
+    Object.assign(this, tsx);
   }
 }
 

@@ -1,4 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../logger/logger.service';
@@ -15,13 +17,19 @@ import { MigrationEvent } from './types/events';
 
 @Injectable()
 export class MigrationService {
+  private readonly cacheTTLInSeconds: number;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private configService: ConfigService,
     private readonly assetsStore: AssetsStore,
     private readonly assetsTransfersStore: AssetsTransfersStore,
     private readonly approvalsStore: ApprovalsStore,
     private readonly assetPublisherService: AssetPublisherService,
-  ) {}
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {
+    this.cacheTTLInSeconds = this.configService.get<number>('CACHE_TTL_IN_SECONDS') || 300;
+  }
 
   async migrateEvent(event: MigrationEvent): Promise<number> {
     const { entity, type } = toEntity(event);
@@ -52,16 +60,7 @@ export class MigrationService {
 
     // send event to update token with information from COVALENT
     if (type === TYPE_TRANSFER && !asset?.isDataPresent) {
-      const userAddress =
-        (entity as AssetTransfersEntity).to && (entity as AssetTransfersEntity).to !== ETH_ADDRESS
-          ? (entity as AssetTransfersEntity).to
-          : (entity as AssetTransfersEntity).from;
-
-      await this.assetPublisherService.publishNewAssetAddedWithEvents({
-        userAddress: userAddress,
-        chainId: event.chainId,
-        contractAddress: event.address.toLowerCase(), // (entity as AssetTransfersEntity).tokenAddress,
-      });
+      await this.checkOfCacheAndSendAssetToPublish(event, entity);
     }
 
     if (type === TYPE_TRANSFER) {
@@ -74,5 +73,38 @@ export class MigrationService {
     }
 
     return 1;
+  }
+
+  private getTokenCacheKey(address: string, chain: number): string {
+    return `asset_${address}_${chain}`;
+  }
+
+  private async checkOfCacheAndSendAssetToPublish(
+    event: MigrationEvent,
+    entity: AssetTransfersEntity | ApprovalsEntity,
+  ): Promise<void> {
+    const cashKey = this.getTokenCacheKey(event.address.toLowerCase(), event.chainId);
+    const cashedAsset = await this.cache.get(cashKey);
+    if (!cashedAsset) {
+      await this.cache.set(
+        cashKey,
+        {
+          chainId: event.chainId,
+          contractAddress: event.address.toLowerCase(),
+        },
+        { ttl: this.cacheTTLInSeconds },
+      );
+
+      const userAddress =
+        (entity as AssetTransfersEntity).to && (entity as AssetTransfersEntity).to !== ETH_ADDRESS
+          ? (entity as AssetTransfersEntity).to
+          : (entity as AssetTransfersEntity).from;
+
+      await this.assetPublisherService.publishNewAssetAddedWithEvents({
+        userAddress: userAddress,
+        chainId: event.chainId,
+        contractAddress: event.address.toLowerCase(), // (entity as AssetTransfersEntity).tokenAddress,
+      });
+    }
   }
 }

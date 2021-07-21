@@ -204,7 +204,7 @@ export class DatabaseService {
 
   public addTokenToDb = async (address, name, symbol, type, platform, chainId, isLp = true) => {
     const new_one = await this.pg.any(
-      'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new) VALUES ($1, $2, $3, $4, $5, $6, true, $7); ',
+      'INSERT INTO prices.asset(address, symbol, name, type, platform, chain_id, is_new, "isLp") VALUES ($1, $2, $3, $4, $5, $6, true, $7); ',
       [address, symbol, name, type, platform, chainId, true, isLp],
     );
 

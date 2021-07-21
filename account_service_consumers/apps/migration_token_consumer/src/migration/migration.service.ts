@@ -110,6 +110,14 @@ export class MigrationService {
       const transfer = json?.data?.items?.[0]?.transfers?.[0];
       this.logger.timeEnd(timeMark);
 
+      if (
+        !transfer?.contract_name ||
+        !transfer?.contract_decimals ||
+        !transfer?.contract_ticker_symbol
+      ) {
+        throw new Error('no data returns from covalent');
+      }
+
       return {
         name: transfer?.contract_name,
         decimals: transfer?.contract_decimals,

@@ -23,5 +23,10 @@ export enum EtherScanStatusEnum {
 export enum EtherScanMessageEnum {
   ok = 'OK',
   notOk = 'NOTOK',
-  noTransactionsFound = 'No transactions found'
+  noTransactionsFound = 'No transactions found',
+}
+
+export enum TransactionTypeEnum {
+  normal = 'normal',
+  internal = 'internal',
 }

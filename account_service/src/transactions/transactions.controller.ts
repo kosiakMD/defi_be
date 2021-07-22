@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { TransactionTypeEnum } from 'src/common/enum';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsAllResponseDto } from './dto/api.transactions.all.dto';
@@ -128,10 +129,22 @@ export class TransactionsController {
     const addressesSplitted: string[] = addresses.split(',');
 
     const transactions: any[] = await Promise.all([
-      this.bscscanTransactionsService.getTransactions(addressesSplitted),
-      this.bscscanTransactionsService.getInternalTransactions(addressesSplitted),
-      this.etherscanTransactionsService.getTransactions(addressesSplitted),
-      this.etherscanTransactionsService.getInternalTransactions(addressesSplitted),
+      this.bscscanTransactionsService.getTransactions(
+        addressesSplitted,
+        TransactionTypeEnum.normal,
+      ),
+      this.bscscanTransactionsService.getTransactions(
+        addressesSplitted,
+        TransactionTypeEnum.internal,
+      ),
+      this.etherscanTransactionsService.getTransactions(
+        addressesSplitted,
+        TransactionTypeEnum.normal,
+      ),
+      this.etherscanTransactionsService.getTransactions(
+        addressesSplitted,
+        TransactionTypeEnum.internal,
+      ),
     ]);
 
     return addressesSplitted.reduce((acc, address) => {

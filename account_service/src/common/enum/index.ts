@@ -14,3 +14,14 @@ export enum ResultStatus {
   ok = 'ok',
   error = 'error',
 }
+
+export enum EtherScanStatusEnum {
+  ok = '1',
+  error = '0',
+}
+
+export enum EtherScanMessageEnum {
+  ok = 'OK',
+  notOk = 'NOTOK',
+  noTransactionsFound = 'No transactions found'
+}

@@ -1,8 +1,10 @@
 import { HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
+import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
+import { EtherScanTransactionResponseDto } from 'src/scan_api/ether.scan.transaction.response.dto';
 
 import { Logger } from '../Logger/Logger.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
@@ -208,7 +210,7 @@ export class ScanApiService {
               apikey: this.apiKey,
             },
           })
-          .pipe(map((response) => response.data))
+          .pipe(map((response) => plainToClass(EtherScanTransactionResponseDto, response.data)))
           .toPromise();
         transactions = txsResp && txsResp.result ? txsResp.result : [];
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

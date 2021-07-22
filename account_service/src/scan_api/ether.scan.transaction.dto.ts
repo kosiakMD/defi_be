@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TransactionBaseDto {
+export class EtherScanTransactionDto {
   @ApiProperty({ example: '10266704', type: String })
   blockNumber: string;
   @ApiProperty({ example: '1592175374', type: String })
@@ -31,6 +31,9 @@ export class TransactionBaseDto {
   gasPrice: string;
   @ApiProperty({ example: '0', type: String })
   isError: string;
+  @ApiProperty({ example: '1', type: String })
+  // eslint-disable-next-line camelcase
+  txreceipt_status: string;
   @ApiProperty({ example: '0x', type: String })
   input: string;
   @ApiProperty({ example: '0xd6327ce1fb9d6020e8c2c0e124a1ec23dcab7536', type: String })
@@ -41,6 +44,4 @@ export class TransactionBaseDto {
   gasUsed: string;
   @ApiProperty({ example: '2390490', type: String })
   confirmations: string;
-  @ApiProperty({ example: 1, type: Number, required: false })
-  chainId?: number;
 }

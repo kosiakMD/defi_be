@@ -6,14 +6,20 @@ import { map } from 'rxjs/operators';
 import { Logger } from '../Logger/Logger.service';
 import { Address } from '../common/interfaces';
 import { ChainId } from '../common/types';
-import { CovalentResponse, CovalentTsx } from './covalent.interface';
+import { Covalent } from './covalent.interface';
+
+const TRANSACTIONS_PER_PAGE = 10e3;
 
 @Injectable()
 export class CovalentService {
   protected readonly url: string;
   protected readonly apiKey: string;
 
-  private /*static*/ getTransactionUrl(address: Address, chainId: ChainId): string {
+  private getBalanceUrl(address: Address, chainId: ChainId): string {
+    return `${this.url}/${chainId}/address/${address}/balances_v2/`;
+  }
+
+  private getTransactionUrl(address: Address, chainId: ChainId): string {
     return `${this.url}/${chainId}/address/${address}/transactions_v2/`;
   }
 
@@ -26,18 +32,53 @@ export class CovalentService {
     this.apiKey = this.configService.get<string>('COVALENT_KEY');
   }
 
-  public async getTransactions(address: Address, chainId: ChainId): Promise<CovalentTsx> {
-    const transactionUrl = /*CovalentService*/ this.getTransactionUrl(address, chainId);
+  public async getBalances(address: Address, chainId: ChainId): Promise<Covalent.Balance> {
+    const transactionUrl = this.getBalanceUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);
       const result = await this.httpService
-        .get<CovalentResponse<CovalentTsx>>(transactionUrl, {
+        .get<Covalent.Response<Covalent.Balance>>(transactionUrl, {
+          params: {
+            key: this.apiKey,
+            'quote-currency': 'usd',
+            'page-size': TRANSACTIONS_PER_PAGE,
+          },
+        })
+        .pipe(map((response) => response.data))
+        .toPromise();
+      this.logger.timeEnd(transactionUrl);
+
+      if (result.error) {
+        throw new HttpException(result.error_message, result.error_code);
+      } else {
+        return result.data;
+      }
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        if (e.response?.data) {
+          this.logger.error(e.response.data);
+        }
+        throw new HttpException(e.response, e.code);
+      } else {
+        this.logger.error('CovalentService.getTransactions', e);
+        throw e;
+      }
+    }
+  }
+
+  public async getTransactions(address: Address, chainId: ChainId): Promise<Covalent.Transaction> {
+    const transactionUrl = this.getTransactionUrl(address, chainId);
+    try {
+      this.logger.time(transactionUrl);
+      const result = await this.httpService
+        .get<Covalent.Response<Covalent.Transaction>>(transactionUrl, {
           // baseURL: this.url, TODO: doesn't work properly, fix and use static get url method
           // url: transactionUrl,
           params: {
             key: this.apiKey,
             'quote-currency': 'usd',
-            'page-size': 10e3,
+            'page-size': TRANSACTIONS_PER_PAGE,
           },
         })
         .pipe(map((response) => response.data))

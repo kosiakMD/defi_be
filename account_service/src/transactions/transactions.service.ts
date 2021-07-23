@@ -11,12 +11,13 @@ import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from '../common/consta
 import { ResultStatus } from '../common/enum';
 import { Address, DetailedResponse } from '../common/interfaces';
 import { ChainId, ChainsIds } from '../common/types';
-import { CovalentTsx } from '../covalent/covalent.interface';
+import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
-import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import { getAbsoluteChainIds } from '../utils/chains';
+import { getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import { TransactionDto } from './dto/transaction.dto';
 import { TransactionNewDto } from './dto/transactions.dto';
 import { TransactionNewEntity } from './entity/transaction.new.entity';
@@ -242,7 +243,10 @@ export class TransactionsService {
     return response;
   }
 
-  private transformCovalentToInternal(data: CovalentTsx, chainId: ChainId): TransactionDto[] {
+  private transformCovalentToInternal(
+    data: Covalent.Transaction,
+    chainId: ChainId,
+  ): TransactionDto[] {
     const { quote_currency: currency, items } = data;
     return items.map(
       (tsx) =>
@@ -274,8 +278,6 @@ export class TransactionsService {
 
   async getTransactionsFromCovalent(
     addresses: Address[],
-    // TODO: Covalent doesn't support BSC (2)
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     chains: ChainId[],
   ): Promise<DetailedResponse<TransactionsResult[]>> {
     const response = {
@@ -284,17 +286,17 @@ export class TransactionsService {
       data: [],
     };
 
-    // TODO: Covalent doesn't support BSC (2)
-    const chainsToHandle = [CHAIN_ID_ETH]; /*chains*/
+    const chainsToHandle = getAbsoluteChainIds(getUniqList(chains));
+    const addressesToHandle = getUniqueAndToLowerCaseArrayData(addresses);
 
     const promises = [];
-    addresses.forEach((address) => {
+    addressesToHandle.forEach((address) => {
       chainsToHandle.forEach((chain) => {
         promises.push(this.covalentService.getTransactions(address, chain));
       });
     });
 
-    const results = await Promise.allSettled(promises);
+    const results = await Promise.allSettled<Covalent.Transaction>(promises);
 
     results.forEach((result, index) => {
       if (result.status === 'fulfilled') {

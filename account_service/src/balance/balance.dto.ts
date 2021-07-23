@@ -5,7 +5,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { Address } from '../common/interfaces';
-import { ChainsIds } from '../common/types';
+import { ChainId, ChainsIds } from '../common/types';
 import { AccountTokenBalance, Balance, BalanceToken } from './interfaces/balance.interfaces';
 
 interface BalancesQuery {
@@ -84,6 +84,16 @@ export class BalanceDto implements Balance {
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
   tokens: AccountTokenBalance;
+}
+
+export class AllBalancesDto {
+  address: Address;
+  balances: {
+    chain: ChainId;
+    items: any[];
+    status: string;
+    error: string | null | Error;
+  }[];
 }
 
 export class BalancesResponseDto {

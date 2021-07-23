@@ -1,13 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { HttpException } from '@nestjs/common/exceptions/http.exception';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../common/constatnt';
 import { Address } from '../common/interfaces';
 import { ChainId, ChainsIds } from '../common/types';
+import { Covalent } from '../covalent/covalent.interface';
+import { CovalentService } from '../covalent/covalent.service';
 import { PriceService } from '../price/price.service';
-import { decimalsAmount, getUniqueAndToLowerCaseArrayData, totalPrice } from '../utils/utils';
+import { getAbsoluteChainIds } from '../utils/chains';
+import {
+  decimalsAmount,
+  getUniqList,
+  getUniqueAndToLowerCaseArrayData,
+  totalPrice,
+} from '../utils/utils';
 import { isBnbAddress } from '../utils/web3';
+import { AllBalancesDto } from './balance.dto';
 import { getUtilTokenPrice, mapTokenBalances } from './balance_util/balance.util';
 import {
   AccountTokenBalance,
@@ -32,6 +42,7 @@ export class BalanceService {
     private readonly dbService: DbService,
     private readonly chainProvider: Web3Provider,
     private readonly priceService: PriceService,
+    private readonly covalentService: CovalentService,
   ) {
     this.instanceChainProviderEth = this.chainProvider.instanceEth();
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
@@ -92,6 +103,57 @@ export class BalanceService {
       }
     }
     return etherBalances;
+  }
+
+  public async getBalanceFromCovalent(
+    addresses: Address[],
+    chains?: ChainsIds,
+  ): Promise<AllBalancesDto[]> {
+    const chainsToHandle = getAbsoluteChainIds(getUniqList(chains));
+    const addressesToHandle = getUniqueAndToLowerCaseArrayData(addresses);
+
+    const allBalances: AllBalancesDto[] = [];
+
+    const promises = [];
+
+    addressesToHandle.forEach((address, addressIndex) => {
+      allBalances.push({
+        address: address,
+        balances: [],
+      });
+      chainsToHandle.forEach((chain) => {
+        const promise = this.covalentService.getBalances(address, chain);
+        promises.push(promise);
+        allBalances[addressIndex].balances.push({
+          chain: chain,
+          items: [],
+          error: null,
+          status: null,
+        });
+      });
+    });
+
+    const results = await Promise.allSettled<Covalent.Balance>(promises);
+
+    let index = 0;
+    allBalances.forEach(({ balances }) => {
+      balances.forEach((balance) => {
+        const result = results[index];
+        if (result.status === 'fulfilled') {
+          balance.items = result.value.items;
+          balance.status = result.status;
+        } else {
+          balance.error = new HttpException(
+            result.reason?.response?.data?.error_message,
+            result.reason?.response?.status,
+          );
+          balance.status = result.status;
+        }
+        index++;
+      });
+    });
+
+    return allBalances;
   }
 
   public async getBalanceDataFromDb(
@@ -229,34 +291,33 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance = (
-    prices: TokenPrices,
-    chainId: number,
-  ): ((row: TokenRow) => AccountTokenBalance) => ({
-    address,
-    amount,
-    tokenAddress,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    tokenTotalSupply,
-    isLp,
-  }) => ({
-    account: address,
-    amount,
-    decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-    tokenPriceUSD: prices[tokenAddress] || 0,
-    totalPriceUSD: prices[tokenAddress]
-      ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
-      : 0,
-    token: {
-      chainId: chainId,
-      address: tokenAddress,
-      name: tokenName || null,
-      symbol: tokenSymbol || null,
-      decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-      totalSupply: +tokenTotalSupply || 0,
-      isLp: isLp,
-    },
-  });
+  private mapErc20Balance =
+    (prices: TokenPrices, chainId: number): ((row: TokenRow) => AccountTokenBalance) =>
+    ({
+      address,
+      amount,
+      tokenAddress,
+      tokenName,
+      tokenSymbol,
+      tokenDecimals,
+      tokenTotalSupply,
+      isLp,
+    }) => ({
+      account: address,
+      amount,
+      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+      tokenPriceUSD: prices[tokenAddress] || 0,
+      totalPriceUSD: prices[tokenAddress]
+        ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
+        : 0,
+      token: {
+        chainId: chainId,
+        address: tokenAddress,
+        name: tokenName || null,
+        symbol: tokenSymbol || null,
+        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+        totalSupply: +tokenTotalSupply || 0,
+        isLp: isLp,
+      },
+    });
 }

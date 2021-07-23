@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { TransactionTypeEnum } from 'src/common/enum';
+import { TransactionType } from 'src/common/enum';
 
 import { EtherscanApi } from './api/etherscan.api';
 import { Transaction, TransactionsResponse } from './interfaces/api.transactions.interfaces';
@@ -14,7 +14,7 @@ export class EtherscanTransactionsService {
 
   public async getTransactions(
     addresses: string[],
-    type: TransactionTypeEnum,
+    type: TransactionType,
   ): Promise<TransactionsResponse | []> {
     if (this.isAddressesNotCorrect(addresses)) return [];
 

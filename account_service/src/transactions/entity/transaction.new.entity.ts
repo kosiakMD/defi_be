@@ -20,28 +20,19 @@ export class TransactionNewEntity {
   @Column({ name: 'timestamp' })
   timestamp: string;
 
-  @Column({ name: 'gas_price' })
-  gasPrice: string;
+  @Column({ name: 'gas_price', transformer: new ColumnNumericTransformer() })
+  gasPrice: number;
 
-  @Column({
-    name: 'gas_used',
-    transformer: new ColumnNumericTransformer(),
-  })
+  @Column({ name: 'gas_used', transformer: new ColumnNumericTransformer() })
   gasUsed: number;
 
-  @Column({
-    name: 'fee_usd',
-    transformer: new ColumnNumericTransformer(),
-  })
+  @Column({ name: 'fee_usd', transformer: new ColumnNumericTransformer() })
   feeUsd?: number;
 
   @Column({ name: 'name' })
   name: string;
 
-  @Column({
-    name: 'chain_id',
-    transformer: new ColumnNumericTransformer(),
-  })
+  @Column({ name: 'chain_id', transformer: new ColumnNumericTransformer() })
   chainId: number;
 
   @Column({ name: 'sub_transactions', type: 'json' })

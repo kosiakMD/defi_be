@@ -19,7 +19,7 @@ export class MigrationController {
   public async handleEvent(@Payload() data: MigrationEvent, @Ctx() context: RmqContext) {
     try {
       this.logger.debug(
-        `consumed migration data for event has [${data.contractAddress}]`,
+        `consumed migration data for token has [${data.contractAddress}]`,
         'migration.controller',
       );
       await this.migrationService.migrateEvent(data);

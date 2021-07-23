@@ -18,8 +18,7 @@ import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
 import { getAbsoluteChainIds } from '../utils/chains';
 import { getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
-import { TransactionDto } from './dto/transaction.dto';
-import { TransactionNewDto } from './dto/transactions.dto';
+import { TransactionDto, TransactionNewDto } from './dto/transaction.dto';
 import { TransactionNewEntity } from './entity/transaction.new.entity';
 import {
   Transaction,
@@ -160,17 +159,11 @@ export class TransactionsService {
     };
 
     try {
-      const dbTsxNew = await this.transactionRepository.find({
+      const dbTsxNew: TransactionNewEntity[] = await this.transactionRepository.find({
         where: { address: In(addresses), isVisible: true, chainId: In(chains) },
         order: { timestamp: 'ASC' },
       });
-      // TODO: choose later
-      /*const tsx = await this.repository
-        .createQueryBuilder('tsx')
-        .where(`tsx.address IN ('${addresses.join("','")}')`)
-        .orderBy('tsx.timestamp')
-        .getMany();*/
-      response.data = dbTsxNew.map((tsx) => plainToClass(TransactionNewDto, tsx));
+      response.data = plainToClass(TransactionNewDto, dbTsxNew);
       return response;
     } catch (e) {
       this.logger.error(e, 'getTransactionsNew');

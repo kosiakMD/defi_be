@@ -1,6 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { TransactionTypeEnum } from 'src/common/enum';
+import { classToPlain } from 'class-transformer';
+import { TransactionType } from 'src/common/enum';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsAllResponseDto } from './dto/api.transactions.all.dto';
@@ -94,7 +95,7 @@ export class TransactionsController {
   // TODO rename after finished
   public async getInternalV2(@Query() query: TransactionQueryDto): Promise<any> {
     const { addresses, chains } = query;
-    return this.transactionsService.getTransactionsNew(addresses, chains);
+    return classToPlain(this.transactionsService.getTransactionsNew(addresses, chains));
   }
 
   @Get('/internal_v1')
@@ -129,21 +130,12 @@ export class TransactionsController {
     const addressesSplitted: string[] = addresses.split(',');
 
     const transactions: any[] = await Promise.all([
-      this.bscscanTransactionsService.getTransactions(
-        addressesSplitted,
-        TransactionTypeEnum.normal,
-      ),
-      this.bscscanTransactionsService.getTransactions(
-        addressesSplitted,
-        TransactionTypeEnum.internal,
-      ),
+      this.bscscanTransactionsService.getTransactions(addressesSplitted, TransactionType.normal),
+      this.bscscanTransactionsService.getTransactions(addressesSplitted, TransactionType.internal),
+      this.etherscanTransactionsService.getTransactions(addressesSplitted, TransactionType.normal),
       this.etherscanTransactionsService.getTransactions(
         addressesSplitted,
-        TransactionTypeEnum.normal,
-      ),
-      this.etherscanTransactionsService.getTransactions(
-        addressesSplitted,
-        TransactionTypeEnum.internal,
+        TransactionType.internal,
       ),
     ]);
 

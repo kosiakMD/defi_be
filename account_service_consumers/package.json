@@ -8,7 +8,7 @@
   "engines": {
     "node": ">=10.13.0",
     "npm": "^6.11.0 || ^7.5.6",
-    "yarm": ">=1.13.0"
+    "yarn": ">=1.13.0"
   },
   "scripts": {
     "prebuild": "rimraf dist",

@@ -65,7 +65,10 @@ export class MigrationService {
 
     // try to get token info from covalent
     try {
-      return await this.getCovalentToken(userAddress, contractAddress, chainId);
+      const token = await this.getCovalentToken(userAddress, contractAddress, chainId);
+      if (token.decimals && token.address && token.name && token.decimals) {
+        return token;
+      }
     } catch (e) {
       //
     }

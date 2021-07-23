@@ -26,7 +26,7 @@ export class PoolsService {
     @InjectRepository(LiquidityPoolsEntity)
     private readonly liquidityPoolsRepository: LiquidityPoolsRepository,
   ) {
-    this.cacheTTLInSeconds = config.get<number>('POOLS_CACHE_TTL_IN_SECONDS') || 15 * 60;
+    this.cacheTTLInSeconds = config.get<number>('POOLS_CACHE_TTL_IN_SECONDS') || 5 * 60;
   }
 
   async getPoolsToDisplay(): Promise<LiquidityPoolsEntity[]> {

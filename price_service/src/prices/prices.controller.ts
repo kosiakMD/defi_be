@@ -1,6 +1,9 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Req, Inject } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
+import { Request } from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '../common/Logger/Logger.service';
 import {
   PriceBatchRequestDto,
   PriceQueryDto,
@@ -16,56 +19,83 @@ import { PriceService } from './prices.service';
 
 @Controller('prices')
 export class PricesController {
-  constructor(private priceService: PriceService) {}
+  constructor(
+    private priceService: PriceService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/')
   @ApiOkResponse({ type: CurrentPriceResponseDto })
-  get(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
+  get(@Query() query: PriceQueryDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps && timestamps.length;
 
-    return isHistoricalPricesRequest
+    this.logger.time(request.originalUrl);
+
+    const response = isHistoricalPricesRequest
       ? this.priceService.getHistoricalPrices(query)
       : this.priceService.getCurrentPrices(query);
+
+    this.logger.timeEnd(request.originalUrl);
+
+    return response;
   }
 
   // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/v2')
   @ApiOkResponse({ type: CurrentPriceV2ResponseDto })
-  getV2(@Query() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayloadV2>> {
+  getV2(@Query() query: PriceQueryDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayloadV2>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps && timestamps.length;
 
-    return isHistoricalPricesRequest
+    this.logger.time(request.originalUrl);
+
+    const response = isHistoricalPricesRequest
       ? this.priceService.getHistoricalPricesV2(query)
       : this.priceService.getCurrentPricesV2(query);
+
+    this.logger.timeEnd(request.originalUrl);
+
+    return response;
   }
 
   // TODO: divide method because we have 2 different DTO for History and Current
   @Post('/')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: CurrentPriceResponseDto })
-  post(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayload>> {
-    const { timestamps } = request;
+  post(@Body() query: PriceRequestDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayload>> {
+    const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps?.length;
 
-    return isHistoricalPricesRequest
-      ? this.priceService.getHistoricalPrices(request)
-      : this.priceService.getCurrentPrices(request);
+    this.logger.time(request.originalUrl);
+
+    const response = isHistoricalPricesRequest
+      ? this.priceService.getHistoricalPrices(query)
+      : this.priceService.getCurrentPrices(query);
+
+    this.logger.timeEnd(request.originalUrl);
+
+    return response;
   }
 
   // TODO: divide method because we have 2 different DTO for History and Current
   @Post('/v2')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: CurrentPriceV2ResponseDto })
-  postV2(@Body() request: PriceRequestDto): Promise<PriceResponseDto<PricesPayloadV2>> {
-    const { timestamps } = request;
+  postV2(@Body() query: PriceRequestDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayloadV2>> {
+    const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps?.length;
 
-    return isHistoricalPricesRequest
-      ? this.priceService.getHistoricalPricesV2(request)
-      : this.priceService.getCurrentPricesV2(request);
+    this.logger.time(request.originalUrl);
+
+    const response = isHistoricalPricesRequest
+      ? this.priceService.getHistoricalPricesV2(query)
+      : this.priceService.getCurrentPricesV2(query);
+
+    this.logger.timeEnd(request.originalUrl);
+
+    return response;
   }
 
   @Post('/nonLpTokens')
@@ -76,7 +106,16 @@ export class PricesController {
 
   @Post('/batch')
   @ApiOkResponse({ type: HistoricalPriceV2ResponseDto })
-  postBatch(@Body() request: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {
-    return this.priceService.getPricesInBatches(request);
+  postBatch(
+    @Body() query: PriceBatchRequestDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<PricesPayload>> {
+    this.logger.time(request.originalUrl);
+
+    const response = this.priceService.getPricesInBatches(query);
+
+    this.logger.timeEnd(request.originalUrl);
+
+    return response;
   }
 }

@@ -5,6 +5,7 @@ export const DEFAULT_MULTIPLIER = 1e-18;
 
 export const CHAIN_ID_ETH: ChainId = 1;
 export const CHAIN_ID_BSC: ChainId = 2;
+export const CHAIN_ID_BSC_MAINNET: ChainId = 56;
 
 export const ETH_BNB_ADDRESS: Address = '0x0000000000000000000000000000000000000000';
 export const WBNB_ADDRESS: Address = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';

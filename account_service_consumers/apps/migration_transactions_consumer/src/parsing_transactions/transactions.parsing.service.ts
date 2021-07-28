@@ -79,7 +79,7 @@ export class TransactionsParsingService {
 
       const from = addressSubTransactions.find((x) => x.type === TokenTypes.OUT);
       const to = addressSubTransactions.find((x) => x.type === TokenTypes.IN);
-      const name = from
+      const tokenOperation = from
         ? to
           ? TokenOperations.EXCHANGE
           : TokenOperations.SEND
@@ -90,7 +90,7 @@ export class TransactionsParsingService {
           transaction.timestamp
         }', '${transaction.gasPrice}', ${transaction.gasUsed}, ${
           transaction.gasUsedUsd
-        }, '${name}', ${transaction.chainId || CHAIN_ID_ETH}, 
+        }, '${tokenOperation}', ${transaction.chainId || CHAIN_ID_ETH}, 
         ${Boolean(addressSubTransactions?.length)}, 
         '${JSON.stringify(addressSubTransactions)}')`,
       );
@@ -103,7 +103,7 @@ export class TransactionsParsingService {
       return '';
     }
 
-    return `insert into transactions_new(hash, address, block_number, timestamp, gas_price, gas_used, fee_usd, name, chain_id, is_visible, sub_transactions) 
+    return `insert into transactions_new(hash, address, block_number, timestamp, gas_price, gas_used, fee_usd, token_operation, chain_id, is_visible, sub_transactions) 
         values ${sqlValues.join(',')}
         on conflict(hash, address) 
         do update set 
@@ -112,7 +112,7 @@ export class TransactionsParsingService {
         gas_price = EXCLUDED.gas_price,
         gas_used = EXCLUDED.gas_used,
         fee_usd = EXCLUDED.fee_usd,
-        name = EXCLUDED.name,
+        token_operation = EXCLUDED.token_operation,
         chain_id = EXCLUDED.chain_id,
         is_visible = EXCLUDED.is_visible,
         sub_transactions = EXCLUDED.sub_transactions`;
@@ -219,6 +219,9 @@ export class TransactionsParsingService {
     subTransaction.price = asset.price;
     subTransaction.symbol = asset.symbol;
     subTransaction.tokenAddress = asset.address;
+    subTransaction.decimals = asset.decimals;
+    subTransaction.from = event?.topic2 || null;
+    subTransaction.to = event?.topic3 || null;
     subTransaction.type = type;
 
     if (subTransaction.address) {

@@ -2,6 +2,9 @@ export interface SubTransactions {
   address: string;
   amount: string;
   symbol: string;
+  decimals: number;
+  from?: string;
+  to?: string;
   type: string;
   tokenAddress?: string;
   price?: number;

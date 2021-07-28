@@ -106,7 +106,7 @@ export class TransactionNewDto {
   @ApiProperty({ type: String, example: '1625499513' })
   timestamp: string = null;
 
-  @Expose({ name: 'name' })
+  @Expose()
   @ApiProperty({
     enum: TokenOperations,
     enumName: 'TokenOperations',

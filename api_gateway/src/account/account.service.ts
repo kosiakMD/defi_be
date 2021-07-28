@@ -7,6 +7,7 @@ import { map } from 'rxjs/operators';
 import { AssetsDto } from '../assets/assets.dto';
 import { Logger } from '../common/Logger/Logger.service';
 import { Address, Chains } from '../common/interfaces';
+import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
 import { ApprovalDTO } from './account.dto';
@@ -81,7 +82,7 @@ export class AccountService {
     }
   }
 
-  async getTransactionsNew(addresses: Address[]): Promise<TransactionsResponse[]> {
+  async getTransactionsNew(addresses: Address[]): Promise<TransactionsNewDetailedResponseDto> {
     try {
       this.logger.time(this.getTransactionsNewUrl);
       const data = await this.httpService

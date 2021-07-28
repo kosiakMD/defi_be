@@ -80,7 +80,7 @@ export class TransactionsController {
     return this.transactionsService.getTransactionsFromCovalent(addresses, chains);
   }
 
-  @Get('/internal_v2')
+  @Get('/new')
   @ApiQuery({
     name: 'addresses',
     type: String,

@@ -29,8 +29,8 @@ export class TransactionNewEntity {
   @Column({ name: 'fee_usd', transformer: new ColumnNumericTransformer() })
   feeUsd?: number;
 
-  @Column({ name: 'name' })
-  name: string;
+  @Column({ name: 'token_operation' })
+  tokenOperation: string;
 
   @Column({ name: 'chain_id', transformer: new ColumnNumericTransformer() })
   chainId: number;

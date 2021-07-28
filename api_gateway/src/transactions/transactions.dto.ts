@@ -5,6 +5,9 @@ import { DetailedResponseDto } from '../common/DTO';
 import { ResultStatus } from '../common/enum';
 import { Address } from '../common/interfaces';
 import { TransactionScanDto } from '../scans-api/scans-api.dto';
+import { ChainDto } from './chain.dto';
+import { CryptoCurrencyDto, CurrencyDto } from './currency.dto';
+import { TokenOperations } from './enums';
 import { Transaction } from './transactions.interfaces';
 
 class GasDto {
@@ -94,6 +97,45 @@ export class TransactionsDetailedResponseDto extends DetailedResponseDto<Transac
   data: TransactionScanDto[];
 }
 
+class PriceDto {
+  @ApiProperty({ type: Number, example: 111 })
+  value: number;
+
+  @ApiProperty({ type: CurrencyDto })
+  currency: CurrencyDto = new CurrencyDto();
+
+  constructor(data?: Partial<PriceDto>) {
+    Object.assign(this, data);
+  }
+}
+
+class GasPriceDto {
+  @ApiProperty({ type: Number, example: 77000000000 })
+  value: number;
+
+  @ApiProperty({ type: CryptoCurrencyDto })
+  currency: CryptoCurrencyDto = new CryptoCurrencyDto();
+
+  constructor(data?: Partial<GasPriceDto>) {
+    Object.assign(this, data);
+  }
+}
+
+class NewGasDto {
+  @ApiProperty({ type: Number, example: 21000 })
+  used: number; // amount
+
+  @ApiProperty({ type: GasPriceDto })
+  price: GasPriceDto;
+
+  @ApiProperty({ type: PriceDto, example: { value: 2.8108311, currency: { id: 1, name: 'usd' } } })
+  fee: PriceDto;
+
+  constructor(data: Partial<GasDto>) {
+    Object.assign(this, data);
+  }
+}
+
 export class SubTransactionDto {
   @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
   address: Address;
@@ -101,50 +143,69 @@ export class SubTransactionDto {
   @ApiProperty({ type: String, example: '605271.935' })
   amount: string;
 
-  @ApiProperty({ type: Number, example: 19789 })
-  gasUsed: number;
-
-  @ApiProperty({ type: Number, example: 0.70202506528 })
-  gasUsedUsd: number;
-
-  @ApiProperty({ type: Number, example: 0.00950568 })
-  price: number;
-
   @ApiProperty({ type: String, example: 'LYM' })
   symbol: string;
+
+  @ApiProperty({ type: Number, example: 18 })
+  decimals: number;
+
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  from?: string;
+
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  to?: string;
+
+  @ApiProperty({ type: String })
+  type: string;
 
   @ApiProperty({ type: String, example: '0xc690f7c7fcffa6a82b79fab7508c466fefdfc8c5' })
   tokenAddress: string;
 
-  @ApiProperty({ type: String, example: 'incoming' })
-  type: string;
+  @ApiProperty({ type: Number, example: 0.00950568 })
+  price: number;
+
+  constructor(transferEntity: Partial<SubTransactionDto>) {
+    Object.assign(this, transferEntity);
+  }
 }
 
 export class TransactionNewDto {
-  @ApiProperty({ type: String, example: '83' })
-  id: string;
   @ApiProperty({
     type: String,
     example: '0x1583b096aa28d7c047cc321e9bef1c2a23857637fdc797626cbce5e216f75e8e',
   })
-  hash: string;
-  @ApiProperty({ type: String, example: '12768337' })
-  blockNumber: string;
-  @ApiProperty({ type: String, example: '1625499513' })
-  timestamp: string;
+  hash: string = null;
+
+  @ApiProperty({ type: Number, example: 12768337 })
+  blockNumber: number = null;
+
   @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
-  address: Address;
-  @ApiProperty({ type: Number, example: 95000 })
-  gas: number;
-  @ApiProperty({ type: String, example: '16000000000' })
-  gasPrice: string;
-  @ApiProperty({ type: String, example: 'receive' })
-  name: string;
+  address: Address = null;
+
+  @ApiProperty({ type: String, example: '1625499513' })
+  timestamp: string = null;
+
+  @ApiProperty({
+    enum: TokenOperations,
+    enumName: 'TokenOperations',
+    example: TokenOperations.RECEIVE,
+  })
+  tokenOperation?: TokenOperations = null;
+
+  @ApiProperty({ type: Boolean, example: true })
+  isVisible: boolean = null;
+
+  @ApiProperty({ type: ChainDto })
+  chain?: ChainDto = null;
+
+  @ApiProperty({ type: GasDto })
+  gas?: NewGasDto;
+
   @ApiProperty({
     type: SubTransactionDto,
     isArray: true,
   })
-  subTransactions: SubTransactionDto[];
+  subTransactions?: SubTransactionDto[] = null;
 }
 
 export class TransactionsNewDetailedResponseDto extends DetailedResponseDto<TransactionNewDto[]> {

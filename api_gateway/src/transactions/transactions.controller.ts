@@ -49,7 +49,9 @@ export class TransactionsController {
       '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
   })
   @ApiResponse({ status: 200, type: TransactionsNewDetailedResponseDto })
-  public getTransactionsNew(@Query() query: TransactionQueryDto): Promise<TransactionsResponse[]> {
+  public getTransactionsNew(
+    @Query() query: TransactionQueryDto,
+  ): Promise<TransactionsNewDetailedResponseDto> {
     const { addresses } = query;
     return this.service.getTransactionsNew(addresses);
   }

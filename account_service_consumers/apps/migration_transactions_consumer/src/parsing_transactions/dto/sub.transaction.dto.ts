@@ -9,6 +9,12 @@ export class SubTransactionDto implements SubTransactions {
   amount: string;
   @ApiProperty({ type: String })
   symbol: string;
+  @ApiProperty({ type: Number })
+  decimals: number;
+  @ApiProperty({ type: String })
+  from?: string;
+  @ApiProperty({ type: String })
+  to?: string;
   @ApiProperty({ type: String })
   type: string;
   @ApiProperty({ type: String })

@@ -149,6 +149,15 @@ export class SubTransactionDto {
   @ApiProperty({ type: String, example: 'LYM' })
   symbol: string;
 
+  @ApiProperty({ type: Number, example: 18 })
+  decimals: number;
+
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  from: string;
+
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d43f' })
+  to: string;
+
   @ApiProperty({
     type: SubTransactionTypEnum,
     enumName: 'SubTransactionTypEnum',

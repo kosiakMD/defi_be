@@ -2,12 +2,12 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
+import { AssetsEntity } from '../assets/assets.entity';
 import { AssetsService } from '../assets/assets.service';
 import { CHAIN_ID_ETH } from '../common/constatnt';
-import { TransfersService } from '../transfers/transfers.service';
-import { TransferEntityNew } from '../transfers/dto/transfers.entity';
-import { AssetsEntity } from '../assets/assets.entity';
 import { PriceService } from '../price/price.service';
+import { TransferEntityNew } from '../transfers/dto/transfers.entity';
+import { TransfersService } from '../transfers/transfers.service';
 import { decimalsAmount } from '../utils/utils';
 
 @Injectable()

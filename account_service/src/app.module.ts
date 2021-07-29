@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { AnalyticModule } from './analytic/analytic.module';
 import { ApprovalsModule } from './approvals/approvals.module';
 import { AssetsModule } from './assets/assets.module';
 import { BalanceModule } from './balance/balance.module';
@@ -13,7 +14,6 @@ import { HealthController } from './health/health.controller';
 import { TransactionsModule } from './transactions/transcations.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { winstonParams } from './utils/winston';
-import { AnalyticModule } from './analytic/analytic.module';
 
 @Module({
   imports: [

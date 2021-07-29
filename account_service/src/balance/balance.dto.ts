@@ -3,10 +3,13 @@ import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import Web3 from 'web3';
 
 import { Address } from '../common/interfaces';
 import { ChainId, ChainsIds } from '../common/types';
 import { AccountTokenBalance, Balance, BalanceToken } from './interfaces/balance.interfaces';
+
+const web3 = new Web3();
 
 interface BalancesQuery {
   addresses: Address[];
@@ -16,6 +19,17 @@ interface BalancesQuery {
 
 export class BalancesQueryDto implements BalancesQuery {
   @IsNotEmpty()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    value.forEach((address: string) => {
+      if (!web3.utils.isAddress(address)) {
+        throw new BadRequestException(`Address '${address}' is not valid`);
+      }
+    });
+    return value;
+  })
   @IsString({ each: true })
   addresses: Address[];
 

@@ -103,6 +103,16 @@ export class TransactionNewDto {
 
   @Type(() => String)
   @Expose()
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  sender: string = null;
+
+  @Type(() => String)
+  @Expose()
+  @ApiProperty({ type: String, example: '0xab5c66752a9e8167967685f1450532fb96d5d24f' })
+  destination: string = null;
+
+  @Type(() => String)
+  @Expose()
   @ApiProperty({ type: String, example: '1625499513' })
   timestamp: string = null;
 

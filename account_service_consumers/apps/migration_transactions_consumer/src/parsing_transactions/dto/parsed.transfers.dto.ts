@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ParsedTransfers, SubTransactions } from '../transactions.parsing.interfaces';
+import { OldSubTransactions, ParsedTransfers } from '../transactions.parsing.interfaces';
 
 export class ParsedTransfersDto implements ParsedTransfers {
   @ApiProperty({ type: String })
@@ -14,5 +14,5 @@ export class ParsedTransfersDto implements ParsedTransfers {
   @ApiProperty({ type: String })
   name: string;
   @ApiProperty({ type: Array })
-  subTransactions?: SubTransactions[];
+  subTransactions?: OldSubTransactions[];
 }

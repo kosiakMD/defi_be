@@ -11,13 +11,24 @@ export interface SubTransactions {
   chainId?: number;
 }
 
+export interface OldSubTransactions {
+  address: string;
+  amount: string;
+  gasUsed: number;
+  gasUsedUsd: number;
+  price?: number;
+  symbol: string;
+  type: string;
+  tokenAddress?: string;
+}
+
 export interface ParsedTransfers {
   address?: string;
   gas: number;
   gasPrice: string;
   hash: string;
   name: string;
-  subTransactions?: SubTransactions[];
+  subTransactions?: OldSubTransactions[];
 }
 
 export interface MigrationEvent {

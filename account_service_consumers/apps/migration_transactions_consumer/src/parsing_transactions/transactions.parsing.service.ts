@@ -12,6 +12,8 @@ import { CurrentPrices, PriceResponseDto } from '../price/dto/price.response.dto
 import { PriceService } from '../price/price.service';
 import {
   CHAIN_ID_ETH,
+  DB_BLOCK_FROM,
+  DB_BLOCK_TO,
   decimalsDivider,
   ETH_ADDRESS,
   ETH_TRANSFER_TOPIC,
@@ -21,6 +23,7 @@ import {
 import { EventDto } from './dto/event.dto';
 import { SubTransactionDto } from './dto/sub.transaction.dto';
 import { AssetsNewEntity } from './entities/assets.new.entity';
+import { TransactionsEntity } from './entities/transactions.entity';
 import { TokenOperations } from './enums/token.operations';
 import { TokenTypes } from './enums/token.types';
 import {
@@ -35,6 +38,8 @@ export class TransactionsParsingService {
   constructor(
     @InjectRepository(AssetsNewEntity)
     private assetsNewRepository: Repository<AssetsNewEntity>,
+    @InjectRepository(TransactionsEntity)
+    private transactionRepository: Repository<TransactionsEntity>,
     private priceService: PriceService,
     private web3Provider: Web3Provider,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -88,9 +93,9 @@ export class TransactionsParsingService {
       sqlData.push(
         `('${transaction.hash}', '${address}', ${transaction.blockNumber}, '${
           transaction.timestamp
-        }', '${transaction.gasPrice}', ${transaction.gasUsed}, ${
-          transaction.gasUsedUsd
-        }, '${tokenOperation}', ${transaction.chainId || CHAIN_ID_ETH}, 
+        }', '${transaction.from}', '${transaction.to}', '${transaction.gasPrice}', ${
+          transaction.gasUsed
+        }, ${transaction.gasUsedUsd}, '${tokenOperation}', ${transaction.chainId || CHAIN_ID_ETH}, 
         ${Boolean(addressSubTransactions?.length)}, 
         '${JSON.stringify(addressSubTransactions)}')`,
       );
@@ -103,12 +108,14 @@ export class TransactionsParsingService {
       return '';
     }
 
-    return `insert into transactions_new(hash, address, block_number, timestamp, gas_price, gas_used, fee_usd, token_operation, chain_id, is_visible, sub_transactions) 
+    return `insert into transactions_new(hash, address, block_number, timestamp, sender, destination, gas_price, gas_used, fee_usd, token_operation, chain_id, is_visible, sub_transactions) 
         values ${sqlValues.join(',')}
         on conflict(hash, address) 
         do update set 
         block_number = EXCLUDED.block_number,
         timestamp = EXCLUDED.timestamp,
+        sender = EXCLUDED.sender,
+        destination = EXCLUDED.destination,
         gas_price = EXCLUDED.gas_price,
         gas_used = EXCLUDED.gas_used,
         fee_usd = EXCLUDED.fee_usd,
@@ -130,7 +137,14 @@ export class TransactionsParsingService {
     });
 
     const assetsPrices = await this.priceService.getHistoricalPrices(requestAssets, CHAIN_ID_ETH);
-    const gasUsed = await this.getGasUsedFromWeb3(transaction.hash);
+    let gasUsed;
+    if (transaction.blockNumber >= DB_BLOCK_FROM && transaction.blockNumber <= DB_BLOCK_TO) {
+      const dbTransaction = await this.transactionRepository.findOne({ hash: transaction.hash });
+      const dbGasUsed = dbTransaction?.transactionData?.subTransactions[0]?.gasUsed;
+      gasUsed = dbGasUsed ? dbGasUsed : await this.getGasUsedFromWeb3(transaction.hash);
+    } else {
+      gasUsed = await this.getGasUsedFromWeb3(transaction.hash);
+    }
 
     this.modifyTransaction(
       transaction,
@@ -234,7 +248,7 @@ export class TransactionsParsingService {
     uniqueAddresses: Set<string>,
   ): MigrationEvent[] {
     const transactionTransfers: MigrationEvent[] = [];
-    transaction?.events.forEach((event) => {
+    transaction?.events?.forEach((event) => {
       if (event.topic1 === ETH_TRANSFER_TOPIC) {
         const temporaryEvent: MigrationEvent = JSON.parse(JSON.stringify(event));
         temporaryEvent.topic2 = fromHexToAddress(temporaryEvent.topic2);
@@ -257,6 +271,8 @@ export class TransactionsParsingService {
       throw Error('Price-service is not working correctly!');
     }
 
+    transaction.from = transaction?.from?.toLowerCase();
+    transaction.to = transaction?.to?.toLowerCase();
     transaction.gasUsed = gasUsed;
     transaction.gasUsedUsd = new BN(gasUsed)
       .times(transaction.gasPrice)

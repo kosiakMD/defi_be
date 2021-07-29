@@ -185,6 +185,12 @@ export class TransactionNewDto {
   @ApiProperty({ type: String, example: '1625499513' })
   timestamp: string = null;
 
+  @ApiProperty({ type: String, example: '1625499513' })
+  sender?: string = null;
+
+  @ApiProperty({ type: String, example: '1625499513' })
+  destination?: string = null;
+
   @ApiProperty({
     enum: TokenOperations,
     enumName: 'TokenOperations',

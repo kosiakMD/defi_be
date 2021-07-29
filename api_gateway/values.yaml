@@ -41,6 +41,7 @@ configMaps:
     ACCOUNT_APPROVALS: v1/approvals
     ACCOUNT_TRANSFERS: v1/transfers
     ACCOUNT_ASSETS: v1/assets
+    ACCOUNT_ANALYTIC: v1/analytic
     POOLS_SERVICE_URL: https://integration.dfyield.xyz
     POOLS_PATH: v1/pools
     VAULTS_SERVICE_URL: https://integration.dfyield.xyz

@@ -13,6 +13,8 @@ configMaps:
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000
+    COVALENT_URL: https://api.covalenthq.com/v1
+    COVALENT_KEY: ckey_8a12ec5b8243410b9960bb90ad0
 
 secrets:
 - database-read

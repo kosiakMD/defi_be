@@ -26,4 +26,10 @@ export class AssetsService {
       throw e;
     }
   }
+
+  async findByAddressAndChain(address: string, chainId: number): Promise<AssetsEntity> {
+    return this.assetRepository.findOne({
+      where: { address: address, chain: chainId },
+    });
+  }
 }

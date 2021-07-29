@@ -3,7 +3,7 @@ import { Exclude, Transform } from 'class-transformer';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 // TODO  use Entity columns with @View aggregation and delete mapping at db service
-@Entity({ name: 'asset_transfers' })
+@Entity({ name: 'asset_transfers_new' })
 export class TransferEntity {
   // @PrimaryColumn()
   // id: number;
@@ -66,6 +66,34 @@ export class TransferEntity {
   constructor(transferEntity: TransferEntity) {
     Object.assign(this, transferEntity);
   }
+}
+
+@Entity({ name: 'asset_transfers_new' })
+export class TransferEntityNew {
+  @Exclude()
+  @PrimaryColumn({ name: 'log_index' })
+  logIndex: number;
+
+  @Column({ name: 'asset_id' })
+  assetId: number;
+
+  @Column({ name: 'from' })
+  fromAddress: string;
+
+  @Column({ name: 'to' })
+  toAddress: string;
+
+  @Column({ name: 'value' })
+  amount: string;
+
+  @Column({ name: 'timestamp' })
+  blockTimeStamp: string;
+
+  @PrimaryColumn({ name: 'tx_hash' })
+  hash: string;
+
+  @PrimaryColumn({ name: 'block_number' })
+  blockNumber: string;
 }
 
 @Entity({ name: 'assets' })

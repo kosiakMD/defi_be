@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
+import { AssetsEntity } from '../assets/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
@@ -31,7 +32,7 @@ import {
   TransfersDetailedResponseDto,
   TransfersResponseDto,
 } from './dto/transfers.dto';
-import { TransferEntity } from './dto/transfers.entity';
+import { TransferEntity, TransferEntityNew } from './dto/transfers.entity';
 import {
   ERC20Transfer,
   ScanTransfer,
@@ -88,6 +89,18 @@ export class TransfersService {
       return dbTransfers;
     } catch (e) {
       this.logger.error(e, 'queryTransfers');
+      throw e;
+    }
+  }
+
+  async queryAssetTransfers(
+    asset: AssetsEntity,
+    addresses: string[],
+  ): Promise<TransferEntityNew[]> {
+    try {
+      return this.dbService.getAssetTransfers(asset, addresses);
+    } catch (e) {
+      this.logger.error(e, 'queryAssetTransfers');
       throw e;
     }
   }
@@ -154,22 +167,20 @@ export class TransfersService {
         userTransactions.map((transaction) => transaction.hash),
       );
 
-      const transactionWithTransfers = uniqueUserHashes.map<Transfer>(
-        (hash): Transfer => {
-          const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
+      const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash): Transfer => {
+        const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
 
-          const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
-            (transfer) => new ERC20TransferDto(transfer),
-          );
+        const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
+          (transfer) => new ERC20TransferDto(transfer),
+        );
 
-          return new TransferDto({
-            chainId: chainId,
-            hash: hashTransfers[0].hash,
-            blockTimeStamp: hashTransfers[0].blockTimeStamp,
-            erc20Transfers,
-          });
-        },
-      );
+        return new TransferDto({
+          chainId: chainId,
+          hash: hashTransfers[0].hash,
+          blockTimeStamp: hashTransfers[0].blockTimeStamp,
+          erc20Transfers,
+        });
+      });
 
       return {
         ...response,
@@ -319,9 +330,8 @@ export class TransfersService {
         return transfersResponse;
       }
 
-      const blocksDataTimestamps: BlocksResponseData = await this.blocksSubgraph.getBlocksTimestamps(
-        missedBlocks,
-      );
+      const blocksDataTimestamps: BlocksResponseData =
+        await this.blocksSubgraph.getBlocksTimestamps(missedBlocks);
       const blocks = blocksDataTimestamps.data.blocks;
 
       Object.keys(transfersResponse).map((k) => {

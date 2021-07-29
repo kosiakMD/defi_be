@@ -13,6 +13,7 @@ import { HealthController } from './health/health.controller';
 import { TransactionsModule } from './transactions/transcations.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { winstonParams } from './utils/winston';
+import { AnalyticModule } from './analytic/analytic.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { winstonParams } from './utils/winston';
     BalanceModule,
     TransactionsModule,
     TransfersModule,
+    AnalyticModule,
   ],
   controllers: [HealthController],
 })

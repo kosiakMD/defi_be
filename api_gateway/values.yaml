@@ -46,6 +46,7 @@ configMaps:
     POOLS_PATH: v1/pools
     VAULTS_SERVICE_URL: https://integration.dfyield.xyz
     VAULTS_PATH: v1/vaults
+    IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
 
 secrets:
 - mailer

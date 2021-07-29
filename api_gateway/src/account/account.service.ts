@@ -7,19 +7,23 @@ import { map } from 'rxjs/operators';
 import { AssetsDto } from '../assets/assets.dto';
 import { Logger } from '../common/Logger/Logger.service';
 import { Address, Chains } from '../common/interfaces';
+import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
-import { ApprovalBscDTO } from './account.dto';
+import { ApprovalDTO } from './account.dto';
 import { BalancesResponse } from './account.interfaces';
+import { ProfitAndLossResponseDto } from 'src/analytic/dto';
 
 @Injectable()
 export class AccountService {
   private readonly getStatusUrl: string;
   private readonly getTransactionsUrl: string;
+  private readonly getTransactionsNewUrl: string;
   private readonly getTransfersUrl: string;
   private readonly getBalanceUrl: string;
   private readonly getApprovalsUrl: string;
   private readonly getAssetsUrl: string;
+  private readonly getAnalyticUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -35,6 +39,7 @@ export class AccountService {
 
     const transactionsPath = this.configService.get<string>('ACCOUNT_TRANSACTIONS');
     this.getTransactionsUrl = `${url}/${transactionsPath}`;
+    this.getTransactionsNewUrl = `${url}/${transactionsPath}/new`;
 
     const transfersPath = this.configService.get<string>('ACCOUNT_TRANSFERS');
     this.getTransfersUrl = `${url}/${transfersPath}`;
@@ -47,6 +52,9 @@ export class AccountService {
 
     const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
     this.getAssetsUrl = `${url}/${assetsPath}`;
+
+    const analyticPath = this.configService.get<string>('ACCOUNT_ANALYTIC');
+    this.getAnalyticUrl = `${url}/${analyticPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -72,6 +80,21 @@ export class AccountService {
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getTransactionsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getTransactionsNew(addresses: Address[]): Promise<TransactionsNewDetailedResponseDto> {
+    try {
+      this.logger.time(this.getTransactionsNewUrl);
+      const data = await this.httpService
+        .get(this.getTransactionsNewUrl, { params: { addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getTransactionsNewUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
@@ -109,7 +132,7 @@ export class AccountService {
     }
   }
 
-  async getApprovals(addresses: string, chains?: string): Promise<ApprovalBscDTO[]> {
+  async getApprovals(addresses: string, chains?: string): Promise<ApprovalDTO[]> {
     try {
       this.logger.time(this.getApprovalsUrl);
       const data = await this.httpService
@@ -136,6 +159,21 @@ export class AccountService {
     } catch (e) {
       e.response && this.logger.error(e.response.data);
       this.logger.error(e, 'AccountService.getAssets');
+      throw e;
+    }
+  }
+
+  async getProfitAndLoss(asset: Address, addresses: Address): Promise<ProfitAndLossResponseDto> {
+    try {
+      this.logger.time(this.getAnalyticUrl);
+      const data = await this.httpService
+        .get(this.getAnalyticUrl, { params: { asset, addresses } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getAnalyticUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
       throw e;
     }
   }

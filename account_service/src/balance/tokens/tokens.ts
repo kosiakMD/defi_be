@@ -11,6 +11,7 @@ export const esdToken = {
   symbol: 'ESD',
   name: 'Empty Set Dollar',
   decimals: 18,
+  isLp: false,
 };
 
 export const daiToken = {
@@ -18,6 +19,7 @@ export const daiToken = {
   symbol: 'DAI',
   name: 'Dai Stablecoin',
   decimals: 18,
+  isLp: false,
 };
 
 export const ethToken = {
@@ -25,6 +27,7 @@ export const ethToken = {
   symbol: 'ETH',
   name: 'Ether',
   decimals: 18,
+  isLp: false,
 };
 
 export const wethToken = {
@@ -32,6 +35,7 @@ export const wethToken = {
   symbol: 'WETH',
   name: 'Wrapped Ether',
   decimals: 18,
+  isLp: false,
 };
 
 export const bnbToken = {
@@ -39,6 +43,7 @@ export const bnbToken = {
   symbol: 'BNB',
   name: 'BNB',
   decimals: 18,
+  isLp: false,
 };
 
 export const wbnbToken = {
@@ -46,6 +51,7 @@ export const wbnbToken = {
   symbol: 'WBNB',
   name: 'Wrapped BNB',
   decimals: 18,
+  isLp: false,
 };
 
 export const NO_DB_ETH_TOKENS = [ethToken, wethToken, daiToken, esdToken];

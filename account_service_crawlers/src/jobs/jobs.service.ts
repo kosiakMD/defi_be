@@ -27,7 +27,6 @@ export class JobsService {
       defaultLockLifetime: 1000 * 60 * 60 * 24 * 30,
     });
 
-    // TODO will be uncommented when all data in the network is synchronized with db data
     this.agenda.on('ready', async () => {
       await this.agenda.start();
       await this.startEthMigrationJob();

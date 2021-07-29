@@ -2,7 +2,7 @@ import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Cache } from 'cache-manager';
 
-import { ApprovalBscDTO } from '../account/account.dto';
+import { ApprovalDTO } from '../account/account.dto';
 import { AccountService } from '../account/account.service';
 
 @ApiTags('Approvals')
@@ -28,11 +28,11 @@ export class ApprovalsController {
     // example: '1,2',
     example: '',
   })
-  @ApiResponse({ status: 200, type: ApprovalBscDTO, isArray: true })
+  @ApiResponse({ status: 200, type: ApprovalDTO })
   async getBscApproval(
     @Query('addresses') addresses: string,
     @Query('chains') chains: string,
-  ): Promise<ApprovalBscDTO[]> {
+  ): Promise<ApprovalDTO[]> {
     return this.accountService.getApprovals(addresses, chains);
   }
 }

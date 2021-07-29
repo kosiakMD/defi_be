@@ -41,6 +41,7 @@ export const mapTokenBalances = ({
       symbol: token.symbol,
       name: token.name,
       address: token.address,
+      isLp: token.isLp,
     },
   };
 };

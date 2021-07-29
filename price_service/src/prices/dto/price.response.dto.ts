@@ -3,13 +3,21 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ChainDto, CurrencyDto } from '../../lookup/dto';
 
 export class PriceResponseDto<T> {
-  @ApiProperty()
+  @ApiProperty({ type: ChainDto })
   chain: ChainDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: CurrencyDto })
   currency: CurrencyDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Object,
+    example: {
+      '0xbddab785b306bcd9fb056da189615cc8ece1d823': {
+        1617138000: 0.001164317707510157,
+        1617224400: 0.001164317707510157,
+      },
+    },
+  })
   prices: T;
 }
 
@@ -18,7 +26,7 @@ export interface CurrentPricesPayload {
 }
 
 export interface CurrentPricesPayloadV2 {
-  [key: string]: {price: number, platform: string, isLp: boolean};
+  [key: string]: { price: number; platform: string; isLp: boolean };
 }
 
 export interface TimestampKeyPrice {
@@ -29,7 +37,7 @@ export interface HistoricalPricesPayload {
   [key: string]: TimestampKeyPrice;
 }
 export interface HistoricalPricesPayloadV2 {
-  [key: string]: {prices:TimestampKeyPrice, platform: string, isLp: boolean};
+  [key: string]: { prices: TimestampKeyPrice; platform: string; isLp: boolean };
 }
 
 export type PricesPayloadV2 = CurrentPricesPayloadV2 | HistoricalPricesPayloadV2;

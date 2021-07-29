@@ -1,19 +1,72 @@
+import { ApiProperty } from '@nestjs/swagger';
+
 import { LiquidityPoolsEntity } from '../entities/liquidity.pools.entity';
-import { APY } from './apy.dto';
-import { ImpermanentLoss } from './impermanentloss.dto';
-import { Token } from './token.dto';
+import { APYDto } from './apy.dto';
+import { ImpermanentLossDto } from './impermanentloss.dto';
+import { TokenDto } from './token.dto';
 
 export class LiquidityPoolsResponseDto {
+  @ApiProperty({ type: Number, example: 2830808 })
   id: number;
+
+  @ApiProperty({ type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d' })
   address: string;
+
+  @ApiProperty({ type: Number, example: 1 })
   chain: number;
+
+  @ApiProperty({ type: String, example: 'Uniswap V2' })
   project: string;
+
+  @ApiProperty({ type: Number, example: 99690611 })
   reserveUsd: number;
-  apy: APY;
-  il: ImpermanentLoss;
-  token: Token;
-  poolTokens: Token[];
+
+  @ApiProperty({ type: APYDto })
+  apy: APYDto;
+
+  @ApiProperty({ type: ImpermanentLossDto })
+  il: ImpermanentLossDto;
+
+  @ApiProperty({
+    type: TokenDto,
+    example: {
+      id: '0x72630b1e3b42874bf335020ba0249e3e9e47bafc',
+      totalSupply: 17595.65235211107,
+    },
+  })
+  token: TokenDto;
+
+  @ApiProperty({
+    type: [TokenDto],
+    example: [
+      {
+        id: '0x395c8db957d743a62ac3aaaa4574553bcf2380b3',
+        name: 'ulock.eth Wrapped Ether',
+        symbol: 'UETH',
+        percentage: 50,
+        reserve: 1000,
+      },
+      {
+        id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+        name: 'Wrapped Ether',
+        symbol: 'WETH',
+        percentage: 50,
+        reserve: 290.4075220249111,
+      },
+    ],
+  })
+  poolTokens: TokenDto[];
+
+  @ApiProperty({
+    type: String,
+    example: '2021-04-26T12:15:22.355Z',
+  })
   createdAt: Date;
+
+  @ApiProperty({
+    type: String,
+    example: '2021-06-10T11:06:23.343Z',
+  })
   updatedAt: Date;
 
   public fromEntityToDto(entity: LiquidityPoolsEntity) {

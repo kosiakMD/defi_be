@@ -18,7 +18,8 @@ export class DbService {
         assets_new.address as "tokenAddress",
         assets_new.name as "tokenName",
         assets_new.symbol as "tokenSymbol",
-        assets_new.decimals as "tokenDecimals"
+        assets_new.decimals as "tokenDecimals",
+        assets_new.is_lp as "isLp"
       from (
         select
           address,
@@ -39,7 +40,7 @@ export class DbService {
         ) as reduced
       group by address, asset_id) as balances
       join assets_new on asset_id = assets_new.id
-      where assets_new.is_migrated = true and assets_new.chain_id = ${chainId} and amount > 0
+      where (assets_new.is_migrated = true or is_lp = true) and assets_new.chain_id = ${chainId} and amount > 0
     `);
   };
 }

@@ -14,6 +14,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
+import { AnalyticController } from './analytic/analytic.controller';
 import { AppController } from './app/app.controller';
 import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
@@ -82,6 +83,7 @@ import { VaultsModule } from './vaults/vaults.module';
   ],
   controllers: [
     HealthController,
+    AnalyticController,
     AppController,
     AssetsController,
     CurveController,

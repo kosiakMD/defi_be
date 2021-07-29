@@ -4,11 +4,15 @@ import { Repository } from 'typeorm';
 
 import { AccountService, BalanceToken } from '../account/account.service';
 import { EtherscanService } from '../etherscan/etherscan.service';
-import { UniswapLiquidityPosition, UniswapLiquidityPositionPair } from '../interfaces/liquidity.position.interfaces';
+import {
+  UniswapLiquidityPosition,
+  UniswapLiquidityPositionPair,
+} from '../interfaces/liquidity.position.interfaces';
 import { Base, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
+import { PROJECT_PANCAKE } from '../pools/pools.setting';
 import { PancakeSubgraph } from '../thegraph/pancake.subgraph';
 import { getDataByAddresses, getDbDataByAddresses } from '../utils/util';
 import { PancakeBurnsEntity } from './entity/pancake.burns.entity';
@@ -16,7 +20,6 @@ import { PancakeMintsEntity } from './entity/pancake.mints.entity';
 import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
-import { PROJECT_PANCAKE } from '../pools/pools.setting';
 
 @Injectable()
 export class PancakeService {
@@ -38,15 +41,13 @@ export class PancakeService {
 
   async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
     const addressesArray: string[] = addresses.split(',');
-    let allPools: LiquidityPoolsEntity[] = []
+    let allPools: LiquidityPoolsEntity[] = [];
     const [balances, pools, poolsV2] = await Promise.all([
       this.etherscanService.getBalances(addressesArray),
       this.poolsService.getProjectPools(PANCAKE_PROJECT),
       this.poolsService.getProjectPools(PANCAKE_V2_PROJECT),
     ]);
-    allPools = allPools
-      .concat(pools)
-      .concat(poolsV2)
+    allPools = allPools.concat(pools).concat(poolsV2);
 
     const liquidityPositions: UniswapResponseData = {
       uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
@@ -137,7 +138,7 @@ export class PancakeService {
     const internalSubgraphData = await this.getDbLiquidityPositions(addresses);
 
     result.response.uniswapLiquidityPositions = internalSubgraphData.uniswapLiquidityPositions;
-    result.response.sushiswapStakingPosition = undefined
+    result.response.sushiswapStakingPosition = undefined;
     return this.mapper.mapData(
       result.userAddresses,
       originAddressesArray,

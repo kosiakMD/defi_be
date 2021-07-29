@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { ChainModule } from '../chain/chain.module';
+import { CovalentModule } from '../covalent/covalent.module';
+import { CovalentService } from '../covalent/covalent.service';
 import { MulticallModule } from '../multicall/multicall.module';
 import { PriceModule } from '../price/price.module';
 import { BalanceController } from './balance.controller';
@@ -19,6 +21,7 @@ import { ScanService } from './scan/scan.service';
     ChainModule,
     PriceModule,
     MulticallModule,
+    CovalentModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -33,6 +36,6 @@ import { ScanService } from './scan/scan.service';
     }),
   ],
   controllers: [BalanceController],
-  providers: [BalanceService, DbService, ScanService, ScanApi],
+  providers: [BalanceService, DbService, ScanService, ScanApi, CovalentService],
 })
 export class BalanceModule {}

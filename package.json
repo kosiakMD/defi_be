@@ -2,6 +2,11 @@
   "name": "defiyield-backend",
   "version": "1.0.1",
   "description": "DeFiYield Microservices",
+  "engines": {
+    "node": ">=10.13.0",
+    "npm": "^6.11.0 || ^7.5.6",
+    "yarn": ">=1.13.0"
+  },
   "scripts": {
     "pre-commit": "yarn run lint && yarn run format-check",
     "prepare": "husky install",
@@ -60,11 +65,13 @@
   },
   "homepage": "https://github.com/defiyield-info/defiyield-backend-v2#readme",
   "devDependencies": {
+    "@nestjs/config": "^0.6.3",
     "@trivago/prettier-plugin-sort-imports": "^2.0.1",
     "@types/cache-manager": "^3.4.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "axios": "^0.21.1",
+    "bignumber.js": "^9.0.1",
     "danger": "^10.6.3",
     "eslint": "^7.22.0",
     "eslint-config-prettier": "^8.1.0",
@@ -75,7 +82,14 @@
     "pg-promise": "^10.10.1",
     "prettier": "^2.2.1",
     "prettier-plugin-import-sort": "0.0.6",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.3",
+    "web3": "^1.3.6"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@nestjs/common": "^7.6.18",
+    "@nestjs/swagger": "^4.8.1",
+    "@nestjs/typeorm": "^7.1.5",
+    "nest-winston": "^1.5.0",
+    "typeorm": "^0.2.34"
+  }
 }

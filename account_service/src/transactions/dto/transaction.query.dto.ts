@@ -2,6 +2,7 @@ import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { CHAIN_ID_ETH } from '../../common/constatnt';
 import { ChainsIds } from '../../common/types';
 
 interface TransactionQuery {
@@ -19,7 +20,7 @@ export class TransactionQueryDto implements TransactionQuery {
   })
   @IsArray()
   @IsInt({ each: true })
-  chains;
+  chains: ChainsIds = [CHAIN_ID_ETH];
 
   @IsNotEmpty()
   @IsString({ each: true })

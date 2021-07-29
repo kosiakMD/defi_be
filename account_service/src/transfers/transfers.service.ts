@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
+import { AssetsEntity } from '../assets/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
@@ -31,7 +32,7 @@ import {
   TransfersDetailedResponseDto,
   TransfersResponseDto,
 } from './dto/transfers.dto';
-import { TransferEntity } from './dto/transfers.entity';
+import { TransferEntity, TransferEntityNew } from './dto/transfers.entity';
 import {
   ERC20Transfer,
   ScanTransfer,
@@ -88,6 +89,18 @@ export class TransfersService {
       return dbTransfers;
     } catch (e) {
       this.logger.error(e, 'queryTransfers');
+      throw e;
+    }
+  }
+
+  async queryAssetTransfers(
+    asset: AssetsEntity,
+    addresses: string[],
+  ): Promise<TransferEntityNew[]> {
+    try {
+      return this.dbService.getAssetTransfers(asset, addresses);
+    } catch (e) {
+      this.logger.error(e, 'queryAssetTransfers');
       throw e;
     }
   }

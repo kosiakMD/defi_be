@@ -5,7 +5,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AccountService } from '../account/account.service';
 import { Logger } from '../common/Logger/Logger.service';
 import { TransactionQueryDto } from './transaction.query.dto';
-import { TransactionsDetailedResponseDto } from './transactions.dto';
+import {
+  TransactionsDetailedResponseDto,
+  TransactionsNewDetailedResponseDto,
+} from './transactions.dto';
 import { TransactionsResponse } from './transactions.interfaces';
 
 @ApiTags('Transactions')
@@ -35,5 +38,21 @@ export class TransactionsController {
   public getTransactions(@Query() query: TransactionQueryDto): Promise<TransactionsResponse[]> {
     const { addresses, chains } = query;
     return this.service.getTransactions(addresses, chains);
+  }
+
+  @Get('/new')
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    description: 'Array of Addresses (comma separated)',
+    example:
+      '0xcff17036c5ae141f2244f480fc16ba244ffab33b,0x07471d0262b17529a489d0c696eef988f89464ac',
+  })
+  @ApiResponse({ status: 200, type: TransactionsNewDetailedResponseDto })
+  public getTransactionsNew(
+    @Query() query: TransactionQueryDto,
+  ): Promise<TransactionsNewDetailedResponseDto> {
+    const { addresses } = query;
+    return this.service.getTransactionsNew(addresses);
   }
 }

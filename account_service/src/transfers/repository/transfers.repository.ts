@@ -1,6 +1,6 @@
 import { EntityRepository, Repository } from 'typeorm';
 
-import { TransferEntity } from '../dto/transfers.entity';
+import { TransferEntityNew } from '../dto/transfers.entity';
 
-@EntityRepository(TransferEntity)
-export class TransfersRepository extends Repository<TransferEntity> {}
+@EntityRepository(TransferEntityNew)
+export class TransfersRepository extends Repository<TransferEntityNew> {}

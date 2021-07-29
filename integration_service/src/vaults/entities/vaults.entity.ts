@@ -1,7 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { APY } from '../dto/apy.dto';
-import { Token } from '../dto/token.dto';
+import { APYDto } from '../dto/apy.dto';
+import { TokenDto } from '../dto/token.dto';
 
 @Entity('vaults')
 export class VaultsEntity {
@@ -21,19 +21,19 @@ export class VaultsEntity {
   chain: number;
 
   @Column({ name: 'apy', nullable: true, type: 'json' })
-  apy: APY;
+  apy: APYDto;
 
   @Column({ name: 'tvl', nullable: true })
   tvl: number;
 
   @Column({ name: 'lp_token', nullable: true, type: 'json' })
-  lpToken: Token;
+  lpToken: TokenDto;
 
   @Column({ name: 'liquidity_pool_tokens', nullable: true, type: 'json' })
-  liquidityPoolTokens: Token[];
+  liquidityPoolTokens: TokenDto[];
 
   @Column({ name: 'reward_token', nullable: true, type: 'json' })
-  rewardToken: Token;
+  rewardToken: TokenDto;
 
   @Column({ name: 'created_at', nullable: true, type: 'timestamp' })
   createdAt: Date;

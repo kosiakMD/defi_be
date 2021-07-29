@@ -12,13 +12,13 @@ export class PriceResponseDto<T> implements PriceServiceResponse<T> {
     this.prices = prices;
   }
 
-  @ApiProperty()
+  @ApiProperty({ type: ChainDto, required: false })
   chain?: ChainDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: CurrencyDto, required: false })
   currency?: CurrencyDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: Object })
   prices: T;
 }
 

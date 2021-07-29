@@ -50,8 +50,8 @@ export default class VaultDto implements Vault {
   @ApiProperty({ type: String, example: 'sushiswap' })
   project: string;
 
-  @ApiProperty({ type: String, example: 'eth' })
-  chain: string;
+  @ApiProperty({ type: Number, example: 1 })
+  chain: number;
 
   @ApiProperty({ type: VaultAPYDTO })
   apy: VaultAPYDTO;

@@ -15,7 +15,7 @@ import {
 import { DetailedResponseDto } from '../../common/dto';
 import { ResultStatus } from '../../common/enum';
 import { Address } from '../../common/interfaces';
-import { ChainsIds } from '../../common/types';
+import { ChainId, ChainsIds } from '../../common/types';
 import {
   ERC20Token,
   ERC20Transfer,
@@ -49,7 +49,7 @@ export class TransfersQueryDto implements TransfersQuery {
   })
   @IsArray()
   @IsInt({ each: true })
-  chains;
+  chains: number[];
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -103,19 +103,19 @@ export class ERC20TokenDto {
 }
 
 export class ERC20TransferDto implements ERC20Transfer {
-  @ApiProperty({ example: '0xe5ccfca59acd6a3dea18a97a8d12a1fc5be09b13' })
+  @ApiProperty({ type: String, example: '0xe5ccfca59acd6a3dea18a97a8d12a1fc5be09b13' })
   fromAddress: string;
 
-  @ApiProperty({ example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85' })
+  @ApiProperty({ type: String, example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85' })
   toAddress: string;
 
-  @ApiProperty({ example: '20000000000000000000' })
+  @ApiProperty({ type: String, example: '20000000000000000000' })
   amount: string;
 
-  @ApiProperty({ example: null })
+  @ApiProperty({ type: Number, example: null })
   tokenPriceUSD: number | null;
 
-  @ApiProperty({ example: 0 })
+  @ApiProperty({ type: Number, example: 0 })
   totalPriceUSD: number | null;
 
   @ApiProperty({ type: ERC20TokenDto })
@@ -137,8 +137,8 @@ export class ERC20TransferDto implements ERC20Transfer {
 }
 
 export class ScanTransferDto implements ScanTransfer {
-  @ApiProperty({ example: 1 })
-  chainId: number;
+  @ApiProperty({ type: Number, example: 1 })
+  chainId: ChainId;
   @ApiProperty({
     type: String,
     example: '0x0e91ee6e298b4856a7d58e77c7926453cf46edc147a78e4d5cfe2e4c1c675499',
@@ -159,8 +159,8 @@ export class ScanTransferDto implements ScanTransfer {
 }
 
 export class TransferDto implements Transfer {
-  @ApiProperty({ example: 1 })
-  chainId: number;
+  @ApiProperty({ type: Number, example: 1 })
+  chainId: ChainId;
 
   @ApiProperty({
     type: String,
@@ -193,6 +193,7 @@ export class TransfersDetailedResponseDto extends DetailedResponseDto<TransfersR
   }
 
   @ApiProperty({
+    type: String,
     enum: ResultStatus,
     enumName: 'ResultStatus',
     example: ResultStatus.ok,
@@ -200,6 +201,7 @@ export class TransfersDetailedResponseDto extends DetailedResponseDto<TransfersR
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Array<Error | string>;

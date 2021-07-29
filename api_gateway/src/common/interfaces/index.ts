@@ -28,6 +28,7 @@ export interface TokenCommon {
   name?: string;
   symbol?: string;
   decimals?: number;
+  isLp?: boolean;
 }
 
 export interface ERC20Token extends TokenCommon {
@@ -67,13 +68,13 @@ export interface PoolToken {
 
 export interface Token {
   id: number;
-  isStable: number;
+  is_stable: number; // eslint-disable-line camelcase
   name: string;
-  coingeckoId: string;
+  coingecko_id: string; // eslint-disable-line camelcase
   address: Address;
   decimals: number;
-  abiTypeId: number;
-  createdAt: string;
+  abi_type_id: number; // eslint-disable-line camelcase
+  created_at: string; // eslint-disable-line camelcase
   price: number;
 }
 
@@ -104,10 +105,11 @@ export interface PoolTokenId {
 }
 
 export interface Pool {
-  id: string;
+  id: number;
   address: Address;
-  chain: string;
+  chain: number;
   project: string;
+  reserveUSD: number;
   apy: PoolAPY;
   il: IL;
   token: PoolTokenId;
@@ -136,7 +138,7 @@ export interface Vault {
   vaultId: string;
   vaultName: string;
   project: string;
-  chain: string;
+  chain: number;
   apy: VaultAPY;
   tvl: number; //6974003.81675021
   lpToken: LPToken;

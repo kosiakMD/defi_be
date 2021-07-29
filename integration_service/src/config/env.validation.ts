@@ -72,6 +72,10 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  POOLS_CACHE_TTL_IN_SECONDS: Joi.number(),
+  CHAIN_CACHE_TTL_IN_SECONDS: Joi.number(),
+  CURRENCY_CACHE_TTL_IN_SECONDS: Joi.number(),
+  PRICE_CACHE_TTL_IN_SECONDS: Joi.number(),
 });
 
 export const validationOptions = {

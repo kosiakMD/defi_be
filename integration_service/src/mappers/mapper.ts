@@ -29,9 +29,9 @@ import {
   Transactions,
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
+import { PROJECT_PANCAKE } from '../pools/pools.setting';
 import { PriceService } from '../price/price.service';
 import { abi, decimalsDivider } from '../utils/util';
-import { PROJECT_PANCAKE } from '../pools/pools.setting';
 
 @Injectable()
 export class Mapper {
@@ -335,7 +335,7 @@ export class Mapper {
         userPoolShare,
       );
 
-      const project = amm.protocolName === 'uniswap' ? 'Uniswap V2' : amm.protocolName
+      const project = amm.protocolName === 'uniswap' ? 'Uniswap V2' : amm.protocolName;
       const liquidityPosition: LiquidityPosition = {
         pool: pool,
         lpToken,

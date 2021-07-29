@@ -31,4 +31,7 @@ export class AssetsEntity {
 
   @Column({ name: 'is_display', nullable: true, default: false })
   isDisplay: boolean;
+
+  @Column({ name: 'is_data_present', nullable: true, default: false })
+  isDataPresent: boolean;
 }

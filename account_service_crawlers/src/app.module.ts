@@ -1,4 +1,4 @@
-import { Inject, LoggerService, Module, OnModuleInit, HttpModule } from '@nestjs/common';
+import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -9,24 +9,15 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
-import { HealthController } from './health/health.controller';
+import configuration from './config/configuration';
 import { JobsModule } from './jobs/jobs.module';
 import { JobsService } from './jobs/jobs.service';
+import { MigrationModule } from './migrations/migration.module';
+import { NodeModule } from './node/node.module';
 
 @Module({
-  controllers: [HealthController],
   imports: [
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
-      envFilePath: [
-        '.env.development.local',
-        '.env.development',
-        '.env.production.local',
-        '.env.production',
-        '.env',
-      ],
-    }),
+    ConfigModule.forRoot(configuration),
     WinstonModule.forRoot({
       // options
       level: process.env.LOG_LEVEL || 'info',
@@ -53,13 +44,15 @@ import { JobsService } from './jobs/jobs.service';
         type: 'postgres',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USER'),
+        username: configService.get<string>('DB_USERNAME'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_DATABASE'),
-        schema: configService.get<string>('DB_SCHEMA'),
-        entities: [configService.get<string>('DB_ENTITIES')],
+        // schema: configService.get<string>('DB_SCHEMA'),
+        entities: ['dist/**/*.entity{.ts,.js}'],
+        // entities: [configService.get<string>('DB_ENTITIES')],
         autoLoadEntities: true,
-        logging: true,
+        synchronize: false,
+        logging: false,
       }),
     }),
     TerminusModule,
@@ -68,6 +61,8 @@ import { JobsService } from './jobs/jobs.service';
       maxRedirects: 2,
     }),
     JobsModule,
+    NodeModule,
+    MigrationModule,
   ],
   providers: [JobsService],
 })
@@ -82,7 +77,6 @@ export class AppModule implements OnModuleInit {
       },
       'App',
     );
-    this.logger.log(this.configService, SERVICE_NAME);
   }
 
   constructor(

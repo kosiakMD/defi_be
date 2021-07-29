@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDecimal, IsEthereumAddress, IsNumber, IsString } from 'class-validator';
+import { IsEthereumAddress, IsNumber, IsString } from 'class-validator';
 
 import { Address, PoolToken, TokenSymbol } from '../interfaces';
 
@@ -12,15 +12,11 @@ export default class PoolTokenDto implements PoolToken {
   @IsString()
   name: string;
 
-  @ApiProperty({ type: Number, example: 'WETH' })
+  @ApiProperty({ type: String, example: 'WETH' })
   @IsString()
   symbol: TokenSymbol;
 
   @ApiProperty({ type: Number, example: 50 })
   @IsNumber()
   percentage: number;
-
-  @ApiProperty({ type: Number, example: 612.3847071070329 })
-  @IsDecimal()
-  reserve: number;
 }

@@ -4,13 +4,21 @@ import { ChainDto } from './chain.dto';
 import { CurrencyDto } from './currency.dto';
 
 export class PriceResponseDto<T> {
-  @ApiProperty()
+  @ApiProperty({ type: ChainDto })
   chain: ChainDto;
 
-  @ApiProperty()
+  @ApiProperty({ type: CurrencyDto })
   currency: CurrencyDto;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: Object,
+    example: {
+      '0xbddab785b306bcd9fb056da189615cc8ece1d823': {
+        1617138000: 0.001164317707510157,
+        1617224400: 0.001164317707510157,
+      },
+    },
+  })
   prices: T;
 }
 

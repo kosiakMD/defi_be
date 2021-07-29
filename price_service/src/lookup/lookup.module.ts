@@ -1,8 +1,8 @@
 import { CacheModule, Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-
-import * as redisStore from 'cache-manager-redis-store';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import * as redisStore from 'cache-manager-redis-store';
+
 import { ChainController } from './chain.controller';
 import { CurrencyController } from './currency.controller';
 import { Chain, Currency } from './models';

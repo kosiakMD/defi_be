@@ -54,6 +54,7 @@ export const validationSchema = Joi.object({
 
   RABBITMQ_URL: Joi.string().required(),
   ASSET_MIGRATION_QUEUE: Joi.string().required(),
+  TRANSACTION_EVENTS_MIGRATION_QUEUE: Joi.string().required(),
 });
 
 export const validationOptions = {

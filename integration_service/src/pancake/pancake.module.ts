@@ -13,8 +13,8 @@ import { PancakeMintsEntity } from './entity/pancake.mints.entity';
 import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PancakeController } from './pancake.controller';
-import { PancakeService } from './pancake.service';
 import { PancakePriceService } from './pancake.price.service';
+import { PancakeService } from './pancake.service';
 
 @Module({
   imports: [

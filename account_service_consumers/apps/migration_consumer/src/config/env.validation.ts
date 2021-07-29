@@ -34,6 +34,11 @@ export const validationSchema = Joi.object({
   DB_DATABASE: Joi.string().required(),
   RABBITMQ_URL: Joi.string().required(),
   ASSET_MIGRATION_QUEUE: Joi.string().required(),
+  TRANSACTION_NEW_ASSET_ADDED: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.string().required(),
+  REDIS_AUTH: Joi.string().required(),
+  CACHE_TTL_IN_SECONDS: Joi.number().required(),
 });
 
 export const validationOptions = {

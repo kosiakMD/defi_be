@@ -3,8 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { urlencoded, json } from 'express';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AppModule } from './app.module';
+import { addTimeLogFeature } from './common/Logger/Logger.service';
 import { createLogger } from './utils/winston';
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -48,6 +50,9 @@ async function bootstrap(): Promise<void> {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
   }
+
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useLogger(enhancedLogger);
 
   const port = configService.get<string>('SERVICE_PORT') || 3000;
   const host = configService.get<string>('SERVICE_HOST');

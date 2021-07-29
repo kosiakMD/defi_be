@@ -1,16 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { getManager } from 'typeorm';
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { getManager, In, Repository } from 'typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from '../common/constatnt';
 import { ResultStatus } from '../common/enum';
-import { Address } from '../common/interfaces';
-import { ChainsIds } from '../common/types';
+import { Address, DetailedResponse } from '../common/interfaces';
+import { ChainId, ChainsIds } from '../common/types';
+import { Covalent } from '../covalent/covalent.interface';
+import { CovalentService } from '../covalent/covalent.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
-import { getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import { getAbsoluteChainIds } from '../utils/chains';
+import { getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import { TransactionDto, TransactionNewDto } from './dto/transaction.dto';
+import { TransactionNewEntity } from './entity/transaction.new.entity';
 import {
   Transaction,
   TransactionsResponse,
@@ -24,9 +33,13 @@ export class TransactionsService {
   manager: EntityManager;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
     private readonly web3Provider: Web3Provider,
     private readonly bscScanService: BscScanService,
     private readonly etherScanService: EtherScanService,
+    private readonly covalentService: CovalentService,
+    @InjectRepository(TransactionNewEntity)
+    private readonly transactionRepository: Repository<TransactionNewEntity>,
   ) {}
 
   private static convertAddresses(addresses: string[]): string {
@@ -135,14 +148,41 @@ export class TransactionsService {
     `);
   }
 
-  async getTransactionsFromScan(addresses: string[], chains: ChainsIds) {
-    const result = {
+  public async getTransactionsNew(
+    addresses: Address[],
+    chains: ChainsIds,
+  ): Promise<DetailedResponse<TransactionNewDto[]>> {
+    const response = {
+      status: ResultStatus.ok,
+      errors: [],
+      data: [],
+    };
+
+    try {
+      const dbTsxNew: TransactionNewEntity[] = await this.transactionRepository.find({
+        where: { address: In(addresses), isVisible: true, chainId: In(chains) },
+        order: { timestamp: 'ASC' },
+      });
+      response.data = plainToClass(TransactionNewDto, dbTsxNew);
+      return response;
+    } catch (e) {
+      this.logger.error(e, 'getTransactionsNew');
+      throw e;
+    }
+  }
+
+  async getTransactionsFromScan(
+    addresses: Address[],
+    chains: ChainsIds,
+  ): Promise<DetailedResponse<TransactionsResult[]>> {
+    const response = {
       status: ResultStatus.ok,
       errors: [],
       data: [],
     };
     //
-    const concatTxs = (newTxs): TransactionsResult[] => (result.data = result.data.concat(newTxs));
+    const concatTxs = (newTxs): TransactionsResult[] =>
+      (response.data = response.data.concat(newTxs));
 
     if (chains?.length) {
       const handleChain = async (chainId, service: ScanApiService): Promise<any> => {
@@ -153,9 +193,9 @@ export class TransactionsService {
           txs.forEach((tx) => {
             if (tx.status === 'fulfilled') {
               concatTxs(tx.value.data);
-              if (tx.value.errors) result.errors.push(tx.value.errors);
+              if (tx.value.errors) response.errors.push(tx.value.errors);
             } else {
-              result.errors.push(tx.reason);
+              response.errors.push(tx.reason);
             }
           });
         }
@@ -175,24 +215,95 @@ export class TransactionsService {
           if (chainTxsResult.status === 'fulfilled') {
             chainTxsResult.value.forEach((tx) => {
               concatTxs(tx.transactions);
-              if (tx.error) result.errors.push(tx.error);
+              if (tx.error) response.errors.push(tx.error);
             });
           } else {
-            result.errors.push(chainTxsResult.reason);
+            response.errors.push(chainTxsResult.reason);
           }
         });
-        if (result.errors.length) {
-          result.status = ResultStatus.error;
+        if (response.errors.length) {
+          response.status = ResultStatus.error;
         }
-        return result;
+        return response;
       };
 
       checkFulfillment([ethTransactions, bscTransactions]);
     }
 
-    if (result.errors.length) {
-      result.status = ResultStatus.error;
+    if (response.errors.length) {
+      response.status = ResultStatus.error;
     }
-    return result;
+    return response;
+  }
+
+  private transformCovalentToInternal(
+    data: Covalent.Transaction,
+    chainId: ChainId,
+  ): TransactionDto[] {
+    const { quote_currency: currency, items } = data;
+    return items.map(
+      (tsx) =>
+        new TransactionDto({
+          chainId: chainId,
+          // @ts-ignore
+          blockNumber: tsx.block_height,
+          blockHash: tsx.tx_hash,
+          hash: tsx.tx_hash,
+          timeStamp: tsx.block_signed_at,
+          // @ts-ignore
+          from: tsx.from_adress,
+          // @ts-ignore
+          to: tsx.to_adress,
+          // @ts-ignore
+          value: tsx.value,
+          // @ts-ignore
+          valueInCurrency: tsx.value_quote,
+          // @ts-ignore
+          currency: currency,
+          // @ts-ignore
+          gasPrice: tsx.gas_price,
+          // @ts-ignore
+          gasUsed: tsx.gas_spent,
+          isError: tsx.successful ? '0' : '1',
+        }),
+    );
+  }
+
+  async getTransactionsFromCovalent(
+    addresses: Address[],
+    chains: ChainId[],
+  ): Promise<DetailedResponse<TransactionsResult[]>> {
+    const response = {
+      status: ResultStatus.ok,
+      errors: [],
+      data: [],
+    };
+
+    const chainsToHandle = getAbsoluteChainIds(getUniqList(chains));
+    const addressesToHandle = getUniqueAndToLowerCaseArrayData(addresses);
+
+    const promises = [];
+    addressesToHandle.forEach((address) => {
+      chainsToHandle.forEach((chain) => {
+        promises.push(this.covalentService.getTransactions(address, chain));
+      });
+    });
+
+    const results = await Promise.allSettled<Covalent.Transaction>(promises);
+
+    results.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        const intTsx = this.transformCovalentToInternal(result.value, chainsToHandle[index]);
+        response.data = response.data.concat(intTsx);
+      } else {
+        response.errors.push(result.reason?.message || result.reason);
+      }
+    });
+
+    if (response.errors.length) {
+      response.status = ResultStatus.error;
+    }
+
+    return response;
   }
 }

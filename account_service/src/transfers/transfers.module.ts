@@ -5,14 +5,14 @@ import { ChainModule } from '../chain/chain.module';
 import { PriceModule } from '../price/price.module';
 import { ScanApiModule } from '../scan_api/scan.api.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
+import { TransferEntityNew } from './dto/transfers.entity';
 import { DbService } from './repository/db.service';
 import { TransfersController } from './transfers.controller';
-import { TransferEntity } from './dto/transfers.entity';
 import { TransfersService } from './transfers.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TransferEntity]),
+    TypeOrmModule.forFeature([TransferEntityNew]),
     ChainModule,
     ScanApiModule,
     PriceModule,
@@ -20,5 +20,6 @@ import { TransfersService } from './transfers.service';
   ],
   controllers: [TransfersController],
   providers: [TransfersService, DbService],
+  exports: [TransfersService],
 })
 export class TransfersModule {}

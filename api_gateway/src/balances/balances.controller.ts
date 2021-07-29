@@ -29,7 +29,6 @@ export class BalancesController {
     required: false,
     description: 'Array of chain ID (comma separated)',
     example: '1,2',
-    // example: '',
   })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
   public getBalance(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {

@@ -1,4 +1,5 @@
 import { ResultStatus } from '../../common/enum';
+import { TransactionDto } from '../dto/transaction.dto';
 
 interface amount {
   eth: number;
@@ -29,5 +30,17 @@ export interface TransactionsResponse {
 export interface TransactionsResult {
   status: ResultStatus;
   errors?: Error | string;
-  data: Transaction[];
+  data: TransactionDto[];
+}
+
+export interface SubTransaction {
+  address: string;
+  amount: string;
+  symbol: string;
+  decimals: number;
+  from?: string;
+  to?: string;
+  type: string;
+  tokenAddress?: string;
+  price?: number;
 }

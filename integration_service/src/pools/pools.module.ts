@@ -1,5 +1,7 @@
-import { Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import * as redisStore from 'cache-manager-redis-store';
 
 import { LiquidityPoolsEntity } from './entities/liquidity.pools.entity';
 import { PoolsController } from './pools.controller';
@@ -7,7 +9,21 @@ import { PoolsService } from './pools.service';
 
 @Module({
   controllers: [PoolsController],
-  imports: [TypeOrmModule.forFeature([LiquidityPoolsEntity])],
+  imports: [
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('REDIS_CACHE_TTL') || 300,
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        // eslint-disable-next-line camelcase
+        auth_pass: configService.get('REDIS_AUTH'),
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forFeature([LiquidityPoolsEntity]),
+  ],
   providers: [PoolsService],
   exports: [PoolsService],
 })

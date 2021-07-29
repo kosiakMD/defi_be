@@ -12,10 +12,11 @@ export interface ApprovalToken {
   icon: string;
   name: string;
   symbol: string;
-  decimals: string;
+  decimals: number;
 }
 
-export interface ApprovalBsc {
+export interface ApprovalDetailed {
+  chainId: number;
   allowance: string;
   blockNumber: number;
   blockTimestamp: number;

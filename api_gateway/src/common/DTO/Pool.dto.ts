@@ -34,17 +34,20 @@ class PoolTokenIdDTO implements PoolTokenId {
 }
 
 export default class PoolDto implements Pool {
-  @ApiProperty({ type: String, example: '150958' })
-  id: string;
+  @ApiProperty({ type: Number, example: 2830808 })
+  id: number;
 
   @ApiProperty({ type: String, example: '0x08d22e98d3024c1af130536e0e175ee38c13957b' })
   address: Address;
 
-  @ApiProperty({ type: String, example: 'eth' })
-  chain: string;
+  @ApiProperty({ type: Number, example: 1 })
+  chain: number;
 
   @ApiProperty({ type: String, example: 'uniswap' })
   project: string;
+
+  @ApiProperty({ type: Number, example: 99690611 })
+  reserveUSD: number;
 
   @ApiProperty({ type: PoolAPYDTO })
   apy: PoolAPY;

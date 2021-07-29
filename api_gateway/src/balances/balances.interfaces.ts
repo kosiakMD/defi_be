@@ -1,4 +1,4 @@
-import { Address, ERC20Token } from '../common/interfaces';
+import { ERC20Token } from '../common/interfaces';
 
 export interface TokenBalance {
   amount: string;
@@ -13,7 +13,6 @@ export interface AccountTokenBalance extends TokenBalance {
 }
 
 export interface Balance {
-  account: Address;
   totalUsd: number;
 }
 
@@ -23,4 +22,5 @@ export interface BalanceToken {
   symbol: string;
   name: string;
   address: string;
+  isLp?: boolean;
 }

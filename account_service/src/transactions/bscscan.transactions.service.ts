@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { TransactionType } from 'src/common/enum';
 
 import { BscscanApi } from './api/bscscan.api';
 import { Transaction, TransactionsResponse } from './interfaces/api.transactions.interfaces';
@@ -8,16 +9,13 @@ import { Web3Service } from './web3.service';
 export class BscscanTransactionsService {
   constructor(private readonly bscscan: BscscanApi, private readonly web3Service: Web3Service) {}
 
-  public async getTransactions(addresses: string[]): Promise<TransactionsResponse | []> {
+  public async getTransactions(
+    addresses: string[],
+    type: TransactionType,
+  ): Promise<TransactionsResponse | []> {
     if (this.isAddressesNotCorrect(addresses)) return [];
 
-    return this.toTransactionsResponse(addresses, 'normal');
-  }
-
-  public async getInternalTransactions(addresses: string[]): Promise<TransactionsResponse | []> {
-    if (this.isAddressesNotCorrect(addresses)) return [];
-
-    return this.toTransactionsResponse(addresses, 'internal');
+    return this.toTransactionsResponse(addresses, type);
   }
 
   private isAddressesNotCorrect(addresses: string[]): boolean {
@@ -74,7 +72,7 @@ export class BscscanTransactionsService {
         gasPrice,
         isError,
         // eslint-disable-next-line
-      txreceipt_status,
+        txreceipt_status,
         input,
         contractAddress,
         cumulativeGasUsed,
@@ -95,7 +93,7 @@ export class BscscanTransactionsService {
           gasPrice,
           isError,
           // eslint-disable-next-line
-        txreceiptStatus: txreceipt_status,
+          txreceiptStatus: txreceipt_status,
           input,
           contractAddress,
           cumulativeGasUsed,

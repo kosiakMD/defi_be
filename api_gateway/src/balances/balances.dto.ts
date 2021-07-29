@@ -18,9 +18,9 @@ export class BalancesQueryDto {
   @IsOptional()
   @Transform(({ value, key }) => {
     if (key && !value) {
-      throw new BadRequestException(`Empty param '${key}' is not allowed`)
+      throw new BadRequestException(`Empty param '${key}' is not allowed`);
     }
-    return splitToArray(value).map((x) => parseInt(x, 10))
+    return splitToArray(value).map((x) => parseInt(x, 10));
   })
   @IsArray()
   @IsInt({ each: true })
@@ -28,39 +28,38 @@ export class BalancesQueryDto {
 }
 
 export class BalanceTokenDto implements BalanceToken {
-  @ApiProperty({ example: 1 })
-  chainId;
-  @ApiProperty({ example: 18 })
-  decimals;
-  @ApiProperty({ example: 'ETH' })
-  symbol;
-  @ApiProperty({ example: 'Ether' })
-  name;
-  @ApiProperty({ example: '0x0000000000000000000000000000000000000000' })
-  address;
+  @ApiProperty({ type: Number, example: 1 })
+  chainId: number;
+  @ApiProperty({ type: Number, example: 18 })
+  decimals: number;
+  @ApiProperty({ type: String, example: 'ETH' })
+  symbol: string;
+  @ApiProperty({ type: String, example: 'Ether' })
+  name: string;
+  @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
+  address: string;
+  @ApiProperty({ type: Boolean, example: false, required: false })
+  isLp: boolean;
 }
 
 export class AccountTokenBalanceDto implements AccountTokenBalance {
-  @ApiProperty({ example: '95480719361477141' })
-  amount;
-  @ApiProperty({ example: '0x782629c9578889a9b8464f051f23843734f72599' })
-  account;
-  @ApiProperty({ example: 0.09548071936147715 })
-  decimalsAmount;
-  @ApiProperty({ example: 0 })
-  tokenPriceUSD?;
-  @ApiProperty({ example: 0 })
-  totalPriceUSD?;
+  @ApiProperty({ type: String, example: '95480719361477141' })
+  amount: string;
+  @ApiProperty({ type: String, example: '0x782629c9578889a9b8464f051f23843734f72599' })
+  account: string;
+  @ApiProperty({ type: Number, example: 0.09548071936147715 })
+  decimalsAmount: number;
+  @ApiProperty({ type: Number, example: 0, required: false })
+  tokenPriceUSD?: number;
+  @ApiProperty({ type: Number, example: 0, required: false })
+  totalPriceUSD?: number;
   @ApiProperty({ type: BalanceTokenDto })
   token: ERC20Token;
 }
 
 export class BalanceDto implements Balance {
-  @ApiProperty({ example: '0x782629c9578889a9b8464f051f23843734f72599' })
-  account;
-
-  @ApiProperty({ example: 0 })
-  totalUsd;
+  @ApiProperty({ type: Number, example: 0 })
+  totalUsd: number;
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
   tokens: AccountTokenBalance;

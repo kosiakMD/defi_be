@@ -1,4 +1,5 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import Web3 from 'web3';
 
@@ -15,7 +16,6 @@ import {
 import { MigrationBlockResponse } from './interfaces/migration.block.response';
 import { Log } from './interfaces/migration.event.interfaces';
 import { BlockTransactionObject } from './interfaces/web3.interfaces';
-import BigNumber from 'bignumber.js';
 
 @Injectable()
 export class SqlService {
@@ -37,7 +37,9 @@ export class SqlService {
         transactionSqlArray.push(
           `('${transaction.hash}',${transaction.blockNumber},'${transaction.from}',
           '${transaction.to}','${transaction.input}',${new BigNumber(transaction.value).toNumber()},
-          ${transaction.gas},${new BigNumber(transaction.gasPrice).toNumber()},'${transaction.transactionIndex}')`,
+          ${transaction.gas},${new BigNumber(transaction.gasPrice).toNumber()},'${
+            transaction.transactionIndex
+          }')`,
         );
       });
 
@@ -114,16 +116,28 @@ export class SqlService {
     switch (field) {
       case ETH_BLOCKS:
       case BSC_BLOCKS:
-        insertQueryStart = `insert into ${field} (number, timestamp, hash) values `;
-        break;
+        return `insert into ${field} (number, timestamp, hash) values ${values} 
+            on conflict(number) 
+            do update set 
+            timestamp = EXCLUDED.timestamp, 
+            hash = EXCLUDED.hash`;
       case BLOCKS_INFO:
       case BSC_BLOCKS_INFO:
         insertQueryStart = `insert into ${field} (from_block, to_block, information, created_at) values `;
         break;
       case ETH_TRANSACTIONS:
       case BSC_TRANSACTIONS:
-        insertQueryStart = `insert into ${field} (hash, block_number, "from", "to", input, value, gas, gas_price, index) values `;
-        break;
+        return `insert into ${field} (hash, block_number, "from", "to", input, value, gas, gas_price, index) values ${values} 
+            on conflict(hash) 
+            do update set 
+            block_number = EXCLUDED.block_number, 
+            "from" = EXCLUDED."from", 
+            "to" = EXCLUDED."to", 
+            input = EXCLUDED.input, 
+            value = EXCLUDED.value, 
+            gas = EXCLUDED.gas, 
+            gas_price = EXCLUDED.gas_price,
+            index = EXCLUDED.index`;
       case ETH_EVENTS:
       case BSC_EVENTS:
         insertQueryStart = `insert into ${field} (transaction_hash, topic_1, topic_2, topic_3, topics, block_number, data, address, log_index) values `;

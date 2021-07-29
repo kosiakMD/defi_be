@@ -23,13 +23,14 @@ export class DetailedResponseDto<T> implements DetailedResponse<T> {
   status: ResultStatus;
 
   @ApiProperty({
+    type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[];
 
-  // @ApiProperty({
-  // isArray: true,
-  // type: Object,
-  // })
+  @ApiProperty({
+    isArray: true,
+    type: Object,
+  })
   data: T;
 }

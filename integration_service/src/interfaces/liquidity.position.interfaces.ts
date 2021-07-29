@@ -37,7 +37,7 @@ export interface TransferTransaction extends Transaction {
   token: SwapToken[];
 }
 
-type AMMTransaction = LiquidityChangeTransaction | SwapTransaction | TransferTransaction;
+export type AMMTransaction = LiquidityChangeTransaction | SwapTransaction | TransferTransaction;
 
 export interface LiquidityPosition {
   lpToken: ERC20Token;

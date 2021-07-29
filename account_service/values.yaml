@@ -17,7 +17,7 @@ configMaps:
     COVALENT_KEY: ckey_8a12ec5b8243410b9960bb90ad0
 
 secrets:
-- database-read
+- database
 - redis
 - bscscan
 - etherscan

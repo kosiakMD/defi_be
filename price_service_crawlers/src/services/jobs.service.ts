@@ -7,6 +7,7 @@ import { IDatabase } from 'pg-promise';
 import { Logger } from '../Logger/Logger.service';
 import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job';
 import { CoingeckoJob } from '../jobs/coingecko.job';
+import { CommonJob } from '../jobs/common.job';
 import { CurveJob } from '../jobs/curve.job';
 import { CurveFirstCheckJob } from '../jobs/curve_first_check.job';
 import { PancakeJob } from '../jobs/pancake.job';
@@ -31,6 +32,7 @@ export class JobsService {
     private sushiswapJob: SushiswapJob,
     private uniswapJob: UniswapJob,
     private pancakeJob: PancakeJob,
+    private commonJob: CommonJob,
     private curveJob: CurveJob,
     private balancerFirstCheckJob: BalancerFirstCheckJob,
     private curveFirstCheckJob: CurveFirstCheckJob,
@@ -83,7 +85,7 @@ export class JobsService {
         const setAgendaTask = async (
           taskName: string,
           method: string,
-          job: CoingeckoJob | SushiswapJob | UniswapJob | PancakeJob,
+          job: CoingeckoJob | SushiswapJob | UniswapJob | PancakeJob | CommonJob,
           interval: string | number = CURRENT_PRICE_SECONDS_INTERVAL,
         ): Promise<void> => {
           await cancel(taskName);
@@ -198,6 +200,14 @@ export class JobsService {
         //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
         //   {},
         // );
+
+        // clean prices to reduce database size
+        setAgendaTask(
+          'CRAWL_DELETE_EXTRA_PRICES',
+          'removeExtraPrices',
+          this.commonJob,
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
+        );
       })
       .on('error', (e) => this.logger.error('Agenda connection error!', e));
 

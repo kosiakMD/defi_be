@@ -14,7 +14,7 @@ export class AssetService {
     protected readonly minEthContract: MinEthContract,
   ) {}
 
-  async getTokenInfo(address: string): Promise<Partial<AssetsEntity>> {
-    return this.minEthContract.getContractData(address);
+  async getTokenInfo(address: string, chainId: number): Promise<Partial<AssetsEntity>> {
+    return this.minEthContract.getContractData(address, chainId);
   }
 }

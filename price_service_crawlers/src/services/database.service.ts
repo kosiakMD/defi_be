@@ -291,4 +291,23 @@ export class DatabaseService {
     }
     return;
   };
+
+  public removeExtraTokens = (
+    timestampMode: number,
+    toTimestamp: number,
+    fromTimestamp?: number,
+  ): Promise<void> => {
+    if (fromTimestamp) {
+      this.pg.any(
+        'DELETE FROM prices.asset_price WHERE timestamp % $1 <> 0 and timestamp < $2 and timestamp > $3',
+        [timestampMode, toTimestamp, fromTimestamp],
+      );
+      return;
+    }
+    this.pg.any('DELETE FROM prices.asset_price WHERE timestamp % $1 <> 0 and timestamp < $2', [
+      timestampMode,
+      toTimestamp,
+    ]);
+    return;
+  };
 }

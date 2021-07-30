@@ -20,6 +20,12 @@ export class TransactionNewEntity {
   @Column({ name: 'timestamp' })
   timestamp: string;
 
+  @Column({ name: 'sender' })
+  sender?: string;
+
+  @Column({ name: 'destination' })
+  destination?: string;
+
   @Column({ name: 'gas_price', transformer: new ColumnNumericTransformer() })
   gasPrice: number;
 

@@ -28,6 +28,7 @@ import configuration from './config/configuration';
 import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
+import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
 import { IntegrationService } from './integration/integration.service';
 import { MailModule } from './mail/mail.module';
 import { PancakeController } from './pancake/pancake.controller';
@@ -80,6 +81,7 @@ import { VaultsModule } from './vaults/vaults.module';
     PricesModule,
     ScansApiModule,
     MailModule,
+    ImpermanentLossModule,
   ],
   controllers: [
     HealthController,

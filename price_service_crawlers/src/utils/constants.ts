@@ -12,7 +12,11 @@ export const SECONDS_IN_WEEK = 86400 * 24;
 export const BNB_CHAIN_ID = 2;
 export const NEW_TOKENS_SECONDS_INTERVAL = 60 * 60 * 24;
 export const SECONDS_IN_HOUR = 60 * 60;
+export const SECONDS_IN_2_HOURS = 2 * 60 * 60;
+export const SECONDS_IN_30_MIN = 60 * 30;
+export const SECONDS_IN_1_WEEK = SECONDS_IN_HOUR * 24 * 7;
 export const SECONDS_IN_TEN_MINUTES = 300;
+export const SECONDS_IN_MONTH = 60 * 60 * 24 * 31;
 export const CURRENCY = 'usd';
 export const TEST_TOKENS = [
   ETH_ADDRESS,

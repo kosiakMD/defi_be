@@ -77,22 +77,24 @@ export class MigrationService {
     const web3TimeMark = `Request to web3.js for tokenAddress: ${contractAddress}`;
     try {
       this.logger.time(web3TimeMark);
-      return await this.assetService.getTokenInfo(contractAddress);
+      return await this.assetService.getTokenInfo(contractAddress, chainId);
     } catch (e) {
       //
     } finally {
       this.logger.timeEnd(web3TimeMark);
     }
 
-    // try to get token info from ethplorer
-    const ethplorerTimeMark = `Request to ${this.ethplorerUrl} for tokenAddress: ${contractAddress}`;
-    try {
-      this.logger.time(ethplorerTimeMark);
-      return await this.getEthplorerToken(contractAddress);
-    } catch (e) {
-      //
-    } finally {
-      this.logger.timeEnd(ethplorerTimeMark);
+    // try to get token info from ethplorer. only for ethereum tokens
+    if (chainId === CHAIN_ID_ETH) {
+      const ethplorerTimeMark = `Request to ${this.ethplorerUrl} for tokenAddress: ${contractAddress}`;
+      try {
+        this.logger.time(ethplorerTimeMark);
+        return await this.getEthplorerToken(contractAddress);
+      } catch (e) {
+        //
+      } finally {
+        this.logger.timeEnd(ethplorerTimeMark);
+      }
     }
 
     this.logger.timeEnd(tokenInfoTimeMark);

@@ -108,23 +108,27 @@ export class BalanceService {
 
   private mapCovalentBalances(
     account: Address,
-    balances: Covalent.TokenBalance[],
+    tokens: Covalent.TokenBalance[],
     chainId: number,
   ): AccountTokenBalance[] {
-    return balances.map((balance) =>
-      plainToClass(AccountTokenBalanceDto, {
+    return tokens.map((token) => {
+      const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
+      const totalPriceUSD = token.quote * decimalsAmount;
+      return plainToClass(AccountTokenBalanceDto, {
         account,
-        amount: balance.balance,
-        decimalsAmount: +balance.balance / 10 ** balance.contract_decimals,
+        amount: token.balance,
+        decimalsAmount,
+        tokenPriceUSD: token.quote || null,
+        totalPriceUSD: totalPriceUSD || null,
         token: plainToClass(BalanceTokenDto, {
           chainId,
-          decimals: balance.contract_decimals,
-          symbol: balance.contract_ticker_symbol,
-          name: balance.contract_name,
-          address: balance.contract_address,
+          decimals: token.contract_decimals,
+          symbol: token.contract_ticker_symbol,
+          name: token.contract_name,
+          address: token.contract_address,
         }),
-      }),
-    );
+      });
+    });
   }
 
   private async getCovalentTokens(
@@ -133,8 +137,11 @@ export class BalanceService {
   ): Promise<AccountTokenBalance[][]> {
     return await Promise.all(
       accounts.map(async (account) => {
-        const { address, items, chain_id } = await this.covalentService.getBalances(account, chain); // eslint-disable-line camelcase
-        return this.mapCovalentBalances(address, items, chain_id); // eslint-disable-line camelcase
+        const { address, items } = await this.covalentService.getBalances(
+          account,
+          chain === CHAIN_ID_BSC ? CHAIN_ID_BSC_MAINNET : chain,
+        );
+        return this.mapCovalentBalances(address, items, chain);
       }),
     );
   }
@@ -285,7 +292,7 @@ export class BalanceService {
       t.address = t.address.toLowerCase();
       t.tokenAddress = t.tokenAddress.toLowerCase();
     });
-    const covalentTokens = await this.getCovalentTokens(accounts, CHAIN_ID_BSC_MAINNET);
+    const covalentTokens = await this.getCovalentTokens(accounts, CHAIN_ID_BSC);
 
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 

@@ -71,7 +71,7 @@ export class BalanceService {
     chain: number,
     mapNoDbTokenBalances?: Map<string, TokenPrices[]>,
   ): Promise<AccountTokenBalance[]> {
-    const etherBalances = [];
+    const etherBalances: AccountTokenBalance[] = [];
     for (const balance of ethBalances) {
       const noDbTokenBalances = mapNoDbTokenBalances
         ? mapNoDbTokenBalances.get(balance.account)
@@ -113,12 +113,12 @@ export class BalanceService {
   ): AccountTokenBalance[] {
     return tokens.map((token) => {
       const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
-      const totalPriceUSD = token.quote * decimalsAmount;
+      const totalPriceUSD = token.quote_rate * decimalsAmount;
       return plainToClass(AccountTokenBalanceDto, {
         account,
         amount: token.balance,
         decimalsAmount,
-        tokenPriceUSD: token.quote || null,
+        tokenPriceUSD: token.quote_rate || null,
         totalPriceUSD: totalPriceUSD || null,
         token: plainToClass(BalanceTokenDto, {
           chainId,
@@ -353,7 +353,7 @@ export class BalanceService {
     tokenDecimals,
     tokenTotalSupply,
     isLp,
-  }) => ({
+  }): AccountTokenBalance => ({
     account: address,
     amount,
     decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),

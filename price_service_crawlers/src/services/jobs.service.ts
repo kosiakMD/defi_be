@@ -85,7 +85,7 @@ export class JobsService {
         const setAgendaTask = async (
           taskName: string,
           method: string,
-          job: CoingeckoJob | SushiswapJob | UniswapJob | PancakeJob,
+          job: CoingeckoJob | SushiswapJob | UniswapJob | PancakeJob | CommonJob,
           interval: string | number = CURRENT_PRICE_SECONDS_INTERVAL,
         ): Promise<void> => {
           await cancel(taskName);
@@ -201,16 +201,12 @@ export class JobsService {
         //   {},
         // );
 
-        await cancel('CRAWL_DELETE_EXTRA_PRICES');
-        await this.agenda.define(
+        // clean prices to reduce database size
+        setAgendaTask(
           'CRAWL_DELETE_EXTRA_PRICES',
-          { lockLifetime: 10000 },
-          this.commonJob.removeExtraPrices.bind(this),
-        );
-        await this.agenda.every(
-          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-          'CRAWL_DELETE_EXTRA_PRICES',
-          {},
+          'removeExtraPrices',
+          this.commonJob,
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
         );
       })
       .on('error', (e) => this.logger.error('Agenda connection error!', e));

@@ -24,7 +24,7 @@ configMaps:
     ACCOUNT_BALANCE: v1/balances
 
 secrets:
-- database
+- database-read
 - redis
 - bscscan
 - etherscan

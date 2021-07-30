@@ -15,6 +15,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
 import { CoingeckoJob } from './jobs/coingecko.job';
+import { CommonJob } from './jobs/common.job';
 import { CurveJob } from './jobs/curve.job';
 import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
 import { PancakeJob } from './jobs/pancake.job';
@@ -92,6 +93,7 @@ import { Api } from './thegraph/api';
     SushiswapJob,
     PancakeJob,
     UniswapJob,
+    CommonJob,
     CurveJob,
     BalancerFirstCheckJob,
     CurveFirstCheckJob,

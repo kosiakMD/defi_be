@@ -7,6 +7,7 @@ import { IDatabase } from 'pg-promise';
 import { Logger } from '../Logger/Logger.service';
 import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job';
 import { CoingeckoJob } from '../jobs/coingecko.job';
+import { CommonJob } from '../jobs/common.job';
 import { CurveJob } from '../jobs/curve.job';
 import { CurveFirstCheckJob } from '../jobs/curve_first_check.job';
 import { PancakeJob } from '../jobs/pancake.job';
@@ -31,6 +32,7 @@ export class JobsService {
     private sushiswapJob: SushiswapJob,
     private uniswapJob: UniswapJob,
     private pancakeJob: PancakeJob,
+    private commonJob: CommonJob,
     private curveJob: CurveJob,
     private balancerFirstCheckJob: BalancerFirstCheckJob,
     private curveFirstCheckJob: CurveFirstCheckJob,
@@ -198,6 +200,18 @@ export class JobsService {
         //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
         //   {},
         // );
+
+        await cancel('CRAWL_DELETE_EXTRA_PRICES');
+        await this.agenda.define(
+          'CRAWL_DELETE_EXTRA_PRICES',
+          { lockLifetime: 10000 },
+          this.commonJob.removeExtraPrices.bind(this),
+        );
+        await this.agenda.every(
+          NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
+          'CRAWL_DELETE_EXTRA_PRICES',
+          {},
+        );
       })
       .on('error', (e) => this.logger.error('Agenda connection error!', e));
 

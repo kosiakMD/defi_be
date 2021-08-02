@@ -1,6 +1,7 @@
 import {
   DAI_ADDRESS,
   ESD_ADDRESS,
+  ETH_ADDRESS,
   ETH_BNB_ADDRESS,
   WBNB_ADDRESS,
   WETH_ADDRESS,
@@ -23,7 +24,7 @@ export const daiToken = {
 };
 
 export const ethToken = {
-  address: ETH_BNB_ADDRESS.toLowerCase(),
+  address: ETH_ADDRESS.toLowerCase(),
   symbol: 'ETH',
   name: 'Ether',
   decimals: 18,

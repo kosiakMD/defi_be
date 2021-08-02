@@ -27,7 +27,7 @@ export class ApprovalsService {
     }
 
     const addressesArray: string[] = addresses.split(',');
-    const addressesJoined: string = addressesArray.map((a) => `'${a}'`).join(',');
+    const addressesJoined: string = addressesArray.map((a) => `'${a.toLowerCase()}'`).join(',');
     const entityManager = getManager();
     const approvals: any[] = await entityManager.query(`
             select
@@ -56,10 +56,9 @@ export class ApprovalsService {
               where a.user_address in (${addressesJoined})
               group by a.user_address, a.token_address, a.contract_address
             )`);
-
     return addressesArray.reduce((response, address) => {
       const singleAddressApprovals = approvals.filter(
-        (approval) => approval['user_address'] === address,
+        (approval) => approval['user_address'] === address.toLowerCase(),
       );
       return {
         ...response,

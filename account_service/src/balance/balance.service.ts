@@ -32,7 +32,7 @@ import {
   Web3TokenBalance,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
-import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
+import { ethToken, NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
 
 // TODO refactor from 1 class to Factory / Abstract
 @Injectable()
@@ -117,7 +117,7 @@ export class BalanceService {
       const totalPriceUSD = token.quote_rate * decimalsAmount;
       const contractAddress =
         token.contract_ticker_symbol === ChainSymbols.ETH
-          ? token.contract_address.replace(/e/g, '0')
+          ? ethToken.address
           : token.contract_address;
 
       return plainToClass(AccountTokenBalanceDto, {

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { HttpException } from '@nestjs/common/exceptions/http.exception';
 import { plainToClass } from 'class-transformer';
+import { ChainSymbols } from 'src/common/enum';
 import Web3 from 'web3';
 
 import { Web3Provider } from '../chain/web3.provider';
@@ -114,6 +115,11 @@ export class BalanceService {
     return tokens.map((token) => {
       const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
       const totalPriceUSD = token.quote_rate * decimalsAmount;
+      const contractAddress =
+        token.contract_ticker_symbol === ChainSymbols.ETH
+          ? token.contract_address.replace(/e/g, '0')
+          : token.contract_address;
+
       return plainToClass(AccountTokenBalanceDto, {
         account,
         amount: token.balance,
@@ -125,7 +131,7 @@ export class BalanceService {
           decimals: token.contract_decimals,
           symbol: token.contract_ticker_symbol,
           name: token.contract_name,
-          address: token.contract_address,
+          address: contractAddress,
         }),
       });
     });

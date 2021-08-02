@@ -13,6 +13,7 @@ import { TransfersResponse } from '../transfers/transfers.interfaces';
 import { ApprovalDTO } from './account.dto';
 import { BalancesResponse } from './account.interfaces';
 import { ProfitAndLossResponseDto } from 'src/analytic/dto';
+import { ChainId } from '../transactions/enums';
 
 @Injectable()
 export class AccountService {
@@ -163,11 +164,15 @@ export class AccountService {
     }
   }
 
-  async getProfitAndLoss(asset: Address, addresses: Address): Promise<ProfitAndLossResponseDto> {
+  async getProfitAndLoss(
+    asset: Address,
+    chain: ChainId,
+    addresses: Address,
+  ): Promise<ProfitAndLossResponseDto> {
     try {
       this.logger.time(this.getAnalyticUrl);
       const data = await this.httpService
-        .get(this.getAnalyticUrl, { params: { asset, addresses } })
+        .get(this.getAnalyticUrl, { params: { asset, chain, addresses } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getAnalyticUrl);

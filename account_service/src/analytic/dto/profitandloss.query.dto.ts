@@ -1,11 +1,10 @@
+import { Address } from '../../common/interfaces';
 import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
-import Web3 from 'web3';
-
-import { Address } from '../../common/interfaces';
 import { splitToArrayAndLowerCase } from '../../utils/transform';
-
+import Web3 from 'web3';
+import { ChainId } from '../../common/types';
 const web3 = new Web3();
 
 export class ProfitAndLossQueryDto {
@@ -18,6 +17,9 @@ export class ProfitAndLossQueryDto {
   })
   @IsString({ each: true })
   asset: Address;
+
+  @IsNotEmpty()
+  chain: ChainId;
 
   @IsNotEmpty()
   @Transform(({ value }) => {

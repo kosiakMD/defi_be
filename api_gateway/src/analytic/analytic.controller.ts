@@ -18,8 +18,8 @@ export class AnalyticController {
     @Query() query: ProfitAndLossQueryDto,
   ): Promise<ProfitAndLossResponseDto> {
     try {
-      const { asset, addresses } = query;
-      return await this.accountService.getProfitAndLoss(asset, addresses);
+      const { asset, addresses, chain } = query;
+      return await this.accountService.getProfitAndLoss(asset, chain, addresses);
     } catch (e) {
       this.logger.error(e, 'AccountService.getProfitAndLoss');
       throw e;

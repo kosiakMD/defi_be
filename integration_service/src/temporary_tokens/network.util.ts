@@ -1,3 +1,6 @@
+import { ChainNameEnum, ChainPrefixEnum } from 'src/common/enum';
+import { capitalizeFirstLetter } from 'src/utils/string';
+
 interface NetworkInfo {
   name: string;
   symbol: string;
@@ -8,5 +11,8 @@ export enum Network {
 }
 
 export const networks: Record<Network, NetworkInfo> = {
-  [Network.ETHEREUM]: { name: 'Ethereum', symbol: 'eth' },
+  [Network.ETHEREUM]: {
+    name: capitalizeFirstLetter(ChainNameEnum.ethereum),
+    symbol: ChainPrefixEnum.eth,
+  },
 };

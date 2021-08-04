@@ -8,10 +8,10 @@ export class VaultsResponseDto {
   @ApiProperty({ type: Number, example: 26 })
   id: number;
 
-  @ApiProperty({ type: String, example: '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' })
+  @ApiProperty({ type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' })
   vaultId: string;
 
-  @ApiProperty({ type: String, example: 'Vault Name' })
+  @ApiProperty({ type: String, example: 'compound' })
   vaultName: string;
 
   @ApiProperty({ type: String, example: 'sushiswap' })
@@ -29,7 +29,7 @@ export class VaultsResponseDto {
   @ApiProperty({
     type: TokenDto,
     example: {
-      id: '0x17a2194d55f52fd0c711e0e42b41975494bb109b',
+      id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     },
   })
   lpToken: TokenDto;
@@ -38,13 +38,13 @@ export class VaultsResponseDto {
     type: [TokenDto],
     example: [
       {
-        id: '0x1337def16f9b486faed0293eb623dc8395dfe46a',
+        id: '0x72630b1e3b42874bf335020ba0249e3e9e47bafc',
         name: 'Armor',
         symbol: 'ARMOR',
         percentage: 50,
       },
       {
-        id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+        id: '0x395c8db957d743a62ac3aaaa4574553bcf2380b3',
         name: 'Wrapped Ether',
         symbol: 'WETH',
         percentage: 50,
@@ -56,10 +56,10 @@ export class VaultsResponseDto {
   @ApiProperty({
     type: TokenDto,
     example: {
-      id: '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2',
-      address: '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2',
-      name: 'SushiToken',
-      symbol: 'SUSHI',
+      id: '707388',
+      address: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d',
+      name: 'Wrapped Ether',
+      symbol: 'WETH',
       decimals: 18,
       totalSupply: null,
       priceUSD: 22.17,
@@ -67,10 +67,10 @@ export class VaultsResponseDto {
   })
   rewardToken: TokenDto;
 
-  @ApiProperty({ type: String, example: '2021-04-11T20:02:34.329Z' })
+  @ApiProperty({ type: String, example: '2021-04-26T12:15:22.355Z' })
   createdAt: Date;
 
-  @ApiProperty({ type: String, example: '2021-05-18T18:42:31.345Z' })
+  @ApiProperty({ type: String, example: '2021-06-10T11:06:23.343Z' })
   updatedAt: Date;
 
   public fromEntityToDto(entity: VaultsEntity) {

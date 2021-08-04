@@ -41,15 +41,15 @@ export class LiquidityPoolsResponseDto {
     example: [
       {
         id: '0x395c8db957d743a62ac3aaaa4574553bcf2380b3',
-        name: 'ulock.eth Wrapped Ether',
-        symbol: 'UETH',
+        name: 'Wrapped Ether',
+        symbol: 'WETH',
         percentage: 50,
         reserve: 1000,
       },
       {
         id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-        name: 'Wrapped Ether',
-        symbol: 'WETH',
+        name: 'fae.df',
+        symbol: 'FDF',
         percentage: 50,
         reserve: 290.4075220249111,
       },

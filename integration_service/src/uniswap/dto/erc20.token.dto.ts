@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ERC20TokenDto {
-  @ApiProperty({ type: String, example: '0x795065dcc9f64b5614c407a6efdc400da6221fb0' })
+  @ApiProperty({ type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d' })
   address: string;
 
   @ApiProperty({ type: String, example: 'fae.df', required: false })
@@ -13,6 +13,6 @@ export class ERC20TokenDto {
   @ApiProperty({ type: Number, example: 18, required: false })
   decimals?: number;
 
-  @ApiProperty({ type: String, example: '1033405.007016168557863923', required: false })
+  @ApiProperty({ type: String, example: '1033405.00701', required: false })
   totalSupply?: string;
 }

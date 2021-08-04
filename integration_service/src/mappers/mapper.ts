@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BigNumber as BN } from 'bignumber.js';
+import { LiquidityChangeTypeEnum, ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
 import { AbiItem } from 'web3-utils';
 
 import { Web3Provider } from '../chain/web3.provider';
@@ -54,7 +55,7 @@ export class Mapper {
     for (const address of userAddresses) {
       const transactions: Transactions = {
         chainId: chainId,
-        protocolType: 'transaction',
+        protocolType: ProtocolTypeEnum.transaction,
         protocolName: protocolName,
         userAddress: this.getOriginAddress(originAddresses, address),
         txs: [],
@@ -62,7 +63,7 @@ export class Mapper {
 
       const amm: AutomaticMarketMaker = {
         chainId: chainId,
-        protocolType: 'amm',
+        protocolType: ProtocolTypeEnum.amm,
         protocolName: protocolName,
         userAddress: this.getOriginAddress(originAddresses, address),
         liquidityPositions: [],
@@ -71,7 +72,7 @@ export class Mapper {
       if (response.sushiswapStakingPosition) {
         const staking: Staking = {
           chainId: chainId,
-          protocolType: 'staking',
+          protocolType: ProtocolTypeEnum.staking,
           protocolName: protocolName,
           userAddress: this.getOriginAddress(originAddresses, address),
           stakingPositions: [],
@@ -156,7 +157,7 @@ export class Mapper {
   private mapSwaps(transactions: Transactions, swapFrom: SwapsInterface[]): void {
     for (const swap of swapFrom) {
       const ammSwap: SwapTransaction = {
-        type: 'swap',
+        type: TransactionTypeEnum.swap,
         hash: swap.information.transaction.id,
         timestamp: Number(swap.information.transaction.timestamp),
         blockNumber: Number(swap.blockNumber),
@@ -402,7 +403,7 @@ export class Mapper {
     flag: boolean,
   ): LiquidityChangeTransaction {
     return {
-      type: flag ? 'addLiquidity' : 'removeLiquidity',
+      type: flag ? LiquidityChangeTypeEnum.addLiquidity : LiquidityChangeTypeEnum.removeLiquidity,
       hash: entity.information.transaction.id,
       blockNumber: Number(entity.blockNumber),
       timestamp: Number(entity.information.transaction.timestamp),

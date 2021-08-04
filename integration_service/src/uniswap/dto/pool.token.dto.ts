@@ -7,10 +7,10 @@ import { PriceAbleDto } from './price.able.dto';
 interface PoolToken extends ERC20TokenDto, PriceAbleDto, AmountAbleDto {}
 
 export class PoolTokenDto implements PoolToken {
-  @ApiProperty({ type: String, example: '0x795065dcc9f64b5614c407a6efdc400da6221fb0' })
+  @ApiProperty({ type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' })
   address: string;
 
-  @ApiProperty({ type: String, example: '19515604.638277984175730315' })
+  @ApiProperty({ type: String, example: '19515604.6385' })
   reserve: string;
 
   @ApiProperty({ type: Number, required: false, example: 50 })

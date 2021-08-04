@@ -1,3 +1,5 @@
+import { LiquidityChangeTypeEnum, ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
+
 import {
   BurnsInterface,
   MintsInterface,
@@ -32,7 +34,7 @@ export interface Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export interface Transactions extends Base<'transaction'> {
+export interface Transactions extends Base<ProtocolTypeEnum.transaction> {
   txs: Transaction[];
 }
 
@@ -60,7 +62,7 @@ export interface PoolToken extends ERC20Token, PriceAble, AmountAble {
 }
 
 export interface LiquidityChangeTransaction extends Transaction {
-  type: 'addLiquidity' | 'removeLiquidity';
+  type: LiquidityChangeTypeEnum;
   lpTokenAddress: string;
   liquidity: string;
   amountUSD?: number;
@@ -68,12 +70,12 @@ export interface LiquidityChangeTransaction extends Transaction {
 }
 
 export interface SwapTransaction extends Transaction {
-  type: 'swap';
+  type: TransactionTypeEnum.swap;
   tokenIn: SwapToken;
   tokenOut: SwapToken;
 }
 
-export interface AutomaticMarketMaker extends Base<'amm'> {
+export interface AutomaticMarketMaker extends Base<ProtocolTypeEnum.amm> {
   isTransferSupported?: boolean;
   liquidityPositions: LiquidityPosition[];
 }

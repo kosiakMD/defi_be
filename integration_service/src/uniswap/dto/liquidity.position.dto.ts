@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { LiquidityChangeTypeEnum } from 'src/common/enum';
 import { AMMTransaction } from 'src/interfaces/liquidity.position.interfaces';
 
 import { ERC20TokenDto } from './erc20.token.dto';
@@ -12,7 +13,7 @@ export class liquidityPositionDto {
     required: false,
     example: {
       name: 'sushiswap',
-      address: '0x795065dcc9f64b5614c407a6efdc400da6221fb0',
+      address: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d',
     },
   })
   pool?: LiquidityPoolDto;
@@ -30,26 +31,26 @@ export class liquidityPositionDto {
     type: [PoolTokenDto],
     example: [
       {
-        address: '0x795065dcc9f64b5614c407a6efdc400da6221fb0',
-        reserve: '19515604.638277984175730315',
+        address: '0x72630b1e3b42874bf335020ba0249e3e9e47bafc',
+        reserve: '19515604.6385',
         percentage: '50',
         amount: '0.2262',
         priceUSD: 0.485,
-        name: 'Token',
-        symbol: 'TKN',
+        name: 'ulock.eth Wrapped Ether',
+        symbol: 'UETH',
         decimals: 18,
-        totalSupply: '0.2222',
+        totalSupply: '1033405.00701',
       },
       {
-        address: '0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9',
-        reserve: '152315604.638277984175730315',
+        address: '0x395c8db957d743a62ac3aaaa4574553bcf2380b3',
+        reserve: '45603.12',
         percentage: '50',
-        amount: '0.4262',
+        amount: '1009',
         priceUSD: 0.126,
-        name: 'Test',
-        symbol: 'TES',
+        name: 'Wrapped Ether',
+        symbol: 'WETH',
         decimals: 18,
-        totalSupply: '0.4222',
+        totalSupply: '6582.36',
       },
     ],
   })
@@ -58,7 +59,10 @@ export class liquidityPositionDto {
   @ApiProperty({
     type: [LiquidityChangeTransactionDto],
     required: false,
-    example: [{ type: 'addLiquidity' }, { type: 'removeLiquidity' }],
+    example: [
+      { type: LiquidityChangeTypeEnum.addLiquidity },
+      { type: LiquidityChangeTypeEnum.removeLiquidity },
+    ],
   })
   transactions?: AMMTransaction[];
 

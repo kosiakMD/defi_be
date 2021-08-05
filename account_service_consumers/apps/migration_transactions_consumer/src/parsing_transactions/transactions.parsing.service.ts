@@ -55,7 +55,7 @@ export class TransactionsParsingService {
       uniqueAddresses,
     );
 
-    if (!transactionTransfers.length && Number(transaction.value)) {
+    if (Number(transaction.value)) {
       TransactionsParsingService.addToSetAddress(transaction.from?.toLowerCase(), uniqueAddresses);
       TransactionsParsingService.addToSetAddress(transaction.to?.toLowerCase(), uniqueAddresses);
       transactionTransfers.push(TransactionsParsingService.getEthTransactionTransfer(transaction));

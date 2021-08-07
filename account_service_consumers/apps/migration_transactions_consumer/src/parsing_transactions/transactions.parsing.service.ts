@@ -93,11 +93,11 @@ export class TransactionsParsingService {
       sqlData.push(
         `('${transaction.hash}', '${address}', ${transaction.blockNumber}, '${
           transaction.timestamp
-        }', '${transaction.from}', '${transaction.to}', '${transaction.gasPrice}', ${
+        }', '${transaction.from}', '${transaction?.to}', '${transaction.gasPrice}', ${
           transaction.gasUsed
         }, ${transaction.gasUsedUsd}, '${tokenOperation}', ${transaction.chainId || CHAIN_ID_ETH}, 
         ${Boolean(addressSubTransactions?.length)}, 
-        '${JSON.stringify(addressSubTransactions)}')`,
+        '${JSON.stringify(addressSubTransactions).replace("'", "''")}')`,
       );
     }
     return this.getInsertSql(sqlData);

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PlatformEnum, ProtocolName, UniswapProtocolEnum } from 'src/common/enum';
 
 import { LiquidityPoolsEntity } from '../entities/liquidity.pools.entity';
 import { APYDto } from './apy.dto';
@@ -15,8 +16,8 @@ export class LiquidityPoolsResponseDto {
   @ApiProperty({ type: Number, example: 1 })
   chain: number;
 
-  @ApiProperty({ type: String, example: 'Uniswap V2' })
-  project: string;
+  @ApiProperty({ type: String, example: UniswapProtocolEnum.protocolV2 })
+  project: PlatformEnum | ProtocolName;
 
   @ApiProperty({ type: Number, example: 99690611 })
   reserveUsd: number;
@@ -73,7 +74,8 @@ export class LiquidityPoolsResponseDto {
     this.id = +entity.id;
     this.address = entity.address;
     this.chain = +entity.chain;
-    this.project = entity.project === 'uniswap' ? 'Uniswap V2' : entity.project;
+    this.project =
+      entity.project === PlatformEnum.uniswap ? UniswapProtocolEnum.protocolV2 : entity.project;
     this.reserveUsd = +entity.reserveUsd;
     this.apy = entity.apy;
     this.il = entity.il;

@@ -2,15 +2,15 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
-import { AssetsService } from '../assets/assets.service';
-import { TransfersService } from '../transfers/transfers.service';
-import { TransferEntityNew } from '../transfers/dto/transfers.entity';
 import { AssetsEntity } from '../assets/assets.entity';
-import { PriceService } from '../price/price.service';
-import { decimalsAmount } from '../utils/utils';
-import { PriceServiceResponse } from '../price/price.interfaces';
+import { AssetsService } from '../assets/assets.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
+import { PriceServiceResponse } from '../price/price.interfaces';
+import { PriceService } from '../price/price.service';
+import { TransferEntityNew } from '../transfers/dto/transfers.entity';
+import { TransfersService } from '../transfers/transfers.service';
 import { SECONDS_IN_DAY } from '../utils/time';
+import { decimalsAmount } from '../utils/utils';
 
 @Injectable()
 export class ProfitAndLossService {
@@ -22,10 +22,7 @@ export class ProfitAndLossService {
   ) {}
   async getProfitAndLoss(assetAddress: string, chain: number, addresses: string[]): Promise<any> {
     // better to find and validate asset first
-    const asset: AssetsEntity = await this.assetsService.findByAddressAndChain(
-      assetAddress,
-      chain,
-    );
+    const asset: AssetsEntity = await this.assetsService.findByAddressAndChain(assetAddress, chain);
     if (!asset) {
       throw new NotFoundException(`Asset with address ${assetAddress} not found`);
     }

@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
-import { Base } from '../interfaces/transactions.interfaces';
+import { BaseData } from '../interfaces/transactions.interfaces';
 import BaseDataDto from '../uniswap/dto/BaseData.dto';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
 import { PancakePriceService } from './pancake.price.service';
@@ -31,7 +31,7 @@ export class PancakeController {
   getDataByAddresses(
     @Query('addresses') addresses: string,
     @Query('internal') internal,
-  ): Promise<Base[]> {
+  ): Promise<BaseData[]> {
     return internal === undefined || Number(internal) === 1
       ? this.pancakeService.getDataInternal(addresses)
       : this.pancakeService.getDataExternal(addresses);

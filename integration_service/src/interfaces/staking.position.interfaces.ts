@@ -1,6 +1,12 @@
 import { ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
 
-import { AmountAble, Base, ERC20Token, PoolToken, Transaction } from './transactions.interfaces';
+import {
+  AmountAble,
+  BaseData,
+  ERC20Token,
+  PoolToken,
+  Transaction,
+} from './transactions.interfaces';
 
 export interface StakeTransaction extends Transaction<TransactionTypeEnum.stake> {
   amount: number;
@@ -22,10 +28,6 @@ export interface ClaimAbleToken extends ERC20Token {
   priceUSD?: number;
 }
 
-export interface Staking extends Base<ProtocolTypeEnum.staking> {
-  stakingPositions: StakingPosition[];
-}
-
 type StakingTransaction = StakeTransaction | UnStakeTransaction | ClaimTransaction;
 
 export interface StakingPosition {
@@ -36,6 +38,10 @@ export interface StakingPosition {
   rewardToken: ClaimAbleToken;
   liquidityPoolTokens: PoolToken[];
   transactions?: StakingTransaction[];
+}
+
+export interface Staking extends BaseData<ProtocolTypeEnum.staking> {
+  stakingPositions: StakingPosition[];
 }
 
 export interface GraphQLStakingPositionPool {

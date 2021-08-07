@@ -1,4 +1,4 @@
-import { ResultStatus } from '../enum';
+import { ProtocolTypeEnum, ResultStatus } from '../enum';
 
 export type Address = string;
 
@@ -6,7 +6,7 @@ export type TokenSymbol = string;
 
 export type DateString = string;
 
-export interface BaseData<T = string> {
+export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   userAddress: string;
   protocolName: string;
   protocolType: T;

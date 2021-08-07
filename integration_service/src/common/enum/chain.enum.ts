@@ -3,7 +3,12 @@ export enum ChainPrefixEnum {
   bsc = 'bsc',
 }
 
+export enum ChainIdEnum {
+  eth = 1,
+  bsc = 2,
+}
+
 export enum ChainNameEnum {
-  ethereum = 'ethereum',
-  binance = 'binance',
+  eth = 'ethereum',
+  bsc = 'binance',
 }

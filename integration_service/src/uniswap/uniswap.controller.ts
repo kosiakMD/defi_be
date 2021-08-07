@@ -2,7 +2,7 @@ import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Base } from '../interfaces/transactions.interfaces';
+import { BaseData } from '../interfaces/transactions.interfaces';
 import BaseDataDto from './dto/BaseData.dto';
 import { UniswapBurnsEntity } from './entities/uniswap.burns.entity';
 import { UniswapMintsEntity } from './entities/uniswap.mints.entity';
@@ -30,7 +30,7 @@ export class UniswapController {
       '0x43e5ffd0c720b356b0b0e9f8c8178ad35dd4050c,0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2,0xa2107fa5b38d9bbd2c461d6edf11b11a50f6b974',
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  getDataByAddresses(@Query('addresses') addresses: string): Promise<Base[]> {
+  getDataByAddresses(@Query('addresses') addresses: string): Promise<BaseData[]> {
     if (!addresses) {
       return Promise.resolve([]);
     }

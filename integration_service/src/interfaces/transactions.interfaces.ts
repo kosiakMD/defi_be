@@ -1,5 +1,11 @@
-import { LiquidityChangeTypeEnum, ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
-
+import {
+  ChainIdEnum,
+  LiquidityChangeTypeEnum,
+  PlatformEnum,
+  ProtocolName,
+  ProtocolTypeEnum,
+  TransactionTypeEnum,
+} from '../common/enum';
 import {
   BurnsInterface,
   MintsInterface,
@@ -17,11 +23,12 @@ export interface UniswapResponseData {
   sushiswapStakingPosition?: Map<string, any>;
 }
 
-export interface Base<T = string> {
-  chainId: number;
+export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
+  chainId: ChainIdEnum;
   userAddress: string;
-  protocolName: string;
   protocolType: T;
+  platformName: PlatformEnum;
+  protocolName?: ProtocolName;
 }
 
 export interface Transaction<T = string> {
@@ -34,7 +41,7 @@ export interface Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export interface Transactions extends Base<ProtocolTypeEnum.transaction> {
+export interface Transactions extends BaseData<ProtocolTypeEnum.transaction> {
   txs: Transaction[];
 }
 
@@ -75,7 +82,7 @@ export interface SwapTransaction extends Transaction {
   tokenOut: SwapToken;
 }
 
-export interface AutomaticMarketMaker extends Base<ProtocolTypeEnum.amm> {
+export interface AutomaticMarketMaker extends BaseData<ProtocolTypeEnum.amm> {
   isTransferSupported?: boolean;
   liquidityPositions: LiquidityPosition[];
 }

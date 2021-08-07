@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { LiquidityChangeTypeEnum } from 'src/common/enum';
+import { PlatformEnum, LiquidityChangeTypeEnum } from 'src/common/enum';
 import { AMMTransaction } from 'src/interfaces/liquidity.position.interfaces';
 
 import { ERC20TokenDto } from './erc20.token.dto';
@@ -12,8 +12,8 @@ export class liquidityPositionDto {
     type: LiquidityPoolDto,
     required: false,
     example: {
-      name: 'sushiswap',
-      address: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d',
+      name: PlatformEnum.sushiswap,
+      address: '0x795065dcc9f64b5614c407a6efdc400da6221fb0',
     },
   })
   pool?: LiquidityPoolDto;
@@ -24,8 +24,13 @@ export class liquidityPositionDto {
   @ApiProperty({ type: String, example: '13654.125822002' })
   lpTokenBalance: string;
 
-  @ApiProperty({ type: String, example: 'sushiswap', required: false })
-  project?: string;
+  @ApiProperty({
+    enum: PlatformEnum,
+    enumName: 'PlatformEnum',
+    example: PlatformEnum.sushiswap,
+    required: false,
+  })
+  project?: PlatformEnum;
 
   @ApiProperty({
     type: [PoolTokenDto],

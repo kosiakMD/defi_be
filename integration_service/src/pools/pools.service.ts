@@ -2,17 +2,14 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
+import { PancakeProtocolEnum, PlatformEnum } from 'src/common/enum';
 
 import { LiquidityPoolsEntity } from './entities/liquidity.pools.entity';
 import {
   PANCAKE_MIN_RESERVE,
-  PROJECT_PANCAKE,
-  PROJECT_SUSHISWAP,
-  PROJECT_UNISWAP,
   SUSHISWAP_MIN_RESERVE,
   UNI_MIN_RESERVE,
   UNI_PAIRS_BLACKLIST,
-  PROJECT_PANCAKE_V2,
 } from './pools.setting';
 import { LiquidityPoolsRepository } from './repository/liquidity.pools.repository';
 
@@ -44,22 +41,22 @@ export class PoolsService {
 
     const uniswapPools = dbPools.filter((p) => {
       return (
-        p.project === PROJECT_UNISWAP &&
+        p.project === PlatformEnum.uniswap &&
         p.reserveUsd > UNI_MIN_RESERVE &&
         !UNI_PAIRS_BLACKLIST.find((address) => address === p.address)
       );
     });
 
     const sushiswapPools = dbPools.filter((p) => {
-      return p.project === PROJECT_SUSHISWAP && p.reserveUsd > SUSHISWAP_MIN_RESERVE;
+      return p.project === PlatformEnum.sushiswap && p.reserveUsd > SUSHISWAP_MIN_RESERVE;
     });
 
     const pancakePools = dbPools.filter((p) => {
-      return p.project === PROJECT_PANCAKE && p.reserveUsd > PANCAKE_MIN_RESERVE;
+      return p.project === PancakeProtocolEnum.protocolV1 && p.reserveUsd > PANCAKE_MIN_RESERVE;
     });
 
     const pancakeV2Pools = dbPools.filter((p) => {
-      return p.project === PROJECT_PANCAKE_V2 && p.reserveUsd > PANCAKE_MIN_RESERVE;
+      return p.project === PancakeProtocolEnum.protocolV2 && p.reserveUsd > PANCAKE_MIN_RESERVE;
     });
 
     const allPools = [...uniswapPools, ...sushiswapPools, ...pancakePools, ...pancakeV2Pools];

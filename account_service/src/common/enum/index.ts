@@ -26,6 +26,17 @@ export enum ChainPrefixEnum {
   'bsc' = CHAIN_ID_BSC,
 }
 
+export enum ChainIdEnum {
+  eth = 1,
+  bsc = 2,
+}
+
+export enum ProtocolTypeEnum {
+  amm = 'amm',
+  staking = 'staking',
+  transaction = 'transaction',
+}
+
 export enum ResultStatus {
   ok = 'ok',
   error = 'error',

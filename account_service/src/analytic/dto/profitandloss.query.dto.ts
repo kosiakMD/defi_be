@@ -1,10 +1,12 @@
-import { Address } from '../../common/interfaces';
 import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsString } from 'class-validator';
-import { splitToArrayAndLowerCase } from '../../utils/transform';
 import Web3 from 'web3';
+
+import { Address } from '../../common/interfaces';
 import { ChainId } from '../../common/types';
+import { splitToArrayAndLowerCase } from '../../utils/transform';
+
 const web3 = new Web3();
 
 export class ProfitAndLossQueryDto {

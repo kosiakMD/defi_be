@@ -3,17 +3,17 @@ import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
+import { ProfitAndLossResponseDto } from 'src/analytic/dto';
 
 import { AssetsDto } from '../assets/assets.dto';
 import { Logger } from '../common/Logger/Logger.service';
 import { Address, Chains } from '../common/interfaces';
+import { ChainId } from '../transactions/enums';
 import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
 import { ApprovalDTO } from './account.dto';
 import { BalancesResponse } from './account.interfaces';
-import { ProfitAndLossResponseDto } from 'src/analytic/dto';
-import { ChainId } from '../transactions/enums';
 
 @Injectable()
 export class AccountService {

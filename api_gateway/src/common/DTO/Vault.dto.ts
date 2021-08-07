@@ -1,6 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PlatformEnum } from '../enum';
 import { Address, LPToken, PoolToken, RewardToken, Vault } from '../interfaces';
 import { VaultAPYDTO } from './APY.dto';
 import PoolTokenDto from './PoolToken.dto';
@@ -47,7 +48,7 @@ export default class VaultDto implements Vault {
   @ApiProperty({ type: String, example: 'hbtc' })
   vaultName: string;
 
-  @ApiProperty({ type: String, example: 'sushiswap' })
+  @ApiProperty({ type: String, example: PlatformEnum.sushiswap })
   project: string;
 
   @ApiProperty({ type: Number, example: 1 })

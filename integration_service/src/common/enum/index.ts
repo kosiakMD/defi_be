@@ -1,4 +1,7 @@
-export * from './network.enum';
+import { PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum } from './platform.enum';
+
+export * from './chain.enum';
+export * from './platform.enum';
 
 export enum DirectionEnum {
   in = 'in',
@@ -40,3 +43,5 @@ export enum ColumnType {
   timestamp = 'timestamp',
   timestamptz = 'timestamptz',
 }
+
+export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;

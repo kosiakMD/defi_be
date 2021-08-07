@@ -1,3 +1,4 @@
+import { PlatformEnum, ProtocolName } from 'src/common/enum';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { APYDto } from '../dto/apy.dto';
@@ -16,7 +17,7 @@ export class LiquidityPoolsEntity {
   chain: number;
 
   @Column({ name: 'project', nullable: true })
-  project: string;
+  project: PlatformEnum | ProtocolName;
 
   @Column({ name: 'reserve_usd', nullable: true })
   reserveUsd: number;

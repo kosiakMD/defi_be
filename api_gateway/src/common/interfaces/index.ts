@@ -1,4 +1,12 @@
-import { ResultStatus } from '../enum';
+import {
+  ChainIdEnum,
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolTypeEnum,
+  ResultStatus,
+  SushiSwapProtocolEnum,
+  UniswapProtocolEnum,
+} from '../enum';
 
 export type Address = string;
 
@@ -6,14 +14,18 @@ export type TokenSymbol = string;
 
 export type DateString = string;
 
-export type Chain = number;
+export type Chain = ChainIdEnum;
 
-export type Chains = Chain[];
+export type Chains = ChainIdEnum[];
 
-export interface BaseData<T = string> {
+export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;
+
+export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
+  chainId: ChainIdEnum;
   userAddress: string;
-  protocolName: string;
   protocolType: T;
+  platformName: PlatformEnum;
+  protocolName?: ProtocolName;
 }
 
 export interface PlatformData {

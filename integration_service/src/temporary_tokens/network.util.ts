@@ -12,7 +12,7 @@ export enum Network {
 
 export const networks: Record<Network, NetworkInfo> = {
   [Network.ETHEREUM]: {
-    name: capitalizeFirstLetter(ChainNameEnum.ethereum),
+    name: capitalizeFirstLetter(ChainNameEnum.eth),
     symbol: ChainPrefixEnum.eth,
   },
 };

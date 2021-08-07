@@ -97,7 +97,7 @@ export class TransactionsParsingService {
           transaction.gasUsed
         }, ${transaction.gasUsedUsd}, '${tokenOperation}', ${transaction.chainId || CHAIN_ID_ETH}, 
         ${Boolean(addressSubTransactions?.length)}, 
-        '${JSON.stringify(addressSubTransactions).replace("'", "''")}')`,
+        '${this.replaceAll(JSON.stringify(addressSubTransactions), "'", "''")}')`,
       );
     }
     return this.getInsertSql(sqlData);
@@ -295,5 +295,9 @@ export class TransactionsParsingService {
     if (topic) {
       uniqueAddresses.add(topic);
     }
+  }
+
+  replaceAll(string, search, replace) {
+    return string.split(search).join(replace);
   }
 }

@@ -3,9 +3,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainDto } from '../balance/dto/chain.dto';
 import { CurrencyDto } from '../balance/dto/currency.dto';
-import { PriceServiceResponse } from './price.interfaces';
-import { Address } from 'src/common/interfaces';
-import { ChainId, CurrencyId, Timestamp } from 'src/common/types';
+import { Address } from '../common/interfaces';
+import { ChainId, CurrencyId, Timestamp } from '../common/types';
+import { CurrentTokensPrices, PriceServiceResponse } from './price.interfaces';
 
 export class PriceCurrentRequestDto {
   constructor(addresses: Address[], chain: ChainId, currency: CurrencyId) {
@@ -64,4 +64,20 @@ export class PriceResponseDto<T> implements PriceServiceResponse<T> {
 
   @ApiProperty({ type: Object })
   prices: T;
+}
+
+export class CurrentTokensPricesDto implements CurrentTokensPrices {
+  @ApiProperty({ type: Boolean, example: true })
+  isLp = false;
+  @ApiProperty({ type: String, example: 'COINGECKO' })
+  platform: string = null;
+  @ApiProperty({ type: String, example: 1233 })
+  price: number = null;
+}
+
+export class NoDbTokenPricesDto {
+  @ApiProperty({ type: String, example: '0xf5d669627376ebd411e34b98f19c868c8aba5ada' })
+  address: string = null;
+  @ApiProperty({ type: Number, example: 1233 })
+  price: number = null;
 }

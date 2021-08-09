@@ -1,5 +1,6 @@
-import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { ChainId, CurrencyId } from 'src/common/types';
+
+import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 
 interface Chain {
   id: ChainId;
@@ -15,6 +16,16 @@ export interface PriceServiceResponse<T> {
   chain?: Chain;
   currency?: Currency;
   prices: T;
+}
+
+export interface CurrentTokensPrices {
+  price: number;
+  platform: string;
+  isLp: boolean;
+}
+
+export interface CurrentPricesPayloadNew {
+  [key: string]: CurrentTokensPrices;
 }
 
 export type PriceServiceHistoricalResponse = PriceServiceResponse<HistoricalPricesMap>;

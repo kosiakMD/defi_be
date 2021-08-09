@@ -1,18 +1,41 @@
+import { plainToClass } from 'class-transformer';
+
+import { ChainIdEnum } from '../../common/enum';
+import { NoDbTokenPricesDto } from '../../price/price.dto';
+import { CurrentPricesPayloadNew } from '../../price/price.interfaces';
 import { decimalsAmount, totalPrice } from '../../utils/utils';
 import { CurrentPricesPayload } from '../dto/price.response.dto';
-import { AccountTokenBalance, BalanceToken, DbTokenPrice } from '../interfaces/balance.interfaces';
-import { ChainIdEnum } from 'src/common/enum';
+import { AccountTokenBalance, BalanceToken } from '../interfaces/balance.interfaces';
 
 export function getUtilTokenPrice(
   tokens: BalanceToken[],
   prices: CurrentPricesPayload,
-): DbTokenPrice[] {
+): NoDbTokenPricesDto[] {
   return tokens.map((token) =>
     Object.prototype.hasOwnProperty.call(prices, token.address)
       ? prices[`${token.address}`] === null
-        ? { address: token.address, price: 0 }
-        : { address: token.address, price: prices[`${token.address}`] }
-      : { address: token.address, price: 0 },
+        ? plainToClass(NoDbTokenPricesDto, { address: token.address, price: null })
+        : plainToClass(NoDbTokenPricesDto, {
+            address: token.address,
+            price: prices[`${token.address}`],
+          })
+      : plainToClass(NoDbTokenPricesDto, { address: token.address, price: null }),
+  );
+}
+
+export function getNoDbTokensPricesWithLp(
+  tokens: BalanceToken[],
+  prices: CurrentPricesPayloadNew,
+): NoDbTokenPricesDto[] {
+  return tokens.map((token) =>
+    Object.prototype.hasOwnProperty.call(prices, token.address)
+      ? prices[token.address].price === null
+        ? plainToClass(NoDbTokenPricesDto, { address: token.address, price: null })
+        : plainToClass(NoDbTokenPricesDto, {
+            address: token.address,
+            price: prices[token.address].price,
+          })
+      : plainToClass(NoDbTokenPricesDto, { address: token.address, price: null }),
   );
 }
 

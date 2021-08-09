@@ -1,12 +1,26 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { HttpException } from '@nestjs/common/exceptions/http.exception';
+import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Repository } from 'typeorm';
 import Web3 from 'web3';
 
-import { Injectable } from '@nestjs/common';
-import { HttpException } from '@nestjs/common/exceptions/http.exception';
-
+import { Logger } from '../Logger/Logger.service';
+import { AssetsEntity } from '../assets/assets.entity';
 import { Web3Provider } from '../chain/web3.provider';
+import {
+  CHAIN_ID_BSC,
+  CHAIN_ID_BSC_MAINNET,
+  CHAIN_ID_ETH,
+  ETH_BNB_ADDRESS,
+} from '../common/constatnt';
+import { ChainIdEnum, ChainSymbols } from '../common/enum';
+import { Address } from '../common/interfaces';
+import { ChainsIds } from '../common/types';
 import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
+import { CurrentPricesPayloadNew } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { getAbsoluteChainIds } from '../utils/chains';
 import {
@@ -17,7 +31,7 @@ import {
 } from '../utils/utils';
 import { isBnbAddress } from '../utils/web3';
 import { AccountTokenBalanceDto, AllBalancesDto, BalanceTokenDto } from './balance.dto';
-import { getUtilTokenPrice, mapTokenBalances } from './balance_util/balance.util';
+import { getNoDbTokensPricesWithLp, mapTokenBalances } from './balance_util/balance.util';
 import {
   AccountTokenBalance,
   BalancesResponse,
@@ -25,15 +39,12 @@ import {
   DbTokenPrice,
   TokenBalance,
   TokenPrices,
+  TokenPricesV2,
   TokenRow,
   Web3TokenBalance,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
-import { ethToken, NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
-import { CHAIN_ID_BSC, CHAIN_ID_BSC_MAINNET, CHAIN_ID_ETH } from 'src/common/constatnt';
-import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
-import { Address } from 'src/common/interfaces';
-import { ChainsIds } from 'src/common/types';
+import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
 
 // TODO refactor from 1 class to Factory / Abstract
 @Injectable()
@@ -46,6 +57,9 @@ export class BalanceService {
     private readonly chainProvider: Web3Provider,
     private readonly priceService: PriceService,
     private readonly covalentService: CovalentService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    @InjectRepository(AssetsEntity)
+    private readonly assentsRepository: Repository<AssetsEntity>,
   ) {
     this.instanceChainProviderEth = this.chainProvider.instanceEth();
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
@@ -57,7 +71,7 @@ export class BalanceService {
     accountsArray,
   ): Promise<any[]> {
     return Promise.all([
-      this.priceService.getTokenPrices(tokensAddresses, chainId, 1),
+      this.priceService.getTokenPricesWithLp(tokensAddresses, chainId, 1),
       Promise.all(
         accountsArray.map(async (account) => ({
           account,
@@ -112,31 +126,45 @@ export class BalanceService {
     return etherBalances;
   }
 
-  private mapCovalentBalances(
+  private async mapCovalentBalances(
     account: Address,
-    tokens: Covalent.TokenBalance[],
+    balances: Covalent.TokenBalance[],
     chainId: ChainIdEnum,
-  ): AccountTokenBalance[] {
-    return tokens.map((token) => {
-      const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
-      const totalPriceUSD = token.quote_rate * decimalsAmount;
-      const contractAddress =
-        token.contract_ticker_symbol === ChainSymbols.ETH
-          ? ethToken.address
-          : token.contract_address;
+    prices: CurrentPricesPayloadNew,
+  ): Promise<AccountTokenBalance[]> {
+    // TODO we can get isLp info from db tokens, or from price service(as i do bellow)
+    // const assets = await this.assentsRepository.find({
+    //   address: In(balances.map((token) => token.contract_address)),
+    // });
 
+    return balances.map((token) => {
+      // eslint-disable-next-line camelcase
+      token.contract_address =
+        token.contract_ticker_symbol === ChainSymbols.ETH
+          ? token.contract_address.replace(/e/g, '0')
+          : token.contract_address;
+      const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
+      const tokenPriceUSD = token.quote_rate
+        ? token.quote_rate
+        : prices[token.contract_address]?.price
+        ? prices[token.contract_address].price
+        : null;
+      const totalPriceUSD = tokenPriceUSD * decimalsAmount;
       return plainToClass(AccountTokenBalanceDto, {
         account,
         amount: token.balance,
-        decimalsAmount,
-        tokenPriceUSD: token.quote_rate || null,
+        decimalsAmount: +token.balance / 10 ** token.contract_decimals,
+        // covalent returned null price value for lp tokens that's why i do this check
+        tokenPriceUSD: tokenPriceUSD,
         totalPriceUSD: totalPriceUSD || null,
         token: plainToClass(BalanceTokenDto, {
           chainId,
           decimals: token.contract_decimals,
           symbol: token.contract_ticker_symbol,
           name: token.contract_name,
-          address: contractAddress,
+          address: token.contract_address,
+          isLp: prices[token.contract_address]?.isLp || false,
+          // isLp: assets.find((asset) => asset.address === token.contract_address)?.isLp || false,
         }),
       });
     });
@@ -145,16 +173,21 @@ export class BalanceService {
   private async getCovalentTokens(
     accounts: Address[],
     chain: ChainIdEnum,
-  ): Promise<AccountTokenBalance[][]> {
-    return await Promise.all(
+    prices: CurrentPricesPayloadNew,
+  ): Promise<Map<string, AccountTokenBalance[]>> {
+    const tokenBalances: Map<string, AccountTokenBalance[]> = new Map();
+    await Promise.all(
       accounts.map(async (account) => {
         const { address, items } = await this.covalentService.getBalances(
           account,
           chain === CHAIN_ID_BSC ? CHAIN_ID_BSC_MAINNET : chain,
         );
-        return this.mapCovalentBalances(address, items, chain);
+        tokenBalances.set(account, await this.mapCovalentBalances(address, items, chain, prices));
+        return;
+        // eslint-disable-line camelcase
       }),
     );
+    return tokenBalances;
   }
 
   public async getBalanceFromCovalent(
@@ -243,13 +276,16 @@ export class BalanceService {
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_ETH);
-    const covalentTokens = await this.getCovalentTokens(accounts, CHAIN_ID_ETH);
 
     tokenRows.forEach((t) => {
       t.address = t.address.toLowerCase();
       t.tokenAddress = t.tokenAddress.toLowerCase();
     });
+
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
+    if (!tokensAddresses.find((tokensAddress) => tokensAddress === ETH_BNB_ADDRESS)) {
+      tokensAddresses.push(ETH_BNB_ADDRESS);
+    }
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,
@@ -257,7 +293,13 @@ export class BalanceService {
       accountsArray,
     );
 
-    const priceArray = getUtilTokenPrice(NO_DB_ETH_TOKENS, tokenPrices.prices);
+    const covalentTokens = await this.getCovalentTokens(
+      accountsArray,
+      CHAIN_ID_ETH,
+      tokenPrices.prices,
+    );
+
+    const priceArray = getNoDbTokensPricesWithLp(NO_DB_ETH_TOKENS, tokenPrices.prices);
 
     const etherTokenBalances = await this.getArrayOfTokenBalances(
       balances,
@@ -269,13 +311,15 @@ export class BalanceService {
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_ETH));
 
     return accountsArray.reduce((response, account) => {
-      const accountFilter = (balance): boolean => balance.account === account;
+      // i modified check to avoid duplicates. balances from covalent is in high priority
+      const accountFilter = (balance): boolean =>
+        balance.account === account &&
+        !covalentTokens.get(account).find((token) => token.token.address === balance.token.address);
       const ether = etherTokenBalances.filter(accountFilter);
       const erc20 = erc20Balances.filter(accountFilter);
-
       const tokens = ether
         .concat(erc20)
-        .concat(...covalentTokens)
+        .concat(covalentTokens.get(account))
         .map((t) => {
           return {
             ...t,
@@ -303,8 +347,6 @@ export class BalanceService {
       t.address = t.address.toLowerCase();
       t.tokenAddress = t.tokenAddress.toLowerCase();
     });
-    const covalentTokens = await this.getCovalentTokens(accounts, CHAIN_ID_BSC);
-
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
@@ -313,7 +355,9 @@ export class BalanceService {
       accountsArray,
     );
 
-    const priceArray = getUtilTokenPrice(NO_DB_BNB_TOKENS, tokenPrices.prices);
+    const covalentTokens = await this.getCovalentTokens(accounts, CHAIN_ID_BSC, tokenPrices.prices);
+
+    const priceArray = getNoDbTokensPricesWithLp(NO_DB_BNB_TOKENS, tokenPrices.prices);
 
     const bscTokenBalances = await this.getArrayOfTokenBalances(
       balances,
@@ -325,11 +369,14 @@ export class BalanceService {
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_BSC));
 
     return accountsArray.reduce((response, account) => {
-      const bsc = bscTokenBalances.filter((balance) => balance.account === account);
-      const erc20 = erc20Balances.filter((balance) => balance.account === account);
+      const accountFilter = (balance): boolean =>
+        balance.account === account &&
+        !covalentTokens.get(account).find((token) => token.token.address === balance.token.address);
+      const bsc = bscTokenBalances.filter(accountFilter);
+      const erc20 = erc20Balances.filter(accountFilter);
       const tokens = bsc
         .concat(erc20)
-        .concat(...covalentTokens)
+        .concat(covalentTokens.get(account))
         .map((t) => {
           return {
             ...t,
@@ -353,7 +400,7 @@ export class BalanceService {
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
   private mapErc20Balance =
-    (prices: TokenPrices, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalance) =>
+    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
     ({
       address,
       amount,
@@ -363,22 +410,23 @@ export class BalanceService {
       tokenDecimals,
       tokenTotalSupply,
       isLp,
-    }): AccountTokenBalance => ({
-      account: address,
-      amount,
-      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-      tokenPriceUSD: prices[tokenAddress] || 0,
-      totalPriceUSD: prices[tokenAddress]
-        ? totalPrice(amount, prices[tokenAddress], tokenDecimals ? tokenDecimals : 18)
-        : 0,
-      token: {
-        chainId: chainId,
-        address: tokenAddress,
-        name: tokenName || null,
-        symbol: tokenSymbol || null,
-        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-        totalSupply: +tokenTotalSupply || 0,
-        isLp: isLp,
-      },
-    });
+    }) =>
+      plainToClass(AccountTokenBalanceDto, {
+        account: address,
+        amount,
+        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+        tokenPriceUSD: prices[tokenAddress]?.price || 0,
+        totalPriceUSD: prices[tokenAddress]?.price
+          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+          : 0,
+        token: {
+          chainId: chainId,
+          address: tokenAddress,
+          name: tokenName || null,
+          symbol: tokenSymbol || null,
+          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+          totalSupply: +tokenTotalSupply || 0,
+          isLp: isLp,
+        },
+      });
 }

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { ChainIdEnum, ChainPrefixEnum } from 'src/common/enum';
 
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
-import { CHAIN_BSC, CHAIN_ID_BSC } from '../pools/pools.setting';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
 import { CURRENCY_USD, PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
 import { deriveBNBPerToken, deriveBNBPrice } from './util/pricing';
@@ -21,8 +21,8 @@ export class PancakePriceService {
     const allPools: LiquidityPoolsEntity[] = [...poolsV1, ...poolsV2];
     const priceResponse: PriceResponseDto<PricesPayload> = {
       chain: {
-        id: CHAIN_ID_BSC,
-        name: CHAIN_BSC,
+        id: ChainIdEnum.bsc,
+        name: ChainPrefixEnum.bsc,
       },
       currency: {
         id: 1,

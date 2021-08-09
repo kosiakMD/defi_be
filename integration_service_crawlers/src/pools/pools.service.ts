@@ -1,6 +1,7 @@
+import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
@@ -13,6 +14,8 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
 
 @Injectable()
 export class PoolsService {
+  private readonly cacheTTLInSeconds;
+
   constructor(
     private readonly poolsServiceUniswap: PoolsServiceUniswap,
     private readonly poolsServiceSushiswap: PoolsServiceSushiswap,
@@ -21,8 +24,12 @@ export class PoolsService {
     private readonly poolsServiceCurve: PoolsServiceCurve,
     protected readonly liquidityPoolsStore: LiquidityPoolsStore,
     private databaseService: DatabaseService,
+    private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
-  ) {}
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {
+    this.cacheTTLInSeconds = this.configService.get<number>('POOLS_CACHE_TTL_IN_SECONDS');
+  }
 
   // async savePancakeV2Pols(): Promise<void> {
   //   try {
@@ -58,7 +65,7 @@ export class PoolsService {
     }
   }
 
-  buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {
+  private buildInsertPoolsQuery(liquidityPools: LiquidityPool[], seed?: string): string {
     const queryStart = `
         INSERT INTO liquidity_pools
         (id,
@@ -76,6 +83,7 @@ export class PoolsService {
 
     const valuesConcatenated = liquidityPools
       .map((lp) => {
+        lp.updatedAt = PoolsService.getUpdatedDate();
         return `(
 				default, 
 				'${lp.id}', 
@@ -104,6 +112,19 @@ export class PoolsService {
 					pool_tokens = excluded.pool_tokens,
 					updated_at = current_timestamp
 		`;
+
+    this.cache.set(PoolsService.getCacheKey(seed), liquidityPools, { ttl: this.cacheTTLInSeconds });
     return queryStart.concat(valuesConcatenated).concat(queryEnd);
+  }
+
+  private static getCacheKey(seed?: string): string {
+    return `pools_${seed}`;
+  }
+
+  private static getUpdatedDate(): string {
+    return new Date() //
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
   }
 }

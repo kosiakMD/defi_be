@@ -1,3 +1,6 @@
+import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TerminusModule } from '@nestjs/terminus';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
@@ -5,10 +8,7 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
-
+import configuration from './config/configuration';
 import { HealthController } from './health/health.controller';
 import { JobsModule } from './jobs/jobs.module';
 import { PoolsModule } from './pools/pools.module';
@@ -17,17 +17,7 @@ import { VaultsModule } from './vaults/vaults.module';
 @Module({
   controllers: [HealthController],
   imports: [
-    ConfigModule.forRoot({
-      cache: true,
-      isGlobal: true,
-      envFilePath: [
-        '.env.development.local',
-        '.env.development',
-        '.env.production.local',
-        '.env.production',
-        '.env',
-      ],
-    }),
+    ConfigModule.forRoot(configuration),
     WinstonModule.forRoot({
       // options
       level: process.env.LOG_LEVEL || 'info',

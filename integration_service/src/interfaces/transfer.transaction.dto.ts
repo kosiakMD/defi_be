@@ -1,6 +1,8 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { DirectionEnum, EnumName, TransactionTypeEnum } from 'src/common/enum';
 import { SwapTokenDto } from 'src/uniswap/dto/swap.token.dto';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { DirectionEnum, EnumName, TransactionTypeEnum } from 'src/common/enum';
 
 export class TransferTransactionDto {
   @ApiProperty({

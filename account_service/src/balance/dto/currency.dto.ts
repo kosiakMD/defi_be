@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainEnum, ChainSymbols } from '../../common/enum';
+import { ChainEnum, ChainSymbols } from 'src/common/enum';
 
 export class CurrencyDto {
   @ApiProperty({ type: Number, example: 1 })

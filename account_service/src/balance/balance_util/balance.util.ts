@@ -1,8 +1,12 @@
 import { decimalsAmount, totalPrice } from '../../utils/utils';
 import { CurrentPricesPayload } from '../dto/price.response.dto';
-import { AccountTokenBalance, BalanceToken } from '../interfaces/balance.interfaces';
+import { AccountTokenBalance, BalanceToken, DbTokenPrice } from '../interfaces/balance.interfaces';
+import { ChainIdEnum } from 'src/common/enum';
 
-export function getUtilTokenPrice(tokens: BalanceToken[], prices: CurrentPricesPayload) {
+export function getUtilTokenPrice(
+  tokens: BalanceToken[],
+  prices: CurrentPricesPayload,
+): DbTokenPrice[] {
   return tokens.map((token) =>
     Object.prototype.hasOwnProperty.call(prices, token.address)
       ? prices[`${token.address}`] === null
@@ -12,7 +16,7 @@ export function getUtilTokenPrice(tokens: BalanceToken[], prices: CurrentPricesP
   );
 }
 
-export function changeTokenArray(fromArray: BalanceToken[], toArray: string[]) {
+export function changeTokenArray(fromArray: BalanceToken[], toArray: string[]): void {
   fromArray.forEach((token) => toArray.push(token.address));
 }
 
@@ -26,7 +30,7 @@ export const mapTokenBalances = ({
   account: string;
   amount: string;
   token: BalanceToken;
-  chainId: number;
+  chainId: ChainIdEnum;
   price?: number;
 }): AccountTokenBalance => {
   return {

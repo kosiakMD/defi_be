@@ -1,10 +1,12 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { classToPlain } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { AssetsEntity } from './assets.entity';
 import { AssetsRepository } from './assets.repository';
+import { ChainIdEnum } from 'src/common/enum';
 
 @Injectable()
 export class AssetsService {
@@ -27,7 +29,7 @@ export class AssetsService {
     }
   }
 
-  async findByAddressAndChain(address: string, chainId: number): Promise<AssetsEntity> {
+  async findByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetsEntity> {
     return this.assetRepository.findOne({
       where: { address: address, chain: chainId },
     });

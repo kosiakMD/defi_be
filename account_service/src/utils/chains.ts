@@ -1,5 +1,5 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../common/constatnt';
-import { ChainId } from '../common/types';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainId } from 'src/common/types';
 
 export const AbsoluteChainIds = {
   [CHAIN_ID_ETH]: 1,

@@ -1,5 +1,3 @@
-import { Inject, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
@@ -8,6 +6,9 @@ import {
 import { AgendaModule } from 'nestjs-agenda';
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
 import * as winston from 'winston';
+
+import { Inject, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { Logger } from './Logger/Logger.service';
 import { LoggerModule } from './Logger/LoggerModule';

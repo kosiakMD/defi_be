@@ -1,3 +1,4 @@
-import { SetMetadata } from '@nestjs/common';
+import { CustomDecorator, SetMetadata } from '@nestjs/common';
 
-export const AddVersion = (...versions: string[]) => SetMetadata('apiVersion', versions);
+export const AddVersion = (...versions: string[]): CustomDecorator<string> =>
+  SetMetadata('apiVersion', versions);

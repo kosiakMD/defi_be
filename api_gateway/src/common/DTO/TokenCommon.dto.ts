@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { TokenCommon } from '../interfaces';
 

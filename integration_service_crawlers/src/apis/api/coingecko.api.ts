@@ -1,6 +1,7 @@
+import { map } from 'rxjs/operators';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { map } from 'rxjs/operators';
 
 @Injectable()
 export class CoingeckoApi {
@@ -16,7 +17,7 @@ export class CoingeckoApi {
       .get(this.apiUrl.concat('coins/markets'), {
         params: {
           // eslint-disable-next-line
-				vs_currency: currencyId,
+          vs_currency: currencyId,
           ids: coinsIds.join(','),
         },
       })
@@ -29,9 +30,9 @@ export class CoingeckoApi {
       .get(this.apiUrl.concat('simple/token_price/ethereum'), {
         params: {
           // eslint-disable-next-line
-				vs_currencies: currencyId.join(','),
+          vs_currencies: currencyId.join(','),
           // eslint-disable-next-line
-				contract_addresses: tokenAddresses.join(',')
+          contract_addresses: tokenAddresses.join(','),
         },
       })
       .pipe(map((response) => response.data))

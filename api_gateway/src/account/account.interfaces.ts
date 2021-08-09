@@ -1,4 +1,5 @@
-import { Address, ERC20Token } from '../common/interfaces';
+import { ChainIdEnum } from 'src/common/enum';
+import { Address, ERC20Token } from 'src/common/interfaces';
 
 export interface ApprovalProject {
   id: number;
@@ -16,7 +17,7 @@ export interface ApprovalToken {
 }
 
 export interface ApprovalDetailed {
-  chainId: number;
+  chainId: ChainIdEnum;
   allowance: string;
   blockNumber: number;
   blockTimestamp: number;
@@ -38,7 +39,7 @@ export interface AccountTokenBalance extends TokenBalance {
 }
 
 export interface AccountBalance {
-  chainId: number;
+  chainId: ChainIdEnum;
   account: string;
   totalUsd: number;
   token: TokenBalance;

@@ -1,8 +1,8 @@
-import { ColumnType, PlatformEnum } from 'src/common/enum';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { APYDto } from '../dto/apy.dto';
 import { TokenDto } from '../dto/token.dto';
+import { ChainIdEnum, ColumnType, PlatformEnum } from 'src/common/enum';
 
 @Entity('vaults')
 export class VaultsEntity {
@@ -19,7 +19,7 @@ export class VaultsEntity {
   project: PlatformEnum;
 
   @Column({ name: 'chain', nullable: true })
-  chain: number;
+  chain: ChainIdEnum;
 
   @Column({ name: 'apy', nullable: true, type: ColumnType.json })
   apy: APYDto;

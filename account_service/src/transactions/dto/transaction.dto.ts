@@ -1,16 +1,17 @@
 // eslint-disable-next-line max-classes-per-file
-import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, plainToClass, Type } from 'class-transformer';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainDto } from '../../balance/dto/chain.dto';
 import { CryptoCurrencyDto, CurrencyDto } from '../../balance/dto/currency.dto';
-import { ChainIdToSymbol } from '../../common/constatnt/dictionaries';
-import { DetailedResponseDto } from '../../common/dto';
-import { ChainSymbolNames, ResultStatus } from '../../common/enum';
-import { Address } from '../../common/interfaces';
-import { ChainId } from '../../common/types';
 import { TransactionBaseDto } from './transaction.base.dto';
 import { SubTransactionDto } from './transactions.dto';
+import { ChainIdToSymbol } from 'src/common/constatnt/dictionaries';
+import { DetailedResponseDto } from 'src/common/dto';
+import { ChainSymbolNames, ResultStatus } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+import { ChainId } from 'src/common/types';
 
 export class TransactionDto extends TransactionBaseDto {
   @ApiProperty({ example: '1', type: String })

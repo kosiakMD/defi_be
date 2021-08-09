@@ -1,15 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { ERC20Token } from '../interfaces';
 import { TokenCommonDTO } from './TokenCommon.dto';
 
 export class ERC20TokenDto extends TokenCommonDTO implements ERC20Token {
   @ApiProperty({
-    type: Number,
+    type: String,
     required: false,
-    example: 3235740,
+    example: '3235740',
   })
   @IsString()
-  totalSupply?: number;
+  totalSupply?: string;
 }

@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { CHAIN_ID_BSC } from '../pools/pools.setting';
-import { ScanApi, EtherscanTransfer } from './scan-api.service';
+import { ChainIdEnum } from '../common/enum';
+import { AccountTokenBalance, BalancesResponse, Transfers } from './interfaces';
+import { ScanApi } from './scan-api.service';
+
+function toDecimals(amount: number, decimals: number): number {
+  return amount * Math.pow(10, -decimals);
+}
 
 @Injectable()
 export class EtherscanService {
@@ -39,7 +44,7 @@ export class EtherscanService {
               tokenPriceUSD: 0,
               totalPriceUSD: 0,
               token: {
-                chainId: CHAIN_ID_BSC,
+                chainId: ChainIdEnum.bsc,
                 name: transfer.tokenName,
                 address: transfer.contractAddress,
                 decimals: transfer.tokenDecimal,
@@ -63,47 +68,4 @@ export class EtherscanService {
     });
     return allBalances;
   }
-}
-
-function toDecimals(amount: number, decimals: number) {
-  return amount * Math.pow(10, -decimals);
-}
-
-export interface Transfers {
-  [key: string]: EtherscanTransfer[];
-}
-
-export interface AccountBalance {
-  totalUsd: number;
-  tokens: AccountTokenBalance[];
-}
-
-export type BalancesResponse = { [key: string]: AccountBalance };
-
-export interface AccountTokenBalance extends TokenBalance {
-  account: string;
-}
-
-export interface TokenBalance {
-  amount: string;
-  decimalsAmount: number;
-  tokenPriceUSD?: number;
-  totalPriceUSD?: number;
-  token: BalanceToken;
-}
-
-export interface BalanceToken {
-  amount: number;
-  decimalsAmount: number;
-  tokenPriceUSD: number;
-  totalPriceUSD: number;
-  token: Token;
-}
-
-export interface Token {
-  chainId: number;
-  name: string;
-  address: string;
-  decimals: number;
-  symbol: string;
 }

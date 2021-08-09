@@ -1,3 +1,6 @@
+import { ApiVersionGuard } from '@nestjsx/api-version';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
+
 import {
   HttpModule,
   Inject,
@@ -9,8 +12,6 @@ import {
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
-import { ApiVersionGuard } from '@nestjsx/api-version';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';

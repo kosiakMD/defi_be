@@ -1,6 +1,7 @@
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
-import { Injectable } from '@nestjs/common';
 import { BigNumber } from 'bignumber.js';
+
+import { Injectable } from '@nestjs/common';
 
 import { UNISWAP_PAIR_ABI } from '../../pools/utils/pair';
 import { Web3Provider } from '../web3.provider';

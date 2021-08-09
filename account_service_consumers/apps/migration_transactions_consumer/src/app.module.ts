@@ -1,7 +1,8 @@
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
+
 import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { ChainModule } from './chain/chain.module';
 import configModuleConfiguration from './config/config.module';

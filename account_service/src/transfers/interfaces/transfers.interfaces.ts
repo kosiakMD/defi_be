@@ -1,3 +1,5 @@
+import { ChainIdEnum } from 'src/common/enum';
+
 export interface ERC20Token {
   address: string;
   chainId?: number;
@@ -38,7 +40,7 @@ export interface ScanTransfer {
 }
 
 export interface Transfer {
-  chainId: number;
+  chainId: ChainIdEnum;
   hash: string;
   blockTimeStamp: string;
   // TODO: until no gas in DB

@@ -1,7 +1,9 @@
-import { CACHE_MANAGER, HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { CACHE_MANAGER, HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { ChainPrefixEnum } from 'src/common/enum';
 
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
@@ -63,26 +65,4 @@ export class ScanApi {
     }
     return transfers;
   }
-}
-
-export interface EtherscanTransfer {
-  blockNumber: number;
-  timeStamp: number;
-  hash: string;
-  nonce: number;
-  blockHash: string;
-  from: string;
-  contractAddress: string;
-  to: string;
-  value: number;
-  tokenName: string;
-  tokenSymbol: string;
-  tokenDecimal: number;
-  transactionIndex: number;
-  gas: number;
-  gasPrice: number;
-  gasUsed: number;
-  cumulativeGasUsed: number;
-  input: string;
-  confirmations: number;
 }

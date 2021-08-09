@@ -42,8 +42,32 @@ export enum ResultStatus {
   error = 'error',
 }
 
+export enum HealthStatusEnum {
+  ok = 'ok',
+  error = 'error',
+  shuttingDown = 'shutting_down',
+}
+
+export enum HealthServiceStatusEnum {
+  up = 'up',
+  down = 'down',
+}
+
+export enum LiquidityChangeTypeEnum {
+  addLiquidity = 'addLiquidity',
+  removeLiquidity = 'removeLiquidity',
+}
+
 export enum ProtocolTypeEnum {
   amm = 'amm',
   staking = 'staking',
   transaction = 'transaction',
+}
+
+export enum TransactionTypeEnum {
+  stake = 'stake',
+  unStake = 'unStake',
+  claim = 'claim',
+  swap = 'swap',
+  transfer = 'transfer',
 }

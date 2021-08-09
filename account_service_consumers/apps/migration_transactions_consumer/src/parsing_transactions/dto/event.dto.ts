@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import Web3 from 'web3';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { ETH_ADDRESS } from '../../util/util';
 import { MigrationEvent } from '../transactions.parsing.interfaces';

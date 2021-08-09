@@ -1,8 +1,3 @@
-export const CHAIN_ETH = 'eth';
-export const CHAIN_ID_ETH = 1;
-export const CHAIN_BSC = 'bsc';
-export const CHAIN_ID_BSC = 2;
-
 export const UNI_MIN_RESERVE = 500000;
 // such pairs not necessary to display (they are not 'tracked' and values is not real):
 // todo: consider to move this config to the database

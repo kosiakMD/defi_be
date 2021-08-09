@@ -11,3 +11,10 @@ export function camelize(...texts: string[]): string {
 }
 
 export const isAllUppercase = (s: string): boolean => /[A-Z_]/y.test(s);
+
+export function toCamelCase(string: string): string {
+  return string.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match: string, index: number): string {
+    if (+match === 0) return '';
+    return index === 0 ? match.toLowerCase() : match.toUpperCase();
+  });
+}

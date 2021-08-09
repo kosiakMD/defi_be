@@ -1,19 +1,21 @@
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { Logger } from '../Logger/Logger.service';
-import { CHAIN_ID_ETH } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
 import { ScanApiService } from './scan.api.service';
+import { CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainIdEnum } from 'src/common/enum';
 
 @Injectable()
 export class EtherScanService extends ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
   protected readonly chainPrefix: 'bsc' | 'eth';
-  protected readonly chainId: number;
+  protected readonly chainId: ChainIdEnum;
   protected readonly mainCoinAddress: string;
 
   constructor(

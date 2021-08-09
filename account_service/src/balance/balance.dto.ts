@@ -1,13 +1,15 @@
 // eslint-disable-next-line max-classes-per-file
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import Web3 from 'web3';
 
-import { Address } from '../common/interfaces';
-import { ChainId, ChainsIds } from '../common/types';
+import { BadRequestException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { AccountTokenBalance, Balance, BalanceToken } from './interfaces/balance.interfaces';
+import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+import { ChainId, ChainsIds } from 'src/common/types';
 
 const web3 = new Web3();
 
@@ -63,12 +65,12 @@ export class BalancesQueryDto implements BalancesQuery {
 }
 
 export class BalanceTokenDto implements BalanceToken {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
-  @ApiProperty({ type: String, example: 'ETH' })
-  symbol: string;
+  @ApiProperty({ enum: ChainSymbols, enumName: 'ChainSymbols', example: ChainSymbols.ETH })
+  symbol: ChainSymbols;
   @ApiProperty({ type: String, example: 'Ether' })
   name: string;
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })

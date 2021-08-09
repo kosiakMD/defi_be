@@ -45,29 +45,26 @@ export function getImpermanentLossPercent(currentValue: number, historyValue: nu
 }
 
 export function getIl(pairCurrent: Pair, pairPast: Pair): [number, number] {
-  const t0PriceCurrent = pairCurrent.reserveUSD / 2 / pairCurrent.reserve0
-  const t1PriceCurrent = pairCurrent.reserveUSD / 2 / pairCurrent.reserve1
+  const t0PriceCurrent = pairCurrent.reserveUSD / 2 / pairCurrent.reserve0;
+  const t1PriceCurrent = pairCurrent.reserveUSD / 2 / pairCurrent.reserve1;
 
-  const t0PricePast = pairPast.reserveUSD / 2 / pairPast.reserve0
-  const t1PricePast = pairPast.reserveUSD / 2 / pairPast.reserve1
+  const t0PricePast = pairPast.reserveUSD / 2 / pairPast.reserve0;
+  const t1PricePast = pairPast.reserveUSD / 2 / pairPast.reserve1;
 
-  const lpRatio = pairPast.reserveUSD/pairCurrent.reserveUSD - 1;
+  const lpRatio = pairPast.reserveUSD / pairCurrent.reserveUSD - 1;
 
-  let t0PriceChange = t0PriceCurrent/t0PricePast
-  let t1PriceChange = t1PriceCurrent/t1PricePast
+  let t0PriceChange = t0PriceCurrent / t0PricePast;
+  let t1PriceChange = t1PriceCurrent / t1PricePast;
 
-  const valueOfPool = Math.pow(t0PriceChange, 50/100) * Math.pow(t1PriceChange, 50/100);
-  const assetValue = t0PriceChange * (50/100) + t1PriceChange * (50/100);
+  const valueOfPool = Math.pow(t0PriceChange, 50 / 100) * Math.pow(t1PriceChange, 50 / 100);
+  const assetValue = t0PriceChange * (50 / 100) + t1PriceChange * (50 / 100);
   const impermanentLoss = (valueOfPool / assetValue - 1) * 100;
   const poolIlPercent = impermanentLoss * lpRatio;
 
-  const holdValueUSD = pairPast.reserve0 * t0PriceCurrent + pairPast.reserve1 * t1PriceCurrent
-  const impermanentLossUSD = poolIlPercent * holdValueUSD
+  const holdValueUSD = pairPast.reserve0 * t0PriceCurrent + pairPast.reserve1 * t1PriceCurrent;
+  const impermanentLossUSD = poolIlPercent * holdValueUSD;
 
-  return [
-    poolIlPercent,
-    impermanentLossUSD
-  ]
+  return [poolIlPercent, impermanentLossUSD];
 }
 
 export function mergeUniswapData(response: ResponseData): Pair[] {

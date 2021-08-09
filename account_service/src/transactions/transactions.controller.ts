@@ -1,10 +1,11 @@
+import { classToPlain } from 'class-transformer';
+
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { classToPlain } from 'class-transformer';
-import { TransactionType } from 'src/common/enum';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsAllResponseDto } from './dto/api.transactions.all.dto';
+import { TransactionCovalentResponseDto } from './dto/transaction.covalent.response.dto';
 import { TransactionQueryDto } from './dto/transaction.query.dto';
 import {
   TransactionsDetailedResponseDto,
@@ -18,6 +19,7 @@ import {
 } from './interfaces/api.transactions.interfaces';
 import { TransactionsResponse } from './interfaces/transactions.interfaces';
 import { TransactionsService } from './transactions.service';
+import { TransactionType } from 'src/common/enum';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -74,7 +76,7 @@ export class TransactionsController {
     description: `Array of chains' ID`,
     example: [1, 2],
   })
-  @ApiResponse({ status: 200, type: TransactionsDetailedResponseDto, isArray: true })
+  @ApiResponse({ status: 200, type: TransactionCovalentResponseDto })
   public async getTransactionsFromCovalent(@Query() query: TransactionQueryDto): Promise<any> {
     const { addresses, chains } = query;
     return this.transactionsService.getTransactionsFromCovalent(addresses, chains);

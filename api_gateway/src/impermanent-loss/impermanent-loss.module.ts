@@ -1,7 +1,7 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
-// import { LoggerModule } from '../common/Logger/LoggerModule';
+// import { LoggerModule } from  'src/common/Logger/LoggerModule';
 import { ImpermanentLossController } from './impermanent-loss.controller';
 import { ImpermanentLossService } from './impermanent-loss.service';
 

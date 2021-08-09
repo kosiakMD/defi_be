@@ -1,4 +1,6 @@
-const ApprovalMapper = (approvals: Array<any>, chainId: number): Array<any> => {
+import { ChainIdEnum } from 'src/common/enum';
+
+const ApprovalMapper = (approvals: Array<any>, chainId: ChainIdEnum): Array<any> => {
   let resp = [];
   for (const row of approvals) {
     resp = [

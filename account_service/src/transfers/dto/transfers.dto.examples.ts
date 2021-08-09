@@ -1,7 +1,8 @@
 import { TransferDto } from './transfers.dto';
+import { ChainIdEnum } from 'src/common/enum';
 
 export const exampleChain1: TransferDto = {
-  chainId: 1,
+  chainId: ChainIdEnum.eth,
   hash: '0x6277ad9a3302420a63d01f8c26a3e4c810ba5c6a44138253abf03c5b7cccd29b',
   blockTimeStamp: '1554803381',
   // TODO: until no gas in DB
@@ -25,7 +26,7 @@ export const exampleChain1: TransferDto = {
 };
 
 export const exampleChain2WithErrorNoPrice: TransferDto = {
-  chainId: 2,
+  chainId: ChainIdEnum.bsc,
   hash: '0x52415f1a094ed09799879b294762b9b8484e827e14754aea177ad322b59f680a',
   blockTimeStamp: '1621776463',
   // TODO: until no gas in DB

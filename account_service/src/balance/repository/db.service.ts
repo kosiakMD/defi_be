@@ -1,13 +1,14 @@
-import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
-import { Address } from '../../common/interfaces';
-import { ChainId } from '../../common/types';
+import { Injectable } from '@nestjs/common';
+
+import { ChainIdEnum } from '../../common/enum';
 import { TokenRow } from '../interfaces/balance.interfaces';
+import { Address } from 'src/common/interfaces';
 
 @Injectable()
 export class DbService {
-  public loadErc20Balances = (addresses: Address[], chainId: ChainId): Promise<TokenRow[]> => {
+  public loadErc20Balances = (addresses: Address[], chainId: ChainIdEnum): Promise<TokenRow[]> => {
     // NOTE: We join addresses as there seems to be no better way to do IN query
     // We are safe with query building as parameters are validated before
     const addressesString = addresses.map((accounts) => `'${accounts}'`).join(',');

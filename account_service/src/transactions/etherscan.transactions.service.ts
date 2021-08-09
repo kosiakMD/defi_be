@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { TransactionType } from 'src/common/enum';
 
 import { EtherscanApi } from './api/etherscan.api';
 import { Transaction, TransactionsResponse } from './interfaces/api.transactions.interfaces';
 import { Web3Service } from './web3.service';
+import { TransactionType } from 'src/common/enum';
 
 @Injectable()
 export class EtherscanTransactionsService {

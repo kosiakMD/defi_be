@@ -1,8 +1,9 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
-import { Address } from 'src/common/interfaces';
 
 import { ApprovalDetailed, ApprovalProject, ApprovalToken } from './account.interfaces';
+import { ChainIdEnum } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
 
 export class ApprovalProjectDTO implements ApprovalProject {
   @ApiProperty({ type: Number, example: 18 })
@@ -37,8 +38,8 @@ export class ApprovalTokenDTO implements ApprovalToken {
 }
 
 export class ApprovalDetailedDto implements ApprovalDetailed {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
 
   @ApiProperty({
     type: String,

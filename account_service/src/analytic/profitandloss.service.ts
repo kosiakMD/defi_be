@@ -1,10 +1,12 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
 import { AssetsEntity } from '../assets/assets.entity';
 import { AssetsService } from '../assets/assets.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
+import { ChainIdEnum } from '../common/enum';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { TransferEntityNew } from '../transfers/dto/transfers.entity';
@@ -20,7 +22,11 @@ export class ProfitAndLossService {
     private readonly transfersService: TransfersService,
     private readonly priceService: PriceService,
   ) {}
-  async getProfitAndLoss(assetAddress: string, chain: number, addresses: string[]): Promise<any> {
+  async getProfitAndLoss(
+    assetAddress: string,
+    chain: ChainIdEnum,
+    addresses: string[],
+  ): Promise<any> {
     // better to find and validate asset first
     const asset: AssetsEntity = await this.assetsService.findByAddressAndChain(assetAddress, chain);
     if (!asset) {

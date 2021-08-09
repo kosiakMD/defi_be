@@ -1,11 +1,12 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { BalancesResponse } from '../account/account.interfaces';
 import { AccountService } from '../account/account.service';
-import { Logger } from '../common/Logger/Logger.service';
 import { BalancesQueryDto, BalancesResponseDto } from './balances.dto';
+import { Logger } from 'src/common/Logger/Logger.service';
 
 @ApiTags('Balances')
 @Controller('balances')

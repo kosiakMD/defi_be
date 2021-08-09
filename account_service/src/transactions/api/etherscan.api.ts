@@ -1,6 +1,7 @@
+import axios from 'axios';
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import axios from 'axios';
 
 import { Transaction } from '../interfaces/api.transactions.interfaces';
 

@@ -1,6 +1,7 @@
+import { map } from 'rxjs/operators';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { map } from 'rxjs/operators';
 
 import { Block } from './block.interface';
 

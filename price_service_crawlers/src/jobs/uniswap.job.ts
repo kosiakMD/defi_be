@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
 import PromisePool from 'es6-promise-pool';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
+
+import { Inject, Injectable } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
 import { DatabaseService } from '../services/database.service';

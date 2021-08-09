@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
@@ -10,7 +10,10 @@ import {
 } from '@nestjs/terminus';
 
 import { ServiceHealthIndicator } from '../app/app.health';
-import { AddVersion } from '../common/decorators/AddVersion';
+import { HealthServicesResponse200Dto } from './dto/health.services.response.200.dto';
+import { HealthServicesResponse503Dto } from './dto/health.services.response.503.dto';
+import { AddVersion } from 'src/common/decorators/AddVersion';
+import { HealthStatusEnum } from 'src/common/enum';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
   [service: string]: {
@@ -42,14 +45,19 @@ export class HealthController {
 
   @AddVersion('v1')
   @Get('/services')
-  @HealthCheck()
   @ApiResponse({
-    type: Object,
+    type: HealthServicesResponse200Dto,
     status: 200,
   })
+  @ApiResponse({
+    type: HealthServicesResponse503Dto,
+    status: 503,
+    description: 'In case any service is down',
+  })
+  @HealthCheck()
   async checkServices(): Promise<any> {
     const result = {
-      status: 'ok',
+      status: HealthStatusEnum.ok,
       info: {},
       error: {},
       details: {},
@@ -71,7 +79,8 @@ export class HealthController {
       Object.assign(result.details, service.details);
     });
     if (Object.keys(result.error).length) {
-      result.status = 'error';
+      result.status = HealthStatusEnum.error;
+      throw new ServiceUnavailableException(result);
     }
     return result;
     // throw new HealthCheckError('Services check failed', result);

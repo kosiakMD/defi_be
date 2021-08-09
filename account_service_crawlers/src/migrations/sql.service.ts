@@ -1,7 +1,8 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import Web3 from 'web3';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import {
   BLOCKS_INFO,

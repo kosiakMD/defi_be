@@ -1,10 +1,19 @@
+import { map } from 'rxjs/operators';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { map } from 'rxjs/operators';
 
 import { LiquidityPositionResponseData } from '../interfaces/liquidity.position.interfaces';
 import { StakingPositionResponse } from '../interfaces/staking.position.interfaces';
 import { Pair } from './uniswap/pair.dto';
+
+export interface ResponseData {
+  data: {
+    from0to1000: Pair[];
+    from1000to2000: Pair[];
+    from2000to3000: Pair[];
+  };
+}
 
 @Injectable()
 export class UniswapSubgraph {
@@ -266,14 +275,6 @@ export class UniswapSubgraph {
       .pipe(map((response) => response.data))
       .toPromise();
   }
-}
-
-export interface ResponseData {
-  data: {
-    from0to1000: Pair[];
-    from1000to2000: Pair[];
-    from2000to3000: Pair[];
-  };
 }
 
 /* TODO: use query builder or gql

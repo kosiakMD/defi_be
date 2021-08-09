@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import { Connection } from 'typeorm';
+
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class UtilsDatabase {

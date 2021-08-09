@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
 import { getManager } from 'typeorm';
 
-import { CHAIN_ID_ETH } from '../common/constatnt';
-import { Address, ContractApprovalResponse } from '../common/interfaces';
+import { Injectable } from '@nestjs/common';
+
 import ApprovalMapper from './utils/approvalMapper';
+import { CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainIdEnum } from 'src/common/enum';
+import { Address, ContractApprovalResponse } from 'src/common/interfaces';
 
 @Injectable()
 export class ApprovalsService {
@@ -18,9 +20,9 @@ export class ApprovalsService {
     return ethApprovals;
   }
 
-  async getApprovals(addresses: Address, chainId: number): Promise<ContractApprovalResponse> {
+  async getApprovals(addresses: Address, chainId: ChainIdEnum): Promise<ContractApprovalResponse> {
     let approvalsTableName;
-    if (chainId === 1) {
+    if (chainId === ChainIdEnum.eth) {
       approvalsTableName = 'approvals';
     } else {
       approvalsTableName = 'bsc_approvals';

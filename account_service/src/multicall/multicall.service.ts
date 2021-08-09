@@ -1,7 +1,8 @@
 import { MultiCall } from '@indexed-finance/multicall';
-import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import Web3 from 'web3';
+
+import { Inject, Injectable } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
 import { TokenPrices } from '../balance/interfaces/balance.interfaces';

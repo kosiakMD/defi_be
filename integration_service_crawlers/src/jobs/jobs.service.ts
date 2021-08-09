@@ -1,9 +1,10 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import Agenda from 'agenda';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { PoolsService } from 'src/pools/pools.service';
 import { VaultsService } from 'src/vaults/vaults.service';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { CurveService } from './curve.service';
 import { PANCAKE_JOB, POOLS_JOB, SUSHISWAP_JOB, UNISWAP_JOB, VAULTS_JOB } from './jobs.setting';

@@ -1,7 +1,10 @@
 // eslint-disable-next-line max-classes-per-file
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainIdEnum, CurrencyIdEnum } from '../../common/enum';
 
 export class TokenPriceRequest {
   @IsNotEmpty()
@@ -32,9 +35,9 @@ export class PriceBatchRequestDto {
     type: Number,
     required: false,
     description: 'Chain or network id',
-    default: 1,
+    default: ChainIdEnum.eth,
   })
-  chain = 1;
+  chain = ChainIdEnum.eth;
 
   @Type(() => Number)
   @IsInt()
@@ -43,9 +46,9 @@ export class PriceBatchRequestDto {
     type: Number,
     required: false,
     description: 'Currency Id',
-    default: 1,
+    default: CurrencyIdEnum.usd,
   })
-  currency = 1;
+  currency = CurrencyIdEnum.usd;
 
   @IsNotEmpty()
   @IsArray()

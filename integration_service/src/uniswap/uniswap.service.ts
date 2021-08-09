@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PlatformEnum, UniswapProtocolEnum } from 'src/common/enum';
 
 import { BaseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
@@ -14,6 +13,7 @@ import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
 import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
 import { UniswapSnapshotsRepository } from './repository/uniswap.snapshots.repository';
 import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
+import { PlatformEnum, UniswapProtocolEnum } from 'src/common/enum';
 
 @Injectable()
 export class UniswapService {

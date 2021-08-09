@@ -1,15 +1,16 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { AccountService } from '../account/account.service';
-import { Logger } from '../common/Logger/Logger.service';
 import { TransactionQueryDto } from './transaction.query.dto';
 import {
   TransactionsDetailedResponseDto,
   TransactionsNewDetailedResponseDto,
 } from './transactions.dto';
 import { TransactionsResponse } from './transactions.interfaces';
+import { Logger } from 'src/common/Logger/Logger.service';
 
 @ApiTags('Transactions')
 @Controller('transactions')

@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { ApprovalsEntity } from './entities/approvals.entity';
 import { ApprovalsRepository } from './repositories/approvals.repository';
 
 @Injectable()
 export class ApprovalsStore {
-
   constructor(
     @InjectRepository(ApprovalsEntity) private readonly repository: ApprovalsRepository,
-  ) {
-  }
+  ) {}
 
   async save(approval: ApprovalsEntity) {
     const insertRegularApproval = `

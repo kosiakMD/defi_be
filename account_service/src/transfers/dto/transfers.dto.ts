@@ -1,6 +1,4 @@
 // eslint-disable-next-line max-classes-per-file
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   IsArray,
@@ -12,10 +10,9 @@ import {
   IsString,
 } from 'class-validator';
 
-import { DetailedResponseDto } from '../../common/dto';
-import { ResultStatus } from '../../common/enum';
-import { Address } from '../../common/interfaces';
-import { ChainId, ChainsIds } from '../../common/types';
+import { BadRequestException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+
 import {
   ERC20Token,
   ERC20Transfer,
@@ -25,6 +22,10 @@ import {
   TransferWithTokenAndPrices,
 } from '../interfaces/transfers.interfaces';
 import { exampleResponse } from './transfers.dto.examples';
+import { DetailedResponseDto } from 'src/common/dto';
+import { ResultStatus } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+import { ChainId, ChainsIds } from 'src/common/types';
 
 interface TransfersQuery {
   addresses: Address[];

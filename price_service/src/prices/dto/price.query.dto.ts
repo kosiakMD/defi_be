@@ -1,7 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainIdEnum, CurrencyIdEnum } from '../../common/enum';
 import { splitToArray, splitToNumberArray } from '../../utils/transform';
 
 export class PriceQueryDto {
@@ -12,10 +14,10 @@ export class PriceQueryDto {
     type: Number,
     required: false,
     description: 'Chain or network id',
-    example: 1,
-    default: 1,
+    example: ChainIdEnum.eth,
+    default: ChainIdEnum.eth,
   })
-  chain = 1;
+  chain = ChainIdEnum.eth;
 
   @Type(() => Number)
   @IsInt()
@@ -24,10 +26,10 @@ export class PriceQueryDto {
     type: Number,
     required: false,
     description: 'Currency Id',
-    example: 1,
-    default: 1,
+    example: CurrencyIdEnum.usd,
+    default: CurrencyIdEnum.usd,
   })
-  currency = 1;
+  currency = CurrencyIdEnum.usd;
 
   @IsNotEmpty()
   @IsString({ each: true })
@@ -36,7 +38,8 @@ export class PriceQueryDto {
     type: String,
     required: true,
     description: 'Array of token / coin addresses (comma separated)',
-    example: '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
+    example:
+      '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
     default:
       '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
   })

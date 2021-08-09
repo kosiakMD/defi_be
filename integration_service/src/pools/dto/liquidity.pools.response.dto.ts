@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlatformEnum, ProtocolName, UniswapProtocolEnum } from 'src/common/enum';
 
 import { LiquidityPoolsEntity } from '../entities/liquidity.pools.entity';
 import { APYDto } from './apy.dto';
 import { ImpermanentLossDto } from './impermanentloss.dto';
 import { TokenDto } from './token.dto';
+import { ChainIdEnum, PlatformEnum, ProtocolName, UniswapProtocolEnum } from 'src/common/enum';
 
 export class LiquidityPoolsResponseDto {
   @ApiProperty({ type: Number, example: 2830808 })
@@ -13,8 +13,8 @@ export class LiquidityPoolsResponseDto {
   @ApiProperty({ type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d' })
   address: string;
 
-  @ApiProperty({ type: Number, example: 1 })
-  chain: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
 
   @ApiProperty({ type: String, example: UniswapProtocolEnum.protocolV2 })
   project: PlatformEnum | ProtocolName;
@@ -70,7 +70,7 @@ export class LiquidityPoolsResponseDto {
   })
   updatedAt: Date;
 
-  public fromEntityToDto(entity: LiquidityPoolsEntity) {
+  public fromEntityToDto(entity: LiquidityPoolsEntity): any {
     this.id = +entity.id;
     this.address = entity.address;
     this.chain = +entity.chain;

@@ -14,3 +14,9 @@ export interface Block {
   size: number;
   unclesHash: string;
 }
+
+export interface ResponseData {
+  data: {
+    blocks: Block[];
+  };
+}

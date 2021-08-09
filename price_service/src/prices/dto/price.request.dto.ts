@@ -1,7 +1,10 @@
-import { BadRequestException } from '@nestjs/common/exceptions';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { BadRequestException } from '@nestjs/common/exceptions';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainIdEnum, CurrencyIdEnum } from '../../common/enum';
 
 export class PriceRequestDto {
   @Type(() => Number)
@@ -11,10 +14,10 @@ export class PriceRequestDto {
     type: Number,
     required: false,
     description: 'Chain or network id',
-    example: 1,
-    default: 1,
+    example: ChainIdEnum.eth,
+    default: ChainIdEnum.eth,
   })
-  chain = 1;
+  chain = ChainIdEnum.eth;
 
   @Type(() => Number)
   @IsInt()
@@ -23,10 +26,10 @@ export class PriceRequestDto {
     type: Number,
     required: false,
     description: 'Currency Id',
-    example: 1,
-    default: 1,
+    example: CurrencyIdEnum.usd,
+    default: CurrencyIdEnum.usd,
   })
-  currency = 1;
+  currency = CurrencyIdEnum.usd;
 
   @IsNotEmpty()
   @IsString({ each: true })

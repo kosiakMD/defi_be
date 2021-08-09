@@ -1,6 +1,7 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { SushiswapSubgraph } from '../thegraph/sushiswap/sushiswap.subgraph';
 import { DatabaseManagerSushiswap } from './db/database.manager.sushiswap';

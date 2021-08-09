@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { BigNumber as BN } from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { getManager, In, Repository } from 'typeorm';
 import Web3 from 'web3';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { Logger } from '../logger/logger.service';

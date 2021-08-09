@@ -1,7 +1,8 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientProxyFactory, Transport, ClientProxy } from '@nestjs/microservices';
-import * as redisStore from 'cache-manager-redis-store';
 
 import { StoreModule } from '../store/store.module';
 import { AssetPublisherService } from './asset.publisher.service';

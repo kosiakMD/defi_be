@@ -1,8 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
 import Agenda from 'agenda';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
+
+import { Inject, Injectable } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
 import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job';

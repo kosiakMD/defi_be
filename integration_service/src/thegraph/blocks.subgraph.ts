@@ -1,8 +1,15 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { map } from 'rxjs/operators';
 
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { Block } from './blocks/block.dto';
+
+interface ResponseData {
+  data: {
+    blocks: Block[];
+  };
+}
 
 @Injectable()
 export class BlocksSubgraph {
@@ -37,10 +44,4 @@ export class BlocksSubgraph {
       .pipe(map((response) => response.data))
       .toPromise();
   }
-}
-
-interface ResponseData {
-  data: {
-    blocks: Block[];
-  };
 }

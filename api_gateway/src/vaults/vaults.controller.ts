@@ -1,13 +1,14 @@
-import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import * as Promise from 'bluebird';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import VaultDto from '../common/DTO/Vault.dto';
-import { Logger } from '../common/Logger/Logger.service';
-import { Vault } from '../common/interfaces';
+import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/common';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { IntegrationService } from '../integration/integration.service';
+import VaultDto from 'src/common/DTO/Vault.dto';
+import { Logger } from 'src/common/Logger/Logger.service';
+import { Vault } from 'src/common/interfaces';
 
 // TODO: can be null as updated each time
 const VAULTS_CACHE_TIME = 60; // 1 min

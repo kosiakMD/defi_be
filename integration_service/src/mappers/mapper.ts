@@ -1,15 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import { BigNumber as BN } from 'bignumber.js';
-import {
-  PancakeProtocolEnum,
-  PlatformEnum,
-  ProtocolName,
-  UniswapProtocolEnum,
-  LiquidityChangeTypeEnum,
-  ProtocolTypeEnum,
-  TransactionTypeEnum,
-} from 'src/common/enum';
 import { AbiItem } from 'web3-utils';
+
+import { Injectable } from '@nestjs/common';
 
 import { Web3Provider } from '../chain/web3.provider';
 import {
@@ -40,6 +32,18 @@ import {
 } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
 import { abi, decimalsDivider } from '../utils/util';
+import {
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolName,
+  UniswapProtocolEnum,
+  LiquidityChangeTypeEnum,
+  ProtocolTypeEnum,
+  TransactionTypeEnum,
+  ChainIdEnum,
+} from 'src/common/enum';
+
+type UniversalEntity = BurnsInterface | MintsInterface;
 
 @Injectable()
 export class Mapper {
@@ -60,7 +64,8 @@ export class Mapper {
     const base: BaseData[] = [];
 
     // TODO: add checks does protocol belong to chain
-    const chainId = protocolName === PancakeProtocolEnum.protocolV1 ? 2 : 1;
+    const chainId =
+      protocolName === PancakeProtocolEnum.protocolV1 ? ChainIdEnum.bsc : ChainIdEnum.eth;
     for (const address of userAddresses) {
       const transactions: Transactions = {
         chainId: chainId,
@@ -372,7 +377,7 @@ export class Mapper {
     entity?: UniversalEntity,
     pair?: UniswapLiquidityPositionPair,
     userPoolShare?: number,
-  ) {
+  ): PoolToken[] {
     const poolToken0 = {
       address: token0.id,
       decimals: Number(token0.decimals),
@@ -440,7 +445,7 @@ export class Mapper {
     staking: Staking,
     liquidityPositions: UniswapLiquidityPosition[],
     stakingPositions,
-  ) {
+  ): Promise<void> {
     const StakingPositionsToPush = [];
     const address = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2';
     const usdPriceOfRewardToken = await this.priceService.getTokenPrices([address], 1);
@@ -535,5 +540,3 @@ export class Mapper {
     return await contract.methods.pendingSushi(poolId, userId).call();
   }
 }
-
-type UniversalEntity = BurnsInterface | MintsInterface;

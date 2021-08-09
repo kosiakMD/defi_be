@@ -1,7 +1,7 @@
-import { ColumnType } from 'src/common/enum';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { InformationSwap } from '../../interfaces/entity.information.interfaces';
+import { ColumnType } from 'src/common/enum';
 
 @Entity('uniswap_swaps')
 export class UniswapSwapsEntity {

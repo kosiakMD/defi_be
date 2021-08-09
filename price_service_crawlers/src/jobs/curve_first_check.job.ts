@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
 import axios from 'axios';
 import rateLimit from 'axios-rate-limit';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
+
+import { Inject, Injectable } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
 import {
@@ -148,9 +149,8 @@ export class CurveFirstCheckJob {
         //this.logger.log(daily_price_query['data']['data']['pools'][0])
 
         if (dailyPriceQuery['data']['data']['pools'].length) {
-          const { virtualPrice, /*name, id, TODO: fpr what?*/ poolToken } = dailyPriceQuery['data'][
-            'data'
-          ]['pools'][0];
+          const { virtualPrice, /*name, id, TODO: fpr what?*/ poolToken } =
+            dailyPriceQuery['data']['data']['pools'][0];
 
           let poolLpTokenPrice;
 

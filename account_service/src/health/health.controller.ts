@@ -1,3 +1,5 @@
+import { Connection } from 'typeorm';
+
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
@@ -7,7 +9,6 @@ import {
   HealthCheckResult,
 } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
-import { Connection } from 'typeorm';
 
 import { camelize } from '../utils/string';
 

@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+
 import { EtherScanMessageEnum, EtherScanStatusEnum } from 'src/common/enum';
 
 export class EtherScanResponseDto<T = any> {

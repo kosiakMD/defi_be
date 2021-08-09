@@ -1,6 +1,7 @@
-import { Controller, Get, Inject } from '@nestjs/common';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
+
+import { Controller, Get, Inject } from '@nestjs/common';
 
 import { AppService } from './app.service';
 

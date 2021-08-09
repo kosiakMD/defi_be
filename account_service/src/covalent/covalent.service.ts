@@ -1,12 +1,13 @@
-import { HttpException, HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
+import { HttpException, HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { Logger } from '../Logger/Logger.service';
-import { Address } from '../common/interfaces';
-import { ChainId } from '../common/types';
 import { Covalent } from './covalent.interface';
+import { Address } from 'src/common/interfaces';
+import { ChainId } from 'src/common/types';
 
 const TRANSACTIONS_PER_PAGE = 10e3;
 

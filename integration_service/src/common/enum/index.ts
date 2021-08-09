@@ -1,5 +1,5 @@
-import { PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum } from './platform.enum';
-
+export * from './transaction.type';
+export * from './liquidity.change.type';
 export * from './chain.enum';
 export * from './platform.enum';
 
@@ -12,23 +12,14 @@ export enum CurrencyEnum {
   usd = 'usd',
 }
 
+export enum CurrencyIdEnum {
+  usd = 1,
+}
+
 export enum ProtocolTypeEnum {
   amm = 'amm',
   staking = 'staking',
   transaction = 'transaction',
-}
-
-export enum TransactionTypeEnum {
-  stake = 'stake',
-  unStake = 'unStake',
-  claim = 'claim',
-  swap = 'swap',
-  transfer = 'transfer',
-}
-
-export enum LiquidityChangeTypeEnum {
-  addLiquidity = 'addLiquidity',
-  removeLiquidity = 'removeLiquidity',
 }
 
 export enum EnumName {
@@ -43,5 +34,3 @@ export enum ColumnType {
   timestamp = 'timestamp',
   timestamptz = 'timestamptz',
 }
-
-export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;

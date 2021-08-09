@@ -1,6 +1,7 @@
+import { map } from 'rxjs/operators';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { map } from 'rxjs/operators';
 
 import { Pair } from '../uniswap/pair.interface';
 import { UniswapSubgraph } from '../uniswap/uniswap.subgraph';

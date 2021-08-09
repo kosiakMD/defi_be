@@ -1,9 +1,10 @@
-import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Inject, Injectable } from '@nestjs/common';
+
 import { AccountService } from '../account/account.service';
-import { Logger } from '../common/Logger/Logger.service';
 import { AssetsDto } from './assets.dto';
+import { Logger } from 'src/common/Logger/Logger.service';
 
 @Injectable()
 export class AssetsService {

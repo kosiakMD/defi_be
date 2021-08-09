@@ -1,5 +1,6 @@
-import { ChainNameEnum, ChainPrefixEnum } from 'src/common/enum';
 import { capitalizeFirstLetter } from 'src/utils/string';
+
+import { ChainNameEnum, ChainPrefixEnum } from 'src/common/enum';
 
 interface NetworkInfo {
   name: string;

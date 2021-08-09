@@ -1,6 +1,7 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as redisStore from 'cache-manager-redis-store';
 
 import { PriceModule } from '../price/price.module';
 import { BscScanService } from './bsc-scan.service';

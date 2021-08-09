@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { PlatformEnum } from 'src/common/enum';
 
 import { VaultsEntity } from '../entities/vaults.entity';
 import { APYDto } from './apy.dto';
 import { TokenDto } from './token.dto';
+import { ChainIdEnum, PlatformEnum } from 'src/common/enum';
 
 export class VaultsResponseDto {
   @ApiProperty({ type: Number, example: 26 })
@@ -18,8 +18,8 @@ export class VaultsResponseDto {
   @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.sushiswap })
   project: PlatformEnum;
 
-  @ApiProperty({ type: Number, example: 1 })
-  chain: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
 
   @ApiProperty({ type: APYDto })
   apy: APYDto;
@@ -74,7 +74,7 @@ export class VaultsResponseDto {
   @ApiProperty({ type: String, example: '2021-06-10T11:06:23.343Z' })
   updatedAt: Date;
 
-  public fromEntityToDto(entity: VaultsEntity) {
+  public fromEntityToDto(entity: VaultsEntity): any {
     this.id = +entity.id;
     this.vaultId = entity.vaultId;
     this.vaultName = entity.vaultName;

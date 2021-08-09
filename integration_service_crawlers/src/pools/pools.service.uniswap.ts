@@ -39,17 +39,13 @@ export class PoolsServiceUniswap {
     const lastMonthBlockNumber = blockDataMonthBefore.data.blocks[0].number;
 
     // get up to 3k pair in concurrent requests
-    const [
-      pairsDataCurrent,
-      pairsDataDayBefore,
-      pairsDataWeekBefore,
-      pairsDataMonthBefore,
-    ] = await Promise.all([
-      this.uniswapSubgraph.getPairs(this.minTVL),
-      this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastDayBlockNumber),
-      this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastWeekBlockNumber),
-      this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastMonthBlockNumber),
-    ]);
+    const [pairsDataCurrent, pairsDataDayBefore, pairsDataWeekBefore, pairsDataMonthBefore] =
+      await Promise.all([
+        this.uniswapSubgraph.getPairs(this.minTVL),
+        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastDayBlockNumber),
+        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastWeekBlockNumber),
+        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastMonthBlockNumber),
+      ]);
     const allCurrentPairsData = mergeUniswapData(pairsDataCurrent);
     const allPairsDataDayBefore = mergeUniswapData(pairsDataDayBefore);
     const allPairsDataWeekBefore = mergeUniswapData(pairsDataWeekBefore);
@@ -83,15 +79,13 @@ export class PoolsServiceUniswap {
         : null;
       const fee24h: number = volume24hrsUSD ? volume24hrsUSD * 0.003 : null;
 
-      const [dayILPercent, dayIlUSD] = lastDayPair
-        ? getIl(currentPair, lastDayPair)
-        : [null, null]
+      const [dayILPercent, dayIlUSD] = lastDayPair ? getIl(currentPair, lastDayPair) : [null, null];
       const [weekILPercent, weekIlUSD] = lastWeekPair
         ? getIl(currentPair, lastWeekPair)
-        : [null, null]
+        : [null, null];
       const [monthILPercent, monthIlUSD] = lastMonthPair
         ? getIl(currentPair, lastMonthPair)
-        : [null, null]
+        : [null, null];
 
       const dayAPY: number = lastDayPair
         ? getLastDayApy(
@@ -112,15 +106,9 @@ export class PoolsServiceUniswap {
           )
         : null;
 
-      const dayIL: number = lastDayPair
-        ? dayILPercent
-        : null;
-      const weekIL: number = lastWeekPair
-        ? weekILPercent
-        : null;
-      const monthIL: number = lastMonthPair
-        ? monthILPercent
-        : null;
+      const dayIL: number = lastDayPair ? dayILPercent : null;
+      const weekIL: number = lastWeekPair ? weekILPercent : null;
+      const monthIL: number = lastMonthPair ? monthILPercent : null;
 
       const percentage = 50;
       const token0: Token = {

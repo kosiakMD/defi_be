@@ -1,7 +1,8 @@
-import { BadRequestException } from '@nestjs/common/exceptions';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { BadRequestException } from '@nestjs/common/exceptions';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PriceRequestDto {
   @Type(() => Number)

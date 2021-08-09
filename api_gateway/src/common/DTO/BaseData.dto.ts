@@ -1,11 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsString } from 'class-validator';
 
+import { ApiProperty } from '@nestjs/swagger';
+
 import { ChainIdEnum, PlatformEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '../enum';
-import { BaseData, ProtocolName } from '../interfaces';
+import { BaseData, ProtocolName, StakingPosition, txs } from '../interfaces';
+import { LiquidityPositionDto } from './LiquidityPositions.dto';
+import { StakingPositionDto } from './StakingPosition.dto';
+import { txsDto } from './txs.dto';
 
 export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
-  @ApiProperty({ type: Number, example: 1 })
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chainId: ChainIdEnum;
 
   @ApiProperty({ type: String, example: '0x94dfce828c3daaf6492f1b6f66f9a1825254d24b' })
@@ -26,4 +30,13 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   })
   @IsString()
   protocolType: T;
+
+  @ApiProperty({ type: [StakingPositionDto], required: false })
+  stakingPositions?: StakingPosition[];
+
+  @ApiProperty({ type: [LiquidityPositionDto], required: false })
+  liquidityPositions?: LiquidityPositionDto[];
+
+  @ApiProperty({ type: [txsDto], required: false })
+  txs?: txs[];
 }

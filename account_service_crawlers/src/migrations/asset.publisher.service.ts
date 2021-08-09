@@ -1,8 +1,9 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Observable } from 'rxjs';
+
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { Observable } from 'rxjs';
 
 import {
   ASSET_EVENT_MIGRATION_PATTERN,

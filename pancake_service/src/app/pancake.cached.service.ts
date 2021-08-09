@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import * as NodeCache from 'node-cache';
+
+import { Injectable } from '@nestjs/common';
 
 import { Pancake } from './interfaces/pancake.interface';
 import { PancakesService } from './pancake.service';

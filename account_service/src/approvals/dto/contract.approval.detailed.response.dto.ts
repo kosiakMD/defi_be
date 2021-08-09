@@ -2,10 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ContractProjectDto } from './contract.project.dto';
 import { ContractTokenDto } from './contract.token.dto';
+import { ChainIdEnum } from 'src/common/enum';
 
 export class ContractApprovalDetailedResponseDto {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
 
   @ApiProperty({
     type: String,

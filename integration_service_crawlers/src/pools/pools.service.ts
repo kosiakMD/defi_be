@@ -1,5 +1,6 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';

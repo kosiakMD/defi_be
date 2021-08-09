@@ -1,7 +1,8 @@
-import { Inject } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { injectable } from 'inversify';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Inject } from '@nestjs/common';
 
 import endpoints from '../../config/endpoints';
 import { Logger } from '../Logger/Logger.service';

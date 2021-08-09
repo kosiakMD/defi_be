@@ -1,16 +1,15 @@
-import { HttpService, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 import { EtherScanTransactionResponseDto } from 'src/scan_api/ether.scan.transaction.response.dto';
 
+import { HttpService, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
 import { Logger } from '../Logger/Logger.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
-import { DEFAULT_MULTIPLIER } from '../common/constatnt';
-import { ResultStatus } from '../common/enum';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import {
@@ -30,6 +29,8 @@ import {
   transactionFeeUSD,
   transferTokenAddressNotIn,
 } from '../utils/utils';
+import { DEFAULT_MULTIPLIER } from 'src/common/constatnt';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
@@ -40,7 +41,7 @@ export class ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
   protected readonly chainPrefix: 'bsc' | 'eth';
-  protected readonly chainId: number;
+  protected readonly chainId: ChainIdEnum;
   protected readonly mainCoinAddress: string;
 
   constructor(

@@ -1,9 +1,10 @@
-import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { CHAIN_ID_ETH } from '../../common/constatnt';
-import { ChainsIds } from '../../common/types';
+import { BadRequestException } from '@nestjs/common';
+
+import { CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainsIds } from 'src/common/types';
 
 interface TransactionQuery {
   addresses: string[];

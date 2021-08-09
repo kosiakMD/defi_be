@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import fetch from 'node-fetch';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { AssetService } from '../chain/asset.service';
 import { Logger } from '../logger/logger.service';

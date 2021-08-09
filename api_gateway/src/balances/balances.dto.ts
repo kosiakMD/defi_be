@@ -1,13 +1,15 @@
 // eslint-disable-next-line max-classes-per-file
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
+import { BadRequestException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+
 import { AccountTokenBalance } from '../account/account.interfaces';
-import { Address, Chains, ERC20Token } from '../common/interfaces';
 import { splitToArray } from '../utils/transform';
 import { Balance, BalanceToken } from './balances.interfaces';
+import { ChainIdEnum } from 'src/common/enum';
+import { Address, Chains, ERC20Token } from 'src/common/interfaces';
 
 export class BalancesQueryDto {
   @IsNotEmpty()
@@ -28,8 +30,8 @@ export class BalancesQueryDto {
 }
 
 export class BalanceTokenDto implements BalanceToken {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
   @ApiProperty({ type: String, example: 'ETH' })

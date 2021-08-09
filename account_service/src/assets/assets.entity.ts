@@ -1,8 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose } from 'class-transformer';
 import { AfterLoad, Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ApiProperty } from '@nestjs/swagger';
+
 import { AssetState } from './assets.interface';
+import { ChainIdEnum } from 'src/common/enum';
 
 @Entity({ name: 'assets_new', orderBy: { name: 'ASC' } })
 export class AssetsEntity {
@@ -37,9 +39,9 @@ export class AssetsEntity {
   @Exclude()
   icon: string;
 
-  @ApiProperty({ type: Number, example: 1 })
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   @Column({ name: 'chain_id' })
-  chain: number;
+  chain: ChainIdEnum;
 
   @ApiProperty({ type: Number, example: 18 })
   @Column({ name: 'decimals' })

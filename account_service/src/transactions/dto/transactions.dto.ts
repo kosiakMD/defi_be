@@ -1,12 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DetailedResponseDto } from '../../common/dto';
-import { ResultStatus } from '../../common/enum';
-import { Address, DetailedResponse } from '../../common/interfaces';
 import { Transaction } from '../interfaces/transactions.interfaces';
 import { SubTransactionTypEnum } from '../transactions.enum';
 import { TransactionDto as TransactionFromScanDto, TransactionNewDto } from './transaction.dto';
+import { DetailedResponseDto } from 'src/common/dto';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+import { Address, DetailedResponse } from 'src/common/interfaces';
 
 class GasDto {
   @ApiProperty({ type: Number, example: 1.1900000000000001e-7 })
@@ -25,8 +25,8 @@ class AmountDto {
 }
 
 class TransactionDto implements Transaction {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
   @ApiProperty({
     type: String,
     example: '0xc343e8f4f3109390d62c4004b814df4d68747c8b6b6d60d1b4c33436aa8d93e0',
@@ -81,8 +81,8 @@ class TransactionScanDto {
   @ApiProperty({ type: Number, example: 0.236 })
   usd: number;
 
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
   @ApiProperty({
     type: String,
     example: 'c2e10c20bf46daf0ba03f725218b012544a3d0d3b37334eeb1d4d81e5406e478',
@@ -117,7 +117,8 @@ export interface TransactionsDetailedResponse extends DetailedResponse<Transacti
 
 export class TransactionsDetailedResponseDto
   extends DetailedResponseDto<TransactionFromScanDto[]>
-  implements TransactionsDetailedResponse {
+  implements TransactionsDetailedResponse
+{
   @ApiProperty({
     type: String,
     enum: ResultStatus,

@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { ColumnNumericTransformer } from '../dto/column.numeric.transformer';
 import { SubTransaction } from '../interfaces/transactions.interfaces';
+import { ChainIdEnum } from 'src/common/enum';
 
 @Entity('transactions_new')
 export class TransactionNewEntity {
@@ -39,7 +40,7 @@ export class TransactionNewEntity {
   tokenOperation: string;
 
   @Column({ name: 'chain_id', transformer: new ColumnNumericTransformer() })
-  chainId: number;
+  chainId: ChainIdEnum;
 
   @Column({ name: 'sub_transactions', type: 'json' })
   subTransactions: SubTransaction;

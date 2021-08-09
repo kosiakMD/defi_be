@@ -1,7 +1,8 @@
 /* eslint-disable camelcase*/
-import { Inject, Injectable } from '@nestjs/common';
 import { NEST_PGPROMISE_CONNECTION } from 'nestjs-pgpromise';
 import { IDatabase } from 'pg-promise';
+
+import { Inject, Injectable } from '@nestjs/common';
 
 import { toTimestamp } from '../utils/common';
 import {

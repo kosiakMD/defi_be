@@ -22,3 +22,5 @@ export enum UniswapProtocolEnum {
   protocolV2 = 'Uniswap V2',
   protocolV3 = 'Uniswap V3',
 }
+
+export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;

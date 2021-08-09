@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
 //import { Blocks } from './interfaces/blocks.interface';
 import axios from 'axios';
 import * as dotenv from 'dotenv';
+
+import { Injectable } from '@nestjs/common';
 
 import { TheGraphQuery } from './interfaces/graph.interface';
 import { Pancake } from './interfaces/pancake.interface';

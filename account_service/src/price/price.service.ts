@@ -1,7 +1,8 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
+
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { Logger } from '../Logger/Logger.service';
 import { changeTokenArray } from '../balance/balance_util/balance.util';
@@ -18,12 +19,13 @@ import {
   NO_SCAN_BNB_TOKENS,
   NO_SCAN_ETH_TOKENS,
 } from '../balance/tokens/tokens';
-import { ETH_BNB_ADDRESS } from '../common/constatnt';
-import { Address } from '../common/interfaces';
-import { ChainId } from '../common/types';
 import { isEthChain } from '../utils/web3';
 import { PriceCurrentRequestDto } from './price.dto';
 import { PriceServiceResponse } from './price.interfaces';
+import { ETH_BNB_ADDRESS } from 'src/common/constatnt';
+import { ChainIdEnum } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+import { ChainId } from 'src/common/types';
 
 @Injectable()
 export class PriceService {
@@ -31,7 +33,7 @@ export class PriceService {
   private readonly getNonLpTokensUrl: string;
   private readonly getBatchPriceUrl: string;
 
-  private static addressArrayToStringInternal(addresses: string[], chain: number): void {
+  private static addressArrayToStringInternal(addresses: string[], chain: ChainIdEnum): void {
     if (isEthChain(chain)) {
       changeTokenArray(NO_DB_ETH_TOKENS, addresses);
     } else {
@@ -39,7 +41,7 @@ export class PriceService {
     }
   }
 
-  private static addressArrayToStringExternal(addresses: string[], chain: number): void {
+  private static addressArrayToStringExternal(addresses: string[], chain: ChainIdEnum): void {
     if (isEthChain(chain)) {
       changeTokenArray(NO_SCAN_ETH_TOKENS, addresses);
     } else {
@@ -77,7 +79,7 @@ export class PriceService {
     );
   }
 
-  private static mapAddressArray(addresses: string[], chain: number, internal?: number): void {
+  private static mapAddressArray(addresses: string[], chain: ChainIdEnum, internal?: number): void {
     internal
       ? PriceService.addressArrayToStringInternal(addresses, chain)
       : PriceService.addressArrayToStringExternal(addresses, chain);
@@ -148,7 +150,7 @@ export class PriceService {
 
   async getHistoricalPrices(
     assets,
-    chainId: number,
+    chainId: ChainIdEnum,
   ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       this.logger.time(`request: chain=${chainId} ${this.getBatchPriceUrl}`);

@@ -1,5 +1,5 @@
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { ChainId, CurrencyId } from '../common/types';
+import { ChainId, CurrencyId } from 'src/common/types';
 
 interface Chain {
   id: ChainId;

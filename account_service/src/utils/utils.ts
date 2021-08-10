@@ -1,9 +1,10 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
-import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
 import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from 'src/common/constatnt';
 import { Address } from 'src/common/interfaces';
+
+import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
 
 export const EXCLUDE_TRANSFER_TOKEN_ADDRESSES = [WBNB_ADDRESS, imBTC, SNX];
 

@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ChainIdEnum } from '../../common/enum';
+
 export class TransactionBaseDto {
   @ApiProperty({ example: '10266704', type: String })
   blockNumber: string;
@@ -41,6 +43,6 @@ export class TransactionBaseDto {
   gasUsed: string;
   @ApiProperty({ example: '2390490', type: String })
   confirmations: string;
-  @ApiProperty({ example: 1, type: Number, required: false })
-  chainId?: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', required: false })
+  chainId?: ChainIdEnum;
 }

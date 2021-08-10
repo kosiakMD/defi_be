@@ -1,6 +1,8 @@
+import { classToPlain } from 'class-transformer';
+
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { classToPlain } from 'class-transformer';
+
 import { TransactionType } from 'src/common/enum';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';

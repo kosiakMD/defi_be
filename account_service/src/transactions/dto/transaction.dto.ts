@@ -3,15 +3,15 @@ import { Exclude, Expose, plainToClass, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ChainIdToSymbol } from 'src/common/constatnt/dictionaries';
+import { DetailedResponseDto } from 'src/common/dto';
+import { ChainIdEnum, ChainNameEnum, ResultStatus } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+
 import { ChainDto } from '../../balance/dto/chain.dto';
 import { CryptoCurrencyDto, CurrencyDto } from '../../balance/dto/currency.dto';
 import { TransactionBaseDto } from './transaction.base.dto';
 import { SubTransactionDto } from './transactions.dto';
-import { ChainIdToSymbol } from 'src/common/constatnt/dictionaries';
-import { DetailedResponseDto } from 'src/common/dto';
-import { ChainSymbolNames, ResultStatus } from 'src/common/enum';
-import { Address } from 'src/common/interfaces';
-import { ChainId } from 'src/common/types';
 
 export class TransactionDto extends TransactionBaseDto {
   @ApiProperty({ example: '1', type: String })
@@ -132,7 +132,7 @@ export class TransactionNewDto {
   // for Chain
   @Expose({ toClassOnly: true })
   @ApiProperty({ type: Number, example: 1 })
-  chainId: ChainId = null;
+  chainId: ChainIdEnum = null;
 
   @Expose()
   @Type(() => ChainDto)
@@ -140,7 +140,7 @@ export class TransactionNewDto {
     return plainToClass(ChainDto, {
       id: this.chainId,
       symbol: ChainIdToSymbol[this.chainId],
-      name: ChainSymbolNames[ChainIdToSymbol[this.chainId]],
+      name: ChainNameEnum[ChainIdToSymbol[this.chainId]],
     } as ChainDto);
   }
 

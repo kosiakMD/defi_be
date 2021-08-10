@@ -4,11 +4,12 @@ import { toCamelCase } from 'src/utils/string';
 import { Inject, Injectable } from '@nestjs/common';
 import { HealthCheckResult, HealthIndicator } from '@nestjs/terminus';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+import { HealthServiceStatusEnum, HealthStatusEnum } from 'src/common/enum';
+
 import { AccountService } from '../account/account.service';
 import { IntegrationService } from '../integration/integration.service';
 import { PricesService } from '../prices/prices.service';
-import { Logger } from 'src/common/Logger/Logger.service';
-import { HealthServiceStatusEnum, HealthStatusEnum } from 'src/common/enum';
 
 // example
 // interface HealthCheckResult {

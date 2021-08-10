@@ -19,7 +19,12 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.uniswap })
   platformName: PlatformEnum;
 
-  @ApiProperty({ type: String, example: UniswapProtocolEnum.protocolV2, required: false })
+  @ApiProperty({
+    enum: UniswapProtocolEnum,
+    enumName: 'UniswapProtocolEnum',
+    example: UniswapProtocolEnum.protocolV2,
+    required: false,
+  })
   @IsString()
   protocolName: ProtocolName;
 

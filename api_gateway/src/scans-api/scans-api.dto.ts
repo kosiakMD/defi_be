@@ -4,9 +4,10 @@ import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { splitToArray } from '../utils/transform';
 import { DetailedResponseDto } from 'src/common/DTO';
 import { ResultStatus } from 'src/common/enum';
+
+import { splitToArray } from '../utils/transform';
 
 export class TransactionScanDto {
   @ApiProperty({ example: '10266704', type: String })

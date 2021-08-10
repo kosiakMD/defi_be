@@ -5,10 +5,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { TokensService } from './tokens.service';
 import TokenDto from 'src/common/DTO/Token.dto';
 import { Logger } from 'src/common/Logger/Logger.service';
 import { Token } from 'src/common/interfaces';
+
+import { TokensService } from './tokens.service';
 
 // TODO: can be null as updated each time
 const TOKENS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour

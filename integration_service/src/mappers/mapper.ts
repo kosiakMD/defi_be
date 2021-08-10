@@ -3,6 +3,17 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
+import {
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolName,
+  UniswapProtocolEnum,
+  LiquidityChangeTypeEnum,
+  ProtocolTypeEnum,
+  TransactionTypeEnum,
+  ChainIdEnum,
+} from 'src/common/enum';
+
 import { Web3Provider } from '../chain/web3.provider';
 import {
   BurnsInterface,
@@ -32,16 +43,6 @@ import {
 } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
 import { abi, decimalsDivider } from '../utils/util';
-import {
-  PancakeProtocolEnum,
-  PlatformEnum,
-  ProtocolName,
-  UniswapProtocolEnum,
-  LiquidityChangeTypeEnum,
-  ProtocolTypeEnum,
-  TransactionTypeEnum,
-  ChainIdEnum,
-} from 'src/common/enum';
 
 type UniversalEntity = BurnsInterface | MintsInterface;
 

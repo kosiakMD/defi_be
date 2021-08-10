@@ -1,16 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import {
+  ChainIdEnum,
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolName,
+  ProtocolTypeEnum,
+  SushiSwapProtocolEnum,
+  UniswapProtocolEnum,
+} from 'src/common/enum';
+
 import { BaseData, StakingPosition, txs } from '../../interfaces/transactions.interfaces';
 import { liquidityPositionDto } from './liquidity.position.dto';
 import { StakingPositionDto } from './staking.position.dto';
 import { txsDto } from './txs.dto';
-import {
-  ChainIdEnum,
-  PlatformEnum,
-  ProtocolName,
-  ProtocolTypeEnum,
-  UniswapProtocolEnum,
-} from 'src/common/enum';
 
 export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
@@ -22,7 +25,12 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.uniswap })
   platformName: PlatformEnum;
 
-  @ApiProperty({ type: String, example: UniswapProtocolEnum.protocolV2, required: false })
+  @ApiProperty({
+    enum: [PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum],
+    enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum',
+    example: UniswapProtocolEnum.protocolV2,
+    required: false,
+  })
   protocolName: ProtocolName;
 
   @ApiProperty({

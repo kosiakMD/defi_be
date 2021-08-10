@@ -23,4 +23,18 @@ export enum UniswapProtocolEnum {
   protocolV3 = 'Uniswap V3',
 }
 
+/** TODO: try this fo swagger
+ * const BasicEvents = {
+  Start: 'Start' as 'Start',
+  Finish: 'Finish' as 'Finish'
+};
+ type BasicEvents = (typeof BasicEvents)[keyof typeof BasicEvents];
+ 
+ const AdvEvents = {
+  ...BasicEvents,
+  Pause: 'Pause' as 'Pause',
+  Resume: 'Resume' as 'Resume'
+};
+ type AdvEvents = (typeof AdvEvents)[keyof typeof AdvEvents];
+ */
 export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;

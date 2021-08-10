@@ -4,6 +4,7 @@ import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { ChainIdEnum } from '../common/enum';
+
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 
 @Injectable()

@@ -1,14 +1,16 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
+import { Address } from '../common/interfaces';
+import { CurrencyId, Timestamp } from '../common/types';
+import { ChainIdEnum, CurrencyIdEnum } from 'src/common/enum';
+
 import { ChainDto } from '../balance/dto/chain.dto';
 import { CurrencyDto } from '../balance/dto/currency.dto';
-import { Address } from '../common/interfaces';
-import { ChainId, CurrencyId, Timestamp } from '../common/types';
 import { CurrentTokensPrices, PriceServiceResponse } from './price.interfaces';
 
 export class PriceCurrentRequestDto {
-  constructor(addresses: Address[], chain: ChainId, currency: CurrencyId) {
+  constructor(addresses: Address[], chain: ChainIdEnum, currency: CurrencyId) {
     this.addresses = addresses;
     this.chain = chain;
     this.currency = currency;
@@ -23,15 +25,20 @@ export class PriceCurrentRequestDto {
   })
   addresses: Address[];
 
-  @ApiProperty({ type: Number, example: 1 })
-  chain: ChainId;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
 
   @ApiProperty({ type: Number, example: 1 })
   currency?: CurrencyId;
 }
 
 export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
-  constructor(addresses: Address[], timestamps: Timestamp[], chain: ChainId, currency: CurrencyId) {
+  constructor(
+    addresses: Address[],
+    timestamps: Timestamp[],
+    chain: ChainIdEnum,
+    currency: CurrencyId,
+  ) {
     super(addresses, chain, currency);
     this.timestamps = timestamps;
   }
@@ -45,11 +52,11 @@ export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
   })
   addresses: Address[];
 
-  @ApiProperty({ type: Number, example: 1 })
-  chain: ChainId;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
 
-  @ApiProperty({ type: Number, example: 1 })
-  currency?: CurrencyId;
+  @ApiProperty({ enum: CurrencyIdEnum, enumName: 'CurrencyIdEnum', example: CurrencyIdEnum.usd })
+  currency?: CurrencyIdEnum;
 
   @ApiProperty({ type: [String], example: ['1626178227726', '1626178458384'] })
   timestamps: Timestamp[];

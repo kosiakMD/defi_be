@@ -5,9 +5,10 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { splitToArrayAndLowerCase } from '../../utils/transform';
+import { ChainIdEnum } from '../../common/enum';
 import { Address } from 'src/common/interfaces';
-import { ChainId } from 'src/common/types';
+
+import { splitToArrayAndLowerCase } from '../../utils/transform';
 
 const web3 = new Web3();
 
@@ -24,7 +25,7 @@ export class ProfitAndLossQueryDto {
   asset: Address;
 
   @IsNotEmpty()
-  chain: ChainId;
+  chain: ChainIdEnum;
 
   @IsNotEmpty()
   @Transform(({ value }) => {

@@ -1,14 +1,12 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { HttpException } from '@nestjs/common/exceptions/http.exception';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Repository } from 'typeorm';
 import Web3 from 'web3';
 
-import { Logger } from '../Logger/Logger.service';
-import { AssetsEntity } from '../assets/assets.entity';
-import { Web3Provider } from '../chain/web3.provider';
+import { Inject, Injectable } from '@nestjs/common';
+import { HttpException } from '@nestjs/common/exceptions/http.exception';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import {
   CHAIN_ID_BSC,
   CHAIN_ID_BSC_MAINNET,
@@ -17,7 +15,10 @@ import {
 } from '../common/constatnt';
 import { ChainIdEnum, ChainSymbols } from '../common/enum';
 import { Address } from '../common/interfaces';
-import { ChainsIds } from '../common/types';
+
+import { Logger } from '../Logger/Logger.service';
+import { AssetsEntity } from '../assets/assets.entity';
+import { Web3Provider } from '../chain/web3.provider';
 import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
 import { CurrentPricesPayloadNew } from '../price/price.interfaces';
@@ -193,7 +194,7 @@ export class BalanceService {
 
   public async getBalanceFromCovalent(
     addresses: Address[],
-    chains?: ChainsIds,
+    chains?: ChainIdEnum[],
   ): Promise<AllBalancesDto[]> {
     const chainsToHandle = getAbsoluteChainIds(getUniqList(chains));
     const addressesToHandle = getUniqueAndToLowerCaseArrayData(addresses);
@@ -244,7 +245,7 @@ export class BalanceService {
 
   public async getBalanceDataFromDb(
     accounts: Address[],
-    chains?: ChainsIds,
+    chains?: ChainIdEnum[],
   ): Promise<BalancesResponse> {
     // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
@@ -405,35 +406,34 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance = (
-    prices: TokenPricesV2,
-    chainId: ChainIdEnum,
-  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
-    address,
-    amount,
-    tokenAddress,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    tokenTotalSupply,
-    isLp,
-  }) =>
-    plainToClass(AccountTokenBalanceDto, {
-      account: address,
+  private mapErc20Balance =
+    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
+    ({
+      address,
       amount,
-      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-      tokenPriceUSD: prices[tokenAddress]?.price || 0,
-      totalPriceUSD: prices[tokenAddress]?.price
-        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-        : 0,
-      token: {
-        chainId: chainId,
-        address: tokenAddress,
-        name: tokenName || null,
-        symbol: tokenSymbol || null,
-        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-        totalSupply: +tokenTotalSupply || 0,
-        isLp: isLp,
-      },
-    });
+      tokenAddress,
+      tokenName,
+      tokenSymbol,
+      tokenDecimals,
+      tokenTotalSupply,
+      isLp,
+    }) =>
+      plainToClass(AccountTokenBalanceDto, {
+        account: address,
+        amount,
+        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+        tokenPriceUSD: prices[tokenAddress]?.price || 0,
+        totalPriceUSD: prices[tokenAddress]?.price
+          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+          : 0,
+        token: {
+          chainId: chainId,
+          address: tokenAddress,
+          name: tokenName || null,
+          symbol: tokenSymbol || null,
+          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+          totalSupply: +tokenTotalSupply || 0,
+          isLp: isLp,
+        },
+      });
 }

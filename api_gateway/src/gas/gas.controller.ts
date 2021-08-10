@@ -5,10 +5,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CACHE_MANAGER, Controller, Get, Inject } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { GasService } from './gas.service';
 import { GasHistoryDto, GasPriceDto } from 'src/common/DTO/Gas.dto';
 import { Logger } from 'src/common/Logger/Logger.service';
 import { GasHistory, GasPrice } from 'src/common/interfaces';
+
+import { GasService } from './gas.service';
 
 // TODO: can be null as updated each time
 const GAS_CURRENT_CACHE_TIME = 30; // 30 sec as Gas current updates

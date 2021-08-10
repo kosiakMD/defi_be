@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import {
+  ChainIdEnum,
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolName,
+  SushiSwapProtocolEnum,
+  UniswapProtocolEnum,
+} from 'src/common/enum';
+
 import { LiquidityPoolsEntity } from '../entities/liquidity.pools.entity';
 import { APYDto } from './apy.dto';
 import { ImpermanentLossDto } from './impermanentloss.dto';
 import { TokenDto } from './token.dto';
-import { ChainIdEnum, PlatformEnum, ProtocolName, UniswapProtocolEnum } from 'src/common/enum';
 
 export class LiquidityPoolsResponseDto {
   @ApiProperty({ type: Number, example: 2830808 })
@@ -16,7 +24,12 @@ export class LiquidityPoolsResponseDto {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;
 
-  @ApiProperty({ type: String, example: UniswapProtocolEnum.protocolV2 })
+  // TODO: solve the problem it's either platform or protocol; use enum, enumName
+  @ApiProperty({
+    enum: [PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum],
+    enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum',
+    example: UniswapProtocolEnum.protocolV2,
+  })
   project: PlatformEnum | ProtocolName;
 
   @ApiProperty({ type: Number, example: 99690611 })

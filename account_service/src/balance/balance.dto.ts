@@ -6,21 +6,21 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+
 import {
   AccountBalance,
   AccountTokenBalance,
   BalanceToken,
   ErrorMessage,
 } from './interfaces/balance.interfaces';
-import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
-import { Address } from 'src/common/interfaces';
-import { ChainId, ChainsIds } from 'src/common/types';
 
 const web3 = new Web3();
 
 interface BalancesQuery {
   addresses: Address[];
-  chains: ChainsIds;
+  chains: ChainIdEnum[];
   internal: number;
 }
 
@@ -50,10 +50,10 @@ export class BalancesQueryDto implements BalancesQuery {
   @IsArray()
   @IsInt({ each: true })
   @ApiProperty({
-    type: [Number],
-    example: [1, 2],
+    type: [ChainIdEnum],
+    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
   })
-  chains: ChainsIds;
+  chains: ChainIdEnum[];
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -130,7 +130,7 @@ export class BalanceDto implements AccountBalance {
 export class AllBalancesDto {
   address: Address;
   balances: {
-    chain: ChainId;
+    chain: ChainIdEnum;
     items: any[];
     status: string;
     error: string | null | Error;

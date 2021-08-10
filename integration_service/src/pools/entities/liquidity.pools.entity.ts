@@ -1,9 +1,10 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ChainIdEnum, PlatformEnum, ProtocolName } from 'src/common/enum';
+
 import { APYDto } from '../dto/apy.dto';
 import { ImpermanentLossDto } from '../dto/impermanentloss.dto';
 import { TokenDto } from '../dto/token.dto';
-import { ChainIdEnum, PlatformEnum, ProtocolName } from 'src/common/enum';
 
 @Entity('liquidity_pools')
 export class LiquidityPoolsEntity {

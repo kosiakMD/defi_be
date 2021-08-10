@@ -5,9 +5,10 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import { ChainDto, CurrencyDto, PriceQueryDto, PriceResponseDto, PricesPayload } from './dto';
 import { PriceBatchRequestDto } from './dto/priceBatch.request.dto';
-import { Logger } from 'src/common/Logger/Logger.service';
 
 @Injectable()
 export class PricesService {

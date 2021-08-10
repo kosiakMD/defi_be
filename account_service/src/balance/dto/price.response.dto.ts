@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { Address } from 'src/common/interfaces';
+
 import { PriceServiceResponse } from '../../price/price.interfaces';
 import { ChainDto } from './chain.dto';
 import { CurrencyDto } from './currency.dto';
-import { Address } from 'src/common/interfaces';
 
 export class PriceResponseDto<T> implements PriceServiceResponse<T> {
   constructor(chain, currency, prices) {

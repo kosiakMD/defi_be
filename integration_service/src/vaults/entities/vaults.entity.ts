@@ -1,8 +1,9 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ChainIdEnum, ColumnType, PlatformEnum } from 'src/common/enum';
+
 import { APYDto } from '../dto/apy.dto';
 import { TokenDto } from '../dto/token.dto';
-import { ChainIdEnum, ColumnType, PlatformEnum } from 'src/common/enum';
 
 @Entity('vaults')
 export class VaultsEntity {

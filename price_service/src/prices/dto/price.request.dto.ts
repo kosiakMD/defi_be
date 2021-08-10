@@ -11,11 +11,12 @@ export class PriceRequestDto {
   @IsInt()
   @IsOptional()
   @ApiProperty({
-    type: Number,
-    required: false,
-    description: 'Chain or network id',
+    enum: ChainIdEnum,
+    enumName: 'ChainIdEnum',
     example: ChainIdEnum.eth,
     default: ChainIdEnum.eth,
+    description: 'Chain or network id',
+    required: false,
   })
   chain = ChainIdEnum.eth;
 
@@ -23,11 +24,12 @@ export class PriceRequestDto {
   @IsInt()
   @IsOptional()
   @ApiProperty({
-    type: Number,
-    required: false,
-    description: 'Currency Id',
+    enum: CurrencyIdEnum,
+    enumName: 'CurrencyIdEnum',
     example: CurrencyIdEnum.usd,
     default: CurrencyIdEnum.usd,
+    description: 'Currency Id',
+    required: false,
   })
   currency = CurrencyIdEnum.usd;
 

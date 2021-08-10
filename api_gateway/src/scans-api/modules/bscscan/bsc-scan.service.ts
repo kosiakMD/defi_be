@@ -4,10 +4,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ScanService } from '../scan.service';
-import { CHAIN_ID_BSC } from '../utils/utils';
 import { Logger } from 'src/common/Logger/Logger.service';
 import { ChainIdEnum, ChainPrefixEnum } from 'src/common/enum';
+
+import { ScanService } from '../scan.service';
+import { CHAIN_ID_BSC } from '../utils/utils';
 
 @Injectable()
 export class BscScanService extends ScanService {

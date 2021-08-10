@@ -9,8 +9,8 @@ export const ERC20_APPROVAL_EVENT_HASH =
   '0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925';
 export const ZERO_DATA = '0x';
 
-export const TYPE_TRANSFER: string = 'transfer';
-export const TYPE_APPROVAL: string = 'approval';
+export const TYPE_TRANSFER = 'transfer';
+export const TYPE_APPROVAL = 'approval';
 
 const Eth = require('web3-eth');
 const eth = new Eth();

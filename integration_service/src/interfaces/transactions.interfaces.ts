@@ -1,11 +1,4 @@
 import {
-  BurnsInterface,
-  MintsInterface,
-  SnapshotsInterface,
-  SwapsInterface,
-} from './entity.information.interfaces';
-import { LiquidityPosition, UniswapLiquidityPosition } from './liquidity.position.interfaces';
-import {
   ChainIdEnum,
   LiquidityChangeTypeEnum,
   PlatformEnum,
@@ -13,6 +6,14 @@ import {
   ProtocolTypeEnum,
   TransactionTypeEnum,
 } from 'src/common/enum';
+
+import {
+  BurnsInterface,
+  MintsInterface,
+  SnapshotsInterface,
+  SwapsInterface,
+} from './entity.information.interfaces';
+import { LiquidityPosition, UniswapLiquidityPosition } from './liquidity.position.interfaces';
 
 export type Address = string;
 
@@ -64,20 +65,8 @@ export interface Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
-  chainId: ChainIdEnum;
-  userAddress: string;
-  protocolType: T;
-  platformName: PlatformEnum;
-  protocolName?: ProtocolName;
-}
-
 export interface StakeTransaction extends Transaction<TransactionTypeEnum.stake> {
   amount: number;
-}
-
-export interface Transactions extends BaseData<ProtocolTypeEnum.transaction> {
-  txs: Transaction[];
 }
 
 export interface UnStakeTransaction extends Transaction<TransactionTypeEnum.unStake> {
@@ -106,6 +95,20 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   protocolType: T;
   platformName: PlatformEnum;
   protocolName?: ProtocolName;
+}
+
+export interface Transaction<T = string> {
+  type: T;
+  hash: string;
+  timestamp: number;
+  blockNumber: number;
+  gasUsed?: number;
+  gasPrice?: number;
+  gasPriceUsd?: number;
+}
+
+export interface Transactions extends BaseData<'transaction'> {
+  txs: Transaction[];
 }
 
 export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}

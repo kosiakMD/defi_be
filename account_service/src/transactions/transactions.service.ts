@@ -1,14 +1,16 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from 'src/common/constatnt';
-import { ResultStatus } from 'src/common/enum';
-import { Address, DetailedResponse } from 'src/common/interfaces';
-import { ChainId, ChainsIds } from 'src/common/types';
 import { getManager, In, Repository } from 'typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from 'src/common/constatnt';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+import { Address, DetailedResponse } from 'src/common/interfaces';
+import { ChainId } from 'src/common/types';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { Covalent } from '../covalent/covalent.interface';
@@ -150,7 +152,7 @@ export class TransactionsService {
 
   public async getTransactionsNew(
     addresses: Address[],
-    chains: ChainsIds,
+    chains: ChainIdEnum[],
   ): Promise<DetailedResponse<TransactionNewDto[]>> {
     const response = {
       status: ResultStatus.ok,
@@ -173,7 +175,7 @@ export class TransactionsService {
 
   async getTransactionsFromScan(
     addresses: Address[],
-    chains: ChainsIds,
+    chains: ChainIdEnum[],
   ): Promise<DetailedResponse<TransactionsResult[]>> {
     const response = {
       status: ResultStatus.ok,
@@ -238,7 +240,7 @@ export class TransactionsService {
 
   private transformCovalentToInternal(
     data: Covalent.Transaction,
-    chainId: ChainId,
+    chainId: ChainIdEnum,
   ): TransactionDto[] {
     const { quote_currency: currency, items } = data;
     return items.map(

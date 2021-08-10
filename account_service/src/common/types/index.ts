@@ -1,6 +1,6 @@
-export type ChainId = number;
+import { ChainIdEnum } from '../enum';
 
-export type ChainsIds = ChainId[];
+export type ChainId = ChainIdEnum;
 
 export type CurrencyId = number;
 

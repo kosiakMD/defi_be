@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum } from '../common/enum';
+
 import { AccountTokenBalance, BalancesResponse, Transfers } from './interfaces';
 import { ScanApi } from './scan-api.service';
 

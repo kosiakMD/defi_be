@@ -3,13 +3,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Controller, Inject } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+import { Address } from 'src/common/interfaces';
+
 import { BscScanService } from '../scans-api/modules/bscscan/bsc-scan.service';
 import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.service';
 import { ScanService } from '../scans-api/modules/scan.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../scans-api/modules/utils/utils';
 import { TransfersResponse } from './transfers.interfaces';
-import { Logger } from 'src/common/Logger/Logger.service';
-import { Address } from 'src/common/interfaces';
 
 @ApiTags('Transfers')
 @Controller('transfers')

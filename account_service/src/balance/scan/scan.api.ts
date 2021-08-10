@@ -5,11 +5,12 @@ import { map } from 'rxjs/operators';
 import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainIdEnum } from 'src/common/enum';
+
 import { Logger } from '../../Logger/Logger.service';
 import { isEthChain } from '../../utils/web3';
 import { EtherscanTransfer } from '../interfaces/etherscan.interfaces';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
-import { ChainIdEnum } from 'src/common/enum';
 
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 

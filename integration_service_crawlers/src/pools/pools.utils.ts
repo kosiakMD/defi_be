@@ -53,8 +53,8 @@ export function getIl(pairCurrent: Pair, pairPast: Pair): [number, number] {
 
   const lpRatio = pairPast.reserveUSD / pairCurrent.reserveUSD - 1;
 
-  let t0PriceChange = t0PriceCurrent / t0PricePast;
-  let t1PriceChange = t1PriceCurrent / t1PricePast;
+  const t0PriceChange = t0PriceCurrent / t0PricePast;
+  const t1PriceChange = t1PriceCurrent / t1PricePast;
 
   const valueOfPool = Math.pow(t0PriceChange, 50 / 100) * Math.pow(t1PriceChange, 50 / 100);
   const assetValue = t0PriceChange * (50 / 100) + t1PriceChange * (50 / 100);

@@ -3,6 +3,8 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { PlatformEnum } from 'src/common/enum';
+
 import { AccountService } from '../account/account.service';
 import { BalanceToken } from '../account/interfaces';
 import { EtherscanService } from '../etherscan/etherscan.service';
@@ -21,7 +23,6 @@ import { PancakeMintsEntity } from './entity/pancake.mints.entity';
 import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
 import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
-import { PlatformEnum } from 'src/common/enum';
 
 @Injectable()
 export class PancakeService {

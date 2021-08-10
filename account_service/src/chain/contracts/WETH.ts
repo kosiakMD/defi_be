@@ -3,6 +3,9 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
+import { CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ERC20Token } from 'src/common/interfaces';
+
 import {
   ERC20Transfer,
   ScanTransfer,
@@ -10,8 +13,6 @@ import {
 } from '../../transfers/interfaces/transfers.interfaces';
 import { DepositEvent, WithdrawalEvent } from '../interfaces';
 import { Web3Provider } from '../web3.provider';
-import { CHAIN_ID_ETH } from 'src/common/constatnt';
-import { ERC20Token } from 'src/common/interfaces';
 
 // events: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
 @Injectable()

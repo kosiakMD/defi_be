@@ -4,6 +4,8 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { PancakeProtocolEnum, PlatformEnum } from 'src/common/enum';
+
 import { LiquidityPoolsEntity } from './entities/liquidity.pools.entity';
 import {
   PANCAKE_MIN_RESERVE,
@@ -12,7 +14,6 @@ import {
   UNI_PAIRS_BLACKLIST,
 } from './pools.setting';
 import { LiquidityPoolsRepository } from './repository/liquidity.pools.repository';
-import { PancakeProtocolEnum, PlatformEnum } from 'src/common/enum';
 
 @Injectable()
 export class PoolsService {

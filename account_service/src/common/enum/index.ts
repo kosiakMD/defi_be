@@ -1,6 +1,6 @@
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../constatnt';
 
-export enum ChainSymbolNames {
+export enum ChainNameEnum {
   ETH = 'ethereum',
   eth = 'ethereum',
   BSC = 'binance',
@@ -29,6 +29,14 @@ export enum ChainPrefixEnum {
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
+}
+
+export enum CurrencyEnum {
+  usd = 'usd',
+}
+
+export enum CurrencyIdEnum {
+  usd = 1,
 }
 
 export enum ProtocolTypeEnum {

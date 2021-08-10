@@ -3,9 +3,10 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { ContractApprovalResponse } from 'src/common/interfaces';
+
 import { ApprovalsService } from './approvals.service';
 import { ContractApprovalResponseDto } from './dto';
-import { ContractApprovalResponse } from 'src/common/interfaces';
 
 @ApiTags('Approvals')
 @Controller('approvals')

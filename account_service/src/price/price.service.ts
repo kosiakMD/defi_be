@@ -1,7 +1,12 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
+
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { ETH_BNB_ADDRESS } from '../common/constatnt';
+import { ChainIdEnum } from '../common/enum';
+import { Address } from '../common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
 import { changeTokenArray } from '../balance/balance_util/balance.util';
@@ -18,10 +23,6 @@ import {
   NO_SCAN_BNB_TOKENS,
   NO_SCAN_ETH_TOKENS,
 } from '../balance/tokens/tokens';
-import { ETH_BNB_ADDRESS } from '../common/constatnt';
-import { ChainIdEnum } from '../common/enum';
-import { Address } from '../common/interfaces';
-import { ChainId } from '../common/types';
 import { isEthChain } from '../utils/web3';
 import { CurrentTokensPricesDto, PriceCurrentRequestDto } from './price.dto';
 import { CurrentPricesPayloadNew, PriceServiceResponse } from './price.interfaces';
@@ -100,7 +101,7 @@ export class PriceService {
 
   async getTokenPrices(
     addressesArray: Address[],
-    chain: ChainId,
+    chain: ChainIdEnum,
     internal?: number,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     // TODO: do we need this?
@@ -134,7 +135,7 @@ export class PriceService {
 
   async getTokenPricesWithLp(
     addressesArray: Address[],
-    chain: ChainId,
+    chain: ChainIdEnum,
     internal?: number,
   ): Promise<PriceResponseDto<CurrentPricesPayloadNew>> {
     // TODO: do we need this?

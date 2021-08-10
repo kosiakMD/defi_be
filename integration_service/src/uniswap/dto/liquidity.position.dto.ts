@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { PlatformEnum } from 'src/common/enum';
+
 import { ERC20TokenDto } from './erc20.token.dto';
 import { LiquidityPoolDto } from './liquidity.pool.dto';
 import { PoolTokenDto } from './pool.token.dto';
-import { PlatformEnum } from 'src/common/enum';
 
 export class liquidityPositionDto {
   @ApiProperty({

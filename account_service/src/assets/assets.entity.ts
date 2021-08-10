@@ -3,8 +3,9 @@ import { AfterLoad, Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AssetState } from './assets.interface';
 import { ChainIdEnum } from 'src/common/enum';
+
+import { AssetState } from './assets.interface';
 
 @Entity({ name: 'assets_new', orderBy: { name: 'ASC' } })
 export class AssetsEntity {
@@ -62,7 +63,7 @@ export class AssetsEntity {
   @Column({ name: 'is_lp' })
   isLp: boolean;
 
-  @ApiProperty({ type: String, example: AssetState.processing })
+  @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.processing })
   @Expose()
   get status(): AssetState {
     return this.isReadyToMigrate && this.isMigrated ? AssetState.ready : AssetState.pending;

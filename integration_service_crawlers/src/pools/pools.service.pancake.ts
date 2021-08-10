@@ -37,7 +37,7 @@ export class PoolsServicePancake {
     );
     const allPairs = await this.fillPairsData([...poolsV1, ...poolsV2]);
     return allPairs.reduce((a, c) => {
-      let liquidityPool: LiquidityPool = {
+      const liquidityPool: LiquidityPool = {
         id: c.address,
         chain: Number(c.chain),
         project: c.project,

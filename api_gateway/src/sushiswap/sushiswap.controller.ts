@@ -3,9 +3,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { IntegrationService } from '../integration/integration.service';
 import BaseDataDto from 'src/common/DTO/BaseData.dto';
 import { Logger } from 'src/common/Logger/Logger.service';
+
+import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
 @Controller('sushiswap')

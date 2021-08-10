@@ -9,11 +9,12 @@ import {
   HttpHealthIndicator,
 } from '@nestjs/terminus';
 
+import { AddVersion } from 'src/common/decorators/AddVersion';
+import { HealthStatusEnum } from 'src/common/enum';
+
 import { ServiceHealthIndicator } from '../app/app.health';
 import { HealthServicesResponse200Dto } from './dto/health.services.response.200.dto';
 import { HealthServicesResponse503Dto } from './dto/health.services.response.503.dto';
-import { AddVersion } from 'src/common/decorators/AddVersion';
-import { HealthStatusEnum } from 'src/common/enum';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
   [service: string]: {

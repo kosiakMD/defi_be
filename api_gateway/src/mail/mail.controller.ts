@@ -3,13 +3,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import {
   HireEmailRequestDto,
   EmailResponseDto,
   HireEmailValidationErrorResponseDto,
 } from './mail.dto';
 import { MailService } from './mail.service';
-import { Logger } from 'src/common/Logger/Logger.service';
 
 @ApiTags('Hire')
 @Controller('mail')

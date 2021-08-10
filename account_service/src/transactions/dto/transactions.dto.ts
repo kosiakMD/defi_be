@@ -1,12 +1,13 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Transaction } from '../interfaces/transactions.interfaces';
-import { SubTransactionTypEnum } from '../transactions.enum';
-import { TransactionDto as TransactionFromScanDto, TransactionNewDto } from './transaction.dto';
 import { DetailedResponseDto } from 'src/common/dto';
 import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 import { Address, DetailedResponse } from 'src/common/interfaces';
+
+import { Transaction } from '../interfaces/transactions.interfaces';
+import { SubTransactionTypEnum } from '../transactions.enum';
+import { TransactionDto as TransactionFromScanDto, TransactionNewDto } from './transaction.dto';
 
 class GasDto {
   @ApiProperty({ type: Number, example: 1.1900000000000001e-7 })
@@ -159,7 +160,7 @@ export class SubTransactionDto {
   to: string;
 
   @ApiProperty({
-    type: SubTransactionTypEnum,
+    enum: SubTransactionTypEnum,
     enumName: 'SubTransactionTypEnum',
     example: SubTransactionTypEnum.incoming,
   })

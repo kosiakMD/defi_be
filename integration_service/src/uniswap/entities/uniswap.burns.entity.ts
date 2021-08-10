@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { InformationBurn } from '../../interfaces/entity.information.interfaces';
 import { ColumnType } from 'src/common/enum';
+
+import { InformationBurn } from '../../interfaces/entity.information.interfaces';
 
 @Entity('uniswap_burns')
 export class UniswapBurnsEntity {

@@ -4,6 +4,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Body, Controller, Get, Post, Query, Req, Inject } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import {
   PriceBatchRequestDto,
   PriceQueryDto,
@@ -16,7 +18,6 @@ import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
 import { CurrentPriceV2ResponseDto } from './dto/price.response.v2.current.dto';
 import { HistoricalPriceV2ResponseDto } from './dto/price.response.v2.historical.dto';
 import { PriceService } from './prices.service';
-import { Logger } from 'src/common/Logger/Logger.service';
 
 @Controller('prices')
 export class PricesController {

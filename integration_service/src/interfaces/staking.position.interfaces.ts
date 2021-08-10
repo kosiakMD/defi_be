@@ -1,3 +1,5 @@
+import { ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
+
 import {
   AmountAble,
   BaseData,
@@ -5,7 +7,6 @@ import {
   PoolToken,
   Transaction,
 } from './transactions.interfaces';
-import { ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
 
 export interface StakeTransaction extends Transaction<TransactionTypeEnum.stake> {
   amount: number;

@@ -5,9 +5,10 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
 
-import { BalancesResponse } from '../account/account.interfaces';
 import { Logger } from 'src/common/Logger/Logger.service';
 import { BaseData, Pool, Vault } from 'src/common/interfaces';
+
+import { BalancesResponse } from '../account/account.interfaces';
 
 @Injectable()
 export class IntegrationService {

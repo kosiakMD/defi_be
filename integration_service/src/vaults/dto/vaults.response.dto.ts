@@ -1,9 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ChainIdEnum, PlatformEnum } from 'src/common/enum';
+
 import { VaultsEntity } from '../entities/vaults.entity';
 import { APYDto } from './apy.dto';
 import { TokenDto } from './token.dto';
-import { ChainIdEnum, PlatformEnum } from 'src/common/enum';
 
 export class VaultsResponseDto {
   @ApiProperty({ type: Number, example: 26 })

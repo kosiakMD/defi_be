@@ -25,18 +25,18 @@ if (chars > bigPRThreshold) {
 }
 
 // Check for changes to package.json
-const packageChanged = danger.git.modified_files.includes('package.json');
-// if npm
 const packageLockfileChanged = danger.git.modified_files.includes('package-lock.json');
-if ((packageChanged && !packageLockfileChanged) || (!packageChanged && packageLockfileChanged)) {
-  const message = 'Files package.json and package-lock.json include different packages';
-  const idea = 'Perhaps you need to run `npm install`?';
-  warn(`${message} - <i>${idea}</i>`);
-}
-// if yarn
-// const yarnLockfileChanged = danger.git.modified_files.includes('yarn.lock');
-// if (packageChanged && !yarnLockfileChanged || !packageChanged && yarnLockfileChanged) {
-// 	const message = 'Changes were made to package.json, but not to yarn.lock';
-// 	const idea = 'Perhaps you need to run `yarn install`?';
-// 	warn(`${message} - <i>${idea}</i>`);
+// if npm
+// const packageChanged = danger.git.modified_files.includes('package.json');
+// if ((packageChanged && !packageLockfileChanged) || (!packageChanged && packageLockfileChanged)) {
+//   const message = 'Files package.json and package-lock.json include different packages';
+//   const idea = 'Perhaps you need to run `npm install`?';
+//   warn(`${message} - <i>${idea}</i>`);
 // }
+// if yarn
+const yarnLockfileChanged = danger.git.modified_files.includes('yarn.lock');
+if (yarnLockfileChanged && !packageLockfileChanged || !yarnLockfileChanged && packageLockfileChanged) {
+	const message = 'Changes were made to package.json, but not to yarn.lock';
+	const idea = 'Perhaps you need to run `yarn install`?';
+	warn(`${message} - <i>${idea}</i>`);
+}

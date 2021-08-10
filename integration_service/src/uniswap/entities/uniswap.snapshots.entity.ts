@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { InformationSnapshot } from '../../interfaces/entity.information.interfaces';
 import { ColumnType } from 'src/common/enum';
+
+import { InformationSnapshot } from '../../interfaces/entity.information.interfaces';
 
 @Entity('uniswap_snapshots')
 export class UniswapSnapshotsEntity {

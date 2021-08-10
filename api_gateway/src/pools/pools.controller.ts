@@ -5,10 +5,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { IntegrationService } from '../integration/integration.service';
 import PoolDto from 'src/common/DTO/Pool.dto';
 import { Logger } from 'src/common/Logger/Logger.service';
 import { Pool } from 'src/common/interfaces';
+
+import { IntegrationService } from '../integration/integration.service';
 
 // TODO: can be null as updated each time
 const POOLS_CACHE_TIME = 60; // 1 min

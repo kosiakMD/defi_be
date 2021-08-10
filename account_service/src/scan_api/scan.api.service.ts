@@ -7,6 +7,9 @@ import { EtherScanTransactionResponseDto } from 'src/scan_api/ether.scan.transac
 import { HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { DEFAULT_MULTIPLIER } from 'src/common/constatnt';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+
 import { Logger } from '../Logger/Logger.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
@@ -29,8 +32,6 @@ import {
   transactionFeeUSD,
   transferTokenAddressNotIn,
 } from '../utils/utils';
-import { DEFAULT_MULTIPLIER } from 'src/common/constatnt';
-import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec

@@ -2,8 +2,9 @@ import { PlatformPoolToken, txs } from 'src/interfaces/transactions.interfaces';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PlatformPoolTokenDto } from './platform.pool.token.dto';
 import { LiquidityChangeTypeEnum } from 'src/common/enum';
+
+import { PlatformPoolTokenDto } from './platform.pool.token.dto';
 
 export class txsDto implements txs {
   @ApiProperty({

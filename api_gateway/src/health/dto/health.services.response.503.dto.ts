@@ -2,9 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { HealthIndicatorResult } from '@nestjs/terminus';
 import { HealthCheckResult, HealthCheckStatus } from '@nestjs/terminus/dist/health-check';
 
+import { HealthServiceStatusEnum, HealthStatusEnum } from 'src/common/enum';
+
 import { HealthServicesDto } from './health.services.info.dto';
 import { HealthErrorDto } from './heath.error.dto';
-import { HealthServiceStatusEnum, HealthStatusEnum } from 'src/common/enum';
 
 const HealthServicesExample = {
   accountService: {
@@ -26,7 +27,8 @@ const HealthServicesExample = {
 
 export class HealthServicesResponse503Dto implements HealthCheckResult {
   @ApiProperty({
-    type: HealthStatusEnum.error,
+    enum: HealthStatusEnum,
+    enumName: 'HealthStatusEnum',
     example: HealthStatusEnum.error,
   })
   status: HealthCheckStatus;

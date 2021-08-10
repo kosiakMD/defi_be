@@ -1,5 +1,6 @@
-import { TransferDto } from './transfers.dto';
 import { ChainIdEnum } from 'src/common/enum';
+
+import { TransferDto } from './transfers.dto';
 
 export const exampleChain1: TransferDto = {
   chainId: ChainIdEnum.eth,

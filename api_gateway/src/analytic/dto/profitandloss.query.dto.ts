@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainId } from '../../transactions/enums';
+import { ChainIdEnum } from '../../common/enum';
 import { Address } from 'src/common/interfaces';
 
 export class ProfitAndLossQueryDto {
@@ -12,7 +12,7 @@ export class ProfitAndLossQueryDto {
   asset: Address;
 
   @IsNotEmpty()
-  chain: ChainId;
+  chain: ChainIdEnum;
 
   @IsNotEmpty()
   @IsString({ each: true })

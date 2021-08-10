@@ -2,10 +2,11 @@ import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import ApprovalMapper from './utils/approvalMapper';
 import { CHAIN_ID_ETH } from 'src/common/constatnt';
 import { ChainIdEnum } from 'src/common/enum';
 import { Address, ContractApprovalResponse } from 'src/common/interfaces';
+
+import ApprovalMapper from './utils/approvalMapper';
 
 @Injectable()
 export class ApprovalsService {

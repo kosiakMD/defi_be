@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Asset, AssetState } from './assets.interface';
 import { ChainIdEnum } from 'src/common/enum';
+
+import { Asset, AssetState } from './assets.interface';
 
 export class AssetDto implements Asset {
   @ApiProperty({ type: Number, example: 1066834 })

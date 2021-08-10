@@ -13,6 +13,10 @@ import {
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { DetailedResponseDto } from 'src/common/dto';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+
 import {
   ERC20Token,
   ERC20Transfer,
@@ -22,14 +26,10 @@ import {
   TransferWithTokenAndPrices,
 } from '../interfaces/transfers.interfaces';
 import { exampleResponse } from './transfers.dto.examples';
-import { DetailedResponseDto } from 'src/common/dto';
-import { ResultStatus } from 'src/common/enum';
-import { Address } from 'src/common/interfaces';
-import { ChainId, ChainsIds } from 'src/common/types';
 
 interface TransfersQuery {
   addresses: Address[];
-  chains: ChainsIds;
+  chains: ChainIdEnum[];
   internal: number;
 }
 
@@ -138,8 +138,8 @@ export class ERC20TransferDto implements ERC20Transfer {
 }
 
 export class ScanTransferDto implements ScanTransfer {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: ChainId;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
   @ApiProperty({
     type: String,
     example: '0x0e91ee6e298b4856a7d58e77c7926453cf46edc147a78e4d5cfe2e4c1c675499',
@@ -160,8 +160,8 @@ export class ScanTransferDto implements ScanTransfer {
 }
 
 export class TransferDto implements Transfer {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: ChainId;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
 
   @ApiProperty({
     type: String,

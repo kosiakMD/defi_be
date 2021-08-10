@@ -1,8 +1,9 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ChainIdEnum } from 'src/common/enum';
+
 import { ColumnNumericTransformer } from '../dto/column.numeric.transformer';
 import { SubTransaction } from '../interfaces/transactions.interfaces';
-import { ChainIdEnum } from 'src/common/enum';
 
 @Entity('transactions_new')
 export class TransactionNewEntity {

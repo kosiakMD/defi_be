@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AssetState } from './assets.interface';
 import { ChainIdEnum } from 'src/common/enum';
+
+import { AssetState } from './assets.interface';
 
 export class AssetsDto {
   @ApiProperty({ type: Number, example: 13 })
@@ -16,6 +17,6 @@ export class AssetsDto {
   chain: ChainIdEnum;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
-  @ApiProperty({ type: String, example: AssetState.processing })
+  @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.processing })
   status: AssetState;
 }

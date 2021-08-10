@@ -1,7 +1,8 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { InformationMint } from '../../interfaces/entity.information.interfaces';
 import { ColumnType } from 'src/common/enum';
+
+import { InformationMint } from '../../interfaces/entity.information.interfaces';
 
 @Entity('uniswap_mints')
 export class UniswapMintsEntity {

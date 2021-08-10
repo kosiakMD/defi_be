@@ -4,6 +4,9 @@ import { map } from 'rxjs/operators';
 import { HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from 'src/common/enum';
+
 import { Transaction } from '../../transactions/transactions.interfaces';
 import {
   ERC20TokenTransfer,
@@ -15,8 +18,6 @@ import {
 import { PriceServiceResponse } from '../interfaces/priceServiceResponse.interface';
 import { TransactionsDetailedResponseDto } from '../scans-api.dto';
 import { getUniqueAndToLowerCaseArrayData, totalPrice } from './utils/utils';
-import { Logger } from 'src/common/Logger/Logger.service';
-import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from 'src/common/enum';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec

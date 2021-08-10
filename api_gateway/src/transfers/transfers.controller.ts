@@ -3,13 +3,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import { AccountService } from '../account/account.service';
 import { BscScanService } from '../scans-api/modules/bscscan/bsc-scan.service';
 import { EtherScanService } from '../scans-api/modules/etherscan/ether-scan.service';
 import { TransferQueryDto, TransfersDetailedResponseDto } from './transfers.dto';
 import { TransfersResponse } from './transfers.interfaces';
 import { TransfersService } from './transfers.service';
-import { Logger } from 'src/common/Logger/Logger.service';
 
 @ApiTags('Transfers')
 @Controller('transfers')

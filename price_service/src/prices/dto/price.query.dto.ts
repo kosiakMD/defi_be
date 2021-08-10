@@ -4,6 +4,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainIdEnum, CurrencyIdEnum } from '../../common/enum';
+
 import { splitToArray, splitToNumberArray } from '../../utils/transform';
 
 export class PriceQueryDto {
@@ -11,11 +12,12 @@ export class PriceQueryDto {
   @IsInt()
   @IsOptional()
   @ApiProperty({
-    type: Number,
-    required: false,
-    description: 'Chain or network id',
+    enum: ChainIdEnum,
+    enumName: 'ChainIdEnum',
     example: ChainIdEnum.eth,
     default: ChainIdEnum.eth,
+    required: false,
+    description: 'Chain or network id',
   })
   chain = ChainIdEnum.eth;
 
@@ -23,11 +25,12 @@ export class PriceQueryDto {
   @IsInt()
   @IsOptional()
   @ApiProperty({
-    type: Number,
-    required: false,
-    description: 'Currency Id',
+    enum: CurrencyIdEnum,
+    enumName: 'CurrencyIdEnum',
     example: CurrencyIdEnum.usd,
     default: CurrencyIdEnum.usd,
+    description: 'Currency Id',
+    required: false,
   })
   currency = CurrencyIdEnum.usd;
 

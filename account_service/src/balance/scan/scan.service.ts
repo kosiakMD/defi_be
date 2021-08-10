@@ -3,8 +3,11 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { Web3Provider } from '../../chain/web3.provider';
 import { ChainIdEnum } from '../../common/enum';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, WETH_ADDRESS } from 'src/common/constatnt';
+import { Address } from 'src/common/interfaces';
+
+import { Web3Provider } from '../../chain/web3.provider';
 import { PriceService } from '../../price/price.service';
 import {
   abi,
@@ -24,9 +27,6 @@ import {
 import { Transfers } from '../interfaces/etherscan.interfaces';
 import { NO_SCAN_BNB_TOKENS, NO_SCAN_ETH_TOKENS } from '../tokens/tokens';
 import { ScanApi } from './scan.api';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, WETH_ADDRESS } from 'src/common/constatnt';
-import { Address } from 'src/common/interfaces';
-import { ChainId, ChainsIds } from 'src/common/types';
 
 // TODO: Refactor to Factory or Abstract class extends
 @Injectable()
@@ -45,7 +45,7 @@ export class ScanService {
 
   public async getBalanceDataFromChains(
     accounts: Address[],
-    chains: ChainsIds,
+    chains: ChainIdEnum[],
   ): Promise<BalancesResponse> {
     // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
@@ -86,7 +86,7 @@ export class ScanService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  async getBalances(addresses: Address[], chain: ChainId): Promise<any> {
+  async getBalances(addresses: Address[], chain: ChainIdEnum): Promise<any> {
     const transfersAll: Transfers = {};
     await Promise.all(
       addresses.map(async (a) => {

@@ -4,9 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { ChainIdEnum } from 'src/common/enum';
+
 import { AssetsEntity } from './assets.entity';
 import { AssetsRepository } from './assets.repository';
-import { ChainIdEnum } from 'src/common/enum';
 
 @Injectable()
 export class AssetsService {

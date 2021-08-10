@@ -4,10 +4,11 @@ import { map } from 'rxjs/operators';
 import { HttpException, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { ChainIdEnum, CurrencyEnum } from '../common/enum';
+import { Address } from 'src/common/interfaces';
+
 import { Logger } from '../Logger/Logger.service';
 import { Covalent } from './covalent.interface';
-import { Address } from 'src/common/interfaces';
-import { ChainId } from 'src/common/types';
 
 const TRANSACTIONS_PER_PAGE = 10e3;
 
@@ -16,11 +17,11 @@ export class CovalentService {
   protected readonly url: string;
   protected readonly apiKey: string;
 
-  private getBalanceUrl(address: Address, chainId: ChainId): string {
+  private getBalanceUrl(address: Address, chainId: ChainIdEnum): string {
     return `${this.url}/${chainId}/address/${address}/balances_v2/`;
   }
 
-  private getTransactionUrl(address: Address, chainId: ChainId): string {
+  private getTransactionUrl(address: Address, chainId: ChainIdEnum): string {
     return `${this.url}/${chainId}/address/${address}/transactions_v2/`;
   }
 
@@ -33,7 +34,7 @@ export class CovalentService {
     this.apiKey = this.configService.get<string>('COVALENT_KEY');
   }
 
-  public async getBalances(address: Address, chainId: ChainId): Promise<Covalent.Balance> {
+  public async getBalances(address: Address, chainId: ChainIdEnum): Promise<Covalent.Balance> {
     const transactionUrl = this.getBalanceUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);
@@ -41,7 +42,7 @@ export class CovalentService {
         .get<Covalent.Response<Covalent.Balance>>(transactionUrl, {
           params: {
             key: this.apiKey,
-            'quote-currency': 'usd',
+            'quote-currency': CurrencyEnum.usd,
             'page-size': TRANSACTIONS_PER_PAGE,
           },
         })
@@ -68,7 +69,10 @@ export class CovalentService {
     }
   }
 
-  public async getTransactions(address: Address, chainId: ChainId): Promise<Covalent.Transaction> {
+  public async getTransactions(
+    address: Address,
+    chainId: ChainIdEnum,
+  ): Promise<Covalent.Transaction> {
     const transactionUrl = this.getTransactionUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);
@@ -78,7 +82,7 @@ export class CovalentService {
           // url: transactionUrl,
           params: {
             key: this.apiKey,
-            'quote-currency': 'usd',
+            'quote-currency': CurrencyEnum.usd,
             'page-size': TRANSACTIONS_PER_PAGE,
           },
         })

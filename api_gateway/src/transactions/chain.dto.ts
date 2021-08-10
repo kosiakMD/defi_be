@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainSymbolNames, ChainSymbols } from './enums';
-import { ChainIdEnum } from 'src/common/enum';
+import { ChainIdEnum, ChainSymbolNames, ChainSymbols } from 'src/common/enum';
 
 export class ChainDto {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })

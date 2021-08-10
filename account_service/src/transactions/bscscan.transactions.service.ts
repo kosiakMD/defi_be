@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
+import { ChainIdEnum, TransactionType } from 'src/common/enum';
+
 import { BscscanApi } from './api/bscscan.api';
 import { Transaction, TransactionsResponse } from './interfaces/api.transactions.interfaces';
 import { Web3Service } from './web3.service';
-import { ChainIdEnum, TransactionType } from 'src/common/enum';
 
 @Injectable()
 export class BscscanTransactionsService {

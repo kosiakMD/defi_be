@@ -2,11 +2,12 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
+import { ChainIdEnum } from '../common/enum';
+
 import { Logger } from '../Logger/Logger.service';
 import { AssetsEntity } from '../assets/assets.entity';
 import { AssetsService } from '../assets/assets.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { ChainIdEnum } from '../common/enum';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { TransferEntityNew } from '../transfers/dto/transfers.entity';

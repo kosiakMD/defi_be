@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 
 import { ChainIdEnum } from '../common/enum';
+
 import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';
 import { SECONDS_IN_DAY, SECONDS_IN_HOUR, timestampNow } from '../utils/time';

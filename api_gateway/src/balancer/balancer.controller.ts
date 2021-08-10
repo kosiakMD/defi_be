@@ -4,8 +4,9 @@ import { BalancesResponse } from 'src/account/account.interfaces';
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { IntegrationService } from '../integration/integration.service';
 import { Logger } from 'src/common/Logger/Logger.service';
+
+import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
 @Controller('balancer')

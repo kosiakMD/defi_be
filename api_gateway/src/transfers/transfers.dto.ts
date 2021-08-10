@@ -5,11 +5,12 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validato
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { splitToArray } from '../utils/transform';
-import { ERC20Token, ERC20Transfer, Transfer } from './transfers.interfaces';
 import { DetailedResponseDto } from 'src/common/DTO';
 import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 import { Address, Chains } from 'src/common/interfaces';
+
+import { splitToArray } from '../utils/transform';
+import { ERC20Token, ERC20Transfer, Transfer } from './transfers.interfaces';
 
 export class AmountDto {
   @ApiProperty({ type: Number, example: 0.0362313268178732 })

@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { PlatformEnum } from 'src/common/enum';
+
 import { Mapper } from '../mappers/mapper';
 import { SushiswapSubgraph } from '../thegraph/balancer.subgraph';
 import { getDataByAddresses } from '../utils/util';
@@ -11,7 +13,6 @@ import { SushiswapBurnsEntity } from './entity/sushiswap.burns.entity';
 import { SushiswapMintsEntity } from './entity/sushiswap.mints.entity';
 import { SushiswapSnapshotsEntity } from './entity/sushiswap.snapshots.entity';
 import { SushiswapSwapsEntity } from './entity/sushiswap.swaps.entity';
-import { PlatformEnum } from 'src/common/enum';
 
 @Injectable()
 export class SushiswapService {

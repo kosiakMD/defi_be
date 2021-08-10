@@ -1,7 +1,7 @@
-import { classToPlain } from 'class-transformer';
-
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { classToPlain } from 'class-transformer';
+import { TransactionType } from 'src/common/enum';
 
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { ApiTransactionsAllResponseDto } from './dto/api.transactions.all.dto';
@@ -19,7 +19,6 @@ import {
 } from './interfaces/api.transactions.interfaces';
 import { TransactionsResponse } from './interfaces/transactions.interfaces';
 import { TransactionsService } from './transactions.service';
-import { TransactionType } from 'src/common/enum';
 
 @ApiTags('Transactions')
 @Controller('transactions')
@@ -92,6 +91,14 @@ export class TransactionsController {
       '0xcff17036c5ae141f2244f480fc16ba244ffab33b',
       '0x07471d0262b17529a489d0c696eef988f89464ac',
     ],
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: Number,
+    isArray: true,
+    required: false,
+    description: `Array of chains' ID`,
+    example: [1, 2],
   })
   @ApiResponse({ status: 200, type: TransactionsNewDetailedResponseDto })
   // TODO rename after finished

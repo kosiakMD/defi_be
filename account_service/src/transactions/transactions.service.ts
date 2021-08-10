@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { plainToClass } from 'class-transformer';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { getManager, In, Repository } from 'typeorm';
-import { EntityManager } from 'typeorm/entity-manager/EntityManager';
-
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { plainToClass } from 'class-transformer';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from 'src/common/constatnt';
+import { ResultStatus } from 'src/common/enum';
+import { Address, DetailedResponse } from 'src/common/interfaces';
+import { ChainId, ChainsIds } from 'src/common/types';
+import { getManager, In, Repository } from 'typeorm';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { Covalent } from '../covalent/covalent.interface';
@@ -22,10 +25,6 @@ import {
   TransactionsResponse,
   TransactionsResult,
 } from './interfaces/transactions.interfaces';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from 'src/common/constatnt';
-import { ResultStatus } from 'src/common/enum';
-import { Address, DetailedResponse } from 'src/common/interfaces';
-import { ChainId, ChainsIds } from 'src/common/types';
 
 @Injectable()
 export class TransactionsService {

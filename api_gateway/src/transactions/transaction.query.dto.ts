@@ -1,10 +1,9 @@
+import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-
-import { BadRequestException } from '@nestjs/common';
+import { Address, Chains } from 'src/common/interfaces';
 
 import { splitToArray } from '../utils/transform';
-import { Address, Chains } from 'src/common/interfaces';
 
 export class TransactionQueryDto {
   @IsOptional()

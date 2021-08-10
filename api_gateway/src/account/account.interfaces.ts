@@ -38,11 +38,18 @@ export interface AccountTokenBalance extends TokenBalance {
   account: string;
 }
 
+export interface ErrorMessage {
+  chainId: number;
+  statusCode: number;
+  message: string;
+}
+
 export interface AccountBalance {
   chainId: ChainIdEnum;
   account: string;
   totalUsd: number;
   token: TokenBalance;
+  errors?: ErrorMessage[];
 }
 
 export type BalancesResponse = { [key: string]: AccountBalance };

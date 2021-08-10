@@ -6,7 +6,12 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AccountTokenBalance, Balance, BalanceToken } from './interfaces/balance.interfaces';
+import {
+  AccountBalance,
+  AccountTokenBalance,
+  BalanceToken,
+  ErrorMessage,
+} from './interfaces/balance.interfaces';
 import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 import { ChainId, ChainsIds } from 'src/common/types';
@@ -94,12 +99,32 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
   token: BalanceTokenDto;
 }
 
-export class BalanceDto implements Balance {
+export class ErrorDto implements ErrorMessage {
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
+
+  @ApiProperty({ type: Number, example: 502 })
+  statusCode: number;
+
+  @ApiProperty({ type: String, example: 'Connection to web3 provider failed' })
+  message: string;
+
+  constructor(chainId: number, statusCode: number, message: string) {
+    this.chainId = chainId;
+    this.statusCode = statusCode;
+    this.message = message;
+  }
+}
+
+export class BalanceDto implements AccountBalance {
   @ApiProperty({ type: Number, example: 0 })
   totalUsd: number;
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
-  tokens: AccountTokenBalance;
+  tokens: AccountTokenBalance[];
+
+  @ApiProperty({ type: [ErrorDto] })
+  errors?: ErrorMessage[];
 }
 
 export class AllBalancesDto {

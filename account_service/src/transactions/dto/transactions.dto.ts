@@ -117,8 +117,7 @@ export interface TransactionsDetailedResponse extends DetailedResponse<Transacti
 
 export class TransactionsDetailedResponseDto
   extends DetailedResponseDto<TransactionFromScanDto[]>
-  implements TransactionsDetailedResponse
-{
+  implements TransactionsDetailedResponse {
   @ApiProperty({
     type: String,
     enum: ResultStatus,

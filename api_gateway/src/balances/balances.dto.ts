@@ -5,7 +5,7 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validato
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AccountTokenBalance } from '../account/account.interfaces';
+import { AccountTokenBalance, ErrorMessage } from '../account/account.interfaces';
 import { splitToArray } from '../utils/transform';
 import { Balance, BalanceToken } from './balances.interfaces';
 import { ChainIdEnum } from 'src/common/enum';
@@ -59,12 +59,26 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
   token: ERC20Token;
 }
 
+export class ErrorMessageDto implements ErrorMessage {
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.bsc })
+  chainId: ChainIdEnum;
+
+  @ApiProperty({ type: Number, example: 502 })
+  statusCode: number;
+
+  @ApiProperty({ type: String, example: 'Connection to web3 provider failed' })
+  message: string;
+}
+
 export class BalanceDto implements Balance {
   @ApiProperty({ type: Number, example: 0 })
   totalUsd: number;
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
   tokens: AccountTokenBalance;
+
+  @ApiProperty({ type: [ErrorMessageDto] })
+  errors?: ErrorMessage[];
 }
 
 export class BalancesResponseDto {

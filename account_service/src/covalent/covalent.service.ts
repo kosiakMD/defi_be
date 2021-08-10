@@ -63,7 +63,7 @@ export class CovalentService {
         throw new HttpException(e.response, e.code);
       } else {
         this.logger.error('CovalentService.getTransactions', e);
-        throw e;
+        throw new HttpException(e.response, e.code);
       }
     }
   }

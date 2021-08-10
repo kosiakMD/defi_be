@@ -50,9 +50,16 @@ export interface AccountTokenBalance extends TokenBalance {
   account: string;
 }
 
+export interface ErrorMessage {
+  chainId: number;
+  statusCode: number;
+  message: string;
+}
+
 export interface AccountBalance {
   totalUsd: number;
   tokens: AccountTokenBalance[];
+  errors?: ErrorMessage[];
 }
 
 export interface EthTokenBalance {

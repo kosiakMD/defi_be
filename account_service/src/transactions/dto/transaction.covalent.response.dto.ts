@@ -5,7 +5,7 @@ import { TransactionCovalentDto } from './transaction.covalent.dto';
 import { ResultStatus } from 'src/common/enum';
 import { DetailedResponse } from 'src/common/interfaces';
 
-export class TransactionCovalentResponseDto implements DetailedResponse<TransactionCovalent> {
+export class TransactionCovalentResponseDto implements DetailedResponse<TransactionCovalent[]> {
   @ApiProperty({ enum: ResultStatus, enumName: 'ResultStatus' })
   status: ResultStatus;
 
@@ -14,7 +14,7 @@ export class TransactionCovalentResponseDto implements DetailedResponse<Transact
 
   @ApiProperty({
     type: [TransactionCovalentDto],
-    examples: [
+    example: [
       {
         chainId: 1,
         blockNumber: 11782395,
@@ -30,5 +30,5 @@ export class TransactionCovalentResponseDto implements DetailedResponse<Transact
       },
     ],
   })
-  data: TransactionCovalent;
+  data: TransactionCovalent[];
 }

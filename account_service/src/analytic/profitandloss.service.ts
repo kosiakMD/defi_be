@@ -33,7 +33,12 @@ export class ProfitAndLossService {
       throw new NotFoundException(`Asset with address ${assetAddress} not found`);
     }
     if (!asset.isMigrated) {
-      throw new NotFoundException(`Asset with address ${assetAddress} is not ready`);
+      return {
+        profitAndLoss: 0,
+        profitAndLoss24h: 0,
+        averageCost: 0,
+        isTracked: asset.isMigrated,
+      };
     }
     const transfers: TransferEntityNew[] = await this.transfersService.queryAssetTransfers(
       asset,
@@ -44,6 +49,7 @@ export class ProfitAndLossService {
         profitAndLoss: 0,
         profitAndLoss24h: 0,
         averageCost: 0,
+        isMigrated: asset.isMigrated,
       };
     }
 
@@ -79,6 +85,7 @@ export class ProfitAndLossService {
       profitAndLoss: plTotal.profitAndLoss,
       profitAndLoss24h: pl24.profitAndLoss,
       averageCost: plTotal.averageCost,
+      isTracked: asset.isMigrated,
     };
   }
 

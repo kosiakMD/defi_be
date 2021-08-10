@@ -9,4 +9,7 @@ export class ProfitAndLossResponseDto {
 
   @ApiProperty({ type: Number, example: 0.92 })
   averageCost: number;
+
+  @ApiProperty({ type: Boolean, example: true })
+  isTracked: boolean;
 }

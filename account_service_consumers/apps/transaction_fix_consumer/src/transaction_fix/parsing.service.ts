@@ -1,7 +1,7 @@
 import { BigNumber as BN } from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { getManager, In, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -13,8 +13,6 @@ import { CurrentPrices, PriceResponseDto } from '../price/dto/price.response.dto
 import { PriceService } from '../price/price.service';
 import {
   CHAIN_ID_ETH,
-  DB_BLOCK_FROM,
-  DB_BLOCK_TO,
   decimalsDivider,
   ETH_ADDRESS,
   ETH_TRANSFER_TOPIC,
@@ -24,23 +22,19 @@ import {
 import { EventDto } from './dto/event.dto';
 import { SubTransactionDto } from './dto/sub.transaction.dto';
 import { AssetsNewEntity } from './entities/assets.new.entity';
-import { TransactionsEntity } from './entities/transactions.entity';
+import { TransactionNewEntity } from './entities/transaction.new.entity';
 import { TokenOperations } from './enums/token.operations';
 import { TokenTypes } from './enums/token.types';
-import {
-  MigrationEvent,
-  MigrationTransaction,
-  SubTransactions,
-} from './transactions.parsing.interfaces';
+import { MigrationEvent, MigrationTransaction, SubTransactions } from './transaction.fix.interface';
 
 @Injectable()
-export class TransactionsParsingService {
+export class ParsingService {
   private readonly ethProvider: Web3;
   constructor(
     @InjectRepository(AssetsNewEntity)
     private assetsNewRepository: Repository<AssetsNewEntity>,
-    @InjectRepository(TransactionsEntity)
-    private transactionRepository: Repository<TransactionsEntity>,
+    @InjectRepository(TransactionNewEntity)
+    private transactionRepository: Repository<TransactionNewEntity>,
     private priceService: PriceService,
     private web3Provider: Web3Provider,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -48,7 +42,10 @@ export class TransactionsParsingService {
     this.ethProvider = web3Provider.instanceEth();
   }
 
-  async parseTransactions(transaction: MigrationTransaction): Promise<void> {
+  async parseTransactions(
+    transaction: MigrationTransaction,
+    newTransactions: TransactionNewEntity[],
+  ): Promise<string[]> {
     const uniqueAddresses: Set<string> = new Set();
 
     const transactionTransfers: MigrationEvent[] = this.getModifiedTransactionTransfers(
@@ -56,27 +53,24 @@ export class TransactionsParsingService {
       uniqueAddresses,
     );
 
-    if (Number(transaction.value)) {
-      TransactionsParsingService.addToSetAddress(transaction.from?.toLowerCase(), uniqueAddresses);
-      TransactionsParsingService.addToSetAddress(transaction.to?.toLowerCase(), uniqueAddresses);
-      transactionTransfers.push(TransactionsParsingService.getEthTransactionTransfer(transaction));
-    }
+    ParsingService.addToSetAddress(transaction.from?.toLowerCase(), uniqueAddresses);
+    ParsingService.addToSetAddress(transaction.to?.toLowerCase(), uniqueAddresses);
+    transactionTransfers.push(ParsingService.getEthTransactionTransfer(transaction));
 
-    const subTransactions = await this.getArrayOfSubTransactions(transactionTransfers, transaction);
-    const parsedTransfers: string = await this.getInsertSqlString(
+    const subTransactions = await this.getArrayOfSubTransactions(
+      transactionTransfers,
       transaction,
-      uniqueAddresses,
-      subTransactions,
+      newTransactions,
     );
-    await getManager().query(parsedTransfers);
-    return;
+
+    return this.getInsertSqlString(transaction, uniqueAddresses, subTransactions);
   }
 
   private getInsertSqlString(
     transaction: MigrationTransaction,
     uniqueAddresses: Set<string>,
     subTransactions: SubTransactions[],
-  ): string {
+  ): string[] {
     const sqlData: string[] = [];
     for (const address of uniqueAddresses) {
       const addressSubTransactions = subTransactions.filter(
@@ -98,13 +92,13 @@ export class TransactionsParsingService {
           transaction.gasUsed
         }, ${transaction.gasUsedUsd}, '${tokenOperation}', ${transaction.chainId || CHAIN_ID_ETH}, 
         ${Boolean(addressSubTransactions?.length)}, 
-        '${this.replaceAll(JSON.stringify(addressSubTransactions), "'", "''")}')`,
+        '${JSON.stringify(addressSubTransactions).replace(/'/gm, "''")}')`,
       );
     }
-    return this.getInsertSql(sqlData);
+    return sqlData;
   }
 
-  private getInsertSql(sqlValues: string[]): string {
+  public static getInsertSql(sqlValues: string[]): string {
     if (!sqlValues.length) {
       return '';
     }
@@ -129,6 +123,7 @@ export class TransactionsParsingService {
   private async getAssetsPricesAndModifyTransaction(
     transaction: MigrationTransaction,
     tokenAddresses: Set<string>,
+    newTransactions: TransactionNewEntity[],
   ): Promise<PriceResponseDto<CurrentPrices>> {
     const requestAssets = Array.from(tokenAddresses).map((token) => {
       return {
@@ -137,23 +132,17 @@ export class TransactionsParsingService {
       };
     });
 
-    const assetsPrices = await this.priceService.getHistoricalPrices(
-      requestAssets,
-      transaction.chainId,
-    );
-    let gasUsed;
-    if (transaction.blockNumber >= DB_BLOCK_FROM && transaction.blockNumber <= DB_BLOCK_TO) {
-      const dbTransaction = await this.transactionRepository.findOne({ hash: transaction.hash });
-      const dbGasUsed = dbTransaction?.transactionData?.subTransactions[0]?.gasUsed;
-      gasUsed = dbGasUsed ? dbGasUsed : await this.getGasUsedFromWeb3(transaction.hash);
-    } else {
-      gasUsed = await this.getGasUsedFromWeb3(transaction.hash);
-    }
+    const assetsPrices = await this.priceService.getHistoricalPrices(requestAssets, CHAIN_ID_ETH);
+    const gasUsedMap = new Map<TransactionNewEntity['hash'], TransactionNewEntity['gasUsed']>();
+    newTransactions.forEach((newTrans) => gasUsedMap.set(newTrans.hash, newTrans.gasUsed));
+
+    const gasUsed = gasUsedMap.get(transaction.hash);
+    const finalGasUsed = gasUsed ? gasUsed : await this.getGasUsedFromWeb3(transaction.hash);
 
     this.modifyTransaction(
       transaction,
       assetsPrices.prices[ETH_ADDRESS][transaction.timestamp],
-      gasUsed,
+      finalGasUsed,
     );
 
     return assetsPrices;
@@ -175,6 +164,7 @@ export class TransactionsParsingService {
   private async getArrayOfSubTransactions(
     events: MigrationEvent[],
     transaction: MigrationTransaction,
+    newTransactions: TransactionNewEntity[],
   ): Promise<SubTransactions[]> {
     const subTransactions: SubTransactionDto[] = [];
     const tokenAddresses = new Set(events.map((event) => event.address));
@@ -183,14 +173,12 @@ export class TransactionsParsingService {
     const assetsPrices = await this.getAssetsPricesAndModifyTransaction(
       transaction,
       tokenAddresses,
+      newTransactions,
     );
     const timeMark = `Request to DB - getting of data from assets_new table`;
     this.logger.time(timeMark);
     const assetsEntities: AssetsNewEntity[] = await this.assetsNewRepository.find({
-      where: {
-        address: In(Array.from(tokenAddresses)),
-        chain: transaction.chainId || CHAIN_ID_ETH,
-      },
+      where: { address: In(Array.from(tokenAddresses)), chain: CHAIN_ID_ETH },
     });
     this.logger.timeEnd(timeMark);
 
@@ -207,13 +195,13 @@ export class TransactionsParsingService {
       currentAssetEntity.price =
         assetsPrices.prices[currentAssetEntity.address][transaction.timestamp];
 
-      TransactionsParsingService.getSubTransactions(
+      ParsingService.getSubTransactions(
         currentAssetEntity,
         item,
         TokenTypes.IN, //'incoming',
         subTransactions,
       );
-      TransactionsParsingService.getSubTransactions(
+      ParsingService.getSubTransactions(
         currentAssetEntity,
         item,
         TokenTypes.OUT, //'outgoing',
@@ -235,7 +223,7 @@ export class TransactionsParsingService {
 
     const subTransaction = new SubTransactionDto();
     subTransaction.address = type === TokenTypes.OUT ? event.topic2 : event.topic3;
-    subTransaction.amount = TransactionsParsingService.fromHexToNumber(event.data, asset.decimals);
+    subTransaction.amount = ParsingService.fromHexToNumber(event.data, asset.decimals);
 
     subTransaction.price = asset.price;
     subTransaction.symbol = asset.symbol;
@@ -261,8 +249,8 @@ export class TransactionsParsingService {
         temporaryEvent.topic2 = fromHexToAddress(temporaryEvent.topic2);
         temporaryEvent.topic3 = fromHexToAddress(temporaryEvent.topic3);
         temporaryEvent.address = temporaryEvent.address.toLowerCase();
-        TransactionsParsingService.addToSetAddress(temporaryEvent.topic2, uniqueAddresses);
-        TransactionsParsingService.addToSetAddress(temporaryEvent.topic3, uniqueAddresses);
+        ParsingService.addToSetAddress(temporaryEvent.topic2, uniqueAddresses);
+        ParsingService.addToSetAddress(temporaryEvent.topic3, uniqueAddresses);
         transactionTransfers.push(temporaryEvent);
       }
     });
@@ -302,9 +290,5 @@ export class TransactionsParsingService {
     if (topic) {
       uniqueAddresses.add(topic);
     }
-  }
-
-  replaceAll(string, search, replace): string {
-    return string.split(search).join(replace);
   }
 }

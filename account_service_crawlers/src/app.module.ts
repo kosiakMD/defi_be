@@ -13,6 +13,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import configuration from './config/configuration';
 import { JobsModule } from './jobs/jobs.module';
 import { JobsService } from './jobs/jobs.service';
+import { LoggerModule } from './logger/logger.module';
 import { MigrationModule } from './migrations/migration.module';
 import { NodeModule } from './node/node.module';
 
@@ -64,6 +65,7 @@ import { NodeModule } from './node/node.module';
     JobsModule,
     NodeModule,
     MigrationModule,
+    LoggerModule,
   ],
   providers: [JobsService],
 })

@@ -17,7 +17,7 @@ import { ChainIdEnum, ChainSymbols } from '../common/enum';
 import { Address } from '../common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
-import { AssetsEntity } from '../assets/assets.entity';
+import { AssetsEntity } from '../assets/entity/assets.entity';
 import { Web3Provider } from '../chain/web3.provider';
 import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
@@ -417,7 +417,7 @@ export class BalanceService {
       tokenDecimals,
       tokenTotalSupply,
       isLp,
-    }) =>
+    }): AccountTokenBalanceDto =>
       plainToClass(AccountTokenBalanceDto, {
         account: address,
         amount,

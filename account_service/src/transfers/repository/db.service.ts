@@ -9,7 +9,7 @@ import { ChainIdEnum } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../../Logger/Logger.service';
-import { AssetsEntity } from '../../assets/assets.entity';
+import { AssetsEntity } from '../../assets/entity/assets.entity';
 import { TransferEntity, TransferEntityNew } from '../dto/transfers.entity';
 import { TransferFromDb } from '../interfaces/transfers.interfaces';
 import { TransfersRepository } from './transfers.repository';

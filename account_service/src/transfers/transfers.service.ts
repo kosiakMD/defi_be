@@ -7,7 +7,7 @@ import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
-import { AssetsEntity } from '../assets/assets.entity';
+import { AssetsEntity } from '../assets/entity/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';

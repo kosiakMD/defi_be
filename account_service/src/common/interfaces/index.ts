@@ -2,6 +2,8 @@ import { ChainIdEnum, ProtocolTypeEnum, ResultStatus } from '../enum';
 
 export type Address = string;
 
+export type Chains = ChainIdEnum[];
+
 export type TokenSymbol = string;
 
 export type DateString = string;

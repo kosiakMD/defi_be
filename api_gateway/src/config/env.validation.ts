@@ -49,6 +49,7 @@ export const validationSchema = Joi.object({
   ACCOUNT_TRANSFERS: Joi.string().required(),
   ACCOUNT_BALANCE: Joi.string().required(),
   ACCOUNT_APPROVALS: Joi.string().required(),
+  ACCOUNT_ASSETS: Joi.string().required(),
   POOLS_PATH: Joi.string().required(),
   VAULTS_PATH: Joi.string().required(),
   // PRICE

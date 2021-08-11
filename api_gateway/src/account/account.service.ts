@@ -8,9 +8,9 @@ import { HealthCheckResult } from '@nestjs/terminus';
 
 import { ChainIdEnum } from '../common/enum';
 import { Logger } from 'src/common/Logger/Logger.service';
-import { Address, Chains } from 'src/common/interfaces';
+import { Address, Chains, DetailedResponse } from 'src/common/interfaces';
 
-import { AssetsDto } from '../assets/assets.dto';
+import { AssetResponseDto, AssetsDto } from '../assets/assets.dto';
 import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
@@ -25,6 +25,7 @@ export class AccountService {
   private readonly getTransfersUrl: string;
   private readonly getBalanceUrl: string;
   private readonly getApprovalsUrl: string;
+  private readonly getAllAssetsUrl: string;
   private readonly getAssetsUrl: string;
   private readonly getAnalyticUrl: string;
 
@@ -54,6 +55,7 @@ export class AccountService {
     this.getApprovalsUrl = `${url}/${approvalsPath}`;
 
     const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
+    this.getAllAssetsUrl = `${url}/${assetsPath}/all`;
     this.getAssetsUrl = `${url}/${assetsPath}`;
 
     const analyticPath = this.configService.get<string>('ACCOUNT_ANALYTIC');
@@ -155,16 +157,35 @@ export class AccountService {
 
   async getAssets(): Promise<AssetsDto[]> {
     try {
+      this.logger.time(this.getAllAssetsUrl);
+      const data = await this.httpService
+        .get(this.getAllAssetsUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getAllAssetsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      this.logger.error(e, 'AccountService.getAssets');
+      throw e;
+    }
+  }
+
+  async getAssetsByAddressesAndChains(
+    addresses: Address[],
+    chains: Chains,
+  ): Promise<DetailedResponse<AssetResponseDto[]>> {
+    try {
       this.logger.time(this.getAssetsUrl);
       const data = await this.httpService
-        .get(this.getAssetsUrl)
+        .get(this.getAssetsUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getAssetsUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
-      this.logger.error(e, 'AccountService.getAssets');
+      this.logger.error(e, 'AccountService.getAssetsByAddressesAndChains');
       throw e;
     }
   }

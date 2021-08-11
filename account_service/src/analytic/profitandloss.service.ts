@@ -5,8 +5,8 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { ChainIdEnum } from '../common/enum';
 
 import { Logger } from '../Logger/Logger.service';
-import { AssetsEntity } from '../assets/assets.entity';
 import { AssetsService } from '../assets/assets.service';
+import { AssetsEntity } from '../assets/entity/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';

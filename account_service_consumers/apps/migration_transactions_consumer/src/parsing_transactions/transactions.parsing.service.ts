@@ -184,7 +184,10 @@ export class TransactionsParsingService {
     const timeMark = `Request to DB - getting of data from assets_new table`;
     this.logger.time(timeMark);
     const assetsEntities: AssetsNewEntity[] = await this.assetsNewRepository.find({
-      where: { address: In(Array.from(tokenAddresses)), chain: CHAIN_ID_ETH },
+      where: {
+        address: In(Array.from(tokenAddresses)),
+        chain: transaction.chainId || CHAIN_ID_ETH,
+      },
     });
     this.logger.timeEnd(timeMark);
 
@@ -298,7 +301,7 @@ export class TransactionsParsingService {
     }
   }
 
-  replaceAll(string, search, replace) {
+  replaceAll(string, search, replace): string {
     return string.split(search).join(replace);
   }
 }

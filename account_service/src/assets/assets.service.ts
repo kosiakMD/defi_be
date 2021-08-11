@@ -1,38 +1,71 @@
-import { classToPlain } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { ChainIdEnum } from 'src/common/enum';
+import { Address, Chains, DetailedResponse } from '../common/interfaces';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 
-import { AssetsEntity } from './assets.entity';
+import { Logger } from '../Logger/Logger.service';
 import { AssetsRepository } from './assets.repository';
+import { AssetDto, AssetResponseDto } from './dto/asset.dto';
+import { AssetsEntity } from './entity/assets.entity';
 
 @Injectable()
 export class AssetsService {
   constructor(
-    @InjectRepository(AssetsEntity) private readonly assetRepository: AssetsRepository,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectRepository(AssetsRepository) private readonly assetRepository: AssetsRepository,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
-  async queryAllAssets(): Promise<AssetsEntity[]> {
+  async queryAllAssets(): Promise<AssetDto[]> {
     try {
-      // db query works very fast
-      const storedAssets: AssetsEntity[] = await this.assetRepository.find({
-        where: { isReadyToMigrate: true },
-      });
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      return classToPlain(storedAssets);
+      const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
+      return storedAssets.map((asset) =>
+        plainToClass(AssetDto, asset, { excludeExtraneousValues: true }),
+      );
     } catch (e) {
       this.logger.error(e, 'AssetsService.queryAllAssets');
       throw e;
     }
   }
 
-  async findByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetsEntity> {
-    return this.assetRepository.findOne({
-      where: { address: address, chain: chainId },
-    });
+  async findByAddressAndChain(address: Address, chainId: ChainIdEnum): Promise<AssetsEntity> {
+    return await this.assetRepository.findOneByAddressAndChain(address, chainId);
+  }
+
+  async getAllAssetsByAddressesAndChains(
+    addresses: Address[],
+    chains: Chains,
+  ): Promise<DetailedResponse<AssetResponseDto[]>> {
+    const response = {
+      status: ResultStatus.ok,
+      errors: [],
+      data: [],
+    };
+
+    try {
+      const timeMark = `Query to asset_new table with addresses: ${addresses} and chains: ${chains}`;
+      this.logger.time(timeMark);
+      const assets = await this.assetRepository.findAllByAddressesAndChains(addresses, chains);
+      this.logger.timeEnd(timeMark);
+      response.data.push(
+        ...assets.map((asset) =>
+          plainToClass(AssetResponseDto, asset, { excludeExtraneousValues: true }),
+        ),
+      );
+    } catch (e) {
+      if (e.response) {
+        response.errors.push(e.response.data.message);
+        this.logger.error(e.response.data, 'getAllAssetsByAddressesAndChains');
+      } else {
+        response.errors.push(e);
+        this.logger.error(e, 'getAllAssetsByAddressesAndChains');
+      }
+    }
+    if (response.errors.length) {
+      response.status = ResultStatus.error;
+    }
+    return response;
   }
 }

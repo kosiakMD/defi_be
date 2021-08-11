@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ResultStatus } from '../enum';
@@ -29,4 +30,13 @@ export abstract class DetailedResponseDto<T> implements DetailedResponse<T> {
   // type: Object,
   // })
   data: T;
+}
+
+export class ColumnNumericTransformer {
+  to(data: number): number {
+    return data;
+  }
+  from(data: string): number {
+    return Number(data);
+  }
 }

@@ -21,6 +21,7 @@ import {
   fromHexToAddress,
   ZERO_DATA,
 } from '../util/util';
+import { AssetPublisherService } from './asset.publisher.service';
 import { EventDto } from './dto/event.dto';
 import { SubTransactionDto } from './dto/sub.transaction.dto';
 import { AssetsNewEntity } from './entities/assets.new.entity';
@@ -37,6 +38,7 @@ import {
 export class TransactionsParsingService {
   private readonly ethProvider: Web3;
   constructor(
+    private assetPublisherService: AssetPublisherService,
     @InjectRepository(AssetsNewEntity)
     private assetsNewRepository: Repository<AssetsNewEntity>,
     @InjectRepository(TransactionsEntity)
@@ -207,13 +209,13 @@ export class TransactionsParsingService {
       currentAssetEntity.price =
         assetsPrices.prices[currentAssetEntity.address][transaction.timestamp];
 
-      TransactionsParsingService.getSubTransactions(
+      await this.getSubTransactions(
         currentAssetEntity,
         item,
         TokenTypes.IN, //'incoming',
         subTransactions,
       );
-      TransactionsParsingService.getSubTransactions(
+      await this.getSubTransactions(
         currentAssetEntity,
         item,
         TokenTypes.OUT, //'outgoing',
@@ -223,13 +225,22 @@ export class TransactionsParsingService {
     return subTransactions;
   }
 
-  private static getSubTransactions(
+  private async getSubTransactions(
     asset: AssetsNewEntity,
     event: MigrationEvent,
     type: string,
     subTransactions: SubTransactions[],
-  ): void {
-    if (!asset || !asset.isDataPresent) {
+  ): Promise<void> {
+    if (!asset) {
+      throw Error('GetSubTransaction method - there is no AssetsNewEntity object!');
+    }
+
+    if (!asset.isDataPresent) {
+      await this.assetPublisherService.publishNewAssetAddedWithEvents({
+        chainId: event.chainId || CHAIN_ID_ETH,
+        contractAddress: asset.address,
+        userAddress: event.topic2,
+      });
       throw Error('GetSubTransaction method - incorrect data for AssetsNewEntity object!');
     }
 

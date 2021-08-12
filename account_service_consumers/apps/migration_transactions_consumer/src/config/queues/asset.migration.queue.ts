@@ -1,6 +1,7 @@
 import { ClientProviderOptions, RmqOptions, Transport } from '@nestjs/microservices';
 
 const migrationQueue = process.env.TRANSACTION_EVENTS_MIGRATION_QUEUE;
+const assetMigrationQueue = process.env.TRANSACTION_NEW_ASSET_ADDED;
 
 // setup the RabbitMQ connection
 const rmqOptions: RmqOptions = {
@@ -24,6 +25,21 @@ const migrationQueueOptions: ClientProviderOptions = {
   },
 };
 
+const assetMigrationOptions: ClientProviderOptions = {
+  ...rmqOptions,
+  name: assetMigrationQueue,
+  options: {
+    ...rmqOptions.options,
+    queue: migrationQueue,
+    prefetchCount: 1,
+    noAck: false,
+    queueOptions: {
+      durable: true,
+    },
+  },
+};
+
 export const queueOptions = {
   migrationQueueOptions,
+  assetMigrationOptions,
 };

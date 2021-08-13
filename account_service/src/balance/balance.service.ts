@@ -3,8 +3,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Repository } from 'typeorm';
 import Web3 from 'web3';
 
-import { Inject, Injectable } from '@nestjs/common';
-import { HttpException } from '@nestjs/common/exceptions/http.exception';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import {
@@ -13,11 +12,12 @@ import {
   CHAIN_ID_ETH,
   ETH_BNB_ADDRESS,
 } from '../common/constatnt';
-import { ChainIdEnum, ChainSymbols } from '../common/enum';
 import { Address } from '../common/interfaces';
+import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
 
 import { Logger } from '../Logger/Logger.service';
 import { AssetsEntity } from '../assets/entity/assets.entity';
+import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
 import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
@@ -26,6 +26,7 @@ import { PriceService } from '../price/price.service';
 import { getAbsoluteChainIds } from '../utils/chains';
 import {
   decimalsAmount,
+  excludeSecondArray,
   getUniqList,
   getUniqueAndToLowerCaseArrayData,
   totalPrice,
@@ -62,6 +63,7 @@ export class BalanceService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @InjectRepository(AssetsEntity)
     private readonly assentsRepository: Repository<AssetsEntity>,
+    private readonly blacklistService: BlacklistService,
   ) {
     this.instanceChainProviderEth = this.chainProvider.instanceEth();
     this.instanceChainProviderBsc = this.chainProvider.instanceBsc();
@@ -201,6 +203,15 @@ export class BalanceService {
 
     const allBalances: AllBalancesDto[] = [];
 
+    const blacklistedAddresses: string[] = await this.blacklistService.filterIsBlacklisted(
+      addresses,
+    );
+
+    addresses = excludeSecondArray(addresses, blacklistedAddresses);
+    if (addresses.length === 0) {
+      return [];
+    }
+
     const promises = [];
 
     addressesToHandle.forEach((address, addressIndex) => {
@@ -249,6 +260,14 @@ export class BalanceService {
   ): Promise<BalancesResponse> {
     // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
+    const blacklistedAddresses: string[] = await this.blacklistService.filterIsBlacklisted(
+      accounts,
+    );
+
+    accounts = accounts.filter((a) => !blacklistedAddresses.find((b) => a === b));
+    if (accounts.length === 0) {
+      return allBalances;
+    }
 
     // TODO refactor to unify logic
     const scanHandlers = [];

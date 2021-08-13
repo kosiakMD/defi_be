@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AssetsModule } from '../assets/assets.module';
 import { AssetsEntity } from '../assets/entity/assets.entity';
+import { BlacklistModule } from '../blacklist/blacklist.module';
 import { ChainModule } from '../chain/chain.module';
 import { CovalentModule } from '../covalent/covalent.module';
 import { CovalentService } from '../covalent/covalent.service';
@@ -26,6 +27,7 @@ import { ScanService } from './scan/scan.service';
     MulticallModule,
     AssetsModule,
     CovalentModule,
+    BlacklistModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

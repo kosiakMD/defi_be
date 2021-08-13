@@ -1,10 +1,10 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ChainIdEnum } from 'src/common/enum';
+import { ChainIdEnum } from '../common/enum';
 
 import { ProfitAndLossQueryDto } from './dto/profitandloss.query.dto';
-import { ProfitAndLossResponseDto } from './dto/profitandloss.response.dto';
+import { ProfitAndLossResponseDTO } from './dto/profitandloss.response.dto';
 import { ProfitAndLossService } from './profitandloss.service';
 
 @ApiTags('Analytic')
@@ -12,7 +12,7 @@ import { ProfitAndLossService } from './profitandloss.service';
 export class AnalyticController {
   constructor(private service: ProfitAndLossService) {}
 
-  @Get('')
+  @Get()
   @ApiQuery({
     name: 'asset',
     type: String,
@@ -35,10 +35,10 @@ export class AnalyticController {
     example: '0x1af067552304c2369037125466eeec6debe30b31',
     required: true,
   })
-  @ApiResponse({ status: 200, type: ProfitAndLossResponseDto })
+  @ApiResponse({ status: 200, type: ProfitAndLossResponseDTO })
   async getProfitAndLossValues(
     @Query() query: ProfitAndLossQueryDto,
-  ): Promise<ProfitAndLossResponseDto> {
+  ): Promise<ProfitAndLossResponseDTO> {
     return this.service.getProfitAndLoss(query.asset, query.chain, query.addresses);
   }
 }

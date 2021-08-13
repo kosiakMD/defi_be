@@ -8,6 +8,7 @@ import { AnalyticModule } from './analytic/analytic.module';
 import { ApprovalsModule } from './approvals/approvals.module';
 import { AssetsModule } from './assets/assets.module';
 import { BalanceModule } from './balance/balance.module';
+import { BlacklistModule } from './blacklist/blacklist.module';
 import { ChainModule } from './chain/chain.module';
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
@@ -49,6 +50,7 @@ import { winstonParams } from './utils/winston';
     TransactionsModule,
     TransfersModule,
     AnalyticModule,
+    BlacklistModule,
   ],
   controllers: [HealthController],
 })

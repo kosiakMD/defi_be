@@ -2,14 +2,16 @@ import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import { CHAIN_ID_ETH } from 'src/common/constatnt';
-import { ChainIdEnum } from 'src/common/enum';
-import { Address, ContractApprovalResponse } from 'src/common/interfaces';
+import { CHAIN_ID_ETH } from '../common/constatnt';
+import { ChainIdEnum } from '../common/enum';
+import { Address, ContractApprovalResponse } from '../common/interfaces';
 
+import { BlacklistService } from '../blacklist/blacklist.service';
 import ApprovalMapper from './utils/approvalMapper';
 
 @Injectable()
 export class ApprovalsService {
+  constructor(private readonly blacklistService: BlacklistService) {}
   async getAllApprovals(addresses: Address): Promise<ContractApprovalResponse> {
     const allApprovals = {};
     if (!addresses) {
@@ -29,7 +31,16 @@ export class ApprovalsService {
       approvalsTableName = 'bsc_approvals';
     }
 
-    const addressesArray: string[] = addresses.split(',');
+    let addressesArray: string[] = addresses.split(',');
+    const blacklistedAddresses: string[] = await this.blacklistService.filterIsBlacklisted(
+      addressesArray,
+    );
+
+    addressesArray = addressesArray.filter((a) => !blacklistedAddresses.find((b) => a === b));
+    if (!addressesArray.length) {
+      return {};
+    }
+
     const addressesJoined: string = addressesArray.map((a) => `'${a.toLowerCase()}'`).join(',');
     const entityManager = getManager();
     const approvals: any[] = await entityManager.query(`

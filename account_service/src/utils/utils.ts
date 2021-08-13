@@ -147,6 +147,10 @@ export function mergeTransfersResponse(
   return finalTransfersResponse;
 }
 
+export function excludeSecondArray(keep: string[], exclude: string[]): string[] {
+  return keep.filter((a) => !exclude.find((b) => a === b));
+}
+
 // TODO todo move to dummy data folder!
 export const abi: AbiItem[] = [
   {

@@ -1,6 +1,6 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
-import { ProfitAndLossResponseDto } from 'src/analytic/dto';
+import { ProfitAndLossResponseDTO } from 'src/analytic/dto';
 
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -194,7 +194,7 @@ export class AccountService {
     asset: Address,
     chain: ChainIdEnum,
     addresses: Address,
-  ): Promise<ProfitAndLossResponseDto> {
+  ): Promise<ProfitAndLossResponseDTO> {
     try {
       this.logger.time(this.getAnalyticUrl);
       const data = await this.httpService

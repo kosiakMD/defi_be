@@ -189,7 +189,7 @@ export class WETH {
   }
 
   // not tested and must be handled with source and destination, 2 calls
-  async transferEvents(addresses: string[]) {
+  async transferEvents(addresses: string[]): Promise<any> {
     // filter addresses to avoid future errors
     addresses = addresses.filter((a) => Web3.utils.isAddress(a));
     return this.contract.getPastEvents('Transfer', {

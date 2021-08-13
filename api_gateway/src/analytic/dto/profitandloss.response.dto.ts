@@ -1,15 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ProfitAndLossResponseDto {
-  @ApiProperty({ type: Number, example: 87.3 })
-  profitAndLoss: number;
+import { DetailedResponseDto } from '../../common/DTO';
+import { ResultStatus } from '../../common/enum';
+import { ProfitAndLossResponse } from './profitandloss.response';
 
-  @ApiProperty({ type: Number, example: 14.5 })
-  profitAndLoss24h: number;
-
-  @ApiProperty({ type: Number, example: 0.92 })
-  averageCost: number;
-
-  @ApiProperty({ type: Boolean, example: true })
-  isTracked: boolean;
+export declare class ProfitAndLossResponseDTO extends DetailedResponseDto<ProfitAndLossResponse> {
+  @ApiProperty({ type: ResultStatus, example: ResultStatus.ok })
+  status: ResultStatus;
+  @ApiProperty()
+  errors: Error[] | string[];
+  @ApiProperty()
+  data: ProfitAndLossResponse;
 }

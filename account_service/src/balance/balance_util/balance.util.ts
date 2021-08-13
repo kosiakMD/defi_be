@@ -1,6 +1,7 @@
 import { plainToClass } from 'class-transformer';
 
 import { ChainIdEnum } from '../../common/enum';
+
 import { NoDbTokenPricesDto } from '../../price/price.dto';
 import { CurrentPricesPayloadNew } from '../../price/price.interfaces';
 import { decimalsAmount, totalPrice } from '../../utils/utils';

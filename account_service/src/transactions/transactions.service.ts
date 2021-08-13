@@ -12,6 +12,7 @@ import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 import { Address, DetailedResponse } from 'src/common/interfaces';
 import { ChainId } from 'src/common/types';
 
+import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
 import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
@@ -19,7 +20,7 @@ import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
 import { getAbsoluteChainIds } from '../utils/chains';
-import { getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import { excludeSecondArray, getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import { TransactionDto, TransactionNewDto } from './dto/transaction.dto';
 import { TransactionNewEntity } from './entity/transaction.new.entity';
 import {
@@ -42,6 +43,7 @@ export class TransactionsService {
     private readonly covalentService: CovalentService,
     @InjectRepository(TransactionNewEntity)
     private readonly transactionRepository: Repository<TransactionNewEntity>,
+    private readonly blacklistService: BlacklistService,
   ) {}
 
   private static convertAddresses(addresses: string[]): string {
@@ -159,7 +161,14 @@ export class TransactionsService {
       errors: [],
       data: [],
     };
+    const blacklistedAddresses: string[] = await this.blacklistService.filterIsBlacklisted(
+      addresses,
+    );
 
+    addresses = excludeSecondArray(addresses, blacklistedAddresses);
+    if (addresses.length === 0) {
+      return response;
+    }
     try {
       const dbTsxNew: TransactionNewEntity[] = await this.transactionRepository.find({
         where: { address: In(addresses), isVisible: true, chainId: In(chains) },

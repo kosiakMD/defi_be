@@ -1,19 +1,22 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '../common/enum';
+import { ResultStatus } from '../common/enum';
 
 import { Logger } from '../Logger/Logger.service';
 import { AssetsService } from '../assets/assets.service';
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
+import { BlacklistService } from '../blacklist/blacklist.service';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { TransferEntityNew } from '../transfers/dto/transfers.entity';
 import { TransfersService } from '../transfers/transfers.service';
 import { SECONDS_IN_DAY } from '../utils/time';
 import { decimalsAmount } from '../utils/utils';
+import { ProfitAndLoss } from './dto/profitAndLoss';
+import { ProfitAndLossResponseDTO } from './dto/profitandloss.response.dto';
 
 @Injectable()
 export class ProfitAndLossService {
@@ -22,36 +25,47 @@ export class ProfitAndLossService {
     private readonly assetsService: AssetsService,
     private readonly transfersService: TransfersService,
     private readonly priceService: PriceService,
+    private readonly blacklistedService: BlacklistService,
   ) {}
   async getProfitAndLoss(
     assetAddress: string,
-    chain: ChainIdEnum,
+    chain: number,
     addresses: string[],
-  ): Promise<any> {
+  ): Promise<ProfitAndLossResponseDTO> {
+    const response = new ProfitAndLossResponseDTO({
+      status: ResultStatus.ok,
+      errors: [],
+      data: null,
+    });
     // better to find and validate asset first
     const asset: AssetsEntity = await this.assetsService.findByAddressAndChain(assetAddress, chain);
     if (!asset) {
-      throw new NotFoundException(`Asset with address ${assetAddress} not found`);
+      response.errors.push(`Asset with address ${assetAddress} not found`);
     }
     if (!asset.isMigrated) {
-      return {
-        profitAndLoss: 0,
-        profitAndLoss24h: 0,
-        averageCost: 0,
-        isTracked: asset.isMigrated,
-      };
+      response.errors.push(`Asset with address ${assetAddress} is not ready`);
+    }
+    const addressBlacklisted: string[] = await this.blacklistedService.filterIsBlacklisted(
+      addresses,
+    );
+    if (addressBlacklisted.length > 0) {
+      response.errors.push(`Found blacklisted addresses: ${addressBlacklisted.join(',')}`);
+    }
+    if (response.errors.length > 0) {
+      response.status = ResultStatus.error;
+      return response;
     }
     const transfers: TransferEntityNew[] = await this.transfersService.queryAssetTransfers(
       asset,
       addresses,
     );
+    response.data = new ProfitAndLoss({
+      profitAndLoss: 0,
+      profitAndLoss24h: 0,
+      averageCost: 0,
+    });
     if (transfers.length === 0) {
-      return {
-        profitAndLoss: 0,
-        profitAndLoss24h: 0,
-        averageCost: 0,
-        isMigrated: asset.isMigrated,
-      };
+      return response;
     }
 
     const currentTimestamp: number = Math.floor(Date.now() / 1000);
@@ -82,12 +96,10 @@ export class ProfitAndLossService {
       timestamp24hAgo,
       currentTimestamp,
     );
-    return {
-      profitAndLoss: plTotal.profitAndLoss,
-      profitAndLoss24h: pl24.profitAndLoss,
-      averageCost: plTotal.averageCost,
-      isTracked: asset.isMigrated,
-    };
+    response.data.profitAndLoss = plTotal.profitAndLoss;
+    response.data.profitAndLoss24h = pl24.profitAndLoss;
+    response.data.averageCost = plTotal.averageCost;
+    return response;
   }
 
   private calculateProfitAndLoss(

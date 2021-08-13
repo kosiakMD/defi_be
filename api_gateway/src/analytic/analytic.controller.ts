@@ -1,10 +1,13 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AccountService } from 'src/account/account.service';
 
-import { Controller, Get, Inject, Logger, Query } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ProfitAndLossQueryDto, ProfitAndLossResponseDto } from './dto';
+import { Logger } from '../common/Logger/Logger.service';
+
+import { ProfitAndLossQueryDto, ProfitAndLossResponseDTO } from './dto';
+import { ChainIdEnum } from '../common/enum';
 
 @ApiTags('Analytic')
 @Controller('analytic')
@@ -14,11 +17,33 @@ export class AnalyticController {
     private accountService: AccountService,
   ) {}
 
-  @Get('')
-  @ApiResponse({ status: 200, type: ProfitAndLossResponseDto })
+  @Get()
+  @ApiQuery({
+    name: 'asset',
+    type: String,
+    description: 'asset address',
+    example: '0xe61fdaf474fac07063f2234fb9e60c1163cfa850',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'chain',
+    enum: ChainIdEnum,
+    enumName: 'ChainIdEnum',
+    description: 'chain 1 - Ethereum',
+    example: ChainIdEnum.eth,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    description: 'list of bundled addresses',
+    example: '0x1af067552304c2369037125466eeec6debe30b31',
+    required: true,
+  })
+  @ApiResponse({ status: 200, type: ProfitAndLossResponseDTO })
   async getProfitAndLossValues(
     @Query() query: ProfitAndLossQueryDto,
-  ): Promise<ProfitAndLossResponseDto> {
+  ): Promise<ProfitAndLossResponseDTO> {
     try {
       const { asset, addresses, chain } = query;
       return await this.accountService.getProfitAndLoss(asset, chain, addresses);

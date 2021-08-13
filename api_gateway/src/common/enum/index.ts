@@ -113,3 +113,13 @@ export enum CurrencyEnum {
 export enum CurrencyIdEnum {
   usd = 1,
 }
+
+export enum SortDirectionEnum {
+  asc = 'asc',
+  desc = 'desc',
+}
+
+export enum SortFieldEnum {
+  project = 'project',
+  ticker = 'ticker',
+}

@@ -36,6 +36,8 @@ import { PancakeController } from './pancake/pancake.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
+import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
+import { SafeProxyService } from './safe-proxy/safe.proxy.service';
 // import { ScansApiController } from './scans-api/scans-api.controller';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
@@ -83,6 +85,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScansApiModule,
     MailModule,
     ImpermanentLossModule,
+    SafeProxyModule,
   ],
   controllers: [
     HealthController,
@@ -129,6 +132,7 @@ import { VaultsModule } from './vaults/vaults.module';
     TransfersService,
     AccountService,
     AssetsService,
+    SafeProxyService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

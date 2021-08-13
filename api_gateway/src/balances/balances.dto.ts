@@ -5,11 +5,12 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validato
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
+import { ChainIdEnum } from 'src/common/enum';
+import { Address, Chains, ERC20Token } from 'src/common/interfaces';
+
 import { AccountTokenBalance, ErrorMessage } from '../account/account.interfaces';
 import { splitToArray } from '../utils/transform';
 import { Balance, BalanceToken } from './balances.interfaces';
-import { ChainIdEnum } from 'src/common/enum';
-import { Address, Chains, ERC20Token } from 'src/common/interfaces';
 
 export class BalancesQueryDto {
   @IsNotEmpty()

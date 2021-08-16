@@ -11,6 +11,7 @@ import { BlacklistedAddressSaveDto } from './dto/blacklisted.address.save.dto';
 export class BlacklistService {
   private readonly addressesCacheKey = 'addresses_blacklisted';
   private readonly cacheTTLInSeconds: number;
+
   constructor(
     private readonly addressesRepository: AddressesRepository,
     private readonly config: ConfigService,
@@ -24,23 +25,26 @@ export class BlacklistService {
   }
 
   async getAllCached(): Promise<Map<string, boolean>> {
-    let blacklistedAddresses: Map<string, boolean> = await this.cache.get(this.addressesCacheKey);
+    const blacklistedAddresses: { 0: string; 1: boolean }[] = await this.cache.get(
+      this.addressesCacheKey,
+    );
     if (blacklistedAddresses === null) {
-      blacklistedAddresses = new Map<string, boolean>();
+      const blacklistedAddressesMap = new Map<string, boolean>();
       (await this.getAll()).forEach((ca) => {
-        blacklistedAddresses.set(ca.address, true);
+        blacklistedAddressesMap.set(ca.address, true);
       });
-      await this.cache.set(this.addressesCacheKey, Array.from(blacklistedAddresses), {
+      await this.cache.set(this.addressesCacheKey, Array.from(blacklistedAddressesMap), {
         ttl: this.cacheTTLInSeconds,
       });
+      return blacklistedAddressesMap;
     }
-    return blacklistedAddresses;
+    return new Map<string, boolean>(blacklistedAddresses.map((a) => [a[0], a[1]]));
   }
 
   async filterIsBlacklisted(addresses: string[]): Promise<string[]> {
     const blacklistedAddresses: Map<string, boolean> = await this.getAllCached();
     addresses = addresses.filter((a) => {
-      return blacklistedAddresses[a.toLowerCase()] === true;
+      return blacklistedAddresses.get(a.toLowerCase()) === true;
     });
     return addresses;
   }

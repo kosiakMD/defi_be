@@ -178,8 +178,8 @@ export class BalanceService {
     accounts: Address[],
     chain: ChainIdEnum,
     prices: CurrentPricesPayloadNew,
-  ): Promise<Map<string, AccountTokenBalance[]>> {
-    const tokenBalances: Map<string, AccountTokenBalance[]> = new Map();
+  ): Promise<Map<Address, AccountTokenBalance[]>> {
+    const tokenBalances: Map<Address, AccountTokenBalance[]> = new Map();
     await Promise.all(
       accounts.map(async (account) => {
         const { address, items } = await this.covalentService.getBalances(
@@ -192,6 +192,20 @@ export class BalanceService {
       }),
     );
     return tokenBalances;
+  }
+
+  // balances from covalent is in high priority
+  private filterAccount(
+    account: Address,
+    balance: AccountTokenBalance,
+    covalentTokens: Map<Address, AccountTokenBalance[]>,
+  ): boolean {
+    return (
+      balance.account === account &&
+      !covalentTokens
+        .get(account)
+        .find((token: AccountTokenBalance) => token.token.address === balance.token.address)
+    );
   }
 
   public async getBalanceFromCovalent(
@@ -334,12 +348,12 @@ export class BalanceService {
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_ETH));
 
     return accountsArray.reduce((response, account) => {
-      // i modified check to avoid duplicates. balances from covalent is in high priority
-      const accountFilter = (balance): boolean =>
-        balance.account === account &&
-        !covalentTokens.get(account).find((token) => token.token.address === balance.token.address);
-      const ether = etherTokenBalances.filter(accountFilter);
-      const erc20 = erc20Balances.filter(accountFilter);
+      const ether = etherTokenBalances.filter((balance) =>
+        this.filterAccount(account, balance, covalentTokens),
+      );
+      const erc20 = erc20Balances.filter((balance) =>
+        this.filterAccount(account, balance, covalentTokens),
+      );
       const tokens = ether
         .concat(erc20)
         .concat(covalentTokens.get(account))
@@ -394,11 +408,12 @@ export class BalanceService {
     const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_BSC));
 
     return accountsArray.reduce((response, account) => {
-      const accountFilter = (balance): boolean =>
-        balance.account === account &&
-        !covalentTokens.get(account).find((token) => token.token.address === balance.token.address);
-      const bsc = bscTokenBalances.filter(accountFilter);
-      const erc20 = erc20Balances.filter(accountFilter);
+      const bsc = bscTokenBalances.filter((balance) =>
+        this.filterAccount(account, balance, covalentTokens),
+      );
+      const erc20 = erc20Balances.filter((balance) =>
+        this.filterAccount(account, balance, covalentTokens),
+      );
       const tokens = bsc
         .concat(erc20)
         .concat(covalentTokens.get(account))
@@ -425,34 +440,35 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance =
-    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
-    ({
-      address,
+  private mapErc20Balance = (
+    prices: TokenPricesV2,
+    chainId: ChainIdEnum,
+  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
+    address,
+    amount,
+    tokenAddress,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
+    tokenTotalSupply,
+    isLp,
+  }): AccountTokenBalanceDto =>
+    plainToClass(AccountTokenBalanceDto, {
+      account: address,
       amount,
-      tokenAddress,
-      tokenName,
-      tokenSymbol,
-      tokenDecimals,
-      tokenTotalSupply,
-      isLp,
-    }): AccountTokenBalanceDto =>
-      plainToClass(AccountTokenBalanceDto, {
-        account: address,
-        amount,
-        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-        tokenPriceUSD: prices[tokenAddress]?.price || 0,
-        totalPriceUSD: prices[tokenAddress]?.price
-          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-          : 0,
-        token: {
-          chainId: chainId,
-          address: tokenAddress,
-          name: tokenName || null,
-          symbol: tokenSymbol || null,
-          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-          totalSupply: +tokenTotalSupply || 0,
-          isLp: isLp,
-        },
-      });
+      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+      tokenPriceUSD: prices[tokenAddress]?.price || 0,
+      totalPriceUSD: prices[tokenAddress]?.price
+        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+        : 0,
+      token: {
+        chainId: chainId,
+        address: tokenAddress,
+        name: tokenName || null,
+        symbol: tokenSymbol || null,
+        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+        totalSupply: +tokenTotalSupply || 0,
+        isLp: isLp,
+      },
+    });
 }

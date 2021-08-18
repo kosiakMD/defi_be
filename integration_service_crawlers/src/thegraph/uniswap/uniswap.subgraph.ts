@@ -22,15 +22,16 @@ export class UniswapSubgraph {
     return this.httpService
       .post<ResponseData>(this.subgraphNativeUrl, {
         operationName: 'pairs',
-        variables: {},
-        query: `
-        {
+        variables: {
+          minTVL: minReserve,
+        },
+        query: `query pairs($minTVL: Int!) {
           from0to1000: pairs (
             first: 1000,
             skip: 0,
             orderBy: reserveUSD,
             orderDirection: desc,
-            where: {reserveUSD_gt: ${minReserve}}
+            where: {reserveUSD_gt: $minTVL}
           ) {
             id
             untrackedVolumeUSD
@@ -56,7 +57,7 @@ export class UniswapSubgraph {
             skip: 1000,
             orderBy: reserveUSD,
             orderDirection: desc,
-            where: {reserveUSD_gt: ${minReserve}}
+            where: {reserveUSD_gt: $minTVL}
           ) {
           	id
             untrackedVolumeUSD
@@ -82,7 +83,7 @@ export class UniswapSubgraph {
             skip: 2000,
             orderBy: reserveUSD,
             orderDirection: desc,
-            where: {reserveUSD_gt: ${minReserve}}
+            where: {reserveUSD_gt: $minTVL}
           ) {
             id
             untrackedVolumeUSD
@@ -112,16 +113,18 @@ export class UniswapSubgraph {
     return this.httpService
       .post<ResponseData>(this.subgraphNativeUrl, {
         operationName: 'pairs',
-        variables: {},
-        query: `
-        {
+        variables: {
+          minTVL: minReserve,
+          blockNumber: blockNumber,
+        },
+        query: `query pairs($minTVL: Int!, $blockNumber: Int!) {
           from0to1000: pairs (
             first: 1000,
             skip: 0,
             orderBy: reserveUSD,
             orderDirection: desc,
-            where: {reserveUSD_gt: ${minReserve}},
-            block: {number: ${blockNumber}}
+            where: {reserveUSD_gt: $minTVL},
+            block: {number: $blockNumber}
           ) {
             id
             untrackedVolumeUSD
@@ -147,7 +150,8 @@ export class UniswapSubgraph {
             skip: 1000,
             orderBy: reserveUSD,
             orderDirection: desc,
-            where: {reserveUSD_gt: ${minReserve}}
+            where: {reserveUSD_gt: $minTVL},
+            block: {number: $blockNumber}
           ) {
 						id
             untrackedVolumeUSD
@@ -173,7 +177,8 @@ export class UniswapSubgraph {
             skip: 2000,
             orderBy: reserveUSD,
             orderDirection: desc,
-            where: {reserveUSD_gt: ${minReserve}}
+            where: {reserveUSD_gt: $minTVL},
+            block: {number: $blockNumber}
           ) {
             id
             untrackedVolumeUSD

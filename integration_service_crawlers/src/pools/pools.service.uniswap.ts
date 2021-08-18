@@ -42,10 +42,11 @@ export class PoolsServiceUniswap {
     const [pairsDataCurrent, pairsDataDayBefore, pairsDataWeekBefore, pairsDataMonthBefore] =
       await Promise.all([
         this.uniswapSubgraph.getPairs(this.minTVL),
-        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastDayBlockNumber),
-        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastWeekBlockNumber),
-        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, lastMonthBlockNumber),
+        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, Number(lastDayBlockNumber)),
+        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, Number(lastWeekBlockNumber)),
+        this.uniswapSubgraph.getPairsInBlockState(this.minTVL, Number(lastMonthBlockNumber)),
       ]);
+
     const allCurrentPairsData = mergeUniswapData(pairsDataCurrent);
     const allPairsDataDayBefore = mergeUniswapData(pairsDataDayBefore);
     const allPairsDataWeekBefore = mergeUniswapData(pairsDataWeekBefore);

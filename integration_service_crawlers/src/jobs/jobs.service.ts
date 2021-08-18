@@ -7,7 +7,7 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { CurveService } from './curve.service';
-import { PANCAKE_JOB, POOLS_JOB, SUSHISWAP_JOB, UNISWAP_JOB, VAULTS_JOB } from './jobs.setting';
+import { POOLS_JOB, VAULTS_JOB, } from './jobs.setting';
 import { PancakeService } from './pancake.service';
 import { SushiswapService } from './sushiswap.service';
 import { UniswapService } from './uniswap.service';
@@ -36,60 +36,9 @@ export class JobsService {
 
     this.agenda.on('ready', async () => {
       await this.agenda.start();
-      await this.startUniswapJob();
-      await this.startSushiswapJob();
       await this.startPoolsJob();
       await this.startVaultsJob();
     });
-  }
-
-  async startUniswapJob() {
-    await this.cancel(UNISWAP_JOB.name);
-    this.logger.log(
-      `agenda.define: [${UNISWAP_JOB.name}], agenda.every: [${UNISWAP_JOB.seconds}] seconds`,
-      'Agenda',
-    );
-    await this.agenda.define(UNISWAP_JOB.name, (job, done) => {
-      this.logger.log(`agenda.start [${UNISWAP_JOB.name}] job`, 'Agenda');
-      this.uniswapService.startMigration().then(() => {
-        this.logger.log(`agenda.complete [${UNISWAP_JOB.name}] job`, 'Agenda');
-        done();
-      });
-    });
-    await this.agenda.every(UNISWAP_JOB.seconds + ' seconds', UNISWAP_JOB.name);
-  }
-
-  async startSushiswapJob() {
-    await this.cancel(SUSHISWAP_JOB.name);
-    this.logger.log(
-      `agenda.define: [${SUSHISWAP_JOB.name}], agenda.every: [${SUSHISWAP_JOB.seconds}] seconds`,
-      'Agenda',
-    );
-    await this.agenda.define(SUSHISWAP_JOB.name, (job, done) => {
-      this.logger.log(`agenda.start [${SUSHISWAP_JOB.name}] job`, 'Agenda');
-      this.sushiswapService.startMigration().then(() => {
-        this.logger.log(`agenda.complete [${SUSHISWAP_JOB.name}] job`, 'Agenda');
-        done();
-      });
-    });
-    await this.agenda.every(SUSHISWAP_JOB.seconds + ' seconds', SUSHISWAP_JOB.name);
-  }
-
-  async startPancakeJob() {
-    // notice: no sense to have this job because data is outdated
-    await this.cancel(PANCAKE_JOB.name);
-    this.logger.log(
-      `agenda.define: [${PANCAKE_JOB.name}], agenda.every: [${PANCAKE_JOB.seconds}] seconds`,
-      'Agenda',
-    );
-    await this.agenda.define(PANCAKE_JOB.name, (job, done) => {
-      this.logger.log(`agenda.start [${PANCAKE_JOB.name}] job`, 'Agenda');
-      this.pancakeService.startMigration().then(() => {
-        this.logger.log(`agenda.complete [${PANCAKE_JOB.name}] job`, 'Agenda');
-        done();
-      });
-    });
-    await this.agenda.every(PANCAKE_JOB.seconds + ' seconds', PANCAKE_JOB.name);
   }
 
   async startPoolsJob() {

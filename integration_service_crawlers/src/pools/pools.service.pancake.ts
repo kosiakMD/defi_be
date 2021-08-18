@@ -85,27 +85,6 @@ export class PoolsServicePancake {
     return pools;
   }
 
-  // async importPancakePools(): Promise<void> {
-  //   const masterChiefContract = new MasterChiefContract(this.web3ProviderBSC);
-  //   const poolLength = await masterChiefContract.poolLength();
-  //
-  //   const liquidityPools: LiquidityPool[] = [];
-  //   for (let i = 0; i < poolLength; i++) {
-  //     const poolInfo = await masterChiefContract.poolInfo(i);
-  //     if (poolInfo.allocPoint.gt(new BigNumber(0))) {
-  //       try {
-  //         const liquidityPool: LiquidityPool = await this.getLiquidityPoolChainData(
-  //           poolInfo.lpToken,
-  //         );
-  //         liquidityPools.push(liquidityPool);
-  //       } catch (ignored) {
-  //
-  //       }
-  //     }
-  //   }
-  //   await this.liquidityPoolsStore.insertBulk(liquidityPools);
-  // }
-
   async getLiquidityPoolChainData(address: string) {
     const tokenContract = new Erc20TokenContract(this.web3ProviderBSC, address);
     const pairContract = new PairContract(this.web3ProviderBSC, address);

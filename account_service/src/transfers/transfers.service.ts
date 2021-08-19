@@ -1,4 +1,5 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { PolygonScanService } from 'src/scan_api/polygon-scan.service';
 
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -66,6 +67,7 @@ export class TransfersService {
   constructor(
     private etherScanService: EtherScanService,
     private bscScanService: BscScanService,
+    private polygonScanService: PolygonScanService,
     private readonly dbService: DbService,
     protected readonly priceService: PriceService,
     private readonly assetService: AssetService,
@@ -75,6 +77,7 @@ export class TransfersService {
     this.chainToScan = {
       [ChainIdEnum.eth]: this.etherScanService,
       [ChainIdEnum.bsc]: this.bscScanService,
+      [ChainIdEnum.polygon]: this.polygonScanService,
     };
   }
 
@@ -169,20 +172,22 @@ export class TransfersService {
         userTransactions.map((transaction) => transaction.hash),
       );
 
-      const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash): Transfer => {
-        const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
+      const transactionWithTransfers = uniqueUserHashes.map<Transfer>(
+        (hash): Transfer => {
+          const hashTransfers = userTransactions.filter((ts) => ts.hash === hash);
 
-        const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
-          (transfer) => new ERC20TransferDto(transfer),
-        );
+          const erc20Transfers: ERC20Transfer[] = hashTransfers.map(
+            (transfer) => new ERC20TransferDto(transfer),
+          );
 
-        return new TransferDto({
-          chainId: chainId,
-          hash: hashTransfers[0].hash,
-          blockTimeStamp: hashTransfers[0].blockTimeStamp,
-          erc20Transfers,
-        });
-      });
+          return new TransferDto({
+            chainId: chainId,
+            hash: hashTransfers[0].hash,
+            blockTimeStamp: hashTransfers[0].blockTimeStamp,
+            erc20Transfers,
+          });
+        },
+      );
 
       return {
         ...response,
@@ -332,8 +337,9 @@ export class TransfersService {
         return transfersResponse;
       }
 
-      const blocksDataTimestamps: BlocksResponseData =
-        await this.blocksSubgraph.getBlocksTimestamps(missedBlocks);
+      const blocksDataTimestamps: BlocksResponseData = await this.blocksSubgraph.getBlocksTimestamps(
+        missedBlocks,
+      );
       const blocks = blocksDataTimestamps.data.blocks;
 
       Object.keys(transfersResponse).map((k) => {

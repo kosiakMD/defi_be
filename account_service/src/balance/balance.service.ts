@@ -6,12 +6,7 @@ import Web3 from 'web3';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import {
-  CHAIN_ID_BSC,
-  CHAIN_ID_BSC_MAINNET,
-  CHAIN_ID_ETH,
-  ETH_BNB_ADDRESS,
-} from '../common/constatnt';
+import { ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
 import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
 
@@ -23,7 +18,7 @@ import { Covalent } from '../covalent/covalent.interface';
 import { CovalentService } from '../covalent/covalent.service';
 import { CurrentPricesPayloadNew } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
-import { getAbsoluteChainIds } from '../utils/chains';
+import { getAbsoluteChainId, getAbsoluteChainIds } from '../utils/chains';
 import {
   decimalsAmount,
   excludeSecondArray,
@@ -47,7 +42,7 @@ import {
   Web3TokenBalance,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
-import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS } from './tokens/tokens';
+import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS, NO_DB_POLYGON_TOKENS } from './tokens/tokens';
 
 // TODO refactor from 1 class to Factory / Abstract
 @Injectable()
@@ -184,11 +179,10 @@ export class BalanceService {
       accounts.map(async (account) => {
         const { address, items } = await this.covalentService.getBalances(
           account,
-          chain === CHAIN_ID_BSC ? CHAIN_ID_BSC_MAINNET : chain,
+          getAbsoluteChainId(chain),
         );
         tokenBalances.set(account, await this.mapCovalentBalances(address, items, chain, prices));
         return;
-        // eslint-disable-line camelcase
       }),
     );
     return tokenBalances;
@@ -283,14 +277,11 @@ export class BalanceService {
       return allBalances;
     }
 
-    // TODO refactor to unify logic
     const scanHandlers = [];
-    if (!chains || !chains.length) {
-      scanHandlers.push(this.getEthBalances(accounts), this.getBscBalances(accounts));
-    } else {
-      scanHandlers.push(chains.includes(CHAIN_ID_ETH) ? this.getEthBalances(accounts) : null);
-      scanHandlers.push(chains.includes(CHAIN_ID_BSC) ? this.getBscBalances(accounts) : null);
-    }
+
+    chains?.forEach((chain) => {
+      scanHandlers.push(this.getBalances(accounts, chain));
+    });
 
     const [ethBalances, bscBalances] = await Promise.all(scanHandlers);
 
@@ -308,11 +299,16 @@ export class BalanceService {
     return ethBalances || bscBalances;
   }
 
-  public async getEthBalances(accounts: Address[]): Promise<BalancesResponse> {
+  public async getBalances(accounts: Address[], chainId: ChainIdEnum): Promise<BalancesResponse> {
     const errors: ErrorMessage[] = [];
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
+    const noDbTokens: Record<ChainIdEnum, BalanceToken[]> = {
+      [ChainIdEnum.eth]: NO_DB_ETH_TOKENS,
+      [ChainIdEnum.bsc]: NO_DB_BNB_TOKENS,
+      [ChainIdEnum.polygon]: NO_DB_POLYGON_TOKENS,
+    };
 
-    const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_ETH);
+    const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);
 
     tokenRows.forEach((t) => {
       t.address = t.address.toLowerCase();
@@ -320,101 +316,40 @@ export class BalanceService {
     });
 
     const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
-    if (!tokensAddresses.find((tokensAddress) => tokensAddress === ETH_BNB_ADDRESS)) {
-      tokensAddresses.push(ETH_BNB_ADDRESS);
+
+    if (chainId === ChainIdEnum.eth) {
+      if (!tokensAddresses.find((tokensAddress) => tokensAddress === ETH_BNB_ADDRESS)) {
+        tokensAddresses.push(ETH_BNB_ADDRESS);
+      }
     }
 
     const [tokenPrices, balances] = await this.getPricesAndBalances(
       tokensAddresses,
-      CHAIN_ID_ETH,
+      chainId,
       accountsArray,
     );
 
-    const covalentTokens = await this.getCovalentTokens(
-      accountsArray,
-      CHAIN_ID_ETH,
-      tokenPrices.prices,
-    );
+    const covalentTokens = await this.getCovalentTokens(accountsArray, chainId, tokenPrices.prices);
 
-    const priceArray = getNoDbTokensPricesWithLp(NO_DB_ETH_TOKENS, tokenPrices.prices);
+    const priceArray = getNoDbTokensPricesWithLp(noDbTokens[chainId], tokenPrices.prices);
 
-    const etherTokenBalances = await this.getArrayOfTokenBalances(
+    const tokenBalances = await this.getArrayOfTokenBalances(
       balances,
       priceArray,
-      NO_DB_ETH_TOKENS,
-      CHAIN_ID_ETH,
+      noDbTokens[chainId],
+      chainId,
     );
 
-    const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_ETH));
+    const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, chainId));
 
     return accountsArray.reduce((response, account) => {
-      const ether = etherTokenBalances.filter((balance) =>
+      const filteredTokenBalances = tokenBalances.filter((balance) =>
         this.filterAccount(account, balance, covalentTokens),
       );
       const erc20 = erc20Balances.filter((balance) =>
         this.filterAccount(account, balance, covalentTokens),
       );
-      const tokens = ether
-        .concat(erc20)
-        .concat(covalentTokens.get(account))
-        .map((t) => {
-          return {
-            ...t,
-            account: account,
-          };
-        });
-      const totalUsd = this.calculateTotalUsd(tokens);
-
-      return {
-        ...response,
-        [account]: {
-          account,
-          totalUsd,
-          tokens,
-          errors,
-        },
-      };
-    }, {});
-  }
-
-  public async getBscBalances(accounts: Address[]): Promise<BalancesResponse> {
-    const errors: ErrorMessage[] = [];
-    const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
-
-    const tokenRows = await this.dbService.loadErc20Balances(accountsArray, CHAIN_ID_BSC);
-    tokenRows.forEach((t) => {
-      t.address = t.address.toLowerCase();
-      t.tokenAddress = t.tokenAddress.toLowerCase();
-    });
-    const tokensAddresses = tokenRows.map(({ tokenAddress }) => tokenAddress.toLowerCase());
-
-    const [tokenPrices, balances] = await this.getPricesAndBalances(
-      tokensAddresses,
-      CHAIN_ID_BSC,
-      accountsArray,
-    );
-
-    const covalentTokens = await this.getCovalentTokens(accounts, CHAIN_ID_BSC, tokenPrices.prices);
-
-    const priceArray = getNoDbTokensPricesWithLp(NO_DB_BNB_TOKENS, tokenPrices.prices);
-
-    const bscTokenBalances = await this.getArrayOfTokenBalances(
-      balances,
-      priceArray,
-      NO_DB_BNB_TOKENS,
-      CHAIN_ID_BSC,
-    );
-
-    const erc20Balances = tokenRows.map(this.mapErc20Balance(tokenPrices.prices, CHAIN_ID_BSC));
-
-    return accountsArray.reduce((response, account) => {
-      const bsc = bscTokenBalances.filter((balance) =>
-        this.filterAccount(account, balance, covalentTokens),
-      );
-      const erc20 = erc20Balances.filter((balance) =>
-        this.filterAccount(account, balance, covalentTokens),
-      );
-      const tokens = bsc
+      const tokens = filteredTokenBalances
         .concat(erc20)
         .concat(covalentTokens.get(account))
         .map((t) => {

@@ -1,9 +1,10 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, CHAIN_ID_POLYGON } from 'src/common/constatnt';
 import { ChainId } from 'src/common/types';
 
 export const AbsoluteChainIds = {
   [CHAIN_ID_ETH]: 1,
   [CHAIN_ID_BSC]: 56,
+  [CHAIN_ID_POLYGON]: 137,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): ChainId => AbsoluteChainIds[chainId];

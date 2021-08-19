@@ -1,5 +1,7 @@
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Logger } from 'src/Logger/Logger.service';
+import { PriceService } from 'src/price/price.service';
 
 import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,12 +9,10 @@ import { ConfigService } from '@nestjs/config';
 import { ChainIdEnum, ChainPrefixEnum } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
-import { Logger } from '../Logger/Logger.service';
-import { PriceService } from '../price/price.service';
 import { ScanApiService } from './scan.api.service';
 
 @Injectable()
-export class BscScanService extends ScanApiService {
+export class PolygonScanService extends ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
   protected readonly chainPrefix: ChainPrefixEnum;
@@ -28,10 +28,10 @@ export class BscScanService extends ScanApiService {
   ) {
     super(httpService, configService, cacheManager, logger, priceService);
 
-    this.url = this.configService.get<string>('BSCSCAN_URL');
-    this.apiKey = this.configService.get<string>('BSCSCAN_KEY');
-    this.chainPrefix = ChainPrefixEnum.bsc;
-    this.chainId = ChainIdEnum.bsc;
+    this.url = this.configService.get<string>('POLYGON_URL');
+    this.apiKey = this.configService.get<string>('POLYGON_KEY');
+    this.chainPrefix = ChainPrefixEnum.polygon;
+    this.chainId = ChainIdEnum.polygon;
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
   }
 }

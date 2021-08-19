@@ -2,7 +2,7 @@ export const DEFAULT_MULTIPLIER = 1e-18;
 
 export const CHAIN_ID_ETH = 1;
 export const CHAIN_ID_BSC = 2;
-export const CHAIN_ID_BSC_MAINNET = 56;
+export const CHAIN_ID_POLYGON = 3;
 
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const ETH_BNB_ADDRESS = '0xb8c77482e45f1f44de1745f52c74426c631bdd52';

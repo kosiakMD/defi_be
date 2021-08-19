@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PriceModule } from '../price/price.module';
 import { BscScanService } from './bsc-scan.service';
 import { EtherScanService } from './ether-scan.service';
+import { PolygonScanService } from './polygon-scan.service';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { EtherScanService } from './ether-scan.service';
     }),
     PriceModule,
   ],
-  providers: [BscScanService, EtherScanService],
-  exports: [BscScanService, EtherScanService],
+  providers: [BscScanService, EtherScanService, PolygonScanService],
+  exports: [BscScanService, EtherScanService, PolygonScanService],
 })
 export class ScanApiModule {}

@@ -1,4 +1,12 @@
-import { Body, CacheInterceptor, CacheTTL, Controller, Get, Post, UseInterceptors, } from '@nestjs/common';
+import {
+  Body,
+  CacheInterceptor,
+  CacheTTL,
+  Controller,
+  Get,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { BlacklistService } from './blacklist.service';

@@ -8,7 +8,8 @@ import { HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { DEFAULT_MULTIPLIER } from 'src/common/constatnt';
-import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
@@ -41,9 +42,9 @@ export class ScanApiService {
   private retries: 0;
   protected readonly url: string;
   protected readonly apiKey: string;
-  protected readonly chainPrefix: 'bsc' | 'eth';
+  protected readonly chainPrefix: ChainPrefixEnum;
   protected readonly chainId: ChainIdEnum;
-  protected readonly mainCoinAddress: string;
+  protected readonly mainCoinAddress: Address;
 
   constructor(
     protected readonly httpService: HttpService,

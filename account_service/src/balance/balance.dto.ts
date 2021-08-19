@@ -52,8 +52,9 @@ export class BalancesQueryDto implements BalancesQuery {
   @ApiProperty({
     type: [ChainIdEnum],
     example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+    default: [ChainIdEnum.eth],
   })
-  chains: ChainIdEnum[];
+  chains: ChainIdEnum[] = [ChainIdEnum.eth];
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))

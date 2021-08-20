@@ -42,11 +42,20 @@ configMaps:
     ACCOUNT_TRANSFERS: v1/transfers
     ACCOUNT_ASSETS: v1/assets
     ACCOUNT_ANALYTIC: v1/analytic
-    POOLS_SERVICE_URL: https://integration.dfyield.xyz
+    POOLS_SERVICE_URL: https://integration-service
     POOLS_PATH: v1/pools
-    VAULTS_SERVICE_URL: https://integration.dfyield.xyz
+    VAULTS_SERVICE_URL: https://integration-service
     VAULTS_PATH: v1/vaults
     IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
+    SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
+    SAFE_PROXY_SERVICE_PORT: 80
+    SAFE_PROXY_STATUS: v1/status
+    SAFE_PROXY_NETWORKS: v1/networks
+    SAFE_PROXY_PARTNERS: v1/partners
+    SAFE_PROXY_PROJECTS: v1/projects
+    SAFE_PROXY_SCAMS: v1/scams
+    SAFE_PROXY_SCAM_TYPES: v1/scams/types
+    SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
 
 secrets:
 - mailer

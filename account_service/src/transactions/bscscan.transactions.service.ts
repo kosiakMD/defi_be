@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { TransactionType } from 'src/common/enum';
+
+import { ChainIdEnum, TransactionType } from 'src/common/enum';
 
 import { BscscanApi } from './api/bscscan.api';
 import { Transaction, TransactionsResponse } from './interfaces/api.transactions.interfaces';
@@ -99,7 +100,7 @@ export class BscscanTransactionsService {
           cumulativeGasUsed,
           gasUsed,
           confirmations,
-          chainId: 2,
+          chainId: ChainIdEnum.bsc,
           isInternal: type === 'internal' ? true : undefined,
         };
       },

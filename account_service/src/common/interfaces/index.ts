@@ -1,12 +1,14 @@
-import { ResultStatus } from '../enum';
+import { ChainIdEnum, ProtocolTypeEnum, ResultStatus } from '../enum';
 
 export type Address = string;
+
+export type Chains = ChainIdEnum[];
 
 export type TokenSymbol = string;
 
 export type DateString = string;
 
-export interface BaseData<T = string> {
+export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   userAddress: string;
   protocolName: string;
   protocolType: T;
@@ -29,7 +31,7 @@ export interface ERC20Token {
 }
 
 export interface ContractApproval {
-  chainId: number;
+  chainId: ChainIdEnum;
   contractAddress: Address;
   amount: string;
   blockTimestamp: number;

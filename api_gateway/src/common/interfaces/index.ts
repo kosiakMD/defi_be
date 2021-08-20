@@ -1,4 +1,14 @@
-import { ResultStatus } from '../enum';
+import {
+  ChainIdEnum,
+  LiquidityChangeTypeEnum,
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolTypeEnum,
+  ResultStatus,
+  SushiSwapProtocolEnum,
+  TransactionTypeEnum,
+  UniswapProtocolEnum,
+} from '../enum';
 
 export type Address = string;
 
@@ -6,14 +16,18 @@ export type TokenSymbol = string;
 
 export type DateString = string;
 
-export type Chain = number;
+export type Chain = ChainIdEnum;
 
-export type Chains = Chain[];
+export type Chains = ChainIdEnum[];
 
-export interface BaseData<T = string> {
+export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;
+
+export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
+  chainId: ChainIdEnum;
   userAddress: string;
-  protocolName: string;
   protocolType: T;
+  platformName: PlatformEnum;
+  protocolName: ProtocolName;
 }
 
 export interface PlatformData {
@@ -32,7 +46,99 @@ export interface TokenCommon {
 }
 
 export interface ERC20Token extends TokenCommon {
-  totalSupply?: number;
+  totalSupply?: string;
+}
+
+export interface ClaimAbleToken extends ERC20Token {
+  claimed?: string;
+  claimable: string;
+  priceUSD?: number;
+}
+
+export interface PoolTokenBase {
+  id: Address;
+  name?: string;
+  symbol?: TokenSymbol;
+  percentage?: number;
+}
+
+export interface PoolToken extends PoolTokenBase {
+  reserve: string;
+}
+
+export interface Transaction<T = string> {
+  type: T;
+  hash: string;
+  timestamp: number;
+  blockNumber: number;
+  gasUsed?: number;
+  gasPrice?: number;
+  gasPriceUsd?: number;
+}
+
+export interface StakeTransaction extends Transaction<TransactionTypeEnum.stake> {
+  amount: number;
+}
+
+export interface UnStakeTransaction extends Transaction<TransactionTypeEnum.unStake> {
+  amount: number;
+}
+
+export interface ClaimTransaction extends Transaction<TransactionTypeEnum.claim> {
+  amount: number;
+}
+
+type StakingTransaction = StakeTransaction | UnStakeTransaction | ClaimTransaction;
+
+export interface StakingPosition {
+  address: string;
+  poolId?: string;
+  staked: string;
+  lpToken: ERC20Token;
+  rewardToken: ClaimAbleToken;
+  liquidityPoolTokens: PoolToken[];
+  transactions?: StakingTransaction[];
+}
+
+export interface PlatformPoolToken {
+  address: string;
+  reserve: string;
+  name?: string;
+  symbol?: TokenSymbol;
+  percentage?: number;
+  decimals?: number;
+  totalSupply?: string;
+  priceUSD?: number;
+  amount?: string;
+}
+
+export interface LiquidityPool {
+  address: string;
+  name?: string;
+}
+
+export interface LiquidityPosition {
+  lpToken: ERC20Token;
+  poolTokens: PlatformPoolToken[];
+  lpTokenBalance: string;
+  pool?: LiquidityPool;
+  exitedAt?: number;
+  earnedFeeUSD?: number;
+  project?: string;
+}
+
+export interface txs {
+  type: LiquidityChangeTypeEnum;
+  hash: Address;
+  blockNumber: number;
+  timestamp: number;
+  liquidity: string;
+  amountUSD: number;
+  gasPrice: number;
+  gasPriceUsd: number;
+  gasUsed: number;
+  lpTokenAddress: Address;
+  tokens: PlatformPoolToken[];
 }
 
 export interface ContractApproval {
@@ -50,20 +156,13 @@ export interface GasPrice {
   timestamp: number;
 }
 
-export interface GasHistoryResponse {
-  [index: number]: GasHistory;
-}
-
 export interface GasHistory {
   average: number;
   time: string;
 }
 
-export interface PoolToken {
-  id: Address;
-  name: string;
-  symbol: TokenSymbol;
-  percentage: number;
+export interface GasHistoryResponse {
+  [index: number]: GasHistory;
 }
 
 export interface Token {
@@ -107,7 +206,7 @@ export interface PoolTokenId {
 export interface Pool {
   id: number;
   address: Address;
-  chain: number;
+  chain: ChainIdEnum;
   project: string;
   reserveUSD: number;
   apy: PoolAPY;
@@ -138,11 +237,11 @@ export interface Vault {
   vaultId: string;
   vaultName: string;
   project: string;
-  chain: number;
+  chain: ChainIdEnum;
   apy: VaultAPY;
   tvl: number; //6974003.81675021
   lpToken: LPToken;
-  liquidityPoolTokens: PoolToken[];
+  liquidityPoolTokens: PoolTokenBase[];
   rewardToken: RewardToken;
 }
 
@@ -159,4 +258,21 @@ export interface DetailedResponse<T> {
   status: ResultStatus;
   errors: Error[] | string[];
   data: T;
+}
+
+export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
+  chainId: ChainIdEnum;
+  userAddress: string;
+  protocolName: ProtocolName;
+  protocolType: T;
+  stakingPositions?: StakingPosition[];
+  liquidityPositions?: LiquidityPosition[];
+  txs?: txs[];
+}
+
+export interface PlatformData {
+  balancer: BaseData[];
+  curve: BaseData[];
+  sushiswap: BaseData[];
+  uniswap: BaseData[];
 }

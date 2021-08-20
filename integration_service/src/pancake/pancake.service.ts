@@ -1,18 +1,21 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { AccountService, BalanceToken } from '../account/account.service';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { PlatformEnum } from 'src/common/enum';
+
+import { AccountService } from '../account/account.service';
+import { BalanceToken } from '../account/interfaces';
 import { EtherscanService } from '../etherscan/etherscan.service';
 import {
   UniswapLiquidityPosition,
   UniswapLiquidityPositionPair,
 } from '../interfaces/liquidity.position.interfaces';
-import { Base, UniswapResponseData } from '../interfaces/transactions.interfaces';
+import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
-import { PROJECT_PANCAKE } from '../pools/pools.setting';
 import { PancakeSubgraph } from '../thegraph/pancake.subgraph';
 import { getDataByAddresses, getDbDataByAddresses } from '../utils/util';
 import { PancakeBurnsEntity } from './entity/pancake.burns.entity';
@@ -106,7 +109,7 @@ export class PancakeService {
     };
   }
 
-  async getDataExternal(addresses: string): Promise<Base[]> {
+  async getDataExternal(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
     const result = await getDataByAddresses(
       this.swapsRepository,
@@ -120,11 +123,11 @@ export class PancakeService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      PROJECT_PANCAKE,
+      PlatformEnum.pancake,
     );
   }
 
-  async getDataInternal(addresses: string): Promise<Base[]> {
+  async getDataInternal(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
 
     const result = await getDbDataByAddresses(
@@ -143,7 +146,7 @@ export class PancakeService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      PROJECT_PANCAKE,
+      PlatformEnum.pancake,
     );
   }
 }

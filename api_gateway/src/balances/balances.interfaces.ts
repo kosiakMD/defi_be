@@ -1,4 +1,5 @@
-import { ERC20Token } from '../common/interfaces';
+import { ChainIdEnum } from 'src/common/enum';
+import { ERC20Token } from 'src/common/interfaces';
 
 export interface TokenBalance {
   amount: string;
@@ -17,7 +18,7 @@ export interface Balance {
 }
 
 export interface BalanceToken {
-  chainId: number;
+  chainId: ChainIdEnum;
   decimals: number;
   symbol: string;
   name: string;

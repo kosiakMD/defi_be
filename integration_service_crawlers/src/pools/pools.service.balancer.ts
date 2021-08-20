@@ -39,17 +39,13 @@ export class PoolsServiceBalancer {
     const lastMonthBlockNumber = blockDataMonthBefore.data.blocks[0].number;
 
     // get up to 3k pair in concurrent requests
-    const [
-      pairsDataCurrent,
-      pairsDataDayBefore,
-      pairsDataWeekBefore,
-      pairsDataMonthBefore,
-    ] = await Promise.all([
-      this.balancerSubgraph.getPairs(this.minTVL),
-      this.balancerSubgraph.getPairsInBlockState(this.minTVL, lastDayBlockNumber),
-      this.balancerSubgraph.getPairsInBlockState(this.minTVL, lastWeekBlockNumber),
-      this.balancerSubgraph.getPairsInBlockState(this.minTVL, lastMonthBlockNumber),
-    ]);
+    const [pairsDataCurrent, pairsDataDayBefore, pairsDataWeekBefore, pairsDataMonthBefore] =
+      await Promise.all([
+        this.balancerSubgraph.getPairs(this.minTVL),
+        this.balancerSubgraph.getPairsInBlockState(this.minTVL, lastDayBlockNumber),
+        this.balancerSubgraph.getPairsInBlockState(this.minTVL, lastWeekBlockNumber),
+        this.balancerSubgraph.getPairsInBlockState(this.minTVL, lastMonthBlockNumber),
+      ]);
     const allCurrentPairsData = [...pairsDataCurrent.data.from0to1000];
     const allPairsDataDayBefore = [...pairsDataDayBefore.data.from0to1000];
     const allPairsDataWeekBefore = [...pairsDataWeekBefore.data.from0to1000];

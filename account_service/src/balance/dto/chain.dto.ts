@@ -1,13 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
-import { ChainSymbolNames, ChainSymbols } from '../../common/enum';
-import { ChainId } from '../../common/types';
+import { ApiProperty } from '@nestjs/swagger';
 
-export class ChainDto {
-  @ApiProperty({ type: Number, example: 1 })
+import { ChainIdEnum, ChainNameEnum, ChainSymbols } from 'src/common/enum';
+
+import { Chain } from '../../price/price.interfaces';
+
+export class ChainDto implements Chain {
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   @Type(() => Number)
-  id: ChainId;
+  id: ChainIdEnum;
 
   @ApiProperty({
     enum: ChainSymbols,
@@ -17,9 +19,9 @@ export class ChainDto {
   symbol: ChainSymbols;
 
   @ApiProperty({
-    enum: ChainSymbolNames,
+    enum: ChainNameEnum,
     enumName: 'ChainSymbolNames',
-    example: ChainSymbolNames.ETH,
+    example: ChainNameEnum.ETH,
   })
-  name: ChainSymbolNames;
+  name: ChainNameEnum;
 }

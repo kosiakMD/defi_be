@@ -1,8 +1,9 @@
-import { Inject, NestMiddleware } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 // import * as proxy from 'http-proxy-middleware';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Inject, NestMiddleware } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { Logger } from '../Logger/Logger.service';
 
@@ -25,7 +26,7 @@ export class ProxyMiddleware implements NestMiddleware {
     },
   });
 
-  use(req: Request, res: Response, next: () => void) {
+  use(req: Request, res: Response, next: () => void): void {
     this.proxy(req as any, res as any, next);
   }
 }

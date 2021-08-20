@@ -1,11 +1,14 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Repository } from 'typeorm';
 
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { CurrencyIdEnum } from 'src/common/enum';
+
 import { SECONDS_IN_HOUR } from '../../utils/time';
-import { Chain, Currency } from '../models';
+import { CurrencyDto } from '../models';
 
 @Injectable()
 export class CurrencyService {
@@ -14,19 +17,19 @@ export class CurrencyService {
   constructor(
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    @InjectRepository(Currency) private readonly repository: Repository<Currency>,
+    @InjectRepository(CurrencyDto) private readonly repository: Repository<CurrencyDto>,
   ) {
     this.cacheTTLInSeconds =
       config.get<number>('CURRENCY_CACHE_TTL_IN_SECONDS') || 24 * SECONDS_IN_HOUR;
   }
 
-  getAll(): Promise<Currency[]> {
+  getAll(): Promise<CurrencyDto[]> {
     return this.repository.find();
   }
 
-  async getById(id: number): Promise<Currency> {
+  async getById(id: CurrencyIdEnum): Promise<CurrencyDto> {
     const cacheKey = `currency_${id}`;
-    const cacheValue = await this.cache.get<Chain>(cacheKey);
+    const cacheValue = await this.cache.get<CurrencyDto>(cacheKey);
     if (cacheValue) {
       return cacheValue;
     }

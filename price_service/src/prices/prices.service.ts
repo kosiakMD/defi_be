@@ -1,19 +1,22 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import _ from 'lodash';
 import { EntityManager, Repository } from 'typeorm';
+
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+
+import { ChainIdEnum } from '../common/enum';
 
 import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';
 import { SECONDS_IN_DAY, SECONDS_IN_HOUR, timestampNow } from '../utils/time';
 import {
-  PriceBatchRequestDto,
-  CurrentPricesPayloadV2,
-  HistoricalPricesPayloadV2,
   CurrentPricesPayload,
+  CurrentPricesPayloadV2,
   HistoricalPricesPayload,
+  HistoricalPricesPayloadV2,
+  PriceBatchRequestDto,
   PriceResponseDto,
   TimestampKeyPrice,
 } from './dto';
@@ -229,7 +232,7 @@ export class PriceService {
   }
 
   private async getAllAssetPrices(
-    chain: number,
+    chain: ChainIdEnum,
     currency: number,
     addresses: string[],
   ): Promise<AssetPrices[]> {
@@ -278,7 +281,7 @@ export class PriceService {
     const query = `
       (
         SELECT address
-        FROM prices.asset 
+        FROM prices.asset
         WHERE "isLp" = false
       )
     `;
@@ -287,7 +290,7 @@ export class PriceService {
   }
 
   private async getAllAssetPricesV2(
-    chain: number,
+    chain: ChainIdEnum,
     currency: number,
     addresses: string[],
   ): Promise<AssetPricesV2[]> {
@@ -343,7 +346,7 @@ export class PriceService {
   }
 
   private async getCachedPrices(
-    chain: number,
+    chain: ChainIdEnum,
     currency: number,
     addresses: string[],
   ): Promise<{
@@ -367,7 +370,7 @@ export class PriceService {
   }
 
   private async getCachedPricesV2(
-    chain: number,
+    chain: ChainIdEnum,
     currency: number,
     addresses: string[],
   ): Promise<{
@@ -441,7 +444,7 @@ export class PriceService {
   }
 
   private async updateCachedPrices(
-    chain: number,
+    chain: ChainIdEnum,
     currency: number,
     addresses: string[],
     assetPrices: AssetPrices[],
@@ -464,7 +467,7 @@ export class PriceService {
   }
 
   private async updateCachedPricesV2(
-    chain: number,
+    chain: ChainIdEnum,
     currency: number,
     addresses: string[],
     assetPrices: AssetPricesV2[],
@@ -534,10 +537,10 @@ export class PriceService {
     return price;
   }
 
-  private getCacheKey(chain: number, currency: number, address: string): string {
+  private getCacheKey(chain: ChainIdEnum, currency: number, address: string): string {
     return `price_${chain}_${currency}_${address}`;
   }
-  private getDetailsCacheKey(chain: number, currency: number, address: string): string {
+  private getDetailsCacheKey(chain: ChainIdEnum, currency: number, address: string): string {
     return `asset_details_${chain}_${currency}_${address}`;
   }
 }

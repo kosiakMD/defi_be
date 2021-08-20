@@ -1,24 +1,24 @@
-import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { PolygonScanService } from 'src/scan_api/polygon-scan.service';
+
+import { Inject, Injectable } from '@nestjs/common';
+
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
-import { AssetsEntity } from '../assets/assets.entity';
+import { AssetsEntity } from '../assets/entity/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
 import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../common/constatnt';
-import { ResultStatus } from '../common/enum';
-import { Address } from '../common/interfaces';
-import { ChainId, ChainsIds } from '../common/types';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
-import {
-  BlocksSubgraph,
-  ResponseData as BlocksResponseData,
-} from '../thegraph/blocks/blocks.subgraph';
+import { ResponseData as BlocksResponseData } from '../thegraph/blocks/block.interface';
+import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
 import {
   getTokenDecimals,
   getUniqueAndToLowerCaseArrayData,
@@ -62,11 +62,12 @@ export class TransfersService {
     return Object.fromEntries<Transfer[]>(result);
   }
 
-  private readonly chainToScan: Record<ChainId, ScanApiService>;
+  private readonly chainToScan: Record<ChainIdEnum, ScanApiService>;
 
   constructor(
     private etherScanService: EtherScanService,
     private bscScanService: BscScanService,
+    private polygonScanService: PolygonScanService,
     private readonly dbService: DbService,
     protected readonly priceService: PriceService,
     private readonly assetService: AssetService,
@@ -74,12 +75,16 @@ export class TransfersService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.chainToScan = {
-      [CHAIN_ID_ETH]: this.etherScanService,
-      [CHAIN_ID_BSC]: this.bscScanService,
+      [ChainIdEnum.eth]: this.etherScanService,
+      [ChainIdEnum.bsc]: this.bscScanService,
+      [ChainIdEnum.polygon]: this.polygonScanService,
     };
   }
 
-  private async queryTransfers(addresses: Address[], chainId: ChainId): Promise<TransferEntity[]> {
+  private async queryTransfers(
+    addresses: Address[],
+    chainId: ChainIdEnum,
+  ): Promise<TransferEntity[]> {
     try {
       const dbTransfers: TransferEntity[] = await this.dbService.getTransfersDataFromDb(
         addresses,
@@ -107,7 +112,7 @@ export class TransfersService {
 
   private async getPrices(
     transferRows: TransferEntity[],
-    chainId: ChainId,
+    chainId: ChainIdEnum,
   ): Promise<HistoricalPricesMap> {
     // form request params
     const tokenAddresses: Set<string> = new Set<string>();
@@ -156,7 +161,7 @@ export class TransfersService {
   private toTransfersResponse(
     transfers: TransferWithTokenAndPrices[],
     addresses: Address[],
-    chainId: ChainId,
+    chainId: ChainIdEnum,
   ): TransfersResponse<Transfer> {
     return addresses.reduce<TransfersResponse<Transfer>>((response, address) => {
       const userTransactions = transfers.filter(
@@ -193,7 +198,7 @@ export class TransfersService {
 
   public async getTransfersByAddresses(
     addressArray: Address[],
-    chainId: ChainId,
+    chainId: ChainIdEnum,
   ): Promise<TransfersDetailedResponseDto> {
     const result = new TransfersDetailedResponseDto(ResultStatus.ok, [], null);
     const transferRows: TransferEntity[] = await this.queryTransfers(addressArray, chainId);
@@ -266,7 +271,7 @@ export class TransfersService {
 
   async getExternalTransfers(
     addresses: Address[],
-    chains: ChainsIds,
+    chains: ChainIdEnum[],
   ): Promise<TransfersResponse<ScanTransfer>> {
     const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses);
     const transfers: TransfersResponse<ScanTransfer> = {};
@@ -356,7 +361,7 @@ export class TransfersService {
 
   private async getTransfersPrices(
     transfersResponse: TransfersResponse<ScanTransfer>,
-    chainId: number,
+    chainId: ChainIdEnum,
   ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       const unpricedContracts = [];

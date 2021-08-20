@@ -1,6 +1,7 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { getManager } from 'typeorm';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import { ETH_ADDRESS } from '../utils/util';
 import { CoingeckoService } from './coingecko.service';
@@ -21,7 +22,8 @@ export class TemporaryTokensService {
 
   async getTemporaryTokens(): Promise<string> {
     try {
-      const coinMarketCapResponse: CoinMarketCapResponse = await this.coingeckoService.getCoinsListFromCoinMarketCap();
+      const coinMarketCapResponse: CoinMarketCapResponse =
+        await this.coingeckoService.getCoinsListFromCoinMarketCap();
       const coinsList: Coin[] = await this.coingeckoService.getCoinsList();
       const ethCoinMarketCap: CoinMarketCapData[] = this.getFilteredEthCoins(
         coinsList,

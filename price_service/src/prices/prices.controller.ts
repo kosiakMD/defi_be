@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Post, Query, Req, Inject } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
 import { Request } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../common/Logger/Logger.service';
+import { Body, Controller, Get, Post, Query, Req, Inject } from '@nestjs/common';
+import { ApiOkResponse } from '@nestjs/swagger';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import {
   PriceBatchRequestDto,
   PriceQueryDto,
@@ -27,7 +29,10 @@ export class PricesController {
   // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/')
   @ApiOkResponse({ type: CurrentPriceResponseDto })
-  get(@Query() query: PriceQueryDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayload>> {
+  get(
+    @Query() query: PriceQueryDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps && timestamps.length;
 
@@ -45,7 +50,10 @@ export class PricesController {
   // TODO: divide method because we have 2 different DTO for History and Current
   @Get('/v2')
   @ApiOkResponse({ type: CurrentPriceV2ResponseDto })
-  getV2(@Query() query: PriceQueryDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayloadV2>> {
+  getV2(
+    @Query() query: PriceQueryDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<PricesPayloadV2>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps && timestamps.length;
 
@@ -64,7 +72,10 @@ export class PricesController {
   @Post('/')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: CurrentPriceResponseDto })
-  post(@Body() query: PriceRequestDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayload>> {
+  post(
+    @Body() query: PriceRequestDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps?.length;
 
@@ -83,7 +94,10 @@ export class PricesController {
   @Post('/v2')
   // @UsePipes(new ArrayValidationParseIntPipe('timestamps', { isOptional: true }))
   @ApiOkResponse({ type: CurrentPriceV2ResponseDto })
-  postV2(@Body() query: PriceRequestDto, @Req() request: Request): Promise<PriceResponseDto<PricesPayloadV2>> {
+  postV2(
+    @Body() query: PriceRequestDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<PricesPayloadV2>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps?.length;
 

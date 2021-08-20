@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsDateString, IsEthereumAddress, IsNumber, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { Address, Token } from '../interfaces';
 import EthereumAddressDto from './EthereumAddress.dto';

@@ -1,3 +1,5 @@
+import { DirectionEnum, TransactionTypeEnum } from 'src/common/enum';
+
 import { UniswapToken } from './entity.information.interfaces';
 import {
   ERC20Token,
@@ -32,8 +34,8 @@ export interface UniswapLiquidityPosition {
 }
 
 export interface TransferTransaction extends Transaction {
-  type: 'transfer';
-  direction: 'in' | 'out';
+  type: TransactionTypeEnum.transfer;
+  direction: DirectionEnum;
   token: SwapToken[];
 }
 

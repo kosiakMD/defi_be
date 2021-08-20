@@ -1,15 +1,17 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { EnumName } from 'src/common/enum';
+
 import { SwapTokenDto } from './swap.token.dto';
 
 enum SwapTransactionType {
-  'swap' = 'swap',
+  swap = 'swap',
 }
 
 export class SwapTransactionDto {
   @ApiProperty({
     enum: SwapTransactionType,
-    enumName: 'SwapTransactionType',
+    enumName: EnumName.SwapTransactionType,
     example: SwapTransactionType.swap,
   })
   type: SwapTransactionType.swap;

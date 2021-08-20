@@ -1,6 +1,18 @@
-import { Injectable } from '@nestjs/common';
 import { BigNumber as BN } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
+
+import { Injectable } from '@nestjs/common';
+
+import {
+  PancakeProtocolEnum,
+  PlatformEnum,
+  ProtocolName,
+  UniswapProtocolEnum,
+  LiquidityChangeTypeEnum,
+  ProtocolTypeEnum,
+  TransactionTypeEnum,
+  ChainIdEnum,
+} from 'src/common/enum';
 
 import { Web3Provider } from '../chain/web3.provider';
 import {
@@ -20,7 +32,7 @@ import {
 import { Staking } from '../interfaces/staking.position.interfaces';
 import {
   AutomaticMarketMaker,
-  Base,
+  BaseData,
   ERC20Token,
   LiquidityChangeTransaction,
   PoolToken,
@@ -29,13 +41,14 @@ import {
   Transactions,
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
-import { PROJECT_PANCAKE } from '../pools/pools.setting';
 import { PriceService } from '../price/price.service';
 import { abi, decimalsDivider } from '../utils/util';
 
+type UniversalEntity = BurnsInterface | MintsInterface;
+
 @Injectable()
 export class Mapper {
-  private PERSENTAGE = 50;
+  private PERCENTAGE = 50;
 
   constructor(
     private readonly chainProvider: Web3Provider,
@@ -46,24 +59,29 @@ export class Mapper {
     userAddresses: string[],
     originAddresses: string[],
     response: UniswapResponseData,
-    protocolName: string,
-  ): Promise<Base[]> {
-    const base: Base[] = [];
+    platformName: PlatformEnum,
+    protocolName?: ProtocolName,
+  ): Promise<BaseData[]> {
+    const base: BaseData[] = [];
 
-    const chainId = protocolName === PROJECT_PANCAKE ? 2 : 1;
+    // TODO: add checks does protocol belong to chain
+    const chainId =
+      protocolName === PancakeProtocolEnum.protocolV1 ? ChainIdEnum.bsc : ChainIdEnum.eth;
     for (const address of userAddresses) {
       const transactions: Transactions = {
         chainId: chainId,
-        protocolType: 'transaction',
+        protocolType: ProtocolTypeEnum.transaction,
         protocolName: protocolName,
+        platformName: platformName,
         userAddress: this.getOriginAddress(originAddresses, address),
         txs: [],
       };
 
       const amm: AutomaticMarketMaker = {
         chainId: chainId,
-        protocolType: 'amm',
+        protocolType: ProtocolTypeEnum.amm,
         protocolName: protocolName,
+        platformName: platformName,
         userAddress: this.getOriginAddress(originAddresses, address),
         liquidityPositions: [],
       };
@@ -71,8 +89,9 @@ export class Mapper {
       if (response.sushiswapStakingPosition) {
         const staking: Staking = {
           chainId: chainId,
-          protocolType: 'staking',
+          protocolType: ProtocolTypeEnum.staking,
           protocolName: protocolName,
+          platformName: platformName,
           userAddress: this.getOriginAddress(originAddresses, address),
           stakingPositions: [],
         };
@@ -156,7 +175,7 @@ export class Mapper {
   private mapSwaps(transactions: Transactions, swapFrom: SwapsInterface[]): void {
     for (const swap of swapFrom) {
       const ammSwap: SwapTransaction = {
-        type: 'swap',
+        type: TransactionTypeEnum.swap,
         hash: swap.information.transaction.id,
         timestamp: Number(swap.information.transaction.timestamp),
         blockNumber: Number(swap.blockNumber),
@@ -335,7 +354,10 @@ export class Mapper {
         userPoolShare,
       );
 
-      const project = amm.protocolName === 'uniswap' ? 'Uniswap V2' : amm.protocolName;
+      const project =
+        amm.platformName === PlatformEnum.uniswap
+          ? UniswapProtocolEnum.protocolV2
+          : amm.platformName;
       const liquidityPosition: LiquidityPosition = {
         pool: pool,
         lpToken,
@@ -356,7 +378,7 @@ export class Mapper {
     entity?: UniversalEntity,
     pair?: UniswapLiquidityPositionPair,
     userPoolShare?: number,
-  ) {
+  ): PoolToken[] {
     const poolToken0 = {
       address: token0.id,
       decimals: Number(token0.decimals),
@@ -372,7 +394,7 @@ export class Mapper {
         pair === undefined
           ? this.priceInUSD(entity.information.amountUSD, entity.information.amount0)
           : this.priceInUSD(pair.reserveUSD, pair.reserve0),
-      percentage: this.PERSENTAGE,
+      percentage: this.PERCENTAGE,
     };
 
     const poolToken1 = {
@@ -390,7 +412,7 @@ export class Mapper {
         pair === undefined
           ? this.priceInUSD(entity.information.amountUSD, entity.information.amount1)
           : this.priceInUSD(pair.reserveUSD, pair.reserve1),
-      percentage: this.PERSENTAGE,
+      percentage: this.PERCENTAGE,
     };
 
     return [poolToken0, poolToken1];
@@ -402,7 +424,7 @@ export class Mapper {
     flag: boolean,
   ): LiquidityChangeTransaction {
     return {
-      type: flag ? 'addLiquidity' : 'removeLiquidity',
+      type: flag ? LiquidityChangeTypeEnum.addLiquidity : LiquidityChangeTypeEnum.removeLiquidity,
       hash: entity.information.transaction.id,
       blockNumber: Number(entity.blockNumber),
       timestamp: Number(entity.information.transaction.timestamp),
@@ -424,7 +446,7 @@ export class Mapper {
     staking: Staking,
     liquidityPositions: UniswapLiquidityPosition[],
     stakingPositions,
-  ) {
+  ): Promise<void> {
     const StakingPositionsToPush = [];
     const address = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2';
     const usdPriceOfRewardToken = await this.priceService.getTokenPrices([address], 1);
@@ -486,7 +508,7 @@ export class Mapper {
               amount: userPoolShare.times(reserve0).toString(),
               reserve: reserve0,
               priceUSD: this.priceInUSD(element1.pair.reserveUSD, reserve0),
-              percentage: this.PERSENTAGE,
+              percentage: this.PERCENTAGE,
             };
 
             const poolToken1 = {
@@ -498,7 +520,7 @@ export class Mapper {
               amount: userPoolShare.times(reserve1).toString(),
               reserve: reserve1,
               priceUSD: this.priceInUSD(element1.pair.reserveUSD, reserve1),
-              percentage: this.PERSENTAGE,
+              percentage: this.PERCENTAGE,
             };
             position.liquidityPoolTokens.push(poolToken0, poolToken1);
           }
@@ -519,5 +541,3 @@ export class Mapper {
     return await contract.methods.pendingSushi(poolId, userId).call();
   }
 }
-
-type UniversalEntity = BurnsInterface | MintsInterface;

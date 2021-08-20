@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { splitToArray, splitToNumberArray } from '../../utils/transform';
 

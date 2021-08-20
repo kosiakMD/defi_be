@@ -49,6 +49,7 @@ export const validationSchema = Joi.object({
   ACCOUNT_TRANSFERS: Joi.string().required(),
   ACCOUNT_BALANCE: Joi.string().required(),
   ACCOUNT_APPROVALS: Joi.string().required(),
+  ACCOUNT_ASSETS: Joi.string().required(),
   POOLS_PATH: Joi.string().required(),
   VAULTS_PATH: Joi.string().required(),
   // PRICE
@@ -72,6 +73,18 @@ export const validationSchema = Joi.object({
   INTEGRATION_PANCAKE: Joi.string().required(),
   INTEGRATION_BALANCER: Joi.string().required(),
   INTEGRATION_CURVE: Joi.string().required(),
+  // SAFE
+  SAFE_PROXY_SERVICE_HOST: Joi.string().required(),
+  SAFE_PROXY_SERVICE_PORT: Joi.number() //
+    .allow('')
+    .required(),
+  SAFE_PROXY_STATUS: Joi.string().required(),
+  SAFE_PROXY_NETWORKS: Joi.string().required(),
+  SAFE_PROXY_PARTNERS: Joi.string().required(),
+  SAFE_PROXY_PROJECTS: Joi.string().required(),
+  SAFE_PROXY_SCAMS: Joi.string().required(),
+  SAFE_PROXY_SCAM_TYPES: Joi.string().required(),
+  SAFE_PROXY_SCAM_FUNCTIONS: Joi.string().required(),
   // EXTERNAL API'S
   ETHERSCAN_API_URL: Joi.string().required(),
   ETHERSCAN_API_KEY: Joi.string().required(),

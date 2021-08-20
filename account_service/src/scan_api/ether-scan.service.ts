@@ -1,10 +1,13 @@
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { ChainIdEnum, ChainPrefixEnum } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+
 import { Logger } from '../Logger/Logger.service';
-import { CHAIN_ID_ETH } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
 import { ScanApiService } from './scan.api.service';
 
@@ -12,9 +15,9 @@ import { ScanApiService } from './scan.api.service';
 export class EtherScanService extends ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
-  protected readonly chainPrefix: 'bsc' | 'eth';
-  protected readonly chainId: number;
-  protected readonly mainCoinAddress: string;
+  protected readonly chainPrefix: ChainPrefixEnum;
+  protected readonly chainId: ChainIdEnum;
+  protected readonly mainCoinAddress: Address;
 
   constructor(
     httpService: HttpService,
@@ -27,8 +30,8 @@ export class EtherScanService extends ScanApiService {
 
     this.url = this.configService.get<string>('ETHERSCAN_URL');
     this.apiKey = this.configService.get<string>('ETHERSCAN_KEY');
-    this.chainPrefix = 'eth';
-    this.chainId = CHAIN_ID_ETH;
+    this.chainPrefix = ChainPrefixEnum.eth;
+    this.chainId = ChainIdEnum.eth;
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
   }
 }

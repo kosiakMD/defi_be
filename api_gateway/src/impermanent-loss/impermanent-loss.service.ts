@@ -1,9 +1,11 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
-import { Logger } from '../common/Logger/Logger.service';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import { ImpermanentLossResponseDto } from './dto/impermanentLoss.dto';
 import { ImpermanentLossDto } from './dto/impermanentLoss.dto';
 

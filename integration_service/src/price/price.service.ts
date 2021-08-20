@@ -1,6 +1,9 @@
+import { map } from 'rxjs/operators';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { map } from 'rxjs/operators';
+
+import { ChainIdEnum } from '../common/enum';
 
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 
@@ -21,7 +24,7 @@ export class PriceService {
 
   async getTokenPrices(
     addressesArray: string[],
-    chain: number,
+    chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     const addresses = await addressesArray.join(',');
     return this.httpService

@@ -1,8 +1,12 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as redisStore from 'cache-manager-redis-store';
 
+import { AssetsModule } from '../assets/assets.module';
+import { AssetsEntity } from '../assets/entity/assets.entity';
+import { BlacklistModule } from '../blacklist/blacklist.module';
 import { ChainModule } from '../chain/chain.module';
 import { CovalentModule } from '../covalent/covalent.module';
 import { CovalentService } from '../covalent/covalent.service';
@@ -16,12 +20,14 @@ import { ScanService } from './scan/scan.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature(),
+    TypeOrmModule.forFeature([AssetsEntity]),
     HttpModule,
     ChainModule,
     PriceModule,
     MulticallModule,
+    AssetsModule,
     CovalentModule,
+    BlacklistModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

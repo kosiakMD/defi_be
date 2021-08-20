@@ -107,3 +107,15 @@ export interface SwapsInterface {
   toAddress: string;
   fromAddress: string;
 }
+
+export interface PoolToken {
+  address: string;
+  decimals: number;
+  name: string;
+  symbol: string;
+  totalSupply: any;
+  reserve: string;
+  amount: string;
+  priceUSD: number;
+  percentage: number;
+}

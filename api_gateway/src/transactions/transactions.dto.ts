@@ -1,13 +1,13 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DetailedResponseDto } from '../common/DTO';
-import { ResultStatus } from '../common/enum';
-import { Address } from '../common/interfaces';
+import { DetailedResponseDto } from 'src/common/DTO';
+import { ResultStatus, TokenOperations } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+
 import { TransactionScanDto } from '../scans-api/scans-api.dto';
 import { ChainDto } from './chain.dto';
 import { CryptoCurrencyDto, CurrencyDto } from './currency.dto';
-import { TokenOperations } from './enums';
 import { Transaction } from './transactions.interfaces';
 
 class GasDto {

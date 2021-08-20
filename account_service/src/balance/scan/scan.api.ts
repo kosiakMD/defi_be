@@ -1,11 +1,14 @@
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ChainIdEnum } from 'src/common/enum';
+
 import { Logger } from '../../Logger/Logger.service';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../common/constatnt';
 import { isEthChain } from '../../utils/web3';
 import { EtherscanTransfer } from '../interfaces/etherscan.interfaces';
 
@@ -36,7 +39,7 @@ export class ScanApi {
     };
   }
 
-  async getEthTransfers(address: string, chain: number): Promise<any> {
+  async getEthTransfers(address: string, chain: ChainIdEnum): Promise<any> {
     const url = isEthChain(chain) ? this.ethUrl : this.bscUrl;
     const action = 'tokentx';
     const chainPrefix = this.networks[chain];

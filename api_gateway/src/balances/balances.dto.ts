@@ -1,11 +1,14 @@
 // eslint-disable-next-line max-classes-per-file
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { AccountTokenBalance } from '../account/account.interfaces';
-import { Address, Chains, ERC20Token } from '../common/interfaces';
+import { BadRequestException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainIdEnum } from 'src/common/enum';
+import { Address, Chains, ERC20Token } from 'src/common/interfaces';
+
+import { AccountTokenBalance, ErrorMessage } from '../account/account.interfaces';
 import { splitToArray } from '../utils/transform';
 import { Balance, BalanceToken } from './balances.interfaces';
 
@@ -28,8 +31,8 @@ export class BalancesQueryDto {
 }
 
 export class BalanceTokenDto implements BalanceToken {
-  @ApiProperty({ type: Number, example: 1 })
-  chainId: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chainId: ChainIdEnum;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
   @ApiProperty({ type: String, example: 'ETH' })
@@ -57,12 +60,26 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
   token: ERC20Token;
 }
 
+export class ErrorMessageDto implements ErrorMessage {
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.bsc })
+  chainId: ChainIdEnum;
+
+  @ApiProperty({ type: Number, example: 502 })
+  statusCode: number;
+
+  @ApiProperty({ type: String, example: 'Connection to web3 provider failed' })
+  message: string;
+}
+
 export class BalanceDto implements Balance {
   @ApiProperty({ type: Number, example: 0 })
   totalUsd: number;
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
   tokens: AccountTokenBalance;
+
+  @ApiProperty({ type: [ErrorMessageDto] })
+  errors?: ErrorMessage[];
 }
 
 export class BalancesResponseDto {

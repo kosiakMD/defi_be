@@ -1,6 +1,7 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { Controller, Inject } from '@nestjs/common';
 import { Ctx, EventPattern, Payload, RmqContext } from '@nestjs/microservices';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { NEW_ASSET_ADDED_EVENT_PATTERN } from '../config/queues/event.patterns';
 import { Logger } from '../logger/logger.service';

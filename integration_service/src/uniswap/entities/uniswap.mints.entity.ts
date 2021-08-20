@@ -1,5 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ColumnType } from 'src/common/enum';
+
 import { InformationMint } from '../../interfaces/entity.information.interfaces';
 
 @Entity('uniswap_mints')
@@ -10,10 +12,10 @@ export class UniswapMintsEntity {
   @Column({ name: 'block_number', nullable: true })
   blockNumber: number;
 
-  @Column({ name: 'created_at', type: 'timestamptz' })
+  @Column({ name: 'created_at', type: ColumnType.timestamptz })
   createdAt: Date;
 
-  @Column({ type: 'json' })
+  @Column({ type: ColumnType.json })
   information: InformationMint;
 
   @Column()

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { BlacklistModule } from '../blacklist/blacklist.module';
 import { ChainModule } from '../chain/chain.module';
 import { CovalentModule } from '../covalent/covalent.module';
 import { ScanApiModule } from '../scan_api/scan.api.module';
@@ -19,6 +20,7 @@ import { Web3Service } from './web3.service';
     ChainModule,
     ScanApiModule,
     CovalentModule,
+    BlacklistModule,
   ],
   controllers: [TransactionsController],
   providers: [

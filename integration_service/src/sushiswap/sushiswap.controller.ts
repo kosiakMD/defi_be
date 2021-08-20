@@ -2,7 +2,7 @@ import { Get, Query } from '@nestjs/common';
 import { Controller } from '@nestjs/common';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
 
-import { Base } from '../interfaces/transactions.interfaces';
+import { BaseData } from '../interfaces/transactions.interfaces';
 import BaseDataDto from '../uniswap/dto/BaseData.dto';
 import { SushiswapService } from './sushiswap.service';
 
@@ -18,7 +18,7 @@ export class SushiswapController {
     example: '',
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
-  getDataByAddresses(@Query('addresses') addresses: string): Promise<Base[]> {
+  getDataByAddresses(@Query('addresses') addresses: string): Promise<BaseData[]> {
     if (!addresses) {
       return Promise.resolve([]);
     }

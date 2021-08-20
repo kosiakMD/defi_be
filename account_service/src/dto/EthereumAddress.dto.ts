@@ -1,7 +1,8 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { IsEthereumAddress } from 'class-validator';
 
-import { Address } from '../common/interfaces';
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
+
+import { Address } from 'src/common/interfaces';
 
 @ApiExtraModels()
 export default class EthereumAddressDto extends String {

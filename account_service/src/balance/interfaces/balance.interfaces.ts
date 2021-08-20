@@ -50,9 +50,16 @@ export interface AccountTokenBalance extends TokenBalance {
   account: string;
 }
 
+export interface ErrorMessage {
+  chainId: number;
+  statusCode: number;
+  message: string;
+}
+
 export interface AccountBalance {
   totalUsd: number;
   tokens: AccountTokenBalance[];
+  errors?: ErrorMessage[];
 }
 
 export interface EthTokenBalance {
@@ -62,5 +69,7 @@ export interface EthTokenBalance {
 export type BalancesResponse = { [key: string]: AccountBalance };
 
 export type TokenPrices = { [key: string]: number };
+
+export type TokenPricesV2 = { [key: string]: { price?: number; isLp?: boolean } };
 
 export type NoDbTokenBalances = { [key: string]: number };

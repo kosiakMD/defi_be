@@ -1,9 +1,10 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import pLimit from 'p-limit';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService } from './db/database.service';
 import { TheGraphQuery } from './interfaces/graph.interface';

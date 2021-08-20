@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
+import { Injectable } from '@nestjs/common';
+
+import { ChainIdEnum } from '../../common/enum';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, WETH_ADDRESS } from 'src/common/constatnt';
+import { Address } from 'src/common/interfaces';
+
 import { Web3Provider } from '../../chain/web3.provider';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, WETH_ADDRESS } from '../../common/constatnt';
-import { Address } from '../../common/interfaces';
-import { ChainId, ChainsIds } from '../../common/types';
 import { PriceService } from '../../price/price.service';
 import {
   abi,
@@ -43,7 +45,7 @@ export class ScanService {
 
   public async getBalanceDataFromChains(
     accounts: Address[],
-    chains: ChainsIds,
+    chains: ChainIdEnum[],
   ): Promise<BalancesResponse> {
     // TODO: allBalances better to become Map
     const allBalances: BalancesResponse = {};
@@ -84,7 +86,7 @@ export class ScanService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  async getBalances(addresses: Address[], chain: ChainId): Promise<any> {
+  async getBalances(addresses: Address[], chain: ChainIdEnum): Promise<any> {
     const transfersAll: Transfers = {};
     await Promise.all(
       addresses.map(async (a) => {
@@ -173,7 +175,7 @@ export class ScanService {
   private async getArrayOfTokenBalances(
     address: string,
     currentPrice: CurrentPricesPayload,
-    chain: number,
+    chain: ChainIdEnum,
   ): Promise<AccountTokenBalance[]> {
     const [provider, balanceArray] = isEthChain(chain)
       ? [this.instanceEthProvider, NO_SCAN_ETH_TOKENS]

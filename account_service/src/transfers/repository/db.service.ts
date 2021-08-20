@@ -1,13 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { getManager } from 'typeorm';
 
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { ChainIdEnum } from 'src/common/enum';
+import { Address } from 'src/common/interfaces';
+
 import { Logger } from '../../Logger/Logger.service';
-import { AssetsEntity } from '../../assets/assets.entity';
-import { Address } from '../../common/interfaces';
-import { ChainId } from '../../common/types';
+import { AssetsEntity } from '../../assets/entity/assets.entity';
 import { TransferEntity, TransferEntityNew } from '../dto/transfers.entity';
 import { TransferFromDb } from '../interfaces/transfers.interfaces';
 import { TransfersRepository } from './transfers.repository';
@@ -23,7 +25,7 @@ export class DbService {
 
   async getTransfersDataFromDb(
     addresses: Address[],
-    chainId: ChainId,
+    chainId: ChainIdEnum,
     limit = DEFAULT_LIMIT,
   ): Promise<TransferEntity[]> {
     const timeMark = `getTransfersDataFromDb chain:${chainId}`;
@@ -67,7 +69,7 @@ export class DbService {
 
   private queryRaw(
     addressesString: string,
-    chainId: ChainId,
+    chainId: ChainIdEnum,
     limit = DEFAULT_LIMIT,
   ): Promise<TransferFromDb[]> {
     const manager = getManager();

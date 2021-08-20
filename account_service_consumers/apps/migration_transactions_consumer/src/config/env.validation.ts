@@ -34,6 +34,7 @@ export const validationSchema = Joi.object({
   DB_DATABASE: Joi.string().required(),
   RABBITMQ_URL: Joi.string().required(),
   TRANSACTION_EVENTS_MIGRATION_QUEUE: Joi.string().required(),
+  TRANSACTION_NEW_ASSET_ADDED: Joi.string().required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.string().required(),
   PRICES_PATH: Joi.string().required(),

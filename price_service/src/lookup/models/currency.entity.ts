@@ -1,10 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+import { CurrencyEnum, CurrencyIdEnum } from '../../common/enum';
+
 @Entity({ name: 'currency' })
-export class Currency {
+export class CurrencyDto {
   @PrimaryGeneratedColumn()
-  public id: number;
+  public id: CurrencyIdEnum;
 
   @Column()
-  public name: string;
+  public name: CurrencyEnum;
 }

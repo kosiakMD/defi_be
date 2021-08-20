@@ -1,10 +1,11 @@
 import {
   DAI_ADDRESS,
   ESD_ADDRESS,
+  ETH_ADDRESS,
   ETH_BNB_ADDRESS,
   WBNB_ADDRESS,
   WETH_ADDRESS,
-} from '../../common/constatnt';
+} from 'src/common/constatnt';
 
 export const esdToken = {
   address: ESD_ADDRESS.toLowerCase(),
@@ -23,7 +24,7 @@ export const daiToken = {
 };
 
 export const ethToken = {
-  address: ETH_BNB_ADDRESS.toLowerCase(),
+  address: ETH_ADDRESS.toLowerCase(),
   symbol: 'ETH',
   name: 'Ether',
   decimals: 18,
@@ -56,8 +57,10 @@ export const wbnbToken = {
 
 export const NO_DB_ETH_TOKENS = [ethToken, wethToken, daiToken, esdToken];
 
+export const NO_DB_BNB_TOKENS = [bnbToken, wbnbToken];
+
+export const NO_DB_POLYGON_TOKENS = [];
+
 export const NO_SCAN_ETH_TOKENS = [ethToken, wethToken];
 
 export const NO_SCAN_BNB_TOKENS = [bnbToken, wbnbToken];
-
-export const NO_DB_BNB_TOKENS = [bnbToken, wbnbToken];

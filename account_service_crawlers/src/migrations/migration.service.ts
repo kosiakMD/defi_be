@@ -1,7 +1,8 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { getManager } from 'typeorm';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { BscService } from '../node/bsc.service';
 import { EthService } from '../node/eth.service';

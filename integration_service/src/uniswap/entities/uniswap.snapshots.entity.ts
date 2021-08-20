@@ -1,5 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ColumnType } from 'src/common/enum';
+
 import { InformationSnapshot } from '../../interfaces/entity.information.interfaces';
 
 @Entity('uniswap_snapshots')
@@ -10,12 +12,12 @@ export class UniswapSnapshotsEntity {
   @Column({ name: 'user_address' })
   userAddress: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: ColumnType.json })
   information: InformationSnapshot;
 
   @Column({ name: 'block_number' })
   blockNumber: number;
 
-  @Column({ name: 'created_at', type: 'timestamptz' })
+  @Column({ name: 'created_at', type: ColumnType.timestamptz })
   createdAt: Date;
 }

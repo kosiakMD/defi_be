@@ -1,20 +1,38 @@
-import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { ChainId, CurrencyId } from '../common/types';
+import {
+  ChainIdEnum,
+  ChainNameEnum,
+  ChainSymbols,
+  CurrencyEnum,
+  CurrencyIdEnum,
+} from '../common/enum';
 
-interface Chain {
-  id: ChainId;
-  name: string;
+import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
+
+export interface Chain {
+  id: ChainIdEnum;
+  name: ChainNameEnum;
+  symbol: ChainSymbols;
 }
 
-interface Currency {
-  id: CurrencyId;
-  name: string;
+export interface Currency {
+  id: CurrencyIdEnum;
+  name: CurrencyEnum;
 }
 
 export interface PriceServiceResponse<T> {
   chain?: Chain;
   currency?: Currency;
   prices: T;
+}
+
+export interface CurrentTokensPrices {
+  price: number;
+  platform: string;
+  isLp: boolean;
+}
+
+export interface CurrentPricesPayloadNew {
+  [key: string]: CurrentTokensPrices;
 }
 
 export type PriceServiceHistoricalResponse = PriceServiceResponse<HistoricalPricesMap>;

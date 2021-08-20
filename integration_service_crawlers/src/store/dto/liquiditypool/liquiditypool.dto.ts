@@ -12,4 +12,6 @@ export class LiquidityPool {
   il?: ImpermanentLoss;
   poolToken: Token;
   tokens: Token[];
+  createdAt?: string;
+  updatedAt?: string;
 }

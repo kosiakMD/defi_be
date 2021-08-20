@@ -1,5 +1,7 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
+import { ChainIdEnum, PlatformEnum, ProtocolName } from 'src/common/enum';
+
 import { APYDto } from '../dto/apy.dto';
 import { ImpermanentLossDto } from '../dto/impermanentloss.dto';
 import { TokenDto } from '../dto/token.dto';
@@ -13,10 +15,10 @@ export class LiquidityPoolsEntity {
   address: string;
 
   @Column({ name: 'chain', nullable: true })
-  chain: number;
+  chain: ChainIdEnum;
 
   @Column({ name: 'project', nullable: true })
-  project: string;
+  project: PlatformEnum | ProtocolName;
 
   @Column({ name: 'reserve_usd', nullable: true })
   reserveUsd: number;

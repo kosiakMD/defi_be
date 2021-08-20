@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { ChainDto } from 'src/dto/chain.dto';
 import { CurrencyDto } from 'src/dto/currency.dto';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PriceResponseDto<T> {
   @ApiProperty({ type: ChainDto })

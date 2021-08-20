@@ -1,7 +1,8 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as redisStore from 'cache-manager-redis-store';
 
 import { LookupModule } from '../lookup/lookup.module';
 import { Asset, AssetPrice } from './models';

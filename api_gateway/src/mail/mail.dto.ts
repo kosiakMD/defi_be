@@ -1,6 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
-import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { EmailResponse, HireRequest } from './mail.interface';
 

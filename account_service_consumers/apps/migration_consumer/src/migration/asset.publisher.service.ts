@@ -1,7 +1,8 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ClientProxy } from '@nestjs/microservices';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { NEW_ASSET_ADDED_EVENT_PATTERN } from '../config/queues/event.patterns';
 import { MigrationAddNewAsset } from './types/events';

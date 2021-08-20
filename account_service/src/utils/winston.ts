@@ -1,6 +1,7 @@
-import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 import * as winston from 'winston';
+
+import { LoggerService } from '@nestjs/common';
 
 export const winstonParams = (
   logErrorFile: string,

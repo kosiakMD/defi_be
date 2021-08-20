@@ -1,6 +1,7 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { LiquidityPositionSnapshot } from '../../thegraph/uniswap/liquidity.position.snapshot';
 import { Transaction } from '../../thegraph/uniswap/transaction';

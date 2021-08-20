@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 import { EtherScanResponseDto } from './ether.scan.response.dto';
 import { EtherScanTransactionDto } from './ether.scan.transaction.dto';

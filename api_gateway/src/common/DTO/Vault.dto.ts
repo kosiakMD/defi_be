@@ -1,9 +1,11 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, LPToken, PoolToken, RewardToken, Vault } from '../interfaces';
+import { ChainIdEnum, PlatformEnum } from 'src/common/enum';
+
+import { Address, LPToken, PoolTokenBase, RewardToken, Vault } from '../interfaces';
 import { VaultAPYDTO } from './APY.dto';
-import PoolTokenDto from './PoolToken.dto';
+import LiquidityPoolTokenDto from './LiquidityPoolToken.dto';
 import { TokenCommonDTO } from './TokenCommon.dto';
 
 class RewardTokenDTO extends TokenCommonDTO implements RewardToken {
@@ -47,11 +49,11 @@ export default class VaultDto implements Vault {
   @ApiProperty({ type: String, example: 'hbtc' })
   vaultName: string;
 
-  @ApiProperty({ type: String, example: 'sushiswap' })
-  project: string;
+  @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.sushiswap })
+  project: PlatformEnum;
 
-  @ApiProperty({ type: Number, example: 1 })
-  chain: number;
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
 
   @ApiProperty({ type: VaultAPYDTO })
   apy: VaultAPYDTO;
@@ -62,8 +64,8 @@ export default class VaultDto implements Vault {
   @ApiProperty({ type: LPTokenDTO })
   lpToken: LPToken;
 
-  @ApiProperty({ type: PoolTokenDto, isArray: true })
-  liquidityPoolTokens: PoolToken[] = [];
+  @ApiProperty({ type: LiquidityPoolTokenDto, isArray: true })
+  liquidityPoolTokens: PoolTokenBase[] = [];
 
   @ApiProperty({ type: RewardTokenDTO })
   rewardToken: RewardToken;

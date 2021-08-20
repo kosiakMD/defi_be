@@ -1,5 +1,6 @@
-import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { IsEthereumAddress } from 'class-validator';
+
+import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 
 import { Address } from '../interfaces';
 

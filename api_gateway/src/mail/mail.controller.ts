@@ -1,8 +1,10 @@
-import { Body, Controller, Inject, Post } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../common/Logger/Logger.service';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+
 import {
   HireEmailRequestDto,
   EmailResponseDto,

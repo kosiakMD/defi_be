@@ -1,4 +1,19 @@
-import { BigNumber as BN } from 'bignumber.js';
+import BigNumber, { BigNumber as BN } from 'bignumber.js';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const Eth = require('web3-eth');
+const eth = new Eth();
+
+export type Chain = number;
+
+export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ETH_TRANSFER_TOPIC =
+  '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+export const ZERO_DATA = '0x';
+
+export function fromHexToAddress(topic: string): string {
+  return topic ? eth.abi.decodeParameter('address', topic).toLowerCase() : null;
+}
 
 export const DEFAULT_MULTIPLIER = 1e-18;
 export const ETH_DECIMALS = 18;
@@ -21,6 +36,13 @@ export const ETH_LAST_BLOCKS = 3;
 
 export const CHAIN_ID_ETH = 1;
 export const CHAIN_ID_BSC = 2;
+
+export const decimalsDividerV2 = (decimals: Decimals): BigNumber => {
+  if (Number(decimals) === 0) {
+    return new BN(1);
+  }
+  return new BN(10).pow(decimals);
+};
 
 export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
   const result = new Set(array);

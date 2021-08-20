@@ -1,18 +1,21 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { map } from 'rxjs/operators';
+import { ProfitAndLossResponseDTO } from 'src/analytic/dto';
+
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { map } from 'rxjs/operators';
 
-import { AssetsDto } from '../assets/assets.dto';
-import { Logger } from '../common/Logger/Logger.service';
-import { Address, Chains } from '../common/interfaces';
+import { ChainIdEnum } from '../common/enum';
+import { Logger } from 'src/common/Logger/Logger.service';
+import { Address, Chains, DetailedResponse } from 'src/common/interfaces';
+
+import { AssetResponseDto, AssetsDto } from '../assets/assets.dto';
 import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
 import { ApprovalDTO } from './account.dto';
 import { BalancesResponse } from './account.interfaces';
-import { ProfitAndLossResponseDto } from 'src/analytic/dto';
 
 @Injectable()
 export class AccountService {
@@ -22,6 +25,7 @@ export class AccountService {
   private readonly getTransfersUrl: string;
   private readonly getBalanceUrl: string;
   private readonly getApprovalsUrl: string;
+  private readonly getAllAssetsUrl: string;
   private readonly getAssetsUrl: string;
   private readonly getAnalyticUrl: string;
 
@@ -51,6 +55,7 @@ export class AccountService {
     this.getApprovalsUrl = `${url}/${approvalsPath}`;
 
     const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
+    this.getAllAssetsUrl = `${url}/${assetsPath}/all`;
     this.getAssetsUrl = `${url}/${assetsPath}`;
 
     const analyticPath = this.configService.get<string>('ACCOUNT_ANALYTIC');
@@ -87,11 +92,14 @@ export class AccountService {
     }
   }
 
-  async getTransactionsNew(addresses: Address[]): Promise<TransactionsNewDetailedResponseDto> {
+  async getTransactionsNew(
+    addresses: Address[],
+    chains?: Chains,
+  ): Promise<TransactionsNewDetailedResponseDto> {
     try {
       this.logger.time(this.getTransactionsNewUrl);
       const data = await this.httpService
-        .get(this.getTransactionsNewUrl, { params: { addresses } })
+        .get(this.getTransactionsNewUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getTransactionsNewUrl);
@@ -149,12 +157,12 @@ export class AccountService {
 
   async getAssets(): Promise<AssetsDto[]> {
     try {
-      this.logger.time(this.getAssetsUrl);
+      this.logger.time(this.getAllAssetsUrl);
       const data = await this.httpService
-        .get(this.getAssetsUrl)
+        .get(this.getAllAssetsUrl)
         .pipe(map((r) => r.data))
         .toPromise();
-      this.logger.timeEnd(this.getAssetsUrl);
+      this.logger.timeEnd(this.getAllAssetsUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
@@ -163,11 +171,34 @@ export class AccountService {
     }
   }
 
-  async getProfitAndLoss(asset: Address, addresses: Address): Promise<ProfitAndLossResponseDto> {
+  async getAssetsByAddressesAndChains(
+    addresses: Address[],
+    chains: Chains,
+  ): Promise<DetailedResponse<AssetResponseDto[]>> {
+    try {
+      this.logger.time(this.getAssetsUrl);
+      const data = await this.httpService
+        .get(this.getAssetsUrl, { params: { addresses, chains } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.getAssetsUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      this.logger.error(e, 'AccountService.getAssetsByAddressesAndChains');
+      throw e;
+    }
+  }
+
+  async getProfitAndLoss(
+    asset: Address,
+    chain: ChainIdEnum,
+    addresses: Address,
+  ): Promise<ProfitAndLossResponseDTO> {
     try {
       this.logger.time(this.getAnalyticUrl);
       const data = await this.httpService
-        .get(this.getAnalyticUrl, { params: { asset, addresses } })
+        .get(this.getAnalyticUrl, { params: { asset, chain, addresses } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getAnalyticUrl);

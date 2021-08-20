@@ -1,5 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { ChainDto, CurrencyDto } from 'src/lookup/dto';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class PriceBaseResponseDto {
   @ApiProperty({

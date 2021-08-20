@@ -1,13 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsEthereumAddress, IsInt, IsString } from 'class-validator';
 
-import { Address, ContractApproval, ERC20Token } from '../common/interfaces';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainIdEnum } from 'src/common/enum';
+import { Address, ContractApproval, ERC20Token } from 'src/common/interfaces';
+
 import { ERC20TokenDto } from './ERC20Token.dto';
 
 export default class ContractApprovalDto implements ContractApproval {
-  @ApiProperty({ type: Number, example: 1 })
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   @IsEthereumAddress()
-  chainId: number;
+  chainId: ChainIdEnum;
 
   @ApiProperty({ type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' })
   @IsEthereumAddress()

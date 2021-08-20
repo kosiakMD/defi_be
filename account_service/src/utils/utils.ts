@@ -1,8 +1,9 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
-import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from '../common/constatnt';
-import { Address } from '../common/interfaces';
+import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from 'src/common/constatnt';
+import { Address } from 'src/common/interfaces';
+
 import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';
 
 export const EXCLUDE_TRANSFER_TOKEN_ADDRESSES = [WBNB_ADDRESS, imBTC, SNX];
@@ -144,6 +145,10 @@ export function mergeTransfersResponse(
   });
 
   return finalTransfersResponse;
+}
+
+export function excludeSecondArray(keep: string[], exclude: string[]): string[] {
+  return keep.filter((a) => !exclude.find((b) => a === b));
 }
 
 // TODO todo move to dummy data folder!

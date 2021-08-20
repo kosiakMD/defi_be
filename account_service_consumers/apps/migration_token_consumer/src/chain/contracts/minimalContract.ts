@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
+
+import { Injectable } from '@nestjs/common';
 
 import { AssetsEntity } from '../../store/entities/assets.entity';
 import { CHAIN_ID_ETH } from '../../util/util';

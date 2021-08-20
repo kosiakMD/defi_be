@@ -2,10 +2,10 @@
 // import { Controller, Get, Param } from '@nestjs/common';
 // import { ApiResponse, ApiTags } from '@nestjs/swagger';
 //
-// import BaseDataDto from '../common/DTO/BaseData.dto';
-// import EthereumAddressDto from '../common/DTO/EthereumAddress.dto';
-// import PlatformDataDto from '../common/DTO/PlatofrmData.dto';
-// import { PlatformData } from '../common/interfaces';
+// import BaseDataDto from  'src/common/DTO/BaseData.dto';
+// import EthereumAddressDto from  'src/common/DTO/EthereumAddress.dto';
+// import PlatformDataDto from  'src/common/DTO/PlatofrmData.dto';
+// import { PlatformData } from  'src/common/interfaces';
 //
 // @ApiTags('Platform')
 // @Controller('platform')

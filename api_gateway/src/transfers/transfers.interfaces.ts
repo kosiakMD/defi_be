@@ -5,6 +5,7 @@ export interface ERC20Token {
   symbol?: string;
   decimals?: number;
   totalSupply?: number;
+  isIncludedToGraph?: boolean;
 }
 
 export interface ERC20Transfer {

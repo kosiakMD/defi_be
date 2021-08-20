@@ -1,10 +1,12 @@
-import { HttpService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { map } from 'rxjs/operators';
 
-import { Logger } from '../../common/Logger/Logger.service';
-import { ResultStatus } from '../../common/enum';
+import { HttpService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from 'src/common/enum';
+
 import { Transaction } from '../../transactions/transactions.interfaces';
 import {
   ERC20TokenTransfer,
@@ -27,8 +29,8 @@ export class ScanService {
   protected readonly scanServiceUrl: string;
   protected readonly scanServiceKey: string;
   protected readonly mainCoinAddress: string;
-  protected readonly chainId: number;
-  protected readonly chainPrefix: 'bsc' | 'eth';
+  protected readonly chainId: ChainIdEnum;
+  protected readonly chainPrefix: ChainPrefixEnum;
   private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   constructor(

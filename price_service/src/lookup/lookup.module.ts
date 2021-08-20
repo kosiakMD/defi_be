@@ -1,11 +1,12 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as redisStore from 'cache-manager-redis-store';
 
 import { ChainController } from './chain.controller';
 import { CurrencyController } from './currency.controller';
-import { Chain, Currency } from './models';
+import { ChainDto, CurrencyDto } from './models';
 import { ChainService } from './services/chain.service';
 import { CurrencyService } from './services/currency.service';
 
@@ -23,7 +24,7 @@ import { CurrencyService } from './services/currency.service';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([Chain, Currency]),
+    TypeOrmModule.forFeature([ChainDto, CurrencyDto]),
   ],
   controllers: [ChainController, CurrencyController],
   providers: [ChainService, CurrencyService],

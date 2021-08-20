@@ -1,12 +1,13 @@
-import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
   WinstonModule,
 } from 'nest-winston';
 import * as winston from 'winston';
+
+import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import configModuleConfiguration from './config/config.module';
 import { MigrationController } from './migration/migration.controller';

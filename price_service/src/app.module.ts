@@ -1,8 +1,9 @@
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
+
 import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { Logger } from './common/Logger/Logger.service';
 import { LoggerModule } from './common/Logger/LoggerModule';

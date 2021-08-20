@@ -1,9 +1,10 @@
-import { HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../common/Logger/Logger.service';
-import { Token } from '../common/interfaces';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+import { Token } from 'src/common/interfaces';
 
 @Injectable()
 export class TokensService {

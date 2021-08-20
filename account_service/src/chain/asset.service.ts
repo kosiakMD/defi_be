@@ -1,6 +1,7 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
 import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';

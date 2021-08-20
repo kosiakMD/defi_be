@@ -1,6 +1,7 @@
+import Web3 from 'web3';
+
 import { HttpService, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Web3 from 'web3';
 
 import { Log } from '../migrations/interfaces/migration.event.interfaces';
 import { BlockTransactionObject } from '../migrations/interfaces/web3.interfaces';

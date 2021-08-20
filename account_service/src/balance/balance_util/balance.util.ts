@@ -1,18 +1,46 @@
+import { plainToClass } from 'class-transformer';
+
+import { ChainIdEnum } from '../../common/enum';
+
+import { NoDbTokenPricesDto } from '../../price/price.dto';
+import { CurrentPricesPayloadNew } from '../../price/price.interfaces';
 import { decimalsAmount, totalPrice } from '../../utils/utils';
 import { CurrentPricesPayload } from '../dto/price.response.dto';
 import { AccountTokenBalance, BalanceToken } from '../interfaces/balance.interfaces';
 
-export function getUtilTokenPrice(tokens: BalanceToken[], prices: CurrentPricesPayload) {
+export function getUtilTokenPrice(
+  tokens: BalanceToken[],
+  prices: CurrentPricesPayload,
+): NoDbTokenPricesDto[] {
   return tokens.map((token) =>
     Object.prototype.hasOwnProperty.call(prices, token.address)
       ? prices[`${token.address}`] === null
-        ? { address: token.address, price: 0 }
-        : { address: token.address, price: prices[`${token.address}`] }
-      : { address: token.address, price: 0 },
+        ? plainToClass(NoDbTokenPricesDto, { address: token.address, price: null })
+        : plainToClass(NoDbTokenPricesDto, {
+            address: token.address,
+            price: prices[`${token.address}`],
+          })
+      : plainToClass(NoDbTokenPricesDto, { address: token.address, price: null }),
   );
 }
 
-export function changeTokenArray(fromArray: BalanceToken[], toArray: string[]) {
+export function getNoDbTokensPricesWithLp(
+  tokens: BalanceToken[],
+  prices: CurrentPricesPayloadNew,
+): NoDbTokenPricesDto[] {
+  return tokens.map((token) =>
+    Object.prototype.hasOwnProperty.call(prices, token.address)
+      ? prices[token.address].price === null
+        ? plainToClass(NoDbTokenPricesDto, { address: token.address, price: null })
+        : plainToClass(NoDbTokenPricesDto, {
+            address: token.address,
+            price: prices[token.address].price,
+          })
+      : plainToClass(NoDbTokenPricesDto, { address: token.address, price: null }),
+  );
+}
+
+export function changeTokenArray(fromArray: BalanceToken[], toArray: string[]): void {
   fromArray.forEach((token) => toArray.push(token.address));
 }
 
@@ -26,7 +54,7 @@ export const mapTokenBalances = ({
   account: string;
   amount: string;
   token: BalanceToken;
-  chainId: number;
+  chainId: ChainIdEnum;
   price?: number;
 }): AccountTokenBalance => {
   return {

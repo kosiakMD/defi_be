@@ -1,8 +1,9 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';
@@ -11,7 +12,7 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
-    bodyParser: false,
+    bodyParser: true,
     logger: true,
   });
 

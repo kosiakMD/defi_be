@@ -19,7 +19,7 @@ export class TokenDto {
   @ApiProperty({ type: Number, example: 1230.15, required: false })
   reserve?: number;
 
-  @ApiProperty({ type: Number, example: '1033405.007016168557863923', required: false })
+  @ApiProperty({ type: Number, example: '1033405.00701', required: false })
   totalSupply?: number;
 
   @ApiProperty({ type: Number, example: 1546852, required: false })

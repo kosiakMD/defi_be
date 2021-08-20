@@ -1,9 +1,11 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
-import { LiquidityPoolsStore } from '../store/liquiditypools.store';
 import { PoolsServiceBalancer } from './pools.service.balancer';
 import { PoolsServiceCurve } from './pools.service.curve';
 import { PoolsServicePancake } from './pools.service.pancake';
@@ -12,27 +14,21 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
 
 @Injectable()
 export class PoolsService {
+  private readonly cacheTTLInSeconds;
+
   constructor(
     private readonly poolsServiceUniswap: PoolsServiceUniswap,
     private readonly poolsServiceSushiswap: PoolsServiceSushiswap,
     private readonly poolsServicePancake: PoolsServicePancake,
     private readonly poolsServiceBalancer: PoolsServiceBalancer,
     private readonly poolsServiceCurve: PoolsServiceCurve,
-    protected readonly liquidityPoolsStore: LiquidityPoolsStore,
     private databaseService: DatabaseService,
+    private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
-  ) {}
-
-  // async savePancakeV2Pols(): Promise<void> {
-  //   try {
-  //     const pools: LiquidityPoolsEntity[] = await this.poolsServicePancake.fillPairsData();
-  //     this.logger.log(`found pancake v2 pools in total [${pools.length}]`, 'PoolsService');
-  //     await this.liquidityPoolsStore.insertEntitiesBulk(pools);
-  //   } catch (e) {
-  //     this.logger.error(e, 'PoolsService');
-  //     this.logger.log(`pools import failed`, 'PoolsService');
-  //   }
-  // }
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {
+    this.cacheTTLInSeconds = this.configService.get<number>('POOLS_CACHE_TTL_IN_SECONDS');
+  }
 
   async savePools(): Promise<any> {
     try {
@@ -49,6 +45,7 @@ export class PoolsService {
         `liquidity pools import completed in total [${pools.length}]`,
         'PoolsService',
       );
+
       return pools;
     } catch (e) {
       this.logger.error(e, 'PoolsService');
@@ -57,7 +54,7 @@ export class PoolsService {
     }
   }
 
-  buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {
+  private buildInsertPoolsQuery(liquidityPools: LiquidityPool[], seed?: string): string {
     const queryStart = `
         INSERT INTO liquidity_pools
         (id,
@@ -75,6 +72,7 @@ export class PoolsService {
 
     const valuesConcatenated = liquidityPools
       .map((lp) => {
+        lp.updatedAt = PoolsService.getUpdatedDate();
         return `(
 				default, 
 				'${lp.id}', 
@@ -83,8 +81,8 @@ export class PoolsService {
 				'${lp.reserveUSD}',
 				'${JSON.stringify(lp.apy)}',
 				'${JSON.stringify(lp.il)}',
-				'${JSON.stringify(lp.poolToken).replace("'", "''")}',
-				'${JSON.stringify(lp.tokens).replace("'", "''")}',
+				'${JSON.stringify(lp.poolToken).replace(/'/gm, "''")}',
+				'${JSON.stringify(lp.tokens).replace(/'/gm, "''")}',
 				current_timestamp,
 				current_timestamp
 				)`;
@@ -103,6 +101,19 @@ export class PoolsService {
 					pool_tokens = excluded.pool_tokens,
 					updated_at = current_timestamp
 		`;
+
+    this.cache.set(PoolsService.getCacheKey(seed), liquidityPools, { ttl: this.cacheTTLInSeconds });
     return queryStart.concat(valuesConcatenated).concat(queryEnd);
+  }
+
+  private static getCacheKey(seed?: string): string {
+    return `pools_${seed}`;
+  }
+
+  private static getUpdatedDate(): string {
+    return new Date() //
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
   }
 }

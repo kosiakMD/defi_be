@@ -1,11 +1,12 @@
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { Repository } from 'typeorm';
 
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { SECONDS_IN_HOUR } from '../../utils/time';
-import { Chain } from '../models';
+import { ChainDto } from '../models';
 
 @Injectable()
 export class ChainService {
@@ -14,19 +15,19 @@ export class ChainService {
   constructor(
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    @InjectRepository(Chain) private readonly repository: Repository<Chain>,
+    @InjectRepository(ChainDto) private readonly repository: Repository<ChainDto>,
   ) {
     this.cacheTTLInSeconds =
       config.get<number>('CHAIN_CACHE_TTL_IN_SECONDS') || 24 * SECONDS_IN_HOUR;
   }
 
-  getAll(): Promise<Chain[]> {
+  getAll(): Promise<ChainDto[]> {
     return this.repository.find();
   }
 
-  async getById(id: number): Promise<Chain> {
+  async getById(id: number): Promise<ChainDto> {
     const cacheKey = `chain_${id}`;
-    const cacheValue = await this.cache.get<Chain>(cacheKey);
+    const cacheValue = await this.cache.get<ChainDto>(cacheKey);
     if (cacheValue) {
       return cacheValue;
     }

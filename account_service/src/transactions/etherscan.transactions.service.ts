@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { TransactionType } from 'src/common/enum';
 
 import { EtherscanApi } from './api/etherscan.api';

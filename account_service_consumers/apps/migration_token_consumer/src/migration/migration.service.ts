@@ -1,7 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import fetch from 'node-fetch';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { AssetService } from '../chain/asset.service';
 import { Logger } from '../logger/logger.service';
@@ -61,14 +62,13 @@ export class MigrationService {
     chainId: number,
   ): Promise<Partial<AssetsEntity>> {
     const tokenInfoTimeMark = `Trying to get token information for tokenAddress: ${contractAddress}`;
+    const errorMessage = `There is no information about token: ${contractAddress} --- "getTokenInfo"`;
     this.logger.time(tokenInfoTimeMark);
 
     // try to get token info from covalent
     try {
-      const token = await this.getCovalentToken(userAddress, contractAddress, chainId);
-      if (token.decimals && token.address && token.name && token.decimals) {
-        return token;
-      }
+      // i deleted check of token info here because inside of getCovalentToken method there is the same check
+      return await this.getCovalentToken(userAddress, contractAddress, chainId);
     } catch (e) {
       //
     }
@@ -77,7 +77,10 @@ export class MigrationService {
     const web3TimeMark = `Request to web3.js for tokenAddress: ${contractAddress}`;
     try {
       this.logger.time(web3TimeMark);
-      return await this.assetService.getTokenInfo(contractAddress, chainId);
+      const token = await this.assetService.getTokenInfo(contractAddress, chainId);
+      if (token?.symbol && token?.decimals && token?.name) {
+        return token;
+      }
     } catch (e) {
       //
     } finally {
@@ -87,17 +90,16 @@ export class MigrationService {
     // try to get token info from ethplorer. only for ethereum tokens
     if (chainId === CHAIN_ID_ETH) {
       const ethplorerTimeMark = `Request to ${this.ethplorerUrl} for tokenAddress: ${contractAddress}`;
-      try {
-        this.logger.time(ethplorerTimeMark);
-        return await this.getEthplorerToken(contractAddress);
-      } catch (e) {
-        //
-      } finally {
-        this.logger.timeEnd(ethplorerTimeMark);
-      }
-    }
 
-    this.logger.timeEnd(tokenInfoTimeMark);
+      this.logger.time(ethplorerTimeMark);
+      const token = await this.getEthplorerToken(contractAddress);
+      this.logger.timeEnd(tokenInfoTimeMark);
+      if (token?.symbol && token?.decimals && token?.name) {
+        return token;
+      }
+      throw new Error(errorMessage);
+    }
+    throw new Error(errorMessage);
   }
 
   async getCovalentToken(

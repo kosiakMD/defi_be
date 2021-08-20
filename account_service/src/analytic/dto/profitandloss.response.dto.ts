@@ -1,12 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class ProfitAndLossResponseDto {
-  @ApiProperty({ type: Number, example: 87.3 })
-  profitAndLoss: number;
+import { ResultStatus } from '../../common/enum';
 
-  @ApiProperty({ type: Number, example: 14.5 })
-  profitAndLoss24h: number;
+import { ProfitAndLoss } from './profitAndLoss';
 
-  @ApiProperty({ type: Number, example: 0.92 })
-  averageCost: number;
+export class ProfitAndLossResponseDTO {
+  @ApiProperty({ enum: ResultStatus, enumName: 'ResultStatus', example: ResultStatus.ok })
+  status: ResultStatus;
+  @ApiProperty()
+  errors: (Error | string)[];
+  @ApiProperty()
+  data: ProfitAndLoss;
+
+  constructor(data?: Partial<ProfitAndLossResponseDTO>) {
+    Object.assign(this, data);
+  }
 }

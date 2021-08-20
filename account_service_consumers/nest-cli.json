@@ -35,6 +35,15 @@
         "tsConfigPath": "apps/migration_token_consumer/tsconfig.app.json"
       }
     },
+    "transaction-fix-consumer": {
+      "type": "application",
+      "root": "apps/transaction_fix_consumer",
+      "entryFile": "main",
+      "sourceRoot": "apps/transaction_fix_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/transaction_fix_consumer/tsconfig.app.json"
+      }
+    },
     "shared": {
       "type": "library",
       "root": "libs/shared",

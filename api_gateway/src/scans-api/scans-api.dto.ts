@@ -1,10 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { DetailedResponseDto } from '../common/DTO';
-import { ResultStatus } from '../common/enum';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { DetailedResponseDto } from 'src/common/DTO';
+import { ResultStatus } from 'src/common/enum';
+
 import { splitToArray } from '../utils/transform';
 
 export class TransactionScanDto {
@@ -50,6 +52,12 @@ export class TransactionScanDto {
   gasUsed: string;
   @ApiProperty({ example: '2390490', type: String })
   confirmations: string;
+  @ApiProperty({ type: Number, example: 0.1690104753942263 })
+  feeUSD: number;
+  @ApiProperty({ type: Number, example: 335.33824482981413 })
+  coinPriceUSD: number;
+  @ApiProperty({ type: Number, example: 335.33824482981413 })
+  valueUSD: number;
   @ApiProperty({ example: null, type: Number })
   chainId: number;
   @ApiProperty({ example: null, type: Boolean, required: false })

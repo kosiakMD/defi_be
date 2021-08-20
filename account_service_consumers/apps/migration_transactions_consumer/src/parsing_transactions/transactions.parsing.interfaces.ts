@@ -63,3 +63,9 @@ export interface MigrationTransaction {
   gasUsedUsd?: number;
   chainId: number;
 }
+
+export interface MigrationAddNewAsset {
+  chainId: number;
+  userAddress: string;
+  contractAddress: string;
+}

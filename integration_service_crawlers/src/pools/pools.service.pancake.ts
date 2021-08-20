@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
 import Web3 from 'web3';
+
+import { Injectable } from '@nestjs/common';
 
 import { MultiCallBsc } from '../chain/multicall/multicallbsc';
 import { Erc20TokenContract } from '../chain/token/erc20token.contract';
@@ -34,9 +35,9 @@ export class PoolsServicePancake {
     const poolsV2: LiquidityPoolsEntity[] = await this.liquidityPoolsStore.getProjectPools(
       PROJECT_PANCAKE_V2,
     );
-    const allPairs = await this.fillPairsData([...poolsV1, ...poolsV2])
+    const allPairs = await this.fillPairsData([...poolsV1, ...poolsV2]);
     return allPairs.reduce((a, c) => {
-      let liquidityPool: LiquidityPool = {
+      const liquidityPool: LiquidityPool = {
         id: c.address,
         chain: Number(c.chain),
         project: c.project,
@@ -45,10 +46,10 @@ export class PoolsServicePancake {
         apy: c.apy,
         il: c.il,
         poolToken: c.token,
-        tokens: c.poolTokens
-      }
-      return [...a, liquidityPool]
-    }, [])
+        tokens: c.poolTokens,
+      };
+      return [...a, liquidityPool];
+    }, []);
   }
 
   async fillPairsData(pools: LiquidityPoolsEntity[]): Promise<LiquidityPoolsEntity[]> {
@@ -74,7 +75,7 @@ export class PoolsServicePancake {
       p.token.totalSupply = BNToDecimals(totalSupply).toString();
     });
 
-    const bnbUsdPrice = deriveBNBPrice(pools)
+    const bnbUsdPrice = deriveBNBPrice(pools);
     pools.map((p) => {
       p.reserveUsd = 0;
       p.poolTokens.map((pt) => {
@@ -83,27 +84,6 @@ export class PoolsServicePancake {
     });
     return pools;
   }
-
-  // async importPancakePools(): Promise<void> {
-  //   const masterChiefContract = new MasterChiefContract(this.web3ProviderBSC);
-  //   const poolLength = await masterChiefContract.poolLength();
-  //
-  //   const liquidityPools: LiquidityPool[] = [];
-  //   for (let i = 0; i < poolLength; i++) {
-  //     const poolInfo = await masterChiefContract.poolInfo(i);
-  //     if (poolInfo.allocPoint.gt(new BigNumber(0))) {
-  //       try {
-  //         const liquidityPool: LiquidityPool = await this.getLiquidityPoolChainData(
-  //           poolInfo.lpToken,
-  //         );
-  //         liquidityPools.push(liquidityPool);
-  //       } catch (ignored) {
-  //
-  //       }
-  //     }
-  //   }
-  //   await this.liquidityPoolsStore.insertBulk(liquidityPools);
-  // }
 
   async getLiquidityPoolChainData(address: string) {
     const tokenContract = new Erc20TokenContract(this.web3ProviderBSC, address);

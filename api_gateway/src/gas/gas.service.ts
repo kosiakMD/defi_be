@@ -1,11 +1,12 @@
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
-import { Logger } from '../common/Logger/Logger.service';
-import { GasHistory, GasPrice } from '../common/interfaces';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+import { GasHistory, GasPrice } from 'src/common/interfaces';
 
 interface GasServiceResponse {
   code: number;

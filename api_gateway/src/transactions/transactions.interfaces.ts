@@ -1,3 +1,5 @@
+import { ChainIdEnum } from 'src/common/enum';
+
 interface amount {
   eth: number;
   usd: number;
@@ -10,7 +12,7 @@ interface gas {
 }
 
 export interface Transaction {
-  chainId: number;
+  chainId: ChainIdEnum;
   hash: string;
   blockNumber: string;
   from: string;

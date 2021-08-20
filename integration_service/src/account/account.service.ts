@@ -1,3 +1,5 @@
+import { BalancesResponse } from 'src/etherscan/interfaces';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -20,27 +22,4 @@ export class AccountService {
       .toPromise();
     return data.data;
   }
-}
-
-export interface BalancesResponse {
-  [address: string]: {
-    totalUsd: number;
-    tokens: BalanceToken[];
-  };
-}
-
-export interface BalanceToken {
-  amount: number;
-  decimalsAmount: number;
-  tokenPriceUSD: number;
-  totalPriceUSD: number;
-  token: Token;
-}
-
-export interface Token {
-  chainId: number;
-  name: string;
-  address: string;
-  decimals: number;
-  symbol: number;
 }

@@ -1,8 +1,9 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AppModule } from './app.module';
 import { addTimeLogFeature } from './common/Logger/Logger.service';

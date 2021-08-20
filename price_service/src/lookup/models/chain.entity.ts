@@ -1,10 +1,12 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
+import { ChainIdEnum, ChainNameEnum } from '../../common/enum';
+
 @Entity({ name: 'chain' })
-export class Chain {
+export class ChainDto {
   @PrimaryGeneratedColumn()
-  public id: number;
+  public id: ChainIdEnum;
 
   @Column()
-  public name: string;
+  public name: ChainNameEnum;
 }

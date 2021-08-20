@@ -1,13 +1,13 @@
-import { BadRequestException } from '@nestjs/common';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { CHAIN_ID_ETH } from '../../common/constatnt';
-import { ChainsIds } from '../../common/types';
+import { BadRequestException } from '@nestjs/common';
+
+import { ChainIdEnum } from '../../common/enum';
 
 interface TransactionQuery {
   addresses: string[];
-  chains: ChainsIds;
+  chains: ChainIdEnum[];
 }
 
 export class TransactionQueryDto implements TransactionQuery {
@@ -20,7 +20,7 @@ export class TransactionQueryDto implements TransactionQuery {
   })
   @IsArray()
   @IsInt({ each: true })
-  chains: ChainsIds = [CHAIN_ID_ETH];
+  chains: ChainIdEnum[] = [ChainIdEnum.eth];
 
   @IsNotEmpty()
   @IsString({ each: true })

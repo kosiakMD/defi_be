@@ -1,6 +1,10 @@
+import { BaseData } from 'src/interfaces/transactions.interfaces';
+import { Repository } from 'typeorm';
+
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+
+import { PlatformEnum } from 'src/common/enum';
 
 import { Mapper } from '../mappers/mapper';
 import { SushiswapSubgraph } from '../thegraph/balancer.subgraph';
@@ -25,7 +29,7 @@ export class SushiswapService {
     private readonly mapper: Mapper,
   ) {}
 
-  async getSushiswapDataByAddresses(addresses: string) {
+  async getSushiswapDataByAddresses(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
     const result = await getDataByAddresses(
       this.swapsRepository,
@@ -39,7 +43,7 @@ export class SushiswapService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      'sushiswap',
+      PlatformEnum.sushiswap,
     );
   }
 }

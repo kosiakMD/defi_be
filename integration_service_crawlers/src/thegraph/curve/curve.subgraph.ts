@@ -1,6 +1,7 @@
+import { map } from 'rxjs/operators';
+
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { map } from 'rxjs/operators';
 
 import { LiquidityPosition } from './liquidity.position.interface';
 import { Pool } from './pool.interface';

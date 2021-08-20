@@ -1,7 +1,8 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { getManager, Repository } from 'typeorm';
+
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { NodeService } from '../node/node.service';
 import { AssetPublisherService } from './asset.publisher.service';

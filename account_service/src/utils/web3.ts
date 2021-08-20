@@ -1,6 +1,6 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '../common/constatnt';
-import { Address } from '../common/interfaces';
-import { ChainId } from '../common/types';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, ETH_BNB_ADDRESS } from 'src/common/constatnt';
+import { Address } from 'src/common/interfaces';
+import { ChainId } from 'src/common/types';
 
 export const isEthChain = (chain: ChainId): boolean => chain === CHAIN_ID_ETH;
 

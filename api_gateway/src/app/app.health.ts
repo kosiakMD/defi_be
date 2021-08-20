@@ -1,16 +1,15 @@
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { toCamelCase } from 'src/utils/string';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { HealthCheckResult, HealthIndicator } from '@nestjs/terminus';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+import { HealthServiceStatusEnum, HealthStatusEnum } from 'src/common/enum';
 
 import { AccountService } from '../account/account.service';
-import { Logger } from '../common/Logger/Logger.service';
 import { IntegrationService } from '../integration/integration.service';
 import { PricesService } from '../prices/prices.service';
-
-enum StatusEnum {
-  up = 'up',
-  down = 'down',
-}
 
 // example
 // interface HealthCheckResult {
@@ -29,20 +28,20 @@ export class ServiceHealthIndicator extends HealthIndicator {
       return await service.isHealthy();
     } catch (e) {
       return {
-        status: 'shutting_down',
+        status: HealthStatusEnum.shuttingDown,
         info: {
-          [service.constructor.name]: {
-            status: StatusEnum.down,
+          [toCamelCase(service.constructor.name)]: {
+            status: HealthServiceStatusEnum.down,
           },
         },
         error: {
-          [service.constructor.name]: {
-            status: StatusEnum.down,
+          [toCamelCase(service.constructor.name)]: {
+            status: HealthServiceStatusEnum.down,
           },
         },
         details: {
-          [service.constructor.name]: {
-            status: StatusEnum.down,
+          [toCamelCase(service.constructor.name)]: {
+            status: HealthServiceStatusEnum.down,
           },
         },
       };

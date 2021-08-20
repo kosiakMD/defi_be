@@ -1,9 +1,11 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../common/Logger/Logger.service';
-import { ResultStatus } from '../common/enum';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+import { Logger } from 'src/common/Logger/Logger.service';
+import { ResultStatus } from 'src/common/enum';
+
 import { BscScanService } from './modules/bscscan/bsc-scan.service';
 import { EtherScanService } from './modules/etherscan/ether-scan.service';
 import { ScanService } from './modules/scan.service';

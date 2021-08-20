@@ -1,7 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
-import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TokenPriceRequest {
   @IsNotEmpty()

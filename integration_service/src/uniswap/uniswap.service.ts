@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Base } from '../interfaces/transactions.interfaces';
+import { PlatformEnum, UniswapProtocolEnum } from 'src/common/enum';
+
+import { BaseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 import { getDataByAddresses } from '../utils/util';
@@ -26,7 +28,7 @@ export class UniswapService {
     private readonly mapper: Mapper,
   ) {}
 
-  async getDataByAddress(addresses: string): Promise<Base[]> {
+  async getDataByAddress(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
 
     const result = await getDataByAddresses(
@@ -42,7 +44,8 @@ export class UniswapService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      'uniswap',
+      PlatformEnum.uniswap,
+      UniswapProtocolEnum.protocolV2,
     );
   }
 }

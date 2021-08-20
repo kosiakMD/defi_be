@@ -23,9 +23,7 @@ jobs:
         uses: borales/actions-yarn@v2.0.0
 
       - name: 'Install Nest CLI'
-        run: |
-          npm install -g @nestjs/cli
-          npm install -g
+        run: yarn global add @nestjs/cli
 
       - name: 'Install dependencies'
         run: yarn install_all

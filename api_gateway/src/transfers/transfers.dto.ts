@@ -1,12 +1,14 @@
 // eslint-disable-next-line max-classes-per-file
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-import { DetailedResponseDto } from '../common/DTO';
-import { ResultStatus } from '../common/enum';
-import { Address, Chains } from '../common/interfaces';
+import { BadRequestException } from '@nestjs/common';
+import { ApiProperty } from '@nestjs/swagger';
+
+import { DetailedResponseDto } from 'src/common/DTO';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+import { Address, Chains } from 'src/common/interfaces';
+
 import { splitToArray } from '../utils/transform';
 import { ERC20Token, ERC20Transfer, Transfer } from './transfers.interfaces';
 
@@ -20,14 +22,16 @@ export class AmountDto {
 export class ERC20TokenDto implements ERC20Token {
   @ApiProperty({ type: String, example: '0xbddab785b306bcd9fb056da189615cc8ece1d823' })
   address: string;
-  @ApiProperty({ type: String, example: null })
-  name: string;
   @ApiProperty({ type: String, example: 'SushiToken' })
+  name: string;
+  @ApiProperty({ type: String, example: 'SUSHI' })
   symbol: string;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
   @ApiProperty({ type: Number, example: 92077.06746043958 })
   totalSupply: number;
+  @ApiProperty({ type: Boolean, example: true })
+  isIncludedToGraph?: boolean;
 }
 
 export class ERC20TransferDto {
@@ -37,11 +41,21 @@ export class ERC20TransferDto {
   toAddress: string;
   @ApiProperty({ type: String, example: '20000000000000000000' })
   amount: number;
-  @ApiProperty({ type: ERC20TokenDto })
+  @ApiProperty({
+    type: ERC20TokenDto,
+    example: {
+      address: '0xbddab785b306bcd9fb056da189615cc8ece1d823',
+      name: 'SushiSwap',
+      symbol: 'SUSHI',
+      decimals: 18,
+      totalSupply: 92077.06746043958,
+      isIncludedToGraph: true,
+    },
+  })
   token: ERC20Token;
-  @ApiProperty({ type: Number, example: null, required: false })
+  @ApiProperty({ type: Number, example: 1.000991947975955, required: false })
   tokenPriceUSD?: number;
-  @ApiProperty({ type: Number, example: 0, required: false })
+  @ApiProperty({ type: Number, example: 20019.8389595191, required: false })
   totalPriceUSD?: number;
 }
 
@@ -96,7 +110,7 @@ export class TransfersResponseDto {
     description: 'User address which comes as param',
     example: [
       {
-        chainId: 1,
+        chainId: ChainIdEnum.eth,
         hash: '0x6277ad9a3302420a63d01f8c26a3e4c810ba5c6a44138253abf03c5b7cccd29b',
         blockNumber: '11020705',
         blockTimeStamp: '1602239613',
@@ -121,6 +135,7 @@ export class TransfersResponseDto {
                 decimals: 1,
                 usd: 0,
               },
+              isIncludedToGraph: true,
             },
             tokenPriceUSD: 15.4971,
             totalPriceUSD: 2.8770831063e-12,
@@ -128,7 +143,7 @@ export class TransfersResponseDto {
         ],
       },
       {
-        chainId: 2,
+        chainId: ChainIdEnum.bsc,
         hash: '0x52415f1a094ed09799879b294762b9b8484e827e14754aea177ad322b59f680a',
         blockTimeStamp: '1621776463',
         gasUsed: null,
@@ -142,6 +157,7 @@ export class TransfersResponseDto {
               name: 'Ethereum Token',
               symbol: 'ETH',
               decimals: 18,
+              isIncludedToGraph: false,
             },
             tokenPriceUSD: null,
             totalPriceUSD: null,

@@ -4,10 +4,10 @@ export class TokenDto {
   @ApiProperty({ type: String, example: 68 })
   id: string;
 
-  @ApiProperty({ type: String, example: 'Tether USD', required: false })
+  @ApiProperty({ type: String, example: 'fae.df', required: false })
   name?: string;
 
-  @ApiProperty({ type: String, example: 'USDT', required: false })
+  @ApiProperty({ type: String, example: 'FDF', required: false })
   symbol?: string;
 
   @ApiProperty({ type: Number, example: 18, required: false })

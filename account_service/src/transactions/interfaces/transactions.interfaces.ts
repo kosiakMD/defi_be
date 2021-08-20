@@ -1,4 +1,5 @@
-import { ResultStatus } from '../../common/enum';
+import { ChainIdEnum, ResultStatus } from 'src/common/enum';
+
 import { TransactionDto } from '../dto/transaction.dto';
 
 interface amount {
@@ -13,7 +14,7 @@ interface gas {
 }
 
 export interface Transaction {
-  chainId: number;
+  chainId: ChainIdEnum;
   hash: string;
   blockNumber: string;
   from: string;
@@ -43,4 +44,18 @@ export interface SubTransaction {
   type: string;
   tokenAddress?: string;
   price?: number;
+}
+
+export interface TransactionCovalent {
+  chainId: ChainIdEnum;
+  blockNumber: number;
+  blockHash: string;
+  hash: string;
+  timeStamp: string;
+  value: string;
+  valueInCurrency: number;
+  currency: string;
+  gasPrice: number;
+  gasUsed: number;
+  isError: string;
 }

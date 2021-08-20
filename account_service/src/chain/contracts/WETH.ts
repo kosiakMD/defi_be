@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
-import { ERC20Token } from 'src/common/interfaces';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
-import { CHAIN_ID_ETH } from '../../common/constatnt';
+import { Injectable } from '@nestjs/common';
+
+import { CHAIN_ID_ETH } from 'src/common/constatnt';
+import { ERC20Token } from 'src/common/interfaces';
+
 import {
   ERC20Transfer,
   ScanTransfer,
   TransfersResponse,
 } from '../../transfers/interfaces/transfers.interfaces';
+import { DepositEvent, WithdrawalEvent } from '../interfaces';
 import { Web3Provider } from '../web3.provider';
 
 // events: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
@@ -186,7 +189,7 @@ export class WETH {
   }
 
   // not tested and must be handled with source and destination, 2 calls
-  async transferEvents(addresses: string[]) {
+  async transferEvents(addresses: string[]): Promise<any> {
     // filter addresses to avoid future errors
     addresses = addresses.filter((a) => Web3.utils.isAddress(a));
     return this.contract.getPastEvents('Transfer', {
@@ -318,36 +321,4 @@ export class WETH {
     });
     return transferResponse;
   }
-}
-
-export interface Event {
-  address: string;
-  blockHash: string;
-  blockNumber: number;
-  logIndex: number;
-  removed: boolean;
-  transactionHash: string;
-  transactionIndex: number;
-  id: string;
-  returnValues: any;
-  event: string;
-  signature: string;
-}
-
-export interface DepositEvent extends Event {
-  returnValues: Deposit;
-}
-
-export interface Deposit {
-  dst: string;
-  wad: string;
-}
-
-export interface WithdrawalEvent extends Event {
-  returnValues: Withdrawal;
-}
-
-export interface Withdrawal {
-  src: string;
-  wad: string;
 }

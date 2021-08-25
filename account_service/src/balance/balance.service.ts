@@ -283,20 +283,29 @@ export class BalanceService {
       scanHandlers.push(this.getBalances(accounts, chain));
     });
 
-    const [ethBalances, bscBalances] = await Promise.all(scanHandlers);
+    const [ethBalances, bscBalances, polygonBalances] = await Promise.all(scanHandlers);
 
     if (ethBalances && bscBalances) {
       Object.keys(ethBalances).forEach((key) => {
         allBalances[key] = {
-          totalUsd: ethBalances[key].totalUsd + bscBalances[key].totalUsd,
-          tokens: [...ethBalances[key].tokens, ...bscBalances[key].tokens],
-          errors: [...ethBalances[key].errors, ...bscBalances[key].errors],
+          totalUsd:
+            ethBalances[key].totalUsd + bscBalances[key].totalUsd + polygonBalances[key].totalUsd,
+          tokens: [
+            ...ethBalances[key].tokens,
+            ...bscBalances[key].tokens,
+            ...polygonBalances[key].tokens,
+          ],
+          errors: [
+            ...ethBalances[key].errors,
+            ...bscBalances[key].errors,
+            ...polygonBalances[key].errors,
+          ],
         };
       });
 
       return allBalances;
     }
-    return ethBalances || bscBalances;
+    return ethBalances || bscBalances || polygonBalances;
   }
 
   public async getBalances(accounts: Address[], chainId: ChainIdEnum): Promise<BalancesResponse> {

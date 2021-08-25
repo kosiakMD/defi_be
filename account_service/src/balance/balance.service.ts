@@ -30,6 +30,7 @@ import { isBnbAddress } from '../utils/web3';
 import { AccountTokenBalanceDto, AllBalancesDto, BalanceTokenDto } from './balance.dto';
 import { getNoDbTokensPricesWithLp, mapTokenBalances } from './balance_util/balance.util';
 import {
+  AccountBalance,
   AccountTokenBalance,
   BalancesResponse,
   BalanceToken,
@@ -266,16 +267,23 @@ export class BalanceService {
     accounts: Address[],
     chains?: ChainIdEnum[],
   ): Promise<BalancesResponse> {
-    // TODO: allBalances better to become Map
-    const allBalances: BalancesResponse = {};
+    const allBalances: Map<Address, AccountBalance> = new Map();
     const blacklistedAddresses: string[] = await this.blacklistService.filterIsBlacklisted(
       accounts,
     );
 
     accounts = accounts.filter((a) => !blacklistedAddresses.find((b) => a === b));
     if (accounts.length === 0) {
-      return allBalances;
+      return Object.fromEntries(allBalances);
     }
+
+    accounts.forEach((account) => {
+      allBalances.set(account, {
+        totalUsd: 0,
+        tokens: [],
+        errors: [],
+      });
+    });
 
     const scanHandlers = [];
 
@@ -283,29 +291,26 @@ export class BalanceService {
       scanHandlers.push(this.getBalances(accounts, chain));
     });
 
-    const [ethBalances, bscBalances, polygonBalances] = await Promise.all(scanHandlers);
+    const balancesByAccounts = await Promise.all(scanHandlers);
 
-    if (ethBalances && bscBalances) {
-      Object.keys(ethBalances).forEach((key) => {
-        allBalances[key] = {
+    balancesByAccounts.forEach((balancesByAccount) => {
+      Object.keys(balancesByAccount).forEach((accountAddress) => {
+        allBalances.set(accountAddress, {
           totalUsd:
-            ethBalances[key].totalUsd + bscBalances[key].totalUsd + polygonBalances[key].totalUsd,
+            allBalances.get(accountAddress).totalUsd + balancesByAccount[accountAddress].totalUsd,
           tokens: [
-            ...ethBalances[key].tokens,
-            ...bscBalances[key].tokens,
-            ...polygonBalances[key].tokens,
+            ...allBalances.get(accountAddress).tokens,
+            ...balancesByAccount[accountAddress].tokens,
           ],
           errors: [
-            ...ethBalances[key].errors,
-            ...bscBalances[key].errors,
-            ...polygonBalances[key].errors,
+            ...allBalances.get(accountAddress).errors,
+            ...balancesByAccount[accountAddress].errors,
           ],
-        };
+        });
       });
+    });
 
-      return allBalances;
-    }
-    return ethBalances || bscBalances || polygonBalances;
+    return Object.fromEntries(allBalances);
   }
 
   public async getBalances(accounts: Address[], chainId: ChainIdEnum): Promise<BalancesResponse> {

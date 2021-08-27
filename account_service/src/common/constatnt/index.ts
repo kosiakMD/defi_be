@@ -4,6 +4,10 @@ export const CHAIN_ID_ETH = 1;
 export const CHAIN_ID_BSC = 2;
 export const CHAIN_ID_POLYGON = 3;
 
+export const ABSOLUTE_CHAIN_ID_ETH = 1;
+export const ABSOLUTE_CHAIN_ID_BSC = 56;
+export const ABSOLUTE_CHAIN_ID_POLYGON = 137;
+
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const ETH_BNB_ADDRESS = '0xb8c77482e45f1f44de1745f52c74426c631bdd52';
 export const WBNB_ADDRESS = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';

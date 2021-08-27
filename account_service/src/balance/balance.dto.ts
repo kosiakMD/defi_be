@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import Web3 from 'web3';
 
@@ -97,6 +97,7 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
   @ApiProperty({ type: Number, example: 18346602.807013184, required: false })
   totalPriceUSD?: number;
   @ApiProperty({ type: BalanceTokenDto })
+  @Type(() => BalanceTokenDto)
   token: BalanceTokenDto;
 }
 

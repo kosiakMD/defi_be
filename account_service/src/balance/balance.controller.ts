@@ -1,7 +1,7 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { AllBalancesDto, BalancesQueryDto, BalancesResponseDto } from './balance.dto';
+import { BalancesQueryDto, BalancesResponseDto } from './balance.dto';
 import { BalanceService } from './balance.service';
 import { BalancesResponse } from './interfaces/balance.interfaces';
 import { ScanService } from './scan/scan.service';
@@ -66,8 +66,8 @@ export class BalanceController {
       '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
     ],
   })
-  @ApiResponse({ status: 200, type: [AllBalancesDto] })
-  getBalanceFromCovalent(@Query() query: BalancesQueryDto): Promise<AllBalancesDto[]> {
+  @ApiResponse({ status: 200, type: [BalancesResponseDto] })
+  getBalanceFromCovalent(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
     const { addresses, chains } = query;
 
     return this.balanceService.getBalanceFromCovalent(addresses, chains);

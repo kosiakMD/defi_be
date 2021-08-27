@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
-import { ChainIdEnum } from 'src/common/enum';
+import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
 
 import { Logger } from '../Logger/Logger.service';
 import { AssetsEntity } from '../assets/entity/assets.entity';
@@ -142,6 +142,10 @@ export class BalanceService {
           const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
           const tokenPriceUSD = token.quote_rate ? token.quote_rate : null;
           const totalPriceUSD = tokenPriceUSD * decimalsAmount;
+          const tokenAddress =
+            token.contract_ticker_symbol === ChainSymbols.ETH
+              ? token.contract_address.replace(/e/g, '0')
+              : token.contract_address;
 
           if (balance.error) {
             errors.push(balance.error);
@@ -159,7 +163,8 @@ export class BalanceService {
                 decimals: token.contract_decimals,
                 symbol: token.contract_ticker_symbol,
                 name: token.contract_name,
-                address: token.contract_address,
+                address: tokenAddress,
+                totalSupply: 0,
                 isLp: false,
                 // isLp: assets.find((asset) => asset.address === token.contract_address)?.isLp || false,
               },

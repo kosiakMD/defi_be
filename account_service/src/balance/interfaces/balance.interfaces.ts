@@ -1,3 +1,5 @@
+import { Address } from 'src/common/interfaces';
+
 import { ERC20Token } from '../../transfers/interfaces/transfers.interfaces';
 
 export interface Balance {
@@ -57,6 +59,7 @@ export interface ErrorMessage {
 }
 
 export interface AccountBalance {
+  account?: Address;
   totalUsd: number;
   tokens: AccountTokenBalance[];
   errors?: ErrorMessage[];

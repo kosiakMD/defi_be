@@ -174,6 +174,7 @@ export class BalanceService {
       });
 
       balancesByAccount.set(address, {
+        account: address,
         totalUsd: this.calculateTotalUsd(tokens),
         tokens,
         errors,
@@ -263,6 +264,7 @@ export class BalanceService {
 
     accounts.forEach((account) => {
       allBalances.set(account, {
+        account: account,
         totalUsd: 0,
         tokens: [],
         errors: [],
@@ -280,6 +282,7 @@ export class BalanceService {
     balancesByAccounts.forEach((balancesByAccount) => {
       Object.keys(balancesByAccount).forEach((accountAddress) => {
         allBalances.set(accountAddress, {
+          account: accountAddress,
           totalUsd:
             allBalances.get(accountAddress).totalUsd + balancesByAccount[accountAddress].totalUsd,
           tokens: [
@@ -366,35 +369,34 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance = (
-    prices: TokenPricesV2,
-    chainId: ChainIdEnum,
-  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
-    address,
-    amount,
-    tokenAddress,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    tokenTotalSupply,
-    isLp,
-  }): AccountTokenBalanceDto =>
-    plainToClass(AccountTokenBalanceDto, {
-      account: address,
+  private mapErc20Balance =
+    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
+    ({
+      address,
       amount,
-      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-      tokenPriceUSD: prices[tokenAddress]?.price || 0,
-      totalPriceUSD: prices[tokenAddress]?.price
-        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-        : 0,
-      token: {
-        chainId: chainId,
-        address: tokenAddress,
-        name: tokenName || null,
-        symbol: tokenSymbol || null,
-        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-        totalSupply: +tokenTotalSupply || 0,
-        isLp: isLp,
-      },
-    });
+      tokenAddress,
+      tokenName,
+      tokenSymbol,
+      tokenDecimals,
+      tokenTotalSupply,
+      isLp,
+    }): AccountTokenBalanceDto =>
+      plainToClass(AccountTokenBalanceDto, {
+        account: address,
+        amount,
+        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+        tokenPriceUSD: prices[tokenAddress]?.price || 0,
+        totalPriceUSD: prices[tokenAddress]?.price
+          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+          : 0,
+        token: {
+          chainId: chainId,
+          address: tokenAddress,
+          name: tokenName || null,
+          symbol: tokenSymbol || null,
+          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+          totalSupply: +tokenTotalSupply || 0,
+          isLp: isLp,
+        },
+      });
 }

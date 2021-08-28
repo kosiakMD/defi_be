@@ -119,6 +119,9 @@ export class ErrorDto implements ErrorMessage {
 }
 
 export class BalanceDto implements AccountBalance {
+  @ApiProperty({ type: String, example: '0x1709f800fc9d0b210b6c1f69a7cdc492899808b6' })
+  account: Address;
+
   @ApiProperty({ type: Number, example: 0 })
   totalUsd: number;
 

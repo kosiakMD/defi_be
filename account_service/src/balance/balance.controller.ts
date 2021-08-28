@@ -66,7 +66,7 @@ export class BalanceController {
       '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
     ],
   })
-  @ApiResponse({ status: 200, type: [BalancesResponseDto] })
+  @ApiResponse({ status: 200, type: BalancesResponseDto })
   getBalanceFromCovalent(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
     const { addresses, chains } = query;
 

@@ -1,3 +1,7 @@
+import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TerminusModule } from '@nestjs/terminus';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
@@ -5,15 +9,9 @@ import {
 } from 'nest-winston';
 import * as winston from 'winston';
 
-import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
-import { TypeOrmModule } from '@nestjs/typeorm';
-
 import configuration from './config/configuration';
 import { JobsModule } from './jobs/jobs.module';
 import { JobsService } from './jobs/jobs.service';
-import { LoggerModule } from './logger/logger.module';
 import { MigrationModule } from './migrations/migration.module';
 import { NodeModule } from './node/node.module';
 
@@ -65,7 +63,6 @@ import { NodeModule } from './node/node.module';
     JobsModule,
     NodeModule,
     MigrationModule,
-    LoggerModule,
   ],
   providers: [JobsService],
 })

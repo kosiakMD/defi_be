@@ -1,7 +1,8 @@
+import { Address } from '../common/types';
 import {
   ChainIdEnum,
   LiquidityChangeTypeEnum,
-  PlatformEnum,
+  ProjectEnum,
   ProtocolName,
   ProtocolTypeEnum,
   TransactionTypeEnum,
@@ -14,8 +15,6 @@ import {
   SwapsInterface,
 } from './entity.information.interfaces';
 import { LiquidityPosition, UniswapLiquidityPosition } from './liquidity.position.interfaces';
-
-export type Address = string;
 
 export type TokenSymbol = string;
 
@@ -93,8 +92,9 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: PlatformEnum;
+  platformName: ProjectEnum;
   protocolName?: ProtocolName;
+  liquidityPositions?: any[];
 }
 
 export interface Transaction<T = string> {

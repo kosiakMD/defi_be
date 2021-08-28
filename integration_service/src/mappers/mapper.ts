@@ -5,7 +5,7 @@ import { Injectable } from '@nestjs/common';
 
 import {
   PancakeProtocolEnum,
-  PlatformEnum,
+  ProjectEnum,
   ProtocolName,
   UniswapProtocolEnum,
   LiquidityChangeTypeEnum,
@@ -59,14 +59,14 @@ export class Mapper {
     userAddresses: string[],
     originAddresses: string[],
     response: UniswapResponseData,
-    platformName: PlatformEnum,
+    platformName: ProjectEnum,
     protocolName?: ProtocolName,
   ): Promise<BaseData[]> {
     const base: BaseData[] = [];
 
     // TODO: add checks does protocol belong to chain
     const chainId =
-      protocolName === PancakeProtocolEnum.protocolV1 ? ChainIdEnum.bsc : ChainIdEnum.eth;
+      protocolName === PancakeProtocolEnum.pancakeV1 ? ChainIdEnum.bsc : ChainIdEnum.eth;
     for (const address of userAddresses) {
       const transactions: Transactions = {
         chainId: chainId,
@@ -355,9 +355,7 @@ export class Mapper {
       );
 
       const project =
-        amm.platformName === PlatformEnum.uniswap
-          ? UniswapProtocolEnum.protocolV2
-          : amm.platformName;
+        amm.platformName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.platformName;
       const liquidityPosition: LiquidityPosition = {
         pool: pool,
         lpToken,

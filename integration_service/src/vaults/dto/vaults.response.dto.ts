@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, PlatformEnum } from 'src/common/enum';
+import { ChainIdEnum, ProjectEnum } from 'src/common/enum';
 
 import { VaultsEntity } from '../entities/vaults.entity';
 import { APYDto } from './apy.dto';
@@ -16,8 +16,8 @@ export class VaultsResponseDto {
   @ApiProperty({ type: String, example: 'compound' })
   vaultName: string;
 
-  @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.sushiswap })
-  project: PlatformEnum;
+  @ApiProperty({ enum: ProjectEnum, enumName: 'ProjectEnum', example: ProjectEnum.sushiswap })
+  project: ProjectEnum;
 
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;

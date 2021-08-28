@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { PlatformEnum } from 'src/common/enum';
+import { ProjectEnum } from 'src/common/enum';
 
 import { AccountService } from '../account/account.service';
 import { BalanceToken } from '../account/interfaces';
@@ -123,7 +123,7 @@ export class PancakeService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      PlatformEnum.pancake,
+      ProjectEnum.pancake,
     );
   }
 
@@ -146,7 +146,7 @@ export class PancakeService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      PlatformEnum.pancake,
+      ProjectEnum.pancake,
     );
   }
 }

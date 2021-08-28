@@ -1,7 +1,18 @@
-export * from './transaction.type';
-export * from './liquidity.change.type';
 export * from './chain.enum';
-export * from './platform.enum';
+export * from './liquidity.enum';
+export * from './projectEnum';
+export * from './transaction.type';
+
+export enum ResultStatus {
+  ok = 'ok',
+  error = 'error',
+}
+
+export enum HealthStatusEnum {
+  ok = 'ok',
+  error = 'error',
+  shuttingDown = 'shutting_down',
+}
 
 export enum DirectionEnum {
   in = 'in',

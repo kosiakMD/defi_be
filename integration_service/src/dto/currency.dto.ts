@@ -4,8 +4,8 @@ import { CurrencyEnum, CurrencyIdEnum } from 'src/common/enum';
 
 export class CurrencyDto {
   @ApiProperty({ enum: CurrencyIdEnum, enumName: 'CurrencyIdEnum', example: CurrencyIdEnum.usd })
-  id: CurrencyIdEnum;
+  id: CurrencyIdEnum = CurrencyIdEnum.usd;
 
   @ApiProperty({ enum: CurrencyEnum, enumName: 'CurrencyEnum', example: CurrencyEnum.usd })
-  name: CurrencyEnum;
+  name: CurrencyEnum = CurrencyEnum.usd;
 }

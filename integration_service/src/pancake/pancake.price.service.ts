@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum, ChainNameEnum, CurrencyEnum, CurrencyIdEnum } from 'src/common/enum';
+import {
+  ChainIdEnum,
+  ChainNameEnum,
+  ChainAbbrEnum,
+  CurrencyEnum,
+  CurrencyIdEnum,
+} from 'src/common/enum';
 
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
@@ -24,6 +30,7 @@ export class PancakePriceService {
       chain: {
         id: ChainIdEnum.bsc,
         name: ChainNameEnum.bsc,
+        abbr: ChainAbbrEnum.bsc,
       },
       currency: {
         id: CurrencyIdEnum.usd,

@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   ChainIdEnum,
   PancakeProtocolEnum,
-  PlatformEnum,
+  ProjectEnum,
   ProtocolName,
   ProtocolTypeEnum,
   SushiSwapProtocolEnum,
@@ -22,13 +22,13 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ type: String, example: '0x782629c9578889a9b8464f051f23843734f72599' })
   userAddress: string;
 
-  @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.uniswap })
-  platformName: PlatformEnum;
+  @ApiProperty({ enum: ProjectEnum, enumName: 'ProjectEnum', example: ProjectEnum.uniswap })
+  platformName: ProjectEnum;
 
   @ApiProperty({
     enum: [PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum],
     enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum',
-    example: UniswapProtocolEnum.protocolV2,
+    example: UniswapProtocolEnum.uniswapV2,
     required: false,
   })
   protocolName: ProtocolName;

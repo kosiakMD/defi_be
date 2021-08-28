@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { PlatformEnum } from 'src/common/enum';
+import { ProjectEnum } from 'src/common/enum';
 
 import { Mapper } from '../mappers/mapper';
 import { SushiswapSubgraph } from '../thegraph/balancer.subgraph';
@@ -43,7 +43,7 @@ export class SushiswapService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      PlatformEnum.sushiswap,
+      ProjectEnum.sushiswap,
     );
   }
 }

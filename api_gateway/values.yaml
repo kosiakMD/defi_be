@@ -1,0 +1,64 @@
+ingress:
+  enabled: true
+  host: api.defiyield.app
+
+configMaps:
+  common:
+    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+    MAIL_HIRE_FROM: mail@defiyield.app
+    MAIL_HIRE_TO: hr@defiyield.app
+    MAIL_QUESTION_FROM: mail@defiyield.app
+    MAIL_QUESTION_TO: hr@defiyield.app
+  gas:
+    GAS_API_URL: https://www.gasnow.org/api/v3
+    GAS_CURRENT_PATH: gas/price?utm_source=defi
+    GAS_HISTORY_PATH: gas-hist
+  portal:
+    DEFIYIELD_INFO_2_URL: https://api2.defiyield.info
+    TOKENS_PATH: tokens
+    DEFIYIELD_INFO_MAIN_URL: https://apimain.defiyield.info
+    APPROVALS_PATH: tool/approvals/eth
+  endpoints:
+    PRICE_SERVICE_HOST: http://price-service
+    PRICE_SERVICE_PORT: 80
+    PRICE_STATUS: v1/status
+    PRICES_PATH: v1/prices
+    PRICE_CHAINS_PATH: v1/chains
+    PRICE_CURRENCIES_PATH: v1/currencies
+    INTEGRATION_SERVICE_HOST: http://integration-service
+    INTEGRATION_SERVICE_PORT: 80
+    INTEGRATION_STATUS: v1/status
+    INTEGRATION_UNISWAP: v1/integration/uniswap
+    INTEGRATION_SUSHISWAP: v1/integration/sushiswap
+    INTEGRATION_BALANCER: v1/integration/balancer
+    INTEGRATION_CURVE: v1/integration/curve
+    INTEGRATION_PANCAKE: v1/integration/pancake
+    ACCOUNT_SERVICE_HOST: http://account-service
+    ACCOUNT_SERVICE_PORT: 80
+    ACCOUNT_STATUS: v1/status
+    ACCOUNT_TRANSACTIONS: v1/transactions
+    ACCOUNT_BALANCE: v1/balances
+    ACCOUNT_APPROVALS: v1/approvals
+    ACCOUNT_TRANSFERS: v1/transfers
+    ACCOUNT_ASSETS: v1/assets
+    ACCOUNT_ANALYTIC: v1/analytic
+    POOLS_SERVICE_URL: https://integration-service
+    POOLS_PATH: v1/pools
+    VAULTS_SERVICE_URL: https://integration-service
+    VAULTS_PATH: v1/vaults
+    IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
+    SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
+    SAFE_PROXY_SERVICE_PORT: 80
+    SAFE_PROXY_STATUS: v1/status
+    SAFE_PROXY_NETWORKS: v1/networks
+    SAFE_PROXY_PARTNERS: v1/partners
+    SAFE_PROXY_PROJECTS: v1/projects
+    SAFE_PROXY_SCAMS: v1/scams
+    SAFE_PROXY_SCAM_TYPES: v1/scams/types
+    SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
+
+secrets:
+- mailer
+- redis
+- bscscan
+- etherscan

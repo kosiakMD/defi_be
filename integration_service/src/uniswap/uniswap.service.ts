@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { PlatformEnum, UniswapProtocolEnum } from 'src/common/enum';
+import { ProjectEnum, UniswapProtocolEnum } from 'src/common/enum';
 
 import { BaseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
@@ -44,8 +44,8 @@ export class UniswapService {
       result.userAddresses,
       originAddressesArray,
       result.response,
-      PlatformEnum.uniswap,
-      UniswapProtocolEnum.protocolV2,
+      ProjectEnum.uniswap,
+      UniswapProtocolEnum.uniswapV2,
     );
   }
 }

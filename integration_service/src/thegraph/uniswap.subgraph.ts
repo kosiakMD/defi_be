@@ -1,10 +1,12 @@
+// import gql from 'graphql-tag';
 import { map } from 'rxjs/operators';
 
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { LiquidityPositionResponseData } from '../interfaces/liquidity.position.interfaces';
+import { LiquidityPositionResponse } from '../dto/liquidity.position.dto';
 import { StakingPositionResponse } from '../interfaces/staking.position.interfaces';
+import { GraphOperation } from './enum';
 import { Pair } from './uniswap/pair.dto';
 
 export interface ResponseData {
@@ -209,44 +211,45 @@ export class UniswapSubgraph {
       .toPromise();
   }
 
-  async getUniswapLiquidityPositions(addresses: string[]): Promise<LiquidityPositionResponseData> {
+  // TODO: filter liquidityTokenBalance_gt
+  async getLiquidityPositions(addresses: string[]): Promise<LiquidityPositionResponse> {
     return this.httpService
-      .post<LiquidityPositionResponseData>(this.subgraphUrl, {
-        operationName: 'liquidityPositions',
+      .post<LiquidityPositionResponse>(this.subgraphUrl, {
+        operationName: GraphOperation.liquidityPositions,
         variables: {
           addresses: addresses,
         },
         query: `
-      query liquidityPositionQuery($addresses: [String]) {
-      liquidityPositions (where:{user_in:$addresses}, first:1000) {
-        liquidityTokenBalance
-        user {
-          id
-        }
-        pair {
-          id
-          totalSupply
-          reserveUSD
-          reserve0
-          reserve1
-          token0Price
-          token1Price
-          totalSupply
-          token0 {
-            id
-            name
-            symbol
-            decimals
-          }
-          token1 {
-            id
-            name
-            symbol
-            decimals
+          query liquidityPositionQuery($addresses: [String]) {
+          liquidityPositions (where: {user_in: $addresses}, first:1000) {
+            liquidityTokenBalance
+            user {
+              id
+            }
+            ${pairFragment}
           }
         }
-      }
-	  }`,
+      `,
+      })
+      .pipe(map((response) => response.data))
+      .toPromise();
+  }
+
+  async getPairDayData(addresses: string[]): Promise<LiquidityPositionResponse> {
+    return this.httpService
+      .post<LiquidityPositionResponse>(this.subgraphUrl, {
+        operationName: GraphOperation.liquidityPositions,
+        variables: {
+          addresses: addresses,
+        },
+        query: `
+          query liquidityPositionQuery($addresses: [String]) {
+          pairDayDatas(where: {id_in: ${addresses}) {
+            id
+            dailyVolumeUSD
+          }
+        }
+      `,
       })
       .pipe(map((response) => response.data))
       .toPromise();
@@ -257,91 +260,132 @@ export class UniswapSubgraph {
     const addressesString = addresses.map((address) => `"${address}"`).join(',');
     return this.httpService
       .post(url, {
-        operationName: 'stakingPositions',
+        operationName: GraphOperation.stakingPositions,
         variables: {
           addresses: addresses,
         },
-        query: `{
-                users (where: {address_in:[${addressesString}], pool_not:null, amount_not:0}) {
+        query: `
+          query stakingPositionsQuery($addresses: [String]) {
+            users (where: {address_in:[${addressesString}], pool_not:null, amount_not:0}) {
+            id
+            pool {
                 id
-                pool {
-                    id
-                    pair
-                }
-                amount
-                }
-            }`,
+                pair
+            }
+            amount
+            }
+          }
+        `,
       })
       .pipe(map((response) => response.data))
       .toPromise();
   }
 }
 
+const pairFragment = `
+  pair {
+    id
+    totalSupply
+    reserveUSD
+    reserveETH
+    trackedReserveETH
+    totalSupply
+    volumeUSD
+    untrackedVolumeUSD
+    volumeToken0
+    token0Price
+    reserve0
+    token0 {
+      id
+      name
+      symbol
+      decimals
+      tradeVolume
+      tradeVolumeUSD
+      untrackedVolumeUSD
+      totalLiquidity
+    }
+    volumeToken1
+    token1Price
+    reserve1
+    token1 {
+      id
+      name
+      symbol
+      decimals
+      tradeVolume
+      tradeVolumeUSD
+      untrackedVolumeUSD
+      totalLiquidity
+    }
+  }
+`;
+
 /* TODO: use query builder or gql
  import * as gql from 'gql-query-builder';
  "gql-query-builder": "^3.5.5",
  "graphql-tag": "^2.11.0",
-const newQuery = (addresses) => {
-  const query = gql.query({
-    operation: 'liquidityPositions',
-    variables: {
-      where: { ['user_in']: addresses },
-      addresses: addresses,
-      first: 1000,
-    },
-    fields: [
-      'liquidityTokenBalance',
-      { user: ['id'] },
-      {
-        pair: [
-          'id',
-          'totalSupply',
-          'reserveUSD',
-          'reserve0',
-          'reserve1',
-          'token0Price',
-          'token1Price',
-          'totalSupply',
-          { token0: ['id', 'name', 'symbol', 'decimals'] },
-          { token1: ['id', 'name', 'symbol', 'decimals'] },
-        ],
-      },
-    ],
-  });
-
-  return query;
-};
-newQuery([1]);
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const oldQuery = `
-      query liquidityPositionQuery($addresses: [String]) {
-      liquidityPositions (where:{user_in:$addresses}, first:1000) {
-        liquidityTokenBalance
-        user {
-          id
-        }
-        pair {
-          id
-          totalSupply
-          reserveUSD
-          reserve0
-          reserve1
-          token0Price
-          token1Price
-          totalSupply
-          token0 {
-            id
-            name
-            symbol
-            decimals
-          }
-          token1 {
-            id
-            name
-            symbol
-            decimals
-          }
-        }
-      }
-	  }`;
-*/
+ const newQuery = (addresses) => {
+ const query = gql.query({
+ operation: 'liquidityPositions',
+ variables: {
+ where: { ['user_in']: addresses },
+ addresses: addresses,
+ first: 1000,
+ },
+ fields: [
+ 'liquidityTokenBalance',
+ { user: ['id'] },
+ {
+ pair: [
+ 'id',
+ 'totalSupply',
+ 'reserveUSD',
+ 'reserve0',
+ 'reserve1',
+ 'token0Price',
+ 'token1Price',
+ 'totalSupply',
+ { token0: ['id', 'name', 'symbol', 'decimals'] },
+ { token1: ['id', 'name', 'symbol', 'decimals'] },
+ ],
+ },
+ ],
+ });
+ 
+ return query;
+ };
+ newQuery([1]);
+ // eslint-disable-next-line @typescript-eslint/no-unused-vars
+ const oldQuery = `
+ query liquidityPositionQuery($addresses: [String]) {
+ liquidityPositions (where:{user_in:$addresses}, first:1000) {
+ liquidityTokenBalance
+ user {
+ id
+ }
+ pair {
+ id
+ totalSupply
+ reserveUSD
+ reserve0
+ reserve1
+ token0Price
+ token1Price
+ totalSupply
+ token0 {
+ id
+ name
+ symbol
+ decimals
+ }
+ token1 {
+ id
+ name
+ symbol
+ decimals
+ }
+ }
+ }
+ }`;
+ */

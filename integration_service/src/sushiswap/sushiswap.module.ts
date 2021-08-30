@@ -26,5 +26,6 @@ import { SushiswapService } from './sushiswap.service';
   ],
   controllers: [SushiswapController],
   providers: [SushiswapService, Mapper],
+  exports: [SushiswapService],
 })
 export class SushiswapModule {}

@@ -4,7 +4,7 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, CurrencyIdEnum } from '../../common/enum';
+import { ChainIdEnum, CurrencyIdEnum } from 'src/common/enum';
 
 export class TokenPriceRequest {
   @IsNotEmpty()

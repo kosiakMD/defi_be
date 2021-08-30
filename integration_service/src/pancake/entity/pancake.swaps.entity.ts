@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { InformationSwap } from '../../interfaces/entity.information.interfaces';
@@ -14,6 +15,7 @@ export class PancakeSwapsEntity {
   toAddress: string;
 
   @Column({ type: 'json' })
+  @Type(() => InformationSwap)
   information: InformationSwap;
 
   @Column({ name: 'block_number' })

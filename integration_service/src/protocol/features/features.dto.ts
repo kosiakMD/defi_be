@@ -66,11 +66,11 @@ export class ProtocolBasicInfo {
 
 export class ProtocolFeatureInfoDto extends ProtocolBasicInfo {
   @Exclude()
-  name: ProtocolName;
+  name?: ProtocolName;
   @Exclude()
-  project: ProjectEnum;
+  project?: ProjectEnum;
   @Exclude()
-  chains: ChainAbbrEnum[];
+  chains?: ChainAbbrEnum[];
 
   @ApiProperty({ type: ProtocolFeaturesExportDto })
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

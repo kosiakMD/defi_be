@@ -8,9 +8,11 @@ import { TerminusModule } from '@nestjs/terminus';
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
+import { IntegrationsModule } from './integrations/integrations.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { PancakeModule } from './pancake/pancake.module';
 import { PoolsModule } from './pools/pools.module';
+import { ProtocolModule } from './protocol/protocol.module';
 import { SushiswapModule } from './sushiswap/sushiswap.module';
 import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
@@ -42,14 +44,17 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
     }),
     TerminusModule,
-    UniswapModule,
-    PoolsModule,
     ThegraphModule,
+    //
+    UniswapModule,
+    ProtocolModule,
+    PoolsModule,
     DatabaseModule,
     VaultsModule,
     SushiswapModule,
     PancakeModule,
     TemporaryTokensModule,
+    IntegrationsModule,
   ],
   controllers: [HealthController],
 })

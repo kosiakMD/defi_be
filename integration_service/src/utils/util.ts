@@ -1,7 +1,7 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
 import { Repository } from 'typeorm';
 
-import { UniswapLiquidityPosition } from '../interfaces/liquidity.position.interfaces';
+import { UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
 type Decimals = string | number;
@@ -394,7 +394,7 @@ export async function getDataByAddresses<T, K, V, E>(
       .createQueryBuilder()
       .where(`user_address IN (:...fields)`, { fields: addressesArray })
       .getMany(),
-    subgraph.getUniswapLiquidityPositions(addressesArray),
+    subgraph.getLiquidityPositions(addressesArray),
     flag ? subgraph.getStakingPositions(addressesArray) : null,
   ]);
 

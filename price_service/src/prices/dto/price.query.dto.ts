@@ -3,7 +3,7 @@ import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, CurrencyIdEnum } from '../../common/enum';
+import { ChainIdEnum, CurrencyIdEnum } from 'src/common/enum';
 
 import { splitToArray, splitToNumberArray } from '../../utils/transform';
 

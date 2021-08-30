@@ -7,11 +7,11 @@ import { ProjectEnum } from 'src/common/enum';
 
 import { AccountService } from '../account/account.service';
 import { BalanceToken } from '../account/interfaces';
-import { EtherscanService } from '../etherscan/etherscan.service';
 import {
   UniswapLiquidityPosition,
   UniswapLiquidityPositionPair,
-} from '../interfaces/liquidity.position.interfaces';
+} from '../dto/liquidity.position.dto';
+import { EtherscanService } from '../etherscan/etherscan.service';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';

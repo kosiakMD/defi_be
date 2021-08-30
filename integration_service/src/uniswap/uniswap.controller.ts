@@ -34,6 +34,6 @@ export class UniswapController {
     if (!addresses) {
       return Promise.resolve([]);
     }
-    return this.integrationService.getDataByAddress(addresses);
+    return this.integrationService.getDataByAddresses(addresses);
   }
 }

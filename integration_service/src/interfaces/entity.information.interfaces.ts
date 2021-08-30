@@ -1,4 +1,8 @@
-export interface UniswapToken {
+// eslint-disable-next-line max-classes-per-file
+import { Type } from 'class-transformer';
+
+// eslint-disable-next-line max-classes-per-file
+export class UniswapToken {
   decimals: string;
   id: string;
   name: string;
@@ -6,15 +10,17 @@ export interface UniswapToken {
   percentage?: number;
 }
 
-export interface InformationTransaction {
+export class InformationTransaction {
   blockNumber: string;
   id: string;
   timestamp: string;
 }
 
-export interface Pair {
+export class Pair {
   id: string;
+  @Type(() => UniswapToken)
   token0: UniswapToken;
+  @Type(() => UniswapToken)
   token1: UniswapToken;
 }
 
@@ -36,7 +42,7 @@ export interface InformationSnapshot {
   };
 }
 
-export interface InformationSwap {
+export class InformationSwap {
   amount0In: string;
   amount0Out: string;
   amount1In: string;
@@ -44,31 +50,37 @@ export interface InformationSwap {
   amountUSD: string;
   from: string;
   logIndex: string;
+  @Type(() => Pair)
   pair: Pair;
   sender: string;
   to: string;
+  @Type(() => InformationTransaction)
   transaction: InformationTransaction;
 }
 
-export interface InformationMint {
+export class InformationMint {
   amount0: string;
   amount1: string;
   amountUSD: string;
   liquidity: string;
+  @Type(() => Pair)
   pair: Pair;
   sender: string;
   to: string;
+  @Type(() => InformationTransaction)
   transaction: InformationTransaction;
 }
 
-export interface InformationBurn {
+export class InformationBurn {
   amount0: string;
   amount1: string;
   amountUSD: string;
   liquidity: string;
+  @Type(() => Pair)
   pair: Pair;
   sender: string;
   to: string;
+  @Type(() => InformationTransaction)
   transaction: InformationTransaction;
 }
 

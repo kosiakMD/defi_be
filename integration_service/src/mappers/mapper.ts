@@ -1,20 +1,27 @@
 import { BigNumber as BN } from 'bignumber.js';
+import { plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
 import {
+  ChainIdEnum,
+  LiquidityChangeTypeEnum,
   PancakeProtocolEnum,
   ProjectEnum,
   ProtocolName,
-  UniswapProtocolEnum,
-  LiquidityChangeTypeEnum,
   ProtocolTypeEnum,
   TransactionTypeEnum,
-  ChainIdEnum,
+  UniswapProtocolEnum,
 } from 'src/common/enum';
 
 import { Web3Provider } from '../chain/web3.provider';
+import {
+  LiquidityPool,
+  LiquidityPosition,
+  UniswapLiquidityPosition,
+  UniswapLiquidityPositionPair,
+} from '../dto/liquidity.position.dto';
 import {
   BurnsInterface,
   MintsInterface,
@@ -23,12 +30,6 @@ import {
   UniswapToken,
 } from '../interfaces/entity.information.interfaces';
 import { FeesSn1Data, FeesSn2Data } from '../interfaces/fee.interfaces';
-import {
-  LiquidityPool,
-  LiquidityPosition,
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
-} from '../interfaces/liquidity.position.interfaces';
 import { Staking } from '../interfaces/staking.position.interfaces';
 import {
   AutomaticMarketMaker,
@@ -36,7 +37,9 @@ import {
   ERC20Token,
   LiquidityChangeTransaction,
   PoolToken,
+  PoolTokenDto,
   SwapToken,
+  SwapTokenDto,
   SwapTransaction,
   Transactions,
   UniswapResponseData,
@@ -68,23 +71,23 @@ export class Mapper {
     const chainId =
       protocolName === PancakeProtocolEnum.pancakeV1 ? ChainIdEnum.bsc : ChainIdEnum.eth;
     for (const address of userAddresses) {
-      const transactions: Transactions = {
+      const transactions: Transactions = plainToClass(Transactions, {
         chainId: chainId,
         protocolType: ProtocolTypeEnum.transaction,
         protocolName: protocolName,
         platformName: platformName,
         userAddress: this.getOriginAddress(originAddresses, address),
         txs: [],
-      };
+      });
 
-      const amm: AutomaticMarketMaker = {
+      const amm: AutomaticMarketMaker = plainToClass(AutomaticMarketMaker, {
         chainId: chainId,
         protocolType: ProtocolTypeEnum.amm,
         protocolName: protocolName,
         platformName: platformName,
         userAddress: this.getOriginAddress(originAddresses, address),
         liquidityPositions: [],
-      };
+      });
 
       if (response.sushiswapStakingPosition) {
         const staking: Staking = {
@@ -146,7 +149,7 @@ export class Mapper {
       const { token0, token1 } = mint.information.pair;
       const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(token0, token1, mint);
 
-      const ammMint: LiquidityChangeTransaction = this.createLiquidityChangeTransaction(
+      const ammMint: LiquidityChangeTransaction = Mapper.createLiquidityChangeTransaction(
         mint,
         [poolToken0, poolToken1],
         true,
@@ -162,7 +165,7 @@ export class Mapper {
 
       const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(token0, token1, burn);
 
-      const ammBurn: LiquidityChangeTransaction = this.createLiquidityChangeTransaction(
+      const ammBurn: LiquidityChangeTransaction = Mapper.createLiquidityChangeTransaction(
         burn,
         [poolToken0, poolToken1],
         false,
@@ -174,7 +177,7 @@ export class Mapper {
 
   private mapSwaps(transactions: Transactions, swapFrom: SwapsInterface[]): void {
     for (const swap of swapFrom) {
-      const ammSwap: SwapTransaction = {
+      const ammSwap: SwapTransaction = plainToClass(SwapTransaction, {
         type: TransactionTypeEnum.swap,
         hash: swap.information.transaction.id,
         timestamp: Number(swap.information.transaction.timestamp),
@@ -184,23 +187,23 @@ export class Mapper {
         gasUsed: null,
         tokenIn: null,
         tokenOut: null,
-      };
+      });
 
-      const token0: SwapToken = {
+      const token0: SwapToken = plainToClass(SwapTokenDto, {
         address: swap.information.pair.token0.id,
         name: swap.information.pair.token0.name,
         symbol: swap.information.pair.token0.symbol,
         decimals: Number(swap.information.pair.token0.decimals),
         totalSupply: null,
-      };
+      });
 
-      const token1: SwapToken = {
+      const token1: SwapToken = plainToClass(SwapTokenDto, {
         address: swap.information.pair.token1.id,
         name: swap.information.pair.token1.name,
         symbol: swap.information.pair.token1.symbol,
         decimals: Number(swap.information.pair.token1.decimals),
         totalSupply: null,
-      };
+      });
 
       // check which token is "IN"
       // this means that token0 is "IN"
@@ -239,14 +242,14 @@ export class Mapper {
     }
   }
 
-  priceInUSD(totalUSD: string, amount: string): number {
+  static priceInUSD(totalUSD: string, amount: string): number {
     return new BN(totalUSD) //
       .div(2)
       .div(amount)
       .toNumber();
   }
 
-  private getFeeBetweenTwoSnapshots(sn1: FeesSn1Data, sn2: FeesSn2Data): number {
+  private static getFeeBetweenTwoSnapshots(sn1: FeesSn1Data, sn2: FeesSn2Data): number {
     if (sn2.tokenSupply === 0 || sn1.tokenSupply === 0) {
       return 0;
     }
@@ -289,7 +292,7 @@ export class Mapper {
       const uniswapLpPosition = lpPositions.find((u) => u.pair.id === l.lpToken.address);
       // liquidity snapshots is already ordered
       for (let i = 0; i < currentPairSnapshots.length; i++) {
-        const sn1Data: FeesSn1Data = {
+        const sn1Data: FeesSn1Data = plainToClass(FeesSn1Data, {
           tokenSupply: new BN(
             currentPairSnapshots[i].information.liquidityTokenTotalSupply,
           ).toNumber(),
@@ -298,27 +301,27 @@ export class Mapper {
           ).toNumber(),
           reserve0: new BN(currentPairSnapshots[i].information.reserve0).toNumber(),
           reserve1: new BN(currentPairSnapshots[i].information.reserve1).toNumber(),
-        };
+        });
 
         let sn2Data: FeesSn2Data = null;
         if (currentPairSnapshots[i + 1] !== undefined) {
-          sn2Data = {
+          sn2Data = plainToClass(FeesSn2Data, {
             tokenSupply: new BN(
               currentPairSnapshots[i + 1].information.liquidityTokenTotalSupply,
             ).toNumber(),
             totalReserve: new BN(currentPairSnapshots[i + 1].information.reserveUSD).toNumber(),
             reserve0: new BN(currentPairSnapshots[i + 1].information.reserve0).toNumber(),
             reserve1: new BN(currentPairSnapshots[i + 1].information.reserve1).toNumber(),
-          };
+          });
         } else {
-          sn2Data = {
+          sn2Data = plainToClass(FeesSn2Data, {
             tokenSupply: new BN(l.lpToken.totalSupply).toNumber(),
             totalReserve: new BN(uniswapLpPosition.pair.reserveUSD).toNumber(),
             reserve0: new BN(l.poolTokens[0].reserve).toNumber(),
             reserve1: new BN(l.poolTokens[1].reserve).toNumber(),
-          };
+          });
         }
-        l.earnedFeeUSD += this.getFeeBetweenTwoSnapshots(sn1Data, sn2Data);
+        l.earnedFeeUSD += Mapper.getFeeBetweenTwoSnapshots(sn1Data, sn2Data);
       }
     });
   }
@@ -328,17 +331,18 @@ export class Mapper {
     uniswapPositions: UniswapLiquidityPosition[],
   ): void {
     for (const uniswapPosition of uniswapPositions) {
-      const pool: LiquidityPool = {
+      // console.log(uniswapPosition);
+      const pool: LiquidityPool = plainToClass(LiquidityPool, {
         address: uniswapPosition.pair.id,
         name: null,
-      };
-      const lpToken: ERC20Token = {
+      });
+      const lpToken: ERC20Token = plainToClass(ERC20Token, {
         address: uniswapPosition.pair.id,
         decimals: 18, // always 18 in Uniswap
         name: null,
         symbol: null,
         totalSupply: uniswapPosition.pair.totalSupply,
-      };
+      });
 
       const { pair } = uniswapPosition;
       const { token0, token1 } = pair;
@@ -356,7 +360,7 @@ export class Mapper {
 
       const project =
         amm.platformName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.platformName;
-      const liquidityPosition: LiquidityPosition = {
+      const liquidityPosition: LiquidityPosition = plainToClass(LiquidityPosition, {
         pool: pool,
         lpToken,
         lpTokenBalance: uniswapPosition.liquidityTokenBalance,
@@ -364,7 +368,7 @@ export class Mapper {
         poolTokens: [poolToken0, poolToken1],
         earnedFeeUSD: 0,
         exitedAt: null,
-      };
+      });
 
       amm.liquidityPositions.push(liquidityPosition);
     }
@@ -377,7 +381,7 @@ export class Mapper {
     pair?: UniswapLiquidityPositionPair,
     userPoolShare?: number,
   ): PoolToken[] {
-    const poolToken0 = {
+    const poolToken0 = plainToClass(PoolTokenDto, {
       address: token0.id,
       decimals: Number(token0.decimals),
       name: token0.name,
@@ -390,12 +394,12 @@ export class Mapper {
           : entity.information.amount0,
       priceUSD:
         pair === undefined
-          ? this.priceInUSD(entity.information.amountUSD, entity.information.amount0)
-          : this.priceInUSD(pair.reserveUSD, pair.reserve0),
+          ? Mapper.priceInUSD(entity.information.amountUSD, entity.information.amount0)
+          : Mapper.priceInUSD(pair.reserveUSD, pair.reserve0),
       percentage: this.PERCENTAGE,
-    };
+    });
 
-    const poolToken1 = {
+    const poolToken1 = plainToClass(PoolTokenDto, {
       address: token1.id,
       decimals: Number(token1.decimals),
       name: token1.name,
@@ -408,20 +412,20 @@ export class Mapper {
           : entity.information.amount1,
       priceUSD:
         pair === undefined
-          ? this.priceInUSD(entity.information.amountUSD, entity.information.amount1)
-          : this.priceInUSD(pair.reserveUSD, pair.reserve1),
+          ? Mapper.priceInUSD(entity.information.amountUSD, entity.information.amount1)
+          : Mapper.priceInUSD(pair.reserveUSD, pair.reserve1),
       percentage: this.PERCENTAGE,
-    };
+    });
 
     return [poolToken0, poolToken1];
   }
 
-  private createLiquidityChangeTransaction(
+  private static createLiquidityChangeTransaction(
     entity: UniversalEntity,
     uniswapTokens: PoolToken[],
     flag: boolean,
   ): LiquidityChangeTransaction {
-    return {
+    return plainToClass(LiquidityChangeTransaction, {
       type: flag ? LiquidityChangeTypeEnum.addLiquidity : LiquidityChangeTypeEnum.removeLiquidity,
       hash: entity.information.transaction.id,
       blockNumber: Number(entity.blockNumber),
@@ -433,7 +437,7 @@ export class Mapper {
       gasUsed: null,
       lpTokenAddress: entity.information.pair.id,
       tokens: [uniswapTokens[0], uniswapTokens[1]],
-    };
+    });
   }
 
   private getOriginAddress(originArray: string[], address: string): string {
@@ -497,7 +501,7 @@ export class Mapper {
             const reserve0 = element1.pair.reserve0;
             const reserve1 = element1.pair.reserve1;
 
-            const poolToken0 = {
+            const poolToken0 = plainToClass(PoolTokenDto, {
               address: token0.id,
               decimals: Number(token0.decimals),
               name: token0.name,
@@ -505,11 +509,11 @@ export class Mapper {
               totalSupply: null,
               amount: userPoolShare.times(reserve0).toString(),
               reserve: reserve0,
-              priceUSD: this.priceInUSD(element1.pair.reserveUSD, reserve0),
+              priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve0),
               percentage: this.PERCENTAGE,
-            };
+            });
 
-            const poolToken1 = {
+            const poolToken1 = plainToClass(PoolTokenDto, {
               address: token1.id,
               decimals: Number(token1.decimals),
               name: token1.name,
@@ -517,9 +521,9 @@ export class Mapper {
               totalSupply: null,
               amount: userPoolShare.times(reserve1).toString(),
               reserve: reserve1,
-              priceUSD: this.priceInUSD(element1.pair.reserveUSD, reserve1),
+              priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve1),
               percentage: this.PERCENTAGE,
-            };
+            });
             position.liquidityPoolTokens.push(poolToken0, poolToken1);
           }
         });

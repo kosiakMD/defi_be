@@ -1,3 +1,6 @@
+// eslint-disable-next-line max-classes-per-file
+import { Type } from 'class-transformer';
+
 import { Address } from '../common/types';
 import {
   ChainIdEnum,
@@ -8,13 +11,13 @@ import {
   TransactionTypeEnum,
 } from 'src/common/enum';
 
+import { LiquidityPosition, UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
 import {
   BurnsInterface,
   MintsInterface,
   SnapshotsInterface,
   SwapsInterface,
 } from './entity.information.interfaces';
-import { LiquidityPosition, UniswapLiquidityPosition } from './liquidity.position.interfaces';
 
 export type TokenSymbol = string;
 
@@ -26,17 +29,37 @@ export interface AmountAble {
   amount?: string;
 }
 
-export interface ERC20Token {
+export class ERC20Token {
   address: string;
-  name?: string;
-  symbol?: string;
-  decimals?: number;
+  name: string;
+  symbol: string;
+  decimals: number;
   totalSupply?: string;
 }
 
-export interface PoolToken extends ERC20Token, PriceAble, AmountAble {
+export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
   reserve: string;
   percentage?: number;
+}
+
+export interface Asset extends ERC20Token {
+  id: number;
+  chainId: number;
+  isTracked: boolean;
+}
+
+export class PoolTokenDto extends ERC20Token implements PoolToken {
+  reserve: string;
+  percentage?: number;
+  priceUSD?: number;
+  amount?: string;
+}
+
+export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
+
+export class SwapTokenDto extends ERC20Token implements SwapToken {
+  priceUSD?: number;
+  amount?: string;
 }
 
 export interface UniswapResponseData {
@@ -88,7 +111,7 @@ export interface StakingPosition {
   transactions?: StakingTransaction[];
 }
 
-export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
+export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
@@ -97,7 +120,7 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   liquidityPositions?: any[];
 }
 
-export interface Transaction<T = string> {
+export class Transaction<T = string> {
   type: T;
   hash: string;
   timestamp: number;
@@ -107,13 +130,12 @@ export interface Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export interface Transactions extends BaseData<'transaction'> {
+export class Transactions extends BaseData<'transaction'> {
+  @Type(() => Transaction)
   txs: Transaction[];
 }
 
-export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
-
-export interface LiquidityChangeTransaction extends Transaction {
+export class LiquidityChangeTransaction extends Transaction {
   type: LiquidityChangeTypeEnum;
   lpTokenAddress: string;
   liquidity: string;
@@ -121,13 +143,15 @@ export interface LiquidityChangeTransaction extends Transaction {
   tokens: PoolToken[];
 }
 
-export interface SwapTransaction extends Transaction {
+export class SwapTransaction extends Transaction {
   type: TransactionTypeEnum.swap;
+  @Type(() => SwapTokenDto)
   tokenIn: SwapToken;
+  @Type(() => SwapTokenDto)
   tokenOut: SwapToken;
 }
 
-export interface AutomaticMarketMaker extends BaseData<ProtocolTypeEnum.amm> {
+export class AutomaticMarketMaker extends BaseData<ProtocolTypeEnum.amm> {
   isTransferSupported?: boolean;
   liquidityPositions: LiquidityPosition[];
 }

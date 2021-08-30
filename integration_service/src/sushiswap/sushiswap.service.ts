@@ -29,7 +29,7 @@ export class SushiswapService {
     private readonly mapper: Mapper,
   ) {}
 
-  async getSushiswapDataByAddresses(addresses: string): Promise<BaseData[]> {
+  async getDataByAddresses(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
     const result = await getDataByAddresses(
       this.swapsRepository,

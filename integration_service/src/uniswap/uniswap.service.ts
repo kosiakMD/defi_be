@@ -28,7 +28,7 @@ export class UniswapService {
     private readonly mapper: Mapper,
   ) {}
 
-  async getDataByAddress(addresses: string): Promise<BaseData[]> {
+  public getDataByAddresses = async (addresses: string): Promise<BaseData[]> => {
     const originAddressesArray = addresses.split(',');
 
     const result = await getDataByAddresses(
@@ -47,5 +47,5 @@ export class UniswapService {
       ProjectEnum.uniswap,
       UniswapProtocolEnum.uniswapV2,
     );
-  }
+  };
 }

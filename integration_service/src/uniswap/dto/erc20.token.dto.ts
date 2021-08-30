@@ -5,13 +5,13 @@ export class ERC20TokenDto {
   address: string;
 
   @ApiProperty({ type: String, example: 'fae.df', required: false })
-  name?: string;
+  name: string;
 
   @ApiProperty({ type: String, example: 'FDF', required: false })
-  symbol?: string;
+  symbol: string;
 
   @ApiProperty({ type: Number, example: 18, required: false })
-  decimals?: number;
+  decimals: number;
 
   @ApiProperty({ type: String, example: '1033405.00701', required: false })
   totalSupply?: string;

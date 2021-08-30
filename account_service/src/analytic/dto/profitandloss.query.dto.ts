@@ -5,7 +5,7 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { splitToArrayAndLowerCase } from '../../utils/transform';

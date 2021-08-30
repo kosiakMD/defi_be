@@ -26,5 +26,6 @@ import { UniswapService } from './uniswap.service';
   ],
   controllers: [UniswapController],
   providers: [UniswapService, Mapper],
+  exports: [UniswapService],
 })
 export class UniswapModule {}

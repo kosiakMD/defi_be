@@ -1,7 +1,7 @@
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Address, Chains, DetailedResponse } from '../common/interfaces';
@@ -10,6 +10,7 @@ import { ChainIdEnum, ResultStatus } from 'src/common/enum';
 import { Logger } from '../Logger/Logger.service';
 import { AssetsRepository } from './assets.repository';
 import { AssetDto, AssetResponseDto } from './dto/asset.dto';
+import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assetsPoolsDto';
 import { AssetsEntity } from './entity/assets.entity';
 
 @Injectable()
@@ -32,6 +33,11 @@ export class AssetsService {
 
   async findByAddressAndChain(address: Address, chainId: ChainIdEnum): Promise<AssetsEntity> {
     return await this.assetRepository.findOneByAddressAndChain(address, chainId);
+  }
+
+  async getAssetObjectsForLambda(chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
+    const assetsPools = await this.assetRepository.findAllTrackedAssetsWithPoolsByChain(chainId);
+    return assetsPools.map((pool) => plainToClass(AssetsPoolsDto, pool));
   }
 
   async getAllAssetsByAddressesAndChains(
@@ -67,5 +73,17 @@ export class AssetsService {
       response.status = ResultStatus.error;
     }
     return response;
+  }
+
+  static getResponseObject(flag?: boolean): AssetsPoolsPostResponseDto {
+    return flag
+      ? new AssetsPoolsPostResponseDto(
+          HttpStatus.CREATED,
+          'AssetsPools were successfully saved to DB',
+        )
+      : new AssetsPoolsPostResponseDto(
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          'Saving of assetsPools failed',
+        );
   }
 }

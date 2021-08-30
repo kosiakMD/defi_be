@@ -42,5 +42,8 @@ export class AssetsEntity {
   @Column({ name: 'is_lp' })
   isLp: boolean;
 
+  @Column({ name: 'is_tracked' })
+  isTracked: boolean;
+
   status: AssetState;
 }

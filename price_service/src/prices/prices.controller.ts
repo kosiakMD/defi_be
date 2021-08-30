@@ -1,8 +1,8 @@
 import { Request } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Body, Controller, Get, Post, Query, Req, Inject } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpStatus, Inject, Post, Query, Req } from '@nestjs/common';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
 import { Logger } from 'src/common/Logger/Logger.service';
 
@@ -11,9 +11,11 @@ import {
   PriceQueryDto,
   PriceRequestDto,
   PriceResponseDto,
-  PricesPayloadV2,
   PricesPayload,
+  PricesPayloadV2,
 } from './dto';
+import { PostResponseDto } from './dto/post.response.dto';
+import { PriceRequestCurrentDto } from './dto/price.request.current.dto';
 import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
 import { CurrentPriceV2ResponseDto } from './dto/price.response.v2.current.dto';
 import { HistoricalPriceV2ResponseDto } from './dto/price.response.v2.historical.dto';
@@ -131,5 +133,24 @@ export class PricesController {
     this.logger.timeEnd(request.originalUrl);
 
     return response;
+  }
+
+  @Post('/current')
+  @ApiCreatedResponse({ type: PostResponseDto })
+  async postCurrentPrice(@Body() body: PriceRequestCurrentDto[]): Promise<PostResponseDto> {
+    try {
+      await this.priceService.updateCurrentPrice(body);
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Asset price has been successfully updated',
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+        message: 'Error. Asset current price is not saved',
+        error,
+      };
+    }
   }
 }

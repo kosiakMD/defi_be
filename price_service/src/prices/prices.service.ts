@@ -6,7 +6,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 
-import { ChainIdEnum } from '../common/enum';
+import { ChainIdEnum, CurrencyIdEnum } from '../common/enum';
 
 import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';
@@ -20,8 +20,9 @@ import {
   PriceResponseDto,
   TimestampKeyPrice,
 } from './dto';
+import { PriceRequestCurrentDto } from './dto/price.request.current.dto';
 import { CurrentPricesRequest, HistoricalPricesRequest } from './interfaces';
-import { AssetPrice } from './models';
+import { Asset, AssetCurrentPrice, AssetPrice } from './models';
 
 type TimestampPrice = {
   timestamp: number;
@@ -56,6 +57,14 @@ type PriceRow = {
 };
 
 type PriceRowV2 = PriceRow & AssetV2Additional;
+
+type AssociatedAssetPrice = {
+  assetId: number;
+  address: string;
+  chainId: ChainIdEnum;
+  currencyId: CurrencyIdEnum;
+  value: number;
+};
 
 const DEFAULT_ALLOWED_CURRENT_PRICE_THRESHOLD = 6 * SECONDS_IN_HOUR;
 const DEFAULT_ALLOWED_HISTORICAL_PRICE_THRESHOLD = 2 * SECONDS_IN_DAY;
@@ -228,6 +237,120 @@ export class PriceService {
       prices: response,
       chain: await this.chainService.getById(chain),
       currency: await this.currencyService.getById(currency),
+    };
+  }
+
+  public async updateCurrentPrice(requestBody: PriceRequestCurrentDto[]): Promise<void> {
+    // get a list of assets that exist in DB
+    const sqlCondition: string = this.getFindAssetsSqlCondition(requestBody);
+    const foundAssets: Asset[] = (
+      await this.entityManager.query(`SELECT * FROM prices.asset WHERE ${sqlCondition}`)
+    ).map((row) => this.mapRowToAsset(row));
+
+    // filter a list of DTOs for which no assets were found
+    const dtoForMissingAssets: PriceRequestCurrentDto[] = requestBody.filter(
+      (dto) =>
+        !foundAssets.some(
+          (asset) => asset.address === dto.address && asset.chainId === dto.chainId,
+        ),
+    );
+
+    await this.entityManager.transaction(async (transactionalEntityManager: EntityManager) => {
+      // save new assets from DTO to DB
+      let addedAssets: Asset[] = [];
+      if (dtoForMissingAssets.length) {
+        const sqlValues: string = this.getSqlValues(
+          dtoForMissingAssets,
+          (dto) => `('${dto.address}',${dto.chainId})`,
+        );
+        addedAssets = (
+          await transactionalEntityManager.query(
+            `INSERT INTO prices.asset(address, chain_id) VALUES ${sqlValues} RETURNING *`,
+          )
+        ).map((row) => this.mapRowToAsset(row));
+      }
+
+      // create a new list linking all assets (old and new) with DTOs
+      const associatedAssetsPrices: AssociatedAssetPrice[] = this.getAssociatedAssetsPrices(
+        foundAssets.concat(addedAssets),
+        requestBody,
+      );
+
+      // save prices associated with asset ids
+      const pricesSqlValues: string = this.getSqlValues(
+        associatedAssetsPrices,
+        (price) => `('${price.assetId}',${price.currencyId},${price.value},NOW())`,
+      );
+      const assetCurrentPrices: AssetCurrentPrice[] = (
+        await transactionalEntityManager.query(
+          `INSERT INTO prices.asset_current_price(asset_id, currency_id, value, updated_at)
+                VALUES ${pricesSqlValues}
+                ON CONFLICT (asset_id) DO UPDATE SET value=EXCLUDED.value, updated_at=NOW()
+                RETURNING *;`,
+        )
+      ).map((row) => this.mapRowToCurrentPrices(row));
+
+      // store current price to cache using associated list
+      assetCurrentPrices.forEach((assetPrice) => {
+        const associatedAsset: AssociatedAssetPrice = associatedAssetsPrices.find(
+          (value) => value.assetId === assetPrice.assetId,
+        );
+        this.cache.set<AssetCurrentPrice>(
+          this.getCacheKey(associatedAsset.chainId, assetPrice.currencyId, associatedAsset.address),
+          assetPrice,
+          { ttl: this.cacheTTLInSeconds },
+        );
+      });
+    });
+  }
+
+  private getAssociatedAssetsPrices(
+    assets: Asset[],
+    listOfDTO: PriceRequestCurrentDto[],
+  ): AssociatedAssetPrice[] {
+    return assets.map((asset) => {
+      const associatedDto: PriceRequestCurrentDto = listOfDTO.find(
+        (dto) => dto.address === asset.address && dto.chainId === asset.chainId,
+      );
+      return {
+        assetId: asset.id,
+        address: asset.address,
+        currencyId: associatedDto.currencyId,
+        value: associatedDto.price,
+        chainId: asset.chainId,
+      };
+    });
+  }
+
+  private getSqlValues(listOfObjects: any[], getValues): string {
+    return listOfObjects.reduce<string>(
+      (result: string, sourceObject: any, i: number) =>
+        result + getValues(sourceObject) + (i !== listOfObjects.length - 1 ? ',' : ''),
+      '',
+    );
+  }
+
+  private getFindAssetsSqlCondition(requestBody: PriceRequestCurrentDto[]): string {
+    return requestBody.reduce<string>(
+      (result: string, dto: PriceRequestCurrentDto, i: number) =>
+        result +
+        `(address='${dto.address}' AND chain_id=${dto.chainId})` +
+        (i !== requestBody.length - 1 ? ' OR ' : ''),
+      '',
+    );
+  }
+
+  private mapRowToAsset(row: any): Asset {
+    return { ...row, chainId: row.chain_id } as Asset;
+  }
+
+  private mapRowToCurrentPrices(row: any): AssetCurrentPrice {
+    return {
+      id: row.id,
+      value: row.value,
+      assetId: Number.parseInt(row.asset_id),
+      currencyId: row.currency_id,
+      updatedAt: row.updated_at,
     };
   }
 

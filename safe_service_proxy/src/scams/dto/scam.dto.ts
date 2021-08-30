@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { NetworkDto } from 'src/common/dto/network.dto';
 
 import { AuditedByDto } from './audited.by.dto';
-import { LinksDto } from './links.dto';
+import { ScamLinksDto } from './scam.links.dto';
 import { ScamTypeDto } from './scam.type.dto';
 import { TokenDto } from './token.dto';
 
@@ -57,9 +57,9 @@ export class ScamDto {
   network: NetworkDto;
 
   @Expose()
-  @Transform(({ obj }) => plainToClass(LinksDto, obj))
-  @ApiProperty({ type: LinksDto })
-  links: LinksDto;
+  @Transform(({ obj }) => plainToClass(ScamLinksDto, obj))
+  @ApiProperty({ type: ScamLinksDto })
+  links: ScamLinksDto;
 
   @Expose()
   @ApiProperty({ type: [AuditedByDto] })

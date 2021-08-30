@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Exclude()
-export class LinksDto {
+export class ScamLinksDto {
   @Expose({ name: 'website_link' })
   @ApiProperty({ type: String, example: 'https://www.coverprotocol.com/' })
   website: string;

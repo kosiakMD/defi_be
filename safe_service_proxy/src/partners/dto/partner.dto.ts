@@ -2,7 +2,7 @@ import { Exclude, Expose, plainToClass, Transform } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { LinksDto } from '../../common/dto/links.dto';
+import { LinksDto } from 'src/common/dto/links.dto';
 import { PartnerBaseDto } from 'src/common/dto/partner.base.dto';
 
 import { FilesCountDto } from './files.count.dto';

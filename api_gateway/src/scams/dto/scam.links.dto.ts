@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class LinksDto {
+export class ScamLinksDto {
   @ApiProperty({ type: String, example: 'https://www.coverprotocol.com/' })
   website: string;
 

@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Body, Controller, Get, HttpStatus, Inject, Post, Query, Req } from '@nestjs/common';
-import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
 import { Logger } from 'src/common/Logger/Logger.service';
 
@@ -137,6 +137,7 @@ export class PricesController {
 
   @Post('/current')
   @ApiCreatedResponse({ type: PostResponseDto })
+  @ApiBody({ type: [PriceRequestCurrentDto] })
   async postCurrentPrice(@Body() body: PriceRequestCurrentDto[]): Promise<PostResponseDto> {
     try {
       await this.priceService.updateCurrentPrice(body);

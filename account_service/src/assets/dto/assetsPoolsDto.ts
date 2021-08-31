@@ -46,8 +46,3 @@ export class AssetsPoolsPostResponseDto {
     this.error = error;
   }
 }
-
-export class LambdaRequestDto {
-  @ApiProperty({ type: AssetsPoolsDto, isArray: true })
-  tokensPools: AssetsPoolsDto[];
-}

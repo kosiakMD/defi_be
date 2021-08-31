@@ -1,18 +1,9 @@
 import { Response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Body, Controller, Get, HttpStatus, Inject, LoggerService, Post, Query, Res, } from '@nestjs/common';
 import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Inject,
-  LoggerService,
-  Post,
-  Query,
-  Res,
-} from '@nestjs/common';
-import {
+  ApiBody,
   ApiCreatedResponse,
   ApiInternalServerErrorResponse,
   ApiQuery,
@@ -26,7 +17,7 @@ import { DetailedResponse } from '../common/interfaces';
 import { AssetsPoolsService } from './assets.pools.service';
 import { AssetsService } from './assets.service';
 import { AssetDto, AssetQueryDto, AssetResponseDto } from './dto/asset.dto';
-import { AssetsPoolsDto, AssetsPoolsPostResponseDto, LambdaRequestDto } from './dto/assetsPoolsDto';
+import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assetsPoolsDto';
 
 @ApiTags('Assets')
 @Controller('assets')
@@ -89,11 +80,12 @@ export class AssetsController {
   }
 
   @Post('/pools')
+  @ApiBody({ type: [AssetsPoolsDto] })
   @ApiCreatedResponse({ type: AssetsPoolsPostResponseDto })
   @ApiInternalServerErrorResponse({ type: AssetsPoolsPostResponseDto })
-  async saveAssetsPools(@Body() body: LambdaRequestDto, @Res() res: Response): Promise<void> {
+  async saveAssetsPools(@Body() body: AssetsPoolsDto[], @Res() res: Response): Promise<void> {
     try {
-      await this.assetsPoolsService.saveAssetsPoolsToDb(body.tokensPools);
+      await this.assetsPoolsService.saveAssetsPoolsToDb(body);
       res.status(HttpStatus.CREATED).send(AssetsService.getResponseObject(true));
     } catch (e) {
       this.logger.error(e);

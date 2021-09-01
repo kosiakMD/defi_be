@@ -8,6 +8,7 @@ import {
   CurrencyIdEnum,
 } from 'src/common/enum';
 
+import { LiquidityPoolsResponseDto } from '../pools/dto/liquidity.pools.response.dto';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
@@ -19,10 +20,10 @@ export class PancakePriceService {
   constructor(private readonly poolsService: PoolsService) {}
 
   async liquidityPoolsPrices(): Promise<PriceResponseDto<PricesPayload>> {
-    const poolsV1: LiquidityPoolsEntity[] = await this.poolsService.getProjectPools(
+    const poolsV1: LiquidityPoolsResponseDto[] = await this.poolsService.getProjectPools(
       PANCAKE_PROJECT,
     );
-    const poolsV2: LiquidityPoolsEntity[] = await this.poolsService.getProjectPools(
+    const poolsV2: LiquidityPoolsResponseDto[] = await this.poolsService.getProjectPools(
       PANCAKE_V2_PROJECT,
     );
     const allPools: LiquidityPoolsEntity[] = [...poolsV1, ...poolsV2];

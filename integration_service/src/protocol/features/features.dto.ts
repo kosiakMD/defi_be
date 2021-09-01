@@ -76,7 +76,7 @@ export class ProtocolFeatureInfoDto extends ProtocolBasicInfo {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   // eslint-disable-next-line prettier/prettier
-  override features: ProtocolFeaturesExportDto;
+  features: ProtocolFeaturesExportDto;
 }
 
 export class ProtocolDataDto {

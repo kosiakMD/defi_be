@@ -4,8 +4,9 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { PancakeProtocolEnum, ProjectEnum } from 'src/common/enum';
+import { PancakeProtocolEnum, ProjectEnum, UniswapProtocolEnum } from 'src/common/enum';
 
+import { LiquidityPoolsResponseDto } from './dto/liquidity.pools.response.dto';
 import { LiquidityPoolsEntity } from './entities/liquidity.pools.entity';
 import {
   PANCAKE_MIN_RESERVE,
@@ -28,7 +29,7 @@ export class PoolsService {
     this.cacheTTLInSeconds = config.get<number>('POOLS_CACHE_TTL_IN_SECONDS') || 5 * 60;
   }
 
-  async getPoolsToDisplay(): Promise<LiquidityPoolsEntity[]> {
+  async getPoolsToDisplay(): Promise<LiquidityPoolsResponseDto[]> {
     const cachedPools = await this.getCachedPools();
 
     if (cachedPools?.length) {
@@ -41,7 +42,9 @@ export class PoolsService {
       .orWhere("pools.project = 'Pancake V2'")
       .getMany();
 
-    const uniswapPools = dbPools.filter((p) => {
+    const dtoPools: LiquidityPoolsResponseDto[] = this.fromEntityToDtos(dbPools);
+
+    const uniswapPools = dtoPools.filter((p) => {
       return (
         p.project === ProjectEnum.uniswap &&
         p.reserveUsd > UNI_MIN_RESERVE &&
@@ -49,26 +52,26 @@ export class PoolsService {
       );
     });
 
-    const sushiswapPools = dbPools.filter((p) => {
+    const sushiswapPools = dtoPools.filter((p) => {
       return p.project === ProjectEnum.sushiswap && p.reserveUsd > SUSHISWAP_MIN_RESERVE;
     });
 
-    const pancakePools = dbPools.filter((p) => {
+    const pancakePools = dtoPools.filter((p) => {
       return p.project === PancakeProtocolEnum.pancakeV1 && p.reserveUsd > PANCAKE_MIN_RESERVE;
     });
 
-    const pancakeV2Pools = dbPools.filter((p) => {
+    const pancakeV2Pools = dtoPools.filter((p) => {
       return p.project === PancakeProtocolEnum.pancakeV2 && p.reserveUsd > PANCAKE_MIN_RESERVE;
     });
 
     const allPools = [...uniswapPools, ...sushiswapPools, ...pancakePools, ...pancakeV2Pools];
 
-    this.updateCachePools(allPools);
+    await this.updateCachePools(allPools);
 
     return allPools;
   }
 
-  async getProjectPools(project: string): Promise<LiquidityPoolsEntity[]> {
+  async getProjectPools(project: string): Promise<LiquidityPoolsResponseDto[]> {
     const cachedPools = await this.getCachedPools(project);
 
     if (cachedPools?.length) {
@@ -80,17 +83,39 @@ export class PoolsService {
       .where('pools.project = :project', { project: project })
       .getMany();
 
-    this.updateCachePools(dbPools, project);
+    const dtoPools: LiquidityPoolsResponseDto[] = this.fromEntityToDtos(dbPools);
+    await this.updateCachePools(dtoPools, project);
 
-    return dbPools;
+    return dtoPools;
   }
 
-  private async getCachedPools(seed?: string): Promise<LiquidityPoolsEntity[]> {
-    return await this.cache.get<LiquidityPoolsEntity[]>(this.getCacheKey(seed));
+  private fromEntityToDtos(entities: LiquidityPoolsEntity[]): LiquidityPoolsResponseDto[] {
+    const dtoPools: LiquidityPoolsResponseDto[] = [];
+    entities.forEach((dbPool) => {
+      const poolDto = new LiquidityPoolsResponseDto();
+      poolDto.id = +dbPool.id;
+      poolDto.address = dbPool.address;
+      poolDto.chain = +dbPool.chain;
+      poolDto.project =
+        dbPool.project === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : dbPool.project;
+      poolDto.reserveUsd = +dbPool.reserveUsd;
+      poolDto.apy = dbPool.apy;
+      poolDto.il = dbPool.il;
+      poolDto.token = dbPool.token;
+      poolDto.poolTokens = dbPool.poolTokens;
+      poolDto.createdAt = dbPool.createdAt;
+      poolDto.updatedAt = dbPool.updatedAt;
+      dtoPools.push(poolDto);
+    });
+    return dtoPools;
   }
 
-  private async updateCachePools(pools: LiquidityPoolsEntity[], seed?: string): Promise<void> {
-    this.cache.set(this.getCacheKey(seed), pools, { ttl: this.cacheTTLInSeconds });
+  private async getCachedPools(seed?: string): Promise<LiquidityPoolsResponseDto[]> {
+    return await this.cache.get<LiquidityPoolsResponseDto[]>(this.getCacheKey(seed));
+  }
+
+  private async updateCachePools(pools: LiquidityPoolsResponseDto[], seed?: string): Promise<void> {
+    await this.cache.set(this.getCacheKey(seed), pools, { ttl: this.cacheTTLInSeconds });
   }
 
   private getCacheKey(seed?: string): string {

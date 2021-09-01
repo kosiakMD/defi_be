@@ -11,9 +11,6 @@ export class PoolsController {
   @Get()
   @ApiOkResponse({ type: LiquidityPoolsResponseDto, isArray: true })
   async getPoolsToDisplay(): Promise<LiquidityPoolsResponseDto[]> {
-    const liquidityPoolsEntities = await this.poolsService.getPoolsToDisplay();
-    return liquidityPoolsEntities.map((entity) =>
-      new LiquidityPoolsResponseDto().fromEntityToDto(entity),
-    );
+    return this.poolsService.getPoolsToDisplay();
   }
 }

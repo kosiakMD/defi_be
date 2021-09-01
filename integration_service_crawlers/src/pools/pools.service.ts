@@ -6,8 +6,6 @@ import { ConfigService } from '@nestjs/config';
 
 import { DatabaseService } from '../jobs/db/database.service';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
-import { PoolsServiceBalancer } from './pools.service.balancer';
-import { PoolsServiceCurve } from './pools.service.curve';
 import { PoolsServicePancake } from './pools.service.pancake';
 import { PoolsServiceSushiswap } from './pools.service.sushiswap';
 import { PoolsServiceUniswap } from './pools.service.uniswap';
@@ -20,8 +18,6 @@ export class PoolsService {
     private readonly poolsServiceUniswap: PoolsServiceUniswap,
     private readonly poolsServiceSushiswap: PoolsServiceSushiswap,
     private readonly poolsServicePancake: PoolsServicePancake,
-    private readonly poolsServiceBalancer: PoolsServiceBalancer,
-    private readonly poolsServiceCurve: PoolsServiceCurve,
     private databaseService: DatabaseService,
     private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,

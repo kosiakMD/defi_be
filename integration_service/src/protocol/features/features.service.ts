@@ -18,7 +18,7 @@ export class FeaturesService {
   // private static createProtocolFeature(abbr: ChainAbbrEnum): ProtocolDataDto {
   //   return plainToClass(ProtocolDataDto, {
   //     chain: getChainByAbbr(abbr),
-  //     protocols: [],
+  //     protocol: [],
   //   } as ProtocolDataDto);
   // }
 

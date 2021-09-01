@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 
-import { PlatformController } from './platform.controller';
+import { PlatformController } from './protocol.controller';
 
 describe('PlatformController', () => {
   let controller: PlatformController;

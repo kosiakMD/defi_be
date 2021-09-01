@@ -2,7 +2,7 @@ import {
   ChainIdEnum,
   LiquidityChangeTypeEnum,
   PancakeProtocolEnum,
-  PlatformEnum,
+  ProjectEnum,
   ProtocolTypeEnum,
   ResultStatus,
   SushiSwapProtocolEnum,
@@ -26,7 +26,7 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: PlatformEnum;
+  platformName: ProjectEnum;
   protocolName: ProtocolName;
 }
 

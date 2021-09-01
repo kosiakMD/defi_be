@@ -2,23 +2,15 @@
 import { Exclude } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
+import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum, SushiSwapProtocolEnum, UniswapProtocolEnum } from '../enum';
+import { FeatureEnum } from '../enum/feature.enum';
+import { FeaturesType } from '../types/protocol.types';
+import { FeatureDto } from '../types/features.types';
 
-import {
-  ChainAbbrEnum,
-  PancakeProtocolEnum,
-  ProjectEnum,
-  ProtocolName,
-  ProtocolNameEnum,
-  SushiSwapProtocolEnum,
-  UniswapProtocolEnum
-} from '../../common/enum';
-
-import { ResponseDto } from '../../dto';
-import { ChainDto } from '../../dto/chain.dto';
-import { FeatureEnum } from './features.enum';
-import { FeatureDto } from '../../integrations/integrationFeatures';
-import { FeaturesType } from '../protocol.types';
-
+import { ChainDto } from './chain.dto';
+import { ProtocolName } from '../interfaces';
+import { ResponseDto } from './response.dto';
+import { ProtocolNameEnum } from '../enum/projectEnum';
 
 export interface ProtocolParams {
   protocolName: ProtocolName;
@@ -84,7 +76,7 @@ export class ProtocolFeatureInfoDto extends ProtocolBasicInfo {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   // eslint-disable-next-line prettier/prettier
-  features: ProtocolFeaturesExportDto;
+  override features: ProtocolFeaturesExportDto;
 }
 
 export class ProtocolDataDto {

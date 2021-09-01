@@ -1,6 +1,6 @@
 import { createParamDecorator, HttpException } from '@nestjs/common';
 
-import { ChainIdEnum } from '../common/enum';
+import { ChainIdEnum } from '../enum';
 
 export * from './error.decorators';
 

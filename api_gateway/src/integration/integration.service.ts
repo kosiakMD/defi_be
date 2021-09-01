@@ -5,8 +5,11 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
 
+import { FeaturesResponseDto } from '../common/DTO/features.dto';
+import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
+import { RequestErrorHandler } from '../common/decorators';
 import { Logger } from 'src/common/Logger/Logger.service';
-import { BaseData, Pool, Vault } from 'src/common/interfaces';
+import { Address, BaseData, Pool, ProtocolName, Vault } from 'src/common/interfaces';
 
 import { BalancesResponse } from '../account/account.interfaces';
 
@@ -20,6 +23,7 @@ export class IntegrationService {
   private readonly getCurveUrl: string;
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
+  private readonly protocolsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -53,6 +57,9 @@ export class IntegrationService {
 
     const vaultsPath = this.configService.get<string>('VAULTS_PATH');
     this.getVaultsUrl = `${url}/${vaultsPath}`;
+
+    const protocolsPath = this.configService.get<string>('INTEGRATION_PROTOCOLS');
+    this.protocolsUrl = `${url}/${protocolsPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -174,12 +181,49 @@ export class IntegrationService {
       return data;
     } catch (e) {
       if (e.isAxiosError) {
-        this.logger.error(e.config.url);
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
         if (e.response) {
           this.logger.error(e.response.data);
         }
       }
       throw e;
     }
+  }
+
+  async getAllFeatures(): Promise<FeaturesResponseDto> {
+    try {
+      this.logger.time(`${this.protocolsUrl}/`);
+      const data = await this.httpService
+        .get(this.protocolsUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.protocolsUrl);
+      return data;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
+      throw e;
+    }
+  }
+
+  @RequestErrorHandler()
+  async getProtocolFeaturesData(
+    protocolName: ProtocolName,
+    chains: string,
+    addresses: Address,
+  ): Promise<IntegrationsResponseDto> {
+    const url = `${this.protocolsUrl}/${protocolName}/`;
+
+    this.logger.time(url);
+    const data = await this.httpService
+      .get(url, { params: { chains, addresses } })
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(url);
+    return data;
   }
 }

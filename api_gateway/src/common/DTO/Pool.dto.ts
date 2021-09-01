@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, PlatformEnum } from '../enum';
+import { ChainIdEnum, ProjectEnum } from '../enum';
 import { Address, Pool, PoolAPY, PoolToken, PoolTokenId } from '../interfaces';
 import { PoolAPYDTO } from './APY.dto';
 import PoolTokenDto from './PoolToken.dto';
@@ -44,8 +44,8 @@ export default class PoolDto implements Pool {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;
 
-  @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.uniswap })
-  project: PlatformEnum;
+  @ApiProperty({ enum: ProjectEnum, enumName: 'ProjectEnum', example: ProjectEnum.uniswap })
+  project: ProjectEnum;
 
   @ApiProperty({ type: Number, example: 99690611 })
   reserveUSD: number;

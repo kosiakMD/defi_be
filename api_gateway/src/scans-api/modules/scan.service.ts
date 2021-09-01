@@ -5,7 +5,7 @@ import { HttpService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Logger } from 'src/common/Logger/Logger.service';
-import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from 'src/common/enum';
+import { ChainIdEnum, ChainAbbrEnum, ResultStatus } from 'src/common/enum';
 
 import { Transaction } from '../../transactions/transactions.interfaces';
 import {
@@ -30,7 +30,7 @@ export class ScanService {
   protected readonly scanServiceKey: string;
   protected readonly mainCoinAddress: string;
   protected readonly chainId: ChainIdEnum;
-  protected readonly chainPrefix: ChainPrefixEnum;
+  protected readonly chainPrefix: ChainAbbrEnum;
   private readonly DEFAULT_MULTIPLIER: number = 1e-18;
 
   constructor(

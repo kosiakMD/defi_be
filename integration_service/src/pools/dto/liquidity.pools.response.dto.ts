@@ -24,7 +24,7 @@ export class LiquidityPoolsResponseDto {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;
 
-  // TODO: solve the problem it's either platform or protocol; use enum, enumName
+  // TODO: solve the problem it's either protocol or protocol; use enum, enumName
   @ApiProperty({
     enum: [PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum],
     enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum',

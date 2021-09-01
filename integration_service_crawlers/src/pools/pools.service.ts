@@ -54,7 +54,7 @@ export class PoolsService {
     }
   }
 
-  private buildInsertPoolsQuery(liquidityPools: LiquidityPool[], seed?: string): string {
+  private buildInsertPoolsQuery(liquidityPools: LiquidityPool[]): string {
     const queryStart = `
         INSERT INTO liquidity_pools
         (id,
@@ -81,8 +81,8 @@ export class PoolsService {
 				'${lp.reserveUSD}',
 				'${JSON.stringify(lp.apy)}',
 				'${JSON.stringify(lp.il)}',
-				'${JSON.stringify(lp.poolToken).replace(/'/gm, "''")}',
-				'${JSON.stringify(lp.tokens).replace(/'/gm, "''")}',
+				'${JSON.stringify(lp.token).replace(/'/gm, "''")}',
+				'${JSON.stringify(lp.poolTokens).replace(/'/gm, "''")}',
 				current_timestamp,
 				current_timestamp
 				)`;
@@ -102,12 +102,7 @@ export class PoolsService {
 					updated_at = current_timestamp
 		`;
 
-    this.cache.set(PoolsService.getCacheKey(seed), liquidityPools, { ttl: this.cacheTTLInSeconds });
     return queryStart.concat(valuesConcatenated).concat(queryEnd);
-  }
-
-  private static getCacheKey(seed?: string): string {
-    return `pools_${seed}`;
   }
 
   private static getUpdatedDate(): string {

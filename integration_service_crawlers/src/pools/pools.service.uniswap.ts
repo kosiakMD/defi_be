@@ -146,11 +146,11 @@ export class PoolsServiceUniswap {
           month: monthIL,
           monthUSD: monthIlUSD,
         },
-        poolToken: {
+        token: {
           id: currentPair.id,
           totalSupply: parseFloat(currentPair.totalSupply),
         },
-        tokens: [token0, token1],
+        poolTokens: [token0, token1],
       };
       return pool;
     });

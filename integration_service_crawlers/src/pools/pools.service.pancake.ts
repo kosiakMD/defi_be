@@ -45,8 +45,8 @@ export class PoolsServicePancake {
         fee24h: null,
         apy: c.apy,
         il: c.il,
-        poolToken: c.token,
-        tokens: c.poolTokens,
+        token: c.token,
+        poolTokens: c.poolTokens,
       };
       return [...a, liquidityPool];
     }, []);
@@ -120,11 +120,11 @@ export class PoolsServicePancake {
         month: null,
         monthUSD: null,
       },
-      poolToken: {
+      token: {
         id: address.toLowerCase(),
         totalSupply: stringToDecimals(pairTokenSupply),
       },
-      tokens: [
+      poolTokens: [
         {
           ...token0,
           reserve: BNToDecimals(pairReserves.reserves[address].reserve0, token0.decimals),

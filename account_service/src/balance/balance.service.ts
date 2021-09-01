@@ -159,7 +159,7 @@ export class BalanceService {
               tokenPriceUSD,
               totalPriceUSD: totalPriceUSD || null,
               token: {
-                chain: getInternalChainId(balance.chain),
+                chainId: getInternalChainId(balance.chain),
                 decimals: token.contract_decimals,
                 symbol: token.contract_ticker_symbol,
                 name: token.contract_name,
@@ -369,34 +369,35 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance =
-    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
-    ({
-      address,
+  private mapErc20Balance = (
+    prices: TokenPricesV2,
+    chainId: ChainIdEnum,
+  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
+    address,
+    amount,
+    tokenAddress,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
+    tokenTotalSupply,
+    isLp,
+  }): AccountTokenBalanceDto =>
+    plainToClass(AccountTokenBalanceDto, {
+      account: address,
       amount,
-      tokenAddress,
-      tokenName,
-      tokenSymbol,
-      tokenDecimals,
-      tokenTotalSupply,
-      isLp,
-    }): AccountTokenBalanceDto =>
-      plainToClass(AccountTokenBalanceDto, {
-        account: address,
-        amount,
-        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-        tokenPriceUSD: prices[tokenAddress]?.price || 0,
-        totalPriceUSD: prices[tokenAddress]?.price
-          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-          : 0,
-        token: {
-          chainId: chainId,
-          address: tokenAddress,
-          name: tokenName || null,
-          symbol: tokenSymbol || null,
-          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-          totalSupply: +tokenTotalSupply || 0,
-          isLp: isLp,
-        },
-      });
+      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+      tokenPriceUSD: prices[tokenAddress]?.price || 0,
+      totalPriceUSD: prices[tokenAddress]?.price
+        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+        : 0,
+      token: {
+        chainId: chainId,
+        address: tokenAddress,
+        name: tokenName || null,
+        symbol: tokenSymbol || null,
+        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+        totalSupply: +tokenTotalSupply || 0,
+        isLp: isLp,
+      },
+    });
 }

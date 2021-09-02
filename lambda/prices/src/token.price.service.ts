@@ -12,6 +12,7 @@ import {
   PriceResponse,
   StableCoinMapValue,
 } from './interfaces';
+import { Decimals, decimalsReserve } from './util';
 
 export class TokenPriceService {
   public static getTokensPriceResponse(
@@ -50,21 +51,29 @@ export class TokenPriceService {
     pair: Pair,
     assetPairsReserves: UniswapPairReserves,
     assetAddress: string,
-    stableCoinsMap: Map<string, StableCoinMapValue>,
+    stableCoinsReserveMap: Map<string, StableCoinMapValue>,
   ): number {
+    const decimals0 = TokenPriceService.getCorrectTokenDecimals(pair.tokens[0].decimals);
+    const decimals1 = TokenPriceService.getCorrectTokenDecimals(pair.tokens[1].decimals);
     [pair.tokens[0].reserved, pair.tokens[1].reserved] =
       pair.tokens[0].pairPosition === 0
-        ? [assetPairsReserves.reserve0, assetPairsReserves.reserve1]
-        : [assetPairsReserves.reserve1, assetPairsReserves.reserve0];
+        ? [
+            decimalsReserve(assetPairsReserves.reserve0, decimals0),
+            decimalsReserve(assetPairsReserves.reserve1, decimals1),
+          ]
+        : [
+            decimalsReserve(assetPairsReserves.reserve1, decimals0),
+            decimalsReserve(assetPairsReserves.reserve0, decimals1),
+          ];
 
     if (pair.tokens[0]?.tokenAddress === assetAddress) {
-      stableCoinsMap.set(pair.tokens[1].tokenAddress, {
+      stableCoinsReserveMap.set(pair.tokens[1].tokenAddress, {
         reserveStable: pair.tokens[1].reserved,
         reserveCoin: pair.tokens[0].reserved,
       });
       return Number(pair.tokens[0].reserved);
     }
-    stableCoinsMap.set(pair.tokens[0]?.tokenAddress, {
+    stableCoinsReserveMap.set(pair.tokens[0]?.tokenAddress, {
       reserveStable: pair.tokens[0].reserved,
       reserveCoin: pair.tokens[1].reserved,
     });
@@ -77,9 +86,12 @@ export class TokenPriceService {
     requestParams: LambdaRequestInterface,
     wrappedCoinPrice: PriceResponse,
   ): PriceResponse {
+    if (!asset) {
+      return;
+    }
     let totalLiquidityToken = 0;
     const stableCoinsMap = new Map<string, { reserveStable: string; reserveCoin: string }>();
-    asset.pairs.forEach((pair) => {
+    asset?.pairs.forEach((pair) => {
       const reserve = tokenReserves[pair.address];
       totalLiquidityToken += TokenPriceService.getTokenReserveAndModifyFields(
         pair,
@@ -125,15 +137,18 @@ export class TokenPriceService {
     tokenReserves: UniswapReservesData,
     requestParams: LambdaRequestInterface,
   ): PriceResponse {
-    const stableCoinsMap = new Map<string, StableCoinMapValue>();
+    if (!asset) {
+      return;
+    }
+    const stableCoinsValuesMap = new Map<string, StableCoinMapValue>();
     let totalLiquidityToken = 0;
-    asset.pairs.forEach((pair) => {
+    asset?.pairs.forEach((pair) => {
       const assetPairsReserves = tokenReserves[pair.address];
       totalLiquidityToken += TokenPriceService.getTokenReserveAndModifyFields(
         pair,
         assetPairsReserves,
         asset.address,
-        stableCoinsMap,
+        stableCoinsValuesMap,
       );
     });
 
@@ -142,7 +157,7 @@ export class TokenPriceService {
       if (coin === asset.address) {
         return;
       }
-      const pairsReserves = stableCoinsMap.get(coin);
+      const pairsReserves = stableCoinsValuesMap.get(coin);
       const tokenWeight = new BN(pairsReserves.reserveCoin) //
         .div(totalLiquidityToken)
         .toNumber();
@@ -168,8 +183,11 @@ export class TokenPriceService {
     requestParams: LambdaRequestInterface,
     wrappedCoinPrice: PriceResponse,
   ): PriceResponse {
+    if (!asset) {
+      return;
+    }
     const stableCoinsMap = new Map<string, { reserveStable: string; reserveCoin: string }>();
-    asset.pairs.forEach((pair) => {
+    asset?.pairs.forEach((pair) => {
       const reserve = tokenReserves[pair.address];
       TokenPriceService.getTokenReserveAndModifyFields(
         pair,
@@ -191,5 +209,9 @@ export class TokenPriceService {
       chainId: requestParams.chainId,
       currencyId: requestParams.currencyId,
     };
+  }
+
+  private static getCorrectTokenDecimals(decimals: Decimals): Decimals {
+    return !decimals ? (decimals === 0 ? 0 : 18) : decimals;
   }
 }

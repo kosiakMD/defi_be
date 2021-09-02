@@ -96,40 +96,46 @@ async function addPairsDataToAssets(
 }
 
 export async function getResult(requestParams: LambdaRequestInterface): Promise<void> {
-  const web3 = Web3Provider.initWeb3(requestParams.rpcUrl);
-  FactoryContract.initFactoryContract(web3, requestParams.protocol.address);
-  const assets = await AssetsService.getAssetsAndPairsFromDbByChain(
-    requestParams.tokenServiceUrl,
-    requestParams.chainId,
-  );
-  const uniquePairAddresses = new Set<string>();
-  const stableCoinsMap = new Map<string, AssetsApiResponse>();
-  requestParams.stableCoins.push(requestParams.protocol.coin);
-  assets.forEach((asset) => {
-    if (requestParams.stableCoins.find((address) => address === asset.address)) {
-      stableCoinsMap.set(asset.address, asset);
+  try {
+    const web3 = Web3Provider.initWeb3(requestParams.rpcUrl);
+    FactoryContract.initFactoryContract(web3, requestParams.protocol.address);
+    const assets = await AssetsService.getAssetsAndPairsFromDbByChain(
+      requestParams.tokenServiceUrl,
+      requestParams.chainId,
+    );
+    if (!assets.length) {
+      return;
     }
-  });
-  const assetsWithNewData: AssetsApiResponse[] = [];
-  await addPairsDataToAssets(
-    assets,
-    requestParams,
-    uniquePairAddresses,
-    assetsWithNewData,
-    stableCoinsMap,
-  );
+    const uniquePairAddresses = new Set<string>();
+    const stableCoinsMap = new Map<string, AssetsApiResponse>();
+    requestParams.stableCoins.push(requestParams.protocol.coin);
+    assets.forEach((asset) => {
+      if (requestParams.stableCoins.find((address) => address === asset.address)) {
+        stableCoinsMap.set(asset.address, asset);
+      }
+    });
+    const assetsWithNewData: AssetsApiResponse[] = [];
+    await addPairsDataToAssets(
+      assets,
+      requestParams,
+      uniquePairAddresses,
+      assetsWithNewData,
+      stableCoinsMap,
+    );
 
-  await AssetsService.saveAssetsPairs(requestParams.tokenServiceUrl, assetsWithNewData);
+    await AssetsService.saveAssetsPairs(requestParams.tokenServiceUrl, assetsWithNewData);
 
-  const multiCall = new LocalMultiCall();
+    const multiCall = new LocalMultiCall();
 
-  const pairsReserves = await multiCall.getPairsReserves(Array.from(uniquePairAddresses));
-
-  const assetsPrices = TokenPriceService.getTokensPriceResponse(
-    requestParams,
-    pairsReserves,
-    assets,
-  );
-  LOGGER.info(JSON.stringify(assetsPrices));
-  await PriceService.saveAssetsPrices(requestParams.priceServiceUrl, assetsPrices);
+    const pairsReserves = await multiCall.getPairsReserves(Array.from(uniquePairAddresses));
+    const assetsPrices = TokenPriceService.getTokensPriceResponse(
+      requestParams,
+      pairsReserves,
+      assets,
+    );
+    LOGGER.info(JSON.stringify(assetsPrices));
+    await PriceService.saveAssetsPrices(requestParams.priceServiceUrl, assetsPrices);
+  } catch (e) {
+    LOGGER.error(e);
+  }
 }

@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainIdEnum, CurrencyIdEnum } from 'src/common/enum';
 
-import { splitToArray, splitToNumberArray } from '../../utils/transform';
+import { splitToArray } from '../../utils/transform';
 
 export class PriceQueryDto {
   @Type(() => Number)
@@ -13,7 +13,6 @@ export class PriceQueryDto {
   @IsOptional()
   @ApiProperty({
     enum: ChainIdEnum,
-    enumName: 'ChainIdEnum',
     example: ChainIdEnum.eth,
     default: ChainIdEnum.eth,
     required: false,
@@ -26,7 +25,6 @@ export class PriceQueryDto {
   @IsOptional()
   @ApiProperty({
     enum: CurrencyIdEnum,
-    enumName: 'CurrencyIdEnum',
     example: CurrencyIdEnum.usd,
     default: CurrencyIdEnum.usd,
     description: 'Currency Id',
@@ -47,16 +45,4 @@ export class PriceQueryDto {
       '0xbddab785b306bcd9fb056da189615cc8ece1d823,0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
   })
   addresses: string[];
-
-  @IsOptional()
-  @IsInt({ each: true })
-  @Transform(({ value }) => splitToNumberArray(value))
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: 'Array of timestamps for historical prices (comma separated)',
-    example: '1617138000,1617224400',
-    default: '1617138000,1617224400',
-  })
-  timestamps: number[];
 }

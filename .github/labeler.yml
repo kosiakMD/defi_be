@@ -1,5 +1,5 @@
 documentation:
-  - any: [ 'README.md' ]
+  - any: [ 'README.md', '*/README.md' ]
 
 Config:
   - any: [
@@ -18,7 +18,7 @@ Config:
   ]
 
 dependencies:
-  - any: [ 'package.json', 'yarn.lock', 'package-lock.json' ]
+  - any: [ 'package.json', 'yarn.lock', 'package-lock.json', '*/package.json', '*/yarn.lock', '*/package-lock.json' ]
 
 .Env:
   - .env.*
@@ -41,22 +41,22 @@ Crawler/Job:
       ]
 
 Safe Service:
-  - safe_service_proxy/*
+  - safe_service_proxy/src/*
 
 Swap Service:
-  - swap*/*
+  - swap*/src/*
 
 Integration Service:
-  - integration_service/*
+  - integration_service/src/*
 
 Gateway Service:
-  - api_gateway/*
+  - api_gateway/src/*
 
 Account Service:
-  - account_service/*
+  - account_service/src/*
 
 Price Service:
-  - price_service/*
+  - price_service/src/*
 
 Lambda:
-  - lambda/*
+  - lambda/src/*

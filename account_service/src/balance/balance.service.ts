@@ -1,5 +1,6 @@
 import { plainToClass } from 'class-transformer';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { replaceIncorrectTokenAddress } from 'src/utils/token';
 import { Repository } from 'typeorm';
 import Web3 from 'web3';
 
@@ -8,7 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
-import { ChainIdEnum, ChainSymbols } from 'src/common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 
 import { Logger } from '../Logger/Logger.service';
 import { AssetsEntity } from '../assets/entity/assets.entity';
@@ -142,10 +143,10 @@ export class BalanceService {
           const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
           const tokenPriceUSD = token.quote_rate ? token.quote_rate : null;
           const totalPriceUSD = tokenPriceUSD * decimalsAmount;
-          const tokenAddress =
-            token.contract_ticker_symbol === ChainSymbols.ETH
-              ? token.contract_address.replace(/e/g, '0')
-              : token.contract_address;
+          const tokenAddress = replaceIncorrectTokenAddress(
+            token.contract_address,
+            getInternalChainId(balance.chain),
+          );
 
           if (balance.error) {
             errors.push(balance.error);
@@ -369,35 +370,34 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance = (
-    prices: TokenPricesV2,
-    chainId: ChainIdEnum,
-  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
-    address,
-    amount,
-    tokenAddress,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    tokenTotalSupply,
-    isLp,
-  }): AccountTokenBalanceDto =>
-    plainToClass(AccountTokenBalanceDto, {
-      account: address,
+  private mapErc20Balance =
+    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
+    ({
+      address,
       amount,
-      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-      tokenPriceUSD: prices[tokenAddress]?.price || 0,
-      totalPriceUSD: prices[tokenAddress]?.price
-        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-        : 0,
-      token: {
-        chainId: chainId,
-        address: tokenAddress,
-        name: tokenName || null,
-        symbol: tokenSymbol || null,
-        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-        totalSupply: +tokenTotalSupply || 0,
-        isLp: isLp,
-      },
-    });
+      tokenAddress,
+      tokenName,
+      tokenSymbol,
+      tokenDecimals,
+      tokenTotalSupply,
+      isLp,
+    }): AccountTokenBalanceDto =>
+      plainToClass(AccountTokenBalanceDto, {
+        account: address,
+        amount,
+        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+        tokenPriceUSD: prices[tokenAddress]?.price || 0,
+        totalPriceUSD: prices[tokenAddress]?.price
+          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+          : 0,
+        token: {
+          chainId: chainId,
+          address: tokenAddress,
+          name: tokenName || null,
+          symbol: tokenSymbol || null,
+          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+          totalSupply: +tokenTotalSupply || 0,
+          isLp: isLp,
+        },
+      });
 }

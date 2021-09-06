@@ -44,8 +44,9 @@ import {
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
 import {
-  NO_DB_BNB_TOKENS,
+  NO_DB_ARBITRUM_TOKENS,
   NO_DB_ETH_TOKENS,
+  NO_DB_BNB_TOKENS,
   NO_DB_FTM_TOKENS,
   NO_DB_POLYGON_TOKENS,
 } from './tokens/tokens';
@@ -314,6 +315,7 @@ export class BalanceService {
       [ChainIdEnum.bsc]: NO_DB_BNB_TOKENS,
       [ChainIdEnum.polygon]: NO_DB_POLYGON_TOKENS,
       [ChainIdEnum.ftm]: NO_DB_FTM_TOKENS,
+      [ChainIdEnum.arbitrum]: NO_DB_ARBITRUM_TOKENS,
     };
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);
@@ -376,34 +378,35 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance =
-    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
-    ({
-      address,
+  private mapErc20Balance = (
+    prices: TokenPricesV2,
+    chainId: ChainIdEnum,
+  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
+    address,
+    amount,
+    tokenAddress,
+    tokenName,
+    tokenSymbol,
+    tokenDecimals,
+    tokenTotalSupply,
+    isLp,
+  }): AccountTokenBalanceDto =>
+    plainToClass(AccountTokenBalanceDto, {
+      account: address,
       amount,
-      tokenAddress,
-      tokenName,
-      tokenSymbol,
-      tokenDecimals,
-      tokenTotalSupply,
-      isLp,
-    }): AccountTokenBalanceDto =>
-      plainToClass(AccountTokenBalanceDto, {
-        account: address,
-        amount,
-        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-        tokenPriceUSD: prices[tokenAddress]?.price || 0,
-        totalPriceUSD: prices[tokenAddress]?.price
-          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-          : 0,
-        token: {
-          chainId: chainId,
-          address: tokenAddress,
-          name: tokenName || null,
-          symbol: tokenSymbol || null,
-          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-          totalSupply: +tokenTotalSupply || 0,
-          isLp: isLp,
-        },
-      });
+      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+      tokenPriceUSD: prices[tokenAddress]?.price || 0,
+      totalPriceUSD: prices[tokenAddress]?.price
+        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+        : 0,
+      token: {
+        chainId: chainId,
+        address: tokenAddress,
+        name: tokenName || null,
+        symbol: tokenSymbol || null,
+        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+        totalSupply: +tokenTotalSupply || 0,
+        isLp: isLp,
+      },
+    });
 }

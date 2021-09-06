@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ChainIdEnum } from 'src/common/enum';
 
 import { BalancesQueryDto, BalancesResponseDto } from './balance.dto';
 import { BalanceService } from './balance.service';
@@ -27,7 +28,7 @@ export class BalanceController {
     type: Number,
     isArray: true,
     description: 'Array of chain ID',
-    example: [1, 2],
+    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
     required: false,
   })
   @ApiQuery({
@@ -53,7 +54,13 @@ export class BalanceController {
     type: Number,
     isArray: true,
     description: 'Array of chain ID',
-    example: [1, 2, 3, 4],
+    example: [
+      ChainIdEnum.eth,
+      ChainIdEnum.bsc,
+      ChainIdEnum.polygon,
+      ChainIdEnum.ftm,
+      ChainIdEnum.arbitrum,
+    ],
     required: false,
   })
   @ApiQuery({

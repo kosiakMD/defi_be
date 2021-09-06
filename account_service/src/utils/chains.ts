@@ -1,23 +1,16 @@
-import {
-  ABSOLUTE_CHAIN_ID_BSC,
-  ABSOLUTE_CHAIN_ID_ETH,
-  ABSOLUTE_CHAIN_ID_POLYGON,
-  ABSOLUTE_CHAIN_ID_FTM,
-  CHAIN_ID_BSC,
-  CHAIN_ID_ETH,
-  CHAIN_ID_POLYGON,
-  CHAIN_ID_FTM,
-} from 'src/common/constatnt';
+import { AbsoluteChainIdEnum, ChainIdEnum } from 'src/common/enum';
 import { ChainId } from 'src/common/types';
 
-export const AbsoluteChainIds = {
-  [CHAIN_ID_ETH]: ABSOLUTE_CHAIN_ID_ETH,
-  [CHAIN_ID_BSC]: ABSOLUTE_CHAIN_ID_BSC,
-  [CHAIN_ID_POLYGON]: ABSOLUTE_CHAIN_ID_POLYGON,
-  [CHAIN_ID_FTM]: ABSOLUTE_CHAIN_ID_FTM,
+export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
+  [ChainIdEnum.eth]: AbsoluteChainIdEnum.eth,
+  [ChainIdEnum.bsc]: AbsoluteChainIdEnum.bsc,
+  [ChainIdEnum.polygon]: AbsoluteChainIdEnum.polygon,
+  [ChainIdEnum.ftm]: AbsoluteChainIdEnum.ftm,
+  [ChainIdEnum.arbitrum]: AbsoluteChainIdEnum.arbitrum,
 };
 
-export const getAbsoluteChainId = (chainId: ChainId): ChainId => AbsoluteChainIds[chainId];
+export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
+  AbsoluteChainIds[chainId];
 
 export const getAbsoluteChainIds = (chainIds: ChainId[] | Iterable<number>): ChainId[] => {
   const mapping = (obj): ChainId[] => obj.map(getAbsoluteChainId);
@@ -28,11 +21,12 @@ export const getAbsoluteChainIds = (chainIds: ChainId[] | Iterable<number>): Cha
   }
 };
 
-export const InternalChainIds = {
-  [ABSOLUTE_CHAIN_ID_ETH]: CHAIN_ID_ETH,
-  [ABSOLUTE_CHAIN_ID_BSC]: CHAIN_ID_BSC,
-  [ABSOLUTE_CHAIN_ID_POLYGON]: CHAIN_ID_POLYGON,
-  [ABSOLUTE_CHAIN_ID_FTM]: CHAIN_ID_FTM,
+export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
+  [AbsoluteChainIdEnum.eth]: ChainIdEnum.eth,
+  [AbsoluteChainIdEnum.bsc]: ChainIdEnum.bsc,
+  [AbsoluteChainIdEnum.polygon]: ChainIdEnum.polygon,
+  [AbsoluteChainIdEnum.ftm]: ChainIdEnum.ftm,
+  [AbsoluteChainIdEnum.arbitrum]: ChainIdEnum.arbitrum,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];

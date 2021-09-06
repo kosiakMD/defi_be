@@ -20,6 +20,6 @@ export function replaceIncorrectTokenAddress(address: Address, chainId: ChainId)
       return handleBsc(address);
 
     default:
-      return '';
+      return address;
   }
 }

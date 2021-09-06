@@ -52,9 +52,9 @@ export class BalancesQueryDto implements BalancesQuery {
   @ApiProperty({
     type: [ChainIdEnum],
     example: [ChainIdEnum.eth, ChainIdEnum.bsc],
-    default: [ChainIdEnum.eth, ChainIdEnum.bsc, ChainIdEnum.polygon],
+    default: [ChainIdEnum.eth, ChainIdEnum.bsc, ChainIdEnum.polygon, ChainIdEnum.ftm],
   })
-  chains: ChainIdEnum[] = [ChainIdEnum.eth, ChainIdEnum.bsc, ChainIdEnum.polygon];
+  chains: ChainIdEnum[] = [ChainIdEnum.eth, ChainIdEnum.bsc, ChainIdEnum.polygon, ChainIdEnum.ftm];
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))

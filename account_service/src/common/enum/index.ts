@@ -13,15 +13,17 @@ export enum ChainSymbols {
 }
 
 export enum ChainPrefixEnum {
-  'eth' = 'eth',
-  'bsc' = 'bsc',
-  'polygon' = 'polygon',
+  eth = 'eth',
+  bsc = 'bsc',
+  polygon = 'polygon',
+  ftm = 'ftm',
 }
 
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
   polygon = 3,
+  ftm = 4,
 }
 
 export enum CurrencyEnum {

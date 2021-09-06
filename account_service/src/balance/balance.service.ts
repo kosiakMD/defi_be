@@ -43,7 +43,12 @@ import {
   Web3TokenBalance,
 } from './interfaces/balance.interfaces';
 import { DbService } from './repository/db.service';
-import { NO_DB_BNB_TOKENS, NO_DB_ETH_TOKENS, NO_DB_POLYGON_TOKENS } from './tokens/tokens';
+import {
+  NO_DB_BNB_TOKENS,
+  NO_DB_ETH_TOKENS,
+  NO_DB_FTM_TOKENS,
+  NO_DB_POLYGON_TOKENS,
+} from './tokens/tokens';
 
 // TODO refactor from 1 class to Factory / Abstract
 @Injectable()
@@ -308,6 +313,7 @@ export class BalanceService {
       [ChainIdEnum.eth]: NO_DB_ETH_TOKENS,
       [ChainIdEnum.bsc]: NO_DB_BNB_TOKENS,
       [ChainIdEnum.polygon]: NO_DB_POLYGON_TOKENS,
+      [ChainIdEnum.ftm]: NO_DB_FTM_TOKENS,
     };
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);

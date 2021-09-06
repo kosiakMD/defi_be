@@ -53,7 +53,7 @@ export class BalanceController {
     type: Number,
     isArray: true,
     description: 'Array of chain ID',
-    example: [1, 2],
+    example: [1, 2, 3, 4],
     required: false,
   })
   @ApiQuery({

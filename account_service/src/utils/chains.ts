@@ -2,9 +2,11 @@ import {
   ABSOLUTE_CHAIN_ID_BSC,
   ABSOLUTE_CHAIN_ID_ETH,
   ABSOLUTE_CHAIN_ID_POLYGON,
+  ABSOLUTE_CHAIN_ID_FTM,
   CHAIN_ID_BSC,
   CHAIN_ID_ETH,
   CHAIN_ID_POLYGON,
+  CHAIN_ID_FTM,
 } from 'src/common/constatnt';
 import { ChainId } from 'src/common/types';
 
@@ -12,6 +14,7 @@ export const AbsoluteChainIds = {
   [CHAIN_ID_ETH]: ABSOLUTE_CHAIN_ID_ETH,
   [CHAIN_ID_BSC]: ABSOLUTE_CHAIN_ID_BSC,
   [CHAIN_ID_POLYGON]: ABSOLUTE_CHAIN_ID_POLYGON,
+  [CHAIN_ID_FTM]: ABSOLUTE_CHAIN_ID_FTM,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): ChainId => AbsoluteChainIds[chainId];
@@ -29,6 +32,7 @@ export const InternalChainIds = {
   [ABSOLUTE_CHAIN_ID_ETH]: CHAIN_ID_ETH,
   [ABSOLUTE_CHAIN_ID_BSC]: CHAIN_ID_BSC,
   [ABSOLUTE_CHAIN_ID_POLYGON]: CHAIN_ID_POLYGON,
+  [ABSOLUTE_CHAIN_ID_FTM]: CHAIN_ID_FTM,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];

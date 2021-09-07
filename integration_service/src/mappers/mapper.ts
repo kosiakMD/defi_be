@@ -6,12 +6,10 @@ import { Injectable } from '@nestjs/common';
 
 import {
   ChainIdEnum,
-  LiquidityChangeTypeEnum,
   PancakeProtocolEnum,
   ProjectEnum,
   ProtocolName,
   ProtocolTypeEnum,
-  TransactionTypeEnum,
   UniswapProtocolEnum,
 } from 'src/common/enum';
 
@@ -22,32 +20,20 @@ import {
   UniswapLiquidityPosition,
   UniswapLiquidityPositionPair,
 } from '../dto/liquidity.position.dto';
-import {
-  BurnsInterface,
-  MintsInterface,
-  SnapshotsInterface,
-  SwapsInterface,
-  UniswapToken,
-} from '../interfaces/entity.information.interfaces';
+import { UniswapToken } from '../interfaces/entity.information.interfaces';
 import { FeesSn1Data, FeesSn2Data } from '../interfaces/fee.interfaces';
 import { Staking } from '../interfaces/staking.position.interfaces';
 import {
   AutomaticMarketMaker,
   BaseData,
   ERC20Token,
-  LiquidityChangeTransaction,
   PoolToken,
   PoolTokenDto,
-  SwapToken,
-  SwapTokenDto,
-  SwapTransaction,
   Transactions,
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
 import { abi, decimalsDivider } from '../utils/util';
-
-type UniversalEntity = BurnsInterface | MintsInterface;
 
 @Injectable()
 export class Mapper {
@@ -118,128 +104,11 @@ export class Mapper {
           ? []
           : response.uniswapLiquidityPositions.get(address),
       );
-      this.mapLiquidityLiquiditySnapshots(
-        amm,
-        !response.uniswapSnapshots.get(address) ? [] : response.uniswapSnapshots.get(address),
-        !response.uniswapLiquidityPositions.get(address)
-          ? []
-          : response.uniswapLiquidityPositions.get(address),
-      );
-      this.mapMints(
-        transactions,
-        !response.uniswapMints.get(address) ? [] : response.uniswapMints.get(address),
-      );
-      this.mapBurns(
-        transactions,
-        !response.uniswapBurns.get(address) ? [] : response.uniswapBurns.get(address),
-      );
-      this.mapSwaps(
-        transactions,
-        !response.uniswapSwapsFrom.get(address) ? [] : response.uniswapSwapsFrom.get(address),
-      );
 
       base.push(amm);
       base.push(transactions);
     }
     return base;
-  }
-
-  private mapMints(transactions: Transactions, mints: MintsInterface[]): void {
-    for (const mint of mints) {
-      const { token0, token1 } = mint.information.pair;
-      const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(token0, token1, mint);
-
-      const ammMint: LiquidityChangeTransaction = Mapper.createLiquidityChangeTransaction(
-        mint,
-        [poolToken0, poolToken1],
-        true,
-      );
-
-      transactions.txs.push(ammMint);
-    }
-  }
-
-  private mapBurns(transactions: Transactions, burns: BurnsInterface[]): void {
-    for (const burn of burns) {
-      const { token0, token1 } = burn.information.pair;
-
-      const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(token0, token1, burn);
-
-      const ammBurn: LiquidityChangeTransaction = Mapper.createLiquidityChangeTransaction(
-        burn,
-        [poolToken0, poolToken1],
-        false,
-      );
-
-      transactions.txs.push(ammBurn);
-    }
-  }
-
-  private mapSwaps(transactions: Transactions, swapFrom: SwapsInterface[]): void {
-    for (const swap of swapFrom) {
-      const ammSwap: SwapTransaction = plainToClass(SwapTransaction, {
-        type: TransactionTypeEnum.swap,
-        hash: swap.information.transaction.id,
-        timestamp: Number(swap.information.transaction.timestamp),
-        blockNumber: Number(swap.blockNumber),
-        gasPrice: null,
-        gasPriceUsd: null,
-        gasUsed: null,
-        tokenIn: null,
-        tokenOut: null,
-      });
-
-      const token0: SwapToken = plainToClass(SwapTokenDto, {
-        address: swap.information.pair.token0.id,
-        name: swap.information.pair.token0.name,
-        symbol: swap.information.pair.token0.symbol,
-        decimals: Number(swap.information.pair.token0.decimals),
-        totalSupply: null,
-      });
-
-      const token1: SwapToken = plainToClass(SwapTokenDto, {
-        address: swap.information.pair.token1.id,
-        name: swap.information.pair.token1.name,
-        symbol: swap.information.pair.token1.symbol,
-        decimals: Number(swap.information.pair.token1.decimals),
-        totalSupply: null,
-      });
-
-      // check which token is "IN"
-      // this means that token0 is "IN"
-      if (swap.information.amount0In !== '0') {
-        ammSwap.tokenIn = token0;
-        ammSwap.tokenIn.amount = swap.information.amount0In;
-        ammSwap.tokenIn.priceUSD =
-          Number(swap.information.amountUSD) / Number(swap.information.amount0In);
-        ammSwap.tokenOut = token1;
-        ammSwap.tokenOut.amount = swap.information.amount1Out;
-        ammSwap.tokenOut.priceUSD =
-          Number(swap.information.amountUSD) / Number(swap.information.amount1Out);
-      } else {
-        ammSwap.tokenIn = token1;
-        ammSwap.tokenIn.amount = swap.information.amount1In;
-        ammSwap.tokenIn.priceUSD =
-          Number(swap.information.amountUSD) / Number(swap.information.amount1In);
-        ammSwap.tokenOut = token0;
-        ammSwap.tokenOut.amount = swap.information.amount0Out;
-        ammSwap.tokenOut.priceUSD =
-          Number(swap.information.amountUSD) / Number(swap.information.amount0Out);
-      }
-
-      // handle swap with more then 1 pair i such way
-      const existedSwap = transactions.txs.find(
-        (t) => t.type === 'swap' && t.hash === swap.information.transaction.id,
-      ) as SwapTransaction;
-      if (existedSwap) {
-        // can be used logIndex here, but as subgraph returns data in the same order this works too
-        if (ammSwap.tokenIn.address === existedSwap.tokenOut.address) {
-          existedSwap.tokenOut = ammSwap.tokenOut;
-        }
-      } else {
-        transactions.txs.push(ammSwap);
-      }
-    }
   }
 
   static priceInUSD(totalUSD: string, amount: string): number {
@@ -274,64 +143,11 @@ export class Mapper {
     return lpEarnedUser * lpTokenPrice;
   }
 
-  private mapLiquidityLiquiditySnapshots(
-    amm: AutomaticMarketMaker,
-    lpSnapshots: SnapshotsInterface[],
-    lpPositions: UniswapLiquidityPosition[],
-  ): void {
-    lpSnapshots = lpSnapshots.sort((a, b) => a.information.timestamp - b.information.timestamp);
-
-    amm.liquidityPositions.map((l) => {
-      const currentPairSnapshots = lpSnapshots.filter(
-        (s) => s.information.pair.id === l.lpToken.address,
-      );
-
-      if (l.lpTokenBalance === '0' && currentPairSnapshots[currentPairSnapshots.length - 1]) {
-        l.exitedAt = currentPairSnapshots[currentPairSnapshots.length - 1].information.timestamp;
-      }
-      const uniswapLpPosition = lpPositions.find((u) => u.pair.id === l.lpToken.address);
-      // liquidity snapshots is already ordered
-      for (let i = 0; i < currentPairSnapshots.length; i++) {
-        const sn1Data: FeesSn1Data = plainToClass(FeesSn1Data, {
-          tokenSupply: new BN(
-            currentPairSnapshots[i].information.liquidityTokenTotalSupply,
-          ).toNumber(),
-          tokenBalance: new BN(
-            currentPairSnapshots[i].information.liquidityTokenBalance,
-          ).toNumber(),
-          reserve0: new BN(currentPairSnapshots[i].information.reserve0).toNumber(),
-          reserve1: new BN(currentPairSnapshots[i].information.reserve1).toNumber(),
-        });
-
-        let sn2Data: FeesSn2Data = null;
-        if (currentPairSnapshots[i + 1] !== undefined) {
-          sn2Data = plainToClass(FeesSn2Data, {
-            tokenSupply: new BN(
-              currentPairSnapshots[i + 1].information.liquidityTokenTotalSupply,
-            ).toNumber(),
-            totalReserve: new BN(currentPairSnapshots[i + 1].information.reserveUSD).toNumber(),
-            reserve0: new BN(currentPairSnapshots[i + 1].information.reserve0).toNumber(),
-            reserve1: new BN(currentPairSnapshots[i + 1].information.reserve1).toNumber(),
-          });
-        } else {
-          sn2Data = plainToClass(FeesSn2Data, {
-            tokenSupply: new BN(l.lpToken.totalSupply).toNumber(),
-            totalReserve: new BN(uniswapLpPosition.pair.reserveUSD).toNumber(),
-            reserve0: new BN(l.poolTokens[0].reserve).toNumber(),
-            reserve1: new BN(l.poolTokens[1].reserve).toNumber(),
-          });
-        }
-        l.earnedFeeUSD += Mapper.getFeeBetweenTwoSnapshots(sn1Data, sn2Data);
-      }
-    });
-  }
-
   private mapLiquidityPositions(
     amm: AutomaticMarketMaker,
     uniswapPositions: UniswapLiquidityPosition[],
   ): void {
     for (const uniswapPosition of uniswapPositions) {
-      // console.log(uniswapPosition);
       const pool: LiquidityPool = plainToClass(LiquidityPool, {
         address: uniswapPosition.pair.id,
         name: null,
@@ -353,7 +169,6 @@ export class Mapper {
       const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(
         token0,
         token1,
-        undefined,
         uniswapPosition.pair,
         userPoolShare,
       );
@@ -377,7 +192,6 @@ export class Mapper {
   private mapFromUniswapTokenToPoolToken(
     token0: UniswapToken,
     token1: UniswapToken,
-    entity?: UniversalEntity,
     pair?: UniswapLiquidityPositionPair,
     userPoolShare?: number,
   ): PoolToken[] {
@@ -387,15 +201,9 @@ export class Mapper {
       name: token0.name,
       symbol: token0.symbol,
       totalSupply: null,
-      reserve: pair === undefined ? null : pair.reserve0,
-      amount:
-        entity === undefined
-          ? (userPoolShare * Number(pair.reserve0)).toString()
-          : entity.information.amount0,
-      priceUSD:
-        pair === undefined
-          ? Mapper.priceInUSD(entity.information.amountUSD, entity.information.amount0)
-          : Mapper.priceInUSD(pair.reserveUSD, pair.reserve0),
+      reserve: pair && pair.reserve0,
+      amount: (userPoolShare * Number(pair.reserve0)).toString(),
+      priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve0),
       percentage: this.PERCENTAGE,
     });
 
@@ -405,39 +213,13 @@ export class Mapper {
       name: token1.name,
       symbol: token1.symbol,
       totalSupply: null,
-      reserve: pair === undefined ? null : pair.reserve1,
-      amount:
-        entity === undefined
-          ? (userPoolShare * Number(pair.reserve1)).toString()
-          : entity.information.amount1,
-      priceUSD:
-        pair === undefined
-          ? Mapper.priceInUSD(entity.information.amountUSD, entity.information.amount1)
-          : Mapper.priceInUSD(pair.reserveUSD, pair.reserve1),
+      reserve: pair && pair.reserve1,
+      amount: (userPoolShare * Number(pair.reserve1)).toString(),
+      priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve1),
       percentage: this.PERCENTAGE,
     });
 
     return [poolToken0, poolToken1];
-  }
-
-  private static createLiquidityChangeTransaction(
-    entity: UniversalEntity,
-    uniswapTokens: PoolToken[],
-    flag: boolean,
-  ): LiquidityChangeTransaction {
-    return plainToClass(LiquidityChangeTransaction, {
-      type: flag ? LiquidityChangeTypeEnum.addLiquidity : LiquidityChangeTypeEnum.removeLiquidity,
-      hash: entity.information.transaction.id,
-      blockNumber: Number(entity.blockNumber),
-      timestamp: Number(entity.information.transaction.timestamp),
-      liquidity: entity.information.liquidity,
-      amountUSD: Number(entity.information.amountUSD),
-      gasPrice: null,
-      gasPriceUsd: null,
-      gasUsed: null,
-      lpTokenAddress: entity.information.pair.id,
-      tokens: [uniswapTokens[0], uniswapTokens[1]],
-    });
   }
 
   private getOriginAddress(originArray: string[], address: string): string {

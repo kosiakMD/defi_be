@@ -21,12 +21,10 @@ import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
 import { AssetsController } from './assets/assets.controller';
 import { AssetsService } from './assets/assets.service';
-import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
 import { Logger } from './common/Logger/Logger.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import configuration from './config/configuration';
-import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
@@ -91,19 +89,15 @@ import { VaultsModule } from './vaults/vaults.module';
     AnalyticController,
     AppController,
     AssetsController,
-    CurveController,
     BalancesController,
     TransactionsController,
     TransfersController,
     // Platforms
-    BalancerController,
     PancakeController,
     SushiswapController,
     UniswapController,
     SwapController,
     ProtocolController,
-    // PlatformController,
-    // ScansApiController,
   ],
   providers: [
     // TODO: for global auto caching

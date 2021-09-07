@@ -1,7 +1,5 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
-import { Repository } from 'typeorm';
 
-import { UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
 import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
 type Decimals = string | number;
@@ -12,13 +10,8 @@ export const CHAIN_ID_ETH: Chain = 1;
 export const decimalsDivider = (decimals: Decimals): BigNumber => new BN(10).pow(decimals);
 
 export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const ETH_TRANSFER_TOPIC =
-  '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-export const ETH_DEPOSIT_TOPIC =
-  '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c';
-export const ETH_WITHDRAWAL_TOPIC =
-  '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65';
 
+// TODO: Move this to separate file
 export const abi = [
   {
     inputs: [
@@ -309,103 +302,19 @@ export function groupBy(list, keyGetter): Map<any, any> {
   return map;
 }
 
-// will be changed
-export async function getDbDataByAddresses<T, K, V, E>(
-  repository1: Repository<T>,
-  repository2: Repository<K>,
-  repository3: Repository<V>,
-  repository4: Repository<E>,
-  addresses: string[],
-) {
-  const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
-  const [swapFrom, mint, burn, snapshot] = await Promise.all([
-    repository1
-      .createQueryBuilder()
-      .where(`from_address IN (:...fields)`, { fields: addressesArray })
-      .orderBy('block_number', 'DESC')
-      .limit(2000)
-      .getMany(),
-    repository2
-      .createQueryBuilder()
-      .where(`to_address IN (:...fields)`, { fields: addressesArray })
-      .orderBy('block_number', 'DESC')
-      .limit(2000)
-      .getMany(),
-    repository3
-      .createQueryBuilder()
-      .where(`to_address IN (:...fields)`, { fields: addressesArray })
-      .orderBy('block_number', 'DESC')
-      .limit(2000)
-      .getMany(),
-    repository4
-      .createQueryBuilder()
-      .where(`user_address IN (:...fields)`, { fields: addressesArray })
-      .getMany(),
-  ]);
-
-  const uniswapSnapshots = groupBy(snapshot, (uniswapSnapshot) => uniswapSnapshot.userAddress);
-  const uniswapSwapsFrom = groupBy(swapFrom, (swap) => swap.fromAddress);
-  const uniswapMints = groupBy(mint, (uniswapMint) => uniswapMint.toAddress);
-  const uniswapBurns = groupBy(burn, (uniswapBurn) => uniswapBurn.toAddress);
-
-  return {
-    userAddresses: addressesArray,
-    response: {
-      uniswapSwapsFrom,
-      uniswapMints,
-      uniswapBurns,
-      uniswapSnapshots,
-      uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
-      sushiswapStakingPosition: new Map<string, any>(),
-    },
-  };
-}
-
-export async function getDataByAddresses<T, K, V, E>(
-  repository1: Repository<T>,
-  repository2: Repository<K>,
-  repository3: Repository<V>,
-  repository4: Repository<E>,
-  addresses: string[],
-  subgraph: UniswapSubgraph = null,
-) {
+export async function getDataByAddresses(addresses: string[], subgraph: UniswapSubgraph = null) {
   const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
   const flag = subgraph && subgraph.constructor.name === 'SushiswapSubgraph';
-  const [swapFrom, mint, burn, snapshot, liquidityPosition, stakingPositions] = await Promise.all([
-    repository1
-      .createQueryBuilder()
-      .where(`from_address IN (:...fields)`, { fields: addressesArray })
-      .orderBy('block_number', 'DESC')
-      .limit(2000)
-      .getMany(),
-    repository2
-      .createQueryBuilder()
-      .where(`to_address IN (:...fields)`, { fields: addressesArray })
-      .orderBy('block_number', 'DESC')
-      .limit(2000)
-      .getMany(),
-    repository3
-      .createQueryBuilder()
-      .where(`to_address IN (:...fields)`, { fields: addressesArray })
-      .orderBy('block_number', 'DESC')
-      .limit(2000)
-      .getMany(),
-    repository4
-      .createQueryBuilder()
-      .where(`user_address IN (:...fields)`, { fields: addressesArray })
-      .getMany(),
+  const [liquidityPosition, stakingPositions] = await Promise.all([
     subgraph.getLiquidityPositions(addressesArray),
     flag ? subgraph.getStakingPositions(addressesArray) : null,
   ]);
 
-  const uniswapSnapshots = groupBy(snapshot, (uniswapSnapshot) => uniswapSnapshot.userAddress);
-  const uniswapSwapsFrom = groupBy(swapFrom, (swap) => swap.fromAddress);
-  const uniswapMints = groupBy(mint, (uniswapMint) => uniswapMint.toAddress);
-  const uniswapBurns = groupBy(burn, (uniswapBurn) => uniswapBurn.toAddress);
   const uniswapLiquidityPositions = groupBy(
     liquidityPosition.data.liquidityPositions,
     (liquidityPosition) => liquidityPosition.user.id,
   );
+
   const sushiswapStakingPosition = flag
     ? groupBy(stakingPositions.data.users, (staking) => {
         const array = staking.id.split('-');
@@ -416,10 +325,6 @@ export async function getDataByAddresses<T, K, V, E>(
   return {
     userAddresses: addressesArray,
     response: {
-      uniswapSwapsFrom,
-      uniswapMints,
-      uniswapBurns,
-      uniswapSnapshots,
       uniswapLiquidityPositions,
       sushiswapStakingPosition,
     },

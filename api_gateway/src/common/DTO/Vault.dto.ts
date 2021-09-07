@@ -34,9 +34,6 @@ class RewardTokenDTO extends TokenCommonDTO implements RewardToken {
 class LPTokenDTO implements LPToken {
   @ApiProperty({ type: String, example: '0xd905e2eaebe188fc92179b6350807d8bd91db0d8' })
   id: Address;
-
-  // @ApiProperty({ type: String, example: 'Curve.fi DAI/USDC/USDT/PAX' })
-  // name: string;
 }
 
 export default class VaultDto implements Vault {

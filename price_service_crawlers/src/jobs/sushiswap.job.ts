@@ -226,7 +226,7 @@ export class SushiswapJob {
       let iteration = 0;
       let tokens = [];
       do {
-        const tokenRequest = await this.theGraphService.getSushiswapPoolsTokens(iteration);
+        const tokenRequest = await this.theGraphService.getSushiSwapPoolsTokens(iteration);
         tokens = tokenRequest['data']['data']['dataPairs'];
 
         for (let i = 0; i < tokens.length; i++) {
@@ -348,7 +348,7 @@ export class SushiswapJob {
       throw 'No current currency in DB: ' + CURRENCY;
     }
 
-    const firstTxData = await this.theGraphService.getSushiswapfirstTxTimestamp();
+    const firstTxData = await this.theGraphService.getSushiSwapFirstTxTimestamp();
     const firstTimestamp = parseInt(firstTxData['data']['data']['transactions'][0]['timestamp']);
 
     const beginOfDay = toTimestamp(new Date()) - (toTimestamp(new Date()) % SECONDS_IN_DAY);
@@ -380,14 +380,14 @@ export class SushiswapJob {
               do {
                 logger.log(`making for timestamp ${fromTs} with coin ${coin.id}`);
 
-                const firstDayBlockQuery = await this.theGraphService.getSushiswapfirstBlockQuery(
+                const firstDayBlockQuery = await this.theGraphService.getSushiSwapFirstBlockQuery(
                   fromTs,
                 );
                 const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];
                 //logger.log(blockNumber, `blockNumber ${coin.id}` );
 
                 const dailyPriceQuery =
-                  await this.theGraphService.getSushiswapDailyBlockPricesQuery(
+                  await this.theGraphService.getSushiSwapDailyBlockPricesQuery(
                     parseInt(blockNumber),
                     coin['address'],
                   );

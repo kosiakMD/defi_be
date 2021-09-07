@@ -9,8 +9,6 @@ import { BlockTransactionObject } from '../migrations/interfaces/web3.interfaces
 export class NodeService {
   protected blockIfoTable: string;
   protected blockTable: string;
-  protected eventsTable: string;
-  protected transactionsTable: string;
   protected web3Provider: Web3;
 
   constructor(
@@ -43,13 +41,5 @@ export class NodeService {
 
   getBlockTable(): string {
     return this.blockTable;
-  }
-
-  getEventsTable(): string {
-    return this.eventsTable;
-  }
-
-  getTransactionsTable(): string {
-    return this.transactionsTable;
   }
 }

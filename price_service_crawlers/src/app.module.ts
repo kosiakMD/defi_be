@@ -1,6 +1,3 @@
-import { Inject, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
@@ -10,22 +7,23 @@ import { AgendaModule } from 'nestjs-agenda';
 import { NestPgpromiseModule } from 'nestjs-pgpromise';
 import * as winston from 'winston';
 
+import { Inject, Module, OnModuleInit } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TerminusModule } from '@nestjs/terminus';
+
 import { Logger } from './Logger/Logger.service';
 import { LoggerModule } from './Logger/LoggerModule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BalancerFirstCheckJob } from './jobs/balancer_first_check.job';
+import { HealthController } from './health/health.controller';
 import { CoingeckoJob } from './jobs/coingecko.job';
 import { CommonJob } from './jobs/common.job';
-import { CurveJob } from './jobs/curve.job';
-import { CurveFirstCheckJob } from './jobs/curve_first_check.job';
 import { PancakeJob } from './jobs/pancake.job';
 import { SushiswapJob } from './jobs/sushiswap.job';
 import { UniswapJob } from './jobs/uniswap.job';
 import { DatabaseService } from './services/database.service';
 import { JobsService } from './services/jobs.service';
 import { Api } from './thegraph/api';
-import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -97,12 +95,14 @@ import { HealthController } from './health/health.controller';
     PancakeJob,
     UniswapJob,
     CommonJob,
-    CurveJob,
-    BalancerFirstCheckJob,
-    CurveFirstCheckJob,
   ],
 })
 export class AppModule implements OnModuleInit {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private configService: ConfigService,
+  ) {}
+
   onModuleInit(): void {
     const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
@@ -114,9 +114,4 @@ export class AppModule implements OnModuleInit {
       'App',
     );
   }
-
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private configService: ConfigService,
-  ) {}
 }

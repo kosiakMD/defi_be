@@ -1,5 +1,0 @@
-apiVersion: v2
-name: defiyield-service
-description: DeFiYield backend microservice Helm chart
-type: application
-version: 1.0.0

@@ -1,5 +1,3 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../scans-api/modules/utils/utils';
-
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
@@ -20,8 +18,6 @@ export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
-  curve = 'curve',
-  balancer = 'balancer',
 }
 
 export enum UniswapProtocolEnum {
@@ -100,13 +96,6 @@ export enum TokenOperations {
   RECEIVE = 'receive',
   SEND = 'send',
   EXCHANGE = 'exchange',
-}
-
-export enum ChainEnum {
-  eth = CHAIN_ID_ETH,
-  ETH = CHAIN_ID_ETH,
-  bsc = CHAIN_ID_BSC,
-  BSC = CHAIN_ID_BSC,
 }
 
 export enum SubTransactionTypEnum {

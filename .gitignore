@@ -125,3 +125,5 @@ dist
 ./.idea/
 .DS_Store
 .idea2
+/.chart/
+/.ci/

@@ -9,8 +9,6 @@ import { AssetsService } from './assets.service';
 import { AssetsEntity } from './entities/assets.entity';
 import { BlocksInfoEntity } from './entities/eth/blocks.info.entity';
 import { EthBlockEntity } from './entities/eth/eth.block.entity';
-import { EthEventsEntity } from './entities/eth/eth.events.entity';
-import { EthTransactionsEntity } from './entities/eth/eth.transactions.entity';
 import { SettingsEntity } from './entities/settings.entity';
 import { MigrationEventService } from './migration.event.service';
 import { MigrationService } from './migration.service';
@@ -19,14 +17,7 @@ import { SqlService } from './sql.service';
 @Module({
   imports: [
     ConfigService,
-    TypeOrmModule.forFeature([
-      EthEventsEntity,
-      BlocksInfoEntity,
-      EthBlockEntity,
-      EthTransactionsEntity,
-      AssetsEntity,
-      SettingsEntity,
-    ]),
+    TypeOrmModule.forFeature([BlocksInfoEntity, EthBlockEntity, AssetsEntity, SettingsEntity]),
     HttpModule,
     NodeModule,
   ],

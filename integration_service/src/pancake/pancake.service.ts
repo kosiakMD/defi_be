@@ -1,7 +1,4 @@
-import { Repository } from 'typeorm';
-
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import { ProjectEnum } from 'src/common/enum';
 
@@ -17,24 +14,11 @@ import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
 import { PancakeSubgraph } from '../thegraph/pancake.subgraph';
-import { getDataByAddresses, getDbDataByAddresses } from '../utils/util';
-import { PancakeBurnsEntity } from './entity/pancake.burns.entity';
-import { PancakeMintsEntity } from './entity/pancake.mints.entity';
-import { PancakeSnapshotsEntity } from './entity/pancake.snapshots.entity';
-import { PancakeSwapsEntity } from './entity/pancake.swaps.entity';
 import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
 
 @Injectable()
 export class PancakeService {
   constructor(
-    @InjectRepository(PancakeSwapsEntity)
-    private readonly swapsRepository: Repository<PancakeSwapsEntity>,
-    @InjectRepository(PancakeMintsEntity)
-    private readonly mintsRepository: Repository<PancakeMintsEntity>,
-    @InjectRepository(PancakeBurnsEntity)
-    private readonly burnsRepository: Repository<PancakeBurnsEntity>,
-    @InjectRepository(PancakeSnapshotsEntity)
-    private readonly snapshotsRepository: Repository<PancakeSnapshotsEntity>,
     private readonly mapper: Mapper,
     private readonly pancakeSubgraph: PancakeSubgraph,
     private readonly accountService: AccountService,
@@ -109,42 +93,21 @@ export class PancakeService {
     };
   }
 
-  async getDataExternal(addresses: string): Promise<BaseData[]> {
-    const originAddressesArray = addresses.split(',');
-    const result = await getDataByAddresses(
-      this.swapsRepository,
-      this.mintsRepository,
-      this.burnsRepository,
-      this.snapshotsRepository,
-      originAddressesArray,
-      this.pancakeSubgraph,
-    );
-    return this.mapper.mapData(
-      result.userAddresses,
-      originAddressesArray,
-      result.response,
-      ProjectEnum.pancake,
-    );
-  }
-
-  async getDataInternal(addresses: string): Promise<BaseData[]> {
-    const originAddressesArray = addresses.split(',');
-
-    const result = await getDbDataByAddresses(
-      this.swapsRepository,
-      this.mintsRepository,
-      this.burnsRepository,
-      this.snapshotsRepository,
-      originAddressesArray,
-    );
+  async getData(addresses: string): Promise<BaseData[]> {
+    const addressesArray = addresses.split(',');
 
     const internalSubgraphData = await this.getDbLiquidityPositions(addresses);
+    const result = {
+      userAddresses: addressesArray,
+      response: {
+        uniswapLiquidityPositions: internalSubgraphData.uniswapLiquidityPositions,
+        sushiswapStakingPosition: undefined,
+      },
+    };
 
-    result.response.uniswapLiquidityPositions = internalSubgraphData.uniswapLiquidityPositions;
-    result.response.sushiswapStakingPosition = undefined;
     return this.mapper.mapData(
       result.userAddresses,
-      originAddressesArray,
+      addressesArray,
       result.response,
       ProjectEnum.pancake,
     );

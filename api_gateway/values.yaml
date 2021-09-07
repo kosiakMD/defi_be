@@ -30,8 +30,6 @@ configMaps:
     INTEGRATION_STATUS: v1/status
     INTEGRATION_UNISWAP: v1/integration/uniswap
     INTEGRATION_SUSHISWAP: v1/integration/sushiswap
-    INTEGRATION_BALANCER: v1/integration/balancer
-    INTEGRATION_CURVE: v1/integration/curve
     INTEGRATION_PANCAKE: v1/integration/pancake
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80

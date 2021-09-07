@@ -12,12 +12,6 @@ import {
 } from 'src/common/enum';
 
 import { LiquidityPosition, UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
-import {
-  BurnsInterface,
-  MintsInterface,
-  SnapshotsInterface,
-  SwapsInterface,
-} from './entity.information.interfaces';
 
 export type TokenSymbol = string;
 
@@ -63,10 +57,6 @@ export class SwapTokenDto extends ERC20Token implements SwapToken {
 }
 
 export interface UniswapResponseData {
-  uniswapSwapsFrom?: Map<string, SwapsInterface[]>;
-  uniswapMints?: Map<string, MintsInterface[]>;
-  uniswapBurns?: Map<string, BurnsInterface[]>;
-  uniswapSnapshots?: Map<string, SnapshotsInterface[]>;
   uniswapLiquidityPositions: Map<string, UniswapLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
 }

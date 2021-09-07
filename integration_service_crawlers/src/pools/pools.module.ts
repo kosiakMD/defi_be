@@ -1,12 +1,13 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { CacheModule, forwardRef, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import * as redisStore from 'cache-manager-redis-store';
 
 import { ApisModule } from '../apis/apis.module';
 import { ChainModule } from '../chain/chain.module';
 import { JobsModule } from '../jobs/jobs.module';
 import { StoreModule } from '../store/store.module';
-import { ThegraphModule } from '../thegraph/thegraph.module';
+import { TheGraphModule } from '../thegraph/theGraphModule';
 import { PoolsService } from './pools.service';
 import { PoolsServicePancake } from './pools.service.pancake';
 import { PoolsServiceSushiswap } from './pools.service.sushiswap';
@@ -32,17 +33,12 @@ import { PoolsServiceUniswap } from './pools.service.uniswap';
     }),
     forwardRef(() => JobsModule),
     ConfigModule,
-    ThegraphModule,
+    TheGraphModule,
     ApisModule,
     ChainModule,
     StoreModule,
   ],
-  providers: [
-    PoolsService,
-    PoolsServiceUniswap,
-    PoolsServiceSushiswap,
-    PoolsServicePancake,
-  ],
+  providers: [PoolsService, PoolsServiceUniswap, PoolsServiceSushiswap, PoolsServicePancake],
   exports: [PoolsService],
 })
 export class PoolsModule {}

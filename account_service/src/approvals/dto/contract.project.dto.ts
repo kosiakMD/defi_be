@@ -4,7 +4,7 @@ export class ContractProjectDto {
   @ApiProperty({ type: Number, example: 18 })
   id: number;
 
-  @ApiProperty({ type: String, example: 'curve' })
+  @ApiProperty({ type: String, example: 'uniswap' })
   name: string;
 
   @ApiProperty({
@@ -14,6 +14,6 @@ export class ContractProjectDto {
   })
   icon: string;
 
-  @ApiProperty({ type: String, example: 'curve.fi' })
+  @ApiProperty({ type: String, example: 'UniSwap V2' })
   description: string;
 }

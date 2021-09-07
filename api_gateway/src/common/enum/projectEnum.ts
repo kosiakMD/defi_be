@@ -2,8 +2,6 @@ export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
-  curve = 'curve',
-  balancer = 'balancer',
 }
 
 export enum PancakeProtocolEnum {

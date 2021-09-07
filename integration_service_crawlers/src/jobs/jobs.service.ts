@@ -6,21 +6,13 @@ import { VaultsService } from 'src/vaults/vaults.service';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { CurveService } from './curve.service';
-import { POOLS_JOB, VAULTS_JOB, } from './jobs.setting';
-import { PancakeService } from './pancake.service';
-import { SushiswapService } from './sushiswap.service';
-import { UniswapService } from './uniswap.service';
+import { POOLS_JOB, VAULTS_JOB } from './jobs.setting';
 
 @Injectable()
 export class JobsService {
   private agenda;
   constructor(
     private configService: ConfigService,
-    private uniswapService: UniswapService,
-    private sushiswapService: SushiswapService,
-    private pancakeService: PancakeService,
-    private curveMigrationService: CurveService,
     private poolsService: PoolsService,
     private vaultsService: VaultsService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,

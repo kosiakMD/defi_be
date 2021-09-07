@@ -30,13 +30,6 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   protocolName: ProtocolName;
 }
 
-export interface PlatformData {
-  balancer: BaseData[];
-  curve: BaseData[];
-  sushiswap: BaseData[];
-  uniswap: BaseData[];
-}
-
 export interface TokenCommon {
   address: string;
   name?: string;
@@ -268,11 +261,4 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   stakingPositions?: StakingPosition[];
   liquidityPositions?: LiquidityPosition[];
   txs?: txs[];
-}
-
-export interface PlatformData {
-  balancer: BaseData[];
-  curve: BaseData[];
-  sushiswap: BaseData[];
-  uniswap: BaseData[];
 }

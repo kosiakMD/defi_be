@@ -36,7 +36,7 @@
     "@nestjsx/api-version": "^0.1.1",
     "agenda": "^4.1.2",
     "agendash": "^2.1.1",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bignumber.js": "^9.0.1",
     "cache-manager": "^3.4.3",
     "class-transformer": "^0.4.0",

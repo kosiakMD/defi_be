@@ -383,7 +383,7 @@ export class UniswapJob {
               do {
                 logger.log(`making for timestamp ${fromTs} with coin ${coin.id}`);
 
-                const firstDayBlockQuery = await this.theGraphService.getUniswapfirstBlockQuery(
+                const firstDayBlockQuery = await this.theGraphService.getUniswapFirstBlockQuery(
                   fromTs,
                 );
                 const blockNumber = firstDayBlockQuery['data']['data']['blocks'][0]['blockNumber'];

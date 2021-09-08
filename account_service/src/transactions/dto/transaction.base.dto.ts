@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 
 export class TransactionBaseDto {
   @ApiProperty({ example: '10266704', type: String })

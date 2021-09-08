@@ -14,13 +14,6 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   protocolType: T;
 }
 
-export interface PlatformData {
-  balancer: BaseData[];
-  curve: BaseData[];
-  sushiswap: BaseData[];
-  uniswap: BaseData[];
-}
-
 export interface ERC20Token {
   address: string;
   chainId?: number;

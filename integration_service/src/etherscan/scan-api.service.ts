@@ -4,7 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CACHE_MANAGER, HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainPrefixEnum } from 'src/common/enum';
+import { ChainAbbrEnum } from 'src/common/enum';
 
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 
@@ -12,7 +12,7 @@ const TRANSFERS_CACHE_TIME = 30; // 30 sec
 export class ScanApi {
   private url: string;
   private apiKey: string;
-  private readonly chainPrefix = ChainPrefixEnum.bsc; // | ChainPrefixEnum.eth;
+  private readonly chainPrefix = ChainAbbrEnum.bsc; // | ChainAbbrEnum.eth;
 
   constructor(
     private httpService: HttpService,

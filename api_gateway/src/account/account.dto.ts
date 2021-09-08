@@ -9,7 +9,7 @@ import { ApprovalDetailed, ApprovalProject, ApprovalToken } from './account.inte
 export class ApprovalProjectDTO implements ApprovalProject {
   @ApiProperty({ type: Number, example: 18 })
   id: number;
-  @ApiProperty({ type: String, example: 'curve' })
+  @ApiProperty({ type: String, example: 'uniswap' })
   name: string;
   @ApiProperty({
     type: String,
@@ -17,7 +17,7 @@ export class ApprovalProjectDTO implements ApprovalProject {
       'https://admapidev2.defiyield.info/projects/icons/92b6da7e9748da25ffd9a9a671351a32.png',
   })
   icon: string;
-  @ApiProperty({ type: String, example: 'curve.fi' })
+  @ApiProperty({ type: String, example: 'UniSwap V2' })
   description: string;
 }
 

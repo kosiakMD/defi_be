@@ -3,9 +3,13 @@ import { BalancesResponse } from 'src/etherscan/interfaces';
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { DetailedResponseDto } from '../dto';
+import { Asset } from '../interfaces/transactions.interfaces';
+
 @Injectable()
 export class AccountService {
   private getBalanceUrl: string;
+  private getAssetsUrl: string;
 
   constructor(private httpService: HttpService, private configService: ConfigService) {
     const host = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
@@ -14,11 +18,21 @@ export class AccountService {
 
     const balancePath = this.configService.get<string>('ACCOUNT_BALANCE');
     this.getBalanceUrl = `${url}/${balancePath}`;
+
+    const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
+    this.getAssetsUrl = `${url}/${assetsPath}`;
   }
 
   async getBalances(addresses: string, chains?: number): Promise<BalancesResponse> {
     const data = await this.httpService
       .get(this.getBalanceUrl, { params: { addresses, chains } })
+      .toPromise();
+    return data.data;
+  }
+
+  async getAssets(addresses: string[], chains?: number[]): Promise<DetailedResponseDto<Asset[]>> {
+    const data = await this.httpService
+      .get(this.getAssetsUrl, { params: { addresses, chains } })
       .toPromise();
     return data.data;
   }

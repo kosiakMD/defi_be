@@ -110,7 +110,7 @@ export class CoingeckoService {
       return coinsPrices;
     } catch (e) {
       if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        this.logger.error(new Error(`URL ${e.code || ' '}${e.config.url}`), 'getCoinsPricesUsd');
         if (e.response) {
           this.logger.error(e.response.data);
         }

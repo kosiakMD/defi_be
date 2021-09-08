@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ApprovalsStore } from './approvals.store';
 import { AssetsStore } from './assets.store';
-import { AssetsTransfersStore } from './assettransfers.store';
 import { ApprovalsEntity } from './entities/approvals.entity';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetTransfersEntity } from './entities/assettransfers.entity';
@@ -21,8 +20,7 @@ import { UtilsDatabase } from './utils.database';
     ApprovalsRepository,
     AssetsStore,
     ApprovalsStore,
-    AssetsTransfersStore,
   ],
-  exports: [AssetsStore, AssetsTransfersStore, ApprovalsStore],
+  exports: [AssetsStore, ApprovalsStore],
 })
 export class StoreModule {}

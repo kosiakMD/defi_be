@@ -1,1 +1,5 @@
-export type ChainId = number;
+import { ChainIdEnum } from '../enum';
+
+export type ChainId = ChainIdEnum;
+
+export type Address = string;

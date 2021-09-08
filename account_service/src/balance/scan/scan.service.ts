@@ -3,8 +3,8 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '../../common/enum';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH, WETH_ADDRESS } from 'src/common/constatnt';
+import { ChainIdEnum } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { Web3Provider } from '../../chain/web3.provider';

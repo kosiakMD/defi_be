@@ -3,8 +3,6 @@ export const TYPES = {
 
   TimestampService: Symbol.for('TimestampService'),
   UniswapService: Symbol.for('UniswapService'),
-  CurveService: Symbol.for('CurveService'),
-  BalancerService: Symbol.for('BalancerService'),
   BalancesService: Symbol.for('BalancesService'),
   EtherscanBalancesService: Symbol.for('EtherscanBalancesService'),
   TransactionsService: Symbol.for('TransactionsService'),
@@ -20,8 +18,6 @@ export const TYPES = {
 
   SwapService: Symbol.for('SwapService'),
   EtherscanApi: Symbol.for('EtherscanApi'),
-  CurveMapper: Symbol.for('CurveMapper'),
-  BalancerMapper: Symbol.for('BalancerMapper'),
   UniswapMapper: Symbol.for('UniswapMapper'),
   SushiswapMapper: Symbol.for('SushiswapMapper'),
   SushiswapService: Symbol.for('SushiswapService'),

@@ -3,9 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { ApisModule } from '../apis/apis.module';
 import { JobsModule } from '../jobs/jobs.module';
-import { ThegraphModule } from '../thegraph/thegraph.module';
-import { GaugeRewards } from './curve/gauge.rewards';
-import { VaultsServiceCurve } from './curve/vaults.service.curve';
+import { TheGraphModule } from '../thegraph/theGraphModule';
 import { VaultsServiceSushiswap } from './sushiswap/vaults.service.sushiswap';
 import { VaultsService } from './vaults.service';
 import { Web3Provider } from './web3.provider';
@@ -17,17 +15,11 @@ import { Web3Provider } from './web3.provider';
       maxRedirects: 5,
     }),
     ConfigModule.forRoot(),
-    ThegraphModule,
+    TheGraphModule,
     ApisModule,
     forwardRef(() => JobsModule),
   ],
-  providers: [
-    VaultsServiceCurve,
-    VaultsServiceSushiswap,
-    GaugeRewards,
-    Web3Provider,
-    VaultsService,
-  ],
+  providers: [VaultsServiceSushiswap, Web3Provider, VaultsService],
   exports: [VaultsService],
 })
 export class VaultsModule {}

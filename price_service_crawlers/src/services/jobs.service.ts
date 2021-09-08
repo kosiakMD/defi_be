@@ -6,17 +6,13 @@ import { IDatabase } from 'pg-promise';
 import { Inject, Injectable } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
-import { BalancerFirstCheckJob } from '../jobs/balancer_first_check.job';
 import { CoingeckoJob } from '../jobs/coingecko.job';
 import { CommonJob } from '../jobs/common.job';
-import { CurveJob } from '../jobs/curve.job';
-import { CurveFirstCheckJob } from '../jobs/curve_first_check.job';
 import { PancakeJob } from '../jobs/pancake.job';
 import { SushiswapJob } from '../jobs/sushiswap.job';
 import { UniswapJob } from '../jobs/uniswap.job';
 import { Api } from '../thegraph/api';
-import //NEW_TOKENS_SECONDS_INTERVAL,
-'../utils/constants';
+import '../utils/constants';
 import { DatabaseService } from './database.service';
 
 // NOTE: We are limited to 10 bu to be safe we do 6
@@ -30,13 +26,10 @@ export class JobsService {
     private databaseService: DatabaseService,
     private theGraphService: Api,
     private coingeckoJob: CoingeckoJob,
-    private sushiswapJob: SushiswapJob,
-    private uniswapJob: UniswapJob,
+    private sushiSwapJob: SushiswapJob,
+    private uniSwapJob: UniswapJob,
     private pancakeJob: PancakeJob,
     private commonJob: CommonJob,
-    private curveJob: CurveJob,
-    private balancerFirstCheckJob: BalancerFirstCheckJob,
-    private curveFirstCheckJob: CurveFirstCheckJob,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.CURRENT_PRICE_SECONDS_INTERVAL = process.env.CURRENT_PRICE_SECONDS_INTERVAL
@@ -129,14 +122,14 @@ export class JobsService {
         setAgendaTask(
           'CRAWL_SUSHI_CURRENT_PRICE',
           'getCurrentPrices',
-          this.sushiswapJob,
+          this.sushiSwapJob,
           CURRENT_PRICE_SECONDS_INTERVAL,
         );
 
         setAgendaTask(
           'CRAWL_SUSHI_NEW_TOKENS_HISTORY',
           'crawlNewTokensHistory',
-          this.sushiswapJob,
+          this.sushiSwapJob,
           NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
         );
 
@@ -144,63 +137,16 @@ export class JobsService {
         setAgendaTask(
           'CRAWL_UNISWAP_CURRENT_PRICE',
           'getCurrentPrices',
-          this.uniswapJob,
+          this.uniSwapJob,
           CURRENT_PRICE_SECONDS_INTERVAL,
         );
 
         setAgendaTask(
           'CRAWL_UNISWAP_NEW_TOKENS_HISTORY',
           'crawlNewTokensHistory',
-          this.uniswapJob,
+          this.uniSwapJob,
           NEW_TOKENS_HISTORY_SECONDS_INTERVAL,
         );
-
-        // //CURVE
-        // this.logger.log('starting curve')
-        // await cancel('CRAWL_CURVE_NEW_TOKENS');
-        // this.agenda.define(
-        //   'CRAWL_CURVE_NEW_TOKENS',
-        //   {},
-        //   this.curveJob.getCurrentPrices.bind(this),
-        // );
-        // this.agenda.every(CURRENT_PRICE_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_CURVE_NEW_TOKENS',
-        //   {});
-
-        // await cancel('CRAWL_CURVE_NEW_TOKENS_HISTORY');
-        // this.agenda.define(
-        //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-        //   {},
-        //   this.curveJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_HISTORY_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_CURVE_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
-
-        // // this.logger.log('starting balancer');
-        // this.agenda.define(
-        //   'CRAWL_BALANCER_NEW_TOKENS',
-        //   { lockLifetime: 10e3 },
-        //   this.balancerFirstCheckJob.crawlNewTokens.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_BALANCER_NEW_TOKENS',
-        //   {},
-        // );
-
-        // this.agenda.define(
-        //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
-        //   { lockLifetime: 10e3 },
-        //   this.balancerFirstCheckJob.crawlNewTokensHistory.bind(this),
-        // );
-        // this.agenda.every(
-        //   NEW_TOKENS_SECONDS_INTERVAL + ' seconds',
-        //   'CRAWL_BALANCER_NEW_TOKENS_HISTORY',
-        //   {},
-        // );
 
         // clean prices to reduce database size
         setAgendaTask(

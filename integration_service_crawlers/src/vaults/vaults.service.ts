@@ -3,14 +3,12 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import { DatabaseService } from '../jobs/db/database.service';
-import { VaultsServiceCurve } from './curve/vaults.service.curve';
 import { Vault } from './dto/vault.dto';
 import { VaultsServiceSushiswap } from './sushiswap/vaults.service.sushiswap';
 
 @Injectable()
 export class VaultsService {
   constructor(
-    private readonly curveVaultsService: VaultsServiceCurve,
     private readonly sushiswapVaultsService: VaultsServiceSushiswap,
     private readonly databaseService: DatabaseService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,

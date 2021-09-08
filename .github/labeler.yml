@@ -1,0 +1,62 @@
+documentation:
+  - any: [ 'README.md', '*/README.md' ]
+
+Config:
+  - any: [
+      '.github/*',
+      'dangerfile.js',
+      '.gitignore',
+      'tsconfig.json',
+      '.prettierignore',
+      '.prettierrc',
+      '.eslintignore',
+      '.eslintrc.js',
+      'Dockerfile',
+      'dockerignore',
+      'Dockerfile.dockerignore',
+      'Jenkinsfile'
+  ]
+
+dependencies:
+  - any: [ 'package.json', 'yarn.lock', 'package-lock.json', '*/package.json', '*/yarn.lock', '*/package-lock.json' ]
+
+.Env:
+  - .env.*
+
+DTO:
+  - any: [ '*.dto.ts', '*Dto.ts', '*DTO.ts' ]
+
+Tests:
+  - src/**/*.spec.*
+
+Crawler/Job:
+  - any:
+      [
+          'price_service_crawlers/*',
+          'integration_service_crawlers/*',
+          'account_service_consumers/*',
+          '*/account_service_crawlers',
+          '*crawlers/*',
+          '*consumers/*',
+      ]
+
+Safe Service:
+  - safe_service_proxy/src/*
+
+Swap Service:
+  - swap*/src/*
+
+Integration Service:
+  - integration_service/src/*
+
+Gateway Service:
+  - api_gateway/src/*
+
+Account Service:
+  - account_service/src/*
+
+Price Service:
+  - price_service/src/*
+
+Lambda:
+  - lambda/src/*

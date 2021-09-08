@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import Web3 from 'web3';
 
@@ -52,9 +52,9 @@ export class BalancesQueryDto implements BalancesQuery {
   @ApiProperty({
     type: [ChainIdEnum],
     example: [ChainIdEnum.eth, ChainIdEnum.bsc],
-    default: [ChainIdEnum.eth],
+    default: [ChainIdEnum.eth, ChainIdEnum.bsc, ChainIdEnum.polygon, ChainIdEnum.ftm],
   })
-  chains: ChainIdEnum[] = [ChainIdEnum.eth];
+  chains: ChainIdEnum[] = [ChainIdEnum.eth, ChainIdEnum.bsc, ChainIdEnum.polygon, ChainIdEnum.ftm];
 
   @IsOptional()
   @Transform(({ value }) => parseInt(value, 10))
@@ -97,6 +97,7 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
   @ApiProperty({ type: Number, example: 18346602.807013184, required: false })
   totalPriceUSD?: number;
   @ApiProperty({ type: BalanceTokenDto })
+  @Type(() => BalanceTokenDto)
   token: BalanceTokenDto;
 }
 
@@ -118,6 +119,9 @@ export class ErrorDto implements ErrorMessage {
 }
 
 export class BalanceDto implements AccountBalance {
+  @ApiProperty({ type: String, example: '0x1709f800fc9d0b210b6c1f69a7cdc492899808b6' })
+  account: Address;
+
   @ApiProperty({ type: Number, example: 0 })
   totalUsd: number;
 

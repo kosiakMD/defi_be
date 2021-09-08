@@ -1,8 +1,3 @@
-export enum ChainPrefixEnum {
-  eth = 'eth',
-  bsc = 'bsc',
-}
-
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
@@ -11,11 +6,4 @@ export enum ChainIdEnum {
 export enum ChainNameEnum {
   eth = 'ethereum',
   bsc = 'binance',
-}
-
-export enum ChainSymbols {
-  eth = 'eth',
-  ETH = 'ETH',
-  bsc = 'bsc',
-  BSC = 'BSC',
 }

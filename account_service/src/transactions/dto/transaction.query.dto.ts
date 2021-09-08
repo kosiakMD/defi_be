@@ -3,7 +3,7 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validato
 
 import { BadRequestException } from '@nestjs/common';
 
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 
 interface TransactionQuery {
   addresses: string[];

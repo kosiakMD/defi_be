@@ -57,7 +57,7 @@ export class CovalentService {
       }
     } catch (e) {
       if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        this.logger.error(new Error(`URL ${e.code || ' '}${e.config.url}`), 'getBalances');
         if (e.response?.data) {
           this.logger.error(e.response.data);
         }
@@ -97,7 +97,12 @@ export class CovalentService {
       }
     } catch (e) {
       if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        this.logger.error(
+          new Error(
+            `URL ${e.code || ' '}this.logger.error(new Error(\`URL ${e.code || ' '}${e.config.url}`,
+          ),
+          'getTransactions',
+        );
         if (e.response?.data) {
           this.logger.error(e.response.data);
         }

@@ -41,7 +41,7 @@ export class MigrationService {
     }
 
     const assetPartial: Partial<AssetsEntity> = await this.getTokenInfo(
-      userAddress.toLocaleLowerCase(),
+      userAddress?.toLocaleLowerCase(),
       contractAddress.toLocaleLowerCase(),
       this.getCovalentChainId(chainId),
     );

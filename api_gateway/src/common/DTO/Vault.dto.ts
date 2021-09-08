@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, PlatformEnum } from 'src/common/enum';
+import { ChainIdEnum, ProjectEnum } from 'src/common/enum';
 
 import { Address, LPToken, PoolTokenBase, RewardToken, Vault } from '../interfaces';
 import { VaultAPYDTO } from './APY.dto';
@@ -34,9 +34,6 @@ class RewardTokenDTO extends TokenCommonDTO implements RewardToken {
 class LPTokenDTO implements LPToken {
   @ApiProperty({ type: String, example: '0xd905e2eaebe188fc92179b6350807d8bd91db0d8' })
   id: Address;
-
-  // @ApiProperty({ type: String, example: 'Curve.fi DAI/USDC/USDT/PAX' })
-  // name: string;
 }
 
 export default class VaultDto implements Vault {
@@ -49,8 +46,8 @@ export default class VaultDto implements Vault {
   @ApiProperty({ type: String, example: 'hbtc' })
   vaultName: string;
 
-  @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.sushiswap })
-  project: PlatformEnum;
+  @ApiProperty({ enum: ProjectEnum, enumName: 'ProjectEnum', example: ProjectEnum.sushiswap })
+  project: ProjectEnum;
 
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;

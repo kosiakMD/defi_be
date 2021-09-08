@@ -61,12 +61,6 @@ export const validationSchema = Joi.object({
   THEGRAPH_SUSHISWAP_ENDPOINT: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
-  THEGRAPH_CURVE_ENDPOINT: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
-  THEGRAPH_BALANCER_ENDPOINT: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
   SWAP_0X_ENDPOINT: Joi.string() //
     .allow('')
     .required(), // TODO: not empty

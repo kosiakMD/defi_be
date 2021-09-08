@@ -1,6 +1,6 @@
 import { plainToClass } from 'class-transformer';
 
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 
 import { NoDbTokenPricesDto } from '../../price/price.dto';
 import { CurrentPricesPayloadNew } from '../../price/price.interfaces';

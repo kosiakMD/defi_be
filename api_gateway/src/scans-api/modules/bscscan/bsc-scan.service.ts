@@ -5,7 +5,7 @@ import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Logger } from 'src/common/Logger/Logger.service';
-import { ChainIdEnum, ChainPrefixEnum } from 'src/common/enum';
+import { ChainIdEnum, ChainAbbrEnum } from 'src/common/enum';
 
 import { ScanService } from '../scan.service';
 import { CHAIN_ID_BSC } from '../utils/utils';
@@ -16,7 +16,7 @@ export class BscScanService extends ScanService {
   protected readonly scanServiceKey: string;
   protected readonly mainCoinAddress: string;
   protected readonly chainId: ChainIdEnum;
-  protected readonly chainPrefix: ChainPrefixEnum;
+  protected readonly chainPrefix: ChainAbbrEnum;
 
   constructor(
     httpService: HttpService,
@@ -30,6 +30,6 @@ export class BscScanService extends ScanService {
     this.scanServiceKey = this.configService.get<string>('BSCSCAN_API_KEY');
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
     this.chainId = CHAIN_ID_BSC;
-    this.chainPrefix = ChainPrefixEnum.bsc;
+    this.chainPrefix = ChainAbbrEnum.bsc;
   }
 }

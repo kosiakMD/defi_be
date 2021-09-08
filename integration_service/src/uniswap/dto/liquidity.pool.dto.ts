@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PlatformEnum } from 'src/common/enum';
+import { ProjectEnum } from 'src/common/enum';
 
 export class LiquidityPoolDto {
   @ApiProperty({
-    enum: PlatformEnum,
-    enumName: 'PlatformEnum',
-    example: PlatformEnum.uniswap,
+    enum: ProjectEnum,
+    enumName: 'ProjectEnum',
+    example: ProjectEnum.uniswap,
     required: false,
   })
   name?: string;

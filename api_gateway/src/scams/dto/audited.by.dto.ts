@@ -1,7 +1,10 @@
-import { PartnerResponseDto } from 'src/partners/dto';
+import { ApiProperty } from '@nestjs/swagger';
 
 import { AuditDto } from 'src/common/DTO/Audit.dto';
 
+import { ScamPartnerDto } from './partner.dto';
+
 export class AuditedByDto extends AuditDto {
-  partner: PartnerResponseDto;
+  @ApiProperty({ type: ScamPartnerDto })
+  partner: ScamPartnerDto;
 }

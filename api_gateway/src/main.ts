@@ -1,4 +1,5 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { install } from 'source-map-support';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -7,6 +8,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { addTimeLogFeature } from './common/Logger/Logger.service';
+
+install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'development' */ });
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {

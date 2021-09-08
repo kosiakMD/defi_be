@@ -1,19 +1,18 @@
+import { plainToClass } from 'class-transformer';
 import { capitalizeFirstLetter } from 'src/utils/string';
 
-import { ChainNameEnum, ChainPrefixEnum } from 'src/common/enum';
+import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from 'src/common/enum';
 
-interface NetworkInfo {
-  name: string;
-  symbol: string;
-}
+import { ChainDto } from '../dto/chain.dto';
 
 export enum Network {
   ETHEREUM,
 }
 
-export const networks: Record<Network, NetworkInfo> = {
-  [Network.ETHEREUM]: {
+export const networks: Record<Network, ChainDto> = {
+  [Network.ETHEREUM]: plainToClass(ChainDto, {
+    id: ChainIdEnum.eth,
     name: capitalizeFirstLetter(ChainNameEnum.eth),
-    symbol: ChainPrefixEnum.eth,
-  },
+    abbr: ChainAbbrEnum.eth,
+  }),
 };

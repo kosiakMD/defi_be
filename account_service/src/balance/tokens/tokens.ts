@@ -5,6 +5,8 @@ import {
   ETH_BNB_ADDRESS,
   WBNB_ADDRESS,
   WETH_ADDRESS,
+  ZERO_ADDRESS,
+  WFTM_ADDRESS,
 } from 'src/common/constatnt';
 
 export const esdToken = {
@@ -55,11 +57,31 @@ export const wbnbToken = {
   isLp: false,
 };
 
+export const ftmToken = {
+  address: ZERO_ADDRESS.toLowerCase(),
+  symbol: 'FTM',
+  name: 'Fantom',
+  decimals: 18,
+  isLp: false,
+};
+
+export const wftmToken = {
+  address: WFTM_ADDRESS.toLowerCase(),
+  symbol: 'WFTM',
+  name: 'Wrapped Fantom',
+  decimals: 18,
+  isLp: false,
+};
+
 export const NO_DB_ETH_TOKENS = [ethToken, wethToken, daiToken, esdToken];
 
 export const NO_DB_BNB_TOKENS = [bnbToken, wbnbToken];
 
 export const NO_DB_POLYGON_TOKENS = [];
+
+export const NO_DB_FTM_TOKENS = [ftmToken, wftmToken];
+
+export const NO_DB_ARBITRUM_TOKENS = [];
 
 export const NO_SCAN_ETH_TOKENS = [ethToken, wethToken];
 

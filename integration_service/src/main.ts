@@ -1,4 +1,5 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { install } from 'source-map-support';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
@@ -8,8 +9,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-async function bootstrap() {
+install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'development' */ });
+
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     bodyParser: false,

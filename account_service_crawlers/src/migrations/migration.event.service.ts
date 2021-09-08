@@ -52,9 +52,6 @@ export class MigrationEventService {
     fromHex: string,
     toHex: string,
   ): MigrationEventResponse {
-    const eventsSql = logsArray.length
-      ? this.sqlService.getEventsSqlString(logsArray, nodeService.getEventsTable())
-      : null;
     const blocksInfoSql = logsArray.length
       ? this.sqlService.getBlockInfoSqlString(
           fromHex,
@@ -70,7 +67,7 @@ export class MigrationEventService {
           nodeService.getBlockIfoTable(),
         );
 
-    return { blocksInfoSql, eventsSql };
+    return { blocksInfoSql };
   }
 
   private getEventsPromisesArray(
@@ -102,9 +99,7 @@ export class MigrationEventService {
     finish: number,
     nodeService: NodeService,
   ): Promise<BlockTransactionObject[]> {
-    const network = nodeService.getEventsTable().substring(0, 3);
-
-    this.logger.log(`${network.toUpperCase()} - Get block data ${start} - ${finish}`);
+    this.logger.log(`Get block data ${start} - ${finish}`);
     const array = range(start, finish, 1);
 
     const promisesEthBlocks = array.map((block) => nodeService.getBlocksDataFromNetwork(block));
@@ -178,7 +173,6 @@ export class MigrationEventService {
     const { blocksInsertSql, transactionsInsertSql } =
       this.sqlService.getBlocksAndTransactionsSqlStrings(
         blockTransactionObjects,
-        nodeService.getTransactionsTable(),
         nodeService.getBlockTable(),
       );
 

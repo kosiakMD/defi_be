@@ -2,7 +2,7 @@ import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { TokenRow } from '../interfaces/balance.interfaces';

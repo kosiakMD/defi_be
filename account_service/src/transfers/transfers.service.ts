@@ -1,5 +1,4 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { PolygonScanService } from 'src/scan_api/polygon-scan.service';
 
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -16,6 +15,7 @@ import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
+import { PolygonScanService } from 'src/scan_api/polygon-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
 import { ResponseData as BlocksResponseData } from '../thegraph/blocks/block.interface';
 import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
@@ -62,7 +62,7 @@ export class TransfersService {
     return Object.fromEntries<Transfer[]>(result);
   }
 
-  private readonly chainToScan: Record<ChainIdEnum, ScanApiService>;
+  private readonly chainToScan: Partial<Record<ChainIdEnum, ScanApiService>>;
 
   constructor(
     private etherScanService: EtherScanService,

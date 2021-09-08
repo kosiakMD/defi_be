@@ -2,7 +2,7 @@ import { IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, PlatformEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '../enum';
+import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '../enum';
 import { BaseData, ProtocolName, StakingPosition, txs } from '../interfaces';
 import { LiquidityPositionDto } from './LiquidityPositions.dto';
 import { StakingPositionDto } from './StakingPosition.dto';
@@ -16,8 +16,8 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @IsString()
   userAddress: string;
 
-  @ApiProperty({ enum: PlatformEnum, enumName: 'PlatformEnum', example: PlatformEnum.uniswap })
-  platformName: PlatformEnum;
+  @ApiProperty({ enum: ProjectEnum, enumName: 'ProjectEnum', example: ProjectEnum.uniswap })
+  platformName: ProjectEnum;
 
   @ApiProperty({
     enum: UniswapProtocolEnum,

@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { LookupModule } from '../lookup/lookup.module';
-import { Asset, AssetPrice } from './models';
+import { Asset, AssetCurrentPrice, AssetPrice } from './models';
 import { PricesController } from './prices.controller';
 import { PriceService } from './prices.service';
 
@@ -23,7 +23,7 @@ import { PriceService } from './prices.service';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([AssetPrice, Asset]),
+    TypeOrmModule.forFeature([AssetPrice, Asset, AssetCurrentPrice]),
     LookupModule,
   ],
   controllers: [PricesController],

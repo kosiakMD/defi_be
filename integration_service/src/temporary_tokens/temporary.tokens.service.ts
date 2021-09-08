@@ -108,7 +108,7 @@ export class TemporaryTokensService {
         sqlValuesArray.push(`('${!coin.platform ? ETH_ADDRESS : coin.platform.token_address}',
             ${coin.rank},${pricesMap.get(coin.coinGeckoId)},
             '${coin.name.replace("'", "''")}','${coin.symbol}','${
-          networks[Network.ETHEREUM].symbol
+          networks[Network.ETHEREUM].abbr
         }')`);
       }
     });

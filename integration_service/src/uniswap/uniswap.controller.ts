@@ -1,25 +1,13 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse } from '@nestjs/swagger';
-import { InjectRepository } from '@nestjs/typeorm';
 
 import { BaseData } from '../interfaces/transactions.interfaces';
 import BaseDataDto from './dto/BaseData.dto';
-import { UniswapBurnsEntity } from './entities/uniswap.burns.entity';
-import { UniswapMintsEntity } from './entities/uniswap.mints.entity';
-import { UniswapSwapsEntity } from './entities/uniswap.swaps.entity';
-import { UniswapBurnsRepository } from './repository/uniswap.burns.repository';
-import { UniswapMintsRepository } from './repository/uniswap.mints.repository';
-import { UniswapSwapsRepository } from './repository/uniswap.swaps.repository';
 import { UniswapService } from './uniswap.service';
 
 @Controller('integration')
 export class UniswapController {
-  constructor(
-    private readonly integrationService: UniswapService,
-    @InjectRepository(UniswapSwapsEntity) private readonly swapsRepository: UniswapSwapsRepository,
-    @InjectRepository(UniswapMintsEntity) private readonly mintsRepository: UniswapMintsRepository,
-    @InjectRepository(UniswapBurnsEntity) private readonly burnRepository: UniswapBurnsRepository,
-  ) {}
+  constructor(private readonly integrationService: UniswapService) {}
 
   @Get('/uniswap')
   @ApiQuery({
@@ -34,6 +22,6 @@ export class UniswapController {
     if (!addresses) {
       return Promise.resolve([]);
     }
-    return this.integrationService.getDataByAddress(addresses);
+    return this.integrationService.getDataByAddresses(addresses);
   }
 }

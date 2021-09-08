@@ -22,6 +22,6 @@ export class SushiswapController {
     if (!addresses) {
       return Promise.resolve([]);
     }
-    return this.sushiswapService.getSushiswapDataByAddresses(addresses);
+    return this.sushiswapService.getDataByAddresses(addresses);
   }
 }

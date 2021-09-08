@@ -1,30 +1,38 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
+import { ChainDto } from '../../lookup/models';
 import { AssetPrice } from './asset_price.entity';
 
 @Entity({ name: 'prices.asset' })
 export class Asset {
   @PrimaryGeneratedColumn()
-  public id: number;
+  id: number;
 
   @Column()
-  public symbol: string;
+  symbol: string;
+
+  @Column({ name: 'chain_id' })
+  chainId: number;
 
   @Column()
-  public address: string;
+  address: string;
 
   @Column()
-  public name: string;
+  name: string;
 
   @Column()
-  public type: string;
+  type: string;
 
   @Column({ name: 'platform_id' })
-  public platformId: number;
+  platformId: number;
 
   @Column({ name: 'is_new' })
-  public isNew: boolean;
+  isNew: boolean;
 
   @OneToMany(() => AssetPrice, (assetPrice: AssetPrice) => assetPrice.asset)
-  public assetPrices: AssetPrice[];
+  assetPrices: AssetPrice[];
+
+  @ManyToOne(() => ChainDto)
+  @JoinColumn({ name: 'chain_id' })
+  chain: ChainDto;
 }

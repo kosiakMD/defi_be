@@ -21,12 +21,10 @@ import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
 import { AssetsController } from './assets/assets.controller';
 import { AssetsService } from './assets/assets.service';
-import { BalancerController } from './balancer/balancer.controller';
 import { BalancesController } from './balances/balances.controller';
 import { Logger } from './common/Logger/Logger.service';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import configuration from './config/configuration';
-import { CurveController } from './curve/curve.controller';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
@@ -36,6 +34,7 @@ import { PancakeController } from './pancake/pancake.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
+import { ProtocolController } from './protocol/protocol.controller';
 import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
 import { SafeProxyService } from './safe-proxy/safe.proxy.service';
 // import { ScansApiController } from './scans-api/scans-api.controller';
@@ -47,8 +46,6 @@ import { TransactionsController } from './transactions/transactions.controller';
 import { TransfersController } from './transfers/transfers.controller';
 import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
-import { filterObjectKeys } from './utils/object';
-import { isAllUppercase } from './utils/string';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
 
@@ -92,18 +89,15 @@ import { VaultsModule } from './vaults/vaults.module';
     AnalyticController,
     AppController,
     AssetsController,
-    CurveController,
     BalancesController,
     TransactionsController,
     TransfersController,
     // Platforms
-    BalancerController,
     PancakeController,
     SushiswapController,
     UniswapController,
     SwapController,
-    // PlatformController,
-    // ScansApiController,
+    ProtocolController,
   ],
   providers: [
     // TODO: for global auto caching
@@ -141,14 +135,7 @@ export class AppModule implements OnModuleInit, NestModule {
   }
 
   onModuleInit(): void {
-    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
-    this.logger.log(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line no-underscore-dangle
-      filterObjectKeys(this.configService.internalConfig._PROCESS_ENV_VALIDATED, isAllUppercase),
-      SERVICE_NAME,
-    );
+    const { ENV, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         env: ENV,

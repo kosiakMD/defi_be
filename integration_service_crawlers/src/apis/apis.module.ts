@@ -2,7 +2,6 @@ import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { CoingeckoApi } from './api/coingecko.api';
-import { CurveApi } from './api/curve.api';
 
 @Module({
   imports: [
@@ -13,7 +12,7 @@ import { CurveApi } from './api/curve.api';
     }),
     ConfigModule,
   ],
-  providers: [CoingeckoApi, CurveApi],
-  exports: [CoingeckoApi, CurveApi],
+  providers: [CoingeckoApi],
+  exports: [CoingeckoApi],
 })
 export class ApisModule {}

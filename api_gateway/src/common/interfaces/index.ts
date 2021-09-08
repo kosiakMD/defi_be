@@ -2,7 +2,7 @@ import {
   ChainIdEnum,
   LiquidityChangeTypeEnum,
   PancakeProtocolEnum,
-  PlatformEnum,
+  ProjectEnum,
   ProtocolTypeEnum,
   ResultStatus,
   SushiSwapProtocolEnum,
@@ -26,15 +26,8 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: PlatformEnum;
+  platformName: ProjectEnum;
   protocolName: ProtocolName;
-}
-
-export interface PlatformData {
-  balancer: BaseData[];
-  curve: BaseData[];
-  sushiswap: BaseData[];
-  uniswap: BaseData[];
 }
 
 export interface TokenCommon {
@@ -268,11 +261,4 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   stakingPositions?: StakingPosition[];
   liquidityPositions?: LiquidityPosition[];
   txs?: txs[];
-}
-
-export interface PlatformData {
-  balancer: BaseData[];
-  curve: BaseData[];
-  sushiswap: BaseData[];
-  uniswap: BaseData[];
 }

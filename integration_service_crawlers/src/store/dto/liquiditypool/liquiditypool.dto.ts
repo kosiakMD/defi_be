@@ -10,8 +10,8 @@ export class LiquidityPool {
   fee24h: number;
   apy: APY;
   il?: ImpermanentLoss;
-  poolToken: Token;
-  tokens: Token[];
+  token: Token;
+  poolTokens: Token[];
   createdAt?: string;
   updatedAt?: string;
 }

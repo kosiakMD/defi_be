@@ -1,5 +1,3 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '../../scans-api/modules/utils/utils';
-
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
@@ -10,33 +8,39 @@ export enum ChainNameEnum {
   bsc = 'binance',
 }
 
-export enum ChainPrefixEnum {
+export enum ChainAbbrEnum {
   eth = 'eth',
   bsc = 'bsc',
+  plg = 'plg',
 }
 
-export enum PlatformEnum {
+export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
-  curve = 'curve',
-  balancer = 'balancer',
 }
 
 export enum UniswapProtocolEnum {
-  protocolV1 = 'Uniswap V1',
-  protocolV2 = 'Uniswap V2',
+  protocolV1 = 'UniswapV1',
+  uniswapV1 = 'UniswapV1',
+  protocolV2 = 'UniswapV2',
+  uniswapV2 = 'UniswapV2',
 }
 
 export enum SushiSwapProtocolEnum {
-  protocolV1 = 'SushiSwap V1',
-  protocolV2 = 'SushiSwap V2',
-  protocolV3 = 'SushiSwap V3',
+  protocolV1 = 'SushiSwapV1',
+  sushiswapV1 = 'SushiSwapV1',
+  protocolV2 = 'SushiSwapV2',
+  sushiswapV2 = 'SushiSwapV2',
+  protocolV3 = 'SushiSwapV3',
+  sushiswapV3 = 'SushiSwapV3',
 }
 
 export enum PancakeProtocolEnum {
-  protocolV1 = 'Pancake V1',
-  protocolV2 = 'Pancake V2',
+  protocolV1 = 'PancakeV1',
+  pancakeV1 = 'PancakeV1',
+  protocolV2 = 'PancakeV2',
+  pancakeV2 = 'PancakeV2',
 }
 
 export enum ResultStatus {
@@ -94,13 +98,6 @@ export enum TokenOperations {
   EXCHANGE = 'exchange',
 }
 
-export enum ChainEnum {
-  eth = CHAIN_ID_ETH,
-  ETH = CHAIN_ID_ETH,
-  bsc = CHAIN_ID_BSC,
-  BSC = CHAIN_ID_BSC,
-}
-
 export enum SubTransactionTypEnum {
   incoming = 'incoming',
   outgoing = 'outgoing',
@@ -122,4 +119,9 @@ export enum SortDirectionEnum {
 export enum SortFieldEnum {
   project = 'project',
   ticker = 'ticker',
+}
+
+export enum DirectionEnum {
+  in = 'in',
+  out = 'out',
 }

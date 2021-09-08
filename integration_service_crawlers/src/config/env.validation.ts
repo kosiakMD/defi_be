@@ -53,9 +53,6 @@ export const validationSchema = Joi.object({
   AMM_PANCAKE_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
-  AMM_CURVE_SUBGRAPH_URL: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
   BLOCKS_BSC_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty

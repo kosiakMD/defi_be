@@ -3,7 +3,7 @@ import { Exclude, Expose, plainToClass, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdToSymbol } from 'src/common/constatnt/dictionaries';
+import { ChainIdToAbbr } from 'src/common/constatnt/dictionaries';
 import { DetailedResponseDto } from 'src/common/dto';
 import { ChainIdEnum, ChainNameEnum, ResultStatus } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
@@ -139,8 +139,8 @@ export class TransactionNewDto {
   get chain(): ChainDto {
     return plainToClass(ChainDto, {
       id: this.chainId,
-      symbol: ChainIdToSymbol[this.chainId],
-      name: ChainNameEnum[ChainIdToSymbol[this.chainId]],
+      symbol: ChainIdToAbbr[this.chainId],
+      name: ChainNameEnum[ChainIdToAbbr[this.chainId]],
     } as ChainDto);
   }
 

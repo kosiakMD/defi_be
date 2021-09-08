@@ -53,9 +53,6 @@ export const validationSchema = Joi.object({
   AMM_PANCAKE_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
-  AMM_CURVE_SUBGRAPH_URL: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
   BLOCKS_BSC_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
@@ -67,6 +64,10 @@ export const validationSchema = Joi.object({
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),
+  ACCOUNT_SERVICE_HOST: Joi.string().required(),
+  ACCOUNT_SERVICE_PORT: Joi.number().required(),
+  ACCOUNT_BALANCE: Joi.string().required(),
+  ACCOUNT_ASSETS: Joi.string().required(),
   THEGRAPH_SUSHISWAP_STAKING_POSITIONS: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),

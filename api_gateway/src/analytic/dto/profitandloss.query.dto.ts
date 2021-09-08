@@ -2,7 +2,7 @@ import { IsNotEmpty, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from 'src/common/enum';
 import { Address } from 'src/common/interfaces';
 
 export class ProfitAndLossQueryDto {

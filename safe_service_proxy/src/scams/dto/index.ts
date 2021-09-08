@@ -1,5 +1,5 @@
 export * from './scams.response.dto';
-export * from './links.dto';
+export * from './scam.links.dto';
 export * from './scam.dto';
 export * from './scam.function.response.dto';
 export * from './scam.type.dto';

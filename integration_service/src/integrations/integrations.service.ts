@@ -47,9 +47,10 @@ export class IntegrationsService {
     response.data.currency = plainToClass(CurrencyDto, {});
     // Features Data
     const allData = await Promise.allSettled<any>(
-      chains.map((chainId) => {
-        return this.protocolService.getProtocolFeatures(protocolName, addresses, chainId);
-      }),
+      chains.map(
+        async (chainId) =>
+          await this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
+      ),
     );
     // Data
     chains.forEach((chainId, dataIndex) => {
@@ -63,6 +64,9 @@ export class IntegrationsService {
       const chainResult = allData[dataIndex];
       if (chainResult.status === 'fulfilled') {
         Object.assign(chainData, chainResult.value);
+        if (chainResult.value.errors) {
+          response.errors = [...response.errors, ...chainResult.value.errors];
+        }
       } else {
         response.errors.push(chainResult.reason);
       }

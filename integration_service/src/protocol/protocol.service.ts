@@ -2,6 +2,7 @@ import { Injectable, NotImplementedException } from '@nestjs/common';
 
 import { ChainIdEnum, ProtocolName } from '../common/enum';
 
+import { IntegrationFeaturesData } from '../integrations/integrations.dto';
 import { ProtocolBasicInfo } from './features/features.dto';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
@@ -39,11 +40,11 @@ export class ProtocolService {
     protocolName: ProtocolName,
     addresses: string,
     chainId: ChainIdEnum,
-  ): Promise<any> {
+  ): Promise<IntegrationFeaturesData> {
     const protocol = this.getProtocolByName(protocolName);
     if (!protocol) {
       throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
     }
-    return protocol.getAllFeaturesData(addresses, chainId);
+    return await protocol.getAllFeaturesData(addresses, chainId);
   }
 }

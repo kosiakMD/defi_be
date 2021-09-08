@@ -6,11 +6,11 @@ import { DetailedResponseDto } from './index';
 
 import { ProtocolFeaturesInfo } from '../types/protocol.types';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from './features.dto';
-import { FeatureDto, FeatureResult } from '../types/features.types';
+import { FeatureResult } from '../types/features.types';
 import { ChainDto } from './chain.dto';
 import { CurrencyDto } from '../../prices/dto';
 import { MetaDto } from './response.dto';
-import { ERC20Token } from './transactions.interfaces';
+import { ERC20Token, StakingPosition } from './transactions.interfaces';
 import { FeatureEnum } from '../enum/feature.enum';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
@@ -31,16 +31,19 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: LiquidityPoolFeature[] | FeatureResult | FeatureResult[];
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionDto | StakingPosition>;
+} & {
+  errors: string[] | Error[];
 };
 
 @Exclude()
 export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
+  errors: string[] | Error[];
   @Expose()
     // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureDto | FeatureResult | FeatureResult[];
+  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureDto | FeatureResult | FeatureResult[];
+  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionDto*/>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {

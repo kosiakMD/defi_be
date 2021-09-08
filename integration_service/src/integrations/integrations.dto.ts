@@ -5,13 +5,12 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { DetailedResponseDto, MetaDto } from '../dto';
 import { ChainDto } from '../dto/chain.dto';
-import { ERC20Token } from '../interfaces/transactions.interfaces';
+import { ERC20Token, StakingPosition } from '../interfaces/transactions.interfaces';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from '../protocol/features/features.dto';
 import { FeatureEnum } from '../protocol/features/features.enum';
-import { FeatureResult } from '../protocol/features/features.types';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
-import { FeatureDto } from './integrationFeatures';
 import { CurrencyDto } from '../dto/currency.dto';
+import { FeatureResult } from '../protocol/features/features.types';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -31,16 +30,19 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: LiquidityPoolFeature[] | FeatureResult | FeatureResult[];
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionDto | StakingPosition>;
+} & {
+  errors: string[] | Error[];
 };
 
 @Exclude()
 export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
+  errors: string[] | Error[];
   @Expose()
     // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureDto | FeatureResult | FeatureResult[];
+  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureDto | FeatureResult | FeatureResult[];
+  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionDto*/>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {
@@ -123,18 +125,25 @@ export class PoolUserData {
 
 export class LiquidityPoolFeature {
   address: string = null;
+
   name: string = null; // 'WETH / USDC'
+
   // TODO: lp balance?
   @Type(() => ERC20TokenDto)
   lpToken?: ERC20TokenDto = null;
+
   TVL?: number = null; // sum(reserve * price)
   // volumeChangePercentage?: number;
+
   @Type(() => Fee)
   fee: Fee = new Fee();
+
   @Type(() => PoolUserData)
   user: PoolUserData = new PoolUserData();
+
   @Type(() => PoolStatistic)
   statistic: PoolStatistic = new PoolStatistic();
+
   @Type(() => PoolTokenDto)
   tokens: PoolTokenDto[] = [];
 }

@@ -83,6 +83,8 @@ export const NO_DB_FTM_TOKENS = [ftmToken, wftmToken];
 
 export const NO_DB_ARBITRUM_TOKENS = [];
 
+export const NO_DB_AVAX_TOKENS = [];
+
 export const NO_SCAN_ETH_TOKENS = [ethToken, wethToken];
 
 export const NO_SCAN_BNB_TOKENS = [bnbToken, wbnbToken];

@@ -60,6 +60,7 @@ export class BalanceController {
       ChainIdEnum.polygon,
       ChainIdEnum.ftm,
       ChainIdEnum.arbitrum,
+      ChainIdEnum.avax
     ],
     required: false,
   })

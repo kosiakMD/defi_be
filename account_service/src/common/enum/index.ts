@@ -18,6 +18,7 @@ export enum ChainPrefixEnum {
   polygon = 'polygon',
   ftm = 'ftm',
   arbi = 'arbi',
+  avax = 'avax'
 }
 
 export enum ChainIdEnum {
@@ -26,6 +27,7 @@ export enum ChainIdEnum {
   polygon = 3,
   ftm = 4,
   arbitrum = 5,
+  avax = 6
 }
 
 export enum AbsoluteChainIdEnum {
@@ -34,6 +36,7 @@ export enum AbsoluteChainIdEnum {
   polygon = 137,
   ftm = 250,
   arbitrum = 42161,
+  avax = 43114
 }
 
 export enum CurrencyEnum {

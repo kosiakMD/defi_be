@@ -36,7 +36,7 @@ export class MigrationService {
       event.chainId,
     );
 
-    if (asset.isDataPresent) {
+    if (asset.name && asset.symbol && asset.decimals) {
       return 1;
     }
 
@@ -50,7 +50,6 @@ export class MigrationService {
     asset.decimals = assetPartial?.decimals;
     asset.symbol = assetPartial?.symbol;
     asset.icon = assetPartial?.icon;
-    asset.isDataPresent = true;
     await this.assetsStore.save(asset);
 
     return 1;

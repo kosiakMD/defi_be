@@ -23,12 +23,6 @@ export class AssetsEntity {
   @Column({ name: 'decimals' })
   decimals: number;
 
-  @Column({ name: 'is_ready_to_migrate' })
-  isReadyToMigrate: boolean;
-
-  @Column({ name: 'is_migrated' })
-  isMigrated: boolean;
-
   @Column({ name: 'is_lp' })
   isLp: boolean;
 }

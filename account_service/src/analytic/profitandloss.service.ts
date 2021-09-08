@@ -42,7 +42,7 @@ export class ProfitAndLossService {
     if (!asset) {
       response.errors.push(`Asset with address ${assetAddress} not found`);
     }
-    if (!asset.isMigrated) {
+    if (!asset.isAnalyticAvailable) {
       response.errors.push(`Asset with address ${assetAddress} is not ready`);
     }
     const addressBlacklisted: string[] = await this.blacklistedService.filterIsBlacklisted(

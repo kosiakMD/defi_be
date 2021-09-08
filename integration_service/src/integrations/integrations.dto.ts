@@ -57,7 +57,7 @@ export class IntegrationDataDto {
 
   @ApiProperty({ type: ProtocolInfoDto })
   protocol: ProtocolInfoDto = null;
-  
+
   @ApiProperty({ type: CurrencyDto})
   currency: CurrencyDto = null;
 

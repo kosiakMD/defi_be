@@ -1,3 +1,8 @@
+export enum ChainAbbrEnum {
+  eth = 'eth',
+  bsc = 'bsc',
+}
+
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,

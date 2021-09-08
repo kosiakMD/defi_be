@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChainController } from './chain.controller';
 import { CurrencyController } from './currency.controller';
-import { ChainDto, CurrencyDto } from './models';
+import { ChainEntity, CurrencyDto } from './models';
 import { ChainService } from './services/chain.service';
 import { CurrencyService } from './services/currency.service';
 
@@ -24,7 +24,7 @@ import { CurrencyService } from './services/currency.service';
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([ChainDto, CurrencyDto]),
+    TypeOrmModule.forFeature([ChainEntity, CurrencyDto]),
   ],
   controllers: [ChainController, CurrencyController],
   providers: [ChainService, CurrencyService],

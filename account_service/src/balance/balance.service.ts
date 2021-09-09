@@ -7,7 +7,7 @@ import Web3 from 'web3';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { ETH_BNB_ADDRESS } from '../common/constatnt';
+import { BLACKLISTED_TOKENS, ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
 import { ChainIdEnum } from 'src/common/enum';
 
@@ -145,7 +145,12 @@ export class BalanceService {
       const errors = [];
 
       balances.forEach((balance) => {
-        balance.items.forEach((token) => {
+        balance.items
+        .filter(
+          // TODO: Hotfix. Remove or rewrite this filtration
+          (token) => !BLACKLISTED_TOKENS.includes(token.contract_address),
+        )
+        .forEach((token) => {
           const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
           const tokenPriceUSD = token.quote_rate ? token.quote_rate : null;
           const totalPriceUSD = tokenPriceUSD * decimalsAmount;

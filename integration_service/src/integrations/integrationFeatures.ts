@@ -4,7 +4,7 @@ import { ProtocolName, TransactionTypeEnum } from '../common/enum';
 import { StakingPosition } from '../interfaces/staking.position.interfaces';
 import { SwapToken } from '../interfaces/transactions.interfaces';
 import { FeatureResult } from '../protocol/features/features.types';
-import { LiquidityPoolFeature, StakingPositionDto } from './integrations.dto';
+import { LiquidityPoolFeature } from './integrations.dto';
 
 export interface APY {
   day: number;
@@ -143,9 +143,9 @@ export interface SwapTransaction extends Transaction {
 export type FeatureName = string;
 
 // TODO remove StakingPosition asfter StakingPositionDto will be done
-export type FeatureDto<T = LiquidityPoolFeature | StakingPositionDto | StakingPosition> = Record<
+export type FeatureDto<T = LiquidityPoolFeature | StakingPosition> = Record<
   FeatureName,
-  FeatureResult<T>
+  FeatureResult<T> | FeatureResult<T>[]
 >;
 
 export interface IntegrationResponse {

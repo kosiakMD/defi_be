@@ -19,6 +19,7 @@ import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
+import { AutofarmModule } from './autofarm/autofarm.module';
 import { JobsModule } from './jobs/jobs.module';
 
 @Module({
@@ -56,6 +57,7 @@ import { JobsModule } from './jobs/jobs.module';
     PancakeModule,
     TemporaryTokensModule,
     IntegrationsModule,
+    AutofarmModule,
     JobsModule,
   ],
   controllers: [HealthController],

@@ -9,7 +9,7 @@ export class AssetsEntity {
   address: string;
 
   @Column({ name: 'name', nullable: true })
-  name: number;
+  name: string;
 
   @Column({ name: 'symbol', nullable: true })
   symbol: string;

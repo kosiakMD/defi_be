@@ -1,6 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { Type } from 'class-transformer';
 
+import { ApiProperty } from '@nestjs/swagger';
+
 import { Address } from '../common/types';
 import {
   ChainIdEnum,
@@ -12,6 +14,7 @@ import {
 } from 'src/common/enum';
 
 import { LiquidityPosition, UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
+import { LPToken } from '../integrations/integrations.dto';
 
 export type TokenSymbol = string;
 
@@ -24,10 +27,15 @@ export interface AmountAble {
 }
 
 export class ERC20Token {
+  @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
   address: string;
+  @ApiProperty({ type: String, example: 'Ethereum' })
   name: string;
+  @ApiProperty({ type: String, example: 'ETH' })
   symbol: string;
+  @ApiProperty({ type: Number, example: 18 })
   decimals: number;
+  @ApiProperty({ type: String, example: '69393241' })
   totalSupply?: string;
 }
 
@@ -63,7 +71,7 @@ export interface UniswapResponseData {
 
 export interface ClaimAbleToken extends ERC20Token {
   claimed?: string;
-  claimable: string;
+  claimable?: string;
   priceUSD?: number;
 }
 
@@ -95,9 +103,10 @@ export interface StakingPosition {
   address: string;
   poolId?: string;
   staked: string;
-  lpToken: ERC20Token;
+  lpToken?: ERC20Token;
   rewardToken: ClaimAbleToken;
-  liquidityPoolTokens: PoolToken[];
+  stakingToken: ERC20Token | LPToken;
+  liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }
 

@@ -80,6 +80,7 @@ export abstract class BasicProtocol<
       this.logger.error(e);
       throw e;
     }
+
     const rawPools = data.find((data) => data['liquidityPositions']);
     const rawStaking = data.find((data) => data['stakingPositions']);
     // TODO: feature transaction is disabled
@@ -193,6 +194,7 @@ export abstract class BasicProtocol<
       totalValue: 0,
       items: null,
     };
+
     rawStaking?.stakingPositions.forEach((staking) => {
       result.totalValue += Number(staking.staked);
     });
@@ -220,7 +222,7 @@ export abstract class BasicProtocol<
       result.errors.push(e.message);
     }
 
-    const outputPools: LiquidityPoolFeature[] = inputPoolsData.liquidityPositions.map(
+    const outputPools: LiquidityPoolFeature[] = inputPoolsData?.liquidityPositions.map(
       (inputPool) => {
         const tokens: PoolTokenDto[] = [];
         let TVL = 0; // sum(reserve * price)

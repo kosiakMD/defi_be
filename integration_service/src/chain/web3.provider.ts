@@ -3,15 +3,21 @@ import Web3 from 'web3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { ChainIdEnum } from '../common/enum';
+
 @Injectable()
 export class Web3Provider {
-  private readonly web3Eth;
-  constructor(private readonly configService: ConfigService) {
-    const ethUrl = this.configService.get<string>('ETH_URL');
+  public readonly web3Map: Map<ChainIdEnum, Web3> = new Map<ChainIdEnum, Web3>();
 
-    this.web3Eth = new Web3(ethUrl);
+  constructor(private readonly configService: ConfigService) {
+    this.web3Map.set(ChainIdEnum.bsc, new Web3(this.configService.get<string>('BSC_URL')));
+    this.web3Map.set(ChainIdEnum.eth, new Web3(this.configService.get<string>('ETH_URL')));
   }
-  instanceEth(): any {
-    return this.web3Eth;
+  instanceEth(): Web3 {
+    return this.web3Map.get(ChainIdEnum.eth);
+  }
+
+  instanceBsc(): Web3 {
+    return this.web3Map.get(ChainIdEnum.bsc);
   }
 }

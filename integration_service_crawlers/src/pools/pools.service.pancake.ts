@@ -3,21 +3,19 @@ import Web3 from 'web3';
 import { Injectable } from '@nestjs/common';
 
 import { MultiCallBsc } from '../chain/multicall/multicallbsc';
-import { Erc20TokenContract } from '../chain/token/erc20token.contract';
-import { PairContract } from '../chain/uniswapv2pair/pair.contract';
 import { Web3Provider } from '../chain/web3.provider';
+import { PancakeProtocolEnum, ProjectEnum } from '../config/projects';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
-import { Token } from '../store/dto/liquiditypool/token.dto';
 import { LiquidityPoolsEntity } from '../store/entities/liquiditypools.entity';
 import { LiquidityPoolsStore } from '../store/liquiditypools.store';
 import { deriveBNBPerToken, deriveBNBPrice } from './helpers/pricing';
-import { CHAIN_ID_BSC, PROJECT_PANCAKE, PROJECT_PANCAKE_V2 } from './pools.utils';
-import { BNToDecimals, stringToDecimals } from './utils/number';
+import { CHAIN_ID_BSC } from './pools.utils';
+import { BNToDecimals } from './utils/number';
 
 @Injectable()
 export class PoolsServicePancake {
   protected chain: number = CHAIN_ID_BSC;
-  protected project: string = PROJECT_PANCAKE;
+  protected project: string = ProjectEnum.pancake;
   protected web3ProviderBSC: Web3;
 
   constructor(
@@ -30,10 +28,10 @@ export class PoolsServicePancake {
 
   async getCurrentPairs(): Promise<LiquidityPoolsEntity[]> {
     const poolsV1: LiquidityPoolsEntity[] = await this.liquidityPoolsStore.getProjectPools(
-      PROJECT_PANCAKE,
+      PancakeProtocolEnum.pancakeV1,
     );
     const poolsV2: LiquidityPoolsEntity[] = await this.liquidityPoolsStore.getProjectPools(
-      PROJECT_PANCAKE_V2,
+      PancakeProtocolEnum.pancakeV2,
     );
     const allPairs = await this.fillPairsData([...poolsV1, ...poolsV2]);
     return allPairs.reduce((a, c) => {
@@ -83,79 +81,5 @@ export class PoolsServicePancake {
       });
     });
     return pools;
-  }
-
-  async getLiquidityPoolChainData(address: string) {
-    const tokenContract = new Erc20TokenContract(this.web3ProviderBSC, address);
-    const pairContract = new PairContract(this.web3ProviderBSC, address);
-
-    const [token0Address, token1Address, pairTokenSupply, pairReserves] = await Promise.all([
-      pairContract.token0(),
-      pairContract.token1(),
-      tokenContract.totalSupply(),
-      this.multicall.getPairsReserves([address]),
-    ]);
-
-    const [token0, token1] = await Promise.all([
-      this.getTokenFields(token0Address),
-      this.getTokenFields(token1Address),
-    ]);
-
-    const lPoolChainData: LiquidityPool = {
-      id: address.toLowerCase(),
-      chain: CHAIN_ID_BSC,
-      project: PROJECT_PANCAKE_V2,
-      reserveUSD: 0,
-      fee24h: null,
-      apy: {
-        day: null,
-        week: null,
-        month: null,
-      },
-      il: {
-        day: null,
-        dayUSD: null,
-        week: null,
-        weekUSD: null,
-        month: null,
-        monthUSD: null,
-      },
-      token: {
-        id: address.toLowerCase(),
-        totalSupply: stringToDecimals(pairTokenSupply),
-      },
-      poolTokens: [
-        {
-          ...token0,
-          reserve: BNToDecimals(pairReserves.reserves[address].reserve0, token0.decimals),
-          positionInPool: 0,
-          percentage: 50,
-        },
-        {
-          ...token1,
-          reserve: BNToDecimals(pairReserves.reserves[address].reserve1, token1.decimals),
-          positionInPool: 1,
-          percentage: 50,
-        },
-      ],
-    };
-
-    return lPoolChainData;
-  }
-
-  async getTokenFields(token: string): Promise<Token> {
-    const tokenContract = new Erc20TokenContract(this.web3ProviderBSC, token);
-    const [name, symbol, decimals] = await Promise.all([
-      tokenContract.name(),
-      tokenContract.symbol(),
-      tokenContract.decimals(),
-    ]);
-
-    return {
-      id: token.toLowerCase(),
-      name: name,
-      symbol: symbol,
-      decimals: decimals,
-    };
   }
 }

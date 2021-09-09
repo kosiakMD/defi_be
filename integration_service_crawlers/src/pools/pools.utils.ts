@@ -11,18 +11,9 @@ export const TIMESTAMP_MONTH_BEFORE_CURRENT: number = Math.trunc(
   TIMESTAMP_CURRENT - ONE_DAY_SECONDS * 30,
 );
 
-export const CHAIN_ETH = 'eth';
 export const CHAIN_ID_ETH = 1;
-export const CHAIN_BSC = 'bsc';
 export const CHAIN_ID_BSC = 2;
-export const PROJECT_UNISWAP = 'uniswap';
-export const PROJECT_SUSHISWAP = 'sushiswap';
-export const PROJECT_PANCAKE = 'Pancake V1';
-export const PROJECT_PANCAKE_V2 = 'Pancake V2';
 
-export function getImpermanentLossUSD(reserveUSD: number, percent: number): number {
-  return reserveUSD * (percent / 100);
-}
 export function getLastDayApy(total: number, history: number): number {
   return (history / total) * 100;
 }
@@ -31,15 +22,6 @@ export function getLastWeekApy(total: number, history: number): number {
 }
 export function getLastMonthApy(total: number, history: number): number {
   return getLastDayApy(total, history) / 30;
-}
-export function getLpTokenPrice(reserveUSD: number, totalSupply: number): number {
-  return reserveUSD / totalSupply;
-}
-export function getImpermanentLossValue(currentValue: number, historyValue: number): number {
-  return currentValue / historyValue - 1;
-}
-export function getImpermanentLossPercent(currentValue: number, historyValue: number): number {
-  return getImpermanentLossValue(currentValue, historyValue) * 100;
 }
 
 export function getIl(pairCurrent: Pair, pairPast: Pair): [number, number] {

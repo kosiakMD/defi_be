@@ -65,7 +65,7 @@
     "@types/cache-manager": "^3.4.0",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "bignumber.js": "^9.0.1",
     "danger": "^10.6.3",
     "eslint": "^7.22.0",

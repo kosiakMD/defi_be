@@ -46,7 +46,7 @@ export class PoolsService {
 
     const uniswapPools = dtoPools.filter((p) => {
       return (
-        p.project === ProjectEnum.uniswap &&
+        p.project === UniswapProtocolEnum.uniswapV2 &&
         p.reserveUsd > UNI_MIN_RESERVE &&
         !UNI_PAIRS_BLACKLIST.find((address) => address === p.address)
       );

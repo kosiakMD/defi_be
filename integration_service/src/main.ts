@@ -14,13 +14,13 @@ install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'develop
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
-    bodyParser: false,
+    bodyParser: true,
     logger: true,
   });
 
   app.enableShutdownHooks();
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
   const logger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));

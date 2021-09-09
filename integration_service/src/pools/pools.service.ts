@@ -39,7 +39,7 @@ export class PoolsService {
     const dbPools = await this.liquidityPoolsRepository
       .createQueryBuilder('pools')
       .orWhere('pools.updated_at = (select max(updated_at) from liquidity_pools)')
-      .orWhere("pools.project = 'Pancake V2'")
+      .orWhere("pools.project = '" + PancakeProtocolEnum.pancakeV2 + "'")
       .getMany();
 
     const dtoPools: LiquidityPoolsResponseDto[] = this.fromEntityToDtos(dbPools);

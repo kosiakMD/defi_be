@@ -1,30 +1,8 @@
 import { LiquidityPoolsEntity } from '../../store/entities/liquiditypools.entity';
 
-export const BUSD_BNB_PAIR_ADDRESS = '0x1b96b92314c44b159149f7e0303511fb2fc4774f';
 export const BUSD_BNB_PAIR_ADDRESS_NEW = '0x58f876857a02d6762e0101bb5c46a8c1ed44dc16';
-export const USDT_BNB_PAIR_ADDRESS = '0x20bcc3b8a0091ddac2d0bc30f68e6cbb97de59cd';
 export const USDT_BNB_PAIR_ADDRESS_NEW = '0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae';
 export const WBNB_TOKEN_ADDRESS = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
-
-export function deriveBNBPriceOld(pools: LiquidityPoolsEntity[]): number {
-  const BUSD_BNB_POOL = pools.find((p) => p.address === BUSD_BNB_PAIR_ADDRESS);
-  const USDT_BNB_POOL = pools.find((p) => p.address === USDT_BNB_PAIR_ADDRESS);
-
-  const WBNB_BUSD = BUSD_BNB_POOL.poolTokens.find((t) => t.id === WBNB_TOKEN_ADDRESS);
-  const BUSD_WBNB = BUSD_BNB_POOL.poolTokens.find((t) => t.id !== WBNB_TOKEN_ADDRESS);
-  const WBNB_USDT = USDT_BNB_POOL.poolTokens.find((t) => t.id === WBNB_TOKEN_ADDRESS);
-  const USDT_WBNB = USDT_BNB_POOL.poolTokens.find((t) => t.id !== WBNB_TOKEN_ADDRESS);
-
-  const totalLiquidityBNB = Number(BUSD_WBNB.reserve) + Number(WBNB_USDT.reserve);
-
-  const busdWeight = WBNB_BUSD.reserve / totalLiquidityBNB;
-  const usdtWeight = WBNB_USDT.reserve / totalLiquidityBNB;
-
-  const bnbPriceBusd = BUSD_WBNB.reserve / WBNB_BUSD.reserve;
-  const usdtPriceBusd = USDT_WBNB.reserve / WBNB_USDT.reserve;
-
-  return bnbPriceBusd * busdWeight + usdtPriceBusd * usdtWeight;
-}
 
 export function deriveBNBPrice(pools: LiquidityPoolsEntity[]): number {
   const BUSD_BNB_POOL = pools.find((p) => p.address === BUSD_BNB_PAIR_ADDRESS_NEW);

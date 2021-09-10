@@ -5,10 +5,10 @@ interface JobsSettings {
 
 export const POOLS_JOB: JobsSettings = {
   name: 'INT_POOLS_JOB',
-  seconds: 60,
+  seconds: 300,
 };
 
 export const VAULTS_JOB: JobsSettings = {
   name: 'INT_VAULTS_JOB',
-  seconds: 60,
+  seconds: 300,
 };

@@ -36,7 +36,7 @@ export class MigrationService {
       event.chainId,
     );
 
-    if (asset.name && asset.symbol && asset.decimals) {
+    if (asset.isDataPresent) {
       return 1;
     }
 
@@ -50,6 +50,7 @@ export class MigrationService {
     asset.decimals = assetPartial?.decimals;
     asset.symbol = this.normalizeWeb3TokensData(assetPartial?.symbol);
     asset.icon = assetPartial?.icon;
+    asset.isDataPresent = true;
     await this.assetsStore.save(asset);
 
     return 1;
@@ -170,11 +171,11 @@ export class MigrationService {
     }
   }
 
-  replaceAll(string, search, replace) {
+  replaceAll(string, search, replace): string {
     return string.split(search).join(replace);
   }
 
-  normalizeWeb3TokensData(data: string) {
+  normalizeWeb3TokensData(data: string): string {
     return this.replaceAll(data, '\u0000', '');
   }
 }

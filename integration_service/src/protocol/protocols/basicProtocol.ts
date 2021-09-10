@@ -115,7 +115,7 @@ export abstract class BasicProtocol<
       }
     };
 
-    inputPoolsData.liquidityPositions.forEach((inputPool) => {
+    inputPoolsData?.liquidityPositions?.forEach((inputPool) => {
       pools.push(inputPool.lpToken.address);
       inputPool.poolTokens.forEach((token: PoolToken) => {
         const { address, name, symbol, decimals, priceUSD } = token;

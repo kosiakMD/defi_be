@@ -28,4 +28,7 @@ export class AssetsEntity {
 
   @Column({ name: 'project_id', nullable: true })
   projectId: boolean;
+
+  @Column({ name: 'is_data_present' })
+  isDataPresent: boolean;
 }

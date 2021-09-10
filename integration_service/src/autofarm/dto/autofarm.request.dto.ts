@@ -16,7 +16,7 @@ export class AutofarmRequestDto {
   address: Address;
 
   @IsNotEmpty()
-  @Transform(({ value }) => Number(value))
+  @Transform(({ value }) => ChainIdEnum[value])
   @ApiProperty({
     type: ChainIdEnum,
     example: ChainIdEnum.bsc,

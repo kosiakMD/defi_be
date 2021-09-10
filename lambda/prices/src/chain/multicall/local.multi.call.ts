@@ -1,6 +1,7 @@
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import { BigNumber } from 'bignumber.js';
 
+import { LOGGER } from '../../logger/logger';
 import { UNISWAP_PAIR_ABI } from '../uniswapv2pair/abi';
 import { Web3Provider } from '../web3.provider';
 import {
@@ -16,26 +17,31 @@ export class LocalMultiCall extends MultiCall {
   }
 
   async getPairsReserves(pairs: string[]): Promise<UniswapReservesResult> {
-    const chunkSize = 100;
-    let blockNumberLast: number;
-    const convertedReserves: UniswapReservesData = {};
-    for (let i = 0, j = pairs.length; i < j; i += chunkSize) {
-      const pairsSlice = pairs.slice(i, i + chunkSize);
-      const [blockNumber, multiCallReserves] = await super.getReserves(pairsSlice);
-      blockNumberLast = blockNumber;
-      for (const key in pairsSlice) {
-        convertedReserves[pairsSlice[key]] = {
-          reserve0: multiCallReserves[pairsSlice[key]].reserve0.toString(),
-          reserve1: multiCallReserves[pairsSlice[key]].reserve1.toString(),
-          blockTimestampLast: multiCallReserves[pairsSlice[key]].blockTimestampLast,
-        };
+    try {
+      const chunkSize = 100;
+      let blockNumberLast: number;
+      const convertedReserves: UniswapReservesData = {};
+      for (let i = 0, j = pairs.length; i < j; i += chunkSize) {
+        const pairsSlice = pairs.slice(i, i + chunkSize);
+        const [blockNumber, multiCallReserves] = await super.getReserves(pairsSlice);
+        blockNumberLast = blockNumber;
+        for (const key in pairsSlice) {
+          convertedReserves[pairsSlice[key]] = {
+            reserve0: multiCallReserves[pairsSlice[key]].reserve0.toString(),
+            reserve1: multiCallReserves[pairsSlice[key]].reserve1.toString(),
+            blockTimestampLast: multiCallReserves[pairsSlice[key]].blockTimestampLast,
+          };
+        }
       }
-    }
 
-    return {
-      block: blockNumberLast,
-      reserves: convertedReserves,
-    };
+      return {
+        block: blockNumberLast,
+        reserves: convertedReserves,
+      };
+    } catch (e) {
+      LOGGER.error(e.message);
+      throw e;
+    }
   }
 
   async getTotalSupplies(pairs: string[]): Promise<TotalSuppliesResult> {

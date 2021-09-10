@@ -7,6 +7,7 @@ import { AssetsApiResponse, LambdaRequestInterface, Pair } from './interfaces';
 import { LOGGER } from './logger/logger';
 import { PriceService } from './price.service';
 import { TokenPriceService } from './token.price.service';
+import { toField } from './util';
 
 async function getPairObject(
   stableCoin: string,
@@ -33,7 +34,7 @@ async function getPairObject(
     uniquePairAddresses.add(pair.address);
     !asset?.pairs?.length ? (asset['pairs'] = [pair]) : asset.pairs.push(pair);
   } catch (e) {
-    LOGGER.info(e);
+    LOGGER.info(e.message);
     return;
   }
 }
@@ -78,21 +79,27 @@ async function addPairsDataToAssets(
   assetsWithNewData: AssetsApiResponse[],
   stableAssetsMap: Map<string, AssetsApiResponse>,
 ): Promise<void> {
-  await Promise.all(
-    assets.map(async (asset) => {
-      if (!asset?.pairs?.length) {
-        await addPairAddressAndTokensPositions(
-          requestParams,
-          asset,
-          uniquePairAddresses,
-          stableAssetsMap,
-        );
-        assetsWithNewData.push(asset);
-      } else {
-        asset.pairs.forEach((pair) => uniquePairAddresses.add(pair.address));
-      }
-    }),
-  );
+  const chunkSize = 100;
+  for (let i = 0, j = assets.length; i < j; i += chunkSize) {
+    const to = toField(i, assets.length, chunkSize);
+    const sliceAssets = assets.slice(i, to);
+    await Promise.all(
+      sliceAssets.map(async (asset) => {
+        if (!asset?.pairs) {
+          await addPairAddressAndTokensPositions(
+            requestParams,
+            asset,
+            uniquePairAddresses,
+            stableAssetsMap,
+          );
+          if (!asset.pairs) asset.pairs = [];
+          assetsWithNewData.push(asset);
+        } else {
+          asset.pairs.forEach((pair) => uniquePairAddresses.add(pair.address));
+        }
+      }),
+    );
+  }
 }
 
 export async function getResult(requestParams: LambdaRequestInterface): Promise<void> {
@@ -136,6 +143,7 @@ export async function getResult(requestParams: LambdaRequestInterface): Promise<
     LOGGER.info(JSON.stringify(assetsPrices));
     await PriceService.saveAssetsPrices(requestParams.priceServiceUrl, assetsPrices);
   } catch (e) {
-    LOGGER.error(e);
+    LOGGER.error(e.message);
+    throw e;
   }
 }

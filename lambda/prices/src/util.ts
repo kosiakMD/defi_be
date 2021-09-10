@@ -10,3 +10,7 @@ export const decimalsReserve = (reserve: string, decimals: Decimals): string =>
     : new BN(reserve) //
         .div(decimalsDivider(decimals))
         .toString();
+
+export const toField = (index: number, length: number, chunkSize: number): number => {
+  return index + chunkSize > length ? length : index + chunkSize;
+};

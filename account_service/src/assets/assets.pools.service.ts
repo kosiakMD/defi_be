@@ -28,6 +28,10 @@ export class AssetsPoolsService {
     if (!values.length) {
       return '';
     }
-    return `insert into assets_pools(asset_id, pairs, created_at) values ${values.join(',')}`;
+    return `insert into assets_pools(asset_id, pairs, created_at) values ${values.join(',')}
+            on conflict(asset_id) 
+            do update set 
+            pairs = EXCLUDED.pairs, 
+            created_at = EXCLUDED.created_at`;
   }
 }

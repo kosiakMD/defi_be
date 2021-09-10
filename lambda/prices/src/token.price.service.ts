@@ -12,6 +12,7 @@ import {
   PriceResponse,
   StableCoinMapValue,
 } from './interfaces';
+import { LOGGER } from './logger/logger';
 import { Decimals, decimalsReserve } from './util';
 
 export class TokenPriceService {
@@ -20,31 +21,29 @@ export class TokenPriceService {
     pairsReserves: UniswapReservesResult,
     assets: AssetsApiResponse[],
   ): PriceResponse[] {
-    const wrappedCoin = assets.find((asset) => asset.address === requestParams.protocol.coin);
-    const wrappedCoinPrice = TokenPriceService.getWrappedTokenPrice(
-      wrappedCoin,
-      pairsReserves.reserves,
-      requestParams,
-    );
-
-    return assets.map((asset) => {
-      if (asset.address === wrappedCoin.address) {
-        return wrappedCoinPrice;
-      } else if (requestParams.stableCoins.find((address) => address === asset.address)) {
-        return TokenPriceService.getStableTokenPrice(
-          asset,
-          pairsReserves.reserves,
-          requestParams,
-          wrappedCoinPrice,
-        );
-      }
-      return TokenPriceService.getTokenPrice(
-        asset,
+    try {
+      const wrappedCoin = assets.find((asset) => asset.address === requestParams.protocol.coin);
+      const wrappedCoinPrice = TokenPriceService.getWrappedTokenPrice(
+        wrappedCoin,
         pairsReserves.reserves,
         requestParams,
-        wrappedCoinPrice,
       );
-    });
+
+      return assets
+        .filter((asset) => asset?.pairs?.length)
+        .map((asset) => {
+          const argumentsArray = [asset, pairsReserves.reserves, requestParams, wrappedCoinPrice];
+          if (asset.address === wrappedCoin.address) {
+            return wrappedCoinPrice;
+          }
+          return requestParams.stableCoins.find((address) => address === asset.address)
+            ? TokenPriceService.getStableTokenPrice.apply(this, argumentsArray)
+            : TokenPriceService.getTokenPrice.apply(this, argumentsArray);
+        });
+    } catch (e) {
+      LOGGER.error(e.message);
+      throw e;
+    }
   }
 
   public static getTokenReserveAndModifyFields(
@@ -89,6 +88,7 @@ export class TokenPriceService {
     if (!asset) {
       return;
     }
+
     let totalLiquidityToken = 0;
     const stableCoinsMap = new Map<string, { reserveStable: string; reserveCoin: string }>();
     asset?.pairs.forEach((pair) => {
@@ -119,9 +119,10 @@ export class TokenPriceService {
           : new BN(pairsReserves.reserveStable) //
               .div(pairsReserves.reserveCoin)
               .toNumber();
-      price += new BN(tokenWeight) //
-        .times(tokenPairPrice)
-        .toNumber();
+      price +=
+        new BN(tokenWeight) //
+          .times(tokenPairPrice)
+          .toNumber() || 0;
     });
 
     return {
@@ -158,6 +159,10 @@ export class TokenPriceService {
         return;
       }
       const pairsReserves = stableCoinsValuesMap.get(coin);
+      if (!pairsReserves) {
+        LOGGER.info(`COIN --> ${coin}, asset -> ${JSON.stringify(asset)}`);
+        return;
+      }
       const tokenWeight = new BN(pairsReserves.reserveCoin) //
         .div(totalLiquidityToken)
         .toNumber();

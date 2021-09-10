@@ -26,14 +26,21 @@ export enum UniswapProtocolEnum {
   uniswapV3 = 'UniswapV3',
 }
 
+export enum AutofarmProtocolEnum {
+  autofarm = 'Autofarm',
+}
+
 export type ProtocolName =
   | PancakeProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
+  | AutofarmProtocolEnum
   | SpookySwapProtocolEnum;
+
 export const ProtocolNameEnum = {
   ...PancakeProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...AutofarmProtocolEnum,
   ...SpookySwapProtocolEnum,
 };

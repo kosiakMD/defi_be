@@ -105,7 +105,7 @@ export interface StakingPosition {
   staked: string;
   lpToken?: ERC20Token;
   rewardToken: ClaimAbleToken;
-  stakingToken: ERC20Token | LPToken;
+  stakingToken?: ERC20Token | LPToken;
   liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }

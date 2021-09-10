@@ -4,8 +4,7 @@ export enum ChainAbbrEnum {
   plg = 'plg',
   ftm = 'ftm',
   arbi = 'arbi',
-  avax = 'avax'
-
+  avax = 'avax',
 }
 
 export enum ChainIdEnum {
@@ -14,20 +13,12 @@ export enum ChainIdEnum {
   plg = 3,
   ftm = 4,
   arbi = 5,
-  avax = 6
+  avax = 6,
 }
 
 export enum ChainNameEnum {
   eth = 'ethereum',
   bsc = 'binance',
-}
-
-export enum ChainIdToNameEnum {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  // eslint-disable-next-line prettier/prettier
-  1 = 'ethereum',
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  2 = 'binance',
+  ftm = 'fantom',
+  avax = 'avalanche',
 }

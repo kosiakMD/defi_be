@@ -39,6 +39,7 @@ import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
 import { SafeProxyService } from './safe-proxy/safe.proxy.service';
 // import { ScansApiController } from './scans-api/scans-api.controller';
 import { ScansApiModule } from './scans-api/scans-api.module';
+import { SpookyswapController } from './spookyswap/spookyswap.controller';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
@@ -95,6 +96,7 @@ import { VaultsModule } from './vaults/vaults.module';
     // Platforms
     PancakeController,
     SushiswapController,
+    SpookyswapController,
     UniswapController,
     SwapController,
     ProtocolController,

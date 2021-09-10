@@ -3,12 +3,18 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { JobsController } from './jobs.controller';
-import { JobsService } from './jobs.service';
+import { AccountModule } from '../account/account.module';
+import { ChainModule } from '../chain/chain.module';
+import { Mapper } from '../mappers/mapper';
+import { PriceModule } from '../price/price.module';
+import { SpookyswapController } from './spookyswap.controller';
+import { SpookyswapService } from './spookyswap.service';
 
 @Module({
-  controllers: [JobsController],
   imports: [
+    AccountModule,
+    ChainModule,
+    PriceModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -22,6 +28,8 @@ import { JobsService } from './jobs.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [JobsService],
+  controllers: [SpookyswapController],
+  providers: [SpookyswapService, Mapper],
+  exports: [SpookyswapService],
 })
-export class JobsModule {}
+export class SpookyswapModule {}

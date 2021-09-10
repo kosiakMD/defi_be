@@ -2,11 +2,16 @@ export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
+  spookyswap = 'spookyswap',
 }
 
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',
+}
+
+export enum SpookySwapProtocolEnum {
+  SpookySwap = 'SpookySwap',
 }
 
 export enum SushiSwapProtocolEnum {
@@ -21,9 +26,14 @@ export enum UniswapProtocolEnum {
   uniswapV3 = 'UniswapV3',
 }
 
-export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;
+export type ProtocolName =
+  | PancakeProtocolEnum
+  | SushiSwapProtocolEnum
+  | UniswapProtocolEnum
+  | SpookySwapProtocolEnum;
 export const ProtocolNameEnum = {
   ...PancakeProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...SpookySwapProtocolEnum,
 };

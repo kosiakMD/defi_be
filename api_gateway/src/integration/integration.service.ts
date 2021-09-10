@@ -19,6 +19,7 @@ export class IntegrationService {
   private readonly getUniswapUrl: string;
   private readonly getSushiswapUrl: string;
   private readonly getPancakeUrl: string;
+  private readonly getSpookyswapUrl: string;
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
   private readonly protocolsUrl: string;
@@ -43,6 +44,9 @@ export class IntegrationService {
 
     const pancakePath = this.configService.get<string>('INTEGRATION_PANCAKE');
     this.getPancakeUrl = `${url}/${pancakePath}`;
+
+    const spookyswapPath = this.configService.get<string>('INTEGRATION_SPOOKYSWAP');
+    this.getSpookyswapUrl = `${url}/${spookyswapPath}`;
 
     const poolsPath = this.configService.get<string>('POOLS_PATH');
     this.getPoolsUrl = `${url}/${poolsPath}`;
@@ -112,6 +116,17 @@ export class IntegrationService {
       e.response && this.logger.error(e.response.data);
       throw e;
     }
+  }
+
+  @RequestErrorHandler()
+  async getSpookyswap(addresses: string, chains?: string): Promise<BalancesResponse> {
+    this.logger.time(this.getSpookyswapUrl);
+    const data = await this.httpService
+      .get(this.getSpookyswapUrl, { params: { addresses, chains } })
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(this.getSpookyswapUrl);
+    return data;
   }
 
   async getPools(): Promise<Pool[]> {

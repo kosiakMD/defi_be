@@ -59,7 +59,7 @@ export class IntegrationsService {
       // Chain Info
       chainData.chain = getChainByAbbr(chainAbbr);
       // Protocol Features Info
-      chainData.features = [...info.features[chainAbbr]];
+      chainData.features = [...(info?.features[chainAbbr] ?? [])];
       // Result Features Data
       const chainResult = allData[dataIndex];
       if (chainResult.status === 'fulfilled') {

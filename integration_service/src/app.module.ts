@@ -5,10 +5,12 @@ import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 
+import { AutofarmModule } from './autofarm/autofarm.module';
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { JobsModule } from './jobs/jobs.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { PancakeModule } from './pancake/pancake.module';
 import { PoolsModule } from './pools/pools.module';
@@ -19,8 +21,6 @@ import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
-import { AutofarmModule } from './autofarm/autofarm.module';
-import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [

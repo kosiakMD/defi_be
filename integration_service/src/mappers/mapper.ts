@@ -10,6 +10,7 @@ import {
   ProjectEnum,
   ProtocolName,
   ProtocolTypeEnum,
+  SpookySwapProtocolEnum,
   UniswapProtocolEnum,
 } from 'src/common/enum';
 
@@ -54,8 +55,8 @@ export class Mapper {
     const base: BaseData[] = [];
 
     // TODO: add checks does protocol belong to chain
-    const chainId =
-      protocolName === PancakeProtocolEnum.pancakeV1 ? ChainIdEnum.bsc : ChainIdEnum.eth;
+    const chainId = this.guessChainIdFromProtocolName(protocolName);
+
     for (const address of userAddresses) {
       const transactions: Transactions = plainToClass(Transactions, {
         chainId: chainId,
@@ -109,6 +110,17 @@ export class Mapper {
       base.push(transactions);
     }
     return base;
+  }
+
+  private guessChainIdFromProtocolName(name: ProtocolName): ChainIdEnum {
+    switch (name) {
+      case PancakeProtocolEnum.pancakeV1:
+        return ChainIdEnum.bsc;
+      case SpookySwapProtocolEnum.SpookySwap:
+        return ChainIdEnum.ftm;
+      default:
+        return ChainIdEnum.eth;
+    }
   }
 
   static priceInUSD(totalUSD: string, amount: string): number {
@@ -318,7 +330,7 @@ export class Mapper {
     staking.stakingPositions.push(...StakingPositionsToPush);
   }
 
-  private async getPendingSushi(poolId, userId) {
+  private async getPendingSushi(poolId, userId): Promise<string> {
     const masterChiefAddress = '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd';
     const provider = this.chainProvider.instanceEth();
     const contract = await new provider.eth.Contract(abi as AbiItem[], masterChiefAddress);

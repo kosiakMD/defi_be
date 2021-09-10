@@ -1,10 +1,15 @@
 export enum ProjectEnum {
+  spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
   curve = 'curve',
   balancer = 'balancer',
   autofarm = 'autofarm',
+}
+
+export enum SpookySwapProtocolEnum {
+  SpookySwap = 'SpookySwap',
 }
 
 export enum PancakeProtocolEnum {
@@ -34,7 +39,7 @@ export enum AutofarmProtocolEnum {
   Finish: 'Finish' as 'Finish'
 };
  type BasicEvents = (typeof BasicEvents)[keyof typeof BasicEvents];
- 
+
  const AdvEvents = {
   ...BasicEvents,
   Pause: 'Pause' as 'Pause',
@@ -46,10 +51,12 @@ export type ProtocolName =
   | PancakeProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
+  | SpookySwapProtocolEnum
   | AutofarmProtocolEnum;
 export const ProtocolNameEnum = {
   ...PancakeProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...SpookySwapProtocolEnum,
   ...AutofarmProtocolEnum,
 };

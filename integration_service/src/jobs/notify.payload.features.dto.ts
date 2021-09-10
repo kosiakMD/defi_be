@@ -1,8 +1,10 @@
 // eslint-disable-next-line max-classes-per-file
-import { ApiProperty } from "@nestjs/swagger";
-import { ChainIdEnum, ProtocolName } from "src/common/enum";
-import { FeatureName } from "src/integrations/integrationFeatures";
-import { FeatureEnum } from "src/protocol/features/features.enum";
+import { FeatureName } from 'src/integrations/integrationFeatures';
+import { FeatureEnum } from 'src/protocol/features/features.enum';
+
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainIdEnum, ProtocolName } from 'src/common/enum';
 
 export class ERC20TokenDto {
   address: string = null;

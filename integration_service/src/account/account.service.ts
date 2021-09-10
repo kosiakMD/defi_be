@@ -3,6 +3,9 @@ import { BalancesResponse } from 'src/etherscan/interfaces';
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { ChainIdEnum } from 'src/common/enum';
+import { Address } from 'src/common/types';
+
 import { DetailedResponseDto } from '../dto';
 import { Asset } from '../interfaces/transactions.interfaces';
 
@@ -23,7 +26,7 @@ export class AccountService {
     this.getAssetsUrl = `${url}/${assetsPath}`;
   }
 
-  async getBalances(addresses: string, chains?: number): Promise<BalancesResponse> {
+  async getBalances(addresses: Address[], chains?: ChainIdEnum[]): Promise<BalancesResponse> {
     const data = await this.httpService
       .get(this.getBalanceUrl, { params: { addresses, chains } })
       .toPromise();

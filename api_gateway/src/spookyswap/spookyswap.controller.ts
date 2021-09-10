@@ -9,8 +9,8 @@ import { Logger } from 'src/common/Logger/Logger.service';
 import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
-@Controller('pancake')
-export class PancakeController {
+@Controller('spookyswap')
+export class SpookyswapController {
   constructor(
     private integrationService: IntegrationService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -26,9 +26,9 @@ export class PancakeController {
   })
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
   async get(@Query('addresses') addresses: string): Promise<any> {
-    this.logger.time('getPancake');
-    const result = await this.integrationService.getPancake(addresses);
-    this.logger.timeEnd('getPancake');
+    this.logger.time('getSpookyswap');
+    const result = await this.integrationService.getSpookyswap(addresses);
+    this.logger.timeEnd('getSpookyswap');
     return result;
   }
 }

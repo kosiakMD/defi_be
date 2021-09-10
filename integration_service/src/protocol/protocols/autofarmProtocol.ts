@@ -20,7 +20,7 @@ export class AutofarmProtocol extends BasicProtocol<AutofarmService> implements 
   readonly project = ProjectEnum.autofarm;
   readonly name = AutofarmProtocolEnum.autofarm;
   readonly label: 'Autofarm';
-  readonly features = { [ChainAbbrEnum.bsc]: [FeatureEnum.staking], };
+  readonly features = { [ChainAbbrEnum.bsc]: [FeatureEnum.staking] };
   protected dataProvider;
   protected feeRate: 0.003;
 

@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { CoingeckoApi } from '../../apis/api/coingecko.api';
-import { CHAIN_ID_ETH, PROJECT_SUSHISWAP } from '../../pools/pools.utils';
+import { ProjectEnum } from '../../config/projects';
+import { CHAIN_ID_ETH } from '../../pools/pools.utils';
 import { BlocksSubgraph } from '../../thegraph/blocks/blocks.subgraph';
 import { SushimasterchiefSubgraph } from '../../thegraph/sushimasterchief/sushimasterchief.subgraph';
 import { SushiswapSubgraph } from '../../thegraph/sushiswap/sushiswap.subgraph';
@@ -11,7 +12,7 @@ import { SUSHI } from './tokens/SUSHI';
 @Injectable()
 export class VaultsServiceSushiswap {
   protected chain: number = CHAIN_ID_ETH;
-  protected project: string = PROJECT_SUSHISWAP;
+  protected project: string = ProjectEnum.sushiswap;
   constructor(
     protected readonly blocksSubgraph: BlocksSubgraph,
     protected readonly sushimasterchiefSubgraph: SushimasterchiefSubgraph,

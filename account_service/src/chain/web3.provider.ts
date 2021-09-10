@@ -3,22 +3,26 @@ import Web3 from 'web3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-// TODO: refactor - should be one provider
+import { ChainIdEnum } from '../common/enum';
+
 @Injectable()
 export class Web3Provider {
-  private readonly web3Eth;
-  private readonly web3Bsc;
-  constructor(private readonly configService: ConfigService) {
-    const ethUrl = this.configService.get<string>('ETH_URL');
-    const bscUrl = this.configService.get<string>('BSC_URL');
+  private readonly providers = {};
 
-    this.web3Eth = new Web3(ethUrl);
-    this.web3Bsc = new Web3(bscUrl);
+  constructor(private readonly configService: ConfigService) {
+    this.providers[ChainIdEnum.eth] = new Web3(this.configService.get<string>('ETH_URL'));
+    this.providers[ChainIdEnum.bsc] = new Web3(this.configService.get<string>('BSC_URL'));
+    this.providers[ChainIdEnum.polygon] = new Web3(this.configService.get<string>('POLYGON_URL'));
+    this.providers[ChainIdEnum.ftm] = new Web3(this.configService.get<string>('FTM_URL'));
   }
-  instanceEth(): any {
-    return this.web3Eth;
+
+  public getInstanceByChainId(chain: ChainIdEnum): Web3 {
+    return this.providers[chain];
   }
-  instanceBsc(): any {
-    return this.web3Bsc;
+  public instanceEth(): Web3 {
+    return this.providers[ChainIdEnum.eth];
+  }
+  public instanceBsc(): any {
+    return this.providers[ChainIdEnum.bsc];
   }
 }

@@ -8,10 +8,11 @@ import {
   PriceRequestDto,
   PriceResponseDto,
   PricesPayload,
+  CurrentPriceResponseDto,
+  HistoricalPriceResponseDto,
+  PriceBatchRequestDto,
+  PriceRangeRequestDto,
 } from './dto';
-import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
-import { HistoricalPriceResponseDto } from './dto/price.response.historical.dto';
-import { PriceBatchRequestDto } from './dto/priceBatch.request.dto';
 import { PricesService } from './prices.service';
 
 @ApiTags('Prices')
@@ -37,6 +38,14 @@ export class PricesController {
     @Body() request: PriceBatchRequestDto,
   ): Promise<PriceResponseDto<PricesPayload>> {
     return this.service.getPricesInBatch(request);
+  }
+
+  @Post('/range')
+  @ApiOkResponse({ type: HistoricalPriceResponseDto })
+  getPricesInRange(
+    @Body() request: PriceRangeRequestDto,
+  ): Promise<PriceResponseDto<PricesPayload>> {
+    return this.service.getPricesInRange(request);
   }
 
   @Get('/chains')

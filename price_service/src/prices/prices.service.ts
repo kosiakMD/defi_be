@@ -1,5 +1,8 @@
 import { Cache } from 'cache-manager';
-import _ from 'lodash';
+import { plainToClass } from 'class-transformer';
+import _last from 'lodash/last';
+import _minBy from 'lodash/minBy';
+import _orderBy from 'lodash/orderBy';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { EntityManager, Repository } from 'typeorm';
 
@@ -18,12 +21,15 @@ import {
   HistoricalPriceQueryDto,
   HistoricalPricesPayload,
   PriceBatchRequestDto,
+  PriceRangeRequestDto,
+  PriceRequestCurrentDto,
   PriceResponseDto,
   TimestampKeyPrice,
+  PriceQueryDto,
 } from './dto';
-import { PriceQueryDto } from './dto/price.query.dto';
-import { PriceRequestCurrentDto } from './dto/price.request.current.dto';
+import { getStepCount, interpolation } from './helpers';
 import { Asset, AssetCurrentPrice, AssetPrice } from './models';
+import { PriceRangePeriod, TimeframeFrequentlyInMin, TimePeriodInDays } from './prices.enum';
 
 type TimestampPrice = {
   timestamp: number;
@@ -62,6 +68,49 @@ export class PriceService {
   cacheTTLInSeconds: number;
   allowedCurrentPriceThresholdInSeconds: number;
   allowedHistoricalPriceThresholdInSeconds: number;
+
+  private static mapRowToAsset(row: any): Asset {
+    const asset: Asset = plainToClass(Asset, row);
+    asset.chainId = row.chain_id;
+    return asset;
+  }
+
+  private static mapRowToCurrentPrices(row: any): AssetCurrentPrice {
+    const assetPrice: AssetCurrentPrice = plainToClass(AssetCurrentPrice, {});
+
+    assetPrice.id = row.id;
+    assetPrice.value = row.value;
+    assetPrice.assetId = Number.parseInt(row.asset_id);
+    assetPrice.currencyId = row.currency_id;
+    assetPrice.updatedAt = row.updated_at;
+
+    return assetPrice;
+  }
+
+  private static getRangeTimestamps(range: PriceRangePeriod, minFoundTimestamp?: number): number[] {
+    let timestamp: number = Math.floor(Date.now() / 1000);
+    if (range === PriceRangePeriod.all && !minFoundTimestamp) {
+      // TODO: need to check
+      timestamp = timestamp - minFoundTimestamp;
+    }
+    const freqInMin = Number(TimeframeFrequentlyInMin[range]);
+    const dayCount = Number(TimePeriodInDays[range]);
+
+    const stepsCount = getStepCount(freqInMin, dayCount);
+    return interpolation(timestamp, TimeframeFrequentlyInMin[range], stepsCount);
+  }
+
+  private static getCacheKey(chain: ChainIdEnum, currency: number, address: string): string {
+    return `price_${chain}_${currency}_${address}`;
+  }
+
+  private static getDetailsCacheKey(chain: ChainIdEnum, currency: number, address: string): string {
+    return `asset_details_${chain}_${currency}_${address}`;
+  }
+
+  private static getCurrentPriceKey(chain: ChainIdEnum, currency: number, address: string): string {
+    return `current_price_${chain}_${currency}_${address}`;
+  }
 
   constructor(
     private readonly config: ConfigService,
@@ -162,7 +211,7 @@ export class PriceService {
     const sqlCondition: string = this.getFindAssetsSqlCondition(requestBody);
     const foundAssets: Asset[] = (
       await this.entityManager.query(`SELECT * FROM prices.asset WHERE ${sqlCondition}`)
-    ).map((row) => this.mapRowToAsset(row));
+    ).map((row) => PriceService.mapRowToAsset(row));
 
     // filter a list of DTOs for which no assets were found
     const dtoForMissingAssets: PriceRequestCurrentDto[] = requestBody.filter(
@@ -184,7 +233,7 @@ export class PriceService {
           await transactionalEntityManager.query(
             `INSERT INTO prices.asset(address, chain_id) VALUES ${sqlValues} RETURNING *`,
           )
-        ).map((row) => this.mapRowToAsset(row));
+        ).map((row) => PriceService.mapRowToAsset(row));
       }
 
       // create a new list linking all assets (old and new) with DTOs
@@ -205,7 +254,7 @@ export class PriceService {
                 ON CONFLICT (asset_id) DO UPDATE SET value=EXCLUDED.value, updated_at=NOW()
                 RETURNING *;`,
         )
-      ).map((row) => this.mapRowToCurrentPrices(row));
+      ).map((row) => PriceService.mapRowToCurrentPrices(row));
 
       // store current price to cache using associated list
       assetCurrentPrices.forEach((assetPrice) => {
@@ -214,7 +263,7 @@ export class PriceService {
         );
         const { chainId, address } = associatedAsset;
         this.cache.set<CurrentPrice>(
-          this.getCurrentPriceKey(chainId, assetPrice.currencyId, address),
+          PriceService.getCurrentPriceKey(chainId, assetPrice.currencyId, address),
           { address, value: assetPrice.value },
         );
       });
@@ -305,18 +354,41 @@ export class PriceService {
     );
   }
 
-  private mapRowToAsset(row: any): Asset {
-    return { ...row, chainId: row.chain_id } as Asset;
-  }
+  public async getRangePrices(
+    query: PriceRangeRequestDto,
+  ): Promise<PriceResponseDto<HistoricalPricesPayload>> {
+    const { chain, currency, addresses, range } = query;
 
-  private mapRowToCurrentPrices(row: any): AssetCurrentPrice {
-    return {
-      id: row.id,
-      value: row.value,
-      assetId: Number.parseInt(row.asset_id),
-      currencyId: row.currency_id,
-      updatedAt: row.updated_at,
-    };
+    /**
+     * in case range = all we should find minimal timestamp
+     * we need to find minimal timestamp for each address, so skipping for now
+     */
+    const timestamps =
+      range === PriceRangePeriod.all ? [0] : PriceService.getRangeTimestamps(range);
+
+    const allPrices = await this.getAllAssetPrices(chain, currency, addresses);
+    const response = addresses.reduce<{ [address: string]: TimestampKeyPrice }>((map, address) => {
+      const assetPrices = allPrices.find((asset) => asset.address === address);
+      const prices = assetPrices?.prices || [];
+      return {
+        ...map,
+        [address]: this.matchPrices(
+          this.allowedHistoricalPriceThresholdInSeconds,
+          range === PriceRangePeriod.all
+            ? PriceService.getRangeTimestamps(range, assetPrices?.prices?.[0].timestamp)
+            : timestamps,
+          prices,
+        ),
+      };
+    }, {});
+
+    const result: PriceResponseDto<HistoricalPricesPayload> = plainToClass(PriceResponseDto, {});
+
+    result.prices = response;
+    result.chain = await this.chainService.getById(chain);
+    result.currency = await this.currencyService.getById(currency);
+
+    return result;
   }
 
   private async getAllAssetPrices(
@@ -363,7 +435,7 @@ export class PriceService {
     const cached: AssetPrices[] = [];
 
     for (const address of addresses) {
-      const cacheKey = this.getCacheKey(chain, currency, address);
+      const cacheKey = PriceService.getCacheKey(chain, currency, address);
       const cachedPrices = await this.cache.get<TimestampPrice[]>(cacheKey);
       if (cachedPrices?.length) {
         cached.push({ address, prices: cachedPrices });
@@ -387,7 +459,7 @@ export class PriceService {
     const cached: CurrentPrice[] = [];
 
     for (const address of addresses) {
-      const cacheKey = this.getCurrentPriceKey(chain, currency, address);
+      const cacheKey = PriceService.getCurrentPriceKey(chain, currency, address);
       const currentPrice = await this.cache.get<CurrentPrice>(cacheKey);
       if (currentPrice) {
         cached.push({ address, value: currentPrice.value });
@@ -413,7 +485,7 @@ export class PriceService {
 
     return Object.keys(pricesMap).map<AssetPrices>((address) => ({
       address,
-      prices: _.orderBy(pricesMap[address], 'timestamp'),
+      prices: _orderBy(pricesMap[address], 'timestamp'),
     }));
   }
 
@@ -425,7 +497,10 @@ export class PriceService {
   ): Promise<void> {
     // store to cache all prices found in DB
     foundPrices.forEach((price) => {
-      this.cache.set<CurrentPrice>(this.getCurrentPriceKey(chain, currency, price.address), price);
+      this.cache.set<CurrentPrice>(
+        PriceService.getCurrentPriceKey(chain, currency, price.address),
+        price,
+      );
     });
 
     if (foundPrices.length !== allAddresses.length) {
@@ -437,7 +512,7 @@ export class PriceService {
       );
       // store to cache all prices not found in DB with value=null
       unknownAddresses.forEach((address) => {
-        const key = this.getCurrentPriceKey(chain, currency, address);
+        const key = PriceService.getCurrentPriceKey(chain, currency, address);
         this.cache.set(key, { value: null });
         foundPrices.push({ address, value: null });
       });
@@ -452,14 +527,14 @@ export class PriceService {
   ): Promise<void> {
     await Promise.all(
       assetPrices.map(({ address, prices }) => {
-        const cacheKey = this.getCacheKey(chain, currency, address);
+        const cacheKey = PriceService.getCacheKey(chain, currency, address);
         return this.cache.set(cacheKey, prices, { ttl: this.cacheTTLInSeconds });
       }),
     );
 
     // NOTE: We update cache with empty data for not found addresses to not query them again
     for (const address of addresses) {
-      const cacheKey = this.getCacheKey(chain, currency, address);
+      const cacheKey = PriceService.getCacheKey(chain, currency, address);
       const cached = await this.cache.get(cacheKey);
       if (!cached) {
         await this.cache.set(cacheKey, [], { ttl: this.cacheTTLInSeconds });
@@ -494,12 +569,12 @@ export class PriceService {
       return null;
     }
 
-    const { price } = _.minBy(candidates, (price) => Math.abs(price.timestamp - timestamp));
+    const { price } = _minBy(candidates, (price) => Math.abs(price.timestamp - timestamp));
     return price;
   }
 
   private getCurrentPrice(prices: TimestampPrice[]): number {
-    const lastPrice = _.last(prices);
+    const lastPrice = _last(prices);
     if (!lastPrice) {
       return null;
     }
@@ -511,13 +586,5 @@ export class PriceService {
     }
 
     return price;
-  }
-
-  private getCurrentPriceKey(chain: ChainIdEnum, currency: number, address: string): string {
-    return `current_price_${chain}_${currency}_${address}`;
-  }
-
-  private getCacheKey(chain: ChainIdEnum, currency: number, address: string): string {
-    return `price_${chain}_${currency}_${address}`;
   }
 }

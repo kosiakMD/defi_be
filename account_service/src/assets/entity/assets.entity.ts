@@ -9,7 +9,7 @@ import { AssetState } from '../assets.interface';
 export class AssetsEntity {
   @AfterLoad()
   setStatus(): void {
-    this.status = this.isReadyToMigrate && this.isMigrated ? AssetState.ready : AssetState.pending;
+    this.status = this.isAnalyticAvailable ? AssetState.ready : AssetState.pending;
   }
 
   @PrimaryColumn({ name: 'id', transformer: new ColumnNumericTransformer() })
@@ -33,11 +33,8 @@ export class AssetsEntity {
   @Column({ name: 'decimals', transformer: new ColumnNumericTransformer() })
   decimals: number;
 
-  @Column({ name: 'is_ready_to_migrate' })
-  isReadyToMigrate: boolean;
-
-  @Column({ name: 'is_migrated' })
-  isMigrated: boolean;
+  @Column({ name: 'is_analytic_available' })
+  isAnalyticAvailable: boolean;
 
   @Column({ name: 'is_lp' })
   isLp: boolean;
@@ -46,4 +43,6 @@ export class AssetsEntity {
   isTracked: boolean;
 
   status: AssetState;
+
+  positionInPool: number;
 }

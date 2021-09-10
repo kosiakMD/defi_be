@@ -28,13 +28,4 @@ export class AssetsEntity {
 
   @Column({ name: 'project_id', nullable: true })
   projectId: boolean;
-
-  @Column({ name: 'is_display', nullable: true, default: false })
-  isDisplay: boolean;
-
-  @Column({ name: 'is_migrated', nullable: true, default: false })
-  isMigrated: boolean;
-
-  @Column({ name: 'is_data_present', nullable: true, default: false })
-  isDataPresent: boolean;
 }

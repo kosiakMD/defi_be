@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { ProjectEnum } from '../config/projects';
 import { LiquidityPool } from '../store/dto/liquiditypool/liquiditypool.dto';
 import { Token } from '../store/dto/liquiditypool/token.dto';
 import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
@@ -12,7 +13,6 @@ import {
   getLastMonthApy,
   getLastWeekApy,
   mergeUniswapData,
-  PROJECT_UNISWAP,
   TIMESTAMP_DAY_BEFORE_CURRENT,
   TIMESTAMP_MONTH_BEFORE_CURRENT,
   TIMESTAMP_WEEK_BEFORE_CURRENT,
@@ -21,7 +21,7 @@ import {
 @Injectable()
 export class PoolsServiceUniswap {
   protected chain: number = CHAIN_ID_ETH;
-  protected project: string = PROJECT_UNISWAP;
+  protected project: string = ProjectEnum.uniswap;
   protected minTVL = 50000;
   constructor(
     protected readonly uniswapSubgraph: UniswapSubgraph,

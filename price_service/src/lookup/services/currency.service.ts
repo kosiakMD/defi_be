@@ -5,7 +5,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { CurrencyIdEnum } from 'src/common/enum';
+import { CurrencyIdEnum } from '../../common/enum';
 
 import { SECONDS_IN_HOUR } from '../../utils/time';
 import { CurrencyDto } from '../models';

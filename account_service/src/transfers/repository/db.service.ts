@@ -86,7 +86,7 @@ export class DbService {
            assets_new.name     AS "tokenName",
            assets_new.symbol   AS "tokenSymbol",
            assets_new.decimals AS "tokenDecimals",
-           assets_new.is_migrated as "isIncludedToGraph"
+           assets_new.is_analytic_available as "isIncludedToGraph"
         FROM (
              SELECT fromAddress AS "fromAddress",
                     toAddress AS "toAddress",

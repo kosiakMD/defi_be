@@ -1,16 +1,16 @@
+import { StakingPositionDto } from '../DTO/StakingPosition.dto';
 import { LiquidityPoolFeature } from '../DTO/integrations.dto';
+import { StakingPosition } from '../interfaces';
 
 export type FeatureName = string;
 
-export type FeatureDto = Record<
+// TODO remove StakingPosition asfter StakingPositionDto will be done
+export type FeatureDto<T = LiquidityPoolFeature | StakingPositionDto | StakingPosition> = Record<
   FeatureName,
-  // | LendingFeature
-  // | BorrowFeature
-  // | VaultFeature
-  // | ExchangeFeature
-  // | BalanceFeature
-  LiquidityPoolFeature[]
-  // | BaseData
+  FeatureResult<T>
 >;
 
-export type FeatureResult = FeatureDto | FeatureDto[] | Promise<FeatureDto | FeatureDto[]>;
+export interface FeatureResult<T = FeatureDto> {
+  totalValue: number;
+  items: T[];
+}

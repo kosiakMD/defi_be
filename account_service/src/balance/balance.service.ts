@@ -32,8 +32,8 @@ import { getNoDbTokensPricesWithLp, mapTokenBalances } from './balance_util/bala
 import {
   AccountBalance,
   AccountTokenBalance,
-  BalancesResponse,
   BalanceToken,
+  BalancesResponse,
   DbTokenPrice,
   ErrorMessage,
   TokenBalance,
@@ -45,8 +45,9 @@ import {
 import { DbService } from './repository/db.service';
 import {
   NO_DB_ARBITRUM_TOKENS,
-  NO_DB_ETH_TOKENS,
+  NO_DB_AVAX_TOKENS,
   NO_DB_BNB_TOKENS,
+  NO_DB_ETH_TOKENS,
   NO_DB_FTM_TOKENS,
   NO_DB_POLYGON_TOKENS,
 } from './tokens/tokens';
@@ -316,11 +317,12 @@ export class BalanceService {
     const errors: ErrorMessage[] = [];
     const accountsArray = getUniqueAndToLowerCaseArrayData(accounts);
     const noDbTokens: Record<ChainIdEnum, BalanceToken[]> = {
-      [ChainIdEnum.eth]: NO_DB_ETH_TOKENS,
-      [ChainIdEnum.bsc]: NO_DB_BNB_TOKENS,
-      [ChainIdEnum.polygon]: NO_DB_POLYGON_TOKENS,
-      [ChainIdEnum.ftm]: NO_DB_FTM_TOKENS,
       [ChainIdEnum.arbitrum]: NO_DB_ARBITRUM_TOKENS,
+      [ChainIdEnum.avax]: NO_DB_AVAX_TOKENS,
+      [ChainIdEnum.bsc]: NO_DB_BNB_TOKENS,
+      [ChainIdEnum.eth]: NO_DB_ETH_TOKENS,
+      [ChainIdEnum.ftm]: NO_DB_FTM_TOKENS,
+      [ChainIdEnum.polygon]: NO_DB_POLYGON_TOKENS,
     };
 
     const tokenRows = await this.dbService.loadErc20Balances(accountsArray, chainId);

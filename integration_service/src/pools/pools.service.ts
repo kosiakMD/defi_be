@@ -39,14 +39,14 @@ export class PoolsService {
     const dbPools = await this.liquidityPoolsRepository
       .createQueryBuilder('pools')
       .orWhere('pools.updated_at = (select max(updated_at) from liquidity_pools)')
-      .orWhere("pools.project = 'Pancake V2'")
+      .orWhere("pools.project = '" + PancakeProtocolEnum.pancakeV2 + "'")
       .getMany();
 
     const dtoPools: LiquidityPoolsResponseDto[] = this.fromEntityToDtos(dbPools);
 
     const uniswapPools = dtoPools.filter((p) => {
       return (
-        p.project === ProjectEnum.uniswap &&
+        p.project === UniswapProtocolEnum.uniswapV2 &&
         p.reserveUsd > UNI_MIN_RESERVE &&
         !UNI_PAIRS_BLACKLIST.find((address) => address === p.address)
       );

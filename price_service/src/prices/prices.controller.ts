@@ -2,21 +2,23 @@ import { Request } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Body, Controller, HttpStatus, Inject, Post, Req } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
+import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger';
 
-import { Logger } from 'src/common/Logger/Logger.service';
+import { Logger } from '../common/Logger/Logger.service';
 
 import {
   HistoricalPriceQueryDto,
   PriceBatchRequestDto,
+  PriceRangeRequestDto,
   PriceResponseDto,
   PricesPayload,
+  PostResponseDto,
+  PriceRequestCurrentDto,
+  CurrentPriceResponseDto,
+  HistoricalPriceV2ResponseDto,
+  PriceQueryDto,
+  HistoricalPricesPayload,
 } from './dto';
-import { PostResponseDto } from './dto/post.response.dto';
-import { PriceQueryDto } from './dto/price.query.dto';
-import { PriceRequestCurrentDto } from './dto/price.request.current.dto';
-import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
-import { HistoricalPriceV2ResponseDto } from './dto/price.response.v2.historical.dto';
 import { PriceService } from './prices.service';
 
 @Controller('prices')
@@ -58,6 +60,20 @@ export class PricesController {
 
     this.logger.timeEnd(request.originalUrl);
 
+    return response;
+  }
+
+  @Post('/range')
+  @ApiResponse({ status: 200, type: PriceResponseDto })
+  getPriceRange(
+    @Body() query: PriceRangeRequestDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<HistoricalPricesPayload>> {
+    this.logger.time(request.originalUrl);
+
+    const response = this.priceService.getRangePrices(query);
+
+    this.logger.timeEnd(request.originalUrl);
     return response;
   }
 

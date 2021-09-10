@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { ChainDto } from '../../lookup/models';
+import { ChainEntity } from '../../lookup/models';
 import { AssetPrice } from './asset_price.entity';
 
 @Entity({ name: 'prices.asset' })
@@ -32,7 +32,7 @@ export class Asset {
   @OneToMany(() => AssetPrice, (assetPrice: AssetPrice) => assetPrice.asset)
   assetPrices: AssetPrice[];
 
-  @ManyToOne(() => ChainDto)
+  @ManyToOne(() => ChainEntity)
   @JoinColumn({ name: 'chain_id' })
-  chain: ChainDto;
+  chain: ChainEntity;
 }

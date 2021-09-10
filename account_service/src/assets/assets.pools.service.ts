@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { Logger } from '../Logger/Logger.service';
 import { getCurrentDate } from '../utils/time';
-import { AssetsPoolsDto } from './dto/assetsPoolsDto';
+import { AssetsPoolsDto } from './dto/assets.pools.dto';
 
 @Injectable()
 export class AssetsPoolsService {

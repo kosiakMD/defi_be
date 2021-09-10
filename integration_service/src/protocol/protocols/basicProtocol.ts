@@ -18,11 +18,18 @@ import {
   LiquidityPoolFeature,
   PoolTokenDto,
 } from '../../integrations/integrations.dto';
-import { Asset, AutomaticMarketMaker, PoolToken } from '../../interfaces/transactions.interfaces';
+import { Staking } from '../../interfaces/staking.position.interfaces';
+import {
+  Asset,
+  AutomaticMarketMaker,
+  PoolToken,
+  StakingPosition,
+} from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
 import { objectUpdate } from '../../utils/object';
 import { ProtocolBasicInfo } from '../features/features.dto';
 import { FeatureEnum } from '../features/features.enum';
+import { FeatureResult } from '../features/features.types';
 import { FeaturesType, ProtocolFeaturesInfo } from '../protocol.types';
 import { tokenDictionary } from '../protocols.dictionaries';
 import { DefaultDataProvider } from '../protocols.dto';
@@ -66,11 +73,6 @@ export abstract class BasicProtocol<
     address: Address,
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> => {
-    // try {
-    //   const [pools, staking] = await this.getData(address);
-    // } catch (e) {
-    // this.logger.error(e);
-    // }
     let data;
     try {
       data = await this.dataProvider.getDataByAddresses(address, chainId);
@@ -79,15 +81,16 @@ export abstract class BasicProtocol<
       throw e;
     }
     const rawPools = data.find((data) => data['liquidityPositions']);
-    const staking = data.find((data) => data['stakingPositions']);
+    const rawStaking = data.find((data) => data['stakingPositions']);
+    // TODO: feature transaction is disabled
     // const transactions = data.find((data) => data['transactions']);
     const { errors: poolsErrors, data: pools } = await this.transformPools(rawPools, chainId);
+    const staking = this.transformStaking(rawStaking);
     return {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
       errors: poolsErrors,
       [FeatureEnum.pools]: pools,
       [FeatureEnum.staking]: staking,
+      // TODO: feature transaction is disabled
       // [FeatureEnum.transactions]: transactions,
     };
   };
@@ -162,7 +165,7 @@ export abstract class BasicProtocol<
             errors.push(tokensData.errors);
           }
         } else {
-          errors.push(tokens.reason);
+          errors.push(tokens.reason.message);
         }
       }
 
@@ -185,18 +188,36 @@ export abstract class BasicProtocol<
     }
   }
 
+  protected transformStaking(rawStaking: Staking): FeatureResult<StakingPosition> {
+    const result: FeatureResult<StakingPosition> = {
+      totalValue: 0,
+      items: null,
+    };
+    rawStaking?.stakingPositions.forEach((staking) => {
+      result.totalValue += Number(staking.staked);
+    });
+
+    result.items = rawStaking?.stakingPositions || [];
+    return result;
+  }
+
   protected async transformPools(
     inputPoolsData: AutomaticMarketMaker,
     chainId: ChainIdEnum,
-  ): Promise<{ errors: any[]; data: LiquidityPoolFeature[] }> {
-    // eslint-disable-next-line no-underscore-dangle
-    const errors: any[] = [];
+  ): Promise<{ errors: any[]; data: FeatureResult<LiquidityPoolFeature> }> {
+    const result = {
+      errors: [] as any[],
+      data: {
+        totalValue: 0,
+        items: [],
+      } as FeatureResult<LiquidityPoolFeature>,
+    };
 
     try {
-      await this.handleMissedData(inputPoolsData, chainId, errors);
+      await this.handleMissedData(inputPoolsData, chainId, result.errors);
     } catch (e) {
       this.logger.error(e);
-      errors.push(e);
+      result.errors.push(e.message);
     }
 
     const outputPools: LiquidityPoolFeature[] = inputPoolsData.liquidityPositions.map(
@@ -220,7 +241,7 @@ export abstract class BasicProtocol<
 
           tokens.push(formattedToken);
         });
-
+        result.data.totalValue += userValue;
         // Pool
         const outPool: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
           address: inputPool.pool.address,
@@ -248,7 +269,9 @@ export abstract class BasicProtocol<
       },
     );
 
-    return { errors, data: outputPools };
+    result.data.items = outputPools;
+
+    return result;
   }
 
   private getAllTokenInfo(

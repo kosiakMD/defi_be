@@ -2,11 +2,12 @@ import { AbsoluteChainIdEnum, ChainIdEnum } from 'src/common/enum';
 import { ChainId } from 'src/common/types';
 
 export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
-  [ChainIdEnum.eth]: AbsoluteChainIdEnum.eth,
-  [ChainIdEnum.bsc]: AbsoluteChainIdEnum.bsc,
-  [ChainIdEnum.polygon]: AbsoluteChainIdEnum.polygon,
-  [ChainIdEnum.ftm]: AbsoluteChainIdEnum.ftm,
   [ChainIdEnum.arbitrum]: AbsoluteChainIdEnum.arbitrum,
+  [ChainIdEnum.avax]: AbsoluteChainIdEnum.avax,
+  [ChainIdEnum.bsc]: AbsoluteChainIdEnum.bsc,
+  [ChainIdEnum.eth]: AbsoluteChainIdEnum.eth,
+  [ChainIdEnum.ftm]: AbsoluteChainIdEnum.ftm,
+  [ChainIdEnum.polygon]: AbsoluteChainIdEnum.polygon,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -22,11 +23,12 @@ export const getAbsoluteChainIds = (chainIds: ChainId[] | Iterable<number>): Cha
 };
 
 export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
-  [AbsoluteChainIdEnum.eth]: ChainIdEnum.eth,
-  [AbsoluteChainIdEnum.bsc]: ChainIdEnum.bsc,
-  [AbsoluteChainIdEnum.polygon]: ChainIdEnum.polygon,
-  [AbsoluteChainIdEnum.ftm]: ChainIdEnum.ftm,
   [AbsoluteChainIdEnum.arbitrum]: ChainIdEnum.arbitrum,
+  [AbsoluteChainIdEnum.avax]: ChainIdEnum.avax,
+  [AbsoluteChainIdEnum.bsc]: ChainIdEnum.bsc,
+  [AbsoluteChainIdEnum.eth]: ChainIdEnum.eth,
+  [AbsoluteChainIdEnum.ftm]: ChainIdEnum.ftm,
+  [AbsoluteChainIdEnum.polygon]: ChainIdEnum.polygon,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];

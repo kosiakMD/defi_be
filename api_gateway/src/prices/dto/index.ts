@@ -3,3 +3,7 @@ export * from './currency.dto';
 export * from './price.query.dto';
 export * from './price.request.dto';
 export * from './price.response.dto';
+export * from './price.range.request.dto';
+export * from './price.batch.request.dto';
+export * from './price.response.current.dto';
+export * from './price.response.historical.dto';

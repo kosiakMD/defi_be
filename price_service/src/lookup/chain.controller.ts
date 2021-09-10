@@ -10,7 +10,7 @@ export class ChainController {
 
   @Get('/')
   @ApiOkResponse({ type: ChainDto, isArray: true })
-  getAll(): Promise<ChainDto[]> {
+  getAll(): ChainDto[] {
     return this.service.getAll();
   }
 }

@@ -1,20 +1,16 @@
 import { Injectable } from '@nestjs/common';
 
-import { ProjectEnum } from 'src/common/enum';
+import { PancakeProtocolEnum, ProjectEnum } from 'src/common/enum';
 
 import { AccountService } from '../account/account.service';
 import { BalanceToken } from '../account/interfaces';
-import {
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
-} from '../dto/liquidity.position.dto';
+import { UniswapLiquidityPosition, UniswapLiquidityPositionPair, } from '../dto/liquidity.position.dto';
 import { EtherscanService } from '../etherscan/etherscan.service';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
 import { PancakeSubgraph } from '../thegraph/pancake.subgraph';
-import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
 
 @Injectable()
 export class PancakeService {
@@ -31,11 +27,10 @@ export class PancakeService {
     let allPools: LiquidityPoolsEntity[] = [];
     const [balances, pools, poolsV2] = await Promise.all([
       this.etherscanService.getBalances(addressesArray),
-      this.poolsService.getProjectPools(PANCAKE_PROJECT),
-      this.poolsService.getProjectPools(PANCAKE_V2_PROJECT),
+      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV1),
+      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV2),
     ]);
     allPools = allPools.concat(pools).concat(poolsV2);
-
     const liquidityPositions: UniswapResponseData = {
       uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
     };

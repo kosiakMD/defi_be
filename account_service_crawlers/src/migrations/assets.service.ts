@@ -1,10 +1,8 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { getManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
-import { NodeService } from '../node/node.service';
 import { AssetPublisherService } from './asset.publisher.service';
 import { AssetsEntity } from './entities/assets.entity';
 import { SettingsEntity } from './entities/settings.entity';
@@ -12,8 +10,6 @@ import { Log } from './interfaces/migration.event.interfaces';
 import { BlockTransactionObject } from './interfaces/web3.interfaces';
 import { SqlService } from './sql.service';
 import { MigrationEvent } from './types/events';
-
-const MIGRATION_CHUNK_SIZE = 100000;
 
 @Injectable()
 export class AssetsService {
@@ -75,51 +71,5 @@ export class AssetsService {
     });
 
     return migrationEvents;
-  }
-
-  async sendReadyForMigrationAssets(chainId: number, nodeService: NodeService): Promise<void> {
-    const assetsReadyToMigrate: AssetsEntity[] = await this.assetsRepository.find({
-      isReadyToMigrate: true,
-      isHistoricalDataMigrated: false,
-      chainId: chainId,
-    });
-
-    const dbEventLastBlock = await getManager().query(
-      this.sqlService.getBlockInfoSelectString(nodeService.getBlockIfoTable()),
-    );
-
-    assetsReadyToMigrate.map(async (asset) => {
-      await this.sendHistoricalMigrationChunks(
-        asset,
-        asset.fromBlock,
-        dbEventLastBlock[0].to_block,
-      );
-      asset.isHistoricalDataMigrated = true;
-      asset.toBlock = dbEventLastBlock[0].to_block;
-      await this.assetsRepository.save(asset);
-    });
-  }
-
-  async sendHistoricalMigrationChunks(
-    asset: AssetsEntity,
-    fromBlock: number,
-    toBlock: number,
-  ): Promise<void> {
-    const blockNumbers: number[] = [];
-    for (let i = Number(fromBlock); i <= Number(toBlock); i++) {
-      blockNumbers.push(i);
-    }
-
-    let chunks: number[];
-    for (let i = 0, j = blockNumbers.length; i < j; i += MIGRATION_CHUNK_SIZE) {
-      chunks = blockNumbers.slice(i, i + MIGRATION_CHUNK_SIZE);
-      await this.assetPublisherService.publishHistoricalMigrationEvent({
-        assetId: asset.id,
-        fromBlock: chunks[0],
-        toBlock: chunks[chunks.length - 1],
-        chainId: asset.chainId,
-        template: asset.template,
-      });
-    }
   }
 }

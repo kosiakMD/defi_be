@@ -1,6 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { Expose, Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import Web3 from 'web3';
 
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
@@ -9,6 +10,8 @@ import { Address, Chains } from '../../common/interfaces';
 import { ChainIdEnum } from 'src/common/enum';
 
 import { Asset, AssetState } from '../assets.interface';
+
+const web3 = new Web3();
 
 export class AssetDto implements Asset {
   @ApiProperty({ type: Number, example: 1066834 })
@@ -67,8 +70,6 @@ export class AssetQueryDto {
   chains: Chains = [ChainIdEnum.eth];
 }
 
-export type ChainAssets = Record<ChainIdEnum, AssetDto[]>;
-
 export class AssetResponseDto {
   @ApiProperty({ type: Number, example: 1066834 })
   @Expose()
@@ -88,13 +89,43 @@ export class AssetResponseDto {
 
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   @Expose({ name: 'chain' })
-  chainId: ChainIdEnum;
+  chain: ChainIdEnum;
 
   @ApiProperty({ type: Number, example: 18 })
   @Expose()
   decimals: number;
 
   @ApiProperty({ type: Boolean, example: true })
-  @Expose({ name: 'isMigrated' })
+  @Expose()
+  @Transform(({ value }) => {
+    return !!value;
+  })
+  isLp: boolean;
+
+  @ApiProperty({ type: Boolean, example: true })
+  @Expose()
   isTracked: boolean;
+
+  @Expose()
+  positionInPool?: number;
+
+  underlyingAssets?: AssetResponseDto[];
+}
+
+export class AssetTrackDto {
+  @Expose()
+  @IsNotEmpty()
+  @Transform(({ value }) => {
+    if (!web3.utils.isAddress(value)) {
+      throw new BadRequestException(`Asset address '${value}' is not valid`);
+    }
+    return value.toLowerCase();
+  })
+  @ApiProperty({ type: String, example: '0xf411903cbc70a74d22900a5de66a2dda66507255' })
+  address: string;
+
+  @Expose()
+  @IsNotEmpty()
+  @ApiProperty({ type: Number, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
 }

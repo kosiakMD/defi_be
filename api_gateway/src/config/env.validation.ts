@@ -61,6 +61,8 @@ export const validationSchema = Joi.object({
   PRICES_PATH: Joi.string().required(),
   PRICE_CHAINS_PATH: Joi.string().required(),
   PRICE_CURRENCIES_PATH: Joi.string().required(),
+  PRICE_BATCH_PATH: Joi.string().required(),
+  PRICE_RANGE_PATH: Joi.string().required(),
   PRICE_SERVICE_MAIN_COIN_ADDRESS: Joi.string().required(),
   // INTEGRATION
   INTEGRATION_SERVICE_HOST: Joi.string().required(),

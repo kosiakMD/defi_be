@@ -1,7 +1,17 @@
 import { Response } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Body, Controller, Get, HttpStatus, Inject, LoggerService, Post, Query, Res, } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Inject,
+  LoggerService,
+  Post,
+  Query,
+  Res,
+} from '@nestjs/common';
 import {
   ApiBody,
   ApiCreatedResponse,
@@ -16,8 +26,8 @@ import { DetailedResponse } from '../common/interfaces';
 
 import { AssetsPoolsService } from './assets.pools.service';
 import { AssetsService } from './assets.service';
-import { AssetDto, AssetQueryDto, AssetResponseDto } from './dto/asset.dto';
-import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assetsPoolsDto';
+import { AssetDto, AssetQueryDto, AssetResponseDto, AssetTrackDto } from './dto/asset.dto';
+import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 
 @ApiTags('Assets')
 @Controller('assets')
@@ -64,6 +74,16 @@ export class AssetsController {
     const { addresses, chains } = query;
 
     return await this.assetsService.getAllAssetsByAddressesAndChains(addresses, chains);
+  }
+
+  @Post('')
+  @ApiBody({ type: AssetTrackDto })
+  @ApiResponse({ status: 200, type: AssetResponseDto })
+  async addAssetToTrack(@Body() asset: AssetTrackDto): Promise<any> {
+    return await this.assetsService.saveTrackingAsset({
+      assetAddress: asset.address,
+      assetChain: asset.chain,
+    });
   }
 
   @Get('/pools')

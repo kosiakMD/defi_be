@@ -20,7 +20,7 @@ module.exports = {
   ],
   root: true,
   // healthcheck & danger *.js
-  ignorePatterns: [".eslintrc.js", "**/*.js", "*.json", "**/dist/", "node_modules"],
+  ignorePatterns: [".eslintrc.js", "**/*.spec.ts", "**/*.js", "*.json", "**/dist/", "node_modules"],
   rules: {
     "quotes": [
       "error",

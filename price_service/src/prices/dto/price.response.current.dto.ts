@@ -1,7 +1,6 @@
-import { CurrentPriceDto } from 'src/lookup/dto';
-
 import { ApiProperty } from '@nestjs/swagger';
 
+import { CurrentPriceDto } from '../../lookup/dto';
 import { PriceBaseResponseDto } from './price.response.base.dto';
 
 export class CurrentPriceResponseDto extends PriceBaseResponseDto {

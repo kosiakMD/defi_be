@@ -155,6 +155,10 @@ export class BalanceService {
             getInternalChainId(balance.chain),
           );
 
+          if (!decimalsAmount) {
+            return;
+          }
+
           if (balance.error) {
             errors.push(balance.error);
           }

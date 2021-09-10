@@ -79,6 +79,7 @@ export const validationSchema = Joi.object({
   CURRENCY_CACHE_TTL_IN_SECONDS: Joi.number(),
   PRICE_CACHE_TTL_IN_SECONDS: Joi.number(),
   AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
+  BSC_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

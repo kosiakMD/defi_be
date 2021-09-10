@@ -1,7 +1,7 @@
-documentation:
+📄 Documentation:
   - any: [ 'README.md', '*/README.md' ]
 
-Config:
+⚙️ Config:
   - any: [
       '.github/*',
       'dangerfile.js',
@@ -17,19 +17,19 @@ Config:
       'Jenkinsfile'
   ]
 
-dependencies:
+📦 Dependencies:
   - any: [ 'package.json', 'yarn.lock', 'package-lock.json', '*/package.json', '*/yarn.lock', '*/package-lock.json' ]
 
-.Env:
+🏗️ Env:
   - .env.*
 
 DTO:
   - any: [ '*.dto.ts', '*Dto.ts', '*DTO.ts' ]
 
-Tests:
+🧪 Tests:
   - src/**/*.spec.*
 
-Crawler/Job:
+👷 Job:
   - any:
       [
           'price_service_crawlers/*',
@@ -40,23 +40,23 @@ Crawler/Job:
           '*consumers/*',
       ]
 
-Safe Service:
+🔒 Safe Service:
   - safe_service_proxy/src/*
 
-Swap Service:
+🔄 Swap Service:
   - swap*/src/*
 
-Integration Service:
+🎌 Integration Service:
   - integration_service/src/*
 
-Gateway Service:
+🚪 Gateway Service:
   - api_gateway/src/*
 
-Account Service:
+👤 Account Service:
   - account_service/src/*
 
-Price Service:
+🏷️ Price Service:
   - price_service/src/*
 
-Lambda:
+👷️ Lambda:
   - lambda/src/*

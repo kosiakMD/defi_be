@@ -12,6 +12,7 @@ import { Asset } from '../interfaces/transactions.interfaces';
 export class AccountService {
   private getBalanceUrl: string;
   private getAssetsUrl: string;
+  private getBalanceCovalentUrl: string;
 
   constructor(private httpService: HttpService, private configService: ConfigService) {
     const host = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
@@ -21,6 +22,8 @@ export class AccountService {
     const balancePath = this.configService.get<string>('ACCOUNT_BALANCE');
     this.getBalanceUrl = `${url}/${balancePath}`;
 
+    this.getBalanceCovalentUrl = `${url}/v1/balances/covalent`;
+
     const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
     this.getAssetsUrl = `${url}/${assetsPath}`;
   }
@@ -28,6 +31,16 @@ export class AccountService {
   async getBalances(addresses: Address[], chains?: ChainIdEnum[]): Promise<BalancesResponse> {
     const data = await this.httpService
       .get(this.getBalanceUrl, { params: { addresses, chains } })
+      .toPromise();
+    return data.data;
+  }
+
+  async getBalancesCovalent(
+    addresses: Address[],
+    chains?: ChainIdEnum[],
+  ): Promise<BalancesResponse> {
+    const data = await this.httpService
+      .get(this.getBalanceCovalentUrl, { params: { addresses, chains } })
       .toPromise();
     return data.data;
   }

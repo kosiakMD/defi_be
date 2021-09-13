@@ -26,8 +26,9 @@ export class SpookyswapService {
   async getDataByAddresses(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
     const pools: NotifyPayloadFeaturesDto = await this.cache.get('4_SpookySwap_pools');
-    const balances = await this.accountService.getBalances(originAddressesArray, [ChainIdEnum.ftm]);
-
+    const balances = await this.accountService.getBalancesCovalent(originAddressesArray, [
+      ChainIdEnum.ftm,
+    ]);
     return this.mapper.mapData(
       Object.keys(balances),
       originAddressesArray,

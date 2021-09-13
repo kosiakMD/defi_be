@@ -3,6 +3,7 @@ export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
+  quickswap = 'quickswap',
   curve = 'curve',
   balancer = 'balancer',
   autofarm = 'autofarm',
@@ -29,6 +30,10 @@ export enum UniswapProtocolEnum {
   uniswapV3 = 'UniswapV3',
 }
 
+export enum QuickswapProtocolEnum {
+  quickswap = 'QuickSwap',
+}
+
 export enum AutofarmProtocolEnum {
   autofarm = 'Autofarm',
 }
@@ -51,12 +56,14 @@ export type ProtocolName =
   | PancakeProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
+  | QuickswapProtocolEnum
   | SpookySwapProtocolEnum
   | AutofarmProtocolEnum;
 export const ProtocolNameEnum = {
   ...PancakeProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...QuickswapProtocolEnum,
   ...SpookySwapProtocolEnum,
   ...AutofarmProtocolEnum,
 };

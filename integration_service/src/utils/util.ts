@@ -302,7 +302,16 @@ export function groupBy(list, keyGetter): Map<any, any> {
   return map;
 }
 
-export async function getDataByAddresses(addresses: string[], subgraph: UniswapSubgraph = null) {
+export async function getDataByAddresses(
+  addresses: string[],
+  subgraph: UniswapSubgraph = null,
+): Promise<{
+  userAddresses: string[];
+  response: {
+    uniswapLiquidityPositions: Map<any, any>;
+    sushiswapStakingPosition: Map<any, any>;
+  };
+}> {
   const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
   const flag = subgraph && subgraph.constructor.name === 'SushiswapSubgraph';
   const [liquidityPosition, stakingPositions] = await Promise.all([

@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
 import { PancakeProtocolEnum, ProjectEnum } from 'src/common/enum';
+import { TokenBalance } from 'src/common/types/balances';
 
 import { AccountService } from '../account/account.service';
-import { BalanceToken } from '../account/interfaces';
-import { UniswapLiquidityPosition, UniswapLiquidityPositionPair, } from '../dto/liquidity.position.dto';
+import {
+  UniswapLiquidityPosition,
+  UniswapLiquidityPositionPair,
+} from '../dto/liquidity.position.dto';
 import { EtherscanService } from '../etherscan/etherscan.service';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
@@ -55,7 +58,7 @@ export class PancakeService {
   private static createLiquidityPosition(
     user: string,
     pool: LiquidityPoolsEntity,
-    balance: BalanceToken,
+    balance: TokenBalance,
   ): UniswapLiquidityPosition {
     const token0 = pool.poolTokens.find((t) => t.positionInPool === 0);
     const token1 = pool.poolTokens.find((t) => t.positionInPool === 1);

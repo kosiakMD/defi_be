@@ -1,3 +1,5 @@
+import { QuickswapProtocolEnum } from '.';
+
 export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
@@ -33,14 +35,16 @@ export enum AutofarmProtocolEnum {
 export type ProtocolName =
   | PancakeProtocolEnum
   | SushiSwapProtocolEnum
-  | UniswapProtocolEnum
   | AutofarmProtocolEnum
-  | SpookySwapProtocolEnum;
+  | SpookySwapProtocolEnum
+  | QuickswapProtocolEnum
+  | UniswapProtocolEnum;
 
 export const ProtocolNameEnum = {
   ...PancakeProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...QuickswapProtocolEnum,
   ...SpookySwapProtocolEnum,
 };

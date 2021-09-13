@@ -3,6 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum, ProtocolName, ResultStatus } from '../common/enum';
+import { ChainIdToAbbr } from 'src/common/enum/chain.enum';
 
 import { CurrencyDto } from '../dto/currency.dto';
 import { FeaturesResponseDto, ProtocolBasicInfo } from '../protocol/features/features.dto';
@@ -30,6 +31,11 @@ export class IntegrationsService {
     addresses,
   ): Promise<IntegrationsResponseDto> {
     const protocol = this.protocolService.getProtocolByName(protocolName);
+
+    const allowedChains = chains.filter((chain) =>
+      protocol.getInfo().chains.includes(ChainIdToAbbr[chain]),
+    );
+
     const response: IntegrationsResponseDto = plainToClass(IntegrationsResponseDto, {
       errors: [],
       data: {},
@@ -47,13 +53,13 @@ export class IntegrationsService {
     response.data.currency = plainToClass(CurrencyDto, {});
     // Features Data
     const allData = await Promise.allSettled<any>(
-      chains.map(
+      allowedChains.map(
         async (chainId) =>
           await this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
       ),
     );
     // Data
-    chains.forEach((chainId, dataIndex) => {
+    allowedChains.forEach((chainId, dataIndex) => {
       const chainData = plainToClass(IntChainsDataDto, {});
       const chainAbbr = ChainIdEnum[chainId];
       // Chain Info

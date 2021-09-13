@@ -3,7 +3,7 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { NotifyPayloadFeaturesDto } from './notify.payload.features.dto';
+import { NotifyPayloadFeaturesDto, SavePoolsResponseDto } from './notify.payload.features.dto';
 
 @Injectable()
 export class JobsService {
@@ -16,9 +16,7 @@ export class JobsService {
     this.cacheTTLInSeconds = config.get<number>('JOBS_CACHE_TTL_IN_SECONDS') || 60 * 60 * 24; // 24 hours
   }
 
-  async saveFeatureToCache(
-    features: NotifyPayloadFeaturesDto[],
-  ): Promise<{ success: boolean; count: number }> {
+  async saveFeatureToCache(features: NotifyPayloadFeaturesDto[]): Promise<SavePoolsResponseDto> {
     const done = await Promise.all(features.map((feature) => this.updateCacheFeature(feature)));
     return { success: true, count: done.length };
   }

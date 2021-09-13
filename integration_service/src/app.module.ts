@@ -15,6 +15,7 @@ import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { PancakeModule } from './pancake/pancake.module';
 import { PoolsModule } from './pools/pools.module';
 import { ProtocolModule } from './protocol/protocol.module';
+import { QuickswapModule } from './quickswap/quickswap.module';
 import { SushiswapModule } from './sushiswap/sushiswap.module';
 import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
@@ -50,14 +51,16 @@ import { VaultsModule } from './vaults/vaults.module';
     //
     UniswapModule,
     ProtocolModule,
+    QuickswapModule,
+    SushiswapModule,
+    PancakeModule,
+    AutofarmModule,
+    //
     PoolsModule,
     DatabaseModule,
     VaultsModule,
-    SushiswapModule,
-    PancakeModule,
     TemporaryTokensModule,
     IntegrationsModule,
-    AutofarmModule,
     JobsModule,
   ],
   controllers: [HealthController],

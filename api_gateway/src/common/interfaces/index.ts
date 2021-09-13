@@ -4,6 +4,7 @@ import {
   PancakeProtocolEnum,
   ProjectEnum,
   ProtocolTypeEnum,
+  QuickswapProtocolEnum,
   ResultStatus,
   SushiSwapProtocolEnum,
   TransactionTypeEnum,
@@ -25,7 +26,8 @@ export type ProtocolName =
   | PancakeProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
-  | AutofarmProtocolEnum;
+  | AutofarmProtocolEnum
+  | QuickswapProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;

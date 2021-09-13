@@ -1,8 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
+import { ApiBody, ApiResponse } from '@nestjs/swagger';
 
 import { JobsService } from './jobs.service';
-import { NotifyPayloadFeaturesDto } from './notify.payload.features.dto';
+import { NotifyPayloadFeaturesDto, SavePoolsResponseDto } from './notify.payload.features.dto';
 
 @Controller('jobs')
 export class JobsController {
@@ -10,9 +10,10 @@ export class JobsController {
 
   @Post()
   @ApiBody({ type: [NotifyPayloadFeaturesDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: SavePoolsResponseDto })
   savePoolsToCache(
     @Body() notifyPayloadFeaturesDto: NotifyPayloadFeaturesDto[],
-  ): Promise<{ success: boolean; count: number }> {
+  ): Promise<SavePoolsResponseDto> {
     return this.jobsService.saveFeatureToCache(notifyPayloadFeaturesDto);
   }
 }

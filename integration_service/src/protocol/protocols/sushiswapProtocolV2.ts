@@ -19,7 +19,7 @@ export class SushiswapProtocolV2
   extends BasicProtocol<SushiswapService>
   implements AbstractProtocol
 {
-  readonly chains: [ChainAbbrEnum.eth, ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.sushiswap;
   readonly name = SushiSwapProtocolEnum.sushiswapV2;
   readonly label: 'Sushiswap';

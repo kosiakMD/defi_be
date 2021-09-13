@@ -43,6 +43,10 @@ export enum PancakeProtocolEnum {
   pancakeV2 = 'PancakeV2',
 }
 
+export enum QuickswapProtocolEnum {
+  quickswap = 'QuickSwap',
+}
+
 export enum ResultStatus {
   ok = 'ok',
   error = 'error',

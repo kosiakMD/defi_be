@@ -7,6 +7,7 @@ import { ProtocolBasicInfo } from './features/features.dto';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
+import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapProtocolV2';
@@ -20,6 +21,7 @@ export class ProtocolService {
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
+    private readonly quickswapProtocol: QuickswapProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
   ) {
@@ -28,6 +30,7 @@ export class ProtocolService {
       sushiswapProtocolV2,
       pancakeProtocolV1,
       autofarmProtocol,
+      quickswapProtocol,
       spookySwapProtocol,
     ];
   }

@@ -68,3 +68,10 @@ export class NotifyPayloadFeaturesDto {
   @ApiProperty({ example: [] })
   items: LiquidityPoolFeature[];
 }
+
+export class SavePoolsResponseDto {
+  @ApiProperty({ type: Boolean, example: true })
+  success: boolean;
+  @ApiProperty({ type: Number, example: 9 })
+  count: number;
+}

@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { BlocksSubgraph } from './blocks.subgraph';
 import { PancakeSubgraph } from './pancake.subgraph';
+import { QuickswapSubgraph } from './quickswap.subgraph';
 import { SushiswapSubgraph } from './sushiswap.subgraph';
 import { UniswapSubgraph } from './uniswap.subgraph';
 
@@ -14,7 +15,20 @@ import { UniswapSubgraph } from './uniswap.subgraph';
     }),
     ConfigModule,
   ],
-  providers: [UniswapSubgraph, BlocksSubgraph, SushiswapSubgraph, PancakeSubgraph],
-  exports: [ThegraphModule, UniswapSubgraph, SushiswapSubgraph, BlocksSubgraph, PancakeSubgraph],
+  providers: [
+    UniswapSubgraph,
+    BlocksSubgraph,
+    SushiswapSubgraph,
+    PancakeSubgraph,
+    QuickswapSubgraph,
+  ],
+  exports: [
+    ThegraphModule,
+    UniswapSubgraph,
+    SushiswapSubgraph,
+    BlocksSubgraph,
+    PancakeSubgraph,
+    QuickswapSubgraph,
+  ],
 })
 export class ThegraphModule {}

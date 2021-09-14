@@ -59,6 +59,18 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_REGION: Joi.string() //
+    .default('eu-central-1')
+    .optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_ACCESS_KEY_ID: Joi.string() //
+    .default('AKIAZDKQQQWB2PUMCMK5')
+    .optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_SECRET_ACCESS_KEY: Joi.string() //
+    .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
+    .optional(),
 });
 
 export const validationOptions = {

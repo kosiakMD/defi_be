@@ -24,13 +24,18 @@ import { winstonParams } from './utils/winston';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams(
-          configService.get<string>('LOG_ERROR_FILE'),
-          configService.get<string>('LOG_COMBINED_FILE'),
-          configService.get<string>('SERVICE_NAME'),
-          configService.get<string>('LOG_LEVEL'),
-          { env: configService.get<string>('ENV') },
-        ),
+        winstonParams({
+          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
+          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
+          serviceName: configService.get<string>('SERVICE_NAME'),
+          level: configService.get<string>('LOG_LEVEL'),
+          meta: { env: configService.get<string>('ENV') },
+          awsConfig: {
+            region: configService.get<string>('AWS_REGION'),
+            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+          },
+        }),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],

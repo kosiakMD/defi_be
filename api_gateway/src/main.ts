@@ -8,7 +8,9 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 import { addTimeLogFeature } from './common/Logger/Logger.service';
+import { createLogger } from './utils/winston';
 
+const logger = createLogger();
 install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'development' */ });
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -16,15 +18,13 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     bodyParser: true,
-    logger: true,
+    abortOnError: false,
+    logger,
   });
 
   app.enableShutdownHooks();
 
-  // TODO: adding time logs features [HACK]
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  // TODO: left for custom logger
-  // app.useLogger(app.get(Logger));
   app.useLogger(enhancedLogger);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -45,4 +45,6 @@ async function bootstrap() {
   await app.listen(SERVICE_PORT, SERVICE_HOST);
 }
 
-bootstrap();
+bootstrap().catch((e) => {
+  logger.error(e, null, 'Bootstrap');
+});

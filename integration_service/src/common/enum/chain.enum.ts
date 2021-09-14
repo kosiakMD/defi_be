@@ -31,4 +31,5 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.plg]: ChainAbbrEnum.plg,
   [ChainIdEnum.ftm]: ChainAbbrEnum.ftm,
   [ChainIdEnum.arbi]: ChainAbbrEnum.arbi,
+  [ChainIdEnum.avax]: ChainAbbrEnum.avax,
 };

@@ -125,7 +125,13 @@ export class IntegrationERC20TokenDto {
   totalSupply?: string = null;
 
   @ApiProperty({type: Number, example: 3759.23})
-  price?: number = null;
+  price?: number;
+
+  @ApiProperty({ type: Number, example: 1.2512 })
+  value?: number;
+
+  @ApiProperty({ type: String, example: '123.6534' })
+  balance?: string;
 }
 
 export class PoolPeriodStats {
@@ -174,7 +180,7 @@ export class LiquidityPoolFeature {
 
 export class ClaimableDto {
   @ApiProperty({type: String, example: '1.23413'})
-  intValue: string = null;
+  balance: string = null;
   @ApiProperty({type: String, example: '123413'})
   value: string = null;
 }

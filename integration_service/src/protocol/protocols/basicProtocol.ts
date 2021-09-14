@@ -16,6 +16,7 @@ import { CurrentPricesPayload, PriceResponseDto } from '../../dto/price.response
 import {
   IntegrationFeaturesData,
   LiquidityPoolFeature,
+  LPToken,
   PoolTokenDto,
 } from '../../integrations/integrations.dto';
 import { Staking } from '../../interfaces/staking.position.interfaces';
@@ -23,6 +24,7 @@ import {
   Asset,
   AutomaticMarketMaker,
   PoolToken,
+  StakingErcToken,
   StakingPosition,
 } from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
@@ -196,7 +198,13 @@ export abstract class BasicProtocol<
     };
 
     rawStaking?.stakingPositions.forEach((staking) => {
-      result.totalValue += Number(staking.staked);
+      if (staking.stakingToken.constructor.name === 'LPToken') {
+        const lpToken = staking.stakingToken as LPToken;
+        lpToken.tokens.forEach((token) => (result.totalValue += token.value));
+        return;
+      }
+      const stakingToken = staking.stakingToken as StakingErcToken;
+      result.totalValue += Number(stakingToken.value);
     });
 
     result.items = rawStaking?.stakingPositions || [];

@@ -44,70 +44,80 @@ export class AutofarmService {
     address: Address,
     chainId: ChainIdEnum,
   ): Promise<StakingPositionResponseDto[]> {
-    const autofarmUsers: AutofarmUser[] = await this.autofarmSubgrahp.getSubgraphData([address]);
-    const stakedPosition: StakingInterface[] = autofarmUsers.flatMap((user) =>
-      user.balances.map((balance) => {
-        return {
-          poolNum: Number(balance.id.slice(balance.id.indexOf('-') + 1)),
-          userAddress: user.id,
-          amount: balance.amount,
-        };
-      }),
-    );
+    try {
+      const autofarmUsers: AutofarmUser[] = await this.autofarmSubgrahp.getSubgraphData([
+        address.toLowerCase(),
+      ]);
+      const stakedPosition: StakingInterface[] = [];
+      autofarmUsers.forEach((user) =>
+        user.balances.forEach((balance) => {
+          if (Number(balance.amount) >= 0) {
+            stakedPosition.push({
+              poolNum: Number(balance.id.slice(balance.id.indexOf('-') + 1)),
+              userAddress: user.id,
+              amount: balance.amount,
+            });
+          }
+        }),
+      );
 
-    const web3Provider = this.web3Provider.web3Map.get(chainId);
-    const multicall = new LocalMultiCall(web3Provider, this.logger);
-    const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chainId);
+      const web3Provider = this.web3Provider.web3Map.get(chainId);
+      const multicall = new LocalMultiCall(web3Provider, this.logger);
+      const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chainId);
 
-    await Promise.all([
-      multicall.getVaultUsersInfo(stakedPosition, chainId),
-      multicall.getTotalSupplies(poolsAddresses, stakedPosition),
-    ]);
+      await Promise.all([
+        multicall.getVaultUsersInfo(stakedPosition, chainId),
+        multicall.getTotalSupplies(poolsAddresses, stakedPosition),
+      ]);
 
-    const lpStaked: StakingInterface[] = [];
-    const tokensAddresses = new Set<string>();
-    tokensAddresses.add(autofarmRewardToken);
-    await Promise.all(
-      stakedPosition.map(async (staking) => {
-        try {
-          const poolContract = new web3Provider.eth.Contract(
-            lpTokenAbi as AbiItem[],
-            staking.contractAddress,
-          );
-          const reserves = await poolContract.methods.getReserves().call();
-          // eslint-disable-next-line no-underscore-dangle
-          staking.reserve0 = reserves._reserve0;
-          // eslint-disable-next-line no-underscore-dangle
-          staking.reserve1 = reserves._reserve1;
-          staking.isLp = true;
-          lpStaked.push(staking);
-        } catch (e) {
-          staking.isLp = false;
-          tokensAddresses.add(staking.contractAddress);
-        }
-      }),
-    );
+      const lpStaked: StakingInterface[] = [];
+      const tokensAddresses = new Set<string>();
+      tokensAddresses.add(autofarmRewardToken);
+      await Promise.all(
+        stakedPosition.map(async (staking) => {
+          try {
+            const poolContract = new web3Provider.eth.Contract(
+              lpTokenAbi as AbiItem[],
+              staking.contractAddress,
+            );
+            const reserves = await poolContract.methods.getReserves().call();
+            // eslint-disable-next-line no-underscore-dangle
+            staking.reserve0 = reserves._reserve0;
+            // eslint-disable-next-line no-underscore-dangle
+            staking.reserve1 = reserves._reserve1;
+            staking.isLp = true;
+            lpStaked.push(staking);
+          } catch (e) {
+            staking.isLp = false;
+            tokensAddresses.add(staking.contractAddress);
+          }
+        }),
+      );
 
-    await multicall.getToken0AndToken1FromLp(lpStaked, tokensAddresses);
-    const tokenAddressesArray = Array.from(tokensAddresses);
-    const [{ data }, price] = await Promise.all([
-      this.assetsService.getAssets(tokenAddressesArray, [chainId]),
-      this.priceService.getTokenPricesFetch(tokenAddressesArray, chainId),
-    ]);
+      await multicall.getToken0AndToken1FromLp(lpStaked, tokensAddresses);
+      const tokenAddressesArray = Array.from(tokensAddresses);
+      const [{ data }, price] = await Promise.all([
+        this.assetsService.getAssets(tokenAddressesArray, [chainId]),
+        this.priceService.getTokenPricesFetch(tokenAddressesArray, chainId),
+      ]);
 
-    const assetsMap = new Map<string, Asset>();
-    data.forEach((asset) => assetsMap.set(asset.address, asset));
+      const assetsMap = new Map<string, Asset>();
+      data.forEach((asset) => assetsMap.set(asset.address, asset));
 
-    const claimableToken = AutofarmService.getClaimableToken(assetsMap, price.prices);
-    const stakingPositionsMap = this.getStakingPositionDtosMap(
-      stakedPosition,
-      assetsMap,
-      price.prices,
-      claimableToken,
-      chainId,
-    );
+      const claimableToken = AutofarmService.getClaimableToken(assetsMap, price.prices);
+      const stakingPositionsMap = this.getStakingPositionDtosMap(
+        stakedPosition,
+        assetsMap,
+        price.prices,
+        claimableToken,
+        chainId,
+      );
 
-    return this.getResponse(autofarmUsers, stakingPositionsMap);
+      return this.getResponse(autofarmUsers, stakingPositionsMap);
+    } catch (e) {
+      this.logger.error(e.message);
+      throw e;
+    }
   }
 
   private getResponse(
@@ -138,9 +148,11 @@ export class AutofarmService {
     stakingPositions.map((staking) => {
       const rewardToken: IntegrationClaimableTokenDto = classToClass(claimAbleToken);
       const claimable = new ClaimableDto();
-      claimable.value = staking.claimable;
-      claimable.intValue = new BigNumber(staking.claimable) //
+      claimable.balance = new BigNumber(staking.claimable) //
         .div(decimalsDivider(18))
+        .toString();
+      claimable.value = new BigNumber(claimable.balance)
+        .times(rewardToken.price) //
         .toString();
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
@@ -169,7 +181,12 @@ export class AutofarmService {
     AutofarmService.setFieldsFromAsset(asset, erc20Token);
     erc20Token.totalSupply = staking.totalSupply;
     erc20Token.price = prices[staking.contractAddress];
-
+    erc20Token.balance = new BigNumber(staking.amount)
+      .div(decimalsDivider(erc20Token.decimals))
+      .toString();
+    erc20Token.value = new BigNumber(erc20Token.balance) //
+      .times(erc20Token.price)
+      .toNumber();
     return erc20Token;
   }
 

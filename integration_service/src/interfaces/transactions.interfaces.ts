@@ -39,6 +39,17 @@ export class ERC20Token {
   totalSupply?: string;
 }
 
+export class StakingErcToken extends ERC20Token {
+  @ApiProperty({ type: Number, example: 3759.23 })
+  price?: number = null;
+
+  @ApiProperty({ type: Number, example: 1.2512 })
+  value?: number;
+
+  @ApiProperty({ type: String, example: '123.6534' })
+  balance?: string;
+}
+
 export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
   reserve: string;
   percentage?: number;
@@ -105,7 +116,7 @@ export interface StakingPosition {
   staked: string;
   lpToken?: ERC20Token;
   rewardToken: ClaimAbleToken;
-  stakingToken?: ERC20Token | LPToken;
+  stakingToken?: StakingErcToken | LPToken;
   liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }

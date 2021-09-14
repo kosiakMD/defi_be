@@ -6,6 +6,7 @@ import {
   BaseData,
   ERC20Token,
   PoolToken,
+  StakingErcToken,
   Transaction,
 } from './transactions.interfaces';
 
@@ -37,7 +38,7 @@ export interface StakingPosition {
   staked: string;
   lpToken?: PoolTokenStaked;
   rewardToken: ClaimAbleToken;
-  stakingToken: LPToken | ERC20Token;
+  stakingToken: LPToken | StakingErcToken;
   liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }

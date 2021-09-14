@@ -32,9 +32,10 @@ export class IntegrationsService {
   ): Promise<IntegrationsResponseDto> {
     const protocol = this.protocolService.getProtocolByName(protocolName);
 
-    const allowedChains = chains.filter((chain) =>
-      protocol.getInfo().chains.includes(ChainIdToAbbr[chain]),
-    );
+    const allowedChains = chains.filter((chain) => {
+      const basicInfo = protocol.getInfo();
+      return basicInfo.chains?.includes(ChainIdToAbbr[chain]);
+    });
 
     const response: IntegrationsResponseDto = plainToClass(IntegrationsResponseDto, {
       errors: [],

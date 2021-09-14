@@ -18,7 +18,7 @@ export const RequestErrorHandler = function () {
         if (e.isAxiosError) {
           const stack = e.toJSON().stack;
           logger.error(
-            `Error ${e.request.method} ${e.request.res.responseUrl}${
+            `Error ${e.request.method} ${e.request.res?.responseUrl}${
               e.request.data ? `\n${e.request.data}` : ''
             }`,
             stack,

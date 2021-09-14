@@ -16,13 +16,13 @@ import BasicProtocol from './basicProtocol';
 
 @Injectable()
 export class AutofarmProtocol extends BasicProtocol<AutofarmService> implements AbstractProtocol {
-  readonly chains: [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.autofarm;
   readonly name = AutofarmProtocolEnum.autofarm;
-  readonly label: 'Autofarm';
+  readonly label = 'Autofarm';
   readonly features = { [ChainAbbrEnum.bsc]: [FeatureEnum.staking] };
   protected dataProvider;
-  protected feeRate: 0.003;
+  protected feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,

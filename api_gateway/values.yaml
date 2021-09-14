@@ -57,7 +57,7 @@ configMaps:
     SAFE_PROXY_SCAM_TYPES: v1/scams/types
     SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
     INTEGRATION_PROTOCOLS: v1/protocols
-    PRICE_BATCH_PATH: v1/batch
+    PRICE_BATCH_PATH: v1/prices/batch
     PRICE_RANGE_PATH: v1/priceRange
 
 secrets:

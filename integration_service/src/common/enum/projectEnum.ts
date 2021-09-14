@@ -7,6 +7,11 @@ export enum ProjectEnum {
   curve = 'curve',
   balancer = 'balancer',
   autofarm = 'autofarm',
+  pangolin = 'pangolin',
+}
+
+export enum PangolinProtocolEnum {
+  pangolin = 'Pangolin',
 }
 
 export enum SpookySwapProtocolEnum {
@@ -54,6 +59,7 @@ export enum AutofarmProtocolEnum {
  */
 export type ProtocolName =
   | PancakeProtocolEnum
+  | PangolinProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
   | QuickswapProtocolEnum
@@ -61,6 +67,7 @@ export type ProtocolName =
   | AutofarmProtocolEnum;
 export const ProtocolNameEnum = {
   ...PancakeProtocolEnum,
+  ...PangolinProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
   ...QuickswapProtocolEnum,

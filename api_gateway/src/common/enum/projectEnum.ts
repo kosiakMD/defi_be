@@ -1,15 +1,24 @@
 import { QuickswapProtocolEnum } from '.';
 
 export enum ProjectEnum {
+  pancake = 'pancake',
+  pangolin = 'pangolin',
+  spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
-  pancake = 'pancake',
-  spookyswap = 'spookyswap',
+}
+
+export enum AutofarmProtocolEnum {
+  autofarm = 'Autofarm',
 }
 
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',
+}
+
+export enum PangolinProtocolEnum {
+  pangolin = 'Pangolin',
 }
 
 export enum SpookySwapProtocolEnum {
@@ -28,23 +37,21 @@ export enum UniswapProtocolEnum {
   uniswapV3 = 'UniswapV3',
 }
 
-export enum AutofarmProtocolEnum {
-  autofarm = 'Autofarm',
-}
-
 export type ProtocolName =
-  | PancakeProtocolEnum
-  | SushiSwapProtocolEnum
   | AutofarmProtocolEnum
-  | SpookySwapProtocolEnum
+  | PancakeProtocolEnum
+  | PangolinProtocolEnum
   | QuickswapProtocolEnum
+  | SpookySwapProtocolEnum
+  | SushiSwapProtocolEnum
   | UniswapProtocolEnum;
 
 export const ProtocolNameEnum = {
-  ...PancakeProtocolEnum,
-  ...SushiSwapProtocolEnum,
-  ...UniswapProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...PancakeProtocolEnum,
+  ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,
   ...SpookySwapProtocolEnum,
+  ...SushiSwapProtocolEnum,
+  ...UniswapProtocolEnum,
 };

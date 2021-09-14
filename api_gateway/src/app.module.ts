@@ -48,6 +48,7 @@ import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
+import { PangolinController } from './pangolin/pangolin.controller';
 
 @Module({
   imports: [
@@ -99,6 +100,7 @@ import { VaultsModule } from './vaults/vaults.module';
     TransfersController,
     // Platforms
     PancakeController,
+    PangolinController,
     SushiswapController,
     SpookyswapController,
     UniswapController,

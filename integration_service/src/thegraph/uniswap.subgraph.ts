@@ -352,7 +352,7 @@ const pairFragment = `
  },
  ],
  });
- 
+
  return query;
  };
  newQuery([1]);

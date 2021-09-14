@@ -22,7 +22,7 @@ export class ProtocolController {
   @ApiParam({
     name: 'protocolName',
     enum: ProtocolNameEnum,
-    enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum',
+    enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum, PangolinProtocolEnum',
     example: UniswapProtocolEnum.uniswapV2,
   })
   @ApiQuery({

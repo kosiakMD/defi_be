@@ -74,6 +74,7 @@ export const validationSchema = Joi.object({
   INTEGRATION_SUSHISWAP: Joi.string().required(),
   INTEGRATION_SPOOKYSWAP: Joi.string().required(),
   INTEGRATION_PANCAKE: Joi.string().required(),
+  INTEGRATION_PANGOLIN: Joi.string().required(),
   INTEGRATION_PROTOCOLS: Joi.string().required(),
   // SAFE
   SAFE_PROXY_SERVICE_HOST: Joi.string().required(),

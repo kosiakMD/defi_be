@@ -18,6 +18,7 @@ export class IntegrationService {
   private readonly getStatusUrl: string;
   private readonly getUniswapUrl: string;
   private readonly getSushiswapUrl: string;
+  private readonly getPangolinUrl: string;
   private readonly getPancakeUrl: string;
   private readonly getSpookyswapUrl: string;
   private readonly getPoolsUrl: string;
@@ -44,6 +45,9 @@ export class IntegrationService {
 
     const pancakePath = this.configService.get<string>('INTEGRATION_PANCAKE');
     this.getPancakeUrl = `${url}/${pancakePath}`;
+
+    const pangolinPath = this.configService.get<string>('INTEGRATION_PANGOLIN');
+    this.getPangolinUrl = `${url}/${pangolinPath}`;
 
     const spookyswapPath = this.configService.get<string>('INTEGRATION_SPOOKYSWAP');
     this.getSpookyswapUrl = `${url}/${spookyswapPath}`;
@@ -116,6 +120,17 @@ export class IntegrationService {
       e.response && this.logger.error(e.response.data);
       throw e;
     }
+  }
+
+  @RequestErrorHandler()
+  async getPangolin(addresses: string, chains?: string): Promise<BalancesResponse> {
+    this.logger.time(this.getPangolinUrl);
+    const data = await this.httpService
+      .get(this.getPangolinUrl, { params: { addresses, chains } })
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(this.getPangolinUrl);
+    return data;
   }
 
   @RequestErrorHandler()

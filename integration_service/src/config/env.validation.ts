@@ -47,6 +47,9 @@ export const validationSchema = Joi.object({
   AMM_UNISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  AMM_PANGOLIN_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
   BLOCKS_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty

@@ -8,6 +8,10 @@ configMaps:
   links:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
+    POLYGON_URL: https://rpc-mainnet.matic.network/
+    FTM_URL: https://rpc.ftm.tools/
+    POLYGONSCAN_URL: https://api.polygonscan.com/api
+    POLYGONSCAN_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80

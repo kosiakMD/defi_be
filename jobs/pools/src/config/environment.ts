@@ -1,0 +1,14 @@
+export default (): any => ({
+  DB_HOST: process.env.DB_HOST,
+  DB_PORT: process.env.DB_PORT,
+  DB_USERNAME: process.env.DB_USERNAME,
+  DB_PASSWORD: process.env.DB_PASSWORD,
+  DB_DATABASE: process.env.DB_DATABASE,
+  ETH_URL: process.env.ETH_URL,
+  BSC_URL: process.env.BSC_URL,
+  POLYGON_URL: process.env.POLYGON_URL,
+  FTM_URL: process.env.FTM_URL,
+  INTEGRATION_SERVICE_URL: process.env.INTEGRATION_SERVICE_URL,
+  ACCOUNT_SERVICE_URL: process.env.ACCOUNT_SERVICE_URL,
+  PRICE_SERVICE_URL: process.env.PRICE_SERVICE_URL,
+});

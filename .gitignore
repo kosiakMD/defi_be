@@ -127,3 +127,5 @@ dist
 .idea2
 /.chart/
 /.ci/
+/jobs/cron/
+/jobs/deploy/

@@ -347,10 +347,6 @@
     "@ethersproject/properties" "^5.4.0"
     "@ethersproject/strings" "^5.4.0"
 
-"@indexed-finance/multicall@^2.0.0":
-  version "2.0.0"
-  resolved "https://registry.npmjs.org/@indexed-finance/multicall/-/multicall-2.0.0.tgz"
-
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
   resolved "https://registry.npmjs.org/@sindresorhus/is/-/is-0.14.0.tgz"

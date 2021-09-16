@@ -1,5 +1,5 @@
 import { AssetsService } from './assets.service';
-import { LocalMultiCall } from './chain/multicall/local.multi.call';
+import { MultiCall } from './chain/multicall/multi.call';
 import { FactoryContract } from './chain/uniswapv2pair/factory.contract';
 import { PairContract } from './chain/uniswapv2pair/pair.contract';
 import { Web3Provider } from './chain/web3.provider';
@@ -132,7 +132,7 @@ export async function getResult(requestParams: LambdaRequestInterface): Promise<
 
     await AssetsService.saveAssetsPairs(requestParams.tokenServiceUrl, assetsWithNewData);
 
-    const multiCall = new LocalMultiCall();
+    const multiCall = new MultiCall();
 
     const pairsReserves = await multiCall.getPairsReserves(Array.from(uniquePairAddresses));
     const assetsPrices = TokenPriceService.getTokensPriceResponse(

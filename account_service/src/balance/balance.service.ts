@@ -7,7 +7,7 @@ import Web3 from 'web3';
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { ETH_BNB_ADDRESS } from '../common/constatnt';
+import { BLACKLISTED_TOKENS, ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';
 import { ChainIdEnum } from 'src/common/enum';
 
@@ -146,43 +146,48 @@ export class BalanceService {
       const errors = [];
 
       balances.forEach((balance) => {
-        balance.items.forEach((token) => {
-          const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
-          const tokenPriceUSD = token.quote_rate ? token.quote_rate : null;
-          const totalPriceUSD = tokenPriceUSD * decimalsAmount;
-          const tokenAddress = replaceIncorrectTokenAddress(
-            token.contract_address,
-            getInternalChainId(balance.chain),
-          );
+        balance.items
+          .filter(
+            // TODO: Remove or rewrite this filtration
+            (token) => !BLACKLISTED_TOKENS.includes(token.contract_address),
+          )
+          .forEach((token) => {
+            const decimalsAmount = +token.balance / 10 ** token.contract_decimals;
+            const tokenPriceUSD = token.quote_rate ? token.quote_rate : null;
+            const totalPriceUSD = tokenPriceUSD * decimalsAmount;
+            const tokenAddress = replaceIncorrectTokenAddress(
+              token.contract_address,
+              getInternalChainId(balance.chain),
+            );
 
-          if (!decimalsAmount) {
-            return;
-          }
+            if (!decimalsAmount) {
+              return;
+            }
 
-          if (balance.error) {
-            errors.push(balance.error);
-          }
+            if (balance.error) {
+              errors.push(balance.error);
+            }
 
-          tokens.push(
-            plainToClass(AccountTokenBalanceDto, {
-              account: address,
-              amount: token.balance,
-              decimalsAmount,
-              tokenPriceUSD,
-              totalPriceUSD: totalPriceUSD || null,
-              token: {
-                chainId: getInternalChainId(balance.chain),
-                decimals: token.contract_decimals,
-                symbol: token.contract_ticker_symbol,
-                name: token.contract_name,
-                address: tokenAddress,
-                totalSupply: 0,
-                isLp: false,
-                // isLp: assets.find((asset) => asset.address === token.contract_address)?.isLp || false,
-              },
-            }),
-          );
-        });
+            tokens.push(
+              plainToClass(AccountTokenBalanceDto, {
+                account: address,
+                amount: token.balance,
+                decimalsAmount,
+                tokenPriceUSD,
+                totalPriceUSD: totalPriceUSD || null,
+                token: {
+                  chainId: getInternalChainId(balance.chain),
+                  decimals: token.contract_decimals,
+                  symbol: token.contract_ticker_symbol,
+                  name: token.contract_name,
+                  address: tokenAddress,
+                  totalSupply: 0,
+                  isLp: false,
+                  // isLp: assets.find((asset) => asset.address === token.contract_address)?.isLp || false,
+                },
+              }),
+            );
+          });
       });
 
       balancesByAccount.set(address, {
@@ -384,35 +389,34 @@ export class BalanceService {
   private calculateTotalUsd = (tokens: TokenBalance[]): number =>
     tokens.reduce((total, { totalPriceUSD }) => total + (totalPriceUSD || 0), 0);
 
-  private mapErc20Balance = (
-    prices: TokenPricesV2,
-    chainId: ChainIdEnum,
-  ): ((row: TokenRow) => AccountTokenBalanceDto) => ({
-    address,
-    amount,
-    tokenAddress,
-    tokenName,
-    tokenSymbol,
-    tokenDecimals,
-    tokenTotalSupply,
-    isLp,
-  }): AccountTokenBalanceDto =>
-    plainToClass(AccountTokenBalanceDto, {
-      account: address,
+  private mapErc20Balance =
+    (prices: TokenPricesV2, chainId: ChainIdEnum): ((row: TokenRow) => AccountTokenBalanceDto) =>
+    ({
+      address,
       amount,
-      decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
-      tokenPriceUSD: prices[tokenAddress]?.price || 0,
-      totalPriceUSD: prices[tokenAddress]?.price
-        ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
-        : 0,
-      token: {
-        chainId: chainId,
-        address: tokenAddress,
-        name: tokenName || null,
-        symbol: tokenSymbol || null,
-        decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
-        totalSupply: +tokenTotalSupply || 0,
-        isLp: isLp,
-      },
-    });
+      tokenAddress,
+      tokenName,
+      tokenSymbol,
+      tokenDecimals,
+      tokenTotalSupply,
+      isLp,
+    }): AccountTokenBalanceDto =>
+      plainToClass(AccountTokenBalanceDto, {
+        account: address,
+        amount,
+        decimalsAmount: decimalsAmount(amount, tokenDecimals ? tokenDecimals : 18),
+        tokenPriceUSD: prices[tokenAddress]?.price || 0,
+        totalPriceUSD: prices[tokenAddress]?.price
+          ? totalPrice(amount, prices[tokenAddress]?.price, tokenDecimals ? tokenDecimals : 18)
+          : 0,
+        token: {
+          chainId: chainId,
+          address: tokenAddress,
+          name: tokenName || null,
+          symbol: tokenSymbol || null,
+          decimals: tokenDecimals ? parseInt(tokenDecimals) : 18,
+          totalSupply: +tokenTotalSupply || 0,
+          isLp: isLp,
+        },
+      });
 }

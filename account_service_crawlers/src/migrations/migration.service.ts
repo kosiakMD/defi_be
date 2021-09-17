@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { BscService } from '../node/bsc.service';
 import { EthService } from '../node/eth.service';
-import { BSC_NETWORK, ETH_NETWORK } from '../utils/utils';
+import { BSC_NETWORK, ETH_NETWORK, toField } from '../utils/utils';
 import { AssetPublisherService } from './asset.publisher.service';
 import { MigrationBlockResponse } from './interfaces/migration.block.response';
 import {
@@ -28,25 +28,42 @@ export class MigrationService {
   ) {}
 
   private async sendAssetEventsToQueue(migrationEvents: MigrationEvent[]): Promise<void> {
-    await Promise.all(
-      migrationEvents.map(async (e) => {
-        await this.assetPublisherService.publishTrackedAssetEvent(e);
-      }),
-    );
+    this.logger.log(`Start assetEvents migration - length: ${migrationEvents.length}`);
+    const chunkSize = 100;
+    for (let i = 0, j = migrationEvents.length; i < j; i += chunkSize) {
+      const to = toField(i, migrationEvents.length, chunkSize);
+      const sliceAssets = migrationEvents.slice(i, to);
+      await Promise.all(
+        sliceAssets.map(async (e) => {
+          await this.assetPublisherService.publishTrackedAssetEvent(e);
+        }),
+      );
+    }
     this.logger.log(`${migrationEvents.length} - events was sent to queue`);
   }
 
   private async sendTransactionEventsToQueue(
     ethResponse: MigrationEventServiceResponse,
   ): Promise<void> {
+    this.logger.log(
+      `Start TransactionEvents migration - length: ${ethResponse.migrationTransactions.length}`,
+    );
     if (ethResponse?.migrationTransactions) {
-      await Promise.all(
-        ethResponse.migrationTransactions.map(async (transaction) => {
-          transaction.events = ethResponse.migrationEvents.filter(
-            (event) => event.transactionHash === transaction.hash,
-          );
-          await this.assetPublisherService.publishTransactionWithEvents(transaction);
-        }),
+      const chunkSize = 100;
+      for (let i = 0, j = ethResponse.migrationTransactions.length; i < j; i += chunkSize) {
+        const to = toField(i, ethResponse.migrationTransactions.length, chunkSize);
+        const sliceAssets = ethResponse.migrationTransactions.slice(i, to);
+        await Promise.all(
+          sliceAssets.map(async (transaction) => {
+            transaction.events = ethResponse.migrationEvents.filter(
+              (event) => event.transactionHash === transaction.hash,
+            );
+            await this.assetPublisherService.publishTransactionWithEvents(transaction);
+          }),
+        );
+      }
+      this.logger.log(
+        `${ethResponse.migrationTransactions.length} - transactionsEvents was sent to queue`,
       );
     }
   }

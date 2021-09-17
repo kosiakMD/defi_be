@@ -21,10 +21,34 @@ export class LoggerMiddleware implements NestMiddleware {
         path: req.path,
         url: req.url,
         params: req.params,
-        body: req.body,
+        body: this.getBodyMessage(req),
       },
       req.method,
     );
     next();
+  }
+
+  getBodyMessage(req: Request): string {
+    if (!req.body) {
+      return req.body;
+    }
+
+    const MAX_BODY_SIZE = 262144;
+    const bodyString = JSON.stringify(req.body);
+    const size = Buffer.byteLength(bodyString);
+
+    let fallbackMessage = 'Request Body Too Large To Display';
+
+    if (req.path === '/jobs' && req.method === 'POST') {
+      try {
+        fallbackMessage += ` - ${
+          req.body.flatMap((pool: any) => pool.items.flatMap((i) => i)).length
+        } Entities`;
+      } catch {
+        fallbackMessage += ` - Failed To Count Entities`;
+      }
+    }
+
+    return size < MAX_BODY_SIZE ? bodyString : fallbackMessage;
   }
 }

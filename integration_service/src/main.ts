@@ -1,3 +1,4 @@
+import * as bodyParser from 'body-parser';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { install } from 'source-map-support';
 
@@ -21,6 +22,8 @@ async function bootstrap(): Promise<void> {
     logger,
   });
 
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.enableShutdownHooks();
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));

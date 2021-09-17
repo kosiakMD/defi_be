@@ -42,6 +42,8 @@ export const validationSchema = Joi.object({
   BSC_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   FTM_URL: Joi.string().required(),
+  ARBITRUM_URL: Joi.string().required(),
+  AVAX_URL: Joi.string().required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),

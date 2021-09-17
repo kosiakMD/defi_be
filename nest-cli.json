@@ -1,0 +1,90 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/api_gateway/src",
+  "monorepo": true,
+  "root": "apps/api_gateway",
+  "compilerOptions": {
+    "webpack": false,
+    "tsConfigPath": "apps/api_gateway/tsconfig.app.json"
+  },
+  "projects": {
+    "api_gateway": {
+      "type": "application",
+      "root": "apps/api_gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api_gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/api_gateway/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/api_gateway"
+          }
+        ]
+      }
+    },
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
+    "account_service": {
+      "type": "application",
+      "root": "apps/account_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/account_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/account_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/account_service"
+          }
+        ]
+      }
+    },
+    "integration_service": {
+      "type": "application",
+      "root": "apps/integration_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/integration_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/integration_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/integration_service"
+          }
+        ]
+      }
+    },
+    "price_service": {
+      "type": "application",
+      "root": "apps/price_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/price_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/price_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/price_service"
+          }
+        ]
+      }
+    },
+    "lambda_prices": {
+      "type": "application",
+      "root": "apps/lambda_prices",
+      "entryFile": "main",
+      "sourceRoot": "apps/lambda_prices/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/lambda_prices/tsconfig.app.json"
+      }
+    }
+  }
+}

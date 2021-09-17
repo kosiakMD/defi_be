@@ -1,11 +1,11 @@
 import { plainToClass } from 'class-transformer';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { replaceIncorrectTokenAddress } from 'src/utils/token';
 import { Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { BLACKLISTED_TOKENS, ETH_BNB_ADDRESS } from '../common/constatnt';
 import { Address } from '../common/interfaces';

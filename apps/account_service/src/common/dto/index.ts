@@ -1,0 +1,42 @@
+// eslint-disable-next-line max-classes-per-file
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ResultStatus } from '../enum';
+import { DetailedResponse } from '../interfaces';
+
+export abstract class DetailedResponseDto<T> implements DetailedResponse<T> {
+  protected constructor(status: ResultStatus, errors: Error[] | string[], data: T) {
+    this.status = status;
+    this.errors = errors;
+    this.data = data;
+  }
+
+  @ApiProperty({
+    type: String,
+    enum: ResultStatus,
+    enumName: 'ResultStatus',
+    example: ResultStatus.ok,
+  })
+  status: ResultStatus;
+
+  @ApiProperty({
+    type: [String],
+    example: ['connect ECONNREFUSED ...'],
+  })
+  errors: Array<Error | string>;
+
+  // @ApiProperty({
+  // isArray: true,
+  // type: Object,
+  // })
+  data: T;
+}
+
+export class ColumnNumericTransformer {
+  to(data: number): number {
+    return data;
+  }
+  from(data: string): number {
+    return Number(data);
+  }
+}

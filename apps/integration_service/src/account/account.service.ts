@@ -1,0 +1,56 @@
+import { HttpService, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+import { DetailedResponseDto } from '@app/common/dto';
+import { ChainIdEnum } from '@app/common/enum';
+import { Address, BalancesResponse } from '@app/common/types';
+
+import { Asset } from '../interfaces/transactions.interfaces';
+
+@Injectable()
+export class AccountService {
+  private getBalanceUrl: string;
+  private getAssetsUrl: string;
+  private getBalanceCovalentUrl: string;
+
+  constructor(private httpService: HttpService, private configService: ConfigService) {
+    const host = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
+    const port = this.configService.get<string>('ACCOUNT_SERVICE_PORT');
+    const url = `${host}${port ? ':' + port : ''}`;
+
+    const balancePath = this.configService.get<string>('ACCOUNT_BALANCE');
+    this.getBalanceUrl = `${url}/${balancePath}`;
+
+    this.getBalanceCovalentUrl = `${url}/v1/balances/covalent`;
+
+    const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
+    this.getAssetsUrl = `${url}/${assetsPath}`;
+  }
+
+  async getBalances(addresses: Address[], chains?: ChainIdEnum[]): Promise<BalancesResponse> {
+    const data = await this.httpService
+      .get(this.getBalanceUrl, { params: { addresses, chains } })
+      .toPromise();
+    return data.data;
+  }
+
+  async getBalancesCovalent(
+    addresses: Address[],
+    chains?: ChainIdEnum[],
+  ): Promise<BalancesResponse> {
+    const data = await this.httpService
+      .get(this.getBalanceCovalentUrl, { params: { addresses, chains } })
+      .toPromise();
+    return data.data;
+  }
+
+  async getAssets(
+    addresses: Address[],
+    chains?: ChainIdEnum[],
+  ): Promise<DetailedResponseDto<Asset[]>> {
+    const data = await this.httpService
+      .get(this.getAssetsUrl, { params: { addresses, chains } })
+      .toPromise();
+    return data.data;
+  }
+}

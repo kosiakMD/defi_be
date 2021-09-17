@@ -1,0 +1,28 @@
+import { ApiProperty } from '@nestjs/swagger';
+
+import { ChainDto, CurrencyDto } from '@app/common';
+
+export class PriceResponseDto<T> {
+  @ApiProperty({ type: ChainDto })
+  chain: ChainDto;
+
+  @ApiProperty({ type: CurrencyDto })
+  currency: CurrencyDto;
+
+  @ApiProperty({ type: Object })
+  prices: T;
+}
+
+export interface CurrentPricesPayload {
+  [key: string]: number;
+}
+
+export interface TimestampKeyPrice {
+  [key: string]: number;
+}
+
+export interface HistoricalPricesPayload {
+  [key: string]: TimestampKeyPrice;
+}
+
+export type PricesPayload = CurrentPricesPayload;

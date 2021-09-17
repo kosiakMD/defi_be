@@ -1,5 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
 import { ChainIdEnum } from 'src/common/enum';
 
 import { BalancesQueryDto, BalancesResponseDto } from './balance.dto';
@@ -60,7 +61,7 @@ export class BalanceController {
       ChainIdEnum.polygon,
       ChainIdEnum.ftm,
       ChainIdEnum.arbitrum,
-      ChainIdEnum.avax
+      ChainIdEnum.avax,
     ],
     required: false,
   })

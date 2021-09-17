@@ -1,11 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { EnumName, LiquidityChangeTypeEnum } from 'src/common/enum';
+import { LiquidityChangeTypeEnum } from 'src/common/enum';
 
 export class LiquidityChangeTransactionDto {
   @ApiProperty({
     enum: LiquidityChangeTypeEnum,
-    enumName: EnumName.LiquidityChangeType,
+    enumName: 'LiquidityChangeType',
     example: LiquidityChangeTypeEnum.addLiquidity,
   })
   type: LiquidityChangeTypeEnum;

@@ -1,0 +1,37 @@
+{
+  "name": "common",
+  "version": "1.0.0",
+  "description": "Common",
+  "main": "./dist/index.js",
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": "^14",
+    "npm": "^6"
+  },
+  "scripts": {
+
+  },
+  "dependencies": {
+    "rxjs": "^6.6.6"
+  },
+  "devDependencies": {
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}

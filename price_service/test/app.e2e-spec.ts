@@ -18,6 +18,8 @@ describe('AppController (e2e)', () => {
   });
 
   it('[GET] /status', () => {
-    return request(app.getHttpServer()).get('/status').expect(200);
+    return request(app.getHttpServer()) //
+      .get('/status')
+      .expect(200);
   });
 });

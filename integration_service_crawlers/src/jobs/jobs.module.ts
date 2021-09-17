@@ -15,11 +15,7 @@ import { JobsService } from './jobs.service';
     forwardRef(() => PoolsModule),
     forwardRef(() => VaultsModule),
   ],
-  providers: [
-    DatabaseService,
-    JobsService,
-    DatabaseTransactionManager,
-  ],
+  providers: [DatabaseService, JobsService, DatabaseTransactionManager],
   exports: [DatabaseService],
 })
 export class JobsModule {}

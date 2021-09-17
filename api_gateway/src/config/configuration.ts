@@ -29,7 +29,7 @@ export const ensureDotEnvInitiated = (): void => {
 };
 
 export const configuration: ConfigModuleOptions = {
-  cache: true,
+  cache: false,
   isGlobal: true,
   envFilePath,
   validationSchema,

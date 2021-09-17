@@ -1,6 +1,3 @@
-import { ApiVersionGuard } from '@nestjsx/api-version';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-
 import {
   HttpModule,
   Inject,
@@ -12,6 +9,8 @@ import {
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
+import { ApiVersionGuard } from '@nestjsx/api-version';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -31,6 +30,7 @@ import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.modul
 import { IntegrationService } from './integration/integration.service';
 import { MailModule } from './mail/mail.module';
 import { PancakeController } from './pancake/pancake.controller';
+import { PangolinController } from './pangolin/pangolin.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
@@ -48,7 +48,6 @@ import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
-import { PangolinController } from './pangolin/pangolin.controller';
 
 @Module({
   imports: [

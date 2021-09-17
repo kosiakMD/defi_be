@@ -129,3 +129,8 @@ dist
 /.ci/
 /jobs/cron/
 /jobs/deploy/
+
+./dist
+
+# compiled sources
+**/src/**/*.js

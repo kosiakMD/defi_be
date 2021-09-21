@@ -225,8 +225,8 @@ export abstract class BasicProtocol<
       result.errors.push(e.message);
     }
 
-    const outputPools: LiquidityPoolFeature[] = inputPoolsData?.liquidityPositions.map(
-      (inputPool) => {
+    const outputPools: LiquidityPoolFeature[] = inputPoolsData?.liquidityPositions.reduce(
+      (resultArray, inputPool) => {
         const tokens: PoolTokenDto[] = [];
         let TVL = 0; // sum(reserve * price)
         let userValue = 0; // sum of values
@@ -270,10 +270,14 @@ export abstract class BasicProtocol<
           tokens: tokens,
         } as LiquidityPoolFeature);
 
-        return outPool;
-      },
-    );
+        if (outPool.user.value) {
+          resultArray.push(outPool);
+        }
 
+        return resultArray;
+      },
+      [],
+    );
     result.data.items = outputPools;
 
     return result;

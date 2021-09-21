@@ -21,10 +21,9 @@ export class SushiswapProtocolV2
   readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.sushiswap;
   readonly name = SushiSwapProtocolEnum.sushiswapV2;
-  readonly label: 'Sushiswap';
+  readonly label = 'Sushiswap';
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.pools, FeatureEnum.staking],
-    [ChainAbbrEnum.bsc]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   protected dataProvider;
   protected feeRate: 0.003;

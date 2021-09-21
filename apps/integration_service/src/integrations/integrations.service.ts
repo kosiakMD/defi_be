@@ -1,6 +1,6 @@
 import { plainToClass } from 'class-transformer';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 
 import { ProtocolName } from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constatnt/dictionaries';
@@ -32,6 +32,10 @@ export class IntegrationsService {
     addresses,
   ): Promise<IntegrationsResponseDto> {
     const protocol = this.protocolService.getProtocolByName(protocolName);
+
+    if (!protocol) {
+      throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
+    }
 
     const allowedChains = chains.filter((chain) => {
       const basicInfo = protocol.getInfo();

@@ -279,7 +279,7 @@ export abstract class BasicProtocol<
       },
     );
 
-    result.data.items = outputPools.filter((pool) => pool.user.value);
+    result.data.items = outputPools?.filter((pool) => pool.user.value);
 
     return result;
   }

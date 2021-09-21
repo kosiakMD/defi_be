@@ -21,7 +21,7 @@ export interface AutofarmVaultPoolInfo {
 
 export interface VaultUserInfo {
   shares: BigNumber;
-  rewardDebt: BigNumber; //- cliamable amount
+  rewardDebt: BigNumber; //- claimable amount
 }
 
 export interface StakingInterface {

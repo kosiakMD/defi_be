@@ -80,8 +80,6 @@ export abstract class BasicProtocol<
 
     const rawPools = data.find((data) => data['liquidityPositions']);
     const rawStaking = data.find((data) => data['stakingPositions']);
-    // TODO: feature transaction is disabled
-    // const transactions = data.find((data) => data['transactions']);
     const { errors: poolsErrors, data: pools } = await this.transformPools(rawPools, chainId);
     const staking = this.transformStaking(rawStaking);
     return {
@@ -160,9 +158,11 @@ export abstract class BasicProtocol<
               });
             });
           } else {
+            tokensData.errors.map((err) => this.logger.error(err));
             errors.push(tokensData.errors);
           }
         } else {
+          this.logger.error(tokens.reason);
           errors.push(tokens.reason.message);
         }
       }
@@ -180,6 +180,7 @@ export abstract class BasicProtocol<
             });
           });
         } else {
+          this.logger.error(prices.reason);
           errors.push(prices.reason);
         }
       }
@@ -187,23 +188,31 @@ export abstract class BasicProtocol<
   }
 
   protected transformStaking(rawStaking: Staking): FeatureResult<StakingPosition> {
-    const result: FeatureResult<StakingPosition> = {
-      totalValue: 0,
-      items: null,
-    };
+    try {
+      const result: FeatureResult<StakingPosition> = {
+        totalValue: 0,
+        items: null,
+      };
 
-    rawStaking?.stakingPositions.forEach((staking) => {
-      if (staking.stakingToken.constructor.name === 'LPToken') {
-        const lpToken = staking.stakingToken as LPToken;
-        lpToken.tokens.forEach((token) => (result.totalValue += token.value));
-        return;
-      }
-      const stakingToken = staking.stakingToken as StakingErcToken;
-      result.totalValue += Number(stakingToken.value);
-    });
+      rawStaking?.stakingPositions.forEach((staking) => {
+        // TODO: stakingToken is missed - need to fix to get it!
+        if (staking?.stakingToken) {
+          if (staking.stakingToken.constructor?.name === 'LPToken') {
+            const lpToken = staking.stakingToken as LPToken;
+            lpToken.tokens.forEach((token) => (result.totalValue += token.value));
+            return;
+          }
+          const stakingToken = staking.stakingToken as StakingErcToken;
+          result.totalValue += Number(stakingToken.value);
+        }
+      });
 
-    result.items = rawStaking?.stakingPositions || [];
-    return result;
+      result.items = rawStaking?.stakingPositions || [];
+      return result;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
   }
 
   protected async transformPools(
@@ -223,6 +232,7 @@ export abstract class BasicProtocol<
     } catch (e) {
       this.logger.error(e);
       result.errors.push(e.message);
+      throw e;
     }
 
     const outputPools: LiquidityPoolFeature[] = inputPoolsData?.liquidityPositions.reduce(

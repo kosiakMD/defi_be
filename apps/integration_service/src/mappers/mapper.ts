@@ -34,7 +34,8 @@ import {
   UniswapResponseData,
 } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
-import { abi, decimalsDivider } from '../utils/util';
+import { abi } from '../utils/abi';
+import { decimalsDivider } from '../utils/util';
 
 @Injectable()
 export class Mapper {
@@ -325,8 +326,11 @@ export class Mapper {
         if (position.liquidityPoolTokens && position.liquidityPoolTokens.length) {
           StakingPositionsToPush.push(position);
         }
+      } else {
+        StakingPositionsToPush.push(element);
       }
     }
+
     staking.stakingPositions.push(...StakingPositionsToPush);
   }
 

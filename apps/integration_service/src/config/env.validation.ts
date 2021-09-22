@@ -96,6 +96,7 @@ export const validationSchema = Joi.object({
   AWS_SECRET_ACCESS_KEY: Joi.string() //
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
+  POLYGON_RPC_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

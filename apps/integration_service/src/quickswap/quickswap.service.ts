@@ -1,30 +1,31 @@
+import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
 import { Injectable } from '@nestjs/common';
 
+import { UniswapLiquidityPosition } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
-import BaseDataDto from '@app/common/dto/BaseData.dto';
-import { ChainIdEnum, ProjectEnum, ProtocolNameEnum, ProtocolTypeEnum } from '@app/common/enum';
+import { BaseData } from '@app/common/dto/transactions.dto';
+import { ChainIdEnum, ProjectEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
 
 import { AccountService } from '../account/account.service';
+import { IntegrationClaimableTokenDto } from '../integrations/integrations.dto';
 import { Mapper } from '../mappers/mapper';
 import { QuickswapSubgraph } from '../thegraph/quickswap.subgraph';
-import { ERC20TokenDto } from '../uniswap/dto/erc20.token.dto';
-import { LiquidityPoolDto } from '../uniswap/dto/liquidity.pool.dto';
-import { liquidityPositionDto } from '../uniswap/dto/liquidity.position.dto';
-import { PoolTokenDto } from '../uniswap/dto/pool.token.dto';
-import { getUniqueAndToLowerCaseArrayData } from '../utils/util';
-import { SubgraphPairDto } from './dto';
+import { decimalsDivider, getUniqueAndToLowerCaseArrayData } from '../utils/util';
+import { MultiCallService } from './multicall/multicall.service';
+import { QUICKSWAP_REWARDS_TOKEN_ADDRESS, QUICKSWAP_STAKING_CONTRACTS } from './utils/constants';
+import { getContractByPair } from './utils/utils';
 
 @Injectable()
 export class QuickswapService {
-  private DECIMALS = 18;
-
   constructor(
+    private readonly mapper: Mapper,
     private readonly accountService: AccountService,
     private readonly quickswapSubgraph: QuickswapSubgraph,
     private readonly logger: Logger,
+    private readonly multicall: MultiCallService,
   ) {}
 
   private mapTokenAddressesFromResponse(
@@ -44,88 +45,8 @@ export class QuickswapService {
     return Object.fromEntries(tokensByAccount);
   }
 
-  private async mapToBase(
-    userAddress: Address,
-    pairs: SubgraphPairDto[],
-    chainId = ChainIdEnum.plg,
-    projectName = ProjectEnum.quickswap,
-    protocolName = ProtocolNameEnum.quickswap,
-  ): Promise<BaseDataDto<ProtocolTypeEnum.amm>> {
-    const liquidityPositions: liquidityPositionDto[] = [];
-
-    const userBalances = await this.accountService.getBalances([userAddress]);
-
-    pairs.forEach((pair) => {
-      const { id, reserveUSD, totalSupply } = pair;
-
-      const {
-        amount: lpTokenOriginBalance,
-        token: { name: lpTokenName, symbol: lpTokenSymbol },
-      } = userBalances[userAddress].tokens.find((token) => token.token.address === id);
-
-      const lpTokenBalance = Number(lpTokenOriginBalance) / 10 ** this.DECIMALS;
-
-      const pool = plainToClass(LiquidityPoolDto, {
-        address: id,
-        name: protocolName,
-      });
-
-      const lpToken = plainToClass(ERC20TokenDto, {
-        address: id,
-        decimals: this.DECIMALS,
-        name: lpTokenName,
-        symbol: lpTokenSymbol,
-        totalSupply: totalSupply,
-      });
-
-      const userPoolShare = Number(lpTokenBalance) / Number(totalSupply);
-
-      const poolTokens: PoolTokenDto[] = [];
-
-      for (let id = 0; id < 2; id++) {
-        const token = pair[`token${id}`];
-        const tokenReserve = pair[`reserve${id}`];
-
-        poolTokens.push(
-          plainToClass(PoolTokenDto, {
-            address: token.id,
-            name: token.name,
-            symbol: token.symbol,
-            decimals: Number(token.decimals),
-            reserve: tokenReserve,
-            priceUSD: Mapper.priceInUSD(reserveUSD, tokenReserve),
-            amount: (userPoolShare * Number(tokenReserve)).toString(),
-          }),
-        );
-      }
-
-      liquidityPositions.push(
-        plainToClass(liquidityPositionDto, {
-          pool,
-          lpToken,
-          lpTokenBalance,
-          poolTokens,
-        }),
-      );
-    });
-
-    return plainToClass(BaseDataDto, {
-      chainId,
-      userAddress,
-      platformName: projectName,
-      protocolName,
-      protocolType: ProtocolTypeEnum.amm,
-      liquidityPositions,
-    });
-  }
-
-  async getDataByAddresses(
-    addresses: string,
-    chainId?: ChainIdEnum,
-  ): Promise<BaseDataDto<ProtocolTypeEnum.amm>[]> {
+  async getDataByAddresses(addresses: string, chainId?: ChainIdEnum): Promise<BaseData[]> {
     try {
-      const response = [];
-
       const originAddresses = addresses.split(',');
       const uniqueAddresses = getUniqueAndToLowerCaseArrayData(originAddresses);
 
@@ -135,14 +56,99 @@ export class QuickswapService {
         uniqueAddresses,
       );
 
+      const uniswapLiquidityPositions = new Map<Address, UniswapLiquidityPosition[]>();
+      const sushiswapStakingPosition = new Map<Address, any>();
+
       for (const address of uniqueAddresses) {
         const {
-          data: { pairs: pairs },
+          data: { pairs: _pairs },
         } = await this.quickswapSubgraph.getPairs(tokenAddressesByAccount[address]);
 
-        response.push(await this.mapToBase(address, pairs));
+        const pairs = await Promise.all(
+          _pairs.map(async (pair) => ({
+            liquidityTokenBalance: await this.multicall.getBalanceOf(pair.id, address),
+            user: address,
+            pair,
+          })),
+        );
+
+        uniswapLiquidityPositions.set(address, pairs);
+
+        const { data: rewardTokens } = await this.accountService.getAssets(
+          [QUICKSWAP_REWARDS_TOKEN_ADDRESS],
+          [chainId],
+        );
+
+        const stakingPosition = await Promise.all(
+          QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress }) => {
+            const balance = await this.multicall.getBalanceOf(
+              getContractByPair(pairAddress),
+              address,
+            );
+            const claimable = await this.multicall.getClaimable(
+              getContractByPair(pairAddress),
+              address,
+            );
+
+            const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
+              ...rewardTokens[0],
+              claimableData: {
+                balance: new BigNumber(claimable) //
+                  .div(decimalsDivider(18))
+                  .toString(),
+                value: new BigNumber(balance) //
+                  .div(decimalsDivider(18))
+                  .toString(),
+              },
+            });
+
+            rewardToken.claimableData;
+
+            const stakingToken = {
+              address: pairAddress,
+              name: 'Uniswap V2',
+              symbol: 'UNI-V2',
+              decimals: 18,
+              tokens: [],
+            };
+
+            const LPStakingTokensAddresses = await this.multicall.getStakingTokensAddresses(
+              pairAddress,
+            );
+
+            const { data: LPStakingTokens } = await this.accountService.getAssets(
+              LPStakingTokensAddresses,
+              [chainId],
+            );
+
+            stakingToken.tokens.push(...LPStakingTokens);
+
+            return {
+              address,
+              staked: new BigNumber(balance) //
+                .div(decimalsDivider(18))
+                .toString(),
+              rewardToken,
+              stakingToken,
+            };
+          }),
+        );
+
+        sushiswapStakingPosition.set(
+          address,
+          stakingPosition.filter((_) => +_.staked),
+        );
       }
-      return response;
+
+      return this.mapper.mapData(
+        uniqueAddresses,
+        originAddresses,
+        {
+          uniswapLiquidityPositions,
+          sushiswapStakingPosition,
+        },
+        ProjectEnum.quickswap,
+      );
     } catch (error) {
       this.logger.error(error, 'QuickswapService.getDataByAddress');
       throw new Error(error);

@@ -1,3 +1,4 @@
+import { UniswapLiquidityPositionPair } from '@app/common';
 import { Exclude, Expose, Type } from 'class-transformer';
 
 import { SubgraphPairDto } from './subgraph.pair.dto';
@@ -6,5 +7,5 @@ import { SubgraphPairDto } from './subgraph.pair.dto';
 export class SubgraphPairsDto {
   @Expose()
   @Type(() => SubgraphPairDto)
-  pairs: SubgraphPairDto[];
+  pairs: UniswapLiquidityPositionPair[];
 }

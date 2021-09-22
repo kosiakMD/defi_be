@@ -5,8 +5,8 @@ import { TokenBalance } from 'src/common/types/balances';
 
 import { AccountService } from '../account/account.service';
 import {
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
+  IncomeLiquidityPosition,
+  IncomeLiquidityPositionPair,
 } from '../dto/liquidity.position.dto';
 import { EtherscanService } from '../etherscan/etherscan.service';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
@@ -36,7 +36,7 @@ export class PancakeService {
     allPools = allPools.concat(pools).concat(poolsV2);
 
     const liquidityPositions: UniswapResponseData = {
-      uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
+      uniswapLiquidityPositions: new Map<string, IncomeLiquidityPosition[]>(),
     };
     Object.keys(balances).map((key) => {
       balances[key].tokens.map((t) => {
@@ -59,11 +59,11 @@ export class PancakeService {
     user: string,
     pool: LiquidityPoolsEntity,
     balance: TokenBalance,
-  ): UniswapLiquidityPosition {
+  ): IncomeLiquidityPosition {
     const token0 = pool.poolTokens.find((t) => t.positionInPool === 0);
     const token1 = pool.poolTokens.find((t) => t.positionInPool === 1);
 
-    const pair: UniswapLiquidityPositionPair = {
+    const pair: IncomeLiquidityPositionPair = {
       id: pool.address,
       reserve0: token0.reserve.toString(),
       reserve1: token1.reserve.toString(),

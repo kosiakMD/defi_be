@@ -7,7 +7,7 @@ import { ClaimAbleTokenDto } from './ClaimableToken.dto';
 // import PoolTokenDto from './PoolToken.dto';
 import { TransactionDto } from './Transaction.dto';
 
-export class StakingPositionDto {
+export class StakingPositionFeatureDto {
   @ApiProperty({ type: String, example: '0xa57bd00134b2850b2a1c55860c9e9ea100fdd6cf' })
   address: string;
 

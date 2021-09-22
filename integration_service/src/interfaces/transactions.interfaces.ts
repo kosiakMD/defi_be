@@ -13,7 +13,7 @@ import {
   TransactionTypeEnum,
 } from 'src/common/enum';
 
-import { LiquidityPosition, UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
+import { LiquidityPosition, IncomeLiquidityPosition } from '../dto/liquidity.position.dto';
 import { LPToken } from '../integrations/integrations.dto';
 
 export type TokenSymbol = string;
@@ -76,7 +76,7 @@ export class SwapTokenDto extends ERC20Token implements SwapToken {
 }
 
 export interface UniswapResponseData {
-  uniswapLiquidityPositions: Map<string, UniswapLiquidityPosition[]>;
+  uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
 }
 
@@ -125,7 +125,7 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectEnum: ProjectEnum;
   protocolName?: ProtocolName;
   liquidityPositions?: any[];
 }

@@ -18,10 +18,10 @@ import { Web3Provider } from '../chain/web3.provider';
 import {
   LiquidityPool,
   LiquidityPosition,
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
+  IncomeLiquidityPosition,
+  IncomeLiquidityPositionPair,
 } from '../dto/liquidity.position.dto';
-import { UniswapToken } from '../interfaces/entity.information.interfaces';
+import { IncomeToken } from '../interfaces/entity.information.interfaces';
 import { FeesSn1Data, FeesSn2Data } from '../interfaces/fee.interfaces';
 import { Staking } from '../interfaces/staking.position.interfaces';
 import {
@@ -38,7 +38,7 @@ import { abi, decimalsDivider } from '../utils/util';
 
 @Injectable()
 export class Mapper {
-  private PERCENTAGE = 50;
+  static PERCENTAGE = 50;
 
   constructor(
     private readonly chainProvider: Web3Provider,
@@ -49,21 +49,21 @@ export class Mapper {
     userAddresses: string[],
     originAddresses: string[],
     response: UniswapResponseData,
-    platformName: ProjectEnum,
+    projectName: ProjectEnum,
     protocolName?: ProtocolName,
   ): Promise<BaseData[]> {
     const base: BaseData[] = [];
 
     // TODO: add checks does protocol belong to chain
-    const chainId = this.guessChainIdFromProtocolName(protocolName);
+    const chainId = Mapper.guessChainIdFromProtocolName(protocolName);
 
     for (const address of userAddresses) {
       const transactions: Transactions = plainToClass(Transactions, {
         chainId: chainId,
         protocolType: ProtocolTypeEnum.transaction,
         protocolName: protocolName,
-        platformName: platformName,
-        userAddress: this.getOriginAddress(originAddresses, address),
+        platformName: projectName,
+        userAddress: Mapper.getOriginAddress(originAddresses, address),
         txs: [],
       });
 
@@ -71,8 +71,8 @@ export class Mapper {
         chainId: chainId,
         protocolType: ProtocolTypeEnum.amm,
         protocolName: protocolName,
-        platformName: platformName,
-        userAddress: this.getOriginAddress(originAddresses, address),
+        platformName: projectName,
+        userAddress: Mapper.getOriginAddress(originAddresses, address),
         liquidityPositions: [],
       });
 
@@ -81,8 +81,8 @@ export class Mapper {
           chainId: chainId,
           protocolType: ProtocolTypeEnum.staking,
           protocolName: protocolName,
-          platformName: platformName,
-          userAddress: this.getOriginAddress(originAddresses, address),
+          projectEnum: projectName,
+          userAddress: Mapper.getOriginAddress(originAddresses, address),
           stakingPositions: [],
         };
 
@@ -112,7 +112,7 @@ export class Mapper {
     return base;
   }
 
-  private guessChainIdFromProtocolName(name: ProtocolName): ChainIdEnum {
+  private static guessChainIdFromProtocolName(name: ProtocolName): ChainIdEnum {
     switch (name) {
       case PancakeProtocolEnum.pancakeV1:
         return ChainIdEnum.bsc;
@@ -155,92 +155,89 @@ export class Mapper {
     return lpEarnedUser * lpTokenPrice;
   }
 
-  private mapLiquidityPositions(
+  public mapLiquidityPositions(
     amm: AutomaticMarketMaker,
-    uniswapPositions: UniswapLiquidityPosition[],
+    liquidityPositions: IncomeLiquidityPosition[],
   ): void {
-    for (const uniswapPosition of uniswapPositions) {
-      const pool: LiquidityPool = plainToClass(LiquidityPool, {
-        address: uniswapPosition.pair.id,
-        name: null,
-      });
-      const lpToken: ERC20Token = plainToClass(ERC20Token, {
-        address: uniswapPosition.pair.id,
-        decimals: 18, // always 18 in Uniswap
-        name: null,
-        symbol: null,
-        totalSupply: uniswapPosition.pair.totalSupply,
-      });
-
-      const { pair } = uniswapPosition;
+    liquidityPositions.forEach((lp) => {
+      // for (const lp of liquidityPositions) {
+      // pool
+      const pool: LiquidityPool = plainToClass(LiquidityPool, {});
+      pool.address = lp.pair.id;
+      pool.name = null;
+      // lpToken
+      const lpToken: ERC20Token = plainToClass(ERC20Token, {});
+      lpToken.address = lp.pair.id;
+      lpToken.decimals = 18; // always 18 in Uniswap
+      lpToken.name = null;
+      lpToken.symbol = null;
+      lpToken.totalSupply = lp.pair.totalSupply;
+      //
+      const { pair } = lp;
       const { token0, token1 } = pair;
-
-      const userPoolShare =
-        Number(uniswapPosition.liquidityTokenBalance) / Number(pair.totalSupply);
-
-      const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(
+      //
+      const userPoolShare = Number(lp.liquidityTokenBalance) / Number(pair.totalSupply);
+      //
+      const poolTokens /*[poolToken0, poolToken1]*/ = Mapper.mapFromProjectTokenToPoolToken(
         token0,
         token1,
-        uniswapPosition.pair,
+        lp.pair,
         userPoolShare,
       );
 
       const project =
-        amm.platformName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.platformName;
-      const liquidityPosition: LiquidityPosition = plainToClass(LiquidityPosition, {
-        pool: pool,
-        lpToken,
-        lpTokenBalance: uniswapPosition.liquidityTokenBalance,
-        project: project,
-        poolTokens: [poolToken0, poolToken1],
-        earnedFeeUSD: 0,
-        exitedAt: null,
-      });
+        amm.projectEnum === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.projectEnum;
+      // liquidityPositionliquidityPosition
+      const liquidityPosition: LiquidityPosition = plainToClass(LiquidityPosition, {});
+      liquidityPosition.pool = pool;
+      liquidityPosition.lpToken = lpToken;
+      liquidityPosition.lpTokenBalance = lp.liquidityTokenBalance;
+      liquidityPosition.project = project;
+      liquidityPosition.poolTokens = poolTokens; // [poolToken0, poolToken1];
+      liquidityPosition.earnedFeeUSD = 0;
+      liquidityPosition.exitedAt = null;
 
       amm.liquidityPositions.push(liquidityPosition);
-    }
+      // }
+    });
   }
 
-  private mapFromUniswapTokenToPoolToken(
-    token0: UniswapToken,
-    token1: UniswapToken,
-    pair?: UniswapLiquidityPositionPair,
+  private static makeToken(token: IncomeToken, order: '0' | '1', pair?, userPoolShare?: number) {
+    const reserveOrder = `reserve${order}`;
+    // poolToken
+    const poolToken = plainToClass(PoolTokenDto, {});
+    poolToken.address = token.id;
+    poolToken.decimals = Number(token.decimals);
+    poolToken.name = token.name;
+    poolToken.symbol = token.symbol;
+    poolToken.totalSupply = null;
+    poolToken.reserve = pair && pair[reserveOrder];
+    poolToken.amount = (userPoolShare * Number(pair[reserveOrder])).toString();
+    poolToken.priceUSD = pair && Mapper.priceInUSD(pair.reserveUSD, pair[reserveOrder]);
+    poolToken.percentage = Mapper.PERCENTAGE;
+    //
+    return poolToken;
+  }
+
+  private static mapFromProjectTokenToPoolToken(
+    token0: IncomeToken,
+    token1: IncomeToken,
+    pair?: IncomeLiquidityPositionPair,
     userPoolShare?: number,
   ): PoolToken[] {
-    const poolToken0 = plainToClass(PoolTokenDto, {
-      address: token0.id,
-      decimals: Number(token0.decimals),
-      name: token0.name,
-      symbol: token0.symbol,
-      totalSupply: null,
-      reserve: pair && pair.reserve0,
-      amount: (userPoolShare * Number(pair.reserve0)).toString(),
-      priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve0),
-      percentage: this.PERCENTAGE,
-    });
-
-    const poolToken1 = plainToClass(PoolTokenDto, {
-      address: token1.id,
-      decimals: Number(token1.decimals),
-      name: token1.name,
-      symbol: token1.symbol,
-      totalSupply: null,
-      reserve: pair && pair.reserve1,
-      amount: (userPoolShare * Number(pair.reserve1)).toString(),
-      priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve1),
-      percentage: this.PERCENTAGE,
-    });
+    const poolToken0 = Mapper.makeToken(token0, '0', pair, userPoolShare);
+    const poolToken1 = Mapper.makeToken(token0, '1', pair, userPoolShare);
 
     return [poolToken0, poolToken1];
   }
 
-  private getOriginAddress(originArray: string[], address: string): string {
+  static getOriginAddress(originArray: string[], address: string): string {
     return originArray.find((origin) => origin.toLowerCase() === address);
   }
 
   protected async mapStakingPositions(
     staking: Staking,
-    liquidityPositions: UniswapLiquidityPosition[],
+    liquidityPositions: IncomeLiquidityPosition[],
     stakingPositions,
   ): Promise<void> {
     const StakingPositionsToPush = [];
@@ -304,7 +301,7 @@ export class Mapper {
               amount: userPoolShare.times(reserve0).toString(),
               reserve: reserve0,
               priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve0),
-              percentage: this.PERCENTAGE,
+              percentage: Mapper.PERCENTAGE,
             });
 
             const poolToken1 = plainToClass(PoolTokenDto, {
@@ -316,7 +313,7 @@ export class Mapper {
               amount: userPoolShare.times(reserve1).toString(),
               reserve: reserve1,
               priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve1),
-              percentage: this.PERCENTAGE,
+              percentage: Mapper.PERCENTAGE,
             });
             position.liquidityPoolTokens.push(poolToken0, poolToken1);
           }

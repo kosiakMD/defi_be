@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, PangolinProtocolEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
-import { Logger } from '../../Logger/Logger.service';
 import { AccountService } from '../../account/account.service';
 import { FeatureDto } from '../../integrations/integrationFeatures';
 import { PangolinService } from '../../pangolin/pangolin.service';
@@ -18,7 +18,7 @@ export class PangolinProtocol extends BasicProtocol<PangolinService> implements 
   readonly chains = [ChainAbbrEnum.avax];
   readonly project = ProjectEnum.pangolin;
   readonly name = PangolinProtocolEnum.pangolin;
-  readonly label = 'Pangolin';
+  readonly displayName = 'Pangolin';
   readonly features = {
     [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
   };

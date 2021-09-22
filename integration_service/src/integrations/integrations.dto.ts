@@ -10,7 +10,7 @@ import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from '../protocol/features
 import { FeatureEnum } from '../protocol/features/features.enum';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '../dto/currency.dto';
-import { FeatureResult } from '../protocol/features/features.types';
+import { FeatureResultDto } from '../protocol/features/features.types';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -30,9 +30,9 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResultDto<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition>;
 } & {
-  errors: string[] | Error[];
+  errors?: string[] | Error[];
 };
 
 @Exclude()
@@ -40,16 +40,18 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   errors: string[] | Error[];
   @Expose()
     // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
+  [FeatureEnum.pools]?: FeatureResultDto<LiquidityPoolFeature>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionDto*/>;
+  [FeatureEnum.staking]?: FeatureResultDto<StakingPosition/*StakingPositionFeatureDto*/>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {
   @ApiProperty({ type: ChainDto })
+  @Type(() => ChainDto)
   chain: ChainDto = null; // chains of chain + features data & info
 
   @ApiProperty({ type: ProtocolFeaturesInfoDto })
+  @Type(() => ProtocolFeaturesInfoDto)
   features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
 }
 
@@ -58,12 +60,15 @@ export class IntegrationDataDto {
   __meta?: MetaDto;
 
   @ApiProperty({ type: ProtocolInfoDto })
+  @Type(() => ProtocolInfoDto)
   protocol: ProtocolInfoDto = null;
 
   @ApiProperty({ type: CurrencyDto})
+  @Type(() => CurrencyDto)
   currency: CurrencyDto = null;
 
   @ApiProperty({ type: [IntChainsDataDto] })
+  @Type(() => IntChainsDataDto)
   chains: IntChainsDataDto[] = [];
 
   // @ApiProperty({ type: IntegrationFeaturesDataDto, name: 'IntegrationFeaturesDataDto' })

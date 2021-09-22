@@ -6,8 +6,8 @@ import { Injectable } from '@nestjs/common';
 
 import { LiquidityPosition, LiquidityPositionDto } from '@app/common';
 import {
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
+  IncomeLiquidityPosition,
+  IncomeLiquidityPositionPair,
 } from '@app/common/dto/liquidity.position.dto';
 import {
   ChainIdEnum,
@@ -158,7 +158,7 @@ export class Mapper {
 
   private mapLiquidityPositions(
     amm: AutomaticMarketMaker,
-    uniswapPositions: UniswapLiquidityPosition[],
+    uniswapPositions: IncomeLiquidityPosition[],
   ): void {
     for (const uniswapPosition of uniswapPositions) {
       const pool: LiquidityPool = plainToClass(LiquidityPool, {
@@ -205,7 +205,7 @@ export class Mapper {
   private mapFromUniswapTokenToPoolToken(
     token0: UniswapToken,
     token1: UniswapToken,
-    pair?: UniswapLiquidityPositionPair,
+    pair?: IncomeLiquidityPositionPair,
     userPoolShare?: number,
   ): PoolToken[] {
     const poolToken0 = plainToClass(PoolTokenDto, {
@@ -241,7 +241,7 @@ export class Mapper {
 
   protected async mapStakingPositions(
     staking: Staking,
-    liquidityPositions: UniswapLiquidityPosition[],
+    liquidityPositions: IncomeLiquidityPosition[],
     stakingPositions,
   ): Promise<void> {
     const StakingPositionsToPush = [];

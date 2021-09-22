@@ -2,7 +2,7 @@
 import { Type } from 'class-transformer';
 
 // eslint-disable-next-line max-classes-per-file
-export class UniswapToken {
+export class IncomeToken {
   decimals: string;
   id: string;
   name: string;
@@ -12,10 +12,10 @@ export class UniswapToken {
 
 export class Pair {
   id: string;
-  @Type(() => UniswapToken)
-  token0: UniswapToken;
-  @Type(() => UniswapToken)
-  token1: UniswapToken;
+  @Type(() => IncomeToken)
+  token0: IncomeToken;
+  @Type(() => IncomeToken)
+  token1: IncomeToken;
 }
 
 export interface PoolToken {

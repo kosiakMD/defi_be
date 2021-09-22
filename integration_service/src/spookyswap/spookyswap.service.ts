@@ -1,10 +1,10 @@
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import {
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
+  IncomeLiquidityPosition,
+  IncomeLiquidityPositionPair,
 } from 'src/dto/liquidity.position.dto';
-import { UniswapToken } from 'src/interfaces/entity.information.interfaces';
+import { IncomeToken } from 'src/interfaces/entity.information.interfaces';
 import { BaseData, UniswapResponseData } from 'src/interfaces/transactions.interfaces';
 import { NotifyPayloadFeaturesDto } from 'src/jobs/notify.payload.features.dto';
 
@@ -52,8 +52,8 @@ export class SpookyswapService {
     originAddressesArray,
     pools,
     balances,
-  ): Map<string, UniswapLiquidityPosition[]> {
-    const uniswapLiquidityPositions = new Map<string, UniswapLiquidityPosition[]>();
+  ): Map<string, IncomeLiquidityPosition[]> {
+    const uniswapLiquidityPositions = new Map<string, IncomeLiquidityPosition[]>();
     const lpTokenAddresses = pools.items.map((pool) => pool.address.toLowerCase());
 
     originAddressesArray.forEach((userAddress) => {
@@ -61,19 +61,19 @@ export class SpookyswapService {
         .filter((balance: any): boolean => {
           return lpTokenAddresses.includes(balance.token.address.toLowerCase());
         })
-        .map((balance: any): UniswapLiquidityPosition => {
+        .map((balance: any): IncomeLiquidityPosition => {
           const pool = pools.items.find(
             (p: any) => p.address.toLowerCase() === balance.token.address.toLowerCase(),
           );
-          return plainToClass(UniswapLiquidityPosition, {
+          return plainToClass(IncomeLiquidityPosition, {
             liquidityTokenBalance: balance.decimalsAmount.toString(),
             user: balance.account,
-            pair: plainToClass(UniswapLiquidityPositionPair, {
+            pair: plainToClass(IncomeLiquidityPositionPair, {
               id: pool.address,
               reserve0: pool.tokens[0].reserve,
               reserve1: pool.tokens[1].reserve,
               reserveUSD: pool.TVL * 1e18,
-              token0: plainToClass(UniswapToken, {
+              token0: plainToClass(IncomeToken, {
                 decimals: pool.tokens[0].decimals,
                 id: pool.tokens[0].address,
                 name: pool.tokens[0].name,
@@ -81,7 +81,7 @@ export class SpookyswapService {
                 percentage: pool.tokens[0].percentage,
               }),
               token0Price: pool.tokens[0].price,
-              token1: plainToClass(UniswapToken, {
+              token1: plainToClass(IncomeToken, {
                 decimals: pool.tokens[1].decimals,
                 id: pool.tokens[1].address,
                 name: pool.tokens[1].name,

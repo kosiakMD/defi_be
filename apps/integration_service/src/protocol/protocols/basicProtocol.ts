@@ -4,48 +4,51 @@ import {
   Address,
   ChainAbbrEnum,
   ChainIdEnum,
+  FeatureResultDto,
+  IntegrationFeaturesData,
+  IntegrationFeaturesDataDto,
+  LiquidityPoolFeatureDto,
+  LiquidityPosition,
+  Logger,
   ProjectEnum,
   ProtocolName,
   ResultStatus,
 } from '@app/common';
-import { StakingErcToken } from '@app/common/dto/transactions.dto';
+import { BaseData, StakingErcToken } from '@app/common/dto/transactions.dto';
 
-import { Logger } from '../../Logger/Logger.service';
 import { AccountService } from '../../account/account.service';
 import { DetailedResponseDto } from '../../dto';
 import { CurrentPricesPayload, PriceResponseDto } from '../../dto/price.response.dto';
-import {
-  IntegrationFeaturesData,
-  LiquidityPoolFeature,
-  LPToken,
-  PoolTokenDto,
-} from '../../integrations/integrations.dto';
-import { Staking, StakingPosition } from '../../interfaces/staking.position.interfaces';
-import { Asset, AutomaticMarketMaker, PoolToken } from '../../interfaces/transactions.interfaces';
+import { LPToken, PoolTokenDto } from '../../integrations/integrations.dto';
+import { StakingPosition } from '../../interfaces/staking.position.interfaces';
+import { Asset, PoolToken } from '../../interfaces/transactions.interfaces';
+import { Mapper } from '../../mappers/mapper';
 import { PriceService } from '../../price/price.service';
+import { UniswapLikeSubgraph } from '../../thegraph/uniswap-like-subgraph.service';
 import { objectUpdate } from '../../utils/object';
+import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../utils/util';
 import { ProtocolBasicInfo } from '../features/features.dto';
 import { FeatureEnum } from '../features/features.enum';
-import { FeatureResult } from '../features/features.types';
 import { FeaturesType, ProtocolFeaturesInfo } from '../protocol.types';
 import { tokenDictionary } from '../protocols.dictionaries';
-import { DefaultDataProvider } from '../protocols.dto';
+import { DefaultDataProvider, FeatureHandleDto, RawFeaturesDto } from '../protocols.dto';
 import AbstractProtocol from './abstractProtocol';
 
 export abstract class BasicProtocol<
   DataProvider extends DefaultDataProvider = DefaultDataProvider,
-> extends AbstractProtocol<DataProvider> {
+> extends AbstractProtocol {
   abstract readonly chains: ChainAbbrEnum[];
   abstract readonly project: ProjectEnum;
   abstract readonly name: ProtocolName;
-  abstract readonly label: string;
-  protected abstract readonly features: ProtocolFeaturesInfo;
+  abstract readonly displayName: string;
+  abstract readonly features: ProtocolFeaturesInfo;
   // TODO non mandatory
-  protected abstract readonly dataProvider?: DataProvider;
   protected abstract readonly accountService: AccountService;
   protected abstract readonly priceService: PriceService;
   protected abstract readonly feeRate: number;
   protected abstract readonly logger: Logger;
+  protected abstract readonly dataProvider?: DataProvider | UniswapLikeSubgraph;
+  protected readonly mapper: Mapper;
 
   constructor() {
     super();
@@ -61,7 +64,7 @@ export abstract class BasicProtocol<
       chains: this.chains,
       project: this.project,
       name: this.name,
-      label: this.label,
+      label: this.displayName,
       features: this.getFeaturesInfo(chainId),
     };
   }
@@ -70,30 +73,119 @@ export abstract class BasicProtocol<
     address: Address,
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> => {
-    let data;
     try {
-      data = await this.dataProvider.getDataByAddresses(address, chainId);
+      let pools, poolsErrors;
+      const { rawPools, rawStaking } = await this.getAllFeaturesRawData(address, chainId);
+      // console.log('rawPools', rawPools);
+      // console.log('rawStaking', rawStaking);
+      // pools
+      try {
+        const { errors, data } = await this.transformPools(rawPools, chainId);
+        poolsErrors = errors;
+        pools = data;
+      } catch (e) {
+        this.logger.error(e, 'transformPools');
+        poolsErrors = e;
+        pools = null;
+      }
+      // staking
+      let staking, stakingErrors;
+      if (rawStaking) {
+        try {
+          staking = this.transformStaking(rawStaking);
+        } catch (e) {
+          this.logger.error(e, 'transformStaking');
+          stakingErrors = e;
+          staking = null;
+        }
+      }
+      // result
+      const result = plainToClass(IntegrationFeaturesDataDto, {});
+      result.errors = [poolsErrors, stakingErrors].flat(5); // TODO add staking errors
+      result[FeatureEnum.pools] = pools;
+      result[FeatureEnum.staking] = staking;
+      return result;
+    } catch (e) {
+      this.logger.error(e, 'getAllFeaturesData');
+      throw e;
+    }
+  };
+
+  protected getAllFeaturesRawData = async (
+    addresses: Address,
+    chainId?: ChainIdEnum,
+  ): Promise<RawFeaturesDto> => {
+    try {
+      const data = await this.getData(addresses, chainId);
+      const rawPools = data.find((data) => data['liquidityPositions'])?.liquidityPositions;
+      const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
+      // TODO: feature transaction is disabled
+      // const transactions = data.find((data) => data['transactions']);
+
+      return { rawPools, rawStaking };
     } catch (e) {
       this.logger.error(e);
       throw e;
     }
-
-    const rawPools = data.find((data) => data['liquidityPositions']);
-    const rawStaking = data.find((data) => data['stakingPositions']);
-    const { errors: poolsErrors, data: pools } = await this.transformPools(rawPools, chainId);
-    const staking = this.transformStaking(rawStaking);
-    return {
-      errors: poolsErrors,
-      [FeatureEnum.pools]: pools,
-      [FeatureEnum.staking]: staking,
-      // TODO: feature transaction is disabled
-      // [FeatureEnum.transactions]: transactions,
-    };
   };
+
+  protected async getData(addresses, chainId?) {
+    let data;
+    if (this.dataProvider instanceof UniswapLikeSubgraph) {
+      data = await this.getSubgraphMappedData(addresses);
+    } else {
+      data = await this.dataProvider.getDataByAddresses(addresses, chainId);
+    }
+    return data;
+  }
+
+  protected async getSubgraphMappedData(addresses: Address): Promise<BaseData[]> {
+    const originAddressesArray = addresses.split(',');
+    const response = await this.getSubgraphData(
+      originAddressesArray,
+      this.dataProvider as UniswapLikeSubgraph,
+    );
+    const data = this.mapper.mapData(
+      response.userAddresses,
+      originAddressesArray,
+      response.response,
+      ProjectEnum.sushiswap,
+    );
+    return data;
+  }
+
+  protected async getSubgraphData(addresses: string[], subgraph: UniswapLikeSubgraph) {
+    const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
+    const flag = subgraph && subgraph.constructor.name === 'SushiswapSubgraph';
+    const [liquidityPosition, stakingPositions] = await Promise.all([
+      subgraph.getLiquidityPositions(addressesArray),
+      flag ? subgraph.getStakingPositions(addressesArray) : null,
+    ]);
+
+    const uniswapLiquidityPositions = groupBy(
+      liquidityPosition.data.liquidityPositions,
+      (liquidityPosition) => liquidityPosition.user.id,
+    );
+
+    const sushiswapStakingPosition = flag
+      ? groupBy(stakingPositions.data.users, (staking) => {
+          const array = staking.id.split('-');
+          return array[1];
+        })
+      : null;
+
+    return {
+      userAddresses: addressesArray,
+      response: {
+        uniswapLiquidityPositions,
+        sushiswapStakingPosition,
+      },
+    };
+  }
 
   // side effects
   private async handleMissedData(
-    inputPoolsData: AutomaticMarketMaker,
+    rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
     errors,
   ): Promise<void> {
@@ -109,8 +201,7 @@ export abstract class BasicProtocol<
         map.set(address, [token]);
       }
     };
-
-    inputPoolsData?.liquidityPositions?.forEach((inputPool) => {
+    rawPools?.forEach((inputPool) => {
       pools.push(inputPool.lpToken.address);
       inputPool.poolTokens.forEach((token: PoolToken) => {
         const { address, name, symbol, decimals, priceUSD } = token;
@@ -122,9 +213,9 @@ export abstract class BasicProtocol<
         }
       });
     });
-    if (pools.length || tokensMissedData.size || tokensMissedPrice.size) {
+    if (pools.length && (tokensMissedData.size || tokensMissedPrice.size)) {
       let tokensRequest;
-      if (pools.length || tokensMissedData.size) {
+      if (tokensMissedData.size) {
         const addresses: string[] = Array.from(tokensMissedData.keys()).concat(pools);
         tokensRequest = this.getAllTokenInfo(addresses, [chainId]);
       }
@@ -146,7 +237,7 @@ export abstract class BasicProtocol<
 
             lpTokens.forEach((lpToken, index) => {
               // const index = lpToken.address;
-              const poolData = inputPoolsData.liquidityPositions[index];
+              const poolData = rawPools[index];
               const lpTokenToUpdate = poolData.lpToken;
               poolData.pool.name = lpToken.name;
               objectUpdate(lpTokenToUpdate, lpToken, 'fill');
@@ -158,7 +249,7 @@ export abstract class BasicProtocol<
               });
             });
           } else {
-            tokensData.errors.map((err) => this.logger.error(err));
+            this.logger.error(tokensData.errors);
             errors.push(tokensData.errors);
           }
         } else {
@@ -181,23 +272,23 @@ export abstract class BasicProtocol<
           });
         } else {
           this.logger.error(prices.reason);
-          errors.push(prices.reason);
+          errors.push(prices.reason.message);
         }
       }
     }
   }
 
-  protected transformStaking(rawStaking: Staking): FeatureResult<StakingPosition> {
+  protected transformStaking(rawStaking: StakingPosition[]): FeatureResultDto<StakingPosition> {
     try {
-      const result: FeatureResult<StakingPosition> = {
+      const result: FeatureResultDto<StakingPosition> = {
         totalValue: 0,
         items: null,
       };
 
-      rawStaking?.stakingPositions.forEach((staking) => {
+      rawStaking?.forEach((staking) => {
         // TODO: stakingToken is missed - need to fix to get it!
         if (staking?.stakingToken) {
-          if (staking.stakingToken.constructor?.name === 'LPToken') {
+          if (staking?.stakingToken.constructor.name === 'LPToken') {
             const lpToken = staking.stakingToken as LPToken;
             lpToken.tokens.forEach((token) => (result.totalValue += token.value));
             return;
@@ -207,7 +298,7 @@ export abstract class BasicProtocol<
         }
       });
 
-      result.items = rawStaking?.stakingPositions || [];
+      result.items = rawStaking || [];
       return result;
     } catch (e) {
       this.logger.error(e);
@@ -216,104 +307,105 @@ export abstract class BasicProtocol<
   }
 
   protected async transformPools(
-    inputPoolsData: AutomaticMarketMaker,
+    rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
-  ): Promise<{ errors: any[]; data: FeatureResult<LiquidityPoolFeature> }> {
-    const result = {
-      errors: [] as any[],
-      data: {
-        totalValue: 0,
-        items: [],
-      } as FeatureResult<LiquidityPoolFeature>,
-    };
+  ): Promise<FeatureHandleDto<LiquidityPoolFeatureDto>> {
+    const result = new FeatureHandleDto();
 
+    // TODO first filter out value = 0, then handle filtered only!
     try {
-      await this.handleMissedData(inputPoolsData, chainId, result.errors);
+      await this.handleMissedData(rawPools, chainId, result.errors);
     } catch (e) {
       this.logger.error(e);
       result.errors.push(e.message);
       throw e;
     }
 
-    const outputPools: LiquidityPoolFeature[] = inputPoolsData?.liquidityPositions.reduce(
-      (resultArray, inputPool) => {
-        const tokens: PoolTokenDto[] = [];
-        let TVL = 0; // sum(reserve * price)
-        let userValue = 0; // sum of values
-        // Pool Tokens
-        inputPool.poolTokens.forEach((token: PoolToken) => {
-          const formattedToken = plainToClass(PoolTokenDto, {});
-          objectUpdate(formattedToken, token, tokenDictionary, 'default');
-          const { price, reserve, balance } = formattedToken;
-          // value
-          formattedToken.value = Number(balance) * price ?? null;
-          // user
-          userValue += formattedToken.value;
-          // TVL
-          if (reserve) {
-            TVL += Number(reserve) * price;
-          }
-
-          tokens.push(formattedToken);
-        });
-        result.data.totalValue += userValue;
-        // Pool
-        const outPool: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
-          address: inputPool.pool.address,
-          name: inputPool.pool.name,
-          lpToken: inputPool.lpToken,
-          TVL: TVL,
-          fee: {
-            rate: this.feeRate,
-          },
-          user: {
-            value: userValue,
-            share: userValue / TVL,
-          },
-          // TODO need to add 1 more call to subgraph after pool data will be ready
-          statistic: {
-            day: {
-              // volume: 1,
-              // fee: 1,
-            },
-          },
-          tokens: tokens,
-        } as LiquidityPoolFeature);
-
-        if (outPool.user.value) {
-          resultArray.push(outPool);
+    const outputPools: LiquidityPoolFeatureDto[] = rawPools?.reduce((resultArray, inputPool) => {
+      const tokens: PoolTokenDto[] = [];
+      let TVL = 0; // sum(reserve * price)
+      let userValue = 0; // sum of values
+      // Pool Tokens
+      inputPool.poolTokens.forEach((token: PoolToken) => {
+        const formattedToken = plainToClass(PoolTokenDto, {});
+        objectUpdate(formattedToken, token, tokenDictionary, 'default');
+        const { price, reserve, balance } = formattedToken;
+        // value
+        formattedToken.value = Number(balance) * price ?? null;
+        // user
+        userValue += formattedToken.value;
+        // TVL
+        if (reserve) {
+          TVL += Number(reserve) * price;
         }
 
-        return resultArray;
-      },
-      [],
-    );
+        tokens.push(formattedToken);
+      });
+      result.data.totalValue += userValue;
+      // Pool
+      const outPool: LiquidityPoolFeatureDto = plainToClass(LiquidityPoolFeatureDto, {
+        address: inputPool.pool.address,
+        name: inputPool.pool.name,
+        lpToken: inputPool.lpToken,
+        TVL: TVL,
+        fee: {
+          rate: this.feeRate,
+        },
+        user: {
+          value: userValue,
+          share: userValue / TVL,
+        },
+        // TODO need to add 1 more call to subgraph after pool data will be ready
+        statistic: {
+          day: {
+            // volume: 1,
+            // fee: 1,
+          },
+        },
+        tokens: tokens,
+      } as LiquidityPoolFeatureDto);
+
+      if (outPool.user.value) {
+        resultArray.push(outPool);
+      }
+
+      return resultArray;
+    }, []);
+
     result.data.items = outputPools;
 
     return result;
   }
 
-  private getAllTokenInfo(
+  private async getAllTokenInfo(
     addresses: string[],
     chainIds: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
     try {
-      return this.accountService.getAssets(addresses, chainIds);
+      return await this.accountService.getAssets(addresses, chainIds);
     } catch (e) {
       this.logger.error(e);
-      throw new Error('GetAllTokenInfoError: \n ' + e);
+      if (e.message.startsWith('connect ECONNREFUSED')) {
+        throw new Error('connect ECONNREFUSED Asset Service');
+      } else {
+        throw new Error('GetAllTokenInfoError: \n ' + e);
+      }
     }
   }
 
-  private getAllTokenPrices(
+  private async getAllTokenPrices(
     addresses: string[],
     chainId: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     try {
-      return this.priceService.getTokenPrices(addresses, chainId);
+      return await this.priceService.getTokenPrices(addresses, chainId);
     } catch (e) {
       this.logger.error(e);
-      throw new Error('GetAllTokenInfoError: \n ' + e);
+      if (e.message.startsWith('connect ECONNREFUSED')) {
+        throw new Error('connect ECONNREFUSED Price Service');
+      } else {
+        throw new Error('getAllTokenPrices: \n ' + e);
+      }
     }
   }
 }

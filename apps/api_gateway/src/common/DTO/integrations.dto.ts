@@ -43,7 +43,7 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
     // eslint-disable-next-line prettier/prettier
   [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionDto*/>;
+  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {

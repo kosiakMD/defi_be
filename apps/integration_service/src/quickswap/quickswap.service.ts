@@ -3,13 +3,13 @@ import { plainToClass } from 'class-transformer';
 
 import { Injectable } from '@nestjs/common';
 
-import { UniswapLiquidityPosition } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { BaseData } from '@app/common/dto/transactions.dto';
 import { ChainIdEnum, ProjectEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
 
 import { AccountService } from '../account/account.service';
+import { UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
 import { IntegrationClaimableTokenDto } from '../integrations/integrations.dto';
 import { Mapper } from '../mappers/mapper';
 import { QuickswapSubgraph } from '../thegraph/quickswap.subgraph';

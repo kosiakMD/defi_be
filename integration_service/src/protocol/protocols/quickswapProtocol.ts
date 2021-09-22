@@ -1,9 +1,9 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AccountService } from 'src/account/account.service';
 import { PriceService } from 'src/price/price.service';
 import { QuickswapService } from 'src/quickswap/quickswap.service';
 
 import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainAbbrEnum, ProjectEnum, QuickswapProtocolEnum } from 'src/common/enum';
 
@@ -17,7 +17,7 @@ export class QuickswapProtocol extends BasicProtocol<QuickswapService> implement
   readonly chains = [ChainAbbrEnum.plg];
   readonly project = ProjectEnum.quickswap;
   readonly name = QuickswapProtocolEnum.quickswap;
-  readonly label = 'Quickswap';
+  readonly displayName = 'Quickswap';
   readonly features = {
     [ChainAbbrEnum.plg]: [FeatureEnum.pools],
   };

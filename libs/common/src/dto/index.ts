@@ -27,7 +27,7 @@ export * from './protocols.dto';
 export * from './response.dto';
 export * from './SafeFilterOptionsQuery.dto';
 export * from './SafeToken.dto';
-export * from './StakingPosition.dto';
+export * from './StakingPositionFeatureDto';
 export * from './Token.dto';
 export * from './TokenCommon.dto';
 export * from './Transaction.dto';

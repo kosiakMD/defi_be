@@ -3,7 +3,7 @@ import { Type } from 'class-transformer';
 
 import { DirectionEnum, LiquidityChangeTypeEnum, TransactionTypeEnum } from 'src/common/enum';
 
-import { UniswapToken } from '../interfaces/entity.information.interfaces';
+import { IncomeToken } from '../interfaces/entity.information.interfaces';
 import {
   ERC20Token,
   LiquidityChangeTransaction,
@@ -14,16 +14,16 @@ import {
   Transaction,
 } from '../interfaces/transactions.interfaces';
 
-export class UniswapLiquidityPositionPair {
+export class IncomeLiquidityPositionPair {
   id: string = null;
   reserve0: string = null;
   reserve1: string = null;
   reserveUSD: string = null;
-  @Type(() => UniswapToken)
-  token0: UniswapToken = null;
+  @Type(() => IncomeToken)
+  token0: IncomeToken = null;
   token0Price: string = null;
-  @Type(() => UniswapToken)
-  token1: UniswapToken = null;
+  @Type(() => IncomeToken)
+  token1: IncomeToken = null;
   token1Price: string = null;
   totalSupply: string = null;
 }
@@ -33,11 +33,11 @@ export class LiquidityPool {
   name?: string = null;
 }
 
-export class UniswapLiquidityPosition {
+export class IncomeLiquidityPosition {
   liquidityTokenBalance: string = null;
   user: string = null;
-  @Type(() => UniswapLiquidityPositionPair)
-  pair: UniswapLiquidityPositionPair = null;
+  @Type(() => IncomeLiquidityPositionPair)
+  pair: IncomeLiquidityPositionPair = null;
 }
 
 export class TransferTransaction extends Transaction {
@@ -72,8 +72,8 @@ export class LiquidityPosition {
 }
 
 export class LiquidityPositionResponseData {
-  @Type(() => UniswapLiquidityPosition)
-  liquidityPositions: UniswapLiquidityPosition[];
+  @Type(() => IncomeLiquidityPosition)
+  liquidityPositions: IncomeLiquidityPosition[];
 }
 
 export class LiquidityPositionResponse {

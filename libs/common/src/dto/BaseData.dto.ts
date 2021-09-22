@@ -7,7 +7,7 @@ import { ProtocolName } from '@app/common';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '../enum';
 import { BaseData, StakingPosition, txs } from '../interfaces';
 import { LiquidityPositionDto } from './LiquidityPositions.dto';
-import { StakingPositionDto } from './StakingPosition.dto';
+import { StakingPositionFeatureDto } from './StakingPositionFeatureDto';
 import { txsDto } from './txs.dto';
 
 export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
@@ -38,7 +38,7 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @IsString()
   protocolType: T;
 
-  @ApiProperty({ type: [StakingPositionDto], required: false })
+  @ApiProperty({ type: [StakingPositionFeatureDto], required: false })
   stakingPositions?: StakingPosition[];
 
   @ApiProperty({ type: [LiquidityPositionDto], required: false })

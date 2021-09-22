@@ -1,6 +1,6 @@
-import { UniswapLiquidityPositionPair } from '@app/common';
 import { Exclude, Expose, Type } from 'class-transformer';
 
+import { UniswapLiquidityPositionPair } from '../../dto/liquidity.position.dto';
 import { SubgraphPairDto } from './subgraph.pair.dto';
 
 @Exclude()

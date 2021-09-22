@@ -2,7 +2,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { ERC20TokenDto, StakingPositionDto } from './index';
+import { ERC20TokenDto, StakingPositionFeatureDto } from './index';
 
 import { FeatureEnum } from '@app/common/enum';
 import { FeatureResult, ProtocolFeaturesInfo, StakingPosition } from '@app/common';
@@ -70,7 +70,7 @@ export class PoolUserData {
   share: number = null; // value / TVL
 }
 
-export class LiquidityPoolFeature {
+export class LiquidityPoolFeatureDto {
   address: string = null;
   name: string = null; // 'WETH / USDC'
   // TODO: lp balance?
@@ -89,7 +89,7 @@ export class LiquidityPoolFeature {
 }
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionDto | StakingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeatureDto | StakingPositionFeatureDto | StakingPosition>;
 } & {
   errors: string[] | Error[];
 };
@@ -99,9 +99,9 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   errors: string[] | Error[];
   @Expose()
     // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
+  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeatureDto>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionDto*/>;
+  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {

@@ -1,6 +1,5 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
 import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '../../common/enum';
 
@@ -16,7 +15,7 @@ export default class PancakeProtocolV1 extends BasicProtocol<any> implements Abs
   readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.pancake;
   readonly name = PancakeProtocolEnum.pancakeV1;
-  readonly label = 'Pancake';
+  readonly displayName = 'Pancake';
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.pools],
     [ChainAbbrEnum.bsc]: [FeatureEnum.pools],

@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { AutofarmProtocolEnum, ChainAbbrEnum, ChainIdEnum, ProjectEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
-import { Logger } from '../../Logger/Logger.service';
 import { AccountService } from '../../account/account.service';
 import { AutofarmService } from '../../autofarm/services/autofarm.service';
 import { FeatureDto } from '../../integrations/integrationFeatures';
@@ -18,7 +18,7 @@ export class AutofarmProtocol extends BasicProtocol<AutofarmService> implements 
   readonly chains = [ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.autofarm;
   readonly name = AutofarmProtocolEnum.autofarm;
-  readonly label = 'Autofarm';
+  readonly displayName = 'Autofarm';
   readonly features = { [ChainAbbrEnum.bsc]: [FeatureEnum.staking] };
   protected dataProvider;
   protected feeRate = 0.003;

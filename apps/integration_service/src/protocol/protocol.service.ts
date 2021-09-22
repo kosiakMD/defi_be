@@ -1,9 +1,8 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 
-import { ProtocolName } from '@app/common';
+import { IntegrationFeaturesData, ProtocolName } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
-import { IntegrationFeaturesData } from '../integrations/integrations.dto';
 import { ProtocolBasicInfo } from './features/features.dto';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';

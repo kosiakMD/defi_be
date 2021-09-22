@@ -6,21 +6,21 @@ import {
   SwapTransaction,
   Transaction,
 } from '@app/common/dto/transactions.dto';
-import { UniswapToken } from '@app/common/interfaces';
+import { IncomeToken } from '@app/common/interfaces';
 import { SwapToken } from '@app/common/interfaces';
 
 import { DirectionEnum, TransactionTypeEnum } from '../enum';
 
-export class UniswapLiquidityPositionPair {
+export class IncomeLiquidityPositionPair {
   id: string = null;
   reserve0: string = null;
   reserve1: string = null;
   reserveUSD: string = null;
-  @Type(() => UniswapToken)
-  token0: UniswapToken = null;
+  @Type(() => IncomeToken)
+  token0: IncomeToken = null;
   token0Price: string = null;
-  @Type(() => UniswapToken)
-  token1: UniswapToken = null;
+  @Type(() => IncomeToken)
+  token1: IncomeToken = null;
   token1Price: string = null;
   totalSupply: string = null;
 }
@@ -30,11 +30,11 @@ export class LiquidityPositionPoolDto {
   name?: string = null;
 }
 
-export class UniswapLiquidityPosition {
+export class IncomeLiquidityPosition {
   liquidityTokenBalance: string = null;
   user: string = null;
-  @Type(() => UniswapLiquidityPositionPair)
-  pair: UniswapLiquidityPositionPair = null;
+  @Type(() => IncomeLiquidityPositionPair)
+  pair: IncomeLiquidityPositionPair = null;
 }
 
 export class TransferTransaction extends Transaction {
@@ -69,8 +69,8 @@ export type AMMTransaction = LiquidityChangeTransaction | SwapTransaction | Tran
 // }
 
 export class LiquidityPositionResponseData {
-  @Type(() => UniswapLiquidityPosition)
-  liquidityPositions: UniswapLiquidityPosition[];
+  @Type(() => IncomeLiquidityPosition)
+  liquidityPositions: IncomeLiquidityPosition[];
 }
 
 export class LiquidityPositionResponse {

@@ -4,8 +4,8 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 
 import {
-  UniswapLiquidityPosition,
-  UniswapLiquidityPositionPair,
+  IncomeLiquidityPosition,
+  IncomeLiquidityPositionPair,
 } from '@app/common/dto/liquidity.position.dto';
 import { ChainIdEnum, ProjectEnum, ProtocolNameEnum } from '@app/common/enum';
 
@@ -52,8 +52,8 @@ export class SpookyswapService {
     originAddressesArray,
     pools,
     balances,
-  ): Map<string, UniswapLiquidityPosition[]> {
-    const uniswapLiquidityPositions = new Map<string, UniswapLiquidityPosition[]>();
+  ): Map<string, IncomeLiquidityPosition[]> {
+    const uniswapLiquidityPositions = new Map<string, IncomeLiquidityPosition[]>();
     const lpTokenAddresses = pools.items.map((pool) => pool.address.toLowerCase());
 
     originAddressesArray.forEach((userAddress) => {
@@ -61,14 +61,14 @@ export class SpookyswapService {
         .filter((balance: any): boolean => {
           return lpTokenAddresses.includes(balance.token.address.toLowerCase());
         })
-        .map((balance: any): UniswapLiquidityPosition => {
+        .map((balance: any): IncomeLiquidityPosition => {
           const pool = pools.items.find(
             (p: any) => p.address.toLowerCase() === balance.token.address.toLowerCase(),
           );
-          return plainToClass(UniswapLiquidityPosition, {
+          return plainToClass(IncomeLiquidityPosition, {
             liquidityTokenBalance: balance.decimalsAmount.toString(),
             user: balance.account,
-            pair: plainToClass(UniswapLiquidityPositionPair, {
+            pair: plainToClass(IncomeLiquidityPositionPair, {
               id: pool.address,
               reserve0: pool.tokens[0].reserve,
               reserve1: pool.tokens[1].reserve,

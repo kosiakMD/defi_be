@@ -6,15 +6,11 @@ import { ChainIdEnum } from 'src/common/enum';
 import { BalancesQueryDto, BalancesResponseDto } from './balance.dto';
 import { BalanceService } from './balance.service';
 import { BalancesResponse } from './interfaces/balance.interfaces';
-import { ScanService } from './scan/scan.service';
 
 @ApiTags('Balances')
 @Controller('balances')
 export class BalanceController {
-  constructor(
-    private readonly balanceService: BalanceService,
-    private readonly scanService: ScanService,
-  ) {}
+  constructor(private readonly balanceService: BalanceService) {}
 
   @Get('')
   @ApiQuery({

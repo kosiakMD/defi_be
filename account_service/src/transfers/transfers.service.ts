@@ -1,5 +1,4 @@
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { PolygonScanService } from 'src/scan_api/polygon-scan.service';
 
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -10,22 +9,8 @@ import { Address } from 'src/common/interfaces';
 import { Logger } from '../Logger/Logger.service';
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
-import { AssetService } from '../chain/asset.service';
-import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
-import { BscScanService } from '../scan_api/bsc-scan.service';
-import { EtherScanService } from '../scan_api/ether-scan.service';
-import { ScanApiService } from '../scan_api/scan.api.service';
-import { ResponseData as BlocksResponseData } from '../thegraph/blocks/block.interface';
-import { BlocksSubgraph } from '../thegraph/blocks/blocks.subgraph';
-import {
-  getTokenDecimals,
-  getUniqueAndToLowerCaseArrayData,
-  mergeTransfersResponse,
-  totalPrice,
-} from '../utils/utils';
-import { isEthChain } from '../utils/web3';
+import { getTokenDecimals, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import {
   ERC20TransferDto,
   TransferDto,
@@ -35,7 +20,6 @@ import {
 import { TransferEntity, TransferEntityNew } from './dto/transfers.entity';
 import {
   ERC20Transfer,
-  ScanTransfer,
   Transfer,
   TransfersResponse,
   TransferWithTokenAndPrices,
@@ -62,24 +46,11 @@ export class TransfersService {
     return Object.fromEntries<Transfer[]>(result);
   }
 
-  private readonly chainToScan: Partial<Record<ChainIdEnum, ScanApiService>>;
-
   constructor(
-    private etherScanService: EtherScanService,
-    private bscScanService: BscScanService,
-    private polygonScanService: PolygonScanService,
     private readonly dbService: DbService,
     protected readonly priceService: PriceService,
-    private readonly assetService: AssetService,
-    private readonly blocksSubgraph: BlocksSubgraph,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-  ) {
-    this.chainToScan = {
-      [ChainIdEnum.eth]: this.etherScanService,
-      [ChainIdEnum.bsc]: this.bscScanService,
-      [ChainIdEnum.polygon]: this.polygonScanService,
-    };
-  }
+  ) {}
 
   private async queryTransfers(
     addresses: Address[],
@@ -266,151 +237,4 @@ export class TransfersService {
       }
     }
   };
-
-  async getExternalTransfers(
-    addresses: Address[],
-    chains: ChainIdEnum[],
-  ): Promise<TransfersResponse<ScanTransfer>> {
-    const uniqueLowerCaseAddresses = getUniqueAndToLowerCaseArrayData(addresses);
-    const transfers: TransfersResponse<ScanTransfer> = {};
-    const handleScan = async (service: ScanApiService, addresses: string[]): Promise<boolean> => {
-      const transfersResponse = await Promise.all<EtherscanTransfer[]>(
-        addresses.map((address) => service.getTransfers(address)),
-      );
-
-      const singleArray: EtherscanTransfer[] = transfersResponse.flat();
-
-      const transfersResult = await service.toTransfersResponse(singleArray, addresses);
-      this.combineResults(transfers, transfersResult);
-      return true;
-    };
-
-    const scans: ScanApiService[] = [];
-    if (chains) {
-      chains.map((n) => {
-        scans.push(this.chainToScan[n]);
-      });
-    } else {
-      scans.push(this.chainToScan[CHAIN_ID_ETH], this.chainToScan[CHAIN_ID_BSC]);
-    }
-    await Promise.allSettled(scans.map((scan) => handleScan(scan, uniqueLowerCaseAddresses)));
-
-    const allTransfers = transfers;
-    if (chains && chains.length && chains.filter((n) => isEthChain(n))) {
-      // this call works pretty fast, but there is no block timestamp fuck!
-      const additionalTransfers = await this.assetService.getConvertedTransfers(
-        uniqueLowerCaseAddresses,
-      );
-
-      let allTransfers = mergeTransfersResponse(
-        uniqueLowerCaseAddresses,
-        transfers,
-        additionalTransfers,
-      );
-
-      allTransfers = await this.addTimestampsToTransfers(allTransfers);
-      return await this.addPricesToTransfers(allTransfers);
-    }
-
-    return allTransfers;
-  }
-
-  private async addTimestampsToTransfers(
-    transfersResponse: TransfersResponse<ScanTransfer>,
-  ): Promise<TransfersResponse<ScanTransfer>> {
-    try {
-      const missedBlocks: number[] = [];
-      Object.keys(transfersResponse).map((k) => {
-        const transfers: ScanTransfer[] = transfersResponse[k];
-        transfers.map((t) => {
-          if (isEthChain(t.chainId) && t.blockTimeStamp === null) {
-            const isMissed = missedBlocks.find((blockNumber) => blockNumber === t.blockNumber);
-            if (!isMissed) {
-              missedBlocks.push(Number(t.blockNumber));
-            }
-          }
-        });
-      });
-      if (!missedBlocks) {
-        return transfersResponse;
-      }
-
-      const blocksDataTimestamps: BlocksResponseData =
-        await this.blocksSubgraph.getBlocksTimestamps(missedBlocks);
-      const blocks = blocksDataTimestamps.data.blocks;
-
-      Object.keys(transfersResponse).map((k) => {
-        const transfers: ScanTransfer[] = transfersResponse[k];
-        transfers.map((t) => {
-          if (isEthChain(t.chainId) && t.blockTimeStamp === null) {
-            const blockTimestamp = blocks.find((b) => Number(b.number) === Number(t.blockNumber));
-            if (blockTimestamp) {
-              t.blockTimeStamp = blockTimestamp.timestamp;
-            }
-          }
-        });
-      });
-    } catch (e) {
-      this.logger.warn('error fetching block timestamps for transfers');
-    }
-    return transfersResponse;
-  }
-
-  private async getTransfersPrices(
-    transfersResponse: TransfersResponse<ScanTransfer>,
-    chainId: ChainIdEnum,
-  ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
-    try {
-      const unpricedContracts = [];
-      Object.keys(transfersResponse).map((k) => {
-        const transfers: ScanTransfer[] = transfersResponse[k];
-        transfers.map((t) => {
-          if (t.chainId === chainId) {
-            for (const transfer of t.erc20Transfers) {
-              const transferInArray = unpricedContracts.find(
-                (unpricedContract) => unpricedContract.address === transfer.token.address,
-              );
-              if (transferInArray) {
-                transferInArray.timestamps.push(Number(t.blockTimeStamp));
-              } else {
-                unpricedContracts.push({
-                  address: transfer.token.address,
-                  timestamps: [Number(t.blockTimeStamp)],
-                });
-              }
-            }
-          }
-        });
-      });
-      return await this.priceService.getHistoricalPrices(unpricedContracts, chainId);
-    } catch (e) {
-      this.logger.warn('error fetching token prices for transfers');
-      throw e;
-    }
-  }
-
-  private async addPricesToTransfers(
-    allTransfers: TransfersResponse<ScanTransfer>,
-  ): Promise<TransfersResponse<ScanTransfer>> {
-    const [ethPrices, bscPrices] = await Promise.all([
-      this.getTransfersPrices(allTransfers, CHAIN_ID_ETH),
-      this.getTransfersPrices(allTransfers, CHAIN_ID_BSC),
-    ]);
-    Object.keys(allTransfers).map((address) => {
-      allTransfers[address].map((transfer) => {
-        transfer.erc20Transfers.map((erc20Transfer) => {
-          const tokenPriceUsd = isEthChain(transfer.chainId)
-            ? ethPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp]
-            : bscPrices.prices[erc20Transfer.token.address][transfer.blockTimeStamp];
-          erc20Transfer.tokenPriceUSD = tokenPriceUsd;
-          erc20Transfer.totalPriceUSD = totalPrice(
-            erc20Transfer.amount.toString(),
-            tokenPriceUsd,
-            erc20Transfer.token.decimals ? erc20Transfer.token.decimals : 18,
-          );
-        });
-      });
-    });
-    return allTransfers;
-  }
 }

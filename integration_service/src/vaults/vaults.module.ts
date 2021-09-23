@@ -3,11 +3,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { VaultsEntity } from './entities/vaults.entity';
 import { VaultsRepository } from './repository/vaults.repository';
-import { VaultsController } from './vaults.controller';
 import { VaultsService } from './vaults.service';
 
 @Module({
-  controllers: [VaultsController],
   imports: [TypeOrmModule.forFeature([VaultsEntity])],
   providers: [VaultsService, VaultsRepository],
 })

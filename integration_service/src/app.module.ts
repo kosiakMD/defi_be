@@ -17,7 +17,6 @@ import { PoolsModule } from './pools/pools.module';
 import { ProtocolModule } from './protocol/protocol.module';
 import { QuickswapModule } from './quickswap/quickswap.module';
 import { SushiswapModule } from './sushiswap/sushiswap.module';
-import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
 import { winstonParams } from './utils/winston';
@@ -64,7 +63,6 @@ import { VaultsModule } from './vaults/vaults.module';
     PoolsModule,
     DatabaseModule,
     VaultsModule,
-    TemporaryTokensModule,
     IntegrationsModule,
     JobsModule,
   ],

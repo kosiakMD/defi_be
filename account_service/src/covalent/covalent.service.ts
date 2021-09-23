@@ -21,10 +21,6 @@ export class CovalentService {
     return `${this.url}/${chainId}/address/${address}/balances_v2/`;
   }
 
-  private getTransactionUrl(address: Address, chainId: ChainIdEnum): string {
-    return `${this.url}/${chainId}/address/${address}/transactions_v2/`;
-  }
-
   constructor(
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
@@ -65,51 +61,6 @@ export class CovalentService {
       } else {
         this.logger.error('CovalentService.getTransactions', e);
         throw new HttpException(e.response, e.code);
-      }
-    }
-  }
-
-  public async getTransactions(
-    address: Address,
-    chainId: ChainIdEnum,
-  ): Promise<Covalent.Transaction> {
-    const transactionUrl = this.getTransactionUrl(address, chainId);
-    try {
-      this.logger.time(transactionUrl);
-      const result = await this.httpService
-        .get<Covalent.Response<Covalent.Transaction>>(transactionUrl, {
-          // baseURL: this.url, TODO: doesn't work properly, fix and use static get url method
-          // url: transactionUrl,
-          params: {
-            key: this.apiKey,
-            'quote-currency': CurrencyEnum.usd,
-            'page-size': TRANSACTIONS_PER_PAGE,
-          },
-        })
-        .pipe(map((response) => response.data))
-        .toPromise();
-      this.logger.timeEnd(transactionUrl);
-
-      if (result.error) {
-        throw new HttpException(result.error_message, result.error_code);
-      } else {
-        return result.data;
-      }
-    } catch (e) {
-      if (e.isAxiosError) {
-        this.logger.error(
-          new Error(
-            `URL ${e.code || ' '}this.logger.error(new Error(\`URL ${e.code || ' '}${e.config.url}`,
-          ),
-          'getTransactions',
-        );
-        if (e.response?.data) {
-          this.logger.error(e.response.data);
-        }
-        throw new HttpException(e.response, e.code);
-      } else {
-        this.logger.error('CovalentService.getTransactions', e);
-        throw e;
       }
     }
   }

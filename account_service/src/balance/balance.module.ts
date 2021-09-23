@@ -10,7 +10,6 @@ import { BlacklistModule } from '../blacklist/blacklist.module';
 import { ChainModule } from '../chain/chain.module';
 import { CovalentModule } from '../covalent/covalent.module';
 import { CovalentService } from '../covalent/covalent.service';
-import { MulticallModule } from '../multicall/multicall.module';
 import { PriceModule } from '../price/price.module';
 import { BalanceController } from './balance.controller';
 import { BalanceService } from './balance.service';
@@ -24,7 +23,6 @@ import { ScanService } from './scan/scan.service';
     HttpModule,
     ChainModule,
     PriceModule,
-    MulticallModule,
     AssetsModule,
     CovalentModule,
     BlacklistModule,

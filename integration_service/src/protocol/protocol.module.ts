@@ -21,6 +21,7 @@ import { QuickswapProtocol } from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapProtocolV2';
+import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 
 // import { SpookyswapModule } from '../spookyswap/spookyswap.module';
 // import { UniswapModule } from '../uniswap/uniswap.module';
@@ -37,6 +38,7 @@ const ProtocolList = [
   SpookySwapProtocol,
   SushiswapProtocolV2,
   UniswapProtocolV2,
+  UniswapProtocolV3,
 ];
 
 @Module({

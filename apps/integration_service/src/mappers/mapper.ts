@@ -4,7 +4,7 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { LiquidityPosition, LiquidityPositionDto } from '@app/common';
+import { LiquidityPositionDto, AutomaticMarketMaker } from '@app/common';
 import {
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
@@ -25,7 +25,6 @@ import { UniswapToken } from '../interfaces/entity.information.interfaces';
 import { FeesSn1Data, FeesSn2Data } from '../interfaces/fee.interfaces';
 import { Staking } from '../interfaces/staking.position.interfaces';
 import {
-  AutomaticMarketMaker,
   BaseData,
   ERC20Token,
   PoolToken,
@@ -188,7 +187,7 @@ export class Mapper {
 
       const project =
         amm.platformName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.platformName;
-      const liquidityPosition: LiquidityPosition = plainToClass(LiquidityPositionDto, {
+      const liquidityPosition: LiquidityPositionDto = plainToClass(LiquidityPositionDto, {
         pool: pool,
         lpToken,
         lpTokenBalance: uniswapPosition.liquidityTokenBalance,

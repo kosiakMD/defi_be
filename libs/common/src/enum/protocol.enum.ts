@@ -13,6 +13,7 @@ export enum ProjectEnum {
 export enum UniswapProtocolEnum {
   uniswapV1 = 'UniswapV1',
   uniswapV2 = 'UniswapV2',
+  uniswapV3 = 'UniswapV3',
 }
 
 export enum SushiSwapProtocolEnum {

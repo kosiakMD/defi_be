@@ -47,6 +47,9 @@ export const validationSchema = Joi.object({
   AMM_UNISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  AMM_UNISWAP_V3_ETH_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
   AMM_PANGOLIN_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
@@ -65,8 +68,6 @@ export const validationSchema = Joi.object({
   ETH_URL: Joi.string() //
     .required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
-  PRICE_SERVICE_PORT: Joi.number().required(),
-  PRICES_PATH: Joi.string().required(),
   ACCOUNT_SERVICE_HOST: Joi.string().required(),
   ACCOUNT_SERVICE_PORT: Joi.number().required(),
   ACCOUNT_BALANCE: Joi.string().required(),

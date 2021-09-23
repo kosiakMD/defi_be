@@ -17,10 +17,11 @@ import { ProtocolService } from './protocol.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
 import PangolinProtocol from './protocols/pangolinProtocol';
-import { QuickswapProtocol } from './protocols/quickswapProtocol';
+import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapProtocolV2';
+import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -31,6 +32,7 @@ const ProtocolList = [
   SpookySwapProtocol,
   SushiswapProtocolV2,
   UniswapProtocolV2,
+  UniswapProtocolV3,
 ];
 
 @Module({

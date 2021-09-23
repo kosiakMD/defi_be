@@ -16,10 +16,6 @@ export abstract class AbstractProtocol {
   abstract readonly name: ProtocolName;
   abstract readonly displayName: string;
   abstract readonly features: ProtocolFeaturesInfo;
-  // todo delete
-  // protected abstract readonly dataProvider?: DefaultDataProvider | UniswapLikeSubgraph;
-  // protected abstract readonly accountService: AccountService;
-  // protected abstract readonly priceService: PriceService;
   protected abstract readonly feeRate?: number;
   protected abstract readonly logger: Logger;
   abstract getFeaturesInfo<T extends FeaturesType>(chainId?: ChainIdEnum): T;

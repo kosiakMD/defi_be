@@ -10,6 +10,9 @@ export class LiquidityPositionDto implements LiquidityPosition {
   lpToken: ERC20TokenDto;
 
   @ApiProperty({ type: [PlatformPoolTokenDto] })
+  rewards?: PlatformPoolToken[];
+
+  @ApiProperty({ type: [PlatformPoolTokenDto] })
   poolTokens: PlatformPoolToken[];
 
   @ApiProperty({ type: String, example: '0' })

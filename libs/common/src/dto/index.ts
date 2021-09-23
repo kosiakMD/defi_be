@@ -2,10 +2,12 @@
 
 export * from './APY.dto';
 export * from './Audit.dto';
+export * from './AutomaticMarketMaker.dto';
 export * from './BaseData.dto';
 export * from './chain.dto';
 export * from './ClaimableToken.dto';
 export * from './ContractApproval.dto';
+export * from './CurrentPricesPayload.dto';
 export * from './currency.dto';
 export * from './ERC20Token.dto';
 export * from './EthereumAddress.dto';
@@ -23,6 +25,7 @@ export * from './PlatformPoolToken.dto';
 export * from './Pool.dto';
 // export * from './PoolToken.dto';
 export * from './PriceHistoryReuqest.dto';
+export * from './PriceResponse.dto';
 export * from './protocols.dto';
 export * from './response.dto';
 export * from './SafeFilterOptionsQuery.dto';
@@ -33,4 +36,7 @@ export * from './TokenCommon.dto';
 export * from './Transaction.dto';
 export * from '../interfaces/transactions.interfaces';
 export * from './txs.dto';
+export * from './UniswapV3Position.dto';
+export * from './UniswapV3Tick.dto';
+export * from './UniswapV3Pool.dto';
 export * from './Vault.dto';

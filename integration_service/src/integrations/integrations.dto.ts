@@ -164,6 +164,9 @@ export class LiquidityPoolFeature {
 
   name: string = null; // 'WETH / USDC'
 
+  // Claimable LP rewards
+  rewards?: PoolTokenDto[] = [];
+
   // TODO: lp balance?
   @Type(() => IntegrationERC20TokenDto)
   lpToken?: IntegrationERC20TokenDto = null;

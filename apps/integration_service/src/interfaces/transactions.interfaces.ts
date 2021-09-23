@@ -3,7 +3,6 @@ import { Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { LiquidityPosition } from '@app/common';
 import { IncomeLiquidityPosition } from '@app/common/dto/liquidity.position.dto';
 import {
   ChainIdEnum,
@@ -159,11 +158,6 @@ export class SwapTransaction extends Transaction {
   tokenIn: SwapToken;
   @Type(() => SwapTokenDto)
   tokenOut: SwapToken;
-}
-
-export class AutomaticMarketMaker extends BaseData<ProtocolTypeEnum.amm> {
-  isTransferSupported?: boolean;
-  liquidityPositions: LiquidityPosition[];
 }
 
 export interface PlatformPoolToken {

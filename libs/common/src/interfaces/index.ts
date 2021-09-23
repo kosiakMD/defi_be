@@ -58,6 +58,7 @@ export interface LiquidityPosition {
   lpToken: ERC20Token;
   poolTokens: PlatformPoolToken[];
   lpTokenBalance: string;
+  rewards?: PlatformPoolToken[];
   pool?: LiquidityPositionPool;
   exitedAt?: number;
   earnedFeeUSD?: number;

@@ -76,8 +76,7 @@ export abstract class BasicProtocol<
     try {
       let pools, poolsErrors;
       const { rawPools, rawStaking } = await this.getAllFeaturesRawData(address, chainId);
-      // console.log('rawPools', rawPools);
-      // console.log('rawStaking', rawStaking);
+
       // pools
       try {
         const { errors, data } = await this.transformPools(rawPools, chainId);
@@ -121,7 +120,6 @@ export abstract class BasicProtocol<
       const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
       // TODO: feature transaction is disabled
       // const transactions = data.find((data) => data['transactions']);
-
       return { rawPools, rawStaking };
     } catch (e) {
       this.logger.error(e);
@@ -184,7 +182,7 @@ export abstract class BasicProtocol<
   }
 
   // side effects
-  private async handleMissedData(
+  protected async handleMissedData(
     rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
     errors,
@@ -338,7 +336,6 @@ export abstract class BasicProtocol<
         if (reserve) {
           TVL += Number(reserve) * price;
         }
-
         tokens.push(formattedToken);
       });
       result.data.totalValue += userValue;

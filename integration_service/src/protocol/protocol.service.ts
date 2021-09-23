@@ -12,6 +12,7 @@ import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapProtocolV2';
+import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 
 @Injectable()
 export class ProtocolService {
@@ -20,6 +21,7 @@ export class ProtocolService {
   // TODO: to add a new Protocol just add it at ProtocolModule and at ProtocolService constructor
   constructor(
     private readonly uniswapProtocolV2: UniswapProtocolV2,
+    private readonly uniswapProtocolV3: UniswapProtocolV3,
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly pangolinProtocol: PangolinProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
@@ -35,6 +37,7 @@ export class ProtocolService {
       spookySwapProtocol,
       sushiswapProtocolV2,
       uniswapProtocolV2,
+      uniswapProtocolV3,
     ];
   }
 

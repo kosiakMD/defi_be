@@ -179,7 +179,7 @@ export abstract class BasicProtocol<
   }
 
   // side effects
-  private async handleMissedData(
+  protected async handleMissedData(
     rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
     errors,

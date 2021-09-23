@@ -7,6 +7,7 @@ import { PangolinSubgraph } from './pangolin.subgraph';
 import { QuickswapSubgraph } from './quickswap.subgraph';
 import { SushiswapSubgraph } from './sushiswap.subgraph';
 import { UniswapSubgraph } from './uniswap.subgraph';
+import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UniswapSubgraph } from './uniswap.subgraph';
   ],
   providers: [
     UniswapSubgraph,
+    UniswapV3Subgraph,
     BlocksSubgraph,
     SushiswapSubgraph,
     PangolinSubgraph,
@@ -27,6 +29,7 @@ import { UniswapSubgraph } from './uniswap.subgraph';
   exports: [
     ThegraphModule,
     UniswapSubgraph,
+    UniswapV3Subgraph,
     SushiswapSubgraph,
     PangolinSubgraph,
     BlocksSubgraph,

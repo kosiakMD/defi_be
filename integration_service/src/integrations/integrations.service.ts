@@ -31,7 +31,6 @@ export class IntegrationsService {
     addresses,
   ): Promise<IntegrationsResponseDto> {
     const protocol = this.protocolService.getProtocolByName(protocolName);
-
     const allowedChains = chains.filter((chain) => {
       const basicInfo = protocol.getInfo();
       return basicInfo.chains?.includes(ChainIdToAbbr[chain]);

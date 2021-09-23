@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { UniswapLikeSubgraph } from './uniswap-like-subgraph.service';
 
 @Injectable()
-export class PancakeSubgraph extends UniswapLikeSubgraph {
+export class PangolinSubgraph extends UniswapLikeSubgraph {
   constructor(
     protected readonly configService: ConfigService,
     protected readonly httpService: HttpService,

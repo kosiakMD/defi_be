@@ -8,8 +8,8 @@ import { QuickswapController } from './quickswap.controller';
 import { QuickswapService } from './quickswap.service';
 
 @Module({
-  imports: [AccountModule, ThegraphModule, Logger],
-  providers: [QuickswapService],
+  imports: [AccountModule, ThegraphModule],
+  providers: [QuickswapService, Logger],
   controllers: [QuickswapController],
   exports: [QuickswapService],
 })

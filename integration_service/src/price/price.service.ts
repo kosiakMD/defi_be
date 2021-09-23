@@ -16,9 +16,12 @@ export class PriceService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    const url = this.configService.get<string>('PRICE_SERVICE_HOST');
-    this.getPricesUrl = `${url}/prices`;
-    this.getPriceUrlFetch = `${url}/prices/fetch`;
+    const host = this.configService.get<string>('PRICE_SERVICE_HOST');
+    const port = this.configService.get<string>('PRICE_SERVICE_PORT');
+    const url = `${host}${port ? ':' + port : ''}`;
+    const getPricesPath = this.configService.get<string>('PRICES_PATH');
+    this.getPricesUrl = `${url}/${getPricesPath}`;
+    this.getPriceUrlFetch = `${this.getPricesUrl}/fetch`;
   }
 
   async getTokenPrices(

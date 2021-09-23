@@ -26,6 +26,9 @@ export class SpookyswapService {
   async getDataByAddresses(addresses: string): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
     const pools: NotifyPayloadFeaturesDto = await this.cache.get('4_SpookySwap_pools');
+
+    if (!pools) return [];
+
     const balances = await this.accountService.getBalancesCovalent(originAddressesArray, [
       ChainIdEnum.ftm,
     ]);
@@ -72,7 +75,7 @@ export class SpookyswapService {
               id: pool.address,
               reserve0: pool.tokens[0].reserve,
               reserve1: pool.tokens[1].reserve,
-              reserveUSD: pool.TVL * 1e18,
+              reserveUSD: pool.TVL,
               token0: plainToClass(UniswapToken, {
                 decimals: pool.tokens[0].decimals,
                 id: pool.tokens[0].address,

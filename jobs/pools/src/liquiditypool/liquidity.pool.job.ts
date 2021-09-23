@@ -92,6 +92,7 @@ export class LiquidityPoolJob {
         );
 
         extractedPoolFeatures.get(chain).forEach((pf) => {
+          pf.TVL = 0;
           pf.lpToken.totalSupply = BNToDecimals(
             totalSupplies.get(pf.lpToken.address),
             pf.lpToken.decimals,

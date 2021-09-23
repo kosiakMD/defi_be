@@ -5,9 +5,11 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { LiquidityPoolsEntity } from './entities/liquidity.pools.entity';
+import { PoolsController } from './pools.controller';
 import { PoolsService } from './pools.service';
 
 @Module({
+  controllers: [PoolsController],
   imports: [
     CacheModule.registerAsync({
       imports: [ConfigModule],

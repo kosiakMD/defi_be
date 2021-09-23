@@ -7,7 +7,6 @@ import { AccountModule } from '../account/account.module';
 import { ChainModule } from '../chain/chain.module';
 import { Mapper } from '../mappers/mapper';
 import { PriceModule } from '../price/price.module';
-import { SpookyswapController } from './spookyswap.controller';
 import { SpookyswapService } from './spookyswap.service';
 
 @Module({
@@ -28,7 +27,6 @@ import { SpookyswapService } from './spookyswap.service';
       inject: [ConfigService],
     }),
   ],
-  controllers: [SpookyswapController],
   providers: [SpookyswapService, Mapper],
   exports: [SpookyswapService],
 })

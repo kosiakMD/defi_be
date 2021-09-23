@@ -8,6 +8,10 @@ export enum ProjectEnum {
   uniswap = 'uniswap',
 }
 
+export enum AaveProtocolEnum {
+  AaveV2 = 'AaveV2',
+}
+
 export enum AutofarmProtocolEnum {
   autofarm = 'Autofarm',
 }
@@ -38,6 +42,7 @@ export enum UniswapProtocolEnum {
 }
 
 export type ProtocolName =
+  | AaveProtocolEnum
   | AutofarmProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
@@ -48,6 +53,7 @@ export type ProtocolName =
 
 export const ProtocolNameEnum = {
   ...AutofarmProtocolEnum,
+  ...AaveProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,

@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
+import { AaveUser } from '@app/common';
 import { IncomeLiquidityPosition } from '@app/common/dto/liquidity.position.dto';
 import {
   ChainIdEnum,
@@ -77,6 +78,7 @@ export class SwapTokenDto extends ERC20Token implements SwapToken {
 export interface UniswapResponseData {
   uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
+  aaveLendingPositions?: Map<string, AaveUser>;
 }
 
 export interface ClaimAbleToken extends ERC20Token {

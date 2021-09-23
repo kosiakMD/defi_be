@@ -14,6 +14,8 @@ export interface DefaultDataProvider {
 export class RawFeaturesDto {
   rawPools: any;
   rawStaking: any;
+  rawLending: any;
+  rawBorrowing: any;
 }
 
 export class FeatureHandleDto<T = LiquidityPoolFeatureDto> {

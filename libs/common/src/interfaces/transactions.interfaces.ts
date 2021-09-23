@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { IncomeLiquidityPosition } from '@app/common/dto';
+import { AaveUser, IncomeLiquidityPosition } from '@app/common/dto';
 import { ERC20Token } from '@app/common/dto/transactions.dto';
 import {
   BurnsInterface,
@@ -33,6 +33,7 @@ export interface UniswapResponseData {
   uniswapSnapshots?: Map<string, SnapshotsInterface[]>;
   uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
+  aaveLendingPositions?: Map<string, AaveUser>;
 }
 
 export interface Transaction<T = string> {

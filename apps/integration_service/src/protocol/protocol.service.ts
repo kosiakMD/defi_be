@@ -4,6 +4,7 @@ import { IntegrationFeaturesData, ProtocolName } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { ProtocolBasicInfo } from './features/features.dto';
+import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
@@ -20,6 +21,7 @@ export class ProtocolService {
 
   // TODO: to add a new Protocol just add it at ProtocolModule and at ProtocolService constructor
   constructor(
+    private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly uniswapProtocolV3: UniswapProtocolV3,
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
@@ -30,6 +32,7 @@ export class ProtocolService {
     private readonly spookySwapProtocol: SpookySwapProtocol,
   ) {
     this.protocols = [
+      aaveProtocolV2,
       autofarmProtocol,
       pancakeProtocolV1,
       pangolinProtocol,

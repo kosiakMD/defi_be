@@ -4,6 +4,7 @@ import { ChainIdEnum, ProtocolName } from '../common/enum';
 
 import { IntegrationFeaturesData } from '../integrations/integrations.dto';
 import { ProtocolBasicInfo } from './features/features.dto';
+import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
@@ -20,16 +21,18 @@ export class ProtocolService {
 
   // TODO: to add a new Protocol just add it at ProtocolModule and at ProtocolService constructor
   constructor(
+    private readonly aaveProtocolV2: AaveProtocolV2,
+    private readonly autofarmProtocol: AutofarmProtocol,
+    private readonly pancakeProtocolV1: PancakeProtocolV1,
+    private readonly pangolinProtocol: PangolinProtocol,
+    private readonly quickswapProtocol: QuickswapProtocol,
+    private readonly spookySwapProtocol: SpookySwapProtocol,
+    private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly uniswapProtocolV3: UniswapProtocolV3,
-    private readonly sushiswapProtocolV2: SushiswapProtocolV2,
-    private readonly pangolinProtocol: PangolinProtocol,
-    private readonly pancakeProtocolV1: PancakeProtocolV1,
-    private readonly quickswapProtocol: QuickswapProtocol,
-    private readonly autofarmProtocol: AutofarmProtocol,
-    private readonly spookySwapProtocol: SpookySwapProtocol,
   ) {
     this.protocols = [
+      aaveProtocolV2,
       autofarmProtocol,
       pancakeProtocolV1,
       pangolinProtocol,
@@ -64,6 +67,7 @@ export class ProtocolService {
     if (!protocol) {
       throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
     }
+
     return await protocol.getAllFeaturesData(addresses, chainId);
   }
 }

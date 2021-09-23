@@ -27,6 +27,8 @@ export enum ProtocolTypeEnum {
   amm = 'amm',
   staking = 'staking',
   transaction = 'transaction',
+  lending = 'lending',
+  borrowing = 'borrowing',
 }
 
 export enum TransactionTypeEnum {

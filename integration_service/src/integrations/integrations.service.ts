@@ -74,9 +74,7 @@ export class IntegrationsService {
           response.errors = [...response.errors, ...chainResult.value.errors];
         }
       } else {
-        response.errors.push(
-          chainResult.reason.message ? chainResult.reason.message : chainResult.reason,
-        );
+        response.errors.push(chainResult.reason?.message ?? chainResult.reason);
       }
 
       response.data.chains.push(chainData);

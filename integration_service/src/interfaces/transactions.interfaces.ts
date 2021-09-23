@@ -13,8 +13,13 @@ import {
   TransactionTypeEnum,
 } from 'src/common/enum';
 
-import { LiquidityPosition, IncomeLiquidityPosition } from '../dto/liquidity.position.dto';
+import {
+  AaveUser,
+  LiquidityPosition,
+  IncomeLiquidityPosition,
+} from '../dto/liquidity.position.dto';
 import { LPToken } from '../integrations/integrations.dto';
+import { BorrowingPosition, LendingPosition } from './lending.position.interfaces';
 
 export type TokenSymbol = string;
 
@@ -68,6 +73,10 @@ export class PoolTokenDto extends ERC20Token implements PoolToken {
   amount?: string;
 }
 
+export class LendTokenDto extends ERC20Token implements PriceAble {
+  priceUSD: number;
+}
+
 export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
 
 export class SwapTokenDto extends ERC20Token implements SwapToken {
@@ -78,6 +87,7 @@ export class SwapTokenDto extends ERC20Token implements SwapToken {
 export interface UniswapResponseData {
   uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
+  aaveLendingPositions?: Map<string, AaveUser>;
 }
 
 export interface ClaimAbleToken extends ERC20Token {
@@ -140,9 +150,16 @@ export class Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export class Transactions extends BaseData<'transaction'> {
+export class Transactions extends BaseData<ProtocolTypeEnum.transaction> {
   @Type(() => Transaction)
   txs: Transaction[];
+}
+
+export class LendingDto extends BaseData<ProtocolTypeEnum.lending> {
+  lendingPositions: LendingPosition[];
+}
+export class BorrowingDto extends BaseData<ProtocolTypeEnum.borrowing> {
+  borrowingPositions: BorrowingPosition[];
 }
 
 export class LiquidityChangeTransaction extends Transaction {

@@ -11,6 +11,7 @@ import { FeatureEnum } from '../protocol/features/features.enum';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '../dto/currency.dto';
 import { FeatureResultDto } from '../protocol/features/features.types';
+import { BorrowingPosition, LendingPosition } from 'src/interfaces/lending.position.interfaces';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -30,7 +31,7 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResultDto<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResultDto<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPosition | BorrowingPosition>;
 } & {
   errors?: string[] | Error[];
 };
@@ -235,4 +236,47 @@ export class StakingPositionResponseDto {
 
   @ApiProperty({type: [IntegrationStakingPositionDto]})
   stakingPositions: IntegrationStakingPositionDto[];
+}
+
+export class IntegrationLendingPositionsDto {
+  @ApiProperty({type: String, example: '0x0000000000085d4780b73119b644ae5ecd22b3760xb53c1a33016b2dc2ff3653530bff1848a515c8c5'})
+  id: string;
+
+  @ApiProperty({type: String, example: '684096740209'})
+  currentTotalBalance: string;
+
+  @ApiProperty({type: String, example: '28139924983415244252223'})
+  currentTotalDebt: string;
+
+  @ApiProperty({type: String, example: '28139924983415244252223'})
+  currentStableDebt: string;
+
+  @ApiProperty({type: String, example: '28139924983415244252223'})
+  currentVariableDebt: string;
+
+  @ApiProperty({type: Number, example: '0.0287'})
+  lendingAPY: number;
+
+  @ApiProperty({type: Number, example: '0.0397'})
+  stableBorrowAPY: number;
+
+  @ApiProperty({type: Number, example: '0.1199'})
+  variableBorrowAPY: number;
+
+  @ApiProperty({ type: LPToken })
+  token: IntegrationERC20TokenDto;
+}
+
+export class LendingPoolResponseDto {
+  @ApiProperty({type: Number, example: 1329299651716364})
+  totalBalance: number;
+
+  @ApiProperty({type: Number, example: 1329299651716364})
+  totalDebt: number;
+
+  @ApiProperty({type: Number, example: 1.3})
+  healthFactor: number;
+
+  @ApiProperty({type: [IntegrationLendingPositionsDto]})
+  lendingPositions: IntegrationLendingPositionsDto[];
 }

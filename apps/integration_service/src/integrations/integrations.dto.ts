@@ -11,6 +11,7 @@ import { FeatureEnum } from '../protocol/features/features.enum';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { FeatureResult } from '../protocol/features/features.types';
+import { LendingPosition, BorrowingPosition } from '@app/common';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -30,7 +31,7 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPosition | BorrowingPosition>;
 } & {
   errors: string[] | Error[];
 };

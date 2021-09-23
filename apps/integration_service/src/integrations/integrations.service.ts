@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { Injectable, NotImplementedException } from '@nestjs/common';
 
 import { ProtocolName } from '@app/common';
-import { ChainIdToAbbr } from '@app/common/constatnt/dictionaries';
+import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 

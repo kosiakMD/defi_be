@@ -5,7 +5,7 @@ import { UniswapSubgraph } from './uniswap.subgraph';
 
 @Injectable()
 export class PangolinSubgraph extends UniswapSubgraph {
-  protected subgraphUrl: string = process.env.AMM_PANGOLIN_SUBGRAPH_URL;
+  protected subgraphUrl: string;
 
   constructor(
     protected readonly configService: ConfigService,

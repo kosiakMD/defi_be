@@ -30,6 +30,40 @@ export class IncomeLiquidityPosition {
   pair: IncomeLiquidityPositionPair = null;
 }
 
+export class AaveReserve {
+  id: string = null; // reserve ID
+
+  // underlying token
+  underlyingAsset: string = null;
+  symbol: string = null;
+  decimals: number = null;
+  name: string = null;
+  priceUSD?: number = null;
+
+  // APY/APR calculations
+  liquidityRate: string = null;
+  stableBorrowRate: string = null;
+  variableBorrowRate: string = null;
+  aEmissionPerSecond: string = null;
+  vEmissionPerSecond: string = null;
+  sEmissionPerSecond: string = null;
+  totalATokenSupply: string = null;
+  totalCurrentVariableDebt: string = null;
+}
+
+export class AaveUserReserve {
+  currentTotalDebt = '0';
+  currentStableDebt = '0';
+  currentVariableDebt = '0';
+  currentATokenBalance = '0';
+  reserve: AaveReserve;
+}
+
+export class AaveUser {
+  userAddress: string;
+  reserves: AaveUserReserve[];
+}
+
 export class LiquidityPosition {
   lpToken: ERC20Token = null;
   pool?: LiquidityPool = null;

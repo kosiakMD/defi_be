@@ -1,4 +1,5 @@
 export enum ProjectEnum {
+  aave = 'aave',
   spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
@@ -12,6 +13,10 @@ export enum ProjectEnum {
 
 export enum PangolinProtocolEnum {
   pangolin = 'Pangolin',
+}
+
+export enum AaveProtocolEnum {
+  AaveV2 = 'AaveV2',
 }
 
 export enum SpookySwapProtocolEnum {
@@ -58,6 +63,7 @@ export enum AutofarmProtocolEnum {
  type AdvEvents = (typeof AdvEvents)[keyof typeof AdvEvents];
  */
 export type ProtocolName =
+  | AaveProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
   | SushiSwapProtocolEnum
@@ -66,6 +72,7 @@ export type ProtocolName =
   | SpookySwapProtocolEnum
   | AutofarmProtocolEnum;
 export const ProtocolNameEnum = {
+  ...AaveProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...SushiSwapProtocolEnum,

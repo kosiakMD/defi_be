@@ -1,4 +1,10 @@
 import { plainToClass } from 'class-transformer';
+import {
+  Borrowing,
+  BorrowingPosition,
+  Lending,
+  LendingPosition,
+} from 'src/interfaces/lending.position.interfaces';
 
 import {
   ChainAbbrEnum,
@@ -81,7 +87,11 @@ export abstract class BasicProtocol<
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> => {
     let pools, poolsErrors;
-    const { rawPools, rawStaking } = await this.getAllFeaturesRawData(address, chainId);
+    const { rawPools, rawStaking, rawLending, rawBorrowing } = await this.getAllFeaturesRawData(
+      address,
+      chainId,
+    );
+
     try {
       const { errors, data } = await this.transformPools(rawPools, chainId);
       poolsErrors = errors;
@@ -90,6 +100,7 @@ export abstract class BasicProtocol<
       poolsErrors = e;
       pools = null;
     }
+
     let staking, stakingErrors;
     try {
       staking = this.transformStaking(rawStaking);
@@ -97,11 +108,30 @@ export abstract class BasicProtocol<
       stakingErrors = e;
       staking = null;
     }
+
+    let lending, lendingErrors;
+    try {
+      lending = this.transformLending(rawLending);
+    } catch (e) {
+      lendingErrors = e;
+      lending = null;
+    }
+
+    let borrowing, borrowingErrors;
+    try {
+      borrowing = this.transformBorrowing(rawBorrowing);
+    } catch (e) {
+      borrowingErrors = e;
+      borrowing = null;
+    }
+
     // console.log('rawStaking', rawStaking);
     const result = new IntegrationFeaturesDataDto();
-    result.errors = [poolsErrors, stakingErrors].flat(5); // TODO add staking errors
+    result.errors = [poolsErrors, stakingErrors, lendingErrors, borrowingErrors].flat(5); // TODO add staking errors
     result[FeatureEnum.pools] = pools;
     result[FeatureEnum.staking] = staking;
+    result[FeatureEnum.lending] = lending;
+    result[FeatureEnum.borrowing] = borrowing;
 
     return result;
   };
@@ -114,10 +144,12 @@ export abstract class BasicProtocol<
       const data = await this.getData(addresses, chainId);
       const rawPools = data.find((data) => data['liquidityPositions'])?.liquidityPositions;
       const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
+      const rawLending = data.find((data) => data['lendingPositions']);
+      const rawBorrowing = data.find((data) => data['borrowingPositions']);
       // TODO: feature transaction is disabled
       // const transactions = data.find((data) => data['transactions']);
 
-      return { rawPools, rawStaking };
+      return { rawPools, rawStaking, rawLending, rawBorrowing };
     } catch (e) {
       this.logger.error(e);
       throw e;
@@ -272,6 +304,41 @@ export abstract class BasicProtocol<
         }
       }
     }
+  }
+
+  getBasicFeatureResult<T>(
+    data: Borrowing | Lending,
+    rootKey: string,
+    totalKey: string,
+  ): FeatureResultDto<T> {
+    const result = {
+      totalValue: 0,
+      items: data?.[rootKey] ?? [],
+    };
+
+    if (data) {
+      data[rootKey].forEach((cur) => {
+        result.totalValue += cur[totalKey] * cur.token.priceUSD;
+      });
+    }
+
+    return result;
+  }
+
+  protected transformLending(rawLending: Lending): FeatureResultDto<LendingPosition> {
+    return this.getBasicFeatureResult<LendingPosition>(
+      rawLending,
+      'lendingPositions',
+      'totalDepositDecimal',
+    );
+  }
+
+  protected transformBorrowing(rawBorrowing: Borrowing): FeatureResultDto<BorrowingPosition> {
+    return this.getBasicFeatureResult<BorrowingPosition>(
+      rawBorrowing,
+      'borrowingPositions',
+      'totalDebtDecimal',
+    );
   }
 
   protected transformStaking(rawStaking: StakingPosition[]): FeatureResultDto<StakingPosition> {

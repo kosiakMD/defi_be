@@ -1,13 +1,18 @@
 export enum ProjectEnum {
+  aave = 'aave',
+  autofarm = 'autofarm',
+  balancer = 'balancer',
+  curve = 'curve',
+  pancake = 'pancake',
+  pangolin = 'pangolin',
+  quickswap = 'quickswap',
   spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
-  pancake = 'pancake',
-  quickswap = 'quickswap',
-  curve = 'curve',
-  balancer = 'balancer',
-  autofarm = 'autofarm',
-  pangolin = 'pangolin',
+}
+
+export enum AaveProtocolEnum {
+  AaveV2 = 'AaveV2',
 }
 
 export enum UniswapProtocolEnum {
@@ -53,6 +58,7 @@ export enum QuickswapProtocolEnum {
 //   | UniswapProtocolEnum;
 
 export const ProtocolNameEnum = {
+  ...AaveProtocolEnum,
   ...AutofarmProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,

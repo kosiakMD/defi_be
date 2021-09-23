@@ -1,4 +1,5 @@
 import {
+  AaveProtocolEnum,
   AutofarmProtocolEnum,
   ChainIdEnum,
   PancakeProtocolEnum,
@@ -16,13 +17,14 @@ export * from './protocol.types';
 export type ChainId = ChainIdEnum;
 
 export type ProtocolName =
+  | AaveProtocolEnum
+  | AutofarmProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
-  | SushiSwapProtocolEnum
-  | UniswapProtocolEnum
   | QuickswapProtocolEnum
   | SpookySwapProtocolEnum
-  | AutofarmProtocolEnum;
+  | SushiSwapProtocolEnum
+  | UniswapProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

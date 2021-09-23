@@ -4,7 +4,15 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { LiquidityPositionDto, AutomaticMarketMaker } from '@app/common';
+import {
+  Lending,
+  Borrowing,
+  LiquidityPositionDto,
+  LendingToken,
+  BorrowingToken,
+  AutomaticMarketMaker,
+  AaveUser,
+} from '@app/common';
 import {
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
@@ -18,6 +26,7 @@ import {
   UniswapProtocolEnum,
 } from '@app/common/enum';
 import { ProtocolName } from '@app/common/types';
+import { decimalConverter } from '@app/common/utils/number';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { LiquidityPool } from '../dto/liquidity.position.dto';
@@ -51,11 +60,11 @@ export class Mapper {
     response: UniswapResponseData,
     platformName: ProjectEnum,
     protocolName?: ProtocolName,
+    chain?: ChainIdEnum,
   ): Promise<BaseData[]> {
     const base: BaseData[] = [];
 
-    // TODO: add checks does protocol belong to chain
-    const chainId = this.guessChainIdFromProtocolName(protocolName);
+    const chainId = chain ?? this.guessChainIdFromProtocolName(protocolName);
 
     for (const address of userAddresses) {
       const transactions: Transactions = plainToClass(Transactions, {
@@ -97,6 +106,35 @@ export class Mapper {
         );
 
         base.push(staking);
+      }
+
+      if (response.aaveLendingPositions) {
+        // TODO: Lending should be a class and use plainToClass
+        const lending: Lending = plainToClass(Lending, {
+          chainId: chainId,
+          protocolType: ProtocolTypeEnum.lending,
+          protocolName: protocolName,
+          platformName: platformName,
+          userAddress: this.getOriginAddress(originAddresses, address),
+          lendingPositions: [],
+        });
+
+        const borrowing: Borrowing = plainToClass(Borrowing, {
+          chainId: chainId,
+          protocolType: ProtocolTypeEnum.borrowing,
+          protocolName: protocolName,
+          platformName: platformName,
+          userAddress: this.getOriginAddress(originAddresses, address),
+          borrowingPositions: [],
+        });
+
+        await this.mapLendingPositions(
+          lending,
+          borrowing,
+          response.aaveLendingPositions.get(address),
+        );
+        base.push(lending);
+        base.push(borrowing);
       }
 
       this.mapLiquidityPositions(
@@ -331,6 +369,73 @@ export class Mapper {
     }
 
     staking.stakingPositions.push(...StakingPositionsToPush);
+  }
+
+  protected async mapLendingPositions(
+    lending: Lending,
+    borrowing: Borrowing,
+    user: AaveUser = null,
+  ): Promise<void> {
+    if (!user) return;
+
+    const RAY = 10 ** 27;
+
+    user.reserves.forEach((userReserve) => {
+      const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
+
+      // Calculate Lending
+      if (Number(userReserve.currentATokenBalance)) {
+        const lendingToken: LendingToken = plainToClass(LendingToken, {
+          address: userReserve.reserve.underlyingAsset,
+          decimals: userReserve.reserve.decimals,
+          name: userReserve.reserve.name,
+          symbol: userReserve.reserve.symbol,
+          priceUSD: userReserve.reserve.priceUSD,
+        });
+
+        const totalDepositDecimal = getReserveDecimals(Number(userReserve.currentATokenBalance));
+
+        lending.lendingPositions.push({
+          address: userReserve.reserve.id,
+          totalDeposit: userReserve.currentATokenBalance,
+          totalDepositDecimal,
+          totalDepositUSD: totalDepositDecimal * lendingToken.priceUSD,
+          lendingAPY: 100 * (Number(userReserve.reserve.liquidityRate) / RAY),
+          token: lendingToken,
+        });
+      }
+
+      // Calculate Borrowing
+      if (Number(userReserve.currentTotalDebt)) {
+        const borrowToken: BorrowingToken = plainToClass(BorrowingToken, {
+          address: userReserve.reserve.underlyingAsset,
+          decimals: userReserve.reserve.decimals,
+          name: userReserve.reserve.name,
+          symbol: userReserve.reserve.symbol,
+          priceUSD: userReserve.reserve.priceUSD,
+        });
+
+        const totalDebtDecimal = getReserveDecimals(Number(userReserve.currentTotalDebt));
+        const stableDebtDecimal = getReserveDecimals(Number(userReserve.currentStableDebt));
+        const variableDebtDecimal = getReserveDecimals(Number(userReserve.currentVariableDebt));
+
+        borrowing.borrowingPositions.push({
+          address: userReserve.reserve.id,
+          totalDebt: userReserve.currentTotalDebt,
+          stableDebt: userReserve.currentStableDebt,
+          variableDebt: userReserve.currentVariableDebt,
+          totalDebtDecimal,
+          stableDebtDecimal,
+          variableDebtDecimal,
+          totalDebtUSD: totalDebtDecimal * borrowToken.priceUSD,
+          stableDebtUSD: stableDebtDecimal * borrowToken.priceUSD,
+          variableDebtUSD: variableDebtDecimal * borrowToken.priceUSD,
+          borrowStableAPY: 100 * (Number(userReserve.reserve.stableBorrowRate) / RAY),
+          borrowVariableAPY: 100 * (Number(userReserve.reserve.variableBorrowRate) / RAY),
+          token: borrowToken,
+        });
+      }
+    });
   }
 
   private async getPendingSushi(poolId, userId): Promise<string> {

@@ -1,6 +1,7 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { AaveSubgraph } from './aave.subgraph';
 import { BlocksSubgraph } from './blocks.subgraph';
 import { PancakeSubgraph } from './pancake.subgraph';
 import { PangolinSubgraph } from './pangolin.subgraph';
@@ -19,6 +20,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
   ],
   providers: [
     UniswapSubgraph,
+    AaveSubgraph,
     UniswapV3Subgraph,
     BlocksSubgraph,
     SushiswapSubgraph,
@@ -29,6 +31,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
   exports: [
     ThegraphModule,
     UniswapSubgraph,
+    AaveSubgraph,
     UniswapV3Subgraph,
     SushiswapSubgraph,
     PangolinSubgraph,

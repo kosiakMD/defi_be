@@ -30,6 +30,8 @@ export enum CurrencyIdEnum {
 export enum ProtocolTypeEnum {
   amm = 'amm',
   staking = 'staking',
+  lending = 'lending',
+  borrowing = 'borrowing',
   transaction = 'transaction',
 }
 

@@ -251,7 +251,7 @@ export class UniswapProtocolV3 extends BasicProtocol implements AbstractProtocol
             // fee: 1,
           },
         },
-        rewards: rewards.push,
+        rewards: rewards,
         tokens: tokens,
       });
 
@@ -263,6 +263,13 @@ export class UniswapProtocolV3 extends BasicProtocol implements AbstractProtocol
     }, []);
 
     result.data.items = outputPools;
+
+    if (outputPools.length !== rawPools.length) {
+      this.logger.debug(
+        `Liquidity Positions Filtered: ${rawPools.length - outputPools.length}/${rawPools.length}`,
+        'uniswapProtocolV3',
+      );
+    }
 
     return result;
   }

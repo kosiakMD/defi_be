@@ -186,6 +186,7 @@ export class UniswapProtocolV3 extends BasicProtocol implements AbstractProtocol
       let TVL = 0; // sum(reserve * price)
       let userValue = 0; // sum of values
       // Pool Tokens
+
       inputPool.poolTokens.forEach((token: PoolToken) => {
         const formattedToken = plainToClass(PoolTokenDto, {});
         objectUpdate(formattedToken, token, tokenDictionary, 'default');
@@ -241,7 +242,7 @@ export class UniswapProtocolV3 extends BasicProtocol implements AbstractProtocol
             // fee: 1,
           },
         },
-        rewards: rewards.push,
+        rewards: rewards,
         tokens: tokens,
       });
 
@@ -251,6 +252,14 @@ export class UniswapProtocolV3 extends BasicProtocol implements AbstractProtocol
 
       return resultArray;
     }, []);
+
+    if (outputPools.length !== rawPools.length) {
+      this.logger.debug(
+        `Liquidity Positions Filtered: ${rawPools.length - outputPools.length}/${rawPools.length}`,
+        'uniswapProtocolV3',
+      );
+    }
+
     result.data.items = outputPools;
 
     return result;

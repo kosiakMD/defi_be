@@ -185,7 +185,7 @@ export class IntegrationService {
 
   async getAllFeatures(): Promise<FeaturesResponseDto> {
     try {
-      this.logger.time(`${this.protocolsUrl}/`);
+      this.logger.time(this.protocolsUrl);
       const data = await this.httpService
         .get(this.protocolsUrl)
         .pipe(map((r) => r.data))

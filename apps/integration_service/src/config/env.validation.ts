@@ -41,6 +41,9 @@ export const validationSchema = Joi.object({
   DB_DATABASE: Joi.string().required(),
   DB_SYNCHRONIZE: Joi.boolean().required(),
   DB_LOGGING: Joi.boolean().required(),
+  AMM_UNISWAP_V3_ETH_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
   AAVE_ETH_SUBGRAPH_URL: Joi.string().required(),
   AAVE_PLG_SUBGRAPH_URL: Joi.string().required(),
   AMM_SUSHISWAP_SUBGRAPH_URL: Joi.string() //

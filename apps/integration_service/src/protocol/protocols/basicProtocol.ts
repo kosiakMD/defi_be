@@ -95,7 +95,8 @@ export abstract class BasicProtocol<
         pools = null;
       }
       // staking
-      let staking, stakingErrors;
+      let staking,
+        stakingErrors = [];
       if (rawStaking) {
         try {
           staking = this.transformStaking(rawStaking);
@@ -106,7 +107,8 @@ export abstract class BasicProtocol<
         }
       }
 
-      let lending, lendingErrors;
+      let lending,
+        lendingErrors = [];
       try {
         lending = this.transformLending(rawLending);
       } catch (e) {
@@ -114,7 +116,8 @@ export abstract class BasicProtocol<
         lending = null;
       }
 
-      let borrowing, borrowingErrors;
+      let borrowing,
+        borrowingErrors = [];
       try {
         borrowing = this.transformBorrowing(rawBorrowing);
       } catch (e) {

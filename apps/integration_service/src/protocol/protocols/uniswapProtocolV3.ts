@@ -4,22 +4,22 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  ERC20TokenDto,
-  LiquidityPositionDto,
-  PlatformPoolTokenDto,
-  CurrentPricesPayload,
-  PriceResponseDto,
-  PoolTokenDto,
-  LiquidityPoolFeatureDto,
-  LiquidityPosition,
-  UniswapV3Position,
-  FeatureResultDto,
-  ClaimAbleTokenDto,
-  UniswapProtocolEnum,
   Address,
   ChainAbbrEnum,
   ChainIdEnum,
+  ClaimAbleTokenDto,
+  CurrentPricesPayload,
+  ERC20TokenDto,
+  FeatureResultDto,
+  LiquidityPoolFeatureDto,
+  LiquidityPosition,
+  LiquidityPositionDto,
+  PlatformPoolTokenDto,
+  PoolTokenDto,
+  PriceResponseDto,
   ProjectEnum,
+  UniswapProtocolEnum,
+  UniswapV3Position,
 } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 
@@ -32,10 +32,10 @@ import { calculatePositionAmounts, calculateTokensOwed } from '../../utils/unisw
 import { FeatureEnum } from '../features/features.enum';
 import { tokenDictionary } from '../protocols.dictionaries';
 import AbstractProtocol from './abstractProtocol';
-import BasicProtocol from './basicProtocol';
+import UniswapLikeProtocol from './uniswapLike/uniswapLikeProtocol';
 
 @Injectable()
-export class UniswapProtocolV3 extends BasicProtocol implements AbstractProtocol {
+export class UniswapProtocolV3 extends UniswapLikeProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.eth];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV3;

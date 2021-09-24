@@ -56,7 +56,7 @@ export class DetailedResponseDto<T> implements DetailedResponse<T> {
     type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
-  errors: Error[] | string[] = [];
+  errors: Error[] | string[] | any[] = [];
 
   @ApiProperty({
     isArray: true,

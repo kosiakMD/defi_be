@@ -20,6 +20,6 @@ export class RawFeaturesDto {
 
 export class FeatureHandleDto<T = LiquidityPoolFeatureDto> {
   @Exclude()
-  errors: string[] | Error[] = [];
+  errors: string[] = [];
   data: FeatureResultDto<T> = new FeatureResultDto();
 }

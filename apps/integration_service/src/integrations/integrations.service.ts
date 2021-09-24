@@ -1,8 +1,9 @@
 import { plainToClass } from 'class-transformer';
 
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ProtocolName } from '@app/common';
+import { IntegrationFeaturesDataDto, Logger, ProtocolName } from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
@@ -16,6 +17,7 @@ import { IntChainsDataDto, IntegrationsResponseDto, ProtocolInfoDto } from './in
 @Injectable()
 export class IntegrationsService {
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly featuresService: FeaturesService,
     private readonly protocolService: ProtocolService,
   ) {}
@@ -42,6 +44,12 @@ export class IntegrationsService {
       return basicInfo.chains?.includes(ChainIdToAbbr[chain]);
     });
 
+    if (!allowedChains.length) {
+      throw new NotImplementedException(
+        `Protocol '${protocolName}' doesn't support any of these chains: ${chains.join(', ')}`,
+      );
+    }
+
     const response: IntegrationsResponseDto = plainToClass(IntegrationsResponseDto, {
       errors: [],
       data: {},
@@ -58,10 +66,9 @@ export class IntegrationsService {
     // Currency
     response.data.currency = plainToClass(CurrencyDto, {});
     // Features Data
-    const allData = await Promise.allSettled<any>(
-      allowedChains.map(
-        async (chainId) =>
-          await this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
+    const allData = await Promise.allSettled<any>( // <IntegrationFeaturesDataDto>
+      allowedChains.map((chainId) =>
+        this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
       ),
     );
     // Data
@@ -75,16 +82,20 @@ export class IntegrationsService {
       // Result Features Data
       const chainResult = allData[dataIndex];
       if (chainResult.status === 'fulfilled') {
-        Object.assign(chainData, chainResult.value);
-        if (chainResult.value.errors) {
-          response.errors = [...response.errors, ...chainResult.value.errors];
+        const value: IntegrationFeaturesDataDto = chainResult.value;
+        Object.assign(chainData, value);
+        if (value.errors) {
+          response.errors.push(value.errors);
         }
       } else {
+        this.logger.error(chainResult.reason, 'getProtocolFeatures');
         response.errors.push(chainResult.reason);
       }
 
       response.data.chains.push(chainData);
     });
+
+    response.errors = response.errors.flat();
 
     if (response.errors.length) {
       response.status = ResultStatus.error;

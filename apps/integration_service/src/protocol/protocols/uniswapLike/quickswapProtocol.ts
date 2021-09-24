@@ -4,15 +4,15 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, QuickswapProtocolEnum } from '@app/common/enum';
 
-import { AccountService } from '../../account/account.service';
-import { PriceService } from '../../price/price.service';
-import { QuickswapService } from '../../quickswap/quickswap.service';
-import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
-import BasicProtocol from './basicProtocol';
+import { AccountService } from '../../../account/account.service';
+import { PriceService } from '../../../price/price.service';
+import { QuickswapService } from '../../../quickswap/quickswap.service';
+import { FeatureEnum } from '../../features/features.enum';
+import AbstractProtocol from '../abstractProtocol';
+import UniswapLikeProtocol from './uniswapLikeProtocol';
 
 @Injectable()
-export class QuickswapProtocol extends BasicProtocol<QuickswapService> implements AbstractProtocol {
+export class QuickswapProtocol extends UniswapLikeProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.plg];
   readonly project = ProjectEnum.quickswap;
   readonly name = QuickswapProtocolEnum.quickswap;
@@ -20,7 +20,6 @@ export class QuickswapProtocol extends BasicProtocol<QuickswapService> implement
   readonly features = {
     [ChainAbbrEnum.plg]: [FeatureEnum.pools, FeatureEnum.staking],
   };
-
   protected dataProvider;
   protected feeRate = 0.003;
 

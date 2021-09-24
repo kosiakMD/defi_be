@@ -4,16 +4,16 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, UniswapProtocolEnum } from '@app/common/enum';
 
-import { AccountService } from '../../account/account.service';
-import { Mapper } from '../../mappers/mapper';
-import { PriceService } from '../../price/price.service';
-import { UniswapSubgraph } from '../../thegraph/uniswap.subgraph';
-import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
-import BasicProtocol from './basicProtocol';
+import { AccountService } from '../../../account/account.service';
+import { Mapper } from '../../../mappers/mapper';
+import { PriceService } from '../../../price/price.service';
+import { UniswapSubgraph } from '../../../thegraph/uniswap.subgraph';
+import { FeatureEnum } from '../../features/features.enum';
+import AbstractProtocol from '../abstractProtocol';
+import UniswapLikeProtocol from './uniswapLikeProtocol';
 
 @Injectable()
-export class UniswapProtocolV2 extends BasicProtocol implements AbstractProtocol {
+export class UniswapProtocolV2 extends UniswapLikeProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.eth];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV2;

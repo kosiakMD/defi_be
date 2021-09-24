@@ -30,7 +30,6 @@ import { decimalConverter } from '@app/common/utils/number';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { LiquidityPool } from '../dto/liquidity.position.dto';
-import { UniswapToken } from '../interfaces/entity.information.interfaces';
 import { FeesSn1Data, FeesSn2Data } from '../interfaces/fee.interfaces';
 import { Staking } from '../interfaces/staking.position.interfaces';
 import {
@@ -47,7 +46,7 @@ import { decimalsDivider } from '../utils/util';
 
 @Injectable()
 export class Mapper {
-  private PERCENTAGE = 50;
+  static PERCENTAGE = 50;
 
   constructor(
     private readonly chainProvider: Web3Provider,
@@ -211,17 +210,11 @@ export class Mapper {
       });
 
       const { pair } = uniswapPosition;
-      const { token0, token1 } = pair;
 
       const userPoolShare =
         Number(uniswapPosition.liquidityTokenBalance) / Number(pair.totalSupply);
 
-      const [poolToken0, poolToken1] = this.mapFromUniswapTokenToPoolToken(
-        token0,
-        token1,
-        uniswapPosition.pair,
-        userPoolShare,
-      );
+      const [poolToken0, poolToken1] = Mapper.mapFromProjectTokenToPoolToken(pair, userPoolShare);
 
       const project =
         amm.platformName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.platformName;
@@ -239,35 +232,64 @@ export class Mapper {
     }
   }
 
-  private mapFromUniswapTokenToPoolToken(
-    token0: UniswapToken,
-    token1: UniswapToken,
-    pair?: IncomeLiquidityPositionPair,
-    userPoolShare?: number,
-  ): PoolToken[] {
-    const poolToken0 = plainToClass(PoolTokenDto, {
-      address: token0.id,
-      decimals: Number(token0.decimals),
-      name: token0.name,
-      symbol: token0.symbol,
-      totalSupply: null,
-      reserve: pair && pair.reserve0,
-      amount: (userPoolShare * Number(pair.reserve0)).toString(),
-      priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve0),
-      percentage: this.PERCENTAGE,
-    });
+  static createPoolTokenPoolBN(pair, order: 0 | 1, userPoolShare: BN): PoolTokenDto {
+    const poolToken = Mapper.createPoolToken(pair, order);
+    poolToken.amount = userPoolShare.times(poolToken.reserve).toString();
+    return poolToken;
+  }
 
-    const poolToken1 = plainToClass(PoolTokenDto, {
-      address: token1.id,
-      decimals: Number(token1.decimals),
-      name: token1.name,
-      symbol: token1.symbol,
-      totalSupply: null,
-      reserve: pair && pair.reserve1,
-      amount: (userPoolShare * Number(pair.reserve1)).toString(),
-      priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve1),
-      percentage: this.PERCENTAGE,
-    });
+  static createPoolTokenPoolNumber(pair, order: 0 | 1, userPoolShare: number): PoolTokenDto {
+    const poolToken = Mapper.createPoolToken(pair, order);
+    poolToken.amount = (userPoolShare * Number(poolToken.reserve)).toString();
+    return poolToken;
+  }
+
+  static createPoolToken(pair, order: 0 | 1): PoolTokenDto {
+    const token = pair[`token${order}`];
+    const reserve = pair[`reserve${order}`];
+    const poolToken = plainToClass(PoolTokenDto, {});
+    poolToken.address = token.id;
+    poolToken.decimals = Number(token.decimals);
+    poolToken.name = token.name;
+    poolToken.symbol = token.symbol;
+    poolToken.totalSupply = null;
+    poolToken.reserve = reserve;
+    poolToken.priceUSD = Mapper.priceInUSD(pair.reserveUSD, reserve);
+    poolToken.percentage = Mapper.PERCENTAGE;
+
+    return poolToken;
+  }
+
+  private static mapFromProjectTokenToPoolToken(
+    pair: IncomeLiquidityPositionPair,
+    userPoolShare: number,
+  ): PoolToken[] {
+    // const poolToken0 = plainToClass(PoolTokenDto, {
+    //   address: token0.id,
+    //   decimals: Number(token0.decimals),
+    //   name: token0.name,
+    //   symbol: token0.symbol,
+    //   totalSupply: null,
+    //   reserve: pair && pair.reserve0,
+    //   amount: (userPoolShare * Number(pair.reserve0)).toString(),
+    //   priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve0),
+    //   percentage: Mapper.PERCENTAGE,
+    // });
+    //
+    // const poolToken1 = plainToClass(PoolTokenDto, {
+    //   address: token1.id,
+    //   decimals: Number(token1.decimals),
+    //   name: token1.name,
+    //   symbol: token1.symbol,
+    //   totalSupply: null,
+    //   reserve: pair && pair.reserve1,
+    //   amount: (userPoolShare * Number(pair.reserve1)).toString(),
+    //   priceUSD: pair && Mapper.priceInUSD(pair.reserveUSD, pair.reserve1),
+    //   percentage: Mapper.PERCENTAGE,
+    // });
+
+    const poolToken0 = Mapper.createPoolTokenPoolNumber(pair, 0, userPoolShare);
+    const poolToken1 = Mapper.createPoolTokenPoolNumber(pair, 1, userPoolShare);
 
     return [poolToken0, poolToken1];
   }
@@ -283,7 +305,7 @@ export class Mapper {
   ): Promise<void> {
     const StakingPositionsToPush = [];
     const address = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2';
-    const usdPriceOfRewardToken = await this.priceService.getTokenPrices([address], 1);
+    // const usdPriceOfRewardToken = await this.priceService.getTokenPrices([address], 1);
 
     for (const element of stakingPositions) {
       if (element.pool) {
@@ -315,7 +337,8 @@ export class Mapper {
             claimable: new BN(await this.getPendingSushi(poolId, staking.userAddress)) //
               .div(decimalsDivider(18))
               .toNumber(),
-            priceUSD: usdPriceOfRewardToken.prices[address],
+            // priceUSD: usdPriceOfRewardToken.prices[address],
+            priceUSD: null,
           },
           exitedAt: null,
           liquidityPoolTokens: [],
@@ -323,39 +346,41 @@ export class Mapper {
 
         liquidityPositions.forEach((element1) => {
           if (element1.pair.id === element.pool.pair) {
-            lpToken.address = element1.pair.id;
-            lpToken.totalSupply = element1.pair.totalSupply;
+            const { pair } = element1;
+            lpToken.address = pair.id;
+            lpToken.totalSupply = pair.totalSupply;
 
-            const userPoolShare = new BN(position.staked).div(element1.pair.totalSupply);
+            // const token0 = pair.token0;
+            // const token1 = pair.token1;
+            // const reserve0 = pair.reserve0;
+            // const reserve1 = pair.reserve1;
+            //
+            // const poolToken0 = plainToClass(PoolTokenDto, {
+            //   address: token0.id,
+            //   decimals: Number(token0.decimals),
+            //   name: token0.name,
+            //   symbol: token0.symbol,
+            //   totalSupply: null,
+            //   amount: userPoolShare.times(reserve0).toString(),
+            //   reserve: reserve0,
+            //   priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve0),
+            //   percentage: Mapper.PERCENTAGE,
+            // });
+            // const poolToken1 = plainToClass(PoolTokenDto, {
+            //   address: token1.id,
+            //   decimals: Number(token1.decimals),
+            //   name: token1.name,
+            //   symbol: token1.symbol,
+            //   totalSupply: null,
+            //   amount: userPoolShare.times(reserve1).toString(),
+            //   reserve: reserve1,
+            //   priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve1),
+            //   percentage: Mapper.PERCENTAGE,
+            // });
 
-            const token0 = element1.pair.token0;
-            const token1 = element1.pair.token1;
-            const reserve0 = element1.pair.reserve0;
-            const reserve1 = element1.pair.reserve1;
-
-            const poolToken0 = plainToClass(PoolTokenDto, {
-              address: token0.id,
-              decimals: Number(token0.decimals),
-              name: token0.name,
-              symbol: token0.symbol,
-              totalSupply: null,
-              amount: userPoolShare.times(reserve0).toString(),
-              reserve: reserve0,
-              priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve0),
-              percentage: this.PERCENTAGE,
-            });
-
-            const poolToken1 = plainToClass(PoolTokenDto, {
-              address: token1.id,
-              decimals: Number(token1.decimals),
-              name: token1.name,
-              symbol: token1.symbol,
-              totalSupply: null,
-              amount: userPoolShare.times(reserve1).toString(),
-              reserve: reserve1,
-              priceUSD: Mapper.priceInUSD(element1.pair.reserveUSD, reserve1),
-              percentage: this.PERCENTAGE,
-            });
+            const poolToken0 = Mapper.createPoolToken(pair, 0);
+            const poolToken1 = Mapper.createPoolToken(pair, 1);
+            //
             position.liquidityPoolTokens.push(poolToken0, poolToken1);
           }
         });

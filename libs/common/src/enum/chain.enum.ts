@@ -19,6 +19,10 @@ export enum ChainNameEnum {
   eth = 'ethereum',
   BSC = 'binance',
   bsc = 'binance',
+  plg = 'polygon',
+  ftm = 'fantom',
+  arbi = 'arbitrum',
+  avax = 'avalanche',
 }
 
 export enum ChainSymbolNames {

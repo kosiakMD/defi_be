@@ -195,7 +195,7 @@ export interface TokensHistorical {
 
 export interface DetailedResponse<T> {
   status: ResultStatus;
-  errors: Error[] | string[];
+  errors: Error[] | string[] | any[];
   data: T;
 }
 

@@ -20,10 +20,10 @@ import { PriceService } from '../../price/price.service';
 import { AaveSubgraph } from '../../thegraph/aave.subgraph';
 import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
-import BasicProtocol from './basicProtocol';
+import UniswapLikeProtocol from './uniswapLike/uniswapLikeProtocol';
 
 @Injectable()
-export class AaveProtocolV2 extends BasicProtocol implements AbstractProtocol {
+export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.plg];
   readonly project = ProjectEnum.aave;
   readonly displayName = 'Aave V2';

@@ -238,7 +238,7 @@ export class Mapper {
     });
   }
 
-  private static makeToken(token: IncomeToken, order: '0' | '1', pair?, userPoolShare?: number) {
+  private static makeToken(token: IncomeToken, order: 0 | 1, pair?, userPoolShare?: number) {
     const reserveOrder = `reserve${order}`;
     // poolToken
     const poolToken = plainToClass(PoolTokenDto, {});
@@ -261,8 +261,8 @@ export class Mapper {
     pair?: IncomeLiquidityPositionPair,
     userPoolShare?: number,
   ): PoolToken[] {
-    const poolToken0 = Mapper.makeToken(token0, '0', pair, userPoolShare);
-    const poolToken1 = Mapper.makeToken(token0, '1', pair, userPoolShare);
+    const poolToken0 = Mapper.makeToken(token0, 0, pair, userPoolShare);
+    const poolToken1 = Mapper.makeToken(token1, 1, pair, userPoolShare);
 
     return [poolToken0, poolToken1];
   }

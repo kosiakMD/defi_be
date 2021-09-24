@@ -22,10 +22,10 @@ import { Mapper } from '../../mappers/mapper';
 import { PriceService } from '../../price/price.service';
 import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
-import BasicProtocol from './basicProtocol';
+import UniswapLikeProtocol from './uniswapLike/uniswapLikeProtocol';
 
 @Injectable()
-export class SpookySwapProtocol extends BasicProtocol implements AbstractProtocol {
+export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.ftm];
   readonly project = ProjectEnum.spookyswap;
   readonly name = SpookySwapProtocolEnum.SpookySwap;

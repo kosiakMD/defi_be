@@ -28,11 +28,16 @@ export class IntegrationsController {
   })
   @ApiQuery({
     name: 'chains',
-    type: Number,
+    type: String,
     // enum: ChainIdEnum,
-    isArray: true,
-    // enumName: 'ChainIdEnum',
-    example: [ChainIdEnum.eth],
+    example: [
+      ChainIdEnum.eth,
+      ChainIdEnum.bsc,
+      ChainIdEnum.plg,
+      ChainIdEnum.ftm,
+      ChainIdEnum.arbi,
+      ChainIdEnum.avax,
+    ].join(','),
   })
   @ApiQuery({
     name: 'addresses',
@@ -51,6 +56,10 @@ export class IntegrationsController {
     if (!Object.values(ProtocolNameEnum).includes(protocolName)) {
       throw new NotAcceptableException(`Wrong protocol name '${protocolName}'`);
     }
+    // return plainToClass(
+    //   IntegrationsResponseDto,
+    //   this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses),
+    // );
     return this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses);
   }
 }

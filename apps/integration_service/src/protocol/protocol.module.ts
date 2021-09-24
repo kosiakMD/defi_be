@@ -16,19 +16,17 @@ import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/AaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
-import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
-import PangolinProtocol from './protocols/pangolinProtocol';
-import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
-import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
-import UniswapProtocolV2 from './protocols/uniswapProtocolV2';
+import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
+import QuickswapProtocol from './protocols/uniswapLike/quickswapProtocol';
+import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
+import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AaveProtocolV2,
   AutofarmProtocol,
-  PancakeProtocolV1,
   PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,

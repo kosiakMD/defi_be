@@ -91,12 +91,14 @@ export class LiquidityPoolFeatureDto {
 export type IntegrationFeaturesData = {
   [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeatureDto | StakingPositionFeatureDto | StakingPosition>;
 } & {
-  errors: string[] | Error[];
+  // errors: string[] | Error[];
+  errors: string[] | string[][] | string[][][] | Error[];
 };
 
 @Exclude()
 export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
-  errors: string[] | Error[];
+  @Exclude()
+  errors: string[] | string[][] | string[][][] | any[] = []; // any[] for [[[Error], Error], [Error]].flat()
   @Expose()
     // eslint-disable-next-line prettier/prettier
   [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeatureDto>;

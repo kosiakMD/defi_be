@@ -48,9 +48,11 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {
   @ApiProperty({ type: ChainDto })
+  @Type(() => ChainDto)
   chain: ChainDto = null; // chains of chain + features data & info
 
   @ApiProperty({ type: ProtocolFeaturesInfoDto })
+  @Type(() => ProtocolFeaturesInfoDto)
   features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
 }
 
@@ -59,12 +61,15 @@ export class IntegrationDataDto {
   __meta?: MetaDto;
 
   @ApiProperty({ type: ProtocolInfoDto })
+  @Type(() => ProtocolInfoDto)
   protocol: ProtocolInfoDto = null;
 
   @ApiProperty({ type: CurrencyDto})
+  @Type(() => CurrencyDto)
   currency: CurrencyDto = null;
 
   @ApiProperty({ type: [IntChainsDataDto] })
+  @Type(() => IntChainsDataDto)
   chains: IntChainsDataDto[] = [];
 
   // @ApiProperty({ type: IntegrationFeaturesDataDto, name: 'IntegrationFeaturesDataDto' })

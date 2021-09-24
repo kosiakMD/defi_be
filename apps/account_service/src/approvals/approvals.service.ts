@@ -2,7 +2,7 @@ import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import { CHAIN_ID_ETH } from '@app/common/constatnt';
+import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 import { Address } from '@app/common/types';

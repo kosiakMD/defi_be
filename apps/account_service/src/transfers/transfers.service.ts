@@ -2,18 +2,18 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '@app/common/constatnt';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '@app/common/constant';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { AssetService } from '../chain/asset.service';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import { BscScanService } from '../scan_api/bsc-scan.service';
 import { EtherScanService } from '../scan_api/ether-scan.service';
+import { EtherscanTransfer } from '../scan_api/ether.scan.interfaces';
 import { PolygonScanService } from '../scan_api/polygon-scan.service';
 import { ScanApiService } from '../scan_api/scan.api.service';
 import { ResponseData as BlocksResponseData } from '../thegraph/blocks/block.interface';

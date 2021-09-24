@@ -59,6 +59,17 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  ETH_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  BSC_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  POLYGON_BALANCES_CHECKER_ADDRESS: Joi.string()
+    .default('0x1502c3c8e63873b1b162ed27a218069dc1486f51')
+    .optional(),
+  FTM_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  AVAX_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //
     .default('eu-central-1')

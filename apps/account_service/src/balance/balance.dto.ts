@@ -6,14 +6,13 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, ChainSymbols } from '@app/common/enum';
-import { Address } from '@app/common/types';
+import { Address, ChainIdEnum, ChainSymbols } from '@app/common';
 
 import {
   AccountBalance,
-  AccountTokenBalance,
-  BalanceToken,
+  ERC20Token,
   ErrorMessage,
+  TokenBalance,
 } from './interfaces/balance.interfaces';
 
 const web3 = new Web3();
@@ -21,7 +20,6 @@ const web3 = new Web3();
 interface BalancesQuery {
   addresses: Address[];
   chains: ChainIdEnum[];
-  internal: number;
 }
 
 export class BalancesQueryDto implements BalancesQuery {
@@ -71,20 +69,26 @@ export class BalancesQueryDto implements BalancesQuery {
   ];
 
   @IsOptional()
-  @Transform(({ value }) => parseInt(value, 10))
-  @IsInt()
-  @ApiProperty({
-    type: Number,
-    default: 1,
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    value.forEach((address: string) => {
+      if (!web3.utils.isAddress(address)) {
+        throw new BadRequestException(`Asset '${address}' is not valid`);
+      }
+    });
+    return value;
   })
-  internal: number;
+  @IsString({ each: true })
+  assets: Address[];
 
   constructor(data: BalancesQueryDto) {
     Object.assign(this, data);
   }
 }
 
-export class BalanceTokenDto implements BalanceToken {
+export class BalanceTokenDto implements ERC20Token {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chainId: ChainIdEnum;
   @ApiProperty({ type: Number, example: 18 })
@@ -95,17 +99,15 @@ export class BalanceTokenDto implements BalanceToken {
   name: string;
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
   address: string;
-  @ApiProperty({ type: Boolean, example: false, required: false })
-  isLp?: boolean;
 }
 
-export class AccountTokenBalanceDto implements AccountTokenBalance {
+export class AccountTokenBalanceDto implements TokenBalance {
   @ApiProperty({ type: String, example: '95480719361477141' })
   amount: string;
   @ApiProperty({ type: String, example: '0x782629c9578889a9b8464f051f23843734f72599' })
   account: string;
   @ApiProperty({ type: Number, example: 0.09548071936147715 })
-  decimalsAmount: number;
+  decimalsAmount?: number;
   @ApiProperty({ type: Number, example: 2177.94, required: false })
   tokenPriceUSD?: number;
   @ApiProperty({ type: Number, example: 18346602.807013184, required: false })
@@ -140,7 +142,7 @@ export class BalanceDto implements AccountBalance {
   totalUsd: number;
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
-  tokens: AccountTokenBalance[];
+  tokens: AccountTokenBalanceDto[];
 
   @ApiProperty({ type: [ErrorDto] })
   errors?: ErrorMessage[];

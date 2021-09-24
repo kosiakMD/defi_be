@@ -1,15 +1,14 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ETH_BNB_ADDRESS } from '../common/constatnt';
 import { ChainIdEnum } from '../common/enum';
 import { Address } from '../common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
-import { changeTokenArray } from '../balance/balance_util/balance.util';
 import {
   CurrentPricesPayload,
   HistoricalPrices,
@@ -17,6 +16,7 @@ import {
   PriceResponseDto,
   PricesDto,
 } from '../balance/dto/price.response.dto';
+import { ERC20Token } from '../balance/interfaces/balance.interfaces';
 import {
   NO_DB_BNB_TOKENS,
   NO_DB_ETH_TOKENS,
@@ -24,12 +24,17 @@ import {
   NO_SCAN_ETH_TOKENS,
 } from '../balance/tokens/tokens';
 import { isEthChain } from '../utils/web3';
-import { CurrentTokensPricesDto, PriceCurrentRequestDto } from './price.dto';
+import { CurrentTokensPricesDto, FetchPricesRequestDto, PriceCurrentRequestDto } from './price.dto';
 import { CurrentPricesPayloadNew, PriceServiceResponse } from './price.interfaces';
+
+function changeTokenArray(fromArray: ERC20Token[], toArray: string[]): void {
+  fromArray.forEach((token) => toArray.push(token.address));
+}
 
 @Injectable()
 export class PriceService {
   private readonly getPricesUrl: string;
+  private readonly fetchPricesUrl: string;
   private readonly getNonLpTokensUrl: string;
   private readonly getBatchPriceUrl: string;
 
@@ -97,6 +102,7 @@ export class PriceService {
     this.getPricesUrl = `${url}/${getPricesPath}/v2`;
     this.getNonLpTokensUrl = `${url}/${getPricesPath}/nonLpTokens`;
     this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
+    this.fetchPricesUrl = `${url}/${getPricesPath}/fetch`;
   }
 
   async getTokenPrices(
@@ -133,6 +139,38 @@ export class PriceService {
     return result;
   }
 
+  async fetchTokenPrices(
+    addressesArray: Address[],
+    chain: ChainIdEnum,
+  ): Promise<PriceResponseDto<CurrentPricesPayload>> {
+    PriceService.mapAddressArray(addressesArray, chain);
+
+    const request = new FetchPricesRequestDto(addressesArray, chain);
+
+    try {
+      this.logger.time(this.getPricesUrl);
+
+      const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
+        .post(this.fetchPricesUrl, request)
+        .pipe(map((response) => response.data))
+        .toPromise();
+
+      this.logger.timeEnd(this.getPricesUrl);
+
+      return response;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      this.logger.error(e);
+      // TODO: do we need 0 if error? it's tricky
+      const pricePayload: CurrentPricesPayload = {};
+
+      addressesArray.forEach((item) => {
+        pricePayload[`${item}`] = 0;
+      });
+      return { prices: pricePayload };
+    }
+  }
+
   async getTokenPricesWithLp(
     addressesArray: Address[],
     chain: ChainIdEnum,
@@ -162,21 +200,6 @@ export class PriceService {
       });
       return new PriceResponseDto<CurrentPricesPayloadNew>(undefined, undefined, pricePayload);
     }
-  }
-
-  async getNonLpTokens(): Promise<string[]> {
-    let result;
-    try {
-      this.logger.time(this.getPricesUrl);
-      result = await this.httpService
-        .post(this.getNonLpTokensUrl, {})
-        .pipe(map((response) => response.data))
-        .toPromise();
-    } catch (e) {
-      e.response && this.logger.error(e.response.data);
-      this.logger.error(e, 'getNonLpTokens');
-    }
-    return result || [];
   }
 
   async getHistoricalPrices(

@@ -2,15 +2,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Address } from '../common/interfaces';
-import { CurrencyId, Timestamp } from '../common/types';
-import { ChainIdEnum, CurrencyIdEnum } from 'src/common/enum';
+import { CurrencyId } from '../common/types';
+import { ChainIdEnum } from 'src/common/enum';
 
 import { ChainDto } from '../balance/dto/chain.dto';
 import { CurrencyDto } from '../balance/dto/currency.dto';
 import { CurrentTokensPrices, PriceServiceResponse } from './price.interfaces';
 
 export class PriceCurrentRequestDto {
-  constructor(addresses: Address[], chain: ChainIdEnum, currency: CurrencyId) {
+  constructor(addresses: Address[], chain: ChainIdEnum, currency?: CurrencyId) {
     this.addresses = addresses;
     this.chain = chain;
     this.currency = currency;
@@ -32,34 +32,25 @@ export class PriceCurrentRequestDto {
   currency?: CurrencyId;
 }
 
-export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
-  constructor(
-    addresses: Address[],
-    timestamps: Timestamp[],
-    chain: ChainIdEnum,
-    currency: CurrencyId,
-  ) {
-    super(addresses, chain, currency);
-    this.timestamps = timestamps;
+export class FetchPricesRequestDto {
+  constructor(addresses: Address[], chain: ChainIdEnum, currency?: CurrencyId) {
+    this.addresses = addresses.join(',');
+    this.chain = chain;
+    this.currency = currency;
   }
 
   @ApiProperty({
-    type: [String],
-    example: [
-      '0xf5d669627376ebd411e34b98f19c868c8aba5ada',
-      '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-    ],
+    type: String,
+    example:
+      '0xf5d669627376ebd411e34b98f19c868c8aba5ada,0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   })
-  addresses: Address[];
+  addresses: string;
 
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;
 
-  @ApiProperty({ enum: CurrencyIdEnum, enumName: 'CurrencyIdEnum', example: CurrencyIdEnum.usd })
-  currency?: CurrencyIdEnum;
-
-  @ApiProperty({ type: [String], example: ['1626178227726', '1626178458384'] })
-  timestamps: Timestamp[];
+  @ApiProperty({ type: Number, example: 1 })
+  currency?: CurrencyId;
 }
 
 export class PriceResponseDto<T> implements PriceServiceResponse<T> {
@@ -79,12 +70,5 @@ export class CurrentTokensPricesDto implements CurrentTokensPrices {
   @ApiProperty({ type: String, example: 'COINGECKO' })
   platform: string = null;
   @ApiProperty({ type: String, example: 1233 })
-  price: number = null;
-}
-
-export class NoDbTokenPricesDto {
-  @ApiProperty({ type: String, example: '0xf5d669627376ebd411e34b98f19c868c8aba5ada' })
-  address: string = null;
-  @ApiProperty({ type: Number, example: 1233 })
   price: number = null;
 }

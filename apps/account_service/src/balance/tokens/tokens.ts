@@ -6,8 +6,7 @@ import {
   WBNB_ADDRESS,
   WETH_ADDRESS,
   ZERO_ADDRESS,
-  WFTM_ADDRESS,
-} from '@app/common/constatnt';
+} from '@app/common/constant';
 
 export const esdToken = {
   address: ESD_ADDRESS.toLowerCase(),
@@ -65,25 +64,9 @@ export const ftmToken = {
   isLp: false,
 };
 
-export const wftmToken = {
-  address: WFTM_ADDRESS.toLowerCase(),
-  symbol: 'WFTM',
-  name: 'Wrapped Fantom',
-  decimals: 18,
-  isLp: false,
-};
-
 export const NO_DB_ETH_TOKENS = [ethToken, wethToken, daiToken, esdToken];
 
 export const NO_DB_BNB_TOKENS = [bnbToken, wbnbToken];
-
-export const NO_DB_POLYGON_TOKENS = [];
-
-export const NO_DB_FTM_TOKENS = [ftmToken, wftmToken];
-
-export const NO_DB_ARBITRUM_TOKENS = [];
-
-export const NO_DB_AVAX_TOKENS = [];
 
 export const NO_SCAN_ETH_TOKENS = [ethToken, wethToken];
 

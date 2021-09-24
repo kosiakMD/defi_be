@@ -7,12 +7,11 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { DEFAULT_MULTIPLIER } from '@app/common/constatnt';
+import { DEFAULT_MULTIPLIER } from '@app/common/constant';
 import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import {
@@ -32,6 +31,7 @@ import {
   transactionFeeUSD,
   transferTokenAddressNotIn,
 } from '../utils/utils';
+import { EtherscanTransfer } from './ether.scan.interfaces';
 import { EtherScanTransactionResponseDto } from './ether.scan.transaction.response.dto';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec

@@ -1,10 +1,10 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { HttpException, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CurrencyEnum } from '../common/enum';
+import { CurrencyEnum } from '../common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
@@ -17,7 +17,7 @@ export class CovalentService {
   protected readonly url: string;
   protected readonly apiKey: string;
 
-  private getBalanceUrl(address: Address, chainId: ChainIdEnum): string {
+  private getBalanceUrl(address: Address, chainId: number): string {
     return `${this.url}/${chainId}/address/${address}/balances_v2/`;
   }
 
@@ -30,7 +30,7 @@ export class CovalentService {
     this.apiKey = this.configService.get<string>('COVALENT_KEY');
   }
 
-  public async getBalances(address: Address, chainId: ChainIdEnum): Promise<Covalent.Balance> {
+  public async getBalances(address: Address, chainId: number): Promise<Covalent.Balance> {
     const transactionUrl = this.getBalanceUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);

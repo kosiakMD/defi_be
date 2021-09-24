@@ -6,8 +6,6 @@ import {
   CurrencyIdEnum,
 } from '../common/enum';
 
-import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-
 export interface Chain {
   id: ChainIdEnum;
   name: ChainNameEnum;
@@ -34,8 +32,6 @@ export interface CurrentTokensPrices {
 export interface CurrentPricesPayloadNew {
   [key: string]: CurrentTokensPrices;
 }
-
-export type PriceServiceHistoricalResponse = PriceServiceResponse<HistoricalPricesMap>;
 
 export interface CurrentPricesPayload {
   [key: string]: number;

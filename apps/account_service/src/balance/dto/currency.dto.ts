@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, ChainSymbols, CurrencyEnum, CurrencyIdEnum } from '@app/common/enum';
+import { ChainIdEnum, ChainSymbols, CurrencyEnum, CurrencyIdEnum } from '@app/common';
 
 import { Currency } from '../../price/price.interfaces';
 
@@ -25,7 +25,6 @@ export class CryptoCurrencyDto /*extends CurrencyDto */ {
   name: ChainSymbols = ChainSymbols.eth;
 
   constructor(currency?: Partial<CryptoCurrencyDto>) {
-    // super(currency);
     Object.assign(this, currency);
   }
 }

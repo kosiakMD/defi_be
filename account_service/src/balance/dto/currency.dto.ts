@@ -25,7 +25,6 @@ export class CryptoCurrencyDto /*extends CurrencyDto */ {
   name: ChainSymbols = ChainSymbols.eth;
 
   constructor(currency?: Partial<CryptoCurrencyDto>) {
-    // super(currency);
     Object.assign(this, currency);
   }
 }

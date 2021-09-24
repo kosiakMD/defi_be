@@ -34,7 +34,7 @@ export class CovalentService {
     this.apiKey = this.configService.get<string>('COVALENT_KEY');
   }
 
-  public async getBalances(address: Address, chainId: ChainIdEnum): Promise<Covalent.Balance> {
+  public async getBalances(address: Address, chainId: number): Promise<Covalent.Balance> {
     const transactionUrl = this.getBalanceUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);
@@ -69,10 +69,7 @@ export class CovalentService {
     }
   }
 
-  public async getTransactions(
-    address: Address,
-    chainId: ChainIdEnum,
-  ): Promise<Covalent.Transaction> {
+  public async getTransactions(address: Address, chainId: number): Promise<Covalent.Transaction> {
     const transactionUrl = this.getTransactionUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);

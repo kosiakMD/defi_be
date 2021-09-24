@@ -1,7 +1,7 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
-import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from '@app/common/constatnt';
+import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from '@app/common/constant';
 import { Address } from '@app/common/types';
 
 import { ScanTransfer, TransfersResponse } from '../transfers/interfaces/transfers.interfaces';

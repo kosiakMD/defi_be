@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address } from '@app/common/types';
+import { Address } from '@app/common';
 
 import { PriceServiceResponse } from '../../price/price.interfaces';
 import { ChainDto } from './chain.dto';

@@ -3,7 +3,7 @@ import { Exclude, Expose, plainToClass, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdToAbbr } from '@app/common/constatnt/dictionaries';
+import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { DetailedResponseDto } from '@app/common/dto';
 import { ChainIdEnum, ChainNameEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';

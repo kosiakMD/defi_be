@@ -31,6 +31,27 @@ export class PriceCurrentRequestDto {
   currency?: CurrencyId;
 }
 
+export class FetchPricesRequestDto {
+  constructor(addresses: Address[], chain: ChainIdEnum, currency?: CurrencyId) {
+    this.addresses = addresses.join(',');
+    this.chain = chain;
+    this.currency = currency;
+  }
+
+  @ApiProperty({
+    type: String,
+    example:
+      '0xf5d669627376ebd411e34b98f19c868c8aba5ada,0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+  })
+  addresses: string;
+
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  chain: ChainIdEnum;
+
+  @ApiProperty({ type: Number, example: 1 })
+  currency?: CurrencyId;
+}
+
 export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
   constructor(
     addresses: Address[],
@@ -78,12 +99,5 @@ export class CurrentTokensPricesDto implements CurrentTokensPrices {
   @ApiProperty({ type: String, example: 'COINGECKO' })
   platform: string = null;
   @ApiProperty({ type: String, example: 1233 })
-  price: number = null;
-}
-
-export class NoDbTokenPricesDto {
-  @ApiProperty({ type: String, example: '0xf5d669627376ebd411e34b98f19c868c8aba5ada' })
-  address: string = null;
-  @ApiProperty({ type: Number, example: 1233 })
   price: number = null;
 }

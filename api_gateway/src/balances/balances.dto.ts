@@ -28,6 +28,11 @@ export class BalancesQueryDto {
   @IsArray()
   @IsInt({ each: true })
   chains: Chains;
+
+  @IsOptional()
+  @Transform(({ value }) => splitToArray(value))
+  @IsString({ each: true })
+  assets: Address[];
 }
 
 export class BalanceTokenDto implements BalanceToken {
@@ -41,8 +46,6 @@ export class BalanceTokenDto implements BalanceToken {
   name: string;
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
   address: string;
-  @ApiProperty({ type: Boolean, example: false, required: false })
-  isLp: boolean;
 }
 
 export class AccountTokenBalanceDto implements AccountTokenBalance {

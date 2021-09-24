@@ -1,6 +1,5 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
 import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from 'src/common/constatnt';
 import { ChainIdEnum, ResultStatus } from 'src/common/enum';

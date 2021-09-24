@@ -1,4 +1,4 @@
-import { CHAIN_ID_BSC, CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '@app/common/constatnt';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH, ETH_BNB_ADDRESS } from '@app/common/constant';
 import { Address } from '@app/common/types';
 import { ChainId } from '@app/common/types';
 

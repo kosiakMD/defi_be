@@ -14,4 +14,7 @@ export const ESD_ADDRESS = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
 export const imBTC = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
 export const SNX = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
 
+export const COIN_ADDRESS = ZERO_ADDRESS;
+export const COIN_DECIMALS = 18;
+
 export const BLACKLISTED_TOKENS = ['0x0df62d2cd80591798721ddc93001afe868c367ff'];

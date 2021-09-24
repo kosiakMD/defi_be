@@ -125,11 +125,15 @@ export class AccountService {
     }
   }
 
-  async getBalances(addresses: Address[], chains?: Chains): Promise<BalancesResponse> {
+  async getBalances(
+    addresses: Address[],
+    chains?: Chains,
+    assets?: Address[],
+  ): Promise<BalancesResponse> {
     try {
       this.logger.time(this.getBalanceUrl);
       const data = await this.httpService
-        .get(this.getBalanceUrl, { params: { addresses, chains } })
+        .get(this.getBalanceUrl, { params: { addresses, chains, assets } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getBalanceUrl);

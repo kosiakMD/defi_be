@@ -3,7 +3,7 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { CHAIN_ID_ETH } from '@app/common/constatnt';
+import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ERC20Token } from '@app/common/interfaces';
 
 import {

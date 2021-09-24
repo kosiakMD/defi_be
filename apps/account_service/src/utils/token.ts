@@ -1,4 +1,4 @@
-import { ETH_ADDRESS, ETH_BNB_ADDRESS } from '@app/common/constatnt';
+import { ETH_ADDRESS, ETH_BNB_ADDRESS } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 import { ChainId } from '@app/common/types';

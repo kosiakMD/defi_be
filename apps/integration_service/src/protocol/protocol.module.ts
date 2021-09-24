@@ -17,6 +17,7 @@ import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/AaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
+import PancakeProtocolV1 from './protocols/uniswapLike/pancakeProtocolV1';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import QuickswapProtocol from './protocols/uniswapLike/quickswapProtocol';
 import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
@@ -28,6 +29,7 @@ const ProtocolList = [
   AaveProtocolV2,
   AutofarmProtocol,
   PangolinProtocol,
+  PancakeProtocolV1,
   QuickswapProtocol,
   SpookySwapProtocol,
   SushiswapProtocolV2,

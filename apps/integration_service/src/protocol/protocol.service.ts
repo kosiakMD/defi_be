@@ -7,6 +7,7 @@ import { ProtocolBasicInfo } from './features/features.dto';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
+import PancakeProtocolV1 from './protocols/uniswapLike/pancakeProtocolV1';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import QuickswapProtocol from './protocols/uniswapLike/quickswapProtocol';
 import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
@@ -24,6 +25,7 @@ export class ProtocolService {
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly uniswapProtocolV3: UniswapProtocolV3,
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
+    private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pangolinProtocol: PangolinProtocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
@@ -32,6 +34,7 @@ export class ProtocolService {
     this.protocols = [
       aaveProtocolV2,
       autofarmProtocol,
+      pancakeProtocolV1,
       pangolinProtocol,
       quickswapProtocol,
       spookySwapProtocol,

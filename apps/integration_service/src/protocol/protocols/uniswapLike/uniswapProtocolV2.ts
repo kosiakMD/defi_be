@@ -21,20 +21,16 @@ export class UniswapProtocolV2 extends UniswapLikeProtocol implements AbstractPr
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.pools],
   };
-  // protected readonly dataProvider;
   protected feeRate = 0.003;
-  protected readonly dataProvider;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-    // private readonly uniswapService: UniswapService,
-    private readonly uniswapSubgraph: UniswapSubgraph,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly mapper: Mapper,
+    protected readonly dataProvider: UniswapSubgraph,
   ) {
     super();
-    this.dataProvider = uniswapSubgraph; // uniswapService
   }
 }
 

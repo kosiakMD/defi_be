@@ -1,18 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '../../common/enum';
+import { Logger } from '@app/common';
+import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
 
-import { Logger } from '../../Logger/Logger.service';
-import { AccountService } from '../../account/account.service';
-import { PriceService } from '../../price/price.service';
-import { PancakeSubgraph } from '../../thegraph/pancake.subgraph';
-import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
-import BasicProtocol from './basicProtocol';
+import { AccountService } from '../../../account/account.service';
+import { Mapper } from '../../../mappers/mapper';
+import { PriceService } from '../../../price/price.service';
+import { PancakeSubgraph } from '../../../thegraph/pancake.subgraph';
+import { FeatureEnum } from '../../features/features.enum';
+import AbstractProtocol from '../abstractProtocol';
+import UniswapLikeProtocol from './uniswapLikeProtocol';
 
 @Injectable()
-export default class PancakeProtocolV1 extends BasicProtocol<any> implements AbstractProtocol {
+export default class PancakeProtocolV1 extends UniswapLikeProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.eth];
   readonly project = ProjectEnum.pancake;
   readonly name = PancakeProtocolEnum.pancakeV1;
@@ -27,6 +28,7 @@ export default class PancakeProtocolV1 extends BasicProtocol<any> implements Abs
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly dataProvider: PancakeSubgraph,
+    protected readonly mapper: Mapper,
   ) {
     super();
   }

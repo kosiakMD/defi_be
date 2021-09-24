@@ -36,7 +36,6 @@ import { BasicProtocol } from '../basicProtocol';
 // <DataProvider extends DefaultDataProvider = DefaultDataProvider>
 
 export abstract class UniswapLikeProtocol extends BasicProtocol {
-  // constructor(
   abstract readonly chains: ChainAbbrEnum[];
   abstract readonly project: ProjectEnum;
   abstract readonly name: ProtocolName;
@@ -46,11 +45,18 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
   protected abstract readonly accountService: AccountService;
   protected abstract readonly priceService: PriceService;
   protected abstract readonly dataProvider?: DefaultDataProvider | UniswapLikeSubgraph;
-  protected abstract readonly feeRate?: number;
+  protected readonly feeRate?: number;
   protected readonly mapper?: Mapper;
-  constructor() {
-    // super(name, displayName, chains, project, features, logger);
+
+  protected constructor() {
     super();
+    setTimeout(() => {
+      if (this.dataProvider instanceof UniswapLikeSubgraph && !this.mapper) {
+        throw new Error(
+          `'${this.constructor.name}' extends 'UniswapLikeProtocol' wrong: No Mapper class as 'mapper' for the subgraph '${this.dataProvider.constructor.name}' is assigned`,
+        );
+      }
+    });
   }
 
   // public getFeaturesInfo<T extends FeaturesType>(chainId?: ChainIdEnum): T {

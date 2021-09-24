@@ -77,6 +77,17 @@ export class AppModule implements OnModuleInit {
   }
 
   onModuleInit(): void {
+    this.log();
+  }
+
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private configService: ConfigService,
+  ) {
+    this.log();
+  }
+
+  private log() {
     const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
@@ -84,12 +95,7 @@ export class AppModule implements OnModuleInit {
         host: SERVICE_HOST,
         port: SERVICE_PORT,
       },
-      'App',
+      'AppModule',
     );
   }
-
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private configService: ConfigService,
-  ) {}
 }

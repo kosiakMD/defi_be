@@ -8,6 +8,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainIdEnum, Logger } from '@app/common';
 
+import { BLACKLISTED_TOKENS } from '../common/constatnt';
+
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
@@ -224,7 +226,9 @@ export class BalancesService {
         ...response,
         [address]: {
           ...accountBalance,
-          tokens: accountBalance.tokens.concat(balances),
+          tokens: accountBalance.tokens
+            .filter(({ token }) => !BLACKLISTED_TOKENS.includes(token.address))
+            .concat(balances),
           errors: accountBalance.errors.concat(errors),
           totalUsd,
         },

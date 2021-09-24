@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address } from '../common/interfaces';
+import { BLACKLISTED_TOKENS } from 'src/common/constatnt';
 import { ChainIdEnum } from 'src/common/enum';
 
 import { Logger } from '../Logger/Logger.service';
@@ -226,7 +227,9 @@ export class BalancesService {
         ...response,
         [address]: {
           ...accountBalance,
-          tokens: accountBalance.tokens.concat(balances),
+          tokens: accountBalance.tokens
+            .filter(({ token }) => !BLACKLISTED_TOKENS.includes(token.address))
+            .concat(balances),
           errors: accountBalance.errors.concat(errors),
           totalUsd,
         },

@@ -48,7 +48,7 @@ export const configuration: ConfigModuleOptions = {
       throw new Error(`Config validation error: ${error.message}`);
     }
 
-    logger.warn(`Starting service with config: ${JSON.stringify(validatedConfig)}`);
+    logger.log(`Starting service with config: ${JSON.stringify(validatedConfig)}`);
     return validatedConfig;
   },
 };

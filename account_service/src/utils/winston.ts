@@ -1,7 +1,6 @@
 import os from 'os';
 import * as winston from 'winston';
 import CloudWatchTransport from 'winston-aws-cloudwatch';
-import * as Transport from 'winston-transport';
 
 import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
@@ -33,14 +32,12 @@ export const winstonParams = ({
   logCombineLog,
   serviceName,
   level = 'info',
+  awsEnabled,
   awsConfig,
   env,
   meta,
-}: LogConfig): WinstonModuleOptions => ({
-  level: level,
-  format: winston.format.json(),
-  defaultMeta: Object.assign({ service: serviceName }, meta),
-  transports: [
+}: LogConfig): WinstonModuleOptions => {
+  const transports: winston.transport[] = [
     // NestJS console like logs
     new winston.transports.Console({
       format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
@@ -49,19 +46,31 @@ export const winstonParams = ({
     new winston.transports.File({ level: 'error', filename: logErrorFile }),
     // - Write all logs with level `info` and below to `combined.log`
     new winston.transports.File({ filename: logCombineLog }),
-    new CloudWatchTransport({
-      logGroupName: `dy-${env}-service/account`,
-      logStreamName: `${os.hostname()}_${Date.now()}`,
-      createLogGroup: true,
-      createLogStream: true,
-      submissionInterval: 2000,
-      submissionRetryCount: 1,
-      batchSize: 20,
-      awsConfig,
-      formatLog,
-    }) as Transport,
-  ],
-});
+  ];
+
+  if (awsEnabled) {
+    transports.push(
+      new CloudWatchTransport({
+        logGroupName: `dy-${env}-service/account`,
+        logStreamName: `${os.hostname()}_${Date.now()}`,
+        createLogGroup: true,
+        createLogStream: true,
+        submissionInterval: 2000,
+        submissionRetryCount: 1,
+        batchSize: 20,
+        awsConfig,
+        formatLog,
+      }) as winston.transport,
+    );
+  }
+
+  return {
+    level: level,
+    format: winston.format.json(),
+    defaultMeta: Object.assign({ service: serviceName }, meta),
+    transports,
+  };
+};
 
 export const createLogger = (): LoggerService => {
   // NOTE: We should use .env initialization for logger as config service is not yet available

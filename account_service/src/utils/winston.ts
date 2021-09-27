@@ -1,10 +1,10 @@
-import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 import os from 'os';
 import * as winston from 'winston';
 import CloudWatchTransport from 'winston-aws-cloudwatch';
 import * as Transport from 'winston-transport';
 
 import { LoggerService } from '@nestjs/common';
+import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 
@@ -15,6 +15,7 @@ type LogConfig = {
   level?: string;
   meta?: Record<string, any>;
   env?: string;
+  awsEnabled: boolean;
   awsConfig: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -73,6 +74,7 @@ export const createLogger = (): LoggerService => {
     serviceName: process.env.SERVICE_NAME,
     level: process.env.LOG_LEVEL,
     env: process.env.NODE_ENV,
+    awsEnabled: Boolean(process.env.LOG_AWS_ENABLED),
     meta: { env: process.env.ENV },
     awsConfig: {
       region: process.env.AWS_REGION,

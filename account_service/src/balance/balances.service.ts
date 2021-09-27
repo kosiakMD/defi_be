@@ -204,17 +204,16 @@ export class BalancesService {
     }
 
     const cacheKey = `TRACKED_ASSETS_${chain}`;
-    let cachedAssets = await this.cache.get<AssetsEntity[]>(cacheKey);
-    if (cachedAssets) {
-      return cachedAssets;
+    let assets = await this.cache.get<AssetsEntity[]>(cacheKey);
+    if (assets && assets.length) {
+      return assets;
     }
 
-    cachedAssets = await this.assentsRepository.find({ where: { chain, isTracked: true } });
-    // NOTE: We store data in cache and forget about it
-    this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets, {
+    assets = await this.assentsRepository.find({ where: { chain, isTracked: true } });
+    await this.cache.set<AssetsEntity[]>(cacheKey, assets, {
       ttl: this.configService.get<number>('CACHE_ASSETS_TTL'),
     });
-    return cachedAssets;
+    return assets;
   }
 
   private mapResults(results: PartialBalancesResponse[]): BalancesResponse {

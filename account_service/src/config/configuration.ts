@@ -39,13 +39,16 @@ export const configuration: ConfigModuleOptions = {
       allowUnknown: true,
       ...validationOptions,
     });
+
+    const logger = createLogger();
     if (error) {
       // NOTE: Environment variables validation failed, service will crash
       // We try to log as much information as possible
-      const logger = createLogger();
       logger.error(`Config validation error: ${error.message}`, null, 'Config validation');
       throw new Error(`Config validation error: ${error.message}`);
     }
+
+    logger.warn(`Starting service with config: ${JSON.stringify(validatedConfig)}`);
     return validatedConfig;
   },
 };

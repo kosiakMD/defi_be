@@ -226,7 +226,7 @@ export class BalancesService {
         ...response,
         [address]: {
           ...accountBalance,
-          tokens: accountBalance.tokens
+          tokens: balances
             .filter(({ token }) => !BLACKLISTED_TOKENS.includes(token.address))
             .concat(balances),
           errors: accountBalance.errors.concat(errors),

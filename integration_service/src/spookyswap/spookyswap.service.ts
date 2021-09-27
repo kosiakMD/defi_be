@@ -29,7 +29,7 @@ export class SpookyswapService {
 
     if (!pools) return [];
 
-    const balances = await this.accountService.getBalancesCovalent(originAddressesArray, [
+    const balances = await this.accountService.getBalances(originAddressesArray, [
       ChainIdEnum.ftm,
     ]);
     return this.mapper.mapData(

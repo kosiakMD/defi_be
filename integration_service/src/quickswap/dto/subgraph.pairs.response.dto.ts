@@ -1,7 +1,7 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-import { SubgraphResponseBase } from 'src/interfaces/subgraph.response.base';
 
 import { SubgraphPairsDto } from '.';
+import { SubgraphResponseBase } from '../../interfaces/subgraph.response.base';
 import { SubgraphErrorResponseDto } from './subgraph.error.response.dto';
 
 @Exclude()

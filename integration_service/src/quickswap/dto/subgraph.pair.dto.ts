@@ -1,6 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
-
 import { Address } from 'src/common/types';
+
 
 import { SubgraphTokenDto } from './subgraph.token.dto';
 

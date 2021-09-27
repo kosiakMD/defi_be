@@ -358,6 +358,8 @@ export class Mapper {
         if (position.liquidityPoolTokens && position.liquidityPoolTokens.length) {
           StakingPositionsToPush.push(position);
         }
+      } else {
+        StakingPositionsToPush.push(element);
       }
     }
     staking.stakingPositions.push(...StakingPositionsToPush);

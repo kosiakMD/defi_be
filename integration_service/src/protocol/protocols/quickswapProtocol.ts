@@ -19,7 +19,7 @@ export class QuickswapProtocol extends BasicProtocol<QuickswapService> implement
   readonly name = QuickswapProtocolEnum.quickswap;
   readonly displayName = 'Quickswap';
   readonly features = {
-    [ChainAbbrEnum.plg]: [FeatureEnum.pools],
+    [ChainAbbrEnum.plg]: [FeatureEnum.pools, FeatureEnum.staking],
   };
 
   protected dataProvider;

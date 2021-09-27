@@ -232,9 +232,9 @@ export class BalancesService {
         ...response,
         [address]: {
           ...accountBalance,
-          tokens: balances
-            .filter(({ token }) => !BLACKLISTED_TOKENS.includes(token.address))
-            .concat(balances),
+          tokens: accountBalance.tokens.concat(
+            balances.filter(({ token }) => !BLACKLISTED_TOKENS.includes(token.address)),
+          ),
           errors: accountBalance.errors.concat(errors),
           totalUsd,
         },

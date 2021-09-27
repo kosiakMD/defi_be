@@ -3,6 +3,7 @@ import { Cache } from 'cache-manager';
 import { In, Repository } from 'typeorm';
 
 import { CACHE_MANAGER, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -31,6 +32,7 @@ export class BalancesService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    private readonly configService: ConfigService,
     @InjectRepository(AssetsEntity)
     private readonly assentsRepository: Repository<AssetsEntity>,
     private readonly priceService: PriceService,
@@ -86,13 +88,14 @@ export class BalancesService {
   }
 
   private addAssetsInformation(results: PartialBalancesResponse[], assetsToHandle: AssetsEntity[]) {
-    const assetsMap = assetsToHandle.reduce(
-      (map, asset) => ({
-        ...map,
-        [asset.address]: asset,
-      }),
-      {},
-    );
+    const assetsMap = assetsToHandle.reduce((map, { address, name, symbol, decimals }) => {
+      map[address] = {
+        name,
+        symbol,
+        decimals,
+      };
+      return map;
+    });
 
     for (const { balances } of results) {
       for (const balance of balances) {
@@ -206,7 +209,10 @@ export class BalancesService {
     }
 
     cachedAssets = await this.assentsRepository.find({ where: { chain, isTracked: true } });
-    await this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets);
+    // NOTE: We store data in cache and forget about it
+    this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets, {
+      ttl: this.configService.get<number>('CACHE_ASSETS_TTL'),
+    });
     return cachedAssets;
   }
 

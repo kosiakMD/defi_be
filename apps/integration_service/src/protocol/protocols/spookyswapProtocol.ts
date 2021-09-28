@@ -235,7 +235,7 @@ export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractP
             const tokenBalance = new BigNumber(balance.balance)
               .div(pool.lpToken.totalSupply)
               .multipliedBy(token.reserve)
-              .div(new BigNumber(10).pow(token.decimals));
+              .div(new BigNumber(10).pow(18));
 
             return plainToClass(PoolTokenDto, {
               address: token.address,

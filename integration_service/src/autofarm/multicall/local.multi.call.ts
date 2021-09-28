@@ -5,12 +5,44 @@ import { ChainIdEnum } from '../../common/enum';
 
 import { Logger } from '../../Logger/Logger.service';
 import { StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
-import { autofarmFactoriesMap, AutofarmVaultAbi, lpTokenAbi } from './util';
+import {
+  AutoFactoryAbi,
+  autofarmAUTOFactory,
+  autofarmFactoriesMap,
+  autofarmRewardToken,
+  AutofarmVaultAbi,
+  lpTokenAbi,
+} from './util';
 
 export class LocalMultiCall extends MultiCall {
   constructor(private readonly web3: Web3, private readonly logger: Logger) {
     super(web3);
     this.logger = logger;
+  }
+
+  private getInputsForAutoStake(address: string, func: string) {
+    return {
+      target: autofarmAUTOFactory,
+      function: func,
+      args: [0, address],
+    };
+  }
+
+  async checkAutoTokenStake(data: StakingInterface[], address: string, poolsTokens: string[]) {
+    const input1 = this.getInputsForAutoStake(address, 'stakedWantTokens');
+    const input2 = this.getInputsForAutoStake(address, 'userInfo');
+
+    const [, result] = await this.multiCall(AutoFactoryAbi, [input1, input2]);
+    if (!result[0].isZero()) {
+      data.push({
+        poolNum: 0,
+        userAddress: address,
+        amount: result[0]?.toString(),
+        claimable: result[1]?.toString(),
+        contractAddress: autofarmRewardToken,
+      });
+      poolsTokens.push(autofarmRewardToken);
+    }
   }
 
   async getVaultPoolsInfo(data: StakingInterface[], chain: ChainIdEnum): Promise<string[]> {
@@ -36,14 +68,14 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       const input: CallInput = {
         target: autofarmFactoriesMap.get(chain),
-        function: 'userInfo',
+        function: 'pendingAUTO',
         args: [pool.poolNum, pool.userAddress],
       };
       return input;
     });
 
     const [, vaultUserInfo] = await this.multiCall(AutofarmVaultAbi, inputs);
-    data.forEach((i, index) => (i.claimable = vaultUserInfo[index].rewardDebt.toString()));
+    data.forEach((i, index) => (i.claimable = vaultUserInfo[index].toString()));
     return vaultUserInfo;
   }
 

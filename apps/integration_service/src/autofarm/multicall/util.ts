@@ -43,6 +43,20 @@ export const AutofarmVaultAbi = [
     stateMutability: 'view',
     type: 'function',
   },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '_pid', type: 'uint256' },
+      {
+        internalType: 'address',
+        name: '_user',
+        type: 'address',
+      },
+    ],
+    name: 'pendingAUTO',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
 ];
 
 export const lpTokenAbi = [
@@ -393,8 +407,81 @@ export const lpTokenAbi = [
   },
 ];
 
+export const AutoFactoryAbi = [
+  {
+    inputs: [],
+    name: 'owner',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'poolInfo',
+    outputs: [
+      { internalType: 'contract IERC20', name: 'want', type: 'address' },
+      { internalType: 'uint256', name: 'allocPoint', type: 'uint256' },
+      { internalType: 'uint256', name: 'lastRewardBlock', type: 'uint256' },
+      { internalType: 'uint256', name: 'accAUTOPerShare', type: 'uint256' },
+      { internalType: 'address', name: 'strat', type: 'address' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'poolLength',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'renounceOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '_pid', type: 'uint256' },
+      { internalType: 'address', name: '_user', type: 'address' },
+    ],
+    name: 'stakedWantTokens',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: 'totalAllocPoint',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'address', name: 'newOwner', type: 'address' }],
+    name: 'transferOwnership',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [
+      { internalType: 'uint256', name: '', type: 'uint256' },
+      { internalType: 'address', name: '', type: 'address' },
+    ],
+    name: 'userInfo',
+    outputs: [{ internalType: 'uint256', name: 'shares', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
+
 export const autofarmFactoriesMap: Map<number, string> = new Map([
   [ChainIdEnum.bsc, '0x0895196562c7868c5be92459fae7f877ed450452'],
 ]);
+
+export const autofarmAUTOFactory = '0x763a05bdb9f8946d8c3fa72d1e0d3f5e68647e5c';
 
 export const autofarmRewardToken = '0xa184088a740c695e156f91f5cc086a06bb78b827';

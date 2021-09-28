@@ -1,9 +1,9 @@
 import BigNumber from 'bignumber.js';
 import { classToClass } from 'class-transformer';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AbiItem } from 'web3-utils';
 
 import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum } from '../../common/enum';
 import { Address } from '../../common/types';
@@ -45,9 +45,11 @@ export class AutofarmService {
     chainId: ChainIdEnum,
   ): Promise<StakingPositionResponseDto[]> {
     try {
+      const addressLowerCase = address.toLowerCase();
       const autofarmUsers: AutofarmUser[] = await this.autofarmSubgrahp.getSubgraphData([
-        address.toLowerCase(),
+        addressLowerCase,
       ]);
+
       const stakedPosition: StakingInterface[] = [];
       autofarmUsers.forEach((user) =>
         user.balances.forEach((balance) => {
@@ -64,11 +66,12 @@ export class AutofarmService {
       const web3Provider = this.web3Provider.web3Map.get(chainId);
       const multicall = new LocalMultiCall(web3Provider, this.logger);
       const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chainId);
-
       await Promise.all([
         multicall.getVaultUsersInfo(stakedPosition, chainId),
-        multicall.getTotalSupplies(poolsAddresses, stakedPosition),
+        multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
       ]);
+
+      await multicall.getTotalSupplies(poolsAddresses, stakedPosition);
 
       const lpStaked: StakingInterface[] = [];
       const tokensAddresses = new Set<string>();
@@ -130,7 +133,7 @@ export class AutofarmService {
       const stakingResponse = new StakingPositionResponseDto();
       // stakingResponse.userAddress = key;
       stakingResponse.stakingPositions = value;
-      stakingResponse.totalValue = Number(autofarmUser.totalAmount);
+      stakingResponse.totalValue = Number(autofarmUser?.totalAmount);
 
       responseData.push(stakingResponse);
     }

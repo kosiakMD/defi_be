@@ -137,6 +137,8 @@ export class LiquidityPoolJob {
         this.logger.error(`error during tracked liquidity pools update`, '', placeholder);
       }
     }
+
+    this.logger.log(`done`);
   }
 
   async getDbPoolsConfiguration(): Promise<Map<string, IntegrationJob>> {

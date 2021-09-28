@@ -1,9 +1,8 @@
-import { WinstonModule } from 'nest-winston';
-
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { WinstonModule } from 'nest-winston';
 
 import environment from './config/environment';
 import { winstonParams } from './config/winston';

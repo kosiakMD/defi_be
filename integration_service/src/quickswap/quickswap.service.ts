@@ -60,6 +60,11 @@ export class QuickswapService {
       const uniswapLiquidityPositions = new Map<Address, IncomeLiquidityPosition[]>();
       const sushiswapStakingPosition = new Map<Address, any>();
 
+      const { data: rewardTokens } = await this.accountService.getAssets(
+        [QUICKSWAP_REWARDS_TOKEN_ADDRESS],
+        [chainId],
+      );
+
       for (const address of uniqueAddresses) {
         const {
           data: { pairs: _pairs },
@@ -73,11 +78,6 @@ export class QuickswapService {
           })),
         );
         uniswapLiquidityPositions.set(address, pairs);
-
-        const { data: rewardTokens } = await this.accountService.getAssets(
-          [QUICKSWAP_REWARDS_TOKEN_ADDRESS],
-          [chainId],
-        );
 
         const stakingPosition = await Promise.all(
           QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress }) => {
@@ -116,12 +116,9 @@ export class QuickswapService {
               pairAddress,
             );
 
-            const { data: LPStakingTokens } = await this.accountService.getAssets(
-              LPStakingTokensAddresses,
-              [chainId],
+            LPStakingTokensAddresses.forEach((tokenAddress) =>
+              stakingToken.tokens.push({ address: tokenAddress }),
             );
-
-            stakingToken.tokens.push(...LPStakingTokens);
 
             return {
               address,
@@ -137,6 +134,37 @@ export class QuickswapService {
         sushiswapStakingPosition.set(
           address,
           stakingPosition.filter((_) => +_.staked),
+        );
+      }
+
+      const tokens = new Set<Address>();
+
+      for (const address of uniqueAddresses) {
+        const stakingPositions = sushiswapStakingPosition.get(address);
+
+        stakingPositions.forEach(({ stakingToken }) =>
+          stakingToken.tokens.forEach(({ address }) => tokens.add(address)),
+        );
+      }
+
+      const { data: tokensWithData } = await this.accountService.getAssets(
+        Array.from(tokens).flat(),
+        [chainId],
+      );
+      for (const address of uniqueAddresses) {
+        const stakingPositions = sushiswapStakingPosition.get(address);
+        sushiswapStakingPosition.set(
+          address,
+          stakingPositions.map((stakingPosition) => ({
+            ...stakingPosition,
+            stakingToken: {
+              ...stakingPosition.stakingToken,
+              tokens: stakingPosition.stakingToken.tokens.map(
+                (stakingToken: Address) =>
+                  tokensWithData.find((token_) => token_.address === stakingToken) || stakingToken,
+              ),
+            },
+          })),
         );
       }
 

@@ -412,14 +412,14 @@ export abstract class BasicProtocol extends AbstractProtocol {
     rawPools?.forEach((inputPool) => {
       pools.push(inputPool.lpToken.address);
       inputPool.poolTokens.forEach((token: PoolToken) => {
-        const { address, name, symbol, decimals /*priceUSD*/ } = token;
+        const { address, name, symbol, decimals, priceUSD } = token;
         if (!name || !symbol || !decimals) {
           groupTokens(tokensMissedData, address, token);
         }
         // TODO: `priceUSD = null` always
-        // if (!priceUSD) {
-        groupTokens(tokensMissedPrice, address, token);
-        // }
+        if (!priceUSD) {
+          groupTokens(tokensMissedPrice, address, token);
+        }
       });
     });
     if (pools.length && (tokensMissedData.size || tokensMissedPrice.size)) {

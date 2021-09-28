@@ -1,6 +1,5 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
 import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AutofarmProtocolEnum, ChainAbbrEnum, ChainIdEnum, ProjectEnum } from '../../common/enum';
 import { Address } from '../../common/types';

@@ -150,7 +150,6 @@ export abstract class BasicProtocol<
       const rawBorrowing = data.find((data) => data['borrowingPositions']);
       // TODO: feature transaction is disabled
       // const transactions = data.find((data) => data['transactions']);
-
       return { rawPools, rawStaking, rawLending, rawBorrowing };
     } catch (e) {
       this.logger.error(e);

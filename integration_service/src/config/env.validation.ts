@@ -65,6 +65,12 @@ export const validationSchema = Joi.object({
   VAULT_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  SPOOKYSWAP_FARM_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  SPOOKYSWAP_ACELAB_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
   AAVE_ETH_SUBGRAPH_URL: Joi.string().required(),
   AAVE_PLG_SUBGRAPH_URL: Joi.string().required(),
   ETH_URL: Joi.string() //
@@ -99,6 +105,7 @@ export const validationSchema = Joi.object({
   AWS_SECRET_ACCESS_KEY: Joi.string() //
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
+  FTM_RPC_URL: Joi.string().required(),
   POLYGON_RPC_URL: Joi.string().required(),
 });
 

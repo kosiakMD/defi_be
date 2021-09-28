@@ -1,11 +1,11 @@
 import * as bodyParser from 'body-parser';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { install } from 'source-map-support';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';

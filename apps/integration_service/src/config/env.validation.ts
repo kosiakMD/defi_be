@@ -67,6 +67,12 @@ export const validationSchema = Joi.object({
   VAULT_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  SPOOKYSWAP_FARM_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  SPOOKYSWAP_ACELAB_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
   ETH_URL: Joi.string() //
     .required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
@@ -102,6 +108,7 @@ export const validationSchema = Joi.object({
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
   POLYGON_RPC_URL: Joi.string().required(),
+  FTM_RPC_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

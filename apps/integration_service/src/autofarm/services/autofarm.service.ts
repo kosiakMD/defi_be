@@ -34,7 +34,7 @@ export class AutofarmService {
   constructor(
     protected readonly web3Provider: Web3Provider,
     protected readonly httpService: HttpService,
-    protected readonly autofarmSubgrahp: AutofarmSubgraph,
+    protected readonly autofarmSubgraph: AutofarmSubgraph,
     protected readonly assetsService: AccountService,
     protected readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -46,7 +46,7 @@ export class AutofarmService {
   ): Promise<StakingPositionResponseDto[]> {
     try {
       const addressLowerCase = address.toLowerCase();
-      const autofarmUsers: AutofarmUser[] = await this.autofarmSubgrahp.getSubgraphData([
+      const autofarmUsers: AutofarmUser[] = await this.autofarmSubgraph.getSubgraphData([
         addressLowerCase,
       ]);
 

@@ -1,10 +1,10 @@
-import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 import os from 'os';
 import * as winston from 'winston';
 import CloudWatchTransport from 'winston-aws-cloudwatch';
 import * as Transport from 'winston-transport';
 
 import { LoggerService } from '@nestjs/common';
+import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 

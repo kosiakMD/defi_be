@@ -8,9 +8,9 @@ import {
   CurrencyIdEnum,
 } from '@app/common/enum';
 
-import { LiquidityPoolsResponseDto } from '../pools/dto/liquidity.pools.response.dto';
-import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
-import { PoolsService } from '../pools/pools.service';
+import { LiquidityPoolsResponseDto } from '../../../pools/dto/liquidity.pools.response.dto';
+import { LiquidityPoolsEntity } from '../../../pools/entities/liquidity.pools.entity';
+import { PoolsService } from '../../../pools/pools.service';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
 import { PANCAKE_PROJECT, PANCAKE_V2_PROJECT } from './util/contants';
 import { deriveBNBPerToken, deriveBNBPrice } from './util/pricing';

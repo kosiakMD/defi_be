@@ -41,8 +41,8 @@ export async function getDataByAddresses(
 ): Promise<{
   userAddresses: string[];
   response: {
-    uniswapLiquidityPositions: Map<any, any>;
-    sushiswapStakingPosition: Map<any, any>;
+    subpgrahpPools: Map<any, any>;
+    subgraphStaking: Map<any, any>;
   };
 }> {
   const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
@@ -52,12 +52,12 @@ export async function getDataByAddresses(
     flag ? subgraph.getStakingPositions(addressesArray) : null,
   ]);
 
-  const uniswapLiquidityPositions = groupBy(
+  const subpgrahpPools = groupBy(
     liquidityPosition.data.liquidityPositions,
     (liquidityPosition) => liquidityPosition.user.id,
   );
 
-  const sushiswapStakingPosition = flag
+  const subgraphStaking = flag
     ? groupBy(stakingPositions.data.users, (staking) => {
         const array = staking.id.split('-');
         return array[1];
@@ -67,8 +67,8 @@ export async function getDataByAddresses(
   return {
     userAddresses: addressesArray,
     response: {
-      uniswapLiquidityPositions,
-      sushiswapStakingPosition,
+      subpgrahpPools,
+      subgraphStaking,
     },
   };
 }

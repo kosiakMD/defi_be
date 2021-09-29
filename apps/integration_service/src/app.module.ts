@@ -7,21 +7,16 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import configuration from '@app/common/config/configuration';
 import { winstonParams } from '@app/common/utils/winston';
 
-import { AutofarmModule } from './autofarm/autofarm.module';
 import config from './config';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { JobsModule } from './jobs/jobs.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { PancakeModule } from './pancake/pancake.module';
 import { PoolsModule } from './pools/pools.module';
 import { ProtocolModule } from './protocol/protocol.module';
-import { QuickswapModule } from './quickswap/quickswap.module';
-import { SushiswapModule } from './sushiswap/sushiswap.module';
 import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
-import { UniswapModule } from './uniswap/uniswap.module';
 import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
@@ -55,12 +50,7 @@ import { VaultsModule } from './vaults/vaults.module';
     TerminusModule,
     ThegraphModule,
     //
-    UniswapModule,
     ProtocolModule,
-    QuickswapModule,
-    SushiswapModule,
-    PancakeModule,
-    AutofarmModule,
     //
     PoolsModule,
     DatabaseModule,

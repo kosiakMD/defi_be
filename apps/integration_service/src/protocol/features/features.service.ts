@@ -37,20 +37,15 @@ export class FeaturesService {
   getAllFeatures(): ProtocolDataDto[] {
     const infos = this.protocolService.getAllProtocolsInfo();
 
-    // const featuresMap = new Map<FeatureEnum, FeatureResult>();
-    // const featuresMap = new Map<ChainAbbrEnum, ProtocolDataDto>(
-    //   getChainList().map((abbr) => [abbr, FeaturesService.createProtocolFeature(abbr)]),
-    // );
-
     const protocols = [];
 
     infos.forEach((info) => {
       const features = info.features;
       const protocolName = info.name;
-      const platformName = info.project;
+      const projectName = info.project;
       const protocol = plainToClass(ProtocolDataDto, {
         name: protocolName,
-        project: platformName,
+        project: projectName,
         // info: plainToClass(ProtocolFeatureInfoDto, info),
         info: undefined,
         features: [],

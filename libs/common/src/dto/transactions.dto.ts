@@ -5,13 +5,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import {
   ClaimTransaction,
+  LiquidityPosition,
   PoolToken,
   ProtocolName,
   StakeTransaction,
+  StakingPosition,
   SwapToken,
   UnStakeTransaction,
 } from '@app/common';
-import { LiquidityPosition } from '@app/common';
 import {
   ChainIdEnum,
   LiquidityChangeTypeEnum,
@@ -57,9 +58,12 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectName: ProjectEnum;
   protocolName?: ProtocolName;
   liquidityPositions?: any[];
+  stakingPositions?: any[];
+  borrowingPositions?: any[];
+  lendingPositions?: any[];
 }
 
 export class Transaction<T = string> {
@@ -72,9 +76,13 @@ export class Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export class Transactions extends BaseData<'transaction'> {
-  @Type(() => Transaction)
-  txs: Transaction[];
+export class TransactionProjectDto extends BaseData<ProtocolTypeEnum.transaction> {
+  // @Type(() => Transaction)
+  txs: Transaction[] = [];
+}
+
+export class StakingProjectDto extends BaseData<ProtocolTypeEnum.staking> {
+  stakingPositions: StakingPosition[] = [];
 }
 
 export class LiquidityChangeTransaction extends Transaction {

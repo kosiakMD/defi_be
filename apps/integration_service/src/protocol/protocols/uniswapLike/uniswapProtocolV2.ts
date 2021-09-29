@@ -5,11 +5,11 @@ import { Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, UniswapProtocolEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../account/account.service';
-import { Mapper } from '../../../mappers/mapper';
 import { PriceService } from '../../../price/price.service';
 import { UniswapSubgraph } from '../../../thegraph/uniswap.subgraph';
 import { FeatureEnum } from '../../features/features.enum';
 import AbstractProtocol from '../abstractProtocol';
+import { Mapper } from '../mappers/mapper';
 import UniswapLikeProtocol from './uniswapLikeProtocol';
 
 @Injectable()
@@ -21,14 +21,14 @@ export class UniswapProtocolV2 extends UniswapLikeProtocol implements AbstractPr
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.pools],
   };
-  protected feeRate = 0.003;
+  public feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly mapper: Mapper,
-    protected readonly dataProvider: UniswapSubgraph,
+    protected readonly subgraph: UniswapSubgraph,
   ) {
     super();
   }

@@ -7,15 +7,15 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
+  BalancesResponse,
   ChainIdEnum,
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
   IncomeToken,
-  BalancesResponse,
   Logger,
   PoolTokenDto,
   ProtocolNameEnum,
-  UniswapResponseData,
+  UniswapSubgraphLikeData,
 } from '@app/common';
 import { BaseData } from '@app/common/dto/transactions.dto';
 import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/enum';
@@ -23,25 +23,24 @@ import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/
 import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import {
-  StakingPositionResponseDto,
-  IntegrationStakingPositionDto,
-  IntegrationClaimableTokenDto,
-  LPToken,
   ClaimableDto,
+  IntegrationClaimableTokenDto,
+  IntegrationStakingPositionDto,
+  LPToken,
+  StakingPositionResponseDto,
 } from '../../integrations/integrations.dto';
 import { NotifyPayloadFeaturesDto } from '../../jobs/notify.payload.features.dto';
-import { Mapper } from '../../mappers/mapper';
 import { PriceService } from '../../price/price.service';
 import { LocalMultiCall } from '../../spookyswap/multicall/local.multi.call';
 import { acelabMap, booMap, farmsMap, xBooMap } from '../../spookyswap/multicall/util';
 import { SpookyswapAceLabSubgraph } from '../../thegraph/spookyswap.acelab.subgraph';
 import { SpookyswapFarmSubgraph } from '../../thegraph/spookyswap.farm.subgraph';
 import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
-import UniswapLikeProtocol from './uniswapLike/uniswapLikeProtocol';
+import DataProviderProtocol from './dataProviderProtocol';
+import { Mapper } from './mappers/mapper';
 
 @Injectable()
-export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractProtocol {
+export class SpookySwapProtocol extends DataProviderProtocol {
   readonly chains = [ChainAbbrEnum.ftm];
   readonly project = ProjectEnum.spookyswap;
   readonly name = SpookySwapProtocolEnum.SpookySwap;
@@ -50,7 +49,7 @@ export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractP
     [ChainAbbrEnum.ftm]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   protected dataProvider;
-  protected feeRate: 0.003;
+  public feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -63,12 +62,10 @@ export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractP
     protected readonly mapper: Mapper,
   ) {
     super();
+    this.dataProvider = this;
   }
 
-  protected async getData(
-    addresses: string,
-    chainId: ChainIdEnum,
-  ): Promise<(StakingPositionResponseDto | BaseData)[]> {
+  protected async getData(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
     const originAddressesArray = addresses.toLowerCase().split(',');
     const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chainId}_SpookySwap_pools`);
 
@@ -107,6 +104,7 @@ export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractP
       await this.mapToUniswapResponseData(originAddressesArray, pools, balances),
       ProjectEnum.spookyswap,
       ProtocolNameEnum.SpookySwap,
+      chainId,
     );
 
     return poolData;
@@ -134,13 +132,9 @@ export class SpookySwapProtocol extends UniswapLikeProtocol implements AbstractP
     originAddressesArray: Address[],
     pools: NotifyPayloadFeaturesDto,
     balances: BalancesResponse,
-  ): Promise<UniswapResponseData> {
+  ): Promise<UniswapSubgraphLikeData> {
     return {
-      uniswapLiquidityPositions: this.mapToUniswapLiquidityPosition(
-        originAddressesArray,
-        pools,
-        balances,
-      ),
+      subgraphPools: this.mapToUniswapLiquidityPosition(originAddressesArray, pools, balances),
     };
   }
   private mapToUniswapLiquidityPosition(

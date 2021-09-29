@@ -19,7 +19,6 @@ export interface ResponseData {
   };
 }
 
-// TODO: rename to Uniswap Like Protocol
 @Injectable()
 export class UniswapLikeSubgraph {
   protected readonly subgraphUrl: string;
@@ -354,72 +353,3 @@ const pairFragment = `
     }
   }
 `;
-
-/* TODO: use query builder or gql
- import * as gql from 'gql-query-builder';
- "gql-query-builder": "^3.5.5",
- "graphql-tag": "^2.11.0",
- const newQuery = (addresses) => {
- const query = gql.query({
- operation: 'liquidityPositions',
- variables: {
- where: { ['user_in']: addresses },
- addresses: addresses,
- first: 1000,
- },
- fields: [
- 'liquidityTokenBalance',
- { user: ['id'] },
- {
- pair: [
- 'id',
- 'totalSupply',
- 'reserveUSD',
- 'reserve0',
- 'reserve1',
- 'token0Price',
- 'token1Price',
- 'totalSupply',
- { token0: ['id', 'name', 'symbol', 'decimals'] },
- { token1: ['id', 'name', 'symbol', 'decimals'] },
- ],
- },
- ],
- });
-
- return query;
- };
- newQuery([1]);
- // eslint-disable-next-line @typescript-eslint/no-unused-vars
- const oldQuery = `
- query liquidityPositionQuery($addresses: [String]) {
- liquidityPositions (where:{user_in:$addresses}, first:1000) {
- liquidityTokenBalance
- user {
- id
- }
- pair {
- id
- totalSupply
- reserveUSD
- reserve0
- reserve1
- token0Price
- token1Price
- totalSupply
- token0 {
- id
- name
- symbol
- decimals
- }
- token1 {
- id
- name
- symbol
- decimals
- }
- }
- }
- }`;
- */

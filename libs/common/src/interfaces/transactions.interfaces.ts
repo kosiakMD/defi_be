@@ -26,14 +26,15 @@ export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
 
 export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
 
-export interface UniswapResponseData {
+export interface UniswapSubgraphLikeData {
+  // TODO: rename to common
   uniswapSwapsFrom?: Map<string, SwapsInterface[]>;
   uniswapMints?: Map<string, MintsInterface[]>;
   uniswapBurns?: Map<string, BurnsInterface[]>;
   uniswapSnapshots?: Map<string, SnapshotsInterface[]>;
-  uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
-  sushiswapStakingPosition?: Map<string, any>;
-  aaveLendingPositions?: Map<string, AaveUser>;
+  subgraphPools: Map<string, IncomeLiquidityPosition[]>;
+  subgraphStaking?: Map<string, any>;
+  subgraphLending?: Map<string, AaveUser>;
 }
 
 export interface Transaction<T = string> {

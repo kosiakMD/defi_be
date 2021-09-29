@@ -11,19 +11,18 @@ import {
   ProjectEnum,
   ProtocolNameEnum,
 } from '@app/common/enum';
-import { UniswapResponseData } from '@app/common/interfaces/transactions.interfaces';
+import { UniswapSubgraphLikeData } from '@app/common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../account/account.service';
 import { BaseData } from '../../interfaces/transactions.interfaces';
-import { Mapper } from '../../mappers/mapper';
 import { PriceService } from '../../price/price.service';
 import { AaveSubgraph } from '../../thegraph/aave.subgraph';
 import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
-import UniswapLikeProtocol from './uniswapLike/uniswapLikeProtocol';
+import DataProviderProtocol from './dataProviderProtocol';
+import { Mapper } from './mappers/mapper';
 
 @Injectable()
-export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProtocol {
+export class AaveProtocolV2 extends DataProviderProtocol {
   readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.plg];
   readonly project = ProjectEnum.aave;
   readonly displayName = 'Aave V2';
@@ -34,20 +33,21 @@ export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProto
   };
 
   protected dataProvider;
-  protected feeRate: 0.003;
+  public feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-    private readonly aaveSubgraph: AaveSubgraph,
     protected readonly mapper: Mapper,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
+    private readonly subgraph: AaveSubgraph,
   ) {
     super();
     this.dataProvider = this;
   }
 
-  async getDataByAddresses(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
+  // override
+  async getData(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
     const originAddressesArray = addresses.toLowerCase().split(',');
     const [usersResult, ethPriceResult] = await Promise.allSettled([
       this.getUserReserves(originAddressesArray, chainId),
@@ -62,7 +62,7 @@ export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProto
 
     const responseData = this.formatData(usersResult.value, ethPrice);
     return this.mapper.mapData(
-      [...responseData.aaveLendingPositions.keys()],
+      [...responseData.subgraphLending.keys()],
       originAddressesArray,
       responseData,
       ProjectEnum.aave,
@@ -72,7 +72,7 @@ export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProto
   }
 
   getUserReserves(addresses: string[], chainId: ChainIdEnum): any {
-    return this.aaveSubgraph.getUsersReserves(addresses, chainId);
+    return this.subgraph.getUsersReserves(addresses, chainId);
   }
 
   async getEthPrice(): Promise<number> {
@@ -80,7 +80,7 @@ export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProto
     return Number(results.prices[WETH_ADDRESS]);
   }
 
-  formatData(aaveUser: AaveUser[], ethPriceUSD: number): UniswapResponseData {
+  formatData(aaveUser: AaveUser[], ethPriceUSD: number): UniswapSubgraphLikeData {
     const aaveLendingPositions = new Map<string, AaveUser>();
     aaveUser.forEach((user) => {
       user.reserves.forEach((userReserve: any) => {
@@ -92,8 +92,8 @@ export class AaveProtocolV2 extends UniswapLikeProtocol implements AbstractProto
     });
 
     return {
-      uniswapLiquidityPositions: new Map(),
-      aaveLendingPositions,
+      subgraphPools: new Map(),
+      subgraphLending: aaveLendingPositions,
     };
   }
 }

@@ -128,10 +128,11 @@ export class Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export class Transactions extends BaseData<'transaction'> {
-  @Type(() => Transaction)
-  txs: Transaction[];
-}
+// TODO disabled
+// export class Transactions extends BaseData<'transaction'> {
+//   @Type(() => Transaction)
+//   txs: Transaction[];
+// }
 
 export class LiquidityChangeTransaction extends Transaction {
   type: LiquidityChangeTypeEnum;

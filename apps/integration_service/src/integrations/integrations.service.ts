@@ -89,7 +89,7 @@ export class IntegrationsService {
         }
       } else {
         this.logger.error(chainResult.reason, 'getProtocolFeatures');
-        response.errors.push(chainResult.reason);
+        response.errors.push(chainResult.reason.message || chainResult.reason);
       }
 
       response.data.chains.push(chainData);

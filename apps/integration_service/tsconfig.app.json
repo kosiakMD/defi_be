@@ -7,6 +7,9 @@
     "declaration": false,
     "outDir": "../../dist"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "../../node_modules/handlebars/types/index.d.ts"
+  ],
   "exclude": ["node_modules", "dist", "test", "**/*spec.ts"]
 }

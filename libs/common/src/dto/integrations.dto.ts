@@ -86,6 +86,8 @@ export class LiquidityPoolFeatureDto {
   statistic: PoolStatistic = new PoolStatistic();
   @Type(() => PoolTokenDto)
   tokens: PoolTokenDto[] = [];
+  @Type(() => PoolTokenDto)
+  rewards?: PoolTokenDto[];
 }
 
 export type IntegrationFeaturesData = {

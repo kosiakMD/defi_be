@@ -23,7 +23,7 @@ export class QuickswapSubgraph {
   getUsers(accountAddresses: Address[]): Promise<ResponseDto<UsersDto>> {
     return this.httpService
       .post(this.subgraphUrl, {
-        operationName: 'user',
+        operationName: 'users',
         query: `{
           users(where: {id_in: [${accountAddresses.map(wrapInQuotes)}]}) {
             id

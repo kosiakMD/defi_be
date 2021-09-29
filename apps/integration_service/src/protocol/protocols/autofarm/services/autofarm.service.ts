@@ -5,13 +5,13 @@ import { AbiItem } from 'web3-utils';
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
-import { Logger } from '../../Logger/Logger.service';
-import { AccountService } from '../../account/account.service';
-import { Web3Provider } from '../../chain/web3.provider';
-import { CurrentPricesPayload } from '../../dto/price.response.dto';
+import { AccountService } from '../../../../account/account.service';
+import { Web3Provider } from '../../../../chain/web3.provider';
+import { CurrentPricesPayload } from '../../../../dto/price.response.dto';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
@@ -20,10 +20,10 @@ import {
   IntegrationStakingPositionDto,
   StakingPositionResponseDto,
   ClaimableDto,
-} from '../../integrations/integrations.dto';
-import { Asset, ERC20Token } from '../../interfaces/transactions.interfaces';
-import { PriceService } from '../../price/price.service';
-import { decimalsDivider } from '../../utils/util';
+} from '../../../../integrations/integrations.dto';
+import { Asset, ERC20Token } from '../../../../interfaces/transactions.interfaces';
+import { PriceService } from '../../../../price/price.service';
+import { decimalsDivider } from '../../../../utils/util';
 import { AutofarmUser, StakingInterface } from '../autofarm.interfaces';
 import { LocalMultiCall } from '../multicall/local.multi.call';
 import { autofarmFactoriesMap, autofarmRewardToken, lpTokenAbi } from '../multicall/util';

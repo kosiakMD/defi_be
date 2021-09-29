@@ -1,4 +1,5 @@
 import {
+  Address,
   FeaturesType,
   IntegrationFeaturesData,
   Logger,
@@ -8,8 +9,7 @@ import {
 import { ChainAbbrEnum, ChainIdEnum, ProjectEnum } from '@app/common/enum';
 
 import { ProtocolFeaturesInfo } from '../protocol.types';
-
-// import { RawFeaturesDto } from '../protocols.dto';
+import { RawFeaturesDto } from '../protocols.dto';
 
 export abstract class AbstractProtocol {
   abstract readonly name: ProtocolName;
@@ -17,22 +17,17 @@ export abstract class AbstractProtocol {
   protected abstract readonly chains: ChainAbbrEnum[];
   protected abstract readonly project: ProjectEnum;
   protected abstract readonly features: ProtocolFeaturesInfo;
-  // todo delete
-  // protected abstract readonly dataProvider?: DefaultDataProvider | UniswapLikeSubgraph;
-  // protected abstract readonly accountService: AccountService;
-  // protected abstract readonly priceService: PriceService;
-  // protected abstract readonly feeRate?: number;
   protected abstract readonly logger: Logger;
   abstract getFeaturesInfo<T extends FeaturesType>(chainId?: ChainIdEnum): T;
   abstract getInfo(chainId?: ChainIdEnum): ProtocolBasicInfo;
-  abstract getAllFeaturesData(
+  abstract getAllFeaturesData?(
     address: string,
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData>;
-  // protected abstract getAllFeaturesRawData(
-  //   address: string,
-  //   chainId?: ChainIdEnum,
-  // ): Promise<RawFeaturesDto>;
+  public abstract getAllFeaturesRawData?(
+    address: Address,
+    chainId?: ChainIdEnum,
+  ): Promise<RawFeaturesDto>;
 }
 
 export default AbstractProtocol;

@@ -10,12 +10,8 @@ import {
   ClaimAbleTokenDto,
   CurrentPricesPayload,
   ERC20TokenDto,
-  FeatureResultDto,
-  LiquidityPoolFeatureDto,
-  LiquidityPosition,
   LiquidityPositionDto,
   PlatformPoolTokenDto,
-  PoolTokenDto,
   PriceResponseDto,
   ProjectEnum,
   UniswapProtocolEnum,
@@ -24,18 +20,15 @@ import {
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import { AccountService } from '../../account/account.service';
-import { PoolToken } from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
 import { UniswapV3Subgraph } from '../../thegraph/uniswap.v3.subgraph';
-import { objectUpdate } from '../../utils/object';
 import { calculatePositionAmounts, calculateTokensOwed } from '../../utils/uniswapV3PositionMath';
 import { FeatureEnum } from '../features/features.enum';
-import { tokenDictionary } from '../protocols.dictionaries';
 import AbstractProtocol from './abstractProtocol';
-import UniswapLikeProtocol from './uniswapLike/uniswapLikeProtocol';
+import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
-export class UniswapProtocolV3 extends UniswapLikeProtocol implements AbstractProtocol {
+export class UniswapProtocolV3 extends DataProviderProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.eth];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV3;
@@ -44,7 +37,7 @@ export class UniswapProtocolV3 extends UniswapLikeProtocol implements AbstractPr
     [ChainAbbrEnum.eth]: [FeatureEnum.pools],
   };
   protected dataProvider;
-  protected feeRate = 0.003;
+  public feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -56,7 +49,8 @@ export class UniswapProtocolV3 extends UniswapLikeProtocol implements AbstractPr
     this.dataProvider = this;
   }
 
-  async getDataByAddresses(address: Address, chainId: ChainIdEnum): Promise<any> {
+  // overrider
+  async getData(address: Address, chainId: ChainIdEnum): Promise<any> {
     const { positions } = await this.uniswapV3Subgraph.getPositions(address, chainId);
     const { prices } = await this.getPricedTokens(positions, chainId);
 
@@ -169,109 +163,6 @@ export class UniswapProtocolV3 extends UniswapLikeProtocol implements AbstractPr
         });
       })
       .filter((position) => position.poolTokens.some((token) => Number(token.amount) > 0));
-  }
-
-  protected async transformPools(
-    rawPools: LiquidityPosition[],
-    chainId: ChainIdEnum,
-  ): Promise<{ errors: any[]; data: FeatureResultDto<LiquidityPoolFeatureDto> }> {
-    const result = {
-      errors: [] as any[],
-      data: {
-        totalValue: 0,
-        items: [],
-      } as FeatureResultDto<LiquidityPoolFeatureDto>,
-    };
-
-    try {
-      await this.handleMissedData(rawPools, chainId, result.errors);
-    } catch (e) {
-      this.logger.error(e);
-      result.errors.push(e.message);
-    }
-
-    const outputPools: LiquidityPoolFeatureDto[] = rawPools?.reduce((resultArray, inputPool) => {
-      const tokens: PoolTokenDto[] = [];
-      const rewards: PoolTokenDto[] = [];
-      let TVL = 0; // sum(reserve * price)
-      let userValue = 0; // sum of values
-      // Pool Tokens
-      inputPool.poolTokens.forEach((token: PoolToken) => {
-        const formattedToken = plainToClass(PoolTokenDto, {});
-        objectUpdate(formattedToken, token, tokenDictionary, 'default');
-        const { price, reserve, balance } = formattedToken;
-        // value
-        formattedToken.value = Number(balance) * price ?? null;
-        // user
-        userValue += formattedToken.value;
-        // TVL
-        if (reserve) {
-          TVL += Number(reserve) * price;
-        }
-
-        tokens.push(formattedToken);
-      });
-
-      inputPool.rewards.forEach((token: PoolToken) => {
-        const formattedToken = plainToClass(PoolTokenDto, {
-          address: token.address,
-          name: token.name,
-          symbol: token.symbol,
-          reserve: token.reserve,
-          price: token.priceUSD,
-          decimals: token.decimals,
-          balance: token.amount,
-          value:
-            Number(token.amount) && token.priceUSD ? Number(token.amount) * token.priceUSD : null,
-        });
-        // user
-        userValue += formattedToken.value;
-
-        rewards.push(formattedToken);
-      });
-
-      result.data.totalValue += userValue;
-      // Pool
-      const outPool: LiquidityPoolFeatureDto = plainToClass(LiquidityPoolFeatureDto, {
-        address: inputPool.pool.address,
-        name: inputPool.pool.name,
-        lpToken: inputPool.lpToken,
-        TVL: TVL,
-        fee: {
-          rate: this.feeRate,
-        },
-        user: {
-          value: userValue,
-          share: userValue / TVL,
-        },
-        // TODO need to add 1 more call to subgraph after pool data will be ready
-        statistic: {
-          day: {
-            // volume: 1,
-            // fee: 1,
-          },
-        },
-        rewards: rewards,
-        tokens: tokens,
-      });
-
-      if (outPool.user.value) {
-        resultArray.push(outPool);
-      }
-
-      return resultArray;
-    }, []);
-
-    result.data.items = outputPools;
-
-    if (outputPools.length !== rawPools.length) {
-      this.logger.debug(
-        `Liquidity Positions Filtered: ${rawPools.length - outputPools.length}/${rawPools.length}`,
-        'uniswapProtocolV3',
-      );
-    }
-
-    return result;
   }
 }
 

@@ -1,9 +1,9 @@
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
 
+import { Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
-import { Logger } from '../../Logger/Logger.service';
 import { StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
 import {
   AutoFactoryAbi,

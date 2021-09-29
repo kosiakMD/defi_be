@@ -4,21 +4,19 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AccountModule } from '../account/account.module';
-import { AutofarmModule } from '../autofarm/autofarm.module';
 import { ChainModule } from '../chain/chain.module';
-import { Mapper } from '../mappers/mapper';
-import { PangolinModule } from '../pangolin/pangolin.module';
 import { PriceModule } from '../price/price.module';
-import { QuickswapModule } from '../quickswap/quickswap.module';
-import { SushiswapModule } from '../sushiswap/sushiswap.module';
+import { Web3Service } from '../quickswap/web3/web3.service';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
-import AaveProtocolV2 from './protocols/AaveProtocolV2';
+import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import { Mapper } from './protocols/mappers/mapper';
+import { PancakeModule } from './protocols/pancake/pancake.module';
+import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
+import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
-import PancakeProtocolV1 from './protocols/uniswapLike/pancakeProtocolV1';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
-import QuickswapProtocol from './protocols/uniswapLike/quickswapProtocol';
 import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -52,18 +50,18 @@ const ProtocolList = [
       }),
       inject: [ConfigService],
     }),
-    // UniswapModule,
     ThegraphModule,
-    PangolinModule,
-    SushiswapModule,
+    // PangolinModule,
     // SushiswapModule,
     // SpookyswapModule,
-    AutofarmModule,
-    QuickswapModule,
+    // AutofarmModule,
+    // QuickswapModule,
     ThegraphModule,
     ChainModule,
+    PancakeModule, // TODO: m.b. delete for pancakeV1
+    Web3Service, // TODO: quickswap
   ],
-  providers: [...ProtocolList, ProtocolService, Mapper],
+  providers: [...ProtocolList, ProtocolService, Mapper, Web3Service],
   exports: [ProtocolService],
 })
 export class ProtocolModule {}

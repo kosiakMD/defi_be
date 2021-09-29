@@ -75,10 +75,10 @@ export class SwapTokenDto extends ERC20Token implements SwapToken {
   amount?: string;
 }
 
-export interface UniswapResponseData {
-  uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
-  sushiswapStakingPosition?: Map<string, any>;
-  aaveLendingPositions?: Map<string, AaveUser>;
+export interface UniswapSubgraphLikeData {
+  subgraphPools: Map<string, IncomeLiquidityPosition[]>;
+  subgraphStaking?: Map<string, any>;
+  subgraphLending?: Map<string, AaveUser>;
 }
 
 export interface ClaimAbleToken extends ERC20Token {
@@ -126,9 +126,9 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectName: ProjectEnum;
   protocolName?: ProtocolName;
-  liquidityPositions?: any[];
+  // liquidityPositions?: any[];
 }
 
 export class Transaction<T = string> {
@@ -141,10 +141,10 @@ export class Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export class Transactions extends BaseData<'transaction'> {
-  @Type(() => Transaction)
-  txs: Transaction[];
-}
+// export class TransactionProjectDto extends BaseData<'transaction'> {
+//   @Type(() => Transaction)
+//   txs: Transaction[];
+// }
 
 export class LiquidityChangeTransaction extends Transaction {
   type: LiquidityChangeTypeEnum;

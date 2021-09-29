@@ -70,12 +70,6 @@ export enum CurrencyIdEnum {
   usd = 1,
 }
 
-export enum ProtocolTypeEnum {
-  amm = 'amm',
-  staking = 'staking',
-  transaction = 'transaction',
-}
-
 export enum ResultStatus {
   ok = 'ok',
   error = 'error',

@@ -1,4 +1,4 @@
-import { LiquidityPoolsEntity } from '../../pools/entities/liquidity.pools.entity';
+import { LiquidityPoolsEntity } from '../../../../pools/entities/liquidity.pools.entity';
 
 export const BUSD_BNB_PAIR_ADDRESS_NEW = '0x58f876857a02d6762e0101bb5c46a8c1ed44dc16';
 export const USDT_BNB_PAIR_ADDRESS_NEW = '0x16b9a82891338f9ba80e2d6970fdda79d1eb0dae';

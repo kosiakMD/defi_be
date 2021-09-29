@@ -75,7 +75,7 @@ export class LocalMultiCall extends MultiCall {
     });
 
     const [, vaultUserInfo] = await this.multiCall(AutofarmVaultAbi, inputs);
-    data.forEach((i, index) => (i.claimable = vaultUserInfo[index].toString()));
+    vaultUserInfo?.forEach((info, index) => (data[index].claimable = info.toString()));
     return vaultUserInfo;
   }
 

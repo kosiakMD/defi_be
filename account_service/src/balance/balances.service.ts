@@ -136,7 +136,7 @@ export class BalancesService {
       for (const balance of balances) {
         const price = balance.tokenPriceUSD || pricesMap[balance.token.address] || 0;
         if (price) {
-          balance.tokenPriceUSD = price;
+          balance.tokenPriceUSD = +price;
           balance.totalPriceUSD = balance.decimalsAmount * balance.tokenPriceUSD;
         }
       }

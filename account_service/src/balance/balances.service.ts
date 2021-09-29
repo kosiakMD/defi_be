@@ -134,9 +134,9 @@ export class BalancesService {
 
     for (const { balances } of results) {
       for (const balance of balances) {
-        const price = pricesMap[balance.token.address] || 0;
+        const price = balance.tokenPriceUSD || pricesMap[balance.token.address] || 0;
         if (price) {
-          balance.tokenPriceUSD = +price;
+          balance.tokenPriceUSD = price;
           balance.totalPriceUSD = balance.decimalsAmount * balance.tokenPriceUSD;
         }
       }

@@ -33,9 +33,13 @@ export class CovalentBalancesStrategy implements BalancesLoadingStrategy {
   }
 
   private mapCovalentResponse(response: Covalent.Balance): TokenBalance[] {
-    return response.items
-      .filter(({ contract_decimals: decimals }) => !!decimals)
-      .map((token) => this.mapCovalentItem(response.chain_id, token));
+    return (
+      response.items
+        .filter(({ contract_decimals: decimals }) => !!decimals)
+        // NOTE: Covalent returns crazy prices sometimes so this is workaround for this
+        .filter(({ quote_rate: price }) => price && price < 100000)
+        .map((token) => this.mapCovalentItem(response.chain_id, token))
+    );
   }
 
   private mapCovalentItem(
@@ -45,8 +49,8 @@ export class CovalentBalancesStrategy implements BalancesLoadingStrategy {
     const decimalsAmount = new BigNumber(token.balance)
       .div(10 ** token.contract_decimals)
       .toNumber();
-    const tokenPriceUSD = token.quote_rate ? token.quote_rate : null;
-    const totalPriceUSD = tokenPriceUSD * decimalsAmount;
+    const tokenPriceUSD = token.quote_rate || null;
+    const totalPriceUSD = tokenPriceUSD * decimalsAmount || null;
     const internalChainId = getInternalChainId(chainId);
     const tokenAddress = replaceIncorrectTokenAddress(token.contract_address, internalChainId);
 

@@ -416,6 +416,7 @@ export abstract class BasicProtocol extends AbstractProtocol {
         if (!name || !symbol || !decimals) {
           groupTokens(tokensMissedData, address, token);
         }
+
         // TODO: `priceUSD = null` always
         if (!priceUSD) {
           groupTokens(tokensMissedPrice, address, token);

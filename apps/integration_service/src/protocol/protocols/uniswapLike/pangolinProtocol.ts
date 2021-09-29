@@ -21,7 +21,7 @@ export class PangolinProtocol extends UniswapLikeProtocol implements AbstractPro
     [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   protected dataProvider;
-  protected feeRate: 0.003;
+  protected feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,

@@ -356,15 +356,15 @@ export const QUICKSWAP_STAKING_CONTRACTS = [
   /**
    * Commented because one of the pair token is not verified.
    * It causes an error.
-   *
+   * 
    * @pair
-   *
+   * 
    * QUICK
    * 0x831753DD7087CaC61aB5644b308642cc1c33Dc13
-   *
+   * 
    * Staked GHST-QUICK LP
    * 0xa02d547512bb90002807499f05495fe9c4c3943f
-   *
+   * 
    */
   // {
   //   stakingContractAddress: '0xa132faD61EDe08f1f288a35ff4c10dcD1cB9E107',

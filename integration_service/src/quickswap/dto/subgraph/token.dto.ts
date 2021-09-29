@@ -1,7 +1,7 @@
 import { Exclude, Expose } from 'class-transformer';
 
 @Exclude()
-export class SubgraphTokenDto {
+export class TokenDto {
   @Expose()
   id: string;
 

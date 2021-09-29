@@ -7,11 +7,11 @@ import { ChainModule } from '../chain/chain.module';
 import { Mapper } from '../mappers/mapper';
 import { PriceModule } from '../price/price.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
-import { MultiCallModule } from './multicall/multicall.module';
 import { QuickswapService } from './quickswap.service';
+import { Web3Module } from './web3/web3.module';
 
 @Module({
-  imports: [AccountModule, ChainModule, PriceModule, ThegraphModule, MultiCallModule],
+  imports: [AccountModule, ChainModule, PriceModule, ThegraphModule, Web3Module],
   providers: [QuickswapService, Mapper, Logger],
   exports: [QuickswapService],
 })

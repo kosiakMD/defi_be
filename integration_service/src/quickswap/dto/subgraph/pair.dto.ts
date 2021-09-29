@@ -2,10 +2,10 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 import { Address } from 'src/common/types';
 
-import { SubgraphTokenDto } from './subgraph.token.dto';
+import { TokenDto } from './token.dto';
 
 @Exclude()
-export class SubgraphPairDto {
+export class PairDto {
   @Expose()
   id: Address;
 
@@ -19,12 +19,18 @@ export class SubgraphPairDto {
   reserveUSD: string;
 
   @Expose()
-  @Type(() => SubgraphTokenDto)
-  token0: SubgraphTokenDto;
+  token0Price: string;
 
   @Expose()
-  @Type(() => SubgraphTokenDto)
-  token1: SubgraphTokenDto;
+  token1Price: string;
+
+  @Expose()
+  @Type(() => TokenDto)
+  token0: TokenDto;
+
+  @Expose()
+  @Type(() => TokenDto)
+  token1: TokenDto;
 
   @Expose()
   totalSupply: string;

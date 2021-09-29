@@ -121,9 +121,6 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
       const rawLending = data.find((data) => data['lendingPositions']);
       const rawBorrowing = data.find((data) => data['borrowingPositions']);
 
-      // console.log('rawPools', rawPools);
-      // console.log('rawStaking', rawStaking);
-
       return { rawPools, rawStaking, rawLending, rawBorrowing };
     } catch (e) {
       this.logger.error(e);

@@ -5,6 +5,7 @@ export interface LiquidityPoolJobInterface {
   chain;
   protocol;
   feature;
+  placeholder;
   isEnabled();
   setConfiguration(config: IntegrationJob);
   getTrackedLiquidityPools(): LiquidityPoolFeature[];

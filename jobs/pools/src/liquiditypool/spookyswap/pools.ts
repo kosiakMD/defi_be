@@ -26,4 +26,7 @@ export const SPOOKYSWAP_POOLS = [
   '0x91b39d5584e2a7dc829f696235742cc293f2e8cf',
   '0x6626c47c00f1d87902fc13eecfac3ed06d5e8d8a',
   '0x7d4cddab6774ff47d62253067958dbd749cb7f06',
+  '0xd10cc1b46d806d6ac803af367da489dea5ee76fa',
+  '0x1656728af3a14e1319f030dc147fabf6f627059e',
+  '0x9a3c6c8e58becf7fed10606dd368da79ec6e0b0e',
 ];

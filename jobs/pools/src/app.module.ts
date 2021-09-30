@@ -21,7 +21,7 @@ import { LiquidityPoolModule } from './liquiditypool/liquidity.pool.module';
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
         synchronize: false,
-        logging: true,
+        logging: false,
       }),
     }),
     HttpModule.register({

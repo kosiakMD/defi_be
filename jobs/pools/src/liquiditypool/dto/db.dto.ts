@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 
 import { ChainIdEnum } from '../../config/enum';
-import { LiquidityPoolFeature } from '../integrations.dto';
+import { LiquidityPoolFeature, StakingPoolFeature } from '../integrations.dto';
 
 export class IntegrationJob {
   id: string;
@@ -11,11 +11,11 @@ export class IntegrationJob {
   chainId: ChainIdEnum;
   feature: string;
   protocol: string;
-  settings: LiquidityPoolFeature[];
+  settings: LiquidityPoolFeature[] | StakingPoolFeature[];
   @Expose({ name: 'update_frequency' })
   updateFrequency: number;
   @Expose({ name: 'created_at' })
   createdAt: Date;
-  @Expose({ name: 'created_at' })
+  @Expose({ name: 'updated_at' })
   updatedAt: Date;
 }

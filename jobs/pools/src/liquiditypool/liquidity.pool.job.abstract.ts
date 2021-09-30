@@ -1,5 +1,4 @@
 import { ChainIdEnum } from '../config/enum';
-import { getJobPlaceholder } from '../utils/string';
 import { IntegrationJob } from './dto/db.dto';
 import { LiquidityPoolFeature } from './integrations.dto';
 import { LiquidityPoolJobInterface } from './liquidity.pool.job.interface';
@@ -8,22 +7,16 @@ export abstract class LiquidityPoolJobAbstract implements LiquidityPoolJobInterf
   public chain: ChainIdEnum;
   public protocol: string;
   public feature: string;
+  public placeholder: string;
 
   protected isConfigurationSet = false;
   protected configuration: IntegrationJob = null;
-  protected liquidityPoolsFeatures: LiquidityPoolFeature[] = [];
-  protected placeholder: string;
-
-  constructor() {
-    this.placeholder = getJobPlaceholder(this.chain, this.protocol, this.feature);
-  }
 
   setConfiguration(config: IntegrationJob): void {
     if (this.isConfigurationSet) {
       throw new Error(`configuration is already set for [${this.placeholder}]`);
     }
     this.configuration = config;
-    this.liquidityPoolsFeatures = this.configuration.settings;
     this.isConfigurationSet = true;
   }
 
@@ -38,7 +31,7 @@ export abstract class LiquidityPoolJobAbstract implements LiquidityPoolJobInterf
     if (!this.isConfigurationSet) {
       throw new Error(`configuration is not set for [${this.placeholder}]`);
     }
-    return this.liquidityPoolsFeatures;
+    return this.configuration.settings as LiquidityPoolFeature[];
   }
 
   abstract updateTrackedLiquidityPools();

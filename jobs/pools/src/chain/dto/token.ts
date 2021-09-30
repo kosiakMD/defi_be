@@ -19,6 +19,12 @@ export interface UniswapPairReserves {
   blockTimestampLast: number;
 }
 
+export interface TokenBalance {
+  tokenContract: string;
+  userAddress: string;
+  balance: BigNumber;
+}
+
 export interface UniswapReservesData {
   [key: string]: UniswapPairReserves;
 }
@@ -26,4 +32,12 @@ export interface UniswapReservesData {
 export interface UniswapReservesResult {
   block: number;
   reserves: UniswapReservesData;
+}
+
+export interface MasterchiefPoolInfoResponse {
+  id: number;
+  lpToken: string;
+  allocPoint: BigNumber;
+  lastRewardBlock: BigNumber;
+  accCakePerShare: BigNumber;
 }

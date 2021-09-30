@@ -15,14 +15,15 @@ import { PriceService } from '../microservices/price.service';
 import { BNToDecimals } from '../utils/calc';
 import { getJobPlaceholder } from '../utils/string';
 import { IntegrationJob } from './dto/db.dto';
+import { FeaturesExtracted } from './features.extracted';
 import { IntegrationJobsRepository } from './integration.jobs.repository';
 import {
   LiquidityPoolFeature,
   NotifyPayloadFeaturesDto,
   ProtocolsResponseData,
 } from './integrations.dto';
-import { JobsFactory } from './jobs.factory';
 import { LiquidityPoolJobInterface } from './liquidity.pool.job.interface';
+import { LiquidityPoolJobsFactory } from './liquidity.pool.jobs.factory';
 import { SpookyswapPoolJob } from './spookyswap/spookyswap.pool.job';
 
 @Injectable()
@@ -32,35 +33,43 @@ export class LiquidityPoolJob {
     private readonly spookySwapPoolJob: SpookyswapPoolJob,
     private readonly integrationService: IntegrationService,
     private readonly configService: ConfigService,
-    private readonly dbManager: IntegrationJobsRepository,
-    private readonly jobsFactory: JobsFactory,
+    private readonly integrationJobsRepository: IntegrationJobsRepository,
+    private readonly liquidityPoolsJobsFactory: LiquidityPoolJobsFactory,
     private readonly web3Provider: Web3Provider,
     private readonly priceService: PriceService,
+    private readonly featuresExtracted: FeaturesExtracted,
   ) {}
 
   async collectProtocolsAvailable(): Promise<void> {
     const integrationServiceConfiguration: Set<string> =
       await this.getIntegrationServiceConfiguration();
     const integratedJobs: Map<string, LiquidityPoolJobInterface> =
-      this.jobsFactory.getJobsIntegrated();
+      this.liquidityPoolsJobsFactory.getJobsIntegrated();
     const dbJobsConfiguration: Map<string, IntegrationJob> = await this.getDbPoolsConfiguration();
+
+    const foundJobsPlaceholders: Set<string> = new Set<string>();
 
     // now need to find what exactly jobs needs to be executed:
     integrationServiceConfiguration.forEach((placeholder) => {
       const existedJob: LiquidityPoolJobInterface = integratedJobs.get(placeholder);
-
       if (existedJob) {
         existedJob.setConfiguration(dbJobsConfiguration.get(placeholder));
         this.logger.log(
           `found job to proceed [${placeholder}], isEnabled: [${existedJob.isEnabled()}]`,
           LiquidityPoolJob.name,
         );
-        // if job is not enabled simply remove it from jobs list
-        if (!existedJob.isEnabled()) {
-          integratedJobs.delete(placeholder);
+        if (existedJob.isEnabled() && existedJob.feature === 'pools') {
+          foundJobsPlaceholders.add(placeholder);
         }
       }
     });
+
+    // keep only enabled jobs in map
+    for (const placeholder of integratedJobs.keys()) {
+      if (!foundJobsPlaceholders.has(placeholder)) {
+        integratedJobs.delete(placeholder);
+      }
+    }
 
     // merge all data for all chains
     const extractedPoolFeatures: Map<ChainIdEnum, Map<string, LiquidityPoolFeature>> = new Map<
@@ -112,6 +121,8 @@ export class LiquidityPoolJob {
       }),
     );
 
+    this.featuresExtracted.setPoolsFeatures(extractedPoolFeatures);
+
     const featuresToNotify: NotifyPayloadFeaturesDto[] = [];
     integratedJobs.forEach((ij) => {
       const featureToNotify: NotifyPayloadFeaturesDto = {
@@ -127,24 +138,27 @@ export class LiquidityPoolJob {
       featuresToNotify.push(featureToNotify);
     });
 
-    await this.integrationService.notifyWithLiquidityPoolsData(featuresToNotify);
-    this.logger.log(`features notified [${featuresToNotify.length}]`, LiquidityPoolJob.name);
+    try {
+      await this.integrationService.notifyWithLiquidityPoolsData(featuresToNotify);
+      this.logger.log(`features notified [${featuresToNotify.length}]`, LiquidityPoolJob.name);
+    } catch (e) {
+      this.logger.error(`error during integration service notification`, '', LiquidityPoolJob.name);
+    }
 
     for (const placeholder of integratedJobs.keys()) {
       try {
         await integratedJobs.get(placeholder).updateTrackedLiquidityPools();
       } catch (e: any) {
-        this.logger.error(`error during tracked liquidity pools update`, '', placeholder);
+        this.logger.error(`error during tracked liquidity pools update [${placeholder}], ${e}`);
       }
     }
-
-    this.logger.log(`done`);
   }
 
   async getDbPoolsConfiguration(): Promise<Map<string, IntegrationJob>> {
-    const availableDbSettings: IntegrationJob[] = await this.dbManager.getAvailablePools();
+    const availableDbSettings: IntegrationJob[] =
+      await this.integrationJobsRepository.getAvailablePools();
     const availableDbSettingMap: Map<string, IntegrationJob> = new Map<string, IntegrationJob>();
-    availableDbSettings.map((ij) => {
+    availableDbSettings.forEach((ij) => {
       availableDbSettingMap.set(getJobPlaceholder(ij.chainId, ij.feature, ij.protocol), ij);
     });
     return availableDbSettingMap;
@@ -154,13 +168,14 @@ export class LiquidityPoolJob {
     const integrationProtocols: ProtocolsResponseData =
       await this.integrationService.getProtocols();
     const integrationProtocolsSet: Set<string> = new Set<string>();
-    integrationProtocols.data.map((ip) => {
+    integrationProtocols.data.forEach((ip) => {
       ip.features.map((f) => {
         f.list.map((feature) => {
           integrationProtocolsSet.add(getJobPlaceholder(f.chain.id, feature, ip.name));
         });
       });
     });
+    integrationProtocolsSet.add('2_PancakeV2_pools');
     return integrationProtocolsSet;
   }
 

@@ -2,6 +2,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { MasterchiefPoolInfoResponse } from '../../chain/dto/token';
+import { MultiCallInternal } from '../../chain/multicall';
+import { Web3Provider } from '../../chain/web3.provider';
 import { ChainIdEnum } from '../../config/enum';
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
@@ -12,18 +15,20 @@ import { isTimeToDo } from '../../utils/time';
 import { IntegrationJobsRepository } from '../integration.jobs.repository';
 import { LiquidityPoolFeature } from '../integrations.dto';
 import { LiquidityPoolJobAbstract } from '../liquidity.pool.job.abstract';
-import { SPOOKYSWAP_POOLS } from './pools';
 
 @Injectable()
-export class SpookyswapPoolJob extends LiquidityPoolJobAbstract {
-  public chain = ChainIdEnum.ftm;
-  public protocol = 'SpookySwap'; // must be Enum!
-  public feature = 'pools'; // must be Enum!
+export class PancakeswapPoolJob extends LiquidityPoolJobAbstract {
+  public chain = ChainIdEnum.bsc;
+  public protocol = 'PancakeV2';
+  public feature = 'pools';
   public placeholder = getJobPlaceholder(this.chain, this.feature, this.protocol);
+
+  private masterchiefAddress = '0x73feaa1ee314f8c655e354234017be2193c9e24e';
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly accountService: AccountService,
+    private readonly web3Provider: Web3Provider,
     private readonly integrationJobsRepository: IntegrationJobsRepository,
   ) {
     super();
@@ -42,23 +47,44 @@ export class SpookyswapPoolJob extends LiquidityPoolJobAbstract {
     }
     this.logger.log(`it is time update pools!`, this.placeholder);
 
-    // todo: get list of pools from the subgraph based on TVL
-    const poolsListSet: Set<string> = new Set<string>();
-    SPOOKYSWAP_POOLS.map((p) => poolsListSet.add(p));
+    const multicall = new MultiCallInternal(this.web3Provider.getInstanceByChainId(this.chain));
+
+    const poolsInfo: Map<string, MasterchiefPoolInfoResponse> = await multicall.getPoolsInfo(
+      this.masterchiefAddress,
+    );
+
+    this.logger.log(
+      `got [${poolsInfo.size}] pools from [${this.masterchiefAddress}] contract, [${
+        this.getTrackedLiquidityPools().length
+      }] pools existed`,
+      this.placeholder,
+    );
+
+    // exclude existed in configuration pools:
+    this.getTrackedLiquidityPools().forEach((tp) => {
+      poolsInfo.delete(tp.lpToken.address);
+    });
+    this.logger.log(`got [${poolsInfo.size}] token infos to add`, this.placeholder);
 
     const liquidityPoolFeaturesToBeAdded: LiquidityPoolFeature[] = [];
-    this.getTrackedLiquidityPools().map((tp) => {
-      poolsListSet.delete(tp.lpToken.address);
-    });
-    this.logger.log(`got [${poolsListSet.size}] token infos to add`, this.placeholder);
-
-    // collect lp tokens data from account service
-    for (const pa of poolsListSet.keys()) {
-      const trackedLiquidityPoolTokenData: LiquidityPoolTokenDto =
-        await this.accountService.saveTrackingAsset(pa, this.chain);
-
-      if (trackedLiquidityPoolTokenData.isLp) {
-        liquidityPoolFeaturesToBeAdded.push(toLiquidityPoolFeature(trackedLiquidityPoolTokenData));
+    for (const address of poolsInfo.keys()) {
+      try {
+        const trackedLiquidityPoolTokenData: LiquidityPoolTokenDto =
+          await this.accountService.saveTrackingAsset(address, this.chain);
+        if (trackedLiquidityPoolTokenData.isLp) {
+          this.logger.log(
+            `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
+            this.placeholder,
+          );
+          liquidityPoolFeaturesToBeAdded.push(
+            toLiquidityPoolFeature(trackedLiquidityPoolTokenData),
+          );
+        }
+      } catch (e) {
+        this.logger.error(
+          `error to get token data to account service, chain [${this.chain}], address [${address}]`,
+          this.placeholder,
+        );
       }
     }
 

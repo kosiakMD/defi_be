@@ -21,6 +21,14 @@ export class ERC20TokenDto {
   totalSupply?: string = null;
 }
 
+export class PriceTokenDto extends ERC20TokenDto {
+  @Expose()
+  @Transform(({ value }) => (value ? value : null))
+  price: number = null;
+
+  balance?: number = null;
+}
+
 export class Fee {
   // feeVolume: number;
   rate: number = null; // 0.003
@@ -72,7 +80,6 @@ export class PoolTokenDto {
   decimals: number = null;
 
   @Expose()
-  @Transform(({ value }) => (value ? value : null))
   positionInPool: number = null;
 }
 
@@ -106,11 +113,27 @@ export class LiquidityPoolFeature {
   tokens: PoolTokenDto[] = [];
 }
 
+export class StakingToken extends ERC20TokenDto {
+  @Expose({ name: 'underlyingAssets' })
+  tokens: PoolTokenDto[];
+}
+
+export class StakingPoolFeature {
+  address: string;
+  poolId: number;
+  poolName?: string;
+  isActive?: boolean;
+  TVL?: number;
+  rewardToken: PriceTokenDto;
+  stakingToken: PriceTokenDto;
+  liquidityPoolTokens?: PoolTokenDto[];
+}
+
 export class NotifyPayloadFeaturesDto {
   chain: ChainIdEnum;
   protocolName: string; // must be ProtocolNameEnum!
   featureName: string; // must be FeatureNameEnum!
-  items: LiquidityPoolFeature[];
+  items: any[];
 }
 
 export class ProtocolsResponseData {

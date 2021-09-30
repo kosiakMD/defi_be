@@ -21,7 +21,9 @@ export const RequestErrorHandler = function () {
           errorMessage += ` method [${e.config.method.toUpperCase()}],`;
           errorMessage += ` status [${e.request?.res ? e.request?.res.statusCode : 'undefined'}],`;
           errorMessage += ` url [${e.config.url}],`;
-          errorMessage += ` request data: [${e.config.data ? `${e.config.data}` : ''}]`;
+          errorMessage += ` request data: [${
+            e.config.data ? `${e.config.data.substring(0, 200)}` : ''
+          }]`;
           logger.error(errorMessage, stack, context);
           if (e.request?.res) {
             throw new HttpException(e.request.res.statusMessage, e.request.res.statusCode);

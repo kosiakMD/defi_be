@@ -5,6 +5,7 @@ export class ERC20TokenDto {
   symbol: string = null;
   decimals: number = null;
   chain: number;
+  isLp = false;
 }
 
 export class PoolTokenDto extends ERC20TokenDto {

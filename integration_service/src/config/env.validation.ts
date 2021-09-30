@@ -47,6 +47,12 @@ export const validationSchema = Joi.object({
   AMM_UNISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  AMM_UNISWAP_V3_ETH_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  AMM_PANGOLIN_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
   BLOCKS_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
@@ -59,11 +65,17 @@ export const validationSchema = Joi.object({
   VAULT_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
+  SPOOKYSWAP_FARM_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  SPOOKYSWAP_ACELAB_SUBGRAPH_URL: Joi.string() //
+    .allow('')
+    .required(), // TODO: not empty
+  AAVE_ETH_SUBGRAPH_URL: Joi.string().required(),
+  AAVE_PLG_SUBGRAPH_URL: Joi.string().required(),
   ETH_URL: Joi.string() //
     .required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
-  PRICE_SERVICE_PORT: Joi.number().required(),
-  PRICES_PATH: Joi.string().required(),
   ACCOUNT_SERVICE_HOST: Joi.string().required(),
   ACCOUNT_SERVICE_PORT: Joi.number().required(),
   ACCOUNT_BALANCE: Joi.string().required(),
@@ -73,10 +85,28 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  JOBS_CACHE_TTL_IN_SECONDS: Joi.number(),
   POOLS_CACHE_TTL_IN_SECONDS: Joi.number(),
   CHAIN_CACHE_TTL_IN_SECONDS: Joi.number(),
   CURRENCY_CACHE_TTL_IN_SECONDS: Joi.number(),
   PRICE_CACHE_TTL_IN_SECONDS: Joi.number(),
+  AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
+  QUICKSWAP_SUBGRAPH_URL: Joi.string().required(),
+  BSC_URL: Joi.string().required(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_REGION: Joi.string() //
+    .default('eu-central-1')
+    .optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_ACCESS_KEY_ID: Joi.string() //
+    .default('AKIAZDKQQQWB2PUMCMK5')
+    .optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_SECRET_ACCESS_KEY: Joi.string() //
+    .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
+    .optional(),
+  FTM_RPC_URL: Joi.string().required(),
+  POLYGON_RPC_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

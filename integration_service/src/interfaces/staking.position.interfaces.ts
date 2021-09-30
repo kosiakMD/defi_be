@@ -1,10 +1,12 @@
 import { ProtocolTypeEnum, TransactionTypeEnum } from 'src/common/enum';
 
+import { LPToken } from '../integrations/integrations.dto';
 import {
   AmountAble,
   BaseData,
   ERC20Token,
   PoolToken,
+  StakingErcToken,
   Transaction,
 } from './transactions.interfaces';
 
@@ -24,7 +26,7 @@ export interface PoolTokenStaked extends ERC20Token, AmountAble {}
 
 export interface ClaimAbleToken extends ERC20Token {
   claimed?: string;
-  claimable: string;
+  claimable?: string;
   priceUSD?: number;
 }
 
@@ -34,9 +36,10 @@ export interface StakingPosition {
   address: string;
   poolId?: string;
   staked: string;
-  lpToken: PoolTokenStaked;
+  lpToken?: PoolTokenStaked;
   rewardToken: ClaimAbleToken;
-  liquidityPoolTokens: PoolToken[];
+  stakingToken: LPToken | StakingErcToken;
+  liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }
 

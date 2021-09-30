@@ -32,10 +32,18 @@ export class BalancesController {
     description: 'Array of chain ID (comma separated)',
     example: '1,2,3,4',
   })
+  @ApiQuery({
+    name: 'assets',
+    type: String,
+    required: false,
+    description: 'Array of asset addresses (comma separated)',
+    example:
+      '0xdac17f958d2ee523a2206206994597c13d831ec7,0xB8c77482e45F1F44dE1745F52C74426C631bDD52',
+  })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
   public getBalance(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
-    const { addresses, chains } = query;
+    const { addresses, chains, assets } = query;
 
-    return this.service.getBalances(addresses, chains);
+    return this.service.getBalances(addresses, chains, assets);
   }
 }

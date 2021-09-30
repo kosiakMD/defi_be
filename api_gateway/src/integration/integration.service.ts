@@ -1,9 +1,9 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { FeaturesResponseDto } from '../common/DTO/features.dto';
 import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
@@ -18,7 +18,9 @@ export class IntegrationService {
   private readonly getStatusUrl: string;
   private readonly getUniswapUrl: string;
   private readonly getSushiswapUrl: string;
+  private readonly getPangolinUrl: string;
   private readonly getPancakeUrl: string;
+  private readonly getSpookyswapUrl: string;
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
   private readonly protocolsUrl: string;
@@ -43,6 +45,12 @@ export class IntegrationService {
 
     const pancakePath = this.configService.get<string>('INTEGRATION_PANCAKE');
     this.getPancakeUrl = `${url}/${pancakePath}`;
+
+    const pangolinPath = this.configService.get<string>('INTEGRATION_PANGOLIN');
+    this.getPangolinUrl = `${url}/${pangolinPath}`;
+
+    const spookyswapPath = this.configService.get<string>('INTEGRATION_SPOOKYSWAP');
+    this.getSpookyswapUrl = `${url}/${spookyswapPath}`;
 
     const poolsPath = this.configService.get<string>('POOLS_PATH');
     this.getPoolsUrl = `${url}/${poolsPath}`;
@@ -114,6 +122,28 @@ export class IntegrationService {
     }
   }
 
+  @RequestErrorHandler()
+  async getPangolin(addresses: string, chains?: string): Promise<BalancesResponse> {
+    this.logger.time(this.getPangolinUrl);
+    const data = await this.httpService
+      .get(this.getPangolinUrl, { params: { addresses, chains } })
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(this.getPangolinUrl);
+    return data;
+  }
+
+  @RequestErrorHandler()
+  async getSpookyswap(addresses: string, chains?: string): Promise<BalancesResponse> {
+    this.logger.time(this.getSpookyswapUrl);
+    const data = await this.httpService
+      .get(this.getSpookyswapUrl, { params: { addresses, chains } })
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(this.getSpookyswapUrl);
+    return data;
+  }
+
   async getPools(): Promise<Pool[]> {
     try {
       this.logger.time(this.getPoolsUrl);
@@ -154,7 +184,7 @@ export class IntegrationService {
 
   async getAllFeatures(): Promise<FeaturesResponseDto> {
     try {
-      this.logger.time(`${this.protocolsUrl}/`);
+      this.logger.time(this.protocolsUrl);
       const data = await this.httpService
         .get(this.protocolsUrl)
         .pipe(map((r) => r.data))

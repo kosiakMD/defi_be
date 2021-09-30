@@ -31,6 +31,8 @@ export const validationSchema = Joi.object({
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
     .default('info'),
+  LOG_AWS_ENABLED: Joi.bool() //
+    .default(false),
   DB_HOST: Joi.string().required(),
   DB_PORT: Joi.number() //
     .default(5432)
@@ -42,6 +44,8 @@ export const validationSchema = Joi.object({
   BSC_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   FTM_URL: Joi.string().required(),
+  ARBITRUM_URL: Joi.string().required(),
+  AVAX_URL: Joi.string().required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),
@@ -59,6 +63,33 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  ETH_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  BSC_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  POLYGON_BALANCES_CHECKER_ADDRESS: Joi.string()
+    .default('0x1502c3c8e63873b1b162ed27a218069dc1486f51')
+    .optional(),
+  FTM_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  AVAX_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string().optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_REGION: Joi.string() //
+    .default('eu-central-1')
+    .optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_ACCESS_KEY_ID: Joi.string() //
+    .default('AKIAZDKQQQWB2PUMCMK5')
+    .optional(),
+  // TODO: Hardcoded values should be removed and made required
+  AWS_SECRET_ACCESS_KEY: Joi.string() //
+    .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
+    .optional(),
+  CACHE_ASSETS_TTL: Joi.number()
+    .integer()
+    .optional()
+    .default(60 * 60),
 });
 
 export const validationOptions = {

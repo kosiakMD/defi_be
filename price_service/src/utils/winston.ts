@@ -6,12 +6,15 @@ import * as Transport from 'winston-transport';
 
 import { LoggerService } from '@nestjs/common';
 
+import { ensureDotEnvInitiated } from '../config/configuration';
+
 type LogConfig = {
   logErrorFile: string;
   logCombineLog: string;
   serviceName: string;
   level?: string;
   meta?: Record<string, any>;
+  env?: string;
   awsConfig: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -30,6 +33,7 @@ export const winstonParams = ({
   serviceName,
   level = 'info',
   awsConfig,
+  env,
   meta,
 }: LogConfig): WinstonModuleOptions => ({
   level: level,
@@ -45,7 +49,7 @@ export const winstonParams = ({
     // - Write all logs with level `info` and below to `combined.log`
     new winston.transports.File({ filename: logCombineLog }),
     new CloudWatchTransport({
-      logGroupName: 'services/price',
+      logGroupName: `dy-${env}-service/prices`,
       logStreamName: `${os.hostname()}_${Date.now()}`,
       createLogGroup: true,
       createLogStream: true,
@@ -58,6 +62,24 @@ export const winstonParams = ({
   ],
 });
 
-export const createLogger = (config: LogConfig): LoggerService => {
+export const createLogger = (): LoggerService => {
+  // NOTE: We should use .env initialization for logger as config service is not yet available
+  // We should have logger before config validation as otherwise we cannot log it to CW
+  ensureDotEnvInitiated();
+
+  const config: LogConfig = {
+    logErrorFile: process.env.LOG_ERROR_FILE,
+    logCombineLog: process.env.LOG_COMBINED_FILE,
+    serviceName: process.env.SERVICE_NAME,
+    level: process.env.LOG_LEVEL,
+    env: process.env.NODE_ENV,
+    meta: { env: process.env.ENV },
+    awsConfig: {
+      region: process.env.AWS_REGION,
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    },
+  };
+
   return WinstonModule.createLogger(winstonParams(config));
 };

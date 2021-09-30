@@ -12,7 +12,7 @@ export const getUniqList = <T = string | number>(values: T[]): T[] => {
   return Array.from(new Set(values));
 };
 
-// TODO refactor - transform toLowerCase in DTO instead of here?
+// TODO refactor - transform toLowerCase in dto instead of here?
 export function getUniqueAndToLowerCaseArrayData(input: string | string[]): string[] {
   const set: Set<string> = new Set();
   const add = (string): typeof set => set.add(string.toLowerCase());

@@ -1,8 +1,7 @@
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-
 import { HttpModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AnalyticModule } from './analytic/analytic.module';
 import { ApprovalsModule } from './approvals/approvals.module';
@@ -24,13 +23,19 @@ import { winstonParams } from './utils/winston';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams(
-          configService.get<string>('LOG_ERROR_FILE'),
-          configService.get<string>('LOG_COMBINED_FILE'),
-          configService.get<string>('SERVICE_NAME'),
-          configService.get<string>('LOG_LEVEL'),
-          { env: configService.get<string>('ENV') },
-        ),
+        winstonParams({
+          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
+          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
+          serviceName: configService.get<string>('SERVICE_NAME'),
+          level: configService.get<string>('LOG_LEVEL'),
+          meta: { env: configService.get<string>('ENV') },
+          awsEnabled: configService.get<boolean>('LOG_AWS_ENABLED'),
+          awsConfig: {
+            region: configService.get<string>('AWS_REGION'),
+            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+          },
+        }),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],
@@ -67,8 +72,5 @@ export class AppModule implements OnModuleInit {
     );
   }
 
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private configService: ConfigService,
-  ) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 }

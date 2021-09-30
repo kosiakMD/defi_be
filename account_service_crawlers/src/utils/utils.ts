@@ -44,3 +44,7 @@ export const totalPrice = (amount: string, price: number, decimals: string | num
     .times(price)
     .div(decimalsDivider(decimals))
     .toNumber();
+
+export const toField = (index: number, length: number, chunkSize: number): number => {
+  return index + chunkSize > length ? length : index + chunkSize;
+};

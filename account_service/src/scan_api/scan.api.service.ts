@@ -1,11 +1,10 @@
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
-import { EtherScanTransactionResponseDto } from 'src/scan_api/ether.scan.transaction.response.dto';
 
 import { HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { DEFAULT_MULTIPLIER } from 'src/common/constatnt';
 import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from 'src/common/enum';
@@ -13,7 +12,6 @@ import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
-import { EtherscanTransfer } from '../balance/interfaces/etherscan.interfaces';
 import { PriceServiceResponse } from '../price/price.interfaces';
 import { PriceService } from '../price/price.service';
 import {
@@ -33,6 +31,8 @@ import {
   transactionFeeUSD,
   transferTokenAddressNotIn,
 } from '../utils/utils';
+import { EtherscanTransfer } from './ether.scan.interfaces';
+import { EtherScanTransactionResponseDto } from './ether.scan.transaction.response.dto';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec

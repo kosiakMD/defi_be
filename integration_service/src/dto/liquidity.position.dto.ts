@@ -1,29 +1,19 @@
 // eslint-disable-next-line max-classes-per-file
 import { Type } from 'class-transformer';
 
-import { DirectionEnum, LiquidityChangeTypeEnum, TransactionTypeEnum } from 'src/common/enum';
+import { IncomeToken } from '../interfaces/entity.information.interfaces';
+import { ERC20Token, PoolToken, PoolTokenDto } from '../interfaces/transactions.interfaces';
 
-import { UniswapToken } from '../interfaces/entity.information.interfaces';
-import {
-  ERC20Token,
-  LiquidityChangeTransaction,
-  PoolToken,
-  PoolTokenDto,
-  SwapToken,
-  SwapTransaction,
-  Transaction,
-} from '../interfaces/transactions.interfaces';
-
-export class UniswapLiquidityPositionPair {
+export class IncomeLiquidityPositionPair {
   id: string = null;
   reserve0: string = null;
   reserve1: string = null;
   reserveUSD: string = null;
-  @Type(() => UniswapToken)
-  token0: UniswapToken = null;
+  @Type(() => IncomeToken)
+  token0: IncomeToken = null;
   token0Price: string = null;
-  @Type(() => UniswapToken)
-  token1: UniswapToken = null;
+  @Type(() => IncomeToken)
+  token1: IncomeToken = null;
   token1Price: string = null;
   totalSupply: string = null;
 }
@@ -33,20 +23,46 @@ export class LiquidityPool {
   name?: string = null;
 }
 
-export class UniswapLiquidityPosition {
+export class IncomeLiquidityPosition {
   liquidityTokenBalance: string = null;
   user: string = null;
-  @Type(() => UniswapLiquidityPositionPair)
-  pair: UniswapLiquidityPositionPair = null;
+  @Type(() => IncomeLiquidityPositionPair)
+  pair: IncomeLiquidityPositionPair = null;
 }
 
-export class TransferTransaction extends Transaction {
-  type: TransactionTypeEnum.transfer = null;
-  direction: DirectionEnum = null;
-  token: SwapToken[] = null;
+export class AaveReserve {
+  id: string = null; // reserve ID
+
+  // underlying token
+  underlyingAsset: string = null;
+  symbol: string = null;
+  decimals: number = null;
+  name: string = null;
+  priceUSD?: number = null;
+
+  // APY/APR calculations
+  liquidityRate: string = null;
+  stableBorrowRate: string = null;
+  variableBorrowRate: string = null;
+  aEmissionPerSecond: string = null;
+  vEmissionPerSecond: string = null;
+  sEmissionPerSecond: string = null;
+  totalATokenSupply: string = null;
+  totalCurrentVariableDebt: string = null;
 }
 
-export type AMMTransaction = LiquidityChangeTransaction | SwapTransaction | TransferTransaction;
+export class AaveUserReserve {
+  currentTotalDebt = '0';
+  currentStableDebt = '0';
+  currentVariableDebt = '0';
+  currentATokenBalance = '0';
+  reserve: AaveReserve;
+}
+
+export class AaveUser {
+  userAddress: string;
+  reserves: AaveUserReserve[];
+}
 
 export class LiquidityPosition {
   lpToken: ERC20Token = null;
@@ -54,26 +70,15 @@ export class LiquidityPosition {
   lpTokenBalance: string = null;
   exitedAt?: number = null;
   earnedFeeUSD?: number = null;
+  rewards?: PoolToken[];
   @Type(() => PoolTokenDto)
   poolTokens: PoolToken[] = null;
-  @Type(() => Transaction, {
-    discriminator: {
-      property: 'type',
-      subTypes: [
-        { value: LiquidityChangeTransaction, name: LiquidityChangeTypeEnum.addLiquidity },
-        { value: LiquidityChangeTransaction, name: LiquidityChangeTypeEnum.removeLiquidity },
-        { value: SwapTransaction, name: TransactionTypeEnum.swap },
-        { value: TransferTransaction, name: TransactionTypeEnum.transfer },
-      ],
-    },
-  })
-  transactions?: AMMTransaction[] = null;
   project?: string = null;
 }
 
 export class LiquidityPositionResponseData {
-  @Type(() => UniswapLiquidityPosition)
-  liquidityPositions: UniswapLiquidityPosition[];
+  @Type(() => IncomeLiquidityPosition)
+  liquidityPositions: IncomeLiquidityPosition[];
 }
 
 export class LiquidityPositionResponse {

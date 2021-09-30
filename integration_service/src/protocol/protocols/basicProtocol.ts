@@ -1,4 +1,10 @@
 import { plainToClass } from 'class-transformer';
+import {
+  Borrowing,
+  BorrowingPosition,
+  Lending,
+  LendingPosition,
+} from 'src/interfaces/lending.position.interfaces';
 
 import {
   ChainAbbrEnum,
@@ -12,43 +18,50 @@ import { Address } from '../../common/types';
 import { Logger } from '../../Logger/Logger.service';
 import { AccountService } from '../../account/account.service';
 import { DetailedResponseDto } from '../../dto';
+import { LiquidityPosition } from '../../dto/liquidity.position.dto';
 import { CurrentPricesPayload, PriceResponseDto } from '../../dto/price.response.dto';
 import {
   IntegrationFeaturesData,
+  IntegrationFeaturesDataDto,
   LiquidityPoolFeature,
+  LPToken,
   PoolTokenDto,
 } from '../../integrations/integrations.dto';
-import { Staking } from '../../interfaces/staking.position.interfaces';
 import {
   Asset,
-  AutomaticMarketMaker,
+  BaseData,
   PoolToken,
+  StakingErcToken,
   StakingPosition,
 } from '../../interfaces/transactions.interfaces';
+import { Mapper } from '../../mappers/mapper';
 import { PriceService } from '../../price/price.service';
+import { UniswapLikeSubgraph } from '../../thegraph/uniswap-like-subgraph.service';
 import { objectUpdate } from '../../utils/object';
+import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../utils/util';
 import { ProtocolBasicInfo } from '../features/features.dto';
 import { FeatureEnum } from '../features/features.enum';
-import { FeatureResult } from '../features/features.types';
+import { FeatureResultDto } from '../features/features.types';
 import { FeaturesType, ProtocolFeaturesInfo } from '../protocol.types';
 import { tokenDictionary } from '../protocols.dictionaries';
-import { DefaultDataProvider } from '../protocols.dto';
+import { DefaultDataProvider, FeatureHandleDto, RawFeaturesDto } from '../protocols.dto';
 import AbstractProtocol from './abstractProtocol';
 
 export abstract class BasicProtocol<
   DataProvider extends DefaultDataProvider = DefaultDataProvider,
-> extends AbstractProtocol<DataProvider> {
+> extends AbstractProtocol {
   abstract readonly chains: ChainAbbrEnum[];
   abstract readonly project: ProjectEnum;
   abstract readonly name: ProtocolName;
-  abstract readonly label: string;
-  protected abstract readonly features: ProtocolFeaturesInfo;
+  abstract readonly displayName: string;
+  abstract readonly features: ProtocolFeaturesInfo;
   // TODO non mandatory
-  protected abstract readonly dataProvider?: DataProvider;
   protected abstract readonly accountService: AccountService;
   protected abstract readonly priceService: PriceService;
   protected abstract readonly feeRate: number;
   protected abstract readonly logger: Logger;
+  protected abstract readonly dataProvider?: DataProvider | UniswapLikeSubgraph;
+  protected readonly mapper: Mapper;
 
   constructor() {
     super();
@@ -64,7 +77,7 @@ export abstract class BasicProtocol<
       chains: this.chains,
       project: this.project,
       name: this.name,
-      label: this.label,
+      label: this.displayName,
       features: this.getFeaturesInfo(chainId),
     };
   }
@@ -73,31 +86,134 @@ export abstract class BasicProtocol<
     address: Address,
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> => {
-    let data;
+    let pools, poolsErrors;
+    const { rawPools, rawStaking, rawLending, rawBorrowing } = await this.getAllFeaturesRawData(
+      address,
+      chainId,
+    );
+
     try {
-      data = await this.dataProvider.getDataByAddresses(address, chainId);
+      const { errors, data } = await this.transformPools(rawPools, chainId);
+      poolsErrors = errors;
+      pools = data;
+    } catch (e) {
+      poolsErrors = e;
+      pools = null;
+    }
+    let staking,
+      stakingErrors = [];
+    try {
+      staking = this.transformStaking(rawStaking);
+    } catch (e) {
+      stakingErrors = e;
+      staking = null;
+    }
+
+    let lending,
+      lendingErrors = [];
+    try {
+      lending = this.transformLending(rawLending);
+    } catch (e) {
+      lendingErrors = e;
+      lending = null;
+    }
+
+    let borrowing,
+      borrowingErrors = [];
+    try {
+      borrowing = this.transformBorrowing(rawBorrowing);
+    } catch (e) {
+      borrowingErrors = e;
+      borrowing = null;
+    }
+
+    // console.log('rawStaking', rawStaking);
+    const result = new IntegrationFeaturesDataDto();
+    result.errors = [poolsErrors, stakingErrors, lendingErrors, borrowingErrors].flat(5); // TODO add staking errors
+    result[FeatureEnum.pools] = pools;
+    result[FeatureEnum.staking] = staking;
+    result[FeatureEnum.lending] = lending;
+    result[FeatureEnum.borrowing] = borrowing;
+
+    return result;
+  };
+
+  protected getAllFeaturesRawData = async (
+    addresses: Address,
+    chainId?: ChainIdEnum,
+  ): Promise<RawFeaturesDto> => {
+    try {
+      const data = await this.getData(addresses, chainId);
+      const rawPools = data.find((data) => data['liquidityPositions'])?.liquidityPositions;
+      const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
+      const rawLending = data.find((data) => data['lendingPositions']);
+      const rawBorrowing = data.find((data) => data['borrowingPositions']);
+      // TODO: feature transaction is disabled
+      // const transactions = data.find((data) => data['transactions']);
+      return { rawPools, rawStaking, rawLending, rawBorrowing };
     } catch (e) {
       this.logger.error(e);
       throw e;
     }
-    const rawPools = data.find((data) => data['liquidityPositions']);
-    const rawStaking = data.find((data) => data['stakingPositions']);
-    // TODO: feature transaction is disabled
-    // const transactions = data.find((data) => data['transactions']);
-    const { errors: poolsErrors, data: pools } = await this.transformPools(rawPools, chainId);
-    const staking = this.transformStaking(rawStaking);
-    return {
-      errors: poolsErrors,
-      [FeatureEnum.pools]: pools,
-      [FeatureEnum.staking]: staking,
-      // TODO: feature transaction is disabled
-      // [FeatureEnum.transactions]: transactions,
-    };
   };
 
+  protected async getData(addresses, chainId?) {
+    let data;
+    if (this.dataProvider instanceof UniswapLikeSubgraph) {
+      data = await this.getSubgraphMappedData(addresses);
+    } else {
+      data = await this.dataProvider.getDataByAddresses(addresses, chainId);
+    }
+    return data;
+  }
+
+  protected async getSubgraphMappedData(addresses: Address): Promise<BaseData[]> {
+    const originAddressesArray = addresses.split(',');
+    const response = await this.getSubgraphData(
+      originAddressesArray,
+      this.dataProvider as UniswapLikeSubgraph,
+    );
+    const data = this.mapper.mapData(
+      response.userAddresses,
+      originAddressesArray,
+      response.response,
+      ProjectEnum.sushiswap,
+    );
+    return data;
+  }
+
+  protected async getSubgraphData(addresses: string[], subgraph: UniswapLikeSubgraph) {
+    const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
+    const flag = subgraph && subgraph.constructor.name === 'SushiswapSubgraph';
+    const [liquidityPosition, stakingPositions] = await Promise.all([
+      subgraph.getLiquidityPositions(addressesArray),
+      flag ? subgraph.getStakingPositions(addressesArray) : null,
+    ]);
+
+    const uniswapLiquidityPositions = groupBy(
+      liquidityPosition.data.liquidityPositions,
+      (liquidityPosition) => liquidityPosition.user.id,
+    );
+
+    const sushiswapStakingPosition = flag
+      ? groupBy(stakingPositions.data.users, (staking) => {
+          const array = staking.id.split('-');
+          return array[1];
+        })
+      : null;
+
+    return {
+      userAddresses: addressesArray,
+      response: {
+        uniswapLiquidityPositions,
+        sushiswapStakingPosition,
+      },
+    };
+  }
+
   // side effects
-  private async handleMissedData(
-    inputPoolsData: AutomaticMarketMaker,
+  protected async handleMissedData(
+    rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
     errors,
   ): Promise<void> {
@@ -113,8 +229,8 @@ export abstract class BasicProtocol<
         map.set(address, [token]);
       }
     };
-
-    inputPoolsData.liquidityPositions.forEach((inputPool) => {
+    // console.log(rawPools);
+    rawPools?.forEach((inputPool) => {
       pools.push(inputPool.lpToken.address);
       inputPool.poolTokens.forEach((token: PoolToken) => {
         const { address, name, symbol, decimals, priceUSD } = token;
@@ -126,9 +242,9 @@ export abstract class BasicProtocol<
         }
       });
     });
-    if (pools.length || tokensMissedData.size || tokensMissedPrice.size) {
+    if (pools.length && (tokensMissedData.size || tokensMissedPrice.size)) {
       let tokensRequest;
-      if (pools.length || tokensMissedData.size) {
+      if (tokensMissedData.size) {
         const addresses: string[] = Array.from(tokensMissedData.keys()).concat(pools);
         tokensRequest = this.getAllTokenInfo(addresses, [chainId]);
       }
@@ -150,7 +266,7 @@ export abstract class BasicProtocol<
 
             lpTokens.forEach((lpToken, index) => {
               // const index = lpToken.address;
-              const poolData = inputPoolsData.liquidityPositions[index];
+              const poolData = rawPools[index];
               const lpTokenToUpdate = poolData.lpToken;
               poolData.pool.name = lpToken.name;
               objectUpdate(lpTokenToUpdate, lpToken, 'fill');
@@ -162,9 +278,11 @@ export abstract class BasicProtocol<
               });
             });
           } else {
+            this.logger.error(tokensData.errors);
             errors.push(tokensData.errors);
           }
         } else {
+          this.logger.error(tokens.reason);
           errors.push(tokens.reason.message);
         }
       }
@@ -182,119 +300,162 @@ export abstract class BasicProtocol<
             });
           });
         } else {
-          errors.push(prices.reason);
+          this.logger.error(prices.reason);
+          errors.push(prices.reason.message);
         }
       }
     }
   }
 
-  protected transformStaking(rawStaking: Staking): FeatureResult<StakingPosition> {
-    const result: FeatureResult<StakingPosition> = {
+  getBasicFeatureResult<T>(
+    data: Borrowing | Lending,
+    rootKey: string,
+    totalKey: string,
+  ): FeatureResultDto<T> {
+    const result = {
+      totalValue: 0,
+      items: data?.[rootKey] ?? [],
+    };
+
+    if (data) {
+      data[rootKey].forEach((cur) => {
+        result.totalValue += cur[totalKey] * cur.token.priceUSD;
+      });
+    }
+
+    return result;
+  }
+
+  protected transformLending(rawLending: Lending): FeatureResultDto<LendingPosition> {
+    return this.getBasicFeatureResult<LendingPosition>(
+      rawLending,
+      'lendingPositions',
+      'totalDepositDecimal',
+    );
+  }
+
+  protected transformBorrowing(rawBorrowing: Borrowing): FeatureResultDto<BorrowingPosition> {
+    return this.getBasicFeatureResult<BorrowingPosition>(
+      rawBorrowing,
+      'borrowingPositions',
+      'totalDebtDecimal',
+    );
+  }
+
+  protected transformStaking(rawStaking: StakingPosition[]): FeatureResultDto<StakingPosition> {
+    const result: FeatureResultDto<StakingPosition> = {
       totalValue: 0,
       items: null,
     };
-    rawStaking?.stakingPositions.forEach((staking) => {
-      result.totalValue += Number(staking.staked);
+
+    rawStaking?.forEach((staking) => {
+      if (staking.stakingToken.constructor.name === 'LPToken') {
+        const lpToken = staking.stakingToken as LPToken;
+        lpToken.tokens.forEach((token) => (result.totalValue += token.value));
+        return;
+      }
+      const stakingToken = staking.stakingToken as StakingErcToken;
+      result.totalValue += Number(stakingToken.value);
     });
 
-    result.items = rawStaking?.stakingPositions || [];
+    result.items = rawStaking || [];
     return result;
   }
 
   protected async transformPools(
-    inputPoolsData: AutomaticMarketMaker,
+    rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
-  ): Promise<{ errors: any[]; data: FeatureResult<LiquidityPoolFeature> }> {
-    const result = {
-      errors: [] as any[],
-      data: {
-        totalValue: 0,
-        items: [],
-      } as FeatureResult<LiquidityPoolFeature>,
-    };
+  ): Promise<FeatureHandleDto<LiquidityPoolFeature>> {
+    const result = new FeatureHandleDto();
 
     try {
-      await this.handleMissedData(inputPoolsData, chainId, result.errors);
+      await this.handleMissedData(rawPools, chainId, result.errors);
     } catch (e) {
       this.logger.error(e);
       result.errors.push(e.message);
     }
 
-    const outputPools: LiquidityPoolFeature[] = inputPoolsData.liquidityPositions.map(
-      (inputPool) => {
-        const tokens: PoolTokenDto[] = [];
-        let TVL = 0; // sum(reserve * price)
-        let userValue = 0; // sum of values
-        // Pool Tokens
-        inputPool.poolTokens.forEach((token: PoolToken) => {
-          const formattedToken = plainToClass(PoolTokenDto, {});
-          objectUpdate(formattedToken, token, tokenDictionary, 'default');
-          const { price, reserve, balance } = formattedToken;
-          // value
-          formattedToken.value = Number(balance) * price ?? null;
-          // user
-          userValue += formattedToken.value;
-          // TVL
-          if (reserve) {
-            TVL += Number(reserve) * price;
-          }
+    const outputPools: LiquidityPoolFeature[] = rawPools?.map((inputPool) => {
+      const tokens: PoolTokenDto[] = [];
+      let TVL = 0; // sum(reserve * price)
+      let userValue = 0; // sum of values
+      // Pool Tokens
+      inputPool.poolTokens.forEach((token: PoolToken) => {
+        const formattedToken = plainToClass(PoolTokenDto, {});
+        objectUpdate(formattedToken, token, tokenDictionary, 'default');
+        const { price, reserve, balance } = formattedToken;
+        // value
+        formattedToken.value = Number(balance) * price ?? null;
+        // user
+        userValue += formattedToken.value;
+        // TVL
+        if (reserve) {
+          TVL += Number(reserve) * price;
+        }
 
-          tokens.push(formattedToken);
-        });
-        result.data.totalValue += userValue;
-        // Pool
-        const outPool: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
-          address: inputPool.pool.address,
-          name: inputPool.pool.name,
-          lpToken: inputPool.lpToken,
-          TVL: TVL,
-          fee: {
-            rate: this.feeRate,
+        tokens.push(formattedToken);
+      });
+      result.data.totalValue += userValue;
+      // Pool
+      const outPool: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
+        address: inputPool.pool.address,
+        name: inputPool.pool.name,
+        lpToken: inputPool.lpToken,
+        TVL: TVL,
+        fee: {
+          rate: this.feeRate,
+        },
+        user: {
+          value: userValue,
+          share: userValue / TVL,
+        },
+        // TODO need to add 1 more call to subgraph after pool data will be ready
+        statistic: {
+          day: {
+            // volume: 1,
+            // fee: 1,
           },
-          user: {
-            value: userValue,
-            share: userValue / TVL,
-          },
-          // TODO need to add 1 more call to subgraph after pool data will be ready
-          statistic: {
-            day: {
-              // volume: 1,
-              // fee: 1,
-            },
-          },
-          tokens: tokens,
-        } as LiquidityPoolFeature);
+        },
+        tokens: tokens,
+      } as LiquidityPoolFeature);
 
-        return outPool;
-      },
-    );
+      return outPool;
+    });
 
-    result.data.items = outputPools;
+    result.data.items = outputPools?.filter((pool) => pool.user.value);
 
     return result;
   }
 
-  private getAllTokenInfo(
+  private async getAllTokenInfo(
     addresses: string[],
     chainIds: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
     try {
-      return this.accountService.getAssets(addresses, chainIds);
+      return await this.accountService.getAssets(addresses, chainIds);
     } catch (e) {
       this.logger.error(e);
-      throw new Error('GetAllTokenInfoError: \n ' + e);
+      if (e.message.startsWith('connect ECONNREFUSED')) {
+        throw new Error('connect ECONNREFUSED Asset Service');
+      } else {
+        throw new Error('GetAllTokenInfoError: \n ' + e);
+      }
     }
   }
 
-  private getAllTokenPrices(
+  private async getAllTokenPrices(
     addresses: string[],
     chainId: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     try {
-      return this.priceService.getTokenPrices(addresses, chainId);
+      return await this.priceService.getTokenPrices(addresses, chainId);
     } catch (e) {
       this.logger.error(e);
-      throw new Error('GetAllTokenInfoError: \n ' + e);
+      if (e.message.startsWith('connect ECONNREFUSED')) {
+        throw new Error('connect ECONNREFUSED Price Service');
+      } else {
+        throw new Error('getAllTokenPrices: \n ' + e);
+      }
     }
   }
 }

@@ -1,6 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { Type } from 'class-transformer';
 
+import { ApiProperty } from '@nestjs/swagger';
+
 import { Address } from '../common/types';
 import {
   ChainIdEnum,
@@ -11,7 +13,13 @@ import {
   TransactionTypeEnum,
 } from 'src/common/enum';
 
-import { LiquidityPosition, UniswapLiquidityPosition } from '../dto/liquidity.position.dto';
+import {
+  AaveUser,
+  LiquidityPosition,
+  IncomeLiquidityPosition,
+} from '../dto/liquidity.position.dto';
+import { LPToken } from '../integrations/integrations.dto';
+import { BorrowingPosition, LendingPosition } from './lending.position.interfaces';
 
 export type TokenSymbol = string;
 
@@ -24,11 +32,27 @@ export interface AmountAble {
 }
 
 export class ERC20Token {
+  @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
   address: string;
+  @ApiProperty({ type: String, example: 'Ethereum' })
   name: string;
+  @ApiProperty({ type: String, example: 'ETH' })
   symbol: string;
+  @ApiProperty({ type: Number, example: 18 })
   decimals: number;
+  @ApiProperty({ type: String, example: '69393241' })
   totalSupply?: string;
+}
+
+export class StakingErcToken extends ERC20Token {
+  @ApiProperty({ type: Number, example: 3759.23 })
+  price?: number = null;
+
+  @ApiProperty({ type: Number, example: 1.2512 })
+  value?: number;
+
+  @ApiProperty({ type: String, example: '123.6534' })
+  balance?: string;
 }
 
 export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
@@ -49,6 +73,10 @@ export class PoolTokenDto extends ERC20Token implements PoolToken {
   amount?: string;
 }
 
+export class LendTokenDto extends ERC20Token implements PriceAble {
+  priceUSD: number;
+}
+
 export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
 
 export class SwapTokenDto extends ERC20Token implements SwapToken {
@@ -57,13 +85,14 @@ export class SwapTokenDto extends ERC20Token implements SwapToken {
 }
 
 export interface UniswapResponseData {
-  uniswapLiquidityPositions: Map<string, UniswapLiquidityPosition[]>;
+  uniswapLiquidityPositions: Map<string, IncomeLiquidityPosition[]>;
   sushiswapStakingPosition?: Map<string, any>;
+  aaveLendingPositions?: Map<string, AaveUser>;
 }
 
 export interface ClaimAbleToken extends ERC20Token {
   claimed?: string;
-  claimable: string;
+  claimable?: string;
   priceUSD?: number;
 }
 
@@ -95,9 +124,10 @@ export interface StakingPosition {
   address: string;
   poolId?: string;
   staked: string;
-  lpToken: ERC20Token;
+  lpToken?: ERC20Token;
   rewardToken: ClaimAbleToken;
-  liquidityPoolTokens: PoolToken[];
+  stakingToken?: StakingErcToken | LPToken;
+  liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }
 
@@ -105,7 +135,7 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectEnum: ProjectEnum;
   protocolName?: ProtocolName;
   liquidityPositions?: any[];
 }
@@ -120,9 +150,16 @@ export class Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
-export class Transactions extends BaseData<'transaction'> {
+export class Transactions extends BaseData<ProtocolTypeEnum.transaction> {
   @Type(() => Transaction)
   txs: Transaction[];
+}
+
+export class LendingDto extends BaseData<ProtocolTypeEnum.lending> {
+  lendingPositions: LendingPosition[];
+}
+export class BorrowingDto extends BaseData<ProtocolTypeEnum.borrowing> {
+  borrowingPositions: BorrowingPosition[];
 }
 
 export class LiquidityChangeTransaction extends Transaction {

@@ -1,4 +1,5 @@
-import { ChainId } from '../../common/types';
+import { Address } from 'src/common/types';
+import { AccountBalanceBase, TokenBalance } from 'src/common/types/balances';
 
 export interface EtherscanTransfer {
   blockNumber: number;
@@ -22,40 +23,20 @@ export interface EtherscanTransfer {
   confirmations: number;
 }
 
-export interface Token {
-  chainId: ChainId;
-  name: string;
-  address: string;
-  decimals: number;
-  symbol: string;
-}
-
-export interface BalanceToken {
-  amount: number;
-  decimalsAmount: number;
-  tokenPriceUSD: number;
-  totalPriceUSD: number;
-  token: Token;
-}
-
-export interface TokenBalance {
-  amount: string;
-  decimalsAmount: number;
-  tokenPriceUSD?: number;
-  totalPriceUSD?: number;
-  token: BalanceToken;
-}
-
 export interface Transfers {
   [key: string]: EtherscanTransfer[];
 }
 
-export interface AccountTokenBalance extends TokenBalance {
-  account: string;
+export interface AccountTokenBalance {
+  account: Address;
+  amount: string;
+  decimalsAmount: number;
+  tokenPriceUSD?: number;
+  totalPriceUSD?: number;
+  token: TokenBalance;
 }
 
-export interface AccountBalance {
-  totalUsd: number;
+export interface AccountBalance extends AccountBalanceBase {
   tokens: AccountTokenBalance[];
 }
 

@@ -6,7 +6,7 @@ import { AccountService } from '../account/account.service';
 import { FeatureDto } from '../integrations/integrationFeatures';
 import { PriceService } from '../price/price.service';
 import { FeatureEnum } from './features/features.enum';
-import { FeatureResult } from './features/features.types';
+import { FeatureResultDto } from './features/features.types';
 import { DefaultDataProvider } from './protocols.dto';
 
 // export type ProtocolFeatures = Record<ChainAbbrEnum, FeatureEnum[]>;
@@ -21,7 +21,7 @@ export type ProtocolFeaturesData = {
 };
 
 export type BasicProtocolType<DataProvider extends DefaultDataProvider = DefaultDataProvider> = {
-  [key in keyof typeof FeatureEnum]?: (address: Address, chainId?: ChainIdEnum) => FeatureResult;
+  [key in keyof typeof FeatureEnum]?: (address: Address, chainId?: ChainIdEnum) => FeatureResultDto;
 } & {
   readonly chains: ChainAbbrEnum[];
   readonly project: ProjectEnum;

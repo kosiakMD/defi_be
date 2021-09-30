@@ -24,6 +24,7 @@ export class EtherscanService {
     Object.keys(transfersAll).forEach((address) => {
       if (allBalances[address] === undefined) {
         allBalances[address] = {
+          account: '',
           totalUsd: 0,
           tokens: [],
         };

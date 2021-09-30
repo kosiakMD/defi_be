@@ -1,13 +1,13 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AccountService } from 'src/account/account.service';
 
 import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../common/Logger/Logger.service';
+import { ChainIdEnum } from '../common/enum';
 
 import { ProfitAndLossQueryDto, ProfitAndLossResponseDTO } from './dto';
-import { ChainIdEnum } from '../common/enum';
 
 @ApiTags('Analytic')
 @Controller('analytic')

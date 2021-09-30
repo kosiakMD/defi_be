@@ -3,12 +3,12 @@ import { plainToClass } from 'class-transformer';
 import _last from 'lodash/last';
 import _minBy from 'lodash/minBy';
 import _orderBy from 'lodash/orderBy';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { EntityManager, Repository } from 'typeorm';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../common/Logger/Logger.service';
 import { ChainIdEnum, CurrencyIdEnum } from '../common/enum';
@@ -222,7 +222,7 @@ export class PriceService {
     );
 
     await this.entityManager.transaction(async (transactionalEntityManager: EntityManager) => {
-      // save new assets from DTO to DB
+      // save new assets from dto to DB
       let addedAssets: Asset[] = [];
       if (dtoForMissingAssets.length) {
         const sqlValues: string = this.getSqlValues(

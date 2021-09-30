@@ -36,7 +36,7 @@ export class MigrationService {
       event.chainId,
     );
 
-    if (asset.name && asset.symbol && asset.decimals) {
+    if (asset.isDataPresent) {
       return 1;
     }
 
@@ -46,10 +46,11 @@ export class MigrationService {
       this.getCovalentChainId(chainId),
     );
 
-    asset.name = assetPartial?.name;
+    asset.name = this.normalizeWeb3TokensData(assetPartial?.name);
     asset.decimals = assetPartial?.decimals;
-    asset.symbol = assetPartial?.symbol;
+    asset.symbol = this.normalizeWeb3TokensData(assetPartial?.symbol);
     asset.icon = assetPartial?.icon;
+    asset.isDataPresent = true;
     await this.assetsStore.save(asset);
 
     return 1;
@@ -168,5 +169,13 @@ export class MigrationService {
       this.logger.error(e, 'getTokenInfo - from ethplorer');
       throw e;
     }
+  }
+
+  replaceAll(string, search, replace): string {
+    return string.split(search).join(replace);
+  }
+
+  normalizeWeb3TokensData(data: string): string {
+    return this.replaceAll(data, '\u0000', '');
   }
 }

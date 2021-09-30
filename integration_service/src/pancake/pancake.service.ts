@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 
 import { PancakeProtocolEnum, ProjectEnum } from 'src/common/enum';
+import { TokenBalance } from 'src/common/types/balances';
 
 import { AccountService } from '../account/account.service';
-import { BalanceToken } from '../account/interfaces';
-import { UniswapLiquidityPosition, UniswapLiquidityPositionPair, } from '../dto/liquidity.position.dto';
+import {
+  IncomeLiquidityPosition,
+  IncomeLiquidityPositionPair,
+} from '../dto/liquidity.position.dto';
 import { EtherscanService } from '../etherscan/etherscan.service';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
@@ -31,8 +34,9 @@ export class PancakeService {
       this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV2),
     ]);
     allPools = allPools.concat(pools).concat(poolsV2);
+
     const liquidityPositions: UniswapResponseData = {
-      uniswapLiquidityPositions: new Map<string, UniswapLiquidityPosition[]>(),
+      uniswapLiquidityPositions: new Map<string, IncomeLiquidityPosition[]>(),
     };
     Object.keys(balances).map((key) => {
       balances[key].tokens.map((t) => {
@@ -54,12 +58,12 @@ export class PancakeService {
   private static createLiquidityPosition(
     user: string,
     pool: LiquidityPoolsEntity,
-    balance: BalanceToken,
-  ): UniswapLiquidityPosition {
+    balance: TokenBalance,
+  ): IncomeLiquidityPosition {
     const token0 = pool.poolTokens.find((t) => t.positionInPool === 0);
     const token1 = pool.poolTokens.find((t) => t.positionInPool === 1);
 
-    const pair: UniswapLiquidityPositionPair = {
+    const pair: IncomeLiquidityPositionPair = {
       id: pool.address,
       reserve0: token0.reserve.toString(),
       reserve1: token1.reserve.toString(),

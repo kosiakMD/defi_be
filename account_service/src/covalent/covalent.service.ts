@@ -1,10 +1,10 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { map } from 'rxjs/operators';
 
 import { HttpException, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CurrencyEnum } from '../common/enum';
+import { CurrencyEnum } from '../common/enum';
 import { Address } from 'src/common/interfaces';
 
 import { Logger } from '../Logger/Logger.service';
@@ -17,12 +17,8 @@ export class CovalentService {
   protected readonly url: string;
   protected readonly apiKey: string;
 
-  private getBalanceUrl(address: Address, chainId: ChainIdEnum): string {
+  private getBalanceUrl(address: Address, chainId: number): string {
     return `${this.url}/${chainId}/address/${address}/balances_v2/`;
-  }
-
-  private getTransactionUrl(address: Address, chainId: ChainIdEnum): string {
-    return `${this.url}/${chainId}/address/${address}/transactions_v2/`;
   }
 
   constructor(
@@ -34,7 +30,7 @@ export class CovalentService {
     this.apiKey = this.configService.get<string>('COVALENT_KEY');
   }
 
-  public async getBalances(address: Address, chainId: ChainIdEnum): Promise<Covalent.Balance> {
+  public async getBalances(address: Address, chainId: number): Promise<Covalent.Balance> {
     const transactionUrl = this.getBalanceUrl(address, chainId);
     try {
       this.logger.time(transactionUrl);
@@ -65,51 +61,6 @@ export class CovalentService {
       } else {
         this.logger.error('CovalentService.getTransactions', e);
         throw new HttpException(e.response, e.code);
-      }
-    }
-  }
-
-  public async getTransactions(
-    address: Address,
-    chainId: ChainIdEnum,
-  ): Promise<Covalent.Transaction> {
-    const transactionUrl = this.getTransactionUrl(address, chainId);
-    try {
-      this.logger.time(transactionUrl);
-      const result = await this.httpService
-        .get<Covalent.Response<Covalent.Transaction>>(transactionUrl, {
-          // baseURL: this.url, TODO: doesn't work properly, fix and use static get url method
-          // url: transactionUrl,
-          params: {
-            key: this.apiKey,
-            'quote-currency': CurrencyEnum.usd,
-            'page-size': TRANSACTIONS_PER_PAGE,
-          },
-        })
-        .pipe(map((response) => response.data))
-        .toPromise();
-      this.logger.timeEnd(transactionUrl);
-
-      if (result.error) {
-        throw new HttpException(result.error_message, result.error_code);
-      } else {
-        return result.data;
-      }
-    } catch (e) {
-      if (e.isAxiosError) {
-        this.logger.error(
-          new Error(
-            `URL ${e.code || ' '}this.logger.error(new Error(\`URL ${e.code || ' '}${e.config.url}`,
-          ),
-          'getTransactions',
-        );
-        if (e.response?.data) {
-          this.logger.error(e.response.data);
-        }
-        throw new HttpException(e.response, e.code);
-      } else {
-        this.logger.error('CovalentService.getTransactions', e);
-        throw e;
       }
     }
   }

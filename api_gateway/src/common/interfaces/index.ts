@@ -4,11 +4,13 @@ import {
   PancakeProtocolEnum,
   ProjectEnum,
   ProtocolTypeEnum,
+  QuickswapProtocolEnum,
   ResultStatus,
   SushiSwapProtocolEnum,
   TransactionTypeEnum,
   UniswapProtocolEnum,
 } from '../enum';
+import { AutofarmProtocolEnum } from '../enum/projectEnum';
 
 export type Address = string;
 
@@ -20,7 +22,12 @@ export type Chain = ChainIdEnum;
 
 export type Chains = ChainIdEnum[];
 
-export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;
+export type ProtocolName =
+  | PancakeProtocolEnum
+  | SushiSwapProtocolEnum
+  | UniswapProtocolEnum
+  | AutofarmProtocolEnum
+  | QuickswapProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
@@ -87,9 +94,10 @@ export interface StakingPosition {
   address: string;
   poolId?: string;
   staked: string;
-  lpToken: ERC20Token;
+  lpToken?: ERC20Token;
   rewardToken: ClaimAbleToken;
-  liquidityPoolTokens: PoolToken[];
+  stakingToken?: ERC20Token | LPToken;
+  liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];
 }
 

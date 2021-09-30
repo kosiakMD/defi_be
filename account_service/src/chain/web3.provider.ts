@@ -14,6 +14,8 @@ export class Web3Provider {
     this.providers[ChainIdEnum.bsc] = new Web3(this.configService.get<string>('BSC_URL'));
     this.providers[ChainIdEnum.polygon] = new Web3(this.configService.get<string>('POLYGON_URL'));
     this.providers[ChainIdEnum.ftm] = new Web3(this.configService.get<string>('FTM_URL'));
+    this.providers[ChainIdEnum.arbitrum] = new Web3(this.configService.get<string>('ARBITRUM_URL'));
+    this.providers[ChainIdEnum.avax] = new Web3(this.configService.get<string>('AVAX_URL'));
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {

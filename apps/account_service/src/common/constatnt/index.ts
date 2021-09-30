@@ -1,0 +1,31 @@
+export const DEFAULT_MULTIPLIER = 1e-18;
+
+export const CHAIN_ID_ETH = 1;
+export const CHAIN_ID_BSC = 2;
+
+export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+export const ETH_BNB_ADDRESS = '0xb8c77482e45f1f44de1745f52c74426c631bdd52';
+export const WBNB_ADDRESS = '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c';
+export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2';
+export const WFTM_ADDRESS = '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83';
+export const DAI_ADDRESS = '0x6B175474E89094C44Da98b954EedeAC495271d0F';
+export const ESD_ADDRESS = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
+export const imBTC = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
+export const SNX = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
+
+/**
+ * TODO: Blacklist improvement
+ *
+ * I think we need to extend our BlacklistService and implement token support,
+ * because my solution isn't enough flexible.
+ *
+ * Maybe in the next sprint, we will find some story points to do it.
+ *
+ */
+export const BLACKLISTED_TOKENS = [
+  '0x0df62d2cd80591798721ddc93001afe868c367ff',
+  '0x82dfdb2ec1aa6003ed4acba663403d7c2127ff67',
+  '0xb4a81261b16b92af0b9f7c4a83f1e885132d81e4',
+  '0x7dff46370e9ea5f0bad3c4e29711ad50062ea7a4',
+];

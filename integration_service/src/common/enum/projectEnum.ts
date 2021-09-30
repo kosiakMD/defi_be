@@ -1,7 +1,26 @@
 export enum ProjectEnum {
+  aave = 'aave',
+  spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   pancake = 'pancake',
+  quickswap = 'quickswap',
+  curve = 'curve',
+  balancer = 'balancer',
+  autofarm = 'autofarm',
+  pangolin = 'pangolin',
+}
+
+export enum PangolinProtocolEnum {
+  pangolin = 'Pangolin',
+}
+
+export enum AaveProtocolEnum {
+  AaveV2 = 'AaveV2',
+}
+
+export enum SpookySwapProtocolEnum {
+  SpookySwap = 'SpookySwap',
 }
 
 export enum PancakeProtocolEnum {
@@ -21,13 +40,21 @@ export enum UniswapProtocolEnum {
   uniswapV3 = 'UniswapV3',
 }
 
+export enum QuickswapProtocolEnum {
+  quickswap = 'QuickSwap',
+}
+
+export enum AutofarmProtocolEnum {
+  autofarm = 'Autofarm',
+}
+
 /** TODO: try this fo swagger
  * const BasicEvents = {
   Start: 'Start' as 'Start',
   Finish: 'Finish' as 'Finish'
 };
  type BasicEvents = (typeof BasicEvents)[keyof typeof BasicEvents];
- 
+
  const AdvEvents = {
   ...BasicEvents,
   Pause: 'Pause' as 'Pause',
@@ -35,9 +62,22 @@ export enum UniswapProtocolEnum {
 };
  type AdvEvents = (typeof AdvEvents)[keyof typeof AdvEvents];
  */
-export type ProtocolName = PancakeProtocolEnum | SushiSwapProtocolEnum | UniswapProtocolEnum;
+export type ProtocolName =
+  | AaveProtocolEnum
+  | PancakeProtocolEnum
+  | PangolinProtocolEnum
+  | SushiSwapProtocolEnum
+  | UniswapProtocolEnum
+  | QuickswapProtocolEnum
+  | SpookySwapProtocolEnum
+  | AutofarmProtocolEnum;
 export const ProtocolNameEnum = {
+  ...AaveProtocolEnum,
   ...PancakeProtocolEnum,
+  ...PangolinProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...QuickswapProtocolEnum,
+  ...SpookySwapProtocolEnum,
+  ...AutofarmProtocolEnum,
 };

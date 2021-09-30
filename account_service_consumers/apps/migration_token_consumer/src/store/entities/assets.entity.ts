@@ -9,7 +9,7 @@ export class AssetsEntity {
   address: string;
 
   @Column({ name: 'name', nullable: true })
-  name: number;
+  name: string;
 
   @Column({ name: 'symbol', nullable: true })
   symbol: string;
@@ -28,4 +28,7 @@ export class AssetsEntity {
 
   @Column({ name: 'project_id', nullable: true })
   projectId: boolean;
+
+  @Column({ name: 'is_data_present' })
+  isDataPresent: boolean;
 }

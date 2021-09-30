@@ -77,7 +77,7 @@ export namespace Covalent {
             sender_contract_ticker_symbol: string;
             // The address of the sender.
             sender_address: string;
-            // The label of the sender address.
+            // The displayName of the sender address.
             sender_address_label: string;
             // Smart contract URL.
             sender_logo_url: string;

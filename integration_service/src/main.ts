@@ -1,31 +1,36 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import * as bodyParser from 'body-parser';
 import { install } from 'source-map-support';
 
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';
+import { createLogger } from './utils/winston';
 
+const logger = createLogger();
 install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'development' */ });
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     bodyParser: true,
-    logger: true,
+    abortOnError: false,
+    logger,
   });
 
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.enableShutdownHooks();
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
-  const logger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-
-  app.useLogger(logger);
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useLogger(enhancedLogger);
 
   const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
@@ -42,4 +47,6 @@ async function bootstrap(): Promise<void> {
   await app.listen(SERVICE_PORT, SERVICE_HOST);
 }
 
-bootstrap();
+bootstrap().catch((e) => {
+  logger.error(e, null, 'Bootstrap');
+});

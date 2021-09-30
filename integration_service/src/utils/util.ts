@@ -1,6 +1,6 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
 
-import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
+import { UniswapLikeSubgraph } from '../thegraph/uniswap-like-subgraph.service';
 
 type Decimals = string | number;
 export type Chain = number;
@@ -302,7 +302,16 @@ export function groupBy(list, keyGetter): Map<any, any> {
   return map;
 }
 
-export async function getDataByAddresses(addresses: string[], subgraph: UniswapSubgraph = null) {
+export async function getDataByAddresses(
+  addresses: string[],
+  subgraph: UniswapLikeSubgraph = null,
+): Promise<{
+  userAddresses: string[];
+  response: {
+    uniswapLiquidityPositions: Map<any, any>;
+    sushiswapStakingPosition: Map<any, any>;
+  };
+}> {
   const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
   const flag = subgraph && subgraph.constructor.name === 'SushiswapSubgraph';
   const [liquidityPosition, stakingPositions] = await Promise.all([

@@ -37,7 +37,7 @@ export class FeaturesService {
   getAllFeatures(): ProtocolDataDto[] {
     const infos = this.protocolService.getAllProtocolsInfo();
 
-    // const featuresMap = new Map<FeatureEnum, FeatureResult>();
+    // const featuresMap = new Map<FeatureEnum, FeatureResultDto>();
     // const featuresMap = new Map<ChainAbbrEnum, ProtocolDataDto>(
     //   getChainList().map((abbr) => [abbr, FeaturesService.createProtocolFeature(abbr)]),
     // );

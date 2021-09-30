@@ -1,7 +1,7 @@
 import { Controller, Get, NotAcceptableException, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ChainIdEnum, ProtocolNameEnum, UniswapProtocolEnum } from '../common/enum';
+import { ChainIdEnum, ProtocolNameEnum } from '../common/enum';
 
 import { Chains } from '../decorators';
 import { FeaturesResponseDto } from '../protocol/features/features.dto';
@@ -24,7 +24,8 @@ export class IntegrationsController {
     name: 'protocolName',
     enum: ProtocolNameEnum,
     enumName: 'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum',
-    example: UniswapProtocolEnum.uniswapV2,
+    // example: UniswapProtocolEnum.uniswapV2,
+    example: ProtocolNameEnum.sushiswapV2,
   })
   @ApiQuery({
     name: 'chains',

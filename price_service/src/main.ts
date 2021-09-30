@@ -1,4 +1,4 @@
-import { urlencoded, json } from 'express';
+import { json, urlencoded } from 'express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ValidationPipe } from '@nestjs/common';
@@ -10,32 +10,24 @@ import { AppModule } from './app.module';
 import { addTimeLogFeature } from './common/Logger/Logger.service';
 import { createLogger } from './utils/winston';
 
+const logger = createLogger();
+
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
     cors: true,
+    abortOnError: false,
+    logger,
   });
 
-  app.enableShutdownHooks();
-
-  const configService = app.get<ConfigService>(ConfigService);
-
-  const logger = createLogger({
-    logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
-    logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
-    serviceName: configService.get<string>('SERVICE_NAME'),
-    level: configService.get<string>('LOG_LEVEL'),
-    meta: { env: configService.get<string>('ENV') },
-    awsConfig: {
-      region: configService.get<string>('AWS_REGION'),
-      accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-      secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-    },
-  });
   app.useLogger(logger);
+  app.enableShutdownHooks();
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  const configService = app.get<ConfigService>(ConfigService);
+
   app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
   app.use(urlencoded({ extended: true, limit: configService.get<string>('URL_LIMIT') }));
 
@@ -60,4 +52,6 @@ async function bootstrap(): Promise<void> {
   await app.listen(port, host);
 }
 
-bootstrap();
+bootstrap().catch((e) => {
+  logger.error(e, null, 'Bootstrap');
+});

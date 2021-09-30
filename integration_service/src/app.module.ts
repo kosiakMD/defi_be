@@ -1,25 +1,25 @@
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { AutofarmModule } from './autofarm/autofarm.module';
 import configuration from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
+import { JobsModule } from './jobs/jobs.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
 import { PancakeModule } from './pancake/pancake.module';
 import { PoolsModule } from './pools/pools.module';
 import { ProtocolModule } from './protocol/protocol.module';
+import { QuickswapModule } from './quickswap/quickswap.module';
 import { SushiswapModule } from './sushiswap/sushiswap.module';
-import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
 import { UniswapModule } from './uniswap/uniswap.module';
 import { winstonParams } from './utils/winston';
 import { VaultsModule } from './vaults/vaults.module';
-import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -28,13 +28,18 @@ import { JobsModule } from './jobs/jobs.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams(
-          configService.get<string>('LOG_ERROR_FILE'),
-          configService.get<string>('LOG_COMBINED_FILE'),
-          configService.get<string>('SERVICE_NAME'),
-          configService.get<string>('LOG_LEVEL'),
-          { env: configService.get<string>('ENV') },
-        ),
+        winstonParams({
+          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
+          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
+          serviceName: configService.get<string>('SERVICE_NAME'),
+          level: configService.get<string>('LOG_LEVEL'),
+          meta: { env: configService.get<string>('ENV') },
+          awsConfig: {
+            region: configService.get<string>('AWS_REGION'),
+            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+          },
+        }),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],
@@ -49,12 +54,14 @@ import { JobsModule } from './jobs/jobs.module';
     //
     UniswapModule,
     ProtocolModule,
+    QuickswapModule,
+    SushiswapModule,
+    PancakeModule,
+    AutofarmModule,
+    //
     PoolsModule,
     DatabaseModule,
     VaultsModule,
-    SushiswapModule,
-    PancakeModule,
-    TemporaryTokensModule,
     IntegrationsModule,
     JobsModule,
   ],

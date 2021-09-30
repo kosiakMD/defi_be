@@ -1,6 +1,3 @@
-import { ApiVersionGuard } from '@nestjsx/api-version';
-import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-
 import {
   HttpModule,
   Inject,
@@ -12,6 +9,8 @@ import {
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
+import { ApiVersionGuard } from '@nestjsx/api-version';
+import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -31,14 +30,15 @@ import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.modul
 import { IntegrationService } from './integration/integration.service';
 import { MailModule } from './mail/mail.module';
 import { PancakeController } from './pancake/pancake.controller';
+import { PangolinController } from './pangolin/pangolin.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
 import { ProtocolController } from './protocol/protocol.controller';
 import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
 import { SafeProxyService } from './safe-proxy/safe.proxy.service';
-// import { ScansApiController } from './scans-api/scans-api.controller';
 import { ScansApiModule } from './scans-api/scans-api.module';
+import { SpookyswapController } from './spookyswap/spookyswap.controller';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
 import { TokensModule } from './tokens/tokens.module';
@@ -56,13 +56,18 @@ import { VaultsModule } from './vaults/vaults.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams(
-          configService.get<string>('LOG_ERROR_FILE'),
-          configService.get<string>('LOG_COMBINED_FILE'),
-          configService.get<string>('SERVICE_NAME'),
-          configService.get<string>('LOG_LEVEL'),
-          { env: configService.get<string>('ENV') },
-        ),
+        winstonParams({
+          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
+          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
+          serviceName: configService.get<string>('SERVICE_NAME'),
+          level: configService.get<string>('LOG_LEVEL'),
+          meta: { env: configService.get<string>('ENV') },
+          awsConfig: {
+            region: configService.get<string>('AWS_REGION'),
+            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
+          },
+        }),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],
@@ -94,7 +99,9 @@ import { VaultsModule } from './vaults/vaults.module';
     TransfersController,
     // Platforms
     PancakeController,
+    PangolinController,
     SushiswapController,
+    SpookyswapController,
     UniswapController,
     SwapController,
     ProtocolController,

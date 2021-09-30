@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { AssetPublisherService } from './asset.publisher.service';
 import { AssetsEntity } from './entities/assets.entity';
 import { SettingsEntity } from './entities/settings.entity';

@@ -13,3 +13,11 @@ export function camelize(...texts: string[]): string {
 export function capitalizeFirstLetter(string: string): string {
   return string[0].toUpperCase() + string.slice(1);
 }
+
+export function splitToArray(value: string): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return value.toLowerCase().split(',');
+}

@@ -27,7 +27,7 @@ export class PancakeController {
   @ApiResponse({ status: 200, type: BaseDataDto, isArray: true })
   async get(@Query('addresses') addresses: string): Promise<any> {
     this.logger.time('getPancake');
-    const result = this.integrationService.getPancake(addresses);
+    const result = await this.integrationService.getPancake(addresses);
     this.logger.timeEnd('getPancake');
     return result;
   }

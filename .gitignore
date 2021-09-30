@@ -70,6 +70,7 @@ web_modules/
 # dotenv environment variables file
 .env
 .env.*
+.env.*_
 !.env*.example
 
 # parcel-bundler cache (https://parceljs.org/)
@@ -127,3 +128,10 @@ dist
 .idea2
 /.chart/
 /.ci/
+/jobs/cron/
+/jobs/deploy/
+
+./dist
+
+# compiled sources
+**/src/**/*.js

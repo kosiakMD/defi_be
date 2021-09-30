@@ -13,9 +13,13 @@ configMaps:
     BSC_URL: https://bsc-dataseed.binance.org
     BODY_LIMIT: 50mb
     URL_LIMIT: 50mb
+  logs:
+    LOG_AWS_ENABLED: true
+    NODE_ENV: production
 
 secrets:
 - database
 - redis
 - bscscan
 - etherscan
+- logs

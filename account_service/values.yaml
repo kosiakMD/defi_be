@@ -8,22 +8,24 @@ configMaps:
   links:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
-    POLYGON_URL: https://rpc-mainnet.matic.network/
+    POLYGON_URL: https://polygon-mainnet.infura.io/v3/2f6833b1ce1649e0869b7250a6ea169b
     FTM_URL: https://rpc.ftm.tools/
-    POLYGONSCAN_URL: https://api.polygonscan.com/api
-    POLYGONSCAN_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
+    AVAX_URL: https://api.avax.network/ext/bc/C/rpc
+    ARBITRUM_URL: https://arb1.arbitrum.io/rpc
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000
-    COVALENT_URL: https://api.covalenthq.com/v1
-    COVALENT_KEY: ckey_8a12ec5b8243410b9960bb90ad0
-    POLYGON_URL: https://api.polygonscan.com/api
-    POLYGON_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
+  logs:
+    LOG_AWS_ENABLED: true
+    NODE_ENV: production
 
 secrets:
 - database
 - redis
 - bscscan
 - etherscan
+- logs
+- covalent
+- polygonscan

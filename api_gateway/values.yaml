@@ -25,6 +25,8 @@ configMaps:
     PRICES_PATH: v1/prices
     PRICE_CHAINS_PATH: v1/chains
     PRICE_CURRENCIES_PATH: v1/currencies
+    PRICE_BATCH_PATH: v1/prices/batch
+    PRICE_RANGE_PATH: v1/priceRange
     INTEGRATION_SERVICE_HOST: http://integration-service
     INTEGRATION_SERVICE_PORT: 80
     INTEGRATION_STATUS: v1/status
@@ -33,6 +35,9 @@ configMaps:
     INTEGRATION_BALANCER: v1/integration/balancer
     INTEGRATION_CURVE: v1/integration/curve
     INTEGRATION_PANCAKE: v1/integration/pancake
+    INTEGRATION_PROTOCOLS: v1/protocols
+    INTEGRATION_SPOOKYSWAP: v1/integration/spookyswap
+    INTEGRATION_PANGOLIN: v1/integration/pangolin
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_STATUS: v1/status
@@ -56,12 +61,13 @@ configMaps:
     SAFE_PROXY_SCAMS: v1/scams
     SAFE_PROXY_SCAM_TYPES: v1/scams/types
     SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
-    INTEGRATION_PROTOCOLS: v1/protocols
-    PRICE_BATCH_PATH: v1/prices/batch
-    PRICE_RANGE_PATH: v1/priceRange
+  logs:
+    LOG_AWS_ENABLED: true
+    NODE_ENV: production
 
 secrets:
 - mailer
 - redis
 - bscscan
 - etherscan
+- logs

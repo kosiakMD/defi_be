@@ -216,7 +216,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
             const token1balance = new BigNumber(stakingPosition.amount)
               .div(stakingPair.totalSupply)
-              .times(stakingPair.reserve0)
+              .times(stakingPair.reserve1)
               .div(new BigNumber(10).pow(stakingPair.token1.decimals))
               .toString();
 

@@ -42,7 +42,7 @@ configMaps:
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_STATUS: v1/status
     ACCOUNT_TRANSACTIONS: v1/transactions
-    ACCOUNT_BALANCE: v1/balances/covalent
+    ACCOUNT_BALANCE: v1/balances
     ACCOUNT_APPROVALS: v1/approvals
     ACCOUNT_TRANSFERS: v1/transfers
     ACCOUNT_ASSETS: v1/assets

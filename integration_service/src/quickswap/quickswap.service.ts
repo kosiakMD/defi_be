@@ -59,9 +59,13 @@ export class QuickswapService {
         liquidityPositions.forEach(({ pair: { id } }) => stakingPairsAddresses.add(id)),
       );
 
-      const {
-        data: { pairs: liquidityPositionPairs },
-      } = await this.quickswapSubgraph.getPairs(Array.from(stakingPairsAddresses));
+      const { data: pairsData, errors: pairsErrors } = await this.quickswapSubgraph.getPairs(
+        Array.from(stakingPairsAddresses),
+      );
+      if (pairsErrors?.length) {
+        throw pairsErrors[0];
+      }
+      const { pairs: liquidityPositionPairs } = pairsData;
 
       for (const address of uniqueAddresses) {
         const userLiquidityPositions = usersLiquidityPositions.find(
@@ -227,7 +231,6 @@ export class QuickswapService {
           }),
         );
       }
-
       return await this.mapper.mapData(
         uniqueAddresses,
         originAddresses,

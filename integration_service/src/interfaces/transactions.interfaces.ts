@@ -151,7 +151,7 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  projectEnum: ProjectEnum;
+  projectName: ProjectEnum;
   protocolName?: ProtocolName;
   liquidityPositions?: any[];
 }

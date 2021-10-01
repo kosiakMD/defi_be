@@ -17,7 +17,7 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   userAddress: string;
 
   @ApiProperty({ enum: ProjectEnum, enumName: 'ProjectEnum', example: ProjectEnum.uniswap })
-  platformName: ProjectEnum;
+  projectName: ProjectEnum;
 
   @ApiProperty({
     enum: UniswapProtocolEnum,

@@ -167,7 +167,7 @@ export class AlpacaService {
     return {
       userAddress,
       chainId,
-      projectEnum: ProjectEnum.alpaca,
+      projectName: ProjectEnum.alpaca,
       protocolName: AlpacaProtocolEnum.alpaca,
       protocolType: protocolType,
     };

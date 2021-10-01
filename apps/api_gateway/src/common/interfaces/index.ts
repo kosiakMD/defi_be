@@ -34,7 +34,7 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectName: ProjectEnum;
   protocolName: ProtocolName;
 }
 

@@ -87,7 +87,7 @@ export class Mapper {
           chainId: chainId,
           protocolType: ProtocolTypeEnum.staking,
           protocolName: protocolName,
-          projectEnum: projectName,
+          projectName: projectName,
           userAddress: Mapper.getOriginAddress(originAddresses, address),
           stakingPositions: [],
         };
@@ -222,7 +222,7 @@ export class Mapper {
       );
 
       const project =
-        amm.projectEnum === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.projectEnum;
+        amm.projectName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.projectName;
       // liquidityPositionliquidityPosition
       const liquidityPosition: LiquidityPosition = plainToClass(LiquidityPosition, {});
       liquidityPosition.pool = pool;

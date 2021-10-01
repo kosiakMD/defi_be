@@ -5,13 +5,14 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { DetailedResponseDto, MetaDto } from '../dto';
 import { ChainDto } from '../dto/chain.dto';
-import { ERC20Token, StakingPosition } from '../interfaces/transactions.interfaces';
+import { ERC20Token, LeverageErcToken, StakingPosition } from '../interfaces/transactions.interfaces';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from '../protocol/features/features.dto';
 import { FeatureEnum } from '../protocol/features/features.enum';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '../dto/currency.dto';
 import { FeatureResultDto } from '../protocol/features/features.types';
 import { BorrowingPosition, LendingPosition } from 'src/interfaces/lending.position.interfaces';
+import { BorrowToken, LeverageFarmingPosition } from '../interfaces/leverage.farming.interfaces';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -31,7 +32,7 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResultDto<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPosition | BorrowingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResultDto<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPosition | BorrowingPosition | LeverageFarmingPosition>;
 } & {
   errors?: string[] | Error[];
 };
@@ -44,6 +45,8 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   [FeatureEnum.pools]?: FeatureResultDto<LiquidityPoolFeature>;
   @Expose()
   [FeatureEnum.staking]?: FeatureResultDto<StakingPosition/*StakingPositionFeatureDto*/>;
+  @Expose()
+  [FeatureEnum.lending]?: FeatureResultDto<LendingPosition/*LendingPositionFeatureDto*/>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {
@@ -207,6 +210,15 @@ export class LPToken extends IntegrationERC20TokenDto {
   tokens: PoolTokenDto[] = [];
 }
 
+export class LeverageFarmingPositionDto implements LeverageFarmingPosition {
+  address: string;
+  borrowToken: BorrowToken;
+  debtRatio: number;
+  earned: number;
+  farmToken: LPToken | LeverageErcToken;
+
+}
+
 export class IntegrationStakingPositionDto {
   @ApiProperty({type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'})
   address: string = null;// vault address
@@ -235,7 +247,7 @@ export class StakingPositionResponseDto {
   totalValue: number;
 
   @ApiProperty({type: [IntegrationStakingPositionDto]})
-  stakingPositions: IntegrationStakingPositionDto[];
+  stakingPositions: IntegrationStakingPositionDto[] = [];
 }
 
 export class IntegrationLendingPositionsDto {

@@ -4,9 +4,10 @@ import { ChainIdEnum, ProtocolName } from '../common/enum';
 
 import { IntegrationFeaturesData } from '../integrations/integrations.dto';
 import { ProtocolBasicInfo } from './features/features.dto';
+import AlpacaProtocol from './protocols/alpacaProtocol';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
-import BasicProtocol from './protocols/basicProtocol';
+import { BasicProtocol } from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
 import PangolinProtocol from './protocols/pangolinProtocol';
 import QuickswapProtocol from './protocols/quickswapProtocol';
@@ -30,6 +31,7 @@ export class ProtocolService {
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly uniswapProtocolV3: UniswapProtocolV3,
+    private readonly alpacaProtocol: AlpacaProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -46,6 +48,7 @@ export class ProtocolService {
       sushiswapProtocolV2,
       uniswapProtocolV2,
       uniswapProtocolV3,
+      alpacaProtocol,
     ];
   }
 

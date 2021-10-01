@@ -27,9 +27,11 @@ import {
   LPToken,
   PoolTokenDto,
 } from '../../integrations/integrations.dto';
+import { LeverageFarmingPosition } from '../../interfaces/leverage.farming.interfaces';
 import {
   Asset,
   BaseData,
+  LeverageErcToken,
   PoolToken,
   StakingErcToken,
   StakingPosition,
@@ -87,10 +89,8 @@ export abstract class BasicProtocol<
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> => {
     let pools, poolsErrors;
-    const { rawPools, rawStaking, rawLending, rawBorrowing } = await this.getAllFeaturesRawData(
-      address,
-      chainId,
-    );
+    const { rawPools, rawStaking, rawLending, rawBorrowing, rawLeverageFarming } =
+      await this.getAllFeaturesRawData(address, chainId);
 
     try {
       const { errors, data } = await this.transformPools(rawPools, chainId);
@@ -127,13 +127,28 @@ export abstract class BasicProtocol<
       borrowing = null;
     }
 
+    let leverageFarming, farmingErrors;
+    try {
+      leverageFarming = this.transformLeverageFarming(rawLeverageFarming);
+    } catch (e) {
+      farmingErrors = e;
+      leverageFarming = null;
+    }
+
     // console.log('rawStaking', rawStaking);
     const result = new IntegrationFeaturesDataDto();
-    result.errors = [poolsErrors, stakingErrors, lendingErrors, borrowingErrors].flat(5); // TODO add staking errors
+    result.errors = [
+      poolsErrors,
+      stakingErrors,
+      lendingErrors,
+      borrowingErrors,
+      farmingErrors,
+    ].flat(5); // TODO add staking errors
     result[FeatureEnum.pools] = pools;
     result[FeatureEnum.staking] = staking;
     result[FeatureEnum.lending] = lending;
     result[FeatureEnum.borrowing] = borrowing;
+    result[FeatureEnum.leverageFarming] = leverageFarming;
 
     return result;
   };
@@ -148,9 +163,12 @@ export abstract class BasicProtocol<
       const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
       const rawLending = data.find((data) => data['lendingPositions']);
       const rawBorrowing = data.find((data) => data['borrowingPositions']);
+      const rawLeverageFarming = data.find(
+        (data) => data['leverageFarmingPositions'],
+      )?.leverageFarmingPositions;
       // TODO: feature transaction is disabled
       // const transactions = data.find((data) => data['transactions']);
-      return { rawPools, rawStaking, rawLending, rawBorrowing };
+      return { rawPools, rawStaking, rawLending, rawBorrowing, rawLeverageFarming };
     } catch (e) {
       this.logger.error(e);
       throw e;
@@ -319,7 +337,7 @@ export abstract class BasicProtocol<
 
     if (data) {
       data[rootKey].forEach((cur) => {
-        result.totalValue += cur[totalKey] * cur.token.priceUSD;
+        result.totalValue += cur[totalKey] * cur.token.price;
       });
     }
 
@@ -327,11 +345,7 @@ export abstract class BasicProtocol<
   }
 
   protected transformLending(rawLending: Lending): FeatureResultDto<LendingPosition> {
-    return this.getBasicFeatureResult<LendingPosition>(
-      rawLending,
-      'lendingPositions',
-      'totalDepositDecimal',
-    );
+    return this.getBasicFeatureResult<LendingPosition>(rawLending, 'lendingPositions', 'balance');
   }
 
   protected transformBorrowing(rawBorrowing: Borrowing): FeatureResultDto<BorrowingPosition> {
@@ -340,6 +354,28 @@ export abstract class BasicProtocol<
       'borrowingPositions',
       'totalDebtDecimal',
     );
+  }
+
+  protected transformLeverageFarming(
+    rawLeverageFarming: LeverageFarmingPosition[],
+  ): FeatureResultDto<LeverageFarmingPosition> {
+    const result: FeatureResultDto<LeverageFarmingPosition> = {
+      totalValue: 0,
+      items: null,
+    };
+
+    rawLeverageFarming?.forEach((farming) => {
+      if (farming.farmToken instanceof LPToken) {
+        const lpToken = farming.farmToken as LPToken;
+        lpToken.tokens.forEach((token) => (result.totalValue += token.value));
+      } else {
+        const singleToken = farming.farmToken as LeverageErcToken;
+        result.totalValue += Number(singleToken.value);
+      }
+    });
+
+    result.items = rawLeverageFarming || [];
+    return result;
   }
 
   protected transformStaking(rawStaking: StakingPosition[]): FeatureResultDto<StakingPosition> {

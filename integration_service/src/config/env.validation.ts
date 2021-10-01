@@ -107,6 +107,8 @@ export const validationSchema = Joi.object({
     .optional(),
   FTM_RPC_URL: Joi.string().required(),
   POLYGON_RPC_URL: Joi.string().required(),
+  ALPACA_SUBGRAPH_URL: Joi.string().required(),
+  ALPACA_API_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

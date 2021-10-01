@@ -64,6 +64,7 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   stakingPositions?: any[];
   borrowingPositions?: any[];
   lendingPositions?: any[];
+  leverageFarmingPositions?: any[];
 }
 
 export class Transaction<T = string> {

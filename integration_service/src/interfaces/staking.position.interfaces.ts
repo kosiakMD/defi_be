@@ -44,7 +44,7 @@ export interface StakingPosition {
 }
 
 export interface Staking extends BaseData<ProtocolTypeEnum.staking> {
-  stakingPositions: StakingPosition[];
+  stakingPositions?: StakingPosition[];
 }
 
 export interface GraphQLStakingPositionPool {

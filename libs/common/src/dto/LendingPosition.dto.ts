@@ -1,10 +1,10 @@
-import { LendingToken } from './LendingToken.dto';
+import { LendingErcToken } from '@app/common/dto/LendingErcToken.dto';
 
-export class LendingPosition {
+export class LendingPositionDto {
   address: string;
-  totalDeposit: string;
-  totalDepositDecimal: number;
-  totalDepositUSD: number;
-  lendingAPY: number;
-  token: LendingToken;
+  totalDeposit?: string;
+  balance: number;
+  value: number;
+  APY: number;
+  token: LendingErcToken;
 }

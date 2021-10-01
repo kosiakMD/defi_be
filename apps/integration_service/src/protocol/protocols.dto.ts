@@ -16,6 +16,7 @@ export class RawFeaturesDto {
   rawStaking: any;
   rawLending: any;
   rawBorrowing: any;
+  rawLeverageFarming: any;
 }
 
 export class FeatureHandleDto<T = LiquidityPoolFeatureDto> {

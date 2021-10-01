@@ -9,7 +9,9 @@ import {
   FeatureResultDto,
   IntegrationFeaturesDataDto,
   Lending,
-  LendingPosition,
+  LendingPositionDto,
+  LeverageErcToken,
+  LeverageFarmingPosition,
   LiquidityPoolFeatureDto,
   LiquidityPosition,
   Logger,
@@ -32,6 +34,7 @@ import { FeatureEnum } from './features/features.enum';
 import { tokenDictionary } from './protocols.dictionaries';
 import { FeatureHandleDto, RawFeaturesDto } from './protocols.dto';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { AlpacaProtocol } from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
@@ -60,6 +63,7 @@ export class ProtocolService {
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
+    private readonly alpacaProtocol: AlpacaProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -71,6 +75,7 @@ export class ProtocolService {
       sushiswapProtocolV2,
       uniswapProtocolV2,
       uniswapProtocolV3,
+      alpacaProtocol,
     ];
   }
 
@@ -118,7 +123,7 @@ export class ProtocolService {
         errors: [],
       } as IntegrationFeaturesDataDto);
       // all features data
-      const { rawPools, rawStaking, rawLending, rawBorrowing } = featuresData;
+      const { rawPools, rawStaking, rawLending, rawBorrowing, rawLeverageFarming } = featuresData;
       // TODO: add method of handling feature and set into result
       await Promise.all([
         // result pools
@@ -129,6 +134,8 @@ export class ProtocolService {
         rawLending && this.handleResultLending(rawLending, result),
         // result borrowing
         rawBorrowing && this.handleResultBorrowing(rawBorrowing, result),
+        // result leverageFarming
+        rawLeverageFarming && this.handleResultLeverageFarming(rawLeverageFarming, result),
       ]);
       // result errors handling
       result.errors = result.errors.flat(5); // TODO add staking errors
@@ -186,6 +193,19 @@ export class ProtocolService {
     }
   }
 
+  protected async handleResultLeverageFarming(
+    rawLeverageFarming,
+    result: IntegrationFeaturesDataDto,
+  ): Promise<void> {
+    try {
+      result[FeatureEnum.leverageFarming] = this.transformLeverageFarming(rawLeverageFarming);
+    } catch (e) {
+      this.logger.error(e, 'handleResultLending');
+      result.errors.push(e.message);
+      result[FeatureEnum.lending] = null;
+    }
+  }
+
   // side effect
   protected async handleResultBorrowing(
     rawBorrowing,
@@ -198,6 +218,28 @@ export class ProtocolService {
       result.errors.push(e.message);
       result[FeatureEnum.borrowing] = null;
     }
+  }
+
+  protected transformLeverageFarming(
+    rawLeverageFarming: LeverageFarmingPosition[],
+  ): FeatureResultDto<LeverageFarmingPosition> {
+    const result: FeatureResultDto<LeverageFarmingPosition> = {
+      totalValue: 0,
+      items: null,
+    };
+
+    rawLeverageFarming?.forEach((farming) => {
+      if (farming.farmToken instanceof LPToken) {
+        const lpToken = farming.farmToken as LPToken;
+        lpToken.tokens.forEach((token) => (result.totalValue += token.value));
+      } else {
+        const singleToken = farming.farmToken as LeverageErcToken;
+        result.totalValue += Number(singleToken.value);
+      }
+    });
+
+    result.items = rawLeverageFarming || [];
+    return result;
   }
 
   // transforms
@@ -322,11 +364,11 @@ export class ProtocolService {
     return result;
   }
 
-  protected transformLending(rawLending: Lending): FeatureResultDto<LendingPosition> {
-    return this.getBasicFeatureResult<LendingPosition>(
+  protected transformLending(rawLending: Lending): FeatureResultDto<LendingPositionDto> {
+    return this.getBasicFeatureResult<LendingPositionDto>(
       rawLending,
       'lendingPositions',
-      'totalDepositDecimal',
+      'balance',
     );
   }
 
@@ -350,7 +392,7 @@ export class ProtocolService {
 
     if (data) {
       data[rootKey].forEach((cur) => {
-        result.totalValue += cur[totalKey] * cur.token.priceUSD;
+        result.totalValue += cur[totalKey] * cur.token.price;
       });
     }
 

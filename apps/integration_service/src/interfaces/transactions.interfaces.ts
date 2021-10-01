@@ -50,6 +50,33 @@ export class StakingErcToken extends ERC20Token {
   balance?: string;
 }
 
+export class LendingErcToken extends ERC20Token {
+  @ApiProperty({ type: Number, example: 3759.23 })
+  price?: number = null;
+}
+
+export class BorrowToken extends ERC20Token {
+  @ApiProperty()
+  price: number;
+
+  @ApiProperty()
+  balance: string;
+
+  @ApiProperty()
+  value: number;
+}
+
+export class LeverageErcToken extends ERC20Token {
+  @ApiProperty({ type: Number, example: 3759.23 })
+  price?: number = null;
+
+  @ApiProperty({ type: Number, example: 1.2512 })
+  value?: number = null;
+
+  @ApiProperty({ type: String, example: '123.6534' })
+  balance?: string = null;
+}
+
 export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
   reserve: string;
   percentage?: number;
@@ -66,6 +93,10 @@ export class PoolTokenDto extends ERC20Token implements PoolToken {
   percentage?: number;
   priceUSD?: number;
   amount?: string;
+}
+
+export class LendTokenDto extends ERC20Token implements PriceAble {
+  priceUSD: number;
 }
 
 export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}

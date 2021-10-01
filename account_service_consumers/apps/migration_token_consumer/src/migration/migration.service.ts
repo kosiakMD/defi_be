@@ -1,8 +1,8 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import fetch from 'node-fetch';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AssetService } from '../chain/asset.service';
 import { Logger } from '../logger/logger.service';
@@ -78,7 +78,7 @@ export class MigrationService {
     try {
       this.logger.time(web3TimeMark);
       const token = await this.assetService.getTokenInfo(contractAddress, chainId);
-      if (token?.symbol && token?.decimals && token?.name) {
+      if (token?.decimals !== undefined && token?.decimals !== null) {
         return token;
       }
     } catch (e) {

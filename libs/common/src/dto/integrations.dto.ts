@@ -5,7 +5,13 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ERC20TokenDto, StakingPositionFeatureDto } from './index';
 
 import { FeatureEnum } from '@app/common/enum';
-import { FeatureResult, ProtocolFeaturesInfo, StakingPosition } from '@app/common';
+import {
+  FeatureResult,
+  LendingPositionDto,
+  LeverageFarmingPosition,
+  ProtocolFeaturesInfo,
+  StakingPosition,
+} from '@app/common';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from './features.dto';
 import { ChainDto } from './chain.dto';
 
@@ -91,7 +97,7 @@ export class LiquidityPoolFeatureDto {
 }
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeatureDto | StakingPositionFeatureDto | StakingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeatureDto | StakingPositionFeatureDto | StakingPosition | LendingPositionDto | LeverageFarmingPosition>;
 } & {
   // errors: string[] | Error[];
   errors: string[] | string[][] | string[][][] | Error[];
@@ -106,6 +112,10 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeatureDto>;
   @Expose()
   [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
+  @Expose()
+  [FeatureEnum.lending]?: FeatureResult<LendingPositionDto>;
+  @Expose()
+  [FeatureEnum.leverageFarming]?: FeatureResult<LeverageFarmingPosition>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {

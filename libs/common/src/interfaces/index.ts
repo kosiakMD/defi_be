@@ -17,12 +17,14 @@ export * from './integrations.interface';
 export * from './staking.position.interfaces';
 export * from './subgraph.response.base';
 export * from './transactions.interfaces';
+export * from './lending.position.interface';
+export * from './leverage.farming.interface';
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectName: ProjectEnum;
   protocolName: ProtocolName;
 }
 

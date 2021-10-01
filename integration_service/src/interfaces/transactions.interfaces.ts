@@ -35,13 +35,13 @@ export class ERC20Token {
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
   address: string;
   @ApiProperty({ type: String, example: 'Ethereum' })
-  name: string;
+  name?: string = null;
   @ApiProperty({ type: String, example: 'ETH' })
-  symbol: string;
+  symbol?: string = null;
   @ApiProperty({ type: Number, example: 18 })
-  decimals: number;
+  decimals?: number = null;
   @ApiProperty({ type: String, example: '69393241' })
-  totalSupply?: string;
+  totalSupply?: string = null;
 }
 
 export class StakingErcToken extends ERC20Token {
@@ -49,10 +49,26 @@ export class StakingErcToken extends ERC20Token {
   price?: number = null;
 
   @ApiProperty({ type: Number, example: 1.2512 })
-  value?: number;
+  value?: number = null;
 
   @ApiProperty({ type: String, example: '123.6534' })
-  balance?: string;
+  balance?: string = null;
+}
+
+export class LendingErcToken extends ERC20Token {
+  @ApiProperty({ type: Number, example: 3759.23 })
+  price?: number = null;
+}
+
+export class LeverageErcToken extends ERC20Token {
+  @ApiProperty({ type: Number, example: 3759.23 })
+  price?: number = null;
+
+  @ApiProperty({ type: Number, example: 1.2512 })
+  value?: number = null;
+
+  @ApiProperty({ type: String, example: '123.6534' })
+  balance?: string = null;
 }
 
 export interface PoolToken extends ERC20Token, AmountAble, PriceAble {

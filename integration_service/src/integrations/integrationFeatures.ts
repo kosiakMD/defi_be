@@ -1,6 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ProtocolName, TransactionTypeEnum } from '../common/enum';
 
+import { LendingPosition } from '../interfaces/lending.position.interfaces';
 import { StakingPosition } from '../interfaces/staking.position.interfaces';
 import { SwapToken } from '../interfaces/transactions.interfaces';
 import { FeatureResultDto } from '../protocol/features/features.types';
@@ -143,7 +144,7 @@ export interface SwapTransaction extends Transaction {
 export type FeatureName = string;
 
 // TODO remove StakingPosition asfter StakingPositionFeatureDto will be done
-export type FeatureDto<T = LiquidityPoolFeature | StakingPosition> = Record<
+export type FeatureDto<T = LiquidityPoolFeature | StakingPosition | LendingPosition> = Record<
   FeatureName,
   FeatureResultDto<T> | FeatureResultDto<T>[]
 >;

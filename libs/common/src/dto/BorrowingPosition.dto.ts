@@ -1,4 +1,4 @@
-import { BorrowingToken } from './BorrowingToken.dto';
+import { LendingErcToken } from '@app/common/dto/LendingErcToken.dto';
 
 export interface BorrowingPosition {
   address: string;
@@ -13,5 +13,5 @@ export interface BorrowingPosition {
   variableDebtUSD: number;
   borrowStableAPY: number;
   borrowVariableAPY: number;
-  token: BorrowingToken;
+  token: LendingErcToken;
 }

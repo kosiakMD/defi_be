@@ -5,6 +5,7 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AccountModule } from '../account/account.module';
+import { AlpacaModule } from '../alpaca/alpaca.module';
 import { AutofarmModule } from '../autofarm/autofarm.module';
 import { ChainModule } from '../chain/chain.module';
 import { Mapper } from '../mappers/mapper';
@@ -13,6 +14,7 @@ import { QuickswapModule } from '../quickswap/quickswap.module';
 import { SushiswapModule } from '../sushiswap/sushiswap.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
+import AlpacaProtocol from './protocols/alpacaProtocol';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
@@ -40,6 +42,7 @@ const ProtocolList = [
   SushiswapProtocolV2,
   UniswapProtocolV2,
   UniswapProtocolV3,
+  AlpacaProtocol,
 ];
 
 @Module({
@@ -66,6 +69,7 @@ const ProtocolList = [
     // SpookyswapModule,
     AutofarmModule,
     QuickswapModule,
+    AlpacaModule,
     ThegraphModule,
     ChainModule,
   ],

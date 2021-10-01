@@ -9,6 +9,7 @@ export enum ProjectEnum {
   balancer = 'balancer',
   autofarm = 'autofarm',
   pangolin = 'pangolin',
+  alpaca = 'alpaca',
 }
 
 export enum PangolinProtocolEnum {
@@ -48,6 +49,10 @@ export enum AutofarmProtocolEnum {
   autofarm = 'Autofarm',
 }
 
+export enum AlpacaProtocolEnum {
+  alpaca = 'Alpaca',
+}
+
 /** TODO: try this fo swagger
  * const BasicEvents = {
   Start: 'Start' as 'Start',
@@ -70,7 +75,9 @@ export type ProtocolName =
   | UniswapProtocolEnum
   | QuickswapProtocolEnum
   | SpookySwapProtocolEnum
-  | AutofarmProtocolEnum;
+  | AutofarmProtocolEnum
+  | AlpacaProtocolEnum;
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...PancakeProtocolEnum,
@@ -80,4 +87,5 @@ export const ProtocolNameEnum = {
   ...QuickswapProtocolEnum,
   ...SpookySwapProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...AlpacaProtocolEnum,
 };

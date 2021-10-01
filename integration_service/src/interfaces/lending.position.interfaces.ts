@@ -1,15 +1,16 @@
 import { ProtocolTypeEnum } from 'src/common/enum';
 
-import { BaseData, LendTokenDto } from './transactions.interfaces';
+import { BaseData, LendingErcToken } from './transactions.interfaces';
 
 export interface LendingPosition {
   address: string;
-  totalDeposit: string;
-  totalDepositDecimal: number;
-  totalDepositUSD: number;
-  lendingAPY: number;
-  token: LendTokenDto;
+  totalDeposit?: string;
+  balance: number;
+  value: number;
+  APY: number;
+  token: LendingErcToken;
 }
+
 export interface BorrowingPosition {
   address: string;
   totalDebt: string;
@@ -23,7 +24,7 @@ export interface BorrowingPosition {
   variableDebtUSD: number;
   borrowStableAPY: number;
   borrowVariableAPY: number;
-  token: LendTokenDto;
+  token: LendingErcToken;
 }
 
 export interface Lending extends BaseData<ProtocolTypeEnum.lending> {

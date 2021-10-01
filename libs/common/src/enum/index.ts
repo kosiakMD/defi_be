@@ -29,6 +29,7 @@ export enum ProtocolTypeEnum {
   transaction = 'transaction',
   lending = 'lending',
   borrowing = 'borrowing',
+  leverageFarming = 'leverageFarming',
 }
 
 export enum TransactionTypeEnum {

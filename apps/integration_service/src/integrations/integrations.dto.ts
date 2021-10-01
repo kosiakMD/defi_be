@@ -1,17 +1,18 @@
 // eslint-disable-next-line max-classes-per-file
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
 import { DetailedResponseDto, MetaDto } from '@app/common/dto';
 import { ChainDto } from '@app/common/dto/chain.dto';
-import { ERC20Token, StakingPosition } from '../interfaces/transactions.interfaces';
+import { BorrowToken, ERC20Token, LeverageErcToken, StakingPosition } from '../interfaces/transactions.interfaces';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from '../protocol/features/features.dto';
 import { FeatureEnum } from '../protocol/features/features.enum';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { FeatureResult } from '../protocol/features/features.types';
-import { LendingPosition, BorrowingPosition } from '@app/common';
+import { LendingPositionDto, BorrowingPosition } from '@app/common';
+import { LeverageFarmingPosition } from '../interfaces/leverage.farming.interfaces';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -31,7 +32,7 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
 // };
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPosition | BorrowingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPositionDto | BorrowingPosition>;
 } & {
   errors: string[] | Error[];
 };
@@ -233,4 +234,21 @@ export class StakingPositionResponseDto {
 
   @ApiProperty({type: [IntegrationStakingPositionDto]})
   stakingPositions: IntegrationStakingPositionDto[];
+}
+
+export class LeverageFarmingPositionDto implements LeverageFarmingPosition {
+  @ApiProperty({type: String, example: '0x60dE7F647dF2448eF17b9E0123411724De6e373D'})
+  address: string;
+  @ApiProperty({type: BorrowToken})
+  borrowToken: BorrowToken;
+  @ApiProperty({type: Number, example: 75.1})
+  debtRatio: number;
+  @ApiProperty({type: String, example: 144.2})
+  earned: number;
+  @ApiProperty({ oneOf: [
+      { $ref: getSchemaPath(LPToken) },
+      { $ref: getSchemaPath(LeverageErcToken)}
+      ]}
+      )
+  farmToken: LPToken | LeverageErcToken;
 }

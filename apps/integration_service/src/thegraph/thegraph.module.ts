@@ -1,6 +1,7 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { AlpacaSubgraph } from '../protocol/protocols/alpaca/services/alpaca.subgraph';
 import { AutofarmSubgraph } from '../protocol/protocols/autofarm/services/autofarm.subgraph';
 import { AaveSubgraph } from './aave.subgraph';
 import { BlocksSubgraph } from './blocks.subgraph';
@@ -33,6 +34,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
     UniswapSubgraph,
     UniswapV3Subgraph,
     AutofarmSubgraph,
+    AlpacaSubgraph,
   ],
   exports: [
     ThegraphModule,
@@ -47,6 +49,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
     UniswapSubgraph,
     UniswapV3Subgraph,
     AutofarmSubgraph,
+    AlpacaSubgraph,
   ],
 })
 export class ThegraphModule {}

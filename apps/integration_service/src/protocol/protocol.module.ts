@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AccountModule } from '../account/account.module';
@@ -10,6 +10,8 @@ import { Web3Service } from '../quickswap/web3/web3.service';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { AlpacaApiService } from './protocols/alpaca/services/alpaca.api.service';
+import { AlpacaProtocol } from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { Mapper } from './protocols/mappers/mapper';
 import { PancakeModule } from './protocols/pancake/pancake.module';
@@ -32,12 +34,14 @@ const ProtocolList = [
   SushiswapProtocolV2,
   UniswapProtocolV2,
   UniswapProtocolV3,
+  AlpacaProtocol,
 ];
 
 @Module({
   imports: [
     AccountModule,
     PriceModule,
+    HttpModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -61,7 +65,7 @@ const ProtocolList = [
     PancakeModule, // TODO: m.b. delete for pancakeV1
     Web3Service, // TODO: quickswap
   ],
-  providers: [...ProtocolList, ProtocolService, Mapper, Web3Service],
+  providers: [...ProtocolList, ProtocolService, Mapper, Web3Service, AlpacaApiService],
   exports: [ProtocolService],
 })
 export class ProtocolModule {}

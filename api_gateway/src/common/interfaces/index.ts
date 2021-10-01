@@ -10,7 +10,7 @@ import {
   TransactionTypeEnum,
   UniswapProtocolEnum,
 } from '../enum';
-import { AutofarmProtocolEnum } from '../enum/projectEnum';
+import { AlpacaProtocolEnum, AutofarmProtocolEnum } from '../enum/projectEnum';
 
 export type Address = string;
 
@@ -27,13 +27,14 @@ export type ProtocolName =
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
   | AutofarmProtocolEnum
-  | QuickswapProtocolEnum;
+  | QuickswapProtocolEnum
+  | AlpacaProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;
   userAddress: string;
   protocolType: T;
-  platformName: ProjectEnum;
+  projectName: ProjectEnum;
   protocolName: ProtocolName;
 }
 

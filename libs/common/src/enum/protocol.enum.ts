@@ -9,6 +9,7 @@ export enum ProjectEnum {
   spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
+  alpaca = 'alpaca',
 }
 
 export enum AaveProtocolEnum {
@@ -48,6 +49,10 @@ export enum QuickswapProtocolEnum {
   quickswap = 'QuickSwap',
 }
 
+export enum AlpacaProtocolEnum {
+  alpaca = 'Alpaca',
+}
+
 // export type ProtocolName =
 //   | AutofarmProtocolEnum
 //   | PancakeProtocolEnum
@@ -66,4 +71,5 @@ export const ProtocolNameEnum = {
   ...SpookySwapProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...AlpacaProtocolEnum,
 };

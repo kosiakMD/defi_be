@@ -51,7 +51,6 @@ export class MultiCall {
           convertedReserves[pairsSlice[key]] = multiCallReserves[pairsSlice[key]];
         }
       }
-
       return {
         block: blockNumberLast,
         reserves: convertedReserves,

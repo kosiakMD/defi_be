@@ -32,7 +32,7 @@ import {
   BorrowingDto,
   ERC20Token,
   LendingDto,
-  LendTokenDto,
+  LendingErcToken,
   PoolToken,
   PoolTokenDto,
   Transactions,
@@ -377,12 +377,12 @@ export class Mapper {
     user.reserves.forEach((userReserve) => {
       // Calculate Lending
       if (Number(userReserve.currentATokenBalance)) {
-        const lendingToken: LendTokenDto = plainToClass(LendTokenDto, {
+        const lendingToken: LendingErcToken = plainToClass(LendingErcToken, {
           address: userReserve.reserve.underlyingAsset,
           decimals: userReserve.reserve.decimals,
           name: userReserve.reserve.name,
           symbol: userReserve.reserve.symbol,
-          priceUSD: userReserve.reserve.priceUSD,
+          price: userReserve.reserve.priceUSD,
         });
 
         const totalDepositDecimal =
@@ -391,21 +391,21 @@ export class Mapper {
         lending.lendingPositions.push({
           address: userReserve.reserve.id,
           totalDeposit: userReserve.currentATokenBalance,
-          totalDepositDecimal,
-          totalDepositUSD: totalDepositDecimal * lendingToken.priceUSD,
-          lendingAPY: 100 * (Number(userReserve.reserve.liquidityRate) / RAY),
+          balance: totalDepositDecimal,
+          value: totalDepositDecimal * lendingToken.price,
+          APY: 100 * (Number(userReserve.reserve.liquidityRate) / RAY),
           token: lendingToken,
         });
       }
 
       // Calculate Borrowing
       if (Number(userReserve.currentTotalDebt)) {
-        const borrowToken: LendTokenDto = plainToClass(LendTokenDto, {
+        const borrowToken: LendingErcToken = plainToClass(LendingErcToken, {
           address: userReserve.reserve.underlyingAsset,
           decimals: userReserve.reserve.decimals,
           name: userReserve.reserve.name,
           symbol: userReserve.reserve.symbol,
-          priceUSD: userReserve.reserve.priceUSD,
+          price: userReserve.reserve.priceUSD,
         });
 
         const totalDebtDecimal =
@@ -422,9 +422,9 @@ export class Mapper {
           totalDebtDecimal,
           stableDebtDecimal,
           variableDebtDecimal,
-          totalDebtUSD: totalDebtDecimal * borrowToken.priceUSD,
-          stableDebtUSD: stableDebtDecimal * borrowToken.priceUSD,
-          variableDebtUSD: variableDebtDecimal * borrowToken.priceUSD,
+          totalDebtUSD: totalDebtDecimal * borrowToken.price,
+          stableDebtUSD: stableDebtDecimal * borrowToken.price,
+          variableDebtUSD: variableDebtDecimal * borrowToken.price,
           borrowStableAPY: 100 * (Number(userReserve.reserve.stableBorrowRate) / RAY),
           borrowVariableAPY: 100 * (Number(userReserve.reserve.variableBorrowRate) / RAY),
           token: borrowToken,

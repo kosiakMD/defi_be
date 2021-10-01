@@ -1,6 +1,6 @@
 import { plainToClass } from 'class-transformer';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 
 import { ChainIdEnum, ProtocolName, ResultStatus } from '../common/enum';
 import { ChainIdToAbbr } from 'src/common/enum/chain.enum';
@@ -36,6 +36,12 @@ export class IntegrationsService {
       return basicInfo.chains?.includes(ChainIdToAbbr[chain]);
     });
 
+    if (!allowedChains.length) {
+      throw new NotImplementedException(
+        `Protocol '${protocolName}' doesn't support any of these chains: ${chains.join(', ')}`,
+      );
+    }
+
     const response: IntegrationsResponseDto = plainToClass(IntegrationsResponseDto, {
       errors: [],
       data: {},
@@ -53,9 +59,8 @@ export class IntegrationsService {
     response.data.currency = plainToClass(CurrencyDto, {});
     // Features Data
     const allData = await Promise.allSettled<any>(
-      allowedChains.map(
-        async (chainId) =>
-          await this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
+      allowedChains.map((chainId) =>
+        this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
       ),
     );
     // Data

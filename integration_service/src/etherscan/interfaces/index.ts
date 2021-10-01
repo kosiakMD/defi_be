@@ -37,7 +37,7 @@ export interface AccountTokenBalance {
 }
 
 export interface AccountBalance extends AccountBalanceBase {
-  tokens: AccountTokenBalance[];
+  tokens: Map<string, AccountTokenBalance>;
 }
 
-export type BalancesResponse = { [key: string]: AccountBalance };
+export type BalancesResponse = Map<Address, AccountBalance>;

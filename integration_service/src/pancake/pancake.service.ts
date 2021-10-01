@@ -9,8 +9,10 @@ import {
   IncomeLiquidityPositionPair,
 } from '../dto/liquidity.position.dto';
 import { EtherscanService } from '../etherscan/etherscan.service';
+import { BalancesResponse } from '../etherscan/interfaces';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
+import { LiquidityPoolsResponseDto } from '../pools/dto/liquidity.pools.response.dto';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
 import { PancakeSubgraph } from '../thegraph/pancake.subgraph';
@@ -24,36 +26,6 @@ export class PancakeService {
     private readonly poolsService: PoolsService,
     private readonly etherscanService: EtherscanService,
   ) {}
-
-  async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
-    const addressesArray: string[] = addresses.split(',');
-    let allPools: LiquidityPoolsEntity[] = [];
-    const [balances, pools, poolsV2] = await Promise.all([
-      this.etherscanService.getBalances(addressesArray),
-      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV1),
-      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV2),
-    ]);
-    allPools = allPools.concat(pools).concat(poolsV2);
-
-    const liquidityPositions: UniswapResponseData = {
-      uniswapLiquidityPositions: new Map<string, IncomeLiquidityPosition[]>(),
-    };
-    Object.keys(balances).map((key) => {
-      balances[key].tokens.map((t) => {
-        const pool = allPools.find((p) => p.address === t.token.token.address);
-        if (pool) {
-          if (!liquidityPositions.uniswapLiquidityPositions.has(key)) {
-            liquidityPositions.uniswapLiquidityPositions.set(key, []);
-          }
-          let positions = liquidityPositions.uniswapLiquidityPositions.get(key);
-          positions = [...positions, PancakeService.createLiquidityPosition(key, pool, t)];
-          liquidityPositions.uniswapLiquidityPositions.set(key, positions);
-        }
-      });
-    });
-
-    return liquidityPositions;
-  }
 
   private static createLiquidityPosition(
     user: string,
@@ -92,10 +64,11 @@ export class PancakeService {
     };
   }
 
-  async getData(addresses: string): Promise<BaseData[]> {
+  public async getDataByAddresses(addresses: string): Promise<BaseData[]> {
     const addressesArray = addresses.split(',');
 
     const internalSubgraphData = await this.getDbLiquidityPositions(addresses);
+
     const result = {
       userAddresses: addressesArray,
       response: {
@@ -110,5 +83,41 @@ export class PancakeService {
       result.response,
       ProjectEnum.pancake,
     );
+  }
+
+  private async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
+    const addressesArray: string[] = addresses.split(',');
+
+    const [poolsV1, poolsV2, balances] = await Promise.all<
+      LiquidityPoolsResponseDto[],
+      LiquidityPoolsResponseDto[],
+      BalancesResponse
+    >([
+      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV1),
+      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV2),
+      this.etherscanService.getBalances(addressesArray),
+    ]);
+
+    const allPools: LiquidityPoolsEntity[] = [...poolsV1, ...poolsV2];
+
+    const lpMap = new Map<string, IncomeLiquidityPosition[]>();
+    balances.forEach((balance, address) => {
+      balance.tokens.forEach((t) => {
+        const pool = allPools.find((p) => p.address === t.token.token.address); // TODO m.b. Map? on the fly cycle
+        if (pool) {
+          let lps = lpMap.get(address);
+          if (!lps) {
+            lps = [];
+            lpMap.set(address, lps);
+          }
+          lps.push(PancakeService.createLiquidityPosition(address, pool, t.token));
+        }
+      });
+    });
+    const liquidityPositions: UniswapResponseData = {
+      uniswapLiquidityPositions: lpMap,
+    };
+
+    return liquidityPositions;
   }
 }

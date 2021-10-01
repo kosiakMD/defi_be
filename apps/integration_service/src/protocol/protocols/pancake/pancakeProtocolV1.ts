@@ -14,12 +14,12 @@ import { PancakeService } from './pancake.service';
 
 @Injectable()
 export default class PancakeProtocolV1 extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.eth];
+  readonly chains = [ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.pancake;
   readonly name = PancakeProtocolEnum.pancakeV1;
   readonly displayName = 'Pancake';
   readonly features = {
-    [ChainAbbrEnum.eth]: [FeatureEnum.pools],
+    [ChainAbbrEnum.bsc]: [FeatureEnum.pools],
   };
   public feeRate = 0.003;
   protected readonly dataProvider;

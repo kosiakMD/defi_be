@@ -32,7 +32,6 @@ export class ScanApi {
 
     // TODO: if CHAIN will be modified ADD CHAIN_ID to CACHE KEY
     let transfers = await this.cacheManager.get<any[]>(cacheKey);
-
     if (!transfers) {
       try {
         this.logger.debug(logString + 'fetching');

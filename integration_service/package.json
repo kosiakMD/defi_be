@@ -6,8 +6,8 @@
   "author": "",
   "license": "ISC",
   "engines": {
-    "node": "^14",
-    "npm": "^6"
+    "node": ">=14",
+    "npm": ">=6"
   },
   "scripts": {
     "prebuild": "rimraf dist",

@@ -9,6 +9,7 @@ import { AlpacaModule } from '../alpaca/alpaca.module';
 import { AutofarmModule } from '../autofarm/autofarm.module';
 import { ChainModule } from '../chain/chain.module';
 import { Mapper } from '../mappers/mapper';
+import { PancakeModule } from '../pancake/pancake.module';
 import { PriceModule } from '../price/price.module';
 import { QuickswapModule } from '../quickswap/quickswap.module';
 import { SushiswapModule } from '../sushiswap/sushiswap.module';
@@ -24,12 +25,6 @@ import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
-
-// import { SpookyswapModule } from '../spookyswap/spookyswap.module';
-// import { UniswapModule } from '../uniswap/uniswap.module';
-// import { SushiswapModule } from '../sushiswap/sushiswap.module';
-// import { UniswapService } from '../uniswap/uniswap.service';
-// import { UniswapSubgraph } from '../thegraph/uniswap.subgraph';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -61,12 +56,10 @@ const ProtocolList = [
       }),
       inject: [ConfigService],
     }),
-    // UniswapModule,
+    PancakeModule,
     ThegraphModule,
     PangolinModule,
     SushiswapModule,
-    // SushiswapModule,
-    // SpookyswapModule,
     AutofarmModule,
     QuickswapModule,
     AlpacaModule,

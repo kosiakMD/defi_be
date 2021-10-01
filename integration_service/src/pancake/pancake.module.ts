@@ -13,5 +13,6 @@ import { PancakeService } from './pancake.service';
 @Module({
   imports: [ThegraphModule, ChainModule, PriceModule, AccountModule, PoolsModule, EtherscanModule],
   providers: [PancakeService, PancakePriceService, Mapper],
+  exports: [PancakeService],
 })
 export class PancakeModule {}

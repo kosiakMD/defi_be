@@ -1,7 +1,9 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, ProtocolName } from '../common/enum';
 
+import { Logger } from '../Logger/Logger.service';
 import { IntegrationFeaturesData } from '../integrations/integrations.dto';
 import { ProtocolBasicInfo } from './features/features.dto';
 import AlpacaProtocol from './protocols/alpacaProtocol';
@@ -22,6 +24,7 @@ export class ProtocolService {
 
   // TODO: to add a new Protocol just add it at ProtocolModule and at ProtocolService constructor
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
@@ -71,11 +74,16 @@ export class ProtocolService {
     addresses: string,
     chainId: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> {
-    const protocol = this.getProtocolByName(protocolName);
-    if (!protocol) {
-      throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
-    }
+    try {
+      const protocol = this.getProtocolByName(protocolName);
+      if (!protocol) {
+        throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
+      }
 
-    return await protocol.getAllFeaturesData(addresses, chainId);
+      return await protocol.getAllFeaturesData(addresses, chainId);
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
+    }
   }
 }

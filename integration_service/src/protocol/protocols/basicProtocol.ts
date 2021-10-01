@@ -88,15 +88,16 @@ export abstract class BasicProtocol<
     address: Address,
     chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData> => {
-    let pools, poolsErrors;
     const { rawPools, rawStaking, rawLending, rawBorrowing, rawLeverageFarming } =
       await this.getAllFeaturesRawData(address, chainId);
 
+    let pools, poolsErrors;
     try {
       const { errors, data } = await this.transformPools(rawPools, chainId);
       poolsErrors = errors;
       pools = data;
     } catch (e) {
+      this.logger.error(e, 'transformPools');
       poolsErrors = e;
       pools = null;
     }
@@ -105,6 +106,7 @@ export abstract class BasicProtocol<
     try {
       staking = this.transformStaking(rawStaking);
     } catch (e) {
+      this.logger.error(e, 'transformStaking');
       stakingErrors = e;
       staking = null;
     }
@@ -114,6 +116,7 @@ export abstract class BasicProtocol<
     try {
       lending = this.transformLending(rawLending);
     } catch (e) {
+      this.logger.error(e, 'transformLending');
       lendingErrors = e;
       lending = null;
     }
@@ -123,6 +126,7 @@ export abstract class BasicProtocol<
     try {
       borrowing = this.transformBorrowing(rawBorrowing);
     } catch (e) {
+      this.logger.error(e, 'transformBorrowing');
       borrowingErrors = e;
       borrowing = null;
     }
@@ -176,13 +180,18 @@ export abstract class BasicProtocol<
   };
 
   protected async getData(addresses, chainId?) {
-    let data;
-    if (this.dataProvider instanceof UniswapLikeSubgraph) {
-      data = await this.getSubgraphMappedData(addresses);
-    } else {
-      data = await this.dataProvider.getDataByAddresses(addresses, chainId);
+    try {
+      let data;
+      if (this.dataProvider instanceof UniswapLikeSubgraph) {
+        data = await this.getSubgraphMappedData(addresses);
+      } else {
+        data = await this.dataProvider.getDataByAddresses(addresses, chainId);
+      }
+      return data;
+    } catch (e) {
+      this.logger.error(e);
+      throw e;
     }
-    return data;
   }
 
   protected async getSubgraphMappedData(addresses: Address): Promise<BaseData[]> {
@@ -247,7 +256,6 @@ export abstract class BasicProtocol<
         map.set(address, [token]);
       }
     };
-    // console.log(rawPools);
     rawPools?.forEach((inputPool) => {
       pools.push(inputPool.lpToken.address);
       inputPool.poolTokens.forEach((token: PoolToken) => {

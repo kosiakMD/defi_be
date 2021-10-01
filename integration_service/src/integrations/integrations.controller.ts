@@ -29,11 +29,18 @@ export class IntegrationsController {
   })
   @ApiQuery({
     name: 'chains',
-    type: Number,
+    type: String,
     // enum: ChainIdEnum,
-    isArray: true,
+    // isArray: true,
     // enumName: 'ChainIdEnum',
-    example: [ChainIdEnum.eth],
+    example: [
+      ChainIdEnum.eth,
+      ChainIdEnum.bsc,
+      ChainIdEnum.plg,
+      ChainIdEnum.ftm,
+      ChainIdEnum.arbi,
+      ChainIdEnum.avax,
+    ].join(','),
   })
   @ApiQuery({
     name: 'addresses',

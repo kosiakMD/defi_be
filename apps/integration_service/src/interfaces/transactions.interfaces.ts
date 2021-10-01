@@ -172,6 +172,7 @@ export class Transaction<T = string> {
   gasPriceUsd?: number;
 }
 
+// TODO disabled
 // export class TransactionProjectDto extends BaseData<'transaction'> {
 //   @Type(() => Transaction)
 //   txs: Transaction[];

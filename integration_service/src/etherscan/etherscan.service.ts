@@ -2,7 +2,12 @@ import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum } from '../common/enum';
 
-import { AccountTokenBalance, BalancesResponse, Transfers } from './interfaces';
+import {
+  AccountBalance,
+  AccountTokenBalance,
+  BalancesResponse,
+  EtherscanTransfer,
+} from './interfaces';
 import { ScanApi } from './scan-api.service';
 
 function toDecimals(amount: number, decimals: number): number {
@@ -13,29 +18,35 @@ function toDecimals(amount: number, decimals: number): number {
 export class EtherscanService {
   constructor(private etherscanApi: ScanApi) {}
 
-  async getBalances(addresses: string[]): Promise<any> {
-    const transfersAll: Transfers = {};
+  async getBalances(addresses: string[]): Promise<BalancesResponse> {
+    const transfersAll = new Map<string, EtherscanTransfer[]>();
     await Promise.all(
-      addresses.map(async (a) => {
-        transfersAll[a] = await this.etherscanApi.getTransfers(a);
+      addresses.map((address) => {
+        return this.etherscanApi.getTransfers(address).then((transfers) => {
+          transfersAll.set(address, transfers);
+          Promise.resolve();
+        });
       }),
     );
-    const allBalances: BalancesResponse = {};
-    Object.keys(transfersAll).forEach((address) => {
-      if (allBalances[address] === undefined) {
-        allBalances[address] = {
+    // console.log('transfersAll', transfersAll);
+    const allBalances: BalancesResponse = new Map<string, AccountBalance>();
+    transfersAll.forEach((transfers, address) => {
+      let balance = allBalances.get(address);
+      if (!balance) {
+        balance = {
           account: '',
           totalUsd: 0,
-          tokens: [],
+          tokens: new Map(),
         };
+        allBalances.set(address, balance);
       }
-      transfersAll[address].map((transfer) => {
+      transfers.forEach((transfer) => {
         const amountToAdd: number = transfer.from === address ? -transfer.value : transfer.value;
         const decimalAmountToAdd: number = toDecimals(amountToAdd, transfer.tokenDecimal);
-        const existedAccountBalance: AccountTokenBalance = allBalances[address].tokens.find(
-          (tok) => tok.token.token.address === transfer.contractAddress,
+        const existedAccountBalance: AccountTokenBalance = balance.tokens.get(
+          transfer.contractAddress,
         );
-        if (existedAccountBalance === undefined) {
+        if (!existedAccountBalance) {
           const tokenBalance: AccountTokenBalance = {
             account: address,
             amount: amountToAdd.toString(),
@@ -54,15 +65,15 @@ export class EtherscanService {
               },
             },
           };
-          allBalances[address].tokens.push(tokenBalance);
+          balance.tokens.set(transfer.contractAddress, tokenBalance);
         } else {
           existedAccountBalance.amount = (
-            Number(existedAccountBalance.amount) + Number(amountToAdd)
+            Number(existedAccountBalance.amount) + amountToAdd
           ).toString();
           existedAccountBalance.decimalsAmount =
             existedAccountBalance.decimalsAmount + decimalAmountToAdd;
           existedAccountBalance.token.amount =
-            Number(existedAccountBalance.token.amount) + Number(amountToAdd);
+            Number(existedAccountBalance.token.amount) + amountToAdd;
           existedAccountBalance.token.decimalsAmount =
             existedAccountBalance.token.decimalsAmount + decimalAmountToAdd;
         }

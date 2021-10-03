@@ -36,7 +36,6 @@ export enum ChainPrefixEnum {
   eth = 'eth',
   bsc = 'bsc',
   plg = 'plg',
-  polygon = 'polygon',
   ftm = 'ftm',
   arbi = 'arbi',
   avax = 'avax',
@@ -46,19 +45,17 @@ export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
   plg = 3,
-  polygon = 3,
   ftm = 4,
   arbi = 5,
-  arbitrum = 5,
   avax = 6,
 }
 
 export enum AbsoluteChainIdEnum {
   eth = 1,
   bsc = 56,
-  polygon = 137,
+  plg = 137,
   ftm = 250,
-  arbitrum = 42161,
+  arbi = 42161,
   avax = 43114,
 }
 

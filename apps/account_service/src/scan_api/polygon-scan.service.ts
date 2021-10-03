@@ -30,8 +30,8 @@ export class PolygonScanService extends ScanApiService {
 
     this.url = this.configService.get<string>('POLYGONSCAN_URL');
     this.apiKey = this.configService.get<string>('POLYGONSCAN_KEY');
-    this.chainPrefix = ChainPrefixEnum.polygon;
-    this.chainId = ChainIdEnum.polygon;
+    this.chainPrefix = ChainPrefixEnum.plg;
+    this.chainId = ChainIdEnum.plg;
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
   }
 }

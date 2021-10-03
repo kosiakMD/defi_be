@@ -190,7 +190,7 @@ export class BalancesService {
 
   private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
     switch (chain) {
-      case ChainIdEnum.polygon:
+      case ChainIdEnum.plg:
         return [this.covalentBalancesStrategy];
       // TODO: Disable network strategy for everyone before release
       // return [this.networkBalancesStrategy];

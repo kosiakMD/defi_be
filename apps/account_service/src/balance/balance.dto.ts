@@ -53,18 +53,18 @@ export class BalancesQueryDto implements BalancesQuery {
     default: [
       ChainIdEnum.eth,
       ChainIdEnum.bsc,
-      ChainIdEnum.polygon,
+      ChainIdEnum.plg,
       ChainIdEnum.ftm,
-      ChainIdEnum.arbitrum,
+      ChainIdEnum.arbi,
       ChainIdEnum.avax,
     ],
   })
   chains: ChainIdEnum[] = [
     ChainIdEnum.eth,
     ChainIdEnum.bsc,
-    ChainIdEnum.polygon,
+    ChainIdEnum.plg,
     ChainIdEnum.ftm,
-    ChainIdEnum.arbitrum,
+    ChainIdEnum.arbi,
     ChainIdEnum.avax,
   ];
 

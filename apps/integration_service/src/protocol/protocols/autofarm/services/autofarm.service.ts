@@ -151,6 +151,7 @@ export class AutofarmService {
     stakingPositions.map((staking) => {
       const rewardToken: IntegrationClaimableTokenDto = classToClass(claimAbleToken);
       const claimable = new ClaimableDto();
+
       claimable.balance = new BigNumber(staking.claimable) //
         .div(decimalsDivider(18))
         .toString();

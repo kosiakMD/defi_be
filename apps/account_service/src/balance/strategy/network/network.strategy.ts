@@ -91,13 +91,13 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('ETH_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.bsc:
         return this.config.get<string>('BSC_BALANCES_CHECKER_ADDRESS');
-      case ChainIdEnum.polygon:
+      case ChainIdEnum.plg:
         return this.config.get<string>('POLYGON_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.ftm:
         return this.config.get<string>('FTM_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.avax:
         return this.config.get<string>('AVAX_BALANCES_CHECKER_ADDRESS');
-      case ChainIdEnum.arbitrum:
+      case ChainIdEnum.arbi:
         return this.config.get<string>('ARBITRUM_BALANCES_CHECKER_ADDRESS');
     }
   }

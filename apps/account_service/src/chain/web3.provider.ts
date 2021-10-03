@@ -12,7 +12,7 @@ export class Web3Provider {
   constructor(private readonly configService: ConfigService) {
     this.providers[ChainIdEnum.eth] = new Web3(this.configService.get<string>('ETH_URL'));
     this.providers[ChainIdEnum.bsc] = new Web3(this.configService.get<string>('BSC_URL'));
-    this.providers[ChainIdEnum.polygon] = new Web3(this.configService.get<string>('POLYGON_URL'));
+    this.providers[ChainIdEnum.plg] = new Web3(this.configService.get<string>('POLYGON_URL'));
     this.providers[ChainIdEnum.ftm] = new Web3(this.configService.get<string>('FTM_URL'));
   }
 

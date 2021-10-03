@@ -12,6 +12,7 @@ import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AlpacaApiService } from './protocols/alpaca/services/alpaca.api.service';
 import { AlpacaProtocol } from './protocols/alpacaProtocol';
+import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { Mapper } from './protocols/mappers/mapper';
 import { PancakeModule } from './protocols/pancake/pancake.module';
@@ -65,7 +66,14 @@ const ProtocolList = [
     PancakeModule, // TODO: m.b. delete for pancakeV1
     Web3Service, // TODO: quickswap
   ],
-  providers: [...ProtocolList, ProtocolService, Mapper, Web3Service, AlpacaApiService],
+  providers: [
+    ...ProtocolList,
+    ProtocolService,
+    Mapper,
+    Web3Service,
+    AlpacaApiService,
+    AutofarmApiService,
+  ],
   exports: [ProtocolService],
 })
 export class ProtocolModule {}

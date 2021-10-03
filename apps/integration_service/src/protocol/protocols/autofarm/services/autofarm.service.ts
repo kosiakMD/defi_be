@@ -24,9 +24,10 @@ import {
 import { Asset, ERC20Token } from '../../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../../price/price.service';
 import { decimalsDivider } from '../../../../utils/util';
-import { AutofarmUser, StakingInterface } from '../autofarm.interfaces';
+import { AutofarmApiPools, AutofarmUser, StakingInterface } from '../autofarm.interfaces';
 import { LocalMultiCall } from '../multicall/local.multi.call';
 import { autofarmFactoriesMap, autofarmRewardToken, lpTokenAbi } from '../multicall/util';
+import { AutofarmApiService } from './autofarm.api.service';
 import { AutofarmSubgraph } from './autofarm.subgraph';
 
 @Injectable()
@@ -37,6 +38,7 @@ export class AutofarmService {
     protected readonly autofarmSubgraph: AutofarmSubgraph,
     protected readonly assetsService: AccountService,
     protected readonly priceService: PriceService,
+    protected readonly autofarmApiService: AutofarmApiService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
 
@@ -97,6 +99,9 @@ export class AutofarmService {
         }),
       );
 
+      // TODO getTokens coefficients and totalSupply via web3
+      // const tokensInfoMap = await multicall.getTokensInfoMap(stakedPosition, tokensAddresses);
+
       await multicall.getToken0AndToken1FromLp(lpStaked, tokensAddresses);
       const tokenAddressesArray = Array.from(tokensAddresses);
       const [{ data }, price] = await Promise.all([
@@ -104,11 +109,14 @@ export class AutofarmService {
         this.priceService.getTokenPricesFetch(tokenAddressesArray, chainId),
       ]);
 
+      const autofarmPools: AutofarmApiPools = await this.autofarmApiService.getAutofarmPoolsData();
+
       const assetsMap = new Map<string, Asset>();
       data.forEach((asset) => assetsMap.set(asset.address, asset));
 
       const claimableToken = AutofarmService.getClaimableToken(assetsMap, price.prices);
       const stakingPositionsMap = this.getStakingPositionDtosMap(
+        autofarmPools,
         stakedPosition,
         assetsMap,
         price.prices,
@@ -133,7 +141,7 @@ export class AutofarmService {
       const stakingResponse = new StakingPositionResponseDto();
       // stakingResponse.userAddress = key;
       stakingResponse.stakingPositions = value;
-      stakingResponse.totalValue = Number(autofarmUser?.totalAmount);
+      stakingResponse.totalValue = Number(autofarmUser?.totalAmount) || null;
 
       responseData.push(stakingResponse);
     }
@@ -141,6 +149,7 @@ export class AutofarmService {
   }
 
   private getStakingPositionDtosMap(
+    autofarmPools: AutofarmApiPools,
     stakingPositions: StakingInterface[],
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
@@ -166,7 +175,7 @@ export class AutofarmService {
       response.rewardToken = rewardToken;
       response.stakingToken = staking.isLp
         ? AutofarmService.getStakingLpToken(staking, assets, prices)
-        : AutofarmService.getStakingErc20Token(staking, assets, prices);
+        : AutofarmService.getStakingErc20Token(staking, assets, prices, autofarmPools);
       const userStaking = responseMap.get(staking.userAddress);
       userStaking ? userStaking.push(response) : responseMap.set(staking.userAddress, [response]);
       return response;
@@ -179,12 +188,20 @@ export class AutofarmService {
     staking: StakingInterface,
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
+    autofarmPools: AutofarmApiPools,
   ): IntegrationERC20TokenDto {
     const asset = assets.get(staking.contractAddress);
     const erc20Token = new IntegrationERC20TokenDto();
     AutofarmService.setFieldsFromAsset(asset, erc20Token);
     erc20Token.totalSupply = staking.totalSupply;
-    erc20Token.price = prices[staking.contractAddress];
+    const tokenPrice = prices[staking.contractAddress]
+      ? prices[staking.contractAddress]
+      : Number(autofarmPools[staking.poolNum].wantPrice);
+    erc20Token.price = tokenPrice || null;
+    // TODO getTonesPrice via web3
+    // tokenInfo.coefficient
+    // ? new BigNumber(prices[tokenInfo.priceAsset]).times(tokenInfo.coefficient).toNumber()
+    // : prices[tokenInfo.priceAsset];
     erc20Token.balance = new BigNumber(staking.amount)
       .div(decimalsDivider(erc20Token.decimals))
       .toString();

@@ -25,9 +25,10 @@ import { PriceService } from '../../price/price.service';
 import { decimalsDivider } from '../../utils/util';
 import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
-import { AutofarmUser, StakingInterface } from './autofarm/autofarm.interfaces';
+import { AutofarmApiPools, AutofarmUser, StakingInterface } from './autofarm/autofarm.interfaces';
 import { LocalMultiCall } from './autofarm/multicall/local.multi.call';
 import { autofarmFactoriesMap, autofarmRewardToken, lpTokenAbi } from './autofarm/multicall/util';
+import { AutofarmApiService } from './autofarm/services/autofarm.api.service';
 import { AutofarmSubgraph } from './autofarm/services/autofarm.subgraph';
 import DataProviderProtocol from './dataProviderProtocol';
 
@@ -43,11 +44,11 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-    // private readonly autofarmService: AutofarmService,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     private readonly web3Provider: Web3Provider,
     private readonly subgraph: AutofarmSubgraph,
+    private readonly autofarmApiService: AutofarmApiService,
   ) {
     super();
 
@@ -55,11 +56,14 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
   }
 
   // override
-  async getData(address: Address, chainId: ChainIdEnum): Promise<StakingPositionResponseDto[]> {
+  async getDataByAddresses(
+    address: Address,
+    chainId: ChainIdEnum,
+  ): Promise<StakingPositionResponseDto[]> {
     try {
-      const autofarmUsers: AutofarmUser[] = await this.subgraph.getSubgraphData([
-        address.toLowerCase(),
-      ]);
+      const addressLowerCase = address.toLowerCase();
+      const autofarmUsers: AutofarmUser[] = await this.subgraph.getSubgraphData([addressLowerCase]);
+
       const stakedPosition: StakingInterface[] = [];
       autofarmUsers.forEach((user) =>
         user.balances.forEach((balance) => {
@@ -76,11 +80,12 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
       const web3Provider = this.web3Provider.web3Map.get(chainId);
       const multicall = new LocalMultiCall(web3Provider, this.logger);
       const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chainId);
-
       await Promise.all([
         multicall.getVaultUsersInfo(stakedPosition, chainId),
-        multicall.getTotalSupplies(poolsAddresses, stakedPosition),
+        multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
       ]);
+
+      await multicall.getTotalSupplies(poolsAddresses, stakedPosition);
 
       const lpStaked: StakingInterface[] = [];
       const tokensAddresses = new Set<string>();
@@ -106,19 +111,24 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
         }),
       );
 
+      // TODO getTokens coefficients and totalSupply via web3
+      // const tokensInfoMap = await multicall.getTokensInfoMap(stakedPosition, tokensAddresses);
+
       await multicall.getToken0AndToken1FromLp(lpStaked, tokensAddresses);
       const tokenAddressesArray = Array.from(tokensAddresses);
-      // TODO: delete redundant calls
       const [{ data }, price] = await Promise.all([
         this.accountService.getAssets(tokenAddressesArray, [chainId]),
         this.priceService.getTokenPricesFetch(tokenAddressesArray, chainId),
       ]);
+
+      const autofarmPools: AutofarmApiPools = await this.autofarmApiService.getAutofarmPoolsData();
 
       const assetsMap = new Map<string, Asset>();
       data.forEach((asset) => assetsMap.set(asset.address, asset));
 
       const claimableToken = AutofarmProtocol.getClaimableToken(assetsMap, price.prices);
       const stakingPositionsMap = this.getStakingPositionDtosMap(
+        autofarmPools,
         stakedPosition,
         assetsMap,
         price.prices,
@@ -143,7 +153,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
       const stakingResponse = new StakingPositionResponseDto();
       // stakingResponse.userAddress = key;
       stakingResponse.stakingPositions = value;
-      stakingResponse.totalValue = Number(autofarmUser.totalAmount);
+      stakingResponse.totalValue = Number(autofarmUser?.totalAmount) || null;
 
       responseData.push(stakingResponse);
     }
@@ -151,6 +161,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
   }
 
   private getStakingPositionDtosMap(
+    autofarmPools: AutofarmApiPools,
     stakingPositions: StakingInterface[],
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
@@ -175,7 +186,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
       response.rewardToken = rewardToken;
       response.stakingToken = staking.isLp
         ? AutofarmProtocol.getStakingLpToken(staking, assets, prices)
-        : AutofarmProtocol.getStakingErc20Token(staking, assets, prices);
+        : AutofarmProtocol.getStakingErc20Token(staking, assets, prices, autofarmPools);
       const userStaking = responseMap.get(staking.userAddress);
       userStaking ? userStaking.push(response) : responseMap.set(staking.userAddress, [response]);
       return response;
@@ -188,12 +199,20 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
     staking: StakingInterface,
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
+    autofarmPools: AutofarmApiPools,
   ): IntegrationERC20TokenDto {
     const asset = assets.get(staking.contractAddress);
     const erc20Token = new IntegrationERC20TokenDto();
     AutofarmProtocol.setFieldsFromAsset(asset, erc20Token);
     erc20Token.totalSupply = staking.totalSupply;
-    erc20Token.price = prices[staking.contractAddress];
+    const tokenPrice = prices[staking.contractAddress]
+      ? prices[staking.contractAddress]
+      : Number(autofarmPools[staking.poolNum].wantPrice);
+    erc20Token.price = tokenPrice || null;
+    // TODO getTonesPrice via web3
+    // tokenInfo.coefficient
+    // ? new BigNumber(prices[tokenInfo.priceAsset]).times(tokenInfo.coefficient).toNumber()
+    // : prices[tokenInfo.priceAsset];
     erc20Token.balance = new BigNumber(staking.amount)
       .div(decimalsDivider(erc20Token.decimals))
       .toString();

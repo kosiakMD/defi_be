@@ -1,10 +1,11 @@
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
+import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
 import { Logger } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
-import { StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
+import { AutofarmTokenInfo, StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
 import {
   AutoFactoryAbi,
   autofarmAUTOFactory,
@@ -12,6 +13,7 @@ import {
   autofarmRewardToken,
   AutofarmVaultAbi,
   lpTokenAbi,
+  StakedTokenAbi,
 } from './util';
 
 export class LocalMultiCall extends MultiCall {
@@ -131,5 +133,47 @@ export class LocalMultiCall extends MultiCall {
       this.logger.error(e, 'getTotalSupplies');
       throw e;
     }
+  }
+
+  // TODO getTokens coefficients and totalSupply via web3
+  async getTokensInfoMap(
+    stakingPositions: StakingInterface[],
+    priceAssets: Set<string>,
+  ): Promise<Map<string, AutofarmTokenInfo>> {
+    const contractFunctions = ['token', 'totalSupply', 'totalToken', 'balanceStrategy'];
+    const inputs: CallInput[] = stakingPositions.flatMap((pool) => {
+      return contractFunctions.map((func) => {
+        return { target: pool.contractAddress, function: func };
+      });
+    });
+    const tokensMap = new Map<string, AutofarmTokenInfo>();
+    const [, result] = await this.multiCall(StakedTokenAbi, inputs);
+    let count = 0;
+    for (let i = 0; i < result.length; i += 4) {
+      const stakingPosition = stakingPositions[count];
+      const totalSupply = result[i + 1]?.toString();
+      const totalToken = result[i + 2]?.toString();
+      const balancesStrategy = result[i + 3]?.toString();
+      const stakedToken = result[i]?.toLowerCase() || stakingPosition.contractAddress;
+      priceAssets.add(stakedToken);
+      stakingPosition.totalSupply = totalSupply;
+      tokensMap.set(stakingPosition.contractAddress, {
+        priceAsset: stakedToken,
+        totalSupply: totalSupply,
+        coefficient: totalToken
+          ? LocalMultiCall.getCoefficient(totalToken, totalSupply)
+          : balancesStrategy
+          ? LocalMultiCall.getCoefficient(balancesStrategy, totalSupply)
+          : null,
+      });
+      count++;
+    }
+    return tokensMap;
+  }
+
+  private static getCoefficient(totalToken: string, totalSupply: string): string {
+    return new BigNumber(totalToken) //
+      .div(totalSupply)
+      .toString();
   }
 }

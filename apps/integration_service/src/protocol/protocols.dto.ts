@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { Exclude } from 'class-transformer';
 
-import { FeatureResultDto, LiquidityPoolFeatureDto } from '@app/common';
+import { FeatureResultDto, Features } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
 export class ProtocolDto {}
@@ -19,7 +19,7 @@ export class RawFeaturesDto {
   rawLeverageFarming: any;
 }
 
-export class FeatureHandleDto<T = LiquidityPoolFeatureDto> {
+export class FeatureHandleDto<T extends Features> {
   @Exclude()
   errors: string[] = [];
   data: FeatureResultDto<T> = new FeatureResultDto();

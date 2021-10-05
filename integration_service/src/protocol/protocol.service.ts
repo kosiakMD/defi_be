@@ -6,11 +6,12 @@ import { ChainIdEnum, ProtocolName } from '../common/enum';
 import { Logger } from '../Logger/Logger.service';
 import { IntegrationFeaturesData } from '../integrations/integrations.dto';
 import { ProtocolBasicInfo } from './features/features.dto';
-import AlpacaProtocol from './protocols/alpacaProtocol';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { BasicProtocol } from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
+import PancakeProtocolV2 from './protocols/pancakeProtocolV2';
 import PangolinProtocol from './protocols/pangolinProtocol';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
@@ -28,6 +29,7 @@ export class ProtocolService {
     private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
+    private readonly pancakeProtocolV2: PancakeProtocolV2,
     private readonly pangolinProtocol: PangolinProtocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
@@ -40,6 +42,7 @@ export class ProtocolService {
       aaveProtocolV2,
       autofarmProtocol,
       pancakeProtocolV1,
+      pancakeProtocolV2,
       pangolinProtocol,
       quickswapProtocol,
       spookySwapProtocol,

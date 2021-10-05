@@ -57,11 +57,19 @@ export interface ErrorMessage {
 }
 
 export interface AccountBalance {
-  account?: Address;
+  account: Address;
   totalUsd: number;
   tokens: AccountTokenBalance[];
   errors?: ErrorMessage[];
 }
+
+// export interface AccountBalance {
+//   chainId: ChainIdEnum;
+//   account: Address;
+//   totalUsd: number;
+//   token: TokenBalance;
+//   errors?: ErrorMessage[];
+// }
 
 export interface EthTokenBalance {
   [key: string]: BalanceToken;

@@ -1,20 +1,29 @@
-import { StakingPositionFeatureDto } from '@app/common/dto';
-import { LiquidityPoolFeatureDto } from '@app/common/dto';
+import {
+  StakingPositionFeatureDto,
+  LiquidityPoolFeatureDto,
+  LendingPositionDto,
+} from '@app/common/dto';
 
-import { StakingPosition } from '../interfaces';
+import { LeverageFarmingPosition, StakingPosition } from '../interfaces';
 
 export type FeatureName = string;
 
-// TODO remove StakingPosition asfter StakingPositionFeatureDto will be done
-export type FeatureDto<T = LiquidityPoolFeatureDto | StakingPositionFeatureDto | StakingPosition> =
-  Record<FeatureName, FeatureResult<T>>;
+export type Features =
+  | LiquidityPoolFeatureDto
+  | LendingPositionDto
+  | LeverageFarmingPosition
+  | StakingPositionFeatureDto
+  | StakingPosition;
 
-export interface FeatureResult<T = FeatureDto> {
+export interface FeatureResult<T extends Features> {
   totalValue: number;
   items: T[];
 }
 
-export class FeatureResultDto<T = FeatureDto> {
+// TODO remove StakingPosition after StakingPositionFeatureDto will be done
+export type FeatureDto<T extends Features> = Record<FeatureName, FeatureResult<T>>;
+
+export class FeatureResultDto<T extends Features> {
   totalValue = 0;
   items: T[] = [];
 }

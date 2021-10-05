@@ -7,6 +7,7 @@ import {
   Borrowing,
   BorrowingPosition,
   FeatureResultDto,
+  Features,
   IntegrationFeaturesDataDto,
   Lending,
   LendingPositionDto,
@@ -38,6 +39,7 @@ import { AlpacaProtocol } from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
+import PancakeProtocolV2 from './protocols/pancake/pancakeProtocolV2';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
@@ -60,6 +62,7 @@ export class ProtocolService {
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly pangolinProtocol: PangolinProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
+    private readonly pancakeProtocolV2: PancakeProtocolV2,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
@@ -70,6 +73,7 @@ export class ProtocolService {
       autofarmProtocol,
       pangolinProtocol,
       pancakeProtocolV1,
+      pancakeProtocolV2,
       quickswapProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
@@ -276,7 +280,7 @@ export class ProtocolService {
     chainId: ChainIdEnum,
     protocol: BasicProtocol,
   ): Promise<FeatureHandleDto<LiquidityPoolFeatureDto>> {
-    const result = new FeatureHandleDto();
+    const result: FeatureHandleDto<LiquidityPoolFeatureDto> = new FeatureHandleDto();
 
     // TODO first filter out value = 0, then handle filtered only!
     try {
@@ -380,7 +384,7 @@ export class ProtocolService {
     );
   }
 
-  protected getBasicFeatureResult<T>(
+  protected getBasicFeatureResult<T extends Features>(
     data: Borrowing | Lending,
     rootKey: string,
     totalKey: string,

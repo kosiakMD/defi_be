@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { Address } from '@app/common';
 import {
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
@@ -10,7 +11,10 @@ import { TokenBalance } from '../../../common/types/balances';
 
 import { AccountService } from '../../../account/account.service';
 import { EtherscanService } from '../../../etherscan/etherscan.service';
+import { BalancesResponse } from '../../../etherscan/interfaces';
 import { BaseData, UniswapSubgraphLikeData } from '../../../interfaces/transactions.interfaces';
+import { LiquidityPoolsResponseDto } from '../../../pools/dto/liquidity.pools.response.dto';
+import { TokenDto } from '../../../pools/dto/token.dto';
 import { LiquidityPoolsEntity } from '../../../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../../../pools/pools.service';
 import { PancakeSubgraph } from '../../../thegraph/pancake.subgraph';
@@ -26,6 +30,15 @@ export class PancakeService {
     private readonly etherscanService: EtherscanService,
   ) {}
 
+  private static createToken(token: TokenDto) {
+    return {
+      id: token.id,
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals.toString(),
+    };
+  }
+
   private static createLiquidityPosition(
     user: string,
     pool: LiquidityPoolsEntity,
@@ -36,24 +49,14 @@ export class PancakeService {
 
     const pair: IncomeLiquidityPositionPair = {
       id: pool.address,
-      reserve0: token0.reserve.toString(),
-      reserve1: token1.reserve.toString(),
-      reserveUSD: pool.reserveUsd.toString(),
-      token0: {
-        id: token0.id,
-        name: token0.name,
-        symbol: token0.symbol,
-        decimals: token0.decimals.toString(),
-      },
-      token0Price: '0',
-      token1: {
-        id: token1.id,
-        name: token1.name,
-        symbol: token1.symbol,
-        decimals: token1.decimals.toString(),
-      },
-      token1Price: '0',
       totalSupply: pool.token.totalSupply.toString(),
+      reserveUSD: pool.reserveUsd.toString(),
+      reserve0: token0.reserve.toString(),
+      token0: PancakeService.createToken(token0),
+      token0Price: '0',
+      reserve1: token1.reserve.toString(),
+      token1: PancakeService.createToken(token1),
+      token1Price: '0',
     };
 
     return {
@@ -63,10 +66,14 @@ export class PancakeService {
     };
   }
 
-  public async getDataByAddresses(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
+  public async getDataByAddresses(
+    addresses: Address,
+    chainId: ChainIdEnum,
+    pancakeVersion: PancakeProtocolEnum,
+  ): Promise<BaseData[]> {
     const addressesArray = addresses.split(',');
 
-    const internalSubgraphData = await this.getDbLiquidityPositions(addresses);
+    const internalSubgraphData = await this.getDbLiquidityPositions(addresses, pancakeVersion);
     const result = {
       userAddresses: addressesArray,
       response: {
@@ -85,32 +92,37 @@ export class PancakeService {
     );
   }
 
-  private async getDbLiquidityPositions(addresses: string): Promise<UniswapSubgraphLikeData> {
-    const addressesArray: string[] = addresses.split(',');
-    let allPools: LiquidityPoolsEntity[] = [];
-    const [balances, pools, poolsV2] = await Promise.all([
-      this.etherscanService.getBalances(addressesArray),
-      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV1),
-      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV2),
-    ]);
-    allPools = allPools.concat(pools).concat(poolsV2);
+  private async getDbLiquidityPositions(
+    addresses: Address,
+    pancakeVersion: PancakeProtocolEnum,
+  ): Promise<UniswapSubgraphLikeData> {
+    const addressesArray: Address[] = addresses.split(',');
+    const [balances, pools = []] = await Promise.all<BalancesResponse, LiquidityPoolsResponseDto[]>(
+      [
+        this.etherscanService.getBalances(addressesArray),
+        this.poolsService.getProjectPools(pancakeVersion),
+      ],
+    );
 
-    const liquidityPositions: UniswapSubgraphLikeData = {
-      subgraphPools: new Map<string, IncomeLiquidityPosition[]>(),
-    };
-    Object.keys(balances).map((key) => {
-      balances[key].tokens.map((t) => {
-        const pool = allPools.find((p) => p.address === t.token.token.address);
+    const lpMap = new Map<Address, IncomeLiquidityPosition[]>();
+
+    balances.forEach((balance, address) => {
+      balance.tokens.forEach((t) => {
+        const pool = pools.find((p) => p.address === t.token.token.address); // TODO m.b. Map? on the fly cycle
         if (pool) {
-          if (!liquidityPositions.subgraphPools.has(key)) {
-            liquidityPositions.subgraphPools.set(key, []);
+          let lps = lpMap.get(address);
+          if (!lps) {
+            lps = [];
+            lpMap.set(address, lps);
           }
-          let positions = liquidityPositions.subgraphPools.get(key);
-          positions = [...positions, PancakeService.createLiquidityPosition(key, pool, t)];
-          liquidityPositions.subgraphPools.set(key, positions);
+          lps.push(PancakeService.createLiquidityPosition(address, pool, t.token));
         }
       });
     });
+
+    const liquidityPositions: UniswapSubgraphLikeData = {
+      subgraphPools: lpMap,
+    };
 
     return liquidityPositions;
   }

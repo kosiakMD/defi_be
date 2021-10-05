@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { ChainIdEnum, ProjectEnum, ProtocolName } from 'src/common/enum';
+import { ChainIdEnum, ProjectEnum, ProtocolName } from '../../common/enum';
 
 import { APYDto } from '../dto/apy.dto';
 import { ImpermanentLossDto } from '../dto/impermanentloss.dto';

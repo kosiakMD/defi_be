@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
-import { PancakeProtocolEnum, ProjectEnum } from 'src/common/enum';
+import { Address } from '../common/types';
+import { ChainIdEnum, PancakeProtocolEnum, ProjectEnum } from 'src/common/enum';
 import { TokenBalance } from 'src/common/types/balances';
 
 import { AccountService } from '../account/account.service';
@@ -13,6 +14,7 @@ import { BalancesResponse } from '../etherscan/interfaces';
 import { BaseData, UniswapResponseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { LiquidityPoolsResponseDto } from '../pools/dto/liquidity.pools.response.dto';
+import { TokenDto } from '../pools/dto/token.dto';
 import { LiquidityPoolsEntity } from '../pools/entities/liquidity.pools.entity';
 import { PoolsService } from '../pools/pools.service';
 import { PancakeSubgraph } from '../thegraph/pancake.subgraph';
@@ -27,6 +29,15 @@ export class PancakeService {
     private readonly etherscanService: EtherscanService,
   ) {}
 
+  private static createToken(token: TokenDto) {
+    return {
+      id: token.id,
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals.toString(),
+    };
+  }
+
   private static createLiquidityPosition(
     user: string,
     pool: LiquidityPoolsEntity,
@@ -37,24 +48,14 @@ export class PancakeService {
 
     const pair: IncomeLiquidityPositionPair = {
       id: pool.address,
-      reserve0: token0.reserve.toString(),
-      reserve1: token1.reserve.toString(),
-      reserveUSD: pool.reserveUsd.toString(),
-      token0: {
-        id: token0.id,
-        name: token0.name,
-        symbol: token0.symbol,
-        decimals: token0.decimals.toString(),
-      },
-      token0Price: '0',
-      token1: {
-        id: token1.id,
-        name: token1.name,
-        symbol: token1.symbol,
-        decimals: token1.decimals.toString(),
-      },
-      token1Price: '0',
       totalSupply: pool.token.totalSupply.toString(),
+      reserveUSD: pool.reserveUsd.toString(),
+      reserve0: token0.reserve.toString(),
+      token0: PancakeService.createToken(token0),
+      token0Price: '0',
+      reserve1: token1.reserve.toString(),
+      token1: PancakeService.createToken(token1),
+      token1Price: '0',
     };
 
     return {
@@ -64,10 +65,14 @@ export class PancakeService {
     };
   }
 
-  public async getDataByAddresses(addresses: string): Promise<BaseData[]> {
+  public async getDataByAddresses(
+    addresses: Address,
+    chainId: ChainIdEnum,
+    pancakeVersion: PancakeProtocolEnum,
+  ): Promise<BaseData[]> {
     const addressesArray = addresses.split(',');
 
-    const internalSubgraphData = await this.getDbLiquidityPositions(addresses);
+    const internalSubgraphData = await this.getDbLiquidityPositions(addresses, pancakeVersion);
 
     const result = {
       userAddresses: addressesArray,
@@ -85,25 +90,22 @@ export class PancakeService {
     );
   }
 
-  private async getDbLiquidityPositions(addresses: string): Promise<UniswapResponseData> {
-    const addressesArray: string[] = addresses.split(',');
+  private async getDbLiquidityPositions(
+    addresses: Address,
+    pancakeVersion: PancakeProtocolEnum,
+  ): Promise<UniswapResponseData> {
+    const addressesArray: Address[] = addresses.split(',');
 
-    const [poolsV1, poolsV2, balances] = await Promise.all<
-      LiquidityPoolsResponseDto[],
-      LiquidityPoolsResponseDto[],
-      BalancesResponse
-    >([
-      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV1),
-      this.poolsService.getProjectPools(PancakeProtocolEnum.pancakeV2),
+    const [balances, pools] = await Promise.all<BalancesResponse, LiquidityPoolsResponseDto[]>([
       this.etherscanService.getBalances(addressesArray),
+      this.poolsService.getProjectPools(pancakeVersion),
     ]);
 
-    const allPools: LiquidityPoolsEntity[] = [...poolsV1, ...poolsV2];
+    const lpMap = new Map<Address, IncomeLiquidityPosition[]>();
 
-    const lpMap = new Map<string, IncomeLiquidityPosition[]>();
     balances.forEach((balance, address) => {
       balance.tokens.forEach((t) => {
-        const pool = allPools.find((p) => p.address === t.token.token.address); // TODO m.b. Map? on the fly cycle
+        const pool = pools.find((p) => p.address === t.token.token.address); // TODO m.b. Map? on the fly cycle
         if (pool) {
           let lps = lpMap.get(address);
           if (!lps) {
@@ -114,6 +116,7 @@ export class PancakeService {
         }
       });
     });
+
     const liquidityPositions: UniswapResponseData = {
       uniswapLiquidityPositions: lpMap,
     };

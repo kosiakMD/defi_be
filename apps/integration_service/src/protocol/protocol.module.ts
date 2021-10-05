@@ -17,6 +17,7 @@ import AutofarmProtocol from './protocols/autofarmProtocol';
 import { Mapper } from './protocols/mappers/mapper';
 import { PancakeModule } from './protocols/pancake/pancake.module';
 import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
+import PancakeProtocolV2 from './protocols/pancake/pancakeProtocolV2';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
@@ -30,6 +31,7 @@ const ProtocolList = [
   AutofarmProtocol,
   PangolinProtocol,
   PancakeProtocolV1,
+  PancakeProtocolV2,
   QuickswapProtocol,
   SpookySwapProtocol,
   SushiswapProtocolV2,

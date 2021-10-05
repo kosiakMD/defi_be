@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum } from '../common/enum';
+import { Address } from '../common/types';
 
 import {
   AccountBalance,
@@ -18,8 +19,8 @@ function toDecimals(amount: number, decimals: number): number {
 export class EtherscanService {
   constructor(private etherscanApi: ScanApi) {}
 
-  async getBalances(addresses: string[]): Promise<BalancesResponse> {
-    const transfersAll = new Map<string, EtherscanTransfer[]>();
+  async getBalances(addresses: Address[]): Promise<BalancesResponse> {
+    const transfersAll = new Map<Address, EtherscanTransfer[]>();
     await Promise.all(
       addresses.map((address) => {
         return this.etherscanApi.getTransfers(address).then((transfers) => {
@@ -28,8 +29,7 @@ export class EtherscanService {
         });
       }),
     );
-    // console.log('transfersAll', transfersAll);
-    const allBalances: BalancesResponse = new Map<string, AccountBalance>();
+    const allBalances: BalancesResponse = new Map<Address, AccountBalance>();
     transfersAll.forEach((transfers, address) => {
       let balance = allBalances.get(address);
       if (!balance) {

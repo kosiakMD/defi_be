@@ -20,7 +20,10 @@ export type ProtocolFeaturesData = {
 };
 
 export type BasicProtocolType<DataProvider extends DefaultDataProvider = DefaultDataProvider> = {
-  [key in keyof typeof FeatureEnum]?: (address: Address, chainId?: ChainIdEnum) => FeatureResultDto;
+  [key in keyof typeof FeatureEnum]?: (
+    address: Address,
+    chainId?: ChainIdEnum,
+  ) => FeatureResultDto<any>;
 } & {
   readonly chains: ChainAbbrEnum[];
   readonly project: ProjectEnum;

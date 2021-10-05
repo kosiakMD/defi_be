@@ -9,9 +9,9 @@ import {
   ProjectEnum,
   ProtocolNameEnum,
   SushiSwapProtocolEnum,
-  UniswapProtocolEnum,
+  UniswapProtocolEnum
 } from '@app/common/enum';
-import { FeaturesType, FeatureDto, ProtocolName } from '@app/common';
+import { FeaturesType, ProtocolName } from '@app/common';
 
 import { ChainDto } from './chain.dto';
 
@@ -21,13 +21,6 @@ export class ProtocolFeaturesExportDto {
   // [FeatureEnum.pools]: FeatureDto;
   chain: ChainDto;
   list: FeatureEnum[];
-}
-
-export class ProtocolFeaturesDataDto /*implements ProtocolFeaturesData*/ {
-  [FeatureEnum.pools]?: FeatureDto;
-  [FeatureEnum.staking]?: FeatureDto;
-  [FeatureEnum.transactions]?: FeatureDto;
-  [FeatureEnum.farming]?: FeatureDto;
 }
 
 export class ProtocolFeaturesInfoDto {

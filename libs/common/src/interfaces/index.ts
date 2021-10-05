@@ -5,7 +5,6 @@ import {
   ProtocolTypeEnum,
   ResultStatus,
 } from '@app/common/enum';
-import { AccountTokenBalance, ErrorMessage } from '@app/common/interfaces/balance.interfaces';
 import { StakingPosition } from '@app/common/interfaces/staking.position.interfaces';
 import { PlatformPoolToken, PoolToken } from '@app/common/interfaces/transactions.interfaces';
 import { Address, DateString, ProtocolName, TokenSymbol } from '@app/common/types';
@@ -214,18 +213,3 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
 export class ContractApprovalResponse {
   [key: string]: ContractApproval[];
 }
-
-export interface AccountBalance {
-  account: Address;
-  totalUsd: number;
-  tokens: AccountTokenBalance[];
-  errors?: ErrorMessage[];
-}
-
-// export interface AccountBalance {
-//   chainId: ChainIdEnum;
-//   account: Address;
-//   totalUsd: number;
-//   token: TokenBalance;
-//   errors?: ErrorMessage[];
-// }

@@ -14,11 +14,11 @@ import AbstractProtocol from './abstractProtocol';
 import BasicProtocol from './basicProtocol';
 
 @Injectable()
-export default class PancakeProtocolV1 extends BasicProtocol<any> implements AbstractProtocol {
+export default class PancakeProtocolV2 extends BasicProtocol<any> implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.pancake;
-  readonly name = PancakeProtocolEnum.pancakeV1;
-  readonly displayName = 'Pancake V1';
+  readonly name = PancakeProtocolEnum.pancakeV2;
+  readonly displayName = 'Pancake V2';
   readonly features = {
     [ChainAbbrEnum.bsc]: [FeatureEnum.pools],
   };

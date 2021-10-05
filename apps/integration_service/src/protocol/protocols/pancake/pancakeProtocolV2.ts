@@ -14,11 +14,11 @@ import { Mapper } from '../mappers/mapper';
 import { PancakeService } from './pancake.service';
 
 @Injectable()
-export default class PancakeProtocolV1 extends DataProviderProtocol {
+export default class PancakeProtocolV2 extends DataProviderProtocol {
   readonly chains = [ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.pancake;
-  readonly name = PancakeProtocolEnum.pancakeV1;
-  readonly displayName = 'Pancake V1';
+  readonly name = PancakeProtocolEnum.pancakeV2;
+  readonly displayName = 'Pancake V2';
   readonly features = {
     [ChainAbbrEnum.bsc]: [FeatureEnum.pools],
   };

@@ -1,3 +1,5 @@
+import { Type } from 'class-transformer';
+
 import { ApiProperty } from '@nestjs/swagger';
 
 import {
@@ -16,12 +18,14 @@ import { TokenDto } from './token.dto';
 
 export class LiquidityPoolsResponseDto {
   @ApiProperty({ type: Number, example: 2830808 })
+  @Type(() => Number)
   id: number;
 
   @ApiProperty({ type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d' })
   address: string;
 
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  @Type(() => Number)
   chain: ChainIdEnum;
 
   // TODO: solve the problem it's either protocol or protocol; use enum, enumName
@@ -33,6 +37,7 @@ export class LiquidityPoolsResponseDto {
   project: ProjectEnum | ProtocolName;
 
   @ApiProperty({ type: Number, example: 99690611 })
+  @Type(() => Number)
   reserveUsd: number;
 
   @ApiProperty({ type: APYDto })

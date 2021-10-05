@@ -15,10 +15,11 @@ import { QuickswapModule } from '../quickswap/quickswap.module';
 import { SushiswapModule } from '../sushiswap/sushiswap.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
-import AlpacaProtocol from './protocols/alpacaProtocol';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import PancakeProtocolV1 from './protocols/pancakeProtocolV1';
+import PancakeProtocolV2 from './protocols/pancakeProtocolV2';
 import PangolinProtocol from './protocols/pangolinProtocol';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
@@ -31,6 +32,7 @@ const ProtocolList = [
   AaveProtocolV2,
   AutofarmProtocol,
   PancakeProtocolV1,
+  PancakeProtocolV2,
   PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,

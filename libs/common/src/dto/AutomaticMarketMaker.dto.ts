@@ -1,6 +1,6 @@
-import { LiquidityPositionDto } from '.';
-import { ProtocolTypeEnum } from '..';
-import { BaseData } from './transactions.dto';
+import { ProtocolTypeEnum } from '../enum';
+import { BaseData } from './BaseData';
+import { LiquidityPositionDto } from './LiquidityPositions.dto';
 
 export class AutomaticMarketMaker extends BaseData<ProtocolTypeEnum.amm> {
   isTransferSupported?: boolean;

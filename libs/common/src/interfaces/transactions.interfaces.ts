@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { AaveUser, IncomeLiquidityPosition } from '@app/common/dto';
-import { ERC20Token } from '@app/common/dto/transactions.dto';
+import { ERC20Token } from '@app/common/dto/ERC20Token';
 import {
   BurnsInterface,
   MintsInterface,

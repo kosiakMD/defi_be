@@ -1,3 +1,4 @@
+import { StakingErcToken } from '@app/common/dto/StakingErcToken';
 import { plainToClass } from 'class-transformer';
 
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
@@ -19,7 +20,6 @@ import {
   ProtocolName,
   ResultStatus,
 } from '@app/common';
-import { StakingErcToken } from '@app/common/dto/transactions.dto';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { AccountService } from '../account/account.service';

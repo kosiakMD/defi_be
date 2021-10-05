@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ERC20Token } from './transactions.dto';
+import { ERC20Token } from './ERC20Token';
 
 export class LendingErcToken extends ERC20Token {
   @ApiProperty({ type: Number, example: 3759.23 })

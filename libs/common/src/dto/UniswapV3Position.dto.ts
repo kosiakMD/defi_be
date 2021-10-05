@@ -1,6 +1,6 @@
+import { ERC20Token } from './ERC20Token';
 import { UniswapV3Pool } from './UniswapV3Pool.dto';
 import { UniswapV3Tick } from './UniswapV3Tick.dto';
-import { ERC20Token } from './transactions.dto';
 
 export interface UniswapV3Position {
   owner: string;

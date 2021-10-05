@@ -1,15 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { Type } from 'class-transformer';
 
-import {
-  LiquidityChangeTransaction,
-  SwapTransaction,
-  Transaction,
-} from '@app/common/dto/transactions.dto';
+import { LiquidityChangeTransaction, SwapTransaction } from '@app/common/dto/transactions.dto';
 import { IncomeToken } from '@app/common/interfaces';
 import { SwapToken } from '@app/common/interfaces';
 
 import { DirectionEnum, TransactionTypeEnum } from '../enum';
+import { Transaction } from './Transaction';
 
 export class IncomeLiquidityPositionPair {
   id: string = null;

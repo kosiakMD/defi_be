@@ -1,4 +1,4 @@
-import { StakingErcToken } from '@app/common/dto/transactions.dto';
+import { StakingErcToken } from '@app/common/dto/StakingErcToken';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, TransactionTypeEnum } from '@app/common/enum';
 import { ERC20Token, LPToken } from '@app/common/interfaces/index';
 import { ProtocolName } from '@app/common/types';

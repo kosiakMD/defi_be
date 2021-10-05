@@ -17,7 +17,7 @@ import {
   ProtocolNameEnum,
   UniswapSubgraphLikeData,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/transactions.dto';
+import { BaseData } from '@app/common/dto/BaseData';
 import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/enum';
 
 import { AccountService } from '../../account/account.service';

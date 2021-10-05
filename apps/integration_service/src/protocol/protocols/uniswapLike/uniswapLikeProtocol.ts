@@ -6,7 +6,7 @@ import {
   ProjectEnum,
   ProtocolName,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/transactions.dto';
+import { BaseData } from '@app/common/dto/BaseData';
 
 import { UniswapLikeSubgraph } from '../../../thegraph/uniswap-like-subgraph.service';
 import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../../utils/util';

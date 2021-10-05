@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, IncomeLiquidityPosition, Logger, PoolTokenDto } from '@app/common';
-import { BaseData } from '@app/common/dto/transactions.dto';
+import { BaseData } from '@app/common/dto/BaseData';
 import {
   ChainAbbrEnum,
   ChainIdEnum,

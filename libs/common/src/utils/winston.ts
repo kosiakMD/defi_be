@@ -71,7 +71,7 @@ export const createLogger = (workFolder: string): LoggerService => {
   const config: LogConfig = {
     logErrorFile: join(workFolder, process.env.LOG_ERROR_FILE),
     logCombineLog: join(workFolder, process.env.LOG_COMBINED_FILE),
-    serviceName: join(workFolder, process.env.SERVICE_NAME),
+    serviceName: process.env.SERVICE_NAME,
     level: process.env.LOG_LEVEL,
     env: process.env.NODE_ENV,
     meta: { env: process.env.ENV },

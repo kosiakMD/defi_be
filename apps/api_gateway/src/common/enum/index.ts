@@ -1,17 +1,48 @@
 export enum ChainIdEnum {
   eth = 1,
   bsc = 2,
+  plg = 3,
+  ftm = 4,
+  arbi = 5,
+  avax = 6,
+}
+
+export enum ChainPrefixEnum {
+  eth = 'eth',
+  bsc = 'bsc',
+  plg = 'plg',
+  ftm = 'ftm',
+  arbi = 'arbi',
+  avax = 'avax',
+}
+
+export enum AbsoluteChainIdEnum {
+  eth = 1,
+  bsc = 56,
+  plg = 137,
+  ftm = 250,
+  arbi = 42161,
+  avax = 43114,
 }
 
 export enum ChainNameEnum {
+  ETH = 'ethereum', // remove from enum
   eth = 'ethereum',
+  BSC = 'binance', // remove from enum
   bsc = 'binance',
+  plg = 'polygon',
+  ftm = 'fantom',
+  arbi = 'arbitrum',
+  avax = 'avalanche',
 }
 
 export enum ChainAbbrEnum {
   eth = 'eth',
   bsc = 'bsc',
   plg = 'plg',
+  ftm = 'ftm',
+  arbi = 'arbi',
+  avax = 'avax',
 }
 
 export enum ProjectEnum {

@@ -15,9 +15,9 @@ export enum ChainAbbrEnum {
 }
 
 export enum ChainNameEnum {
-  ETH = 'ethereum',
+  ETH = 'ethereum', // remove from enum
   eth = 'ethereum',
-  BSC = 'binance',
+  BSC = 'binance', // remove from enum
   bsc = 'binance',
   plg = 'polygon',
   ftm = 'fantom',
@@ -26,9 +26,9 @@ export enum ChainNameEnum {
 }
 
 export enum ChainSymbolNames {
-  ETH = 'ethereum',
+  ETH = 'ethereum', // remove from enum
   eth = 'ethereum',
-  BSC = 'binance',
+  BSC = 'binance', // remove from enum
   bsc = 'binance',
 }
 

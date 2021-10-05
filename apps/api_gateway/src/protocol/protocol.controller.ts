@@ -23,13 +23,20 @@ export class ProtocolController {
     name: 'protocolName',
     enum: ProtocolNameEnum,
     enumName:
-      'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum, PangolinProtocolEnum',
+      'PancakeProtocolEnum, SushiSwapProtocolEnum, UniswapProtocolEnum, PangolinProtocolEnum, SpookySwapProtocolEnum, QuickswapProtocolEnum',
     example: UniswapProtocolEnum.uniswapV2,
   })
   @ApiQuery({
     name: 'chains',
     type: String,
-    example: `${ChainIdEnum.eth}`,
+    example: [
+      ChainIdEnum.eth,
+      ChainIdEnum.bsc,
+      ChainIdEnum.plg,
+      ChainIdEnum.ftm,
+      ChainIdEnum.arbi,
+      ChainIdEnum.avax,
+    ].join(','),
   })
   @ApiQuery({
     name: 'addresses',

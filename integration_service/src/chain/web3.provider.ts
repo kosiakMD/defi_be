@@ -12,6 +12,7 @@ export class Web3Provider {
   constructor(private readonly configService: ConfigService) {
     this.web3Map.set(ChainIdEnum.bsc, new Web3(this.configService.get<string>('BSC_URL')));
     this.web3Map.set(ChainIdEnum.eth, new Web3(this.configService.get<string>('ETH_URL')));
+    this.web3Map.set(ChainIdEnum.plg, new Web3(this.configService.get<string>('POLYGON_RPC_URL')));
     this.web3Map.set(ChainIdEnum.ftm, new Web3(this.configService.get<string>('FTM_RPC_URL')));
   }
 
@@ -21,6 +22,10 @@ export class Web3Provider {
 
   instanceBsc(): Web3 {
     return this.web3Map.get(ChainIdEnum.bsc);
+  }
+
+  instancePlg(): Web3 {
+    return this.web3Map.get(ChainIdEnum.plg);
   }
 
   instanceFtm(): Web3 {

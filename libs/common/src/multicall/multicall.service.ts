@@ -6,13 +6,11 @@ import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
 
-import { MulticallFunctionEnum } from 'src/common/enum';
-import { Address, Balance } from 'src/common/types';
-
-import { toChunkedArray } from '../utils';
+import { Address, Balance, MulticallFunctionEnum } from '..';
+import { toChunkedArray } from '../utils/transform';
 
 @Injectable()
-export class Web3Service extends MultiCall {
+export class MultiCallService extends MultiCall {
   constructor(protected readonly web3Provider: Web3) {
     super(web3Provider);
   }

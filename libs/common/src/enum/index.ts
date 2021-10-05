@@ -73,3 +73,9 @@ export enum DirectionEnum {
   in = 'in',
   out = 'out',
 }
+
+export enum MulticallFunctionEnum {
+  earned = 'earned',
+  token0 = 'token0',
+  token1 = 'token1',
+}

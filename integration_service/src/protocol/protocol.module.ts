@@ -1,4 +1,5 @@
 import * as redisStore from 'cache-manager-redis-store';
+import { Web3Provider } from 'src/chain/web3.provider';
 import { PangolinModule } from 'src/pangolin/pangolin.module';
 
 import { CacheModule, Module } from '@nestjs/common';
@@ -68,7 +69,7 @@ const ProtocolList = [
     ThegraphModule,
     ChainModule,
   ],
-  providers: [...ProtocolList, ProtocolService, Mapper],
+  providers: [...ProtocolList, ProtocolService, Mapper, Web3Provider],
   exports: [ProtocolService],
 })
 export class ProtocolModule {}

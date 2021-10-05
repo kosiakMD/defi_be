@@ -3,6 +3,8 @@ import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { Web3ProviderService } from '@app/common/web3provider';
+
 import { AccountModule } from '../account/account.module';
 import { ChainModule } from '../chain/chain.module';
 import { PriceModule } from '../price/price.module';
@@ -63,10 +65,8 @@ const ProtocolList = [
     // SpookyswapModule,
     // AutofarmModule,
     // QuickswapModule,
-    ThegraphModule,
     ChainModule,
     PancakeModule, // TODO: m.b. delete for pancakeV1
-    Web3Service, // TODO: quickswap
   ],
   providers: [
     ...ProtocolList,
@@ -75,6 +75,7 @@ const ProtocolList = [
     Web3Service,
     AlpacaApiService,
     AutofarmApiService,
+    Web3ProviderService,
   ],
   exports: [ProtocolService],
 })

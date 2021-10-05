@@ -36,6 +36,8 @@ export enum ColumnType {
 
 export type Address = string;
 
+export type Balance = string;
+
 export type TokenSymbol = string;
 
 export type DateString = string;

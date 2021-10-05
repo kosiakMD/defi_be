@@ -1,4 +1,8 @@
+import { Cache } from 'cache-manager';
+
 import { HttpService, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { DetailedResponseDto } from '@app/common/dto';
@@ -9,11 +13,20 @@ import { Asset } from '../interfaces/transactions.interfaces';
 
 @Injectable()
 export class AccountService {
+  private readonly cacheTTLInSeconds: number;
+
   private getBalanceUrl: string;
   private getAssetsUrl: string;
   private getBalanceCovalentUrl: string;
 
-  constructor(private httpService: HttpService, private configService: ConfigService) {
+  constructor(
+    private httpService: HttpService,
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {
+    this.cacheTTLInSeconds =
+      this.configService.get<number>('BLACKLISTED_CACHE_TTL_IN_SECONDS') || 300;
+
     const host = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
     const port = this.configService.get<string>('ACCOUNT_SERVICE_PORT');
     const url = `${host}${port ? ':' + port : ''}`;
@@ -48,9 +61,20 @@ export class AccountService {
     addresses: Address[],
     chains?: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
-    const data = await this.httpService
-      .get(this.getAssetsUrl, { params: { addresses, chains } })
-      .toPromise();
-    return data.data;
+    const cacheKey = `${addresses.join(',')}_${chains.join(',')}`;
+
+    const cachedResult: DetailedResponseDto<Asset[]> = await this.cache.get(cacheKey);
+
+    if (cachedResult) {
+      return cachedResult;
+    } else {
+      const data = await this.httpService
+        .get(this.getAssetsUrl, { params: { addresses, chains } })
+        .toPromise();
+
+      await this.cache.set(cacheKey, data.data, { ttl: this.cacheTTLInSeconds });
+
+      return data.data;
+    }
   }
 }

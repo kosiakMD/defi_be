@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 import { Logger } from 'src/Logger/Logger.service';
+import { Web3Provider } from 'src/chain/web3.provider';
 import { IncomeLiquidityPosition } from 'src/dto/liquidity.position.dto';
 import { PriceService } from 'src/price/price.service';
 
@@ -22,43 +23,51 @@ import { QuickswapSubgraph } from '../thegraph/quickswap.subgraph';
 import { decimalsDivider, getUniqueAndToLowerCaseArrayData } from '../utils/util';
 import { PairDto } from './dto/subgraph';
 import { LPTokenPair } from './interfaces';
+import { QUICKSWAP_STAKING_REWARDS_ABI, QUICKSWAP_STAKING_TOKEN_ABI } from './utils/abi';
 import { QUICKSWAP_REWARDS_TOKEN_ADDRESS, QUICKSWAP_STAKING_CONTRACTS } from './utils/constants';
-import { getContractByPair } from './utils/utils';
 import { Web3Service } from './web3/web3.service';
 
 @Injectable()
 export class QuickswapService {
+  private readonly multicall: Web3Service;
+
   constructor(
     private readonly mapper: Mapper,
     private readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     private readonly subgraph: QuickswapSubgraph,
     private readonly logger: Logger,
-    private readonly web3: Web3Service,
-  ) {}
+    protected readonly web3Provider: Web3Provider,
+  ) {
+    this.multicall = new Web3Service(this.web3Provider.instancePlg());
+  }
 
-  private async getLPTokens(pair: PairDto, poolShare: number): Promise<PoolTokenDto[]> {
+  private async getLPTokens(
+    { token0, token1, reserve0, reserve1, reserveUSD }: PairDto,
+    poolShare: number,
+  ): Promise<PoolTokenDto[]> {
     return await Promise.all(
       [0, 1].map(async (_) => {
-        const token = _ ? pair.token1 : pair.token0;
-        const reserve = _ ? pair.reserve1 : pair.reserve0;
-        const price = _ ? pair.token1Price : pair.token0Price;
-
+        const { id: address, name, symbol, decimals } = _ ? token1 : token0;
+        const reserve = _ ? reserve1 : reserve0;
+        const price = new BigNumber(reserveUSD) //
+          .div(2)
+          .div(reserve)
+          .toNumber();
         const balance = new BigNumber(poolShare) //
           .times(reserve)
           .toString();
-
         const value = new BigNumber(balance) //
           .times(price)
           .toNumber();
 
         return {
-          address: token.id,
-          name: token.name,
-          symbol: token.symbol,
-          decimals: +token.decimals,
-          price: +price,
-          reserve: reserve,
+          address,
+          name,
+          symbol,
+          decimals: +decimals,
+          price,
+          reserve,
           balance,
           value,
         };
@@ -80,12 +89,12 @@ export class QuickswapService {
       );
       const rawRewardToken = rawRewardTokens[0];
 
-      const { prices } = await this.priceService.getTokenPricesFetch(
+      const { prices: rewardTokenPrices } = await this.priceService.getTokenPricesFetch(
         [rawRewardToken.address],
         chainId || ChainIdEnum.plg,
       );
 
-      const rewardTokenPrice = prices[rawRewardToken.address];
+      const rewardTokenPrice = rewardTokenPrices[rawRewardToken.address];
 
       const { data: usersData, errors: usersErrors } = await this.subgraph.getUsers(
         uniqueAddresses,
@@ -124,14 +133,33 @@ export class QuickswapService {
         );
         uniswapLiquidityPositions.set(address, pairs);
 
+        const stakingTokensBalances = await this.multicall.getBalancesOf(
+          QUICKSWAP_STAKING_CONTRACTS.map((_) => _.stakingContractAddress),
+          address,
+        );
+
+        const stakingTokensClaimable = await this.multicall.getEarned(
+          QUICKSWAP_STAKING_CONTRACTS.map((_) => _.stakingContractAddress),
+          address,
+          QUICKSWAP_STAKING_REWARDS_ABI,
+        );
+
+        const lpStakingTokens = await this.multicall.getStakingTokens(
+          QUICKSWAP_STAKING_CONTRACTS.map((_) => _.pairAddress),
+          QUICKSWAP_STAKING_TOKEN_ABI,
+        );
+
         const stakingPosition = await Promise.all(
-          QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress }) => {
+          QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress, stakingContractAddress }) => {
             const balance = new BigNumber(
-              await this.web3.getBalanceOf(getContractByPair(pairAddress), address),
+              stakingTokensBalances.get(stakingContractAddress.toLocaleLowerCase()),
             )
               .div(decimalsDivider(rawRewardToken.decimals))
               .toString();
-            const claimable = await this.web3.getClaimable(getContractByPair(pairAddress), address);
+
+            const claimable = stakingTokensClaimable.get(
+              stakingContractAddress.toLocaleLowerCase(),
+            );
 
             const claimableDataBalance = new BigNumber(claimable) //
               .div(decimalsDivider(rawRewardToken.decimals))
@@ -160,9 +188,7 @@ export class QuickswapService {
               tokens: [],
             });
 
-            const LPStakingTokensAddresses = await this.web3.getStakingTokensAddresses(pairAddress);
-
-            LPStakingTokensAddresses.forEach((tokenAddress) =>
+            lpStakingTokens.get(pairAddress.toLocaleLowerCase()).forEach((tokenAddress) =>
               stakingToken.tokens.push({
                 address: tokenAddress,
                 name: null,

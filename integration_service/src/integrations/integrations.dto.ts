@@ -141,6 +141,9 @@ export class IntegrationERC20TokenDto {
 
   @ApiProperty({ type: String, example: '123.6534' })
   balance?: string;
+
+  @ApiProperty({ type: [PoolTokenDto], required: false })
+  tokens?: PoolTokenDto[];
 }
 
 export class PoolPeriodStats {
@@ -232,8 +235,8 @@ export class IntegrationStakingPositionDto {
   @ApiProperty({type: String, example: '642354'})
   staked: string = null; // amount
 
-  @ApiProperty({ type: LPToken })
-  stakingToken: IntegrationERC20TokenDto | LPToken; // - lpToken info
+  @ApiProperty({ type: IntegrationERC20TokenDto })
+  stakingToken: IntegrationERC20TokenDto; // - lpToken info
 
   @ApiProperty({type: IntegrationClaimableTokenDto})
   rewardToken: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)

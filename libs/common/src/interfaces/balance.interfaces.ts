@@ -1,9 +1,5 @@
 import { Address, ERC20Token } from '@app/common';
 
-export interface Balance {
-  totalUsd: number;
-}
-
 export interface BalanceToken {
   chainId?: number;
   decimals: number;

@@ -10,13 +10,7 @@
   "scripts": {
     "pre-commit": "yarn run lint && yarn run format-check",
     "prepare": "husky install",
-    "install_all": "yarn --cwd api_gateway && yarn --cwd account_service && yarn --cwd integration_service && yarn --cwd price_service",
-    "install_all_prod": "yarn --prod --cwd api_gateway && yarn --prod --cwd account_service && yarn --prod --cwd integration_service && yarn --prod --cwd price_service",
-    "check_all": "yarn --cwd api_gateway --check-files && yarn --cwd account_service --check-files && yarn --cwd integration_service --check-files && yarn --cwd price_service --check-files",
-    "update_all": "yarn --cwd api_gateway --frozen-lockfile && yarn --cwd account_service --frozen-lockfile && yarn --cwd integration_service --frozen-lockfile && yarn --cwd price_service --frozen-lockfile",
-    "build": "yarn --cwd api_gateway build && yarn --cwd account_service build && yarn --cwd integration_service build && yarn --cwd price_service build",
     "build-monorepo": "yarn common-build && yarn gateway-build && yarn account-build && yarn integration-build && yarn price-build",
-    "audit": "yarn audit --cwd api_gateway && yarn audit --cwd account_service && yarn audit --cwd integration_service && yarn audit --cwd price_service",
     "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
     "lint-fix": "eslint \"**/{src,apps,libs,test}/**/*.ts\" --fix",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",

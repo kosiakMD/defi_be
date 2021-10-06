@@ -192,7 +192,9 @@ export class BalancesService {
   private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
     switch (chain) {
       case ChainIdEnum.polygon:
-        return [this.networkBalancesStrategy];
+        return [this.covalentBalancesStrategy];
+      // TODO: Disable network strategy for everyone before release
+      // return [this.networkBalancesStrategy];
       default:
         return [this.covalentBalancesStrategy];
     }

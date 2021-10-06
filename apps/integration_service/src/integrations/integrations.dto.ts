@@ -131,7 +131,7 @@ export class ClaimableDto {
   @ApiProperty({type: String, example: '1.23413'})
   balance: string = null;
   @ApiProperty({type: String, example: '123413'})
-  value: string | number = null;
+  value: number = null;
 }
 
 export class IntegrationClaimableTokenDto extends ERC20Token {

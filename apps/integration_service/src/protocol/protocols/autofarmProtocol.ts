@@ -177,7 +177,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
         .toString();
       claimable.value = new BigNumber(claimable.balance)
         .times(rewardToken.price) //
-        .toString();
+        .toNumber();
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
       response.address = autofarmFactoriesMap.get(chain);

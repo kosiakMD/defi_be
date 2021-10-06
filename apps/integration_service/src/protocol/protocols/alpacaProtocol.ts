@@ -319,7 +319,7 @@ export class AlpacaProtocol extends DataProviderProtocol implements AbstractProt
       );
       claimable.value = new BigNumber(claimable.balance)
         .times(rewardToken.price) //
-        .toString();
+        .toNumber();
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
       response.address = alpacaFactoriesMap.get(chain);

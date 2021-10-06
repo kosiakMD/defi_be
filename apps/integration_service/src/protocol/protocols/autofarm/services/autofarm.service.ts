@@ -166,7 +166,7 @@ export class AutofarmService {
         .toString();
       claimable.value = new BigNumber(claimable.balance)
         .times(rewardToken.price) //
-        .toString();
+        .toNumber();
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
       response.address = autofarmFactoriesMap.get(chain);

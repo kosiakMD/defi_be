@@ -1,4 +1,3 @@
-import { StakingErcToken } from '@app/common/dto/StakingErcToken';
 import { plainToClass } from 'class-transformer';
 
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
@@ -25,8 +24,11 @@ import { ChainIdEnum } from '@app/common/enum';
 import { AccountService } from '../account/account.service';
 import { DetailedResponseDto } from '../dto';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
-import { LPToken, PoolTokenDto } from '../integrations/integrations.dto';
-import { StakingPosition } from '../interfaces/staking.position.interfaces';
+import {
+  IntegrationStakingPositionDto,
+  LPToken,
+  PoolTokenDto,
+} from '../integrations/integrations.dto';
 import { Asset, PoolToken } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
 import { objectUpdate } from '../utils/object';
@@ -247,27 +249,27 @@ export class ProtocolService {
   }
 
   // transforms
-  protected transformStaking(rawStaking: StakingPosition[]): FeatureResultDto<StakingPosition> {
+  protected transformStaking(
+    stakingPositions: IntegrationStakingPositionDto[],
+  ): FeatureResultDto<IntegrationStakingPositionDto> {
     try {
-      const result: FeatureResultDto<StakingPosition> = {
+      const result: FeatureResultDto<IntegrationStakingPositionDto> = {
         totalValue: 0,
         items: null,
       };
 
-      rawStaking?.forEach((staking) => {
-        // TODO: stakingToken is missed - need to fix to get it!
-        if (staking?.stakingToken) {
-          if (staking?.stakingToken.constructor.name === 'LPToken') {
-            const lpToken = staking.stakingToken as LPToken;
-            lpToken.tokens.forEach((token) => (result.totalValue += token.value));
-            return;
-          }
-          const stakingToken = staking.stakingToken as StakingErcToken;
-          result.totalValue += Number(stakingToken.value);
+      stakingPositions?.forEach((sp) => {
+        if (sp.stakingToken.tokens) {
+          sp.stakingToken.tokens.forEach((spt) => {
+            result.totalValue = result.totalValue + spt.value;
+          });
+        } else {
+          result.totalValue = result.totalValue + sp.stakingToken.value;
         }
+        result.totalValue = result.totalValue + Number(sp.rewardToken.claimableData.value);
       });
 
-      result.items = rawStaking || [];
+      result.items = stakingPositions || [];
       return result;
     } catch (e) {
       this.logger.error(e);

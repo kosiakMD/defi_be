@@ -98,10 +98,9 @@ export class PancakeV2Service {
           Number(sp.stakingToken.balance) * Number(prices[sp.stakingToken.address]);
         totalValue = totalValue + sp.stakingToken.value;
       }
-      sp.rewardToken.price = prices[sp.rewardToken.address];
-      sp.rewardToken.claimableData.value = (
-        Number(sp.rewardToken.claimableData.balance) * Number(prices[sp.rewardToken.address])
-      ).toString();
+      sp.rewardToken.price = Number(prices[sp.rewardToken.address]);
+      sp.rewardToken.claimableData.value =
+        Number(sp.rewardToken.claimableData.balance) * Number(prices[sp.rewardToken.address]);
       totalValue = totalValue + Number(sp.rewardToken.claimableData.value);
     });
 
@@ -120,6 +119,12 @@ export class PancakeV2Service {
     const pools: NotifyPayloadStakingFeaturesDto = await this.cache.get(
       `${chain}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}`,
     );
+
+    if (!pools) {
+      throw new Error(
+        `not found cached data for '${chain}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}'`,
+      );
+    }
 
     const web3Provider = this.web3Provider.web3Map.get(chain);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
@@ -155,7 +160,7 @@ export class PancakeV2Service {
         const stakedBigNumber = new BigNumber(b.balance).div(
           decimalsDivider(stakingPosition.stakingToken.decimals),
         );
-        stakingPosition.staked = stakedBigNumber.toString();
+        stakingPosition.staked = b.balance;
 
         if (cachedPoolData.liquidityPoolTokens) {
           const poolShare = stakedBigNumber.div(

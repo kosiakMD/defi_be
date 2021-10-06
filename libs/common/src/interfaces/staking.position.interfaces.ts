@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { StakingErcToken } from '@app/common/dto/StakingErcToken';
-import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, TransactionTypeEnum } from '@app/common/enum';
+import { ChainIdEnum, TransactionTypeEnum } from '@app/common/enum';
 import { ERC20Token, LPToken } from '@app/common/interfaces/index';
 import { FeatureName, ProtocolName } from '@app/common/types';
 
@@ -26,8 +26,7 @@ export interface ClaimAbleToken extends ERC20Token {
   priceUSD?: number;
 }
 
-type StakingTransaction = StakeTransaction | UnStakeTransaction | ClaimTransaction;
-
+// todo: remove once pools job fixed
 export interface StakingPosition {
   address: string;
   poolId?: string;
@@ -36,36 +35,6 @@ export interface StakingPosition {
   rewardToken: ClaimAbleToken;
   stakingToken: LPToken | StakingErcToken;
   liquidityPoolTokens?: PoolToken[];
-  transactions?: StakingTransaction[];
-}
-
-class BaseData<T = keyof typeof ProtocolTypeEnum> {
-  chainId: ChainIdEnum;
-  userAddress: string;
-  protocolType: T;
-  platformName: ProjectEnum;
-  protocolName?: ProtocolName;
-  liquidityPositions?: any[];
-}
-
-export interface Staking extends BaseData<ProtocolTypeEnum.staking> {
-  stakingPositions: StakingPosition[];
-}
-
-export interface GraphQLStakingPositionPool {
-  id: string;
-  pair: string;
-}
-export interface GraphQLStakingPosition {
-  id: string;
-  pool: GraphQLStakingPositionPool;
-  amount: string;
-}
-
-export interface StakingPositionResponse {
-  data: {
-    users: GraphQLStakingPosition[];
-  };
 }
 
 export class NotifyPayloadStakingFeaturesDto {

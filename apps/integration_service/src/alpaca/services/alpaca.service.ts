@@ -5,8 +5,8 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AlpacaProtocolEnum, Logger } from '@app/common';
-
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
+
 import { Address } from '../../common/types';
 
 import { AccountService } from '../../account/account.service';
@@ -290,9 +290,7 @@ export class AlpacaService {
         staking.claimable,
         claimAbleToken.decimals,
       );
-      claimable.value = new BigNumber(claimable.balance)
-        .times(rewardToken.price) //
-        .toString();
+      claimable.value = new BigNumber(claimable.balance).toNumber() * rewardToken.price;
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
       response.address = alpacaFactoriesMap.get(chain);

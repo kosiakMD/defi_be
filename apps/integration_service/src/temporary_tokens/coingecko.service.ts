@@ -3,7 +3,7 @@ import { map } from 'rxjs/operators';
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../Logger/Logger.service';
+import { Logger } from '../logger/logger.service';
 import {
   Coin,
   CoinGeckoSimplePrice,

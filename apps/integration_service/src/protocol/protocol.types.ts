@@ -1,9 +1,9 @@
 import { ChainAbbrEnum, ChainIdEnum, ProjectEnum } from '@app/common/enum';
 import { Address, FeatureResultDto, ProtocolName } from '@app/common/types';
 
-import { Logger } from '../Logger/Logger.service';
 import { AccountService } from '../account/account.service';
 import { FeatureDto } from '../integrations/integrationFeatures';
+import { Logger } from '../logger/logger.service';
 import { PriceService } from '../price/price.service';
 import { FeatureEnum } from './features/features.enum';
 import { DefaultDataProvider } from './protocols.dto';

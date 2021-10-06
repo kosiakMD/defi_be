@@ -91,7 +91,7 @@ export class Mapper {
     };
   }
 
-  protected static createDynamicFeature<T>(baseInfo: BaseInfo, protocolType: ProtocolTypeEnum): T {
+  static createDynamicFeature<T>(baseInfo: BaseInfo, protocolType: ProtocolTypeEnum): T {
     const typeInfo = {
       [ProtocolTypeEnum.transaction]: {
         field: 'txs',

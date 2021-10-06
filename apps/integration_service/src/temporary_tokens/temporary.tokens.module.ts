@@ -1,7 +1,7 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { LoggerModule } from '../Logger/LoggerModule';
+import { LoggerModule } from '../logger/logger.module';
 import { CoingeckoService } from './coingecko.service';
 import { TemporaryTokensEntity } from './entities/temporary.tokens.entity';
 import { TemporaryTokensController } from './temporary.tokens.controller';

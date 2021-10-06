@@ -5,6 +5,8 @@ import { ConfigService } from '@nestjs/config';
 
 import { ChainIdEnum } from '@app/common/enum';
 
+import { CurrencyIdEnum } from '../common/enum';
+
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 
 @Injectable()
@@ -16,12 +18,9 @@ export class PriceService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    const host = this.configService.get<string>('PRICE_SERVICE_HOST');
-    const port = this.configService.get<string>('PRICE_SERVICE_PORT');
-    const url = `${host}${port ? ':' + port : ''}`;
-    const getPricesPath = this.configService.get<string>('PRICES_PATH');
-    this.getPricesUrl = `${url}/${getPricesPath}`;
-    this.getPriceUrlFetch = `${this.getPricesUrl}/fetch`;
+    const url = this.configService.get<string>('PRICE_SERVICE_URL').replace(/\/$/, '');
+    this.getPricesUrl = `${url}/v1/prices`;
+    this.getPriceUrlFetch = `${url}/v1/prices/fetch`;
   }
 
   async getTokenPrices(
@@ -57,6 +56,7 @@ export class PriceService {
       .post<PriceResponseDto<CurrentPricesPayload>>(this.getPriceUrlFetch, {
         chain,
         addresses,
+        currency: CurrencyIdEnum.usd,
       })
       .pipe(map((response) => response.data))
       .toPromise()

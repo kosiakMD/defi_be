@@ -19,70 +19,6 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
   features: ProtocolFeaturesInfo; // ProtocolFeaturesDataDto;
 }
 
-// type data = {
-//   protocol: { name: string; project: string };
-//   currency: CurrencyDto;
-//   chains: {
-//     features?: string[];
-//     chain: ChainDto;
-//     //
-//     pools: any[];
-//     staking: any[];
-//   }[];
-// };
-
-export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPositionDto | BorrowingPosition>;
-} & {
-  errors: string[] | Error[];
-};
-
-@Exclude()
-export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
-  errors: string[] | Error[];
-  @Expose()
-    // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
-  @Expose()
-  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
-}
-
-export class IntChainsDataDto extends IntegrationFeaturesDataDto {
-  @ApiProperty({ type: ChainDto })
-  @Type(() => ChainDto)
-  chain: ChainDto = null; // chains of chain + features data & info
-
-  @ApiProperty({ type: ProtocolFeaturesInfoDto })
-  @Type(() => ProtocolFeaturesInfoDto)
-  features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
-}
-
-export class IntegrationDataDto {
-  @ApiProperty({ type: MetaDto, required: false })
-  __meta?: MetaDto;
-
-  @ApiProperty({ type: ProtocolInfoDto })
-  @Type(() => ProtocolInfoDto)
-  protocol: ProtocolInfoDto = null;
-
-  @ApiProperty({ type: CurrencyDto})
-  @Type(() => CurrencyDto)
-  currency: CurrencyDto = null;
-
-  @ApiProperty({ type: [IntChainsDataDto] })
-  @Type(() => IntChainsDataDto)
-  chains: IntChainsDataDto[] = [];
-
-  // @ApiProperty({ type: IntegrationFeaturesDataDto, name: 'IntegrationFeaturesDataDto' })
-  // result: IntegrationFeaturesDataDto = null;
-}
-
-export class IntegrationsResponseDto extends DetailedResponseDto<IntegrationDataDto> {
-  @ApiProperty({ type: IntegrationDataDto })
-  @Type(() => IntegrationDataDto)
-  data: IntegrationDataDto = null;
-}
-
 export class PoolTokenDto {
   @ApiProperty({type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d'})
   address: string = null;
@@ -212,21 +148,27 @@ export class LPToken extends IntegrationERC20TokenDto {
 }
 
 export class IntegrationStakingPositionDto {
+  @Expose()
   @ApiProperty({type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'})
   address: string = null;// vault address
 
+  @Expose()
   @ApiProperty({type: String, example: '6'})
   poolId: string = null; // number of pool - get from subgraph
 
+  @Expose()
   @ApiProperty({type: String, example: 'poolName'})
   poolName: string = null;
 
+  @Expose()
   @ApiProperty({type: String, example: '642354'})
   staked: string = null; // amount
 
+  @Expose()
   @ApiProperty({ type: LPToken })
   stakingToken: IntegrationERC20TokenDto; // - lpToken info
 
+  @Expose()
   @ApiProperty({type: IntegrationClaimableTokenDto})
   rewardToken: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
 }
@@ -257,4 +199,57 @@ export class LeverageFarmingPositionDto implements LeverageFarmingPosition {
       ]}
       )
   farmToken: LPToken | LeverageErcToken;
+}
+
+
+export type IntegrationFeaturesData = {
+  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionResponseDto | StakingPosition | LendingPositionDto | BorrowingPosition>;
+} & {
+  errors: string[] | Error[];
+};
+
+@Exclude()
+export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
+  errors: string[] | Error[];
+  @Expose()
+    // eslint-disable-next-line prettier/prettier
+  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
+  @Expose()
+  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
+}
+
+export class IntChainsDataDto extends IntegrationFeaturesDataDto {
+  @ApiProperty({ type: ChainDto })
+  @Type(() => ChainDto)
+  chain: ChainDto = null; // chains of chain + features data & info
+
+  @ApiProperty({ type: ProtocolFeaturesInfoDto })
+  @Type(() => ProtocolFeaturesInfoDto)
+  features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
+}
+
+export class IntegrationDataDto {
+  @ApiProperty({ type: MetaDto, required: false })
+  __meta?: MetaDto;
+
+  @ApiProperty({ type: ProtocolInfoDto })
+  @Type(() => ProtocolInfoDto)
+  protocol: ProtocolInfoDto = null;
+
+  @ApiProperty({ type: CurrencyDto})
+  @Type(() => CurrencyDto)
+  currency: CurrencyDto = null;
+
+  @ApiProperty({ type: [IntChainsDataDto] })
+  @Type(() => IntChainsDataDto)
+  chains: IntChainsDataDto[] = [];
+
+  // @ApiProperty({ type: IntegrationFeaturesDataDto, name: 'IntegrationFeaturesDataDto' })
+  // result: IntegrationFeaturesDataDto = null;
+}
+
+export class IntegrationsResponseDto extends DetailedResponseDto<IntegrationDataDto> {
+  @ApiProperty({ type: IntegrationDataDto })
+  @Type(() => IntegrationDataDto)
+  data: IntegrationDataDto = null;
 }

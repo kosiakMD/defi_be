@@ -8,9 +8,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { createLogger } from '@app/common/utils/winston';
 
-import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
+import { addTimeLogFeature } from './logger/logger.service';
 
 const logger = createLogger(logFileDir);
 install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'development' */ });

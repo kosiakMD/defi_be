@@ -1,7 +1,8 @@
+// eslint-disable-next-line max-classes-per-file
 import { StakingErcToken } from '@app/common/dto/StakingErcToken';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, TransactionTypeEnum } from '@app/common/enum';
 import { ERC20Token, LPToken } from '@app/common/interfaces/index';
-import { ProtocolName } from '@app/common/types';
+import { FeatureName, ProtocolName } from '@app/common/types';
 
 import { AmountAble, PoolToken, Transaction } from './transactions.interfaces';
 
@@ -65,4 +66,11 @@ export interface StakingPositionResponse {
   data: {
     users: GraphQLStakingPosition[];
   };
+}
+
+export class NotifyPayloadStakingFeaturesDto {
+  chain: ChainIdEnum;
+  protocolName: ProtocolName;
+  featureName: FeatureName;
+  items: StakingPosition[];
 }

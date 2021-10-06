@@ -6,6 +6,7 @@ import { AutofarmSubgraph } from '../protocol/protocols/autofarm/services/autofa
 import { AaveSubgraph } from './aave.subgraph';
 import { BlocksSubgraph } from './blocks.subgraph';
 import { PancakeSubgraph } from './pancake.subgraph';
+import { Pancakev2MainStakingSubgraph } from './pancakev2.main.staking.subgraph';
 import { PangolinSubgraph } from './pangolin.subgraph';
 import { QuickswapSubgraph } from './quickswap.subgraph';
 import { SpookyswapAceLabSubgraph } from './spookyswap.acelab.subgraph';
@@ -35,9 +36,9 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
     UniswapV3Subgraph,
     AutofarmSubgraph,
     AlpacaSubgraph,
+    Pancakev2MainStakingSubgraph,
   ],
   exports: [
-    ThegraphModule,
     AaveSubgraph,
     BlocksSubgraph,
     PancakeSubgraph,
@@ -50,6 +51,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
     UniswapV3Subgraph,
     AutofarmSubgraph,
     AlpacaSubgraph,
+    Pancakev2MainStakingSubgraph,
   ],
 })
 export class ThegraphModule {}

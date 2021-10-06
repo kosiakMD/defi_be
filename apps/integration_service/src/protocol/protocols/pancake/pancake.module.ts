@@ -1,4 +1,7 @@
-import { Module } from '@nestjs/common';
+import * as redisStore from 'cache-manager-redis-store';
+
+import { CacheModule, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AccountModule } from '../../../account/account.module';
 import { ChainModule } from '../../../chain/chain.module';
@@ -9,10 +12,30 @@ import { ThegraphModule } from '../../../thegraph/thegraph.module';
 import { Mapper } from '../mappers/mapper';
 import { PancakePriceService } from './pancake.price.service';
 import { PancakeService } from './pancake.service';
+import { PancakeV2Service } from './pancake.v2.service';
 
 @Module({
-  imports: [ThegraphModule, ChainModule, PriceModule, AccountModule, PoolsModule, EtherscanModule],
-  providers: [PancakeService, PancakePriceService, Mapper],
-  exports: [PancakeService],
+  imports: [
+    ThegraphModule,
+    ChainModule,
+    PriceModule,
+    AccountModule,
+    PoolsModule,
+    EtherscanModule,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('REDIS_CACHE_TTL') || 300,
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        // eslint-disable-next-line camelcase
+        auth_pass: configService.get('REDIS_AUTH'),
+      }),
+      inject: [ConfigService],
+    }),
+  ],
+  providers: [PancakeService, PancakeV2Service, PancakePriceService, Mapper],
+  exports: [PancakeService, PancakeV2Service],
 })
 export class PancakeModule {}

@@ -18,8 +18,8 @@ import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.s
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { Mapper } from './protocols/mappers/mapper';
 import { PancakeModule } from './protocols/pancake/pancake.module';
+import PancakeProtocolV2 from './protocols/pancake/pancake.protocol.v2';
 import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
-import PancakeProtocolV2 from './protocols/pancake/pancakeProtocolV2';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';

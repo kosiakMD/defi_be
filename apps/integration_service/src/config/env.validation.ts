@@ -75,9 +75,7 @@ export const validationSchema = Joi.object({
     .required(), // TODO: not empty
   ETH_URL: Joi.string() //
     .required(),
-  PRICE_SERVICE_HOST: Joi.string().required(),
-  PRICE_SERVICE_PORT: Joi.number().required(),
-  PRICES_PATH: Joi.string().required(),
+  PRICE_SERVICE_URL: Joi.string().required(),
   ACCOUNT_SERVICE_HOST: Joi.string().required(),
   ACCOUNT_SERVICE_PORT: Joi.number().required(),
   ACCOUNT_BALANCE: Joi.string().required(),

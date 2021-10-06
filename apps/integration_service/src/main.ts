@@ -1,3 +1,4 @@
+import * as bodyParser from 'body-parser';
 import { install } from 'source-map-support';
 
 import { ValidationPipe } from '@nestjs/common';
@@ -25,6 +26,8 @@ async function bootstrap(): Promise<void> {
 
   app.enableShutdownHooks();
 
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 

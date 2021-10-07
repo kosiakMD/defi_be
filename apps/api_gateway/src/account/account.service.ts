@@ -28,6 +28,7 @@ export class AccountService {
   private readonly getAllAssetsUrl: string;
   private readonly getAssetsUrl: string;
   private readonly getAnalyticUrl: string;
+  private readonly get24HourReturnsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -60,6 +61,9 @@ export class AccountService {
 
     const analyticPath = this.configService.get<string>('ACCOUNT_ANALYTIC');
     this.getAnalyticUrl = `${url}/${analyticPath}`;
+
+    const returnsPath = this.configService.get<string>('ACCOUNT_24H_RETURNS');
+    this.get24HourReturnsUrl = `${url}/${returnsPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -133,6 +137,25 @@ export class AccountService {
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getBalanceUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async get24HourReturns(
+    addresses: Address[],
+    chains?: Chains,
+    assets?: Address[],
+  ): Promise<BalancesResponse> {
+    try {
+      this.logger.time(this.get24HourReturnsUrl);
+      const data = await this.httpService
+        .get(this.get24HourReturnsUrl, { params: { addresses, chains, assets } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.get24HourReturnsUrl);
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);

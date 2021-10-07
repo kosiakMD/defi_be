@@ -25,12 +25,15 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     address,
     chainId,
     tokens: originalTokens,
+    block,
   }: BalancesRequest): Promise<TokenBalance[]> {
     if (!originalTokens.length) {
       return [];
     }
 
-    const message = `Network balances loading for address ${address} and chain ${chainId}`;
+    const message = `Network balances loading for address ${address} and chain ${chainId}  at block ${
+      block?.block ?? "'latest'"
+    }`;
     this.logger.time(message);
 
     const web3 = await this.web3Provider.getInstanceByChainId(chainId);
@@ -50,7 +53,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
 
     const chunkSize = this.config.get<number>('BALANCES_CHECKER_BATCH_SIZE');
     let promises: (Promise<string> | Promise<string[]>)[] = chunkArray(tokens, chunkSize).map(
-      (chunk) => contract.getBalances(address, chunk),
+      (chunk) => contract.getBalances(address, chunk, block),
     );
 
     if (hasNativeCoin) {

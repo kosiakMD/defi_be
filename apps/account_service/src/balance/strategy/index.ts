@@ -2,12 +2,13 @@ import { LoggerService } from '@nestjs/common';
 
 import { Address, ChainIdEnum } from '@app/common';
 
-import { TokenBalance } from '../interfaces/balance.interfaces';
+import { BlockTimestamp, TokenBalance } from '../interfaces/balance.interfaces';
 
 export type BalancesRequest = {
   address: Address;
   chainId: ChainIdEnum;
   tokens: Address[];
+  block?: BlockTimestamp;
 };
 
 export interface BalancesLoadingStrategy {

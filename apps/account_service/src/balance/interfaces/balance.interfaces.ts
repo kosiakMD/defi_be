@@ -40,3 +40,11 @@ export type BalancesResponse = { [key: string]: AccountBalance };
 export type TokenPrices = { [key: string]: number };
 
 export type TokenPricesV2 = { [key: string]: { price?: number; isLp?: boolean } };
+
+export type BlockIdentifier = number | 'latest' | 'pending' | 'earliest';
+
+export interface BlockTimestamp {
+  date: Date;
+  block: number;
+  timestamp: number;
+}

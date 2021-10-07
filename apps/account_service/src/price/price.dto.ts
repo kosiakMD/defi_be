@@ -52,6 +52,32 @@ export class FetchPricesRequestDto {
   currency?: CurrencyId;
 }
 
+export class FetchTimestampPricesRequestDto {
+  constructor(assets: Address[], chain: ChainIdEnum, timestamp: number, currency: CurrencyId = 1) {
+    this.assets = assets;
+    this.timestamp = timestamp;
+    this.chain = chain;
+    this.currency = currency;
+  }
+  @ApiProperty({
+    type: String,
+    example: [
+      '0x5cc61a78f164885776aa610fb0fe1257df78e59b',
+      '0x841fad6eae12c286d1fd18d1d525dffa75c7effe',
+    ],
+  })
+  assets: string[];
+
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.ftm })
+  chain: ChainIdEnum;
+
+  @ApiProperty({ type: Number, example: 1, required: false })
+  currency?: CurrencyId;
+
+  @ApiProperty({ type: Number, example: 1633330800 })
+  timestamp: number;
+}
+
 export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
   constructor(
     addresses: Address[],

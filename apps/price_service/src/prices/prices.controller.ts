@@ -13,6 +13,8 @@ import {
   PriceResponseDto,
   PricesPayload,
   PostResponseDto,
+  PriceTimestampRequestDto,
+  CurrentPricesPayload,
   PriceRequestCurrentDto,
   CurrentPriceResponseDto,
   HistoricalPriceV2ResponseDto,
@@ -57,6 +59,27 @@ export class PricesController {
     this.logger.time(request.originalUrl);
 
     const response = this.priceService.getPricesInBatches(query);
+
+    this.logger.timeEnd(request.originalUrl);
+
+    return response;
+  }
+
+  @Post('/timestamp')
+  @ApiOkResponse({ type: HistoricalPriceV2ResponseDto })
+  async getTimestampPrices(
+    @Body() query: PriceTimestampRequestDto,
+    @Req() request: Request,
+  ): Promise<PriceResponseDto<CurrentPricesPayload>> {
+    this.logger.time(request.originalUrl);
+    const { chain, currency, assets, timestamp } = query;
+
+    const response = await this.priceService.getPricesAtTimestamp(
+      assets,
+      timestamp,
+      chain,
+      currency,
+    );
 
     this.logger.timeEnd(request.originalUrl);
 

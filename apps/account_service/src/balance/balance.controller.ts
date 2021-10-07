@@ -48,4 +48,38 @@ export class BalanceController {
 
     return this.balancesService.getBalance(addresses, chains, assets);
   }
+
+  @Get('/24-hour-returns')
+  @ApiQuery({
+    name: 'chains',
+    type: Number,
+    isArray: true,
+    description: 'Array of chain ID',
+    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+  })
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    isArray: true,
+    description: 'Array of user address',
+    example: [
+      '0x0000000000000000000000000000000000000000',
+      '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
+    ],
+  })
+  @ApiQuery({
+    name: 'assets',
+    type: String,
+    isArray: true,
+    required: false,
+    description: 'Array of token addresses',
+    example: [
+      '0x0000000000000000000000000000000000000000',
+      '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
+    ],
+  })
+  getUser24HourReturns(@Query() query: BalancesQueryDto): Promise<any> {
+    const { addresses, chains, assets } = query;
+    return this.balancesService.get24HourReturns(addresses, chains, assets);
+  }
 }

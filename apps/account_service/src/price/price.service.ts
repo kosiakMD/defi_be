@@ -4,11 +4,10 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ERC20Token } from '@app/common';
+import { ERC20Token, RequestErrorHandler } from '@app/common';
+import { ChainIdEnum, CurrencyId, Address } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ETH_BNB_ADDRESS } from '@app/common/constant';
-import { ChainIdEnum } from '@app/common/enum';
-import { Address } from '@app/common/types';
 
 import {
   CurrentPricesPayload,
@@ -24,7 +23,12 @@ import {
   NO_SCAN_ETH_TOKENS,
 } from '../balance/tokens/tokens';
 import { isEthChain } from '../utils/web3';
-import { CurrentTokensPricesDto, PriceCurrentRequestDto, FetchPricesRequestDto } from './price.dto';
+import {
+  CurrentTokensPricesDto,
+  FetchPricesRequestDto,
+  FetchTimestampPricesRequestDto,
+  PriceCurrentRequestDto,
+} from './price.dto';
 import { CurrentPricesPayloadNew, PriceServiceResponse } from './price.interfaces';
 
 function changeTokenArray(fromArray: ERC20Token[], toArray: string[]): void {
@@ -37,6 +41,7 @@ export class PriceService {
   private readonly getNonLpTokensUrl: string;
   private readonly getBatchPriceUrl: string;
   private readonly fetchPricesUrl: string;
+  private readonly fetchTimestampPricesUrl: string;
 
   private static addressArrayToStringInternal(addresses: string[], chain: ChainIdEnum): void {
     if (isEthChain(chain)) {
@@ -88,6 +93,7 @@ export class PriceService {
     this.getPricesUrl = `${url}/${getPricesPath}/v2`;
     this.getNonLpTokensUrl = `${url}/${getPricesPath}/nonLpTokens`;
     this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
+    this.fetchTimestampPricesUrl = `${url}/${getPricesPath}/timestamp`;
     this.fetchPricesUrl = `${url}/${getPricesPath}/fetch`;
   }
 
@@ -152,6 +158,27 @@ export class PriceService {
       });
       return { prices: pricePayload };
     }
+  }
+
+  @RequestErrorHandler()
+  async getBulkPriceAtTimestamp(
+    tokens: Address[],
+    chain: ChainIdEnum,
+    timestamp: number,
+    currency?: CurrencyId,
+  ): Promise<PriceResponseDto<CurrentPricesPayload>> {
+    this.logger.time(this.getPricesUrl);
+
+    const request = new FetchTimestampPricesRequestDto(tokens, chain, timestamp, currency);
+
+    const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
+      .post(this.fetchTimestampPricesUrl, request)
+      .pipe(map((response) => response.data))
+      .toPromise();
+
+    this.logger.timeEnd(this.getPricesUrl);
+
+    return response;
   }
 
   async getHistoricalPrices(

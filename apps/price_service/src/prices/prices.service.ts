@@ -12,6 +12,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
+import { dateToTimestamp, roundToNearestHour } from '@app/common/utils/dates';
 
 import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';
@@ -66,6 +67,7 @@ const DEFAULT_ALLOWED_HISTORICAL_PRICE_THRESHOLD = 2 * SECONDS_IN_DAY;
 @Injectable()
 export class PriceService {
   cacheTTLInSeconds: number;
+  cacheHistoricalTTLInSeconds: number;
   allowedCurrentPriceThresholdInSeconds: number;
   allowedHistoricalPriceThresholdInSeconds: number;
 
@@ -100,6 +102,15 @@ export class PriceService {
     return interpolation(timestamp, TimeframeFrequentlyInMin[range], stepsCount);
   }
 
+  private static getHistoricCacheKey(
+    chain: ChainIdEnum,
+    currency: number,
+    timestamp: number,
+    address: string,
+  ) {
+    return `historic_price_${chain}_${currency}_${timestamp}_${address}`;
+  }
+
   private static getCacheKey(chain: ChainIdEnum, currency: number, address: string): string {
     return `price_${chain}_${currency}_${address}`;
   }
@@ -122,6 +133,7 @@ export class PriceService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.cacheTTLInSeconds = config.get<number>('PRICE_CACHE_TTL_IN_SECONDS') || 15 * 60;
+    this.cacheHistoricalTTLInSeconds = config.get<number>('CACHE_HISTORIC_PRICES_TTL_IN_SECONDS');
     this.allowedCurrentPriceThresholdInSeconds =
       config.get<number>('ALLOWED_CURRENT_PRICE_THRESHOLD') ||
       DEFAULT_ALLOWED_CURRENT_PRICE_THRESHOLD;
@@ -205,8 +217,38 @@ export class PriceService {
     };
   }
 
+  async getPricesAtTimestamp(
+    assets: string[],
+    timestamp: number,
+    chain: ChainIdEnum,
+    currency: CurrencyIdEnum,
+  ): Promise<PriceResponseDto<CurrentPricesPayload>> {
+    const time = dateToTimestamp(roundToNearestHour(new Date(timestamp * 1000)));
+
+    const data = await this.getRawPriceRequests(chain, currency, time, assets);
+
+    const prices: CurrentPricesPayload = data.reduce((tokens, token) => {
+      if (!assets.includes(token.address.toLowerCase())) {
+        return tokens;
+      }
+
+      tokens[token.address] = token.price;
+      return tokens;
+    }, {});
+
+    return {
+      prices: prices,
+      chain: await this.chainService.getById(chain),
+      currency: await this.currencyService.getById(currency),
+    };
+  }
+
   public async updateCurrentPrice(requestBody: PriceRequestCurrentDto[]): Promise<void> {
     requestBody.forEach((dto) => (dto.address = dto.address.toLowerCase()));
+
+    // Cache prices for 24 hour return calculations
+    this.cacheRawPriceRequest(requestBody);
+
     // get a list of assets that exist in DB
     const sqlCondition: string = this.getFindAssetsSqlCondition(requestBody);
     const foundAssets: Asset[] = (
@@ -267,6 +309,37 @@ export class PriceService {
           { address, value: assetPrice.value },
         );
       });
+    });
+  }
+
+  async getRawPriceRequests(
+    chain: ChainIdEnum,
+    currency: CurrencyIdEnum,
+    timestamp: number,
+    assets: string[],
+  ) {
+    const promises = assets.map((asset) => {
+      return this.cache.get<PriceRequestCurrentDto>(
+        PriceService.getHistoricCacheKey(chain, currency, timestamp, asset),
+      );
+    });
+
+    return (await Promise.all(promises)).filter(Boolean);
+  }
+
+  cacheRawPriceRequest(requestBody: PriceRequestCurrentDto[]): void {
+    const nearestTimeStamp = dateToTimestamp(roundToNearestHour(new Date()));
+    requestBody.forEach((price) => {
+      this.cache.set<PriceRequestCurrentDto>(
+        PriceService.getHistoricCacheKey(
+          price.chainId,
+          price.currencyId,
+          nearestTimeStamp,
+          price.address,
+        ),
+        price,
+        { ttl: this.cacheHistoricalTTLInSeconds }, // 48 hours
+      );
     });
   }
 

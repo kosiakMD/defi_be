@@ -9,7 +9,8 @@
   "scripts": {
     "test": "mocha tests/unit/",
     "compile": "tsc",
-    "start": "tsc && node built/index.js"
+    "start": "tsc && node built/index.js",
+    "dev": "tsc && node -r 'dotenv/config' -e 'require(\"./built/app.js\").lambdaHandler()'"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.51",

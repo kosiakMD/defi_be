@@ -3,6 +3,7 @@ import { Contract } from 'web3-eth-contract';
 
 import { Address } from '@app/common';
 
+import { BlockTimestamp } from '../../interfaces/balance.interfaces';
 import { BALANCES_ABI } from './balances.contract.abi';
 
 export class BalancesContract {
@@ -12,7 +13,7 @@ export class BalancesContract {
     this.contract = new web3.eth.Contract(BALANCES_ABI, address);
   }
 
-  async getBalances(address: Address, tokens: string[]): Promise<string[]> {
-    return this.contract.methods.getBalances(address, tokens).call();
+  async getBalances(address: Address, tokens: string[], block?: BlockTimestamp): Promise<string[]> {
+    return this.contract.methods.getBalances(address, tokens).call(undefined, block?.block);
   }
 }

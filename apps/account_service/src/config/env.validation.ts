@@ -86,6 +86,10 @@ export const validationSchema = Joi.object({
     .integer()
     .optional()
     .default(60 * 60),
+  CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: Joi.number() //
+    .integer()
+    .optional()
+    .default(172800), // 48 hours
 });
 
 export const validationOptions = {

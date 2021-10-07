@@ -1,6 +1,7 @@
 export * from './price.query.historical.dto';
 export * from './price.request.dto';
 export * from './price.batch.request.dto';
+export * from './price.timestamp.request.dto';
 export * from './price.response.dto';
 export * from './price.range.request.dto';
 export * from './post.response.dto';

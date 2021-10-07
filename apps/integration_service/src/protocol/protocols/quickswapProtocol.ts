@@ -147,13 +147,23 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           (_) => _.id.toLocaleLowerCase() === address.toLocaleLowerCase(),
         );
 
+        const pairsTotalSupply = await this.multicall.getTotalSupply(
+          liquidityPositionPairs.map((_) => _.id),
+          QUICKSWAP_STAKING_TOKEN_ABI,
+        );
+
         const pairs = await Promise.all(
           liquidityPositionPairs.map((pair) => ({
             liquidityTokenBalance:
               userLiquidityPositions.liquidityPositions.find(({ pair: { id } }) => id === pair.id)
                 .liquidityTokenBalance || null,
             user: address,
-            pair,
+            pair: {
+              ...pair,
+              totalSupply: new BigNumber(pairsTotalSupply.get(pair.id)) //
+                .div(decimalsDivider(18))
+                .toString(),
+            },
           })),
         );
         uniswapLiquidityPositions.set(address, pairs);

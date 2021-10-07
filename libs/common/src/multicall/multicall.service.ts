@@ -29,6 +29,39 @@ export class MultiCallService extends MultiCall {
     return result;
   }
 
+  async getTotalSupply(
+    contractsAddresses: Address[],
+    contractAbi: Interface | JsonFragment[],
+  ): Promise<Map<Address, Balance>> {
+    const CHUNK_SIZE = 68;
+
+    const result = new Map<Address, Balance>();
+
+    const chunkedContractsAddresses = toChunkedArray(contractsAddresses, CHUNK_SIZE);
+
+    const totalSupplies = await Promise.all(
+      chunkedContractsAddresses.map(async (contractsAddresses) => {
+        const [, totalSupply]: [number, BigNumber[]] = await this.multiCall(
+          contractAbi,
+          contractsAddresses.map((contractAddress) => ({
+            target: contractAddress,
+            function: MulticallFunctionEnum.totalSupply,
+          })),
+        );
+
+        return totalSupply;
+      }),
+    );
+
+    chunkedContractsAddresses.forEach((contractsAddresses, i) =>
+      contractsAddresses.forEach((contractAddress, j) =>
+        result.set(contractAddress.toLocaleLowerCase(), totalSupplies[i][j].toString()),
+      ),
+    );
+
+    return result;
+  }
+
   async getEarned(
     contractsAddresses: Address[],
     accountAddress: Address,

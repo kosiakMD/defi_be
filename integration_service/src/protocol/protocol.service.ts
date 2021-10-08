@@ -45,7 +45,8 @@ export class ProtocolService {
       spookySwapProtocol,
       sushiswapProtocolV2,
       uniswapProtocolV2,
-      uniswapProtocolV3,
+      // TODO: Remove uniswap v3 until it's fixed
+      // uniswapProtocolV3,
     ];
   }
 

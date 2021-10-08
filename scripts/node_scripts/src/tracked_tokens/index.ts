@@ -23,7 +23,7 @@ export async function execute(): Promise<void> {
       for (const platform in platforms) {
         if (platforms[platform] && coingeckoChainMapping[platform]) {
           log(`Saving ${name} token for ${platform} platform`);
-          await axios.post('https://account.dfyield.xyz/v1/assets', {
+          await axios.post('https://acc.dfyield.xyz/v1/assets', {
             address: platforms[platform],
             chain: coingeckoChainMapping[platform],
           });

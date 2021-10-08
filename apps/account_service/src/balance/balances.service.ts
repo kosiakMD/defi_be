@@ -375,14 +375,11 @@ export class BalancesService {
 
   private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
     switch (chain) {
-      case ChainIdEnum.ftm:
-        return [this.networkBalancesStrategy];
-      case ChainIdEnum.plg:
+      // TODO: Only avalanche should use covalent until price job is setup
+      case ChainIdEnum.avax:
         return [this.covalentBalancesStrategy];
-      // TODO: Disable network strategy for everyone before release
-      // return [this.networkBalancesStrategy];
       default:
-        return [this.covalentBalancesStrategy];
+        return [this.networkBalancesStrategy];
     }
   }
 
@@ -393,7 +390,7 @@ export class BalancesService {
 
     const cacheKey = `TRACKED_ASSETS_${chain}`;
     let cachedAssets = await this.cache.get<AssetsEntity[]>(cacheKey);
-    if (cachedAssets) {
+    if (cachedAssets?.length) {
       return cachedAssets;
     }
 

@@ -13,6 +13,8 @@ import { BalancesLoadingStrategy, BalancesRequest } from '../index';
 import { BalancesContract } from './balances.contract';
 import { chunkArray, insertAtPosition } from './utils';
 
+const DEFAULT_BATCH_SIZE = 1000;
+
 @Injectable()
 export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
   constructor(
@@ -51,7 +53,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
       tokens.splice(nativeCoinIndex, 1);
     }
 
-    const chunkSize = this.config.get<number>('BALANCES_CHECKER_BATCH_SIZE');
+    const chunkSize = this.getBalancesBatchSize(chainId);
     let promises: (Promise<string> | Promise<string[]>)[] = chunkArray(tokens, chunkSize).map(
       (chunk) => contract.getBalances(address, chunk, block),
     );
@@ -63,7 +65,6 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     const batchedBalances = await Promise.all<string | string[]>(promises);
 
     let balances: string[];
-
     if (hasNativeCoin) {
       const [coinBalance, ...tokenBalances] = batchedBalances;
       balances = tokenBalances.flat();
@@ -102,6 +103,25 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('AVAX_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.arbi:
         return this.config.get<string>('ARBITRUM_BALANCES_CHECKER_ADDRESS');
+    }
+  }
+
+  private getBalancesBatchSize(chain: ChainIdEnum): number {
+    switch (chain) {
+      case ChainIdEnum.eth:
+        return this.config.get<number>('ETH_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.bsc:
+        return this.config.get<number>('BSC_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.plg:
+        return this.config.get<number>('POLYGON_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.ftm:
+        return this.config.get<number>('FTM_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.avax:
+        return this.config.get<number>('AVAX_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.arbi:
+        return this.config.get<number>('ARBITRUM_BALANCES_CHECKER_BATCH_SIZE');
+      default:
+        return DEFAULT_BATCH_SIZE;
     }
   }
 }

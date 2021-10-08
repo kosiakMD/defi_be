@@ -82,6 +82,10 @@ export const validationSchema = Joi.object({
   AWS_SECRET_ACCESS_KEY: Joi.string() //
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
+  CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: Joi.number() //
+    .integer()
+    .optional()
+    .default(172800), // 48 hours
 });
 
 export const validationOptions = {

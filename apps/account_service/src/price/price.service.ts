@@ -137,14 +137,14 @@ export class PriceService {
     const request = new FetchPricesRequestDto(addressesArray, chain);
 
     try {
-      this.logger.time(this.getPricesUrl);
+      this.logger.time(this.fetchPricesUrl);
 
       const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
         .post(this.fetchPricesUrl, request)
         .pipe(map((response) => response.data))
         .toPromise();
 
-      this.logger.timeEnd(this.getPricesUrl);
+      this.logger.timeEnd(this.fetchPricesUrl);
 
       return response;
     } catch (e) {
@@ -167,7 +167,7 @@ export class PriceService {
     timestamp: number,
     currency?: CurrencyId,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    this.logger.time(this.getPricesUrl);
+    this.logger.time(this.fetchTimestampPricesUrl);
 
     const request = new FetchTimestampPricesRequestDto(tokens, chain, timestamp, currency);
 
@@ -176,7 +176,7 @@ export class PriceService {
       .pipe(map((response) => response.data))
       .toPromise();
 
-    this.logger.timeEnd(this.getPricesUrl);
+    this.logger.timeEnd(this.fetchTimestampPricesUrl);
 
     return response;
   }

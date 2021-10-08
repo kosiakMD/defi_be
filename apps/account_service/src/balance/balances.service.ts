@@ -169,7 +169,7 @@ export class BalancesService {
           const change = nowToken.decimalsAmount - thenToken.decimalsAmount;
           const changeUSD = nowToken.totalPriceUSD - thenToken.totalPriceUSD;
           const percent =
-            (nowToken.totalPriceUSD - thenToken.totalPriceUSD) / nowToken.totalPriceUSD;
+            (nowToken.totalPriceUSD - thenToken.totalPriceUSD) / thenToken.totalPriceUSD;
 
           return {
             token: nowToken.token,
@@ -295,7 +295,6 @@ export class BalancesService {
       .flat();
 
     const pricesMap = await this.getTokenPrices(tokensWithBalances, chain, block);
-
     for (const { balances } of results) {
       for (const balance of balances) {
         const price = pricesMap[balance.token.address] || 0;

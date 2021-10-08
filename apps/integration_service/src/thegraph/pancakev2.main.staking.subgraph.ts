@@ -29,7 +29,7 @@ export class Pancakev2MainStakingSubgraph {
       .post(this.subgraphUrl, {
         variables: { users },
         query: `query GetUserData($users: [ID!]!) {
-            balances(where: { user_in: $users } ) {
+            balances(where: { user_in: $users, balance_gt: 0 } ) {
               id
               balance
               user {

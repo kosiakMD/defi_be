@@ -129,7 +129,8 @@ export class PancakeV2Service {
     const web3Provider = this.web3Provider.web3Map.get(chain);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 
-    const balances: Balance[] = await this.pancakev2MainStakingSubgraph.getBalances(addresses);
+    let balances: Balance[] = await this.pancakev2MainStakingSubgraph.getBalances(addresses);
+    balances = balances.filter((b) => Number(b.balance) > 0);
 
     const claimableRewardsData: RewardsData[] = [];
     balances.forEach((b) => {

@@ -83,108 +83,105 @@ export class AlpacaProtocol extends DataProviderProtocol implements AbstractProt
   }
 
   // override
-  async getData(address: Address, chainId: ChainIdEnum): Promise<BaseData[]> {
-    try {
-      const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([address]);
-      const stakedPosition: AlpacaStakingInterface[] = [];
-      this.getStakingPosition(alpacaUsers, stakedPosition);
+  async getDataByAddresses(address: Address, chainId: ChainIdEnum): Promise<BaseData[]> {
+    const lowerCaseAddress = address.toLowerCase();
+    const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([lowerCaseAddress]);
+    const stakedPosition: AlpacaStakingInterface[] = [];
+    this.getStakingPosition(alpacaUsers, stakedPosition);
 
-      const webProvider = this.web3Provider.web3Map.get(chainId);
-      const localMultiCall = new LocalMultiCall(webProvider, this.logger);
-      const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chainId);
+    const webProvider = this.web3Provider.web3Map.get(chainId);
+    const localMultiCall = new LocalMultiCall(webProvider, this.logger);
+    const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chainId);
 
-      const [lendingTokens, leverageFarming] = await Promise.all([
-        localMultiCall.getLendingPoolsBalances(address, setTokenAddresses),
-        this.alpacaApiService.getLeverageFarmingData(address),
-      ]);
+    const [lendingTokens, leverageFarming] = await Promise.all([
+      localMultiCall.getLendingPoolsBalances(lowerCaseAddress, setTokenAddresses),
+      this.alpacaApiService.getLeverageFarmingData(lowerCaseAddress),
+    ]);
 
-      setTokenAddresses.add(alpacaRewardToken);
+    setTokenAddresses.add(alpacaRewardToken);
 
-      const priceTokensAddresses = [];
-      const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
-        localMultiCall.getVaultUsersInfo(stakedPosition, chainId),
-        localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokensAddresses),
-        localMultiCall.getWorkerTokensData(leverageFarming, priceTokensAddresses),
-      ]);
+    const priceTokens = new Set<string>();
+    const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
+      localMultiCall.getVaultUsersInfo(stakedPosition, chainId),
+      localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokens),
+      localMultiCall.getWorkerTokensData(leverageFarming, priceTokens),
+    ]);
 
-      await Promise.all([
-        localMultiCall.getLpTokenBalanceAndBorrow(leverageFarmingPositions),
-        localMultiCall.getLpTokenData(leverageFarmingPositions),
-      ]);
+    await Promise.all([
+      localMultiCall.getLpTokenBalanceAndBorrow(leverageFarmingPositions),
+      localMultiCall.getLpTokenData(leverageFarmingPositions),
+    ]);
 
-      const [{ data }, price] = await Promise.all([
-        this.accountService.getAssets(priceTokensAddresses, [chainId]),
-        this.priceService.getTokenPricesFetch(priceTokensAddresses, chainId),
-      ]);
+    const priceTokensArray = Array.from(priceTokens);
+    const [{ data }, price] = await Promise.all([
+      this.accountService.getAssets(priceTokensArray, [chainId]),
+      this.priceService.getTokenPricesFetch(priceTokensArray, chainId),
+    ]);
 
-      const assetsMap = new Map<string, Asset>();
-      data.forEach((asset) => assetsMap.set(asset.address, asset));
+    const assetsMap = new Map<string, Asset>();
+    data.forEach((asset) => assetsMap.set(asset.address, asset));
 
-      const claimableToken = AlpacaProtocol.getClaimableToken(
-        assetsMap,
+    const claimableToken = AlpacaProtocol.getClaimableToken(
+      assetsMap,
+      price.prices,
+      stakedTokenInfoMap,
+    );
+
+    const base: BaseData[] = [];
+
+    if (leverageFarming?.length) {
+      const leverage: LeverageFarming = AlpacaProtocol.getBaseDataInstance(
+        ProtocolTypeEnum.leverageFarming,
+        chainId,
+        lowerCaseAddress,
+      ) as LeverageFarming;
+
+      leverage.leverageFarmingPositions = this.getLeverageFarmingPositionsDtos(
+        leverageFarmingPositions,
         price.prices,
-        stakedTokenInfoMap,
+        assetsMap,
       );
 
-      const base: BaseData[] = [];
-
-      if (leverageFarming?.length) {
-        const leverage: LeverageFarming = AlpacaProtocol.getBaseDataInstance(
-          ProtocolTypeEnum.leverageFarming,
-          chainId,
-          address,
-        ) as LeverageFarming;
-
-        leverage.leverageFarmingPositions = this.getLeverageFarmingPositionsDtos(
-          leverageFarmingPositions,
-          price.prices,
-          assetsMap,
-        );
-
-        base.push(leverage);
-      }
-
-      if (lendingTokens?.size) {
-        const lending: Lending = AlpacaProtocol.getBaseDataInstance(
-          ProtocolTypeEnum.lending,
-          chainId,
-          address,
-        ) as Lending;
-        lending.lendingPositions = this.getLendingPositionsDtos(
-          stakedTokenInfoMap,
-          lendingTokens,
-          price.prices,
-          assetsMap,
-          address,
-        );
-
-        base.push(lending);
-      }
-
-      if (stakedPosition?.length) {
-        const staking: Staking = AlpacaProtocol.getBaseDataInstance(
-          ProtocolTypeEnum.staking,
-          chainId,
-          address,
-        ) as Staking;
-
-        staking.stakingPositions = this.getStakingPositionDtos(
-          stakedTokenInfoMap,
-          stakedPosition,
-          assetsMap,
-          price.prices,
-          claimableToken,
-          chainId,
-        );
-
-        base.push(staking);
-      }
-
-      return base;
-    } catch (e) {
-      this.logger.error(e.message);
-      throw e;
+      base.push(leverage);
     }
+
+    if (lendingTokens?.size) {
+      const lending: Lending = AlpacaProtocol.getBaseDataInstance(
+        ProtocolTypeEnum.lending,
+        chainId,
+        lowerCaseAddress,
+      ) as Lending;
+      lending.lendingPositions = this.getLendingPositionsDtos(
+        stakedTokenInfoMap,
+        lendingTokens,
+        price.prices,
+        assetsMap,
+        lowerCaseAddress,
+      );
+
+      base.push(lending);
+    }
+
+    if (stakedPosition?.length) {
+      const staking: Staking = AlpacaProtocol.getBaseDataInstance(
+        ProtocolTypeEnum.staking,
+        chainId,
+        lowerCaseAddress,
+      ) as Staking;
+
+      staking.stakingPositions = this.getStakingPositionDtos(
+        stakedTokenInfoMap,
+        stakedPosition,
+        assetsMap,
+        price.prices,
+        claimableToken,
+        chainId,
+      );
+
+      base.push(staking);
+    }
+
+    return base;
   }
 
   private static getBaseDataInstance(
@@ -288,7 +285,7 @@ export class AlpacaProtocol extends DataProviderProtocol implements AbstractProt
       const balanceDecimals = new BigNumber(value) //
         .div(decimalsDivider(asset.decimals))
         .times(tokenInfo.coefficient)
-        .toString();
+        .toNumber();
       lendingPositions.push({
         token: token,
         balance: balanceDecimals,
@@ -410,6 +407,8 @@ export class AlpacaProtocol extends DataProviderProtocol implements AbstractProt
       borrowAsset.decimals,
       prices[borrowAsset.address],
     );
+
+    leverageErcToken.totalSupply = leverageInterface.totalSupply;
     leverageErcToken.balance = new BigNumber(pairValue) //
       .div(leverageErcToken.price)
       .toString();

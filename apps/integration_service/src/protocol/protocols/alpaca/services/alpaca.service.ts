@@ -64,7 +64,8 @@ export class AlpacaService {
   ) {}
 
   async getDataByAddresses(address: Address, chainId: ChainIdEnum): Promise<BaseData[]> {
-    const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([address]);
+    const lowerCaseAddress = address.toLowerCase();
+    const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([lowerCaseAddress]);
     const stakedPosition: AlpacaStakingInterface[] = [];
     this.getStakingPosition(alpacaUsers, stakedPosition);
 
@@ -73,17 +74,17 @@ export class AlpacaService {
     const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chainId);
 
     const [lendingTokens, leverageFarming] = await Promise.all([
-      localMultiCall.getLendingPoolsBalances(address, setTokenAddresses),
-      this.alpacaApiService.getLeverageFarmingData(address),
+      localMultiCall.getLendingPoolsBalances(lowerCaseAddress, setTokenAddresses),
+      this.alpacaApiService.getLeverageFarmingData(lowerCaseAddress),
     ]);
 
     setTokenAddresses.add(alpacaRewardToken);
 
-    const priceTokensAddresses = [];
+    const priceTokens = new Set<string>();
     const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
       localMultiCall.getVaultUsersInfo(stakedPosition, chainId),
-      localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokensAddresses),
-      localMultiCall.getWorkerTokensData(leverageFarming, priceTokensAddresses),
+      localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokens),
+      localMultiCall.getWorkerTokensData(leverageFarming, priceTokens),
     ]);
 
     await Promise.all([
@@ -91,9 +92,10 @@ export class AlpacaService {
       localMultiCall.getLpTokenData(leverageFarmingPositions),
     ]);
 
+    const priceTokensArray = Array.from(priceTokens);
     const [{ data }, price] = await Promise.all([
-      this.accountService.getAssets(priceTokensAddresses, [chainId]),
-      this.priceService.getTokenPricesFetch(priceTokensAddresses, chainId),
+      this.accountService.getAssets(priceTokensArray, [chainId]),
+      this.priceService.getTokenPricesFetch(priceTokensArray, chainId),
     ]);
 
     const assetsMap = new Map<string, Asset>();
@@ -111,7 +113,7 @@ export class AlpacaService {
       const leverage: LeverageFarming = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.leverageFarming,
         chainId,
-        address,
+        lowerCaseAddress,
       ) as LeverageFarming;
 
       leverage.leverageFarmingPositions = this.getLeverageFarmingPositionsDtos(
@@ -127,14 +129,14 @@ export class AlpacaService {
       const lending: Lending = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.lending,
         chainId,
-        address,
+        lowerCaseAddress,
       ) as Lending;
       lending.lendingPositions = this.getLendingPositionsDtos(
         stakedTokenInfoMap,
         lendingTokens,
         price.prices,
         assetsMap,
-        address,
+        lowerCaseAddress,
       );
 
       base.push(lending);
@@ -144,7 +146,7 @@ export class AlpacaService {
       const staking: Staking = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.staking,
         chainId,
-        address,
+        lowerCaseAddress,
       ) as Staking;
 
       staking.stakingPositions = this.getStakingPositionDtos(
@@ -385,6 +387,8 @@ export class AlpacaService {
       borrowAsset.decimals,
       prices[borrowAsset.address],
     );
+
+    leverageErcToken.totalSupply = leverageInterface.totalSupply;
     leverageErcToken.balance = new BigNumber(pairValue) //
       .div(leverageErcToken.price)
       .toString();

@@ -12,6 +12,14 @@ export enum AutofarmProtocolEnum {
   autofarm = 'Autofarm',
 }
 
+export enum AaveProtocolEnum {
+  AaveV2 = 'AaveV2',
+}
+
+export enum AlpacaProtocolEnum {
+  alpaca = 'Alpaca',
+}
+
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',
@@ -44,7 +52,9 @@ export type ProtocolName =
   | QuickswapProtocolEnum
   | SpookySwapProtocolEnum
   | SushiSwapProtocolEnum
-  | UniswapProtocolEnum;
+  | UniswapProtocolEnum
+  | AlpacaProtocolEnum
+  | AaveProtocolEnum;
 
 export const ProtocolNameEnum = {
   ...AutofarmProtocolEnum,
@@ -54,4 +64,6 @@ export const ProtocolNameEnum = {
   ...SpookySwapProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
+  ...AlpacaProtocolEnum,
+  ...AaveProtocolEnum,
 };

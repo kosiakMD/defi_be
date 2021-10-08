@@ -1,4 +1,7 @@
 import {
+  AaveProtocolEnum,
+  AlpacaProtocolEnum,
+  AutofarmProtocolEnum,
   ChainIdEnum,
   LiquidityChangeTypeEnum,
   PancakeProtocolEnum,
@@ -10,8 +13,6 @@ import {
   TransactionTypeEnum,
   UniswapProtocolEnum,
 } from '@app/common/enum';
-
-import { AutofarmProtocolEnum } from '../enum/projectEnum';
 
 export type Address = string;
 
@@ -28,7 +29,9 @@ export type ProtocolName =
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
   | AutofarmProtocolEnum
-  | QuickswapProtocolEnum;
+  | QuickswapProtocolEnum
+  | AlpacaProtocolEnum
+  | AaveProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;

@@ -35,12 +35,11 @@ export class LocalMultiCall extends MultiCall {
     chain: ChainIdEnum,
   ): Promise<Set<string>> {
     const inputs = data.map((pool) => {
-      const input: CallInput = {
+      return {
         target: alpacaFactoriesMap.get(chain),
         function: 'poolInfo',
         args: [pool.poolNum],
       };
-      return input;
     });
 
     const [, vaultPoolInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
@@ -57,16 +56,15 @@ export class LocalMultiCall extends MultiCall {
     chain: ChainIdEnum,
   ): Promise<VaultUserInfo[]> {
     const inputs = data.map((pool) => {
-      const input: CallInput = {
+      return {
         target: alpacaFactoriesMap.get(chain),
-        function: 'userInfo',
+        function: 'pendingAlpaca',
         args: [pool.poolNum, pool.userAddress],
       };
-      return input;
     });
 
     const [, vaultUserInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
-    data.forEach((i, index) => (i.claimable = vaultUserInfo[index].rewardDebt.toString()));
+    data.forEach((i, index) => (i.claimable = vaultUserInfo[index].toString()));
     return vaultUserInfo;
   }
 
@@ -98,7 +96,7 @@ export class LocalMultiCall extends MultiCall {
 
   async getTokensInfoMap(
     tokens: string[],
-    priceAssets: string[],
+    priceAssets: Set<string>,
   ): Promise<Map<string, AlpacaTokenInfo>> {
     const contractFunctions = ['token', 'totalSupply', 'totalToken'];
     const inputs = tokens.flatMap((pool) => {
@@ -113,7 +111,7 @@ export class LocalMultiCall extends MultiCall {
       const totalSupply = result[i + 1]?.toString();
       let totalToken = result[i + 2]?.toString();
       let stakedToken = result[i]?.toLowerCase();
-      priceAssets.push(stakedToken || tokens[count]);
+      priceAssets.add(stakedToken || tokens[count]);
       if (tokens[count] === alpacaLegacyToken) {
         totalToken = totalSupply;
         stakedToken = alpacaRewardToken;
@@ -131,66 +129,83 @@ export class LocalMultiCall extends MultiCall {
     return tokensMap;
   }
 
-  async getWorkerTokensData(positions: AlpacaApiResponse[], tokenAddresses: string[]) {
+  async getWorkerTokensData(
+    positions: AlpacaApiResponse[],
+    tokenAddresses: Set<string>,
+  ): Promise<LeverageFarmingInterface[]> {
     const workerFunctions = ['lpToken', 'getReversedPath', 'baseToken'];
     const inputs = positions.flatMap((position) => {
       return workerFunctions.map((func) => {
         return { target: position.worker, function: func };
       });
     });
-    const leverageInterface: LeverageFarmingInterface[] = [];
-    const [, result] = await this.multiCall(workerAbi, inputs);
-    let count = 0;
-    for (let i = 0; i < result.length; i += 3) {
-      const leverageFarming: LeverageFarmingInterface = {
-        vault: positions[count].vault,
-        positionId: positions[count].positionId,
-        baseToken: result[i + 2].toLowerCase(),
-        isLp: false,
-      };
 
-      if (result[i] !== zeroAddress) {
-        leverageFarming.poolToken = result[i].toLowerCase();
-        leverageFarming.isLp = true;
-        leverageFarming.token0 = result[i + 1][0]?.toLowerCase();
-        leverageFarming.token1 = result[i + 1][1]?.toLowerCase();
-      } else {
-        leverageFarming.poolToken = cakeAddress;
+    const chunkSize = 15;
+    let count = 0;
+    const leverageInterface: LeverageFarmingInterface[] = [];
+    for (let i = 0; i < inputs.length; i += chunkSize) {
+      const to = i + chunkSize > inputs.length ? inputs.length : i + chunkSize;
+      const slice = inputs.slice(i, to);
+      const [, result] = await this.multiCall(workerAbi, slice);
+      for (let k = 0; k < result.length; k += 3) {
+        const index = (count * chunkSize + k) / 3;
+        const leverageFarming: LeverageFarmingInterface = {
+          vault: positions[index].vault,
+          positionId: positions[index].positionId,
+          baseToken: result[k + 2]?.toLowerCase(),
+          isLp: false,
+        };
+
+        if (result[k] !== zeroAddress) {
+          leverageFarming.poolToken = result[k]?.toLowerCase();
+          leverageFarming.isLp = true;
+          leverageFarming.token0 = result[k + 1][0]?.toLowerCase();
+          leverageFarming.token1 = result[k + 1][1]?.toLowerCase();
+        } else {
+          leverageFarming.poolToken = cakeAddress;
+        }
+
+        leverageInterface.push(leverageFarming);
+        this.addValuesToSet(tokenAddresses, [
+          leverageFarming.poolToken,
+          leverageFarming.token0,
+          leverageFarming.token1,
+          leverageFarming.baseToken,
+        ]);
       }
 
-      leverageInterface.push(leverageFarming);
-      LocalMultiCall.addTokenToArray(
-        tokenAddresses,
-        leverageFarming.poolToken,
-        leverageFarming.token0,
-        leverageFarming.token1,
-        leverageFarming.baseToken,
-      );
       count++;
     }
     return leverageInterface;
   }
 
-  async getLpTokenData(leverageInterface: LeverageFarmingInterface[]) {
+  async getLpTokenData(leverageInterface: LeverageFarmingInterface[]): Promise<void> {
     const lpFunctions = ['getReserves', 'totalSupply'];
-    const inputs = leverageInterface.flatMap((position) => {
-      return lpFunctions.map((func) => {
-        return { target: position.poolToken, function: func };
+    try {
+      const inputs = leverageInterface.flatMap((position) => {
+        return lpFunctions.map((func) => {
+          return { target: position.poolToken, function: func };
+        });
       });
-    });
 
-    const [, result] = await this.multiCall(lpTokenAbi, inputs);
-    let count = 0;
-    for (let i = 0; i < result.length; i += 2) {
-      const leverage = leverageInterface[count];
-      leverage.reserve0 = result[i]?._reserve0?.toString();
-      leverage.reserve1 = result[i]?._reserve1?.toString();
-      leverage.totalSupply = result[i + 1].toString();
-      count++;
+      const [, result] = await this.multiCall(lpTokenAbi, inputs);
+      let count = 0;
+      for (let i = 0; i < result.length; i += 2) {
+        const leverage = leverageInterface[count];
+        // eslint-disable-next-line no-underscore-dangle
+        leverage.reserve0 = result[i]?._reserve0?.toString();
+        // eslint-disable-next-line no-underscore-dangle
+        leverage.reserve1 = result[i]?._reserve1?.toString();
+        leverage.totalSupply = result[i + 1]?.toString();
+        count++;
+      }
+    } catch (e) {
+      this.logger.error(e, 'getLpTokenData');
+      throw e;
     }
   }
 
-  async getLpTokenBalanceAndBorrow(leverageInterface: LeverageFarmingInterface[]) {
+  async getLpTokenBalanceAndBorrow(leverageInterface: LeverageFarmingInterface[]): Promise<void> {
     const inputs = leverageInterface.map((position) => {
       return {
         target: position.vault,
@@ -231,10 +246,10 @@ export class LocalMultiCall extends MultiCall {
     return lendingBalancesMap;
   }
 
-  private static addTokenToArray(tokenAddresses: string[], ...addresses): void {
-    addresses?.forEach((address) => {
-      if (address && tokenAddresses.indexOf(address) === -1) {
-        tokenAddresses.push(address);
+  private addValuesToSet(tokens: Set<string>, addresses: string[]) {
+    addresses.forEach((address) => {
+      if (address) {
+        tokens.add(address);
       }
     });
   }

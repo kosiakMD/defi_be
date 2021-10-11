@@ -22,14 +22,17 @@ jobs:
           check-latest: true
           cache: 'yarn'
 
-      - name: 'Use yarn'
-        uses: borales/actions-yarn@v2.0.0
-
       - name: 'Install Nest CLI'
-        run: yarn global add @nestjs/cli
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: global add @nestjs/cli
 
       - name: 'Install dependencies'
-        run: yarn install
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
 
       - name: 'Build project'
-        run: build-monorepo
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: build-monorepo

@@ -9,13 +9,18 @@ import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 
+export type Environment = 'development' | 'production' | 'test' | 'provision' | 'local';
+
+const AWS_CW_LOGS_ENVIRONMENTS: Environment[] = ['development', 'production', 'local'];
+
 type LogConfig = {
+  identifier: string;
   logErrorFile: string;
   logCombineLog: string;
   serviceName: string;
+  environment: Environment;
   level?: string;
   meta?: Record<string, any>;
-  env?: string;
   awsConfig: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -29,18 +34,16 @@ const formatLog = (item) =>
     : `${item.level}: ${JSON.stringify(item.meta)}`;
 
 export const winstonParams = ({
+  identifier,
   logErrorFile,
   logCombineLog,
   serviceName,
+  environment,
   level = 'info',
   awsConfig,
-  env,
   meta,
-}: LogConfig): WinstonModuleOptions => ({
-  level: level,
-  format: winston.format.json(),
-  defaultMeta: Object.assign({ service: serviceName }, meta),
-  transports: [
+}: LogConfig): WinstonModuleOptions => {
+  const transports: Transport[] = [
     // NestJS console like logs
     new winston.transports.Console({
       format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
@@ -49,19 +52,31 @@ export const winstonParams = ({
     new winston.transports.File({ level: 'error', filename: logErrorFile }),
     // - Write all logs with level `info` and below to `combined.log`
     new winston.transports.File({ filename: logCombineLog }),
-    new CloudWatchTransport({
-      logGroupName: `dy-${env}-service/gateway`,
-      logStreamName: `${hostname()}_${Date.now()}`,
-      createLogGroup: true,
-      createLogStream: true,
-      submissionInterval: 2000,
-      submissionRetryCount: 1,
-      batchSize: 20,
-      awsConfig,
-      formatLog,
-    }) as Transport,
-  ],
-});
+  ];
+
+  if (AWS_CW_LOGS_ENVIRONMENTS.includes(environment)) {
+    transports.push(
+      new CloudWatchTransport({
+        logGroupName: `dy-${environment}-service/${identifier}`,
+        logStreamName: `${hostname()}_${Date.now()}`,
+        createLogGroup: true,
+        createLogStream: true,
+        submissionInterval: 2000,
+        submissionRetryCount: 1,
+        batchSize: 20,
+        awsConfig,
+        formatLog,
+      }) as Transport,
+    );
+  }
+
+  return {
+    level: level,
+    format: winston.format.json(),
+    defaultMeta: Object.assign({ service: serviceName }, meta),
+    transports,
+  };
+};
 
 export const createLogger = (workFolder: string): LoggerService => {
   // NOTE: We should use .env initialization for logger as config service is not yet available
@@ -69,11 +84,12 @@ export const createLogger = (workFolder: string): LoggerService => {
   ensureDotEnvInitiated(workFolder);
 
   const config: LogConfig = {
+    identifier: process.env.IDENTIFIER,
     logErrorFile: join(workFolder, process.env.LOG_ERROR_FILE),
     logCombineLog: join(workFolder, process.env.LOG_COMBINED_FILE),
     serviceName: process.env.SERVICE_NAME,
     level: process.env.LOG_LEVEL,
-    env: process.env.NODE_ENV,
+    environment: process.env.NODE_ENV as Environment,
     meta: { env: process.env.ENV },
     awsConfig: {
       region: process.env.AWS_REGION,

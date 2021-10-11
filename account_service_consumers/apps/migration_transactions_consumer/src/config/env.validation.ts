@@ -4,8 +4,8 @@ const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
-    .equal('development', 'production', 'test', 'provision')
-    .default('development'),
+    .equal('development', 'production', 'test', 'provision', 'local')
+    .default('local'),
   ENV: Joi.string()
     .equal(
       '.env',

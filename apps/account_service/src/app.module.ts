@@ -4,7 +4,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import configuration from '@app/common/config/configuration';
-import { winstonParams } from '@app/common/utils/winston';
+import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import { AnalyticModule } from './analytic/analytic.module';
 import { ApprovalsModule } from './approvals/approvals.module';
@@ -26,6 +26,8 @@ import { TransfersModule } from './transfers/transfers.module';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         winstonParams({
+          identifier: 'account',
+          environment: configService.get<Environment>('NODE_ENV'),
           logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
           logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
           serviceName: configService.get<string>('SERVICE_NAME'),
@@ -73,8 +75,5 @@ export class AppModule implements OnModuleInit {
     );
   }
 
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private configService: ConfigService,
-  ) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 }

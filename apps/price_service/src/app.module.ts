@@ -8,7 +8,7 @@ import { LoggerModule } from '@app/common/Logger/Logger.module';
 import { Logger } from '@app/common/Logger/Logger.service';
 import configuration from '@app/common/config/configuration';
 import { LoggerMiddleware } from '@app/common/middlewares/logger.middleware';
-import { winstonParams } from '@app/common/utils/winston';
+import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import config from './config';
 import { HealthModule } from './health/health.module';
@@ -23,6 +23,8 @@ import { PricesModule } from './prices/prices.module';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         winstonParams({
+          identifier: 'prices',
+          environment: configService.get<Environment>('NODE_ENV'),
           logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
           logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
           serviceName: configService.get<string>('SERVICE_NAME'),
@@ -81,8 +83,5 @@ export class AppModule {
     );
   }
 
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private configService: ConfigService,
-  ) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 }

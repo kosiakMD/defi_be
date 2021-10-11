@@ -5,7 +5,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import configuration from '@app/common/config/configuration';
-import { winstonParams } from '@app/common/utils/winston';
+import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import config from './config';
 import { DatabaseModule } from './database/database.module';
@@ -27,6 +27,8 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         winstonParams({
+          identifier: 'integration',
+          environment: configService.get<Environment>('NODE_ENV'),
           logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
           logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
           serviceName: configService.get<string>('SERVICE_NAME'),
@@ -70,10 +72,7 @@ export class AppModule implements OnModuleInit {
     this.log();
   }
 
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private configService: ConfigService,
-  ) {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {
     this.log();
   }
 

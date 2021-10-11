@@ -13,7 +13,7 @@ import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import configuration from '@app/common/config/configuration';
-import { winstonParams } from '@app/common/utils/winston';
+import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -59,6 +59,8 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         winstonParams({
+          identifier: 'gateway',
+          environment: configService.get<Environment>('NODE_ENV'),
           logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
           logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
           serviceName: configService.get<string>('SERVICE_NAME'),
@@ -155,10 +157,5 @@ export class AppModule implements OnModuleInit, NestModule {
     );
   }
 
-  constructor(
-    // TODO: left for custom logger
-    // private readonly logger: Logger,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private configService: ConfigService,
-  ) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 }

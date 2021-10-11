@@ -11,7 +11,7 @@ import { ensureDotEnvInitiated } from '../config/configuration';
 
 export type Environment = 'development' | 'production' | 'test' | 'provision' | 'local';
 
-const AWS_CW_LOGS_ENVIRONMENTS: Environment[] = ['development', 'production', 'local'];
+const AWS_CW_LOGS_ENVIRONMENTS: Environment[] = ['development', 'production'];
 
 type LogConfig = {
   identifier: string;

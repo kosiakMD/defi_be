@@ -30,7 +30,7 @@ export const validationSchema = Joi.object({
     .required(),
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
-    .default('info')
+    .default('debug')
     .required(),
   HTTP_TIMEOUT: Joi.number().optional(),
   DEFIYIELD_INFO_2_URL: Joi.string().required(),

@@ -16,7 +16,7 @@ import {
   PoolTokenDto,
   StakingPositionResponseDto,
 } from '../integrations/integrations.dto';
-import {  BaseData } from '../interfaces/transactions.interfaces';
+import { BaseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { QuickswapSubgraph } from '../thegraph/quickswap.subgraph';
 import { decimalsDivider, getUniqueAndToLowerCaseArrayData } from '../utils/util';
@@ -27,9 +27,11 @@ import { QUICKSWAP_STAKING_REWARDS_ABI, QUICKSWAP_STAKING_TOKEN_ABI } from './ut
 import { LPTokenPair } from './interfaces';
 import { PairDto } from './dto/subgraph';
 import { Web3Provider } from '../chain/web3.provider';
+import { toChunkedArray } from './utils/utils';
 
 @Injectable()
-export class QuickswapService {  private readonly multicall: MultiCallService;
+export class QuickswapService {
+  private readonly multicall: MultiCallService;
   constructor(
     private readonly mapper: Mapper,
     private readonly accountService: AccountService,
@@ -38,7 +40,6 @@ export class QuickswapService {  private readonly multicall: MultiCallService;
     private readonly logger: Logger,
     protected readonly web3Provider: Web3Provider,
   ) {
-    
     this.multicall = new MultiCallService(this.web3Provider.instancePlg());
   }
 
@@ -75,9 +76,7 @@ export class QuickswapService {  private readonly multicall: MultiCallService;
     );
   }
 
-  async getDataByAddresses(
-    addresses: string,
-  ): Promise<StakingPositionResponseDto | BaseData[]> {
+  async getDataByAddresses(addresses: string): Promise<StakingPositionResponseDto | BaseData[]> {
     try {
       const originAddresses = addresses.split(',');
       const uniqueAddresses = getUniqueAndToLowerCaseArrayData(originAddresses);
@@ -111,13 +110,22 @@ export class QuickswapService {  private readonly multicall: MultiCallService;
         liquidityPositions.forEach(({ pair: { id } }) => stakingPairsAddresses.add(id)),
       );
 
-      const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
-        Array.from(stakingPairsAddresses),
+      const chunkedLiquidityPositionPairs = await Promise.all(
+        toChunkedArray(Array.from(stakingPairsAddresses), 2)
+          .map(async (chunkedStakingPairs): Promise<PairDto[]> => {
+            const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
+              chunkedStakingPairs,
+            );
+            if (pairsErrors?.length) {
+              return [];
+            }
+
+            return pairsData.pairs;
+          })
+          .flat(),
       );
-      if (pairsErrors?.length) {
-        throw pairsErrors[0];
-      }
-      const { pairs: liquidityPositionPairs } = pairsData;
+
+      const liquidityPositionPairs: PairDto[] = chunkedLiquidityPositionPairs.flat();
 
       for (const address of uniqueAddresses) {
         const userLiquidityPositions = usersPools.find(
@@ -231,9 +239,26 @@ export class QuickswapService {  private readonly multicall: MultiCallService;
 
       for (const address of uniqueAddresses) {
         const stakingPositions = sushiswapStakingPosition.get(address);
-        const {
-          data: { pairs: stakingPairsData },
-        } = await this.subgraph.getPairs(stakingPositions.map((_) => _.stakingToken.address));
+
+        const chunkedStakingPairs = await Promise.all(
+          toChunkedArray(
+            stakingPositions.map((_) => _.stakingToken.address),
+            2,
+          )
+            .map(async (chunkedStakingPairs): Promise<PairDto[]> => {
+              const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
+                chunkedStakingPairs,
+              );
+              if (pairsErrors?.length) {
+                return [];
+              }
+
+              return pairsData.pairs;
+            })
+            .flat(),
+        );
+
+        const stakingPairsData: PairDto[] = chunkedStakingPairs.flat();
 
         const resultStakingPositions = await Promise.all(
           stakingPositions.map(
@@ -243,25 +268,26 @@ export class QuickswapService {  private readonly multicall: MultiCallService;
               const stakingPairs = new Map<Address, LPTokenPair>();
               const stakingTokenAddress = stakingPosition.stakingToken.address;
 
-              for await (const pair of stakingPairsData) {
-                const poolShare = new BigNumber(stakingPosition.staked)
-                  .div(pair.totalSupply)
-                  .toNumber();
+              if (stakingPairsData.length) {
+                for await (const pair of stakingPairsData) {
+                  const poolShare = new BigNumber(stakingPosition.staked)
+                    .div(pair.totalSupply)
+                    .toNumber();
 
-                stakingPairs.set(pair.id, {
-                  ...pair,
-                  tokens: await this.getLPTokens(pair, poolShare),
-                });
+                  stakingPairs.set(pair.id, {
+                    ...pair,
+                    tokens: await this.getLPTokens(pair, poolShare),
+                  });
+                }
               }
-
-              const { totalSupply, tokens } = stakingPairs.get(stakingTokenAddress);
+              const stakingPair = stakingPairs.get(stakingTokenAddress);
 
               return {
                 ...stakingPosition,
                 stakingToken: plainToClass(LPToken, {
                   ...stakingPosition.stakingToken,
-                  totalSupply,
-                  tokens,
+                  totalSupply: stakingPair?.totalSupply || null,
+                  tokens: stakingPair?.tokens || [],
                 }),
               };
             },

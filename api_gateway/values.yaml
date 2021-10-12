@@ -64,7 +64,7 @@ configMaps:
     SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
   logs:
     LOG_AWS_ENABLED: true
-    LOG_LEVEL: info
+    LOG_LEVEL: debug
     NODE_ENV: production
 
 secrets:

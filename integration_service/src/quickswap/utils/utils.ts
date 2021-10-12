@@ -1,9 +1,7 @@
-import { Address } from 'src/common/types';
-
-import { QUICKSWAP_STAKING_CONTRACTS } from './constants';
-
-export const getContractByPair = (_: Address): Address =>
-  QUICKSWAP_STAKING_CONTRACTS.find((__) => __.pairAddress === _).stakingContractAddress;
-
-export const getPairByContract = (_: Address): Address =>
-  QUICKSWAP_STAKING_CONTRACTS.find((__) => __.stakingContractAddress === _).pairAddress;
+export function toChunkedArray(array: any[], chunkSize: number): any[][] {
+  return array.reduce((array, one, index) => {
+    const chunk = Math.floor(index / chunkSize);
+    array[chunk] = [].concat(array[chunk] || [], one);
+    return array;
+  }, []);
+}

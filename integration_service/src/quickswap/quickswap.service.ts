@@ -5,61 +5,113 @@ import { IncomeLiquidityPosition } from 'src/dto/liquidity.position.dto';
 
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum, ProjectEnum } from 'src/common/enum';
+import { ChainIdEnum, ProjectEnum, ProtocolNameEnum } from 'src/common/enum';
 import { Address } from 'src/common/types';
 
 import { AccountService } from '../account/account.service';
 import {
   IntegrationClaimableTokenDto,
+  IntegrationStakingPositionDto,
   LPToken,
+  PoolTokenDto,
   StakingPositionResponseDto,
 } from '../integrations/integrations.dto';
-import { Asset, BaseData } from '../interfaces/transactions.interfaces';
+import {  BaseData } from '../interfaces/transactions.interfaces';
 import { Mapper } from '../mappers/mapper';
 import { QuickswapSubgraph } from '../thegraph/quickswap.subgraph';
 import { decimalsDivider, getUniqueAndToLowerCaseArrayData } from '../utils/util';
-import { PairDto } from './dto/subgraph';
 import { QUICKSWAP_REWARDS_TOKEN_ADDRESS, QUICKSWAP_STAKING_CONTRACTS } from './utils/constants';
-import { getContractByPair } from './utils/utils';
-import { Web3Service } from './web3/web3.service';
+import { MultiCallService } from './web3/web3.service';
+import { PriceService } from 'src/price/price.service';
+import { QUICKSWAP_STAKING_REWARDS_ABI, QUICKSWAP_STAKING_TOKEN_ABI } from './utils/abi';
+import { LPTokenPair } from './interfaces';
+import { PairDto } from './dto/subgraph';
+import { Web3Provider } from '../chain/web3.provider';
 
 @Injectable()
-export class QuickswapService {
+export class QuickswapService {  private readonly multicall: MultiCallService;
   constructor(
     private readonly mapper: Mapper,
     private readonly accountService: AccountService,
-    private readonly quickswapSubgraph: QuickswapSubgraph,
+    private readonly priceService: PriceService,
+    private readonly subgraph: QuickswapSubgraph,
     private readonly logger: Logger,
-    private readonly web3: Web3Service,
-  ) {}
+    protected readonly web3Provider: Web3Provider,
+  ) {
+    
+    this.multicall = new MultiCallService(this.web3Provider.instancePlg());
+  }
+
+  private async getLPTokens(
+    { token0, token1, reserve0, reserve1, reserveUSD }: PairDto,
+    poolShare: number,
+  ): Promise<PoolTokenDto[]> {
+    return await Promise.all(
+      [0, 1].map(async (_) => {
+        const { id: address, name, symbol, decimals } = _ ? token1 : token0;
+        const reserve = _ ? reserve1 : reserve0;
+        const price = new BigNumber(reserveUSD) //
+          .div(2)
+          .div(reserve)
+          .toNumber();
+        const balance = new BigNumber(poolShare) //
+          .times(reserve)
+          .toString();
+        const value = new BigNumber(balance) //
+          .times(price)
+          .toNumber();
+
+        return {
+          address,
+          name,
+          symbol,
+          decimals: +decimals,
+          price,
+          reserve,
+          balance,
+          value,
+        };
+      }),
+    );
+  }
 
   async getDataByAddresses(
     addresses: string,
-    chainId?: ChainIdEnum,
   ): Promise<StakingPositionResponseDto | BaseData[]> {
     try {
       const originAddresses = addresses.split(',');
       const uniqueAddresses = getUniqueAndToLowerCaseArrayData(originAddresses);
 
       const uniswapLiquidityPositions = new Map<Address, IncomeLiquidityPosition[]>();
-      const sushiswapStakingPosition = new Map<Address, any>();
+      const sushiswapStakingPosition = new Map<Address, IntegrationStakingPositionDto[]>();
 
-      const { data: rewardTokens } = await this.accountService.getAssets(
+      const { data: rawRewardTokens } = await this.accountService.getAssets(
         [QUICKSWAP_REWARDS_TOKEN_ADDRESS],
-        [chainId],
+        [ChainIdEnum.plg],
+      );
+      const rawRewardToken = rawRewardTokens[0];
+
+      const { prices } = await this.priceService.getTokenPricesFetch(
+        [rawRewardToken.address],
+        ChainIdEnum.plg,
       );
 
-      const {
-        data: { users: usersLiquidityPositions },
-      } = await this.quickswapSubgraph.getUsers(uniqueAddresses);
+      const rewardTokenPrice = prices[rawRewardToken.address];
+
+      const { data: usersData, errors: usersErrors } = await this.subgraph.getUsers(
+        uniqueAddresses,
+      );
+      if (usersErrors?.length) {
+        throw usersErrors[0];
+      }
+      const { users: usersPools } = usersData;
 
       const stakingPairsAddresses = new Set<Address>();
-
-      usersLiquidityPositions.forEach(({ liquidityPositions }) =>
+      usersPools.forEach(({ liquidityPositions }) =>
         liquidityPositions.forEach(({ pair: { id } }) => stakingPairsAddresses.add(id)),
       );
 
-      const { data: pairsData, errors: pairsErrors } = await this.quickswapSubgraph.getPairs(
+      const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
         Array.from(stakingPairsAddresses),
       );
       if (pairsErrors?.length) {
@@ -68,8 +120,13 @@ export class QuickswapService {
       const { pairs: liquidityPositionPairs } = pairsData;
 
       for (const address of uniqueAddresses) {
-        const userLiquidityPositions = usersLiquidityPositions.find(
+        const userLiquidityPositions = usersPools.find(
           (_) => _.id.toLocaleLowerCase() === address.toLocaleLowerCase(),
+        );
+
+        const pairsTotalSupply = await this.multicall.getTotalSupply(
+          liquidityPositionPairs.map((_) => _.id),
+          QUICKSWAP_STAKING_TOKEN_ABI,
         );
 
         const pairs = await Promise.all(
@@ -78,29 +135,61 @@ export class QuickswapService {
               userLiquidityPositions.liquidityPositions.find(({ pair: { id } }) => id === pair.id)
                 .liquidityTokenBalance || null,
             user: address,
-            pair,
+            pair: {
+              ...pair,
+              totalSupply: new BigNumber(pairsTotalSupply.get(pair.id)) //
+                .div(decimalsDivider(18))
+                .toString(),
+            },
           })),
         );
         uniswapLiquidityPositions.set(address, pairs);
 
+        const stakingTokensBalances = await this.multicall.getBalancesOf(
+          QUICKSWAP_STAKING_CONTRACTS.map((_) => _.stakingContractAddress),
+          address,
+        );
+
+        const stakingTokensClaimable = await this.multicall.getEarned(
+          QUICKSWAP_STAKING_CONTRACTS.map((_) => _.stakingContractAddress),
+          address,
+          QUICKSWAP_STAKING_REWARDS_ABI,
+        );
+
+        const lpStakingTokens = await this.multicall.getStakingTokens(
+          QUICKSWAP_STAKING_CONTRACTS.map((_) => _.pairAddress),
+          QUICKSWAP_STAKING_TOKEN_ABI,
+        );
+
         const stakingPosition = await Promise.all(
-          QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress }) => {
-            const balance = await this.web3.getBalanceOf(getContractByPair(pairAddress), address);
-            const claimable = await this.web3.getClaimable(getContractByPair(pairAddress), address);
+          QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress, stakingContractAddress }) => {
+            const balance = new BigNumber(
+              stakingTokensBalances.get(stakingContractAddress.toLocaleLowerCase()),
+            )
+              .div(decimalsDivider(rawRewardToken.decimals))
+              .toString();
+            const claimable = stakingTokensClaimable.get(
+              stakingContractAddress.toLocaleLowerCase(),
+            );
+
+            const claimableDataBalance = new BigNumber(claimable) //
+              .div(decimalsDivider(rawRewardToken.decimals))
+              .toString();
 
             const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
-              ...rewardTokens[0],
+              address: rawRewardToken.address,
+              name: rawRewardToken.name,
+              symbol: rawRewardToken.symbol,
+              decimals: rawRewardToken.decimals,
+              totalSupply: rawRewardToken.totalSupply,
+              price: rewardTokenPrice,
               claimableData: {
-                balance: new BigNumber(claimable) //
-                  .div(decimalsDivider(18))
-                  .toString(),
-                value: new BigNumber(balance) //
-                  .div(decimalsDivider(18))
+                balance: claimableDataBalance,
+                value: new BigNumber(claimableDataBalance) //
+                  .times(rewardTokenPrice)
                   .toString(),
               },
             });
-
-            rewardToken.claimableData;
 
             const stakingToken = plainToClass(LPToken, {
               address: pairAddress,
@@ -110,9 +199,7 @@ export class QuickswapService {
               tokens: [],
             });
 
-            const LPStakingTokensAddresses = await this.web3.getStakingTokensAddresses(pairAddress);
-
-            LPStakingTokensAddresses.forEach((tokenAddress) =>
+            lpStakingTokens.get(pairAddress.toLocaleLowerCase()).forEach((tokenAddress) =>
               stakingToken.tokens.push({
                 address: tokenAddress,
                 name: null,
@@ -127,10 +214,9 @@ export class QuickswapService {
 
             return {
               address,
-              amount: balance,
-              staked: new BigNumber(balance) //
-                .div(decimalsDivider(18))
-                .toString(),
+              poolId: null,
+              poolName: null,
+              staked: balance,
               rewardToken,
               stakingToken,
             };
@@ -143,106 +229,62 @@ export class QuickswapService {
         );
       }
 
-      const tokens = new Set<Address>();
-
       for (const address of uniqueAddresses) {
-        const stakingPositions = sushiswapStakingPosition.get(address);
-
-        stakingPositions.forEach(({ stakingToken }) =>
-          stakingToken.tokens.forEach(({ address }) => tokens.add(address)),
-        );
-      }
-
-      const filledTokens: Asset[] = [];
-
-      if (tokens.size) {
-        const { data: assets } = await this.accountService.getAssets(Array.from(tokens).flat(), [
-          chainId,
-        ]);
-        filledTokens.push(...assets);
-      }
-
-      for (const address of uniqueAddresses) {
-        const stakingPairs = new Map<Address, PairDto>();
-
         const stakingPositions = sushiswapStakingPosition.get(address);
         const {
           data: { pairs: stakingPairsData },
-        } = await this.quickswapSubgraph.getPairs([
-          ...stakingPositions.map((_: any) => _.stakingToken.address),
-        ]);
+        } = await this.subgraph.getPairs(stakingPositions.map((_) => _.stakingToken.address));
 
-        stakingPairsData.forEach((_) => stakingPairs.set(_.id, _));
+        const resultStakingPositions = await Promise.all(
+          stakingPositions.map(
+            async (
+              stakingPosition: IntegrationStakingPositionDto,
+            ): Promise<IntegrationStakingPositionDto> => {
+              const stakingPairs = new Map<Address, LPTokenPair>();
+              const stakingTokenAddress = stakingPosition.stakingToken.address;
 
-        sushiswapStakingPosition.set(
-          address,
-          stakingPositions.map((stakingPosition: any) => {
-            const stakingTokenAddress = stakingPosition.stakingToken.address;
-            const stakingPair = stakingPairs.get(stakingTokenAddress);
+              for await (const pair of stakingPairsData) {
+                const poolShare = new BigNumber(stakingPosition.staked)
+                  .div(pair.totalSupply)
+                  .toNumber();
 
-            const token0balance = new BigNumber(stakingPosition.amount)
-              .div(stakingPair.totalSupply)
-              .times(stakingPair.reserve0)
-              .div(new BigNumber(10).pow(stakingPair.token0.decimals))
-              .toString();
+                stakingPairs.set(pair.id, {
+                  ...pair,
+                  tokens: await this.getLPTokens(pair, poolShare),
+                });
+              }
 
-            const token0value = new BigNumber(token0balance) //
-              .times(stakingPair.reserve0)
-              .toNumber();
+              const { totalSupply, tokens } = stakingPairs.get(stakingTokenAddress);
 
-            const token1balance = new BigNumber(stakingPosition.amount)
-              .div(stakingPair.totalSupply)
-              .times(stakingPair.reserve0)
-              .div(new BigNumber(10).pow(stakingPair.token1.decimals))
-              .toString();
-
-            const token1value = new BigNumber(token1balance) //
-              .times(stakingPair.reserve1)
-              .toNumber();
-
-            return {
-              ...stakingPosition,
-              stakingToken: plainToClass(LPToken, {
-                ...stakingPosition.stakingToken,
-                tokens: [
-                  {
-                    address: stakingPair.token0.id,
-                    name: stakingPair.token0.name,
-                    symbol: stakingPair.token0.symbol,
-                    decimals: stakingPair.token0.decimals,
-                    price: stakingPair.token0Price,
-                    reserve: stakingPair.reserve0,
-                    balance: token0balance,
-                    value: token0value,
-                  },
-                  {
-                    address: stakingPair.token1.id,
-                    name: stakingPair.token1.name,
-                    symbol: stakingPair.token1.symbol,
-                    decimals: stakingPair.token1.decimals,
-                    price: stakingPair.token1Price,
-                    reserve: stakingPair.reserve1,
-                    balance: token1balance,
-                    value: token1value,
-                  },
-                ],
-              }),
-            };
-          }),
+              return {
+                ...stakingPosition,
+                stakingToken: plainToClass(LPToken, {
+                  ...stakingPosition.stakingToken,
+                  totalSupply,
+                  tokens,
+                }),
+              };
+            },
+          ),
         );
+
+        sushiswapStakingPosition.set(address, resultStakingPositions);
       }
+
       return await this.mapper.mapData(
         uniqueAddresses,
         originAddresses,
         {
-          uniswapLiquidityPositions,
-          sushiswapStakingPosition,
+          uniswapLiquidityPositions: uniswapLiquidityPositions,
+          sushiswapStakingPosition: sushiswapStakingPosition,
         },
         ProjectEnum.quickswap,
+        ProtocolNameEnum.quickswap,
+        ChainIdEnum.plg,
       );
     } catch (error) {
       this.logger.error(error, 'QuickswapService.getDataByAddress');
-      throw new Error(error);
+      throw error;
     }
   }
 }

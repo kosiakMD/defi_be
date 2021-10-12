@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
+import { Web3Provider } from 'src/chain/web3.provider';
 
-import { Web3Service } from './web3.service';
 
 @Module({
   imports: [],
-  providers: [Web3Service],
-  exports: [Web3Service],
+  providers: [Web3Provider],
+  exports: [Web3Provider],
 })
 export class Web3Module {}

@@ -47,3 +47,10 @@ export enum ColumnType {
   timestamp = 'timestamp',
   timestamptz = 'timestamptz',
 }
+
+export enum MulticallFunctionEnum {
+  earned = 'earned',
+  totalSupply = 'totalSupply',
+  token0 = 'token0',
+  token1 = 'token1',
+}

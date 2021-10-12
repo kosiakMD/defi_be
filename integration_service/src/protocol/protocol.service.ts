@@ -36,12 +36,7 @@ export class ProtocolService {
       autofarmProtocol,
       pancakeProtocolV1,
       pangolinProtocol,
-      /**
-       * FIXME:
-       * Temporary hidden for production
-       * until fix staking balances
-       */
-      // quickswapProtocol,
+      quickswapProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
       uniswapProtocolV2,

@@ -19,6 +19,7 @@ configMaps:
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000
   logs:
     LOG_AWS_ENABLED: true
+    LOG_LEVEL: info
     NODE_ENV: production
 
 secrets:

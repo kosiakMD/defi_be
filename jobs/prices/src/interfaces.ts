@@ -13,18 +13,28 @@ export interface Pair {
 
 export interface Protocol {
   address: string;
-  coin: string;
   name: string;
+}
+
+export interface AssetPairData {
+  coin: string;
+  asset: string;
+  factory: string;
+  pairAddress?: string;
+  protocolName?: string;
 }
 
 export interface LambdaRequestInterface {
   rpcUrl: string;
   chainId: number;
   stableCoins: string[];
-  protocol: Protocol;
+  whiteListCoins: string[];
+  protocol: Protocol[];
+  wrappedCoin: string;
   priceServiceUrl: string;
   tokenServiceUrl: string;
   currencyId: number;
+  contractAddress: string;
 }
 
 export interface AssetsApiResponse {
@@ -35,6 +45,7 @@ export interface AssetsApiResponse {
   decimals?: number;
   chainId: number;
   pairs?: Pair[];
+  pairProtocols?: Protocol[];
 }
 
 export interface PriceResponse {
@@ -44,7 +55,13 @@ export interface PriceResponse {
   currencyId: number;
 }
 
+export interface CurrentPrice {
+  [key: string]: number;
+}
+
 export interface StableCoinMapValue {
+  stableAddress?: string;
   reserveStable: string;
   reserveCoin: string;
+  reserveUsd: number;
 }

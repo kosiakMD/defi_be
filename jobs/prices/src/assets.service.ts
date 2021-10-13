@@ -11,7 +11,7 @@ export class AssetsService {
   ): Promise<AssetsApiResponse[]> {
     try {
       const response = await axios.get(assetsUrl, {
-        params: { chainId: chainId },
+        params: { chainId },
       });
       return response.data;
     } catch (e) {
@@ -21,7 +21,7 @@ export class AssetsService {
   }
 
   static async saveAssetsPairs(assetsUrl: string, data: AssetsApiResponse[]): Promise<void> {
-    const chunkSize = 100;
+    const chunkSize = 50;
     const promiseArray = [];
     for (let i = 0, j = data.length; i < j; i += chunkSize) {
       const to = toField(i, data.length, chunkSize);

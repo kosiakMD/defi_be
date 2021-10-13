@@ -11,6 +11,9 @@ export const lambdaHandler = async (): Promise<APIGatewayProxyResult> => {
     priceServiceUrl: process.env.PRICE_SERVICE_URL,
     tokenServiceUrl: process.env.TOKEN_SERVICE_URL,
     currencyId: Number(process.env.CURRENCY_ID),
+    wrappedCoin: String(process.env.WRAPPED_COIN),
+    whiteListCoins: JSON.parse(process.env.WHITE_LIST_COINS),
+    contractAddress: String(process.env.CONTRACT_ADDRESS),
   };
 
   await getResult(configuration);

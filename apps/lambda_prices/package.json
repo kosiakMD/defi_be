@@ -9,10 +9,10 @@
   "scripts": {
     "test": "mocha tests/unit/",
     "compile": "tsc",
-    "start": "tsc && node built/index.js"
+    "start": "tsc && node built/index.js",
+    "dev": "tsc && node -r 'dotenv/config' -e 'require(\"./built/app.js\").lambdaHandler()'"
   },
   "devDependencies": {
-    "@indexed-finance/multicall": "^2.0.0",
     "@types/aws-lambda": "^8.10.51",
     "@types/ioredis": "^4.26.7",
     "@types/node": "^13.13.5",

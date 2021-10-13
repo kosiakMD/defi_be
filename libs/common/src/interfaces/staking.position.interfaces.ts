@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { StakingErcToken } from '@app/common/dto/StakingErcToken';
 import { ChainIdEnum, TransactionTypeEnum } from '@app/common/enum';
-import { ERC20Token, LPToken } from '@app/common/interfaces/index';
+import { ERC20Token } from '@app/common/interfaces/index';
 import { FeatureName, ProtocolName } from '@app/common/types';
 
 import { AmountAble, PoolToken, Transaction } from './transactions.interfaces';
@@ -33,7 +33,7 @@ export interface StakingPosition {
   staked: string;
   lpToken?: PoolTokenStaked;
   rewardToken: ClaimAbleToken;
-  stakingToken: LPToken | StakingErcToken;
+  stakingToken: StakingErcToken;
   liquidityPoolTokens?: PoolToken[];
 }
 

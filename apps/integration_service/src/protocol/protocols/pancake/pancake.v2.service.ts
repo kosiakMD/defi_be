@@ -7,13 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
-import {
-  ChainIdEnum,
-  FeatureEnum,
-  PancakeProtocolEnum,
-  ProjectEnum,
-  ProtocolTypeEnum,
-} from '@app/common/enum';
+import { ChainIdEnum, FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum, } from '@app/common/enum';
 
 import { ProtocolNameEnum } from '../../../common/enum';
 
@@ -21,13 +15,15 @@ import { AccountService } from '../../../account/account.service';
 import { RewardsData } from '../../../chain/dto/pancake.interfaces';
 import { LocalMultiCall } from '../../../chain/local.multi.call';
 import { Web3Provider } from '../../../chain/web3.provider';
-import { IntegrationStakingPositionDto } from '../../../integrations/integrations.dto';
+import {
+  ClaimableDto,
+  IntegrationClaimableTokenDto,
+  IntegrationERC20TokenDto,
+  IntegrationStakingPositionDto,
+} from '../../../integrations/integrations.dto';
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../price/price.service';
-import {
-  Balance,
-  Pancakev2MainStakingSubgraph,
-} from '../../../thegraph/pancakev2.main.staking.subgraph';
+import { Balance, Pancakev2MainStakingSubgraph, } from '../../../thegraph/pancakev2.main.staking.subgraph';
 import { decimalsDivider } from '../../../utils/util';
 import { Mapper } from '../mappers/mapper';
 
@@ -150,49 +146,68 @@ export class PancakeV2Service {
       const cachedPoolData = pools.items.find((sp) => Number(sp.poolId) === balancePoolId);
 
       if (cachedPoolData) {
-        const stakingPosition: IntegrationStakingPositionDto = plainToClass(
-          IntegrationStakingPositionDto,
-          cachedPoolData,
+        const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
+          address: cachedPoolData.stakingToken.address,
+          name: cachedPoolData.stakingToken.name,
+          symbol: cachedPoolData.stakingToken.symbol,
+          decimals: cachedPoolData.stakingToken.decimals,
+          totalSupply: cachedPoolData.stakingToken.totalSupply,
+        });
+
+        const rewardToken: IntegrationClaimableTokenDto = plainToClass(
+          IntegrationClaimableTokenDto,
           {
-            excludeExtraneousValues: true,
+            address: cachedPoolData.rewardToken.address,
+            name: cachedPoolData.rewardToken.name,
+            symbol: cachedPoolData.rewardToken.symbol,
+            decimals: cachedPoolData.rewardToken.decimals,
+            totalSupply: cachedPoolData.rewardToken.totalSupply,
           },
         );
 
         const stakedBigNumber = new BigNumber(b.balance).div(
-          decimalsDivider(stakingPosition.stakingToken.decimals),
+          decimalsDivider(stakingToken.decimals),
         );
-        stakingPosition.staked = b.balance;
+        stakingToken.balance = stakedBigNumber.toString();
 
         if (cachedPoolData.liquidityPoolTokens) {
-          const poolShare = stakedBigNumber.div(
-            new BigNumber(stakingPosition.stakingToken.totalSupply),
-          );
-          stakingPosition.stakingToken.tokens = [];
+          stakingToken.tokens = [];
+          const poolShare = stakedBigNumber.div(new BigNumber(stakingToken.totalSupply));
           cachedPoolData.liquidityPoolTokens.forEach((clpt) => {
-            const poolTokenToAdd: PoolTokenDto = {
-              ...clpt,
-              value: null,
-              balance: null,
-              price: null,
-            };
-            poolTokenToAdd.balance = poolShare.times(new BigNumber(clpt.reserve)).toString();
-            stakingPosition.stakingToken.tokens.push(poolTokenToAdd);
+            const poolTokenToAdd: PoolTokenDto = plainToClass(PoolTokenDto, {
+              address: clpt.address,
+              name: clpt.name,
+              symbol: clpt.symbol,
+              decimals: clpt.decimals,
+              reserve: clpt.reserve,
+              balance: poolShare.times(new BigNumber(clpt.reserve)).toString(),
+            });
+            stakingToken.tokens.push(poolTokenToAdd);
           });
         }
+
+        const stakingPosition: IntegrationStakingPositionDto = plainToClass(
+          IntegrationStakingPositionDto,
+          {
+            address: cachedPoolData.address,
+            poolId: cachedPoolData.poolId,
+            staked: b.balance,
+            stakingToken: stakingToken,
+            rewardToken: rewardToken,
+          },
+        );
 
         // find and set claimable rewards:
         const claimableReward = claimableRewards.find(
           (cr) => cr.userAddress === b.user.id && cr.poolId === balancePoolId,
         );
         if (claimableReward) {
-          stakingPosition.rewardToken.claimableData = {
-            balance: null,
-            value: null,
-          };
+          stakingPosition.rewardToken.claimableData = plainToClass(ClaimableDto, {});
           stakingPosition.rewardToken.claimableData.balance = claimableReward.pendingCake
             .div(decimalsDivider(stakingPosition.rewardToken.decimals))
             .toString();
         }
+
         stakingPositions.push(stakingPosition);
       }
     });

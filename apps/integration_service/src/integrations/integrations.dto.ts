@@ -68,19 +68,19 @@ export class IntegrationERC20TokenDto {
   totalSupply?: string = null;
 
   @ApiProperty({type: Number, example: 3759.23})
-  price?: number;
+  price?: number = null;
 
   @ApiProperty({ type: Number, example: 1.2512 })
-  value?: number;
+  value?: number = null;
 
   @ApiProperty({ type: String, example: '123.6534' })
-  balance?: string;
+  balance?: string = null;
 
   /**
    * If LP token
    */
   @ApiProperty({type: [PoolTokenDto]})
-  tokens?: PoolTokenDto[] = [];
+  tokens?: PoolTokenDto[];
 }
 
 export class PoolPeriodStats {

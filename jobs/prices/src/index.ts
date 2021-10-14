@@ -174,10 +174,10 @@ export async function getResult(requestParams: LambdaRequestInterface): Promise<
       prices.prices,
       stableCoinsMap,
     );
-    const priceResponses = assetsPrices.filter((asset) => asset);
+    const priceResponses = assetsPrices.filter((asset) => !!asset);
     await AssetsService.saveAssetsPairs(requestParams.tokenServiceUrl, assetsWithNewData);
     LOGGER.info(JSON.stringify(priceResponses));
-    await PriceService.saveAssetsPrices(requestParams.priceServiceUrl, assetsPrices);
+    await PriceService.saveAssetsPrices(requestParams.priceServiceUrl, priceResponses);
   } catch (e) {
     LOGGER.error(e.message);
     throw e;

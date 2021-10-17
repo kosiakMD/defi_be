@@ -374,9 +374,6 @@ export class BalancesService {
 
   private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
     switch (chain) {
-      // TODO: Only avalanche should use covalent until price job is setup
-      case ChainIdEnum.avax:
-        return [this.covalentBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }

@@ -70,8 +70,24 @@ export class AssetsRepository extends Repository<AssetsEntity> {
   async findAllTrackedAssetsWithPoolsByChain(
     chainId: ChainIdEnum,
   ): Promise<AssetsForLambdaResponse[]> {
-    const lambdaAssetsSql =
-      'select an.address, an.id, an.decimals, an.name, an.symbol, an.chain_id as "chainId", ap.pairs from assets_new an full outer join assets_pools ap on an.id = ap.asset_id where an.chain_id = $1 and an.is_tracked = true and an.is_lp = false';
+    const lambdaAssetsSql = `
+      select 
+        an.address,
+        an.id,
+        an.decimals,
+        an.name,
+        an.symbol,
+        an.chain_id as "chainId",
+        ap.pairs 
+      from assets_new an
+      full outer join assets_pools ap
+        on an.id = ap.asset_id
+      where 
+        an.chain_id = $1 and
+        an.is_tracked = true and
+        an.is_lp = false
+    `;
+
     return await this.query(lambdaAssetsSql, [chainId]);
   }
 

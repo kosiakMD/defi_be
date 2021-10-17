@@ -10,7 +10,7 @@
     "test": "mocha tests/unit/",
     "compile": "tsc",
     "start": "tsc && node built/index.js",
-    "dev": "tsc && node -r 'dotenv/config' -e 'require(\"./built/app.js\").lambdaHandler()'"
+    "dev": "ts-node ./src/start.ts"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.51",
@@ -26,6 +26,7 @@
     "ioredis": "^4.27.7",
     "mocha": "^8.2.1",
     "pg": "^8.7.1",
+    "ts-node": "^10.3.0",
     "typescript": "^3.8.3",
     "web3": "^1.5.2",
     "winston": "^3.3.3"

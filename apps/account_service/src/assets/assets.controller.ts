@@ -96,7 +96,7 @@ export class AssetsController {
   })
   @ApiResponse({ status: 200, type: AssetsPoolsDto })
   async getAssetInfoForLambda(@Query('chainId') chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
-    return await this.assetsService.getAssetObjectsForLambda(chainId);
+    return await this.assetsService.getAssetAndPoolObjects(chainId);
   }
 
   @Post('/pools')

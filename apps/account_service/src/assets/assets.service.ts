@@ -39,7 +39,8 @@ export class AssetsService {
     return await this.assetRepository.findOneByAddressAndChain(address, chainId);
   }
 
-  async getAssetObjectsForLambda(chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
+  // TODO: Review this method
+  async getAssetAndPoolObjects(chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
     const assetsPools = await this.assetRepository.findAllTrackedAssetsWithPoolsByChain(chainId);
     return assetsPools.map((pool) => plainToClass(AssetsPoolsDto, pool));
   }

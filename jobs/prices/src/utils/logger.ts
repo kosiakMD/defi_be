@@ -1,6 +1,6 @@
 import winston from 'winston';
 
-export const LOGGER = winston.createLogger({
+export const logger = winston.createLogger({
   transports: [
     new winston.transports.File({
       filename: 'error.log',

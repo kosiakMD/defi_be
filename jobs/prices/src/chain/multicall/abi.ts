@@ -1,4 +1,6 @@
-export const MULTICALL_ABI = [
+import { AbiItem } from 'web3-utils';
+
+export const MULTICALL_ABI: AbiItem[] = [
   {
     constant: true,
     inputs: [],

@@ -1,4 +1,6 @@
-export const UNISWAP_PAIR_ABI = [
+import { AbiItem } from 'web3-utils';
+
+export const UNISWAP_PAIR_ABI: AbiItem[] = [
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   { inputs: [], payable: false, stateMutability: 'nonpayable', type: 'constructor' },

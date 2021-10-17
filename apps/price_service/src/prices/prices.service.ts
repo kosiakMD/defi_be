@@ -362,7 +362,8 @@ export class PriceService {
           ON a.id = ap.asset_id
         WHERE
           a.address IN ('${notCached.join("','")}') AND
-          a.chain_id = ${chain}
+          a.chain_id = ${chain} AND
+          ap.updated_at >= (NOW() - INTERVAL '1 DAY')
         ORDER BY ap.asset_id
       )`;
 

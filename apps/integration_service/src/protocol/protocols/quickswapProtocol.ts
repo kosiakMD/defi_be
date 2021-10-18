@@ -14,6 +14,7 @@ import {
   ProtocolNameEnum,
 } from '@app/common/enum';
 import { MultiCallService } from '@app/common/multicall';
+import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../account/account.service';
@@ -65,6 +66,24 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     super();
     this.dataProvider = this;
     this.multicall = new MultiCallService(this.web3Provider.getInstanceByChainId(ChainIdEnum.plg));
+  }
+
+  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 2): Promise<PairDto[]> {
+    const chunkedPairs = await Promise.all(
+      toChunkedArray(pairsAddresses, chunkSize)
+        .map(async (chunkedPairsAddresses): Promise<PairDto[]> => {
+          const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
+            chunkedPairsAddresses,
+          );
+          if (pairsErrors?.length) {
+            return [];
+          }
+          return pairsData.pairs;
+        })
+        .flat(),
+    );
+
+    return chunkedPairs.flat();
   }
 
   private async getLPTokens(
@@ -134,13 +153,9 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
         liquidityPositions.forEach(({ pair: { id } }) => stakingPairsAddresses.add(id)),
       );
 
-      const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
+      const liquidityPositionPairs: PairDto[] = await this.getSubgraphPairs(
         Array.from(stakingPairsAddresses),
       );
-      if (pairsErrors?.length) {
-        throw pairsErrors[0];
-      }
-      const { pairs: liquidityPositionPairs } = pairsData;
 
       for (const address of uniqueAddresses) {
         const userLiquidityPositions = usersPools.find(
@@ -254,9 +269,10 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
       for (const address of uniqueAddresses) {
         const stakingPositions = sushiswapStakingPosition.get(address);
-        const {
-          data: { pairs: stakingPairsData },
-        } = await this.subgraph.getPairs(stakingPositions.map((_) => _.stakingToken.address));
+
+        const stakingPairsData: PairDto[] = await this.getSubgraphPairs(
+          stakingPositions.map((_) => _.stakingToken.address),
+        );
 
         const resultStakingPositions = await Promise.all(
           stakingPositions.map(
@@ -266,25 +282,26 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
               const stakingPairs = new Map<Address, LPTokenPair>();
               const stakingTokenAddress = stakingPosition.stakingToken.address;
 
-              for await (const pair of stakingPairsData) {
-                const poolShare = new BigNumber(stakingPosition.staked)
-                  .div(pair.totalSupply)
-                  .toNumber();
+              if (stakingPairsData.length) {
+                for await (const pair of stakingPairsData) {
+                  const poolShare = new BigNumber(stakingPosition.staked)
+                    .div(pair.totalSupply)
+                    .toNumber();
 
-                stakingPairs.set(pair.id, {
-                  ...pair,
-                  tokens: await this.getLPTokens(pair, poolShare),
-                });
+                  stakingPairs.set(pair.id, {
+                    ...pair,
+                    tokens: await this.getLPTokens(pair, poolShare),
+                  });
+                }
               }
-
-              const { totalSupply, tokens } = stakingPairs.get(stakingTokenAddress);
+              const stakingPair = stakingPairs.get(stakingTokenAddress);
 
               return {
                 ...stakingPosition,
                 stakingToken: plainToClass(LPToken, {
                   ...stakingPosition.stakingToken,
-                  totalSupply,
-                  tokens,
+                  totalSupply: stakingPair?.totalSupply || null,
+                  tokens: stakingPair?.tokens || null,
                 }),
               };
             },

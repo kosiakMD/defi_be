@@ -35,23 +35,6 @@ DTO:
 🧪 Tests:
   - apps/**/*.spec.*
 
-👷 Job:
-  - any:
-      [
-          'price_service_crawlers/*',
-          'price_service_crawlers/**/*',
-          'integration_service_crawlers/*',
-          'integration_service_crawlers/**/*',
-          'account_service_consumers/*',
-          'account_service_consumers/**/*',
-          '*/account_service_crawlers',
-          '*/account_service_crawler**/*',
-          '*crawlers/*',
-          '*crawlers/**/*',
-          '*consumers/*'
-          '*consumers**/**'
-      ]
-
 🔒 Safe Service:
   - apps/safe_service_proxy/*
   - apps/safe_service_proxy/**/*
@@ -75,6 +58,10 @@ DTO:
 🏷️ Price Service:
   - apps/price_service/*
   - apps/price_service/**/*
+
+👷 Job:
+  - jobs/*
+  - jobs/**/*
 
 👷️ Lambda:
   - lambda/src/*

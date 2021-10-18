@@ -18,16 +18,16 @@
   ]
 
 📦 Dependencies:
-  - any: [ 'package.json', 'yarn.lock', 'package-lock.json', '*/package.json', '*/yarn.lock', '*/package-lock.json' ]
+  - any: [ 'package.json', 'yarn.lock', 'package-lock.json', '**/package.json', '**/yarn.lock', '**/package-lock.json' ]
 
 🏗️ Env:
-  - .env.*
+  - '**/.env.*'
 
 DTO:
-  - any: [ '*.dto.ts', '*Dto.ts', '*DTO.ts' ]
+  - any: [ '**/*.dto.ts', '**/*Dto.ts', '**/*DTO.ts' ]
 
 🧪 Tests:
-  - src/**/*.spec.*
+  - apps/**/*.spec.*
 
 👷 Job:
   - any:
@@ -37,26 +37,26 @@ DTO:
           'account_service_consumers/*',
           '*/account_service_crawlers',
           '*crawlers/*',
-          '*consumers/*',
+          '*consumers/*'
       ]
 
 🔒 Safe Service:
-  - safe_service_proxy/src/*
+  - apps/safe_service_proxy/*
 
 🔄 Swap Service:
-  - swap*/src/*
+  - apps/swap*/*
 
 🎌 Integration Service:
-  - integration_service/src/*
+  - apps/integration_service/*
 
 🚪 Gateway Service:
-  - api_gateway/src/*
+  - apps/api_gateway/*
 
 👤 Account Service:
-  - account_service/src/*
+  - apps/account_service/*
 
 🏷️ Price Service:
-  - price_service/src/*
+  - apps/price_service/*
 
 👷️ Lambda:
-  - lambda/src/*
+  - any: [ 'lambda/src/*', 'apps/lambda_prices/*']

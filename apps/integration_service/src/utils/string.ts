@@ -23,3 +23,5 @@ export function splitToArray(value: string): string[] {
 
   return value.toLowerCase().split(',');
 }
+
+export const getKey = (...seed: Array<string | number>): string => seed.join('_');

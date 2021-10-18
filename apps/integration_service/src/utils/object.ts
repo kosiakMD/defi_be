@@ -34,3 +34,9 @@ export const objectUpdate = (
     }
   });
 };
+
+export const mapToObject = <T extends Map<string, any>>(mapInstance: T): Record<string, any> =>
+  [...mapInstance.entries()].reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+
+export const objectToMap = (objectInstance: Record<string, any>): Map<string, any> =>
+  new Map(Object.entries(objectInstance));

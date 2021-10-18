@@ -50,6 +50,7 @@ import { TransfersController } from './transfers/transfers.controller';
 import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
 import { VaultsModule } from './vaults/vaults.module';
+import { NftModule } from './nft/nft.module';
 
 @Module({
   imports: [
@@ -92,6 +93,7 @@ import { VaultsModule } from './vaults/vaults.module';
     MailModule,
     ImpermanentLossModule,
     SafeProxyModule,
+    NftModule,
   ],
   controllers: [
     HealthController,

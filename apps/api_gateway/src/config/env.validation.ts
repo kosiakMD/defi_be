@@ -77,6 +77,7 @@ export const validationSchema = Joi.object({
   INTEGRATION_PANCAKE: Joi.string().required(),
   INTEGRATION_PANGOLIN: Joi.string().required(),
   INTEGRATION_PROTOCOLS: Joi.string().required(),
+  INTEGRATION_NFT_ASSETS: Joi.string().required(),
   // SAFE
   SAFE_PROXY_SERVICE_HOST: Joi.string().required(),
   SAFE_PROXY_SERVICE_PORT: Joi.number() //

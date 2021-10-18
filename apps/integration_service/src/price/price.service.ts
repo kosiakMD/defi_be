@@ -27,13 +27,11 @@ export class PriceService {
     addressesArray: string[],
     chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    const addresses = await addressesArray.join(',');
+    const addresses = addressesArray.join(',');
     return this.httpService
-      .get<PriceResponseDto<CurrentPricesPayload>>(this.getPricesUrl, {
-        params: {
-          chain,
-          addresses,
-        },
+      .post<PriceResponseDto<CurrentPricesPayload>>(this.getPricesUrl, {
+        chain,
+        addresses,
       })
       .pipe(map((response) => response.data))
       .toPromise()
@@ -51,7 +49,7 @@ export class PriceService {
     addressesArray: string[],
     chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    const addresses = await addressesArray.join(',');
+    const addresses = addressesArray.join(',');
     return this.httpService
       .post<PriceResponseDto<CurrentPricesPayload>>(this.getPriceUrlFetch, {
         chain,

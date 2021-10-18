@@ -4,10 +4,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
+  // TODO: disabled until reward math is fixed
+  // ClaimAbleTokenDto,
   Address,
   ChainAbbrEnum,
   ChainIdEnum,
-  ClaimAbleTokenDto,
   CurrentPricesPayload,
   ERC20TokenDto,
   LiquidityPositionDto,
@@ -22,7 +23,11 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import { AccountService } from '../../account/account.service';
 import { PriceService } from '../../price/price.service';
 import { UniswapV3Subgraph } from '../../thegraph/uniswap.v3.subgraph';
-import { calculatePositionAmounts, calculateTokensOwed } from '../../utils/uniswapV3PositionMath';
+import {
+  // TODO: disabled until reward math is fixed
+  // calculateTokensOwed
+  calculatePositionAmounts,
+} from '../../utils/uniswapV3PositionMath';
 import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
 import DataProviderProtocol from './dataProviderProtocol';
@@ -120,45 +125,47 @@ export class UniswapProtocolV3 extends DataProviderProtocol implements AbstractP
           priceUSD: prices[position.token1.address.toLowerCase()],
         });
 
-        const { amount0: rewardsAmount0, amount1: rewardsAmount1 } = calculateTokensOwed({
-          tickCurrent: position.pool.tick,
-          tickLower: position.tickLower,
-          tickUpper: position.tickUpper,
-          feeGrowthInside0LastX128: position.feeGrowthInside0LastX128,
-          feeGrowthInside1LastX128: position.feeGrowthInside1LastX128,
-          feeGrowthGlobal0X128: position.pool.feeGrowthGlobal0X128,
-          feeGrowthGlobal1X128: position.pool.feeGrowthGlobal1X128,
-          liquidity: position.liquidity,
-        });
+        // TODO: disabled until reward math is fixed
+        // const { amount0: rewardsAmount0, amount1: rewardsAmount1 } = calculateTokensOwed({
+        //   tickCurrent: position.pool.tick,
+        //   tickLower: position.tickLower,
+        //   tickUpper: position.tickUpper,
+        //   feeGrowthInside0LastX128: position.feeGrowthInside0LastX128,
+        //   feeGrowthInside1LastX128: position.feeGrowthInside1LastX128,
+        //   feeGrowthGlobal0X128: position.pool.feeGrowthGlobal0X128,
+        //   feeGrowthGlobal1X128: position.pool.feeGrowthGlobal1X128,
+        //   liquidity: position.liquidity,
+        // });
 
-        const reward0 = plainToClass(ClaimAbleTokenDto, {
-          address: position.token0.address,
-          name: position.token0.name,
-          symbol: position.token0.symbol,
-          amount: Number(rewardsAmount0) / 10 ** Number(position.token0.decimals),
-          decimals: Number(position.token0.decimals),
-          reserve: position.pool.totalValueLockedToken0,
-          priceUSD: prices[position.token0.address.toLowerCase()],
-        });
+        // const reward0 = plainToClass(ClaimAbleTokenDto, {
+        //   address: position.token0.address,
+        //   name: position.token0.name,
+        //   symbol: position.token0.symbol,
+        //   amount: Number(rewardsAmount0) / 10 ** Number(position.token0.decimals),
+        //   decimals: Number(position.token0.decimals),
+        //   reserve: position.pool.totalValueLockedToken0,
+        //   priceUSD: prices[position.token0.address.toLowerCase()],
+        // });
 
-        const reward1 = plainToClass(ClaimAbleTokenDto, {
-          address: position.token1.address,
-          name: position.token1.name,
-          symbol: position.token1.symbol,
-          amount: Number(rewardsAmount1) / 10 ** Number(position.token1.decimals),
-          decimals: Number(position.token1.decimals),
-          reserve: position.pool.totalValueLockedToken1,
-          priceUSD: prices[position.token1.address.toLowerCase()],
-        });
+        // const reward1 = plainToClass(ClaimAbleTokenDto, {
+        //   address: position.token1.address,
+        //   name: position.token1.name,
+        //   symbol: position.token1.symbol,
+        //   amount: Number(rewardsAmount1) / 10 ** Number(position.token1.decimals),
+        //   decimals: Number(position.token1.decimals),
+        //   reserve: position.pool.totalValueLockedToken1,
+        //   priceUSD: prices[position.token1.address.toLowerCase()],
+        // });
 
         return plainToClass(LiquidityPositionDto, {
           lpToken, // TODO: This is now an NFT not ERC20 token
           pool: { address: position.pool.id, name: null },
           lpTokenBalance: '0',
           exitedAt: null,
-          rewards: [reward0, reward1],
+          // TODO: disabled until reward math is fixed
+          // rewards: [reward0, reward1],
           earnedFeeUSD: 0,
-          poolTokens: [token0, token1], // from subgraph, missing 'amount' 'priceUSD'
+          poolTokens: [token0, token1],
           project: this.project,
         });
       })

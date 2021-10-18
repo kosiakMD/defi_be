@@ -82,6 +82,10 @@ export const validationSchema = Joi.object({
   AWS_SECRET_ACCESS_KEY: Joi.string() //
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
+  CURRENCYLAYER_API_KEY: Joi.string().required(),
+  CURRENCYLAYER_ENDPOINT: Joi.string() //
+    .default('http://api.currencylayer.com/live')
+    .optional(),
   CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: Joi.number() //
     .integer()
     .optional()

@@ -17,6 +17,7 @@ import {
   PricesPayload,
   PriceBatchRequestDto,
   PriceRangeRequestDto,
+  CurrencyListDto,
 } from './dto';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class PricesService {
   private readonly getPricesUrl: string;
   private readonly getChainsUrl: string;
   private readonly getCurrenciesUrl: string;
+  private readonly getCurrencyPricesUrl: string;
   private readonly getBatchPath: string;
   private readonly getRangePath: string;
 
@@ -48,6 +50,7 @@ export class PricesService {
 
     const currenciesPath = this.configService.get<string>('PRICE_CURRENCIES_PATH');
     this.getCurrenciesUrl = `${url}/${currenciesPath}`;
+    this.getCurrencyPricesUrl = `${url}/${currenciesPath}/quotes`;
 
     const batchPath = this.configService.get<string>('PRICE_BATCH_PATH');
     this.getBatchPath = `${url}/${batchPath}`;
@@ -140,6 +143,20 @@ export class PricesService {
     this.logger.time(timeMark);
     const data = await this.httpService
       .get(this.getCurrenciesUrl)
+      .pipe(map((response) => response.data))
+      .toPromise();
+    this.logger.timeEnd(timeMark);
+    return data;
+  }
+
+  @RequestErrorHandler()
+  async getCurrencyPrices(): Promise<CurrencyListDto> {
+    const timeMark = 'request: ' + this.getCurrencyPricesUrl;
+
+    this.logger.log(this.getCurrencyPricesUrl, 'URL');
+    this.logger.time(timeMark);
+    const data = await this.httpService
+      .get(this.getCurrencyPricesUrl)
       .pipe(map((response) => response.data))
       .toPromise();
     this.logger.timeEnd(timeMark);

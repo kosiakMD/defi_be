@@ -1,9 +1,10 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, forwardRef, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { PricesModule } from '../prices/prices.module';
 import { ChainController } from './chain.controller';
 import { CurrencyController } from './currency.controller';
 import { ChainEntity, CurrencyDto } from './models';
@@ -12,6 +13,8 @@ import { CurrencyService } from './services/currency.service';
 
 @Module({
   imports: [
+    forwardRef(() => PricesModule),
+    HttpModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

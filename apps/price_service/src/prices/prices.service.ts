@@ -5,7 +5,7 @@ import _minBy from 'lodash/minBy';
 import _orderBy from 'lodash/orderBy';
 import { EntityManager, Repository } from 'typeorm';
 
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -22,11 +22,11 @@ import {
   HistoricalPriceQueryDto,
   HistoricalPricesPayload,
   PriceBatchRequestDto,
+  PriceQueryDto,
   PriceRangeRequestDto,
   PriceRequestCurrentDto,
   PriceResponseDto,
   TimestampKeyPrice,
-  PriceQueryDto,
 } from './dto';
 import { getStepCount, interpolation } from './helpers';
 import { Asset, AssetCurrentPrice, AssetPrice } from './models';
@@ -124,12 +124,12 @@ export class PriceService {
   }
 
   constructor(
+    @Inject(forwardRef(() => CurrencyService)) private readonly currencyService: CurrencyService,
     private readonly config: ConfigService,
     @InjectEntityManager() private readonly entityManager: EntityManager,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     @InjectRepository(AssetPrice) private readonly priceRepository: Repository<AssetPrice>,
     @Inject(ChainService) private readonly chainService: ChainService,
-    @Inject(CurrencyService) private readonly currencyService: CurrencyService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.cacheTTLInSeconds = config.get<number>('PRICE_CACHE_TTL_IN_SECONDS') || 15 * 60;

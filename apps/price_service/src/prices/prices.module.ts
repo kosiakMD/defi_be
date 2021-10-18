@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -11,6 +11,7 @@ import { PriceService } from './prices.service';
 
 @Module({
   imports: [
+    forwardRef(() => LookupModule),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -24,10 +25,9 @@ import { PriceService } from './prices.service';
       inject: [ConfigService],
     }),
     TypeOrmModule.forFeature([AssetPrice, Asset, AssetCurrentPrice]),
-    LookupModule,
   ],
   controllers: [PricesController],
   providers: [PriceService],
-  exports: [TypeOrmModule],
+  exports: [PriceService],
 })
 export class PricesModule {}

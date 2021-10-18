@@ -13,4 +13,9 @@ export class CurrencyController {
   getAll(): Promise<CurrencyDto[]> {
     return this.service.getAll();
   }
+
+  @Get('/quotes')
+  async getAvailableCurrencies(): Promise<any> {
+    return this.service.getAvailablePrices();
+  }
 }

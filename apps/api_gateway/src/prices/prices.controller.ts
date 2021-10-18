@@ -13,6 +13,7 @@ import {
   PriceBatchRequestDto,
   PriceRangeRequestDto,
 } from './dto';
+import { CurrencyListDto } from './dto/currency.list.dto';
 import { PricesService } from './prices.service';
 
 @ApiTags('Prices')
@@ -58,5 +59,11 @@ export class PricesController {
   @ApiOkResponse({ type: CurrencyDto, isArray: true })
   getCurrencies(): Promise<CurrencyDto[]> {
     return this.service.getCurrencies();
+  }
+
+  @Get('/currencies/quotes')
+  @ApiOkResponse({ type: CurrencyDto, isArray: true })
+  getCurrencyPrices(): Promise<CurrencyListDto> {
+    return this.service.getCurrencyPrices();
   }
 }

@@ -39,6 +39,7 @@ export const validationSchema = Joi.object({
   APPROVALS_PATH: Joi.string().required(),
   GAS_API_URL: Joi.string().required(),
   GAS_CURRENT_PATH: Joi.string().required(),
+  GAS_API_KEY: Joi.string().required(),
   // ACCOUNT
   ACCOUNT_SERVICE_HOST: Joi.string().required(),
   ACCOUNT_SERVICE_PORT: Joi.number() //

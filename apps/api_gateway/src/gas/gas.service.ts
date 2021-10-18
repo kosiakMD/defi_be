@@ -1,4 +1,5 @@
 import { Cache } from 'cache-manager';
+import { plainToClass } from 'class-transformer';
 import { map } from 'rxjs/operators';
 
 import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
@@ -6,17 +7,16 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { GasHistory, GasPrice } from '@app/common/interfaces';
+import { GasHistory } from '@app/common/interfaces';
 
-interface GasServiceResponse {
-  code: number;
-  data: GasPrice;
-}
+import { GasPriceDto } from './dto/gas.price.dto';
 
 @Injectable()
 export class GasService {
   private readonly gasCurrentUrl: string;
   private readonly gasHistoryUrl: string;
+
+  private readonly gasCurrentApiKey: string;
 
   constructor(
     private httpService: HttpService,
@@ -26,6 +26,7 @@ export class GasService {
   ) {
     const curEntUrl = this.configService.get<string>('GAS_API_URL');
     const currentPath = this.configService.get<string>('GAS_CURRENT_PATH');
+    this.gasCurrentApiKey = this.configService.get<string>('GAS_API_KEY');
     this.gasCurrentUrl = `${curEntUrl}/${currentPath}`;
 
     const hisOryUrl = this.configService.get<string>('DEFIYIELD_INFO_2_URL');
@@ -33,12 +34,23 @@ export class GasService {
     this.gasHistoryUrl = `${hisOryUrl}/${historyPath}`;
   }
 
-  async getGasCurrent(): Promise<GasServiceResponse> {
+  async getGasCurrent(): Promise<GasPriceDto> {
     try {
       this.logger.time(this.gasCurrentUrl);
       const data = this.httpService
-        .get(this.gasCurrentUrl)
-        .pipe(map((r) => r.data.data))
+        .get(this.gasCurrentUrl, {
+          params: {
+            'api-key': this.gasCurrentApiKey,
+          },
+        })
+        .pipe(
+          map(({ data }) =>
+            plainToClass(GasPriceDto, {
+              ...data,
+              timestamp: Date.now(),
+            }),
+          ),
+        )
         .toPromise();
       this.logger.timeEnd(this.gasCurrentUrl);
       return data;

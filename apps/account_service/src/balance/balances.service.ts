@@ -150,19 +150,14 @@ export class BalancesService {
       Object.entries(now).map(([account, balances]) => {
         let currentTotal = 0;
         let pastTotal = 0;
-        const tokens = balances.tokens.map((nowToken) => {
+        const tokens = balances.tokens.reduce((allTokens, nowToken) => {
           const thenToken = then[account].tokens.find(
             (token) => token.token.address.toLowerCase() === nowToken.token.address.toLowerCase(),
           );
 
           currentTotal += nowToken.totalPriceUSD ?? 0;
           if (!thenToken) {
-            return {
-              token: nowToken.token,
-              change: null,
-              changeUSD: null,
-              percent: null,
-            };
+            return allTokens;
           }
 
           pastTotal += thenToken.totalPriceUSD ?? 0;
@@ -171,13 +166,17 @@ export class BalancesService {
           const percent =
             (nowToken.totalPriceUSD - thenToken.totalPriceUSD) / thenToken.totalPriceUSD;
 
-          return {
-            token: nowToken.token,
-            change,
-            changeUSD,
-            percent,
-          };
-        });
+          if (changeUSD) {
+            allTokens.push({
+              token: nowToken.token,
+              change,
+              changeUSD,
+              percent,
+            });
+          }
+
+          return allTokens;
+        }, []);
 
         return [
           account,

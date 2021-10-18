@@ -2,29 +2,35 @@
   - any: [ 'README.md', '*/README.md' ]
 
 ⚙️ Config:
-  - any: [
-      '.github/*',
-      'dangerfile.js',
-      '.gitignore',
-      'tsconfig.json',
-      '.prettierignore',
-      '.prettierrc',
-      '.eslintignore',
-      '.eslintrc.js',
-      'Dockerfile',
-      'dockerignore',
-      'Dockerfile.dockerignore',
-      'Jenkinsfile'
-  ]
+  - '.github/*'
+  - '.github/**/*'
+  - 'dangerfile.js'
+  - '.gitignore'
+  - 'tsconfig.json'
+  - '.prettierignore'
+  - '.prettierrc'
+  - '.eslintignore'
+  - '.eslintrc.js'
+  - 'Dockerfile'
+  - 'dockerignore'
+  - 'Dockerfile.dockerignore'
+  - 'Jenkinsfile'
 
 📦 Dependencies:
-  - any: [ 'package.json', 'yarn.lock', 'package-lock.json', '**/package.json', '**/yarn.lock', '**/package-lock.json' ]
+  - 'package.json'
+  - 'yarn.lock'
+  - 'package-lock.json'
+  - 'apps/**/package.json'
+  - 'apps/**/yarn.lock'
+  - 'apps/**/package-lock.json'
 
 🏗️ Env:
-  - '**/.env.*'
+  - 'apps/**/.env.*'
 
 DTO:
-  - any: [ '**/*.dto.ts', '**/*Dto.ts', '**/*DTO.ts' ]
+  - 'apps/**/*.dto.ts'
+  - 'apps/**/*Dto.ts'
+  - 'apps/**/*DTO.ts'
 
 🧪 Tests:
   - apps/**/*.spec.*
@@ -33,30 +39,45 @@ DTO:
   - any:
       [
           'price_service_crawlers/*',
+          'price_service_crawlers/**/*',
           'integration_service_crawlers/*',
+          'integration_service_crawlers/**/*',
           'account_service_consumers/*',
+          'account_service_consumers/**/*',
           '*/account_service_crawlers',
+          '*/account_service_crawler**/*',
           '*crawlers/*',
+          '*crawlers/**/*',
           '*consumers/*'
+          '*consumers**/**'
       ]
 
 🔒 Safe Service:
   - apps/safe_service_proxy/*
+  - apps/safe_service_proxy/**/*
 
 🔄 Swap Service:
   - apps/swap*/*
+  - apps/swap*/**/*
 
 🎌 Integration Service:
   - apps/integration_service/*
+  - apps/integration_service/**/*
 
 🚪 Gateway Service:
   - apps/api_gateway/*
+  - apps/api_gateway/**/*
 
 👤 Account Service:
   - apps/account_service/*
+  - apps/account_service/**/*
 
 🏷️ Price Service:
   - apps/price_service/*
+  - apps/price_service/**/*
 
 👷️ Lambda:
-  - any: [ 'lambda/src/*', 'apps/lambda_prices/*']
+  - lambda/src/*
+  - lambda/src/**/*
+  - apps/lambda_prices/*
+  - apps/lambda_prices/**/*

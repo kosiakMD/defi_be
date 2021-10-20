@@ -85,6 +85,12 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
         multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
       ]);
 
+      this.logger.log(
+        `Subgraph pools numbers - ${stakedPosition
+          ?.map((position) => position.poolNum)
+          .toString()}`,
+      );
+
       await multicall.getTotalSupplies(poolsAddresses, stakedPosition);
 
       const lpStaked: StakingInterface[] = [];

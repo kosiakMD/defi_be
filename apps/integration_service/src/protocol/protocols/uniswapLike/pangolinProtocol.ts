@@ -19,7 +19,7 @@ export class PangolinProtocol extends UniswapLikeProtocol implements AbstractPro
   readonly name = PangolinProtocolEnum.pangolin;
   readonly displayName = 'Pangolin';
   readonly features = {
-    [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.avax]: [FeatureEnum.pools],
   };
   public feeRate = 0.003;
 

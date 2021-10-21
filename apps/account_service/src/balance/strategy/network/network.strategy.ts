@@ -1,11 +1,11 @@
-import BigNumber from 'bignumber.js';
+import { ChainIdEnum, Logger } from '@app/common';
+import { COIN_ADDRESS } from '@app/common/constant';
+import { retry } from '@app/common/utils/retry';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import BigNumber from 'bignumber.js';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { ChainIdEnum, Logger } from '@app/common';
-import { COIN_ADDRESS } from '@app/common/constant';
 
 import { Web3Provider } from '../../../chain/web3.provider';
 import { TokenBalance } from '../../interfaces/balance.interfaces';
@@ -14,6 +14,7 @@ import { BalancesContract } from './balances.contract';
 import { chunkArray, insertAtPosition } from './utils';
 
 const DEFAULT_BATCH_SIZE = 1000;
+const WEB3_RETRY_CALL_IN_MS = 2000;
 
 @Injectable()
 export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
@@ -23,12 +24,13 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     private readonly web3Provider: Web3Provider,
   ) {}
 
-  async getBalances({
-    address,
-    chainId,
-    tokens: originalTokens,
-    block,
-  }: BalancesRequest): Promise<TokenBalance[]> {
+  async getBalances(
+    {
+      address,
+      chainId,
+      tokens: originalTokens,
+      block,
+    }: BalancesRequest): Promise<TokenBalance[]> {
     if (!originalTokens.length) {
       return [];
     }
@@ -55,11 +57,17 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
 
     const chunkSize = this.getBalancesBatchSize(chainId);
     let promises: (Promise<string> | Promise<string[]>)[] = chunkArray(tokens, chunkSize).map(
-      (chunk) => contract.getBalances(address, chunk, block),
+      (chunk) => retry(
+        () => contract.getBalances(address, chunk, block),
+        WEB3_RETRY_CALL_IN_MS,
+      ),
     );
 
     if (hasNativeCoin) {
-      promises = [web3.eth.getBalance(address), ...promises];
+      promises = [
+        retry(() => web3.eth.getBalance(address), WEB3_RETRY_CALL_IN_MS),
+        ...promises,
+      ];
     }
 
     const batchedBalances = await Promise.all<string | string[]>(promises);

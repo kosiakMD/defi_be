@@ -66,7 +66,7 @@ export const validationSchema = Joi.object({
     .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
     .optional(),
   BSC_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(1000)
+    .default(1500)
     .optional(),
   BSC_BALANCES_CHECKER_ADDRESS: Joi.string()
     .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')

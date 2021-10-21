@@ -1,40 +1,36 @@
-export type UpdateStrategy = 'fill' | 'override' | 'default' | 'difference';
+export type UpdateStrategy = 'fill' | 'override' | 'default';
 
 export const objectUpdate = (
   targetObject: Record<string, any>,
   sourceObject: Record<string, any>,
-  dictionary: Record<string, string> | UpdateStrategy = 'fill',
+  dictionary: Record<string, string> | string = 'fill',
   strategy: UpdateStrategy = 'fill',
 ): void => {
-  const strategyOverride = (key: string, sourceValue: any, targetField: string): void =>
-    (targetObject[targetField] = sourceValue);
-  const strategyFill = (key: string, sourceValue: any, targetField: string): void =>
-    sourceValue && (targetObject[targetField] = sourceValue);
-  const strategyDefault = (key: string, sourceValue: any, targetField: string): void =>
-    (targetObject[targetField] = sourceValue ? sourceValue : null);
+  const strategyOverride = (key: string, value: any, targetField: string): void =>
+    (targetObject[targetField] = value);
+  const strategyFill = (key: string, value: any, targetField: string): void =>
+    value && (targetObject[targetField] = value);
+  const strategyDefault = (key: string, value: any, targetField: string): void =>
+    (targetObject[targetField] = value ? value : null);
 
   let source = dictionary;
   let applyStrategy: string = strategy;
   let withoutDictionary = false;
   if (!dictionary || typeof dictionary === 'string') {
-    applyStrategy = dictionary as string;
     withoutDictionary = true;
-    if (applyStrategy === 'difference') {
-      source = targetObject;
-    } else {
-      source = sourceObject;
-    }
+    source = sourceObject;
+    applyStrategy = dictionary as string;
   }
 
   Object.keys(source).forEach((key) => {
-    const sourceValue = sourceObject[key]; // TODO
+    const value = sourceObject[key]; // TODO
     const targetField = withoutDictionary ? key : dictionary[key];
     if (applyStrategy === 'fill') {
-      strategyFill(key, sourceValue, targetField);
+      strategyFill(key, value, targetField);
     } else if (applyStrategy === 'override') {
-      strategyOverride(key, sourceValue, targetField);
+      strategyOverride(key, value, targetField);
     } else {
-      strategyDefault(key, sourceValue, targetField);
+      strategyDefault(key, value, targetField);
     }
   });
 };

@@ -9,7 +9,6 @@ import { StakingPosition } from '@app/common/interfaces/staking.position.interfa
 import { PlatformPoolToken, PoolToken } from '@app/common/interfaces/transactions.interfaces';
 import { Address, DateString, ProtocolName, TokenSymbol } from '@app/common/types';
 
-export * from './assets.interfaces';
 export * from './balance.interfaces';
 export * from './entity.information.interfaces';
 export * from './fee.interfaces';

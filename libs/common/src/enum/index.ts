@@ -1,4 +1,3 @@
-export * from './asset.enum';
 export * from './chain.enum';
 export * from './feature.enum';
 export * from './protocol.enum';
@@ -73,4 +72,11 @@ export enum SortFieldEnum {
 export enum DirectionEnum {
   in = 'in',
   out = 'out',
+}
+
+export enum MulticallFunctionEnum {
+  earned = 'earned',
+  totalSupply = 'totalSupply',
+  token0 = 'token0',
+  token1 = 'token1',
 }

@@ -8,11 +8,6 @@
     "yarn": ">=1.13.0"
   },
   "scripts": {
-    "gateway-start:dev": "nest start api_gateway --watch",
-    "account-start:dev": "nest start account_service --watch",
-    "integration-start:dev": "nest start integration_service --watch",
-    "price-start:dev": "nest start price_service --watch",
-
     "pre-commit": "yarn run lint && yarn run format-check",
     "prepare": "husky install",
     "build-monorepo": "yarn common-build && yarn gateway-build && yarn account-build && yarn integration-build && yarn price-build",
@@ -22,37 +17,48 @@
     "format-check": "prettier \"./**/src/**/*.ts\" \"./**/test/**/*.ts\" --check",
     "common-build": "nest build common",
 
-    "gateway-build": "nest build api_gateway",
-    "account-build": "nest build account_service",
-    "integration-build": "nest build integration_service",
-    "price-build": "nest build price_service",
-
     "gateway-prebuild": "yarn --cwd ./apps/api_gateway run prebuild",
     "gateway-format": "yarn --cwd ./apps/api_gateway run format",
     "gateway-lint": "eslint \"./apps/api_gateway/{src,config,test}/**/*.ts\"",
+    "gateway-build": "nest build api_gateway",
+    "gateway-start:dev": "nest start api_gateway --watch",
     "gateway-start:debug": "nest start api_gateway --debug --watch",
     "gateway-start:prod": "nest start api_gateway",
 
     "account-format": "yarn --cwd ./apps/account_service run format",
     "account-lint": "eslint \"./apps/account_service/{src,config,test}/**/*.ts\"",
     "account-prebuild": "yarn yarn --cwd ./apps/account_service run prebuild",
+    "account-build": "nest build account_service",
     "account-start": "nest start account_service",
+    "account-start:dev": "nest start account_service --watch",
     "account-start:debug": "nest start account_service --debug --watch",
     "account-start:prod": "nest start account_service",
 
     "integration-format": "yarn --cwd ./apps/integration_service run format",
     "integration-lint": "eslint \"./apps/integration_service/{src,config}/**/*.ts\"",
     "integration-prebuild": "yarn yarn --cwd ./apps/integration_service run prebuild",
+    "integration-build": "nest build integration_service",
     "integration-start": "nest start integration_service",
+    "integration-start:dev": "nest start integration_service --watch",
     "integration-start:debug": "nest start integration_service --debug --watch",
     "integration-start:prod": "nest start integration_service",
 
     "price-format": "yarn --cwd ./apps/price_service run format",
     "price-lint": "eslint \"./apps/price_service/{src,config}/**/*.ts\"",
     "price-prebuild": "yarn yarn --cwd ./apps/price_service run prebuild",
+    "price-build": "nest build price_service",
     "price-start": "nest start price_service",
+    "price-start:dev": "nest start price_service --watch",
     "price-start:debug": "nest start price_service --debug --watch",
-    "price-start:prod": "nest start price_service"
+    "price-start:prod": "nest start price_service",
+
+    "prebuild_price": "yarn run prebuild --prefix price_service",
+    "build_price": "yarn run build --prefix price_service",
+    "format_price": "yarn run format --prefix price_service",
+    "start_price": "yarn run start --prefix price_service",
+    "start_price:dev": "yarn run start --watch --prefix price_service",
+    "start_price:debug": "yarn run start --debug --watch --prefix price_service",
+    "start_price:prod": "yarn run start --prefix price_service"
   },
   "repository": {
     "type": "git",

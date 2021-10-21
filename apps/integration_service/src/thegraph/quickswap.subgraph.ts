@@ -1,11 +1,12 @@
 import { map } from 'rxjs/operators';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';
 
-import { PairsDto, SubgraphResponseDto, UsersDto } from '../subgraph';
+import { PairsDto, ResponseDto, UsersDto } from '../quickswap/dto/subgraph';
 import { wrapInQuotes } from '../utils/string';
 
 @Injectable()
@@ -19,7 +20,7 @@ export class QuickswapSubgraph {
     this.subgraphUrl = this.configService.get<string>('QUICKSWAP_SUBGRAPH_URL');
   }
 
-  getUsers(accountAddresses: Address[]): Promise<SubgraphResponseDto<UsersDto>> {
+  getUsers(accountAddresses: Address[]): Promise<ResponseDto<UsersDto>> {
     return this.httpService
       .post(this.subgraphUrl, {
         operationName: 'users',
@@ -41,7 +42,7 @@ export class QuickswapSubgraph {
       .toPromise();
   }
 
-  getPairs(pairsAddresses: Address[]): Promise<SubgraphResponseDto<PairsDto>> {
+  getPairs(pairsAddresses: Address[]): Promise<ResponseDto<PairsDto>> {
     return this.httpService
       .post(this.subgraphUrl, {
         operationName: 'pairs',

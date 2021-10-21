@@ -9,7 +9,6 @@ import {
   AccountTokenBalance,
   Address,
   BalancesResponse,
-  ChainDto,
   ChainIdEnum,
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
@@ -67,16 +66,16 @@ export class SpookySwapProtocol extends DataProviderProtocol {
     this.dataProvider = this;
   }
 
-  protected async getData(addresses: string, chain: ChainDto): Promise<BaseData[]> {
+  protected async getData(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
     const originAddressesArray = addresses.toLowerCase().split(',');
-    const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chain}_SpookySwap_pools`);
+    const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chainId}_SpookySwap_pools`);
 
-    const web3Provider = this.web3Provider.getForChain(chain.abbr);
+    const web3Provider = this.web3Provider.web3Map.get(chainId);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 
     const results = await Promise.allSettled([
-      this.getLiquidityPositions(originAddressesArray, pools, chain),
-      this.getStakingPositions(originAddressesArray, pools, chain.id, multicall),
+      this.getLiquidityPositions(originAddressesArray, pools, chainId),
+      this.getStakingPositions(originAddressesArray, pools, chainId, multicall),
     ]);
 
     const response = [];
@@ -96,11 +95,11 @@ export class SpookySwapProtocol extends DataProviderProtocol {
   private async getLiquidityPositions(
     originAddressesArray: Address[],
     pools: NotifyPayloadFeaturesDto,
-    chain: ChainDto,
+    chainId: ChainIdEnum,
   ): Promise<BaseData[]> {
     const balances = await this.accountService.getBalances(
       originAddressesArray,
-      [chain.id],
+      [chainId],
       pools.items.map((pool) => pool.address.toLowerCase()),
     );
 
@@ -110,7 +109,7 @@ export class SpookySwapProtocol extends DataProviderProtocol {
       await this.mapToUniswapResponseData(originAddressesArray, pools, balances),
       ProjectEnum.spookyswap,
       ProtocolNameEnum.SpookySwap,
-      chain,
+      chainId,
     );
 
     return poolData;

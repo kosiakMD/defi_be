@@ -2,9 +2,9 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { ChainAbbrEnum, Logger } from '@app/common';
+import { Logger } from '@app/common';
+import { ChainIdEnum } from '@app/common/enum';
 
-import { MulticallContractFunctionEnum } from '../../../../multicall/multicall.enum';
 import { AutofarmTokenInfo, StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
 import {
   AutoFactoryAbi,
@@ -47,11 +47,11 @@ export class LocalMultiCall extends MultiCall {
     }
   }
 
-  async getVaultPoolsInfo(data: StakingInterface[], chain: ChainAbbrEnum): Promise<string[]> {
+  async getVaultPoolsInfo(data: StakingInterface[], chain: ChainIdEnum): Promise<string[]> {
     const inputs = data.map((pool) => {
       const input: CallInput = {
         target: autofarmFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.poolInfo,
+        function: 'poolInfo',
         args: [pool.poolNum],
       };
       return input;
@@ -66,10 +66,7 @@ export class LocalMultiCall extends MultiCall {
     return poolsAddresses;
   }
 
-  async getVaultUsersInfo(
-    data: StakingInterface[],
-    chain: ChainAbbrEnum,
-  ): Promise<VaultUserInfo[]> {
+  async getVaultUsersInfo(data: StakingInterface[], chain: ChainIdEnum): Promise<VaultUserInfo[]> {
     const inputs = data.map((pool) => {
       const input: CallInput = {
         target: autofarmFactoriesMap.get(chain),

@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainDto, IntegrationFeaturesDataDto, Logger, ProtocolName } from '@app/common';
+import { IntegrationFeaturesDataDto, Logger, ProtocolName } from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
@@ -11,7 +11,7 @@ import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { FeaturesResponseDto, ProtocolBasicInfo } from '../protocol/features/features.dto';
 import { FeaturesService } from '../protocol/features/features.service';
 import { ProtocolService } from '../protocol/protocol.service';
-import { getChainById } from '../utils/chain';
+import { getChainByAbbr } from '../utils/chain';
 import { IntChainsDataDto, IntegrationsResponseDto, ProtocolInfoDto } from './integrations.dto';
 
 @Injectable()
@@ -67,19 +67,18 @@ export class IntegrationsService {
     response.data.currency = plainToClass(CurrencyDto, {});
     // Features Data
     const allData = await Promise.allSettled<any>( // <IntegrationFeaturesDataDto>
-      allowedChains.map((chainId) => {
-        const chain: ChainDto = getChainById(chainId);
-        return this.protocolService.getProtocolFeatures(protocolName, addresses, chain);
-      }),
+      allowedChains.map((chainId) =>
+        this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
+      ),
     );
     // Data
     allowedChains.forEach((chainId, dataIndex) => {
       const chainData = plainToClass(IntChainsDataDto, {});
-      const chain: ChainDto = getChainById(chainId);
+      const chainAbbr = ChainIdEnum[chainId];
       // Chain Info
-      chainData.chain = chain;
+      chainData.chain = getChainByAbbr(chainAbbr);
       // Protocol Features Info
-      chainData.features = [...(info?.features[chain.abbr] ?? [])];
+      chainData.features = [...(info?.features[chainAbbr] ?? [])];
       // Result Features Data
       const chainResult = allData[dataIndex];
       if (chainResult.status === 'fulfilled') {

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, Logger } from '@app/common';
+import { Logger } from '@app/common';
 import { WETH_ADDRESS } from '@app/common/constant';
 import { AaveUser } from '@app/common/dto';
 import {
@@ -47,10 +47,10 @@ export class AaveProtocolV2 extends DataProviderProtocol {
   }
 
   // override
-  async getData(addresses: string, chain: ChainDto): Promise<BaseData[]> {
+  async getData(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
     const originAddressesArray = addresses.toLowerCase().split(',');
     const [usersResult, ethPriceResult] = await Promise.allSettled([
-      this.getUserReserves(originAddressesArray, chain.id),
+      this.getUserReserves(originAddressesArray, chainId),
       this.getEthPrice(),
     ]);
 
@@ -67,11 +67,11 @@ export class AaveProtocolV2 extends DataProviderProtocol {
       responseData,
       ProjectEnum.aave,
       ProtocolNameEnum.AaveV2,
-      chain,
+      chainId,
     );
   }
 
-  getUserReserves(addresses: Address[], chainId: ChainIdEnum): any {
+  getUserReserves(addresses: string[], chainId: ChainIdEnum): any {
     return this.subgraph.getUsersReserves(addresses, chainId);
   }
 

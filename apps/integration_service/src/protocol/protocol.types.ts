@@ -8,19 +8,16 @@ import { PriceService } from '../price/price.service';
 import { FeatureEnum } from './features/features.enum';
 import { DefaultDataProvider } from './protocols.dto';
 
+// export type ProtocolFeatures = Record<ChainAbbrEnum, FeatureEnum[]>;
+export type ProtocolFeaturesInfo = {
+  [key in keyof typeof ChainAbbrEnum]?: FeatureEnum | FeatureEnum[];
+  // [key in keyof typeof ChainAbbrEnum]?: FeatureDto;
+};
+
 export type ProtocolFeaturesData = {
   // [key in keyof typeof ChainAbbrEnum]?: FeatureEnum | FeatureEnum[];
   [key in keyof typeof ChainAbbrEnum]?: FeatureDto;
 };
-
-// export type ProtocolFeatures = Record<ChainAbbrEnum, FeatureEnum[]>;
-export type ProtocolFeaturesInfo = {
-  [key in keyof typeof ChainAbbrEnum]?: FeatureEnum[];
-  // [key in keyof ChainAbbrEnum]?: FeatureEnum | FeatureEnum[];
-  // [key in keyof typeof ChainAbbrEnum]?: FeatureDto;
-};
-
-export type FeaturesType = FeatureEnum[] | ProtocolFeaturesInfo;
 
 export type BasicProtocolType<DataProvider extends DefaultDataProvider = DefaultDataProvider> = {
   [key in keyof typeof FeatureEnum]?: (
@@ -42,3 +39,5 @@ export type BasicProtocolType<DataProvider extends DefaultDataProvider = Default
   getInfo: (chainId?: ChainIdEnum) => any;
   getAllFeaturesData: (address: string, chainId?: ChainIdEnum) => any;
 };
+
+export type FeaturesType = FeatureEnum[] | ProtocolFeaturesInfo;

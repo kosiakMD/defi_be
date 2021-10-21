@@ -1,14 +1,12 @@
 import {
   Address,
-  ChainDto,
   FeaturesType,
   IntegrationFeaturesData,
   Logger,
   ProtocolBasicInfo,
   ProtocolName,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
-import { ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
+import { ChainAbbrEnum, ChainIdEnum, ProjectEnum } from '@app/common/enum';
 
 import { ProtocolFeaturesInfo } from '../protocol.types';
 import { RawFeaturesDto } from '../protocols.dto';
@@ -20,17 +18,16 @@ export abstract class AbstractProtocol {
   protected abstract readonly project: ProjectEnum;
   protected abstract readonly features: ProtocolFeaturesInfo;
   protected abstract readonly logger: Logger;
-  abstract getFeaturesInfo(chain?: ChainAbbrEnum): FeaturesType;
-  abstract getInfo(chain?: ChainAbbrEnum): ProtocolBasicInfo;
+  abstract getFeaturesInfo<T extends FeaturesType>(chainId?: ChainIdEnum): T;
+  abstract getInfo(chainId?: ChainIdEnum): ProtocolBasicInfo;
   abstract getAllFeaturesData?(
-    address: Address,
-    chain?: ChainDto,
+    address: string,
+    chainId?: ChainIdEnum,
   ): Promise<IntegrationFeaturesData>;
   public abstract getAllFeaturesRawData?(
     address: Address,
-    chain?: ChainDto,
+    chainId?: ChainIdEnum,
   ): Promise<RawFeaturesDto>;
-  protected getData?(addresses: Address, chain: ChainDto): Promise<BaseData[]>;
 }
 
 export default AbstractProtocol;

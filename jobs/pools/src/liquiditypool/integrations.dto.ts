@@ -118,7 +118,6 @@ export class StakingToken extends ERC20TokenDto {
   tokens: PoolTokenDto[];
 }
 
-// TODO: same as IntegrationStakingPositionDto!!!
 export class StakingPoolFeature {
   address: string;
   poolId: number;

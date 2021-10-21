@@ -29,11 +29,9 @@ export class AssetDto {
   })
   description: string;
 
+  
   @Expose({ name: 'image_url' })
-  @ApiProperty({
-    example:
-      'https://lh3.googleusercontent.com/rEbgZYOxhKbjLR6nOJwKsPQKCAEmjJxguTKCZ27vHbHm1v3a4NrwYnUqNzaqq_zFjnC6PytLz5hQ3VC4HABPZ_KPzu478JvvzGFVBw',
-  })
+  @ApiProperty({ example: 'https://lh3.googleusercontent.com/rEbgZYOxhKbjLR6nOJwKsPQKCAEmjJxguTKCZ27vHbHm1v3a4NrwYnUqNzaqq_zFjnC6PytLz5hQ3VC4HABPZ_KPzu478JvvzGFVBw' })
   imageUrl: string;
 
   @Expose({ name: 'token_metadata' })

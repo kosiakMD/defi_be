@@ -9,7 +9,6 @@ import {
   AutomaticMarketMaker,
   Borrowing,
   BorrowingToken,
-  ChainDto,
   Lending,
   LendingErcToken,
   LiquidityPositionDto,
@@ -105,7 +104,7 @@ export class Mapper {
   protected static createBaseData(baseInfo: BaseInfo, protocolType: ProtocolTypeEnum): BaseData {
     return {
       protocolType,
-      chain: baseInfo.chain,
+      chainId: baseInfo.chainId,
       protocolName: baseInfo.protocolName,
       projectName: baseInfo.projectName,
       userAddress: baseInfo.userAddress,
@@ -150,7 +149,7 @@ export class Mapper {
     );
   }
 
-  public static transformAmm(baseInfo: BaseInfo): AutomaticMarketMaker {
+  protected static transformAmm(baseInfo: BaseInfo): AutomaticMarketMaker {
     return Mapper.createDynamicFeature<AutomaticMarketMaker>(baseInfo, ProtocolTypeEnum.amm);
   }
 
@@ -177,13 +176,13 @@ export class Mapper {
     subgraphData: UniswapSubgraphLikeData,
     projectName: ProjectEnum,
     protocolName: ProtocolName,
-    chain: ChainDto,
+    chainId: ChainIdEnum,
   ): Promise<BaseData[]> {
     const base: BaseData[] = [];
 
     for (const userAddress of originAddresses) {
       const baseInfo: BaseInfo = {
-        chain,
+        chainId,
         projectName,
         protocolName,
         userAddress: Mapper.getOriginAddress(originAddresses, userAddress),
@@ -191,36 +190,44 @@ export class Mapper {
       // const transactions: TransactionProjectDto = Mapper.transformTransaction(baseInfo);
       // base.push(transactions);
 
-      const { subgraphPools, subgraphStaking, subgraphLending } = subgraphData;
-
-      if (subgraphPools) {
+      if (subgraphData.subgraphPools) {
         const amm: AutomaticMarketMaker = Mapper.transformAmm(baseInfo);
         await this.mapLiquidityPositions(
           amm,
-          !subgraphPools.get(userAddress) ? [] : subgraphPools.get(userAddress),
+          !subgraphData.subgraphPools.get(userAddress)
+            ? []
+            : subgraphData.subgraphPools.get(userAddress),
         );
         base.push(amm);
       }
 
-      if (subgraphStaking) {
+      if (subgraphData.subgraphStaking) {
         const staking: StakingProjectDto = Mapper.transformStaking(baseInfo);
 
         await this.mapStakingPositions(
           staking,
-          !subgraphPools.has(userAddress) ? [] : subgraphPools.get(userAddress),
-          !subgraphStaking.has(userAddress) ? [] : subgraphStaking.get(userAddress),
+          !subgraphData.subgraphPools.has(userAddress)
+            ? []
+            : subgraphData.subgraphPools.get(userAddress),
+          !subgraphData.subgraphStaking.has(userAddress)
+            ? []
+            : subgraphData.subgraphStaking.get(userAddress),
         );
 
         base.push(staking);
       }
 
-      if (subgraphLending) {
+      if (subgraphData.subgraphLending) {
         // TODO: Lending should be a class and use plainToClass
         const lending: Lending = Mapper.transformLending(baseInfo);
 
         const borrowing: Borrowing = Mapper.transformBorrowing(baseInfo);
 
-        await this.mapLendingPositions(lending, borrowing, subgraphLending.get(userAddress));
+        await this.mapLendingPositions(
+          lending,
+          borrowing,
+          subgraphData.subgraphLending.get(userAddress),
+        );
         base.push(lending);
         base.push(borrowing);
       }
@@ -253,7 +260,7 @@ export class Mapper {
     return lpEarnedUser * lpTokenPrice;
   }
 
-  public async mapLiquidityPositions(
+  private async mapLiquidityPositions(
     amm: AutomaticMarketMaker,
     subgraphPools: IncomeLiquidityPosition[],
   ): Promise<void> {

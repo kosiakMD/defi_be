@@ -6,7 +6,6 @@ import { Logger } from '@app/common';
 
 import { ChainIdEnum } from '../../common/enum';
 
-import { MulticallContractFunctionEnum } from '../../multicall/multicall.enum';
 import {
   AlpacaApiResponse,
   AlpacaStakingInterface,
@@ -40,7 +39,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.poolInfo,
+        function: 'poolInfo',
         args: [pool.poolNum],
       };
     });
@@ -61,7 +60,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.userInfo,
+        function: 'userInfo',
         args: [pool.poolNum, pool.userAddress],
       };
     });

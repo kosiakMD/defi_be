@@ -1,3 +1,3 @@
 export interface SubgraphResponseBase<T = any> {
-  data?: T;
+  data: T;
 }

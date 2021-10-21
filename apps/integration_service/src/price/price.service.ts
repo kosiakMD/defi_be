@@ -3,7 +3,6 @@ import { map } from 'rxjs/operators';
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { Address } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { CurrencyIdEnum } from '../common/enum';
@@ -25,7 +24,7 @@ export class PriceService {
   }
 
   async getTokenPrices(
-    addressesArray: Address[],
+    addressesArray: string[],
     chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     const addresses = addressesArray.join(',');
@@ -47,13 +46,13 @@ export class PriceService {
   }
 
   async getTokenPricesFetch(
-    addressesArray: Address[],
-    chainId: ChainIdEnum,
+    addressesArray: string[],
+    chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     const addresses = addressesArray.join(',');
     return this.httpService
       .post<PriceResponseDto<CurrentPricesPayload>>(this.getPriceUrlFetch, {
-        chain: chainId,
+        chain,
         addresses,
         currency: CurrencyIdEnum.usd,
       })

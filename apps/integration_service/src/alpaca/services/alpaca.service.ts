@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js';
-import { classToClass, plainToClass } from 'class-transformer';
+import { classToClass } from 'class-transformer';
 
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { AlpacaProtocolEnum, ChainDto, Logger } from '@app/common';
+import { AlpacaProtocolEnum, Logger } from '@app/common';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 
 import { Address } from '../../common/types';
@@ -60,14 +60,14 @@ export class AlpacaService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
 
-  async getDataByAddresses(address: Address, chain: ChainDto): Promise<BaseData[]> {
+  async getDataByAddresses(address: Address, chainId: ChainIdEnum): Promise<BaseData[]> {
     const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([address]);
     const stakedPosition: AlpacaStakingInterface[] = [];
     this.getStakingPosition(alpacaUsers, stakedPosition);
 
-    const webProvider = this.web3Provider.getForChain(chain.abbr);
+    const webProvider = this.web3Provider.web3Map.get(chainId);
     const localMultiCall = new LocalMultiCall(webProvider, this.logger);
-    const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chain.id);
+    const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chainId);
 
     const [lendingTokens, leverageFarming] = await Promise.all([
       localMultiCall.getLendingPoolsBalances(address, setTokenAddresses),
@@ -78,7 +78,7 @@ export class AlpacaService {
 
     const priceTokens = new Set<string>();
     const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
-      localMultiCall.getVaultUsersInfo(stakedPosition, chain.id),
+      localMultiCall.getVaultUsersInfo(stakedPosition, chainId),
       localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokens),
       localMultiCall.getWorkerTokensData(leverageFarming, priceTokens),
     ]);
@@ -90,8 +90,8 @@ export class AlpacaService {
 
     const priceTokensArray = Array.from(priceTokens);
     const [{ data }, price] = await Promise.all([
-      this.accountService.getAssets(priceTokensArray, [chain.id]),
-      this.priceService.getTokenPricesFetch(priceTokensArray, chain.id),
+      this.accountService.getAssets(priceTokensArray, [chainId]),
+      this.priceService.getTokenPricesFetch(priceTokensArray, chainId),
     ]);
 
     const assetsMap = new Map<string, Asset>();
@@ -108,7 +108,7 @@ export class AlpacaService {
     if (leverageFarming?.length) {
       const leverage: LeverageFarming = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.leverageFarming,
-        chain,
+        chainId,
         address,
       ) as LeverageFarming;
 
@@ -124,7 +124,7 @@ export class AlpacaService {
     if (lendingTokens?.size) {
       const lending: Lending = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.lending,
-        chain,
+        chainId,
         address,
       ) as Lending;
       lending.lendingPositions = this.getLendingPositionsDtos(
@@ -141,7 +141,7 @@ export class AlpacaService {
     if (stakedPosition?.length) {
       const staking: Staking = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.staking,
-        chain,
+        chainId,
         address,
       ) as Staking;
 
@@ -151,7 +151,7 @@ export class AlpacaService {
         assetsMap,
         price.prices,
         claimableToken,
-        chain.id,
+        chainId,
       );
 
       base.push(staking);
@@ -162,16 +162,16 @@ export class AlpacaService {
 
   private static getBaseDataInstance(
     protocolType: ProtocolTypeEnum,
-    chain: ChainDto,
+    chainId: ChainIdEnum,
     userAddress: string,
   ): BaseData<ProtocolTypeEnum> {
-    return plainToClass(BaseData, {
+    return {
       userAddress,
-      chain,
+      chainId,
       projectName: ProjectEnum.alpaca,
       protocolName: AlpacaProtocolEnum.alpaca,
       protocolType: protocolType,
-    });
+    };
   }
 
   private getLeverageFarmingPositionsDtos(

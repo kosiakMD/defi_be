@@ -26,5 +26,4 @@ export type FeatureDto<T extends Features> = Record<FeatureName, FeatureResult<T
 export class FeatureResultDto<T extends Features> {
   totalValue = 0;
   items: T[] = [];
-  errors?: string[] = [];
 }

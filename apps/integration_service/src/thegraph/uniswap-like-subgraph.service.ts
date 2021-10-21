@@ -333,6 +333,7 @@ const pairFragment = `
       name
       symbol
       decimals
+      derivedETH
       tradeVolume
       tradeVolumeUSD
       untrackedVolumeUSD
@@ -346,6 +347,7 @@ const pairFragment = `
       name
       symbol
       decimals
+      derivedETH
       tradeVolume
       tradeVolumeUSD
       untrackedVolumeUSD

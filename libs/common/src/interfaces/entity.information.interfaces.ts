@@ -7,6 +7,7 @@ export class IncomeToken {
   id: string;
   name: string;
   symbol: string;
+  derivedETH?: string;
   percentage?: number;
 }
 

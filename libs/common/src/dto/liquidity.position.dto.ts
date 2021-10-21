@@ -20,6 +20,7 @@ export class IncomeLiquidityPositionPair {
   token1: IncomeToken = null;
   token1Price: string = null;
   totalSupply: string = null;
+  reserveETH?: string = null;
 }
 
 export class LiquidityPositionPoolDto {

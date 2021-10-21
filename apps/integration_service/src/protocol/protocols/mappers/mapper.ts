@@ -13,6 +13,7 @@ import {
   LendingErcToken,
   LiquidityPositionDto,
 } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import {
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
@@ -49,7 +50,17 @@ export class Mapper {
       .toNumber();
   }
 
-  protected static createPoolTokenPoolBN(pair, order: 0 | 1, userPoolShare: BN): PoolTokenDto {
+  protected static priceInUSDByDerived(halfUSD: string, amount: string): number {
+    return new BN(halfUSD) //
+      .div(amount)
+      .toNumber();
+  }
+
+  protected static createPoolTokenPoolBN(
+    pair: IncomeLiquidityPositionPair,
+    order: 0 | 1,
+    userPoolShare: BN,
+  ): PoolTokenDto {
     const poolToken = Mapper.createPoolToken(pair, order);
     poolToken.amount = userPoolShare.times(poolToken.reserve).toString();
     return poolToken;
@@ -59,13 +70,20 @@ export class Mapper {
     pair,
     order: 0 | 1,
     userPoolShare: number,
+    calculateByDerived: boolean,
+    priceETH: string,
   ): PoolTokenDto {
-    const poolToken = Mapper.createPoolToken(pair, order);
+    const poolToken = Mapper.createPoolToken(pair, order, calculateByDerived, priceETH);
     poolToken.amount = (userPoolShare * Number(poolToken.reserve)).toString();
     return poolToken;
   }
 
-  protected static createPoolToken(pair, order: 0 | 1): PoolTokenDto {
+  protected static createPoolToken(
+    pair: IncomeLiquidityPositionPair,
+    order: 0 | 1,
+    calculateByDerived: boolean = false,
+    halfReserveUSD: string = null,
+  ): PoolTokenDto {
     const token = pair[`token${order}`];
     const reserve = pair[`reserve${order}`];
     const poolToken = plainToClass(PoolTokenDto, {});
@@ -75,7 +93,9 @@ export class Mapper {
     poolToken.symbol = token.symbol;
     poolToken.totalSupply = null;
     poolToken.reserve = reserve;
-    poolToken.priceUSD = Mapper.priceInUSD(pair.reserveUSD, reserve);
+    poolToken.priceUSD = calculateByDerived
+      ? Mapper.priceInUSDByDerived(halfReserveUSD, reserve)
+      : Mapper.priceInUSD(pair.reserveUSD, reserve);
     poolToken.percentage = Mapper.PERCENTAGE;
 
     return poolToken;
@@ -172,7 +192,7 @@ export class Mapper {
 
       if (subgraphData.subgraphPools) {
         const amm: AutomaticMarketMaker = Mapper.transformAmm(baseInfo);
-        Mapper.mapLiquidityPositions(
+        await this.mapLiquidityPositions(
           amm,
           !subgraphData.subgraphPools.get(userAddress)
             ? []
@@ -240,10 +260,10 @@ export class Mapper {
     return lpEarnedUser * lpTokenPrice;
   }
 
-  private static mapLiquidityPositions(
+  private async mapLiquidityPositions(
     amm: AutomaticMarketMaker,
     subgraphPools: IncomeLiquidityPosition[],
-  ): void {
+  ): Promise<void> {
     for (const subgraphPool of subgraphPools) {
       const pool: LiquidityPool = plainToClass(LiquidityPool, {
         address: subgraphPool.pair.id,
@@ -261,7 +281,10 @@ export class Mapper {
 
       const userPoolShare = Number(subgraphPool.liquidityTokenBalance) / Number(pair.totalSupply);
 
-      const [poolToken0, poolToken1] = Mapper.mapFromProjectTokenToPoolToken(pair, userPoolShare);
+      const [poolToken0, poolToken1] = await this.mapFromProjectTokenToPoolToken(
+        pair,
+        userPoolShare,
+      );
 
       const project =
         amm.projectName === ProjectEnum.uniswap ? UniswapProtocolEnum.uniswapV2 : amm.projectName;
@@ -279,12 +302,39 @@ export class Mapper {
     }
   }
 
-  private static mapFromProjectTokenToPoolToken(
+  private async mapFromProjectTokenToPoolToken(
     pair: IncomeLiquidityPositionPair,
     userPoolShare: number,
-  ): PoolToken[] {
-    const poolToken0 = Mapper.createPoolTokenPoolNumber(pair, 0, userPoolShare);
-    const poolToken1 = Mapper.createPoolTokenPoolNumber(pair, 1, userPoolShare);
+  ): Promise<PoolToken[]> {
+    const { prices: priceETH } = await this.priceService.getTokenPricesFetch(
+      [ZERO_ADDRESS],
+      ChainIdEnum.eth,
+    );
+    const calculateByDerived = !(+pair.token0.derivedETH && +pair.token1.derivedETH);
+    const halfReserveUSD =
+      new BN(pair.reserve0) //
+        .times(pair.token0.derivedETH)
+        .times(priceETH[ZERO_ADDRESS])
+        .toNumber() |
+      new BN(pair.reserve1) //
+        .times(pair.token1.derivedETH)
+        .times(priceETH[ZERO_ADDRESS])
+        .toNumber();
+
+    const poolToken0 = Mapper.createPoolTokenPoolNumber(
+      pair,
+      0,
+      userPoolShare,
+      calculateByDerived,
+      new BN(halfReserveUSD).toString(),
+    );
+    const poolToken1 = Mapper.createPoolTokenPoolNumber(
+      pair,
+      1,
+      userPoolShare,
+      calculateByDerived,
+      new BN(halfReserveUSD).toString(),
+    );
 
     return [poolToken0, poolToken1];
   }

@@ -6,6 +6,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
+  AccountTokenBalance,
   Address,
   BalancesResponse,
   ChainIdEnum,
@@ -96,7 +97,11 @@ export class SpookySwapProtocol extends DataProviderProtocol {
     pools: NotifyPayloadFeaturesDto,
     chainId: ChainIdEnum,
   ): Promise<BaseData[]> {
-    const balances = await this.accountService.getBalances(originAddressesArray, [chainId]);
+    const balances = await this.accountService.getBalances(
+      originAddressesArray,
+      [chainId],
+      pools.items.map((pool) => pool.address.toLowerCase()),
+    );
 
     const poolData = await this.mapper.mapData(
       Object.keys(balances),
@@ -143,34 +148,45 @@ export class SpookySwapProtocol extends DataProviderProtocol {
     balances: BalancesResponse,
   ): Map<string, IncomeLiquidityPosition[]> {
     const uniswapLiquidityPositions = new Map<string, IncomeLiquidityPosition[]>();
-    const lpTokenAddresses = pools.items.map((pool) => pool.address.toLowerCase());
+    const lpTokenAddresses = new Set(pools.items.map((pool) => pool.address.toLowerCase()));
 
     originAddressesArray.forEach((userAddress) => {
-      const rawPositions = balances[userAddress.toLowerCase()].tokens
-        .filter((balance) => lpTokenAddresses.includes(balance.token.address.toLowerCase()))
-        .map((balance: any): IncomeLiquidityPosition => {
+      const rawPositions = balances[userAddress.toLowerCase()].tokens.reduce(
+        (
+          positions: IncomeLiquidityPosition[],
+          balance: AccountTokenBalance,
+        ): IncomeLiquidityPosition[] => {
+          if (!lpTokenAddresses.has(balance.token.address.toLowerCase())) {
+            return positions;
+          }
+
           const pool = pools.items.find(
             (p) => p.address.toLowerCase() === balance.token.address.toLowerCase(),
           );
 
-          return plainToClass(IncomeLiquidityPosition, {
-            liquidityTokenBalance: balance.decimalsAmount.toString(),
-            user: balance.account,
-            pair: plainToClass(IncomeLiquidityPositionPair, {
-              id: pool.address,
-              reserveUSD: pool.TVL,
-              totalSupply: pool.lpToken.totalSupply,
+          positions.push(
+            plainToClass(IncomeLiquidityPosition, {
+              liquidityTokenBalance: balance.decimalsAmount.toString(),
+              user: balance.account,
+              pair: plainToClass(IncomeLiquidityPositionPair, {
+                id: pool.address,
+                reserveUSD: pool.TVL,
+                totalSupply: pool.lpToken.totalSupply,
 
-              token0: this.formatIncomeToken(pool.tokens[0]),
-              reserve0: pool.tokens[0].reserve,
-              token0Price: pool.tokens[0].price,
+                token0: this.formatIncomeToken(pool.tokens[0]),
+                reserve0: pool.tokens[0].reserve,
+                token0Price: pool.tokens[0].price,
 
-              token1: this.formatIncomeToken(pool.tokens[1]),
-              reserve1: pool.tokens[1].reserve,
-              token1Price: pool.tokens[1].price,
+                token1: this.formatIncomeToken(pool.tokens[1]),
+                reserve1: pool.tokens[1].reserve,
+                token1Price: pool.tokens[1].price,
+              }),
             }),
-          });
-        });
+          );
+          return positions;
+        },
+        [] as IncomeLiquidityPosition[],
+      );
 
       uniswapLiquidityPositions.set(userAddress.toLowerCase(), rawPositions);
     });

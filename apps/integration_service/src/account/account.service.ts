@@ -40,9 +40,13 @@ export class AccountService {
     this.getAssetsUrl = `${url}/${assetsPath}`;
   }
 
-  async getBalances(addresses: Address[], chains?: ChainIdEnum[]): Promise<BalancesResponse> {
+  async getBalances(
+    addresses: Address[],
+    chains?: ChainIdEnum[],
+    assets?: Address[],
+  ): Promise<BalancesResponse> {
     const data = await this.httpService
-      .get(this.getBalanceUrl, { params: { addresses, chains } })
+      .get(this.getBalanceUrl, { params: { addresses, chains, assets } })
       .toPromise();
     return data.data;
   }

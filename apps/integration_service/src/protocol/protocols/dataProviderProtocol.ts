@@ -1,7 +1,7 @@
 import {
   Address,
   ChainAbbrEnum,
-  ChainIdEnum,
+  ChainDto,
   IntegrationFeaturesDataDto,
   Logger,
   ProjectEnum,
@@ -34,15 +34,15 @@ export abstract class DataProviderProtocol extends BasicProtocol {
 
   public getAllFeaturesData?(
     address: Address,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<IntegrationFeaturesDataDto>;
 
   public getAllFeaturesRawData = async (
     addresses: Address,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<RawFeaturesDto> => {
     try {
-      const data = await this.getData(addresses, chainId);
+      const data = await this.getData(addresses, chain);
 
       const rawPools = data.find((data) => data['liquidityPositions'])?.liquidityPositions;
       const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
@@ -61,8 +61,8 @@ export abstract class DataProviderProtocol extends BasicProtocol {
 
   // get data from data providers
 
-  protected async getData(addresses, chainId) {
-    return await this.dataProvider.getDataByAddresses(addresses, chainId);
+  protected async getData(addresses: Address, chain: ChainDto) {
+    return await this.dataProvider.getDataByAddresses(addresses, chain.id);
   }
 }
 

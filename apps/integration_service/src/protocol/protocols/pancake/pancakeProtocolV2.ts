@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, Logger } from '@app/common';
+import { Address, ChainDto, Logger } from '@app/common';
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../account/account.service';
@@ -38,7 +38,7 @@ export default class PancakeProtocolV2 extends DataProviderProtocol {
     this.dataProvider = this;
   }
 
-  public getDataByAddresses(address: Address, chainId: ChainIdEnum): Promise<BaseData[]> {
-    return this.pancakeService.getDataByAddresses(address, chainId, this.name);
+  public getDataByAddresses(address: Address, chain: ChainDto): Promise<BaseData[]> {
+    return this.pancakeService.getDataByAddresses(address, chain, this.name);
   }
 }

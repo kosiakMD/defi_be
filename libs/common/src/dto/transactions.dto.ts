@@ -1,4 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
+import { Type } from 'class-transformer';
+
 import {
   ClaimTransaction,
   PoolToken,
@@ -8,7 +10,6 @@ import {
   UnStakeTransaction,
 } from '@app/common';
 import { LiquidityChangeTypeEnum, ProtocolTypeEnum, TransactionTypeEnum } from '@app/common/enum';
-import { Type } from 'class-transformer';
 
 import { BaseData } from './BaseData';
 import { ERC20Token } from './ERC20Token';

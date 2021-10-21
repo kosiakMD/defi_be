@@ -1,7 +1,7 @@
-import { ChainIdEnum, ProjectEnum, ProtocolName, ProtocolTypeEnum } from '@app/common';
+import { ChainDto, ProjectEnum, ProtocolName, ProtocolTypeEnum } from '@app/common';
 
 export class BaseData<T = keyof typeof ProtocolTypeEnum> {
-  chainId: ChainIdEnum;
+  chain: ChainDto;
   userAddress: string;
   protocolType: T;
   projectName: ProjectEnum;

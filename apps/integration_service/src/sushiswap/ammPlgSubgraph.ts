@@ -9,14 +9,14 @@ import { PairsDto, SubgraphResponseDto, UsersDto } from '../subgraph';
 import { wrapInQuotes } from '../utils/string';
 
 @Injectable()
-export class QuickswapSubgraph {
+export class AmmPlgSubgraph {
   protected readonly subgraphUrl: string;
 
   constructor(
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
   ) {
-    this.subgraphUrl = this.configService.get<string>('QUICKSWAP_SUBGRAPH_URL');
+    this.subgraphUrl = this.configService.get<string>('AMM_SUSHISWAP_PLG_SUBGRAPH_URL');
   }
 
   getUsers(accountAddresses: Address[]): Promise<SubgraphResponseDto<UsersDto>> {

@@ -4,8 +4,11 @@ import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
+  Address,
   Borrowing,
   BorrowingPosition,
+  ChainDto,
+  ChainId,
   FeatureResultDto,
   Features,
   IntegrationFeaturesDataDto,
@@ -25,6 +28,7 @@ import { AccountService } from '../account/account.service';
 import { DetailedResponseDto } from '../dto';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 import {
+  IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   LPToken,
   PoolTokenDto,
@@ -44,8 +48,8 @@ import PancakeProtocolV2 from './protocols/pancake/pancake.protocol.v2';
 import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
+import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
-import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 
@@ -102,17 +106,17 @@ export class ProtocolService {
   public async getProtocolFeatures(
     protocolName: ProtocolName,
     addresses: string,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<IntegrationFeaturesDataDto> {
     const protocol = this.getProtocolByName(protocolName);
     if (!protocol) {
       throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
     }
     if (protocol.getAllFeaturesData) {
-      return await protocol.getAllFeaturesData(addresses, chainId);
+      return await protocol.getAllFeaturesData(addresses, chain);
     } else {
-      const featuresData = await protocol.getAllFeaturesRawData(addresses, chainId);
-      return await this.formatFeaturesData(featuresData, chainId, protocol);
+      const featuresData = await protocol.getAllFeaturesRawData(addresses, chain);
+      return await this.formatFeaturesData(featuresData, chain.id, protocol);
     }
   }
 
@@ -120,7 +124,7 @@ export class ProtocolService {
 
   private async formatFeaturesData(
     featuresData: RawFeaturesDto,
-    chainId: ChainIdEnum,
+    chainId: ChainId,
     protocol: BasicProtocol,
   ): Promise<IntegrationFeaturesDataDto> {
     try {
@@ -135,7 +139,7 @@ export class ProtocolService {
         // result pools
         rawPools && this.handleResultPools(rawPools, result, chainId, protocol),
         // result staking
-        rawStaking && this.handleResultStaking(rawStaking, result),
+        rawStaking && this.handleResultStaking(rawStaking, result, chainId),
         // result lending
         rawLending && this.handleResultLending(rawLending, result),
         // result borrowing
@@ -155,7 +159,7 @@ export class ProtocolService {
 
   // side effect
   protected async handleResultPools(
-    rawPools,
+    rawPools: LiquidityPosition[],
     result: IntegrationFeaturesDataDto,
     chainId: ChainIdEnum,
     protocol: BasicProtocol,
@@ -175,9 +179,10 @@ export class ProtocolService {
   protected async handleResultStaking(
     rawStaking,
     result: IntegrationFeaturesDataDto,
+    chainId: ChainId,
   ): Promise<void> {
     try {
-      result[FeatureEnum.staking] = this.transformStaking(rawStaking);
+      result[FeatureEnum.staking] = await this.transformStaking(rawStaking, chainId);
     } catch (e) {
       this.logger.error(e, 'handleResultStaking');
       result.errors.push(e.message);
@@ -249,32 +254,37 @@ export class ProtocolService {
   }
 
   // transforms
-  protected transformStaking(
+  protected async transformStaking(
     stakingPositions: IntegrationStakingPositionDto[],
-  ): FeatureResultDto<IntegrationStakingPositionDto> {
+    chainId: ChainId,
+  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
+    const result: FeatureResultDto<IntegrationStakingPositionDto> = {
+      totalValue: 0,
+      items: null,
+      errors: [],
+    };
+
     try {
-      const result: FeatureResultDto<IntegrationStakingPositionDto> = {
-        totalValue: 0,
-        items: null,
-      };
-
-      stakingPositions?.forEach((sp) => {
-        if (sp.stakingToken.tokens) {
-          sp.stakingToken.tokens.forEach((spt) => {
-            result.totalValue = result.totalValue + spt.value;
-          });
-        } else {
-          result.totalValue = result.totalValue + sp.stakingToken.value;
-        }
-        result.totalValue = result.totalValue + Number(sp.rewardToken.claimableData.value);
-      });
-
-      result.items = stakingPositions || [];
-      return result;
+      await this.handleStakingMissedData(stakingPositions, chainId);
     } catch (e) {
       this.logger.error(e);
+      result.errors.push(e.message);
       throw e;
     }
+
+    stakingPositions?.forEach((sp) => {
+      if (sp.stakingToken.tokens) {
+        sp.stakingToken.tokens.forEach((spt) => {
+          result.totalValue = result.totalValue + spt.value;
+        });
+      } else {
+        result.totalValue = result.totalValue + sp.stakingToken.value;
+      }
+      result.totalValue = result.totalValue + Number(sp.rewardToken.claimableData.value);
+    });
+
+    result.items = stakingPositions || [];
+    return result;
   }
 
   protected async transformPools(
@@ -447,11 +457,11 @@ export class ProtocolService {
       }
       type Response = DetailedResponseDto<Asset[]> | PriceResponseDto<CurrentPricesPayload>;
       const requests = [tokensRequest, pricesRequest];
-      const [tokens, prices] = await Promise.allSettled<Response>(requests);
+      const [tokensResponse, pricesResponse] = await Promise.allSettled<Response>(requests);
 
       if (tokensRequest) {
-        if (tokens.status === 'fulfilled') {
-          const tokensData = tokens.value as DetailedResponseDto<Asset[]>;
+        if (tokensResponse.status === 'fulfilled') {
+          const tokensData = tokensResponse.value as DetailedResponseDto<Asset[]>;
           if (tokensData.status === ResultStatus.ok) {
             const lpTokens = tokensData.data.slice(-pools.length);
             const fullTokens = tokensData.data.slice(0, tokensData.data.length - pools.length);
@@ -474,14 +484,14 @@ export class ProtocolService {
             errors.push(tokensData.errors);
           }
         } else {
-          this.logger.error(tokens.reason);
-          errors.push(tokens.reason.message);
+          this.logger.error(tokensResponse.reason);
+          errors.push(tokensResponse.reason.message);
         }
       }
 
       if (pricesRequest) {
-        if (prices.status === 'fulfilled') {
-          const pricesData = prices.value as PriceResponseDto<CurrentPricesPayload>;
+        if (pricesResponse.status === 'fulfilled') {
+          const pricesData = pricesResponse.value as PriceResponseDto<CurrentPricesPayload>;
 
           const tokensPrices = pricesData?.prices || [];
 
@@ -492,8 +502,8 @@ export class ProtocolService {
             });
           });
         } else {
-          this.logger.error(prices.reason);
-          errors.push(prices.reason.message);
+          this.logger.error(pricesResponse.reason);
+          errors.push(pricesResponse.reason.message);
         }
       }
     }
@@ -516,11 +526,11 @@ export class ProtocolService {
   }
 
   private async getAllTokenPrices(
-    addresses: string[],
+    addresses: Address[],
     chainId: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     try {
-      return await this.priceService.getTokenPrices(addresses, chainId);
+      return await this.priceService.getTokenPricesFetch(addresses, chainId);
     } catch (e) {
       this.logger.error(e);
       if (e.message.startsWith('connect ECONNREFUSED')) {
@@ -529,5 +539,61 @@ export class ProtocolService {
         throw new Error('getAllTokenPrices: \n ' + e);
       }
     }
+  }
+
+  private async handleStakingMissedData(
+    stakingPositions: IntegrationStakingPositionDto[],
+    chainId: ChainId,
+  ) {
+    const tokensToFetchPrice: Map<Address, PoolTokenDto | IntegrationERC20TokenDto> = new Map();
+    const addressesToFetchPrice: Address[] = [];
+    // add reward Token
+    const rewardTokenAddress = stakingPositions[0].rewardToken.address;
+    addressesToFetchPrice.push(rewardTokenAddress);
+    // add pool tokens
+    stakingPositions.forEach(({ stakingToken }) => {
+      const { tokens, address: stakingAddress } = stakingToken;
+      addressesToFetchPrice.push(stakingAddress);
+      tokensToFetchPrice.set(stakingAddress, stakingToken);
+      tokens.forEach((token) => {
+        addressesToFetchPrice.push(token.address);
+        tokensToFetchPrice.set(token.address, token);
+      });
+    });
+    // fetch all tokens prices
+    const tokensPrices = await this.priceService.getTokenPricesFetch(
+      addressesToFetchPrice,
+      chainId,
+    );
+    // handle reward token price
+    const rewardTokenPrice = tokensPrices.prices[rewardTokenAddress];
+    // to avoid set in to Map of ordinary tokens
+    delete tokensPrices.prices[rewardTokenAddress];
+    // handle staking and pool tokens prices
+    // Object.entries(tokensPrices.prices).forEach(([address, price]) => {
+    //   const token = tokensToFetchPrice.get(address);
+    //   token.price = Number(price) || null;
+    //   token.value = Number(token.price) * Number(token.balance) || null;
+    // });
+    // handle reward and staking tokens prices and values
+    stakingPositions.forEach(({ rewardToken, stakingToken }) => {
+      rewardToken.price = rewardTokenPrice;
+      rewardToken.claimableData.value =
+        rewardTokenPrice * Number(rewardToken.claimableData.balance);
+      // stakingToken.value = Number(stakingToken.price) * Number(stakingToken.balance);
+      const poolShare = Number(stakingToken.balance) / Number(stakingToken.totalSupply);
+      // staking token
+      const stakingTokenPrice = tokensPrices.prices[stakingToken.address];
+      stakingToken.price = Number(stakingTokenPrice) || null;
+      stakingToken.value = Number(stakingTokenPrice) * Number(stakingToken.balance) || null;
+      stakingToken.tokens.forEach((token) => {
+        const price = tokensPrices.prices[token.address];
+        token.price = Number(price) || null;
+        token.value = Number(price) * Number(token.balance) || null;
+        const tokenBalance = poolShare * Number(token.reserve);
+        token.balance = tokenBalance.toString();
+        token.value = tokenBalance * token.price;
+      });
+    });
   }
 }

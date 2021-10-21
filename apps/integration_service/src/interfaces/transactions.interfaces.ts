@@ -1,18 +1,17 @@
 // eslint-disable-next-line max-classes-per-file
-import { Type } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AaveUser } from '@app/common';
+import { AaveUser, ChainDto } from '@app/common';
 import { IncomeLiquidityPosition } from '@app/common/dto/liquidity.position.dto';
 import {
-  ChainIdEnum,
   LiquidityChangeTypeEnum,
   ProjectEnum,
   ProtocolTypeEnum,
   TransactionTypeEnum,
 } from '@app/common/enum';
-import { ProtocolName, Address } from '@app/common/types';
+import { Address, ProtocolName } from '@app/common/types';
 
 import { LPToken } from '../integrations/integrations.dto';
 
@@ -26,16 +25,22 @@ export interface AmountAble {
   amount?: string;
 }
 
+@Exclude()
 export class ERC20Token {
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })
+  @Expose()
   address: string;
   @ApiProperty({ type: String, example: 'Ethereum' })
+  @Expose()
   name: string;
   @ApiProperty({ type: String, example: 'ETH' })
+  @Expose()
   symbol: string;
   @ApiProperty({ type: Number, example: 18 })
+  @Expose()
   decimals: number;
   @ApiProperty({ type: String, example: '69393241' })
+  @Expose()
   totalSupply?: string;
 }
 
@@ -154,7 +159,7 @@ export interface StakingPosition {
 }
 
 export class BaseData<T = keyof typeof ProtocolTypeEnum> {
-  chainId: ChainIdEnum;
+  chain: ChainDto;
   userAddress: string;
   protocolType: T;
   projectName: ProjectEnum;

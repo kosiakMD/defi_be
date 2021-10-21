@@ -1,6 +1,8 @@
+import { Type } from 'class-transformer';
+
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ProtocolName } from '@app/common';
+import { ChainDto, ProtocolName } from '@app/common';
 import {
   ChainIdEnum,
   PancakeProtocolEnum,
@@ -17,7 +19,8 @@ import { txsDto } from './txs.dto';
 
 export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chainId: ChainIdEnum;
+  @Type(() => ChainDto)
+  chain: ChainDto;
 
   @ApiProperty({ type: String, example: '0x782629c9578889a9b8464f051f23843734f72599' })
   userAddress: string;

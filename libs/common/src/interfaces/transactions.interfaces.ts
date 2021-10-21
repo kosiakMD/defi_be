@@ -50,11 +50,12 @@ export interface Transaction<T = string> {
 export interface PlatformPoolToken {
   address: string;
   reserve: string;
-  name?: string;
-  symbol?: TokenSymbol;
-  percentage?: number;
-  decimals?: number;
-  totalSupply?: string;
+  name: string;
+  symbol: TokenSymbol;
+  percentage: number;
+  decimals: number;
+  totalSupply: string;
   priceUSD?: number;
+  // TODO should be required
   amount?: string;
 }

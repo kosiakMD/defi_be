@@ -10,23 +10,24 @@ export class PlatformPoolTokenDto implements PlatformPoolToken {
   reserve: string;
 
   @ApiProperty({ type: String, example: 'Synthetix Network Token', required: false })
-  name?: string;
+  name: string;
 
   @ApiProperty({ type: String, example: 'SNX', required: false })
-  symbol?: TokenSymbol;
+  symbol: TokenSymbol;
 
   @ApiProperty({ type: Number, example: 50, required: false })
-  percentage?: number;
+  percentage: number;
 
   @ApiProperty({ type: Number, example: 18, required: false })
-  decimals?: number;
+  decimals: number;
 
   @ApiProperty({ type: String, example: '27560900', required: false })
-  totalSupply?: string;
+  totalSupply: string;
 
   @ApiProperty({ type: Number, example: 9.07997544843182, required: false })
   priceUSD?: number;
 
+  // TODO should be required
   @ApiProperty({ type: String, example: '0', required: false })
   amount?: string;
 }

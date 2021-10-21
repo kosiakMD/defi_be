@@ -5,9 +5,15 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
+import {
+  ChainAbbrEnum,
+  ChainDto,
+  Logger,
+  NotifyPayloadStakingFeaturesDto,
+  PoolTokenDto,
+} from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
-import { ChainIdEnum, FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum, } from '@app/common/enum';
+import { FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 
 import { ProtocolNameEnum } from '../../../common/enum';
 
@@ -23,7 +29,10 @@ import {
 } from '../../../integrations/integrations.dto';
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../price/price.service';
-import { Balance, Pancakev2MainStakingSubgraph, } from '../../../thegraph/pancakev2.main.staking.subgraph';
+import {
+  Balance,
+  Pancakev2MainStakingSubgraph,
+} from '../../../thegraph/pancakev2.main.staking.subgraph';
 import { decimalsDivider } from '../../../utils/util';
 import { Mapper } from '../mappers/mapper';
 
@@ -42,10 +51,10 @@ export class PancakeV2Service {
     private readonly priceService: PriceService,
   ) {}
 
-  public async getDataByAddresses(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
+  public async getDataByAddresses(addresses: string, chain: ChainDto): Promise<BaseData[]> {
     const base: BaseData[] = [];
     const baseInfo: BaseInfo = {
-      chainId,
+      chain,
       projectName: ProjectEnum.pancake,
       protocolName: ProtocolNameEnum.pancakeV2,
       userAddress: '',
@@ -59,7 +68,7 @@ export class PancakeV2Service {
 
     const stakingPositions: IntegrationStakingPositionDto[] = await this.getStakingPositions(
       originAddressesArray,
-      chainId,
+      chain.abbr,
     );
 
     const tokenToGetPrices: Set<string> = new Set<string>();
@@ -77,7 +86,7 @@ export class PancakeV2Service {
 
     const { prices } = await this.priceService.getTokenPricesFetch(
       Array.from(tokenToGetPrices),
-      chainId,
+      chain.id,
     );
 
     let totalValue = 0;
@@ -89,7 +98,7 @@ export class PancakeV2Service {
           totalValue = totalValue + spt.value;
         });
       } else {
-        sp.stakingToken.price = prices[sp.stakingToken.address];
+        sp.stakingToken.price = Number(prices[sp.stakingToken.address]);
         sp.stakingToken.value =
           Number(sp.stakingToken.balance) * Number(prices[sp.stakingToken.address]);
         totalValue = totalValue + sp.stakingToken.value;
@@ -108,7 +117,7 @@ export class PancakeV2Service {
 
   private async getStakingPositions(
     addresses: string[],
-    chain: ChainIdEnum,
+    chain: ChainAbbrEnum,
   ): Promise<IntegrationStakingPositionDto[]> {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
@@ -122,7 +131,7 @@ export class PancakeV2Service {
       );
     }
 
-    const web3Provider = this.web3Provider.web3Map.get(chain);
+    const web3Provider = this.web3Provider.getForChain(chain);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 
     let balances: Balance[] = await this.pancakev2MainStakingSubgraph.getBalances(addresses);

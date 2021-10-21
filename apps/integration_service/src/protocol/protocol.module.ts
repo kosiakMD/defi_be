@@ -22,8 +22,8 @@ import PancakeProtocolV2 from './protocols/pancake/pancake.protocol.v2';
 import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
+import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
-import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 

@@ -5,11 +5,9 @@ import { FeatureDto } from './features.types';
 
 export type ProtocolFeaturesInfo = {
   [key in keyof typeof ChainAbbrEnum]?: FeatureEnum | FeatureEnum[];
-  // [key in keyof typeof ChainAbbrEnum]?: FeatureDto;
 };
 
 export type ProtocolFeaturesData = {
-  // [key in keyof typeof ChainAbbrEnum]?: FeatureEnum | FeatureEnum[];
   [key in keyof typeof ChainAbbrEnum]?: FeatureDto;
 };
 

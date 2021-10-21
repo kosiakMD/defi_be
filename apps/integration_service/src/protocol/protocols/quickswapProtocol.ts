@@ -4,16 +4,15 @@ import { plainToClass } from 'class-transformer';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, IncomeLiquidityPosition, Logger, PoolTokenDto } from '@app/common';
+import { Address, ChainDto, IncomeLiquidityPosition, Logger, PoolTokenDto } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import {
   ChainAbbrEnum,
   ChainIdEnum,
   ProjectEnum,
-  QuickswapProtocolEnum,
   ProtocolNameEnum,
+  QuickswapProtocolEnum,
 } from '@app/common/enum';
-import { MultiCallService } from '@app/common/multicall';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3ProviderService } from '@app/common/web3provider';
 
@@ -23,8 +22,8 @@ import {
   IntegrationStakingPositionDto,
   LPToken,
 } from '../../integrations/integrations.dto';
+import { MultiCallService } from '../../multicall';
 import { PriceService } from '../../price/price.service';
-import { PairDto } from '../../quickswap/dto/subgraph';
 import { LPTokenPair } from '../../quickswap/interfaces';
 import {
   QUICKSWAP_STAKING_REWARDS_ABI,
@@ -34,6 +33,7 @@ import {
   QUICKSWAP_REWARDS_TOKEN_ADDRESS,
   QUICKSWAP_STAKING_CONTRACTS,
 } from '../../quickswap/utils/constants';
+import { PairDto } from '../../subgraph';
 import { QuickswapSubgraph } from '../../thegraph/quickswap.subgraph';
 import { decimalsDivider, getUniqueAndToLowerCaseArrayData } from '../../utils/util';
 import { FeatureEnum } from '../features/features.enum';
@@ -44,7 +44,6 @@ import { Mapper } from './mappers/mapper';
 @Injectable()
 export class QuickswapProtocol extends DataProviderProtocol implements AbstractProtocol {
   private readonly multicall: MultiCallService;
-
   readonly chains = [ChainAbbrEnum.plg];
   readonly project = ProjectEnum.quickswap;
   readonly name = QuickswapProtocolEnum.quickswap;
@@ -119,13 +118,13 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     );
   }
 
-  public async getData(addresses: string): Promise<BaseData[]> {
+  public async getData(addresses: string, chain: ChainDto): Promise<BaseData[]> {
     try {
       const originAddresses = addresses.split(',');
       const uniqueAddresses = getUniqueAndToLowerCaseArrayData(originAddresses);
 
-      const uniswapLiquidityPositions = new Map<Address, IncomeLiquidityPosition[]>();
-      const sushiswapStakingPosition = new Map<Address, IntegrationStakingPositionDto[]>();
+      const liquidityPositionsMap = new Map<Address, IncomeLiquidityPosition[]>();
+      const stakingPositionsMap = new Map<Address, IntegrationStakingPositionDto[]>();
 
       const { data: rawRewardTokens } = await this.accountService.getAssets(
         [QUICKSWAP_REWARDS_TOKEN_ADDRESS],
@@ -157,9 +156,9 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
         Array.from(stakingPairsAddresses),
       );
 
-      for (const address of uniqueAddresses) {
+      for (const userAddress of uniqueAddresses) {
         const userLiquidityPositions = usersPools.find(
-          (_) => _.id.toLocaleLowerCase() === address.toLocaleLowerCase(),
+          (_) => _.id.toLocaleLowerCase() === userAddress.toLocaleLowerCase(),
         );
 
         const pairsTotalSupply = await this.multicall.getTotalSupply(
@@ -172,7 +171,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
             liquidityTokenBalance:
               userLiquidityPositions.liquidityPositions.find(({ pair: { id } }) => id === pair.id)
                 .liquidityTokenBalance || null,
-            user: address,
+            user: userAddress,
             pair: {
               ...pair,
               totalSupply: new BigNumber(pairsTotalSupply.get(pair.id)) //
@@ -181,16 +180,16 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
             },
           })),
         );
-        uniswapLiquidityPositions.set(address, pairs);
+        liquidityPositionsMap.set(userAddress, pairs);
 
         const stakingTokensBalances = await this.multicall.getBalancesOf(
           QUICKSWAP_STAKING_CONTRACTS.map((_) => _.stakingContractAddress),
-          address,
+          userAddress,
         );
 
         const stakingTokensClaimable = await this.multicall.getEarned(
           QUICKSWAP_STAKING_CONTRACTS.map((_) => _.stakingContractAddress),
-          address,
+          userAddress,
           QUICKSWAP_STAKING_REWARDS_ABI,
         );
 
@@ -251,7 +250,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
             );
 
             return {
-              address,
+              address: userAddress,
               poolId: null,
               poolName: null,
               staked: balance,
@@ -261,21 +260,21 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           }),
         );
 
-        sushiswapStakingPosition.set(
-          address,
+        stakingPositionsMap.set(
+          userAddress,
           stakingPosition.filter((_) => +_.staked),
         );
       }
 
       for (const address of uniqueAddresses) {
-        const stakingPositions = sushiswapStakingPosition.get(address);
+        const userStakingPositions = stakingPositionsMap.get(address);
 
         const stakingPairsData: PairDto[] = await this.getSubgraphPairs(
-          stakingPositions.map((_) => _.stakingToken.address),
+          userStakingPositions.map((_) => _.stakingToken.address),
         );
 
         const resultStakingPositions = await Promise.all(
-          stakingPositions.map(
+          userStakingPositions.map(
             async (
               stakingPosition: IntegrationStakingPositionDto,
             ): Promise<IntegrationStakingPositionDto> => {
@@ -308,19 +307,19 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           ),
         );
 
-        sushiswapStakingPosition.set(address, resultStakingPositions);
+        stakingPositionsMap.set(address, resultStakingPositions);
       }
 
       return await this.mapper.mapData(
         uniqueAddresses,
         originAddresses,
         {
-          subgraphPools: uniswapLiquidityPositions,
-          subgraphStaking: sushiswapStakingPosition,
+          subgraphPools: liquidityPositionsMap,
+          subgraphStaking: stakingPositionsMap,
         },
         ProjectEnum.quickswap,
         ProtocolNameEnum.quickswap,
-        ChainIdEnum.plg,
+        chain,
       );
     } catch (error) {
       this.logger.error(error, 'QuickswapService.getDataByAddress');

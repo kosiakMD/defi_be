@@ -58,7 +58,7 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         - name: secrets
-          mountPath: /usr/src/app/dist/apps/price_service/.env
+          mountPath: /usr/src/app/dist/apps/{{ include "defiyield-service.fullname" . }}/.env
           subPath: .env
           readOnly: true
       {{- with .Values.extraContainers }}

@@ -7,7 +7,6 @@ RUN yarn install --loglevel verbose
 
 # Build application
 COPY . .
-RUN ls -l apps
 RUN yarn gateway-build
 RUN yarn integration-build
 RUN yarn account-build
@@ -31,6 +30,7 @@ ENV NODE_ENV production
 # Copy runtime dependencies and application code
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
+COPY --from=development /usr/src/app/dist ./dist
 #COPY --from=development /usr/src/app/apps/api_gateway/config/.env /dist/apps/api_gateway/.env
 RUN touch /dist/apps/api_gateway/.env
 

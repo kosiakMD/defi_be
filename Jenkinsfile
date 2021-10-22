@@ -3,7 +3,7 @@
 pipeline {
     agent any
     parameters {
-        string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "master", trim: true),
+        string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "master", trim: true)
         string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_gw", trim: true)
     }
     options {

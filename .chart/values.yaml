@@ -3,7 +3,7 @@ application:
   version: ""
   environment: ""
   maxVersions: 5
-  log_level: info
+  log_level: debug
 
 replicas: 1
 

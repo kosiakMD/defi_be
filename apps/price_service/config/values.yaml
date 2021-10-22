@@ -11,11 +11,16 @@ configMaps:
     SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
-    BODY_LIMIT: 50mb
-    URL_LIMIT: 50mb
+    CURRENCYLAYER_API_KEY: 82aa76fc01397164f25dc02a7acc652b
+    CURRENCYLAYER_ENDPOINT: http://api.currencylayer.com/live
+
   logs:
     LOG_AWS_ENABLED: true
     NODE_ENV: production
+  config:
+    CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: 172800
+    BODY_LIMIT: 50mb
+    URL_LIMIT: 50mb
 
 secrets:
 - database

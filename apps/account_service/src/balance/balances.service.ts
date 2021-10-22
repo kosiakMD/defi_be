@@ -1,26 +1,26 @@
-import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
-import { In, Repository } from 'typeorm';
-import Web3 from 'web3';
+import { Address, ChainIdEnum, Logger } from '@app/common';
+import { roundToNearestHour } from '@app/common/utils/dates';
 
 import { CACHE_MANAGER, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Address, ChainIdEnum, Logger } from '@app/common';
-import { roundToNearestHour } from '@app/common/utils/dates';
-
-import { BLACKLISTED_TOKENS } from '../common/constatnt';
+import { In, Repository } from 'typeorm';
+import Web3 from 'web3';
 
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
+
+import { BLACKLISTED_TOKENS } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
 import { excludeSecondArray, getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import {
   BalancesResponse,
   BlockTimestamp,
+  ERC20Token,
   ErrorMessage,
   TokenBalance,
 } from './interfaces/balance.interfaces';
@@ -66,6 +66,7 @@ export class BalancesService {
     const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
     return this.mapResults(balances);
   }
+
   public async getBalanceAtBlock(
     addresses: Address[],
     blocks: Map<ChainIdEnum, BlockTimestamp>,
@@ -82,7 +83,6 @@ export class BalancesService {
     }
 
     const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets, blocks);
-
     return this.mapResults(balances);
   }
 
@@ -145,14 +145,14 @@ export class BalancesService {
     );
   }
 
-  calculate24HourReturns({ now, then }: { now: BalancesResponse; then: BalancesResponse }) {
+  private calculate24HourReturns({ now, then }: { now: BalancesResponse; then: BalancesResponse }) {
     return Object.fromEntries(
       Object.entries(now).map(([account, balances]) => {
         let currentTotal = 0;
         let pastTotal = 0;
         const tokens = balances.tokens.reduce((allTokens, nowToken) => {
           const thenToken = then[account].tokens.find(
-            (token) => token.token.address.toLowerCase() === nowToken.token.address.toLowerCase(),
+            (token) => this.isTokenTheSame(token.token, nowToken.token),
           );
 
           currentTotal += nowToken.totalPriceUSD ?? 0;
@@ -191,7 +191,11 @@ export class BalancesService {
     );
   }
 
-  async getBlock24HoursAgo(chains: ChainIdEnum[]): Promise<Map<ChainIdEnum, BlockTimestamp>> {
+  private isTokenTheSame(one: ERC20Token, two: ERC20Token): boolean {
+    return (one.address.toLowerCase() === two.address.toLowerCase()) && (one.chainId === two.chainId);
+  }
+
+  private async getBlock24HoursAgo(chains: ChainIdEnum[]): Promise<Map<ChainIdEnum, BlockTimestamp>> {
     const blockMap = new Map<ChainIdEnum, BlockTimestamp>();
 
     await Promise.all(
@@ -344,13 +348,13 @@ export class BalancesService {
         curr.success
           ? { ...response, balances: this.mergeBalances(response.balances, curr.balances) }
           : {
-              ...response,
-              errors: response.errors.concat({
-                chainId,
-                message: curr.error.message,
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              }),
-            },
+            ...response,
+            errors: response.errors.concat({
+              chainId,
+              message: curr.error.message,
+              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            }),
+          },
       {
         address,
         errors: [],

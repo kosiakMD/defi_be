@@ -32,8 +32,6 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 #COPY --from=development /usr/src/app/apps/price_service/config/.env /dist/apps/price_service/.env
-COPY --from=development /usr/src/app/apps/price_service/config/values.yaml /dist/apps/price_service/values.yaml
-COPY --from=development /usr/src/app/dist ./dist
 RUN touch /dist/apps/price_service/.env
 
 # Configure application startup command

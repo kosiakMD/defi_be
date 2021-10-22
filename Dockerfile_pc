@@ -32,11 +32,7 @@ WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
 #COPY --from=development /usr/src/app/apps/price_service/config/.env /dist/apps/price_service/.env
-RUN ls /
-RUN ls /dist
-RUN ls /dist/apps
-RUN ls /dist/apps/price_service
-RUN touch /dist/apps/price_service/.env
+RUN touch /usr/src/app/apps/dist/apps/price_service/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]

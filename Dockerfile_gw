@@ -32,7 +32,7 @@ WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
 #COPY --from=development /usr/src/app/apps/api_gateway/config/.env /dist/apps/api_gateway/.env
-RUN touch /dist/apps/api_gateway/.env
+RUN touch /usr/src/app/dist/apps/api_gateway/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]

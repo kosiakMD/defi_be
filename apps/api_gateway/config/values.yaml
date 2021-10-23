@@ -9,7 +9,6 @@ configMaps:
     MAIL_HIRE_TO: hr@defiyield.app
     MAIL_QUESTION_FROM: mail@defiyield.app
     MAIL_QUESTION_TO: hr@defiyield.app
-    HTTP_TIMEOUT: 300000
   gas:
     GAS_API_URL: https://www.gasnow.org/api/v3
     GAS_CURRENT_PATH: gas/price?utm_source=defi

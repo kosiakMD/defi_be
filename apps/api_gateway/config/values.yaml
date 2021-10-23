@@ -39,6 +39,7 @@ configMaps:
     INTEGRATION_PROTOCOLS: v1/protocols
     INTEGRATION_SPOOKYSWAP: v1/integration/spookyswap
     INTEGRATION_PANGOLIN: v1/integration/pangolin
+    INTEGRATION_NFT_ASSETS: v1/nft/assets
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_STATUS: v1/status
@@ -48,6 +49,7 @@ configMaps:
     ACCOUNT_TRANSFERS: v1/transfers
     ACCOUNT_ASSETS: v1/assets
     ACCOUNT_ANALYTIC: v1/analytic
+    ACCOUNT_24H_RETURNS: 'v1/balances/24-hour-returns'
     POOLS_SERVICE_URL: https://integration-service
     POOLS_PATH: v1/pools
     VAULTS_SERVICE_URL: https://integration-service
@@ -62,6 +64,9 @@ configMaps:
     SAFE_PROXY_SCAMS: v1/scams
     SAFE_PROXY_SCAM_TYPES: v1/scams/types
     SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
+    GAS_API_URL: https://data-api.defipulse.com/api/v1
+    GAS_CURRENT_PATH: egs/api/ethgasAPI.json
+    GAS_API_KEY: 7a54010743b9e2692bd52232e3e06c871df2261205dcb0663a57235b2306
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug

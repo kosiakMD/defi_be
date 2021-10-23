@@ -29,7 +29,7 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: production
   params:
-    ETH_BALANCES_CHECKER_BATCH_SIZE : 2000
+    ETH_BALANCES_CHECKER_BATCH_SIZE: 2000
 
 secrets:
 - database

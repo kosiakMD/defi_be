@@ -1,20 +1,26 @@
+import { plainToClass } from 'class-transformer';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
-import { WETH_ADDRESS } from '@app/common/constant';
-import { AaveUser } from '@app/common/dto';
 import {
+  Logger,
+  IntegrationFeaturesDataDto,
+  FeatureResultDto,
+  LendingPositionDto,
+  LendingErcToken,
+  AaveUserReserve,
+  AaveUser,
   AaveProtocolEnum,
   ChainAbbrEnum,
   ChainIdEnum,
   ProjectEnum,
-  ProtocolNameEnum,
-} from '@app/common/enum';
-import { UniswapSubgraphLikeData } from '@app/common/interfaces/transactions.interfaces';
+  Address,
+} from '@app/common';
+import { WETH_ADDRESS } from '@app/common/constant';
+import { decimalConverter } from '@app/common/utils/number';
 
 import { AccountService } from '../../account/account.service';
-import { BaseData } from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
 import { AaveSubgraph } from '../../thegraph/aave.subgraph';
 import { FeatureEnum } from '../features/features.enum';
@@ -33,7 +39,6 @@ export class AaveProtocolV2 extends DataProviderProtocol {
   };
 
   protected dataProvider;
-  public feeRate = 0.003;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -46,55 +51,152 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     this.dataProvider = this;
   }
 
-  // override
-  async getData(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
-    const originAddressesArray = addresses.toLowerCase().split(',');
-    const [usersResult, ethPriceResult] = await Promise.allSettled([
-      this.getUserReserves(originAddressesArray, chainId),
+  async getAllFeaturesData(
+    address: string,
+    chainId: ChainIdEnum,
+  ): Promise<IntegrationFeaturesDataDto> {
+    const response = plainToClass(IntegrationFeaturesDataDto, {
+      errors: [],
+    });
+
+    await Promise.all([
+      this.getLendingAndBorrowingData(response, address.toLowerCase().split(','), chainId),
+    ]);
+
+    return response;
+  }
+
+  async getLendingAndBorrowingData(
+    response: IntegrationFeaturesDataDto,
+    addresses: Address[],
+    chainId: ChainIdEnum,
+  ) {
+    const [usersResult, ethPrice] = await Promise.all([
+      this.getUserReserves(addresses, chainId),
       this.getEthPrice(),
     ]);
 
-    if (usersResult.status !== 'fulfilled') {
-      throw new Error('Failed to get user reserves');
+    if (!usersResult.length) {
+      response[FeatureEnum.lending] = null;
+      response[FeatureEnum.borrowing] = null;
+      return;
     }
 
-    const ethPrice = ethPriceResult.status === 'fulfilled' ? ethPriceResult.value : null;
-
-    const responseData = this.formatData(usersResult.value, ethPrice);
-    return this.mapper.mapData(
-      [...responseData.subgraphLending.keys()],
-      originAddressesArray,
-      responseData,
-      ProjectEnum.aave,
-      ProtocolNameEnum.AaveV2,
-      chainId,
-    );
+    response[FeatureEnum.lending] = this.formatLendPosition(usersResult, ethPrice);
+    response[FeatureEnum.borrowing] = this.formatBorrowPosition(usersResult, ethPrice);
   }
 
-  getUserReserves(addresses: string[], chainId: ChainIdEnum): any {
+  formatLendPosition(users: AaveUser[], ethPrice: number): FeatureResultDto<LendingPositionDto> {
+    const RAY = 10 ** 27;
+    let totalLendValue = 0;
+    const lendPositions = [];
+    users.forEach((user) => {
+      user.reserves.forEach((userReserve) => {
+        if (!Number(userReserve.currentATokenBalance)) return;
+
+        const { price } = userReserve.reserve;
+        const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
+        const totalDepositDecimal = getReserveDecimals(Number(userReserve.currentATokenBalance));
+
+        const lendToken = this.getUnderlyingToken(
+          userReserve,
+          (price.priceInEth / 1e18) * ethPrice,
+        );
+
+        const position = {
+          address: userReserve.reserve.id,
+          totalDeposit: userReserve.currentATokenBalance,
+          balance: totalDepositDecimal,
+          value: totalDepositDecimal * lendToken.price,
+          APY: 100 * (Number(userReserve.reserve.liquidityRate) / RAY),
+          token: lendToken,
+        };
+
+        totalLendValue += position.value;
+
+        lendPositions.push(position);
+      });
+    });
+
+    const lending: FeatureResultDto<LendingPositionDto> = {
+      totalValue: totalLendValue,
+      items: lendPositions,
+    };
+
+    return lending;
+  }
+
+  formatBorrowPosition(users: AaveUser[], ethPrice: number): FeatureResultDto<LendingPositionDto> {
+    const RAY = 10 ** 27;
+    let totalBorrowValue = 0;
+    const borrowPositions = [];
+
+    users.forEach((user) => {
+      user.reserves.forEach((userReserve) => {
+        const { price } = userReserve.reserve;
+        const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
+        const stableDebtDecimal = getReserveDecimals(Number(userReserve.currentStableDebt));
+        const variableDebtDecimal = getReserveDecimals(Number(userReserve.currentVariableDebt));
+
+        const borrowToken = this.getUnderlyingToken(
+          userReserve,
+          (price.priceInEth / 1e18) * ethPrice,
+        );
+
+        // Stable Debt
+        if (Number(userReserve.currentStableDebt)) {
+          const position = {
+            address: userReserve.reserve.id,
+            totalDeposit: userReserve.currentStableDebt,
+            balance: stableDebtDecimal,
+            value: stableDebtDecimal * borrowToken.price,
+            APY: 100 * (Number(userReserve.reserve.stableBorrowRate) / RAY),
+            token: borrowToken,
+          };
+          totalBorrowValue += position.value;
+          borrowPositions.push(position);
+        }
+
+        // Variable Debt
+        if (Number(userReserve.currentVariableDebt)) {
+          const position = {
+            address: userReserve.reserve.id,
+            totalDeposit: userReserve.currentVariableDebt,
+            balance: variableDebtDecimal,
+            value: variableDebtDecimal * borrowToken.price,
+            APY: 100 * (Number(userReserve.reserve.variableBorrowRate) / RAY),
+            token: borrowToken,
+          };
+          totalBorrowValue += position.value;
+          borrowPositions.push(position);
+        }
+      });
+    });
+
+    const borrowing: FeatureResultDto<LendingPositionDto> = {
+      totalValue: totalBorrowValue,
+      items: borrowPositions,
+    };
+    return borrowing;
+  }
+
+  getUnderlyingToken(userReserve: AaveUserReserve, price: number): LendingErcToken {
+    return plainToClass(LendingErcToken, {
+      address: userReserve.reserve.underlyingAsset,
+      decimals: userReserve.reserve.decimals,
+      name: userReserve.reserve.name,
+      symbol: userReserve.reserve.symbol,
+      price,
+    });
+  }
+
+  getUserReserves(addresses: string[], chainId: ChainIdEnum): Promise<AaveUser[]> {
     return this.subgraph.getUsersReserves(addresses, chainId);
   }
 
   async getEthPrice(): Promise<number> {
     const results = await this.priceService.getTokenPricesFetch([WETH_ADDRESS], ChainIdEnum.eth);
     return Number(results.prices[WETH_ADDRESS]);
-  }
-
-  formatData(aaveUser: AaveUser[], ethPriceUSD: number): UniswapSubgraphLikeData {
-    const aaveLendingPositions = new Map<string, AaveUser>();
-    aaveUser.forEach((user) => {
-      user.reserves.forEach((userReserve: any) => {
-        const { price } = userReserve.reserve;
-        userReserve.reserve.priceUSD = (price.priceInEth / 1e18) * ethPriceUSD;
-      });
-
-      aaveLendingPositions.set(user.userAddress, user);
-    });
-
-    return {
-      subgraphPools: new Map(),
-      subgraphLending: aaveLendingPositions,
-    };
   }
 }
 export default AaveProtocolV2;

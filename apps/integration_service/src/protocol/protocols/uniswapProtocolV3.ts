@@ -29,11 +29,10 @@ import {
   calculatePositionAmounts,
 } from '../../utils/uniswapV3PositionMath';
 import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
 import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
-export class UniswapProtocolV3 extends DataProviderProtocol implements AbstractProtocol {
+export class UniswapProtocolV3 extends DataProviderProtocol {
   readonly chains = [ChainAbbrEnum.eth];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV3;

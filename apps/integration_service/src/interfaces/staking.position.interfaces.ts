@@ -37,7 +37,7 @@ export interface StakingPosition {
   poolId?: string;
   staked: string;
   lpToken?: PoolTokenStaked;
-  rewardToken: ClaimAbleToken;
+  rewardToken?: ClaimAbleToken;
   stakingToken: LPToken | StakingErcToken;
   liquidityPoolTokens?: PoolToken[];
   transactions?: StakingTransaction[];

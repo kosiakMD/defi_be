@@ -170,7 +170,7 @@ export class IntegrationStakingPositionDto {
 
   @Expose()
   @ApiProperty({type: IntegrationClaimableTokenDto})
-  rewardToken: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
+  rewardToken?: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
 }
 
 export class StakingPositionResponseDto {

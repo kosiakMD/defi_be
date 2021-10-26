@@ -58,7 +58,7 @@ import { AlpacaSubgraph } from './alpaca/services/alpaca.subgraph';
 import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
-export class AlpacaProtocol extends DataProviderProtocol implements AbstractProtocol {
+export default class AlpacaProtocol extends DataProviderProtocol implements AbstractProtocol {
   readonly chains = [ChainAbbrEnum.bsc];
   readonly project = ProjectEnum.alpaca;
   readonly name = AlpacaProtocolEnum.alpaca;

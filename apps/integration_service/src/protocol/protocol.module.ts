@@ -13,7 +13,7 @@ import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AlpacaApiService } from './protocols/alpaca/services/alpaca.api.service';
-import { AlpacaProtocol } from './protocols/alpacaProtocol';
+import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { Mapper } from './protocols/mappers/mapper';
@@ -26,20 +26,24 @@ import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+import YearnProtocolV1 from './protocols/yearnProtocolV1';
+import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AaveProtocolV2,
+  AlpacaProtocol,
   AutofarmProtocol,
-  PangolinProtocol,
   PancakeProtocolV1,
   PancakeProtocolV2,
+  PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,
   SushiswapProtocolV2,
   UniswapProtocolV2,
   UniswapProtocolV3,
-  AlpacaProtocol,
+  YearnProtocolV1,
+  YearnProtocolV2,
 ];
 
 @Module({

@@ -7,6 +7,7 @@ export class AaveReserve {
   decimals: number = null;
   name: string = null;
   priceUSD?: number = null;
+  price?: { priceInEth: number };
 
   // APY/APR calculations
   liquidityRate: string = null;

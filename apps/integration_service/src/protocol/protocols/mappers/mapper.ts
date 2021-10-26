@@ -81,7 +81,7 @@ export class Mapper {
   protected static createPoolToken(
     pair: IncomeLiquidityPositionPair,
     order: 0 | 1,
-    calculateByDerived: boolean = false,
+    calculateByDerived = false,
     halfReserveUSD: string = null,
   ): PoolTokenDto {
     const token = pair[`token${order}`];

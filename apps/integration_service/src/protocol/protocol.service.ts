@@ -37,7 +37,7 @@ import { FeatureEnum } from './features/features.enum';
 import { tokenDictionary } from './protocols.dictionaries';
 import { FeatureHandleDto, RawFeaturesDto } from './protocols.dto';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
-import { AlpacaProtocol } from './protocols/alpacaProtocol';
+import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import PancakeProtocolV2 from './protocols/pancake/pancake.protocol.v2';
@@ -48,6 +48,8 @@ import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import SushiswapProtocolV2 from './protocols/uniswapLike/sushiswapProtocolV2';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+import YearnProtocolV1 from './protocols/yearnProtocolV1';
+import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
 @Injectable()
 export class ProtocolService {
@@ -69,19 +71,23 @@ export class ProtocolService {
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
     private readonly alpacaProtocol: AlpacaProtocol,
+    private readonly yearnProtocolV1: YearnProtocolV1,
+    private readonly yearnProtocolV2: YearnProtocolV2,
   ) {
     this.protocols = [
       aaveProtocolV2,
+      alpacaProtocol,
       autofarmProtocol,
-      pangolinProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
+      pangolinProtocol,
       quickswapProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
       uniswapProtocolV2,
       uniswapProtocolV3,
-      alpacaProtocol,
+      yearnProtocolV1,
+      yearnProtocolV2,
     ];
   }
 

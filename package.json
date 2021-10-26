@@ -16,7 +16,6 @@
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "format-check": "prettier \"./**/src/**/*.ts\" \"./**/test/**/*.ts\" --check",
     "common-build": "nest build common",
-
     "gateway-prebuild": "yarn --cwd ./apps/api_gateway run prebuild",
     "gateway-format": "yarn --cwd ./apps/api_gateway run format",
     "gateway-lint": "eslint \"./apps/api_gateway/{src,config,test}/**/*.ts\"",
@@ -24,7 +23,6 @@
     "gateway-start:dev": "nest start api_gateway --watch",
     "gateway-start:debug": "nest start api_gateway --debug --watch",
     "gateway-start:prod": "nest start api_gateway",
-
     "account-format": "yarn --cwd ./apps/account_service run format",
     "account-lint": "eslint \"./apps/account_service/{src,config,test}/**/*.ts\"",
     "account-prebuild": "yarn yarn --cwd ./apps/account_service run prebuild",
@@ -33,7 +31,6 @@
     "account-start:dev": "nest start account_service --watch",
     "account-start:debug": "nest start account_service --debug --watch",
     "account-start:prod": "nest start account_service",
-
     "integration-format": "yarn --cwd ./apps/integration_service run format",
     "integration-lint": "eslint \"./apps/integration_service/{src,config}/**/*.ts\"",
     "integration-prebuild": "yarn yarn --cwd ./apps/integration_service run prebuild",
@@ -42,7 +39,6 @@
     "integration-start:dev": "nest start integration_service --watch",
     "integration-start:debug": "nest start integration_service --debug --watch",
     "integration-start:prod": "nest start integration_service",
-
     "price-format": "yarn --cwd ./apps/price_service run format",
     "price-lint": "eslint \"./apps/price_service/{src,config}/**/*.ts\"",
     "price-prebuild": "yarn yarn --cwd ./apps/price_service run prebuild",
@@ -51,7 +47,6 @@
     "price-start:dev": "nest start price_service --watch",
     "price-start:debug": "nest start price_service --debug --watch",
     "price-start:prod": "nest start price_service",
-
     "prebuild_price": "yarn run prebuild --prefix price_service",
     "build_price": "yarn run build --prefix price_service",
     "format_price": "yarn run format --prefix price_service",
@@ -97,9 +92,8 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@indexed-finance/multicall": "^2.0.0",
     "@ethersproject/providers": "5.4.5",
-    "ethers": "^5.0.19",
+    "@indexed-finance/multicall": "^2.0.0",
     "@nestjs-modules/mailer": "^1.6.0",
     "@nestjs/common": "^7.6.18",
     "@nestjs/config": "^0.6.3",
@@ -109,12 +103,14 @@
     "@nestjs/terminus": "^7.2.0",
     "@nestjs/typeorm": "^7.1.5",
     "@nestjsx/api-version": "^0.1.1",
+    "@yfi/sdk": "^1.0.2",
     "bignumber.js": "^9.0.1",
     "cache-manager": "^3.4.3",
     "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",
+    "ethers": "^5.0.19",
     "http-proxy-middleware": "^1.1.0",
     "joi": "^17.4.0",
     "nest-winston": "^1.4.1",

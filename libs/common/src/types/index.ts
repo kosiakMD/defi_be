@@ -9,6 +9,7 @@ import {
   SpookySwapProtocolEnum,
   SushiSwapProtocolEnum,
   UniswapProtocolEnum,
+  YearnProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -19,6 +20,7 @@ export type ChainId = ChainIdEnum;
 
 export type ProtocolName =
   | AaveProtocolEnum
+  | AlpacaProtocolEnum
   | AutofarmProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
@@ -26,7 +28,7 @@ export type ProtocolName =
   | SpookySwapProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
-  | AlpacaProtocolEnum;
+  | YearnProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

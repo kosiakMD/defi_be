@@ -56,6 +56,7 @@ export class IntegrationsController {
     if (!Object.values(ProtocolNameEnum).includes(protocolName)) {
       throw new NotAcceptableException(`Wrong protocol name '${protocolName}'`);
     }
+
     // return plainToClass(
     //   IntegrationsResponseDto,
     //   this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses),

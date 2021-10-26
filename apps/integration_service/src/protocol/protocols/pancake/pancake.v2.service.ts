@@ -7,7 +7,13 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
-import { ChainIdEnum, FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum, } from '@app/common/enum';
+import {
+  ChainIdEnum,
+  FeatureEnum,
+  PancakeProtocolEnum,
+  ProjectEnum,
+  ProtocolTypeEnum,
+} from '@app/common/enum';
 
 import { ProtocolNameEnum } from '../../../common/enum';
 
@@ -23,7 +29,10 @@ import {
 } from '../../../integrations/integrations.dto';
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../price/price.service';
-import { Balance, Pancakev2MainStakingSubgraph, } from '../../../thegraph/pancakev2.main.staking.subgraph';
+import {
+  Balance,
+  Pancakev2MainStakingSubgraph,
+} from '../../../thegraph/pancakev2.main.staking.subgraph';
 import { decimalsDivider } from '../../../utils/util';
 import { Mapper } from '../mappers/mapper';
 

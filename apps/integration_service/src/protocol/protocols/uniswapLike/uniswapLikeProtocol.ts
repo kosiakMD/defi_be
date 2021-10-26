@@ -8,6 +8,7 @@ import {
 } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 
+import { SubgraphResponseDto } from '../../../quickswap/dto/subgraph';
 import { UniswapLikeSubgraph } from '../../../thegraph/uniswap-like-subgraph.service';
 import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../../utils/util';
 import { FeatureEnum } from '../../features/features.enum';
@@ -88,19 +89,26 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
     const getPools = features.includes(FeatureEnum.pools);
     const getStaking = features.includes(FeatureEnum.staking);
 
-    const [poolsFetch, stakingFetch] = await Promise.all([
+    const [poolsFetch, stakingFetch] = await Promise.all<SubgraphResponseDto>([
       getPools ? subgraph.getLiquidityPositions(addressesArray) : undefined,
       getStaking ? subgraph.getStakingPositions(addressesArray) : undefined,
     ]);
 
-    const subgraphPools = getPools
+    // TODO add subgraph error handling here and in quickSwapProtocol
+    if (poolsFetch?.errors?.length) {
+      throw poolsFetch.errors[0];
+    } else if (stakingFetch?.errors?.length) {
+      throw stakingFetch.errors[0];
+    }
+
+    const subgraphPools = poolsFetch.data?.liquidityPositions
       ? groupBy(
           poolsFetch.data.liquidityPositions,
           (liquidityPosition) => liquidityPosition.user.id,
         )
       : null;
 
-    const subgraphStaking = getStaking
+    const subgraphStaking = stakingFetch.data?.users
       ? groupBy(stakingFetch.data.users, (staking) => {
           const array = staking.id.split('-');
           return array[1];

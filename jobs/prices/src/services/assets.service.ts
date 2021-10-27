@@ -43,6 +43,7 @@ export interface AssetsApiDto {
   decimals?: number;
   chainId: number;
   pairs?: Pair[];
+  createdAt?: string;
   pairProtocols?: Protocol[];
 }
 

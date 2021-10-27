@@ -2,5 +2,9 @@ export const RESERVES_CALL_HASH = '0x0902f1ac00000000000000000000';
 export const GET_PAIR_CALL_HASH = '0xe6a43905';
 export const INPUT_ZEROES = '000000000000000000000000';
 export const zeroAddress = '0x0000000000000000000000000000000000000000';
-// TODO: This should be configurable
-export const LIQUIDITY_LIMIT = 1000;
+
+export enum TokensCategories {
+  stable = 'stable',
+  base = 'base',
+  simple = 'simple',
+}

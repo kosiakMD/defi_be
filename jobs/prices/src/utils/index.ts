@@ -8,6 +8,5 @@ export const decimalsReserve = (reserve: string, decimals: Decimals): string =>
   !decimals
     ? reserve
     : new BN(reserve) //
-      .div(decimalsDivider(decimals))
-      .toString();
-
+        .div(decimalsDivider(decimals))
+        .toString();

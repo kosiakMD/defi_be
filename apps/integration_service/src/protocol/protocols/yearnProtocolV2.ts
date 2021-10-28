@@ -8,18 +8,19 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  ChainAbbrEnum,
-  ProjectEnum,
-  Logger,
-  IntegrationFeaturesDataDto,
-  ChainIdEnum,
-  FeatureEnum,
-  YearnProtocolEnum,
   Address,
+  ChainAbbrEnum,
+  ChainDto,
+  ChainIdEnum,
   CurrentPricesPayload,
-  LendingPositionDto,
-  LendingErcToken,
+  FeatureEnum,
   FeatureResultDto,
+  IntegrationFeaturesDataDto,
+  LendingErcToken,
+  LendingPositionDto,
+  Logger,
+  ProjectEnum,
+  YearnProtocolEnum,
 } from '@app/common';
 import { getAbsoluteChainId } from '@app/common/utils/chains';
 
@@ -61,17 +62,14 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
     ]);
   }
 
-  async getAllFeaturesData(
-    address: string,
-    chainId: ChainIdEnum,
-  ): Promise<IntegrationFeaturesDataDto> {
+  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = plainToClass(IntegrationFeaturesDataDto, {
       errors: [],
     });
 
     await Promise.all([
-      this.getStakingData(response, address, chainId),
-      this.getLendingAndBorrowingData(response, address, chainId),
+      this.getStakingData(response, address, chain.id),
+      this.getLendingAndBorrowingData(response, address, chain.id),
     ]);
 
     return response;

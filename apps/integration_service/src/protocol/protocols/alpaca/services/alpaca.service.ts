@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { classToClass } from 'class-transformer';
+import { classToClass, plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -7,7 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   AlpacaProtocolEnum,
-  ChainIdEnum,
+  ChainDto,
   CurrentPricesPayload,
   Logger,
   PoolTokenDto,
@@ -63,15 +63,15 @@ export class AlpacaService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
 
-  async getDataByAddresses(address: Address, chainId: ChainIdEnum): Promise<BaseData[]> {
+  async getDataByAddresses(address: Address, chain: ChainDto): Promise<BaseData[]> {
     const lowerCaseAddress = address.toLowerCase();
     const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([lowerCaseAddress]);
     const stakedPosition: AlpacaStakingInterface[] = [];
     this.getStakingPosition(alpacaUsers, stakedPosition);
 
-    const webProvider = this.web3Provider.web3Map.get(chainId);
+    const webProvider = this.web3Provider.getForChain(chain.abbr);
     const localMultiCall = new LocalMultiCall(webProvider, this.logger);
-    const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chainId);
+    const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chain.abbr);
 
     const [lendingTokens, leverageFarming] = await Promise.all([
       localMultiCall.getLendingPoolsBalances(lowerCaseAddress, setTokenAddresses),
@@ -82,7 +82,7 @@ export class AlpacaService {
 
     const priceTokens = new Set<string>();
     const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
-      localMultiCall.getVaultUsersInfo(stakedPosition, chainId),
+      localMultiCall.getVaultUsersInfo(stakedPosition, chain.abbr),
       localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokens),
       localMultiCall.getWorkerTokensData(leverageFarming, priceTokens),
     ]);
@@ -94,8 +94,8 @@ export class AlpacaService {
 
     const priceTokensArray = Array.from(priceTokens);
     const [{ data }, price] = await Promise.all([
-      this.accountService.getAssets(priceTokensArray, [chainId]),
-      this.priceService.getTokenPricesFetch(priceTokensArray, chainId),
+      this.accountService.getAssets(priceTokensArray, [chain.id]),
+      this.priceService.getTokenPricesFetch(priceTokensArray, chain.id),
     ]);
 
     const assetsMap = new Map<string, Asset>();
@@ -112,7 +112,7 @@ export class AlpacaService {
     if (leverageFarming?.length) {
       const leverage: LeverageFarming = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.leverageFarming,
-        chainId,
+        chain,
         lowerCaseAddress,
       ) as LeverageFarming;
 
@@ -128,7 +128,7 @@ export class AlpacaService {
     if (lendingTokens?.size) {
       const lending: Lending = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.lending,
-        chainId,
+        chain,
         lowerCaseAddress,
       ) as Lending;
       lending.lendingPositions = this.getLendingPositionsDtos(
@@ -145,7 +145,7 @@ export class AlpacaService {
     if (stakedPosition?.length) {
       const staking: Staking = AlpacaService.getBaseDataInstance(
         ProtocolTypeEnum.staking,
-        chainId,
+        chain,
         lowerCaseAddress,
       ) as Staking;
 
@@ -155,7 +155,7 @@ export class AlpacaService {
         assetsMap,
         price.prices,
         claimableToken,
-        chainId,
+        chain,
       );
 
       base.push(staking);
@@ -166,16 +166,16 @@ export class AlpacaService {
 
   private static getBaseDataInstance(
     protocolType: ProtocolTypeEnum,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
     userAddress: string,
   ): BaseData<ProtocolTypeEnum> {
-    return {
+    return plainToClass(BaseData, {
       userAddress,
-      chainId,
+      chain,
       projectName: ProjectEnum.alpaca,
       protocolName: AlpacaProtocolEnum.alpaca,
       protocolType: protocolType,
-    };
+    });
   }
 
   private getLeverageFarmingPositionsDtos(
@@ -285,7 +285,7 @@ export class AlpacaService {
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
     claimAbleToken: IntegrationClaimableTokenDto,
-    chain: ChainIdEnum,
+    chain: ChainDto,
   ): IntegrationStakingPositionDto[] {
     return stakingPositions.map((staking) => {
       const rewardToken: IntegrationClaimableTokenDto = classToClass(claimAbleToken);
@@ -299,7 +299,7 @@ export class AlpacaService {
         .toNumber();
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
-      response.address = alpacaFactoriesMap.get(chain);
+      response.address = alpacaFactoriesMap.get(chain.abbr);
       response.poolId = String(staking.poolNum);
       response.staked = staking.amount;
       response.rewardToken = rewardToken;

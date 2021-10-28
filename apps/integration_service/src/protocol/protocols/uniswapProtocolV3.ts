@@ -8,6 +8,7 @@ import {
   // ClaimAbleTokenDto,
   Address,
   ChainAbbrEnum,
+  ChainDto,
   ChainIdEnum,
   CurrentPricesPayload,
   ERC20TokenDto,
@@ -54,9 +55,9 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
   }
 
   // overrider
-  async getData(address: Address, chainId: ChainIdEnum): Promise<any> {
-    const { positions } = await this.uniswapV3Subgraph.getPositions(address, chainId);
-    const { prices } = await this.getPricedTokens(positions, chainId);
+  async getData(address: Address, chain: ChainDto): Promise<any> {
+    const { positions } = await this.uniswapV3Subgraph.getPositions(address, chain.id);
+    const { prices } = await this.getPricedTokens(positions, chain.id);
 
     return [
       {

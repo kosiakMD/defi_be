@@ -80,6 +80,7 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_PORT: Joi.number().required(),
   ACCOUNT_BALANCE: Joi.string().required(),
   ACCOUNT_ASSETS: Joi.string().required(),
+  ACCOUNT_COVALENT_BALANCES: Joi.string().required(),
   THEGRAPH_SUSHISWAP_STAKING_POSITIONS: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),

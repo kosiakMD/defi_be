@@ -5,15 +5,9 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
+import { ChainDto, Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
-import {
-  ChainIdEnum,
-  FeatureEnum,
-  PancakeProtocolEnum,
-  ProjectEnum,
-  ProtocolTypeEnum,
-} from '@app/common/enum';
+import { FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 
 import { ProtocolNameEnum } from '../../../common/enum';
 
@@ -51,10 +45,10 @@ export class PancakeV2Service {
     private readonly priceService: PriceService,
   ) {}
 
-  public async getDataByAddresses(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
+  public async getDataByAddresses(addresses: string, chain: ChainDto): Promise<BaseData[]> {
     const base: BaseData[] = [];
     const baseInfo: BaseInfo = {
-      chainId,
+      chain,
       projectName: ProjectEnum.pancake,
       protocolName: ProtocolNameEnum.pancakeV2,
       userAddress: '',
@@ -68,7 +62,7 @@ export class PancakeV2Service {
 
     const stakingPositions: IntegrationStakingPositionDto[] = await this.getStakingPositions(
       originAddressesArray,
-      chainId,
+      chain,
     );
 
     const tokenToGetPrices: Set<string> = new Set<string>();
@@ -86,7 +80,7 @@ export class PancakeV2Service {
 
     const { prices } = await this.priceService.getTokenPricesFetch(
       Array.from(tokenToGetPrices),
-      chainId,
+      chain.id,
     );
 
     let totalValue = 0;
@@ -117,21 +111,19 @@ export class PancakeV2Service {
 
   private async getStakingPositions(
     addresses: string[],
-    chain: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<IntegrationStakingPositionDto[]> {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
-    const pools: NotifyPayloadStakingFeaturesDto = await this.cache.get(
-      `${chain}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}`,
-    );
+    const key = `${chain.id}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}`;
+
+    const pools: NotifyPayloadStakingFeaturesDto = await this.cache.get(key);
 
     if (!pools) {
-      throw new Error(
-        `not found cached data for '${chain}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}'`,
-      );
+      throw new Error(`not found cached data for '${key}'`);
     }
 
-    const web3Provider = this.web3Provider.web3Map.get(chain);
+    const web3Provider = this.web3Provider.getForChain(chain.abbr);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 
     let balances: Balance[] = await this.pancakev2MainStakingSubgraph.getBalances(addresses);

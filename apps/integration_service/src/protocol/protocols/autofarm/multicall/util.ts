@@ -1,4 +1,4 @@
-import { ChainIdEnum } from '@app/common';
+import { ChainAbbrEnum } from '@app/common';
 
 export const AutofarmVaultAbi = [
   {
@@ -527,8 +527,8 @@ export const StakedTokenAbi = [
   },
 ];
 
-export const autofarmFactoriesMap: Map<number, string> = new Map([
-  [ChainIdEnum.bsc, '0x0895196562c7868c5be92459fae7f877ed450452'],
+export const autofarmFactoriesMap: Map<ChainAbbrEnum, string> = new Map([
+  [ChainAbbrEnum.bsc, '0x0895196562c7868c5be92459fae7f877ed450452'],
 ]);
 
 export const autofarmAUTOFactory = '0x763a05bdb9f8946d8c3fa72d1e0d3f5e68647e5c';

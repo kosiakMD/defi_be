@@ -1,10 +1,9 @@
 import { Cache } from 'cache-manager';
 
-import { HttpService, Injectable } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { IAssetResponseDto } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
@@ -63,9 +62,9 @@ export class AccountService {
 
   async getAssets(
     addresses: Address[],
-    chains?: ChainIdEnum[],
+    chainIds?: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
-    const cacheKey = `${addresses.join(',')}_${chains.join(',')}`;
+    const cacheKey = `${addresses.join(',')}_${chainIds.join(',')}`;
 
     const cachedResult: DetailedResponseDto<Asset[]> = await this.cache.get(cacheKey);
 
@@ -73,7 +72,26 @@ export class AccountService {
       return cachedResult;
     } else {
       const data = await this.httpService
-        .get(this.getAssetsUrl, { params: { addresses, chains } })
+        .get(this.getAssetsUrl, { params: { addresses, chains: chainIds } })
+        .toPromise();
+
+      await this.cache.set(cacheKey, data.data, { ttl: this.cacheTTLInSeconds });
+
+      return data.data;
+    }
+  }
+
+  // @RequestErrorHandler()
+  async getTrackedAssets(address: Address, chainId?: ChainIdEnum): Promise<IAssetResponseDto> {
+    const cacheKey = `${address}_${chainId}`;
+
+    const cachedResult: IAssetResponseDto = await this.cache.get(cacheKey);
+
+    if (cachedResult) {
+      return cachedResult;
+    } else {
+      const data = await this.httpService
+        .post(this.getAssetsUrl, { address, chain: chainId })
         .toPromise();
 
       await this.cache.set(cacheKey, data.data, { ttl: this.cacheTTLInSeconds });

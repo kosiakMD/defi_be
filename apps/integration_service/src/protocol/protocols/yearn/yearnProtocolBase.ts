@@ -10,6 +10,7 @@ import {
   ChainIdEnum,
   FeatureEnum,
   FeatureResultDto,
+  ChainDto,
 } from '@app/common';
 
 import { AccountService } from '../../../account/account.service';
@@ -35,15 +36,12 @@ export abstract class YearnProtocolBase extends BasicProtocol {
   protected readonly accountService: AccountService;
   protected readonly priceService: PriceService;
 
-  async getAllFeaturesData(
-    address: string,
-    chainId: ChainIdEnum,
-  ): Promise<IntegrationFeaturesDataDto> {
+  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = plainToClass(IntegrationFeaturesDataDto, {
       errors: [],
     });
 
-    await this.getStakingData(response, address, chainId);
+    await this.getStakingData(response, address, chain.id);
 
     return response;
   }

@@ -5,10 +5,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   ChainAbbrEnum,
-  Logger,
-  IntegrationFeaturesDataDto,
-  ChainIdEnum,
+  ChainDto,
   FeatureEnum,
+  IntegrationFeaturesDataDto,
+  Logger,
   YearnProtocolEnum,
 } from '@app/common';
 
@@ -35,15 +35,12 @@ export default class YearnProtocolV1 extends YearnProtocolBase {
     super();
   }
 
-  async getAllFeaturesData(
-    address: string,
-    chainId: ChainIdEnum,
-  ): Promise<IntegrationFeaturesDataDto> {
+  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = plainToClass(IntegrationFeaturesDataDto, {
       errors: [],
     });
 
-    await this.getStakingData(response, address, chainId);
+    await this.getStakingData(response, address, chain.id);
 
     return response;
   }

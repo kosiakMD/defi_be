@@ -1,6 +1,6 @@
 import { PoolTokenDto } from '@app/common';
 
-import { PairDto } from '../dto/subgraph';
+import { PairDto } from '../../subgraph';
 
 export interface LPTokenPair extends PairDto {
   tokens: PoolTokenDto[];

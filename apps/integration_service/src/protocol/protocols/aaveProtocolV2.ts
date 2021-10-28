@@ -16,6 +16,7 @@ import {
   ChainIdEnum,
   ProjectEnum,
   Address,
+  ChainDto,
 } from '@app/common';
 import { WETH_ADDRESS } from '@app/common/constant';
 import { decimalConverter } from '@app/common/utils/number';
@@ -51,16 +52,13 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     this.dataProvider = this;
   }
 
-  async getAllFeaturesData(
-    address: string,
-    chainId: ChainIdEnum,
-  ): Promise<IntegrationFeaturesDataDto> {
+  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = plainToClass(IntegrationFeaturesDataDto, {
       errors: [],
     });
 
     await Promise.all([
-      this.getLendingAndBorrowingData(response, address.toLowerCase().split(','), chainId),
+      this.getLendingAndBorrowingData(response, address.toLowerCase().split(','), chain.id),
     ]);
 
     return response;

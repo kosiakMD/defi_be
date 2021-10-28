@@ -2,8 +2,9 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { ChainIdEnum, Logger } from '@app/common';
+import { ChainAbbrEnum, Logger } from '@app/common';
 
+import { MulticallContractFunctionEnum } from '../../../../multicall/multicall.enum';
 import {
   AlpacaApiResponse,
   AlpacaStakingInterface,
@@ -32,12 +33,12 @@ export class LocalMultiCall extends MultiCall {
 
   async getVaultPoolsInfo(
     data: AlpacaStakingInterface[],
-    chain: ChainIdEnum,
+    chain: ChainAbbrEnum,
   ): Promise<Set<string>> {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: 'poolInfo',
+        function: MulticallContractFunctionEnum.poolInfo,
         args: [pool.poolNum],
       };
     });
@@ -53,7 +54,7 @@ export class LocalMultiCall extends MultiCall {
 
   async getVaultUsersInfo(
     data: AlpacaStakingInterface[],
-    chain: ChainIdEnum,
+    chain: ChainAbbrEnum,
   ): Promise<VaultUserInfo[]> {
     const inputs = data.map((pool) => {
       return {

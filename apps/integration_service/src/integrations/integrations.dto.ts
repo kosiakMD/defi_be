@@ -19,30 +19,40 @@ export class ProtocolInfoDto extends ProtocolBasicInfo {
   features: ProtocolFeaturesInfo; // ProtocolFeaturesDataDto;
 }
 
+@Exclude()
 export class PoolTokenDto {
   @ApiProperty({type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d'})
+  @Expose()
   address: string = null;
 
   @ApiProperty({type: String, example: 'Wrapped Ethereum'})
+  @Expose()
   name: string = null; // WETH
 
   @ApiProperty({type: String, example: 'WETH'})
+  @Expose()
   symbol: string = null;
   // balance total & user
 
   @ApiProperty({type: String, example: '4362346'})
+  @Expose()
   reserve: string = null;
   //
   @ApiProperty({type: Number, example: 1.2512})
+  @Expose()
   value: number = null; // Balance value // balance * price
 
   @ApiProperty({type: String, example: '123.6534'})
+  @Expose()
   balance: string = null; // string | Balance
   // price: Price = null; // value in currency [usd]
+
   @ApiProperty({type: Number, example: 345.12})
+  @Expose()
   price: number = null; // value in currency [usd]
 
   @ApiProperty({type: Number, example: 18})
+  @Expose()
   decimals: number = null;
 }
 
@@ -134,12 +144,15 @@ export class ClaimableDto {
   value: number = null;
 }
 
+@Exclude()
 export class IntegrationClaimableTokenDto extends ERC20Token {
   @ApiProperty({type: ClaimableDto})
-  claimableData?: ClaimableDto;
+  @Expose()
+  claimableData?: ClaimableDto = null;
 
   @ApiProperty({type: String, example: 543.675})
-  price?: number;
+  @Expose()
+  price?: number = null;
 }
 
 export class LPToken extends IntegrationERC20TokenDto {
@@ -147,6 +160,7 @@ export class LPToken extends IntegrationERC20TokenDto {
   tokens: PoolTokenDto[] = [];
 }
 
+// TODO: same as StakingPoolFeature!!!
 export class IntegrationStakingPositionDto {
   @Expose()
   @ApiProperty({type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'})

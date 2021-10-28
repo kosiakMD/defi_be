@@ -5,6 +5,7 @@ import { AlpacaSubgraph } from '../protocol/protocols/alpaca/services/alpaca.sub
 import { AutofarmSubgraph } from '../protocol/protocols/autofarm/services/autofarm.subgraph';
 import { YearnV1Subgraph } from '../protocol/protocols/yearn/services/yearn.v1.subgraph';
 import { YearnV2Subgraph } from '../protocol/protocols/yearn/services/yearn.v2.subgraph';
+import { AmmPlgSubgraph } from '../sushiswap/ammPlgSubgraph';
 import { AaveSubgraph } from './aave.subgraph';
 import { BlocksSubgraph } from './blocks.subgraph';
 import { PancakeSubgraph } from './pancake.subgraph';
@@ -41,6 +42,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
     YearnV1Subgraph,
     YearnV2Subgraph,
     Pancakev2MainStakingSubgraph,
+    AmmPlgSubgraph,
   ],
   exports: [
     AaveSubgraph,
@@ -58,6 +60,7 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
     YearnV1Subgraph,
     YearnV2Subgraph,
     Pancakev2MainStakingSubgraph,
+    AmmPlgSubgraph,
   ],
 })
 export class ThegraphModule {}

@@ -1,9 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import {
-  CollectionStatsDto as StatsDto,
-  CollectionDto as BaseCollectionDto,
-} from '@app/common/dto/nft';
+import { BaseCollectionDto, CollectionStatsDto as StatsDto } from '.';
 
 @Exclude()
 export class CollectionDto extends BaseCollectionDto {

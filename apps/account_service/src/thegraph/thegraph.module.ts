@@ -1,6 +1,7 @@
 import { HttpModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
+import { AavegotchiSubgraph } from './aavegotchi/aavegotchi.subgraph';
 import { BlocksSubgraph } from './blocks/blocks.subgraph';
 
 @Module({
@@ -11,7 +12,7 @@ import { BlocksSubgraph } from './blocks/blocks.subgraph';
     }),
     ConfigModule.forRoot(),
   ],
-  providers: [BlocksSubgraph],
-  exports: [BlocksSubgraph],
+  providers: [BlocksSubgraph, AavegotchiSubgraph],
+  exports: [BlocksSubgraph, AavegotchiSubgraph],
 })
 export class ThegraphModule {}

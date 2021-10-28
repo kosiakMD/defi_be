@@ -15,6 +15,7 @@ import { ChainModule } from './chain/chain.module';
 import config from './config';
 import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
+import { NftModule } from './nft/nft.module';
 import { TransactionsModule } from './transactions/transcations.module';
 import { TransfersModule } from './transfers/transfers.module';
 
@@ -59,6 +60,7 @@ import { TransfersModule } from './transfers/transfers.module';
     TransfersModule,
     AnalyticModule,
     BlacklistModule,
+    NftModule,
   ],
   controllers: [HealthController],
 })

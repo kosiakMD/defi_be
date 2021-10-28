@@ -25,7 +25,6 @@ export class IntegrationService {
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
   private readonly protocolsUrl: string;
-  private readonly nftAssetsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -62,9 +61,6 @@ export class IntegrationService {
 
     const protocolsPath = this.configService.get<string>('INTEGRATION_PROTOCOLS');
     this.protocolsUrl = `${url}/${protocolsPath}`;
-
-    const nftAssetsPath = this.configService.get<string>('INTEGRATION_NFT_ASSETS');
-    this.nftAssetsUrl = `${url}/${nftAssetsPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -222,25 +218,5 @@ export class IntegrationService {
       .toPromise();
     this.logger.timeEnd(url);
     return data;
-  }
-
-  async getNftAssets(addresses: Address[]) {
-    try {
-      this.logger.time(this.nftAssetsUrl);
-      const data = await this.httpService
-        .get(this.nftAssetsUrl, { params: { addresses } })
-        .pipe(map((r) => r.data))
-        .toPromise();
-      this.logger.timeEnd(this.nftAssetsUrl);
-      return data;
-    } catch (e) {
-      if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
-        if (e.response) {
-          this.logger.error(e.response.data);
-        }
-      }
-      throw e;
-    }
   }
 }

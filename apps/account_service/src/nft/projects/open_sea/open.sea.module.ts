@@ -1,13 +1,10 @@
+import { PriceService } from 'apps/account_service/src/price/price.service';
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule } from '@nestjs/common';
-import { Module, HttpModule } from '@nestjs/common';
+import { Module, HttpModule, CacheModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { OpenSeaService } from '../open_sea/open.sea.service';
-import { PriceService } from '../price/price.service';
-import { NftController } from './nft.controller';
-import { NftService } from './nft.service';
+import { OpenSeaService } from './open.sea.service';
 
 @Module({
   imports: [
@@ -16,7 +13,7 @@ import { NftService } from './nft.service';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         store: redisStore,
-        ttl: configService.get('REDIS_CACHE_TTL') || 30,
+        ttl: configService.get('REDIS_CACHE_TTL') || 60,
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
         // eslint-disable-next-line camelcase
@@ -25,7 +22,7 @@ import { NftService } from './nft.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [NftService, OpenSeaService, PriceService],
-  controllers: [NftController],
+  providers: [OpenSeaService, PriceService],
+  exports: [OpenSeaService],
 })
-export class NftModule {}
+export class OpenSeaModule {}

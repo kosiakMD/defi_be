@@ -111,7 +111,6 @@ export const validationSchema = Joi.object({
   ALPACA_API_URL: Joi.string().required(),
   AUTOFARM_API_URL: Joi.string().required(),
   PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: Joi.string().required(),
-  OPEN_SEA_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

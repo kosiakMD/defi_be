@@ -1,14 +1,16 @@
+import { PriceService } from 'apps/account_service/src/price/price.service';
+import { ThegraphModule } from 'apps/account_service/src/thegraph/thegraph.module';
 import * as redisStore from 'cache-manager-redis-store';
 
 import { Module, HttpModule, CacheModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { PriceService } from '../price/price.service';
-import { OpenSeaService } from './open.sea.service';
+import { AavegotchiService } from './aavegotchi.service';
 
 @Module({
   imports: [
     HttpModule,
+    ThegraphModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -22,7 +24,7 @@ import { OpenSeaService } from './open.sea.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [OpenSeaService, PriceService],
-  exports: [OpenSeaService],
+  providers: [AavegotchiService, PriceService],
+  exports: [AavegotchiService],
 })
-export class OpenSeaModule {}
+export class AavegotchiModule {}

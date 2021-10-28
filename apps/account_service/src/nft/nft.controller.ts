@@ -19,21 +19,21 @@ import {
   NftServiceInfo,
 } from '@app/common/interfaces/nft.interface';
 
-import { AccountService } from '../account/account.service';
+import { NftService } from './nft.service';
 
 @ApiTags('Nft')
 @Controller('nft')
 export class NftController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly accountService: AccountService,
+    private readonly nftService: NftService,
   ) {}
 
   @ApiResponse({ status: HttpStatus.OK, type: [NftProjectResponseDto] })
   @Get('projects')
-  public async getProjects(): Promise<NftServiceInfo[]> {
+  public getProjects(): NftServiceInfo[] {
     try {
-      return await this.accountService.getNftProjects();
+      return this.nftService.getProjects();
     } catch (e) {
       this.logger.error(e);
       throw e;
@@ -43,21 +43,17 @@ export class NftController {
   @ApiResponse({ status: HttpStatus.OK, type: NftResponseDto })
   @ApiQuery({ type: NftAssetsQueryDto })
   @Get('assets/:projectName')
-  public async getAssetsByProject(
+  public async getAssets(
     @Param() { projectName }: NftAssetsParams,
     @AddressesArray('addresses') addresses: Address[],
     @ChainsArray('chains') chains: number[],
     @Query('limit') limit = 20,
     @Query('offset') offset = 0,
   ): Promise<NftAssetsByAccounts> {
-    try {
-      if (!Object.values(NftProjectEnum).includes(projectName)) {
-        throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
-      }
-      return await this.accountService.getNftAssets(projectName, addresses, chains, limit, offset);
-    } catch (e) {
-      this.logger.error(e);
-      return e;
+    if (!Object.values(NftProjectEnum).includes(projectName)) {
+      throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
     }
+
+    return await this.nftService.getAssets(projectName, addresses, chains, limit, offset);
   }
 }

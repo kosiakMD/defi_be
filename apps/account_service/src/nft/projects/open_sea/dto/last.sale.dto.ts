@@ -2,7 +2,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PaymentTokenDto } from './payment.token.dto';
+import { PaymentTokenDto } from '.';
 
 @Exclude()
 export class LastSaleDto {

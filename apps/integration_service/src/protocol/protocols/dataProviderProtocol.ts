@@ -62,7 +62,7 @@ export abstract class DataProviderProtocol extends BasicProtocol {
   // get data from data providers
 
   protected async getData(addresses: Address, chain: ChainDto) {
-    return await this.dataProvider.getDataByAddresses(addresses, chain.id);
+    return await this.dataProvider.getDataByAddresses(addresses, chain);
   }
 }
 

@@ -69,7 +69,7 @@ export class SpookySwapProtocol extends DataProviderProtocol {
 
   protected async getData(addresses: string, chain: ChainDto): Promise<BaseData[]> {
     const originAddressesArray = addresses.toLowerCase().split(',');
-    const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chain}_SpookySwap_pools`);
+    const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chain.id}_SpookySwap_pools`);
 
     const web3Provider = this.web3Provider.getForChain(chain.abbr);
     const multicall = new LocalMultiCall(web3Provider, this.logger);

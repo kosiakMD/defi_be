@@ -89,14 +89,14 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
       throw stakingFetch.errors[0];
     }
 
-    const subgraphPools = poolsFetch.data?.liquidityPositions
+    const subgraphPools = poolsFetch?.data?.liquidityPositions
       ? groupBy(
           poolsFetch.data.liquidityPositions,
           (liquidityPosition) => liquidityPosition.user.id,
         )
       : null;
 
-    const subgraphStaking = stakingFetch.data?.users
+    const subgraphStaking = stakingFetch?.data?.users
       ? groupBy(stakingFetch.data.users, (staking) => {
           const array = staking.id.split('-');
           return array[1];

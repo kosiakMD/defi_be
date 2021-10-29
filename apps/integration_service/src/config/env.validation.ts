@@ -46,6 +46,7 @@ export const validationSchema = Joi.object({
     .required(), // TODO: not empty
   AAVE_ETH_SUBGRAPH_URL: Joi.string().required(),
   AAVE_PLG_SUBGRAPH_URL: Joi.string().required(),
+  AMM_SUSHISWAP_PLG_SUBGRAPH_URL: Joi.string().required(),
   AMM_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
@@ -111,6 +112,9 @@ export const validationSchema = Joi.object({
   ALPACA_API_URL: Joi.string().required(),
   AUTOFARM_API_URL: Joi.string().required(),
   PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: Joi.string().required(),
+  YEARN_ETH_SUBGRAPH_URL: Joi.string().required(),
+  YEARN_FTM_SUBGRAPH_URL: Joi.string().required(),
+  YEARN_V1_ETH_SUBGRAPH_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

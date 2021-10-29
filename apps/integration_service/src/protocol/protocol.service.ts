@@ -486,8 +486,8 @@ export class ProtocolService {
               });
             });
           } else {
-            this.logger.error(tokensData.errors);
-            errors.push(tokensData.errors);
+            this.logger.error(tokensData?.errors);
+            errors.push(tokensData?.errors);
           }
         } else {
           this.logger.error(tokensResponse.reason);
@@ -554,14 +554,14 @@ export class ProtocolService {
     const tokensToFetchPrice: Map<Address, PoolTokenDto | IntegrationERC20TokenDto> = new Map();
     const addressesToFetchPrice: Address[] = [];
     // add reward Token
-    const rewardTokenAddress = stakingPositions[0].rewardToken.address;
+    const rewardTokenAddress = stakingPositions[0]?.rewardToken.address;
     addressesToFetchPrice.push(rewardTokenAddress);
     // add pool tokens
     stakingPositions.forEach(({ stakingToken }) => {
       const { tokens, address: stakingAddress } = stakingToken;
       addressesToFetchPrice.push(stakingAddress);
       tokensToFetchPrice.set(stakingAddress, stakingToken);
-      tokens.forEach((token) => {
+      tokens?.forEach((token) => {
         addressesToFetchPrice.push(token.address);
         tokensToFetchPrice.set(token.address, token);
       });
@@ -592,7 +592,7 @@ export class ProtocolService {
       const stakingTokenPrice = tokensPrices.prices[stakingToken.address];
       stakingToken.price = Number(stakingTokenPrice) || null;
       stakingToken.value = Number(stakingTokenPrice) * Number(stakingToken.balance) || null;
-      stakingToken.tokens.forEach((token) => {
+      stakingToken.tokens?.forEach((token) => {
         const price = tokensPrices.prices[token.address];
         token.price = Number(price) || null;
         token.value = Number(price) * Number(token.balance) || null;

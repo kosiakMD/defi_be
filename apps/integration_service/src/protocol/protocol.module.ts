@@ -9,6 +9,7 @@ import { AccountModule } from '../account/account.module';
 import { ChainModule } from '../chain/chain.module';
 import { PriceModule } from '../price/price.module';
 import { Web3Service } from '../quickswap/web3/web3.service';
+import { AmmPlgSubgraph } from '../sushiswap/ammPlgSubgraph';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
@@ -28,7 +29,6 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { AmmPlgSubgraph } from '../sushiswap/ammPlgSubgraph';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [

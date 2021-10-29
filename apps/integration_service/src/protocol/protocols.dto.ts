@@ -1,14 +1,13 @@
 // eslint-disable-next-line max-classes-per-file
 import { Exclude } from 'class-transformer';
 
-import { FeatureResultDto, Features } from '@app/common';
-import { ChainIdEnum } from '@app/common/enum';
+import { ChainDto, FeatureResultDto, Features } from '@app/common';
 
 export class ProtocolDto {}
 
 export interface DefaultDataProvider {
   [key: string]: any;
-  getDataByAddresses: (address: string, chainId?: ChainIdEnum) => any;
+  getDataByAddresses: (address: string, chain: ChainDto) => any;
 }
 
 export class RawFeaturesDto {

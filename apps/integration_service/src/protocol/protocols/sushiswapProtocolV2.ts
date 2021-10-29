@@ -94,14 +94,14 @@ export class SushiswapProtocolV2 extends UniswapLikeProtocol implements Abstract
     // TODO: for one address only now
     const userAddress = addresses.toLowerCase();
     const [amm, staking] = await Promise.all([
-      this.getPoligonAmmSubgraphData(userAddress, chain),
+      this.getPolygonAmmSubgraphData(userAddress, chain),
       this.getMulticallData(userAddress, chain),
     ]);
     featuresData.push(amm, staking);
     return featuresData;
   }
 
-  private async getPoligonAmmSubgraphData(userAddress: Address, chain: ChainDto) {
+  private async getPolygonAmmSubgraphData(userAddress: Address, chain: ChainDto) {
     const { data: usersData, errors: usersErrors } = await this.ammPlgSubgraph.getUsers([
       userAddress,
     ]);

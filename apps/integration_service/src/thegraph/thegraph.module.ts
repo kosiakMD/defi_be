@@ -1,5 +1,7 @@
-import { HttpModule, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import * as redisStore from 'cache-manager-redis-store';
+
+import { HttpModule, Module, CacheModule } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AlpacaSubgraph } from '../protocol/protocols/alpaca/services/alpaca.subgraph';
 import { AutofarmSubgraph } from '../protocol/protocols/autofarm/services/autofarm.subgraph';
@@ -24,7 +26,18 @@ import { UniswapV3Subgraph } from './uniswap.v3.subgraph';
       timeout: 60000,
       maxRedirects: 5,
     }),
-    ConfigModule,
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('REDIS_CACHE_TTL') || 150,
+        store: redisStore,
+        host: configService.get('REDIS_HOST'),
+        port: configService.get('REDIS_PORT'),
+        // eslint-disable-next-line camelcase
+        auth_pass: configService.get('REDIS_AUTH'),
+      }),
+      inject: [ConfigService],
+    }),
   ],
   providers: [
     AaveSubgraph,

@@ -67,9 +67,9 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     this.multicall = new MultiCallService(this.web3Provider.getInstanceByChainId(ChainIdEnum.plg));
   }
 
-  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 2): Promise<PairDto[]> {
+  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 10): Promise<PairDto[]> {
     const chunkedPairs = await Promise.all(
-      toChunkedArray(pairsAddresses, chunkSize)
+      toChunkedArray(pairsAddresses.sort(), chunkSize)
         .map(async (chunkedPairsAddresses): Promise<PairDto[]> => {
           const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
             chunkedPairsAddresses,
@@ -85,37 +85,35 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     return chunkedPairs.flat();
   }
 
-  private async getLPTokens(
+  private getLPTokens(
     { token0, token1, reserve0, reserve1, reserveUSD }: PairDto,
     poolShare: number,
-  ): Promise<PoolTokenDto[]> {
-    return await Promise.all(
-      [0, 1].map(async (_) => {
-        const { id: address, name, symbol, decimals } = _ ? token1 : token0;
-        const reserve = _ ? reserve1 : reserve0;
-        const price = new BigNumber(reserveUSD) //
-          .div(2)
-          .div(reserve)
-          .toNumber();
-        const balance = new BigNumber(poolShare) //
-          .times(reserve)
-          .toString();
-        const value = new BigNumber(balance) //
-          .times(price)
-          .toNumber();
+  ): PoolTokenDto[] {
+    return [0, 1].map((_) => {
+      const { id: address, name, symbol, decimals } = _ ? token1 : token0;
+      const reserve = _ ? reserve1 : reserve0;
+      const price = new BigNumber(reserveUSD) //
+        .div(2)
+        .div(reserve)
+        .toNumber();
+      const balance = new BigNumber(poolShare) //
+        .times(reserve)
+        .toString();
+      const value = new BigNumber(balance) //
+        .times(price)
+        .toNumber();
 
-        return {
-          address,
-          name,
-          symbol,
-          decimals: +decimals,
-          price,
-          reserve,
-          balance,
-          value,
-        };
-      }),
-    );
+      return {
+        address,
+        name,
+        symbol,
+        decimals: +decimals,
+        price,
+        reserve,
+        balance,
+        value,
+      };
+    });
   }
 
   public async getData(addresses: string, chain: ChainDto): Promise<BaseData[]> {
@@ -282,14 +280,14 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
               const stakingTokenAddress = stakingPosition.stakingToken.address;
 
               if (stakingPairsData.length) {
-                for await (const pair of stakingPairsData) {
+                for (const pair of stakingPairsData) {
                   const poolShare = new BigNumber(stakingPosition.staked)
                     .div(pair.totalSupply)
                     .toNumber();
 
                   stakingPairs.set(pair.id, {
                     ...pair,
-                    tokens: await this.getLPTokens(pair, poolShare),
+                    tokens: this.getLPTokens(pair, poolShare),
                   });
                 }
               }

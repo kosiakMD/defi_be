@@ -1,16 +1,16 @@
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
-import { LiquidityPoolJob } from './liquiditypool/liquidity.pool.job';
-import { LiquidityPoolModule } from './liquiditypool/liquidity.pool.module';
-import { StakingPoolJob } from './liquiditypool/staking.pool.job';
+import { JobsModule } from './jobs/jobs.module';
+import { JobsRunner } from './jobs/jobs.runner';
 
 export async function bootstrap(): Promise<void> {
   const app = await NestFactory.createApplicationContext(AppModule);
-  const poolsJob = app.select(LiquidityPoolModule).get(LiquidityPoolJob);
-  await poolsJob.collectProtocolsAvailable();
-  const stakingPoolJob = app.select(LiquidityPoolModule).get(StakingPoolJob);
-  await stakingPoolJob.collectProtocolsAvailable();
+
+  const jobsRunner = app.select(JobsModule).get(JobsRunner);
+  await jobsRunner.initialize();
+  await jobsRunner.update();
+
   await app.close();
 }
 bootstrap();

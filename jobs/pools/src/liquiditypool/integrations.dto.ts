@@ -113,17 +113,10 @@ export class LiquidityPoolFeature {
   tokens: PoolTokenDto[] = [];
 }
 
-export class StakingToken extends ERC20TokenDto {
-  @Expose({ name: 'underlyingAssets' })
-  tokens: PoolTokenDto[];
-}
-
-// TODO: same as IntegrationStakingPositionDto!!!
 export class StakingPoolFeature {
   address: string;
   poolId: number;
   poolName?: string;
-  isActive?: boolean;
   TVL?: number;
   rewardToken: PriceTokenDto;
   stakingToken: PriceTokenDto;

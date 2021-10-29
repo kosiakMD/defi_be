@@ -171,10 +171,10 @@ export class PancakeV2Service {
         );
         stakingToken.balance = stakedBigNumber.toString();
 
-        if (cachedPoolData.liquidityPoolTokens) {
+        if (cachedPoolData.stakingToken.tokens) {
           stakingToken.tokens = [];
           const poolShare = stakedBigNumber.div(new BigNumber(stakingToken.totalSupply));
-          cachedPoolData.liquidityPoolTokens.forEach((clpt) => {
+          cachedPoolData.stakingToken.tokens.forEach((clpt) => {
             const poolTokenToAdd: PoolTokenDto = plainToClass(PoolTokenDto, {
               address: clpt.address,
               name: clpt.name,

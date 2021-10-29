@@ -47,7 +47,7 @@ export class PancakeswapPoolJob extends LiquidityPoolJobAbstract {
     }
     this.logger.log(`it is time update pools!`, this.placeholder);
 
-    const multicall = new MultiCallInternal(this.web3Provider.getInstanceByChainId(this.chain));
+    const multicall = new MultiCallInternal(this.web3Provider.web3(this.chain));
 
     const poolsInfo: Map<string, MasterchiefPoolInfoResponse> = await multicall.getPoolsInfo(
       this.masterchiefAddress,

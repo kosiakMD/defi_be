@@ -160,6 +160,12 @@ export class LPToken extends IntegrationERC20TokenDto {
   tokens: PoolTokenDto[] = [];
 }
 
+export class Stats {
+  apy: number = null;
+  apr: number = null;
+  tvl: number = null;
+}
+
 // TODO: same as StakingPoolFeature!!!
 export class IntegrationStakingPositionDto {
   @Expose()
@@ -177,6 +183,10 @@ export class IntegrationStakingPositionDto {
   @Expose()
   @ApiProperty({type: String, example: '642354'})
   staked: string = null; // amount
+
+  @Expose()
+  @ApiProperty({type: Stats})
+  stats?: Stats;
 
   @Expose()
   @ApiProperty({ type: LPToken })

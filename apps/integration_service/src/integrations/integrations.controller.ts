@@ -20,6 +20,12 @@ export class IntegrationsController {
     return this.integrationsService.getAllFeatures();
   }
 
+  @ApiResponse({ status: 200 })
+  @Get('active')
+  getActiveFeatures() {
+    return this.integrationsService.getActiveFeatures();
+  }
+
   @ApiParam({
     name: 'protocolName',
     enum: ProtocolNameEnum,
@@ -29,7 +35,6 @@ export class IntegrationsController {
   @ApiQuery({
     name: 'chains',
     type: String,
-    // enum: ChainIdEnum,
     example: [
       ChainIdEnum.eth,
       ChainIdEnum.bsc,
@@ -42,7 +47,6 @@ export class IntegrationsController {
   @ApiQuery({
     name: 'addresses',
     type: String,
-    // example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', 0xa2107fa5b38d9bbd2c461d6edf11b11a50f6b974
     example: '0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2',
   })
   @ApiResponse({ status: 200, type: IntegrationsResponseDto })
@@ -57,10 +61,6 @@ export class IntegrationsController {
       throw new NotAcceptableException(`Wrong protocol name '${protocolName}'`);
     }
 
-    // return plainToClass(
-    //   IntegrationsResponseDto,
-    //   this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses),
-    // );
     return this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses);
   }
 }

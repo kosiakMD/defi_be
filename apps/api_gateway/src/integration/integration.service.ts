@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, BaseData, Pool, ProtocolName, Vault } from '@app/common';
+import { Address, Pool, ProtocolName, Vault } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import { FeaturesResponseDto } from '../common/DTO/features.dto';
@@ -78,7 +78,8 @@ export class IntegrationService {
     }
   }
 
-  async getUniswap(addresses: string): Promise<BaseData[]> {
+  // todo: must be BaseData
+  async getUniswap(addresses: string): Promise<any[]> {
     try {
       this.logger.time(this.getUniswapUrl);
       const data = await this.httpService
@@ -93,7 +94,8 @@ export class IntegrationService {
     }
   }
 
-  async getSushiswap(addresses: string): Promise<BaseData[]> {
+  // todo: must be BaseData
+  async getSushiswap(addresses: string): Promise<any[]> {
     try {
       this.logger.time(this.getSushiswapUrl);
       const data = await this.httpService

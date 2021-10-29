@@ -67,7 +67,7 @@ export class NotifyPayloadFeaturesDto {
   featureName: FeatureName;
 
   @ApiProperty({ example: [] })
-  items: LiquidityPoolFeature[];
+  items: any[];
 }
 
 export class SavePoolsResponseDto {

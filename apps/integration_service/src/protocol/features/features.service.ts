@@ -15,13 +15,6 @@ import { FeatureEnum } from './features.enum';
 
 @Injectable()
 export class FeaturesService {
-  // private static createProtocolFeature(abbr: ChainAbbrEnum): ProtocolDataDto {
-  //   return plainToClass(ProtocolDataDto, {
-  //     chain: getChainByAbbr(abbr),
-  //     protocol: [],
-  //   } as ProtocolDataDto);
-  // }
-
   private static createFeature(
     abbr: ChainAbbrEnum,
     features: FeatureEnum[],

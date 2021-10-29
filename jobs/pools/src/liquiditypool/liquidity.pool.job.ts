@@ -188,7 +188,7 @@ export class LiquidityPoolJob {
       pairAddresses.push(lpf.lpToken.address);
     });
 
-    const multicall = new MultiCallInternal(this.web3Provider.getInstanceByChainId(chain));
+    const multicall = new MultiCallInternal(this.web3Provider.web3(chain));
 
     const reserves: Map<string, UniswapPairReserves> = await multicall.getPairsReserves(
       pairAddresses,

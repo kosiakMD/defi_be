@@ -5,10 +5,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProtocolName } from '@app/common';
 
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '../enum';
-import { BaseData, StakingPosition, txs } from '../interfaces';
+import { BaseData } from '../interfaces';
 import { LiquidityPositionDto } from './LiquidityPositions.dto';
 import { StakingPositionFeatureDto } from './StakingPositionFeatureDto';
-import { txsDto } from './txs.dto';
 
 export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
@@ -39,11 +38,9 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   protocolType: T;
 
   @ApiProperty({ type: [StakingPositionFeatureDto], required: false })
-  stakingPositions?: StakingPosition[];
+  stakingPositions?: any[];
 
   @ApiProperty({ type: [LiquidityPositionDto], required: false })
   liquidityPositions?: LiquidityPositionDto[];
 
-  @ApiProperty({ type: [txsDto], required: false })
-  txs?: txs[];
 }

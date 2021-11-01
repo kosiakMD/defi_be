@@ -37,7 +37,7 @@ import { StoreModule } from './store/store.module';
         database: configService.get('DB_DATABASE'),
         entities: ['dist/**/*.entity{.ts,.js}', 'store/*.entity{.ts,.js}'],
         synchronize: false,
-        logging: false,
+        logging: true,
       }),
     }),
     StoreModule,

@@ -37,3 +37,17 @@ export class LiquidityPoolFeature {
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
   tokens: PoolTokenDto[] = [];
 }
+
+export class PoolsFeatureMapping {
+  dbId: number;
+  dtoName: string;
+  lpToken: {
+    dbId: number;
+    dtoName: string;
+  };
+  tokens?: {
+    dbId: number;
+    dtoName: string;
+    positionInPool: number;
+  }[];
+}

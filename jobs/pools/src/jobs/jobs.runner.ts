@@ -48,7 +48,7 @@ export class JobsRunner {
     TrackedVaultsMap.add(dbJobs);
     TrackedVaultItemsMap.add(dbJobsItems);
 
-    jobsPlaceholdersIntersection.forEach((placeholder) => {
+    for (const placeholder of jobsPlaceholdersIntersection) {
       const existedDbJob: TrackedVault = TrackedVaultsMap.get(placeholder) as TrackedVault;
       if (existedDbJob) {
         this.logger.log(
@@ -56,11 +56,11 @@ export class JobsRunner {
           JobsRunner.name,
         );
         if (existedDbJob.isEnabled === true) {
-          this.jobsRegistry.registry.get(placeholder).manageMapping();
+          await this.jobsRegistry.registry.get(placeholder).manageMapping();
           this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
         }
       }
-    });
+    }
   }
 
   async update() {

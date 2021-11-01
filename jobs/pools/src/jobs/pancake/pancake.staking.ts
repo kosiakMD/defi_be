@@ -19,7 +19,7 @@ import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toDecimals } from '../../utils/number';
-import { concatStrings, getJobPlaceholder } from '../../utils/string';
+import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { ERC20Token } from '../dto/common';
@@ -41,7 +41,7 @@ export class PancakeStaking implements JobInterface {
   chain = ChainIdEnum.bsc;
   feature = 'staking';
   protocol = 'PancakeV2';
-  placeholder = getJobPlaceholder(this.chain, this.feature, this.protocol);
+  placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
 
   private mapping = [];

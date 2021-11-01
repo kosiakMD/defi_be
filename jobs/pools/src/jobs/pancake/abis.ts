@@ -58,4 +58,11 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+  static readonly poolLength: AbiItem = {
+    inputs: [],
+    name: 'poolLength',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

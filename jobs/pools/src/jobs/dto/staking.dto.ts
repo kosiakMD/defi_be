@@ -2,6 +2,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 import { ERC20Token } from './common';
+import BigNumber from 'bignumber.js';
 
 export class ClaimableDto {
   balance: string = null;
@@ -42,4 +43,31 @@ export class IntegrationStakingPositionDto {
   stats: Stats = plainToClass(Stats, {});
   stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
   rewardToken: IntegrationClaimableTokenDto = plainToClass(IntegrationClaimableTokenDto, {});
+}
+
+export class APRStats {
+  totalAllocPoints: BigNumber;
+  poolAllocPoints: BigNumber;
+  rewardTokenPerBlock: number;
+  rewardTokenPrice: number;
+  blockTime: number;
+  farmingPoolTVL: number;
+}
+
+export class StakingFeatureMapping {
+  dbId: number;
+  dtoName: string;
+  rewardToken: {
+    dbId: number;
+    dtoName: string;
+  };
+  stakingToken: {
+    dbId: number;
+    dtoName: string;
+    tokens?: {
+      dbId: number;
+      dtoName: string;
+      positionInPool: number;
+    }[];
+  };
 }

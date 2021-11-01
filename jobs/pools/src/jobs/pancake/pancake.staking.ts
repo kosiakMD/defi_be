@@ -24,10 +24,12 @@ import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { ERC20Token } from '../dto/common';
 import {
+  APRStats,
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
+  StakingFeatureMapping,
 } from '../dto/staking.dto';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
@@ -470,31 +472,4 @@ export class PancakeStaking implements JobInterface {
     const blocksPerYear = (86400 * 365) / blockTime; // 10512000
     return aprPerBlock * blocksPerYear;
   }
-}
-
-export interface APRStats {
-  totalAllocPoints: BigNumber;
-  poolAllocPoints: BigNumber;
-  rewardTokenPerBlock: number;
-  rewardTokenPrice: number;
-  blockTime: number;
-  farmingPoolTVL: number;
-}
-
-class StakingFeatureMapping {
-  dbId: number;
-  dtoName: string;
-  rewardToken: {
-    dbId: number;
-    dtoName: string;
-  };
-  stakingToken: {
-    dbId: number;
-    dtoName: string;
-    tokens?: {
-      dbId: number;
-      dtoName: string;
-      positionInPool: number;
-    }[];
-  };
 }

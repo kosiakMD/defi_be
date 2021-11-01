@@ -4,7 +4,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from '../liquiditypool/integrations.dto';
 import { Logger } from '../logger/logger.service';
 import { IntegrationService } from '../microservices/integration.service';
 import { TrackedVault } from '../store/tracked.vault.entity';
@@ -12,6 +11,7 @@ import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { getJobPlaceholder } from '../utils/string';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { TrackedVaultsMap } from './data/tracked.vaults.map';
+import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from './integrations.dto';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 
@@ -55,8 +55,10 @@ export class JobsRunner {
           `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
           JobsRunner.name,
         );
-        this.jobsRegistry.registry.get(placeholder).manageMapping();
-        this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
+        if (existedDbJob.isEnabled === true) {
+          this.jobsRegistry.registry.get(placeholder).manageMapping();
+          this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
+        }
       }
     });
   }
@@ -97,6 +99,7 @@ export class JobsRunner {
         });
       });
     });
+    jobPlaceholdersSet.add('2_PancakeV2_pools');
     return jobPlaceholdersSet;
   }
 }

@@ -22,16 +22,17 @@ import { toDecimals } from '../../utils/number';
 import { concatStrings, getJobPlaceholder } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
-import { IntegrationDataConverter } from '../integration.data.converter';
+import { ERC20Token } from '../dto/common';
 import {
-  ERC20Token,
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
-} from '../integrations.dto';
+} from '../dto/staking.dto';
+import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
+import { PancakeAddresses } from './addresses';
 
 @Injectable()
 export class PancakeStaking implements JobInterface {
@@ -40,14 +41,9 @@ export class PancakeStaking implements JobInterface {
   protocol = 'PancakeV2';
   placeholder = getJobPlaceholder(this.chain, this.feature, this.protocol);
   features: any;
+
   private mapping = [];
-
-  availableDtosForConversion: Map<string, string>;
-
-  private static readonly addresses = {
-    chief: '0x73feaa1ee314f8c655e354234017be2193c9e24e',
-    cake: '0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82',
-  };
+  private availableDtosForConversion: Map<string, string>;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -83,7 +79,7 @@ export class PancakeStaking implements JobInterface {
     const stakingFeatures: IntegrationStakingPositionDto[] = [];
 
     const accountTokenDto: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
-      PancakeStaking.addresses.cake,
+      PancakeAddresses.cake,
       this.chain,
     );
     const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
@@ -96,7 +92,7 @@ export class PancakeStaking implements JobInterface {
     const multicall = new MultiCallInternal(this.web3Provider.web3(this.chain));
 
     const poolsInfo: Map<string, MasterchiefPoolInfoResponse> = await multicall.getPoolsInfo(
-      PancakeStaking.addresses.chief,
+      PancakeAddresses.chief,
     );
 
     for (const address of poolsInfo.keys()) {
@@ -130,7 +126,7 @@ export class PancakeStaking implements JobInterface {
         const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
           IntegrationStakingPositionDto,
           {
-            address: PancakeStaking.addresses.chief,
+            address: PancakeAddresses.chief,
             poolId: poolsInfo.get(address).id.toString(),
             poolName: null,
             rewardToken: rewardToken,
@@ -163,7 +159,7 @@ export class PancakeStaking implements JobInterface {
     const mappedDto = plainToClass(StakingFeatureMapping, {});
 
     /** reward token */
-    const rewardTokenUniqueId = concatStrings(this.chain, PancakeStaking.addresses.cake);
+    const rewardTokenUniqueId = concatStrings(this.chain, PancakeAddresses.cake);
     const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
       stakingPosition.rewardToken,
       rewardTokenUniqueId,
@@ -368,14 +364,14 @@ export class PancakeStaking implements JobInterface {
       address: stakingPosition.stakingToken.address,
       abi: Abis.balanceOf,
       input: {
-        data: [PancakeStaking.addresses.chief],
+        data: [PancakeAddresses.chief],
       },
       output: {},
     });
 
     // poolInfo to calculate APR
     calls.set(this.poolInfoLabel(stakingPosition), {
-      address: PancakeStaking.addresses.chief,
+      address: PancakeAddresses.chief,
       abi: Abis.poolInfo,
       input: {
         data: [stakingPosition.poolId],
@@ -391,7 +387,7 @@ export class PancakeStaking implements JobInterface {
       [
         this.totalAllocPointLabel(),
         {
-          address: PancakeStaking.addresses.chief,
+          address: PancakeAddresses.chief,
           abi: Abis.totalAllocPoint,
           input: {
             data: [],
@@ -402,7 +398,7 @@ export class PancakeStaking implements JobInterface {
       [
         this.cakePerBlockLabel(),
         {
-          address: PancakeStaking.addresses.chief,
+          address: PancakeAddresses.chief,
           abi: Abis.cakePerBlock,
           input: {
             data: [],
@@ -424,25 +420,21 @@ export class PancakeStaking implements JobInterface {
   private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto) {
     return concatStrings(
       Abis.balanceOf.name,
-      PancakeStaking.addresses.chief,
+      PancakeAddresses.chief,
       stakingPosition.stakingToken.address,
     );
   }
 
   private poolInfoLabel(stakingPosition: IntegrationStakingPositionDto) {
-    return concatStrings(
-      Abis.poolInfo.name,
-      PancakeStaking.addresses.chief,
-      stakingPosition.poolId,
-    );
+    return concatStrings(Abis.poolInfo.name, PancakeAddresses.chief, stakingPosition.poolId);
   }
 
   private totalAllocPointLabel() {
-    return concatStrings(Abis.totalAllocPoint.name, PancakeStaking.addresses.chief);
+    return concatStrings(Abis.totalAllocPoint.name, PancakeAddresses.chief);
   }
 
   private cakePerBlockLabel() {
-    return concatStrings(Abis.cakePerBlock.name, PancakeStaking.addresses.chief);
+    return concatStrings(Abis.cakePerBlock.name, PancakeAddresses.chief);
   }
 
   private getPricedTokensSet(): Set<string> {

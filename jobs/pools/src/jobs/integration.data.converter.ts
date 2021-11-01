@@ -7,7 +7,7 @@ import {
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
-} from './integrations.dto';
+} from './dto/staking.dto';
 
 export class IntegrationDataConverter {
   static toDTO(mapping) {

@@ -7,7 +7,6 @@ import { WinstonModule } from 'nest-winston';
 import environment from './config/environment';
 import { winstonParams } from './config/winston';
 import { JobsModule } from './jobs/jobs.module';
-import { LiquidityPoolModule } from './liquiditypool/liquidity.pool.module';
 import { StoreModule } from './store/store.module';
 
 @Module({
@@ -36,12 +35,11 @@ import { StoreModule } from './store/store.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: ['dist/**/*.entity{.ts,.js}'],
+        entities: ['dist/**/*.entity{.ts,.js}', 'store/*.entity{.ts,.js}'],
         synchronize: false,
         logging: false,
       }),
     }),
-    LiquidityPoolModule,
     StoreModule,
     JobsModule,
   ],

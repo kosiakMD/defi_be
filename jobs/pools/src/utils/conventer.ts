@@ -6,6 +6,8 @@ import { ERC20Token } from '../jobs/dto/common';
 import { LiquidityPoolFeature, PoolTokenDto } from '../jobs/dto/pools.dto';
 import { LiquidityPoolTokenDto } from '../microservices/dto/account/account.dto';
 
+export const UNIV2_POOL_TOKEN_WEIGHT = 0.5;
+
 export function decodeOutput(abi: AbiItem, outputResult) {
   // if there is one output, it doesn't have a name (check abi)
   if (abi.outputs.length === 1) {
@@ -46,6 +48,7 @@ export function toLiquidityPoolFeature(lpTokenData: LiquidityPoolTokenDto): Liqu
         symbol: pt.symbol,
         decimals: pt.decimals,
         positionInPool: pt.positionInPool,
+        weight: UNIV2_POOL_TOKEN_WEIGHT
       });
     }),
   });

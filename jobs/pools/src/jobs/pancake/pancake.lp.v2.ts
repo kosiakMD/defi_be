@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { plainToClass } from 'class-transformer';
+import { classToPlain, plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -7,7 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CallData } from '../../chain/dto/call.data';
 import { MulticallService } from '../../chain/multicall.service';
 import { Web3Provider } from '../../chain/web3.provider';
-import { ChainIdEnum } from '../../config/enum';
+import { ChainIdEnum, CurrencyIdEnum } from '../../config/enum';
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -16,9 +16,15 @@ import { SettingsService } from '../../store/service/settings.service';
 import { Setting } from '../../store/setting.entity';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
+import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toLiquidityPoolFeature } from '../../utils/conventer';
+import { toDecimals } from '../../utils/number';
 import { concatStrings } from '../../utils/string';
+import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
+import { ERC20Token } from '../dto/common';
+import { LiquidityPoolFeature, PoolsFeatureMapping, PoolTokenDto } from '../dto/pools.dto';
+import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { PancakeAddresses } from './addresses';
@@ -42,7 +48,13 @@ export class PancakeLpV2 implements JobInterface {
     private readonly storeService: StoreService,
     private readonly multicallService: MulticallService,
     private readonly priceService: PriceService,
-  ) {}
+  ) {
+    this.availableDtosForConversion = new Map<string, string>([
+      [LiquidityPoolFeature.name, LiquidityPoolFeature.name],
+      [ERC20Token.name, ERC20Token.name],
+      [PoolTokenDto.name, ERC20Token.name],
+    ]);
+  }
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
@@ -50,16 +62,15 @@ export class PancakeLpV2 implements JobInterface {
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
 
-    // jobMapping.mapping.forEach((jm) => {
-    //   this.mapping.push(IntegrationDataConverter.toDTO(jm));
-    // });
-    return Promise.resolve(undefined);
+    jobMapping.mapping.forEach((jm) => {
+      this.mapping.push(IntegrationDataConverter.toDTO(jm));
+    });
   }
 
   async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
     this.logger.log('building initial mapping', this.placeholder);
 
-    const liquidityPools = [];
+    const liquidityPools: LiquidityPoolFeature[] = [];
     const settingId = concatStrings(this.placeholder, 'chief_pool_length');
 
     let dbPoolLenthSetting: Setting = await this.settingsService.findByName(settingId);
@@ -79,8 +90,6 @@ export class PancakeLpV2 implements JobInterface {
       );
       return [];
     }
-
-    // dbPoolLenthSetting = await this.settingsService.update(dbPoolLenthSetting);
 
     const calls = new Map<string, CallData>();
     for (let i = poolIdFrom; i <= poolIdTo; i++) {
@@ -115,9 +124,96 @@ export class PancakeLpV2 implements JobInterface {
         );
       }
     }
-    console.log(liquidityPools);
 
-    return [];
+    const mappings = [];
+    for (const lp of liquidityPools) {
+      mappings.push(await this.toDbMapping(lp));
+    }
+
+    jobMapping.mapping = mappings;
+
+    const updatedMapping = await this.storeService.updateMapping(jobMapping);
+    TrackedVaultsMap.add(updatedMapping);
+
+    await this.settingsService.update(dbPoolLenthSetting);
+    return updatedMapping;
+  }
+
+  async toDbMapping(liquidityPool: LiquidityPoolFeature) {
+    const mappedDto = plainToClass(PoolsFeatureMapping, {});
+    /** lp token */
+    const lpTokenUniqueId = concatStrings(this.chain, liquidityPool.lpToken.address);
+    const lpTokenItem: TrackedVaultItem = await this.getDbItem(
+      liquidityPool.lpToken,
+      lpTokenUniqueId,
+    );
+    mappedDto.lpToken = {
+      dbId: lpTokenItem.id,
+      dtoName: liquidityPool.lpToken.constructor.name,
+    };
+
+    /** pool tokens */
+    mappedDto.tokens = [];
+    for (const t of liquidityPool.tokens) {
+      const tokenId = concatStrings(this.chain, t.address);
+      const tokenItem: TrackedVaultItem = await this.getDbItem(t, tokenId);
+      mappedDto.tokens.push({
+        dbId: tokenItem.id,
+        dtoName: t.constructor.name,
+        positionInPool: t.positionInPool,
+        weight: t.weight,
+      });
+    }
+
+    /** pool feature */
+    const positionUniqueId = concatStrings(this.chain, liquidityPool.address, 'lp');
+    const position: TrackedVaultItem = await this.getDbItem(liquidityPool, positionUniqueId);
+    mappedDto.dbId = position.id;
+    mappedDto.dtoName = liquidityPool.constructor.name;
+    return mappedDto;
+  }
+
+  private async getDbItem(item, uniqueId: string) {
+    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    if (temp) {
+      return temp;
+    }
+    if (!temp) {
+      return await this.saveItemToDb(item, uniqueId);
+    }
+  }
+
+  async saveItemToDb(item, uniqueId: string): Promise<TrackedVaultItem> {
+    let universalDto;
+
+    const newIntegrationJobItem: TrackedVaultItem = plainToClass(TrackedVaultItem, {});
+    const toUniversalDtoName = this.availableDtosForConversion.get(item.constructor.name);
+    newIntegrationJobItem.type = toUniversalDtoName;
+
+    if (toUniversalDtoName === ERC20Token.name) {
+      universalDto = {
+        address: item.address,
+        name: item.name,
+        symbol: item.symbol,
+        decimals: item.decimals,
+      };
+      newIntegrationJobItem.name = universalDto.name;
+      newIntegrationJobItem.idUnique = uniqueId;
+    }
+    if (toUniversalDtoName === LiquidityPoolFeature.name) {
+      universalDto = {
+        address: item.address,
+        name: item.name,
+      };
+      newIntegrationJobItem.name = universalDto.name;
+      newIntegrationJobItem.idUnique = uniqueId;
+    }
+
+    newIntegrationJobItem.data = classToPlain(universalDto);
+    const savedItem: TrackedVaultItem = await this.storeService.saveItem(newIntegrationJobItem);
+    // it is important to add item to database
+    TrackedVaultItemsMap.add(savedItem);
+    return savedItem;
   }
 
   async getChainPoolLength(): Promise<BigNumber> {
@@ -138,6 +234,92 @@ export class PancakeLpV2 implements JobInterface {
     return callRsp.get(this.poolLengthLabel()).output.data;
   }
 
+  updateTracked(): Promise<void> {
+    return Promise.resolve(undefined);
+  }
+
+  async updateWithChainData(): Promise<any[]> {
+    let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
+
+    this.mapping.forEach((m) => {
+      if (m instanceof LiquidityPoolFeature) {
+        batchCallsMap = new Map<string, CallData>([
+          ...batchCallsMap.entries(),
+          ...this.getCallsForPool(m).entries(),
+        ]);
+      }
+    });
+
+    const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
+
+    const [{ prices }, multicallRsp] = await Promise.all([
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
+      this.multicallService.handleInBatches(batchCallsMap),
+    ]);
+
+    this.mapping = this.mapping.map((lp) => {
+      if (lp instanceof LiquidityPoolFeature) {
+        const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(lp)).output.data;
+        lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
+        const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(lp)).output.data;
+        lp.tokens.map((t) => {
+          t.reserve =
+            t.positionInPool === 0
+              ? toDecimals(_reserve0, t.decimals)
+              : toDecimals(_reserve1, t.decimals);
+          t.balance = t.reserve;
+          t.price = Number(prices[t.address]);
+          t.value = t.balance * t.price;
+
+          lp.stats.tvl += t.value;
+          return t;
+        });
+
+        return lp;
+      }
+    });
+
+    return this.mapping;
+  }
+
+  private getCallsForPool(liquidityPoolFeature: LiquidityPoolFeature) {
+    const calls: Map<string, CallData> = new Map<string, CallData>();
+
+    // reserves of lp token
+    calls.set(this.getReservesLabel(liquidityPoolFeature), {
+      address: liquidityPoolFeature.lpToken.address,
+      abi: Abis.getReserves,
+      input: {
+        data: [],
+      },
+      output: {},
+    });
+
+    // total supply supply of staking lp token
+    calls.set(this.totalSupplyLabel(liquidityPoolFeature), {
+      address: liquidityPoolFeature.address,
+      abi: Abis.totalSupply,
+      input: {
+        data: [],
+      },
+      output: {},
+    });
+
+    return calls;
+  }
+
+  private getPricedTokensSet(): Set<string> {
+    const addressesSet: Set<string> = new Set<string>();
+    this.mapping.forEach((m) => {
+      if (m instanceof LiquidityPoolFeature) {
+        m.tokens.forEach((t) => {
+          addressesSet.add(t.address);
+        });
+      }
+    });
+    return addressesSet;
+  }
+
   poolLengthLabel() {
     return concatStrings(Abis.poolLength.name, PancakeAddresses.chief);
   }
@@ -146,11 +328,11 @@ export class PancakeLpV2 implements JobInterface {
     return concatStrings(Abis.poolInfo.name, PancakeAddresses.chief, poolId);
   }
 
-  updateTracked(): Promise<void> {
-    return Promise.resolve(undefined);
+  getReservesLabel(liquidityPoolFeature: LiquidityPoolFeature) {
+    return concatStrings(Abis.getReserves.name, liquidityPoolFeature.lpToken.address);
   }
 
-  updateWithChainData(): Promise<any[]> {
-    return Promise.resolve([]);
+  totalSupplyLabel(liquidityPoolFeature: LiquidityPoolFeature) {
+    return concatStrings(Abis.totalSupply.name, liquidityPoolFeature.lpToken.address);
   }
 }

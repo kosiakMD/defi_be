@@ -161,6 +161,7 @@ export class PancakeStaking implements JobInterface {
     const mappedDto = plainToClass(StakingFeatureMapping, {});
 
     /** reward token */
+    // todo: this unique ids must be moved to other place
     const rewardTokenUniqueId = concatStrings(this.chain, PancakeAddresses.cake);
     const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
       stakingPosition.rewardToken,

@@ -22,11 +22,12 @@ export class PoolPeriodStats {
 }
 
 export class PoolTokenDto extends ERC20Token {
-  reserve: string = null;
+  reserve: number = null;
   value: number = null;
-  balance: string = null;
+  balance: number = null;
   price: number = null;
   positionInPool: number = null;
+  weight: number = null;
 }
 
 export class LiquidityPoolFeature {
@@ -49,5 +50,6 @@ export class PoolsFeatureMapping {
     dbId: number;
     dtoName: string;
     positionInPool: number;
+    weight: number;
   }[];
 }

@@ -33,6 +33,10 @@ export class NftAssetDto {
   traits: TraitDto[];
 
   @Expose()
-  @ApiProperty({ name: 'priceUSD', example: '1200' })
+  @ApiProperty({ type: String, example: '1200' })
   priceUSD: string;
+
+  @Expose()
+  @ApiProperty({ type: String, example: '0.05' })
+  priceNative: string;
 }

@@ -33,6 +33,14 @@ export class CollectionDto {
   description: string;
 
   @Expose()
+  @ApiProperty({ example: 0.05 })
+  averagePrice: number;
+
+  @Expose()
+  @ApiProperty({ example: 1750 })
+  averagePriceUSD: number;
+
+  @Expose()
   @ApiProperty({ example: 2 })
   balance: number;
 

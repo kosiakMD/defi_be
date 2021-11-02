@@ -44,7 +44,7 @@ export class NftService {
       throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
     }
 
-    const allowedChains = chains.filter((chain) =>
+    const allowedChains = [...new Set(chains)].filter((chain) =>
       project.getInfo().chains?.includes(ChainIdToAbbr[chain]),
     );
 

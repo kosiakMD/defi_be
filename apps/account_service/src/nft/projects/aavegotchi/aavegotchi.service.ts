@@ -48,8 +48,18 @@ export class AavegotchiService extends BasicNftService {
     return getKey('nft', 'asset', 'svg', ...ids);
   }
 
-  private async handleEthereum(accounts: Address[], chain: number): Promise<NftAssetsByAccounts[]> {
-    const rawAssets = await this.openSeaService.getAssetsByAccounts(accounts, [chain], 20, 0);
+  private async handleEthereum(
+    accounts: Address[],
+    chain: number,
+    limit: number,
+    offset: number,
+  ): Promise<NftAssetsByAccounts[]> {
+    const rawAssets = await this.openSeaService.getAssetsByAccounts(
+      accounts,
+      [chain],
+      limit,
+      offset,
+    );
     const assetsByAccounts = new Map<Address, NftChainDto[]>();
 
     accounts.forEach((account) => {
@@ -96,7 +106,12 @@ export class AavegotchiService extends BasicNftService {
     });
   }
 
-  private async handlePolygon(accounts: Address[], chain: number): Promise<NftAssetsByAccounts[]> {
+  private async handlePolygon(
+    accounts: Address[],
+    chain: number,
+    limit: number,
+    offset: number,
+  ): Promise<NftAssetsByAccounts[]> {
     const rawAssets = await this.subgraph.getUsers(accounts, chain);
 
     const { prices } = await this.priceService.fetchTokenPrices([GHST_ADDRESS_POLYGON], chain);
@@ -109,11 +124,17 @@ export class AavegotchiService extends BasicNftService {
           collections: [
             plainToClass(CollectionDto, {
               address: aavegotchiCollectionPolygon.address,
-              assets: this.mapPolygonAssets(gotchisOwned, prices[GHST_ADDRESS_POLYGON]),
+              assets: this.mapPolygonAssets(
+                gotchisOwned.slice(offset, offset + limit),
+                prices[GHST_ADDRESS_POLYGON],
+              ),
               name: aavegotchiCollectionPolygon.name,
               symbol: aavegotchiCollectionPolygon.symbol,
               description: aavegotchiCollectionPolygon.description,
-              balance: this.mapPolygonAssets(gotchisOwned, prices[GHST_ADDRESS_POLYGON]).length,
+              balance: this.mapPolygonAssets(
+                gotchisOwned.slice(offset, offset + limit),
+                prices[GHST_ADDRESS_POLYGON],
+              ).length,
               links: aavegotchiCollectionPolygon.links,
             }),
           ],
@@ -125,6 +146,8 @@ export class AavegotchiService extends BasicNftService {
   public async getAssetsByAccounts(
     accounts: Address[],
     chains: number[],
+    limit: number,
+    offset: number,
   ): Promise<NftAssetsByAccounts> {
     const assetsByAccounts = new Map<Address, NftChainDto[]>();
     const imagesByAssets = new Map<string, string>();
@@ -134,11 +157,11 @@ export class AavegotchiService extends BasicNftService {
       chains.map(async (chain) => {
         switch (chain) {
           case ChainIdEnum.eth: {
-            return await this.handleEthereum(accounts, chain);
+            return await this.handleEthereum(accounts, chain, limit, offset);
           }
 
           case ChainIdEnum.plg: {
-            return await this.handlePolygon(accounts, chain);
+            return await this.handlePolygon(accounts, chain, limit, offset);
           }
 
           default: {

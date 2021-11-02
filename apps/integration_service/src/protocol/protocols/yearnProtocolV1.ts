@@ -40,7 +40,7 @@ export default class YearnProtocolV1 extends YearnProtocolBase {
       errors: [],
     });
 
-    await this.getStakingData(response, address, chain.id);
+    await this.getStakingData(response, address, chain);
 
     return response;
   }

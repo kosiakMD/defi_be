@@ -7,7 +7,6 @@ import {
   ProjectEnum,
   Logger,
   IntegrationFeaturesDataDto,
-  ChainIdEnum,
   FeatureEnum,
   FeatureResultDto,
   ChainDto,
@@ -41,7 +40,7 @@ export abstract class YearnProtocolBase extends BasicProtocol {
       errors: [],
     });
 
-    await this.getStakingData(response, address, chain.id);
+    await this.getStakingData(response, address, chain);
 
     return response;
   }
@@ -54,21 +53,17 @@ export abstract class YearnProtocolBase extends BasicProtocol {
     return new BigNumber(position.balance).div(decimalsDivider(position.token.decimals));
   }
 
-  async getStakingData(
-    response: IntegrationFeaturesDataDto,
-    address: string,
-    chainId: ChainIdEnum,
-  ) {
+  async getStakingData(response: IntegrationFeaturesDataDto, address: string, chain: ChainDto) {
     const users = await this.yearnSubgraph.getVaultPositions(
       address.toLowerCase().split(','),
-      chainId,
+      chain.id,
     );
 
     const stakedTokenAddresses = users.flatMap((user) => {
       return user.positions.map((position) => position.token.address.toLowerCase());
     });
 
-    const prices = await this.priceService.getTokenPricesFetch(stakedTokenAddresses, chainId);
+    const prices = await this.priceService.getTokenPricesFetch(stakedTokenAddresses, chain.id);
     let totalValue = 0;
 
     const vaultPromises: IntegrationStakingPositionDto[] = users.flatMap((user) =>

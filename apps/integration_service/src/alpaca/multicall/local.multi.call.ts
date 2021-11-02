@@ -2,9 +2,7 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { Logger } from '@app/common';
-
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { MulticallContractFunctionEnum } from '../../multicall/multicall.enum';
 import {

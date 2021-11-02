@@ -6,7 +6,7 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, ChainIdEnum, ChainSymbols } from '@app/common';
+import { Address, ChainAbbrEnum, ChainIdEnum } from '@app/common';
 
 import {
   AccountBalance,
@@ -93,8 +93,8 @@ export class BalanceTokenDto implements ERC20Token {
   chainId: ChainIdEnum;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
-  @ApiProperty({ enum: ChainSymbols, enumName: 'ChainSymbols', example: ChainSymbols.ETH })
-  symbol: ChainSymbols;
+  @ApiProperty({ enum: ChainAbbrEnum })
+  symbol: ChainAbbrEnum;
   @ApiProperty({ type: String, example: 'Ether' })
   name: string;
   @ApiProperty({ type: String, example: '0x0000000000000000000000000000000000000000' })

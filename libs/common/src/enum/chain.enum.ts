@@ -1,10 +1,3 @@
-export enum ChainSymbols {
-  eth = 'eth',
-  ETH = 'ETH',
-  bsc = 'bsc',
-  BSC = 'BSC',
-}
-
 export enum ChainAbbrEnum {
   eth = 'eth',
   bsc = 'bsc',
@@ -12,33 +5,25 @@ export enum ChainAbbrEnum {
   ftm = 'ftm',
   arbi = 'arbi',
   avax = 'avax',
+  xdai = 'xdai',
+  celo = 'celo',
+  mriver = 'mriver',
+  harm = 'harm',
+  heco = 'heco',
 }
 
 export enum ChainNameEnum {
-  ETH = 'ethereum', // remove from enum
   eth = 'ethereum',
-  BSC = 'binance', // remove from enum
   bsc = 'binance',
   plg = 'polygon',
   ftm = 'fantom',
   arbi = 'arbitrum',
   avax = 'avalanche',
-}
-
-export enum ChainSymbolNames {
-  ETH = 'ethereum', // remove from enum
-  eth = 'ethereum',
-  BSC = 'binance', // remove from enum
-  bsc = 'binance',
-}
-
-export enum ChainPrefixEnum {
-  eth = 'eth',
-  bsc = 'bsc',
-  plg = 'plg',
-  ftm = 'ftm',
-  arbi = 'arbi',
-  avax = 'avax',
+  xdai = 'xdai',
+  celo = 'celo',
+  mriver = 'moonriver',
+  harm = 'harmony',
+  heco = 'heco',
 }
 
 export enum ChainIdEnum {
@@ -48,6 +33,11 @@ export enum ChainIdEnum {
   ftm = 4,
   arbi = 5,
   avax = 6,
+  xdai = 7,
+  celo = 8,
+  mriver = 9,
+  harm = 10,
+  heco = 11,
 }
 
 export enum AbsoluteChainIdEnum {
@@ -57,6 +47,11 @@ export enum AbsoluteChainIdEnum {
   ftm = 250,
   arbi = 42161,
   avax = 43114,
+  xdai = 100,
+  celo = 42220,
+  mriver = 1285,
+  harm = 1666600000,
+  heco = 128,
 }
 
 export enum CurrencyEnum {

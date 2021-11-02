@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum, ChainPrefixEnum } from '@app/common/enum';
+import { ChainIdEnum, ChainAbbrEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { PriceService } from '../price/price.service';
@@ -15,7 +15,7 @@ import { ScanApiService } from './scan.api.service';
 export class EtherScanService extends ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
-  protected readonly chainPrefix: ChainPrefixEnum;
+  protected readonly chainAbbr: ChainAbbrEnum;
   protected readonly chainId: ChainIdEnum;
   protected readonly mainCoinAddress: Address;
 
@@ -30,7 +30,7 @@ export class EtherScanService extends ScanApiService {
 
     this.url = this.configService.get<string>('ETHERSCAN_URL');
     this.apiKey = this.configService.get<string>('ETHERSCAN_KEY');
-    this.chainPrefix = ChainPrefixEnum.eth;
+    this.chainAbbr = ChainAbbrEnum.eth;
     this.chainId = ChainIdEnum.eth;
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
   }

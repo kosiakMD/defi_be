@@ -3,8 +3,8 @@ import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
 import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '@app/common/enum';
+import { InternalChainIdByAbbr } from '@app/common/utils/chains';
 
-import { Chains } from '../../config/chains.config';
 import { ChainDto } from '../dto';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class ChainService {
   }
 
   getAll(): ChainDto[] {
-    return Object.values(Chains).map(this.getById);
+    return Object.values(InternalChainIdByAbbr).map(this.getById);
   }
   // TODO: commented older version to get from DB
   // getAll(): Promise<ChainEntity[]> {

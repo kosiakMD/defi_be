@@ -10,15 +10,11 @@ export class ChainDto implements Chain {
 
   @ApiProperty({
     enum: ChainAbbrEnum,
-    enumName: 'ChainAbbrEnum',
-    example: ChainAbbrEnum.eth,
   })
   symbol: ChainAbbrEnum;
 
   @ApiProperty({
     enum: ChainNameEnum,
-    enumName: 'ChainSymbolNames',
-    example: ChainNameEnum.ETH,
   })
   name: ChainNameEnum;
 }

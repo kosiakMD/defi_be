@@ -5,11 +5,15 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainDto, Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
+import {
+  ChainDto,
+  Logger,
+  NotifyPayloadStakingFeaturesDto,
+  PoolTokenDto,
+  ProtocolNameEnum,
+} from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
 import { FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
-
-import { ProtocolNameEnum } from '../../../common/enum';
 
 import { AccountService } from '../../../account/account.service';
 import { RewardsData } from '../../../chain/dto/pancake.interfaces';

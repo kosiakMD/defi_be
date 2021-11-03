@@ -5,7 +5,7 @@ configMaps:
     AMM_BALANCER_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
-  links:
+  nodes:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
     POLYGON_URL: https://polygon-mainnet.infura.io/v3/2f6833b1ce1649e0869b7250a6ea169b

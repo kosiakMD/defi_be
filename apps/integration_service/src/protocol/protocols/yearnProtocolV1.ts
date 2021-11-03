@@ -13,6 +13,7 @@ import {
 } from '@app/common';
 
 import { AccountService } from '../../account/account.service';
+import { Web3Provider } from '../../chain/web3.provider';
 import { PriceService } from '../../price/price.service';
 import { YearnV1Subgraph } from './yearn/services/yearn.v1.subgraph';
 import { YearnProtocolBase } from './yearn/yearnProtocolBase';
@@ -31,6 +32,7 @@ export default class YearnProtocolV1 extends YearnProtocolBase {
     protected readonly yearnSubgraph: YearnV1Subgraph,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
+    protected readonly web3Provider: Web3Provider,
   ) {
     super();
   }

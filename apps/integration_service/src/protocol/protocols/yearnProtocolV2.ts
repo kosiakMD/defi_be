@@ -54,7 +54,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly configService: ConfigService,
-    private readonly web3Provider: Web3Provider,
+    protected readonly web3Provider: Web3Provider,
   ) {
     super();
 

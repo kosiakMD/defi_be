@@ -13,6 +13,7 @@ import {
 } from '@app/common';
 
 import { AccountService } from '../../../account/account.service';
+import { Web3Provider } from '../../../chain/web3.provider';
 import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
@@ -20,6 +21,7 @@ import {
 import { PriceService } from '../../../price/price.service';
 import { decimalsDivider } from '../../../utils/util';
 import BasicProtocol from '../basicProtocol';
+import { LocalMultiCall } from './multicall/local.multi.call';
 import { YearnV1Subgraph } from './services/yearn.v1.subgraph';
 import { YearnV2Subgraph } from './services/yearn.v2.subgraph';
 import { IVaultPosition, IVaultV1Position } from './yearn.interfaces';
@@ -34,6 +36,7 @@ export abstract class YearnProtocolBase extends BasicProtocol {
   protected readonly yearnSubgraph: YearnV1Subgraph | YearnV2Subgraph;
   protected readonly accountService: AccountService;
   protected readonly priceService: PriceService;
+  protected readonly web3Provider: Web3Provider;
 
   async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = plainToClass(IntegrationFeaturesDataDto, {
@@ -59,6 +62,11 @@ export abstract class YearnProtocolBase extends BasicProtocol {
       chain.id,
     );
 
+    const webProvider = this.web3Provider.getForChain(chain.abbr);
+    const localMultiCall = new LocalMultiCall(webProvider, this.logger);
+
+    await localMultiCall.injectPositionBalances(users);
+
     const stakedTokenAddresses = users.flatMap((user) => {
       return user.positions.map((position) => position.token.address.toLowerCase());
     });
@@ -71,7 +79,7 @@ export abstract class YearnProtocolBase extends BasicProtocol {
         const price = prices.prices[position.token.address];
         const balance = this.getPositionBalance(position);
         const value = balance.multipliedBy(price).toNumber();
-        totalValue += value;
+        totalValue += value || 0;
 
         return {
           address: position.vault.address,

@@ -25,6 +25,7 @@ export class IntegrationService {
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
   private readonly protocolsUrl: string;
+  private readonly protocolsActiveUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -61,6 +62,8 @@ export class IntegrationService {
 
     const protocolsPath = this.configService.get<string>('INTEGRATION_PROTOCOLS');
     this.protocolsUrl = `${url}/${protocolsPath}`;
+
+    this.protocolsActiveUrl = `${url}/v1/protocols/active`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -83,7 +86,7 @@ export class IntegrationService {
     try {
       this.logger.time(this.getUniswapUrl);
       const data = await this.httpService
-        .get(this.getUniswapUrl, { params: { addresses } })
+        .get(this.getUniswapUrl, {params: {addresses}})
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getUniswapUrl);
@@ -99,7 +102,7 @@ export class IntegrationService {
     try {
       this.logger.time(this.getSushiswapUrl);
       const data = await this.httpService
-        .get(this.getSushiswapUrl, { params: { addresses } })
+        .get(this.getSushiswapUrl, {params: {addresses}})
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getSushiswapUrl);
@@ -114,7 +117,7 @@ export class IntegrationService {
     try {
       this.logger.time(this.getPancakeUrl);
       const data = await this.httpService
-        .get(this.getPancakeUrl, { params: { addresses, chains } })
+        .get(this.getPancakeUrl, {params: {addresses, chains}})
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getPancakeUrl);
@@ -129,7 +132,7 @@ export class IntegrationService {
   async getPangolin(addresses: string, chains?: string): Promise<BalancesResponse> {
     this.logger.time(this.getPangolinUrl);
     const data = await this.httpService
-      .get(this.getPangolinUrl, { params: { addresses, chains } })
+      .get(this.getPangolinUrl, {params: {addresses, chains}})
       .pipe(map((r) => r.data))
       .toPromise();
     this.logger.timeEnd(this.getPangolinUrl);
@@ -140,7 +143,7 @@ export class IntegrationService {
   async getSpookyswap(addresses: string, chains?: string): Promise<BalancesResponse> {
     this.logger.time(this.getSpookyswapUrl);
     const data = await this.httpService
-      .get(this.getSpookyswapUrl, { params: { addresses, chains } })
+      .get(this.getSpookyswapUrl, {params: {addresses, chains}})
       .pipe(map((r) => r.data))
       .toPromise();
     this.logger.timeEnd(this.getSpookyswapUrl);
@@ -205,6 +208,26 @@ export class IntegrationService {
     }
   }
 
+  async getAllFeaturesActive(): Promise<FeaturesResponseDto> {
+    try {
+      this.logger.time(this.protocolsUrl);
+      const data = await this.httpService
+        .get(this.protocolsActiveUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.protocolsUrl);
+      return data;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
+      throw e;
+    }
+  }
+
   @RequestErrorHandler()
   async getProtocolFeaturesData(
     protocolName: ProtocolName,
@@ -215,7 +238,7 @@ export class IntegrationService {
 
     this.logger.time(url);
     const data = await this.httpService
-      .get(url, { params: { chains, addresses } })
+      .get(url, {params: {chains, addresses}})
       .pipe(map((r) => r.data))
       .toPromise();
     this.logger.timeEnd(url);

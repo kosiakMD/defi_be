@@ -11,12 +11,13 @@ import {
   ChainIdEnum,
   Logger,
   ProtocolTypeEnum,
+  ChainAbbrEnum,
+  ProjectEnum,
+  SushiSwapProtocolEnum,
 } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3ProviderService } from '@app/common/web3provider';
-
-import { ChainAbbrEnum, ProjectEnum, SushiSwapProtocolEnum } from '../../common/enum';
 
 import { BnToFloat } from '../../../../../jobs/pools/src/utils/calc';
 import { AssetResponseDto } from '../../../../account_service/src/assets/dto/asset.dto';

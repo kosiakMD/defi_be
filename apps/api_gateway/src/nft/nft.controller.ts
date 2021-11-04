@@ -7,7 +7,7 @@ import {
   Param,
 } from '@nestjs/common';
 import { Query } from '@nestjs/common';
-import { ApiResponse, ApiTags, ApiQuery } from '@nestjs/swagger';
+import { ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, AddressesArray, ChainsArray, Logger, NftProjectEnum } from '@app/common';
@@ -41,6 +41,7 @@ export class NftController {
   }
 
   @ApiResponse({ status: HttpStatus.OK, type: NftResponseDto })
+  @ApiParam({ enum: NftProjectEnum, name: 'projectName' })
   @ApiQuery({ type: NftAssetsQueryDto })
   @Get('assets/:projectName')
   public async getAssetsByProject(

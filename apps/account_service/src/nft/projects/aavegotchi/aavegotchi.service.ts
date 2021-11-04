@@ -13,7 +13,7 @@ import { Injectable, CACHE_MANAGER, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainAbbrEnum, ChainIdEnum, NftProjectEnum } from '@app/common';
-import { GHST_ADDRESS_POLYGON } from '@app/common/constant';
+import { GHST_ADDRESS_POLYGON, ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import {
   aavegotchiCollectionEthereum,
@@ -48,8 +48,18 @@ export class AavegotchiService extends BasicNftService {
     return getKey('nft', 'asset', 'svg', ...ids);
   }
 
-  private async handleEthereum(accounts: Address[], chain: number): Promise<NftAssetsByAccounts[]> {
-    const rawAssets = await this.openSeaService.getAssetsByAccounts(accounts, [chain], 20, 0);
+  private async handleEthereum(
+    accounts: Address[],
+    chain: number,
+    limit: number,
+    offset: number,
+  ): Promise<NftAssetsByAccounts[]> {
+    const rawAssets = await this.openSeaService.getAssetsByAccounts(
+      accounts,
+      [chain],
+      limit,
+      offset,
+    );
     const assetsByAccounts = new Map<Address, NftChainDto[]>();
 
     accounts.forEach((account) => {
@@ -67,9 +77,13 @@ export class AavegotchiService extends BasicNftService {
     return [mapToObject(assetsByAccounts)];
   }
 
-  private mapPolygonAssets(assets: GotchiOwned[], ghstPrice: number): NftAssetDto[] {
+  private mapPolygonAssets(
+    assets: GotchiOwned[],
+    ghstPrice: number,
+    maticPrice: number,
+  ): NftAssetDto[] {
     return assets.map(({ gotchiId, name, modifiedNumericTraits: traitsValues, listings }) => {
-      const pricesInWei = listings.filter((_) => _.buyer).map((_) => _.priceInWei);
+      const pricesInWei = listings.filter(({ buyer }) => buyer).map(({ priceInWei }) => priceInWei);
 
       const priceUSD = pricesInWei.length
         ? new BigNumber(
@@ -81,8 +95,10 @@ export class AavegotchiService extends BasicNftService {
             ),
           )
             .times(ghstPrice)
-            .toString()
+            .toNumber()
         : null;
+
+      const priceNative = +priceUSD / maticPrice;
 
       return plainToClass(NftAssetDto, {
         id: gotchiId,
@@ -92,39 +108,69 @@ export class AavegotchiService extends BasicNftService {
           value,
         })),
         priceUSD,
+        priceNative,
       });
     });
   }
 
-  private async handlePolygon(accounts: Address[], chain: number): Promise<NftAssetsByAccounts[]> {
+  private async handlePolygon(
+    accounts: Address[],
+    chain: number,
+    limit: number,
+    offset: number,
+  ): Promise<NftAssetsByAccounts[]> {
     const rawAssets = await this.subgraph.getUsers(accounts, chain);
 
-    const { prices } = await this.priceService.fetchTokenPrices([GHST_ADDRESS_POLYGON], chain);
+    const { prices } = await this.priceService.fetchTokenPrices(
+      [GHST_ADDRESS_POLYGON, ZERO_ADDRESS],
+      chain,
+    );
 
-    return rawAssets.map(({ id: account, gotchisOwned }) => ({
-      [account]: [
-        plainToClass(NftChainDto, {
-          id: chain,
-          abbr: ChainIdToAbbr[chain],
-          collections: [
-            plainToClass(CollectionDto, {
-              address: aavegotchiCollectionPolygon.address,
-              assets: this.mapPolygonAssets(gotchisOwned, prices[GHST_ADDRESS_POLYGON]),
-              name: aavegotchiCollectionPolygon.name,
-              symbol: aavegotchiCollectionPolygon.symbol,
-              description: aavegotchiCollectionPolygon.description,
-              balance: this.mapPolygonAssets(gotchisOwned, prices[GHST_ADDRESS_POLYGON]).length,
-              links: aavegotchiCollectionPolygon.links,
-            }),
-          ],
-        }),
-      ],
-    }));
+    return rawAssets.map(({ id: account, gotchisOwned }) => {
+      const assets = this.mapPolygonAssets(
+        gotchisOwned.slice(offset, offset + limit),
+        prices[GHST_ADDRESS_POLYGON],
+        prices[ZERO_ADDRESS],
+      );
+      const averagePrice =
+        assets.reduce((acc, { priceNative }) => {
+          return acc + +priceNative;
+        }, 0) || null;
+
+      const averagePriceUSD =
+        assets.reduce((acc, { priceUSD }) => {
+          return acc + +priceUSD;
+        }, 0) || null;
+
+      return {
+        [account]: [
+          plainToClass(NftChainDto, {
+            id: chain,
+            abbr: ChainIdToAbbr[chain],
+            collections: [
+              plainToClass(CollectionDto, {
+                address: aavegotchiCollectionPolygon.address,
+                assets,
+                name: aavegotchiCollectionPolygon.name,
+                symbol: aavegotchiCollectionPolygon.symbol,
+                description: aavegotchiCollectionPolygon.description,
+                averagePrice,
+                averagePriceUSD,
+                balance: assets.length,
+                links: aavegotchiCollectionPolygon.links,
+              }),
+            ],
+          }),
+        ],
+      };
+    });
   }
 
   public async getAssetsByAccounts(
     accounts: Address[],
     chains: number[],
+    limit: number,
+    offset: number,
   ): Promise<NftAssetsByAccounts> {
     const assetsByAccounts = new Map<Address, NftChainDto[]>();
     const imagesByAssets = new Map<string, string>();
@@ -134,11 +180,11 @@ export class AavegotchiService extends BasicNftService {
       chains.map(async (chain) => {
         switch (chain) {
           case ChainIdEnum.eth: {
-            return await this.handleEthereum(accounts, chain);
+            return await this.handleEthereum(accounts, chain, limit, offset);
           }
 
           case ChainIdEnum.plg: {
-            return await this.handlePolygon(accounts, chain);
+            return await this.handlePolygon(accounts, chain, limit, offset);
           }
 
           default: {
@@ -190,13 +236,10 @@ export class AavegotchiService extends BasicNftService {
               collections: chainData.collections.map((collection) =>
                 plainToClass(CollectionDto, {
                   ...collection,
-                  assets: collection.assets.map(({ id, name, priceUSD, traits }) =>
+                  assets: collection.assets.map((asset) =>
                     plainToClass(NftAssetDto, {
-                      id,
-                      name,
-                      imageSVG: imagesByAssets.get(id),
-                      traits,
-                      priceUSD,
+                      ...asset,
+                      imageSVG: imagesByAssets.get(asset.id),
                     }),
                   ),
                 }),

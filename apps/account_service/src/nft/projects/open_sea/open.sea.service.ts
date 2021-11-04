@@ -10,7 +10,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainAbbrEnum } from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
-import { CollectionDto, NftChainDto } from '@app/common/dto/nft';
+import { CollectionDto, NftAssetDto, NftChainDto } from '@app/common/dto/nft';
 import { NftProjectEnum } from '@app/common/enum/nft.enum';
 import { NftAssetsByAccounts } from '@app/common/interfaces/nft.interface';
 import { decimalsDivider } from '@app/common/utils/number';
@@ -124,7 +124,10 @@ export class OpenSeaService extends BasicNftService {
     return rawAsset;
   }
 
-  private getOrdersAveragePrice(orders: OrderDto[], owner?: Address): number {
+  private getOrdersAveragePrice(
+    orders: OrderDto[],
+    owner?: Address,
+  ): { priceUSD: number; priceNative: number } {
     if (!orders.length) return null;
 
     const filterOrders = (): { listings: OrderDto[]; offers: OrderDto[] } => {
@@ -143,10 +146,11 @@ export class OpenSeaService extends BasicNftService {
       return { listings, offers };
     };
 
-    const calculateAverage = (orders: OrderDto[]): number => {
+    const calculateAverage = (orders: OrderDto[]): { priceUSD: number; priceNative: number } => {
       const prices: number[] = [];
-
+      let priceETH: string = null;
       orders.forEach(({ currentPrice, paymentToken: { decimals, price } }) => {
+        priceETH = price;
         prices.push(
           new BigNumber(currentPrice) //
             .div(decimalsDivider(decimals))
@@ -155,10 +159,13 @@ export class OpenSeaService extends BasicNftService {
         );
       });
 
-      return (
+      const priceUSD =
         prices.reduce((accumulatedValue, currentValue) => accumulatedValue + currentValue, 0) /
-        prices.length
-      );
+        prices.length;
+      return {
+        priceUSD,
+        priceNative: priceUSD / +priceETH,
+      };
     };
 
     const { listings, offers } = filterOrders();
@@ -177,7 +184,7 @@ export class OpenSeaService extends BasicNftService {
   private mapAssets(
     assets: OpenSeaNftAssetDto[],
     chain: number,
-    pricesByAssets: Map<string, number>,
+    pricesByAssets: Map<string, { priceUSD: number; priceNative: number }>,
   ): NftChainDto {
     return {
       id: chain,
@@ -187,21 +194,31 @@ export class OpenSeaService extends BasicNftService {
       ).map((value) => {
         const { name, symbol, description, externalUrl, imageUrl, bannerImageUrl } =
           value[1][0].collection;
-        const balance = value[1].length;
 
-        return plainToClass(CollectionDto, {
-          assets: value[1].map(({ name, tokenId, traits, imageUrl }) => ({
+        const assets: NftAssetDto[] = value[1].map(({ name, tokenId, traits, imageUrl }) =>
+          plainToClass(NftAssetDto, {
             id: tokenId,
             name,
             imageUrl,
             traits,
-            priceUSD: pricesByAssets.get(this.getAssetSeed(value[0], tokenId)) || null,
-          })),
+            priceNative:
+              pricesByAssets.get(this.getAssetSeed(value[0], tokenId))?.priceNative || null,
+            priceUSD: pricesByAssets.get(this.getAssetSeed(value[0], tokenId))?.priceUSD || null,
+          }),
+        );
+
+        const averagePriceUSD = assets.reduce((acc, { priceUSD }) => acc + +priceUSD, 0);
+        const averagePrice = assets.reduce((acc, { priceNative }) => acc + +priceNative, 0);
+
+        return plainToClass(CollectionDto, {
+          assets,
           address: value[0],
           name,
           symbol,
           description,
-          balance,
+          averagePrice,
+          averagePriceUSD,
+          balance: assets.length,
           links: {
             site: externalUrl,
             image: imageUrl,
@@ -221,7 +238,7 @@ export class OpenSeaService extends BasicNftService {
     return {
       [account]: await Promise.all(
         chains.map(async (chain) => {
-          const pricesByAssets = new Map<string, number>();
+          const pricesByAssets = new Map<string, { priceUSD: number; priceNative: number }>();
 
           const rawAssets = await this.getRawAssetsByAccount(account, limit, offset);
 

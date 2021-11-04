@@ -1,5 +1,4 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { IronBankMarketDynamic, Position as IronBankUserPosition, Yearn } from '@yfi/sdk';
 import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
@@ -22,15 +21,17 @@ import {
   ProjectEnum,
   YearnProtocolEnum,
 } from '@app/common';
-import { getAbsoluteChainId } from '@app/common/utils/chains';
 
 import { AccountService } from '../../account/account.service';
+import { Web3Provider } from '../../chain/web3.provider';
 import { Asset } from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
 import { decimalsDivider } from '../../utils/util';
+import RegistryAdapterIronBank from './yearn/abi/RegisteryAdapterIronBank';
 import { YearnV2Subgraph } from './yearn/services/yearn.v2.subgraph';
+import { ironBankAddressByChain } from './yearn/yearn.constants';
 import { PositionType } from './yearn/yearn.enums';
-import { SdkSupportedChains } from './yearn/yearn.types';
+import { IIronBankMarketDynamic, IIronBankUserPosition } from './yearn/yearn.interfaces';
 import { YearnProtocolBase } from './yearn/yearnProtocolBase';
 
 @Injectable()
@@ -53,6 +54,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly configService: ConfigService,
+    protected readonly web3Provider: Web3Provider,
   ) {
     super();
 
@@ -68,8 +70,8 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
     });
 
     await Promise.all([
-      this.getStakingData(response, address, chain.id),
-      this.getLendingAndBorrowingData(response, address, chain.id),
+      this.getStakingData(response, address, chain),
+      this.getLendingAndBorrowingData(response, address, chain),
     ]);
 
     return response;
@@ -78,20 +80,21 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
   async getLendingAndBorrowingData(
     response: IntegrationFeaturesDataDto,
     address: Address,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ) {
-    if (!this.rpcs.has(chainId)) {
+    if (!this.rpcs.has(chain.id)) {
       return;
     }
 
-    const provider = new JsonRpcProvider(this.rpcs.get(chainId));
+    const web3Provider = this.web3Provider.getForChain(chain.abbr);
+    const ironBankContract = new web3Provider.eth.Contract(
+      RegistryAdapterIronBank,
+      ironBankAddressByChain.get(chain.id),
+    );
 
-    const yearn = new Yearn(getAbsoluteChainId(chainId) as SdkSupportedChains, {
-      provider,
-      cache: { useCache: false },
-    });
-
-    const userPositions = await yearn.ironBank.positionsOf(address);
+    const userPositions: IIronBankUserPosition[] = await ironBankContract.methods
+      .assetsPositionsOf(address)
+      .call();
 
     if (!userPositions.length) {
       response[FeatureEnum.lending] = null;
@@ -99,16 +102,23 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
       return;
     }
 
-    const assets = Array.from(new Set(userPositions.map((a) => a.assetAddress.toLowerCase())));
-    const tokenAddresses = Array.from(
-      new Set(userPositions.map((a) => a.tokenAddress.toLowerCase())),
+    const assets = this.getUniqueFields<IIronBankUserPosition>(userPositions, (a) =>
+      a.assetAddress.toLowerCase(),
     );
 
-    const [{ data: rawTokens }, { prices }, ironBankMarket] = await Promise.all([
-      this.accountService.getAssets(tokenAddresses, [chainId]),
-      this.priceService.getTokenPricesFetch(tokenAddresses, chainId),
-      yearn.ironBank.getDynamic(assets),
-    ]);
+    const tokenAddresses = this.getUniqueFields<IIronBankUserPosition>(userPositions, (a) =>
+      a.tokenAddress.toLowerCase(),
+    );
+
+    const [{ data: rawTokens }, { prices }, ironBankMarketDynamic, blocksPerYear] =
+      await Promise.all([
+        this.accountService.getAssets(tokenAddresses, [chain.id]),
+        this.priceService.getTokenPricesFetch(tokenAddresses, chain.id),
+        ironBankContract.methods.assetsDynamic(assets).call(),
+        ironBankContract.methods.blocksPerYear().call(),
+      ]);
+
+    const ironBankMarket = this.formatIronBankMarkets(ironBankMarketDynamic, blocksPerYear);
 
     const tokens = new Map(rawTokens.map((token) => [token.address.toLowerCase(), token]));
 
@@ -122,9 +132,44 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
     response[FeatureEnum.borrowing] = borrowing;
   }
 
+  getUniqueFields<T>(array: T[], callbackfn: (value: T, index: number, array: T[]) => string) {
+    return Array.from(new Set<string>(array.map(callbackfn)));
+  }
+
+  formatIronBankMarkets(
+    ironBankMarketDynamic: IIronBankMarketDynamic[],
+    blocksPerYear: string,
+  ): IIronBankMarketDynamic[] {
+    const ironBankMarket: IIronBankMarketDynamic[] = [];
+    for (const asset of ironBankMarketDynamic) {
+      const newAsset: IIronBankMarketDynamic = {
+        address: asset.address,
+        typeId: asset.typeId,
+        tokenId: asset.tokenId,
+        underlyingTokenBalance: asset.underlyingTokenBalance,
+        metadata: {
+          totalSuppliedUsdc: asset.metadata.totalSuppliedUsdc,
+          totalBorrowedUsdc: asset.metadata.totalBorrowedUsdc,
+          lendAprBips: asset.metadata.lendAprBips,
+          borrowAprBips: asset.metadata.borrowAprBips,
+          lendApyBips: this.aprBipsToApyBips(asset.metadata.lendAprBips, blocksPerYear),
+          borrowApyBips: this.aprBipsToApyBips(asset.metadata.borrowAprBips, blocksPerYear),
+          liquidity: asset.metadata.liquidity,
+          liquidityUsdc: asset.metadata.liquidityUsdc,
+          collateralFactor: asset.metadata.collateralFactor,
+          isActive: asset.metadata.isActive,
+          reserveFactor: asset.metadata.reserveFactor,
+          exchangeRate: asset.metadata.exchangeRate,
+        },
+      };
+      ironBankMarket.push(newAsset);
+    }
+    return ironBankMarket;
+  }
+
   formatLendingMarketPositions(
-    userPositions: IronBankUserPosition[],
-    ironBankMarket: IronBankMarketDynamic[],
+    userPositions: IIronBankUserPosition[],
+    ironBankMarket: IIronBankMarketDynamic[],
     tokens: Map<string, Asset>,
     prices: CurrentPricesPayload,
   ) {
@@ -137,7 +182,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
 
     userPositions.forEach((position) => {
       let nextPosition;
-      const args: [IronBankUserPosition, IronBankMarketDynamic, Asset, number] = [
+      const args: [IIronBankUserPosition, IIronBankMarketDynamic, Asset, number] = [
         position,
         ironBankMarketMap.get(position.assetAddress),
         tokens.get(position.tokenAddress.toLowerCase()),
@@ -172,8 +217,8 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
   }
 
   formatLendPosition(
-    position: IronBankUserPosition,
-    market: IronBankMarketDynamic,
+    position: IIronBankUserPosition,
+    market: IIronBankMarketDynamic,
     token: Asset,
     price: number,
   ) {
@@ -199,8 +244,8 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
   }
 
   formatBorrowPosition(
-    position: IronBankUserPosition,
-    market: IronBankMarketDynamic,
+    position: IIronBankUserPosition,
+    market: IIronBankMarketDynamic,
     token: Asset,
     price: number,
   ) {
@@ -222,5 +267,19 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
         price,
       },
     };
+  }
+
+  private aprBipsToApyBips(aprBips: number, period: string): number {
+    const bn = BigNumber.clone({ POW_PRECISION: 6 });
+    const apy = new bn(aprBips)
+      .div(new bn(10).pow(4))
+      .div(period)
+      .plus(1)
+      .pow(period)
+      .minus(1)
+      .multipliedBy(new bn(10).pow(4))
+      .toFixed(0);
+
+    return Number(apy);
   }
 }

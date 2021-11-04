@@ -27,13 +27,14 @@ import { LiquidityPoolFeature, PoolsFeatureMapping, PoolTokenDto } from '../dto/
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
-import { PancakeAddresses } from './addresses';
+import { TraderjoeAddresses } from './addresses';
+
 
 @Injectable()
-export class PancakeLpV2 implements JobInterface {
-  chain = ChainIdEnum.bsc;
+export class TraderjoeLp implements JobInterface {
+  chain = ChainIdEnum.avax;
   feature = 'pools';
-  protocol = 'PancakeV2';
+  protocol = 'TraderJoe';
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
 
@@ -66,7 +67,7 @@ export class PancakeLpV2 implements JobInterface {
       this.mapping.push(IntegrationDataConverter.toDTO(jm));
     });
   }
-
+  
   async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
     this.logger.log('building initial mapping', this.placeholder);
 
@@ -82,7 +83,7 @@ export class PancakeLpV2 implements JobInterface {
 
     const poolIdTo = (await this.getChainPoolLength()).toNumber() - 1;
 
-    const poolIdFrom = Number(dbPoolLenthSetting.value);
+    const poolIdFrom = Number(dbPoolLenthSetting.value); // !!!
     if (poolIdFrom >= poolIdTo) {
       this.logger.log(
         `not necessary to update existed mapping, db poolLength ${poolIdFrom}, chain poolLength ${poolIdTo}`,
@@ -91,10 +92,11 @@ export class PancakeLpV2 implements JobInterface {
       return [];
     }
 
+    // Go throw all pools
     const calls = new Map<string, CallData>();
     for (let i = poolIdFrom; i <= poolIdTo; i++) {
       calls.set(this.poolInfoLabel(i), {
-        address: PancakeAddresses.chief,
+        address: TraderjoeAddresses.chief,
         abi: Abis.poolInfo,
         input: {
           data: [i],
@@ -103,13 +105,14 @@ export class PancakeLpV2 implements JobInterface {
       });
     }
 
-    const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.bsc);
+    // make this call
+    const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
 
     for (let i = poolIdFrom; i <= poolIdTo; i++) {
       const tokenAddress = callsRsp.get(this.poolInfoLabel(i)).output.data.lpToken;
       try {
         const trackedLiquidityPoolTokenData: LiquidityPoolTokenDto =
-          await this.accountService.saveTrackingAsset(tokenAddress, this.chain);
+          await this.accountService.saveTrackingAsset(tokenAddress, this.chain); // !!!
         if (trackedLiquidityPoolTokenData.isLp) {
           this.logger.log(
             `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
@@ -125,6 +128,8 @@ export class PancakeLpV2 implements JobInterface {
       }
     }
 
+    // add to DB
+    
     const mappings = [];
     for (const lp of liquidityPools) {
       mappings.push(await this.toDbMapping(lp));
@@ -141,7 +146,7 @@ export class PancakeLpV2 implements JobInterface {
 
   async toDbMapping(liquidityPool: LiquidityPoolFeature) {
     const mappedDto = plainToClass(PoolsFeatureMapping, {});
-    /** lp token */
+    // lp token 
     const lpTokenUniqueId = concatStrings(this.chain, liquidityPool.lpToken.address);
     const lpTokenItem: TrackedVaultItem = await this.getDbItem(
       liquidityPool.lpToken,
@@ -152,7 +157,7 @@ export class PancakeLpV2 implements JobInterface {
       dtoName: liquidityPool.lpToken.constructor.name,
     };
 
-    /** pool tokens */
+    // pool tokens
     mappedDto.tokens = [];
     for (const t of liquidityPool.tokens) {
       const tokenId = concatStrings(this.chain, t.address);
@@ -165,7 +170,7 @@ export class PancakeLpV2 implements JobInterface {
       });
     }
 
-    /** pool feature */
+    // pool feature
     const positionUniqueId = concatStrings(this.chain, liquidityPool.address, 'lp');
     const position: TrackedVaultItem = await this.getDbItem(liquidityPool, positionUniqueId);
     mappedDto.dbId = position.id;
@@ -221,7 +226,7 @@ export class PancakeLpV2 implements JobInterface {
       [
         this.poolLengthLabel(),
         {
-          address: PancakeAddresses.chief,
+          address: TraderjoeAddresses.chief,
           abi: Abis.poolLength,
           input: {
             data: [],
@@ -230,7 +235,7 @@ export class PancakeLpV2 implements JobInterface {
         },
       ],
     ]);
-    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bsc);
+    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.avax);
     return callRsp.get(this.poolLengthLabel()).output.data;
   }
 
@@ -253,8 +258,8 @@ export class PancakeLpV2 implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
-      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bsc),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.avax),
+      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.avax),
     ]);
 
     this.mapping = this.mapping.map((lp) => {
@@ -281,7 +286,7 @@ export class PancakeLpV2 implements JobInterface {
 
     return this.mapping;
   }
-
+  
   private getCallsForPool(liquidityPoolFeature: LiquidityPoolFeature) {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
@@ -320,14 +325,16 @@ export class PancakeLpV2 implements JobInterface {
     return addressesSet;
   }
 
+  //
   poolLengthLabel() {
-    return concatStrings(Abis.poolLength.name, PancakeAddresses.chief);
+    return concatStrings(Abis.poolLength.name, TraderjoeAddresses.chief);
   }
 
+  //
   poolInfoLabel(poolId) {
-    return concatStrings(Abis.poolInfo.name, PancakeAddresses.chief, poolId);
+    return concatStrings(Abis.poolInfo.name, TraderjoeAddresses.chief, poolId);
   }
-
+  //
   getReservesLabel(liquidityPoolFeature: LiquidityPoolFeature) {
     return concatStrings(Abis.getReserves.name, liquidityPoolFeature.lpToken.address);
   }

@@ -29,6 +29,7 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import TraderJoeProtocol from './protocols/traderjoeProtocol';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -45,6 +46,7 @@ const ProtocolList = [
   UniswapProtocolV3,
   YearnProtocolV1,
   YearnProtocolV2,
+  TraderJoeProtocol,
 ];
 
 @Module({

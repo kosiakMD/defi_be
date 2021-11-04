@@ -17,6 +17,7 @@ export class Web3Provider {
     this.providers[ChainIdEnum.bsc] = new Web3(this.configService.get<string>('BSC_URL'));
     this.providers[ChainIdEnum.polygon] = new Web3(this.configService.get<string>('POLYGON_URL'));
     this.providers[ChainIdEnum.ftm] = new Web3(this.configService.get<string>('FTM_URL'));
+    this.providers[ChainIdEnum.avax] = new Web3(this.configService.get<string>('AVAX_URL'));
 
     // todo: move to config
     this.multicalls[ChainIdEnum.eth] = new MulticallContract(
@@ -34,6 +35,10 @@ export class Web3Provider {
     this.multicalls[ChainIdEnum.ftm] = new MulticallContract(
       this.providers[ChainIdEnum.ftm],
       '0x11473d6e641df17cd6331d45b135e35b49edbea8',
+    );
+    this.multicalls[ChainIdEnum.avax] = new MulticallContract(
+      this.providers[ChainIdEnum.avax],
+      '0x92a09557707ab4888eacc034122120f27362da7f',
     );
   }
 

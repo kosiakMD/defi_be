@@ -15,9 +15,9 @@ export class MulticallService {
 
   constructor(private readonly provider: Web3Provider) {}
 
-  async handleInBatches(calls: Map<string, CallData>) {
-    const multicall: MulticallContract = this.provider.multicall(ChainIdEnum.bsc);
-    const web3: Web3 = this.provider.web3(ChainIdEnum.bsc);
+  async handleInBatches(calls: Map<string, CallData>, chain: ChainIdEnum) {
+    const multicall: MulticallContract = this.provider.multicall(chain);
+    const web3: Web3 = this.provider.web3(chain);
 
     // todo: filter with existed calls, probably in the other caching class
     // todo: this must be filtered already
@@ -29,7 +29,7 @@ export class MulticallService {
     calls.forEach((c, k) => {
       c.input.plain = web3.eth.abi.encodeFunctionCall(c.abi, c.input.data);
 
-      const callId = concatStrings(ChainIdEnum.bsc, c.address, c.input.plain);
+      const callId = concatStrings(chain, c.address, c.input.plain);
 
       callLabelToCallIdMap.set(k, callId);
       this.calls.set(callId, c);
@@ -45,8 +45,9 @@ export class MulticallService {
       callsToBeExecuted.push([value.address, value.input.plain]);
     }
 
+    console.log(calls);
     const { returnData } = await multicall.aggregate(callsToBeExecuted);
-
+    console.log(returnData)
     indexes.forEach(({ index, key }) => {
       const callInMap = this.calls.get(key);
       callInMap.output.plain = returnData[index];

@@ -3,6 +3,7 @@ export enum ChainIdEnum {
   bsc = 2,
   polygon = 3,
   ftm = 4,
+  avax = 6,
 }
 
 export const pancakeAbiItems = {

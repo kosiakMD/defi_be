@@ -8,10 +8,11 @@ import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
 import { PancakeLpV2 } from './pancake/pancake.lp.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
+import { TraderjoeLp } from './traderjoe/traderjoe.lp';
 
 @Module({
   imports: [MicroservicesModule, ChainModule, StoreModule],
-  providers: [JobsRunner, JobsRegistry, IntegrationDataConverter, PancakeStaking, PancakeLpV2],
+  providers: [JobsRunner, JobsRegistry, IntegrationDataConverter, PancakeStaking, PancakeLpV2, TraderjoeLp],
   exports: [JobsRunner, IntegrationDataConverter],
 })
 export class JobsModule {}

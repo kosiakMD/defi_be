@@ -12,6 +12,15 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+  static readonly balanceOf: AbiItem = {
+    constant: true,
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  };
   static readonly poolInfo: AbiItem = {
     inputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
     name: 'poolInfo',
@@ -45,6 +54,13 @@ export class Abis {
     inputs: [],
     name: 'poolLength',
     outputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly joePerSec: AbiItem = {
+    inputs: [],
+    name: 'joePerSec',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function',
   };

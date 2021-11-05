@@ -9,10 +9,11 @@ import { JobsRunner } from './jobs.runner';
 import { PancakeLpV2 } from './pancake/pancake.lp.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
 import { TraderjoeLp } from './traderjoe/traderjoe.lp';
+import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 
 @Module({
   imports: [MicroservicesModule, ChainModule, StoreModule],
-  providers: [JobsRunner, JobsRegistry, IntegrationDataConverter, PancakeStaking, PancakeLpV2, TraderjoeLp],
+  providers: [JobsRunner, JobsRegistry, IntegrationDataConverter, PancakeStaking, PancakeLpV2, TraderjoeLp, TraderJoeStaking],
   exports: [JobsRunner, IntegrationDataConverter],
 })
 export class JobsModule {}

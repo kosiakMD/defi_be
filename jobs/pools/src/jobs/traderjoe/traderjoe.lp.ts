@@ -159,16 +159,21 @@ export class TraderjoeLp implements JobInterface {
 
     // pool tokens
     mappedDto.tokens = [];
+
+    const promisesArr = [];
     for (const t of liquidityPool.tokens) {
       const tokenId = concatStrings(this.chain, t.address);
-      const tokenItem: TrackedVaultItem = await this.getDbItem(t, tokenId);
-      mappedDto.tokens.push({
-        dbId: tokenItem.id,
-        dtoName: t.constructor.name,
-        positionInPool: t.positionInPool,
-        weight: t.weight,
-      });
+      promisesArr.push(this.getDbItem(t, tokenId).then((tokenItem: TrackedVaultItem) => {
+        mappedDto.tokens.push({
+          dbId: tokenItem.id,
+          dtoName: t.constructor.name,
+          positionInPool: t.positionInPool,
+          weight: t.weight,
+        });
+      }));
     }
+
+    await Promise.all(promisesArr);
 
     // pool feature
     const positionUniqueId = concatStrings(this.chain, liquidityPool.address, 'lp');

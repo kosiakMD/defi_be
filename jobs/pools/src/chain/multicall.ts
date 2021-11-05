@@ -2,8 +2,9 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import { BigNumber } from 'bignumber.js';
 
 import { MASTER_CHEF_PANCAKE_ABI } from './abis/MASTERCHEFPANCAKE';
+import { MASTER_CHEF_TRADERJOE_ABI } from './abis/MASTERCHEFTRADERJOE';
 import { UNIV2PAIR_ABI } from './abis/UNIV2PAIR';
-import { MasterchiefPoolInfoResponse, TokenBalance, UniswapPairReserves } from './dto/token';
+import { MasterchiefPoolInfoResponse, MasterchiefPoolInfoTraderJoeResponse, TokenBalance, UniswapPairReserves } from './dto/token';
 
 // legacy
 export class MultiCallInternal extends MultiCall {
@@ -14,7 +15,7 @@ export class MultiCallInternal extends MultiCall {
   async getPoolsInfo(
     masterchiefAddress: string,
   ): Promise<Map<string, MasterchiefPoolInfoResponse>> {
-    const [, poolLengthResult] = await this.multiCall(MASTER_CHEF_PANCAKE_ABI, [
+    const [, poolLengthResult] = await this.multiCall(MASTER_CHEF_PANCAKE_ABI, [ 
       { target: masterchiefAddress, function: 'poolLength' },
     ]);
     const poolLength = poolLengthResult[0].toNumber();
@@ -44,6 +45,46 @@ export class MultiCallInternal extends MultiCall {
         });
       }
     }
+    return poolsInfoMap;
+  }
+
+  async getPoolsInfoTraderJoe(
+    masterchiefAddress: string,
+  ): Promise<Map<string, MasterchiefPoolInfoTraderJoeResponse>> {
+    const [, poolLengthResult] = await this.multiCall(MASTER_CHEF_TRADERJOE_ABI, [
+      { target: masterchiefAddress, function: 'poolLength' },
+    ]);
+    
+    const poolLength = poolLengthResult[0].toNumber();
+
+    const poolsInfoMap: Map<string, MasterchiefPoolInfoTraderJoeResponse> = new Map<
+      string,
+      MasterchiefPoolInfoTraderJoeResponse
+    >();
+    // defined from testing
+    
+    const chunkSize = 20;
+    for (let i = 0; i < poolLength; i += chunkSize) {
+      const inputs: CallInput[] = [];
+      
+      for (let j = i; j < i + chunkSize && j < poolLength; j++) {
+        inputs.push({ target: masterchiefAddress, function: 'poolInfo', args: [j] });
+      }
+      
+      const [, poolInfos] = await this.multiCall(MASTER_CHEF_TRADERJOE_ABI, inputs);
+
+      for (let j = i, g = 0; j < i + chunkSize && j < poolLength; j++, g++) {
+        poolsInfoMap.set(poolInfos[g].lpToken.toLowerCase(), {
+          // covert to lower case once received!
+          id: j,
+          lpToken: poolInfos[g].lpToken.toLowerCase(),
+          allocPoint: poolInfos[g].allocPoint,
+          lastRewardTimestamp: poolInfos[g].lastRewardTimestamp,
+          accJoePerShare: poolInfos[g].accJoePerShare,
+        });
+      }
+    }
+    
     return poolsInfoMap;
   }
 

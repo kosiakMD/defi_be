@@ -41,3 +41,11 @@ export interface MasterchiefPoolInfoResponse {
   lastRewardBlock: BigNumber;
   accCakePerShare: BigNumber;
 }
+
+export interface MasterchiefPoolInfoTraderJoeResponse {
+  id: number;
+  lpToken: string;
+  allocPoint: BigNumber;
+  lastRewardTimestamp: BigNumber;
+  accJoePerShare: BigNumber;
+}

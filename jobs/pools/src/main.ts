@@ -18,7 +18,8 @@ export async function bootstrap(): Promise<void> {
   process.env.POLYGON_URL = 'https://rpc-mainnet.matic.network/';
   process.env.FTM_URL = 'https://rpc.ftm.tools/';
   process.env.AVAX_URL = 'https://api.avax.network/ext/bc/C/rpc';
-  process.env.INTEGRATION_SERVICE_URL = 'https://int.dfyield.xyz/';
+  //process.env.INTEGRATION_SERVICE_URL = 'https://int.dfyield.xyz/';
+  process.env.INTEGRATION_SERVICE_URL = 'http://localhost:6062/';
   process.env.ACCOUNT_SERVICE_URL = 'https://acc.dfyield.xyz/';
   process.env.PRICE_SERVICE_URL = 'https://prc.dfyield.xyz/';
 

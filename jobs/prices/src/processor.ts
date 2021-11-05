@@ -95,7 +95,7 @@ async function getAssetsWithNewPairs(
   assetsMap: Map<string, AssetsApiDto>,
 ): Promise<AssetsApiDto[]> {
   const assetsWithNoPairs = Array.from(assetsMap.values()).filter(
-    (asset) => !asset.pairs || !checkAssetPairsUpdateDate(asset),
+    (asset) => !asset?.pairs.length || !checkAssetPairsUpdateDate(asset),
   );
 
   if (!assetsWithNoPairs) {
@@ -247,7 +247,6 @@ function getTokensPricesFromReserves(
   and tokens prices.
    */
   const wrappedCoinPrice = getTokenPrice(wrappedAsset, pairsReserves, TokensCategories.base);
-
   const baseTokensPrices = new Map<string, PriceDto>();
   baseTokensPrices.set(wrappedCoinPrice.address, wrappedCoinPrice);
   whiteListCoins.forEach((address) => {

@@ -1,6 +1,5 @@
 configMaps:
   amm:
-    AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
     AMM_UNISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2
     AMM_BALANCER_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
   blocks:
@@ -23,10 +22,10 @@ configMaps:
     NODE_ENV: production
 
 secrets:
-- database
-- redis
-- bscscan
-- etherscan
-- logs
-- covalent
-- polygonscan
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - covalent
+  - polygonscan

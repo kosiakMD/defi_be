@@ -42,6 +42,11 @@ export class IntegrationsController {
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,
       ChainIdEnum.avax,
+      ChainIdEnum.xdai,
+      ChainIdEnum.celo,
+      ChainIdEnum.mriver,
+      ChainIdEnum.harm,
+      ChainIdEnum.heco,
     ].join(','),
   })
   @ApiQuery({

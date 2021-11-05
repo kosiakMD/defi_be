@@ -22,7 +22,7 @@ import {
 import { StakingProjectDto, TransactionProjectDto } from '@app/common/dto/transactions.dto';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '@app/common/enum';
 import { ProtocolName } from '@app/common/types';
-import { decimalConverter } from '@app/common/utils/number';
+import { normalizeDecimals } from '@app/common/utils/number';
 
 import { Web3Provider } from '../../../chain/web3.provider';
 import { LiquidityPool } from '../../../dto/liquidity.position.dto';
@@ -416,8 +416,6 @@ export class Mapper {
     const RAY = 10 ** 27;
 
     user.reserves.forEach((userReserve) => {
-      const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
-
       // Calculate Lending
       if (Number(userReserve.currentATokenBalance)) {
         const lendingToken: LendingErcToken = plainToClass(LendingErcToken, {
@@ -428,7 +426,10 @@ export class Mapper {
           price: userReserve.reserve.priceUSD,
         });
 
-        const totalDepositDecimal = getReserveDecimals(Number(userReserve.currentATokenBalance));
+        const totalDepositDecimal = normalizeDecimals(
+          userReserve.currentATokenBalance,
+          userReserve.reserve.decimals,
+        );
 
         lending.lendingPositions.push({
           address: userReserve.reserve.id,
@@ -450,9 +451,18 @@ export class Mapper {
           price: userReserve.reserve.priceUSD,
         });
 
-        const totalDebtDecimal = getReserveDecimals(Number(userReserve.currentTotalDebt));
-        const stableDebtDecimal = getReserveDecimals(Number(userReserve.currentStableDebt));
-        const variableDebtDecimal = getReserveDecimals(Number(userReserve.currentVariableDebt));
+        const totalDebtDecimal = normalizeDecimals(
+          userReserve.currentTotalDebt,
+          userReserve.reserve.decimals,
+        );
+        const stableDebtDecimal = normalizeDecimals(
+          userReserve.currentStableDebt,
+          userReserve.reserve.decimals,
+        );
+        const variableDebtDecimal = normalizeDecimals(
+          userReserve.currentVariableDebt,
+          userReserve.reserve.decimals,
+        );
 
         borrowing.borrowingPositions.push({
           address: userReserve.reserve.id,

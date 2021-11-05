@@ -60,7 +60,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
 
     this.rpcs = new Map([
       [ChainIdEnum.eth, configService.get<string>('ETH_URL')],
-      [ChainIdEnum.ftm, configService.get<string>('FTM_RPC_URL')],
+      [ChainIdEnum.ftm, configService.get<string>('FTM_URL')],
     ]);
   }
 

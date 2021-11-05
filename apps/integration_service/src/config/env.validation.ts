@@ -46,10 +46,6 @@ export const validationSchema = Joi.object({
     .required(), // TODO: not empty
   AAVE_ETH_SUBGRAPH_URL: Joi.string().required(),
   AAVE_PLG_SUBGRAPH_URL: Joi.string().required(),
-  AMM_SUSHISWAP_PLG_SUBGRAPH_URL: Joi.string().required(),
-  AMM_SUSHISWAP_SUBGRAPH_URL: Joi.string() //
-    .allow('')
-    .required(), // TODO: not empty
   AMM_UNISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
@@ -81,7 +77,6 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_PORT: Joi.number().required(),
   ACCOUNT_BALANCE: Joi.string().required(),
   ACCOUNT_ASSETS: Joi.string().required(),
-  THEGRAPH_SUSHISWAP_STAKING_POSITIONS: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
@@ -93,6 +88,22 @@ export const validationSchema = Joi.object({
   PRICE_CACHE_TTL_IN_SECONDS: Joi.number(),
   AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
   QUICKSWAP_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_ETH_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_BSC_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_OKEX_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_XDAI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_HECO_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_MATIC_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_FTM_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_CELO_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_AVAX_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_ONE_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_ETH_MASTERCHEF_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_ETH_SUSHIBAR_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_ETH_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
+
   BSC_URL: Joi.string().required(),
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //
@@ -107,7 +118,7 @@ export const validationSchema = Joi.object({
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
   POLYGON_RPC_URL: Joi.string().required(),
-  FTM_RPC_URL: Joi.string().required(),
+  FTM_URL: Joi.string().required(),
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),
   AUTOFARM_API_URL: Joi.string().required(),

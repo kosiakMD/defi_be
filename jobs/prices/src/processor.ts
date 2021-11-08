@@ -120,7 +120,7 @@ async function getAssetsWithNewPairs(
     asset.pairs = asset.pairs || [];
   });
 
-  return assetsWithNoPairs;
+  return assetsWithNoPairs.filter(({ pairs }) => pairs && pairs.length);
 }
 
 function buildPossibleAssetPairs(asset: AssetsApiDto, stableCoinMap: Map<string, AssetsApiDto>) {
@@ -219,7 +219,7 @@ async function updateAssetWithPairData(
       asset.pairs.push(pair);
     }
   } catch (e) {
-    logger.info(e.message);
+    logger.error(e.message);
     return;
   }
 }
@@ -344,9 +344,9 @@ export function getAssetPairReserveValue(
   baseTokesPriceMap: Map<string, PriceDto>,
 ) {
   const baseAssetReserve = getPairTokenReserve(baseAsset, reserves);
-  const stableTokenPrice = baseTokesPriceMap.get(baseAsset.tokenAddress);
+  const baseAssetPrice = baseTokesPriceMap.get(baseAsset.tokenAddress);
   const reserveTokenUsd = new BN(baseAssetReserve) //
-    .times(stableTokenPrice.price)
+    .times(baseAssetPrice.price)
     .toNumber();
   if (reserveTokenUsd >= liquidityLimit) {
     return {

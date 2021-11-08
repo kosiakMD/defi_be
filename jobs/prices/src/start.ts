@@ -1,8 +1,7 @@
 import { config } from 'dotenv';
+config();
 
 import { lambdaHandler } from './app';
-
-config();
 
 (async () => {
   await lambdaHandler();

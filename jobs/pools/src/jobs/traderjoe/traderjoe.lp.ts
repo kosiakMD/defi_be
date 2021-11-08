@@ -96,8 +96,8 @@ export class TraderjoeLp implements JobInterface {
     const calls = new Map<string, CallData>();
     for (let i = poolIdFrom; i <= poolIdTo; i++) {
       calls.set(this.poolInfoLabel(i), {
-        address: TraderjoeAddresses.chief,
-        abi: Abis.poolInfo,
+        address: TraderjoeAddresses.chiefV2,
+        abi: Abis.poolInfoV2,
         input: {
           data: [i],
         },
@@ -231,7 +231,7 @@ export class TraderjoeLp implements JobInterface {
       [
         this.poolLengthLabel(),
         {
-          address: TraderjoeAddresses.chief,
+          address: TraderjoeAddresses.chiefV2,
           abi: Abis.poolLength,
           input: {
             data: [],
@@ -332,12 +332,12 @@ export class TraderjoeLp implements JobInterface {
 
   //
   poolLengthLabel() {
-    return concatStrings(Abis.poolLength.name, TraderjoeAddresses.chief);
+    return concatStrings(Abis.poolLength.name, TraderjoeAddresses.chiefV2);
   }
 
   //
   poolInfoLabel(poolId) {
-    return concatStrings(Abis.poolInfo.name, TraderjoeAddresses.chief, poolId);
+    return concatStrings(Abis.poolInfoV2.name, TraderjoeAddresses.chiefV2, poolId);
   }
   //
   getReservesLabel(liquidityPoolFeature: LiquidityPoolFeature) {

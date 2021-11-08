@@ -7,7 +7,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CallData } from '../../chain/dto/call.data';
 import { MasterchiefPoolInfoTraderJoeResponse } from '../../chain/dto/token';
-import { MultiCallInternal } from '../../chain/multicall';
 import { MulticallService } from '../../chain/multicall.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import { ChainIdEnum, CurrencyIdEnum } from '../../config/enum';
@@ -23,6 +22,7 @@ import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { ERC20Token } from '../dto/common';
+import { DbMapping } from './dbmapping';
 import {
   APRStats,
   IntegrationClaimableTokenDto,
@@ -45,7 +45,7 @@ export class TraderJoeStaking implements JobInterface {
   features: any;
 
   private mapping = [];
-  private availableDtosForConversion: Map<string, string>;
+  private dbMapping;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -55,20 +55,17 @@ export class TraderJoeStaking implements JobInterface {
     private readonly multicallService: MulticallService,
     private readonly priceService: PriceService,
   ) {
-    this.availableDtosForConversion = new Map<string, string>([
-      [IntegrationStakingPositionDto.name, IntegrationStakingPositionDto.name],
-      [IntegrationERC20TokenDto.name, ERC20Token.name],
-      [IntegrationClaimableTokenDto.name, ERC20Token.name],
-      [IntegrationPoolTokenDto.name, ERC20Token.name],
-    ]);
+    this.dbMapping = new DbMapping(storeService);
   }
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
+    jobMapping = await this.buildInitialMapping(jobMapping);
+    /*
     if (!jobMapping.mapping) {
       jobMapping = await this.buildInitialMapping(jobMapping);
-    }
-
+    }*/
+    //console.log(jobMapping)
     jobMapping.mapping.forEach((jm) => {
       this.mapping.push(IntegrationDataConverter.toDTO(jm));
     });
@@ -92,12 +89,9 @@ export class TraderJoeStaking implements JobInterface {
       decimals: accountTokenDto.decimals,
     });
 
-    const multicall = new MultiCallInternal(this.web3Provider.web3(this.chain));
-
-    const poolsInfo: Map<string, MasterchiefPoolInfoTraderJoeResponse> = await multicall.getPoolsInfoTraderJoe(
-      TraderjoeAddresses.chief,
-    );
-
+    
+    const poolsInfo: Map<string, MasterchiefPoolInfoTraderJoeResponse> = await this.getAllPoolInfo();
+    
     for (const address of poolsInfo.keys()) {
       try {
         const poolTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
@@ -129,7 +123,7 @@ export class TraderJoeStaking implements JobInterface {
         const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
           IntegrationStakingPositionDto,
           {
-            address: TraderjoeAddresses.chief,
+            address: TraderjoeAddresses.chiefV2,
             poolId: poolsInfo.get(address).id.toString(),
             poolName: null,
             rewardToken: rewardToken,
@@ -148,116 +142,72 @@ export class TraderJoeStaking implements JobInterface {
 
     const mappings = [];
     for (let i = 0; i < stakingFeatures.length; i++) {
-      mappings.push(await this.toDbMapping(stakingFeatures[i]));
+      mappings.push(await this.dbMapping.toDbMapping(stakingFeatures[i], this.chain));
     }
 
     jobMapping.mapping = mappings;
     
-    const updatedMapping = await this.storeService.updateMapping(jobMapping);
-    TrackedVaultsMap.add(updatedMapping);
-    return updatedMapping;
+    //const updatedMapping = await this.storeService.updateMapping(jobMapping);
+    //TrackedVaultsMap.add(updatedMapping);
+    //return updatedMapping;
+    return jobMapping;
   }
 
-  private async toDbMapping(stakingPosition: IntegrationStakingPositionDto) {
-    const mappedDto = plainToClass(StakingFeatureMapping, {});
+  private async getAllPoolInfo(): Promise<Map<string, MasterchiefPoolInfoTraderJoeResponse>> {
+    const call = new Map<string, CallData>();
+    call.set(this.poolLengthLabel(), {
+      address: TraderjoeAddresses.chiefV2,
+      abi: Abis.poolLength,
+      input: {
+        data: [],
+      },
+      output: {},
+    });
 
-    //reward token
-    const rewardTokenUniqueId = concatStrings(this.chain, TraderjoeAddresses.joe);
+    const poolsInfo: Map<string, CallData> = await this.multicallService.handleInBatches(call, this.chain);
+
+    let poolLengthResult = parseInt(poolsInfo.values().next().value.output.plain, 16);
+
+    const poolsInfoMap: Map<string, MasterchiefPoolInfoTraderJoeResponse> = new Map<
+      string,
+      MasterchiefPoolInfoTraderJoeResponse
+    >();
+
+    const calls = new Map<string, CallData>();
+    for (let i = 0; i < poolLengthResult; i++) {
+      const mappedDTO = plainToClass(IntegrationStakingPositionDto, {});
+      mappedDTO.poolId = i;
+
+      calls.set(
+        this.poolInfoLabel(mappedDTO), {
+          address: TraderjoeAddresses.chiefV2,
+          abi: Abis.poolInfoV2,
+          input: {
+            data: [i],
+          },
+          output: {},
+        }
+      );
+    }
+
+    let poolInfos = await this.multicallService.handleInBatches(calls, this.chain);
     
-    const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-      stakingPosition.rewardToken,
-      rewardTokenUniqueId,
-    );
-    
-    mappedDto.rewardToken = {
-      dbId: rewardTokenItem.id,
-      dtoName: stakingPosition.rewardToken.constructor.name,
-    };
+    let i = 0;
+    for (let poolInfo of poolInfos.values()) {
+      poolsInfoMap.set(poolInfo.output.data.lpToken.toLowerCase(), {
+        // covert to lower case once received!
+        id: i,
+        lpToken: poolInfo.output.data.lpToken.toLowerCase(),
+        allocPoint: poolInfo.output.data.allocPoint,
+        lastRewardTimestamp: poolInfo.output.data.lastRewardTimestamp,
+        accJoePerShare: poolInfo.output.data.accJoePerShare,
+      });
+      //console.log('V2 ' + poolInfo.output.data.allocPoint.toString())
 
-    // staking token 
-    const stakingTokenUniqueId = concatStrings(this.chain, stakingPosition.stakingToken.address);
-    const stakingToken: TrackedVaultItem = await this.getDbItem(
-      stakingPosition.stakingToken,
-      stakingTokenUniqueId,
-    );
-    mappedDto.stakingToken = {
-      dbId: stakingToken.id,
-      dtoName: stakingPosition.stakingToken.constructor.name,
-    };
-
-    // staking lp assets underlying
-    if (stakingPosition.stakingToken.tokens) {
-      mappedDto.stakingToken.tokens = [];
-      for (const t of stakingPosition.stakingToken.tokens) {
-        const tokenId = concatStrings(this.chain, t.address);
-        const tokenItem: TrackedVaultItem = await this.getDbItem(t, tokenId);
-        mappedDto.stakingToken.tokens.push({
-          dbId: tokenItem.id,
-          dtoName: t.constructor.name,
-          positionInPool: t.positionInPool,
-        });
-      }
+      i++;
     }
 
-    // position
-    const positionUniqueId = concatStrings(
-      this.chain,
-      stakingPosition.address,
-      stakingPosition.poolId,
-    );
-    const position: TrackedVaultItem = await this.getDbItem(stakingPosition, positionUniqueId);
-    mappedDto.dbId = position.id;
-    mappedDto.dtoName = stakingPosition.constructor.name;
-
-    return mappedDto;
-  }
-
-  async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
-    if (temp) {
-      return temp;
-    }
-    if (!temp) {
-      return await this.saveItemToDb(item, uniqueId);
-    }
-  }
-
-  async saveItemToDb(item, uniqueId: string): Promise<TrackedVaultItem> {
-    let universalDto;
-
-    const newIntegrationJobItem: TrackedVaultItem = plainToClass(TrackedVaultItem, {});
-    const toUniversalDtoName = this.availableDtosForConversion.get(item.constructor.name);
-    newIntegrationJobItem.type = toUniversalDtoName;
-
-    if (toUniversalDtoName === ERC20Token.name) {
-      universalDto = {
-        address: item.address,
-        name: item.name,
-        symbol: item.symbol,
-        decimals: item.decimals,
-      };
-      newIntegrationJobItem.name = universalDto.name;
-      newIntegrationJobItem.idUnique = uniqueId;
-    }
-    if (toUniversalDtoName === IntegrationStakingPositionDto.name) {
-      universalDto = {
-        address: item.address,
-        poolId: item.poolId,
-        poolName: item.poolName,
-      };
-      newIntegrationJobItem.name = universalDto.poolName
-        ? universalDto.poolName
-        : universalDto.poolId;
-      newIntegrationJobItem.idUnique = uniqueId;
-    }
-
-    newIntegrationJobItem.data = classToPlain(universalDto);
-    console.log(newIntegrationJobItem)
-    const savedItem: TrackedVaultItem = await this.storeService.saveItem(newIntegrationJobItem);
-    console.log(savedItem)
-    // it is important to add item to database
-    TrackedVaultItemsMap.add(savedItem);
-    return savedItem;
+    return poolsInfoMap;
   }
 
   async updateTracked(): Promise<void> {
@@ -266,7 +216,7 @@ export class TraderJoeStaking implements JobInterface {
 
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
-
+    //this.logger.log(this.mapping);
     this.mapping.forEach((m) => {
       if (m instanceof IntegrationStakingPositionDto) {
         batchCallsMap = new Map<string, CallData>([
@@ -281,12 +231,13 @@ export class TraderJoeStaking implements JobInterface {
     ]);
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
-
+    
     const [{ prices }, multicallRsp] = await Promise.all([
       this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.avax),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.avax),
     ]);
-
+    //console.log(multicallRsp)
+    
     const totalAllocPoint: BigNumber = multicallRsp.get(this.totalAllocPointLabel()).output.data;
     const joePerBlock: BigNumber = multicallRsp.get(this.joePerBlockLabel()).output.data;
 
@@ -334,6 +285,8 @@ export class TraderJoeStaking implements JobInterface {
           farmingPoolTVL: m.stats.tvl,
         };
         m.stats.apr = this.calculateAPR(aprStats);
+
+        //console.log(m)
         return m;
       }
     });
@@ -371,15 +324,15 @@ export class TraderJoeStaking implements JobInterface {
       address: stakingPosition.stakingToken.address,
       abi: Abis.balanceOf,
       input: {
-        data: [TraderjoeAddresses.chief],
+        data: [TraderjoeAddresses.chiefV2],
       },
       output: {},
     });
 
     // poolInfo to calculate APR
     calls.set(this.poolInfoLabel(stakingPosition), {
-      address: TraderjoeAddresses.chief,
-      abi: Abis.poolInfo,
+      address: TraderjoeAddresses.chiefV2,
+      abi: Abis.poolInfoV2,
       input: {
         data: [stakingPosition.poolId],
       },
@@ -394,7 +347,7 @@ export class TraderJoeStaking implements JobInterface {
       [
         this.totalAllocPointLabel(),
         {
-          address: TraderjoeAddresses.chief,
+          address: TraderjoeAddresses.chiefV2,
           abi: Abis.totalAllocPoint,
           input: {
             data: [],
@@ -405,8 +358,8 @@ export class TraderJoeStaking implements JobInterface {
       [
         this.joePerBlockLabel(),
         {
-          address: TraderjoeAddresses.chief,
-          abi: Abis.joePerSec,
+          address: TraderjoeAddresses.chiefV2,
+          abi: Abis.joePerSecV2,
           input: {
             data: [],
           },
@@ -414,34 +367,6 @@ export class TraderJoeStaking implements JobInterface {
         },
       ],
     ]);
-  }
-
-  private getReservesLabel(stakingPosition: IntegrationStakingPositionDto) {
-    return concatStrings(Abis.getReserves.name, stakingPosition.stakingToken.address);
-  }
-
-  private totalSupplyLabel(stakingPosition: IntegrationStakingPositionDto) {
-    return concatStrings(Abis.totalSupply.name, stakingPosition.stakingToken.address);
-  }
-
-  private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto) {
-    return concatStrings(
-      Abis.balanceOf.name,
-      TraderjoeAddresses.chief,
-      stakingPosition.stakingToken.address,
-    );
-  }
-
-  private poolInfoLabel(stakingPosition: IntegrationStakingPositionDto) {
-    return concatStrings(Abis.poolInfo.name, TraderjoeAddresses.chief, stakingPosition.poolId);
-  }
-
-  private totalAllocPointLabel() {
-    return concatStrings(Abis.totalAllocPoint.name, TraderjoeAddresses.chief);
-  }
-
-  private joePerBlockLabel() {
-    return concatStrings(Abis.joePerSec.name, TraderjoeAddresses.chief);
   }
 
   private getPricedTokensSet(): Set<string> {
@@ -473,8 +398,41 @@ export class TraderJoeStaking implements JobInterface {
       .div(totalAllocPoints)
       .times(rewardTokenPerBlock)
       .times(rewardTokenPrice); 
+    //console.log(`${totalAllocPoints} + ${poolAllocPoints} + ${rewardTokenPerBlock} + ${blockTime} + ${farmingPoolTVL}`)
     const aprPerBlock = poolRewardPerBlock.div(farmingPoolTVL).toNumber() * 100;
     const blocksPerYear = (86400 * 365) / blockTime;
     return aprPerBlock * blocksPerYear;
+  }
+
+  private getReservesLabel(stakingPosition: IntegrationStakingPositionDto) {
+    return concatStrings(Abis.getReserves.name, stakingPosition.stakingToken.address);
+  }
+
+  private totalSupplyLabel(stakingPosition: IntegrationStakingPositionDto) {
+    return concatStrings(Abis.totalSupply.name, stakingPosition.stakingToken.address);
+  }
+
+  private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto) {
+    return concatStrings(
+      Abis.balanceOf.name,
+      TraderjoeAddresses.chiefV2,
+      stakingPosition.stakingToken.address,
+    );
+  }
+
+  private poolInfoLabel(stakingPosition: IntegrationStakingPositionDto) {
+    return concatStrings(Abis.poolInfoV2.name, TraderjoeAddresses.chiefV2, stakingPosition.poolId);
+  }
+
+  private totalAllocPointLabel() {
+    return concatStrings(Abis.totalAllocPoint.name, TraderjoeAddresses.chiefV2);
+  }
+
+  private joePerBlockLabel() {
+    return concatStrings(Abis.joePerSecV2.name, TraderjoeAddresses.chiefV2);
+  }
+
+  private poolLengthLabel() {
+    return concatStrings(Abis.poolLength.name, TraderjoeAddresses.chiefV2);
   }
 }

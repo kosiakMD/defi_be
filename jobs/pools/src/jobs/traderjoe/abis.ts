@@ -21,7 +21,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
-  static readonly poolInfo: AbiItem = {
+  static readonly poolInfoV2: AbiItem = {
     inputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
     name: 'poolInfo',
     outputs: [
@@ -32,6 +32,24 @@ export class Abis {
       { type: 'address', name: 'rewarder', internalType: 'contract IRewarder' },
     ],
     stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly poolInfoV3: AbiItem = {
+    inputs: [{
+        type:"uint256",
+        name:"",
+        internalType:"uint256"
+      }
+    ],
+    name: 'poolInfo',
+    outputs: [
+      { type:"address", name:"lpToken", internalType:"contract IERC20" },
+      { type:"uint256", name:"accJoePerShare", internalType:"uint256" },
+      { type:"uint256", name:"lastRewardTimestamp", internalType:"uint256" },
+      { type:"uint256", name:"allocPoint", internalType:"uint256" },
+      { type:"address", name:"rewarder", internalType:"contract IRewarder" }
+    ],
+    stateMutability:"view",
     type: 'function',
   };
   static readonly totalSupply: AbiItem = {
@@ -57,10 +75,17 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
-  static readonly joePerSec: AbiItem = {
+  static readonly joePerSecV2: AbiItem = {
     inputs: [],
     name: 'joePerSec',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly joePerSecV3: AbiItem = {
+    inputs: [],
+    name: 'joePerSec',
+    outputs: [{ internalType: 'uint256', name: 'amount', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function',
   };

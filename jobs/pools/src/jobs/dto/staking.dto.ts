@@ -45,6 +45,16 @@ export class IntegrationStakingPositionDto {
   rewardToken: IntegrationClaimableTokenDto = plainToClass(IntegrationClaimableTokenDto, {});
 }
 
+export class IntegrationStakingPositionDtoTraderJoe {
+  address: string = null;
+  poolId: number = null;
+  poolName: string = null;
+  staked: number = null;
+  stats: Stats = plainToClass(Stats, {});
+  stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
+  rewardTokens: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+}
+
 export class APRStats {
   totalAllocPoints: BigNumber;
   poolAllocPoints: BigNumber;
@@ -61,6 +71,24 @@ export class StakingFeatureMapping {
     dbId: number;
     dtoName: string;
   };
+  stakingToken: {
+    dbId: number;
+    dtoName: string;
+    tokens?: {
+      dbId: number;
+      dtoName: string;
+      positionInPool: number;
+    }[];
+  };
+}
+
+export class StakingFeatureMappingTraderJoe {
+  dbId: number;
+  dtoName: string;
+  rewardTokens: {
+    dbId: number;
+    dtoName: string;
+  }[];
   stakingToken: {
     dbId: number;
     dtoName: string;

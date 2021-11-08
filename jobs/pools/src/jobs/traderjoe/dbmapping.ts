@@ -13,8 +13,9 @@ import {
     IntegrationClaimableTokenDto,
     IntegrationERC20TokenDto,
     IntegrationPoolTokenDto,
-    IntegrationStakingPositionDto,
+    IntegrationStakingPositionDtoTraderJoe,
     StakingFeatureMapping,
+    StakingFeatureMappingTraderJoe,
 } from '../dto/staking.dto';
 
 import { TraderjoeAddresses } from './addresses';
@@ -28,28 +29,56 @@ export class DbMapping {
       private readonly storeService: StoreService,
   ) {
       this.availableDtosForConversion = new Map<string, string>([
-        [IntegrationStakingPositionDto.name, IntegrationStakingPositionDto.name],
+        [IntegrationStakingPositionDtoTraderJoe.name, IntegrationStakingPositionDtoTraderJoe.name],
         [IntegrationERC20TokenDto.name, ERC20Token.name],
         [IntegrationClaimableTokenDto.name, ERC20Token.name],
         [IntegrationPoolTokenDto.name, ERC20Token.name],
       ]);
   }
 
-  async toDbMapping(stakingPosition: IntegrationStakingPositionDto, chain: ChainIdEnum) {
-      const mappedDto = plainToClass(StakingFeatureMapping, {});
-  
-      //reward token
-      const rewardTokenUniqueId = concatStrings(chain, TraderjoeAddresses.joe);
-      
-      const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-        stakingPosition.rewardToken,
-        rewardTokenUniqueId,
-      );
-      
-      mappedDto.rewardToken = {
-        dbId: rewardTokenItem.id,
-        dtoName: stakingPosition.rewardToken.constructor.name,
-      };
+  async toDbMapping(stakingPosition: IntegrationStakingPositionDtoTraderJoe, chain: ChainIdEnum) {
+      const mappedDto = plainToClass(StakingFeatureMappingTraderJoe, {});
+
+      if (stakingPosition.rewardTokens.length === 2) {
+        //reward token
+        const rewardTokenUniqueIdJOE = concatStrings(chain, TraderjoeAddresses.joe);
+        const rewardTokenUniqueIdAVAX = concatStrings(chain, TraderjoeAddresses.avax);
+        
+        const rewardTokenItemJOE: TrackedVaultItem = await this.getDbItem(
+          stakingPosition.rewardTokens[0],
+          rewardTokenUniqueIdJOE,
+        );
+        const rewardTokenItemAVAX: TrackedVaultItem = await this.getDbItem(
+          stakingPosition.rewardTokens[1],
+          rewardTokenUniqueIdAVAX,
+        );
+        
+        mappedDto.rewardTokens = [
+          {
+            dbId: rewardTokenItemJOE.id,
+            dtoName: stakingPosition.rewardTokens[0].constructor.name,
+          }, 
+          {
+            dbId: rewardTokenItemAVAX.id,
+            dtoName: stakingPosition.rewardTokens[1].constructor.name,
+          }
+        ];
+      } else {
+        //reward token
+        const rewardTokenUniqueId = concatStrings(chain, TraderjoeAddresses.joe);
+        
+        const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
+          stakingPosition.rewardTokens[0],
+          rewardTokenUniqueId,
+        );
+        
+        mappedDto.rewardTokens = [
+          {
+            dbId: rewardTokenItem.id,
+            dtoName: stakingPosition.rewardTokens[0].constructor.name,
+          }
+        ];
+      }
   
       // staking token 
       const stakingTokenUniqueId = concatStrings(chain, stakingPosition.stakingToken.address);
@@ -82,6 +111,7 @@ export class DbMapping {
         stakingPosition.address,
         stakingPosition.poolId,
       );
+      
       const position: TrackedVaultItem = await this.getDbItem(stakingPosition, positionUniqueId);
       mappedDto.dbId = position.id;
       mappedDto.dtoName = stakingPosition.constructor.name;
@@ -116,7 +146,7 @@ export class DbMapping {
         newIntegrationJobItem.name = universalDto.name;
         newIntegrationJobItem.idUnique = uniqueId;
       }
-      if (toUniversalDtoName === IntegrationStakingPositionDto.name) {
+      if (toUniversalDtoName === IntegrationStakingPositionDtoTraderJoe.name) {
         universalDto = {
           address: item.address,
           poolId: item.poolId,

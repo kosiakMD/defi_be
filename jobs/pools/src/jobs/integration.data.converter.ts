@@ -9,6 +9,7 @@ import {
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
+  IntegrationStakingPositionDtoTraderJoe,
 } from './dto/staking.dto';
 
 export class IntegrationDataConverter {
@@ -46,6 +47,9 @@ export class IntegrationDataConverter {
     // set up object with default values
     if (dtoName === 'IntegrationStakingPositionDto') {
       converted = plainToClass(IntegrationStakingPositionDto, {});
+    }
+    if (dtoName === 'IntegrationStakingPositionDtoTraderJoe') {
+      converted = plainToClass(IntegrationStakingPositionDtoTraderJoe, {});
     }
     if (dtoName === 'IntegrationClaimableTokenDto') {
       converted = plainToClass(IntegrationClaimableTokenDto, {});

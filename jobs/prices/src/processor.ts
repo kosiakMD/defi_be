@@ -95,7 +95,7 @@ async function getAssetsWithNewPairs(
   assetsMap: Map<string, AssetsApiDto>,
 ): Promise<AssetsApiDto[]> {
   const assetsWithNoPairs = Array.from(assetsMap.values()).filter(
-    (asset) => !asset?.pairs.length || !checkAssetPairsUpdateDate(asset),
+    (asset) => !asset?.pairs?.length || !checkAssetPairsUpdateDate(asset),
   );
 
   if (!assetsWithNoPairs) {

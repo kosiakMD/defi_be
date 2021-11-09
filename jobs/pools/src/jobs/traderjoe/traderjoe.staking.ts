@@ -25,6 +25,7 @@ import { ERC20Token } from '../dto/common';
 import { DbMapping } from './dbmapping';
 import {
   APRStats,
+  APRStatsBonus,
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
@@ -100,9 +101,6 @@ export class TraderJoeStaking implements JobInterface {
 
     const poolsInfoV2: Map<string, MasterchiefPoolInfoTraderJoeResponse> = await this.getAllPoolInfo(TraderjoeAddresses.chiefV2);
     const poolsInfoV3: Map<string, MasterchiefPoolInfoTraderJoeResponse> = await this.getAllPoolInfo(TraderjoeAddresses.chiefV3);
-    //const poolsInfo = new Map<string, MasterchiefPoolInfoTraderJoeResponse>([...poolsInfoV2.entries(), ...poolsInfoV3.entries()]);
-    
-    //console.log(poolsInfo)
 
     const poolsInfoArray = [
       { poolsInfo: poolsInfoV2, chiefContract: TraderjoeAddresses.chiefV2 },
@@ -250,6 +248,7 @@ export class TraderJoeStaking implements JobInterface {
 
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
+    let blackList = ['0x6bcddcfa89119b0f3ede7fa45c627dcb704ac9a8', '0x0208a6aa8ac236b5f5fd01d814b7eccf0d9aeb7e'];
 
     this.mapping.forEach((m) => {
       if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
@@ -285,6 +284,8 @@ export class TraderJoeStaking implements JobInterface {
 
     const totalAllocPointV3: BigNumber = multicallRsp.get(this.totalAllocPointLabel(TraderjoeAddresses.chiefV3)).output.data;
     const joePerBlockV3: BigNumber = multicallRsp.get(this.joePerBlockLabel(TraderjoeAddresses.chiefV3)).output.data;
+
+    const blockTime = 2;
 
     this.mapping = await Promise.all(this.mapping.map(async (m) => {
       if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
@@ -326,15 +327,15 @@ export class TraderJoeStaking implements JobInterface {
           const aprStats: APRStats = {
             totalAllocPoints: totalAllocPointV3,
             poolAllocPoints: allocPoint,
-            rewardTokenPerBlock: toDecimals(joePerBlockV3, m.rewardTokens[0].decimals),
+            rewardTokenPerBlock: toDecimals(joePerBlockV3, m.rewardTokens[0].decimals) * blockTime,
             rewardTokenPrice: m.rewardTokens[0].price,
-            blockTime: 2,
+            blockTime: blockTime,
             farmingPoolTVL: m.stats.tvl,
           };
 
           const { rewarder } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV3)).output.data;
           
-          if (rewarder === '0xeB1F569271B2997779e11C5dF6F457753D6e0B55') {
+          if (rewarder !== TraderjoeAddresses.avax && !blackList.includes(rewarder.toLowerCase())) {
             console.log(rewarder);
             const calls: Map<string, CallData> = new Map<string, CallData>();
             calls.set(concatStrings(Abis.balance.name, rewarder), {
@@ -364,26 +365,22 @@ export class TraderJoeStaking implements JobInterface {
             });
             
             const res = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
-            console.log(res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data)
-            console.log(res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase())
-            console.log(Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()]))
-            console.log((res.get(concatStrings(Abis.balance.name, rewarder)).output.data * Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()])).toString())
 
-            const aprStats2: APRStats = {
-              totalAllocPoints: totalAllocPointV3,
-              poolAllocPoints: allocPoint,
-              rewardTokenPerBlock: toDecimals(res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data, 18) * 2,
+            const aprStatsBonus: APRStatsBonus = {
+              rewardTokenPerBlock: toDecimals(res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data, 18) * blockTime,
               rewardTokenPrice: Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()]),
-              blockTime: 2,
-              farmingPoolTVL: res.get(concatStrings(Abis.balance.name, rewarder)).output.data * Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()]),
+              blockTime: blockTime,
+              farmingPoolTVL: m.stats.tvl,
             };
-            //console.log(m)
-            console.log(this.calculateAPR(aprStats2))
+            
+            m.stats.apr.push(this.calculateAPR(aprStats));
+
+            m.stats.apr.push(this.calculateAPRBonus(aprStatsBonus));
+            //console.log(this.calculateAPRBonus(aprStatsBonus))
+            console.log(m)
+          } else {
+            m.stats.apr.push(this.calculateAPR(aprStats));
           }
-
-          m.stats.apr = this.calculateAPR(aprStats);
-
-          //console.log(m)
           
         } else {
           const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(m, TraderjoeAddresses.chiefV2)).output.data;
@@ -425,22 +422,18 @@ export class TraderJoeStaking implements JobInterface {
             poolAllocPoints: allocPoint,
             rewardTokenPerBlock: toDecimals(joePerBlockV2, m.rewardTokens[0].decimals),
             rewardTokenPrice: m.rewardTokens[0].price,
-            blockTime: 2,
+            blockTime: blockTime,
             farmingPoolTVL: m.stats.tvl,
           };
 
           if (m.stakingToken.name === 'JoeBar') {
             aprStats.farmingPoolTVL = m.stakingToken.balance * m.rewardTokens[0].price;
-            //aprStats.farmingPoolTVL = 167650654;
-            //console.log(this.calculateAPR(aprStats));
-            //console.log(aprStats)
           }
-
-          m.stats.apr = this.calculateAPR(aprStats);
+          
+          m.stats.apr.push(this.calculateAPR(aprStats));
         }
         return m;
       }
-
     }));
     //this.logger.log(this.mapping)
 
@@ -535,7 +528,7 @@ export class TraderJoeStaking implements JobInterface {
         addressesSet.add(m.stakingToken.address);
       }
       addressesSet.add(m.rewardTokens[0].address);
-      addressesSet.add('0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7');
+      
       if (m.rewardTokens.length === 2) addressesSet.add(m.rewardTokens[1].address);
     });
     return addressesSet;
@@ -555,6 +548,18 @@ export class TraderJoeStaking implements JobInterface {
       .times(rewardTokenPrice); 
     //console.log(`${totalAllocPoints} + ${poolAllocPoints} + ${rewardTokenPerBlock} + ${blockTime} + ${farmingPoolTVL}`)
     const aprPerBlock = poolRewardPerBlock.div(farmingPoolTVL).toNumber() * 100;
+    const blocksPerYear = (86400 * 365) / blockTime;
+    return aprPerBlock * blocksPerYear;
+  }
+
+  public calculateAPRBonus({
+    rewardTokenPerBlock,
+    rewardTokenPrice,
+    blockTime,
+    farmingPoolTVL,
+  }: APRStatsBonus): number {
+    const poolRewardPerBlock = rewardTokenPerBlock * rewardTokenPrice; 
+    const aprPerBlock = poolRewardPerBlock / farmingPoolTVL * 100;
     const blocksPerYear = (86400 * 365) / blockTime;
     return aprPerBlock * blocksPerYear;
   }

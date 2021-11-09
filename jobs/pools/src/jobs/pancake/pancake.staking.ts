@@ -382,7 +382,7 @@ export class PancakeStaking implements JobInterface {
           blockTime: 3,
           farmingPoolTVL: m.stats.tvl,
         };
-        m.stats.apr = this.calculateAPR(aprStats);
+        m.stats.apr.push(this.calculateAPR(aprStats));
         return m;
       }
     });

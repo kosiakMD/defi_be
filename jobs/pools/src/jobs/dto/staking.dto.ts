@@ -31,7 +31,7 @@ export class IntegrationClaimableTokenDto extends ERC20Token {
 
 export class Stats {
   apy: number = null;
-  apr: number = null;
+  apr: number[] = [];
   tvl: number = null;
 }
 
@@ -58,6 +58,13 @@ export class IntegrationStakingPositionDtoTraderJoe {
 export class APRStats {
   totalAllocPoints: BigNumber;
   poolAllocPoints: BigNumber;
+  rewardTokenPerBlock: number;
+  rewardTokenPrice: number;
+  blockTime: number;
+  farmingPoolTVL: number;
+}
+
+export class APRStatsBonus {
   rewardTokenPerBlock: number;
   rewardTokenPrice: number;
   blockTime: number;

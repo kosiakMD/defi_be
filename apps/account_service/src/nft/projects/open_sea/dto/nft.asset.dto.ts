@@ -1,6 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { TraitDto, BaseCollectionDto, ContractDto, OrderDto } from '.';
+import { TraitDto, CollectionDto, ContractDto, OrderDto, LastSaleDto } from '.';
 
 @Exclude()
 export class NftAssetDto {
@@ -18,8 +18,8 @@ export class NftAssetDto {
   contract: ContractDto;
 
   @Expose()
-  @Type(() => BaseCollectionDto)
-  collection: BaseCollectionDto;
+  @Type(() => CollectionDto)
+  collection: CollectionDto;
 
   @Expose()
   @Type(() => TraitDto)
@@ -28,4 +28,8 @@ export class NftAssetDto {
   @Expose()
   @Type(() => OrderDto)
   orders: OrderDto[];
+
+  @Expose({ name: 'last_sale' })
+  @Type(() => LastSaleDto)
+  lastSale: LastSaleDto;
 }

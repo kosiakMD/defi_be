@@ -42,17 +42,17 @@ export class IntegrationStakingPositionDto {
   staked: number = null;
   stats: Stats = plainToClass(Stats, {});
   stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
-  rewardTokens: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
 }
 
-export class IntegrationStakingPositionDtoTraderJoe {
+export class IntegrationStakingPositionDto1 {
   address: string = null;
   poolId: number = null;
   poolName: string = null;
   staked: number = null;
   stats: Stats = plainToClass(Stats, {});
   stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
-  rewardTokens: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  rewardToken: IntegrationClaimableTokenDto = plainToClass(IntegrationClaimableTokenDto, {});
 }
 
 export class APRStats {
@@ -74,25 +74,7 @@ export class APRStatsBonus {
 export class StakingFeatureMapping {
   dbId: number;
   dtoName: string;
-  rewardToken: {
-    dbId: number;
-    dtoName: string;
-  };
-  stakingToken: {
-    dbId: number;
-    dtoName: string;
-    tokens?: {
-      dbId: number;
-      dtoName: string;
-      positionInPool: number;
-    }[];
-  };
-}
-
-export class StakingFeatureMappingTraderJoe {
-  dbId: number;
-  dtoName: string;
-  rewardTokens: {
+  rewards: {
     dbId: number;
     dtoName: string;
   }[];

@@ -1,8 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { classToPlain, plainToClass } from 'class-transformer';
 
-import { Injectable } from '@nestjs/common';
-
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
@@ -13,15 +11,13 @@ import {
     IntegrationClaimableTokenDto,
     IntegrationERC20TokenDto,
     IntegrationPoolTokenDto,
-    IntegrationStakingPositionDtoTraderJoe,
+    IntegrationStakingPositionDto,
     StakingFeatureMapping,
-    StakingFeatureMappingTraderJoe,
 } from '../dto/staking.dto';
 
 import { TraderjoeAddresses } from './addresses';
 import { ChainIdEnum } from 'src/config/enum';
 
-//@Injectable()
 export class DbMapping {
   private availableDtosForConversion: Map<string, string>;
 
@@ -29,38 +25,38 @@ export class DbMapping {
       private readonly storeService: StoreService,
   ) {
       this.availableDtosForConversion = new Map<string, string>([
-        [IntegrationStakingPositionDtoTraderJoe.name, IntegrationStakingPositionDtoTraderJoe.name],
+        [IntegrationStakingPositionDto.name, IntegrationStakingPositionDto.name],
         [IntegrationERC20TokenDto.name, ERC20Token.name],
         [IntegrationClaimableTokenDto.name, ERC20Token.name],
         [IntegrationPoolTokenDto.name, ERC20Token.name],
       ]);
   }
 
-  async toDbMapping(stakingPosition: IntegrationStakingPositionDtoTraderJoe, chain: ChainIdEnum) {
-      const mappedDto = plainToClass(StakingFeatureMappingTraderJoe, {});
+  async toDbMapping(stakingPosition: IntegrationStakingPositionDto, chain: ChainIdEnum) {
+      const mappedDto = plainToClass(StakingFeatureMapping, {});
 
-      if (stakingPosition.rewardTokens.length === 2) {
+      if (stakingPosition.rewards.length === 2) {
         //reward token
         const rewardTokenUniqueIdJOE = concatStrings(chain, TraderjoeAddresses.joe);
         const rewardTokenUniqueIdAVAX = concatStrings(chain, TraderjoeAddresses.avax);
         
         const rewardTokenItemJOE: TrackedVaultItem = await this.getDbItem(
-          stakingPosition.rewardTokens[0],
+          stakingPosition.rewards[0],
           rewardTokenUniqueIdJOE,
         );
         const rewardTokenItemAVAX: TrackedVaultItem = await this.getDbItem(
-          stakingPosition.rewardTokens[1],
+          stakingPosition.rewards[1],
           rewardTokenUniqueIdAVAX,
         );
         
-        mappedDto.rewardTokens = [
+        mappedDto.rewards = [
           {
             dbId: rewardTokenItemJOE.id,
-            dtoName: stakingPosition.rewardTokens[0].constructor.name,
+            dtoName: stakingPosition.rewards[0].constructor.name,
           }, 
           {
             dbId: rewardTokenItemAVAX.id,
-            dtoName: stakingPosition.rewardTokens[1].constructor.name,
+            dtoName: stakingPosition.rewards[1].constructor.name,
           }
         ];
       } else {
@@ -68,14 +64,14 @@ export class DbMapping {
         const rewardTokenUniqueId = concatStrings(chain, TraderjoeAddresses.joe);
         
         const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-          stakingPosition.rewardTokens[0],
+          stakingPosition.rewards[0],
           rewardTokenUniqueId,
         );
         
-        mappedDto.rewardTokens = [
+        mappedDto.rewards = [
           {
             dbId: rewardTokenItem.id,
-            dtoName: stakingPosition.rewardTokens[0].constructor.name,
+            dtoName: stakingPosition.rewards[0].constructor.name,
           }
         ];
       }
@@ -146,7 +142,7 @@ export class DbMapping {
         newIntegrationJobItem.name = universalDto.name;
         newIntegrationJobItem.idUnique = uniqueId;
       }
-      if (toUniversalDtoName === IntegrationStakingPositionDtoTraderJoe.name) {
+      if (toUniversalDtoName === IntegrationStakingPositionDto.name) {
         universalDto = {
           address: item.address,
           poolId: item.poolId,

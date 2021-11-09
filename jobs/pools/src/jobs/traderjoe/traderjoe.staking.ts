@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import BigNumber from 'bignumber.js';
-import { classToPlain, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -16,12 +16,9 @@ import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.d
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
-import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toDecimals } from '../../utils/number';
 import { concatStrings } from '../../utils/string';
-import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
-import { ERC20Token } from '../dto/common';
 import { DbMapping } from './dbmapping';
 import {
   APRStats,
@@ -30,8 +27,6 @@ import {
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
-  IntegrationStakingPositionDtoTraderJoe,
-  StakingFeatureMapping,
 } from '../dto/staking.dto';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
@@ -62,24 +57,21 @@ export class TraderJoeStaking implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    jobMapping = await this.buildInitialMapping(jobMapping);
-    /*
+    
     if (!jobMapping.mapping) {
       jobMapping = await this.buildInitialMapping(jobMapping);
-    }*/
-    //console.log(jobMapping)
+    }
+
     jobMapping.mapping.forEach((jm) => {
-      //console.log(jm)
       this.mapping.push(IntegrationDataConverter.toDTO(jm));
     });
   }
 
   /** completed for masterchief contract */
-  //async buildInitialMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
-  async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
+  async buildInitialMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
     this.logger.log('building initial mapping', this.placeholder);
 
-    const stakingFeatures: IntegrationStakingPositionDtoTraderJoe[] = [];
+    const stakingFeatures: IntegrationStakingPositionDto[] = [];
 
     const accountTokenDto: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
       TraderjoeAddresses.joe,
@@ -110,8 +102,6 @@ export class TraderJoeStaking implements JobInterface {
     for (const {poolsInfo, chiefContract} of poolsInfoArray) {
       for (const address of poolsInfo.keys()) {
         try {
-          
-
           const poolTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
             address,
             this.chain,
@@ -137,27 +127,27 @@ export class TraderJoeStaking implements JobInterface {
               stakingToken.tokens.push(poolToken);
             });
           }
-          let stakingPoolFeature: IntegrationStakingPositionDtoTraderJoe;
+          let stakingPoolFeature: IntegrationStakingPositionDto;
 
           if (chiefContract === TraderjoeAddresses.chiefV2) {
             stakingPoolFeature = plainToClass(
-              IntegrationStakingPositionDtoTraderJoe,
+              IntegrationStakingPositionDto,
               {
                 address: chiefContract,
                 poolId: poolsInfo.get(address).id.toString(),
                 poolName: null,
-                rewardTokens: [rewardTokenJOE],
+                rewards: [rewardTokenJOE],
                 stakingToken: stakingToken,
               },
             );
           } else {
             stakingPoolFeature = plainToClass(
-              IntegrationStakingPositionDtoTraderJoe,
+              IntegrationStakingPositionDto,
               {
                 address: chiefContract,
                 poolId: poolsInfo.get(address).id.toString(),
                 poolName: null,
-                rewardTokens: [rewardTokenJOE, rewardTokenAVAX],
+                rewards: [rewardTokenJOE, rewardTokenAVAX],
                 stakingToken: stakingToken,
               },
             );
@@ -180,10 +170,9 @@ export class TraderJoeStaking implements JobInterface {
 
     jobMapping.mapping = mappings;
     
-    //const updatedMapping = await this.storeService.updateMapping(jobMapping);
-    //TrackedVaultsMap.add(updatedMapping);
-    //return updatedMapping;
-    return jobMapping;
+    const updatedMapping = await this.storeService.updateMapping(jobMapping);
+    TrackedVaultsMap.add(updatedMapping);
+    return updatedMapping;
   }
 
   private async getAllPoolInfo(chiefContract: TraderjoeAddresses): Promise<Map<string, MasterchiefPoolInfoTraderJoeResponse>> {
@@ -208,7 +197,7 @@ export class TraderJoeStaking implements JobInterface {
 
     const calls = new Map<string, CallData>();
     for (let i = 0; i < poolLengthResult; i++) {
-      const mappedDTO = plainToClass(IntegrationStakingPositionDtoTraderJoe, {});
+      const mappedDTO = plainToClass(IntegrationStakingPositionDto, {});
       mappedDTO.poolId = i;
 
       calls.set(
@@ -251,8 +240,8 @@ export class TraderJoeStaking implements JobInterface {
     let blackList = ['0x6bcddcfa89119b0f3ede7fa45c627dcb704ac9a8', '0x0208a6aa8ac236b5f5fd01d814b7eccf0d9aeb7e'];
 
     this.mapping.forEach((m) => {
-      if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
-        if (m.rewardTokens.length === 2) {
+      if (m instanceof IntegrationStakingPositionDto) {
+        if (m.rewards.length === 2) {
           batchCallsMap = new Map<string, CallData>([
             ...batchCallsMap.entries(),
             ...this.getCallsForPool(m, TraderjoeAddresses.chiefV3).entries(),
@@ -277,7 +266,6 @@ export class TraderJoeStaking implements JobInterface {
       this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.avax),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.avax),
     ]);
-    //console.log(multicallRsp)
     
     const totalAllocPointV2: BigNumber = multicallRsp.get(this.totalAllocPointLabel(TraderjoeAddresses.chiefV2)).output.data;
     const joePerBlockV2: BigNumber = multicallRsp.get(this.joePerBlockLabel(TraderjoeAddresses.chiefV2)).output.data;
@@ -288,47 +276,20 @@ export class TraderJoeStaking implements JobInterface {
     const blockTime = 2;
 
     this.mapping = await Promise.all(this.mapping.map(async (m) => {
-      if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
-        if (m.rewardTokens.length === 2) {
-          const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(m, TraderjoeAddresses.chiefV3)).output.data;
-          m.staked = toDecimals(balance, m.stakingToken.decimals);
-          m.stakingToken.balance = toDecimals(balance, m.stakingToken.decimals);
+      if (m instanceof IntegrationStakingPositionDto) {
+        if (m.rewards.length === 2) {
+          m = this.getDataFromMulticallRsp(multicallRsp, m, prices, TraderjoeAddresses.chiefV3);
 
-          // m.p
-          if (m.stakingToken.tokens.length === 2) {
-            const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(m)).output.data;
-            m.stakingToken.totalSupply = toDecimals(totalSupply, m.stakingToken.decimals);
-            const poolShare = m.stakingToken.balance / m.stakingToken.totalSupply;
-            const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(m)).output.data;
-            m.stakingToken.tokens.map((t) => {
-              t.reserve =
-                t.positionInPool === 0
-                  ? toDecimals(_reserve0, t.decimals)
-                  : toDecimals(_reserve1, t.decimals);
-              t.price = Number(prices[t.address]);
-              t.balance = t.reserve * poolShare;
-              t.value = t.balance * t.price;
-
-              m.stats.tvl += t.value;
-
-              return t;
-            });
-          } else {
-            m.stakingToken.price = Number(prices[m.stakingToken.address]);
-            m.stakingToken.value = m.stakingToken.balance * m.stakingToken.price;
-            m.stats.tvl += m.stakingToken.value;
-          }
-
-          m.rewardTokens[0].price = Number(prices[m.rewardTokens[0].address]);
-          m.rewardTokens[1].price = Number(prices[m.rewardTokens[1].address]);
+          m.rewards[0].price = Number(prices[m.rewards[0].address]);
+          m.rewards[1].price = Number(prices[m.rewards[1].address]);
 
           const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV3)).output.data;
 
           const aprStats: APRStats = {
             totalAllocPoints: totalAllocPointV3,
             poolAllocPoints: allocPoint,
-            rewardTokenPerBlock: toDecimals(joePerBlockV3, m.rewardTokens[0].decimals) * blockTime,
-            rewardTokenPrice: m.rewardTokens[0].price,
+            rewardTokenPerBlock: toDecimals(joePerBlockV3, m.rewards[0].decimals) * blockTime,
+            rewardTokenPrice: m.rewards[0].price,
             blockTime: blockTime,
             farmingPoolTVL: m.stats.tvl,
           };
@@ -336,17 +297,7 @@ export class TraderJoeStaking implements JobInterface {
           const { rewarder } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV3)).output.data;
           
           if (rewarder !== TraderjoeAddresses.avax && !blackList.includes(rewarder.toLowerCase())) {
-            console.log(rewarder);
             const calls: Map<string, CallData> = new Map<string, CallData>();
-            calls.set(concatStrings(Abis.balance.name, rewarder), {
-              address: rewarder,
-              abi: Abis.balance,
-              input: {
-                data: [],
-              },
-              output: {},
-            });
-            
             calls.set(concatStrings(Abis.rewardToken.name, rewarder), {
               address: rewarder,
               abi: Abis.rewardToken,
@@ -374,60 +325,30 @@ export class TraderJoeStaking implements JobInterface {
             };
             
             m.stats.apr.push(this.calculateAPR(aprStats));
-
             m.stats.apr.push(this.calculateAPRBonus(aprStatsBonus));
-            //console.log(this.calculateAPRBonus(aprStatsBonus))
-            console.log(m)
           } else {
             m.stats.apr.push(this.calculateAPR(aprStats));
           }
           
         } else {
-          const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(m, TraderjoeAddresses.chiefV2)).output.data;
-          m.staked = toDecimals(balance, m.stakingToken.decimals);
-          m.stakingToken.balance = toDecimals(balance, m.stakingToken.decimals);
-
-          // m.p
-          if (m.stakingToken.tokens.length === 2) {
-            const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(m)).output.data;
-            m.stakingToken.totalSupply = toDecimals(totalSupply, m.stakingToken.decimals);
-            const poolShare = m.stakingToken.balance / m.stakingToken.totalSupply;
-            const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(m)).output.data;
-
-            m.stakingToken.tokens.map((t) => {
-              t.reserve =
-                t.positionInPool === 0
-                  ? toDecimals(_reserve0, t.decimals)
-                  : toDecimals(_reserve1, t.decimals);
-              t.price = Number(prices[t.address]);
-              t.balance = t.reserve * poolShare;
-              t.value = t.balance * t.price;
-
-              m.stats.tvl += t.value;
-
-              return t;
-            });
-          } else {
-            m.stakingToken.price = Number(prices[m.stakingToken.address]);
-            m.stakingToken.value = m.stakingToken.balance * m.stakingToken.price;
-            m.stats.tvl += m.stakingToken.value;
-          }
-
-          m.rewardTokens[0].price = Number(prices[m.rewardTokens[0].address]);
+          m = this.getDataFromMulticallRsp(multicallRsp, m, prices, TraderjoeAddresses.chiefV2);
+          
+          m.rewards[0].price = Number(prices[m.rewards[0].address]);
 
           const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV2)).output.data;
 
           const aprStats: APRStats = {
             totalAllocPoints: totalAllocPointV2,
             poolAllocPoints: allocPoint,
-            rewardTokenPerBlock: toDecimals(joePerBlockV2, m.rewardTokens[0].decimals),
-            rewardTokenPrice: m.rewardTokens[0].price,
+            rewardTokenPerBlock: toDecimals(joePerBlockV2, m.rewards[0].decimals),
+            rewardTokenPrice: m.rewards[0].price,
             blockTime: blockTime,
             farmingPoolTVL: m.stats.tvl,
           };
 
           if (m.stakingToken.name === 'JoeBar') {
-            aprStats.farmingPoolTVL = m.stakingToken.balance * m.rewardTokens[0].price;
+            m.stats.tvl = m.stakingToken.balance * m.rewards[0].price;
+            aprStats.farmingPoolTVL = m.stats.tvl;
           }
           
           m.stats.apr.push(this.calculateAPR(aprStats));
@@ -435,12 +356,44 @@ export class TraderJoeStaking implements JobInterface {
         return m;
       }
     }));
-    //this.logger.log(this.mapping)
 
     return this.mapping;
   }
 
-  private getCallsForPool(stakingPosition: IntegrationStakingPositionDtoTraderJoe, chiefContract: TraderjoeAddresses) {
+  private getDataFromMulticallRsp(multicallRsp, stakingPos: IntegrationStakingPositionDto, prices, chiefContract: TraderjoeAddresses) {
+    const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(stakingPos, chiefContract)).output.data;
+    stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals);
+    stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
+
+    // m.p
+    if (stakingPos.stakingToken.tokens.length === 2) {
+      const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(stakingPos)).output.data;
+      stakingPos.stakingToken.totalSupply = toDecimals(totalSupply, stakingPos.stakingToken.decimals);
+      const poolShare = stakingPos.stakingToken.balance / stakingPos.stakingToken.totalSupply;
+      const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output.data;
+
+      stakingPos.stakingToken.tokens.map((t) => {
+        t.reserve =
+          t.positionInPool === 0
+            ? toDecimals(_reserve0, t.decimals)
+            : toDecimals(_reserve1, t.decimals);
+        t.price = Number(prices[t.address]);
+        t.balance = t.reserve * poolShare;
+        t.value = t.balance * t.price;
+
+        stakingPos.stats.tvl += t.value;
+
+        return t;
+      });
+    } else {
+      stakingPos.stakingToken.price = Number(prices[stakingPos.stakingToken.address]);
+      stakingPos.stakingToken.value = stakingPos.stakingToken.balance * stakingPos.stakingToken.price;
+      stakingPos.stats.tvl += stakingPos.stakingToken.value;
+    }
+    return stakingPos;
+  }
+
+  private getCallsForPool(stakingPosition: IntegrationStakingPositionDto, chiefContract: TraderjoeAddresses) {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
     // reserves of lp token
@@ -518,7 +471,7 @@ export class TraderJoeStaking implements JobInterface {
   private getPricedTokensSet(): Set<string> {
     const addressesSet: Set<string> = new Set<string>();
     this.mapping.forEach((m) => {
-      if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
+      if (m instanceof IntegrationStakingPositionDto) {
         if (m.stakingToken.tokens.length === 2) {
           m.stakingToken.tokens.forEach((t) => {
             addressesSet.add(t.address);
@@ -527,9 +480,9 @@ export class TraderJoeStaking implements JobInterface {
       } else {
         addressesSet.add(m.stakingToken.address);
       }
-      addressesSet.add(m.rewardTokens[0].address);
+      addressesSet.add(m.rewards[0].address);
       
-      if (m.rewardTokens.length === 2) addressesSet.add(m.rewardTokens[1].address);
+      if (m.rewards.length === 2) addressesSet.add(m.rewards[1].address);
     });
     return addressesSet;
   }
@@ -546,7 +499,6 @@ export class TraderJoeStaking implements JobInterface {
       .div(totalAllocPoints)
       .times(rewardTokenPerBlock)
       .times(rewardTokenPrice); 
-    //console.log(`${totalAllocPoints} + ${poolAllocPoints} + ${rewardTokenPerBlock} + ${blockTime} + ${farmingPoolTVL}`)
     const aprPerBlock = poolRewardPerBlock.div(farmingPoolTVL).toNumber() * 100;
     const blocksPerYear = (86400 * 365) / blockTime;
     return aprPerBlock * blocksPerYear;
@@ -564,15 +516,15 @@ export class TraderJoeStaking implements JobInterface {
     return aprPerBlock * blocksPerYear;
   }
 
-  private getReservesLabel(stakingPosition: IntegrationStakingPositionDtoTraderJoe) {
+  private getReservesLabel(stakingPosition: IntegrationStakingPositionDto) {
     return concatStrings(Abis.getReserves.name, stakingPosition.stakingToken.address);
   }
 
-  private totalSupplyLabel(stakingPosition: IntegrationStakingPositionDtoTraderJoe) {
+  private totalSupplyLabel(stakingPosition: IntegrationStakingPositionDto) {
     return concatStrings(Abis.totalSupply.name, stakingPosition.stakingToken.address);
   }
 
-  private balanceOfLabel(stakingPosition: IntegrationStakingPositionDtoTraderJoe, chiefContract: TraderjoeAddresses) {
+  private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto, chiefContract: TraderjoeAddresses) {
     return concatStrings(
       Abis.balanceOf.name,
       chiefContract,
@@ -580,7 +532,7 @@ export class TraderJoeStaking implements JobInterface {
     );
   }
 
-  private poolInfoLabel(stakingPosition: IntegrationStakingPositionDtoTraderJoe, chiefContract: TraderjoeAddresses) {
+  private poolInfoLabel(stakingPosition: IntegrationStakingPositionDto, chiefContract: TraderjoeAddresses) {
     return concatStrings(chiefContract === TraderjoeAddresses.chiefV2 ? Abis.poolInfoV2.name : Abis.poolInfoV3.name, TraderjoeAddresses.chiefV3, stakingPosition.poolId);
   }
 

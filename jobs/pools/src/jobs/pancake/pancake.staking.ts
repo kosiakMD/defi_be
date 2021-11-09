@@ -65,10 +65,11 @@ export class PancakeStaking implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
+    
     if (!jobMapping.mapping) {
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
-
+    
     jobMapping.mapping.forEach((jm) => {
       this.mapping.push(IntegrationDataConverter.toDTO(jm));
     });
@@ -127,7 +128,7 @@ export class PancakeStaking implements JobInterface {
             address: PancakeAddresses.chief,
             poolId: poolsInfo.get(address).id.toString(),
             poolName: null,
-            rewardTokens: [rewardToken],
+            rewards: [rewardToken],
             stakingToken: stakingToken,
           },
         );
@@ -147,7 +148,7 @@ export class PancakeStaking implements JobInterface {
     }
 
     jobMapping.mapping = mappings;
-
+    
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -202,7 +203,6 @@ export class PancakeStaking implements JobInterface {
         lastRewardBlock: poolInfo.output.data.lastRewardBlock,
         accCakePerShare: poolInfo.output.data.accCakePerShare,
       });
-      console.log(poolInfo.output.data.allocPoint.toString())
 
       i++;
     }
@@ -217,13 +217,15 @@ export class PancakeStaking implements JobInterface {
     // todo: this unique ids must be moved to other place
     const rewardTokenUniqueId = concatStrings(this.chain, PancakeAddresses.cake);
     const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-      stakingPosition.rewardTokens[0],
+      stakingPosition.rewards[0],
       rewardTokenUniqueId,
     );
-    mappedDto.rewardToken = {
-      dbId: rewardTokenItem.id,
-      dtoName: stakingPosition.rewardTokens[0].constructor.name,
-    };
+    mappedDto.rewards = [
+      {
+        dbId: rewardTokenItem.id,
+        dtoName: stakingPosition.rewards[0].constructor.name,
+      }
+    ];
 
     /** staking token */
     const stakingTokenUniqueId = concatStrings(this.chain, stakingPosition.stakingToken.address);
@@ -370,15 +372,15 @@ export class PancakeStaking implements JobInterface {
           m.stats.tvl += m.stakingToken.value;
         }
 
-        m.rewardTokens[0].price = Number(prices[m.rewardTokens[0].address]);
+        m.rewards[0].price = Number(prices[m.rewards[0].address]);
 
         const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m)).output.data;
 
         const aprStats: APRStats = {
           totalAllocPoints: totalAllocPoint,
           poolAllocPoints: allocPoint,
-          rewardTokenPerBlock: toDecimals(cakePerBlock, m.rewardTokens[0].decimals),
-          rewardTokenPrice: m.rewardTokens[0].price,
+          rewardTokenPerBlock: toDecimals(cakePerBlock, m.rewards[0].decimals),
+          rewardTokenPrice: m.rewards[0].price,
           blockTime: 3,
           farmingPoolTVL: m.stats.tvl,
         };
@@ -509,7 +511,7 @@ export class PancakeStaking implements JobInterface {
       } else {
         addressesSet.add(m.stakingToken.address);
       }
-      addressesSet.add(m.rewardTokens[0].address);
+      addressesSet.add(m.rewards[0].address);
     });
     return addressesSet;
   }

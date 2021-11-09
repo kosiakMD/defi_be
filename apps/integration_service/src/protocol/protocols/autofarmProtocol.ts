@@ -25,7 +25,7 @@ import { PriceService } from '../../price/price.service';
 import { decimalsDivider } from '../../utils/util';
 import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
-import { AutofarmApiPools, AutofarmUser, StakingInterface } from './autofarm/autofarm.interfaces';
+import { AutofarmApiPools, StakingInterface } from './autofarm/autofarm.interfaces';
 import { LocalMultiCall } from './autofarm/multicall/local.multi.call';
 import { autofarmFactoriesMap, autofarmRewardToken, lpTokenAbi } from './autofarm/multicall/util';
 import { AutofarmApiService } from './autofarm/services/autofarm.api.service';
@@ -62,33 +62,19 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
   ): Promise<StakingPositionResponseDto[]> {
     try {
       const addressLowerCase = address.toLowerCase();
-      const autofarmUsers: AutofarmUser[] = await this.subgraph.getSubgraphData([addressLowerCase]);
-
-      const stakedPosition: StakingInterface[] = [];
-      autofarmUsers.forEach((user) =>
-        user.balances.forEach((balance) => {
-          if (Number(balance.amount) >= 0) {
-            stakedPosition.push({
-              poolNum: Number(balance.id.slice(balance.id.indexOf('-') + 1)),
-              userAddress: user.id,
-              amount: balance.amount,
-            });
-          }
-        }),
-      );
 
       const web3Provider = this.web3Provider.getForChain(chain.abbr);
       const multicall = new LocalMultiCall(web3Provider, this.logger);
+      const stakedPosition: StakingInterface[] = [];
+      await multicall.getStakedPositions(stakedPosition, addressLowerCase, chain.abbr);
       const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chain.abbr);
       await Promise.all([
-        multicall.getVaultUsersInfo(stakedPosition, chain.abbr),
+        multicall.getVaultUsersRewards(stakedPosition, chain.abbr),
         multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
       ]);
 
       this.logger.log(
-        `Subgraph pools numbers - ${stakedPosition
-          ?.map((position) => position.poolNum)
-          .toString()}`,
+        `Staked pools numbers - ${stakedPosition?.map((position) => position.poolNum).toString()}`,
       );
 
       await multicall.getTotalSupplies(poolsAddresses, stakedPosition);
@@ -142,7 +128,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
         chain.abbr,
       );
 
-      return this.getResponse(autofarmUsers, stakingPositionsMap);
+      return this.getResponse(stakingPositionsMap);
     } catch (e) {
       this.logger.error(e.message);
       throw e;
@@ -150,19 +136,14 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
   }
 
   private getResponse(
-    autofarmUsers: AutofarmUser[],
     stakingPositionsMap: Map<string, IntegrationStakingPositionDto[]>,
   ): StakingPositionResponseDto[] {
     const responseData: StakingPositionResponseDto[] = [];
-    for (const [key, value] of stakingPositionsMap.entries()) {
-      const autofarmUser = autofarmUsers.find((user) => user.id === key);
+    stakingPositionsMap.forEach((value) => {
       const stakingResponse = new StakingPositionResponseDto();
-      // stakingResponse.userAddress = key;
       stakingResponse.stakingPositions = value;
-      stakingResponse.totalValue = Number(autofarmUser?.totalAmount) || null;
-
       responseData.push(stakingResponse);
-    }
+    });
     return responseData;
   }
 

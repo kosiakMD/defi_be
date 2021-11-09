@@ -533,4 +533,6 @@ export const autofarmFactoriesMap: Map<ChainAbbrEnum, string> = new Map([
 
 export const autofarmAUTOFactory = '0x763a05bdb9f8946d8c3fa72d1e0d3f5e68647e5c';
 
+export const autofarmPoolLength = 520;
+
 export const autofarmRewardToken = '0xa184088a740c695e156f91f5cc086a06bb78b827';

@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
+  AutofarmProtocolEnum,
   Borrowing,
   BorrowingPosition,
   ChainDto,
@@ -145,7 +146,7 @@ export class ProtocolService {
         // result pools
         rawPools && this.handleResultPools(rawPools, result, chainId, protocol),
         // result staking
-        rawStaking && this.handleResultStaking(rawStaking, result, chainId),
+        rawStaking && this.handleResultStaking(rawStaking, result, chainId, protocol),
         // result lending
         rawLending && this.handleResultLending(rawLending, result),
         // result borrowing
@@ -186,9 +187,10 @@ export class ProtocolService {
     rawStaking,
     result: IntegrationFeaturesDataDto,
     chainId: ChainId,
+    protocol: BasicProtocol,
   ): Promise<void> {
     try {
-      result[FeatureEnum.staking] = await this.transformStaking(rawStaking, chainId);
+      result[FeatureEnum.staking] = await this.transformStaking(rawStaking, chainId, protocol);
     } catch (e) {
       this.logger.error(e, 'handleResultStaking');
       result.errors.push(e.message);
@@ -263,6 +265,7 @@ export class ProtocolService {
   protected async transformStaking(
     stakingPositions: IntegrationStakingPositionDto[],
     chainId: ChainId,
+    protocol: BasicProtocol,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
     const result: FeatureResultDto<IntegrationStakingPositionDto> = {
       totalValue: 0,
@@ -271,7 +274,9 @@ export class ProtocolService {
     };
 
     try {
-      await this.handleStakingMissedData(stakingPositions, chainId);
+      if (protocol.name !== AutofarmProtocolEnum.autofarm) {
+        await this.handleStakingMissedData(stakingPositions, chainId);
+      }
     } catch (e) {
       this.logger.error(e);
       result.errors.push(e.message);

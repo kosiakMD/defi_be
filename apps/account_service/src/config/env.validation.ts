@@ -100,6 +100,37 @@ export const validationSchema = Joi.object({
   ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string()
     .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
     .optional(),
+  XDAI_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  XDAI_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  CELO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  CELO_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  MOONRIVER_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  MOONRIVER_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  HARMONY_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  HARMONY_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  HECO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  HECO_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //
     .default('eu-central-1')

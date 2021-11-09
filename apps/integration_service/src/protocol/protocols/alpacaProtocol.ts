@@ -48,13 +48,11 @@ import AbstractProtocol from './abstractProtocol';
 import {
   AlpacaStakingInterface,
   AlpacaTokenInfo,
-  AlpacaUser,
   LeverageFarmingInterface,
 } from './alpaca/alpaca.interfaces';
 import { LocalMultiCall } from './alpaca/multicall/local.multi.call';
 import { alpacaFactoriesMap, alpacaLegacyToken, alpacaRewardToken } from './alpaca/multicall/util';
 import { AlpacaApiService } from './alpaca/services/alpaca.api.service';
-import { AlpacaSubgraph } from './alpaca/services/alpaca.subgraph';
 import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
@@ -70,7 +68,6 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
   public feeRate = 0.003;
 
   constructor(
-    protected readonly alpacaSubgraph: AlpacaSubgraph,
     protected readonly web3Provider: Web3Provider,
     protected readonly priceService: PriceService,
     protected readonly accountService: AccountService,
@@ -85,12 +82,10 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
   // override
   async getDataByAddresses(address: Address, chain: ChainDto): Promise<BaseData[]> {
     const lowerCaseAddress = address.toLowerCase();
-    const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([lowerCaseAddress]);
-    const stakedPosition: AlpacaStakingInterface[] = [];
-    this.getStakingPosition(alpacaUsers, stakedPosition);
 
     const webProvider = this.web3Provider.getForChain(chain.abbr);
     const localMultiCall = new LocalMultiCall(webProvider, this.logger);
+    const stakedPosition = await localMultiCall.getStakingPositions(chain.abbr, lowerCaseAddress);
     const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chain.abbr);
 
     const [lendingTokens, leverageFarming] = await Promise.all([
@@ -373,23 +368,6 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
       .times(erc20Token.price)
       .toNumber();
     return erc20Token;
-  }
-
-  private getStakingPosition(
-    alpacaUsers: AlpacaUser[],
-    stakedPosition: AlpacaStakingInterface[],
-  ): void {
-    alpacaUsers.forEach((user) =>
-      user.balances.forEach((balance) => {
-        if (Number(balance.balance) >= 0) {
-          stakedPosition.push({
-            poolNum: Number(balance.id.slice(balance.id.indexOf('-') + 1)),
-            userAddress: user.id,
-            amount: balance.balance,
-          });
-        }
-      }),
-    );
   }
 
   private static getSinglePoolToken(

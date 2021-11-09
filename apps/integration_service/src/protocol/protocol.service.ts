@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
+  AlpacaProtocolEnum,
   AutofarmProtocolEnum,
   Borrowing,
   BorrowingPosition,
@@ -274,7 +275,10 @@ export class ProtocolService {
     };
 
     try {
-      if (protocol.name !== AutofarmProtocolEnum.autofarm) {
+      if (
+        protocol.name !== AlpacaProtocolEnum.alpaca &&
+        protocol.name !== AutofarmProtocolEnum.autofarm
+      ) {
         await this.handleStakingMissedData(stakingPositions, chainId);
       }
     } catch (e) {
@@ -562,7 +566,7 @@ export class ProtocolService {
     const rewardTokenAddress = stakingPositions[0]?.rewardToken.address;
     addressesToFetchPrice.push(rewardTokenAddress);
     // add pool tokens
-    stakingPositions.forEach(({ stakingToken }) => {
+    stakingPositions?.forEach(({ stakingToken }) => {
       const { tokens, address: stakingAddress } = stakingToken;
       addressesToFetchPrice.push(stakingAddress);
       tokensToFetchPrice.set(stakingAddress, stakingToken);

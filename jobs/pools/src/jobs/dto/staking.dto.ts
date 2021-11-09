@@ -42,7 +42,7 @@ export class IntegrationStakingPositionDto {
   staked: number = null;
   stats: Stats = plainToClass(Stats, {});
   stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
-  rewardToken: IntegrationClaimableTokenDto = plainToClass(IntegrationClaimableTokenDto, {});
+  rewardTokens: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
 }
 
 export class IntegrationStakingPositionDtoTraderJoe {

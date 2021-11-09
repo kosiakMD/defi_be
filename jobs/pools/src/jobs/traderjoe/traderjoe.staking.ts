@@ -250,7 +250,7 @@ export class TraderJoeStaking implements JobInterface {
 
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
-    //this.logger.log(this.mapping);
+
     this.mapping.forEach((m) => {
       if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
         if (m.rewardTokens.length === 2) {
@@ -286,7 +286,7 @@ export class TraderJoeStaking implements JobInterface {
     const totalAllocPointV3: BigNumber = multicallRsp.get(this.totalAllocPointLabel(TraderjoeAddresses.chiefV3)).output.data;
     const joePerBlockV3: BigNumber = multicallRsp.get(this.joePerBlockLabel(TraderjoeAddresses.chiefV3)).output.data;
 
-    this.mapping = this.mapping.map((m) => {
+    this.mapping = await Promise.all(this.mapping.map(async (m) => {
       if (m instanceof IntegrationStakingPositionDtoTraderJoe) {
         if (m.rewardTokens.length === 2) {
           const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(m, TraderjoeAddresses.chiefV3)).output.data;
@@ -320,8 +320,6 @@ export class TraderJoeStaking implements JobInterface {
 
           m.rewardTokens[0].price = Number(prices[m.rewardTokens[0].address]);
           m.rewardTokens[1].price = Number(prices[m.rewardTokens[1].address]);
-          //console.log(multicallRsp.get(this.poolInfoLabel(m)).output.data)
-          //console.log(this.poolInfoLabel(m));
 
           const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV3)).output.data;
 
@@ -333,6 +331,56 @@ export class TraderJoeStaking implements JobInterface {
             blockTime: 2,
             farmingPoolTVL: m.stats.tvl,
           };
+
+          const { rewarder } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV3)).output.data;
+          
+          if (rewarder === '0xeB1F569271B2997779e11C5dF6F457753D6e0B55') {
+            console.log(rewarder);
+            const calls: Map<string, CallData> = new Map<string, CallData>();
+            calls.set(concatStrings(Abis.balance.name, rewarder), {
+              address: rewarder,
+              abi: Abis.balance,
+              input: {
+                data: [],
+              },
+              output: {},
+            });
+            
+            calls.set(concatStrings(Abis.rewardToken.name, rewarder), {
+              address: rewarder,
+              abi: Abis.rewardToken,
+              input: {
+                data: [],
+              },
+              output: {},
+            });
+            calls.set(concatStrings(Abis.tokenPerSec.name, rewarder), {
+              address: rewarder,
+              abi: Abis.tokenPerSec,
+              input: {
+                data: [],
+              },
+              output: {},
+            });
+            
+            const res = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
+            console.log(res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data)
+            console.log(res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase())
+            console.log(Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()]))
+            console.log((res.get(concatStrings(Abis.balance.name, rewarder)).output.data * Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()])).toString())
+
+            const aprStats2: APRStats = {
+              totalAllocPoints: totalAllocPointV3,
+              poolAllocPoints: allocPoint,
+              rewardTokenPerBlock: toDecimals(res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data, 18) * 2,
+              rewardTokenPrice: Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()]),
+              blockTime: 2,
+              farmingPoolTVL: res.get(concatStrings(Abis.balance.name, rewarder)).output.data * Number(prices[res.get(concatStrings(Abis.rewardToken.name, rewarder)).output.data.toLowerCase()]),
+            };
+            //console.log(m)
+            console.log(this.calculateAPR(aprStats2))
+          }
+
           m.stats.apr = this.calculateAPR(aprStats);
 
           //console.log(m)
@@ -348,6 +396,7 @@ export class TraderJoeStaking implements JobInterface {
             m.stakingToken.totalSupply = toDecimals(totalSupply, m.stakingToken.decimals);
             const poolShare = m.stakingToken.balance / m.stakingToken.totalSupply;
             const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(m)).output.data;
+
             m.stakingToken.tokens.map((t) => {
               t.reserve =
                 t.positionInPool === 0
@@ -368,9 +417,6 @@ export class TraderJoeStaking implements JobInterface {
           }
 
           m.rewardTokens[0].price = Number(prices[m.rewardTokens[0].address]);
-          
-          //console.log(multicallRsp.get(this.poolInfoLabel(m)).output.data)
-          //console.log(this.poolInfoLabel(m));
 
           const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV2)).output.data;
 
@@ -382,13 +428,21 @@ export class TraderJoeStaking implements JobInterface {
             blockTime: 2,
             farmingPoolTVL: m.stats.tvl,
           };
+
+          if (m.stakingToken.name === 'JoeBar') {
+            aprStats.farmingPoolTVL = m.stakingToken.balance * m.rewardTokens[0].price;
+            //aprStats.farmingPoolTVL = 167650654;
+            //console.log(this.calculateAPR(aprStats));
+            //console.log(aprStats)
+          }
+
           m.stats.apr = this.calculateAPR(aprStats);
         }
         return m;
       }
 
-    });
-    console.log(this.mapping)
+    }));
+    //this.logger.log(this.mapping)
 
     return this.mapping;
   }
@@ -481,6 +535,7 @@ export class TraderJoeStaking implements JobInterface {
         addressesSet.add(m.stakingToken.address);
       }
       addressesSet.add(m.rewardTokens[0].address);
+      addressesSet.add('0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7');
       if (m.rewardTokens.length === 2) addressesSet.add(m.rewardTokens[1].address);
     });
     return addressesSet;

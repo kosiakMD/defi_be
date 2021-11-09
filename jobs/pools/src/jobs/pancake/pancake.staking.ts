@@ -127,7 +127,7 @@ export class PancakeStaking implements JobInterface {
             address: PancakeAddresses.chief,
             poolId: poolsInfo.get(address).id.toString(),
             poolName: null,
-            rewardToken: rewardToken,
+            rewardTokens: [rewardToken],
             stakingToken: stakingToken,
           },
         );
@@ -217,12 +217,12 @@ export class PancakeStaking implements JobInterface {
     // todo: this unique ids must be moved to other place
     const rewardTokenUniqueId = concatStrings(this.chain, PancakeAddresses.cake);
     const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-      stakingPosition.rewardToken,
+      stakingPosition.rewardTokens[0],
       rewardTokenUniqueId,
     );
     mappedDto.rewardToken = {
       dbId: rewardTokenItem.id,
-      dtoName: stakingPosition.rewardToken.constructor.name,
+      dtoName: stakingPosition.rewardTokens[0].constructor.name,
     };
 
     /** staking token */
@@ -370,15 +370,15 @@ export class PancakeStaking implements JobInterface {
           m.stats.tvl += m.stakingToken.value;
         }
 
-        m.rewardToken.price = Number(prices[m.rewardToken.address]);
+        m.rewardTokens[0].price = Number(prices[m.rewardTokens[0].address]);
 
         const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m)).output.data;
 
         const aprStats: APRStats = {
           totalAllocPoints: totalAllocPoint,
           poolAllocPoints: allocPoint,
-          rewardTokenPerBlock: toDecimals(cakePerBlock, m.rewardToken.decimals),
-          rewardTokenPrice: m.rewardToken.price,
+          rewardTokenPerBlock: toDecimals(cakePerBlock, m.rewardTokens[0].decimals),
+          rewardTokenPrice: m.rewardTokens[0].price,
           blockTime: 3,
           farmingPoolTVL: m.stats.tvl,
         };
@@ -509,7 +509,7 @@ export class PancakeStaking implements JobInterface {
       } else {
         addressesSet.add(m.stakingToken.address);
       }
-      addressesSet.add(m.rewardToken.address);
+      addressesSet.add(m.rewardTokens[0].address);
     });
     return addressesSet;
   }

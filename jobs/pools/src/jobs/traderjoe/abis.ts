@@ -89,4 +89,49 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+  static readonly balance: AbiItem = {
+    type:"function",
+    stateMutability:"view",
+    outputs:[
+      {
+        type:"uint256",
+        name:"",
+        internalType:"uint256"
+      }
+    ],
+    name:"balance",
+    inputs:[
+      
+    ]
+  }
+  static readonly rewardToken: AbiItem = {
+    type:"function",
+    stateMutability:"view",
+    outputs:[
+      {
+        type:"address",
+        name:"",
+        internalType:"contract IERC20"
+      }
+    ],
+    name:"rewardToken",
+    inputs:[
+      
+    ]
+  }
+  static readonly tokenPerSec: AbiItem = {
+    type:"function",
+    stateMutability:"view",
+    outputs:[
+      {
+        type:"uint256",
+        name:"",
+        internalType:"uint256"
+      }
+    ],
+    name:"tokenPerSec",
+    inputs:[
+      
+    ]
+  }
 }

@@ -104,7 +104,7 @@ export class JobsRunner {
     jobPlaceholdersSet.add('2_PancakeV2_pools');
     jobPlaceholdersSet.add('6_TraderJoe_pools');
     jobPlaceholdersSet.add('6_TraderJoe_staking');
-    jobPlaceholdersSet.add('6_TraderJoeV3_staking');
+    
     return jobPlaceholdersSet;
   }
 }

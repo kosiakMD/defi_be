@@ -23,6 +23,7 @@ import {
   Logger,
   ProtocolName,
   ResultStatus,
+  SpookySwapProtocolEnum,
 } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
@@ -276,8 +277,10 @@ export class ProtocolService {
 
     try {
       if (
+        // better to avoid this kostil :)
         protocol.name !== AlpacaProtocolEnum.alpaca &&
-        protocol.name !== AutofarmProtocolEnum.autofarm
+        protocol.name !== AutofarmProtocolEnum.autofarm &&
+        protocol.name !== SpookySwapProtocolEnum.SpookySwap
       ) {
         await this.handleStakingMissedData(stakingPositions, chainId);
       }

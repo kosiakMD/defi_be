@@ -109,15 +109,12 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('XDAI_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.harm:
         return this.config.get<string>('HARMONY_BALANCES_CHECKER_ADDRESS');
-      /**
-       * Uncomment when BalanceChecker will be deployed
-       */
-      // case ChainIdEnum.celo:
-      //   return this.config.get<string>('CELO_BALANCES_CHECKER_ADDRESS');
-      // case ChainIdEnum.mriver:
-      //   return this.config.get<string>('MOONRIVER_BALANCES_CHECKER_ADDRESS');
-      // case ChainIdEnum.heco:
-      //   return this.config.get<string>('HECO_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.celo:
+        return this.config.get<string>('CELO_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.mriver:
+        return this.config.get<string>('MOONRIVER_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.heco:
+        return this.config.get<string>('HECO_BALANCES_CHECKER_ADDRESS');
     }
   }
 

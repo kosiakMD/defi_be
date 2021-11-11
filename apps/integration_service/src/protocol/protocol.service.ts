@@ -21,6 +21,7 @@ import {
   LiquidityPoolFeatureDto,
   LiquidityPosition,
   Logger,
+  PancakeProtocolEnum,
   ProtocolName,
   ResultStatus,
   SpookySwapProtocolEnum,
@@ -280,7 +281,8 @@ export class ProtocolService {
         // better to avoid this kostil :)
         protocol.name !== AlpacaProtocolEnum.alpaca &&
         protocol.name !== AutofarmProtocolEnum.autofarm &&
-        protocol.name !== SpookySwapProtocolEnum.SpookySwap
+        protocol.name !== SpookySwapProtocolEnum.SpookySwap &&
+        protocol.name !== PancakeProtocolEnum.pancakeV2
       ) {
         await this.handleStakingMissedData(stakingPositions, chainId);
       }
@@ -330,6 +332,7 @@ export class ProtocolService {
       inputPool.poolTokens.forEach((token: PoolToken) => {
         const formattedToken = plainToClass(PoolTokenDto, {});
         objectUpdate(formattedToken, token, tokenDictionary, 'default');
+        formattedToken.balance = token['balance'] ? token['balance'] : formattedToken.balance;
         const { price, reserve, balance } = formattedToken;
         // value
         formattedToken.value = Number(balance) * price ?? null;
@@ -339,7 +342,6 @@ export class ProtocolService {
         if (reserve) {
           TVL += Number(reserve) * price;
         }
-
         tokens.push(formattedToken);
       });
 
@@ -364,8 +366,8 @@ export class ProtocolService {
       result.data.totalValue += userValue;
       // Pool
       const outPool: LiquidityPoolFeatureDto = plainToClass(LiquidityPoolFeatureDto, {
-        address: inputPool.pool.address,
-        name: inputPool.pool.name,
+        address: inputPool.pool ? inputPool.pool.address : inputPool['address'],
+        name: inputPool.pool?.name,
         lpToken: inputPool.lpToken,
         TVL: TVL,
         fee: {
@@ -392,9 +394,7 @@ export class ProtocolService {
 
       return resultArray;
     }, []);
-
     result.data.items = outputPools;
-
     return result;
   }
 

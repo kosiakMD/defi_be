@@ -50,6 +50,17 @@ export class AccountService {
     return data.data;
   }
 
+  async getBalancesPost(
+    addresses: Address[],
+    chains?: ChainIdEnum[],
+    assets?: Address[],
+  ): Promise<BalancesResponse> {
+    const data = await this.httpService
+      .post(this.getBalanceUrl, { addresses, chains, assets })
+      .toPromise();
+    return data.data;
+  }
+
   async getBalancesCovalent(
     addresses: Address[],
     chains?: ChainIdEnum[],

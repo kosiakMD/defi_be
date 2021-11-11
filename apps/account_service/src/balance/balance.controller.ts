@@ -1,9 +1,9 @@
-import { Controller, Get, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ChainIdEnum } from '@app/common';
 
-import { BalancesQueryDto, BalancesResponseDto } from './balance.dto';
+import { BalancesPostQueryDto, BalancesQueryDto, BalancesResponseDto } from './balance.dto';
 import { BalancesService } from './balances.service';
 import { BalancesResponse } from './interfaces/balance.interfaces';
 
@@ -45,6 +45,15 @@ export class BalanceController {
   @ApiResponse({ status: 200, type: BalancesResponseDto })
   getUserBalanceByAddresses(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
     const { addresses, chains, assets } = query;
+
+    return this.balancesService.getBalance(addresses, chains, assets);
+  }
+
+  @Post()
+  @ApiBody({ type: BalancesPostQueryDto })
+  @ApiResponse({ status: 200, type: BalancesResponseDto })
+  getUserBalanceByAddressesPost(@Body() body: BalancesPostQueryDto): Promise<BalancesResponse> {
+    const { addresses, chains, assets } = body;
 
     return this.balancesService.getBalance(addresses, chains, assets);
   }

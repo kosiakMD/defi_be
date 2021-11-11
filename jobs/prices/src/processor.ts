@@ -345,6 +345,10 @@ export function getAssetPairReserveValue(
 ) {
   const baseAssetReserve = getPairTokenReserve(baseAsset, reserves);
   const baseAssetPrice = baseTokesPriceMap.get(baseAsset.tokenAddress);
+  if (!baseAssetPrice || !baseAssetPrice.price) {
+    return;
+  }
+
   const reserveTokenUsd = new BN(baseAssetReserve) //
     .times(baseAssetPrice.price)
     .toNumber();

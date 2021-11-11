@@ -71,6 +71,11 @@ export class SpookySwapProtocol extends DataProviderProtocol {
     const originAddressesArray = addresses.toLowerCase().split(',');
     const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chain.id}_SpookySwap_pools`);
 
+    if (!pools) {
+      this.logger.error(`SpookySwap: No Pools Found! Chain: ${chain.id}`);
+      throw new Error('Failed to retrieve available liquidity pools');
+    }
+
     const web3Provider = this.web3Provider.getForChain(chain.abbr);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 

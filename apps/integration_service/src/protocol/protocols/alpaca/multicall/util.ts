@@ -635,6 +635,8 @@ export const alpacaFactoriesMap: Map<ChainAbbrEnum, string> = new Map([
   [ChainAbbrEnum.bsc, '0xa625ab01b08ce023b2a342dbb12a16f2c8489a8f'],
 ]);
 
+export const alpacaPoolsLength = 21;
+
 export const alpacaStakeContracts: string[] = [
   '0xd7d069493685a581d27824fc46eda46b7efc0063',
   '0x7c9e73d4c71dae564d41f78d56439bb4ba87592f',

@@ -9,7 +9,6 @@ import { AccountModule } from '../account/account.module';
 import { ChainModule } from '../chain/chain.module';
 import { PriceModule } from '../price/price.module';
 import { Web3Service } from '../quickswap/web3/web3.service';
-import { AmmPlgSubgraph } from '../sushiswap/ammPlgSubgraph';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
@@ -67,11 +66,6 @@ const ProtocolList = [
       inject: [ConfigService],
     }),
     ThegraphModule,
-    // PangolinModule,
-    // SushiswapModule,
-    // SpookyswapModule,
-    // AutofarmModule,
-    // QuickswapModule,
     ChainModule,
     PancakeModule, // TODO: m.b. delete for pancakeV1
   ],
@@ -83,7 +77,6 @@ const ProtocolList = [
     AlpacaApiService,
     AutofarmApiService,
     Web3ProviderService,
-    AmmPlgSubgraph,
   ],
   exports: [ProtocolService],
 })

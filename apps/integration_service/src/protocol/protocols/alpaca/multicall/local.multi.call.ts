@@ -2,7 +2,7 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { ChainAbbrEnum, Logger } from '@app/common';
+import { Address, ChainAbbrEnum, Logger } from '@app/common';
 
 import { MulticallContractFunctionEnum } from '../../../../multicall/multicall.enum';
 import {
@@ -15,6 +15,7 @@ import {
 import {
   alpacaFactoriesMap,
   alpacaLegacyToken,
+  alpacaPoolsLength,
   alpacaRewardToken,
   AlpacaStakeContractAbi,
   alpacaStakeContracts,
@@ -50,6 +51,33 @@ export class LocalMultiCall extends MultiCall {
       stakedTokensAddresses.add(i.stakeToken);
     });
     return stakedTokensAddresses;
+  }
+
+  async getStakingPositions(
+    chain: ChainAbbrEnum,
+    address: Address,
+  ): Promise<AlpacaStakingInterface[]> {
+    const inputs = [];
+    for (let i = 0; i < alpacaPoolsLength; i++) {
+      inputs.push({
+        target: alpacaFactoriesMap.get(chain),
+        function: 'userInfo',
+        args: [i, address],
+      });
+    }
+
+    const [, userInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
+    const stakingPositions: AlpacaStakingInterface[] = [];
+    userInfo.forEach((data, index) => {
+      if (!data.amount.isZero()) {
+        stakingPositions.push({
+          poolNum: index,
+          userAddress: address,
+          amount: data.amount.toString(),
+        });
+      }
+    });
+    return stakingPositions;
   }
 
   async getVaultUsersInfo(

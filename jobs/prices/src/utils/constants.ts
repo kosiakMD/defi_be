@@ -8,3 +8,17 @@ export enum TokensCategories {
   base = 'base',
   simple = 'simple',
 }
+
+export enum ChainIdEnum {
+  eth = 1,
+  bsc = 2,
+  plg = 3,
+  ftm = 4,
+  arbi = 5,
+  avax = 6,
+  xdai = 7,
+  celo = 8,
+  mriver = 9,
+  harm = 10,
+  heco = 11,
+}

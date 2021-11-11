@@ -68,7 +68,7 @@ export class AutofarmService {
       const multicall = new LocalMultiCall(web3Provider, this.logger);
       const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chain.abbr);
       await Promise.all([
-        multicall.getVaultUsersInfo(stakedPosition, chain.abbr),
+        multicall.getVaultUsersRewards(stakedPosition, chain.abbr),
         multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
       ]);
 

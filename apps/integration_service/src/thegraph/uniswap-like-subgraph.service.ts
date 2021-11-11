@@ -258,8 +258,7 @@ export class UniswapLikeSubgraph {
   }
 
   async getStakingPositions(addresses: string[]): Promise<StakingPositionResponse> {
-    const url = this.configService.get<string>('THEGRAPH_SUSHISWAP_STAKING_POSITIONS');
-    const addressesString = addresses.map((address) => `"${address}"`).join(',');
+    const url = this.configService.get<string>('SUSHISWAP_ETH_MASTERCHEF_SUBGRAPH_URL');
     return this.httpService
       .post(url, {
         operationName: GraphOperation.stakingPositions,
@@ -268,13 +267,13 @@ export class UniswapLikeSubgraph {
         },
         query: `
           query stakingPositionsQuery($addresses: [String]) {
-            users (where: {address_in:[${addressesString}], pool_not:null, amount_not:0}) {
-            id
-            pool {
+            users (where: {address_in: $addresses, pool_not:null, amount_not:0}) {
+              id
+              pool {
                 id
                 pair
-            }
-            amount
+              }
+              amount
             }
           }
         `,
@@ -318,7 +317,6 @@ export class UniswapLikeSubgraph {
 const pairFragment = `
   pair {
     id
-    totalSupply
     reserveUSD
     reserveETH
     trackedReserveETH

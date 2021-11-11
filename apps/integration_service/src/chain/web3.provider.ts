@@ -17,7 +17,7 @@ export class Web3Provider {
     const chainProviders: Record<string, ChainAbbrEnum> = {
       ['BSC_URL']: ChainAbbrEnum.bsc,
       ['ETH_URL']: ChainAbbrEnum.eth,
-      ['FTM_RPC_URL']: ChainAbbrEnum.ftm,
+      ['FTM_URL']: ChainAbbrEnum.ftm,
       ['POLYGON_RPC_URL']: ChainAbbrEnum.plg,
     };
     Object.entries(chainProviders).forEach(([url, chain]) => {

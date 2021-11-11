@@ -23,7 +23,11 @@ export class PaymentTokenDto {
   @ApiProperty({ example: ethToken.decimals })
   decimals: number;
 
+  @Expose({ name: 'eth_price' })
+  @ApiProperty({ example: '0.8' })
+  priceETH: string;
+
   @Expose({ name: 'usd_price' })
   @ApiProperty({ example: '3650.098' })
-  price: string;
+  priceUSD: string;
 }

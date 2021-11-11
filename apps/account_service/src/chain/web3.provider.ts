@@ -16,15 +16,14 @@ export class Web3Provider {
     this.providers[ChainIdEnum.ftm] = new Web3(this.configService.get<string>('FTM_URL'));
     this.providers[ChainIdEnum.avax] = new Web3(this.configService.get<string>('AVAX_URL'));
     this.providers[ChainIdEnum.arbi] = new Web3(this.configService.get<string>('ARBITRUM_URL'));
+    this.providers[ChainIdEnum.xdai] = new Web3(this.configService.get<string>('XDAI_URL'));
+    this.providers[ChainIdEnum.celo] = new Web3(this.configService.get<string>('CELO_URL'));
+    this.providers[ChainIdEnum.mriver] = new Web3(this.configService.get<string>('MRIVER_URL'));
+    this.providers[ChainIdEnum.harm] = new Web3(this.configService.get<string>('HARM_URL'));
+    this.providers[ChainIdEnum.heco] = new Web3(this.configService.get<string>('HECO_URL'));
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {
     return this.providers[chain];
-  }
-  public instanceEth(): Web3 {
-    return this.providers[ChainIdEnum.eth];
-  }
-  public instanceBsc(): any {
-    return this.providers[ChainIdEnum.bsc];
   }
 }

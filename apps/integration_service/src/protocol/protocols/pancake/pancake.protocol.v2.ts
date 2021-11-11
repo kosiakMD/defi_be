@@ -19,7 +19,7 @@ export default class PancakeProtocolV2 extends DataProviderProtocol {
   readonly name = PancakeProtocolEnum.pancakeV2;
   readonly displayName = 'Pancake';
   readonly features = {
-    [ChainAbbrEnum.bsc]: [FeatureEnum.staking],
+    [ChainAbbrEnum.bsc]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   public feeRate = 0.003;
   protected readonly dataProvider;

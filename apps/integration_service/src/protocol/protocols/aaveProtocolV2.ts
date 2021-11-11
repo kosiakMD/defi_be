@@ -19,7 +19,7 @@ import {
   ChainDto,
 } from '@app/common';
 import { WETH_ADDRESS } from '@app/common/constant';
-import { decimalConverter } from '@app/common/utils/number';
+import { normalizeDecimals } from '@app/common/utils/number';
 
 import { AccountService } from '../../account/account.service';
 import { PriceService } from '../../price/price.service';
@@ -93,8 +93,11 @@ export class AaveProtocolV2 extends DataProviderProtocol {
         if (!Number(userReserve.currentATokenBalance)) return;
 
         const { price } = userReserve.reserve;
-        const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
-        const totalDepositDecimal = getReserveDecimals(Number(userReserve.currentATokenBalance));
+
+        const totalDepositDecimal = normalizeDecimals(
+          userReserve.currentATokenBalance,
+          userReserve.reserve.decimals,
+        );
 
         const lendToken = this.getUnderlyingToken(
           userReserve,
@@ -132,9 +135,14 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     users.forEach((user) => {
       user.reserves.forEach((userReserve) => {
         const { price } = userReserve.reserve;
-        const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
-        const stableDebtDecimal = getReserveDecimals(Number(userReserve.currentStableDebt));
-        const variableDebtDecimal = getReserveDecimals(Number(userReserve.currentVariableDebt));
+        const stableDebtDecimal = normalizeDecimals(
+          userReserve.currentStableDebt,
+          userReserve.reserve.decimals,
+        );
+        const variableDebtDecimal = normalizeDecimals(
+          userReserve.currentVariableDebt,
+          userReserve.reserve.decimals,
+        );
 
         const borrowToken = this.getUnderlyingToken(
           userReserve,

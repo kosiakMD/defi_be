@@ -165,3 +165,46 @@ export class BalancesResponseDto {
   })
   '0x782629c9578889a9b8464f051f23843734f72599': BalanceDto;
 }
+
+export class BalancesPostQueryDto implements BalancesQuery {
+  @IsNotEmpty()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    value.forEach((address: string) => {
+      if (!web3.utils.isAddress(address)) {
+        throw new BadRequestException(`Address '${address}' is not valid`);
+      }
+    });
+    return value;
+  })
+  @IsString({ each: true })
+  addresses: Address[];
+
+  @IsOptional()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    return value.map((x) => parseInt(x, 10));
+  })
+  @IsArray()
+  @IsInt({ each: true })
+  chains: ChainIdEnum[];
+
+  @IsOptional()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    value.forEach((address: string) => {
+      if (!web3.utils.isAddress(address)) {
+        throw new BadRequestException(`Asset '${address}' is not valid`);
+      }
+    });
+    return value;
+  })
+  @IsString({ each: true })
+  assets: Address[];
+}

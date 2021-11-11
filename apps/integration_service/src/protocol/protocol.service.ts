@@ -5,6 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
+  AlpacaProtocolEnum,
+  AutofarmProtocolEnum,
   Borrowing,
   BorrowingPosition,
   ChainDto,
@@ -19,8 +21,10 @@ import {
   LiquidityPoolFeatureDto,
   LiquidityPosition,
   Logger,
+  PancakeProtocolEnum,
   ProtocolName,
   ResultStatus,
+  SpookySwapProtocolEnum,
 } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
@@ -148,7 +152,7 @@ export class ProtocolService {
         // result pools
         rawPools && this.handleResultPools(rawPools, result, chainId, protocol),
         // result staking
-        rawStaking && this.handleResultStaking(rawStaking, result, chainId),
+        rawStaking && this.handleResultStaking(rawStaking, result, chainId, protocol),
         // result lending
         rawLending && this.handleResultLending(rawLending, result),
         // result borrowing
@@ -189,9 +193,10 @@ export class ProtocolService {
     rawStaking,
     result: IntegrationFeaturesDataDto,
     chainId: ChainId,
+    protocol: BasicProtocol,
   ): Promise<void> {
     try {
-      result[FeatureEnum.staking] = await this.transformStaking(rawStaking, chainId);
+      result[FeatureEnum.staking] = await this.transformStaking(rawStaking, chainId, protocol);
     } catch (e) {
       this.logger.error(e, 'handleResultStaking');
       result.errors.push(e.message);
@@ -266,6 +271,7 @@ export class ProtocolService {
   protected async transformStaking(
     stakingPositions: IntegrationStakingPositionDto[],
     chainId: ChainId,
+    protocol: BasicProtocol,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
     const result: FeatureResultDto<IntegrationStakingPositionDto> = {
       totalValue: 0,
@@ -274,7 +280,15 @@ export class ProtocolService {
     };
 
     try {
-      await this.handleStakingMissedData(stakingPositions, chainId);
+      if (
+        // better to avoid this kostil :)
+        protocol.name !== AlpacaProtocolEnum.alpaca &&
+        protocol.name !== AutofarmProtocolEnum.autofarm &&
+        protocol.name !== SpookySwapProtocolEnum.SpookySwap &&
+        protocol.name !== PancakeProtocolEnum.pancakeV2
+      ) {
+        await this.handleStakingMissedData(stakingPositions, chainId);
+      }
     } catch (e) {
       this.logger.error(e);
       result.errors.push(e.message);
@@ -321,6 +335,7 @@ export class ProtocolService {
       inputPool.poolTokens.forEach((token: PoolToken) => {
         const formattedToken = plainToClass(PoolTokenDto, {});
         objectUpdate(formattedToken, token, tokenDictionary, 'default');
+        formattedToken.balance = token['balance'] ? token['balance'] : formattedToken.balance;
         const { price, reserve, balance } = formattedToken;
         // value
         formattedToken.value = Number(balance) * price ?? null;
@@ -330,7 +345,6 @@ export class ProtocolService {
         if (reserve) {
           TVL += Number(reserve) * price;
         }
-
         tokens.push(formattedToken);
       });
 
@@ -355,8 +369,8 @@ export class ProtocolService {
       result.data.totalValue += userValue;
       // Pool
       const outPool: LiquidityPoolFeatureDto = plainToClass(LiquidityPoolFeatureDto, {
-        address: inputPool.pool.address,
-        name: inputPool.pool.name,
+        address: inputPool.pool ? inputPool.pool.address : inputPool['address'],
+        name: inputPool.pool?.name,
         lpToken: inputPool.lpToken,
         TVL: TVL,
         fee: {
@@ -383,9 +397,7 @@ export class ProtocolService {
 
       return resultArray;
     }, []);
-
     result.data.items = outputPools;
-
     return result;
   }
 
@@ -560,7 +572,7 @@ export class ProtocolService {
     const rewardTokenAddress = stakingPositions[0]?.rewardToken.address;
     addressesToFetchPrice.push(rewardTokenAddress);
     // add pool tokens
-    stakingPositions.forEach(({ stakingToken }) => {
+    stakingPositions?.forEach(({ stakingToken }) => {
       const { tokens, address: stakingAddress } = stakingToken;
       addressesToFetchPrice.push(stakingAddress);
       tokensToFetchPrice.set(stakingAddress, stakingToken);

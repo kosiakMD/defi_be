@@ -8,7 +8,8 @@ import { map } from 'rxjs/operators';
 import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { Address, ChainAbbrEnum } from '@app/common';
+import { Address, ChainAbbrEnum, ChainIdEnum } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CollectionDto, NftAssetDto, NftChainDto } from '@app/common/dto/nft';
 import { NftProjectEnum } from '@app/common/enum/nft.enum';
@@ -18,7 +19,11 @@ import { groupBy, mapToObject, objectToMap } from '@app/common/utils/object';
 import { getKey } from '@app/common/utils/string';
 
 import { BasicNftService } from '../basic.nft.service';
-import { NftAssetDto as OpenSeaNftAssetDto, OrderDto } from './dto';
+import {
+  NftAssetDto as OpenSeaNftAssetDto,
+  OrderDto,
+  CollectionDto as OpenSeaCollectionDto,
+} from './dto';
 
 export class OpenSeaService extends BasicNftService {
   public readonly project = NftProjectEnum.openSea;
@@ -148,13 +153,13 @@ export class OpenSeaService extends BasicNftService {
 
     const calculateAverage = (orders: OrderDto[]): { priceUSD: number; priceNative: number } => {
       const prices: number[] = [];
-      let priceETH: string = null;
-      orders.forEach(({ currentPrice, paymentToken: { decimals, price } }) => {
-        priceETH = price;
+      let currentPriceETH: string = null;
+      orders.forEach(({ currentPrice, paymentToken: { decimals, priceETH } }) => {
+        currentPriceETH = priceETH;
         prices.push(
           new BigNumber(currentPrice) //
             .div(decimalsDivider(decimals))
-            .times(price)
+            .times(currentPriceETH)
             .toNumber(),
         );
       });
@@ -164,7 +169,7 @@ export class OpenSeaService extends BasicNftService {
         prices.length;
       return {
         priceUSD,
-        priceNative: priceUSD / +priceETH,
+        priceNative: priceUSD / +currentPriceETH,
       };
     };
 
@@ -192,8 +197,14 @@ export class OpenSeaService extends BasicNftService {
       collections: Array.from(
         groupBy(assets, (asset: OpenSeaNftAssetDto) => asset.contract.address),
       ).map((value) => {
-        const { name, symbol, description, externalUrl, imageUrl, bannerImageUrl } =
-          value[1][0].collection;
+        const {
+          name,
+          symbol,
+          description,
+          externalUrl,
+          imageUrl,
+          bannerImageUrl,
+        }: OpenSeaCollectionDto = value[1][0].collection;
 
         const assets: NftAssetDto[] = value[1].map(({ name, tokenId, traits, imageUrl }) =>
           plainToClass(NftAssetDto, {
@@ -238,6 +249,10 @@ export class OpenSeaService extends BasicNftService {
     return {
       [account]: await Promise.all(
         chains.map(async (chain) => {
+          const { prices } = await this.priceService.fetchTokenPrices(
+            [ZERO_ADDRESS],
+            ChainIdEnum.eth,
+          );
           const pricesByAssets = new Map<string, { priceUSD: number; priceNative: number }>();
 
           const rawAssets = await this.getRawAssetsByAccount(account, limit, offset);
@@ -249,14 +264,40 @@ export class OpenSeaService extends BasicNftService {
             ),
           );
 
-          rawExtendedAssets.forEach(({ contract: { address }, tokenId, orders }) => {
-            pricesByAssets.set(
-              this.getAssetSeed(address, tokenId),
-              this.getOrdersAveragePrice(orders, account),
-            );
-          });
+          rawExtendedAssets.forEach(
+            ({
+              contract: { address },
+              tokenId,
+              orders,
+              collection: {
+                stats: { averagePrice, floorPrice },
+              },
+              lastSale,
+            }) => {
+              const lastSalePriceNative = new BigNumber(lastSale?.price)
+                .div(decimalsDivider(lastSale?.paymentToken?.decimals))
+                .toNumber();
 
-          return this.mapAssets(rawAssets, chain, pricesByAssets);
+              const lastSalePriceUSD = new BigNumber(lastSalePriceNative)
+                .times(lastSale?.paymentToken?.priceUSD)
+                .toNumber();
+
+              const ordersAveragePrice = this.getOrdersAveragePrice(orders, account);
+
+              const collectionPriceETH = floorPrice || averagePrice;
+
+              pricesByAssets.set(this.getAssetSeed(address, tokenId), {
+                priceUSD:
+                  lastSalePriceUSD ||
+                  ordersAveragePrice?.priceUSD ||
+                  collectionPriceETH * prices[ZERO_ADDRESS],
+                priceNative:
+                  lastSalePriceNative || ordersAveragePrice?.priceNative || collectionPriceETH,
+              });
+            },
+          );
+
+          return this.mapAssets(rawExtendedAssets, chain, pricesByAssets);
         }),
       ),
     };

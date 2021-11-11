@@ -96,15 +96,15 @@ export class PancakeV2Service {
     );
 
     stakingPositions.forEach((sp) => {
-      if (sp.stakingToken.tokens) {
+      if (sp.stakingToken.tokens.length === 0) {
+        sp.stakingToken.price = prices[sp.stakingToken.address];
+        sp.stakingToken.value =
+          Number(sp.stakingToken.balance) * Number(prices[sp.stakingToken.address]);
+      } else {
         sp.stakingToken.tokens.forEach((spt) => {
           spt.price = Number(prices[spt.address]);
           spt.value = Number(spt.balance) * Number(prices[spt.address]);
         });
-      } else {
-        sp.stakingToken.price = prices[sp.stakingToken.address];
-        sp.stakingToken.value =
-          Number(sp.stakingToken.balance) * Number(prices[sp.stakingToken.address]);
       }
       sp.rewardToken.price = Number(prices[sp.rewardToken.address]);
       sp.rewardToken.claimableData.value =

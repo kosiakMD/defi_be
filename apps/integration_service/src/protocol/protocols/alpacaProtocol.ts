@@ -43,15 +43,24 @@ import {
   LeverageErcToken,
 } from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
+import { concatStrings } from '../../utils/string';
 import { decimalsDivider } from '../../utils/util';
 import AbstractProtocol from './abstractProtocol';
 import {
   AlpacaStakingInterface,
   AlpacaTokenInfo,
-  LeverageFarmingInterface,
+  WorkerContractData,
+  TokenContractData,
+  BorrowBalance,
+  TokensBalance,
 } from './alpaca/alpaca.interfaces';
 import { LocalMultiCall } from './alpaca/multicall/local.multi.call';
-import { alpacaFactoriesMap, alpacaLegacyToken, alpacaRewardToken } from './alpaca/multicall/util';
+import {
+  alpacaDebtTokens,
+  alpacaFactoriesMap,
+  alpacaLegacyToken,
+  alpacaRewardToken,
+} from './alpaca/multicall/util';
 import { AlpacaApiService } from './alpaca/services/alpaca.api.service';
 import DataProviderProtocol from './dataProviderProtocol';
 
@@ -96,15 +105,16 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
     setTokenAddresses.add(alpacaRewardToken);
 
     const priceTokens = new Set<string>();
-    const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
+    const [, stakedTokenInfoMap, workerContractData] = await Promise.all([
       localMultiCall.getVaultUsersInfo(stakedPosition, chain.abbr),
       localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokens),
-      localMultiCall.getWorkerTokensData(leverageFarming, priceTokens),
+      localMultiCall.getWorkerContractsData(leverageFarming, priceTokens),
     ]);
 
-    await Promise.all([
-      localMultiCall.getLpTokenBalanceAndBorrow(leverageFarmingPositions),
-      localMultiCall.getLpTokenData(leverageFarmingPositions),
+    const [lpTokensBalances, borrowBalances, lpTokensData] = await Promise.all([
+      localMultiCall.getLpTokensBalances(workerContractData),
+      localMultiCall.getBorrowBalances(workerContractData),
+      localMultiCall.getLpTokenData(workerContractData, priceTokens),
     ]);
 
     const priceTokensArray = Array.from(priceTokens);
@@ -132,9 +142,12 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
       ) as LeverageFarming;
 
       leverage.leverageFarmingPositions = this.getLeverageFarmingPositionsDtos(
-        leverageFarmingPositions,
+        workerContractData,
         price.prices,
         assetsMap,
+        lpTokensBalances,
+        lpTokensData,
+        borrowBalances,
       );
 
       base.push(leverage);
@@ -194,70 +207,93 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
   }
 
   private getLeverageFarmingPositionsDtos(
-    leverageInterface: LeverageFarmingInterface[],
+    leverageInterface: WorkerContractData[],
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
+    lpTokensBalances: TokensBalance,
+    lpTokensData: TokenContractData,
+    borrowBalances: BorrowBalance,
   ): LeverageFarmingPosition[] {
     return leverageInterface
-      .filter((position) => Number(position.baseTokenBalance) > 0)
+      .filter(
+        (position) =>
+          Number(lpTokensBalances[concatStrings(position.poolToken, position.positionId)]) > 0,
+      )
       .map((position) => {
         const leverageFarmingPosition = new LeverageFarmingPositionDto();
         const asset = assets.get(position.baseToken);
         const borrowToken = new BorrowToken();
         AlpacaProtocol.setFieldsFromAsset(asset, borrowToken);
         borrowToken.price = prices[position.baseToken];
-        borrowToken.balance = AlpacaProtocol.getDecimalsBalance(
-          position.borrow,
-          borrowToken.decimals,
-        );
+        const borrowData = borrowBalances[concatStrings(position.poolToken, position.positionId)];
+        borrowToken.balance = AlpacaProtocol.getDecimalsBalance(borrowData, borrowToken.decimals);
         borrowToken.value = new BigNumber(borrowToken.balance) //
           .times(borrowToken.price)
           .toNumber();
         leverageFarmingPosition.borrowToken = borrowToken;
         leverageFarmingPosition.farmToken = position.isLp
-          ? this.getLpPoolToken(position, prices, assets)
-          : AlpacaProtocol.getSinglePoolToken(position, prices, assets);
+          ? this.getLpPoolToken(position, prices, assets, lpTokensBalances, lpTokensData)
+          : AlpacaProtocol.getSinglePoolToken(
+              position,
+              prices,
+              assets,
+              lpTokensBalances,
+              lpTokensData,
+            );
 
         AlpacaProtocol.getDebtRatioAndEarned(position, leverageFarmingPosition);
         return leverageFarmingPosition;
       });
   }
 
-  private getLpPoolToken(position, prices, assets): LPToken {
+  private getLpPoolToken(
+    position,
+    prices,
+    assets,
+    lpTokensBalances: TokensBalance,
+    lpTokensData: TokenContractData,
+  ): LPToken {
     const farmingToken = new LPToken();
     const lpAsset = assets.get(position.poolToken);
     AlpacaProtocol.setFieldsFromAsset(lpAsset, farmingToken);
-    farmingToken.totalSupply = position.totalSupply;
-    farmingToken.tokens = this.getPairTokens(position, prices, assets);
+    farmingToken.totalSupply =
+      lpTokensData[concatStrings(position.poolToken, position.positionId)].totalSupply;
+    farmingToken.tokens = this.getPairTokens(
+      position,
+      prices,
+      assets,
+      lpTokensBalances,
+      lpTokensData,
+    );
     return farmingToken;
   }
 
   private getPairTokens(
-    leverageInterface: LeverageFarmingInterface,
+    leverageInterface: WorkerContractData,
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
+    lpTokensBalances: TokensBalance,
+    lpTokensData: TokenContractData,
   ): PoolTokenDto[] {
-    return [leverageInterface.token0, leverageInterface.token1].map((token) => {
+    const field = concatStrings(leverageInterface.poolToken, leverageInterface.positionId);
+    return [lpTokensData[field].token0, lpTokensData[field].token1].map((token) => {
       const pairToken = new PoolTokenDto();
       const asset = assets.get(token);
-      const borrowAsset = assets.get(leverageInterface.baseToken);
       AlpacaProtocol.setFieldsFromAsset(asset, pairToken);
       pairToken.price = prices[token];
       pairToken.reserve =
-        token === leverageInterface.token0
-          ? leverageInterface.reserve0
-          : leverageInterface.reserve1;
-
-      const pairValue = AlpacaProtocol.getPairTokenValue(
-        leverageInterface.baseTokenBalance,
-        borrowAsset.decimals,
-        prices[borrowAsset.address],
-      );
-      pairToken.balance = new BigNumber(pairValue) //
-        .div(2)
-        .div(prices[asset.address])
+        token === lpTokensData[field].token0
+          ? lpTokensData[field].reserve0
+          : lpTokensData[field].reserve1;
+      pairToken.balance = new BigNumber(
+        AlpacaProtocol.getDecimalsBalance(lpTokensBalances[field], pairToken.decimals),
+      )
+        .div(AlpacaProtocol.getDecimalsBalance(lpTokensData[field].totalSupply, pairToken.decimals))
+        .times(AlpacaProtocol.getDecimalsBalance(pairToken.reserve, pairToken.decimals))
         .toString();
-      pairToken.value = Number(pairValue) / 2;
+      pairToken.value = new BigNumber(pairToken.balance) //
+        .times(pairToken.price)
+        .toNumber();
       return pairToken;
     });
   }
@@ -302,7 +338,7 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
     claimAbleToken: IntegrationClaimableTokenDto,
     chain: ChainAbbrEnum,
   ): IntegrationStakingPositionDto[] {
-    return stakingPositions.map((staking) => {
+    const stakings = stakingPositions.map((staking) => {
       const rewardToken: IntegrationClaimableTokenDto = classToClass(claimAbleToken);
       const claimable = new ClaimableDto();
       claimable.balance = AlpacaProtocol.getDecimalsBalance(
@@ -323,13 +359,16 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
         assets,
         prices,
         alpacaTokensMap,
+        claimable.value,
       );
       return response;
     });
+
+    return stakings.filter((staking) => staking.stakingToken);
   }
 
   private static getDebtRatioAndEarned(
-    position: LeverageFarmingInterface,
+    position: WorkerContractData,
     leverageFarmingPosition: LeverageFarmingPosition,
   ): void {
     let tokensValue;
@@ -350,9 +389,17 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
     stakedTokensMap: Map<string, AlpacaTokenInfo>,
+    reward: number,
   ): IntegrationERC20TokenDto {
     const stakedTokenInfo = stakedTokensMap.get(staking.stakeToken);
     const asset = assets.get(stakedTokenInfo.priceAsset);
+    if (!asset) {
+      return;
+    }
+    /* If a staked token is a debtIbToken - value usd we show will be equal to the amount of
+      the reward usd(like the deBank shows)
+     */
+    const debtToken = alpacaDebtTokens.some((address) => address === staking.stakeToken);
     const erc20Token = new IntegrationERC20TokenDto();
     AlpacaProtocol.setFieldsFromAsset(asset, erc20Token);
     erc20Token.totalSupply = stakedTokenInfo.totalSupply;
@@ -362,35 +409,36 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
         : prices[stakedTokenInfo.priceAsset];
     erc20Token.balance = new BigNumber(staking.amount)
       .div(decimalsDivider(erc20Token.decimals))
-      .times(stakedTokenInfo.coefficient)
+      .times(debtToken ? 1 : stakedTokenInfo.coefficient)
       .toString();
-    erc20Token.value = new BigNumber(erc20Token.balance) //
-      .times(erc20Token.price)
-      .toNumber();
+    erc20Token.value = debtToken
+      ? reward
+      : new BigNumber(erc20Token.balance) //
+          .times(erc20Token.price)
+          .toNumber();
     return erc20Token;
   }
 
   private static getSinglePoolToken(
-    leverageInterface: LeverageFarmingInterface,
+    leverageInterface: WorkerContractData,
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
+    tokensBalances: TokensBalance,
+    tokensData: TokenContractData,
   ): LeverageErcToken {
     const leverageErcToken = new LeverageErcToken();
     const asset = assets.get(leverageInterface.poolToken);
-    const borrowAsset = assets.get(leverageInterface.baseToken);
     AlpacaProtocol.setFieldsFromAsset(asset, leverageErcToken);
     leverageErcToken.price = prices[asset.address];
-    const pairValue = AlpacaProtocol.getPairTokenValue(
-      leverageInterface.baseTokenBalance,
-      borrowAsset.decimals,
-      prices[borrowAsset.address],
+    const field = concatStrings(leverageInterface.poolToken, leverageInterface.positionId);
+    leverageErcToken.totalSupply = tokensData[field].totalSupply;
+    leverageErcToken.balance = AlpacaProtocol.getDecimalsBalance(
+      tokensBalances[field],
+      leverageErcToken.decimals,
     );
-
-    leverageErcToken.totalSupply = leverageInterface.totalSupply;
-    leverageErcToken.balance = new BigNumber(pairValue) //
-      .div(leverageErcToken.price)
-      .toString();
-    leverageErcToken.value = Number(pairValue);
+    leverageErcToken.value = new BigNumber(leverageErcToken.balance)
+      .times(leverageErcToken.price)
+      .toNumber();
     return leverageErcToken;
   }
 
@@ -406,13 +454,6 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
     AlpacaProtocol.setFieldsFromAsset(asset, claimableToken);
 
     return claimableToken;
-  }
-
-  private static getPairTokenValue(balance: string, decimals: number, price: number): string {
-    return new BigNumber(balance) //
-      .div(decimalsDivider(decimals))
-      .times(price)
-      .toString();
   }
 
   private static getDecimalsBalance(balance: string, decimals: number): string {

@@ -486,6 +486,13 @@ export const StakedTokenAbi = [
   },
   {
     inputs: [],
+    name: 'owner',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'totalSupply',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',
@@ -522,6 +529,20 @@ export const workerAbi = [
   {
     inputs: [{ internalType: 'uint256', name: 'balance', type: 'uint256' }],
     name: 'balanceToShare',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: 'share', type: 'uint256' }],
+    name: 'shareToBalance',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'shares',
     outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function',
@@ -645,6 +666,19 @@ export const alpacaStakeContracts: string[] = [
   '0x08fc9ba2cac74742177e0afc3dc8aed6961c24e7',
   '0xbff4a34a4644a113e8200d7f1d79b3555f723afe',
   '0xf1be8ecc990cbcb90e166b71e368299f0116d421',
+];
+
+export const alpacaDebtTokens: string[] = [
+  '0xd19d6253d979ccf663869fee30b8e0ac86029ebd',
+  '0x6a3487ce84fd83c66b83e598b18412bd1d2a55f9',
+  '0x02da7035bed00ae645516bdb0c282a7fd4aa7442',
+  '0x92110af24d280e412b3a89691f6b0b9e09258fe6',
+  '0x11362ea137a799298306123eea014b7809a9db40',
+  '0xbde156e6a814f7a56d3e389e681088649d24a07c',
+  '0x3b4fbb2b8536ab144048abafdd27eaf52f0fa4dc',
+  '0x262de19b5fde97ed5bdba10d630e34fb9a1b59b2',
+  '0xb76ed435b93477511e4604c441550a23d5aeaf84',
+  '0x5138133f0671071d8b8f1c4c180881bfcfe22cec',
 ];
 
 export const alpacaRewardToken = '0x8f0528ce5ef7b51152a59745befdd91d97091d2f';

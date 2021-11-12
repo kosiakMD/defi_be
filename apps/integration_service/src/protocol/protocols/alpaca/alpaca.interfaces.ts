@@ -40,25 +40,37 @@ export interface AlpacaApiResponse {
   worker: string;
 }
 
-export interface LeverageFarmingInterface {
+export interface WorkerContractData {
   address?: string;
   vault: string;
   poolToken?: string;
-  token1?: string;
-  token0?: string;
-  baseTokenBalance?: string;
-  borrow?: string;
   positionId?: number;
   baseToken?: string;
-  tokens?: string[];
-  reserve0?: string;
-  reserve1?: string;
-  totalSupply?: string;
   isLp: boolean;
+  shares?: string;
+  worker?: string;
 }
 
 export interface AlpacaTokenInfo {
   totalSupply: string;
   coefficient: string;
   priceAsset: string;
+}
+
+export interface TokenContractData {
+  [key: string]: {
+    reserve0: string;
+    reserve1: string;
+    totalSupply: string;
+    token0: string;
+    token1: string;
+  };
+}
+
+export interface BorrowBalance {
+  [key: string]: string;
+}
+
+export interface TokensBalance {
+  [key: string]: string;
 }

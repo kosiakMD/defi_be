@@ -7,8 +7,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   AlpacaProtocolEnum,
+  ChainAbbrEnum,
   ChainDto,
   CurrentPricesPayload,
+  LendingPositionDto,
   Logger,
   PoolTokenDto,
   ProjectEnum,
@@ -25,7 +27,7 @@ import {
   LeverageFarmingPositionDto,
   LPToken,
 } from '../../../../integrations/integrations.dto';
-import { Lending, LendingPosition } from '../../../../interfaces/lending.position.interfaces';
+import { Lending } from '../../../../interfaces/lending.position.interfaces';
 import {
   LeverageFarming,
   LeverageFarmingPosition,
@@ -40,22 +42,28 @@ import {
   LeverageErcToken,
 } from '../../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../../price/price.service';
+import { concatStrings } from '../../../../utils/string';
 import { decimalsDivider } from '../../../../utils/util';
 import {
   AlpacaStakingInterface,
   AlpacaTokenInfo,
-  AlpacaUser,
-  LeverageFarmingInterface,
+  BorrowBalance,
+  TokenContractData,
+  TokensBalance,
+  WorkerContractData,
 } from '../alpaca.interfaces';
 import { LocalMultiCall } from '../multicall/local.multi.call';
-import { alpacaFactoriesMap, alpacaLegacyToken, alpacaRewardToken } from '../multicall/util';
+import {
+  alpacaDebtTokens,
+  alpacaFactoriesMap,
+  alpacaLegacyToken,
+  alpacaRewardToken,
+} from '../multicall/util';
 import { AlpacaApiService } from './alpaca.api.service';
-import { AlpacaSubgraph } from './alpaca.subgraph';
 
 @Injectable()
 export class AlpacaService {
   constructor(
-    protected readonly alpacaSubgraph: AlpacaSubgraph,
     protected readonly web3Provider: Web3Provider,
     protected readonly priceService: PriceService,
     protected readonly accountService: AccountService,
@@ -65,12 +73,10 @@ export class AlpacaService {
 
   async getDataByAddresses(address: Address, chain: ChainDto): Promise<BaseData[]> {
     const lowerCaseAddress = address.toLowerCase();
-    const alpacaUsers: AlpacaUser[] = await this.alpacaSubgraph.getSubgraphData([lowerCaseAddress]);
-    const stakedPosition: AlpacaStakingInterface[] = [];
-    this.getStakingPosition(alpacaUsers, stakedPosition);
 
     const webProvider = this.web3Provider.getForChain(chain.abbr);
     const localMultiCall = new LocalMultiCall(webProvider, this.logger);
+    const stakedPosition = await localMultiCall.getStakingPositions(chain.abbr, lowerCaseAddress);
     const setTokenAddresses = await localMultiCall.getVaultPoolsInfo(stakedPosition, chain.abbr);
 
     const [lendingTokens, leverageFarming] = await Promise.all([
@@ -81,15 +87,16 @@ export class AlpacaService {
     setTokenAddresses.add(alpacaRewardToken);
 
     const priceTokens = new Set<string>();
-    const [, stakedTokenInfoMap, leverageFarmingPositions] = await Promise.all([
+    const [, stakedTokenInfoMap, workerContractData] = await Promise.all([
       localMultiCall.getVaultUsersInfo(stakedPosition, chain.abbr),
       localMultiCall.getTokensInfoMap(Array.from(setTokenAddresses), priceTokens),
-      localMultiCall.getWorkerTokensData(leverageFarming, priceTokens),
+      localMultiCall.getWorkerContractsData(leverageFarming, priceTokens),
     ]);
 
-    await Promise.all([
-      localMultiCall.getLpTokenBalanceAndBorrow(leverageFarmingPositions),
-      localMultiCall.getLpTokenData(leverageFarmingPositions),
+    const [lpTokensBalances, borrowBalances, lpTokensData] = await Promise.all([
+      localMultiCall.getLpTokensBalances(workerContractData),
+      localMultiCall.getBorrowBalances(workerContractData),
+      localMultiCall.getLpTokenData(workerContractData, priceTokens),
     ]);
 
     const priceTokensArray = Array.from(priceTokens);
@@ -117,9 +124,12 @@ export class AlpacaService {
       ) as LeverageFarming;
 
       leverage.leverageFarmingPositions = this.getLeverageFarmingPositionsDtos(
-        leverageFarmingPositions,
+        workerContractData,
         price.prices,
         assetsMap,
+        lpTokensBalances,
+        lpTokensData,
+        borrowBalances,
       );
 
       base.push(leverage);
@@ -155,7 +165,7 @@ export class AlpacaService {
         assetsMap,
         price.prices,
         claimableToken,
-        chain,
+        chain.abbr,
       );
 
       base.push(staking);
@@ -179,70 +189,93 @@ export class AlpacaService {
   }
 
   private getLeverageFarmingPositionsDtos(
-    leverageInterface: LeverageFarmingInterface[],
+    leverageInterface: WorkerContractData[],
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
+    lpTokensBalances: TokensBalance,
+    lpTokensData: TokenContractData,
+    borrowBalances: BorrowBalance,
   ): LeverageFarmingPosition[] {
     return leverageInterface
-      .filter((position) => Number(position.baseTokenBalance) > 0)
+      .filter(
+        (position) =>
+          Number(lpTokensBalances[concatStrings(position.poolToken, position.positionId)]) > 0,
+      )
       .map((position) => {
         const leverageFarmingPosition = new LeverageFarmingPositionDto();
         const asset = assets.get(position.baseToken);
         const borrowToken = new BorrowToken();
         AlpacaService.setFieldsFromAsset(asset, borrowToken);
         borrowToken.price = prices[position.baseToken];
-        borrowToken.balance = AlpacaService.getDecimalsBalance(
-          position.borrow,
-          borrowToken.decimals,
-        );
+        const borrowData = borrowBalances[concatStrings(position.poolToken, position.positionId)];
+        borrowToken.balance = AlpacaService.getDecimalsBalance(borrowData, borrowToken.decimals);
         borrowToken.value = new BigNumber(borrowToken.balance) //
           .times(borrowToken.price)
           .toNumber();
         leverageFarmingPosition.borrowToken = borrowToken;
         leverageFarmingPosition.farmToken = position.isLp
-          ? this.getLpPoolToken(position, prices, assets)
-          : AlpacaService.getSinglePoolToken(position, prices, assets);
+          ? this.getLpPoolToken(position, prices, assets, lpTokensBalances, lpTokensData)
+          : AlpacaService.getSinglePoolToken(
+              position,
+              prices,
+              assets,
+              lpTokensBalances,
+              lpTokensData,
+            );
 
         AlpacaService.getDebtRatioAndEarned(position, leverageFarmingPosition);
         return leverageFarmingPosition;
       });
   }
 
-  private getLpPoolToken(position, prices, assets): LPToken {
+  private getLpPoolToken(
+    position,
+    prices,
+    assets,
+    lpTokensBalances: TokensBalance,
+    lpTokensData: TokenContractData,
+  ): LPToken {
     const farmingToken = new LPToken();
     const lpAsset = assets.get(position.poolToken);
     AlpacaService.setFieldsFromAsset(lpAsset, farmingToken);
-    farmingToken.totalSupply = position.totalSupply;
-    farmingToken.tokens = this.getPairTokens(position, prices, assets);
+    farmingToken.totalSupply =
+      lpTokensData[concatStrings(position.poolToken, position.positionId)].totalSupply;
+    farmingToken.tokens = this.getPairTokens(
+      position,
+      prices,
+      assets,
+      lpTokensBalances,
+      lpTokensData,
+    );
     return farmingToken;
   }
 
   private getPairTokens(
-    leverageInterface: LeverageFarmingInterface,
+    leverageInterface: WorkerContractData,
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
+    lpTokensBalances: TokensBalance,
+    lpTokensData: TokenContractData,
   ): PoolTokenDto[] {
-    return [leverageInterface.token0, leverageInterface.token1].map((token) => {
+    const field = concatStrings(leverageInterface.poolToken, leverageInterface.positionId);
+    return [lpTokensData[field].token0, lpTokensData[field].token1].map((token) => {
       const pairToken = new PoolTokenDto();
       const asset = assets.get(token);
-      const borrowAsset = assets.get(leverageInterface.baseToken);
       AlpacaService.setFieldsFromAsset(asset, pairToken);
       pairToken.price = prices[token];
       pairToken.reserve =
-        token === leverageInterface.token0
-          ? leverageInterface.reserve0
-          : leverageInterface.reserve1;
-
-      const pairValue = AlpacaService.getPairTokenValue(
-        leverageInterface.baseTokenBalance,
-        borrowAsset.decimals,
-        prices[borrowAsset.address],
-      );
-      pairToken.balance = new BigNumber(pairValue) //
-        .div(2)
-        .div(prices[asset.address])
+        token === lpTokensData[field].token0
+          ? lpTokensData[field].reserve0
+          : lpTokensData[field].reserve1;
+      pairToken.balance = new BigNumber(
+        AlpacaService.getDecimalsBalance(lpTokensBalances[field], pairToken.decimals),
+      )
+        .div(AlpacaService.getDecimalsBalance(lpTokensData[field].totalSupply, pairToken.decimals))
+        .times(AlpacaService.getDecimalsBalance(pairToken.reserve, pairToken.decimals))
         .toString();
-      pairToken.value = Number(pairValue) / 2;
+      pairToken.value = new BigNumber(pairToken.balance) //
+        .times(pairToken.price)
+        .toNumber();
       return pairToken;
     });
   }
@@ -253,7 +286,7 @@ export class AlpacaService {
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
     address: string,
-  ): LendingPosition[] {
+  ): LendingPositionDto[] {
     const lendingPositions = [];
     lendingTokens.forEach((value, key) => {
       const tokenInfo = stakedTokensInfoMap.get(key);
@@ -285,9 +318,9 @@ export class AlpacaService {
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
     claimAbleToken: IntegrationClaimableTokenDto,
-    chain: ChainDto,
+    chain: ChainAbbrEnum,
   ): IntegrationStakingPositionDto[] {
-    return stakingPositions.map((staking) => {
+    const stakings = stakingPositions.map((staking) => {
       const rewardToken: IntegrationClaimableTokenDto = classToClass(claimAbleToken);
       const claimable = new ClaimableDto();
       claimable.balance = AlpacaService.getDecimalsBalance(
@@ -299,7 +332,7 @@ export class AlpacaService {
         .toNumber();
       rewardToken.claimableData = claimable;
       const response = new IntegrationStakingPositionDto();
-      response.address = alpacaFactoriesMap.get(chain.abbr);
+      response.address = alpacaFactoriesMap.get(chain);
       response.poolId = String(staking.poolNum);
       response.staked = staking.amount;
       response.rewardToken = rewardToken;
@@ -308,13 +341,16 @@ export class AlpacaService {
         assets,
         prices,
         alpacaTokensMap,
+        claimable.value,
       );
       return response;
     });
+
+    return stakings.filter((staking) => staking.stakingToken);
   }
 
   private static getDebtRatioAndEarned(
-    position: LeverageFarmingInterface,
+    position: WorkerContractData,
     leverageFarmingPosition: LeverageFarmingPosition,
   ): void {
     let tokensValue;
@@ -335,9 +371,17 @@ export class AlpacaService {
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
     stakedTokensMap: Map<string, AlpacaTokenInfo>,
+    reward: number,
   ): IntegrationERC20TokenDto {
     const stakedTokenInfo = stakedTokensMap.get(staking.stakeToken);
     const asset = assets.get(stakedTokenInfo.priceAsset);
+    if (!asset) {
+      return;
+    }
+    /* If a staked token is a debtIbToken - value usd we show will be equal to the amount of 
+      the reward usd(like the deBank shows)
+     */
+    const debtToken = alpacaDebtTokens.some((address) => address === staking.stakeToken);
     const erc20Token = new IntegrationERC20TokenDto();
     AlpacaService.setFieldsFromAsset(asset, erc20Token);
     erc20Token.totalSupply = stakedTokenInfo.totalSupply;
@@ -347,52 +391,36 @@ export class AlpacaService {
         : prices[stakedTokenInfo.priceAsset];
     erc20Token.balance = new BigNumber(staking.amount)
       .div(decimalsDivider(erc20Token.decimals))
-      .times(stakedTokenInfo.coefficient)
+      .times(debtToken ? 1 : stakedTokenInfo.coefficient)
       .toString();
-    erc20Token.value = new BigNumber(erc20Token.balance) //
-      .times(erc20Token.price)
-      .toNumber();
+    erc20Token.value = debtToken
+      ? reward
+      : new BigNumber(erc20Token.balance) //
+          .times(erc20Token.price)
+          .toNumber();
     return erc20Token;
   }
 
-  private getStakingPosition(
-    alpacaUsers: AlpacaUser[],
-    stakedPosition: AlpacaStakingInterface[],
-  ): void {
-    alpacaUsers.forEach((user) =>
-      user.balances.forEach((balance) => {
-        if (Number(balance.balance) >= 0) {
-          stakedPosition.push({
-            poolNum: Number(balance.id.slice(balance.id.indexOf('-') + 1)),
-            userAddress: user.id,
-            amount: balance.balance,
-          });
-        }
-      }),
-    );
-  }
-
   private static getSinglePoolToken(
-    leverageInterface: LeverageFarmingInterface,
+    leverageInterface: WorkerContractData,
     prices: CurrentPricesPayload,
     assets: Map<string, Asset>,
+    tokensBalances: TokensBalance,
+    tokensData: TokenContractData,
   ): LeverageErcToken {
     const leverageErcToken = new LeverageErcToken();
     const asset = assets.get(leverageInterface.poolToken);
-    const borrowAsset = assets.get(leverageInterface.baseToken);
     AlpacaService.setFieldsFromAsset(asset, leverageErcToken);
     leverageErcToken.price = prices[asset.address];
-    const pairValue = AlpacaService.getPairTokenValue(
-      leverageInterface.baseTokenBalance,
-      borrowAsset.decimals,
-      prices[borrowAsset.address],
+    const field = concatStrings(leverageInterface.poolToken, leverageInterface.positionId);
+    leverageErcToken.totalSupply = tokensData[field].totalSupply;
+    leverageErcToken.balance = AlpacaService.getDecimalsBalance(
+      tokensBalances[field],
+      leverageErcToken.decimals,
     );
-
-    leverageErcToken.totalSupply = leverageInterface.totalSupply;
-    leverageErcToken.balance = new BigNumber(pairValue) //
-      .div(leverageErcToken.price)
-      .toString();
-    leverageErcToken.value = Number(pairValue);
+    leverageErcToken.value = new BigNumber(leverageErcToken.balance)
+      .times(leverageErcToken.price)
+      .toNumber();
     return leverageErcToken;
   }
 
@@ -408,13 +436,6 @@ export class AlpacaService {
     AlpacaService.setFieldsFromAsset(asset, claimableToken);
 
     return claimableToken;
-  }
-
-  private static getPairTokenValue(balance: string, decimals: number, price: number): string {
-    return new BigNumber(balance) //
-      .div(decimalsDivider(decimals))
-      .times(price)
-      .toString();
   }
 
   private static getDecimalsBalance(balance: string, decimals: number): string {

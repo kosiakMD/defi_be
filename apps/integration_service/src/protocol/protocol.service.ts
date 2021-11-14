@@ -53,6 +53,7 @@ import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
 import QuickswapProtocol from './protocols/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import TraderJoeProtocol from './protocols/traderjoeProtocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -81,6 +82,7 @@ export class ProtocolService {
     private readonly alpacaProtocol: AlpacaProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
+    private readonly traderjoeProtocol: TraderJoeProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -96,6 +98,7 @@ export class ProtocolService {
       uniswapProtocolV3,
       yearnProtocolV1,
       yearnProtocolV2,
+      traderjoeProtocol,
     ];
   }
 

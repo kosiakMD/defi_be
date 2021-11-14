@@ -11,6 +11,7 @@ export enum ProjectEnum {
   uniswap = 'uniswap',
   alpaca = 'alpaca',
   yearn = 'yearn',
+  traderjoe ='traderjoe',
 }
 
 export enum YearnProtocolEnum {
@@ -59,6 +60,10 @@ export enum AlpacaProtocolEnum {
   alpaca = 'Alpaca',
 }
 
+export enum TraderjoeProtocolEnum {
+  traderjoe = 'TraderJoe',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
@@ -70,4 +75,5 @@ export const ProtocolNameEnum = {
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
   ...YearnProtocolEnum,
+  ...TraderjoeProtocolEnum,
 };

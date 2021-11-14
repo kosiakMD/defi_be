@@ -4,7 +4,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from '../liquiditypool/integrations.dto';
 import { Logger } from '../logger/logger.service';
 import { IntegrationService } from '../microservices/integration.service';
 import { TrackedVault } from '../store/tracked.vault.entity';
@@ -12,6 +11,7 @@ import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { getJobPlaceholder } from '../utils/string';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { TrackedVaultsMap } from './data/tracked.vaults.map';
+import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from './integrations.dto';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 
@@ -48,17 +48,19 @@ export class JobsRunner {
     TrackedVaultsMap.add(dbJobs);
     TrackedVaultItemsMap.add(dbJobsItems);
 
-    jobsPlaceholdersIntersection.forEach((placeholder) => {
+    for (const placeholder of jobsPlaceholdersIntersection) {
       const existedDbJob: TrackedVault = TrackedVaultsMap.get(placeholder) as TrackedVault;
       if (existedDbJob) {
         this.logger.log(
           `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
           JobsRunner.name,
         );
-        this.jobsRegistry.registry.get(placeholder).manageMapping();
-        this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
+        if (existedDbJob.isEnabled === true) {
+          await this.jobsRegistry.registry.get(placeholder).manageMapping();
+          this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
+        }
       }
-    });
+    }
   }
 
   async update() {
@@ -89,14 +91,20 @@ export class JobsRunner {
   private async getIntegrationServiceConfiguration() {
     const integrationProtocols: ProtocolsResponseData =
       await this.integrationService.getProtocols();
+    
     const jobPlaceholdersSet: Set<string> = new Set<string>();
     integrationProtocols.data.forEach((ip) => {
       ip.features.forEach((f) => {
+        
         f.list.forEach((feature) => {
           jobPlaceholdersSet.add(getJobPlaceholder(f.chain.id, feature, ip.name));
         });
       });
     });
+    jobPlaceholdersSet.add('2_PancakeV2_pools');
+    jobPlaceholdersSet.add('6_TraderJoe_pools');
+    jobPlaceholdersSet.add('6_TraderJoe_staking');
+    
     return jobPlaceholdersSet;
   }
 }

@@ -2,12 +2,14 @@ import { plainToClass } from 'class-transformer';
 
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
+import { ERC20Token } from './dto/common';
+import { LiquidityPoolFeature, PoolTokenDto } from './dto/pools.dto';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
-} from './integrations.dto';
+} from './dto/staking.dto';
 
 export class IntegrationDataConverter {
   static toDTO(mapping) {
@@ -18,7 +20,8 @@ export class IntegrationDataConverter {
       // set up simple types, null is also object
       if (dto[key] === null || typeof dto[key] !== 'object') {
         const defaultValue = dto[key];
-        dto[key] = mapping[key] ? mapping[key] : itemData.data[key];
+        dto[key] =
+          mapping[key] !== null && mapping[key] !== undefined ? mapping[key] : itemData.data[key];
         // keep default dto value if undefined value got
         dto[key] = dto[key] === undefined ? defaultValue : dto[key];
       }
@@ -52,6 +55,15 @@ export class IntegrationDataConverter {
     }
     if (dtoName === 'IntegrationPoolTokenDto') {
       converted = plainToClass(IntegrationPoolTokenDto, {});
+    }
+    if (dtoName === 'PoolTokenDto') {
+      converted = plainToClass(PoolTokenDto, {});
+    }
+    if (dtoName === 'LiquidityPoolFeature') {
+      converted = plainToClass(LiquidityPoolFeature, {});
+    }
+    if (dtoName === 'ERC20Token') {
+      converted = plainToClass(ERC20Token, {});
     }
 
     return converted;

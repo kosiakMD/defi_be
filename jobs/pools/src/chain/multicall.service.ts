@@ -11,16 +11,13 @@ import { Web3Provider } from './web3.provider';
 
 @Injectable()
 export class MulticallService {
-  private readonly calls: Map<string, CallData> = new Map<string, CallData>();
-
   constructor(private readonly provider: Web3Provider) {}
 
-  async handleInBatches(calls: Map<string, CallData>) {
-    const multicall: MulticallContract = this.provider.multicall(ChainIdEnum.bsc);
-    const web3: Web3 = this.provider.web3(ChainIdEnum.bsc);
+  async handleInBatches(calls: Map<string, CallData>, chain: ChainIdEnum) {
+    const multicall: MulticallContract = this.provider.multicall(chain);
+    const web3: Web3 = this.provider.web3(chain);
 
-    // todo: filter with existed calls, probably in the other caching class
-    // todo: this must be filtered already
+    const callsMap: Map<string, CallData> = new Map<string, CallData>();
 
     // this map is necessary to have in order to map class calls id to received map ids
     const callLabelToCallIdMap: Map<string, string> = new Map<string, string>();
@@ -29,10 +26,10 @@ export class MulticallService {
     calls.forEach((c, k) => {
       c.input.plain = web3.eth.abi.encodeFunctionCall(c.abi, c.input.data);
 
-      const callId = concatStrings(ChainIdEnum.bsc, c.address, c.input.plain);
+      const callId = concatStrings(chain, c.address, c.input.plain);
 
       callLabelToCallIdMap.set(k, callId);
-      this.calls.set(callId, c);
+      callsMap.set(callId, c);
     });
 
     const callsToBeExecuted = [];
@@ -40,7 +37,7 @@ export class MulticallService {
     // this indexes using to map multicall result to back request objects
     let i = 0;
     const indexes: { index; key }[] = [];
-    for (const [key, value] of this.calls) {
+    for (const [key, value] of callsMap) {
       indexes.push({ index: i++, key: key });
       callsToBeExecuted.push([value.address, value.input.plain]);
     }
@@ -48,7 +45,7 @@ export class MulticallService {
     const { returnData } = await multicall.aggregate(callsToBeExecuted);
 
     indexes.forEach(({ index, key }) => {
-      const callInMap = this.calls.get(key);
+      const callInMap = callsMap.get(key);
       callInMap.output.plain = returnData[index];
       const outputResult = web3.eth.abi.decodeParameters(
         callInMap.abi.outputs,
@@ -60,7 +57,7 @@ export class MulticallService {
     // create response with given ids
     calls = new Map<string, CallData>();
     callLabelToCallIdMap.forEach((internalId, receivedId) => {
-      calls.set(receivedId, this.calls.get(internalId));
+      calls.set(receivedId, callsMap.get(internalId));
     });
 
     return calls;

@@ -10,6 +10,7 @@ import {
   SushiSwapProtocolEnum,
   UniswapProtocolEnum,
   YearnProtocolEnum,
+  TraderjoeProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -28,7 +29,8 @@ export type ProtocolName =
   | SpookySwapProtocolEnum
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
-  | YearnProtocolEnum;
+  | YearnProtocolEnum
+  | TraderjoeProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

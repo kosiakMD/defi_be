@@ -16,7 +16,6 @@ import {
   IntegrationFeaturesDataDto,
   Lending,
   LendingPositionDto,
-  LeverageErcToken,
   LeverageFarmingPosition,
   LiquidityPoolFeatureDto,
   LiquidityPosition,
@@ -34,7 +33,6 @@ import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dt
 import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
-  LPToken,
   PoolTokenDto,
 } from '../integrations/integrations.dto';
 import { Asset, PoolToken } from '../interfaces/transactions.interfaces';
@@ -251,13 +249,7 @@ export class ProtocolService {
     };
 
     rawLeverageFarming?.forEach((farming) => {
-      if (farming.farmToken instanceof LPToken) {
-        const lpToken = farming.farmToken as LPToken;
-        lpToken.tokens.forEach((token) => (result.totalValue += token.value));
-      } else {
-        const singleToken = farming.farmToken as LeverageErcToken;
-        result.totalValue += Number(singleToken.value);
-      }
+      result.totalValue += Number(farming.earned);
     });
 
     result.items = rawLeverageFarming || [];

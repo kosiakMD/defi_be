@@ -7,6 +7,7 @@ export enum FeatureEnum {
   borrowing = 'borrowing', // +
   transactions = 'transactions', // -
   leverageFarming = 'leverageFarming',
+  health = 'health',
   // derivatives = 'derivatives',
   // exchange = 'exchange',
   // seigniorage = 'seigniorage',

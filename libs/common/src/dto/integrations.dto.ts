@@ -1,9 +1,10 @@
 // eslint-disable-next-line max-classes-per-file
 import { Exclude, Expose, Type } from 'class-transformer';
-import { ERC20TokenDto, StakingPositionFeatureDto } from './index';
+import { ERC20TokenDto } from './index';
 
 import { FeatureEnum } from '@app/common/enum';
-import { FeatureResult, LendingPositionDto, LeverageFarmingPosition, } from '@app/common';
+import { FeatureResult, Features, IntegrationClaimableTokenDto, LendingPositionDto, LeverageFarmingPosition, } from '@app/common';
+import { HealthFactorDto } from './HealthFactor.dto';
 
 export class PoolTokenDto {
   address: string = null;
@@ -65,7 +66,7 @@ export class LiquidityPoolFeatureDto {
 }
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeatureDto | StakingPositionFeatureDto | LendingPositionDto | LeverageFarmingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResult<Features>;
 } & {
   // errors: string[] | Error[];
   errors: string[] | string[][] | string[][][] | Error[];
@@ -83,5 +84,11 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   @Expose()
   [FeatureEnum.lending]?: FeatureResult<LendingPositionDto>;
   @Expose()
+  [FeatureEnum.borrowing]?: FeatureResult<LendingPositionDto>;
+  @Expose()
   [FeatureEnum.leverageFarming]?: FeatureResult<LeverageFarmingPosition>;
+  @Expose()
+  [FeatureEnum.health]?: FeatureResult<HealthFactorDto>;
+  @Expose()
+  [FeatureEnum.claimable]?: FeatureResult<IntegrationClaimableTokenDto>;
 }

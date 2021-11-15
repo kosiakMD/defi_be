@@ -19,14 +19,14 @@ import {
   ProtocolNameEnum,
   UniswapSubgraphLikeData,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/enum';
 
 import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationStakingPositionDto,
   LPToken,
   StakingPositionResponseDto,
@@ -37,7 +37,6 @@ import { LocalMultiCall } from '../../spookyswap/multicall/local.multi.call';
 import { acelabMap, booMap, farmsMap, xBooMap } from '../../spookyswap/multicall/util';
 import { SpookyswapAceLabSubgraph } from '../../thegraph/spookyswap.acelab.subgraph';
 import { SpookyswapFarmSubgraph } from '../../thegraph/spookyswap.farm.subgraph';
-import { FeatureEnum } from '../features/features.enum';
 import DataProviderProtocol from './dataProviderProtocol';
 import { Mapper } from './mappers/mapper';
 

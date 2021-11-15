@@ -16,12 +16,11 @@ import {
   ProjectEnum,
   ProtocolTypeEnum,
 } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 
 import { AccountService } from '../../../../account/account.service';
 import { Web3Provider } from '../../../../chain/web3.provider';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   LeverageFarmingPositionDto,

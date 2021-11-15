@@ -5,14 +5,15 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
 import { DetailedResponseDto, MetaDto } from '@app/common/dto';
 import { ChainDto } from '@app/common/dto/chain.dto';
-import { BorrowToken, ERC20Token, LeverageErcToken, StakingPosition } from '../interfaces/transactions.interfaces';
+import { BorrowToken, LeverageErcToken, StakingPosition } from '../interfaces/transactions.interfaces';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from '../protocol/features/features.dto';
-import { FeatureEnum } from '../protocol/features/features.enum';
+import { FeatureEnum } from '@app/common';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { FeatureResult } from '../protocol/features/features.types';
 import { LendingPositionDto, BorrowingPosition } from '@app/common';
 import { LeverageFarmingPosition } from '../interfaces/leverage.farming.interfaces';
+import { IntegrationClaimableTokenDto } from '@app/common';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
@@ -135,24 +136,6 @@ export class LiquidityPoolFeature {
 
   @Type(() => PoolTokenDto)
   tokens: PoolTokenDto[] = [];
-}
-
-export class ClaimableDto {
-  @ApiProperty({type: String, example: '1.23413'})
-  balance: string = null;
-  @ApiProperty({type: String, example: '123413'})
-  value: number = null;
-}
-
-@Exclude()
-export class IntegrationClaimableTokenDto extends ERC20Token {
-  @ApiProperty({type: ClaimableDto})
-  @Expose()
-  claimableData?: ClaimableDto = null;
-
-  @ApiProperty({type: String, example: 543.675})
-  @Expose()
-  price?: number = null;
 }
 
 export class LPToken extends IntegrationERC20TokenDto {

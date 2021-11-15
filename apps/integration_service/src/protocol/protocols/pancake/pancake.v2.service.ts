@@ -14,6 +14,7 @@ import {
   PoolTokenDto,
   ProtocolNameEnum,
 } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
 import { FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 
@@ -22,8 +23,6 @@ import { RewardsData } from '../../../chain/dto/pancake.interfaces';
 import { LocalMultiCall } from '../../../chain/local.multi.call';
 import { Web3Provider } from '../../../chain/web3.provider';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
 } from '../../../integrations/integrations.dto';

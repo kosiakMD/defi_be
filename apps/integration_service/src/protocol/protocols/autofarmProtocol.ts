@@ -6,14 +6,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, Logger } from '@app/common';
+import { FeatureEnum } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { AutofarmProtocolEnum, ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
 
 import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import { CurrentPricesPayload } from '../../dto/price.response.dto';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   LPToken,
@@ -23,7 +23,6 @@ import {
 import { Asset, ERC20Token } from '../../interfaces/transactions.interfaces';
 import { PriceService } from '../../price/price.service';
 import { decimalsDivider } from '../../utils/util';
-import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
 import { AutofarmApiPools, StakingInterface } from './autofarm/autofarm.interfaces';
 import { LocalMultiCall } from './autofarm/multicall/local.multi.call';

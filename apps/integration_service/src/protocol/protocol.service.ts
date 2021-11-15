@@ -8,7 +8,6 @@ import {
   AlpacaProtocolEnum,
   AutofarmProtocolEnum,
   Borrowing,
-  BorrowingPosition,
   ChainDto,
   ChainId,
   FeatureResultDto,
@@ -26,6 +25,7 @@ import {
   ResultStatus,
   SpookySwapProtocolEnum,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { AccountService } from '../account/account.service';
@@ -40,7 +40,6 @@ import { Asset, PoolToken } from '../interfaces/transactions.interfaces';
 import { PriceService } from '../price/price.service';
 import { objectUpdate } from '../utils/object';
 import { ProtocolBasicInfo } from './features/features.dto';
-import { FeatureEnum } from './features/features.enum';
 import { tokenDictionary } from './protocols.dictionaries';
 import { FeatureHandleDto, RawFeaturesDto } from './protocols.dto';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
@@ -129,8 +128,6 @@ export class ProtocolService {
     }
   }
 
-  private async postprocessing() {}
-
   private async formatFeaturesData(
     featuresData: RawFeaturesDto,
     chainId: ChainId,
@@ -152,7 +149,7 @@ export class ProtocolService {
         // result lending
         rawLending && this.handleResultLending(rawLending, result),
         // result borrowing
-        rawBorrowing && this.handleResultBorrowing(rawBorrowing, result),
+        rawBorrowing && this.handleResultLending(rawBorrowing, result),
         // result leverageFarming
         rawLeverageFarming && this.handleResultLeverageFarming(rawLeverageFarming, result),
       ]);
@@ -400,8 +397,8 @@ export class ProtocolService {
     );
   }
 
-  protected transformBorrowing(rawBorrowing: Borrowing): FeatureResultDto<BorrowingPosition> {
-    return this.getBasicFeatureResult<BorrowingPosition>(
+  protected transformBorrowing(rawBorrowing: Borrowing): FeatureResultDto<LendingPositionDto> {
+    return this.getBasicFeatureResult<LendingPositionDto>(
       rawBorrowing,
       'borrowingPositions',
       'totalDebtDecimal',

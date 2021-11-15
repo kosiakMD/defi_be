@@ -1,10 +1,10 @@
 import { Address, ChainAbbrEnum, ChainDto, Logger, ProjectEnum, ProtocolName } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 
 import { SubgraphResponseDto } from '../../../subgraph/response.dto';
 import { UniswapLikeSubgraph } from '../../../thegraph/uniswap-like-subgraph.service';
 import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../../utils/util';
-import { FeatureEnum } from '../../features/features.enum';
 import { ProtocolFeaturesInfo } from '../../protocol.types';
 import { RawFeaturesDto } from '../../protocols.dto';
 import { BasicProtocol } from '../basicProtocol';

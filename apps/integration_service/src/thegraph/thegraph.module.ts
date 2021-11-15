@@ -3,6 +3,7 @@ import * as redisStore from 'cache-manager-redis-store';
 import { HttpModule, Module, CacheModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { AaveSubgraph } from '../protocol/protocols/aave/subgraphs/aave.subgraph';
 import { AlpacaSubgraph } from '../protocol/protocols/alpaca/services/alpaca.subgraph';
 import { AutofarmSubgraph } from '../protocol/protocols/autofarm/services/autofarm.subgraph';
 import { SushiSwapBentoBoxSubgraph } from '../protocol/protocols/sushiswap/services/sushiswap.bentobox.subgraph';
@@ -12,7 +13,6 @@ import { SushiSwapMiniChefSubgraph } from '../protocol/protocols/sushiswap/servi
 import { SushiSwapSushiBarSubgraph } from '../protocol/protocols/sushiswap/services/sushiswap.sushibar.subgraph';
 import { YearnV1Subgraph } from '../protocol/protocols/yearn/services/yearn.v1.subgraph';
 import { YearnV2Subgraph } from '../protocol/protocols/yearn/services/yearn.v2.subgraph';
-import { AaveSubgraph } from './aave.subgraph';
 import { BlocksSubgraph } from './blocks.subgraph';
 import { PancakeSubgraph } from './pancake.subgraph';
 import { Pancakev2MainStakingSubgraph } from './pancakev2.main.staking.subgraph';

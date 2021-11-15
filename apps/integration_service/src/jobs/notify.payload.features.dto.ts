@@ -2,10 +2,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ProtocolName } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { FeatureName } from '../integrations/integrationFeatures';
-import { FeatureEnum } from '../protocol/features/features.enum';
 
 export class ERC20TokenDto {
   address: string = null;

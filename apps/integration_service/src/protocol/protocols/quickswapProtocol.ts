@@ -5,6 +5,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, IncomeLiquidityPosition, Logger, PoolTokenDto } from '@app/common';
+import { FeatureEnum } from '@app/common';
+import { IntegrationClaimableTokenDto } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import {
   ChainAbbrEnum,
@@ -18,11 +20,7 @@ import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../account/account.service';
-import {
-  IntegrationClaimableTokenDto,
-  IntegrationStakingPositionDto,
-  LPToken,
-} from '../../integrations/integrations.dto';
+import { IntegrationStakingPositionDto, LPToken } from '../../integrations/integrations.dto';
 import { MultiCallService } from '../../multicall';
 import { PriceService } from '../../price/price.service';
 import {
@@ -36,7 +34,6 @@ import {
 import { PairDto } from '../../subgraph';
 import { QuickswapSubgraph } from '../../thegraph/quickswap.subgraph';
 import { decimalsDivider, getUniqueAndToLowerCaseArrayData } from '../../utils/util';
-import { FeatureEnum } from '../features/features.enum';
 import AbstractProtocol from './abstractProtocol';
 import DataProviderProtocol from './dataProviderProtocol';
 import { Mapper } from './mappers/mapper';

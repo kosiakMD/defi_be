@@ -2,13 +2,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, Logger } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../account/account.service';
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../price/price.service';
 import { PancakeSubgraph } from '../../../thegraph/pancake.subgraph';
-import { FeatureEnum } from '../../features/features.enum';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { Mapper } from '../mappers/mapper';
 import { PancakeService } from './pancake.service';

@@ -6,14 +6,13 @@ import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainAbbrEnum, ChainDto, Logger } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { Address } from '@app/common/types';
 
 import { AccountService } from '../../../../account/account.service';
 import { Web3Provider } from '../../../../chain/web3.provider';
 import { CurrentPricesPayload } from '../../../../dto/price.response.dto';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   LPToken,

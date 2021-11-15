@@ -5,13 +5,10 @@ import { AbiItem } from 'web3-utils';
 import { Injectable } from '@nestjs/common';
 
 import {
-  AaveUser,
   AutomaticMarketMaker,
   Borrowing,
-  BorrowingToken,
   ChainDto,
   Lending,
-  LendingErcToken,
   LiquidityPositionDto,
 } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
@@ -22,7 +19,6 @@ import {
 import { StakingProjectDto, TransactionProjectDto } from '@app/common/dto/transactions.dto';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '@app/common/enum';
 import { ProtocolName } from '@app/common/types';
-import { normalizeDecimals } from '@app/common/utils/number';
 
 import { Web3Provider } from '../../../chain/web3.provider';
 import { LiquidityPool } from '../../../dto/liquidity.position.dto';
@@ -191,7 +187,7 @@ export class Mapper {
       // const transactions: TransactionProjectDto = Mapper.transformTransaction(baseInfo);
       // base.push(transactions);
 
-      const { subgraphPools, subgraphStaking, subgraphLending } = subgraphData;
+      const { subgraphPools, subgraphStaking } = subgraphData;
 
       if (subgraphPools) {
         const amm: AutomaticMarketMaker = Mapper.transformAmm(baseInfo);
@@ -212,17 +208,6 @@ export class Mapper {
         );
 
         base.push(staking);
-      }
-
-      if (subgraphLending) {
-        // TODO: Lending should be a class and use plainToClass
-        const lending: Lending = Mapper.transformLending(baseInfo);
-
-        const borrowing: Borrowing = Mapper.transformBorrowing(baseInfo);
-
-        await this.mapLendingPositions(lending, borrowing, subgraphLending.get(userAddress));
-        base.push(lending);
-        base.push(borrowing);
       }
     }
     return base;
@@ -404,83 +389,6 @@ export class Mapper {
     }
 
     staking.stakingPositions.push(...StakingPositionsToPush);
-  }
-
-  protected async mapLendingPositions(
-    lending: Lending,
-    borrowing: Borrowing,
-    user: AaveUser = null,
-  ): Promise<void> {
-    if (!user) return;
-
-    const RAY = 10 ** 27;
-
-    user.reserves.forEach((userReserve) => {
-      // Calculate Lending
-      if (Number(userReserve.currentATokenBalance)) {
-        const lendingToken: LendingErcToken = plainToClass(LendingErcToken, {
-          address: userReserve.reserve.underlyingAsset,
-          decimals: userReserve.reserve.decimals,
-          name: userReserve.reserve.name,
-          symbol: userReserve.reserve.symbol,
-          price: userReserve.reserve.priceUSD,
-        });
-
-        const totalDepositDecimal = normalizeDecimals(
-          userReserve.currentATokenBalance,
-          userReserve.reserve.decimals,
-        );
-
-        lending.lendingPositions.push({
-          address: userReserve.reserve.id,
-          totalDeposit: userReserve.currentATokenBalance,
-          balance: totalDepositDecimal,
-          value: totalDepositDecimal * lendingToken.price,
-          APY: 100 * (Number(userReserve.reserve.liquidityRate) / RAY),
-          token: lendingToken,
-        });
-      }
-
-      // Calculate Borrowing
-      if (Number(userReserve.currentTotalDebt)) {
-        const borrowToken: BorrowingToken = plainToClass(BorrowingToken, {
-          address: userReserve.reserve.underlyingAsset,
-          decimals: userReserve.reserve.decimals,
-          name: userReserve.reserve.name,
-          symbol: userReserve.reserve.symbol,
-          price: userReserve.reserve.priceUSD,
-        });
-
-        const totalDebtDecimal = normalizeDecimals(
-          userReserve.currentTotalDebt,
-          userReserve.reserve.decimals,
-        );
-        const stableDebtDecimal = normalizeDecimals(
-          userReserve.currentStableDebt,
-          userReserve.reserve.decimals,
-        );
-        const variableDebtDecimal = normalizeDecimals(
-          userReserve.currentVariableDebt,
-          userReserve.reserve.decimals,
-        );
-
-        borrowing.borrowingPositions.push({
-          address: userReserve.reserve.id,
-          totalDebt: userReserve.currentTotalDebt,
-          stableDebt: userReserve.currentStableDebt,
-          variableDebt: userReserve.currentVariableDebt,
-          totalDebtDecimal,
-          stableDebtDecimal,
-          variableDebtDecimal,
-          totalDebtUSD: totalDebtDecimal * borrowToken.price,
-          stableDebtUSD: stableDebtDecimal * borrowToken.price,
-          variableDebtUSD: variableDebtDecimal * borrowToken.price,
-          borrowStableAPY: 100 * (Number(userReserve.reserve.stableBorrowRate) / RAY),
-          borrowVariableAPY: 100 * (Number(userReserve.reserve.variableBorrowRate) / RAY),
-          token: borrowToken,
-        });
-      }
-    });
   }
 
   private async getPendingSushi(poolId, userId): Promise<string> {

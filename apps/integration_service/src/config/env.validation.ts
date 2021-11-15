@@ -46,6 +46,7 @@ export const validationSchema = Joi.object({
     .required(), // TODO: not empty
   AAVE_ETH_SUBGRAPH_URL: Joi.string().required(),
   AAVE_PLG_SUBGRAPH_URL: Joi.string().required(),
+  AAVE_AVAX_SUBGRAPH_URL: Joi.string().required(),
   AMM_UNISWAP_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
@@ -70,8 +71,6 @@ export const validationSchema = Joi.object({
   SPOOKYSWAP_ACELAB_SUBGRAPH_URL: Joi.string() //
     .allow('')
     .required(), // TODO: not empty
-  ETH_URL: Joi.string() //
-    .required(),
   PRICE_SERVICE_URL: Joi.string().required(),
   ACCOUNT_SERVICE_HOST: Joi.string().required(),
   ACCOUNT_SERVICE_PORT: Joi.number().required(),
@@ -104,7 +103,6 @@ export const validationSchema = Joi.object({
   SUSHISWAP_ETH_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
 
-  BSC_URL: Joi.string().required(),
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //
     .default('eu-central-1')
@@ -117,8 +115,18 @@ export const validationSchema = Joi.object({
   AWS_SECRET_ACCESS_KEY: Joi.string() //
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
-  POLYGON_RPC_URL: Joi.string().required(),
+
+  AVAX_URL: Joi.string().required(),
+  BSC_URL: Joi.string().required(),
+  CELO_URL: Joi.string().required(),
+  ETH_URL: Joi.string().required(),
   FTM_URL: Joi.string().required(),
+  HARM_URL: Joi.string().required(),
+  HECO_URL: Joi.string().required(),
+  MRIVER_URL: Joi.string().required(),
+  POLYGON_RPC_URL: Joi.string().required(),
+  XDAI_URL: Joi.string().required(),
+
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),
   AUTOFARM_API_URL: Joi.string().required(),

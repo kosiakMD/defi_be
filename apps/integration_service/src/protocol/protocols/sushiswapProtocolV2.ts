@@ -21,18 +21,14 @@ import {
   LendingPositionDto,
   LendingErcToken,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../account/account.service';
-import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
-  LPToken,
-  IntegrationStakingPositionDto,
-} from '../../integrations/integrations.dto';
+import { LPToken, IntegrationStakingPositionDto } from '../../integrations/integrations.dto';
 import { PriceService } from '../../price/price.service';
-import { FeatureEnum } from '../features/features.enum';
 import BasicProtocol from './basicProtocol';
 import { LocalMultiCall } from './sushiswap/multicall/local.multicall';
 import { SushiSwapBentoBoxSubgraph } from './sushiswap/services/sushiswap.bentobox.subgraph';
@@ -60,6 +56,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     // ChainAbbrEnum.heco, // TODO: find out why heco subgraph is returning 404
     ChainAbbrEnum.plg,
     ChainAbbrEnum.xdai,
+    // ChainAbbrEnum.mriver, // TODO
   ];
   readonly project = ProjectEnum.sushiswap;
   readonly name = SushiSwapProtocolEnum.sushiswapV2;
@@ -80,6 +77,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     [ChainAbbrEnum.heco]: [FeatureEnum.pools],
     [ChainAbbrEnum.plg]: [FeatureEnum.pools, FeatureEnum.staking],
     [ChainAbbrEnum.xdai]: [FeatureEnum.pools],
+    [ChainAbbrEnum.mriver]: [FeatureEnum.pools],
   };
 
   constructor(

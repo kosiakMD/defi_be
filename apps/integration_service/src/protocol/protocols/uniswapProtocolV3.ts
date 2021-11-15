@@ -19,6 +19,7 @@ import {
   UniswapProtocolEnum,
   UniswapV3Position,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import { AccountService } from '../../account/account.service';
@@ -29,7 +30,6 @@ import {
   // calculateTokensOwed
   calculatePositionAmounts,
 } from '../../utils/uniswapV3PositionMath';
-import { FeatureEnum } from '../features/features.enum';
 import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()

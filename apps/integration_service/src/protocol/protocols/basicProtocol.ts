@@ -7,9 +7,9 @@ import {
   ProjectEnum,
   ProtocolName,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
 
 import { ProtocolBasicInfo } from '../features/features.dto';
-import { FeatureEnum } from '../features/features.enum';
 import { FeaturesType, ProtocolFeaturesInfo } from '../protocol.types';
 import { RawFeaturesDto } from '../protocols.dto';
 import AbstractProtocol from './abstractProtocol';

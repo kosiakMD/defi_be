@@ -165,9 +165,10 @@ export class TransactionsParsingService {
     try {
       const timeMark = `Request to web3 - getting of gasUsed for transaction: ${hash}`;
       this.logger.time(timeMark);
-      const { gasUsed } = await this.ethProvider.eth.getTransactionReceipt(hash);
+      const result = await this.ethProvider.eth.getTransactionReceipt(hash);
       this.logger.timeEnd(timeMark);
-      return gasUsed;
+      return result.gasUsed;
+      console.log('test');
     } catch (e) {
       this.logger.error(e, 'getGasUsedFromWeb3');
       throw e;

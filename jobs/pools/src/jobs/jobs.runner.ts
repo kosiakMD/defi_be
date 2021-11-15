@@ -91,20 +91,20 @@ export class JobsRunner {
   private async getIntegrationServiceConfiguration() {
     const integrationProtocols: ProtocolsResponseData =
       await this.integrationService.getProtocols();
-    
+
     const jobPlaceholdersSet: Set<string> = new Set<string>();
     integrationProtocols.data.forEach((ip) => {
       ip.features.forEach((f) => {
-        
         f.list.forEach((feature) => {
           jobPlaceholdersSet.add(getJobPlaceholder(f.chain.id, feature, ip.name));
         });
       });
     });
-    jobPlaceholdersSet.add('2_PancakeV2_pools');
-    jobPlaceholdersSet.add('6_TraderJoe_pools');
-    jobPlaceholdersSet.add('6_TraderJoe_staking');
-    
+    // jobPlaceholdersSet.add('2_PancakeV2_pools');
+    // jobPlaceholdersSet.add('6_TraderJoe_pools');
+    // jobPlaceholdersSet.add('6_TraderJoe_staking');
+    jobPlaceholdersSet.add('2_Ellipsis_pools');
+
     return jobPlaceholdersSet;
   }
 }

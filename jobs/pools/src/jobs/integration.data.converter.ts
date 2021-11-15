@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { ERC20Token } from './dto/common';
-import { LiquidityPoolFeature, PoolTokenDto } from './dto/pools.dto';
+import { CurveLiquidityPoolFeature, LiquidityPoolFeature, PoolTokenDto } from './dto/pools.dto';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
@@ -58,6 +58,9 @@ export class IntegrationDataConverter {
     }
     if (dtoName === 'PoolTokenDto') {
       converted = plainToClass(PoolTokenDto, {});
+    }
+    if (dtoName === 'CurveLiquidityPoolFeature') {
+      converted = plainToClass(CurveLiquidityPoolFeature, {});
     }
     if (dtoName === 'LiquidityPoolFeature') {
       converted = plainToClass(LiquidityPoolFeature, {});

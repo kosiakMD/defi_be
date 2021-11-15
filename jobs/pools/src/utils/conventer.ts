@@ -3,10 +3,54 @@ import { plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
 
 import { ERC20Token } from '../jobs/dto/common';
-import { LiquidityPoolFeature, PoolTokenDto } from '../jobs/dto/pools.dto';
-import { LiquidityPoolTokenDto } from '../microservices/dto/account/account.dto';
+import {
+  CurveLiquidityPoolFeature,
+  LiquidityPoolFeature,
+  PoolTokenDto,
+} from '../jobs/dto/pools.dto';
+import { CurvePoolTokenDto, LiquidityPoolTokenDto } from '../microservices/dto/account/account.dto';
 
 export const UNIV2_POOL_TOKEN_WEIGHT = 0.5;
+
+export function toCurveLiquidityPoolFeature(
+  lpTokenData: CurvePoolTokenDto,
+): CurveLiquidityPoolFeature {
+  return plainToClass(CurveLiquidityPoolFeature, {
+    address: lpTokenData.address,
+    name: lpTokenData.underlyingAssets
+      .sort((a, b) => a.positionInPool - b.positionInPool)
+      .map((pt) => pt.symbol)
+      .join('/'),
+    lpToken: plainToClass(ERC20Token, {
+      address: lpTokenData.address,
+      name: lpTokenData.name,
+      symbol: lpTokenData.symbol,
+      decimals: lpTokenData.decimals,
+    }),
+    tokens: lpTokenData.underlyingAssets.map((pt) => {
+      return plainToClass(CurvePoolTokenDto, {
+        address: pt.address,
+        name: pt.name,
+        symbol: pt.symbol,
+        decimals: pt.decimals,
+        positionInPool: pt.positionInPool,
+        // weight: UNIV2_POOL_TOKEN_WEIGHT,
+        tokens: pt.underlyingAssets?.length
+          ? pt.underlyingAssets.map((token) => {
+              return plainToClass(PoolTokenDto, {
+                address: token.address,
+                name: token.name,
+                symbol: token.symbol,
+                decimals: token.decimals,
+                positionInPool: token.positionInPool,
+                // weight: UNIV2_POOL_TOKEN_WEIGHT,
+              });
+            })
+          : [],
+      });
+    }),
+  });
+}
 
 export function decodeOutput(abi: AbiItem, outputResult) {
   // if there is one output, it doesn't have a name (check abi)
@@ -48,7 +92,7 @@ export function toLiquidityPoolFeature(lpTokenData: LiquidityPoolTokenDto): Liqu
         symbol: pt.symbol,
         decimals: pt.decimals,
         positionInPool: pt.positionInPool,
-        weight: UNIV2_POOL_TOKEN_WEIGHT
+        weight: UNIV2_POOL_TOKEN_WEIGHT,
       });
     }),
   });

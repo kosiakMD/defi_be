@@ -1,3 +1,5 @@
+import { ChainIdEnum } from '@app/common';
+
 export function camelize(...texts: string[]): string {
   let result = '';
   texts.forEach((text, index) => {
@@ -8,4 +10,12 @@ export function camelize(...texts: string[]): string {
     result += text;
   });
   return result;
+}
+
+export function concatStrings(...args): string {
+  return args.join('_');
+}
+
+export function getJobPlaceholder(chain: ChainIdEnum, feature: string, protocol: string): string {
+  return concatStrings(chain, protocol, feature);
 }

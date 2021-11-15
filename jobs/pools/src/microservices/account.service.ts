@@ -8,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainIdEnum } from '../config/enum';
 import { Logger } from '../logger/logger.service';
 import { RequestErrorHandler } from '../utils/decorators/error.decorator';
-import { LiquidityPoolTokenDto } from './dto/account/account.dto';
+import { CurvePoolTokenDto, LiquidityPoolTokenDto } from './dto/account/account.dto';
 
 @Injectable()
 export class AccountService {
@@ -29,6 +29,20 @@ export class AccountService {
   async saveTrackingAsset(address: string, chain: ChainIdEnum): Promise<LiquidityPoolTokenDto> {
     return await this.httpService
       .post(this.saveTrackedTokenUrl, {
+        address: address,
+        chain: chain,
+      })
+      .pipe(map((r) => r.data))
+      .toPromise();
+  }
+
+  @RequestErrorHandler()
+  async saveLikeCurveTrackingAsset(
+    address: string,
+    chain: ChainIdEnum,
+  ): Promise<CurvePoolTokenDto> {
+    return await this.httpService
+      .post(this.saveTrackedTokenUrl + '/like-curve', {
         address: address,
         chain: chain,
       })

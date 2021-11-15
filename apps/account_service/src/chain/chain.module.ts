@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PriceModule } from '../price/price.module';
 import { AssetService } from './asset.service';
 import { WETH } from './contracts/WETH';
+import { MultiCallService } from './multi.call.service';
 import { Web3Provider } from './web3.provider';
 
 @Module({
@@ -27,7 +28,7 @@ import { Web3Provider } from './web3.provider';
     }),
     PriceModule,
   ],
-  providers: [Web3Provider, WETH, AssetService],
-  exports: [Web3Provider, WETH, AssetService],
+  providers: [Web3Provider, WETH, AssetService, MultiCallService],
+  exports: [Web3Provider, WETH, AssetService, MultiCallService],
 })
 export class ChainModule {}

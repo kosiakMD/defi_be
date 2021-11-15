@@ -86,6 +86,26 @@ export class AssetsController {
     });
   }
 
+  @Post('/like-curve')
+  @ApiBody({ type: AssetTrackDto })
+  @ApiResponse({ status: 200, type: AssetResponseDto })
+  async addLikeCurveAssetToTrack(@Body() asset: AssetTrackDto): Promise<any> {
+    return await this.assetsService.saveLikeCurveTrackingAsset({
+      assetAddress: asset.address,
+      assetChain: asset.chain,
+    });
+  }
+
+  @Post('/test')
+  @ApiBody({ type: AssetTrackDto })
+  @ApiResponse({ status: 200, type: AssetsPoolsDto })
+  async test(@Body() asset: AssetTrackDto) {
+    return await this.assetsService.test({
+      assetAddress: asset.address,
+      assetChain: asset.chain,
+    });
+  }
+
   @Get('/pools')
   @ApiQuery({
     name: 'chainId',

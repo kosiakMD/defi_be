@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import BigNumber from 'bignumber.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 
@@ -7,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CallData } from '../../chain/dto/call.data';
 import { MasterchiefPoolInfoResponse } from '../../chain/dto/token';
-//import { MultiCallInternal } from '../../chain/multicall';
+// import { MultiCallInternal } from '../../chain/multicall';
 import { MulticallService } from '../../chain/multicall.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import { ChainIdEnum, CurrencyIdEnum } from '../../config/enum';
@@ -33,14 +32,15 @@ import {
 } from '../dto/staking.dto';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { Abis } from './abis';
-import { PancakeAddresses } from './addresses';
+import { Abis } from '../pancake/abis';
+import { PancakeAddresses } from '../pancake/addresses';
+// import { EllipsisAddresses } from './addresses';
 
 @Injectable()
-export class PancakeStaking implements JobInterface {
+export class EllipsisStaking implements JobInterface {
   chain = ChainIdEnum.bsc;
   feature = 'staking';
-  protocol = 'PancakeV2';
+  protocol = 'Ellipsis';
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
 

@@ -21,6 +21,7 @@ import {
   LiquidityPosition,
   Logger,
   PancakeProtocolEnum,
+  QuickswapProtocolEnum,
   ProtocolName,
   ResultStatus,
   SpookySwapProtocolEnum,
@@ -274,7 +275,8 @@ export class ProtocolService {
         protocol.name !== AlpacaProtocolEnum.alpaca &&
         protocol.name !== AutofarmProtocolEnum.autofarm &&
         protocol.name !== SpookySwapProtocolEnum.SpookySwap &&
-        protocol.name !== PancakeProtocolEnum.pancakeV2
+        protocol.name !== PancakeProtocolEnum.pancakeV2 &&
+        protocol.name !== QuickswapProtocolEnum.quickswap
       ) {
         await this.handleStakingMissedData(stakingPositions, chainId);
       }

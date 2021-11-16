@@ -23,7 +23,7 @@ import { AssetPairReserveValue } from './models';
 import { AssetsApiDto, AssetsService, Pair, Token } from './services/assets.service';
 import { PriceDto, PriceService } from './services/price.service';
 import { Decimals, decimalsReserve } from './utils';
-import { ChainIdEnum, TokensCategories, zeroAddress } from './utils/constants';
+import { TokensCategories, zeroAddress } from './utils/constants';
 import { logger } from './utils/logger';
 
 const uniswapMulticall = new UniSwapV2PairMulticall();
@@ -472,17 +472,6 @@ export function getBasePrice(
       ? new BN(value.baseAssetReserve) //
           .times(coinPrice.price)
           .div(value.assetReserve)
-      : chainId === ChainIdEnum.celo
-      ? decimalsReserve(
-          new BN(value.baseAssetReserve) //
-            .div(value.assetReserve)
-            .toString(),
-          /**
-           * TODO: 4 is the magical number
-           * to get right prices on Celo network
-           */
-          getCorrectTokenDecimals(4),
-        )
       : new BN(value.baseAssetReserve) //
           .div(value.assetReserve);
 

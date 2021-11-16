@@ -1,23 +1,41 @@
+import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
-import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { IntegrationFeaturesDataDto, Logger, ProtocolName } from '@app/common';
+import {
+  ChainDto,
+  FeatureEnum,
+  IntegrationFeaturesDataDto,
+  Logger,
+  ProtocolName,
+} from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 
-import { FeaturesResponseDto, ProtocolBasicInfo } from '../protocol/features/features.dto';
+import { NotifyPayloadFeaturesDto } from '../jobs/notify.payload.features.dto';
+import {
+  FeaturesResponseDto,
+  ProtocolBasicInfo,
+  ProtocolDataDto,
+} from '../protocol/features/features.dto';
 import { FeaturesService } from '../protocol/features/features.service';
 import { ProtocolService } from '../protocol/protocol.service';
-import { getChainByAbbr } from '../utils/chain';
-import { IntChainsDataDto, IntegrationsResponseDto, ProtocolInfoDto } from './integrations.dto';
+import { getChainById } from '../utils/chain';
+import {
+  IntChainsDataDto,
+  IntegrationsResponseDto,
+  IntegrationStakingPositionDto,
+  ProtocolInfoDto,
+} from './integrations.dto';
 
 @Injectable()
 export class IntegrationsService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly featuresService: FeaturesService,
     private readonly protocolService: ProtocolService,
   ) {}
@@ -26,6 +44,32 @@ export class IntegrationsService {
     return plainToClass(FeaturesResponseDto, {
       data: this.featuresService.getAllFeatures(),
     });
+  }
+
+  async getActiveFeatures(): Promise<any[]> {
+    const protocols: ProtocolDataDto[] = this.featuresService.getAllFeatures();
+    for (const protocol of protocols) {
+      for (const feature of protocol.features) {
+        for (const ft of feature.list) {
+          const cachedData = await this.cache.get(
+            feature.chain.id + '_' + protocol.name + '_' + ft,
+          );
+          if (cachedData) {
+            feature[ft] = this.getActive(ft, cachedData as NotifyPayloadFeaturesDto);
+          }
+        }
+      }
+    }
+
+    return protocols;
+  }
+
+  private getActive(ft: FeatureEnum, cachedData: NotifyPayloadFeaturesDto) {
+    if (ft === FeatureEnum.staking) {
+      const items: IntegrationStakingPositionDto[] = cachedData.items;
+      return items.filter((i) => i.stats?.apr > 0 || i.stats?.apy > 0);
+    }
+    return [];
   }
 
   async getProtocolFeaturesData(
@@ -67,18 +111,19 @@ export class IntegrationsService {
     response.data.currency = plainToClass(CurrencyDto, {});
     // Features Data
     const allData = await Promise.allSettled<any>( // <IntegrationFeaturesDataDto>
-      allowedChains.map((chainId) =>
-        this.protocolService.getProtocolFeatures(protocolName, addresses, chainId),
-      ),
+      allowedChains.map((chainId) => {
+        const chain: ChainDto = getChainById(chainId);
+        return this.protocolService.getProtocolFeatures(protocolName, addresses, chain);
+      }),
     );
     // Data
     allowedChains.forEach((chainId, dataIndex) => {
       const chainData = plainToClass(IntChainsDataDto, {});
-      const chainAbbr = ChainIdEnum[chainId];
+      const chain: ChainDto = getChainById(chainId);
       // Chain Info
-      chainData.chain = getChainByAbbr(chainAbbr);
+      chainData.chain = chain;
       // Protocol Features Info
-      chainData.features = [...(info?.features[chainAbbr] ?? [])];
+      chainData.features = [...(info?.features[chain.abbr] ?? [])];
       // Result Features Data
       const chainResult = allData[dataIndex];
       if (chainResult.status === 'fulfilled') {

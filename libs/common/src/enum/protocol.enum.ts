@@ -10,6 +10,12 @@ export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
   alpaca = 'alpaca',
+  yearn = 'yearn',
+}
+
+export enum YearnProtocolEnum {
+  YearnV1 = 'YearnV1',
+  YearnV2 = 'YearnV2',
 }
 
 export enum AaveProtocolEnum {
@@ -53,17 +59,9 @@ export enum AlpacaProtocolEnum {
   alpaca = 'Alpaca',
 }
 
-// export type ProtocolName =
-//   | AutofarmProtocolEnum
-//   | PancakeProtocolEnum
-//   | PangolinProtocolEnum
-//   | QuickswapProtocolEnum
-//   | SpookySwapProtocolEnum
-//   | SushiSwapProtocolEnum
-//   | UniswapProtocolEnum;
-
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
+  ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
@@ -71,5 +69,5 @@ export const ProtocolNameEnum = {
   ...SpookySwapProtocolEnum,
   ...SushiSwapProtocolEnum,
   ...UniswapProtocolEnum,
-  ...AlpacaProtocolEnum,
+  ...YearnProtocolEnum,
 };

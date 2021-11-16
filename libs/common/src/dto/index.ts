@@ -1,9 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 
 export * from './APY.dto';
-export * from './AaveReserve.dto';
-export * from './AaveUser.dto';
-export * from './AaveUserReserve.dto';
 export * from './Audit.dto';
 export * from './AutomaticMarketMaker.dto';
 export * from './BaseData.dto';
@@ -11,6 +8,7 @@ export * from './Borrowing.dto';
 export * from './BorrowingPosition.dto';
 export * from './BorrowingToken.dto';
 export * from './chain.dto';
+export * from './Claimable.dto';
 export * from './ClaimableToken.dto';
 export * from './ContractApproval.dto';
 export * from './CurrentPricesPayload.dto';
@@ -44,6 +42,7 @@ export * from './Token.dto';
 export * from './TokenCommon.dto';
 export * from './Transaction.dto';
 export * from '../interfaces/transactions.interfaces';
+export * from './IntegrationClaimableToken.dto';
 export * from './txs.dto';
 export * from './UniswapV3Position.dto';
 export * from './UniswapV3Tick.dto';

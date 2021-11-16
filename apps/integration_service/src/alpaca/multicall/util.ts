@@ -1,4 +1,4 @@
-import { ChainIdEnum } from '../../common/enum';
+import { ChainIdEnum } from '@app/common';
 
 export const AlpacaStakeContractAbi = [
   {

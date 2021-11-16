@@ -2,14 +2,15 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { Logger } from '@app/common';
-import { ChainIdEnum } from '@app/common/enum';
+import { ChainAbbrEnum, Logger } from '@app/common';
 
+import { MulticallContractFunctionEnum } from '../../../../multicall/multicall.enum';
 import { AutofarmTokenInfo, StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
 import {
   AutoFactoryAbi,
   autofarmAUTOFactory,
   autofarmFactoriesMap,
+  autofarmPoolLength,
   autofarmRewardToken,
   AutofarmVaultAbi,
   lpTokenAbi,
@@ -47,11 +48,11 @@ export class LocalMultiCall extends MultiCall {
     }
   }
 
-  async getVaultPoolsInfo(data: StakingInterface[], chain: ChainIdEnum): Promise<string[]> {
+  async getVaultPoolsInfo(data: StakingInterface[], chain: ChainAbbrEnum): Promise<string[]> {
     const inputs = data.map((pool) => {
       const input: CallInput = {
         target: autofarmFactoriesMap.get(chain),
-        function: 'poolInfo',
+        function: MulticallContractFunctionEnum.poolInfo,
         args: [pool.poolNum],
       };
       return input;
@@ -66,7 +67,10 @@ export class LocalMultiCall extends MultiCall {
     return poolsAddresses;
   }
 
-  async getVaultUsersInfo(data: StakingInterface[], chain: ChainIdEnum): Promise<VaultUserInfo[]> {
+  async getVaultUsersRewards(
+    data: StakingInterface[],
+    chain: ChainAbbrEnum,
+  ): Promise<VaultUserInfo[]> {
     const inputs = data.map((pool) => {
       const input: CallInput = {
         target: autofarmFactoriesMap.get(chain),
@@ -79,6 +83,38 @@ export class LocalMultiCall extends MultiCall {
     const [, vaultUserInfo] = await this.multiCall(AutofarmVaultAbi, inputs);
     vaultUserInfo?.forEach((info, index) => (data[index].claimable = info.toString()));
     return vaultUserInfo;
+  }
+
+  async getStakedPositions(
+    stakedPosition: StakingInterface[],
+    address: string,
+    chain: ChainAbbrEnum,
+  ): Promise<StakingInterface[]> {
+    const inputs = [];
+
+    for (let i = 1; i <= autofarmPoolLength; i++) {
+      inputs.push({
+        target: autofarmFactoriesMap.get(chain),
+        function: 'stakedWantTokens',
+        args: [i, address],
+      });
+    }
+
+    const step = 50;
+    for (let i = 0; i < inputs.length; i += step) {
+      const sliceInput = inputs.slice(i, i + step);
+      const [, stakedWantTokens] = await this.multiCall(AutoFactoryAbi, sliceInput);
+      stakedWantTokens.forEach((amount, index) => {
+        if (amount && !amount.isZero()) {
+          stakedPosition.push({
+            poolNum: i + index + 1,
+            userAddress: address,
+            amount: amount.toString(),
+          });
+        }
+      });
+    }
+    return stakedPosition;
   }
 
   async getToken0AndToken1FromLp(
@@ -115,7 +151,6 @@ export class LocalMultiCall extends MultiCall {
   async getTotalSupplies(pairs: string[], stakingPositions: StakingInterface[]): Promise<void> {
     try {
       const chunkSize = 50;
-      let count = 0;
       for (let i = 0, j = pairs.length; i < j; i += chunkSize) {
         const to = i + chunkSize > pairs.length ? pairs.length : i + chunkSize;
         const pairsSlice = pairs.slice(i, to);
@@ -123,11 +158,10 @@ export class LocalMultiCall extends MultiCall {
           return { target: p, function: 'totalSupply' };
         });
         const [, multicallSupplies] = await this.multiCall(lpTokenAbi, inputs);
-        for (let i = 0; i < to; i++) {
-          const staking = stakingPositions[count * chunkSize + i];
-          staking.totalSupply = multicallSupplies[i]?.toString();
+        for (let k = 0; k < to; k++) {
+          const staking = stakingPositions[i + k];
+          staking.totalSupply = multicallSupplies[k]?.toString();
         }
-        count++;
       }
     } catch (e) {
       this.logger.error(e, 'getTotalSupplies');

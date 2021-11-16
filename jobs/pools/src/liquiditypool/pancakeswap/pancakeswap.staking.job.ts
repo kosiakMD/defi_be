@@ -79,7 +79,7 @@ export class PancakeswapStakingJob implements StakingJobInterface {
     }
     this.logger.log(`it is time update pools!`, this.placeholder);
 
-    const multicall = new MultiCallInternal(this.web3Provider.getInstanceByChainId(this.chain));
+    const multicall = new MultiCallInternal(this.web3Provider.web3(this.chain));
 
     const poolsInfo: Map<string, MasterchiefPoolInfoResponse> = await multicall.getPoolsInfo(
       this.masterchiefAddress,
@@ -143,7 +143,7 @@ export class PancakeswapStakingJob implements StakingJobInterface {
   }
 
   async updateWithExternalData(): Promise<StakingPoolFeature[]> {
-    const multicall = new MultiCallInternal(this.web3Provider.getInstanceByChainId(this.chain));
+    const multicall = new MultiCallInternal(this.web3Provider.web3(this.chain));
     const balancesData: Map<number, TokenBalance> = new Map<number, TokenBalance>();
     this.configuration.settings.map((s) => {
       balancesData.set(s.poolId, {

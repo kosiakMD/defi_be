@@ -54,6 +54,8 @@ export const validationSchema = Joi.object({
   ACCOUNT_ASSETS: Joi.string().required(),
   POOLS_PATH: Joi.string().required(),
   VAULTS_PATH: Joi.string().required(),
+  NFT_PROJECTS: Joi.string().required(),
+  NFT_ASSETS: Joi.string().required(),
   // PRICE
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number() //
@@ -78,7 +80,6 @@ export const validationSchema = Joi.object({
   INTEGRATION_PANCAKE: Joi.string().required(),
   INTEGRATION_PANGOLIN: Joi.string().required(),
   INTEGRATION_PROTOCOLS: Joi.string().required(),
-  INTEGRATION_NFT_ASSETS: Joi.string().required(),
   // SAFE
   SAFE_PROXY_SERVICE_HOST: Joi.string().required(),
   SAFE_PROXY_SERVICE_PORT: Joi.number() //

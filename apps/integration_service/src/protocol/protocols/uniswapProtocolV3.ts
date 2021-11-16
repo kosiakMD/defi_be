@@ -8,6 +8,7 @@ import {
   // ClaimAbleTokenDto,
   Address,
   ChainAbbrEnum,
+  ChainDto,
   ChainIdEnum,
   CurrentPricesPayload,
   ERC20TokenDto,
@@ -18,6 +19,7 @@ import {
   UniswapProtocolEnum,
   UniswapV3Position,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import { AccountService } from '../../account/account.service';
@@ -28,12 +30,10 @@ import {
   // calculateTokensOwed
   calculatePositionAmounts,
 } from '../../utils/uniswapV3PositionMath';
-import { FeatureEnum } from '../features/features.enum';
-import AbstractProtocol from './abstractProtocol';
 import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
-export class UniswapProtocolV3 extends DataProviderProtocol implements AbstractProtocol {
+export class UniswapProtocolV3 extends DataProviderProtocol {
   readonly chains = [ChainAbbrEnum.eth];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV3;
@@ -55,9 +55,9 @@ export class UniswapProtocolV3 extends DataProviderProtocol implements AbstractP
   }
 
   // overrider
-  async getData(address: Address, chainId: ChainIdEnum): Promise<any> {
-    const { positions } = await this.uniswapV3Subgraph.getPositions(address, chainId);
-    const { prices } = await this.getPricedTokens(positions, chainId);
+  async getData(address: Address, chain: ChainDto): Promise<any> {
+    const { positions } = await this.uniswapV3Subgraph.getPositions(address, chain.id);
+    const { prices } = await this.getPricedTokens(positions, chain.id);
 
     return [
       {

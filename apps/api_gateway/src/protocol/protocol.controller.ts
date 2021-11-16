@@ -19,6 +19,12 @@ export class ProtocolController {
     return this.integrationsService.getAllFeatures();
   }
 
+  @ApiResponse({ status: 200, type: FeaturesResponseDto })
+  @Get('/active')
+  getAllActiveFeatures(): Promise<FeaturesResponseDto> {
+    return this.integrationsService.getAllFeaturesActive();
+  }
+
   @ApiParam({
     name: 'protocolName',
     enum: ProtocolNameEnum,

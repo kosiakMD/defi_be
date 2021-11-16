@@ -25,3 +25,7 @@ export function splitToArray(value: string): string[] {
 }
 
 export const getKey = (...seed: Array<string | number>): string => seed.join('_');
+
+export function concatStrings(...args): string {
+  return args.join('_');
+}

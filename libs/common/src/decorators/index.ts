@@ -11,8 +11,8 @@ import { splitToArray } from '../utils/string';
 import { splitToNumberArray } from '../utils/transform';
 
 export const ChainsSplit = createParamDecorator((dataField, req): number[] => {
-  const input: string = req.args[0].query[dataField];
   try {
+    const input: string = req.args[0].query[dataField];
     return splitToNumberArray(input);
   } catch (e) {
     throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -20,15 +20,15 @@ export const ChainsSplit = createParamDecorator((dataField, req): number[] => {
 });
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
-  const input: string | Array<number | string> = req.args[0].query[dataField];
   try {
+    const input: string | Array<number | string> = req.args[0].query[dataField];
     const output: number[] = filterByEnum(
       Array.isArray(input) ? input.map(Number) : splitToNumberArray(input),
       ChainIdEnum,
     );
 
     if (!output.length) {
-      throw 'Provided unsupported chain';
+      throw 'Provided unsupported chains';
     }
 
     return output.map(Number);
@@ -38,8 +38,8 @@ export const ChainsArray = createParamDecorator((dataField, req): number[] => {
 });
 
 export const AddressesSplit = createParamDecorator((dataField, req): Address[] => {
-  const input: string = req.args[0].query[dataField];
   try {
+    const input: string = req.args[0].query[dataField];
     return splitToArray(input);
   } catch (e) {
     throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -47,8 +47,8 @@ export const AddressesSplit = createParamDecorator((dataField, req): Address[] =
 });
 
 export const AddressesArray = createParamDecorator((dataField, req): Address[] => {
-  const input: string | Address[] = req.args[0].query[dataField];
   try {
+    const input: string | Address[] = req.args[0].query[dataField];
     return Array.isArray(input) ? input.map((_) => _.toLocaleLowerCase()) : splitToArray(input);
   } catch (e) {
     throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -1,20 +1,29 @@
-import BigNumber, { BigNumber as BN } from 'bignumber.js';
-import { UniSwapV2PairContract } from './chain/uniswapv2-pair/uniswapv2-pair.contract';
+import { BigNumber as BN } from 'bignumber.js';
 
+import { UniSwapV2PairContract } from './chain/uniswapv2-pair/uniswapv2-pair.contract';
 import {
+  AssetPairArguments,
   AssetPairData,
   UniswapPairReserves,
   UniswapReservesData,
-  UniSwapV2PairMulticall
+  UniSwapV2PairMulticall,
 } from './chain/uniswapv2-pair/uniswapv2-pair.multicall';
-
 import { web3 } from './chain/web3';
-import { chainId, currencyId, protocol, stableCoins, whiteListCoins, wrappedCoin } from './config';
-import { AssetPairReserveValue, CurrentPrice } from './models';
-import { AssetsApiDto, AssetsService, Pair } from './services/assets.service';
+import {
+  chainId,
+  currencyId,
+  liquidityLimit,
+  poolUpdateHours,
+  protocol,
+  stableCoins,
+  whiteListCoins,
+  wrappedCoin,
+} from './config';
+import { AssetPairReserveValue } from './models';
+import { AssetsApiDto, AssetsService, Pair, Token } from './services/assets.service';
 import { PriceDto, PriceService } from './services/price.service';
 import { Decimals, decimalsReserve } from './utils';
-import { LIQUIDITY_LIMIT, zeroAddress } from './utils/constants';
+import { ChainIdEnum, TokensCategories, zeroAddress } from './utils/constants';
 import { logger } from './utils/logger';
 
 const uniswapMulticall = new UniSwapV2PairMulticall();
@@ -40,21 +49,10 @@ export async function process(): Promise<void> {
       await AssetsService.saveAssetsPairs(assetsToUpdate);
     }
 
-    // TODO: What if we run job for the first time. There won't be prices for all of this.
-    //  We should base all prices on stable coins only
-    const { prices: baseAssetPrices } = await PriceService.getTokensPrices(chainId, currencyId, baseAssets);
-
     const uniquePairAddresses = getUniquePairAddresses(assets);
-    const reserves = await uniswapMulticall.getPairsReserves(
-      Array.from(uniquePairAddresses),
-    );
+    const reserves = await uniswapMulticall.getPairsReserves(Array.from(uniquePairAddresses));
 
-    const assetsPrices = getTokensPricesFromReserves(
-      assets,
-      reserves,
-      baseAssetPrices,
-      baseAssetsMap,
-    );
+    const assetsPrices = getTokensPricesFromReserves(assets, reserves, baseAssetsMap);
 
     await PriceService.saveAssetsPrices(assetsPrices);
 
@@ -82,71 +80,94 @@ function buildAssetsMap(assets: AssetsApiDto[]) {
   return assetsMap;
 }
 
+/* function to check if the assetsPools data is actual for the current time and is it needs to do updated.
+    We need to do this because new asset pools may appear over time and we need to track them
+    to be able to calculate token prices
+ */
+function checkAssetPairsUpdateDate(asset: AssetsApiDto) {
+  const randomHour = Math.floor(Math.random() * (poolUpdateHours / 2 - 1) + 1);
+  const limitMs = (randomHour + poolUpdateHours) * 3600 * 1000;
+  return Date.now() - Date.parse(asset.createdAt) < limitMs;
+}
+
 async function getAssetsWithNewPairs(
   baseAssetsMap: Map<string, AssetsApiDto>,
   assetsMap: Map<string, AssetsApiDto>,
 ): Promise<AssetsApiDto[]> {
-  // TODO: What if there are some token pairs after we store it into database
-  //  We should be refreshing pairs from time to time
-  const assetsWithNoPairs = Array
-    .from(assetsMap.values())
-    .filter(({ pairs }) => !pairs);
+  const assetsWithNoPairs = Array.from(assetsMap.values()).filter(
+    (asset) => !asset?.pairs?.length || !checkAssetPairsUpdateDate(asset),
+  );
 
   if (!assetsWithNoPairs) {
     return [];
   }
 
   const assetsWithNoPairsMap = new Map<string, AssetsApiDto>();
-  assetsWithNoPairs.forEach(asset => assetsWithNoPairsMap.set(asset.address, asset));
+  assetsWithNoPairs.forEach((asset) => {
+    asset.pairs = [];
+    assetsWithNoPairsMap.set(asset.address, asset);
+  });
 
-  let assetsPairs = assetsWithNoPairs
-    .map(asset => buildPossibleAssetPairs(asset, baseAssetsMap))
+  const assetsPairsArgs = assetsWithNoPairs
+    .map((asset) => buildPossibleAssetPairs(asset, baseAssetsMap))
     .flat();
 
-  assetsPairs = await uniswapMulticall.getAssetsPairs(assetsPairs);
+  const assetsPairs = await uniswapMulticall.getAssetsPairs(assetsPairsArgs);
 
-  await updateAssetsWithPairData(
-    assetsWithNoPairsMap,
-    assetsPairs,
-    baseAssetsMap,
-  );
+  await updateAssetsWithPairData(assetsWithNoPairsMap, assetsPairs, baseAssetsMap);
 
   assetsWithNoPairs.forEach((asset) => {
     asset.pairs = asset.pairs || [];
-  })
-
-  return assetsWithNoPairs;
-}
-
-function buildPossibleAssetPairs(
-  asset: AssetsApiDto,
-  stableCoinMap: Map<string, AssetsApiDto>,
-) {
-  const pairs: AssetPairData[] = [];
-  protocol.forEach(({ name, address }) => {
-    if (asset.address !== wrappedCoin && stableCoinMap.get(asset.address)) {
-      const value: AssetPairData = {
-        baseAsset: wrappedCoin,
-        asset: asset.address,
-        factoryAddress: address,
-        protocolName: name,
-      };
-      pairs.push(value);
-    }
-
-    stableCoinMap.forEach((stableCoin) => {
-      if (asset.address !== stableCoin.address) {
-        const value: AssetPairData = {
-          baseAsset: stableCoin.address,
-          asset: asset.address,
-          factoryAddress: address,
-          protocolName: name,
-        };
-        pairs.push(value);
-      }
-    });
   });
 
+  return assetsWithNoPairs.filter(({ pairs }) => pairs && pairs.length);
+}
+
+function buildPossibleAssetPairs(asset: AssetsApiDto, stableCoinMap: Map<string, AssetsApiDto>) {
+  const pairs: AssetPairArguments[] = [];
+  protocol.forEach(({ name, address }) => {
+    const stable = stableCoins.some((address) => address === asset.address);
+    const whiteList = whiteListCoins.some((address) => address === asset.address);
+    if (stable) {
+      pairs.push(
+        ...getPossibleAssetPairs([...whiteListCoins, wrappedCoin], name, address, asset.address),
+      );
+      return;
+    }
+    if (whiteList) {
+      pairs.push(
+        ...getPossibleAssetPairs([...stableCoins, wrappedCoin], name, address, asset.address),
+      );
+      return;
+    }
+    if (asset.address === wrappedCoin) {
+      pairs.push(...getPossibleAssetPairs(stableCoins, name, address, asset.address));
+      return;
+    }
+    pairs.push(
+      ...getPossibleAssetPairs(Array.from(stableCoinMap.keys()), name, address, asset.address),
+    );
+  });
+
+  return pairs;
+}
+
+function getPossibleAssetPairs(
+  coins: string[],
+  protocolName: string,
+  factoryAddress: string,
+  asset: string,
+) {
+  const pairs: AssetPairArguments[] = [];
+  coins.forEach((coin) => {
+    const value: AssetPairData = {
+      baseAsset: coin,
+      asset: asset,
+      factoryAddress,
+      protocolName,
+    };
+    pairs.push(value);
+  });
   return pairs;
 }
 
@@ -198,7 +219,7 @@ async function updateAssetWithPairData(
       asset.pairs.push(pair);
     }
   } catch (e) {
-    logger.info(e.message);
+    logger.error(e.message);
     return;
   }
 }
@@ -216,45 +237,42 @@ function getUniquePairAddresses(assets: AssetsApiDto[]): Set<string> {
 function getTokensPricesFromReserves(
   assets: AssetsApiDto[],
   pairsReserves: UniswapReservesData,
-  baseAssetsPrices: CurrentPrice,
   baseAssetsMap: Map<string, AssetsApiDto>,
 ): PriceDto[] {
   const wrappedAsset = assets.find(({ address }) => address === wrappedCoin);
-  const wrappedCoinPrice = getWrappedTokenPrice(
-    wrappedAsset,
-    pairsReserves,
-    baseAssetsPrices,
-  );
 
-  const stableTokensPrice = new Map<string, PriceDto>();
-  baseAssetsMap.forEach((value) => {
-    stableTokensPrice.set(
-      value.address,
-      getStableTokenPrice(
-        value,
-        pairsReserves,
-        wrappedCoinPrice,
-        baseAssetsPrices,
-      ),
+  /*
+  First we need to calculate the price of the wrappedToken, and then having its price find the
+  prices for other tokens. TokensCategories define the strategy for finding tokens reserves values
+  and tokens prices.
+   */
+  const wrappedCoinPrice = getTokenPrice(wrappedAsset, pairsReserves, TokensCategories.base);
+  const baseTokensPrices = new Map<string, PriceDto>();
+  baseTokensPrices.set(wrappedCoinPrice.address, wrappedCoinPrice);
+  whiteListCoins.forEach((address) => {
+    const asset = baseAssetsMap.get(address);
+    baseTokensPrices.set(
+      address,
+      getTokenPrice(asset, pairsReserves, TokensCategories.base, baseTokensPrices),
+    );
+  });
+
+  stableCoins.forEach((address) => {
+    const asset = baseAssetsMap.get(address);
+    baseTokensPrices.set(
+      address,
+      getTokenPrice(asset, pairsReserves, TokensCategories.stable, baseTokensPrices),
     );
   });
 
   const tokensPrices = assets
     .filter((asset) => asset?.pairs?.length)
     .map((asset) => {
-      if (asset.address === wrappedAsset.address) {
-        return wrappedCoinPrice;
+      const basePrice = baseTokensPrices.get(asset.address);
+      if (asset.address === basePrice?.address) {
+        return basePrice;
       }
-      const stablePrice = stableTokensPrice.get(asset.address);
-      if (asset.address === stablePrice?.address) {
-        return stablePrice;
-      }
-      return getTokenPrice(asset,
-        pairsReserves,
-        wrappedCoinPrice,
-        baseAssetsPrices,
-        stableTokensPrice,
-      );
+      return getTokenPrice(asset, pairsReserves, TokensCategories.simple, baseTokensPrices);
     });
 
   tokensPrices.push({
@@ -266,214 +284,211 @@ function getTokensPricesFromReserves(
   return tokensPrices.filter((asset) => !!asset);
 }
 
-// TODO: Method should not get and modify
-function getTokenReserveAndModifyFields(
+function getPairBaseTokensReservesValue(
   pair: Pair,
   assetPairsReserves: UniswapPairReserves,
   assetAddress: string,
-  stableCoinsReserveMap: Map<string, AssetPairReserveValue>,
-  priceResponse: CurrentPrice,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  reserveFunction: Function,
+  coinPriceMap?: Map<string, PriceDto>,
+): AssetPairReserveValue {
+  const reserves: string[] = Object.values(assetPairsReserves);
+  const [token0, token1] = pair?.tokens;
+
+  const args =
+    token0?.tokenAddress === assetAddress
+      ? [token1, token0, reserves, coinPriceMap]
+      : [token0, token1, reserves, coinPriceMap];
+  return reserveFunction.apply(this, args);
+}
+
+export function getBaseAssetPairReserveValue(
+  baseAsset: Token,
+  asset: Token,
+  reserves: string[],
+  baseTokesPriceMap: Map<string, PriceDto>,
 ) {
-  const decimals0 = getCorrectTokenDecimals(pair.tokens[0].decimals);
-  const decimals1 = getCorrectTokenDecimals(pair.tokens[1].decimals);
-  [pair.tokens[0].reserved, pair.tokens[1].reserved] =
-    pair.tokens[0].pairPosition === 0
-      ? [
-        decimalsReserve(assetPairsReserves.reserve0, decimals0),
-        decimalsReserve(assetPairsReserves.reserve1, decimals1),
-      ]
-      : [
-        decimalsReserve(assetPairsReserves.reserve1, decimals0),
-        decimalsReserve(assetPairsReserves.reserve0, decimals1),
-      ];
-
-  if (pair.tokens[0]?.tokenAddress === assetAddress) {
-    const reserveTokenUsd = new BigNumber(pair.tokens[1].reserved)
-      .times(priceResponse[pair.tokens[1].tokenAddress])
-      .toNumber();
-    if (reserveTokenUsd >= LIQUIDITY_LIMIT) {
-      const value: AssetPairReserveValue = {
-        baseAssetAddress: pair.tokens[1].tokenAddress,
-        baseAssetReserve: pair.tokens[1].reserved,
-        assetReserve: pair.tokens[0].reserved,
-        reserveUsd: reserveTokenUsd * 2,
-      };
-
-      stableCoinsReserveMap.set(pair.tokens[1].tokenAddress, value);
-      return value;
-    }
-  }
-
-  // TODO: Remove this code duplication
-  const reserveTokenUsd = new BigNumber(pair.tokens[0].reserved)
-    .times(priceResponse[pair.tokens[0].tokenAddress])
-    .toNumber();
-  if (reserveTokenUsd >= LIQUIDITY_LIMIT) {
-    const value: AssetPairReserveValue = {
-      baseAssetAddress: pair.tokens[0]?.tokenAddress,
-      baseAssetReserve: pair.tokens[0].reserved,
-      assetReserve: pair.tokens[1].reserved,
+  const priceDto = baseTokesPriceMap?.get(baseAsset.tokenAddress);
+  const reserveDecimals = getPairTokenReserve(baseAsset, reserves);
+  const reserveTokenUsd = priceDto
+    ? new BN(priceDto.price) //
+        .times(reserveDecimals)
+        .toNumber()
+    : Number(reserveDecimals);
+  if (reserveTokenUsd >= liquidityLimit) {
+    return {
+      baseAssetAddress: baseAsset?.tokenAddress,
+      baseAssetReserve: reserveDecimals,
+      assetReserve: getPairTokenReserve(asset, reserves),
       reserveUsd: reserveTokenUsd * 2,
     };
-
-    // TODO: We should not return and modify at the same time
-    stableCoinsReserveMap.set(pair.tokens[0]?.tokenAddress, value);
-    return value;
   }
+}
+
+export function getStableAssetPairReserveValue(baseAsset: Token, asset: Token, reserves: string[]) {
+  const reserveStableToken = Number(getPairTokenReserve(asset, reserves));
+  if (reserveStableToken >= liquidityLimit) {
+    return {
+      baseAssetAddress: baseAsset?.tokenAddress,
+      baseAssetReserve: getPairTokenReserve(baseAsset, reserves),
+      assetReserve: String(reserveStableToken),
+      reserveUsd: reserveStableToken * 2,
+    };
+  }
+}
+
+export function getAssetPairReserveValue(
+  baseAsset: Token,
+  asset: Token,
+  reserves: string[],
+  baseTokesPriceMap: Map<string, PriceDto>,
+) {
+  const baseAssetReserve = getPairTokenReserve(baseAsset, reserves);
+  const baseAssetPrice = baseTokesPriceMap.get(baseAsset.tokenAddress);
+  if (!baseAssetPrice || !baseAssetPrice.price) {
+    return;
+  }
+
+  const reserveTokenUsd = new BN(baseAssetReserve) //
+    .times(baseAssetPrice.price)
+    .toNumber();
+  if (reserveTokenUsd >= liquidityLimit) {
+    return {
+      baseAssetAddress: baseAsset?.tokenAddress,
+      baseAssetReserve: baseAssetReserve,
+      assetReserve: getPairTokenReserve(asset, reserves),
+      reserveUsd: reserveTokenUsd * 2,
+    };
+  }
+}
+
+function getPairTokenReserve(token: Token, reserves: string[]): string {
+  const tokenDecimals = getCorrectTokenDecimals(token.decimals);
+  return decimalsReserve(reserves[token.pairPosition], tokenDecimals);
 }
 
 function getTokenPrice(
   asset: AssetsApiDto,
   tokenReserves: UniswapReservesData,
-  wrappedCoinPrice: PriceDto,
-  priceResponse: CurrentPrice,
-  stableTokensPrice: Map<string, PriceDto>,
+  tokensCategory: TokensCategories,
+  coinPriceMap?: Map<string, PriceDto>,
 ): PriceDto {
-  if (asset) {
-    const stableCoinsMap = new Map<string, AssetPairReserveValue>();
-    const value = mapReservesResults(
-      tokenReserves,
-      asset,
-      priceResponse,
-      stableCoinsMap,
+  if (!asset) {
+    return;
+  }
+  const coinsReserveValues: AssetPairReserveValue[] = [];
+  let totalLiquidityToken = 0;
+  const [priceFunction, reserveFunction] =
+    tokensCategory !== TokensCategories.base
+      ? tokensCategory === TokensCategories.stable
+        ? [getStablePrice, getStableAssetPairReserveValue]
+        : [getPrice, getAssetPairReserveValue]
+      : [getBasePrice, getBaseAssetPairReserveValue];
+
+  asset?.pairs.forEach((pair) => {
+    const pairReservesResult = getPairBaseTokensReservesValue(
+      pair,
+      tokenReserves[pair.address],
+      asset.address,
+      reserveFunction,
+      coinPriceMap,
     );
 
-    if (value.reserveUsd) {
-      const stablePrice = stableTokensPrice.get(value.baseAssetAddress);
-      const price = value.baseAssetAddress === wrappedCoinPrice.address
-        ? new BN(value.baseAssetReserve)
-          .times(wrappedCoinPrice.price) //
-          .div(value.assetReserve)
-          .toNumber()
-        : new BN(value.baseAssetReserve) //
-          .times(stablePrice.price)
-          .div(value.assetReserve)
-          .toNumber();
-
-      return {
-        address: asset.address,
-        price: price,
-        chainId,
-        currencyId,
-      };
+    if (pairReservesResult) {
+      totalLiquidityToken += Number(pairReservesResult.assetReserve);
+      coinsReserveValues.push(pairReservesResult);
     }
-  }
-}
+  });
 
-function getWrappedTokenPrice(
-  wrappedAsset: AssetsApiDto,
-  tokenReserves: UniswapReservesData,
-  baseAssetsPrices: CurrentPrice,
-): PriceDto {
-  if (!wrappedAsset) {
+  if (!coinsReserveValues.length) {
     return;
   }
 
-  const stableCoinsValuesMap = new Map<string, AssetPairReserveValue>();
-  let value = getAssetEmptyValue();
-  wrappedAsset?.pairs.forEach((pair) => {
-    const assetPairsReserves = tokenReserves[pair.address];
-    const result = getTokenReserveAndModifyFields(
-      pair,
-      assetPairsReserves,
-      wrappedAsset.address,
-      stableCoinsValuesMap,
-      baseAssetsPrices,
-    );
-
-    const whiteListAddress = whiteListCoins.find(
-      (address) => address === result?.baseAssetAddress,
-    );
-
-    // TODO: Why do we do this one?
-    value = (!result || value.reserveUsd > result?.reserveUsd || whiteListAddress)
-      ? value
-      : result;
+  let price = 0;
+  coinsReserveValues?.forEach((value) => {
+    const args = [value, totalLiquidityToken, coinPriceMap];
+    price += priceFunction.apply(this, args);
   });
 
   return {
-    address: wrappedAsset.address,
-    // TODO: This is correct ony in case base asset is stable coin
-    //  Fix it
-    price: new BN(value.baseAssetReserve) //
-      .div(value.assetReserve)
-      .toNumber(),
-    chainId: wrappedAsset.chainId,
+    address: asset.address,
+    price: price,
+    chainId: asset.chainId,
     currencyId,
   };
 }
 
-function getStableTokenPrice(
-  asset: AssetsApiDto,
-  tokenReserves: UniswapReservesData,
-  wrappedCoinPrice: PriceDto,
-  priceResponse: CurrentPrice,
-): PriceDto {
-  if (asset && asset.address !== wrappedCoin) {
-    const stableCoinsMap = new Map<string, AssetPairReserveValue>();
-    const value = mapReservesResults(
-      tokenReserves,
-      asset,
-      priceResponse,
-      stableCoinsMap,
-    );
+export function getStablePrice(
+  value: AssetPairReserveValue,
+  totalLiquidityToken: number,
+  wrappedCoinPrice: Map<string, PriceDto>,
+) {
+  const tokenWeight = new BN(value.assetReserve) //
+    .div(totalLiquidityToken)
+    .toNumber();
+  const baseTokenPrice = wrappedCoinPrice.get(value.baseAssetAddress);
 
-    const wrappedAssetReserves = stableCoinsMap.get(wrappedCoin);
-    if (!wrappedAssetReserves && value.reserveUsd) {
-      return {
-        address: asset.address,
-        price: new BN(value.baseAssetReserve) //
+  const tokenPairPrice = new BN(value.baseAssetReserve)
+    .times(baseTokenPrice.price)
+    .div(value.assetReserve);
+
+  return (
+    new BN(tokenWeight) //
+      .times(tokenPairPrice)
+      .toNumber() || 1
+  );
+}
+
+export function getPrice(
+  value: AssetPairReserveValue,
+  totalLiquidityToken: number,
+  stableTokensPrice: Map<string, PriceDto>,
+) {
+  const tokenWeight = new BN(value.assetReserve) //
+    .div(totalLiquidityToken)
+    .toNumber();
+  const baseTokenPrice = stableTokensPrice.get(value.baseAssetAddress);
+
+  const tokenPairPrice = new BN(value.baseAssetReserve)
+    .times(baseTokenPrice.price)
+    .div(value.assetReserve);
+
+  return new BN(tokenWeight) //
+    .times(tokenPairPrice)
+    .toNumber();
+}
+
+export function getBasePrice(
+  value: AssetPairReserveValue,
+  totalLiquidityToken: number,
+  coinPriceMap?: Map<string, PriceDto>,
+) {
+  const coinPrice = coinPriceMap?.get(wrappedCoin);
+  const tokenWeight = new BN(value.assetReserve) //
+    .div(totalLiquidityToken)
+    .toNumber();
+  const tokenPairPrice =
+    value.baseAssetAddress === wrappedCoin
+      ? new BN(value.baseAssetReserve) //
+          .times(coinPrice.price)
           .div(value.assetReserve)
-          .toNumber(),
-        chainId,
-        currencyId,
-      };
-    }
-    const tokenPairPrice = new BN(wrappedAssetReserves.baseAssetReserve)
-      .times(wrappedCoinPrice.price)
-      .div(wrappedAssetReserves.assetReserve)
-      .toNumber();
+      : chainId === ChainIdEnum.celo
+      ? decimalsReserve(
+          new BN(value.baseAssetReserve) //
+            .div(value.assetReserve)
+            .toString(),
+          /**
+           * TODO: 4 is the magical number
+           * to get right prices on Celo network
+           */
+          getCorrectTokenDecimals(4),
+        )
+      : new BN(value.baseAssetReserve) //
+          .div(value.assetReserve);
 
-    return {
-      address: asset.address,
-      price: tokenPairPrice,
-      chainId,
-      currencyId,
-    };
-  }
-}
-
-function mapReservesResults(
-  tokenReserves: UniswapReservesData,
-  asset: AssetsApiDto,
-  priceResponse: CurrentPrice,
-  stableCoinsMap: Map<string, AssetPairReserveValue>,
-): AssetPairReserveValue {
-  let value = getAssetEmptyValue();
-  asset?.pairs.forEach((pair) => {
-    const reserve = tokenReserves[pair.address];
-    const result = getTokenReserveAndModifyFields(
-      pair,
-      reserve,
-      asset.address,
-      stableCoinsMap,
-      priceResponse,
-    );
-
-    // TODO: We should calculate weighted price here, not with larges reserve
-    value = !result || value.reserveUsd > result?.reserveUsd ? value : result;
-  });
-
-  return value;
-}
-
-function getAssetEmptyValue(): AssetPairReserveValue {
-  return {
-    baseAssetAddress: null,
-    baseAssetReserve: null,
-    assetReserve: null,
-    reserveUsd: 0,
-  };
+  return new BN(tokenWeight) //
+    .times(tokenPairPrice)
+    .toNumber();
 }
 
 function getCorrectTokenDecimals(decimals: Decimals): Decimals {

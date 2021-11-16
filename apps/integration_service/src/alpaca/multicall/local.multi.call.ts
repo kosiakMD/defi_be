@@ -2,10 +2,9 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { ChainIdEnum } from '../../common/enum';
-
+import { MulticallContractFunctionEnum } from '../../multicall/multicall.enum';
 import {
   AlpacaApiResponse,
   AlpacaStakingInterface,
@@ -39,7 +38,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: 'poolInfo',
+        function: MulticallContractFunctionEnum.poolInfo,
         args: [pool.poolNum],
       };
     });
@@ -60,7 +59,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: 'userInfo',
+        function: MulticallContractFunctionEnum.userInfo,
         args: [pool.poolNum, pool.userAddress],
       };
     });

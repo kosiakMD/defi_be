@@ -2,6 +2,7 @@ import { plainToClass } from 'class-transformer';
 
 import { Injectable } from '@nestjs/common';
 
+import { FeatureEnum } from '@app/common';
 import { ChainAbbrEnum } from '@app/common/enum';
 
 import { getChainByAbbr } from '../../utils/chain';
@@ -11,17 +12,9 @@ import {
   ProtocolFeaturesDataDto,
   ProtocolFeaturesExportDto,
 } from './features.dto';
-import { FeatureEnum } from './features.enum';
 
 @Injectable()
 export class FeaturesService {
-  // private static createProtocolFeature(abbr: ChainAbbrEnum): ProtocolDataDto {
-  //   return plainToClass(ProtocolDataDto, {
-  //     chain: getChainByAbbr(abbr),
-  //     protocol: [],
-  //   } as ProtocolDataDto);
-  // }
-
   private static createFeature(
     abbr: ChainAbbrEnum,
     features: FeatureEnum[],

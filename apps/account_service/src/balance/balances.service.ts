@@ -1,20 +1,21 @@
-import { Address, ChainIdEnum, Logger } from '@app/common';
-import { roundToNearestHour } from '@app/common/utils/dates';
+import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
+import { In, Repository } from 'typeorm';
+import Web3 from 'web3';
 
 import { CACHE_MANAGER, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { In, Repository } from 'typeorm';
-import Web3 from 'web3';
+
+import { Address, ChainIdEnum, Logger } from '@app/common';
+import { roundToNearestHour } from '@app/common/utils/dates';
+
+import { BLACKLISTED_TOKENS } from '../common/constatnt';
 
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
-
-import { BLACKLISTED_TOKENS } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
 import { excludeSecondArray, getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import {
@@ -151,8 +152,8 @@ export class BalancesService {
         let currentTotal = 0;
         let pastTotal = 0;
         const tokens = balances.tokens.reduce((allTokens, nowToken) => {
-          const thenToken = then[account].tokens.find(
-            (token) => this.isTokenTheSame(token.token, nowToken.token),
+          const thenToken = then[account].tokens.find((token) =>
+            this.isTokenTheSame(token.token, nowToken.token),
           );
 
           currentTotal += nowToken.totalPriceUSD ?? 0;
@@ -192,10 +193,12 @@ export class BalancesService {
   }
 
   private isTokenTheSame(one: ERC20Token, two: ERC20Token): boolean {
-    return (one.address.toLowerCase() === two.address.toLowerCase()) && (one.chainId === two.chainId);
+    return one.address.toLowerCase() === two.address.toLowerCase() && one.chainId === two.chainId;
   }
 
-  private async getBlock24HoursAgo(chains: ChainIdEnum[]): Promise<Map<ChainIdEnum, BlockTimestamp>> {
+  private async getBlock24HoursAgo(
+    chains: ChainIdEnum[],
+  ): Promise<Map<ChainIdEnum, BlockTimestamp>> {
     const blockMap = new Map<ChainIdEnum, BlockTimestamp>();
 
     await Promise.all(
@@ -348,13 +351,13 @@ export class BalancesService {
         curr.success
           ? { ...response, balances: this.mergeBalances(response.balances, curr.balances) }
           : {
-            ...response,
-            errors: response.errors.concat({
-              chainId,
-              message: curr.error.message,
-              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            }),
-          },
+              ...response,
+              errors: response.errors.concat({
+                chainId,
+                message: curr.error.message,
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+              }),
+            },
       {
         address,
         errors: [],

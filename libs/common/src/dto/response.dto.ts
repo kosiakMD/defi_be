@@ -31,7 +31,7 @@ export class MetaDto {
 //   data: T;
 // }
 
-// export class ResponseDto<T> extends DetailedResponseDto {
+// export class SubgraphResponseDto<T> extends DetailedResponseDto {
 //   // @ApiProperty({ type: MetaDto, required: false })
 //   // __meta?: MetaDto;
 //

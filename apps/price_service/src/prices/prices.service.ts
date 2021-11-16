@@ -246,6 +246,7 @@ export class PriceService {
     this.cacheRawPriceRequest(requestBody);
 
     // get a list of assets that exist in DB
+    // TODO: We cannot use string concatination here!
     const sqlCondition: string = this.getFindAssetsSqlCondition(requestBody);
     const foundAssets: Asset[] = (
       await this.entityManager.query(`SELECT * FROM prices.asset WHERE ${sqlCondition}`)
@@ -259,6 +260,7 @@ export class PriceService {
         ),
     );
 
+    // TODO: Why do we do this in transactions
     await this.entityManager.transaction(async (transactionalEntityManager: EntityManager) => {
       // save new assets from dto to DB
       let addedAssets: Asset[] = [];
@@ -294,6 +296,7 @@ export class PriceService {
         )
       ).map((row) => PriceService.mapRowToCurrentPrices(row));
 
+      // TODO: Why do we do this inside transaction
       // store current price to cache using associated list
       assetCurrentPrices.forEach((assetPrice) => {
         const associatedAsset: AssociatedAssetPrice = associatedAssetsPrices.find(
@@ -415,6 +418,7 @@ export class PriceService {
     );
   }
 
+  // TODO: Move this to repository
   private getFindAssetsSqlCondition(requestBody: PriceRequestCurrentDto[]): string {
     return requestBody.reduce<string>(
       (result: string, dto: PriceRequestCurrentDto, i: number) =>

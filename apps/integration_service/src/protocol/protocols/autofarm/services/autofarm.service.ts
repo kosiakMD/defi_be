@@ -5,21 +5,19 @@ import { AbiItem } from 'web3-utils';
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
-import { ChainIdEnum } from '@app/common/enum';
+import { ChainAbbrEnum, ChainDto, Logger } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { Address } from '@app/common/types';
 
 import { AccountService } from '../../../../account/account.service';
 import { Web3Provider } from '../../../../chain/web3.provider';
 import { CurrentPricesPayload } from '../../../../dto/price.response.dto';
 import {
-  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
+  IntegrationStakingPositionDto,
   LPToken,
   PoolTokenDto,
-  IntegrationStakingPositionDto,
   StakingPositionResponseDto,
-  ClaimableDto,
 } from '../../../../integrations/integrations.dto';
 import { Asset, ERC20Token } from '../../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../../price/price.service';
@@ -44,7 +42,7 @@ export class AutofarmService {
 
   async getDataByAddresses(
     address: Address,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<StakingPositionResponseDto[]> {
     try {
       const addressLowerCase = address.toLowerCase();
@@ -65,11 +63,11 @@ export class AutofarmService {
         }),
       );
 
-      const web3Provider = this.web3Provider.web3Map.get(chainId);
+      const web3Provider = this.web3Provider.getForChain(chain.abbr);
       const multicall = new LocalMultiCall(web3Provider, this.logger);
-      const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chainId);
+      const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chain.abbr);
       await Promise.all([
-        multicall.getVaultUsersInfo(stakedPosition, chainId),
+        multicall.getVaultUsersRewards(stakedPosition, chain.abbr),
         multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
       ]);
 
@@ -105,8 +103,8 @@ export class AutofarmService {
       await multicall.getToken0AndToken1FromLp(lpStaked, tokensAddresses);
       const tokenAddressesArray = Array.from(tokensAddresses);
       const [{ data }, price] = await Promise.all([
-        this.assetsService.getAssets(tokenAddressesArray, [chainId]),
-        this.priceService.getTokenPricesFetch(tokenAddressesArray, chainId),
+        this.assetsService.getAssets(tokenAddressesArray, [chain.id]),
+        this.priceService.getTokenPricesFetch(tokenAddressesArray, chain.id),
       ]);
 
       const autofarmPools: AutofarmApiPools = await this.autofarmApiService.getAutofarmPoolsData();
@@ -121,7 +119,7 @@ export class AutofarmService {
         assetsMap,
         price.prices,
         claimableToken,
-        chainId,
+        chain.abbr,
       );
 
       return this.getResponse(autofarmUsers, stakingPositionsMap);
@@ -154,7 +152,7 @@ export class AutofarmService {
     assets: Map<string, Asset>,
     prices: CurrentPricesPayload,
     claimAbleToken: IntegrationClaimableTokenDto,
-    chain: ChainIdEnum,
+    chain: ChainAbbrEnum,
   ): Map<string, IntegrationStakingPositionDto[]> {
     const responseMap = new Map<string, IntegrationStakingPositionDto[]>();
     stakingPositions.map((staking) => {
@@ -196,8 +194,8 @@ export class AutofarmService {
     erc20Token.totalSupply = staking.totalSupply;
     const tokenPrice = prices[staking.contractAddress]
       ? prices[staking.contractAddress]
-      : Number(autofarmPools[staking.poolNum].wantPrice);
-    erc20Token.price = tokenPrice || null;
+      : autofarmPools[staking.poolNum].wantPrice;
+    erc20Token.price = Number(tokenPrice) || null;
     // TODO getTonesPrice via web3
     // tokenInfo.coefficient
     // ? new BigNumber(prices[tokenInfo.priceAsset]).times(tokenInfo.coefficient).toNumber()
@@ -236,7 +234,7 @@ export class AutofarmService {
   ): IntegrationClaimableTokenDto {
     const asset = assets.get(autofarmRewardToken);
     const claimableToken = new IntegrationClaimableTokenDto();
-    claimableToken.price = price[autofarmRewardToken];
+    claimableToken.price = Number(price[autofarmRewardToken]);
     AutofarmService.setFieldsFromAsset(asset, claimableToken);
 
     return claimableToken;
@@ -251,7 +249,7 @@ export class AutofarmService {
     const poolToken = new PoolTokenDto();
     poolToken.reserve = tokenPosition === 1 ? staking.reserve1 : staking.reserve0;
     AutofarmService.setFieldsFromAsset(asset, poolToken);
-    poolToken.price = prices[asset.address];
+    poolToken.price = Number(prices[asset.address]);
     poolToken.balance = new BigNumber(staking.amount)
       .div(staking.totalSupply)
       .times(poolToken.reserve)

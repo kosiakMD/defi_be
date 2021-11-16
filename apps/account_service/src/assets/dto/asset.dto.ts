@@ -6,15 +6,14 @@ import Web3 from 'web3';
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '@app/common/enum';
+import { IAssetDto, IAssetResponseDto } from '@app/common';
+import { AssetState, ChainIdEnum } from '@app/common/enum';
 
 import { Address } from '../../common/interfaces';
 
-import { Asset, AssetState } from '../assets.interface';
-
 const web3 = new Web3();
 
-export class AssetDto implements Asset {
+export class AssetDto implements IAssetDto {
   @ApiProperty({ type: Number, example: 1066834 })
   @Expose()
   id: number;
@@ -71,7 +70,7 @@ export class AssetQueryDto {
   chains: ChainIdEnum[] = [ChainIdEnum.eth];
 }
 
-export class AssetResponseDto {
+export class AssetResponseDto implements IAssetResponseDto {
   @ApiProperty({ type: Number, example: 1066834 })
   @Expose()
   id: number;

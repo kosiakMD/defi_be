@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, BaseData, Pool, ProtocolName, Vault } from '@app/common';
+import { Address, Pool, ProtocolName, Vault } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import { FeaturesResponseDto } from '../common/DTO/features.dto';
@@ -25,7 +25,7 @@ export class IntegrationService {
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
   private readonly protocolsUrl: string;
-  private readonly nftAssetsUrl: string;
+  private readonly protocolsActiveUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -63,8 +63,7 @@ export class IntegrationService {
     const protocolsPath = this.configService.get<string>('INTEGRATION_PROTOCOLS');
     this.protocolsUrl = `${url}/${protocolsPath}`;
 
-    const nftAssetsPath = this.configService.get<string>('INTEGRATION_NFT_ASSETS');
-    this.nftAssetsUrl = `${url}/${nftAssetsPath}`;
+    this.protocolsActiveUrl = `${url}/v1/protocols/active`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -82,11 +81,12 @@ export class IntegrationService {
     }
   }
 
-  async getUniswap(addresses: string): Promise<BaseData[]> {
+  // todo: must be BaseData
+  async getUniswap(addresses: string): Promise<any[]> {
     try {
       this.logger.time(this.getUniswapUrl);
       const data = await this.httpService
-        .get(this.getUniswapUrl, { params: { addresses } })
+        .get(this.getUniswapUrl, {params: {addresses}})
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getUniswapUrl);
@@ -97,11 +97,12 @@ export class IntegrationService {
     }
   }
 
-  async getSushiswap(addresses: string): Promise<BaseData[]> {
+  // todo: must be BaseData
+  async getSushiswap(addresses: string): Promise<any[]> {
     try {
       this.logger.time(this.getSushiswapUrl);
       const data = await this.httpService
-        .get(this.getSushiswapUrl, { params: { addresses } })
+        .get(this.getSushiswapUrl, {params: {addresses}})
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getSushiswapUrl);
@@ -116,7 +117,7 @@ export class IntegrationService {
     try {
       this.logger.time(this.getPancakeUrl);
       const data = await this.httpService
-        .get(this.getPancakeUrl, { params: { addresses, chains } })
+        .get(this.getPancakeUrl, {params: {addresses, chains}})
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getPancakeUrl);
@@ -131,7 +132,7 @@ export class IntegrationService {
   async getPangolin(addresses: string, chains?: string): Promise<BalancesResponse> {
     this.logger.time(this.getPangolinUrl);
     const data = await this.httpService
-      .get(this.getPangolinUrl, { params: { addresses, chains } })
+      .get(this.getPangolinUrl, {params: {addresses, chains}})
       .pipe(map((r) => r.data))
       .toPromise();
     this.logger.timeEnd(this.getPangolinUrl);
@@ -142,7 +143,7 @@ export class IntegrationService {
   async getSpookyswap(addresses: string, chains?: string): Promise<BalancesResponse> {
     this.logger.time(this.getSpookyswapUrl);
     const data = await this.httpService
-      .get(this.getSpookyswapUrl, { params: { addresses, chains } })
+      .get(this.getSpookyswapUrl, {params: {addresses, chains}})
       .pipe(map((r) => r.data))
       .toPromise();
     this.logger.timeEnd(this.getSpookyswapUrl);
@@ -207,31 +208,14 @@ export class IntegrationService {
     }
   }
 
-  @RequestErrorHandler()
-  async getProtocolFeaturesData(
-    protocolName: ProtocolName,
-    chains: string,
-    addresses: Address,
-  ): Promise<IntegrationsResponseDto> {
-    const url = `${this.protocolsUrl}/${protocolName}/`;
-
-    this.logger.time(url);
-    const data = await this.httpService
-      .get(url, { params: { chains, addresses } })
-      .pipe(map((r) => r.data))
-      .toPromise();
-    this.logger.timeEnd(url);
-    return data;
-  }
-
-  async getNftAssets(addresses: Address[]) {
+  async getAllFeaturesActive(): Promise<FeaturesResponseDto> {
     try {
-      this.logger.time(this.nftAssetsUrl);
+      this.logger.time(this.protocolsUrl);
       const data = await this.httpService
-        .get(this.nftAssetsUrl, { params: { addresses } })
+        .get(this.protocolsActiveUrl)
         .pipe(map((r) => r.data))
         .toPromise();
-      this.logger.timeEnd(this.nftAssetsUrl);
+      this.logger.timeEnd(this.protocolsUrl);
       return data;
     } catch (e) {
       if (e.isAxiosError) {
@@ -242,5 +226,22 @@ export class IntegrationService {
       }
       throw e;
     }
+  }
+
+  @RequestErrorHandler()
+  async getProtocolFeaturesData(
+    protocolName: ProtocolName,
+    chains: string,
+    addresses: Address,
+  ): Promise<IntegrationsResponseDto> {
+    const url = `${this.protocolsUrl}/${protocolName}/`;
+
+    this.logger.time(url);
+    const data = await this.httpService
+      .get(url, {params: {chains, addresses}})
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(url);
+    return data;
   }
 }

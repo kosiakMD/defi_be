@@ -70,7 +70,9 @@ export class TransactionsService {
     if (!addresses.length) {
       return true;
     }
-    return !addresses.every(this.web3Provider.instanceEth().utils.isAddress);
+    return !addresses.every(
+      this.web3Provider.getInstanceByChainId(ChainIdEnum.eth).utils.isAddress,
+    );
   }
 
   private prepareAddresses(addresses: string[]): void {

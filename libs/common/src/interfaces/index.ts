@@ -5,10 +5,10 @@ import {
   ProtocolTypeEnum,
   ResultStatus,
 } from '@app/common/enum';
-import { StakingPosition } from '@app/common/interfaces/staking.position.interfaces';
 import { PlatformPoolToken, PoolToken } from '@app/common/interfaces/transactions.interfaces';
 import { Address, DateString, ProtocolName, TokenSymbol } from '@app/common/types';
 
+export * from './assets.interfaces';
 export * from './balance.interfaces';
 export * from './entity.information.interfaces';
 export * from './fee.interfaces';
@@ -45,10 +45,6 @@ export interface PoolTokenBase {
   symbol?: TokenSymbol;
   percentage?: number;
 }
-
-// export interface PoolToken extends PoolTokenBase {
-//   reserve: string;
-// }
 
 export interface LiquidityPositionPool {
   address: string;
@@ -99,10 +95,6 @@ export interface GasPrice {
 export interface GasHistory {
   average: number;
   time: string;
-}
-
-export interface GasHistoryResponse {
-  [index: number]: GasHistory;
 }
 
 export interface Token {
@@ -190,10 +182,6 @@ export interface TokenHistorical {
   timestamps: DateString[];
 }
 
-export interface TokensHistorical {
-  [index: number]: TokenHistorical;
-}
-
 export interface DetailedResponse<T> {
   status: ResultStatus;
   errors: Error[] | string[] | any[];
@@ -205,9 +193,8 @@ export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   userAddress: string;
   protocolName: ProtocolName;
   protocolType: T;
-  stakingPositions?: StakingPosition[];
+  stakingPositions?: any[];
   liquidityPositions?: LiquidityPosition[];
-  txs?: txs[];
 }
 
 export class ContractApprovalResponse {

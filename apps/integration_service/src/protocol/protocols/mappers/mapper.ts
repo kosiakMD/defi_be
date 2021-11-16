@@ -5,12 +5,10 @@ import { AbiItem } from 'web3-utils';
 import { Injectable } from '@nestjs/common';
 
 import {
-  AaveUser,
   AutomaticMarketMaker,
   Borrowing,
-  BorrowingToken,
+  ChainDto,
   Lending,
-  LendingErcToken,
   LiquidityPositionDto,
 } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
@@ -21,7 +19,6 @@ import {
 import { StakingProjectDto, TransactionProjectDto } from '@app/common/dto/transactions.dto';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '@app/common/enum';
 import { ProtocolName } from '@app/common/types';
-import { decimalConverter } from '@app/common/utils/number';
 
 import { Web3Provider } from '../../../chain/web3.provider';
 import { LiquidityPool } from '../../../dto/liquidity.position.dto';
@@ -81,7 +78,7 @@ export class Mapper {
   protected static createPoolToken(
     pair: IncomeLiquidityPositionPair,
     order: 0 | 1,
-    calculateByDerived: boolean = false,
+    calculateByDerived = false,
     halfReserveUSD: string = null,
   ): PoolTokenDto {
     const token = pair[`token${order}`];
@@ -104,7 +101,7 @@ export class Mapper {
   protected static createBaseData(baseInfo: BaseInfo, protocolType: ProtocolTypeEnum): BaseData {
     return {
       protocolType,
-      chainId: baseInfo.chainId,
+      chain: baseInfo.chain,
       protocolName: baseInfo.protocolName,
       projectName: baseInfo.projectName,
       userAddress: baseInfo.userAddress,
@@ -149,7 +146,7 @@ export class Mapper {
     );
   }
 
-  protected static transformAmm(baseInfo: BaseInfo): AutomaticMarketMaker {
+  public static transformAmm(baseInfo: BaseInfo): AutomaticMarketMaker {
     return Mapper.createDynamicFeature<AutomaticMarketMaker>(baseInfo, ProtocolTypeEnum.amm);
   }
 
@@ -176,13 +173,13 @@ export class Mapper {
     subgraphData: UniswapSubgraphLikeData,
     projectName: ProjectEnum,
     protocolName: ProtocolName,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<BaseData[]> {
     const base: BaseData[] = [];
 
     for (const userAddress of originAddresses) {
       const baseInfo: BaseInfo = {
-        chainId,
+        chain,
         projectName,
         protocolName,
         userAddress: Mapper.getOriginAddress(originAddresses, userAddress),
@@ -190,46 +187,27 @@ export class Mapper {
       // const transactions: TransactionProjectDto = Mapper.transformTransaction(baseInfo);
       // base.push(transactions);
 
-      if (subgraphData.subgraphPools) {
+      const { subgraphPools, subgraphStaking } = subgraphData;
+
+      if (subgraphPools) {
         const amm: AutomaticMarketMaker = Mapper.transformAmm(baseInfo);
         await this.mapLiquidityPositions(
           amm,
-          !subgraphData.subgraphPools.get(userAddress)
-            ? []
-            : subgraphData.subgraphPools.get(userAddress),
+          !subgraphPools.get(userAddress) ? [] : subgraphPools.get(userAddress),
         );
         base.push(amm);
       }
 
-      if (subgraphData.subgraphStaking) {
+      if (subgraphStaking) {
         const staking: StakingProjectDto = Mapper.transformStaking(baseInfo);
 
         await this.mapStakingPositions(
           staking,
-          !subgraphData.subgraphPools.has(userAddress)
-            ? []
-            : subgraphData.subgraphPools.get(userAddress),
-          !subgraphData.subgraphStaking.has(userAddress)
-            ? []
-            : subgraphData.subgraphStaking.get(userAddress),
+          !subgraphPools.has(userAddress) ? [] : subgraphPools.get(userAddress),
+          !subgraphStaking.has(userAddress) ? [] : subgraphStaking.get(userAddress),
         );
 
         base.push(staking);
-      }
-
-      if (subgraphData.subgraphLending) {
-        // TODO: Lending should be a class and use plainToClass
-        const lending: Lending = Mapper.transformLending(baseInfo);
-
-        const borrowing: Borrowing = Mapper.transformBorrowing(baseInfo);
-
-        await this.mapLendingPositions(
-          lending,
-          borrowing,
-          subgraphData.subgraphLending.get(userAddress),
-        );
-        base.push(lending);
-        base.push(borrowing);
       }
     }
     return base;
@@ -260,7 +238,7 @@ export class Mapper {
     return lpEarnedUser * lpTokenPrice;
   }
 
-  private async mapLiquidityPositions(
+  public async mapLiquidityPositions(
     amm: AutomaticMarketMaker,
     subgraphPools: IncomeLiquidityPosition[],
   ): Promise<void> {
@@ -411,73 +389,6 @@ export class Mapper {
     }
 
     staking.stakingPositions.push(...StakingPositionsToPush);
-  }
-
-  protected async mapLendingPositions(
-    lending: Lending,
-    borrowing: Borrowing,
-    user: AaveUser = null,
-  ): Promise<void> {
-    if (!user) return;
-
-    const RAY = 10 ** 27;
-
-    user.reserves.forEach((userReserve) => {
-      const getReserveDecimals = decimalConverter(userReserve.reserve.decimals);
-
-      // Calculate Lending
-      if (Number(userReserve.currentATokenBalance)) {
-        const lendingToken: LendingErcToken = plainToClass(LendingErcToken, {
-          address: userReserve.reserve.underlyingAsset,
-          decimals: userReserve.reserve.decimals,
-          name: userReserve.reserve.name,
-          symbol: userReserve.reserve.symbol,
-          price: userReserve.reserve.priceUSD,
-        });
-
-        const totalDepositDecimal = getReserveDecimals(Number(userReserve.currentATokenBalance));
-
-        lending.lendingPositions.push({
-          address: userReserve.reserve.id,
-          totalDeposit: userReserve.currentATokenBalance,
-          balance: totalDepositDecimal,
-          value: totalDepositDecimal * lendingToken.price,
-          APY: 100 * (Number(userReserve.reserve.liquidityRate) / RAY),
-          token: lendingToken,
-        });
-      }
-
-      // Calculate Borrowing
-      if (Number(userReserve.currentTotalDebt)) {
-        const borrowToken: BorrowingToken = plainToClass(BorrowingToken, {
-          address: userReserve.reserve.underlyingAsset,
-          decimals: userReserve.reserve.decimals,
-          name: userReserve.reserve.name,
-          symbol: userReserve.reserve.symbol,
-          price: userReserve.reserve.priceUSD,
-        });
-
-        const totalDebtDecimal = getReserveDecimals(Number(userReserve.currentTotalDebt));
-        const stableDebtDecimal = getReserveDecimals(Number(userReserve.currentStableDebt));
-        const variableDebtDecimal = getReserveDecimals(Number(userReserve.currentVariableDebt));
-
-        borrowing.borrowingPositions.push({
-          address: userReserve.reserve.id,
-          totalDebt: userReserve.currentTotalDebt,
-          stableDebt: userReserve.currentStableDebt,
-          variableDebt: userReserve.currentVariableDebt,
-          totalDebtDecimal,
-          stableDebtDecimal,
-          variableDebtDecimal,
-          totalDebtUSD: totalDebtDecimal * borrowToken.price,
-          stableDebtUSD: stableDebtDecimal * borrowToken.price,
-          variableDebtUSD: variableDebtDecimal * borrowToken.price,
-          borrowStableAPY: 100 * (Number(userReserve.reserve.stableBorrowRate) / RAY),
-          borrowVariableAPY: 100 * (Number(userReserve.reserve.variableBorrowRate) / RAY),
-          token: borrowToken,
-        });
-      }
-    });
   }
 
   private async getPendingSushi(poolId, userId): Promise<string> {

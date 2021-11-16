@@ -10,10 +10,7 @@ const GET_RESERVES_CHUNK_SIZE = 100;
 const add0xSuffix = (str: string): string => `0x${str}`;
 
 export class UniSwapV2PairMulticall {
-  private multicallContract = new MulticallContract(
-    web3,
-    multicallContractAddress,
-  );
+  private multicallContract = new MulticallContract(web3, multicallContractAddress);
 
   async getPairsReserves(pairs: string[]): Promise<UniswapReservesData> {
     try {
@@ -34,8 +31,9 @@ export class UniSwapV2PairMulticall {
     try {
       const allReserves: UniswapReservesData = {};
 
-      const aggCallsWeights = await this.multicallContract
-        .aggregate([...pairs.map((pair) => [pair, RESERVES_CALL_HASH])]);
+      const aggCallsWeights = await this.multicallContract.aggregate(
+        pairs.map((pair) => [pair, RESERVES_CALL_HASH]),
+      );
 
       const blockNumber = Number(aggCallsWeights.blockNumber);
 
@@ -57,19 +55,24 @@ export class UniSwapV2PairMulticall {
     }
   }
 
-  // TODO: Requests and responses should have different types here
-  async getAssetsPairs(assetPairs: AssetPairData[]): Promise<AssetPairData[]> {
+  async getAssetsPairs(assetPairs: AssetPairArguments[]): Promise<AssetPairData[]> {
     try {
-      for (let chunkStart = 0; chunkStart < assetPairs.length; chunkStart += GET_RESERVES_CHUNK_SIZE) {
+      const assetPairsResult = [];
+      for (
+        let chunkStart = 0;
+        chunkStart < assetPairs.length;
+        chunkStart += GET_RESERVES_CHUNK_SIZE
+      ) {
         const chunkAssetPairs = assetPairs.slice(chunkStart, chunkStart + GET_RESERVES_CHUNK_SIZE);
         const pairs = await this.getPairsForBatch(chunkAssetPairs);
 
         for (let index = 0; index < pairs.length; index++) {
-          const assetPair = chunkAssetPairs[index];
+          const assetPair: AssetPairData = Object.assign({}, chunkAssetPairs[index]);
           assetPair.pairAddress = pairs[index].toLowerCase();
+          assetPairsResult.push(assetPair);
         }
       }
-      return assetPairs;
+      return assetPairsResult;
     } catch (e) {
       logger.error('Get pairs batch multicall failed', e);
       throw e;
@@ -78,13 +81,12 @@ export class UniSwapV2PairMulticall {
 
   private async getPairsForBatch(assetPairs: AssetPairData[]): Promise<string[]> {
     try {
-      const multicallResponse: { returnData: string[] } = await this.multicallContract
-        .aggregate([
-          ...assetPairs.map((pair) => [
-            pair.factoryAddress,
-            UniSwapV2PairMulticall.getPairInputData(pair.asset, pair.baseAsset, GET_PAIR_CALL_HASH),
-          ]),
-        ]);
+      const multicallResponse: { returnData: string[] } = await this.multicallContract.aggregate(
+        assetPairs.map((pair) => [
+          pair.factoryAddress,
+          UniSwapV2PairMulticall.getPairInputData(pair.asset, pair.baseAsset, GET_PAIR_CALL_HASH),
+        ]),
+      );
 
       return multicallResponse?.returnData.map((data) => {
         return add0xSuffix(String(data).slice(26));
@@ -94,7 +96,6 @@ export class UniSwapV2PairMulticall {
       throw e;
     }
   }
-
 
   private static getPairInputData(address1: string, address2: string, hash: string): string {
     const inputAddress1 = INPUT_ZEROES.concat(address1.slice(2));
@@ -111,6 +112,13 @@ export interface UniswapPairReserves {
 
 export interface UniswapReservesData {
   [key: string]: UniswapPairReserves;
+}
+
+export interface AssetPairArguments {
+  baseAsset: string;
+  asset: string;
+  factoryAddress: string;
+  protocolName: string;
 }
 
 export interface AssetPairData {

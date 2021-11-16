@@ -7,7 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Chains, DetailedResponse } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum } from '@app/common/enum';
+import { ChainIdEnum, NftProjectEnum } from '@app/common/enum';
+import { NftAssetsByAccounts, NftServiceInfo } from '@app/common/interfaces/nft.interface';
 
 import { ProfitAndLossResponseDTO } from '../analytic/dto';
 import { AssetResponseDto, AssetsDto } from '../assets/assets.dto';
@@ -29,6 +30,8 @@ export class AccountService {
   private readonly getAssetsUrl: string;
   private readonly getAnalyticUrl: string;
   private readonly get24HourReturnsUrl: string;
+  private readonly nftAssetsUrl: string;
+  private readonly nftProjectsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -64,6 +67,12 @@ export class AccountService {
 
     const returnsPath = this.configService.get<string>('ACCOUNT_24H_RETURNS');
     this.get24HourReturnsUrl = `${url}/${returnsPath}`;
+
+    const nftProjectsPath = this.configService.get<string>('NFT_PROJECTS');
+    this.nftProjectsUrl = `${url}/${nftProjectsPath}`;
+
+    const nftAssetsPath = this.configService.get<string>('NFT_ASSETS');
+    this.nftAssetsUrl = `${url}/${nftAssetsPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -228,6 +237,53 @@ export class AccountService {
       return data;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getNftProjects(): Promise<NftServiceInfo[]> {
+    try {
+      this.logger.time(this.nftProjectsUrl);
+      const data = await this.httpService
+        .get(this.nftProjectsUrl)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(this.nftProjectsUrl);
+      return data;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
+      throw e;
+    }
+  }
+
+  async getNftAssets(
+    projectName: NftProjectEnum,
+    addresses: Address[],
+    chains: ChainIdEnum[],
+    limit: number,
+    offset: number,
+  ): Promise<NftAssetsByAccounts> {
+    try {
+      const nftAssetsProjectUrl = `${this.nftAssetsUrl}/${projectName}`;
+      this.logger.time(nftAssetsProjectUrl);
+      const data = await this.httpService
+        .get(nftAssetsProjectUrl, { params: { addresses, chains, limit, offset } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(nftAssetsProjectUrl);
+      return data;
+    } catch (e) {
+      if (e.isAxiosError) {
+        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        if (e.response) {
+          this.logger.error(e.response.data);
+        }
+      }
       throw e;
     }
   }

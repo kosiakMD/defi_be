@@ -9,6 +9,7 @@ import {
   AccountTokenBalance,
   Address,
   BalancesResponse,
+  ChainDto,
   ChainIdEnum,
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
@@ -18,14 +19,14 @@ import {
   ProtocolNameEnum,
   UniswapSubgraphLikeData,
 } from '@app/common';
+import { FeatureEnum } from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/enum';
 
 import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationStakingPositionDto,
   LPToken,
   StakingPositionResponseDto,
@@ -36,7 +37,6 @@ import { LocalMultiCall } from '../../spookyswap/multicall/local.multi.call';
 import { acelabMap, booMap, farmsMap, xBooMap } from '../../spookyswap/multicall/util';
 import { SpookyswapAceLabSubgraph } from '../../thegraph/spookyswap.acelab.subgraph';
 import { SpookyswapFarmSubgraph } from '../../thegraph/spookyswap.farm.subgraph';
-import { FeatureEnum } from '../features/features.enum';
 import DataProviderProtocol from './dataProviderProtocol';
 import { Mapper } from './mappers/mapper';
 
@@ -66,16 +66,21 @@ export class SpookySwapProtocol extends DataProviderProtocol {
     this.dataProvider = this;
   }
 
-  protected async getData(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
+  protected async getData(addresses: string, chain: ChainDto): Promise<BaseData[]> {
     const originAddressesArray = addresses.toLowerCase().split(',');
-    const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chainId}_SpookySwap_pools`);
+    const pools: NotifyPayloadFeaturesDto = await this.cache.get(`${chain.id}_SpookySwap_pools`);
 
-    const web3Provider = this.web3Provider.web3Map.get(chainId);
+    if (!pools) {
+      this.logger.error(`SpookySwap: No Pools Found! Chain: ${chain.id}`);
+      throw new Error('Failed to retrieve available liquidity pools');
+    }
+
+    const web3Provider = this.web3Provider.getForChain(chain.abbr);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 
     const results = await Promise.allSettled([
-      this.getLiquidityPositions(originAddressesArray, pools, chainId),
-      this.getStakingPositions(originAddressesArray, pools, chainId, multicall),
+      this.getLiquidityPositions(originAddressesArray, pools, chain),
+      this.getStakingPositions(originAddressesArray, pools, chain.id, multicall),
     ]);
 
     const response = [];
@@ -95,11 +100,11 @@ export class SpookySwapProtocol extends DataProviderProtocol {
   private async getLiquidityPositions(
     originAddressesArray: Address[],
     pools: NotifyPayloadFeaturesDto,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<BaseData[]> {
     const balances = await this.accountService.getBalances(
       originAddressesArray,
-      [chainId],
+      [chain.id],
       pools.items.map((pool) => pool.address.toLowerCase()),
     );
 
@@ -109,7 +114,7 @@ export class SpookySwapProtocol extends DataProviderProtocol {
       await this.mapToUniswapResponseData(originAddressesArray, pools, balances),
       ProjectEnum.spookyswap,
       ProtocolNameEnum.SpookySwap,
-      chainId,
+      chain,
     );
 
     return poolData;

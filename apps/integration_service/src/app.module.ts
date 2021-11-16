@@ -13,8 +13,6 @@ import { HealthController } from './health/health.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { JobsModule } from './jobs/jobs.module';
 import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { NftModule } from './nft/nft.module';
-import { OpenSeaModule } from './open_sea/open.sea.module';
 import { PoolsModule } from './pools/pools.module';
 import { ProtocolModule } from './protocol/protocol.module';
 import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
@@ -62,8 +60,6 @@ import { VaultsModule } from './vaults/vaults.module';
     TemporaryTokensModule,
     IntegrationsModule,
     JobsModule,
-    OpenSeaModule,
-    NftModule,
   ],
   controllers: [HealthController],
 })

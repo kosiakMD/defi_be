@@ -1,32 +1,51 @@
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
+
+import { Address } from '@app/common';
+
+import { NftAssetDto, LinksDto } from '.';
 
 @Exclude()
 export class CollectionDto {
   @Expose()
+  @ApiProperty({ example: '0xc4cca459aef145bdcc8746e7d8ddc73083549c39' })
+  address: Address;
+
+  @Expose()
+  @Type(() => NftAssetDto)
+  @ApiProperty({ type: () => [NftAssetDto] })
+  assets: NftAssetDto[];
+
+  @Expose()
   @ApiProperty({ example: 'Super Shiba Club' })
   name: string;
 
-  @Expose({ name: 'external_url' })
-  @ApiProperty({ example: 'https://supershibas.io/' })
-  externalUrl: string;
+  @Expose()
+  @ApiProperty({ example: 'TES' })
+  symbol: string;
 
-  @Expose({ name: 'image_url' })
+  @Expose()
   @ApiProperty({
     example:
-      'https://lh3.googleusercontent.com/RYF4Gc-9EcE7g_sbl3Aiaux5jkuq9DAe6pRe9PC7FUkFpsUAT1y3CLW-v75uJmKOXM2ST0WH-tnMvSPuvfCzBJLKY64FbthSSZwD=s120',
+      'The Access Utility Token can be used to gain exclusive entry to premium giveaways, claimable metaverse avatar, and access to exclusive merch.',
   })
-  imageUrl: string;
+  description: string;
 
-  @Expose({ name: 'banner_image_url' })
-  @ApiProperty({
-    example:
-      'https://lh3.googleusercontent.com/j2V_S-FYmgoWnuba61apC1EPKfdzI-uIfoD6psHatOuWNXTeVHve8AZqBrt8Ze6P-u5UK12Rr1WK6o1h2DObXa7n2sKVws-aOg7hzqs=s2500',
-  })
-  bannerImageUrl: string;
+  @Expose()
+  @ApiProperty({ example: 0.05 })
+  averagePrice: number;
 
-  @Expose({ name: 'created_date' })
-  @ApiProperty({ example: '2021-09-28T03:54:14.788847' })
-  createdAt: string;
+  @Expose()
+  @ApiProperty({ example: 1750 })
+  averagePriceUSD: number;
+
+  @Expose()
+  @ApiProperty({ example: 2 })
+  balance: number;
+
+  @Expose()
+  @Type(() => LinksDto)
+  @ApiProperty({ type: () => LinksDto })
+  links: LinksDto;
 }

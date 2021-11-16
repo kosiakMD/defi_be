@@ -1,5 +1,5 @@
 // eslint-disable-next-line max-classes-per-file
-import { AaveUser, IncomeLiquidityPosition } from '@app/common/dto';
+import { IncomeLiquidityPosition } from '@app/common/dto';
 import { ERC20Token } from '@app/common/dto/ERC20Token';
 import {
   BurnsInterface,
@@ -34,7 +34,6 @@ export interface UniswapSubgraphLikeData {
   uniswapSnapshots?: Map<string, SnapshotsInterface[]>;
   subgraphPools: Map<string, IncomeLiquidityPosition[]>;
   subgraphStaking?: Map<string, any>;
-  subgraphLending?: Map<string, AaveUser>;
 }
 
 export interface Transaction<T = string> {
@@ -50,11 +49,12 @@ export interface Transaction<T = string> {
 export interface PlatformPoolToken {
   address: string;
   reserve: string;
-  name?: string;
-  symbol?: TokenSymbol;
-  percentage?: number;
-  decimals?: number;
-  totalSupply?: string;
+  name: string;
+  symbol: TokenSymbol;
+  percentage: number;
+  decimals: number;
+  totalSupply: string;
   priceUSD?: number;
+  // TODO should be required
   amount?: string;
 }

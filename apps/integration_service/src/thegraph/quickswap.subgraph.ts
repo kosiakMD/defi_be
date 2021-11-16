@@ -1,12 +1,15 @@
+import { Cache } from 'cache-manager';
 import { map } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/common';
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';
+import { getKey } from '@app/common/utils/string';
 
-import { PairsDto, ResponseDto, UsersDto } from '../quickswap/dto/subgraph';
+import { PairsDto, SubgraphResponseDto } from '../subgraph';
 import { wrapInQuotes } from '../utils/string';
 
 @Injectable()
@@ -16,37 +19,23 @@ export class QuickswapSubgraph {
   constructor(
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) protected readonly cache: Cache,
   ) {
     this.subgraphUrl = this.configService.get<string>('QUICKSWAP_SUBGRAPH_URL');
   }
 
-  getUsers(accountAddresses: Address[]): Promise<ResponseDto<UsersDto>> {
-    return this.httpService
-      .post(this.subgraphUrl, {
-        operationName: 'users',
-        query: `{
-          users(where: {id_in: [${accountAddresses.map(wrapInQuotes)}]}) {
-            id
-            liquidityPositions {
-              id
-              liquidityTokenBalance
-              pair {
-                id
-              }
-            }
-          }
-        }
-        `,
-      })
-      .pipe(map((response) => response.data))
-      .toPromise();
-  }
+  async getPairs(pairsAddresses: Address[]): Promise<SubgraphResponseDto<PairsDto>> {
+    const cachedPairs = await this.cache.get<SubgraphResponseDto<PairsDto>>(
+      getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses),
+    );
 
-  getPairs(pairsAddresses: Address[]): Promise<ResponseDto<PairsDto>> {
-    return this.httpService
-      .post(this.subgraphUrl, {
-        operationName: 'pairs',
-        query: `{
+    if (cachedPairs) {
+      return cachedPairs;
+    } else {
+      const pairs: SubgraphResponseDto<PairsDto> = await this.httpService
+        .post(this.subgraphUrl, {
+          operationName: 'pairs',
+          query: `{
           pairs(where: {id_in: [${pairsAddresses.map(wrapInQuotes)}]}) {
             id
             reserve0
@@ -69,8 +58,13 @@ export class QuickswapSubgraph {
             }
           }
         }`,
-      })
-      .pipe(map((response) => response.data))
-      .toPromise();
+        })
+        .pipe(map((response) => response.data))
+        .toPromise();
+
+      await this.cache.set(getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses), pairs);
+
+      return pairs;
+    }
   }
 }

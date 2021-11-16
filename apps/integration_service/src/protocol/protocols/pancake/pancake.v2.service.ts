@@ -5,25 +5,33 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger, NotifyPayloadStakingFeaturesDto, PoolTokenDto } from '@app/common';
+import {
+  AutomaticMarketMaker,
+  ChainDto,
+  LiquidityPositionDto,
+  Logger,
+  NotifyPayloadStakingFeaturesDto,
+  PoolTokenDto,
+  ProtocolNameEnum,
+} from '@app/common';
+import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
-import { ChainIdEnum, FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum, } from '@app/common/enum';
-
-import { ProtocolNameEnum } from '../../../common/enum';
+import { FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../account/account.service';
 import { RewardsData } from '../../../chain/dto/pancake.interfaces';
 import { LocalMultiCall } from '../../../chain/local.multi.call';
 import { Web3Provider } from '../../../chain/web3.provider';
 import {
-  ClaimableDto,
-  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
 } from '../../../integrations/integrations.dto';
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { PriceService } from '../../../price/price.service';
-import { Balance, Pancakev2MainStakingSubgraph, } from '../../../thegraph/pancakev2.main.staking.subgraph';
+import {
+  Balance,
+  Pancakev2MainStakingSubgraph,
+} from '../../../thegraph/pancakev2.main.staking.subgraph';
 import { decimalsDivider } from '../../../utils/util';
 import { Mapper } from '../mappers/mapper';
 
@@ -42,10 +50,10 @@ export class PancakeV2Service {
     private readonly priceService: PriceService,
   ) {}
 
-  public async getDataByAddresses(addresses: string, chainId: ChainIdEnum): Promise<BaseData[]> {
+  public async getDataByAddresses(addresses: string, chain: ChainDto): Promise<BaseData[]> {
     const base: BaseData[] = [];
     const baseInfo: BaseInfo = {
-      chainId,
+      chain,
       projectName: ProjectEnum.pancake,
       protocolName: ProtocolNameEnum.pancakeV2,
       userAddress: '',
@@ -54,13 +62,14 @@ export class PancakeV2Service {
       baseInfo,
       ProtocolTypeEnum.staking,
     );
+    const pools = Mapper.createDynamicFeature<AutomaticMarketMaker>(baseInfo, ProtocolTypeEnum.amm);
 
     const originAddressesArray = addresses.toLowerCase().split(',');
 
-    const stakingPositions: IntegrationStakingPositionDto[] = await this.getStakingPositions(
-      originAddressesArray,
-      chainId,
-    );
+    const [liquidityPositions, stakingPositions] = await Promise.all([
+      this.getLiquidityPostions(originAddressesArray, chain),
+      this.getStakingPositions(originAddressesArray, chain),
+    ]);
 
     const tokenToGetPrices: Set<string> = new Set<string>();
     stakingPositions.forEach((sp) => {
@@ -74,55 +83,65 @@ export class PancakeV2Service {
       }
       tokenToGetPrices.add(sp.rewardToken.address);
     });
-
+    liquidityPositions.forEach((lp) => {
+      lp.poolTokens.map((pt) => {
+        tokenToGetPrices.add(pt.address);
+      });
+    });
+    //
     const { prices } = await this.priceService.getTokenPricesFetch(
       Array.from(tokenToGetPrices),
-      chainId,
+      chain.id,
     );
 
-    let totalValue = 0;
-    stakingPositions.map((sp) => {
-      if (sp.stakingToken.tokens) {
-        sp.stakingToken.tokens.map((spt) => {
-          spt.price = Number(prices[spt.address]);
-          spt.value = Number(spt.balance) * Number(prices[spt.address]);
-          totalValue = totalValue + spt.value;
-        });
-      } else {
+    stakingPositions.forEach((sp) => {
+      if (sp.stakingToken.tokens.length === 0) {
         sp.stakingToken.price = prices[sp.stakingToken.address];
         sp.stakingToken.value =
           Number(sp.stakingToken.balance) * Number(prices[sp.stakingToken.address]);
-        totalValue = totalValue + sp.stakingToken.value;
+      } else {
+        sp.stakingToken.tokens.forEach((spt) => {
+          spt.price = Number(prices[spt.address]);
+          spt.value = Number(spt.balance) * Number(prices[spt.address]);
+        });
       }
       sp.rewardToken.price = Number(prices[sp.rewardToken.address]);
       sp.rewardToken.claimableData.value =
         Number(sp.rewardToken.claimableData.balance) * Number(prices[sp.rewardToken.address]);
-      totalValue = totalValue + Number(sp.rewardToken.claimableData.value);
     });
-
     staking.stakingPositions = stakingPositions;
+
+    liquidityPositions.forEach((lp) => {
+      lp.poolTokens.forEach((lpt) => {
+        lpt.price = Number(prices[lpt.address]);
+        lpt.value = Number(lpt.balance) * Number(prices[lpt.address]);
+        lp.user.value = lp.user.value ? lp.user.value : 0;
+        lp.user.value += lpt.value;
+      });
+    });
+    pools.liquidityPositions = liquidityPositions;
+
     base.push(staking);
+    base.push(pools);
 
     return base;
   }
 
   private async getStakingPositions(
     addresses: string[],
-    chain: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<IntegrationStakingPositionDto[]> {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
-    const pools: NotifyPayloadStakingFeaturesDto = await this.cache.get(
-      `${chain}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}`,
-    );
+    const key = `${chain.id}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}`;
+
+    const pools: NotifyPayloadStakingFeaturesDto = await this.cache.get(key);
 
     if (!pools) {
-      throw new Error(
-        `not found cached data for '${chain}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.staking}'`,
-      );
+      throw new Error(`not found cached data for '${key}'`);
     }
 
-    const web3Provider = this.web3Provider.web3Map.get(chain);
+    const web3Provider = this.web3Provider.getForChain(chain.abbr);
     const multicall = new LocalMultiCall(web3Provider, this.logger);
 
     let balances: Balance[] = await this.pancakev2MainStakingSubgraph.getBalances(addresses);
@@ -157,11 +176,11 @@ export class PancakeV2Service {
         const rewardToken: IntegrationClaimableTokenDto = plainToClass(
           IntegrationClaimableTokenDto,
           {
-            address: cachedPoolData.rewardToken.address,
-            name: cachedPoolData.rewardToken.name,
-            symbol: cachedPoolData.rewardToken.symbol,
-            decimals: cachedPoolData.rewardToken.decimals,
-            totalSupply: cachedPoolData.rewardToken.totalSupply,
+            address: cachedPoolData['rewards'][0].address,
+            name: cachedPoolData['rewards'][0].name,
+            symbol: cachedPoolData['rewards'][0].symbol,
+            decimals: cachedPoolData['rewards'][0].decimals,
+            totalSupply: cachedPoolData['rewards'][0].totalSupply,
           },
         );
 
@@ -170,10 +189,10 @@ export class PancakeV2Service {
         );
         stakingToken.balance = stakedBigNumber.toString();
 
-        if (cachedPoolData.liquidityPoolTokens) {
+        if (cachedPoolData.stakingToken.tokens) {
           stakingToken.tokens = [];
           const poolShare = stakedBigNumber.div(new BigNumber(stakingToken.totalSupply));
-          cachedPoolData.liquidityPoolTokens.forEach((clpt) => {
+          cachedPoolData.stakingToken.tokens.forEach((clpt) => {
             const poolTokenToAdd: PoolTokenDto = plainToClass(PoolTokenDto, {
               address: clpt.address,
               name: clpt.name,
@@ -213,5 +232,65 @@ export class PancakeV2Service {
     });
 
     return stakingPositions;
+  }
+
+  private async getLiquidityPostions(
+    originAddressesArray: string[],
+    chain: ChainDto,
+  ): Promise<any[]> {
+    // in this case we handle only one address:
+    const address = originAddressesArray[0];
+    const liquidityPosition = [];
+
+    const key = `${chain.id}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.pools}`;
+    const pools: NotifyPayloadStakingFeaturesDto = await this.cache.get(key);
+    if (!pools) {
+      throw new Error(`not found cached data for '${key}'`);
+    }
+
+    const lpTokenAddresses = pools.items.map((p) => p.address);
+    const lpTokenBalances = await this.accountService.getBalancesPost(
+      [address],
+      [chain.id],
+      lpTokenAddresses,
+    );
+
+    lpTokenBalances[address].tokens.forEach((tb) => {
+      const cachedPoolData = pools.items.find((lp) => lp.address === tb.token.address);
+      const poolShare = tb.decimalsAmount / cachedPoolData.lpToken.totalSupply;
+      const userLiquidityPos: LiquidityPositionDto = plainToClass(LiquidityPositionDto, {
+        address: tb.token.address,
+        name: null,
+        lpToken: {
+          address: tb.token.address,
+          name: tb.token.name,
+          symbol: tb.token.symbol,
+          decimals: tb.token.decimals,
+          totalSupply: cachedPoolData.lpToken.totalSupply,
+        },
+        TVL: cachedPoolData.stats.tvl,
+        fee: cachedPoolData.stats.feeRate,
+        statistic: null,
+        user: {
+          value: null,
+          share: poolShare,
+        },
+        poolTokens: cachedPoolData.tokens.map((pt) => {
+          return {
+            address: pt.address,
+            name: pt.name,
+            symbol: pt.symbol,
+            decimals: pt.decimals,
+            reserve: pt.reserve.toString(),
+            value: null,
+            balance: (poolShare * pt.reserve).toString(),
+            price: null,
+          };
+        }),
+      });
+      liquidityPosition.push(userLiquidityPos);
+    });
+
+    return liquidityPosition;
   }
 }

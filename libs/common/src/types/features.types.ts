@@ -1,10 +1,12 @@
 import {
-  StakingPositionFeatureDto,
-  LiquidityPoolFeatureDto,
+  IntegrationClaimableTokenDto,
   LendingPositionDto,
+  LiquidityPoolFeatureDto,
+  StakingPositionFeatureDto,
 } from '@app/common/dto';
 
-import { LeverageFarmingPosition, StakingPosition } from '../interfaces';
+import { HealthFactorDto } from '../dto/HealthFactor.dto';
+import { LeverageFarmingPosition } from '../interfaces';
 
 export type FeatureName = string;
 
@@ -13,7 +15,8 @@ export type Features =
   | LendingPositionDto
   | LeverageFarmingPosition
   | StakingPositionFeatureDto
-  | StakingPosition;
+  | IntegrationClaimableTokenDto
+  | HealthFactorDto;
 
 export interface FeatureResult<T extends Features> {
   totalValue: number;
@@ -26,4 +29,5 @@ export type FeatureDto<T extends Features> = Record<FeatureName, FeatureResult<T
 export class FeatureResultDto<T extends Features> {
   totalValue = 0;
   items: T[] = [];
+  errors?: string[] = [];
 }

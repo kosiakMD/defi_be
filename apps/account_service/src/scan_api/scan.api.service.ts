@@ -8,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { DEFAULT_MULTIPLIER } from '@app/common/constant';
-import { ChainIdEnum, ChainPrefixEnum, ResultStatus } from '@app/common/enum';
+import { ChainIdEnum, ChainAbbrEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { HistoricalPricesMap } from '../balance/dto/price.response.dto';
@@ -42,7 +42,7 @@ export class ScanApiService {
   private retries: 0;
   protected readonly url: string;
   protected readonly apiKey: string;
-  protected readonly chainPrefix: ChainPrefixEnum;
+  protected readonly chainAbbr: ChainAbbrEnum;
   protected readonly chainId: ChainIdEnum;
   protected readonly mainCoinAddress: Address;
 
@@ -91,7 +91,7 @@ export class ScanApiService {
   async getTransfers(address: string): Promise<any> {
     const action = 'tokentx';
 
-    const cacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
+    const cacheKey = `${this.chainAbbr}_transfers_${action}_${address}`;
     const logString = `Cache ${cacheKey} is `;
 
     let transfers = await this.cacheManager.get<EtherscanTransfer[]>(cacheKey);
@@ -193,7 +193,7 @@ export class ScanApiService {
 
   protected async fetchTransactions(address, internal = false): Promise<any> {
     const action = internal ? 'txlistinternal' : 'txlist';
-    const cacheKey = `${this.chainPrefix}_transactions_${action}_${address}`;
+    const cacheKey = `${this.chainAbbr}_transactions_${action}_${address}`;
     const logString = `Cache ${cacheKey} is `;
 
     let transactions = await this.cacheManager.get<any[]>(cacheKey);

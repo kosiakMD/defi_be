@@ -7,4 +7,9 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.ftm]: ChainAbbrEnum.ftm,
   [ChainIdEnum.arbi]: ChainAbbrEnum.arbi,
   [ChainIdEnum.avax]: ChainAbbrEnum.avax,
+  [ChainIdEnum.xdai]: ChainAbbrEnum.xdai,
+  [ChainIdEnum.celo]: ChainAbbrEnum.celo,
+  [ChainIdEnum.mriver]: ChainAbbrEnum.mriver,
+  [ChainIdEnum.harm]: ChainAbbrEnum.harm,
+  [ChainIdEnum.heco]: ChainAbbrEnum.heco,
 };

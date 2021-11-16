@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
-import { Address } from '@app/common';
+import { Address, ChainDto } from '@app/common';
 import {
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
 } from '@app/common/dto/liquidity.position.dto';
-import { ChainIdEnum, PancakeProtocolEnum, ProjectEnum, ProtocolNameEnum } from '@app/common/enum';
+import { PancakeProtocolEnum, ProjectEnum, ProtocolNameEnum } from '@app/common/enum';
 
 import { TokenBalance } from '../../../common/types/balances';
 
@@ -68,7 +68,7 @@ export class PancakeService {
 
   public async getDataByAddresses(
     addresses: Address,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
     pancakeVersion: PancakeProtocolEnum,
   ): Promise<BaseData[]> {
     const addressesArray = addresses.split(',');
@@ -88,7 +88,7 @@ export class PancakeService {
       result.response,
       ProjectEnum.pancake,
       ProtocolNameEnum.pancakeV1,
-      chainId,
+      chain,
     );
   }
 

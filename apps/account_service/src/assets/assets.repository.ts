@@ -78,7 +78,8 @@ export class AssetsRepository extends Repository<AssetsEntity> {
         an.name,
         an.symbol,
         an.chain_id as "chainId",
-        ap.pairs 
+        ap.pairs,
+        ap.created_at as "createdAt"
       from assets_new an
       full outer join assets_pools ap
         on an.id = ap.asset_id

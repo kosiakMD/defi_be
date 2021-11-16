@@ -15,24 +15,16 @@ import {
 
 import { ResponseDto } from '@app/common/dto';
 import { ChainDto } from '@app/common/dto/chain.dto';
-import { FeatureEnum } from './features.enum';
+import { FeatureEnum } from '@app/common';
 import { FeatureDto } from '../../integrations/integrationFeatures';
 import { FeaturesType } from '../protocol.types';
 import { ProtocolName } from '@app/common';
 
 
-export interface ProtocolParams {
-  protocolName: ProtocolName;
-  // featureName: FeatureEnum;
-  // chainId: ChainIdEnum;
-  // address: Address;
-}
-
-
 export class ProtocolFeaturesExportDto {
-  // [FeatureEnum.pools]: FeatureDto;
   chain: ChainDto;
   list: FeatureEnum[];
+  active: FeatureDto
 }
 
 export class ProtocolFeaturesDataDto /*implements ProtocolFeaturesData*/ {
@@ -104,6 +96,8 @@ export class ProtocolDataDto {
     example: UniswapProtocolEnum.uniswapV2
   })
   name: ProtocolName;
+
+  features: ProtocolFeaturesExportDto[];
 }
 
 export class FeaturesResponseDto extends ResponseDto<ProtocolDataDto[]> {

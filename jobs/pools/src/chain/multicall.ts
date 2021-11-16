@@ -5,6 +5,7 @@ import { MASTER_CHEF_PANCAKE_ABI } from './abis/MASTERCHEFPANCAKE';
 import { UNIV2PAIR_ABI } from './abis/UNIV2PAIR';
 import { MasterchiefPoolInfoResponse, TokenBalance, UniswapPairReserves } from './dto/token';
 
+// legacy
 export class MultiCallInternal extends MultiCall {
   constructor(protected readonly web3Instance) {
     super(web3Instance);
@@ -100,7 +101,6 @@ export class MultiCallInternal extends MultiCall {
     const poolIds: number[] = Array.from(balancesData.keys());
     for (let i = 0, j = poolIds.length; i < j; i += chunkSize) {
       const poolIdsSlice = poolIds.slice(i, i + chunkSize);
-      // console.log(poolIdsSlice)
       const inputs: CallInput[] = [];
       poolIdsSlice.map((pid) => {
         const existedData = balancesData.get(pid);

@@ -5,44 +5,55 @@ import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
 import { DetailedResponseDto, MetaDto } from '@app/common/dto';
 import { ChainDto } from '@app/common/dto/chain.dto';
-import { BorrowToken, ERC20Token, LeverageErcToken, StakingPosition } from '../interfaces/transactions.interfaces';
+import { BorrowToken, LeverageErcToken, StakingPosition } from '../interfaces/transactions.interfaces';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from '../protocol/features/features.dto';
-import { FeatureEnum } from '../protocol/features/features.enum';
+import { FeatureEnum } from '@app/common';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { FeatureResult } from '../protocol/features/features.types';
 import { LendingPositionDto, BorrowingPosition } from '@app/common';
 import { LeverageFarmingPosition } from '../interfaces/leverage.farming.interfaces';
+import { IntegrationClaimableTokenDto } from '@app/common';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
   features: ProtocolFeaturesInfo; // ProtocolFeaturesDataDto;
 }
 
+@Exclude()
 export class PoolTokenDto {
   @ApiProperty({type: String, example: '0x97c4adc5d28a86f9470c70dd91dc6cc2f20d2d4d'})
+  @Expose()
   address: string = null;
 
   @ApiProperty({type: String, example: 'Wrapped Ethereum'})
+  @Expose()
   name: string = null; // WETH
 
   @ApiProperty({type: String, example: 'WETH'})
+  @Expose()
   symbol: string = null;
   // balance total & user
 
   @ApiProperty({type: String, example: '4362346'})
+  @Expose()
   reserve: string = null;
   //
   @ApiProperty({type: Number, example: 1.2512})
+  @Expose()
   value: number = null; // Balance value // balance * price
 
   @ApiProperty({type: String, example: '123.6534'})
+  @Expose()
   balance: string = null; // string | Balance
   // price: Price = null; // value in currency [usd]
+
   @ApiProperty({type: Number, example: 345.12})
+  @Expose()
   price: number = null; // value in currency [usd]
 
   @ApiProperty({type: Number, example: 18})
+  @Expose()
   decimals: number = null;
 }
 
@@ -127,26 +138,18 @@ export class LiquidityPoolFeature {
   tokens: PoolTokenDto[] = [];
 }
 
-export class ClaimableDto {
-  @ApiProperty({type: String, example: '1.23413'})
-  balance: string = null;
-  @ApiProperty({type: String, example: '123413'})
-  value: number = null;
-}
-
-export class IntegrationClaimableTokenDto extends ERC20Token {
-  @ApiProperty({type: ClaimableDto})
-  claimableData?: ClaimableDto;
-
-  @ApiProperty({type: String, example: 543.675})
-  price?: number;
-}
-
 export class LPToken extends IntegrationERC20TokenDto {
   @ApiProperty({type: [PoolTokenDto]})
   tokens: PoolTokenDto[] = [];
 }
 
+export class Stats {
+  apy: number = null;
+  apr: number = null;
+  tvl: number = null;
+}
+
+// TODO: same as StakingPoolFeature!!!
 export class IntegrationStakingPositionDto {
   @Expose()
   @ApiProperty({type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'})
@@ -165,12 +168,16 @@ export class IntegrationStakingPositionDto {
   staked: string = null; // amount
 
   @Expose()
+  @ApiProperty({type: Stats})
+  stats?: Stats;
+
+  @Expose()
   @ApiProperty({ type: LPToken })
   stakingToken: IntegrationERC20TokenDto; // - lpToken info
 
   @Expose()
   @ApiProperty({type: IntegrationClaimableTokenDto})
-  rewardToken: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
+  rewardToken?: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
 }
 
 export class StakingPositionResponseDto {

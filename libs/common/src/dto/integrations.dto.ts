@@ -1,41 +1,10 @@
 // eslint-disable-next-line max-classes-per-file
 import { Exclude, Expose, Type } from 'class-transformer';
-
-import { ApiProperty } from '@nestjs/swagger';
-import { ERC20TokenDto, StakingPositionFeatureDto } from './index';
+import { ERC20TokenDto } from './index';
 
 import { FeatureEnum } from '@app/common/enum';
-import {
-  FeatureResult,
-  LendingPositionDto,
-  LeverageFarmingPosition,
-  ProtocolFeaturesInfo,
-  StakingPosition,
-} from '@app/common';
-import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from './features.dto';
-import { ChainDto } from './chain.dto';
-
-import { MetaDto } from './response.dto';
-
-import { CurrencyDto } from './currency.dto';
-
-export class ProtocolInfoDto extends ProtocolBasicInfo {
-  @Exclude()
-  features: ProtocolFeaturesInfo; // ProtocolFeaturesDataDto;
-}
-
-// type data = {
-//   protocol: { name: string; project: string };
-//   currency: CurrencyDto;
-//   chains: {
-//     features?: string[];
-//     chain: ChainDto;
-//     //
-//     pools: any[];
-//     staking: any[];
-//   }[];
-// };
-
+import { FeatureResult, Features, IntegrationClaimableTokenDto, LendingPositionDto, LeverageFarmingPosition, } from '@app/common';
+import { HealthFactorDto } from './HealthFactor.dto';
 
 export class PoolTokenDto {
   address: string = null;
@@ -97,7 +66,7 @@ export class LiquidityPoolFeatureDto {
 }
 
 export type IntegrationFeaturesData = {
-  [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeatureDto | StakingPositionFeatureDto | StakingPosition | LendingPositionDto | LeverageFarmingPosition>;
+  [key in keyof typeof FeatureEnum]?: FeatureResult<Features>;
 } & {
   // errors: string[] | Error[];
   errors: string[] | string[][] | string[][][] | Error[];
@@ -111,40 +80,15 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
     // eslint-disable-next-line prettier/prettier
   [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeatureDto>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
+  [FeatureEnum.staking]?: FeatureResult<any/*StakingPositionFeatureDto*/>;
   @Expose()
   [FeatureEnum.lending]?: FeatureResult<LendingPositionDto>;
   @Expose()
+  [FeatureEnum.borrowing]?: FeatureResult<LendingPositionDto>;
+  @Expose()
   [FeatureEnum.leverageFarming]?: FeatureResult<LeverageFarmingPosition>;
+  @Expose()
+  [FeatureEnum.health]?: FeatureResult<HealthFactorDto>;
+  @Expose()
+  [FeatureEnum.claimable]?: FeatureResult<IntegrationClaimableTokenDto>;
 }
-
-export class IntChainsDataDto extends IntegrationFeaturesDataDto {
-  @ApiProperty({ type: ChainDto })
-  chain: ChainDto = null; // chains of chain + features data & info
-
-  @ApiProperty({ type: ProtocolFeaturesInfoDto })
-  features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
-}
-
-export class IntegrationDataDto {
-  @ApiProperty({ type: MetaDto, required: false })
-  __meta?: MetaDto;
-
-  @ApiProperty({ type: ProtocolInfoDto })
-  protocol: ProtocolInfoDto = null;
-
-  @ApiProperty({ type: CurrencyDto})
-  currency: CurrencyDto = null;
-
-  @ApiProperty({ type: [IntChainsDataDto] })
-  chains: IntChainsDataDto[] = [];
-
-  // @ApiProperty({ type: IntegrationFeaturesDataDto, name: 'IntegrationFeaturesDataDto' })
-  // result: IntegrationFeaturesDataDto = null;
-}
-
-// export class IntegrationsResponseDto extends DetailedResponseDto<IntegrationDataDto> {
-//   @ApiProperty({ type: IntegrationDataDto })
-//   @Type(() => IntegrationDataDto)
-//   data: IntegrationDataDto = null;
-// }

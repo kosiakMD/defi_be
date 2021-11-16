@@ -2,12 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, UniswapProtocolEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../account/account.service';
 import { PriceService } from '../../../price/price.service';
 import { UniswapSubgraph } from '../../../thegraph/uniswap.subgraph';
-import { FeatureEnum } from '../../features/features.enum';
 import AbstractProtocol from '../abstractProtocol';
 import { Mapper } from '../mappers/mapper';
 import UniswapLikeProtocol from './uniswapLikeProtocol';

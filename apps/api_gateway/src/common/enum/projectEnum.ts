@@ -1,3 +1,5 @@
+import { YearnProtocolEnum } from '@app/common';
+
 import { QuickswapProtocolEnum } from '.';
 
 export enum ProjectEnum {
@@ -54,7 +56,8 @@ export type ProtocolName =
   | SushiSwapProtocolEnum
   | UniswapProtocolEnum
   | AlpacaProtocolEnum
-  | AaveProtocolEnum;
+  | AaveProtocolEnum
+  | YearnProtocolEnum;
 
 export const ProtocolNameEnum = {
   ...AutofarmProtocolEnum,
@@ -66,4 +69,5 @@ export const ProtocolNameEnum = {
   ...UniswapProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AaveProtocolEnum,
+  ...YearnProtocolEnum,
 };

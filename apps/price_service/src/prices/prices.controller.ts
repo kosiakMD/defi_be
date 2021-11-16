@@ -112,11 +112,7 @@ export class PricesController {
       };
     } catch (error) {
       this.logger.error(error);
-      return {
-        statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-        message: 'Error. Asset current price is not saved',
-        error,
-      };
+      throw error;
     }
   }
 

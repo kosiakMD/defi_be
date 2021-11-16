@@ -38,10 +38,18 @@ export const validationSchema = Joi.object({
   DB_USERNAME: Joi.string().required(),
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
-  ETH_URL: Joi.string().required(),
+
+  AVAX_URL: Joi.string().required(),
   BSC_URL: Joi.string().required(),
-  POLYGON_URL: Joi.string().required(),
+  CELO_URL: Joi.string().required(),
+  ETH_URL: Joi.string().required(),
   FTM_URL: Joi.string().required(),
+  HARM_URL: Joi.string().required(),
+  HECO_URL: Joi.string().required(),
+  MRIVER_URL: Joi.string().required(),
+  POLYGON_RPC_URL: Joi.string().required(),
+  XDAI_URL: Joi.string().required(),
+
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),
   PRICES_PATH: Joi.string().required(),
@@ -95,6 +103,37 @@ export const validationSchema = Joi.object({
   ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string()
     .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
     .optional(),
+  XDAI_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  XDAI_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  CELO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  CELO_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  MOONRIVER_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  MOONRIVER_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  HARMONY_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  HARMONY_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+  HECO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  HECO_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default('')
+    .optional(),
+
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //
     .default('eu-central-1')
@@ -111,6 +150,12 @@ export const validationSchema = Joi.object({
     .integer()
     .optional()
     .default(60 * 60),
+  OPEN_SEA_URL: Joi.string().required(),
+  OPEN_SEA_API_KEY: Joi.string().required(),
+  OPEN_SEA_INTERVAL: Joi.number().required(),
+  AAVEGOTCHI_SUBGRAPH_ETHEREUM: Joi.string().required(),
+  AAVEGOTCHI_SUBGRAPH_POLYGON: Joi.string().required(),
+  AAVEGOTCHI_SUBGRAPH_SVG: Joi.string().required(),
 });
 
 export const validationOptions = {

@@ -26,6 +26,9 @@ export class AssetsPoolsDto implements AssetsForLambdaResponse {
   @ApiProperty({ type: String, example: 'ETH', required: false })
   symbol: string = null;
 
+  @ApiProperty({ type: Date })
+  createdAt: Date;
+
   @ApiProperty({ type: PairDto, isArray: true, required: false })
   pairs: PairDto[] = null;
 }

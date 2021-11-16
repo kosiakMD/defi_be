@@ -32,6 +32,7 @@ import { HealthController } from './health/health.controller';
 import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
 import { IntegrationService } from './integration/integration.service';
 import { MailModule } from './mail/mail.module';
+import { NftController } from './nft/nft.controller';
 import { PancakeController } from './pancake/pancake.controller';
 import { PangolinController } from './pangolin/pangolin.controller';
 import { PoolsModule } from './pools/pools.module';
@@ -50,7 +51,6 @@ import { TransfersController } from './transfers/transfers.controller';
 import { TransfersService } from './transfers/transfers.service';
 import { UniswapController } from './uniswap/uniswap.controller';
 import { VaultsModule } from './vaults/vaults.module';
-import { NftModule } from './nft/nft.module';
 
 @Module({
   imports: [
@@ -93,7 +93,6 @@ import { NftModule } from './nft/nft.module';
     MailModule,
     ImpermanentLossModule,
     SafeProxyModule,
-    NftModule,
   ],
   controllers: [
     HealthController,
@@ -111,6 +110,7 @@ import { NftModule } from './nft/nft.module';
     UniswapController,
     SwapController,
     ProtocolController,
+    NftController,
   ],
   providers: [
     // TODO: for global auto caching

@@ -1,16 +1,10 @@
-import {
-  Address,
-  ChainAbbrEnum,
-  ChainIdEnum,
-  Logger,
-  ProjectEnum,
-  ProtocolName,
-} from '@app/common';
+import { Address, ChainAbbrEnum, ChainDto, Logger, ProjectEnum, ProtocolName } from '@app/common';
+import { FeatureEnum } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 
+import { SubgraphResponseDto } from '../../../subgraph/response.dto';
 import { UniswapLikeSubgraph } from '../../../thegraph/uniswap-like-subgraph.service';
 import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../../utils/util';
-import { FeatureEnum } from '../../features/features.enum';
 import { ProtocolFeaturesInfo } from '../../protocol.types';
 import { RawFeaturesDto } from '../../protocols.dto';
 import { BasicProtocol } from '../basicProtocol';
@@ -35,10 +29,10 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
 
   public getAllFeaturesRawData = async (
     addresses: Address,
-    chainId: ChainIdEnum,
+    chain: ChainDto,
   ): Promise<RawFeaturesDto> => {
     try {
-      const data = await this.getData(addresses, chainId);
+      const data = await this.getData(addresses, chain);
 
       const rawPools = data.find((data) => data['liquidityPositions'])?.liquidityPositions;
       const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
@@ -55,23 +49,20 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
     }
   };
 
-  protected async getData(addresses, chainId) {
+  protected async getData(addresses, chainId): Promise<BaseData[]> {
     return await this.getSubgraphMappedData(addresses, chainId);
   }
 
-  protected async getSubgraphMappedData(
-    addresses: Address,
-    chainId: ChainIdEnum,
-  ): Promise<BaseData[]> {
+  protected async getSubgraphMappedData(addresses: Address, chain: ChainDto): Promise<BaseData[]> {
     const originAddressesArray = addresses.split(',');
-    const response = await this.getSubgraphData(originAddressesArray, this.subgraph, chainId);
+    const response = await this.getSubgraphData(originAddressesArray, this.subgraph, chain.abbr);
     const data = this.mapper.mapData(
       response.userAddresses,
       originAddressesArray,
       response.response,
       this.project,
       this.name,
-      chainId,
+      chain,
     );
     return data;
   }
@@ -79,28 +70,33 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
   protected getSubgraphData = async (
     addresses: string[],
     subgraph: UniswapLikeSubgraph,
-    chainId: ChainIdEnum,
+    chainAbbr: ChainAbbrEnum,
   ) => {
-    const chainAbbr = ChainIdEnum[chainId];
-
     const features = this.features[chainAbbr];
     const addressesArray = getUniqueAndToLowerCaseArrayData(addresses);
     const getPools = features.includes(FeatureEnum.pools);
     const getStaking = features.includes(FeatureEnum.staking);
 
-    const [poolsFetch, stakingFetch] = await Promise.all([
+    const [poolsFetch, stakingFetch] = await Promise.all<SubgraphResponseDto>([
       getPools ? subgraph.getLiquidityPositions(addressesArray) : undefined,
       getStaking ? subgraph.getStakingPositions(addressesArray) : undefined,
     ]);
 
-    const subgraphPools = getPools
+    // TODO add subgraph error handling here and in quickSwapProtocol
+    if (poolsFetch?.errors?.length) {
+      throw poolsFetch.errors[0];
+    } else if (stakingFetch?.errors?.length) {
+      throw stakingFetch.errors[0];
+    }
+
+    const subgraphPools = poolsFetch?.data?.liquidityPositions
       ? groupBy(
           poolsFetch.data.liquidityPositions,
           (liquidityPosition) => liquidityPosition.user.id,
         )
       : null;
 
-    const subgraphStaking = getStaking
+    const subgraphStaking = stakingFetch?.data?.users
       ? groupBy(stakingFetch.data.users, (staking) => {
           const array = staking.id.split('-');
           return array[1];

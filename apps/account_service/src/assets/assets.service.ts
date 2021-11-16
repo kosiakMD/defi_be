@@ -13,6 +13,7 @@ import { LIKE_CURVE_LP } from '../chain/contracts/LIKE_CURVE_LP';
 import { MINTER } from '../chain/contracts/MINTER';
 import { UNIV2LP } from '../chain/contracts/UNIV2LP';
 import { Web3Provider } from '../chain/web3.provider';
+import { ellipsisPoolsMap } from '../utils/utils';
 import { AssetsRepository } from './assets.repository';
 import { AssetDto, AssetResponseDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
@@ -192,7 +193,8 @@ export class AssetsService {
     const minterContract = new MINTER(minterAddress, chainProvider);
 
     const underlyingCoins = [];
-    for (let i = 0; i < 3; i++) {
+    const lpData = ellipsisPoolsMap.get(assetToSave.address);
+    for (let i = 0; i < lpData.coins; i++) {
       try {
         const coin = await minterContract.coins(i);
         underlyingCoins.push(coin.toLowerCase());

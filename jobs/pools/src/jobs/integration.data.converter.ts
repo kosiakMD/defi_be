@@ -10,6 +10,7 @@ import {
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from './dto/staking.dto';
+import { CurvePoolTokenDto } from '../microservices/dto/account/account.dto';
 
 export class IntegrationDataConverter {
   static toDTO(mapping) {
@@ -46,6 +47,9 @@ export class IntegrationDataConverter {
     // set up object with default values
     if (dtoName === 'IntegrationStakingPositionDto') {
       converted = plainToClass(IntegrationStakingPositionDto, {});
+    }
+    if (dtoName === 'CurvePoolTokenDto') {
+      converted = plainToClass(CurvePoolTokenDto, {});
     }
     if (dtoName === 'IntegrationClaimableTokenDto') {
       converted = plainToClass(IntegrationClaimableTokenDto, {});

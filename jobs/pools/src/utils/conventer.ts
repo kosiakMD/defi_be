@@ -34,6 +34,7 @@ export function toCurveLiquidityPoolFeature(
         symbol: pt.symbol,
         decimals: pt.decimals,
         positionInPool: pt.positionInPool,
+        isLp: pt.isLp,
         // weight: UNIV2_POOL_TOKEN_WEIGHT,
         tokens: pt.underlyingAssets?.length
           ? pt.underlyingAssets.map((token) => {

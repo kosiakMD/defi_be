@@ -58,6 +58,8 @@ export class EllipsisLp implements JobInterface {
   ) {
     this.availableDtosForConversion = new Map<string, string>([
       [LiquidityPoolFeature.name, LiquidityPoolFeature.name],
+      [CurveLiquidityPoolFeature.name, CurveLiquidityPoolFeature.name],
+      [CurvePoolTokenDto.name, ERC20Token.name],
       [ERC20Token.name, ERC20Token.name],
       [PoolTokenDto.name, ERC20Token.name],
     ]);
@@ -135,7 +137,7 @@ export class EllipsisLp implements JobInterface {
     }
 
     await Promise.all(
-      lpTokens.map(async (token) => {
+      ['0x151f1611b2e304ded36661f65506f9d7d172beba'].map(async (token) => {
         const trackedLiquidityPoolTokenData: CurvePoolTokenDto =
           await this.accountService.saveLikeCurveTrackingAsset(token, this.chain);
         if (trackedLiquidityPoolTokenData.isLp) {
@@ -233,11 +235,16 @@ export class EllipsisLp implements JobInterface {
         name: item.name,
         symbol: item.symbol,
         decimals: item.decimals,
+        isLp: item.isLp,
+        positionInPoos: item.positionInPool,
       };
       newIntegrationJobItem.name = universalDto.name;
       newIntegrationJobItem.idUnique = uniqueId;
     }
-    if (toUniversalDtoName === LiquidityPoolFeature.name) {
+    if (
+      toUniversalDtoName === LiquidityPoolFeature.name ||
+      toUniversalDtoName === CurveLiquidityPoolFeature.name
+    ) {
       universalDto = {
         address: item.address,
         name: item.name,
@@ -295,15 +302,30 @@ export class EllipsisLp implements JobInterface {
     ]);
 
     this.mapping = this.mapping.map((lp) => {
-      if (lp instanceof LiquidityPoolFeature) {
-        const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(lp)).output.data;
+      if (lp instanceof CurveLiquidityPoolFeature) {
+        const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(lp.lpToken.address))
+          .output.data;
         lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
-        const lpInfo = ellipsisPoolsMap.get(lp.lpToken.address);
-        const reserves: [] = [];
-        for (let i = 0; i < lpInfo.coins; i++) {
-          const reserve = multicallRsp.get(this.getReservesLabel(lp.lpToken.address, i)).output
-            .data;
-        }
+        // const lpInfo = ellipsisPoolsMap.get(lp.lpToken.address);
+        lp.tokens.map((t) => {
+          t.reserve = multicallRsp
+            .get(this.getReservesLabel(lp.lpToken.address, t.positionInPool))
+            .output.data?.toString();
+          t.balance = t.reserve;
+          t.price = t.isLp ? null : Number(prices[t.address]);
+          t.value = t.balance * t.price;
+
+          lp.stats.tvl += t.value;
+          return t;
+        });
+
+        // const reserves = [];
+        // for (let i = 0; i < lpInfo.coins; i++) {
+        //   const reserve: string = multicallRsp
+        //     .get(this.getReservesLabel(lp.lpToken.address, i))
+        //     .output.data?.toString();
+        //   reserves.push(reserve);
+        // }
         // const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(lp.lpToken.address, 0)).output.data;
         // lp.tokens.map((t) => {
         //   t.reserve =
@@ -326,13 +348,36 @@ export class EllipsisLp implements JobInterface {
   }
 
   private getCallsForPool(liquidityPoolFeature: LiquidityPoolFeature) {
-    const calls: Map<string, CallData> = new Map<string, CallData>();
+    let calls = this.getReservesCallDataMap(liquidityPoolFeature.lpToken.address);
 
-    // reserves of lp token
-    const value = ellipsisPoolsMap.get(liquidityPoolFeature.lpToken.address);
-    for (let i = 0; i < value.coins; i++) {
-      calls.set(this.getReservesLabel(liquidityPoolFeature.lpToken.address, i), {
-        address: value.minter,
+    const lpUnderlyingToken = liquidityPoolFeature.tokens.find((token) => token.isLp);
+
+    if (lpUnderlyingToken) {
+      calls = new Map<string, CallData>([
+        ...calls.entries(),
+        ...this.getReservesCallDataMap(lpUnderlyingToken.address).entries(),
+      ]);
+      calls.set(
+        this.totalSupplyLabel(lpUnderlyingToken.address),
+        this.getTotalSupplyCallData(lpUnderlyingToken.address),
+      );
+    }
+    // total supply supply of staking lp token
+
+    calls.set(
+      this.totalSupplyLabel(liquidityPoolFeature.lpToken.address),
+      this.getTotalSupplyCallData(liquidityPoolFeature.lpToken.address),
+    );
+
+    return calls;
+  }
+
+  private getReservesCallDataMap(lpAddress: string): Map<string, CallData> {
+    const lpData = ellipsisPoolsMap.get(lpAddress);
+    const calls: Map<string, CallData> = new Map<string, CallData>();
+    for (let i = 0; i < lpData.coins; i++) {
+      calls.set(this.getReservesLabel(lpAddress, i), {
+        address: lpData.minter,
         abi: Abis.balances,
         input: {
           data: [i],
@@ -340,18 +385,29 @@ export class EllipsisLp implements JobInterface {
         output: {},
       });
     }
+    return calls;
+  }
 
-    // total supply supply of staking lp token
-    calls.set(this.totalSupplyLabel(liquidityPoolFeature), {
-      address: liquidityPoolFeature.lpToken.address,
+  private getReservesCallData(minter: string, index: number) {
+    return {
+      address: minter,
+      abi: Abis.balances,
+      input: {
+        data: [index],
+      },
+      output: {},
+    };
+  }
+
+  private getTotalSupplyCallData(lpTokenAddress: string) {
+    return {
+      address: lpTokenAddress,
       abi: Abis.totalSupply,
       input: {
         data: [],
       },
       output: {},
-    });
-
-    return calls;
+    };
   }
 
   private getPricedTokensSet(): Set<string> {
@@ -382,7 +438,7 @@ export class EllipsisLp implements JobInterface {
     return concatStrings(Abis.balances.name, lpAddress, position);
   }
 
-  totalSupplyLabel(liquidityPoolFeature: LiquidityPoolFeature) {
-    return concatStrings(Abis.totalSupply.name, liquidityPoolFeature.lpToken.address);
+  totalSupplyLabel(lpAddress: string) {
+    return concatStrings(Abis.totalSupply.name, lpAddress);
   }
 }

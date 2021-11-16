@@ -4,4 +4,6 @@ export class ERC20Token {
   symbol: string = null;
   decimals: number = null;
   totalSupply: number = null;
+  isLp = false;
+  positionInPool;
 }

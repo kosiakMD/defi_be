@@ -9,9 +9,6 @@ type Decimals = string | number;
 
 export const CHAIN_ID_ETH: Chain = 1;
 
-export const DB_BLOCK_FROM = 12768337;
-export const DB_BLOCK_TO = 12827635;
-
 export const decimalsDivider = (decimals: Decimals): BigNumber => {
   if (Number(decimals) === 0) {
     return new BN(1);

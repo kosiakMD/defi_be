@@ -1,11 +1,11 @@
 import { BigNumber as BN } from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { getManager, In, Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { Logger } from '../logger/logger.service';
@@ -13,8 +13,6 @@ import { CurrentPrices, PriceResponseDto } from '../price/dto/price.response.dto
 import { PriceService } from '../price/price.service';
 import {
   CHAIN_ID_ETH,
-  DB_BLOCK_FROM,
-  DB_BLOCK_TO,
   decimalsDivider,
   ETH_ADDRESS,
   ETH_TRANSFER_TOPIC,
@@ -53,6 +51,11 @@ export class TransactionsParsingService {
   async parseTransactions(transaction: MigrationTransaction): Promise<void> {
     const uniqueAddresses: Set<string> = new Set();
 
+    const gasUsed = await this.getGasUsedFromWeb3(transaction.hash);
+    if (!gasUsed) {
+      return;
+    }
+
     const transactionTransfers: MigrationEvent[] = this.getModifiedTransactionTransfers(
       transaction,
       uniqueAddresses,
@@ -64,7 +67,11 @@ export class TransactionsParsingService {
       transactionTransfers.push(TransactionsParsingService.getEthTransactionTransfer(transaction));
     }
 
-    const subTransactions = await this.getArrayOfSubTransactions(transactionTransfers, transaction);
+    const subTransactions = await this.getArrayOfSubTransactions(
+      transactionTransfers,
+      transaction,
+      gasUsed,
+    );
     const parsedTransfers: string = await this.getInsertSqlString(
       transaction,
       uniqueAddresses,
@@ -131,6 +138,7 @@ export class TransactionsParsingService {
   private async getAssetsPricesAndModifyTransaction(
     transaction: MigrationTransaction,
     tokenAddresses: Set<string>,
+    gasUsed,
   ): Promise<PriceResponseDto<CurrentPrices>> {
     const requestAssets = Array.from(tokenAddresses).map((token) => {
       return {
@@ -143,14 +151,6 @@ export class TransactionsParsingService {
       requestAssets,
       transaction.chainId,
     );
-    let gasUsed;
-    if (transaction.blockNumber >= DB_BLOCK_FROM && transaction.blockNumber <= DB_BLOCK_TO) {
-      const dbTransaction = await this.transactionRepository.findOne({ hash: transaction.hash });
-      const dbGasUsed = dbTransaction?.transactionData?.subTransactions[0]?.gasUsed;
-      gasUsed = dbGasUsed ? dbGasUsed : await this.getGasUsedFromWeb3(transaction.hash);
-    } else {
-      gasUsed = await this.getGasUsedFromWeb3(transaction.hash);
-    }
 
     this.modifyTransaction(
       transaction,
@@ -165,9 +165,9 @@ export class TransactionsParsingService {
     try {
       const timeMark = `Request to web3 - getting of gasUsed for transaction: ${hash}`;
       this.logger.time(timeMark);
-      const { gasUsed } = await this.ethProvider.eth.getTransactionReceipt(hash);
+      const result = await this.ethProvider.eth.getTransactionReceipt(hash);
       this.logger.timeEnd(timeMark);
-      return gasUsed;
+      return result?.gasUsed;
     } catch (e) {
       this.logger.error(e, 'getGasUsedFromWeb3');
       throw e;
@@ -177,6 +177,7 @@ export class TransactionsParsingService {
   private async getArrayOfSubTransactions(
     events: MigrationEvent[],
     transaction: MigrationTransaction,
+    gasUsed: number,
   ): Promise<SubTransactions[]> {
     const subTransactions: SubTransactionDto[] = [];
     const tokenAddresses = new Set(events.map((event) => event.address));
@@ -185,6 +186,7 @@ export class TransactionsParsingService {
     const assetsPrices = await this.getAssetsPricesAndModifyTransaction(
       transaction,
       tokenAddresses,
+      gasUsed,
     );
     const timeMark = `Request to DB - getting of data from assets_new table`;
     this.logger.time(timeMark);

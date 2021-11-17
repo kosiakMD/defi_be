@@ -28,6 +28,7 @@ import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { decimalsDivider } from '../../utils/util';
 import RegistryAdapterIronBank from './yearn/abi/RegisteryAdapterIronBank';
+import { YearnV2Subgraph } from './yearn/services/yearn.v2.subgraph';
 import { ironBankAddressByChain } from './yearn/yearn.constants';
 import { PositionType } from './yearn/yearn.enums';
 import { IIronBankMarketDynamic, IIronBankUserPosition } from './yearn/yearn.interfaces';
@@ -49,6 +50,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly yearnSubgraph: YearnV2Subgraph,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly configService: ConfigService,

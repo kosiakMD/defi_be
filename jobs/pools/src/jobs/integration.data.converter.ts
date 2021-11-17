@@ -3,14 +3,13 @@ import { plainToClass } from 'class-transformer';
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { ERC20Token } from './dto/common';
-import { CurveLiquidityPoolFeature, LiquidityPoolFeature, PoolTokenDto } from './dto/pools.dto';
+import { CurveLiquidityPoolFeature, CurvePoolTokenDto, LiquidityPoolFeature, PoolTokenDto } from './dto/pools.dto';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from './dto/staking.dto';
-import { CurvePoolTokenDto } from '../microservices/dto/account/account.dto';
 
 export class IntegrationDataConverter {
   static toDTO(mapping) {
@@ -33,7 +32,7 @@ export class IntegrationDataConverter {
         dto[key] = mapping[key].map((mp) => {
           return this.toDTO(mp);
         });
-      } else if (typeof mapping[key] === 'object') {
+      } else if (typeof mapping[key] === 'object' && mapping[key]) {
         dto[key] = this.toDTO(mapping[key]);
       }
     });

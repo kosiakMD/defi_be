@@ -5,17 +5,18 @@ import { AbiItem } from 'web3-utils';
 import { ERC20Token } from '../jobs/dto/common';
 import {
   CurveLiquidityPoolFeature,
+  CurvePoolTokenDto,
   LiquidityPoolFeature,
   PoolTokenDto,
 } from '../jobs/dto/pools.dto';
-import { CurvePoolTokenDto, LiquidityPoolTokenDto } from '../microservices/dto/account/account.dto';
+import { DbPoolTokenDto, LiquidityPoolTokenDto } from '../microservices/dto/account/account.dto';
 
 export const UNIV2_POOL_TOKEN_WEIGHT = 0.5;
 
 export function toCurveLiquidityPoolFeature(
-  lpTokenData: CurvePoolTokenDto,
+  lpTokenData: DbPoolTokenDto,
 ): CurveLiquidityPoolFeature {
-  return plainToClass(CurveLiquidityPoolFeature, {
+  const poolFeature = plainToClass(CurveLiquidityPoolFeature, {
     address: lpTokenData.address,
     name: lpTokenData.underlyingAssets
       .sort((a, b) => a.positionInPool - b.positionInPool)
@@ -27,30 +28,62 @@ export function toCurveLiquidityPoolFeature(
       symbol: lpTokenData.symbol,
       decimals: lpTokenData.decimals,
     }),
-    tokens: lpTokenData.underlyingAssets.map((pt) => {
-      return plainToClass(CurvePoolTokenDto, {
-        address: pt.address,
-        name: pt.name,
-        symbol: pt.symbol,
-        decimals: pt.decimals,
-        positionInPool: pt.positionInPool,
-        isLp: pt.isLp,
-        // weight: UNIV2_POOL_TOKEN_WEIGHT,
-        tokens: pt.underlyingAssets?.length
-          ? pt.underlyingAssets.map((token) => {
-              return plainToClass(PoolTokenDto, {
-                address: token.address,
-                name: token.name,
-                symbol: token.symbol,
-                decimals: token.decimals,
-                positionInPool: token.positionInPool,
-                // weight: UNIV2_POOL_TOKEN_WEIGHT,
-              });
-            })
-          : [],
-      });
-    }),
   });
+
+  const tokens = [];
+
+  lpTokenData.underlyingAssets.forEach((pt) => {
+    if (pt.underlyingAssets?.length) {
+      tokens.push(
+        ...pt.underlyingAssets.map((underlying) => {
+          return plainToClass(CurvePoolTokenDto, {
+            address: underlying.address,
+            name: underlying.name,
+            symbol: underlying.symbol,
+            decimals: underlying.decimals,
+            positionInPool: underlying.positionInPool,
+            lpAddress: pt.address,
+            // weight: UNIV2_POOL_TOKEN_WEIGHT,
+          });
+        }),
+      );
+    } else {
+      tokens.push(
+        plainToClass(CurvePoolTokenDto, {
+          address: pt.address,
+          name: pt.name,
+          symbol: pt.symbol,
+          decimals: pt.decimals,
+          positionInPool: pt.positionInPool,
+          // weight: UNIV2_POOL_TOKEN_WEIGHT,
+        }),
+      );
+    }
+    // return plainToClass(CurvePoolTokenDto, {
+    //   address: pt.address,
+    //   name: pt.name,
+    //   symbol: pt.symbol,
+    //   decimals: pt.decimals,
+    //   positionInPool: pt.positionInPool,
+    //   isLp: pt.isLp,
+    //   // weight: UNIV2_POOL_TOKEN_WEIGHT,
+    //   tokens: pt.underlyingAssets?.length
+    //     ? pt.underlyingAssets.map((token) => {
+    //         return plainToClass(PoolTokenDto, {
+    //           address: token.address,
+    //           name: token.name,
+    //           symbol: token.symbol,
+    //           decimals: token.decimals,
+    //           positionInPool: token.positionInPool,
+    //           // weight: UNIV2_POOL_TOKEN_WEIGHT,
+    //         });
+    //       })
+    //     : [],
+    // });
+  });
+  // });
+  poolFeature.tokens = tokens;
+  return poolFeature;
 }
 
 export function decodeOutput(abi: AbiItem, outputResult) {

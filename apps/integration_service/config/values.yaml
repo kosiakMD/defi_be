@@ -39,7 +39,7 @@ configMaps:
     VAULT_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/
     THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
-    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    ETH_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/eth/mainnet
     BSC_URL: https://bsc-dataseed.binance.org
     POLYGON_RPC_URL: https://polygon-rpc.com/
     FTM_RPC_URL: https://rpc.ftm.tools

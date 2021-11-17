@@ -28,13 +28,8 @@ export class AccountService {
 
     const url = this.configService.get<string>('ACCOUNT_SERVICE_URL');
 
-    const balancePath = this.configService.get<string>('ACCOUNT_BALANCE');
-    this.getBalanceUrl = `${url}/${balancePath}`;
-
-    this.getBalanceCovalentUrl = `${url}/v1/balances/covalent`;
-
-    const assetsPath = this.configService.get<string>('ACCOUNT_ASSETS');
-    this.getAssetsUrl = `${url}/${assetsPath}`;
+    this.getBalanceUrl = `${url}/v1/balances`;
+    this.getAssetsUrl = `${url}/v1/assets`;
   }
 
   async getBalances(

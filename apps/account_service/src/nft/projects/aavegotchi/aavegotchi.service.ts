@@ -83,17 +83,15 @@ export class AavegotchiService extends BasicNftService {
     maticPrice: number,
   ): NftAssetDto[] {
     return assets.map(({ gotchiId, name, modifiedNumericTraits: traitsValues, listings }) => {
-      const pricesInWei = listings.filter(({ buyer }) => buyer).map(({ priceInWei }) => priceInWei);
+      const pricesInWei = listings.reduce((listings, listing) => {
+        listing && listing.buyer && listings.push(+listing.priceInWei);
+        return listings;
+      }, []);
 
-      const priceUSD = pricesInWei.length
-        ? new BigNumber(
-            web3.utils.fromWei(
-              BigNumber.sum(...pricesInWei) //
-                .div(pricesInWei.length)
-                .toString(),
-              'ether',
-            ),
-          )
+      const maxPriceInWei = Math.max(...pricesInWei);
+
+      const priceUSD = Number.isInteger(maxPriceInWei)
+        ? new BigNumber(web3.utils.fromWei(new BigNumber(maxPriceInWei).toString(), 'ether'))
             .times(ghstPrice)
             .toNumber()
         : null;

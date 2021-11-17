@@ -25,6 +25,11 @@ import {
   CollectionDto as OpenSeaCollectionDto,
 } from './dto';
 
+interface Prices {
+  priceUSD: number;
+  priceNative: number;
+}
+
 export class OpenSeaService extends BasicNftService {
   public readonly project = NftProjectEnum.openSea;
   public readonly chains = [ChainAbbrEnum.eth];
@@ -129,11 +134,12 @@ export class OpenSeaService extends BasicNftService {
     return rawAsset;
   }
 
-  private getOrdersAveragePrice(
-    orders: OrderDto[],
-    owner?: Address,
-  ): { priceUSD: number; priceNative: number } {
-    if (!orders.length) return null;
+  private getPriceFromOrders(orders: OrderDto[], owner?: Address): Prices {
+    if (!orders.length)
+      return {
+        priceUSD: null,
+        priceNative: null,
+      };
 
     const filterOrders = (): { listings: OrderDto[]; offers: OrderDto[] } => {
       const activeOrders = orders.filter(
@@ -151,39 +157,37 @@ export class OpenSeaService extends BasicNftService {
       return { listings, offers };
     };
 
-    const calculateAverage = (orders: OrderDto[]): { priceUSD: number; priceNative: number } => {
-      const prices: number[] = [];
-      let currentPriceETH: string = null;
-      orders.forEach(({ currentPrice, paymentToken: { decimals, priceETH } }) => {
-        currentPriceETH = priceETH;
-        prices.push(
-          new BigNumber(currentPrice) //
+    const calculateMax = (orders: OrderDto[]): Prices => {
+      let currentPriceUSD: string = null;
+      const priceUSD = Math.max(
+        ...orders.map(({ currentPrice, paymentToken: { decimals, priceUSD } }) => {
+          currentPriceUSD = priceUSD || currentPriceUSD;
+          return new BigNumber(currentPrice) //
             .div(decimalsDivider(decimals))
-            .times(currentPriceETH)
-            .toNumber(),
-        );
-      });
-
-      const priceUSD =
-        prices.reduce((accumulatedValue, currentValue) => accumulatedValue + currentValue, 0) /
-        prices.length;
+            .times(currentPriceUSD)
+            .toNumber();
+        }),
+      );
       return {
         priceUSD,
-        priceNative: priceUSD / +currentPriceETH,
+        priceNative: priceUSD / +currentPriceUSD,
       };
     };
 
     const { listings, offers } = filterOrders();
 
     if (listings.length) {
-      return calculateAverage(listings);
+      return calculateMax(listings);
     }
 
     if (offers.length) {
-      return calculateAverage(offers);
+      return calculateMax(offers);
     }
 
-    return null;
+    return {
+      priceUSD: null,
+      priceNative: null,
+    };
   }
 
   private mapAssets(
@@ -270,7 +274,7 @@ export class OpenSeaService extends BasicNftService {
               tokenId,
               orders,
               collection: {
-                stats: { averagePrice, floorPrice },
+                stats: { floorPrice },
               },
               lastSale,
             }) => {
@@ -282,17 +286,16 @@ export class OpenSeaService extends BasicNftService {
                 .times(lastSale?.paymentToken?.priceUSD)
                 .toNumber();
 
-              const ordersAveragePrice = this.getOrdersAveragePrice(orders, account);
-
-              const collectionPriceETH = floorPrice || averagePrice;
+              const priceFromOrders = this.getPriceFromOrders(orders, account);
+              const collectionPriceETH = floorPrice || null;
 
               pricesByAssets.set(this.getAssetSeed(address, tokenId), {
                 priceUSD:
                   lastSalePriceUSD ||
-                  ordersAveragePrice?.priceUSD ||
+                  priceFromOrders?.priceUSD ||
                   collectionPriceETH * prices[ZERO_ADDRESS],
                 priceNative:
-                  lastSalePriceNative || ordersAveragePrice?.priceNative || collectionPriceETH,
+                  lastSalePriceNative || priceFromOrders?.priceNative || collectionPriceETH,
               });
             },
           );

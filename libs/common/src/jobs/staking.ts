@@ -1,9 +1,10 @@
+// eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 
 import { ERC20Token } from '@app/common/jobs/token';
 
 export class ClaimableDto {
-  balance: string = null;
+  balance: number | string = null;
   value: number = null;
 }
 

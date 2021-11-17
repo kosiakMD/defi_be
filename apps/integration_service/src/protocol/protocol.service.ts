@@ -10,6 +10,7 @@ import {
   Borrowing,
   ChainDto,
   ChainId,
+  FeatureEnum,
   FeatureResultDto,
   Features,
   IntegrationFeaturesDataDto,
@@ -20,12 +21,11 @@ import {
   LiquidityPosition,
   Logger,
   PancakeProtocolEnum,
-  QuickswapProtocolEnum,
   ProtocolName,
+  QuickswapProtocolEnum,
   ResultStatus,
   SpookySwapProtocolEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { ChainIdEnum } from '@app/common/enum';
 
@@ -35,7 +35,6 @@ import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   PoolTokenDto,
-  BaseDataStaking,
 } from '../integrations/integrations.dto';
 import { Asset, BaseData, PoolToken } from '../interfaces/transactions.interfaces';
 import { AccountService } from '../microservices/account.service';
@@ -58,6 +57,7 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 
 @Injectable()
 export class ProtocolService {

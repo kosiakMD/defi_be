@@ -1,6 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
+import Web3 from 'web3';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -17,25 +18,29 @@ import {
   PoolTokenDto,
   ProtocolNameEnum,
 } from '@app/common';
-import { FeatureEnum, ProjectEnum, ProtocolTypeEnum, TraderjoeProtocolEnum, } from '@app/common/enum';
+import {
+  FeatureEnum,
+  ProjectEnum,
+  ProtocolTypeEnum,
+  TraderjoeProtocolEnum,
+} from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { concatStrings } from '@app/common/utils';
 
 import { RewardsData as RewardsDataTraderJoe } from '../../../chain/dto/traderjoe.interfaces';
 import { LocalMultiCall } from '../../../chain/local.multi.call';
+import { MulticallProvider } from '../../../chain/multicall.provider';
+import { MulticallService } from '../../../chain/multicall.service';
 import { Web3Provider, Web3Provider as Web3ProviderLocal } from '../../../chain/web3.provider';
 import {
-  BaseDataStaking,
   IntegrationERC20TokenDto,
-  IntegrationStakingPosDto,
 } from '../../../integrations/integrations.dto';
 import { PriceService } from '../../../microservices/price.service';
 import { Balance } from '../../../thegraph/pancakev2.main.staking.subgraph';
 import { decimalsDivider } from '../../../utils/util';
 import { Abis } from './abis';
-import { MulticallProvider } from '../../../chain/multicall.provider';
-import { MulticallService } from '../../../chain/multicall.service';
-import Web3 from 'web3';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 @Injectable()
 export class TraderJoeStaking {
@@ -71,7 +76,7 @@ export class TraderJoeStaking {
         items: [],
       });
 
-      const stakingPositions: IntegrationStakingPosDto[] = await this.getStakingPositions(
+      const stakingPositions: IntegrationStakingPositionDto[] = await this.getStakingPositions(
         addresses,
         chain,
       );
@@ -131,8 +136,8 @@ export class TraderJoeStaking {
   private async getStakingPositions(
     addresses: string[],
     chain: ChainDto,
-  ): Promise<IntegrationStakingPosDto[]> {
-    const stakingPositions: IntegrationStakingPosDto[] = [];
+  ): Promise<IntegrationStakingPositionDto[]> {
+    const stakingPositions: IntegrationStakingPositionDto[] = [];
 
     const key = `${chain.id}_${TraderjoeProtocolEnum.traderjoe}_${FeatureEnum.staking}`;
 
@@ -228,7 +233,7 @@ export class TraderJoeStaking {
         this.masterChiefAddressV3,
       );
     }
-    const stakingPositions: IntegrationStakingPosDto[] = [];
+    const stakingPositions: IntegrationStakingPositionDto[] = [];
 
     balances.forEach((b) => {
       const balancePoolId = Number(b.id.split('_')[1]);
@@ -296,7 +301,7 @@ export class TraderJoeStaking {
           });
         }
 
-        const stakingPosition: IntegrationStakingPosDto = plainToClass(IntegrationStakingPosDto, {
+        const stakingPosition: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
           address: cachedPoolData.address,
           poolId: cachedPoolData.poolId,
           staked: b.balance,

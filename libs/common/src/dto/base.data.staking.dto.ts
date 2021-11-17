@@ -1,7 +1,7 @@
 import { ProtocolTypeEnum } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
-import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 export class BaseDataStaking extends BaseData<ProtocolTypeEnum.staking> {
-  items: LiquidityPoolFeature[];
+  items: IntegrationStakingPositionDto[];
 }

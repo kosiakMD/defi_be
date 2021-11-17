@@ -642,6 +642,7 @@ export class ProtocolService {
       if (d instanceof BaseDataStaking) {
         d.items.forEach((i) => {
           i.stakingToken.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+          i.rewards.forEach((rt) => chainAssets.get(d.chain.id).add(rt.address));
         });
       }
     });
@@ -691,11 +692,12 @@ export class ProtocolService {
             pt.value = Number(pt.balance) * pt.price;
             d.total += pt.value;
           });
-          d.total += i.rewards[0].claimableData.value;
 
-          if (i.rewards.length === 2) {
-            d.total += i.rewards[1].claimableData.value;
-          }
+          i.rewards.forEach((r) => {
+            r.price = chainAssetPrices.get(d.chain.id).get(r.address);
+            r.claimableData.value = Number(r.claimableData.balance) * r.price;
+            d.total += r.claimableData.value;
+          });
         });
       }
     });

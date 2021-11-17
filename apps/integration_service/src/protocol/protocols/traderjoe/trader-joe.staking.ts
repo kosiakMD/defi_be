@@ -18,6 +18,7 @@ import {
   PoolTokenDto,
   ProtocolNameEnum,
 } from '@app/common';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import {
   FeatureEnum,
   ProjectEnum,
@@ -25,6 +26,7 @@ import {
   TraderjoeProtocolEnum,
 } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
 
 import { RewardsData as RewardsDataTraderJoe } from '../../../chain/dto/traderjoe.interfaces';
@@ -32,15 +34,11 @@ import { LocalMultiCall } from '../../../chain/local.multi.call';
 import { MulticallProvider } from '../../../chain/multicall.provider';
 import { MulticallService } from '../../../chain/multicall.service';
 import { Web3Provider, Web3Provider as Web3ProviderLocal } from '../../../chain/web3.provider';
-import {
-  IntegrationERC20TokenDto,
-} from '../../../integrations/integrations.dto';
+import { IntegrationERC20TokenDto } from '../../../integrations/integrations.dto';
 import { PriceService } from '../../../microservices/price.service';
 import { Balance } from '../../../thegraph/pancakev2.main.staking.subgraph';
 import { decimalsDivider } from '../../../utils/util';
 import { Abis } from './abis';
-import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 @Injectable()
 export class TraderJoeStaking {
@@ -301,13 +299,16 @@ export class TraderJoeStaking {
           });
         }
 
-        const stakingPosition: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-          address: cachedPoolData.address,
-          poolId: cachedPoolData.poolId,
-          staked: b.balance,
-          stakingToken: stakingToken,
-          rewards: rewardTokenV3 ? [rewardToken, rewardTokenV3] : [rewardToken],
-        });
+        const stakingPosition: IntegrationStakingPositionDto = plainToClass(
+          IntegrationStakingPositionDto,
+          {
+            address: cachedPoolData.address,
+            poolId: cachedPoolData.poolId,
+            staked: b.balance,
+            stakingToken: stakingToken,
+            rewards: rewardTokenV3 ? [rewardToken, rewardTokenV3] : [rewardToken],
+          },
+        );
 
         // find and set claimable rewards:
         const claimableReward = claimableRewards.find(

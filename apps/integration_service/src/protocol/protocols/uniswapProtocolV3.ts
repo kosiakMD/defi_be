@@ -4,8 +4,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  // TODO: disabled until reward math is fixed
-  // ClaimAbleTokenDto,
   Address,
   ChainAbbrEnum,
   ChainDto,
@@ -22,14 +20,10 @@ import {
 import { FeatureEnum } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 
-import { AccountService } from '../../account/account.service';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { UniswapV3Subgraph } from '../../thegraph/uniswap.v3.subgraph';
-import {
-  // TODO: disabled until reward math is fixed
-  // calculateTokensOwed
-  calculatePositionAmounts,
-} from '../../utils/uniswapV3PositionMath';
+import { calculatePositionAmounts } from '../../utils/uniswapV3PositionMath';
 import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()

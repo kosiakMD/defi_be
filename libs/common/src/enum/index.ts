@@ -70,8 +70,3 @@ export enum SortFieldEnum {
   project = 'project',
   ticker = 'ticker',
 }
-
-export enum DirectionEnum {
-  in = 'in',
-  out = 'out',
-}

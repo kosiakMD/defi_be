@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { FeaturesService } from '../protocol/features/features.service';
 import { ProtocolModule } from '../protocol/protocol.module';
 import { IntegrationsController } from './integrations.controller';
+import { IntegrationsControllerV2 } from './integrations.controller.v2';
 import { IntegrationsService } from './integrations.service';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
@@ -27,6 +28,6 @@ import { IntegrationsService } from './integrations.service';
     ProtocolModule,
   ],
   providers: [IntegrationsService, FeaturesService],
-  controllers: [IntegrationsController],
+  controllers: [IntegrationsController, IntegrationsControllerV2],
 })
 export class IntegrationsModule {}

@@ -4,21 +4,21 @@ import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
 import {
-  ProjectEnum,
-  Logger,
-  IntegrationFeaturesDataDto,
+  ChainDto,
   FeatureEnum,
   FeatureResultDto,
-  ChainDto,
+  IntegrationFeaturesDataDto,
+  Logger,
+  ProjectEnum,
 } from '@app/common';
 
-import { AccountService } from '../../../account/account.service';
 import { Web3Provider } from '../../../chain/web3.provider';
 import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
 } from '../../../integrations/integrations.dto';
-import { PriceService } from '../../../price/price.service';
+import { AccountService } from '../../../microservices/account.service';
+import { PriceService } from '../../../microservices/price.service';
 import { decimalsDivider } from '../../../utils/util';
 import BasicProtocol from '../basicProtocol';
 import { LocalMultiCall } from './multicall/local.multi.call';

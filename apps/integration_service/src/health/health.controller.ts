@@ -17,7 +17,7 @@ enum StatusEnum {
   down = 'down',
 }
 
-@Controller('status')
+@Controller('v1/status')
 export class HealthController {
   constructor(
     @InjectConnection()

@@ -3,9 +3,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainAbbrEnum, FeatureEnum, Logger, YearnProtocolEnum } from '@app/common';
 
-import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { YearnV1Subgraph } from './yearn/services/yearn.v1.subgraph';
 import { YearnProtocolBase } from './yearn/yearnProtocolBase';
 

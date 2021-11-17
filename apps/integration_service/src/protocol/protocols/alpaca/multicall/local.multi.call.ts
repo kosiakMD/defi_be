@@ -1,21 +1,20 @@
-import { CallInput, MultiCall } from '@indexed-finance/multicall';
+import { MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
 import { Address, ChainAbbrEnum, Logger } from '@app/common';
 
 import { LeverageFarmingInterface } from '../../../../alpaca/alpaca.interfaces';
-import { MulticallContractFunctionEnum } from '../../../../multicall/multicall.enum';
 import { concatStrings } from '../../../../utils/string';
 import {
   AlpacaApiResponse,
   AlpacaStakingInterface,
   AlpacaTokenInfo,
-  WorkerContractData,
+  BorrowBalance,
   TokenContractData,
   TokensBalance,
   VaultUserInfo,
-  BorrowBalance,
+  WorkerContractData,
 } from '../alpaca.interfaces';
 import {
   alpacaFactoriesMap,
@@ -71,7 +70,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.poolInfo,
+        function: 'poolInfo',
         args: [pool.poolNum],
       };
     });
@@ -127,32 +126,6 @@ export class LocalMultiCall extends MultiCall {
     const [, vaultUserInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
     data.forEach((i, index) => (i.claimable = vaultUserInfo[index].toString()));
     return vaultUserInfo;
-  }
-
-  async getTotalSupplies(
-    tokens: string[],
-    stakingPositions: AlpacaStakingInterface[],
-  ): Promise<void> {
-    try {
-      const chunkSize = 50;
-      let count = 0;
-      for (let i = 0, j = tokens.length; i < j; i += chunkSize) {
-        const to = i + chunkSize > tokens.length ? tokens.length : i + chunkSize;
-        const pairsSlice = tokens.slice(i, to);
-        const inputs: CallInput[] = pairsSlice.map((p) => {
-          return { target: p, function: 'totalSupply' };
-        });
-        const [, multicallSupplies] = await this.multiCall(lpTokenAbi, inputs);
-        for (let i = 0; i < to; i++) {
-          const staking = stakingPositions[count * chunkSize + i];
-          staking.totalSupply = multicallSupplies[i]?.toString();
-        }
-        count++;
-      }
-    } catch (e) {
-      this.logger.error(e, 'getTotalSupplies');
-      throw e;
-    }
   }
 
   async getTokensInfoMap(

@@ -5,6 +5,7 @@ import { CACHE_MANAGER, Inject, Injectable, NotImplementedException } from '@nes
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
+  Address,
   ChainDto,
   FeatureEnum,
   IntegrationFeaturesDataDto,
@@ -27,7 +28,9 @@ import { getChainById } from '../utils/chain';
 import {
   IntChainsDataDto,
   IntegrationsResponseDto,
+  IntegrationsResponseV2Dto,
   IntegrationStakingPositionDto,
+  IntegrationWalletDto,
   ProtocolInfoDto,
 } from './integrations.dto';
 
@@ -145,6 +148,92 @@ export class IntegrationsService {
     if (response.errors.length) {
       response.status = ResultStatus.error;
     }
+    return response;
+  }
+
+  async getProtocolFeaturesDataV2(
+    protocolName: ProtocolName,
+    chains: ChainIdEnum[],
+    addresses: Address[],
+  ): Promise<IntegrationsResponseV2Dto> {
+    const response: IntegrationsResponseV2Dto = plainToClass(IntegrationsResponseV2Dto, {
+      data: {},
+      errors: [],
+    });
+
+    // handle protocol
+    const protocolToProceed = this.protocolService.getProtocolByName(protocolName);
+    if (!protocolToProceed) {
+      response.errors.push(`Not found protocol '${protocolName}'`);
+      return response;
+    }
+
+    // handle chains
+    const existedProtocolChains = protocolToProceed.getInfo().chains;
+    const chainsToProceed = [];
+    chains.forEach((chainId) => {
+      if (!existedProtocolChains.includes(ChainIdToAbbr[chainId])) {
+        response.errors.push(
+          `Not found protocol '${protocolName}' on ${chainId} (${ChainIdToAbbr[chainId]}) chain`,
+        );
+      } else if (!chainsToProceed.includes(chainId)) {
+        // to avoid duplication
+        chainsToProceed.push(chainId);
+      }
+    });
+
+    // Protocol Info
+    response.data.protocol = plainToClass(ProtocolInfoDto, protocolToProceed.getInfo());
+    response.data.wallets = addresses.map((a) => {
+      return plainToClass(IntegrationWalletDto, {
+        address: a,
+        chains: [],
+      });
+    });
+    response.data.total = 0;
+
+    // make a async calls to get data for all chains:
+    const allData = await Promise.allSettled<any>(
+      chainsToProceed.map((chainId) => {
+        return this.protocolService.getProtocolFeaturesV2(
+          protocolName,
+          addresses,
+          getChainById(chainId),
+        );
+      }),
+    );
+
+    chainsToProceed.forEach((chain, index) => {
+      if (allData[index].status === 'fulfilled') {
+        const [data, errors] = allData[index]['value'];
+        if (errors) {
+          response.errors = [...response.errors, errors.flat()];
+        }
+
+        data.forEach((bd) => {
+          const walletData = response.data.wallets.find((w) => w.address === bd.userAddress);
+          
+          let existedChainData = walletData.chains.find((c) => c.chain.id === chain);
+
+          if (!existedChainData) {
+            const chainData = plainToClass(IntChainsDataDto, {});
+            const chainDto: ChainDto = getChainById(chain);
+            chainData.total = 0;
+            chainData.chain = chainDto;
+            chainData.features = protocolToProceed.getInfo().features[chainDto.abbr];
+            existedChainData = chainData;
+            walletData.chains.push(existedChainData);
+          }
+          
+          existedChainData.total += bd.total;
+          response.data.total += bd.total;
+          existedChainData[bd.feature] = bd.items;
+          
+        });
+      }
+    });
+    response.errors = response.errors.flat();
+    
     return response;
   }
 }

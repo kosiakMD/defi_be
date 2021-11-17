@@ -24,7 +24,7 @@ export class JobsService {
   private updateCacheFeature(
     features: NotifyPayloadFeaturesDto,
   ): Promise<NotifyPayloadFeaturesDto> {
-    return this.cache.set(this.getCacheKey(features), features, { ttl: this.cacheTTLInSeconds });
+    return this.cache.set(this.getCacheKey(features), features);
   }
 
   private getCacheKey(features: NotifyPayloadFeaturesDto): string {

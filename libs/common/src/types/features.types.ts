@@ -1,11 +1,12 @@
 import {
-  IntegrationClaimableTokenDto,
-  LendingPositionDto,
-  LiquidityPoolFeatureDto,
   StakingPositionFeatureDto,
+  LiquidityPoolFeatureDto,
+  LendingPositionDto,
 } from '@app/common/dto';
+import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
+import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
+import { StakingProjectDto } from '@app/common/dto/transactions.dto';
 
-import { HealthFactorDto } from '../dto/HealthFactor.dto';
 import { LeverageFarmingPosition } from '../interfaces';
 
 export type FeatureName = string;
@@ -15,7 +16,8 @@ export type Features =
   | LendingPositionDto
   | LeverageFarmingPosition
   | StakingPositionFeatureDto
-  | IntegrationClaimableTokenDto
+  | LiquidityPoolFeature
+  | StakingProjectDto
   | HealthFactorDto;
 
 export interface FeatureResult<T extends Features> {

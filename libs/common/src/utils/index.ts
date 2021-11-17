@@ -5,3 +5,5 @@ export function filterByEnum<T = Array<string | number>>(value: Array<T>, enumNa
 export const getUniqList = <T = string | number>(values: T[]): T[] => {
   return Array.from(new Set(values));
 };
+
+export * from './string';

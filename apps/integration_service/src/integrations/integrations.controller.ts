@@ -3,14 +3,14 @@ import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ChainIdEnum, ProtocolNameEnum, UniswapProtocolEnum } from '@app/common/enum';
 
-import { Chains } from '../decorators';
+import { Chains } from '../decorators/params';
 import { FeaturesResponseDto } from '../protocol/features/features.dto';
 import { IntegrationsResponseDto } from './integrations.dto';
 import { ProtocolParams } from './integrations.interface';
 import { IntegrationsService } from './integrations.service';
 
 @ApiTags('Protocols')
-@Controller('protocols')
+@Controller('v1/protocols')
 export class IntegrationsController {
   constructor(private readonly integrationsService: IntegrationsService) {}
 

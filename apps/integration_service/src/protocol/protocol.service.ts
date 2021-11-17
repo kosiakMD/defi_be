@@ -26,18 +26,20 @@ import {
   SpookySwapProtocolEnum,
 } from '@app/common';
 import { FeatureEnum } from '@app/common';
+import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { ChainIdEnum } from '@app/common/enum';
 
-import { AccountService } from '../account/account.service';
 import { DetailedResponseDto } from '../dto';
 import { CurrentPricesPayload, PriceResponseDto } from '../dto/price.response.dto';
 import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   PoolTokenDto,
+  BaseDataStaking,
 } from '../integrations/integrations.dto';
-import { Asset, PoolToken } from '../interfaces/transactions.interfaces';
-import { PriceService } from '../price/price.service';
+import { Asset, BaseData, PoolToken } from '../interfaces/transactions.interfaces';
+import { AccountService } from '../microservices/account.service';
+import { PriceService } from '../microservices/price.service';
 import { objectUpdate } from '../utils/object';
 import { ProtocolBasicInfo } from './features/features.dto';
 import { tokenDictionary } from './protocols.dictionaries';
@@ -46,11 +48,11 @@ import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
-import PancakeProtocolV2 from './protocols/pancake/pancake.protocol.v2';
-import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
-import QuickswapProtocol from './protocols/quickswapProtocol';
+import PancakeProtocol from './protocols/pancake/pancake.protocol';
+import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -61,7 +63,6 @@ import YearnProtocolV2 from './protocols/yearnProtocolV2';
 export class ProtocolService {
   private readonly protocols: BasicProtocol[] = [];
 
-  // TODO: to add a new Protocol just add it at ProtocolModule and at ProtocolService constructor
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly accountService: AccountService,
@@ -71,20 +72,19 @@ export class ProtocolService {
     private readonly uniswapProtocolV3: UniswapProtocolV3,
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly pangolinProtocol: PangolinProtocol,
-    private readonly pancakeProtocolV1: PancakeProtocolV1,
-    private readonly pancakeProtocolV2: PancakeProtocolV2,
+    private readonly pancakeProtocolV2: PancakeProtocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
     private readonly alpacaProtocol: AlpacaProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
+    private readonly traderjoeProtocol: TraderJoeProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
       alpacaProtocol,
       autofarmProtocol,
-      pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocol,
       quickswapProtocol,
@@ -94,6 +94,7 @@ export class ProtocolService {
       uniswapProtocolV3,
       yearnProtocolV1,
       yearnProtocolV2,
+      traderjoeProtocol,
     ];
   }
 
@@ -116,10 +117,11 @@ export class ProtocolService {
     addresses: string,
     chain: ChainDto,
   ): Promise<IntegrationFeaturesDataDto> {
-    const protocol = this.getProtocolByName(protocolName);
+    const protocol: BasicProtocol = this.getProtocolByName(protocolName);
     if (!protocol) {
       throw new NotImplementedException(`Protocol '${protocolName}' is not supported yet`);
     }
+
     if (protocol.getAllFeaturesData) {
       return await protocol.getAllFeaturesData(addresses, chain);
     } else {
@@ -423,6 +425,7 @@ export class ProtocolService {
 
     return result;
   }
+
   protected async handleMissedData(
     rawPools: LiquidityPosition[],
     chainId: ChainIdEnum,
@@ -442,16 +445,18 @@ export class ProtocolService {
     };
     rawPools?.forEach((inputPool) => {
       pools.push(inputPool.lpToken.address);
-      inputPool.poolTokens.forEach((token: PoolToken) => {
-        const { address, name, symbol, decimals, priceUSD } = token;
-        if (!name || !symbol || !decimals) {
-          groupTokens(tokensMissedData, address, token);
-        }
-        // TODO: `priceUSD = null` always
-        if (!priceUSD) {
-          groupTokens(tokensMissedPrice, address, token);
-        }
-      });
+      if (inputPool.poolTokens) {
+        inputPool.poolTokens.forEach((token: PoolToken) => {
+          const { address, name, symbol, decimals, priceUSD } = token;
+          if (!name || !symbol || !decimals) {
+            groupTokens(tokensMissedData, address, token);
+          }
+          // TODO: `priceUSD = null` always
+          if (!priceUSD) {
+            groupTokens(tokensMissedPrice, address, token);
+          }
+        });
+      }
     });
     if (pools.length && (tokensMissedData.size || tokensMissedPrice.size)) {
       let tokensRequest;
@@ -604,5 +609,97 @@ export class ProtocolService {
         token.value = tokenBalance * token.price;
       });
     });
+  }
+
+  public async getProtocolFeaturesV2(
+    protocolName: ProtocolName,
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    const protocol: BasicProtocol = this.getProtocolByName(protocolName);
+    // eslint-disable-next-line prefer-const
+    let [data, errors] = await protocol.getAllFeaturesBaseData(addresses, chain);
+
+    // add prices here if needed
+    data = await this.adjustPrices(data);
+
+    return [data, errors];
+  }
+
+  async adjustPrices(data: BaseData[]): Promise<BaseData[]> {
+    const chainAssets: Map<number, Set<string>> = new Map<number, Set<string>>();
+
+    // get all assets for prices
+    data.forEach((d) => {
+      if (!chainAssets.get(d.chain.id)) {
+        chainAssets.set(d.chain.id, new Set<string>());
+      }
+      if (d instanceof BaseDataLp) {
+        d.items.forEach((i) => {
+          i.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+        });
+      }
+      if (d instanceof BaseDataStaking) {
+        d.items.forEach((i) => {
+          i.stakingToken.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+        });
+      }
+    });
+
+    const chainAssetPrices: Map<number, Map<string, number>> = new Map<
+      number,
+      Map<string, number>
+    >();
+    try {
+      const promises = [];
+      chainAssets.forEach((assets, chainId) => {
+        promises.push(this.priceService.getTokenPricesFetch(Array.from(assets), chainId));
+      });
+      // todo: need to update prices api to get prices from many chains
+      const chainPrices = await Promise.allSettled(promises);
+      chainPrices.forEach((cpr) => {
+        if (cpr.status === 'fulfilled') {
+          const pricesData = cpr.value as PriceResponseDto<CurrentPricesPayload>;
+          chainAssetPrices.set(pricesData.chain.id, new Map<string, number>());
+          Object.keys(pricesData.prices).forEach((address) => {
+            chainAssetPrices
+              .get(pricesData.chain.id)
+              .set(address, Number(pricesData.prices[address]));
+          });
+        }
+      });
+      // eslint-disable-next-line no-empty
+    } catch (e) {}
+
+    data.forEach((d) => {
+      if (d instanceof BaseDataLp) {
+        d.total = 0;
+        d.items.forEach((i) => {
+          i.tokens.forEach((pt) => {
+            pt.price = chainAssetPrices.get(d.chain.id).get(pt.address);
+            pt.value = pt.balance * pt.price;
+            d.total += pt.value;
+          });
+        });
+      }
+
+      if (d instanceof BaseDataStaking) {
+        d.total = 0;
+        d.items.forEach((i) => {
+          i.stakingToken.tokens.forEach((pt) => {
+            pt.price = chainAssetPrices.get(d.chain.id).get(pt.address);
+            pt.value = Number(pt.balance) * pt.price;
+            d.total += pt.value;
+          });
+          d.total += i.rewards[0].claimableData.value;
+
+          if (i.rewards.length === 2) {
+            d.total += i.rewards[1].claimableData.value;
+          }
+        });
+      }
+    });
+
+    return data;
   }
 }

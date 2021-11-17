@@ -19,7 +19,6 @@ import {
 } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 
-import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import {
   IntegrationERC20TokenDto,
@@ -41,7 +40,8 @@ import {
   LendingErcToken,
   LeverageErcToken,
 } from '../../interfaces/transactions.interfaces';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { concatStrings } from '../../utils/string';
 import { decimalsDivider } from '../../utils/util';
 import AbstractProtocol from './abstractProtocol';

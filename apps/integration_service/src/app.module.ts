@@ -1,23 +1,21 @@
+import { HttpModule } from '@nestjs/axios';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
-import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { LoggerMiddleware } from '@app/common';
 import configuration from '@app/common/config/configuration';
 import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import config from './config';
-import { DatabaseModule } from './database/database.module';
 import { HealthController } from './health/health.controller';
 import { IntegrationsModule } from './integrations/integrations.module';
 import { JobsModule } from './jobs/jobs.module';
-import { LoggerMiddleware } from './middlewares/logger.middleware';
-import { PoolsModule } from './pools/pools.module';
 import { ProtocolModule } from './protocol/protocol.module';
 import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
 import { ThegraphModule } from './thegraph/thegraph.module';
-import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
   imports: [
@@ -49,14 +47,24 @@ import { VaultsModule } from './vaults/vaults.module';
       }),
       inject: [ConfigService],
     }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DB_HOST'),
+        port: configService.get('DB_PORT'),
+        username: configService.get('DB_USERNAME'),
+        password: configService.get('DB_PASSWORD'),
+        database: configService.get('DB_DATABASE'),
+        entities: ['dist/**/*.entity{.ts,.js}'],
+        synchronize: false,
+        logging: true,
+      }),
+    }),
     TerminusModule,
     ThegraphModule,
-    //
     ProtocolModule,
-    //
-    PoolsModule,
-    DatabaseModule,
-    VaultsModule,
     TemporaryTokensModule,
     IntegrationsModule,
     JobsModule,

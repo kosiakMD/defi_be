@@ -14,30 +14,6 @@ export class MetaDto {
   fetchTime?: number;
 }
 
-// export class DetailedResponseDto<T = any> {
-//   @ApiProperty({
-//     enum: ResultStatus,
-//     enumName: 'ResultStatus',
-//     example: ResultStatus.ok,
-//   })
-//   status: ResultStatus = ResultStatus.ok;
-//
-//   @ApiProperty({
-//     type: [String],
-//     example: ['connect ECONNREFUSED ...'],
-//   })
-//   errors: Error[] | string[] = [];
-//
-//   data: T;
-// }
-
-// export class SubgraphResponseDto<T> extends DetailedResponseDto {
-//   // @ApiProperty({ type: MetaDto, required: false })
-//   // __meta?: MetaDto;
-//
-//   data: T;
-// }
-
 export class DetailedResponseDto<T> implements DetailedResponse<T> {
   constructor(status: ResultStatus, errors: Error[] | string[], data: T) {
     this.status = status;
@@ -66,8 +42,5 @@ export class DetailedResponseDto<T> implements DetailedResponse<T> {
 }
 
 export class ResponseDto<T = any> extends DetailedResponseDto<T> {
-  // @ApiProperty({ type: MetaDto, required: false })
-  // __meta?: MetaDto;
-
   data: T;
 }

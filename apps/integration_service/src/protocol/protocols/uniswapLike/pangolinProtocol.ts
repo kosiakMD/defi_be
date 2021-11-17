@@ -5,8 +5,8 @@ import { Logger } from '@app/common';
 import { FeatureEnum } from '@app/common';
 import { ChainAbbrEnum, PangolinProtocolEnum, ProjectEnum } from '@app/common/enum';
 
-import { AccountService } from '../../../account/account.service';
-import { PriceService } from '../../../price/price.service';
+import { AccountService } from '../../../microservices/account.service';
+import { PriceService } from '../../../microservices/price.service';
 import { PangolinSubgraph } from '../../../thegraph/pangolin.subgraph';
 import AbstractProtocol from '../abstractProtocol';
 import { Mapper } from '../mappers/mapper';

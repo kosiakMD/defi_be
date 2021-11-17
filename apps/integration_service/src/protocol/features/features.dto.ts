@@ -7,7 +7,6 @@ import {
   ChainAbbrEnum,
   PancakeProtocolEnum,
   ProjectEnum,
-
   ProtocolNameEnum,
   SushiSwapProtocolEnum,
   UniswapProtocolEnum
@@ -16,9 +15,9 @@ import {
 import { ResponseDto } from '@app/common/dto';
 import { ChainDto } from '@app/common/dto/chain.dto';
 import { FeatureEnum } from '@app/common';
-import { FeatureDto } from '../../integrations/integrationFeatures';
 import { FeaturesType } from '../protocol.types';
 import { ProtocolName } from '@app/common';
+import { FeatureDto } from '../../integrations/integrations.dto';
 
 
 export class ProtocolFeaturesExportDto {

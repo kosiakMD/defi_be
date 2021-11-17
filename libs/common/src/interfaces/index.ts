@@ -8,12 +8,12 @@ import {
 import { PlatformPoolToken, PoolToken } from '@app/common/interfaces/transactions.interfaces';
 import { Address, DateString, ProtocolName, TokenSymbol } from '@app/common/types';
 
+export * from './call.data.interfaces';
 export * from './assets.interfaces';
 export * from './balance.interfaces';
 export * from './entity.information.interfaces';
 export * from './fee.interfaces';
 export * from './integrations.interface';
-export * from './staking.position.interfaces';
 export * from './subgraph.response.base';
 export * from './transactions.interfaces';
 export * from './lending.position.interface';

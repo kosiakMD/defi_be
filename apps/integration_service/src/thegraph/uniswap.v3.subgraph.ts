@@ -3,7 +3,7 @@ import { map } from 'rxjs/operators';
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { UniswapV3Position, ChainIdEnum, Address } from '@app/common';
+import { Address, ChainIdEnum, UniswapV3Position } from '@app/common';
 
 interface UniswapGraphQLPositionResponse {
   positions: UniswapV3Position[];

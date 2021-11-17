@@ -8,8 +8,8 @@ import {
   ProtocolName,
 } from '@app/common';
 
-import { AccountService } from '../../account/account.service';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { ProtocolFeaturesInfo } from '../protocol.types';
 import { DefaultDataProvider, RawFeaturesDto } from '../protocols.dto';
 import { BasicProtocol } from './basicProtocol';

@@ -9,6 +9,7 @@ import {
 } from '@app/common';
 import { FeatureEnum } from '@app/common';
 
+import { BaseData } from '../../interfaces/transactions.interfaces';
 import { ProtocolBasicInfo } from '../features/features.dto';
 import { FeaturesType, ProtocolFeaturesInfo } from '../protocol.types';
 import { RawFeaturesDto } from '../protocols.dto';
@@ -47,6 +48,11 @@ export abstract class BasicProtocol extends AbstractProtocol {
     address: Address,
     chain?: ChainDto,
   ): Promise<IntegrationFeaturesDataDto>;
+
+  public getAllFeaturesBaseData?(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]>;
 
   public getAllFeaturesRawData?(address: string, chain?: ChainDto): Promise<RawFeaturesDto>;
 }

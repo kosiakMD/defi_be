@@ -85,6 +85,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/lambda_prices/tsconfig.app.json"
       }
+    },
+    "lambda_vaults": {
+      "type": "application",
+      "root": "apps/lambda_vaults",
+      "entryFile": "main",
+      "sourceRoot": "apps/lambda_vaults/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/lambda_vaults/tsconfig.app.json"
+      }
     }
   }
 }

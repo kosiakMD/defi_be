@@ -77,8 +77,7 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   @Exclude()
   errors: string[] | string[][] | string[][][] | any[] = []; // any[] for [[[Error], Error], [Error]].flat()
   @Expose()
-    // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeatureDto>;
+  [FeatureEnum.pools]?: FeatureResult<any>;
   @Expose()
   [FeatureEnum.staking]?: FeatureResult<any/*StakingPositionFeatureDto*/>;
   @Expose()

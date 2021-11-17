@@ -4,7 +4,6 @@ import Web3 from 'web3';
 
 import { ChainAbbrEnum, Logger } from '@app/common';
 
-import { MulticallContractFunctionEnum } from '../../../../multicall/multicall.enum';
 import { AutofarmTokenInfo, StakingInterface, VaultUserInfo } from '../autofarm.interfaces';
 import {
   AutoFactoryAbi,
@@ -52,7 +51,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       const input: CallInput = {
         target: autofarmFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.poolInfo,
+        function: 'poolInfo',
         args: [pool.poolNum],
       };
       return input;

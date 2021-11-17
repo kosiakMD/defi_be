@@ -1,9 +1,7 @@
 import { Cache } from 'cache-manager';
 import { map } from 'rxjs/operators';
 
-import { HttpService, Injectable } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';

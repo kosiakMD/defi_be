@@ -10,7 +10,6 @@ import { FeatureEnum } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { AutofarmProtocolEnum, ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
 
-import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import { CurrentPricesPayload } from '../../dto/price.response.dto';
 import {
@@ -21,7 +20,8 @@ import {
   StakingPositionResponseDto,
 } from '../../integrations/integrations.dto';
 import { Asset, ERC20Token } from '../../interfaces/transactions.interfaces';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { decimalsDivider } from '../../utils/util';
 import AbstractProtocol from './abstractProtocol';
 import { AutofarmApiPools, StakingInterface } from './autofarm/autofarm.interfaces';

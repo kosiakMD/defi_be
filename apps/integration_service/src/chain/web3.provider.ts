@@ -19,6 +19,7 @@ export class Web3Provider {
       ['ETH_URL']: ChainAbbrEnum.eth,
       ['FTM_URL']: ChainAbbrEnum.ftm,
       ['POLYGON_RPC_URL']: ChainAbbrEnum.plg,
+      ['AVAX_URL']: ChainAbbrEnum.avax,
     };
     Object.entries(chainProviders).forEach(([url, chain]) => {
       this.web3Map.set(chain, new Web3(this.configService.get<string>(url)));

@@ -3,7 +3,7 @@ import { map } from 'rxjs/operators';
 import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { Address } from '../common/types';
+import { Address } from '@app/common/types';
 
 export interface Balance {
   id: string;

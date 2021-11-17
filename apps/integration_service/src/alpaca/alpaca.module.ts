@@ -1,14 +1,14 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
 
-import { AccountModule } from '../account/account.module';
 import { ChainModule } from '../chain/chain.module';
-import { PriceModule } from '../price/price.module';
+import { MicroservicesModule } from '../microservices/microservices.module';
 import { AlpacaApiService } from './services/alpaca.api.service';
 import { AlpacaService } from './services/alpaca.service';
 import { AlpacaSubgraph } from './services/alpaca.subgraph';
 
 @Module({
-  imports: [HttpModule, PriceModule, AccountModule, ChainModule],
+  imports: [HttpModule, MicroservicesModule, ChainModule],
   providers: [AlpacaService, AlpacaSubgraph, AlpacaApiService],
   exports: [AlpacaService],
 })

@@ -1,10 +1,9 @@
-import { CallInput, MultiCall } from '@indexed-finance/multicall';
+import { MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { MulticallContractFunctionEnum } from '../../multicall/multicall.enum';
 import {
   AlpacaApiResponse,
   AlpacaStakingInterface,
@@ -38,7 +37,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.poolInfo,
+        function: 'poolInfo',
         args: [pool.poolNum],
       };
     });
@@ -59,7 +58,7 @@ export class LocalMultiCall extends MultiCall {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
-        function: MulticallContractFunctionEnum.userInfo,
+        function: 'userInfo',
         args: [pool.poolNum, pool.userAddress],
       };
     });
@@ -67,32 +66,6 @@ export class LocalMultiCall extends MultiCall {
     const [, vaultUserInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
     data.forEach((i, index) => (i.claimable = vaultUserInfo[index].rewardDebt.toString()));
     return vaultUserInfo;
-  }
-
-  async getTotalSupplies(
-    tokens: string[],
-    stakingPositions: AlpacaStakingInterface[],
-  ): Promise<void> {
-    try {
-      const chunkSize = 50;
-      let count = 0;
-      for (let i = 0, j = tokens.length; i < j; i += chunkSize) {
-        const to = i + chunkSize > tokens.length ? tokens.length : i + chunkSize;
-        const pairsSlice = tokens.slice(i, to);
-        const inputs: CallInput[] = pairsSlice.map((p) => {
-          return { target: p, function: 'totalSupply' };
-        });
-        const [, multicallSupplies] = await this.multiCall(lpTokenAbi, inputs);
-        for (let i = 0; i < to; i++) {
-          const staking = stakingPositions[count * chunkSize + i];
-          staking.totalSupply = multicallSupplies[i]?.toString();
-        }
-        count++;
-      }
-    } catch (e) {
-      this.logger.error(e, 'getTotalSupplies');
-      throw e;
-    }
   }
 
   async getTokensInfoMap(

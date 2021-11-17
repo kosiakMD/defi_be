@@ -6,7 +6,7 @@
 import BN from 'bn.js';
 
 import { UniswapV3Tick } from '@app/common';
-import { ZERO, ONE, Q96, Q32, MaxUint256, Q128 } from '@app/common/constant/numbers';
+import { MaxUint256, ONE, Q128, Q32, Q96, ZERO } from '@app/common/constant/numbers';
 
 function getTicksFeeGrowthInside(
   tickCurrent: string,

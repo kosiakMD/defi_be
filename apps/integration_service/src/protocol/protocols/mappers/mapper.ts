@@ -16,7 +16,7 @@ import {
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
 } from '@app/common/dto/liquidity.position.dto';
-import { StakingProjectDto, TransactionProjectDto } from '@app/common/dto/transactions.dto';
+import { StakingProjectDto } from '@app/common/dto/transactions.dto';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '@app/common/enum';
 import { ProtocolName } from '@app/common/types';
 
@@ -30,7 +30,7 @@ import {
   PoolTokenDto,
   UniswapSubgraphLikeData,
 } from '../../../interfaces/transactions.interfaces';
-import { PriceService } from '../../../price/price.service';
+import { PriceService } from '../../../microservices/price.service';
 import { abi } from '../../../utils/abi';
 import { decimalsDivider } from '../../../utils/util';
 
@@ -110,10 +110,6 @@ export class Mapper {
 
   static createDynamicFeature<T>(baseInfo: BaseInfo, protocolType: ProtocolTypeEnum): T {
     const typeInfo = {
-      [ProtocolTypeEnum.transaction]: {
-        field: 'txs',
-        dto: TransactionProjectDto as any, // TODO: fix
-      },
       [ProtocolTypeEnum.amm]: {
         field: 'liquidityPositions',
         dto: AutomaticMarketMaker,
@@ -136,13 +132,6 @@ export class Mapper {
       Object.assign(Mapper.createBaseData(baseInfo, protocolType), {
         [typeInfo[protocolType].field]: [],
       }),
-    );
-  }
-
-  protected static transformTransaction(baseInfo: BaseInfo): TransactionProjectDto {
-    return Mapper.createDynamicFeature<TransactionProjectDto>(
-      baseInfo,
-      ProtocolTypeEnum.transaction,
     );
   }
 

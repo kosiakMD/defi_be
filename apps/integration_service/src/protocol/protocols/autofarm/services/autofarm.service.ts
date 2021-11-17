@@ -9,7 +9,6 @@ import { ChainAbbrEnum, ChainDto, Logger } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { Address } from '@app/common/types';
 
-import { AccountService } from '../../../../account/account.service';
 import { Web3Provider } from '../../../../chain/web3.provider';
 import { CurrentPricesPayload } from '../../../../dto/price.response.dto';
 import {
@@ -20,7 +19,8 @@ import {
   StakingPositionResponseDto,
 } from '../../../../integrations/integrations.dto';
 import { Asset, ERC20Token } from '../../../../interfaces/transactions.interfaces';
-import { PriceService } from '../../../../price/price.service';
+import { AccountService } from '../../../../microservices/account.service';
+import { PriceService } from '../../../../microservices/price.service';
 import { decimalsDivider } from '../../../../utils/util';
 import { AutofarmApiPools, AutofarmUser, StakingInterface } from '../autofarm.interfaces';
 import { LocalMultiCall } from '../multicall/local.multi.call';

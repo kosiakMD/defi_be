@@ -2,12 +2,11 @@ import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
-import { Logger } from '@app/common';
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { AceLabUser, MasterchefUser } from '../interfaces';
 import { Claimable } from '../interfaces/claimable.interfaces';
-import { acelabMap, farmsMap, farmAbis, acelabAbis, xBooMap, xBooAbis } from './util';
+import { acelabAbis, acelabMap, farmAbis, farmsMap, xBooAbis, xBooMap } from './util';
 
 export class LocalMultiCall extends MultiCall {
   constructor(private readonly web3: Web3, private readonly logger: Logger) {

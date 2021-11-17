@@ -24,8 +24,8 @@ import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
 
-import { AccountService } from '../../account/account.service';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { RAY } from './aave/constants';
 import { IReserve } from './aave/interfaces';
 import { LocalMultiCall } from './aave/multicall/local.multicall';

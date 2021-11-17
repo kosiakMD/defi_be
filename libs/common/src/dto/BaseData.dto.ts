@@ -42,5 +42,4 @@ export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
 
   @ApiProperty({ type: [LiquidityPositionDto], required: false })
   liquidityPositions?: LiquidityPositionDto[];
-
 }

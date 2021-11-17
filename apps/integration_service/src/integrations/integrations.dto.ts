@@ -11,8 +11,10 @@ import { FeatureEnum } from '@app/common';
 import { ProtocolFeaturesInfo } from '../protocol/protocol.types';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { FeatureResult } from '../protocol/features/features.types';
-import { LendingPositionDto, BorrowingPosition } from '@app/common';
+import { BorrowingPosition, FeatureName, LendingPositionDto } from '@app/common';
 import { LeverageFarmingPosition } from '../interfaces/leverage.farming.interfaces';
+import { BaseData } from '../interfaces/transactions.interfaces';
+import { ProtocolTypeEnum } from '@app/common/enum';
 import { IntegrationClaimableTokenDto } from '@app/common';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
@@ -180,6 +182,36 @@ export class IntegrationStakingPositionDto {
   rewardToken?: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
 }
 
+export class IntegrationStakingPosDto {
+  @Expose()
+  @ApiProperty({type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'})
+  address: string = null;// vault address
+
+  @Expose()
+  @ApiProperty({type: String, example: '6'})
+  poolId: string = null; // number of pool - get from subgraph
+
+  @Expose()
+  @ApiProperty({type: String, example: 'poolName'})
+  poolName: string = null;
+
+  @Expose()
+  @ApiProperty({type: String, example: '642354'})
+  staked: string = null; // amount
+
+  @Expose()
+  @ApiProperty({type: Stats})
+  stats?: Stats;
+
+  @Expose()
+  @ApiProperty({ type: LPToken })
+  stakingToken: IntegrationERC20TokenDto;
+
+  @Expose()
+  @ApiProperty({type: IntegrationClaimableTokenDto})
+  rewards?: IntegrationClaimableTokenDto[];
+}
+
 export class StakingPositionResponseDto {
   // @ApiProperty({type: String, example: '0x60de7f647df2448ef17b9e0123411724de6e373d'})
   // userAddress: string;
@@ -233,6 +265,8 @@ export class IntChainsDataDto extends IntegrationFeaturesDataDto {
   @ApiProperty({ type: ProtocolFeaturesInfoDto })
   @Type(() => ProtocolFeaturesInfoDto)
   features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
+
+  total?: number;
 }
 
 export class IntegrationDataDto {
@@ -255,8 +289,34 @@ export class IntegrationDataDto {
   // result: IntegrationFeaturesDataDto = null;
 }
 
+export type FeatureDto<T = LiquidityPoolFeature | StakingPosition> = Record<
+  FeatureName,
+  FeatureResult<T> | FeatureResult<T>[]
+  >;
+
+
 export class IntegrationsResponseDto extends DetailedResponseDto<IntegrationDataDto> {
   @ApiProperty({ type: IntegrationDataDto })
   @Type(() => IntegrationDataDto)
   data: IntegrationDataDto = null;
+}
+
+export class IntegrationWalletDto {
+  address: string;
+  chains: IntChainsDataDto[] = [];
+}
+
+export class IntegrationDataV2Dto {
+  __meta?: MetaDto;
+  protocol: ProtocolInfoDto = null;
+  wallets: IntegrationWalletDto[];
+  total?: number;
+}
+
+export class IntegrationsResponseV2Dto extends DetailedResponseDto<IntegrationDataV2Dto> {
+  data: IntegrationDataV2Dto = null;
+}
+
+export class BaseDataStaking extends BaseData<ProtocolTypeEnum.staking> {
+  items: IntegrationStakingPosDto[];
 }

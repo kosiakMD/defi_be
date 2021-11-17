@@ -18,7 +18,6 @@ import {
 } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 
-import { AccountService } from '../../../../account/account.service';
 import { Web3Provider } from '../../../../chain/web3.provider';
 import {
   IntegrationERC20TokenDto,
@@ -40,7 +39,8 @@ import {
   LendingErcToken,
   LeverageErcToken,
 } from '../../../../interfaces/transactions.interfaces';
-import { PriceService } from '../../../../price/price.service';
+import { AccountService } from '../../../../microservices/account.service';
+import { PriceService } from '../../../../microservices/price.service';
 import { concatStrings } from '../../../../utils/string';
 import { decimalsDivider } from '../../../../utils/util';
 import {
@@ -377,7 +377,7 @@ export class AlpacaService {
     if (!asset) {
       return;
     }
-    /* If a staked token is a debtIbToken - value usd we show will be equal to the amount of 
+    /* If a staked token is a debtIbToken - value usd we show will be equal to the amount of
       the reward usd(like the deBank shows)
      */
     const debtToken = alpacaDebtTokens.some((address) => address === staking.stakeToken);

@@ -1,14 +1,13 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { Web3ProviderService } from '@app/common/web3provider';
 
-import { AccountModule } from '../account/account.module';
 import { ChainModule } from '../chain/chain.module';
-import { PriceModule } from '../price/price.module';
-import { Web3Service } from '../quickswap/web3/web3.service';
+import { MicroservicesModule } from '../microservices/microservices.module';
 import { ThegraphModule } from '../thegraph/thegraph.module';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
@@ -17,12 +16,16 @@ import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { Mapper } from './protocols/mappers/mapper';
-import { PancakeModule } from './protocols/pancake/pancake.module';
-import PancakeProtocolV2 from './protocols/pancake/pancake.protocol.v2';
-import PancakeProtocolV1 from './protocols/pancake/pancakeProtocolV1';
-import QuickswapProtocol from './protocols/quickswapProtocol';
+import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
+import { PancakeV2Pools } from './protocols/pancake/pancake-v2.pools';
+import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
+import PancakeProtocol from './protocols/pancake/pancake.protocol';
+import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
+import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
+import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -34,8 +37,6 @@ const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
   AutofarmProtocol,
-  PancakeProtocolV1,
-  PancakeProtocolV2,
   PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,
@@ -46,10 +47,12 @@ const ProtocolList = [
   YearnProtocolV2,
 ];
 
+const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
+const Pancake = [PancakeProtocol, PancakeV2Pools, PancakeV2Staking, PancakeV2Legacy];
+
 @Module({
   imports: [
-    AccountModule,
-    PriceModule,
+    MicroservicesModule,
     HttpModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
@@ -65,13 +68,13 @@ const ProtocolList = [
     }),
     ThegraphModule,
     ChainModule,
-    PancakeModule, // TODO: m.b. delete for pancakeV1
   ],
   providers: [
     ...ProtocolList,
+    ...TraderJoe,
+    ...Pancake,
     ProtocolService,
     Mapper,
-    Web3Service,
     AlpacaApiService,
     AutofarmApiService,
     Web3ProviderService,

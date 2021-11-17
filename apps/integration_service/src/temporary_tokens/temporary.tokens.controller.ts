@@ -2,7 +2,7 @@ import { Controller, Get } from '@nestjs/common';
 
 import { TemporaryTokensService } from './temporary.tokens.service';
 
-@Controller('temporary-tokens')
+@Controller('v1/temporary-tokens')
 export class TemporaryTokensController {
   constructor(private parsingService: TemporaryTokensService) {}
 

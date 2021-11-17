@@ -26,9 +26,9 @@ import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
 
-import { AccountService } from '../../account/account.service';
 import { LPToken, IntegrationStakingPositionDto } from '../../integrations/integrations.dto';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import BasicProtocol from './basicProtocol';
 import { LocalMultiCall } from './sushiswap/multicall/local.multicall';
 import { SushiSwapBentoBoxSubgraph } from './sushiswap/services/sushiswap.bentobox.subgraph';

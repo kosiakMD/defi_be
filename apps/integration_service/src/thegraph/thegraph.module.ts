@@ -1,6 +1,7 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule, Module, CacheModule } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { AaveSubgraph } from '../protocol/protocols/aave/subgraphs/aave.subgraph';

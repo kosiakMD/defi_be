@@ -24,8 +24,6 @@ export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
   percentage?: number;
 }
 
-export interface SwapToken extends ERC20Token, AmountAble, PriceAble {}
-
 export interface UniswapSubgraphLikeData {
   // TODO: rename to common
   uniswapSwapsFrom?: Map<string, SwapsInterface[]>;

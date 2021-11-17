@@ -29,7 +29,6 @@ async function bootstrap(): Promise<void> {
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);

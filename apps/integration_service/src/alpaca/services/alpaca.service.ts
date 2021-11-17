@@ -7,10 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { AlpacaProtocolEnum, ChainDto, Logger } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
+import { Address } from '@app/common/types';
 
-import { Address } from '../../common/types';
-
-import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import { CurrentPricesPayload } from '../../dto/price.response.dto';
 import {
@@ -34,7 +32,8 @@ import {
   LendingErcToken,
   LeverageErcToken,
 } from '../../interfaces/transactions.interfaces';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { decimalsDivider } from '../../utils/util';
 import {
   AlpacaStakingInterface,

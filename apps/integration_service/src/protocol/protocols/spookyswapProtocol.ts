@@ -24,7 +24,6 @@ import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/enum';
 
-import { AccountService } from '../../account/account.service';
 import { Web3Provider } from '../../chain/web3.provider';
 import {
   IntegrationStakingPositionDto,
@@ -32,7 +31,8 @@ import {
   StakingPositionResponseDto,
 } from '../../integrations/integrations.dto';
 import { NotifyPayloadFeaturesDto } from '../../jobs/notify.payload.features.dto';
-import { PriceService } from '../../price/price.service';
+import { AccountService } from '../../microservices/account.service';
+import { PriceService } from '../../microservices/price.service';
 import { LocalMultiCall } from '../../spookyswap/multicall/local.multi.call';
 import { acelabMap, booMap, farmsMap, xBooMap } from '../../spookyswap/multicall/util';
 import { SpookyswapAceLabSubgraph } from '../../thegraph/spookyswap.acelab.subgraph';

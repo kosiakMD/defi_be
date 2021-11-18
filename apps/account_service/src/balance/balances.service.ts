@@ -28,6 +28,7 @@ import {
 import { BalancesLoadingStrategy, getBalancesSafe } from './strategy';
 import { CovalentBalancesStrategy } from './strategy/covalent/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategy/network/network.strategy';
+import { SolanaBalancesStrategy } from './strategy/network/solana.balances.strategy';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -48,6 +49,7 @@ export class BalancesService {
     private readonly web3Provider: Web3Provider,
     private readonly networkBalancesStrategy: NetworkBalancesStrategy,
     private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
+    private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
   ) {}
 
   public async getBalance(
@@ -380,6 +382,8 @@ export class BalancesService {
 
   private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
     switch (chain) {
+      case ChainIdEnum.sol:
+        return [this.solanaBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }

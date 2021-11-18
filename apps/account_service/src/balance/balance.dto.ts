@@ -28,11 +28,12 @@ export class BalancesQueryDto implements BalancesQuery {
     if (!Array.isArray(value)) {
       throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
     }
-    value.forEach((address: string) => {
-      if (!web3.utils.isAddress(address)) {
-        throw new BadRequestException(`Address '${address}' is not valid`);
-      }
-    });
+    // must be removed or replaced for solana chain
+    // value.forEach((address: string) => {
+    //   if (!web3.utils.isAddress(address)) {
+    //     throw new BadRequestException(`Address '${address}' is not valid`);
+    //   }
+    // });
     return value;
   })
   @IsString({ each: true })

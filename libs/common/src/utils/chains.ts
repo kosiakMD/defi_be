@@ -13,6 +13,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.mriver]: AbsoluteChainIdEnum.mriver,
   [ChainIdEnum.harm]: AbsoluteChainIdEnum.harm,
   [ChainIdEnum.heco]: AbsoluteChainIdEnum.heco,
+  [ChainIdEnum.sol]: AbsoluteChainIdEnum.sol,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -39,6 +40,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.mriver]: ChainIdEnum.mriver,
   [AbsoluteChainIdEnum.harm]: ChainIdEnum.harm,
   [AbsoluteChainIdEnum.heco]: ChainIdEnum.heco,
+  [AbsoluteChainIdEnum.sol]: ChainIdEnum.sol,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];

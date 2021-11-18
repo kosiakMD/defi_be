@@ -24,6 +24,7 @@ export enum ChainNameEnum {
   mriver = 'moonriver',
   harm = 'harmony',
   heco = 'heco',
+  sol = 'solana',
 }
 
 export enum ChainIdEnum {
@@ -38,6 +39,7 @@ export enum ChainIdEnum {
   mriver = 9,
   harm = 10,
   heco = 11,
+  sol = 12,
 }
 
 export enum AbsoluteChainIdEnum {
@@ -52,6 +54,7 @@ export enum AbsoluteChainIdEnum {
   mriver = 1285,
   harm = 1666600000,
   heco = 128,
+  sol = 101,
 }
 
 export enum CurrencyEnum {

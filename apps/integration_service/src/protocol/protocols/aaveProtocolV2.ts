@@ -17,6 +17,7 @@ import {
   ChainDto,
   LendingErcToken,
   IAssetResponseDto,
+  ChainIdEnum,
 } from '@app/common';
 import { FeatureEnum } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
@@ -283,7 +284,17 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     chain: ChainDto,
     prices: Map<string, string>,
   ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> {
-    const claimableRewardsRaw = await this.getRewardsBalance(address, assets, chain);
+    // Not sure why, but the ethereum IncentivesController throws an error
+    // reading the users rewards for this address (breaking multicall)
+    const blacklistedRewardTokens = new Map([
+      [ChainIdEnum.eth, new Set(['0x3356ec1efa75d9d150da1ec7d944d9edf73703b7'])],
+    ]);
+
+    const claimableRewardsRaw = await this.getRewardsBalance(
+      address,
+      assets.filter((asset) => !blacklistedRewardTokens.get(chain.id)?.has(asset)),
+      chain,
+    );
 
     const claimableRewards = normalizeDecimals(claimableRewardsRaw, token.decimals);
 

@@ -15,7 +15,7 @@ configMaps:
     FTM_URL: https://rpc.ftm.tools/
     AVAX_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
     ARBITRUM_URL: https://arb1.arbitrum.io/rpc
-    XDAI_URL: https://rpc.xdaichain.com
+    XDAI_URL: https://xdai-archive.blockscout.com 
     CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/0e98e916335bf4c3a5e8b41181b9336e/
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     HARM_URL: https://a.api.s0.t.hmny.io

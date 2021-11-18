@@ -317,10 +317,6 @@ export class PancakeStaking implements JobInterface {
     return savedItem;
   }
 
-  async updateTracked(): Promise<void> {
-    //console.log('update existed tracking pools, just compare max pool id');
-  }
-
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
 
@@ -390,7 +386,7 @@ export class PancakeStaking implements JobInterface {
           blockTime: 3,
           farmingPoolTVL: m.stats.tvl,
         };
-        m.stats.apr.push(calculateAPR(aprStats));
+        m.rewards[0].apr = calculateAPR(aprStats);
         return m;
       }
     });

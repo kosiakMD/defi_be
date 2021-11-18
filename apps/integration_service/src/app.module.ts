@@ -1,5 +1,5 @@
 import { HttpModule } from '@nestjs/axios';
-import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
+import { Inject, LoggerService, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -71,12 +71,9 @@ import { ThegraphModule } from './thegraph/thegraph.module';
   ],
   controllers: [HealthController],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware).forRoutes('/');
-  }
-
-  onModuleInit(): void {
     this.log();
   }
 

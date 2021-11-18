@@ -5,11 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
-  constructor(
-    // TODO: left for custom logger
-    // private readonly logger: Logger,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-  ) {}
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
   use(req: Request, res: Response, next: NextFunction): void {
     this.logger.log(
       {
@@ -21,10 +17,23 @@ export class LoggerMiddleware implements NestMiddleware {
         path: req.path,
         url: req.url,
         params: req.params,
-        body: req.body,
+        body: this.getBodyMessage(req),
       },
       req.method,
     );
     next();
+  }
+
+  getBodyMessage(req: Request): string {
+    if (!req.body) {
+      return req.body;
+    }
+
+    const MAX_BODY_SIZE = 262144;
+    const bodyString = JSON.stringify(req.body);
+    const size = Buffer.byteLength(bodyString);
+
+    const fallbackMessage = 'Request Body Too Large To Display';
+    return size < MAX_BODY_SIZE ? bodyString : fallbackMessage;
   }
 }

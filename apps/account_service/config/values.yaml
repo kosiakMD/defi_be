@@ -9,13 +9,13 @@ configMaps:
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
-    ETH_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/eth/mainnet/archive
-    BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
-    POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
+    ETH_URL: https://rpc.ankr.com/eth
+    BSC_URL: https://bsc.getblock.io/mainnet/?api_key=bae9225a-2c91-449a-a237-45aff8864c13
+    POLYGON_URL: https://rpc.ankr.com/polygon
     FTM_URL: https://rpc.ftm.tools/
     AVAX_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
     ARBITRUM_URL: https://arb1.arbitrum.io/rpc
-    XDAI_URL: https://xdai-archive.blockscout.com 
+    XDAI_URL: https://xdai-archive.blockscout.com
     CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/0e98e916335bf4c3a5e8b41181b9336e/
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     HARM_URL: https://a.api.s0.t.hmny.io

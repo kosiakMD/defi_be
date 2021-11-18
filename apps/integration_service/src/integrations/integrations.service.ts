@@ -15,6 +15,7 @@ import {
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { NotifyPayloadFeaturesDto } from '../jobs/notify.payload.features.dto';
 import {
@@ -29,7 +30,6 @@ import {
   IntChainsDataDto,
   IntegrationsResponseDto,
   IntegrationsResponseV2Dto,
-  IntegrationStakingPositionDto,
   IntegrationWalletDto,
   ProtocolInfoDto,
 } from './integrations.dto';
@@ -70,7 +70,13 @@ export class IntegrationsService {
   private getActive(ft: FeatureEnum, cachedData: NotifyPayloadFeaturesDto) {
     if (ft === FeatureEnum.staking) {
       const items: IntegrationStakingPositionDto[] = cachedData.items;
-      return items.filter((i) => i.stats?.apr > 0 || i.stats?.apy > 0);
+      return items.filter((i) => {
+        let isActive = false;
+        i.rewards.forEach((r) => {
+          if (r.apr > 0) isActive = true;
+        });
+        return isActive;
+      });
     }
     return [];
   }
@@ -212,7 +218,7 @@ export class IntegrationsService {
 
         data.forEach((bd) => {
           const walletData = response.data.wallets.find((w) => w.address === bd.userAddress);
-          
+
           let existedChainData = walletData.chains.find((c) => c.chain.id === chain);
 
           if (!existedChainData) {
@@ -224,16 +230,15 @@ export class IntegrationsService {
             existedChainData = chainData;
             walletData.chains.push(existedChainData);
           }
-          
+
           existedChainData.total += bd.total;
           response.data.total += bd.total;
           existedChainData[bd.feature] = bd.items;
-          
         });
       }
     });
     response.errors = response.errors.flat();
-    
+
     return response;
   }
 }

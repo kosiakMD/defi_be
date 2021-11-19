@@ -10,8 +10,8 @@ configMaps:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
     ETH_URL: https://rpc.ankr.com/eth
-    BSC_URL: https://bsc.getblock.io/mainnet/?api_key=bae9225a-2c91-449a-a237-45aff8864c13
-    POLYGON_URL: https://rpc.ankr.com/polygon
+    BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
+    POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
     FTM_URL: https://rpc.ftm.tools/
     AVAX_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
     ARBITRUM_URL: https://arb1.arbitrum.io/rpc

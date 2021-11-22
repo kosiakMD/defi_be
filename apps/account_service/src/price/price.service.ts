@@ -148,9 +148,8 @@ export class PriceService {
 
       return response;
     } catch (e) {
-      e.response && this.logger.error(e.response.data);
-      this.logger.error(e);
-      // TODO: do we need 0 if error? it's tricky
+      this.logger.error('Error while fetching token prices', e);
+      // TODO: This logic should not be here, it should be in outer code or removed at all
       const pricePayload: CurrentPricesPayload = {};
 
       addressesArray.forEach((item) => {
@@ -167,18 +166,23 @@ export class PriceService {
     timestamp: number,
     currency?: CurrencyId,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    this.logger.time(this.fetchTimestampPricesUrl);
+    try {
+      this.logger.time(this.fetchTimestampPricesUrl);
 
-    const request = new FetchTimestampPricesRequestDto(tokens, chain, timestamp, currency);
+      const request = new FetchTimestampPricesRequestDto(tokens, chain, timestamp, currency);
 
-    const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
-      .post(this.fetchTimestampPricesUrl, request)
-      .pipe(map((response) => response.data))
-      .toPromise();
+      const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
+        .post(this.fetchTimestampPricesUrl, request)
+        .pipe(map((response) => response.data))
+        .toPromise();
 
-    this.logger.timeEnd(this.fetchTimestampPricesUrl);
+      this.logger.timeEnd(this.fetchTimestampPricesUrl);
 
-    return response;
+      return response;
+    } catch (e) {
+      this.logger.error('Error while fetching token prices at timestamp', e);
+      throw e;
+    }
   }
 
   async getHistoricalPrices(

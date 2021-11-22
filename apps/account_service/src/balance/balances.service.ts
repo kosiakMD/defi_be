@@ -1,21 +1,21 @@
-import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
-import { In, Repository } from 'typeorm';
-import Web3 from 'web3';
+import { Address, ChainIdEnum, Logger } from '@app/common';
+import { roundToNearestHour } from '@app/common/utils/dates';
+import { retry } from '@app/common/utils/retry';
 
 import { CACHE_MANAGER, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Address, ChainIdEnum, Logger } from '@app/common';
-import { roundToNearestHour } from '@app/common/utils/dates';
-
-import { BLACKLISTED_TOKENS } from '../common/constatnt';
+import { In, Repository } from 'typeorm';
+import Web3 from 'web3';
 
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
+
+import { BLACKLISTED_TOKENS } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
 import { excludeSecondArray, getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
 import {
@@ -55,17 +55,27 @@ export class BalancesService {
     chains?: ChainIdEnum[],
     assets?: Address[],
   ): Promise<BalancesResponse> {
-    const chainsToHandle = getUniqList(chains);
-    const addressesToHandle = await this.excludeBlacklisted(
-      getUniqueAndToLowerCaseArrayData(addresses),
-    );
+    try {
+      const chainsToHandle = getUniqList(chains);
+      const addressesToHandle = await this.excludeBlacklisted(
+        getUniqueAndToLowerCaseArrayData(addresses),
+      );
 
-    if (!addressesToHandle.length || !chainsToHandle.length) {
-      return {};
+      if (!addressesToHandle.length || !chainsToHandle.length) {
+        return {};
+      }
+
+      const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
+      return this.mapResults(balances);
+    } catch (e) {
+      // TODO: This should be handled with global error handler
+      this.logger.error(
+        `Unhandled error while getting balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+        e
+      );
+
+      throw e;
     }
-
-    const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
-    return this.mapResults(balances);
   }
 
   public async getBalanceAtBlock(
@@ -88,20 +98,30 @@ export class BalancesService {
   }
 
   async get24HourReturns(addresses: string[], chains: ChainIdEnum[], assets?: Address[]) {
-    // Get current & past balances & prices
-    const [now, then] = await Promise.all([
-      this.getBalance(addresses, chains, assets),
-      this.getBalanceAtBlock(addresses, await this.getBlock24HoursAgo(chains), chains, assets),
-    ]);
+    try {
+      // Get current & past balances & prices
+      const [now, then] = await Promise.all([
+        this.getBalance(addresses, chains, assets),
+        this.getBalanceAtBlock(addresses, await this.getBlock24HoursAgo(chains), chains, assets),
+      ]);
 
-    return this.calculate24HourReturns({ now, then });
+      return this.calculate24HourReturns({ now, then });
+    } catch (e) {
+      // TODO: This should be handled with global error handler
+      this.logger.error(
+        `Unhandled error while calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+        e
+      );
+
+      throw e;
+    }
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {
-    const latestBlock = await web3.eth.getBlock('latest');
+    const latestBlock = await retry(() => web3.eth.getBlock('latest'));
     // skip the first 3/4 of blocks for performance,
     // we only need past 24 hours & old blocks can have wildly different block times than recent blocks
-    const earlyBlock = await web3.eth.getBlock(Math.floor(latestBlock.number * 0.75));
+    const earlyBlock = await retry(() => web3.eth.getBlock(Math.floor(latestBlock.number * 0.75)));
     const avgBlockTime =
       (Number(latestBlock.timestamp) - Number(earlyBlock.timestamp)) /
       (latestBlock.number - earlyBlock.number);
@@ -126,7 +146,7 @@ export class BalancesService {
     tolerance: number,
     web3: Web3,
   ): Promise<BlockTimestamp> {
-    const guessedBlock = await web3.eth.getBlock(guess);
+    const guessedBlock = await retry(() => web3.eth.getBlock(guess));
     const guessedTime = new Date(Number(guessedBlock.timestamp) * 1000);
     const difference = Math.floor((guessedTime.getTime() - target.getTime()) / 1000); // difference in seconds
     if (Math.abs(difference) < tolerance) {
@@ -204,12 +224,22 @@ export class BalancesService {
     await Promise.all(
       chains.map(async (chain) => {
         try {
+          // TODO: Not the best place to cache here. Split into other methods
+          const cacheKey = `24hour_ago_block_${chain}`;
+          let cachedBlock = await this.cache.get<BlockTimestamp>(cacheKey);
+          if (cachedBlock) {
+            blockMap.set(chain, cachedBlock);
+          }
+
           const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
           const block: BlockTimestamp = await this.getBlockFromDate(
             roundToNearestHour(yesterday),
             this.web3Provider.getInstanceByChainId(chain),
           );
           blockMap.set(chain, block);
+
+          // TODO: TTL should be in config
+          await this.cache.set(cacheKey, block, { ttl: 2 * 60 });
         } catch {
           this.logger.error(
             `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
@@ -351,13 +381,13 @@ export class BalancesService {
         curr.success
           ? { ...response, balances: this.mergeBalances(response.balances, curr.balances) }
           : {
-              ...response,
-              errors: response.errors.concat({
-                chainId,
-                message: curr.error.message,
-                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-              }),
-            },
+            ...response,
+            errors: response.errors.concat({
+              chainId,
+              message: curr.error.message,
+              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+            }),
+          },
       {
         address,
         errors: [],

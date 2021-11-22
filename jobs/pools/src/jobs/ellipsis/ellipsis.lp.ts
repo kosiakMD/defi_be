@@ -10,7 +10,7 @@ import { Web3Provider } from '../../chain/web3.provider';
 import { ChainIdEnum, CurrencyIdEnum } from '../../config/enum';
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
-import { DbPoolTokenDto } from '../../microservices/dto/account/account.dto';
+import { DbPoolTokenDto, LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { SettingsService } from '../../store/service/settings.service';
 import { Setting } from '../../store/setting.entity';
@@ -123,9 +123,11 @@ export class EllipsisLp implements JobInterface {
     }
 
     await Promise.all(
-      ['0x151f1611b2e304ded36661f65506f9d7d172beba'].map(async (token) => {
-        const trackedLiquidityPoolTokenData: DbPoolTokenDto =
-          await this.accountService.saveLikeCurveTrackingAsset(token, this.chain);
+      lpTokens.map(async (token) => {
+        const lpData = ellipsisPoolsMap.get(token);
+        const trackedLiquidityPoolTokenData: DbPoolTokenDto | LiquidityPoolTokenDto = lpData.minter
+          ? await this.accountService.saveLikeCurveTrackingAsset(token, this.chain)
+          : await this.accountService.saveTrackingAsset(token, this.chain);
         if (trackedLiquidityPoolTokenData.isLp) {
           this.logger.log(
             `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
@@ -328,19 +330,19 @@ export class EllipsisLp implements JobInterface {
               const underlyingReserve = multicallRsp
                 .get(this.getBalancesLabel(key, underlying.positionInPool))
                 .output.data?.toString();
-              underlying.reserve = this.getUnderlyingTokensBalances(
+              underlying.reserve = EllipsisLp.getUnderlyingTokensBalances(
                 lpTokenReserveDec,
                 lpTotalSupplyDec,
                 toDecimals(underlyingReserve, underlying.decimals),
               );
-              this.setDataToPoolToken(underlying, prices, lp);
+              EllipsisLp.setDataToPoolToken(underlying, prices, lp);
             });
           } else {
             value.reserve = toDecimals(
               this.getTokenReserve(lp.lpToken.address, value, multicallRsp),
               value.decimals,
             );
-            this.setDataToPoolToken(value, prices, lp);
+            EllipsisLp.setDataToPoolToken(value, prices, lp);
           }
         });
       }
@@ -378,7 +380,7 @@ export class EllipsisLp implements JobInterface {
       .output.data?.toString();
   }
 
-  private setDataToPoolToken(
+  private static setDataToPoolToken(
     token: CurvePoolTokenDto,
     prices: { [key: string]: number },
     lp: CurveLiquidityPoolFeature,
@@ -390,7 +392,7 @@ export class EllipsisLp implements JobInterface {
     lp.stats.tvl += token.value;
   }
 
-  private getUnderlyingTokensBalances(
+  private static getUnderlyingTokensBalances(
     lpTokenReserve: number,
     lpTokenTotalSupply: number,
     underlyingReserve: number,
@@ -406,21 +408,21 @@ export class EllipsisLp implements JobInterface {
 
     const lpUnderlyingToken = liquidityPoolFeature.tokens.filter((token) => token?.lp);
 
-    if (lpUnderlyingToken) {
+    if (lpUnderlyingToken.length) {
       calls = new Map<string, CallData>([
         ...calls.entries(),
         ...this.getReservesCallDataMap(lpUnderlyingToken[0].lp.address).entries(),
       ]);
       calls.set(
         this.totalSupplyLabel(lpUnderlyingToken[0].lp.address),
-        this.getTotalSupplyCallData(lpUnderlyingToken[0].lp.address),
+        EllipsisLp.getTotalSupplyCallData(lpUnderlyingToken[0].lp.address),
       );
     }
     // total supply supply of staking lp token
 
     calls.set(
       this.totalSupplyLabel(liquidityPoolFeature.lpToken.address),
-      this.getTotalSupplyCallData(liquidityPoolFeature.lpToken.address),
+      EllipsisLp.getTotalSupplyCallData(liquidityPoolFeature.lpToken.address),
     );
 
     return calls;
@@ -454,7 +456,7 @@ export class EllipsisLp implements JobInterface {
     return calls;
   }
 
-  private getTotalSupplyCallData(lpTokenAddress: string) {
+  private static getTotalSupplyCallData(lpTokenAddress: string) {
     return {
       address: lpTokenAddress,
       abi: Abis.totalSupply,

@@ -1,8 +1,9 @@
 import Web3 from 'web3';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { decodeOutput } from '../utils/conventer';
 import { concatStrings } from '../utils/string';
@@ -12,7 +13,10 @@ import { Web3Provider } from './web3.provider';
 
 @Injectable()
 export class MultiCallService {
-  constructor(private readonly provider: Web3Provider) {}
+  constructor(
+    private readonly provider: Web3Provider,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   async handleInBatches(calls: Map<string, CallData>, chain: ChainIdEnum) {
     const multicall: MulticallContract = this.provider.multicall(chain);
@@ -49,7 +53,7 @@ export class MultiCallService {
       resp = await multicall.aggregate(callsToBeExecuted);
       returnData = resp.returnData;
     } catch (e) {
-      console.log(e);
+      this.logger.error(e.message);
     }
 
     indexes.forEach(({ index, key }) => {

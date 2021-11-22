@@ -22,7 +22,7 @@ export const ellipsisPoolsMap = new Map([
   ],
   [
     '0x052e566a25ace8934dcc52c41a27b04a7c7eccbe',
-    { coins: 2, minter: '0x052e566a25ace8934dcc52c41a27b04a7c7eccbe' },
+    { coins: 2, minter: '0x8d7408c2b3154f9f97fc6dd24cd36143908d1e52' },
   ],
   [
     '0xa2520f3596449105bfe899f3d573c4353917eaf8',
@@ -34,7 +34,7 @@ export const ellipsisPoolsMap = new Map([
   ],
   [
     '0x8339156534e2d7354eed097a6fb4a5820d8d0d27',
-    { coins: 3, minter: '0x2f8e25c21a17bd9d0c337e1b409e73bc959b41be' },
+    { coins: 2, minter: '0x2f8e25c21a17bd9d0c337e1b409e73bc959b41be' },
   ],
   [
     '0x151f1611b2e304ded36661f65506f9d7d172beba',

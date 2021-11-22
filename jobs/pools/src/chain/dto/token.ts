@@ -4,15 +4,6 @@ export interface TokenBalances {
   [key: string]: BigNumber;
 }
 
-export interface TotalSupplies {
-  [key: string]: BigNumber;
-}
-
-export interface TotalSuppliesResult {
-  block: number;
-  totalSupplies: TotalSupplies;
-}
-
 export interface UniswapPairReserves {
   reserve0: BigNumber;
   reserve1: BigNumber;
@@ -29,17 +20,21 @@ export interface UniswapReservesData {
   [key: string]: UniswapPairReserves;
 }
 
-export interface UniswapReservesResult {
-  block: number;
-  reserves: UniswapReservesData;
-}
-
 export interface MasterchiefPoolInfoResponse {
   id: number;
   lpToken: string;
   allocPoint: BigNumber;
   lastRewardBlock: BigNumber;
   accCakePerShare: BigNumber;
+}
+
+export interface CurvePoolInfoResponse {
+  id: number;
+  lpToken: string;
+  oracleIndex: BigNumber;
+  allocPoint: BigNumber;
+  lastRewardTime: BigNumber;
+  accRewardPerShare: BigNumber;
 }
 
 export interface MasterchiefPoolInfoTraderJoeResponse {

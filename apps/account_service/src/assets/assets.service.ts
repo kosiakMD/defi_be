@@ -194,11 +194,13 @@ export class AssetsService {
 
     const underlyingCoins = [];
     const lpData = ellipsisPoolsMap.get(assetToSave.address);
-    for (let i = 0; i < lpData.coins; i++) {
+    for (let i = 0; i < lpData?.coins; i++) {
       try {
         const coin = await minterContract.coins(i);
         underlyingCoins.push(coin.toLowerCase());
-      } catch (e) {}
+      } catch (e) {
+        this.logger.error(e.message);
+      }
     }
 
     if (underlyingCoins.length) {
@@ -223,109 +225,6 @@ export class AssetsService {
     assetToSave = await this.assetRepository.saveAsset(assetToSave);
 
     return this.withUnderlying(assetToSave);
-
-    // const calls = new Map<string, CallData>();
-    // for (let i = 0; i < 2; i++) {
-    //   calls.set(String(i), {
-    //     address: minter,
-    //     abi: Abis.coins,
-    //     input: {
-    //       data: [i],
-    //     },
-    //     output: {},
-    //   });
-    // }
-    //
-    // const callsRsp = await this.multicallService.handleInBatches(calls, assetChain);
-  }
-
-  // async saveLikeCurveTrackingAsset({ assetAddress, assetChain }): Promise<any> {
-  //   const existedAsset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
-  //     assetAddress,
-  //     assetChain,
-  //   );
-  //
-  //   if (existedAsset && (existedAsset.isTracked || existedAsset.isLp)) {
-  //     return this.withUnderlying(existedAsset);
-  //   }
-  //
-  //   const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
-  //   // bind asset to LP token contract because it extends from ERC20 by default
-  //   const assetContract = new LIKE_CURVE_LP(assetAddress, chainProvider);
-  //   const assetData = await assetContract.getContractData();
-  //
-  //   let assetToSave: AssetsEntity;
-  //   if (existedAsset) {
-  //     assetToSave = existedAsset;
-  //   } else {
-  //     assetToSave = new AssetsEntity();
-  //     assetToSave.chain = assetChain;
-  //     assetToSave.address = assetAddress;
-  //     assetToSave.icon = null;
-  //     assetToSave.isLp = false;
-  //     assetToSave.isAnalyticAvailable = false;
-  //     assetToSave = await this.assetRepository.saveAsset(assetToSave);
-  //   }
-  //   assetToSave.name = assetData.name;
-  //   assetToSave.symbol = assetData.symbol;
-  //   assetToSave.decimals = assetData.decimals;
-  //   // define is token LP
-  //   try {
-  //     const minter = await assetContract.minter();
-  //
-  //     const calls = new Map<string, CallData>();
-  //     for (let i = 0; i < 3; i++) {
-  //       calls.set(this.coinInfoLabel(i), {
-  //         address: minter,
-  //         abi: MINTER_ABI.find((data) => data['coins']),
-  //         input: {
-  //           data: [i],
-  //         },
-  //         output: {},
-  //       });
-  //     }
-  //
-  //     const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.bsc);
-  //     for (let i = 0; i < 3; i++) {
-  //       const tokenAddress = callsRsp.get(this.coinInfoLabel(i)).output.data.lpToken;
-  //     }
-  //     // save underlying assets to database and start track them
-  //     const [token0, token1] = await Promise.all([
-  //       this.saveTrackingAsset({
-  //         assetAddress: token0Address,
-  //         assetChain: assetChain,
-  //       }),
-  //       this.saveTrackingAsset({
-  //         assetAddress: token1Address,
-  //         assetChain: assetChain,
-  //       }),
-  //     ]);
-  //     // create relations between lp token and underlying tokens
-  //     await Promise.all([
-  //       this.assetRepository.createRelation(assetToSave.id, token0.id, 0),
-  //       this.assetRepository.createRelation(assetToSave.id, token1.id, 1),
-  //     ]);
-  //     assetToSave.isLp = true;
-  //     // eslint-disable-next-line no-empty
-  //   } catch (e) {}
-  //
-  //   // we don't track lp tokens, we track underlying tokens only
-  //   assetToSave.isTracked = assetToSave.isLp !== true;
-  //   assetToSave = await this.assetRepository.saveAsset(assetToSave);
-  //
-  //   return this.withUnderlying(assetToSave);
-  // }
-  //
-  // coinInfoLabel(index) {
-  //   return concatStrings(Abis.poolInfo.name, index);
-  // }
-
-  async test({ assetAddress, assetChain }): Promise<AssetResponseDto> {
-    const asset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
-      assetAddress,
-      assetChain,
-    );
-    return this.withUnderlying(asset);
   }
 
   async withUnderlying(asset: AssetsEntity): Promise<AssetResponseDto> {
@@ -335,11 +234,6 @@ export class AssetsService {
 
     const underlyingAssets: AssetsEntity[] = await this.assetRepository.findAllUnderlying(asset.id);
     const underlyingAssetsResponse: AssetResponseDto[] = [];
-    // underlyingAssetsResponse.push(
-    //   ...underlyingAssets.map((asset) =>
-    //     plainToClass(AssetResponseDto, asset, { excludeExtraneousValues: true }),
-    //   ),
-    // );
 
     await Promise.all(
       underlyingAssets.map(async (asset) => {

@@ -15,7 +15,7 @@ import { DbPoolTokenDto, LiquidityPoolTokenDto } from '../microservices/dto/acco
 export const UNIV2_POOL_TOKEN_WEIGHT = 0.5;
 
 export function toCurveLiquidityPoolFeature(
-  lpTokenData: DbPoolTokenDto,
+  lpTokenData: DbPoolTokenDto | LiquidityPoolTokenDto,
 ): CurveLiquidityPoolFeature {
   const poolFeature = plainToClass(CurveLiquidityPoolFeature, {
     address: lpTokenData.address,

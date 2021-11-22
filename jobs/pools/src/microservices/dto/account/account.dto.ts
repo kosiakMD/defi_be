@@ -13,7 +13,7 @@ export class PoolTokenDto extends ERC20TokenDto {
 }
 
 export class DbPoolTokenDto extends ERC20TokenDto {
-  positionInPool: number = null;
+  positionInPool?: number = null;
   underlyingAssets: DbPoolTokenDto[];
 }
 

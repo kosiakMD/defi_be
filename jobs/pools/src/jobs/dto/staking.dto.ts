@@ -1,8 +1,9 @@
 // todo: this dto is from integration service, need to optimise import
 // eslint-disable-next-line max-classes-per-file
-import { plainToClass } from 'class-transformer';
-import { ERC20Token } from './common';
 import BigNumber from 'bignumber.js';
+import { plainToClass } from 'class-transformer';
+
+import { ERC20Token } from './common';
 
 export class ClaimableDto {
   balance: string = null;
@@ -15,6 +16,7 @@ export class IntegrationPoolTokenDto extends ERC20Token {
   balance: number = null;
   price: number = null;
   positionInPool: number = null;
+  lp?: UnderlyingStakingLp = null;
 }
 
 export class IntegrationERC20TokenDto extends ERC20Token {
@@ -33,6 +35,11 @@ export class Stats {
   apy: number = null;
   apr: number[] = [];
   tvl: number = null;
+}
+
+export class UnderlyingStakingLp extends ERC20Token {
+  poolId: number = null;
+  positionInPool: number = null;
 }
 
 export class IntegrationStakingPositionDto {
@@ -85,6 +92,7 @@ export class StakingFeatureMapping {
       dbId: number;
       dtoName: string;
       positionInPool: number;
+      lp?: { dbId: string; dtoName: string };
     }[];
   };
 }

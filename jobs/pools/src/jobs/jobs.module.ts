@@ -4,6 +4,7 @@ import { ChainModule } from '../chain/chain.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
+import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
@@ -24,6 +25,7 @@ import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
     TraderjoeLp,
     TraderJoeStaking,
     EllipsisLp,
+    EllipsisStaking,
     DbMapping,
   ],
   exports: [JobsRunner, IntegrationDataConverter],

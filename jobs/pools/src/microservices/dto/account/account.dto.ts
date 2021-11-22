@@ -20,8 +20,3 @@ export class DbPoolTokenDto extends ERC20TokenDto {
 export class LiquidityPoolTokenDto extends ERC20TokenDto {
   underlyingAssets: PoolTokenDto[];
 }
-
-// export class CurveLiquidityPoolTokenDto extends ERC20TokenDto {
-//   underlyingAssets: CurveLiquidityPoolTokenDto[];
-//   positionInPool?: number;
-// }

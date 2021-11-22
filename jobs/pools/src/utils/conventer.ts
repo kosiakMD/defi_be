@@ -6,6 +6,7 @@ import { ERC20Token } from '../jobs/dto/common';
 import {
   CurveLiquidityPoolFeature,
   CurvePoolTokenDto,
+  CurveUnderlyingLpDto,
   LiquidityPoolFeature,
   PoolTokenDto,
 } from '../jobs/dto/pools.dto';
@@ -34,6 +35,13 @@ export function toCurveLiquidityPoolFeature(
 
   lpTokenData.underlyingAssets.forEach((pt) => {
     if (pt.underlyingAssets?.length) {
+      const lp = plainToClass(CurveUnderlyingLpDto, {
+        address: pt.address,
+        name: pt.name,
+        symbol: pt.symbol,
+        decimals: pt.decimals,
+        positionInPool: pt.positionInPool,
+      });
       tokens.push(
         ...pt.underlyingAssets.map((underlying) => {
           return plainToClass(CurvePoolTokenDto, {
@@ -42,8 +50,7 @@ export function toCurveLiquidityPoolFeature(
             symbol: underlying.symbol,
             decimals: underlying.decimals,
             positionInPool: underlying.positionInPool,
-            lpAddress: pt.address,
-            // weight: UNIV2_POOL_TOKEN_WEIGHT,
+            lp: lp,
           });
         }),
       );
@@ -55,33 +62,10 @@ export function toCurveLiquidityPoolFeature(
           symbol: pt.symbol,
           decimals: pt.decimals,
           positionInPool: pt.positionInPool,
-          // weight: UNIV2_POOL_TOKEN_WEIGHT,
         }),
       );
     }
-    // return plainToClass(CurvePoolTokenDto, {
-    //   address: pt.address,
-    //   name: pt.name,
-    //   symbol: pt.symbol,
-    //   decimals: pt.decimals,
-    //   positionInPool: pt.positionInPool,
-    //   isLp: pt.isLp,
-    //   // weight: UNIV2_POOL_TOKEN_WEIGHT,
-    //   tokens: pt.underlyingAssets?.length
-    //     ? pt.underlyingAssets.map((token) => {
-    //         return plainToClass(PoolTokenDto, {
-    //           address: token.address,
-    //           name: token.name,
-    //           symbol: token.symbol,
-    //           decimals: token.decimals,
-    //           positionInPool: token.positionInPool,
-    //           // weight: UNIV2_POOL_TOKEN_WEIGHT,
-    //         });
-    //       })
-    //     : [],
-    // });
   });
-  // });
   poolFeature.tokens = tokens;
   return poolFeature;
 }

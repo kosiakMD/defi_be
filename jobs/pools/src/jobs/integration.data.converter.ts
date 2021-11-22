@@ -3,12 +3,19 @@ import { plainToClass } from 'class-transformer';
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { ERC20Token } from './dto/common';
-import { CurveLiquidityPoolFeature, CurvePoolTokenDto, LiquidityPoolFeature, PoolTokenDto } from './dto/pools.dto';
+import {
+  CurveLiquidityPoolFeature,
+  CurvePoolTokenDto,
+  CurveUnderlyingLpDto,
+  LiquidityPoolFeature,
+  PoolTokenDto,
+} from './dto/pools.dto';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
+  UnderlyingStakingLp,
 } from './dto/staking.dto';
 
 export class IntegrationDataConverter {
@@ -41,37 +48,43 @@ export class IntegrationDataConverter {
   }
 
   private static buildFeatureDtoByDtoName(dtoName: string): any {
-    let converted;
-
     // set up object with default values
     if (dtoName === 'IntegrationStakingPositionDto') {
-      converted = plainToClass(IntegrationStakingPositionDto, {});
+      return plainToClass(IntegrationStakingPositionDto, {});
     }
     if (dtoName === 'CurvePoolTokenDto') {
-      converted = plainToClass(CurvePoolTokenDto, {});
+      return plainToClass(CurvePoolTokenDto, {});
+    }
+    if (dtoName === 'UnderlyingStakingLp') {
+      return plainToClass(UnderlyingStakingLp, {});
     }
     if (dtoName === 'IntegrationClaimableTokenDto') {
-      converted = plainToClass(IntegrationClaimableTokenDto, {});
+      return plainToClass(IntegrationClaimableTokenDto, {});
     }
     if (dtoName === 'IntegrationERC20TokenDto') {
-      converted = plainToClass(IntegrationERC20TokenDto, {});
+      return plainToClass(IntegrationERC20TokenDto, {});
+    }
+    if (dtoName === 'UnderlyingStakingLp') {
+      return plainToClass(UnderlyingStakingLp, {});
+    }
+    if (dtoName === 'CurveUnderlyingLpDto') {
+      return plainToClass(CurveUnderlyingLpDto, {});
     }
     if (dtoName === 'IntegrationPoolTokenDto') {
-      converted = plainToClass(IntegrationPoolTokenDto, {});
+      return plainToClass(IntegrationPoolTokenDto, {});
     }
     if (dtoName === 'PoolTokenDto') {
-      converted = plainToClass(PoolTokenDto, {});
+      return plainToClass(PoolTokenDto, {});
     }
     if (dtoName === 'CurveLiquidityPoolFeature') {
-      converted = plainToClass(CurveLiquidityPoolFeature, {});
+      return plainToClass(CurveLiquidityPoolFeature, {});
     }
     if (dtoName === 'LiquidityPoolFeature') {
-      converted = plainToClass(LiquidityPoolFeature, {});
+      return plainToClass(LiquidityPoolFeature, {});
     }
     if (dtoName === 'ERC20Token') {
-      converted = plainToClass(ERC20Token, {});
+      return plainToClass(ERC20Token, {});
     }
-
-    return converted;
+    return;
   }
 }

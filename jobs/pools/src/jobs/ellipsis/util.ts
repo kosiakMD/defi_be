@@ -1,5 +1,9 @@
 export const ellipsisPoolsMap = new Map([
-  ['0xf9045866e7b372def1eff3712ce55fac1a98daf0', { coins: 2, minter: '' }],
+  [
+    '0xa7f552078dcc247c2684336020c03648500c6d9f',
+    { minter: '0x4076cc26efee47825917d0fec3a79d0bb9a6bb5c' },
+  ],
+  ['0xf9045866e7b372def1eff3712ce55fac1a98daf0', { coins: 2, minter: null }],
   [
     '0xaf4de8e872131ae328ce21d909c74705d3aaf452',
     { coins: 3, minter: '0x160caed03795365f3a589f10c379ffa7d75d4e76' },

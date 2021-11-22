@@ -31,7 +31,11 @@ export class PoolTokenDto extends ERC20Token {
 }
 
 export class CurvePoolTokenDto extends PoolTokenDto {
-  lpAddress: string = null;
+  lp: CurveUnderlyingLpDto = null;
+}
+
+export class CurveUnderlyingLpDto extends ERC20Token {
+  positionInPool: number = null;
 }
 
 export class LiquidityPoolFeature {
@@ -63,7 +67,7 @@ export class PoolsFeatureMapping {
     dbId: number;
     dtoName: string;
     positionInPool: number;
-    tokens?: number;
-    weight: number;
+    weight?: number;
+    lp?: { dbId: string; dtoName: string };
   }[];
 }

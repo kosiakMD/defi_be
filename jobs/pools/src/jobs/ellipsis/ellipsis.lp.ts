@@ -26,6 +26,7 @@ import { ERC20Token } from '../dto/common';
 import {
   CurveLiquidityPoolFeature,
   CurvePoolTokenDto,
+  CurveUnderlyingLpDto,
   LiquidityPoolFeature,
   PoolsFeatureMapping,
   PoolTokenDto,
@@ -46,7 +47,6 @@ export class EllipsisLp implements JobInterface {
   features: any;
 
   private mapping = [];
-  private dbAssets: DbPoolTokenDto[] = [];
   private availableDtosForConversion: Map<string, string>;
 
   constructor(
@@ -62,6 +62,7 @@ export class EllipsisLp implements JobInterface {
       [LiquidityPoolFeature.name, LiquidityPoolFeature.name],
       [CurveLiquidityPoolFeature.name, CurveLiquidityPoolFeature.name],
       [CurvePoolTokenDto.name, CurvePoolTokenDto.name],
+      [CurveUnderlyingLpDto.name, CurveUnderlyingLpDto.name],
       [ERC20Token.name, ERC20Token.name],
       [PoolTokenDto.name, ERC20Token.name],
     ]);
@@ -118,31 +119,13 @@ export class EllipsisLp implements JobInterface {
     const lpTokens: string[] = [];
 
     for (let i = poolIdFrom; i <= poolIdTo; i++) {
-      // const tokenAddress = callsRsp.get(this.poolInfoLabel(i)).output.data.lpToken;
       lpTokens.push(callsRsp.get(this.poolInfoLabel(i)).output.data.lpToken.toLowerCase());
-      // try {
-      //   const trackedLiquidityPoolTokenData: LiquidityPoolTokenDto =
-      //     await this.accountService.saveTrackingAsset(tokenAddress, this.chain);
-      //   if (trackedLiquidityPoolTokenData.isLp) {
-      //     this.logger.log(
-      //       `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
-      //       this.placeholder,
-      //     );
-      //     liquidityPools.push(toLiquidityPoolFeature(trackedLiquidityPoolTokenData));
-      //   }
-      // } catch (e) {
-      //   this.logger.error(
-      //     `error to get token data to account service, chain [${this.chain}], address [${tokenAddress}]`,
-      //     this.placeholder,
-      //   );
-      // }
     }
 
     await Promise.all(
       ['0x151f1611b2e304ded36661f65506f9d7d172beba'].map(async (token) => {
         const trackedLiquidityPoolTokenData: DbPoolTokenDto =
           await this.accountService.saveLikeCurveTrackingAsset(token, this.chain);
-        this.dbAssets.push(trackedLiquidityPoolTokenData);
         if (trackedLiquidityPoolTokenData.isLp) {
           this.logger.log(
             `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
@@ -152,20 +135,6 @@ export class EllipsisLp implements JobInterface {
         }
       }),
     );
-
-    // const lpTokensCalls = new Map<string, CallData>();
-    // for (let i = 0; i <= lpTokens.length; i++) {
-    //   lpTokensCalls.set(this.poolMinterLabel(i), {
-    //     address: lpTokens[i],
-    //     abi: Abis.minter,
-    //     input: {
-    //       data: []
-    //     },
-    //     output: {},
-    //   });
-    // }
-    //
-    // const lpTokensResponse = await this.multicallService.handleInBatches(lpTokensCalls, ChainIdEnum.bsc);
 
     const mappings = [];
     for (const lp of liquidityPools) {
@@ -181,7 +150,7 @@ export class EllipsisLp implements JobInterface {
     return updatedMapping;
   }
 
-  async toDbMapping(liquidityPool: LiquidityPoolFeature) {
+  async toDbMapping(liquidityPool: CurveLiquidityPoolFeature) {
     const mappedDto = plainToClass(PoolsFeatureMapping, {});
     /** lp token */
     const lpTokenUniqueId = concatStrings(this.chain, liquidityPool.lpToken.address);
@@ -203,8 +172,17 @@ export class EllipsisLp implements JobInterface {
         dbId: tokenItem.id,
         dtoName: t.constructor.name,
         positionInPool: t.positionInPool,
-        weight: t.weight,
+        // weight: t.weight,
       };
+      if (t.lp) {
+        const tokenId = concatStrings(this.chain, t.lp.address);
+        const tokenItem: TrackedVaultItem = await this.getDbItem(t.lp, tokenId);
+        mappedToken['lp'] = {
+          dbId: tokenItem.id,
+          dtoName: 'CurveUnderlyingLpDto',
+          positionInPool: t.lp.positionInPool,
+        };
+      }
       mappedDto.tokens.push(mappedToken);
     }
 
@@ -240,19 +218,20 @@ export class EllipsisLp implements JobInterface {
         symbol: item.symbol,
         decimals: item.decimals,
         isLp: item.isLp,
-        lpAddress: item.lpAddress,
-        // tokens: await Promise.all(
-        //   item?.tokens.map(async (token) => {
-        //     const tokenId = concatStrings(this.chain, token.address);
-        //     const tokenItem: TrackedVaultItem = await this.getDbItem(token, tokenId);
-        //     return {
-        //       dbId: tokenItem.id,
-        //       dtoName: token.constructor.name,
-        //       positionInPool: token.positionInPool,
-        //       weight: token.weight,
-        //     };
-        //   }),
-        // ),
+        lp: item.lpAddress,
+      };
+
+      newIntegrationJobItem.name = universalDto.name;
+      newIntegrationJobItem.idUnique = uniqueId;
+    }
+
+    if (toUniversalDtoName === CurveUnderlyingLpDto.name) {
+      universalDto = {
+        address: item.address,
+        name: item.name,
+        symbol: item.symbol,
+        decimals: item.decimals,
+        positionInPool: item.poolId,
       };
 
       newIntegrationJobItem.name = universalDto.name;
@@ -335,31 +314,19 @@ export class EllipsisLp implements JobInterface {
         const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(lp.lpToken.address))
           .output.data;
         lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
-        const tokensMap: Map<string, CurvePoolTokenDto[] | CurvePoolTokenDto> = new Map();
-        lp.tokens.forEach((token) => {
-          if (token.lpAddress) {
-            const value = tokensMap.get(token.lpAddress) as PoolTokenDto[];
-            value ? value.push(token) : tokensMap.set(token.lpAddress, [token]);
-          } else {
-            tokensMap.set(token.address, token);
-          }
-        });
-
-        const lpTotalReserves: { totalReserves?: number; [key: string]: number } = {};
+        const tokensMap = this.getUnderlyingTokensMap(lp);
         tokensMap.forEach((value, key) => {
           if (Array.isArray(value)) {
-            const lpUnderlyingToken = this.dbAssets.find((asset) => asset.address === key);
+            const lpUnderlyingToken = value[0].lp;
             const lpTotalSupply = multicallRsp.get(this.totalSupplyLabel(key)).output.data;
             const lpTotalSupplyDec = toDecimals(lpTotalSupply, lpUnderlyingToken.decimals);
             const lpTokenReserve = multicallRsp
-              .get(this.getReservesLabel(lp.lpToken.address, lpUnderlyingToken.positionInPool))
+              .get(this.getBalancesLabel(lp.lpToken.address, lpUnderlyingToken.positionInPool))
               .output.data?.toString();
             const lpTokenReserveDec = toDecimals(lpTokenReserve, lpUnderlyingToken.decimals);
-            lpTotalReserves[key] = lpTokenReserveDec;
-            lpTotalReserves.totalReserves += lpTotalReserves.totalReserves + lpTokenReserveDec;
             value.map((underlying) => {
               const underlyingReserve = multicallRsp
-                .get(this.getReservesLabel(key, underlying.positionInPool))
+                .get(this.getBalancesLabel(key, underlying.positionInPool))
                 .output.data?.toString();
               underlying.reserve = this.getUnderlyingTokensBalances(
                 lpTokenReserveDec,
@@ -369,32 +336,46 @@ export class EllipsisLp implements JobInterface {
               this.setDataToPoolToken(underlying, prices, lp);
             });
           } else {
-            const tokenReserve = multicallRsp
-              .get(this.getReservesLabel(lp.lpToken.address, value.positionInPool))
-              .output.data?.toString();
-            const tokenReserveDec = toDecimals(tokenReserve, value.decimals);
-            value.reserve = tokenReserveDec;
-            lpTotalReserves[key] = tokenReserveDec;
-            lpTotalReserves.totalReserves += lpTotalReserves.totalReserves + tokenReserveDec;
+            value.reserve = toDecimals(
+              this.getTokenReserve(lp.lpToken.address, value, multicallRsp),
+              value.decimals,
+            );
             this.setDataToPoolToken(value, prices, lp);
           }
         });
-
-        // tokensMap.forEach((value, key) => {
-        //   if (Array.isArray(value)) {
-        //     const weight = new BigNumber(lpTotalReserves[key])
-        //       .div(lpTotalReserves.totalReserves)
-        //       .toNumber();
-        //   } else {
-        //     value.weight = new BigNumber(lpTotalReserves[key])
-        //       .div(lpTotalReserves.totalReserves)
-        //       .toNumber();
-        //   }
-        // });
       }
       return lp;
     });
     return this.mapping;
+  }
+
+  private getUnderlyingTokensMap(lp: CurveLiquidityPoolFeature) {
+    const tokensMap: Map<string, CurvePoolTokenDto[] | CurvePoolTokenDto> = new Map();
+    lp.tokens.forEach((token) => {
+      if (token.lp) {
+        const value = tokensMap.get(token.lp.address) as PoolTokenDto[];
+        value ? value.push(token) : tokensMap.set(token.lp.address, [token]);
+      } else {
+        tokensMap.set(token.address, token);
+      }
+    });
+    return tokensMap;
+  }
+
+  private getTokenReserve(
+    lpAddress: string,
+    underlyingToken: CurvePoolTokenDto,
+    multicallRsp: Map<string, CallData>,
+  ) {
+    if (!ellipsisPoolsMap.get(lpAddress).minter) {
+      const reserves = Object.values(
+        multicallRsp.get(this.getReservesLabel(lpAddress)).output.data,
+      );
+      return reserves[underlyingToken.positionInPool];
+    }
+    return multicallRsp
+      .get(this.getBalancesLabel(lpAddress, underlyingToken.positionInPool))
+      .output.data?.toString();
   }
 
   private setDataToPoolToken(
@@ -423,16 +404,16 @@ export class EllipsisLp implements JobInterface {
   private getCallsForPool(liquidityPoolFeature: CurveLiquidityPoolFeature) {
     let calls = this.getReservesCallDataMap(liquidityPoolFeature.lpToken.address);
 
-    const lpUnderlyingToken = liquidityPoolFeature.tokens.filter((token) => token?.lpAddress);
+    const lpUnderlyingToken = liquidityPoolFeature.tokens.filter((token) => token?.lp);
 
     if (lpUnderlyingToken) {
       calls = new Map<string, CallData>([
         ...calls.entries(),
-        ...this.getReservesCallDataMap(lpUnderlyingToken[0].lpAddress).entries(),
+        ...this.getReservesCallDataMap(lpUnderlyingToken[0].lp.address).entries(),
       ]);
       calls.set(
-        this.totalSupplyLabel(lpUnderlyingToken[0].lpAddress),
-        this.getTotalSupplyCallData(lpUnderlyingToken[0].lpAddress),
+        this.totalSupplyLabel(lpUnderlyingToken[0].lp.address),
+        this.getTotalSupplyCallData(lpUnderlyingToken[0].lp.address),
       );
     }
     // total supply supply of staking lp token
@@ -448,8 +429,20 @@ export class EllipsisLp implements JobInterface {
   private getReservesCallDataMap(lpAddress: string): Map<string, CallData> {
     const lpData = ellipsisPoolsMap.get(lpAddress);
     const calls: Map<string, CallData> = new Map<string, CallData>();
+    if (!lpData.minter) {
+      calls.set(this.getReservesLabel(lpAddress), {
+        address: lpAddress,
+        abi: Abis.getReserves,
+        input: {
+          data: [],
+        },
+        output: {},
+      });
+
+      return calls;
+    }
     for (let i = 0; i < lpData.coins; i++) {
-      calls.set(this.getReservesLabel(lpAddress, i), {
+      calls.set(this.getBalancesLabel(lpAddress, i), {
         address: lpData.minter,
         abi: Abis.balances,
         input: {
@@ -492,8 +485,12 @@ export class EllipsisLp implements JobInterface {
     return concatStrings(Abis.poolInfo.name, EllipsisAddresses.staker, poolId);
   }
 
-  getReservesLabel(lpAddress: string, position: number) {
+  getBalancesLabel(lpAddress: string, position: number) {
     return concatStrings(Abis.balances.name, lpAddress, position);
+  }
+
+  getReservesLabel(lpAddress: string) {
+    return concatStrings(Abis.getReserves.name, lpAddress);
   }
 
   totalSupplyLabel(lpAddress: string) {

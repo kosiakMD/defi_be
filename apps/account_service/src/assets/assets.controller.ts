@@ -96,16 +96,6 @@ export class AssetsController {
     });
   }
 
-  @Post('/test')
-  @ApiBody({ type: AssetTrackDto })
-  @ApiResponse({ status: 200, type: AssetsPoolsDto })
-  async test(@Body() asset: AssetTrackDto) {
-    return await this.assetsService.test({
-      assetAddress: asset.address,
-      assetChain: asset.chain,
-    });
-  }
-
   @Get('/pools')
   @ApiQuery({
     name: 'chainId',

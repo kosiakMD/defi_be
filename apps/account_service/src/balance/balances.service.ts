@@ -236,6 +236,8 @@ export class BalancesService {
             roundToNearestHour(yesterday),
             this.web3Provider.getInstanceByChainId(chain),
           );
+
+          this.logger.log(`24h ago block for ${chain} chain: ${JSON.stringify(block)}`);
           blockMap.set(chain, block);
 
           // TODO: TTL should be in config

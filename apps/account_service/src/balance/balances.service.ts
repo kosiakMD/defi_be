@@ -239,7 +239,7 @@ export class BalancesService {
           blockMap.set(chain, block);
 
           // TODO: TTL should be in config
-          await this.cache.set(cacheKey, block, { ttl: 2 * 60 });
+          await this.cache.set(cacheKey, block, { ttl: 5 * 60 });
         } catch {
           this.logger.error(
             `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,

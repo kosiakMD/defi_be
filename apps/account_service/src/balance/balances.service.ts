@@ -55,17 +55,29 @@ export class BalancesService {
     chains?: ChainIdEnum[],
     assets?: Address[],
   ): Promise<BalancesResponse> {
-    const chainsToHandle = getUniqList(chains);
-    const addressesToHandle = await this.excludeBlacklisted(
-      getUniqueAndToLowerCaseArrayData(addresses),
-    );
+    try {
+      const chainsToHandle = getUniqList(chains);
+      const addressesToHandle = await this.excludeBlacklisted(
+        getUniqueAndToLowerCaseArrayData(addresses),
+      );
 
-    if (!addressesToHandle.length || !chainsToHandle.length) {
-      return {};
+      if (!addressesToHandle.length || !chainsToHandle.length) {
+        return {};
+      }
+
+      throw new Error('PETRO TEST');
+
+      const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
+      return this.mapResults(balances);
+    } catch (e) {
+      // TODO: This should be handled with global error handler
+      this.logger.error(
+        `Unhandled error while getting balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+        e
+      );
+
+      throw e;
     }
-
-    const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
-    return this.mapResults(balances);
   }
 
   public async getBalanceAtBlock(
@@ -88,13 +100,23 @@ export class BalancesService {
   }
 
   async get24HourReturns(addresses: string[], chains: ChainIdEnum[], assets?: Address[]) {
-    // Get current & past balances & prices
-    const [now, then] = await Promise.all([
-      this.getBalance(addresses, chains, assets),
-      this.getBalanceAtBlock(addresses, await this.getBlock24HoursAgo(chains), chains, assets),
-    ]);
+    try {
+      // Get current & past balances & prices
+      const [now, then] = await Promise.all([
+        this.getBalance(addresses, chains, assets),
+        this.getBalanceAtBlock(addresses, await this.getBlock24HoursAgo(chains), chains, assets),
+      ]);
 
-    return this.calculate24HourReturns({ now, then });
+      return this.calculate24HourReturns({ now, then });
+    } catch (e) {
+      // TODO: This should be handled with global error handler
+      this.logger.error(
+        `Unhandled error while calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+        e
+      );
+
+      throw e;
+    }
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {

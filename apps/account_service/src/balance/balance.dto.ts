@@ -22,6 +22,20 @@ interface BalancesQuery {
   chains: ChainIdEnum[];
 }
 
+const ChainList = [
+  ChainIdEnum.eth,
+  ChainIdEnum.bsc,
+  ChainIdEnum.plg,
+  ChainIdEnum.ftm,
+  ChainIdEnum.arbi,
+  ChainIdEnum.avax,
+  ChainIdEnum.xdai,
+  ChainIdEnum.celo,
+  ChainIdEnum.mriver,
+  ChainIdEnum.harm,
+  ChainIdEnum.heco,
+];
+
 export class BalancesQueryDto implements BalancesQuery {
   @IsNotEmpty()
   @Transform(({ value, key }) => {
@@ -49,24 +63,10 @@ export class BalancesQueryDto implements BalancesQuery {
   @IsInt({ each: true })
   @ApiProperty({
     type: [ChainIdEnum],
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
-    default: [
-      ChainIdEnum.eth,
-      ChainIdEnum.bsc,
-      ChainIdEnum.plg,
-      ChainIdEnum.ftm,
-      ChainIdEnum.arbi,
-      ChainIdEnum.avax,
-    ],
+    example: ChainList,
+    default: ChainList,
   })
-  chains: ChainIdEnum[] = [
-    ChainIdEnum.eth,
-    ChainIdEnum.bsc,
-    ChainIdEnum.plg,
-    ChainIdEnum.ftm,
-    ChainIdEnum.arbi,
-    ChainIdEnum.avax,
-  ];
+  chains: ChainIdEnum[] = ChainList;
 
   @IsOptional()
   @Transform(({ value, key }) => {

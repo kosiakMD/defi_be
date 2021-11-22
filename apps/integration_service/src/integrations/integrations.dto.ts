@@ -179,9 +179,14 @@ export class IntegrationStakingPositionDto {
   @ApiProperty({ type: LPToken })
   stakingToken: IntegrationERC20TokenDto; // - lpToken info
 
+  // TODO: remove rewardToken (use rewards instead)
   @Expose()
   @ApiProperty({type: IntegrationClaimableTokenDto})
-  rewardToken?: IntegrationClaimableTokenDto; // for autofarm always will be one token(Token AUTOv2)
+  rewardToken?: IntegrationClaimableTokenDto;
+
+  @Expose()
+  @ApiProperty({type: IntegrationClaimableTokenDto})
+  rewards?: IntegrationClaimableTokenDto[];
 }
 
 export class StakingPositionResponseDto {

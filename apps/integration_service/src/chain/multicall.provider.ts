@@ -29,7 +29,7 @@ export class MulticallProvider {
         multicallAddress: '0x1ee38d535d541c55c9dae27b12edf090c608e6fb',
       },
       [ChainAbbrEnum.plg]: {
-        rpcConfigPath: 'POLYGON_RPC_URL',
+        rpcConfigPath: 'POLYGON_URL',
         multicallAddress: '0xa1b2b503959aedd81512c37e9dce48164ec6a94d',
       },
       [ChainAbbrEnum.ftm]: {

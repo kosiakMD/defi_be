@@ -2,6 +2,8 @@ import * as Joi from 'joi';
 
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
+const COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
+
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .equal('development', 'production', 'test', 'provision', 'local')
@@ -40,6 +42,7 @@ export const validationSchema = Joi.object({
   DB_DATABASE: Joi.string().required(),
 
   AVAX_URL: Joi.string().required(),
+  ARBITRUM_URL: Joi.string().required(),
   BSC_URL: Joi.string().required(),
   CELO_URL: Joi.string().required(),
   ETH_URL: Joi.string().required(),
@@ -47,7 +50,7 @@ export const validationSchema = Joi.object({
   HARM_URL: Joi.string().required(),
   HECO_URL: Joi.string().required(),
   MRIVER_URL: Joi.string().required(),
-  POLYGON_RPC_URL: Joi.string().required(),
+  POLYGON_URL: Joi.string().required(),
   XDAI_URL: Joi.string().required(),
 
   PRICE_SERVICE_HOST: Joi.string().required(),
@@ -70,14 +73,14 @@ export const validationSchema = Joi.object({
   ETH_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
-  ETH_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
+  ETH_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   BSC_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(1500)
     .optional(),
-  BSC_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
+  BSC_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   POLYGON_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
@@ -88,50 +91,50 @@ export const validationSchema = Joi.object({
   FTM_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
-  FTM_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
+  FTM_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   AVAX_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
-  AVAX_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
+  AVAX_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   ARBITRUM_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
   ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default('0x1861eb1cc764032509e4d2ff545138be0ad3b240')
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   XDAI_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
   XDAI_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default('')
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   CELO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
   CELO_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default('')
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   MOONRIVER_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
   MOONRIVER_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default('')
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   HARMONY_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
   HARMONY_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default('')
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   HECO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
   HECO_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default('')
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
 
   // TODO: Hardcoded values should be removed and made required

@@ -212,7 +212,7 @@ export class IntegrationsService {
 
         data.forEach((bd) => {
           const walletData = response.data.wallets.find((w) => w.address === bd.userAddress);
-          
+
           let existedChainData = walletData.chains.find((c) => c.chain.id === chain);
 
           if (!existedChainData) {
@@ -224,16 +224,15 @@ export class IntegrationsService {
             existedChainData = chainData;
             walletData.chains.push(existedChainData);
           }
-          
+
           existedChainData.total += bd.total;
           response.data.total += bd.total;
           existedChainData[bd.feature] = bd.items;
-          
         });
       }
     });
     response.errors = response.errors.flat();
-    
+
     return response;
   }
 }

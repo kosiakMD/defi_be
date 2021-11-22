@@ -18,7 +18,6 @@ export class BalanceController {
     type: Number,
     isArray: true,
     description: 'Array of chain ID',
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
     required: false,
   })
   @ApiQuery({
@@ -27,7 +26,7 @@ export class BalanceController {
     isArray: true,
     description: 'Array of address',
     example: [
-      '0x0000000000000000000000000000000000000000',
+      '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
       '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
     ],
   })
@@ -37,10 +36,7 @@ export class BalanceController {
     isArray: true,
     required: false,
     description: 'Array of asset addresses',
-    example: [
-      '0xdac17f958d2ee523a2206206994597c13d831ec7',
-      '0xB8c77482e45F1F44dE1745F52C74426C631bDD52',
-    ],
+    example: [],
   })
   @ApiResponse({ status: 200, type: BalancesResponseDto })
   getUserBalanceByAddresses(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {

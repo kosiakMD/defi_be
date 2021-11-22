@@ -135,16 +135,17 @@ export class PriceService {
     PriceService.mapAddressArray(addressesArray, chain);
 
     const request = new FetchPricesRequestDto(addressesArray, chain);
+    const timerKey = `${this.fetchPricesUrl} Chain: ${chain}`;
 
     try {
-      this.logger.time(this.fetchPricesUrl);
+      this.logger.time(timerKey);
 
       const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
         .post(this.fetchPricesUrl, request)
         .pipe(map((response) => response.data))
         .toPromise();
 
-      this.logger.timeEnd(this.fetchPricesUrl);
+      this.logger.timeEnd(timerKey);
 
       return response;
     } catch (e) {

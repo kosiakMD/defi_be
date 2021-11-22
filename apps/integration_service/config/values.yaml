@@ -21,7 +21,7 @@ configMaps:
   nodes:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
-    POLYGON_RPC_URL: https://polygon-rpc.com/
+    POLYGON_URL: https://polygon-rpc.com/
     FTM_URL: https://rpc.ftm.tools
   price_endpoints:
     PRICE_SERVICE_HOST: http://price-service

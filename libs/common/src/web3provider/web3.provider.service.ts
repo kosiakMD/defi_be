@@ -13,7 +13,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.eth, 'ETH_URL');
     this.setProvider(ChainIdEnum.bsc, 'BSC_URL');
     this.setProvider(ChainIdEnum.avax, 'AVAX_URL');
-    this.setProvider(ChainIdEnum.plg, 'POLYGON_RPC_URL');
+    this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
     this.setProvider(ChainIdEnum.ftm, 'FTM_URL');
   }
 

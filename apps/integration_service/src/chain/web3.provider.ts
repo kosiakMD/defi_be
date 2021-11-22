@@ -18,7 +18,7 @@ export class Web3Provider {
       ['BSC_URL']: ChainAbbrEnum.bsc,
       ['ETH_URL']: ChainAbbrEnum.eth,
       ['FTM_URL']: ChainAbbrEnum.ftm,
-      ['POLYGON_RPC_URL']: ChainAbbrEnum.plg,
+      ['POLYGON_URL']: ChainAbbrEnum.plg,
       ['AVAX_URL']: ChainAbbrEnum.avax,
     };
     Object.entries(chainProviders).forEach(([url, chain]) => {

@@ -27,6 +27,7 @@ import {
   SpookySwapProtocolEnum,
 } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { DetailedResponseDto } from '../dto';
@@ -57,7 +58,6 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 
 @Injectable()
 export class ProtocolService {
@@ -653,6 +653,9 @@ export class ProtocolService {
     >();
     try {
       const promises = [];
+      // TODO: This currently only accounts for tokens that are priced
+      // via uniswap-like pairs. For others we can set the prices in
+      // the protocol and it will use that as the fallback here
       chainAssets.forEach((assets, chainId) => {
         promises.push(this.priceService.getTokenPricesFetch(Array.from(assets), chainId));
       });
@@ -678,7 +681,7 @@ export class ProtocolService {
         d.items.forEach((i) => {
           i.tokens.forEach((pt) => {
             pt.price = chainAssetPrices.get(d.chain.id).get(pt.address);
-            pt.value = pt.balance * pt.price;
+            pt.value = pt.balance * (pt.price ?? 0);
             d.total += pt.value;
           });
         });
@@ -688,13 +691,13 @@ export class ProtocolService {
         d.total = 0;
         d.items.forEach((i) => {
           i.stakingToken.tokens.forEach((pt) => {
-            pt.price = chainAssetPrices.get(d.chain.id).get(pt.address);
-            pt.value = Number(pt.balance) * pt.price;
+            pt.price = chainAssetPrices.get(d.chain.id).get(pt.address) ?? pt.price;
+            pt.value = Number(pt.balance) * (pt.price ?? 0);
             d.total += pt.value;
           });
 
           i.rewards.forEach((r) => {
-            r.price = chainAssetPrices.get(d.chain.id).get(r.address);
+            r.price = chainAssetPrices.get(d.chain.id).get(r.address) ?? r.price;
             r.claimableData.value = Number(r.claimableData.balance) * r.price;
             d.total += r.claimableData.value;
           });

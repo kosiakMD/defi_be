@@ -3,6 +3,7 @@ import { AfterLoad, Column, Entity, PrimaryColumn } from 'typeorm';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { ColumnNumericTransformer } from '../../common/dto';
+
 import { AssetState } from '../assets.interface';
 
 @Entity({ name: 'assets_new', orderBy: { name: 'ASC' } })

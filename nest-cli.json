@@ -77,22 +77,22 @@
         ]
       }
     },
-    "lambda_prices": {
-      "type": "application",
-      "root": "apps/lambda_prices",
-      "entryFile": "main",
-      "sourceRoot": "apps/lambda_prices/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/lambda_prices/tsconfig.app.json"
-      }
-    },
     "lambda_vaults": {
       "type": "application",
-      "root": "apps/lambda_vaults",
+      "root": "jobs/lambda_vaults",
       "entryFile": "main",
-      "sourceRoot": "apps/lambda_vaults/src",
+      "sourceRoot": "jobs/lambda_vaults/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/lambda_vaults/tsconfig.app.json"
+        "tsConfigPath": "jobs/lambda_vaults/tsconfig.app.json"
+      }
+    },
+    "jobs_prices": {
+      "type": "application",
+      "root": "jobs/prices",
+      "entryFile": "start",
+      "sourceRoot": "jobs/prices/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/prices/tsconfig.app.json"
       }
     }
   }

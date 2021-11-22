@@ -1,12 +1,14 @@
 import axios from 'axios';
 
+import { ChainIdEnum } from '@app/common';
+
 import { tokenServiceUrl } from '../config';
 import { logger } from '../utils/logger';
 
 const SAVE_ASSETS_BATCH_SIZE = 50;
 
 export class AssetsService {
-  static async getAssetsAndPairsByChain(chainId: number): Promise<AssetsApiDto[]> {
+  static async getAssetsAndPairsByChain(chainId: ChainIdEnum): Promise<AssetsApiDto[]> {
     try {
       const { data } = await axios.get(`${tokenServiceUrl}/v1/assets/pools`, {
         params: { chainId },

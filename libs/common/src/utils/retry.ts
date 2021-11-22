@@ -1,9 +1,9 @@
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function retry<T = any>(
   action: () => Promise<T>,
-  delayInMilliseconds: number = 1000,
-  maxRetries: number = 3,
+  delayInMilliseconds = 1000,
+  maxRetries = 3,
 ): Promise<T> {
   try {
     return await action();

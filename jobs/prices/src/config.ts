@@ -1,5 +1,7 @@
+import { ChainIdEnum } from '@app/common';
+
 export const rpcUrl = process.env.RPC_URL;
-export const chainId = Number(process.env.CHAIN_ID);
+export const chainId: ChainIdEnum = Number(process.env.CHAIN_ID);
 export const stableCoins: string[] = JSON.parse(process.env.STABLE_COINS);
 export const protocol: Array<{ name: string; address: string }> = JSON.parse(process.env.PROTOCOL);
 export const priceServiceUrl = process.env.PRICE_SERVICE_URL;

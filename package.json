@@ -47,14 +47,33 @@
     "price-start:dev": "nest start price_service --watch",
     "price-start:debug": "nest start price_service --debug --watch",
     "price-start:prod": "nest start price_service",
-    "vault-format": "yarn --cwd ./apps/lambda_vaults run format",
-    "vault-lint": "eslint \"./apps/lambda_vaults/{src,config}/**/*.ts\"",
-    "vault-prebuild": "yarn yarn --cwd ./apps/lambda_vaults run prebuild",
-    "vault-build": "nest build lambda_vaults",
-    "vault-start": "nest start lambda_vaults",
-    "vault-start:dev": "nest start lambda_vaults --watch",
-    "vault-start:debug": "nest start lambda_vaults --debug --watch",
-    "vault-start:prod": "nest start lambda_vaults"
+
+    "jobs-vault-format": "yarn --cwd jobs/lambda_vaults run format",
+    "jobs-vault-lint": "eslint \\\"jobs/lambda_vaults/{src,config}/**/*.ts\\\"",
+    "jobs-vault-prebuild": "rimraf ./dist/jobs/lambda_vaults",
+    "jobs-vault-build": "nest build lambda_vaults",
+    "jobs-vault-start": "nest start lambda_vaults",
+    "jobs-vault-start:dev": "nest start lambda_vaults --watch",
+    "jobs-vault-start:debug": "nest start lambda_vaults --debug --watch",
+    "jobs-vault-start:prod": "nest start lambda_vaults",
+    "jobs-vault-test": "yarn --cwd ./jobs/lambda_vaults run jest",
+    "jobs-vault-test:watch": "yarn --cwd ./jobs/lambda_vaults run jest --watch",
+    "jobs-vault-test:cov": "yarn --cwd ./jobs/lambda_vaults run jest --coverage",
+    "jobs-vault-test:debug": "node ./jobs/lambda_vaults/main.js --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "jobs-vault-test:e2e": "yarn --cwd ./jobs/lambda_vaults run jest --config test/jest-e2e.json",
+
+    "jobs-prices-prebuild": "yarn --cwd ./jobs/prices run prebuild",
+    "jobs-prices-format": "yarn --cwd ./jobs/prices run format",
+    "jobs-prices-lint": "eslint \"./jobs/prices/{src,config,test}/**/*.ts\"",
+    "jobs-prices-build": "nest build jobs_prices",
+    "jobs-prices-test": "yarn --cwd ./jobs/prices mocha tests/unit/",
+    "jobs-prices-start:dev": "nest start jobs_prices --watch",
+    "jobs-prices-start:debug": "nest start jobs_prices --debug --watch",
+    "jobs-prices-start:prod": "nest start jobs_prices",
+    "jobs-prices-compile": "tsc --project ./jobs/prices/tsconfig.json",
+    "jobs-prices-dev": "ts-node ./jobs/prices/src/start.ts",
+    "start": "tsc && node ./jobs/prices/built/index.js"
+
   },
   "repository": {
     "type": "git",
@@ -90,7 +109,17 @@
     "pg-promise": "^10.10.1",
     "prettier": "^2.2.1",
     "prettier-plugin-import-sort": "0.0.6",
-    "typescript": "^4.2.3"
+    "typescript": "^4.2.3",
+
+    "jest": "27.1.0",
+    "supertest": "6.1.6",
+    "ts-jest": "27.0.5",
+    "ts-loader": "9.2.5",
+    "ts-node": "10.2.1",
+    "tsconfig-paths": "3.11.0",
+    "@types/aws-lambda": "^8.10.51",
+    "@types/ioredis": "^4.26.7",
+    "@types/pg": "^8.6.1"
   },
   "dependencies": {
     "@ethersproject/providers": "5.4.5",
@@ -122,10 +151,10 @@
     "rxjs": "^7.3.0",
     "source-map-support": "^0.5.20",
     "swagger-ui-express": "^4.1.6",
-    "ts-loader": "^8.0.17",
     "typeorm": "^0.2.37",
     "web3": "^1.6.0",
     "winston": "^3.3.3",
-    "winston-aws-cloudwatch": "^3.0.0"
+    "winston-aws-cloudwatch": "^3.0.0",
+    "pg": "^8.5.1"
   }
 }

@@ -1,7 +1,7 @@
-import { WinstonLogger } from 'nest-winston';
 import { Logger as WinstonLoggerInterface } from 'winston';
 
 import { LoggerService as NestLoggerService } from '@nestjs/common';
+import { WinstonLogger } from 'nest-winston';
 
 export class Logger extends WinstonLogger implements NestLoggerService {
   private static times = new Map();

@@ -1,18 +1,18 @@
-import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
-
-import { Logger } from '@app/common/Logger/Logger.service';
-import { dateToTimestamp, roundToNearestHour } from '@app/common/utils/dates';
-
-import { CACHE_MANAGER, forwardRef, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import _last from 'lodash/last';
 import _minBy from 'lodash/minBy';
 import _orderBy from 'lodash/orderBy';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { EntityManager, Repository } from 'typeorm';
+
+import { CACHE_MANAGER, forwardRef, Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Logger } from '@app/common/Logger/Logger.service';
+import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
+import { dateToTimestamp, roundToNearestHour } from '@app/common/utils/dates';
 
 import { ChainService } from '../lookup/services/chain.service';
 import { CurrencyService } from '../lookup/services/currency.service';

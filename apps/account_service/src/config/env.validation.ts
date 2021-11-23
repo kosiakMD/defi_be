@@ -52,6 +52,7 @@ export const validationSchema = Joi.object({
   MRIVER_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   XDAI_URL: Joi.string().required(),
+  SOL_URL: Joi.string().required(),
 
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),

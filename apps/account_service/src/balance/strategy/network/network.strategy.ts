@@ -31,7 +31,8 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     tokens: originalTokens,
     block,
   }: BalancesRequest): Promise<TokenBalance[]> {
-    if (!originalTokens.length) {
+    const web3 = this.web3Provider.getInstanceByChainId(chainId);
+    if (!originalTokens.length || !web3.utils.isAddress(address)) {
       return [];
     }
 
@@ -40,7 +41,6 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     }`;
     this.logger.time(message);
 
-    const web3 = await this.web3Provider.getInstanceByChainId(chainId);
     const contractAddress = this.getBalancesContractAddress(chainId);
     if (!contractAddress) {
       throw new Error(`No balances checker contract for ${chainId} chain`);

@@ -1,23 +1,28 @@
-import { Address, ChainIdEnum, Logger } from '@app/common';
-import { roundToNearestHour } from '@app/common/utils/dates';
-import { retry } from '@app/common/utils/retry';
+import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
+import { In, Repository } from 'typeorm';
+import Web3 from 'web3';
 
 import { CACHE_MANAGER, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { In, Repository } from 'typeorm';
-import Web3 from 'web3';
+
+import { Address, ChainIdEnum, Logger } from '@app/common';
+import { roundToNearestHour } from '@app/common/utils/dates';
+import { retry } from '@app/common/utils/retry';
+
+import { BLACKLISTED_TOKENS } from '../common/constatnt';
 
 import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
-
-import { BLACKLISTED_TOKENS } from '../common/constatnt';
 import { PriceService } from '../price/price.service';
-import { excludeSecondArray, getUniqList, getUniqueAndToLowerCaseArrayData } from '../utils/utils';
+import {
+  excludeSecondArray,
+  getUniqList,
+  unifyAddresses,
+} from '../utils/utils';
 import {
   BalancesResponse,
   BlockTimestamp,
@@ -28,6 +33,7 @@ import {
 import { BalancesLoadingStrategy, getBalancesSafe } from './strategy';
 import { CovalentBalancesStrategy } from './strategy/covalent/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategy/network/network.strategy';
+import { SolanaBalancesStrategy } from './strategy/network/solana.balances.strategy';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -48,6 +54,7 @@ export class BalancesService {
     private readonly web3Provider: Web3Provider,
     private readonly networkBalancesStrategy: NetworkBalancesStrategy,
     private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
+    private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
   ) {}
 
   public async getBalance(
@@ -58,7 +65,7 @@ export class BalancesService {
     try {
       const chainsToHandle = getUniqList(chains);
       const addressesToHandle = await this.excludeBlacklisted(
-        getUniqueAndToLowerCaseArrayData(addresses),
+        unifyAddresses(getUniqList(addresses)),
       );
 
       if (!addressesToHandle.length || !chainsToHandle.length) {
@@ -70,8 +77,10 @@ export class BalancesService {
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
-        `Unhandled error while getting balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
-        e
+        `Unhandled error while getting balances for ${JSON.stringify(
+          addresses,
+        )} networks ${JSON.stringify(chains)}`,
+        e,
       );
 
       throw e;
@@ -85,9 +94,7 @@ export class BalancesService {
     assets?: Address[],
   ): Promise<BalancesResponse> {
     const chainsToHandle = getUniqList(chains);
-    const addressesToHandle = await this.excludeBlacklisted(
-      getUniqueAndToLowerCaseArrayData(addresses),
-    );
+    const addressesToHandle = await this.excludeBlacklisted(unifyAddresses(getUniqList(addresses)));
 
     if (!addressesToHandle.length || !chainsToHandle.length) {
       return {};
@@ -109,8 +116,10 @@ export class BalancesService {
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
-        `Unhandled error while calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
-        e
+        `Unhandled error while calculating 24h returns for ${JSON.stringify(
+          addresses,
+        )} networks ${JSON.stringify(chains)}`,
+        e,
       );
 
       throw e;
@@ -226,7 +235,7 @@ export class BalancesService {
         try {
           // TODO: Not the best place to cache here. Split into other methods
           const cacheKey = `24hour_ago_block_${chain}`;
-          let cachedBlock = await this.cache.get<BlockTimestamp>(cacheKey);
+          const cachedBlock = await this.cache.get<BlockTimestamp>(cacheKey);
           if (cachedBlock) {
             blockMap.set(chain, cachedBlock);
           }
@@ -383,13 +392,13 @@ export class BalancesService {
         curr.success
           ? { ...response, balances: this.mergeBalances(response.balances, curr.balances) }
           : {
-            ...response,
-            errors: response.errors.concat({
-              chainId,
-              message: curr.error.message,
-              statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-            }),
-          },
+              ...response,
+              errors: response.errors.concat({
+                chainId,
+                message: curr.error.message,
+                statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
+              }),
+            },
       {
         address,
         errors: [],
@@ -412,6 +421,8 @@ export class BalancesService {
 
   private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
     switch (chain) {
+      case ChainIdEnum.sol:
+        return [this.solanaBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }

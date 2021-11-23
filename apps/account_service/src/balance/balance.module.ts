@@ -16,6 +16,7 @@ import { BalanceController } from './balance.controller';
 import { BalancesService } from './balances.service';
 import { CovalentBalancesStrategy } from './strategy/covalent/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategy/network/network.strategy';
+import { SolanaBalancesStrategy } from './strategy/network/solana.balances.strategy';
 
 @Module({
   imports: [
@@ -41,6 +42,12 @@ import { NetworkBalancesStrategy } from './strategy/network/network.strategy';
     }),
   ],
   controllers: [BalanceController],
-  providers: [BalancesService, CovalentService, CovalentBalancesStrategy, NetworkBalancesStrategy],
+  providers: [
+    BalancesService,
+    CovalentService,
+    CovalentBalancesStrategy,
+    NetworkBalancesStrategy,
+    SolanaBalancesStrategy,
+  ],
 })
 export class BalanceModule {}

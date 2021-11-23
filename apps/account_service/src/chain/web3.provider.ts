@@ -1,3 +1,4 @@
+import { Connection } from '@solana/web3.js';
 import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
@@ -21,9 +22,14 @@ export class Web3Provider {
     this.providers[ChainIdEnum.mriver] = new Web3(this.configService.get<string>('MRIVER_URL'));
     this.providers[ChainIdEnum.harm] = new Web3(this.configService.get<string>('HARM_URL'));
     this.providers[ChainIdEnum.heco] = new Web3(this.configService.get<string>('HECO_URL'));
+    this.providers[ChainIdEnum.sol] = new Connection(this.configService.get<string>('SOL_URL'));
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {
+    return this.providers[chain];
+  }
+
+  public getInstance(chain: ChainIdEnum): Connection {
     return this.providers[chain];
   }
 }

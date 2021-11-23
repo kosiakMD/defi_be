@@ -1,7 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { Transform, Type } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import Web3 from 'web3';
 
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
@@ -14,8 +13,6 @@ import {
   ErrorMessage,
   TokenBalance,
 } from './interfaces/balance.interfaces';
-
-const web3 = new Web3();
 
 interface BalancesQuery {
   addresses: Address[];
@@ -42,11 +39,6 @@ export class BalancesQueryDto implements BalancesQuery {
     if (!Array.isArray(value)) {
       throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
     }
-    value.forEach((address: string) => {
-      if (!web3.utils.isAddress(address)) {
-        throw new BadRequestException(`Address '${address}' is not valid`);
-      }
-    });
     return value;
   })
   @IsString({ each: true })
@@ -73,11 +65,6 @@ export class BalancesQueryDto implements BalancesQuery {
     if (!Array.isArray(value)) {
       throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
     }
-    value.forEach((address: string) => {
-      if (!web3.utils.isAddress(address)) {
-        throw new BadRequestException(`Asset '${address}' is not valid`);
-      }
-    });
     return value;
   })
   @IsString({ each: true })
@@ -94,11 +81,6 @@ export class BalancesPostQueryDto implements BalancesQuery {
     if (!Array.isArray(value)) {
       throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
     }
-    value.forEach((address: string) => {
-      if (!web3.utils.isAddress(address)) {
-        throw new BadRequestException(`Address '${address}' is not valid`);
-      }
-    });
     return value;
   })
   @IsString({ each: true })
@@ -120,11 +102,6 @@ export class BalancesPostQueryDto implements BalancesQuery {
     if (!Array.isArray(value)) {
       throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
     }
-    value.forEach((address: string) => {
-      if (!web3.utils.isAddress(address)) {
-        throw new BadRequestException(`Asset '${address}' is not valid`);
-      }
-    });
     return value;
   })
   @IsString({ each: true })

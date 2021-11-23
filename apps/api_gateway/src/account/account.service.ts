@@ -140,15 +140,27 @@ export class AccountService {
 
   async getBalances(addresses: Address[], chains?: Chains): Promise<BalancesResponse> {
     try {
+      // TODO: Remove this later
+      this.logger.debug(`Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+
       this.logger.time(this.getBalanceUrl);
       const data = await this.httpService
         .get(this.getBalanceUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.getBalanceUrl);
+
+      // TODO: Remove this later
+      this.logger.debug(`Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`);
+
       return data;
     } catch (e) {
-      e.response && this.logger.error(e.response.data);
+      // TODO: This should be handled with global error handler
+      this.logger.error(
+        `Unhandled error while getting balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+        e
+      );
+
       throw e;
     }
   }
@@ -159,15 +171,27 @@ export class AccountService {
     assets?: Address[],
   ): Promise<BalancesResponse> {
     try {
+      // TODO: Remove this later
+      this.logger.debug(`Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+
       this.logger.time(this.get24HourReturnsUrl);
       const data = await this.httpService
         .get(this.get24HourReturnsUrl, { params: { addresses, chains, assets } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.get24HourReturnsUrl);
+
+      // TODO: Remove this later
+      this.logger.debug(`Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+
       return data;
     } catch (e) {
-      e.response && this.logger.error(e.response.data);
+      // TODO: This should be handled with global error handler
+      this.logger.error(
+        `Unhandled error while calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+        e
+      );
+
       throw e;
     }
   }

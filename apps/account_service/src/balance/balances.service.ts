@@ -56,6 +56,9 @@ export class BalancesService {
     assets?: Address[],
   ): Promise<BalancesResponse> {
     try {
+      // TODO: Remove this later
+      this.logger.debug(`Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+
       const chainsToHandle = getUniqList(chains);
       const addressesToHandle = await this.excludeBlacklisted(
         getUniqueAndToLowerCaseArrayData(addresses),
@@ -66,7 +69,12 @@ export class BalancesService {
       }
 
       const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
-      return this.mapResults(balances);
+      const results = this.mapResults(balances);
+
+      // TODO: Remove this later
+      this.logger.debug(`Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`);
+
+      return results;
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
@@ -99,13 +107,21 @@ export class BalancesService {
 
   async get24HourReturns(addresses: string[], chains: ChainIdEnum[], assets?: Address[]) {
     try {
+      // TODO: Remove this later
+      this.logger.debug(`Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+
       // Get current & past balances & prices
       const [now, then] = await Promise.all([
         this.getBalance(addresses, chains, assets),
         this.getBalanceAtBlock(addresses, await this.getBlock24HoursAgo(chains), chains, assets),
       ]);
 
-      return this.calculate24HourReturns({ now, then });
+      const results = this.calculate24HourReturns({ now, then });
+
+      // TODO: Remove this later
+      this.logger.debug(`Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+
+      return results;
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
@@ -242,6 +258,7 @@ export class BalancesService {
 
           // TODO: TTL should be in config
           await this.cache.set(cacheKey, block, { ttl: 5 * 60 });
+          // TODO: Catch real error here and log
         } catch {
           this.logger.error(
             `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,

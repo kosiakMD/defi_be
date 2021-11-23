@@ -19,7 +19,7 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, {
     cors: true,
     abortOnError: false,
-    logger,
+    logger: logger,
   });
 
   app.useLogger(logger);

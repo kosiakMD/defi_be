@@ -4,8 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { LoggerModule } from '@app/common/Logger/Logger.module';
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger, LoggerModule } from '@app/common/Logger';
 import configuration from '@app/common/config/configuration';
 import { LoggerMiddleware } from '@app/common/middlewares/logger.middleware';
 import { Environment, winstonParams } from '@app/common/utils/winston';

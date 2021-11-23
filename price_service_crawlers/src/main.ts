@@ -1,12 +1,12 @@
+import * as winston from 'winston';
+
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import {
   utilities as nestWinstonModuleUtilities,
   WINSTON_MODULE_NEST_PROVIDER,
   WinstonModule,
 } from 'nest-winston';
-import * as winston from 'winston';
-
-import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { addTimeLogFeature } from './Logger/Logger.service';
 import { AppModule } from './app.module';

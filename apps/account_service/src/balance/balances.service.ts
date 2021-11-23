@@ -18,11 +18,7 @@ import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
 import { PriceService } from '../price/price.service';
-import {
-  excludeSecondArray,
-  getUniqList,
-  unifyAddresses,
-} from '../utils/utils';
+import { excludeSecondArray, getUniqList, unifyAddresses } from '../utils/utils';
 import {
   BalancesResponse,
   BlockTimestamp,

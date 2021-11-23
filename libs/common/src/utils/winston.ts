@@ -33,6 +33,19 @@ const formatLog = (item) =>
     ? `${item.level}: ${item.message} ${JSON.stringify(item.meta)}`
     : `${item.level}: ${JSON.stringify(item.meta)}`;
 
+const createBaseTransports = (logErrorFile: string, logCombineLog: string): Transport[] => {
+  return [
+    // NestJS console like logs
+    new winston.transports.Console({
+      format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
+    }),
+    // - Write all logs with level `error` and below to `error.log`
+    new winston.transports.File({ level: 'error', filename: logErrorFile }),
+    // - Write all logs with level `info` and below to `combined.log`
+    new winston.transports.File({ filename: logCombineLog }),
+  ];
+};
+
 export const winstonParams = ({
   identifier,
   logErrorFile,
@@ -43,16 +56,7 @@ export const winstonParams = ({
   awsConfig,
   meta,
 }: LogConfig): WinstonModuleOptions => {
-  const transports: Transport[] = [
-    // NestJS console like logs
-    new winston.transports.Console({
-      format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
-    }),
-    // - Write all logs with level `error` and below to `error.log`
-    new winston.transports.File({ level: 'error', filename: logErrorFile }),
-    // - Write all logs with level `info` and below to `combined.log`
-    new winston.transports.File({ filename: logCombineLog }),
-  ];
+  const transports: Transport[] = createBaseTransports(logErrorFile, logCombineLog);
 
   if (AWS_CW_LOGS_ENVIRONMENTS.includes(environment)) {
     transports.push(
@@ -99,4 +103,24 @@ export const createLogger = (workFolder: string): LoggerService => {
   };
 
   return WinstonModule.createLogger(winstonParams(config));
+};
+
+export const createJobLogger = (workFolder: string): LoggerService => {
+  // NOTE: We should use .env initialization for logger as config service is not yet available
+  // We should have logger before config validation as otherwise we cannot log it to CW
+  ensureDotEnvInitiated(workFolder);
+
+  const logErrorFile = join(workFolder, process.env.LOG_ERROR_FILE);
+  const logCombineLog = join(workFolder, process.env.LOG_COMBINED_FILE);
+  const transports = createBaseTransports(logErrorFile, logCombineLog);
+
+  const logger = WinstonModule.createLogger({
+    // TODO: for custom logger
+    level: process.env.LOG_LEVEL || 'info',
+    format: winston.format.json(),
+    defaultMeta: { service: process.env.SERVICE_NAME },
+    transports: transports,
+  });
+
+  return logger;
 };

@@ -2,8 +2,8 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Web3Provider } from './web3.provider';
 import { MulticallProvider } from './multicall.provider';
+import { Web3Provider } from './web3.provider';
 
 @Module({
   imports: [TypeOrmModule.forFeature(), HttpModule],

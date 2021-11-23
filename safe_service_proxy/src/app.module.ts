@@ -1,8 +1,7 @@
-import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
 import { HttpModule } from '@nestjs/axios';
 import { Inject, Logger, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { WinstonModule, WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import configuration from './config/configuration';

@@ -1,5 +1,7 @@
+// eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
+
 import { ICallData, IInputOutput } from '@app/common';
 
 export class InputOutput implements IInputOutput {

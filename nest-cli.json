@@ -8,6 +8,15 @@
     "tsConfigPath": "apps/api_gateway/tsconfig.app.json"
   },
   "projects": {
+    "common": {
+      "type": "library",
+      "root": "libs/common",
+      "entryFile": "index",
+      "sourceRoot": "libs/common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/common/tsconfig.lib.json"
+      }
+    },
     "api_gateway": {
       "type": "application",
       "root": "apps/api_gateway",
@@ -21,15 +30,6 @@
             "outDir": "./dist/apps/api_gateway"
           }
         ]
-      }
-    },
-    "common": {
-      "type": "library",
-      "root": "libs/common",
-      "entryFile": "index",
-      "sourceRoot": "libs/common/src",
-      "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
     "account_service": {
@@ -77,6 +77,63 @@
         ]
       }
     },
+    "migration_chain_crawler": {
+      "type": "application",
+      "root": "jobs/migration_chain_crawler",
+      "entryFile": "main",
+      "sourceRoot": "jobs/migration_chain_crawler/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/migration_chain_crawler/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/jobs/migration_chain_crawler"
+          }
+        ]
+      }
+    },
+    "migration_events_consumer": {
+      "type": "application",
+      "root": "jobs/migration_events_consumer",
+      "entryFile": "main",
+      "sourceRoot": "jobs/migration_events_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/migration_events_consumer/tsconfig.app.json"
+      }
+    },
+    "migration_transactions_consumer": {
+      "type": "application",
+      "root": "jobs/migration_transactions_consumer",
+      "entryFile": "main",
+      "sourceRoot": "jobs/migration_transactions_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/migration_transactions_consumer/tsconfig.app.json"
+      }
+    },
+    "migration_token_consumer": {
+      "type": "application",
+      "root": "jobs/migration_token_consumer",
+      "entryFile": "main",
+      "sourceRoot": "jobs/migration_token_consumer/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/migration_token_consumer/tsconfig.app.json"
+      }
+    },
+    "price_crawlers": {
+      "type": "application",
+      "root": "jobs/price_crawlers",
+      "entryFile": "main",
+      "sourceRoot": "jobs/price_crawlers/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/price_crawlers/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/jobs/price_crawlers"
+          }
+        ]
+      }
+    },
     "lambda_vaults": {
       "type": "application",
       "root": "jobs/lambda_vaults",
@@ -86,13 +143,13 @@
         "tsConfigPath": "jobs/lambda_vaults/tsconfig.app.json"
       }
     },
-    "jobs_prices": {
+    "lambda_prices": {
       "type": "application",
-      "root": "jobs/prices",
+      "root": "jobs/lambda_prices",
       "entryFile": "start",
-      "sourceRoot": "jobs/prices/src",
+      "sourceRoot": "jobs/lambda_prices/src",
       "compilerOptions": {
-        "tsConfigPath": "jobs/prices/tsconfig.app.json"
+        "tsConfigPath": "jobs/lambda_prices/tsconfig.app.json"
       }
     }
   }

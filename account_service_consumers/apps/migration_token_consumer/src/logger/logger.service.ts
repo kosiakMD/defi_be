@@ -1,7 +1,7 @@
-import { WinstonLogger } from 'nest-winston';
 import { Logger as WinstonLoggerInterface } from 'winston';
 
 import { LoggerService, LoggerService as NestLoggerService } from '@nestjs/common';
+import { WinstonLogger } from 'nest-winston';
 
 // TODO: TBD?
 // @Injectable({ scope: Scope.TRANSIENT })

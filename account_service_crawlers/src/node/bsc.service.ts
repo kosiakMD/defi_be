@@ -1,8 +1,8 @@
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import Web3 from 'web3';
 
 import { HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Web3Provider } from '../chain/web3.provider';
 import { BSC_BLOCKS, BSC_BLOCKS_INFO } from '../utils/utils';

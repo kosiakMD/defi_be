@@ -1,8 +1,8 @@
 import Agenda from 'agenda';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { MigrationService } from '../migrations/migration.service';
 import { BSC_MIGRATION_JOB, ETH_MIGRATION_JOB } from './jobs.settings';

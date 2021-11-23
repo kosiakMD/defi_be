@@ -1,4 +1,4 @@
-import { ChainAbbrEnum, ChainIdEnum } from '@app/common';
+import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '@app/common';
 
 export const ChainIdToAbbr = {
   [ChainIdEnum.eth]: ChainAbbrEnum.eth,
@@ -12,4 +12,18 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.mriver]: ChainAbbrEnum.mriver,
   [ChainIdEnum.harm]: ChainAbbrEnum.harm,
   [ChainIdEnum.heco]: ChainAbbrEnum.heco,
+};
+
+export const ChainIdToName = {
+  [ChainIdEnum.eth]: ChainNameEnum.eth,
+  [ChainIdEnum.bsc]: ChainNameEnum.bsc,
+  [ChainIdEnum.plg]: ChainNameEnum.plg,
+  [ChainIdEnum.ftm]: ChainNameEnum.ftm,
+  [ChainIdEnum.arbi]: ChainNameEnum.arbi,
+  [ChainIdEnum.avax]: ChainNameEnum.avax,
+  [ChainIdEnum.xdai]: ChainNameEnum.xdai,
+  [ChainIdEnum.celo]: ChainNameEnum.celo,
+  [ChainIdEnum.mriver]: ChainNameEnum.mriver,
+  [ChainIdEnum.harm]: ChainNameEnum.harm,
+  [ChainIdEnum.heco]: ChainNameEnum.heco,
 };

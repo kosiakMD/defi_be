@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { NftChainDto } from '.';
+import { ChainsDto } from '.';
 
 export class NftResponseDto {
   @ApiProperty({
-    type: [NftChainDto],
+    type: ChainsDto,
   })
-  '0x64850F38e800E04eF773efca8FCaFdceFe977f9D': NftChainDto[];
+  '0x64850F38e800E04eF773efca8FCaFdceFe977f9D': ChainsDto;
 }

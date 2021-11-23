@@ -265,14 +265,12 @@ export class AccountService {
     projectName: NftProjectEnum,
     addresses: Address[],
     chains: ChainIdEnum[],
-    limit: number,
-    offset: number,
   ): Promise<NftAssetsByAccounts> {
     try {
       const nftAssetsProjectUrl = `${this.nftAssetsUrl}/${projectName}`;
       this.logger.time(nftAssetsProjectUrl);
       const data = await this.httpService
-        .get(nftAssetsProjectUrl, { params: { addresses, chains, limit, offset } })
+        .get(nftAssetsProjectUrl, { params: { addresses, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(nftAssetsProjectUrl);

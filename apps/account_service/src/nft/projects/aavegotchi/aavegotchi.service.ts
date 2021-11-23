@@ -14,15 +14,16 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainAbbrEnum, ChainIdEnum, NftProjectEnum } from '@app/common';
 import { GHST_ADDRESS_POLYGON, ZERO_ADDRESS } from '@app/common/constant';
-import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
+import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
+import { aavegotchiCollectionPolygon, aavegotchiTraits } from '@app/common/constant/nft';
 import {
-  aavegotchiCollectionEthereum,
-  aavegotchiCollectionPolygon,
-  aavegotchiTraits,
-} from '@app/common/constant/nft';
-import { CollectionDto, NftAssetDto, NftChainDto } from '@app/common/dto/nft';
+  CollectionDto,
+  NftAssetDto,
+  ChainDto as NftChainDto,
+  ChainsDto as NftChainsDto,
+} from '@app/common/dto/nft';
 import { NftAssetsByAccounts } from '@app/common/interfaces/nft.interface';
-import { mapToObject } from '@app/common/utils/object';
+import { mapToObject, sumOfProperties } from '@app/common/utils/object';
 import { getKey } from '@app/common/utils/string';
 
 import { BasicNftService } from '../basic.nft.service';
@@ -48,37 +49,13 @@ export class AavegotchiService extends BasicNftService {
     return getKey('nft', 'asset', 'svg', ...ids);
   }
 
-  private async handleEthereum(
-    accounts: Address[],
-    chain: number,
-    limit: number,
-    offset: number,
-  ): Promise<NftAssetsByAccounts[]> {
-    const rawAssets = await this.openSeaService.getAssetsByAccounts(
-      accounts,
-      [chain],
-      limit,
-      offset,
-    );
-    const assetsByAccounts = new Map<Address, NftChainDto[]>();
-
-    accounts.forEach((account) => {
-      assetsByAccounts.set(
-        account,
-        rawAssets[account].map((chainData) => ({
-          ...chainData,
-          collections: chainData.collections.filter(
-            ({ address }) => address === aavegotchiCollectionEthereum.address,
-          ),
-        })),
-      );
-    });
-
-    return [mapToObject(assetsByAccounts)];
+  private async handleEthereum(accounts: Address[], chain: number): Promise<NftAssetsByAccounts[]> {
+    return [await this.openSeaService.getAssetsByAccounts(accounts, [chain])];
   }
 
   private mapPolygonAssets(
     assets: GotchiOwned[],
+    imagesByAssets: Map<string, string>,
     ghstPrice: number,
     maticPrice: number,
   ): NftAssetDto[] {
@@ -90,13 +67,13 @@ export class AavegotchiService extends BasicNftService {
 
       const maxPriceInWei = Math.max(...pricesInWei);
 
-      const priceUSD = Number.isInteger(maxPriceInWei)
+      const priceUsd = Number.isInteger(maxPriceInWei)
         ? new BigNumber(web3.utils.fromWei(new BigNumber(maxPriceInWei).toString(), 'ether'))
             .times(ghstPrice)
             .toNumber()
         : null;
 
-      const priceNative = +priceUSD / maticPrice;
+      const price = +priceUsd / maticPrice;
 
       return plainToClass(NftAssetDto, {
         id: gotchiId,
@@ -105,84 +82,116 @@ export class AavegotchiService extends BasicNftService {
           type: aavegotchiTraits[key],
           value,
         })),
-        priceUSD,
-        priceNative,
+        price,
+        priceUsd,
+        imageSvg: imagesByAssets.get(gotchiId),
       });
     });
   }
 
-  private async handlePolygon(
-    accounts: Address[],
-    chain: number,
-    limit: number,
-    offset: number,
-  ): Promise<NftAssetsByAccounts[]> {
-    const rawAssets = await this.subgraph.getUsers(accounts, chain);
+  private mapPolygonCollection(assets: NftAssetDto[]): CollectionDto {
+    const { totalCollectionPrice, totalCollectionPriceUsd } = sumOfProperties(
+      assets,
+      ['price', 'priceUsd'],
+      ['totalCollectionPrice', 'totalCollectionPriceUsd'],
+    );
+
+    return plainToClass(CollectionDto, {
+      address: aavegotchiCollectionPolygon.address,
+      chain: ChainIdEnum.plg,
+      assets,
+      name: aavegotchiCollectionPolygon.name,
+      symbol: aavegotchiCollectionPolygon.symbol,
+      description: aavegotchiCollectionPolygon.description,
+      totalCollectionPrice: totalCollectionPrice || null,
+      totalCollectionPriceUsd: totalCollectionPriceUsd || null,
+      balance: assets.length,
+      links: aavegotchiCollectionPolygon.links,
+    });
+  }
+
+  private async handlePolygon(accounts: Address[], chain: number): Promise<NftAssetsByAccounts[]> {
+    const imagesByAssets = new Map<string, string>();
+
+    const rawAssets = await this.subgraph.getUsers(accounts);
 
     const { prices } = await this.priceService.fetchTokenPrices(
       [GHST_ADDRESS_POLYGON, ZERO_ADDRESS],
       chain,
     );
 
-    return rawAssets.map(({ id: account, gotchisOwned }) => {
-      const assets = this.mapPolygonAssets(
-        gotchisOwned.slice(offset, offset + limit),
-        prices[GHST_ADDRESS_POLYGON],
-        prices[ZERO_ADDRESS],
-      );
-      const averagePrice =
-        assets.reduce((acc, { priceNative }) => {
-          return acc + +priceNative;
-        }, 0) || null;
+    return await Promise.all(
+      rawAssets.map(async ({ id: account, gotchisOwned }) => {
+        const gotchisIds = gotchisOwned.map(({ gotchiId }) => gotchiId);
 
-      const averagePriceUSD =
-        assets.reduce((acc, { priceUSD }) => {
-          return acc + +priceUSD;
-        }, 0) || null;
+        await Promise.all(
+          gotchisIds.map(async (gotchiId) => {
+            const cachedSvgByAsset: Svg = await this.cache.get(this.getSvgKey(gotchiId));
 
-      return {
-        [account]: [
-          plainToClass(NftChainDto, {
-            id: chain,
-            abbr: ChainIdToAbbr[chain],
-            collections: [
-              plainToClass(CollectionDto, {
-                address: aavegotchiCollectionPolygon.address,
-                assets,
-                name: aavegotchiCollectionPolygon.name,
-                symbol: aavegotchiCollectionPolygon.symbol,
-                description: aavegotchiCollectionPolygon.description,
-                averagePrice,
-                averagePriceUSD,
-                balance: assets.length,
-                links: aavegotchiCollectionPolygon.links,
+            if (cachedSvgByAsset) {
+              imagesByAssets.set(cachedSvgByAsset.id, cachedSvgByAsset.svg);
+            } else {
+              const svgByAsset = await this.subgraph.getSvg([gotchiId]);
+              svgByAsset.forEach((svgByAsset) => imagesByAssets.set(svgByAsset.id, svgByAsset.svg));
+
+              await this.cache.set(this.getSvgKey(gotchiId), svgByAsset);
+            }
+          }),
+        );
+
+        const assets = this.mapPolygonAssets(
+          gotchisOwned,
+          imagesByAssets,
+          prices[GHST_ADDRESS_POLYGON],
+          prices[ZERO_ADDRESS],
+        );
+
+        const collection = this.mapPolygonCollection(assets);
+
+        const { totalAccountPrice, totalAccountPriceUsd } = sumOfProperties(
+          [collection],
+          ['totalCollectionPrice', 'totalCollectionPriceUsd'],
+          ['totalAccountPrice', 'totalAccountPriceUsd'],
+        );
+
+        return {
+          [account]: {
+            totalAccountPrice: totalAccountPrice || null,
+            totalAccountPriceUsd: totalAccountPriceUsd || null,
+            chains: [
+              plainToClass(NftChainDto, {
+                chain: {
+                  id: chain,
+                  abbr: ChainIdToAbbr[chain],
+                  name: ChainIdToName[chain],
+                },
+                totalChainPrice: collection.totalCollectionPrice || null,
+                totalChainPriceUsd: collection.totalCollectionPriceUsd || null,
+                collections: [collection],
               }),
             ],
-          }),
-        ],
-      };
-    });
+          },
+        };
+      }),
+    );
   }
 
   public async getAssetsByAccounts(
     accounts: Address[],
     chains: number[],
-    limit: number,
-    offset: number,
   ): Promise<NftAssetsByAccounts> {
-    const assetsByAccounts = new Map<Address, NftChainDto[]>();
-    const imagesByAssets = new Map<string, string>();
+    const assetsByAccounts = new Map<Address, NftChainsDto>();
     const assetsIds = new Set<string>();
 
     const rawAssetsByAccounts = await Promise.all(
       chains.map(async (chain) => {
         switch (chain) {
           case ChainIdEnum.eth: {
-            return await this.handleEthereum(accounts, chain, limit, offset);
+            return await this.handleEthereum(accounts, chain);
           }
 
           case ChainIdEnum.plg: {
-            return await this.handlePolygon(accounts, chain, limit, offset);
+            return await this.handlePolygon(accounts, chain);
           }
 
           default: {
@@ -193,59 +202,39 @@ export class AavegotchiService extends BasicNftService {
     );
 
     accounts.forEach((account) => {
+      assetsByAccounts.set(account, {
+        chains: [],
+        totalAccountPrice: null,
+        totalAccountPriceUsd: null,
+      });
+
       rawAssetsByAccounts.flat().map((rawAssetsByChain) => {
         if (rawAssetsByChain[account]) {
           const prevAssetsByAccount = assetsByAccounts.get(account);
+          const chains = [
+            ...(prevAssetsByAccount?.chains || []),
+            ...rawAssetsByChain[account].chains,
+          ];
 
-          if (prevAssetsByAccount) {
-            assetsByAccounts.set(account, [...prevAssetsByAccount, ...rawAssetsByChain[account]]);
-          } else {
-            assetsByAccounts.set(account, rawAssetsByChain[account]);
-          }
-          rawAssetsByChain[account]?.forEach((chainData) => {
+          const { totalAccountPrice, totalAccountPriceUsd } = sumOfProperties(
+            chains,
+            ['totalChainPrice', 'totalChainPriceUsd'],
+            ['totalAccountPrice', 'totalAccountPriceUsd'],
+          );
+
+          assetsByAccounts.set(account, {
+            chains: chains,
+            totalAccountPrice: totalAccountPrice || null,
+            totalAccountPriceUsd: totalAccountPriceUsd || null,
+          });
+
+          rawAssetsByChain[account].chains?.forEach((chainData) => {
             chainData.collections.forEach((collection) => {
               collection.assets.forEach((asset) => assetsIds.add(asset.id));
             });
           });
         }
       });
-    });
-
-    const cachedSvgByAssets: Svg[] = await this.cache.get(this.getSvgKey(...assetsIds));
-
-    if (cachedSvgByAssets) {
-      cachedSvgByAssets.forEach((svgByAsset) => imagesByAssets.set(svgByAsset.id, svgByAsset.svg));
-    } else {
-      const svgByAssets = await this.subgraph.getSvg([...assetsIds]);
-      svgByAssets.forEach((svgByAsset) => imagesByAssets.set(svgByAsset.id, svgByAsset.svg));
-
-      await this.cache.set(this.getSvgKey(...assetsIds), svgByAssets);
-    }
-
-    accounts.forEach((account) => {
-      const chainsData = assetsByAccounts.get(account);
-
-      if (chainsData) {
-        assetsByAccounts.set(
-          account,
-          chainsData.map((chainData) =>
-            plainToClass(NftChainDto, {
-              ...chainData,
-              collections: chainData.collections.map((collection) =>
-                plainToClass(CollectionDto, {
-                  ...collection,
-                  assets: collection.assets.map((asset) =>
-                    plainToClass(NftAssetDto, {
-                      ...asset,
-                      imageSVG: imagesByAssets.get(asset.id),
-                    }),
-                  ),
-                }),
-              ),
-            }),
-          ),
-        );
-      }
     });
 
     return mapToObject(assetsByAccounts);

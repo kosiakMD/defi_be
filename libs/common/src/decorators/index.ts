@@ -22,6 +22,11 @@ export const ChainsSplit = createParamDecorator((dataField, req): number[] => {
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   try {
     const input: string | Array<number | string> = req.args[0].query[dataField];
+
+    if (!input) {
+      throw 'Chains are not provided';
+    }
+
     const output: number[] = filterByEnum(
       Array.isArray(input) ? input.map(Number) : splitToNumberArray(input),
       ChainIdEnum,
@@ -49,6 +54,11 @@ export const AddressesSplit = createParamDecorator((dataField, req): Address[] =
 export const AddressesArray = createParamDecorator((dataField, req): Address[] => {
   try {
     const input: string | Address[] = req.args[0].query[dataField];
+
+    if (!input) {
+      throw 'User address is not provided';
+    }
+
     return Array.isArray(input) ? input.map((_) => _.toLocaleLowerCase()) : splitToArray(input);
   } catch (e) {
     throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -25,7 +25,7 @@ export class NftAssetDto {
   @ApiProperty({
     description: 'SVG element',
   })
-  imageSVG: string;
+  imageSvg: string;
 
   @Expose()
   @Type(() => TraitDto)
@@ -33,10 +33,10 @@ export class NftAssetDto {
   traits: TraitDto[];
 
   @Expose()
-  @ApiProperty({ type: String, example: '1200' })
-  priceUSD: string;
+  @ApiProperty({ type: Number, example: 0.05 })
+  price: number;
 
   @Expose()
-  @ApiProperty({ type: String, example: '0.05' })
-  priceNative: string;
+  @ApiProperty({ type: Number, example: 12 })
+  priceUsd: number;
 }

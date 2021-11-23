@@ -9,7 +9,5 @@ export abstract class AbstractNftService {
   public abstract getAssetsByAccounts(
     accounts: Address[],
     chains: ChainIdEnum[],
-    limit: number,
-    offset: number,
   ): Promise<NftAssetsByAccounts>;
 }

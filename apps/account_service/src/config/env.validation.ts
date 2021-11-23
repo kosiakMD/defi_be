@@ -156,7 +156,6 @@ export const validationSchema = Joi.object({
   OPEN_SEA_URL: Joi.string().required(),
   OPEN_SEA_API_KEY: Joi.string().required(),
   OPEN_SEA_INTERVAL: Joi.number().required(),
-  AAVEGOTCHI_SUBGRAPH_ETHEREUM: Joi.string().required(),
   AAVEGOTCHI_SUBGRAPH_POLYGON: Joi.string().required(),
   AAVEGOTCHI_SUBGRAPH_SVG: Joi.string().required(),
 });

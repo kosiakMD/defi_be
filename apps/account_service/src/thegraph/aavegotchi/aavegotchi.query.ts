@@ -22,12 +22,3 @@ export const usersPolygonQuery = `query users($addresses: [ID!]){
     }
   }
 }`;
-
-export const usersEthereumQuery = `query users($addresses: [ID!]){
-  users(where: { id_in: $addresses }) {
-    id
-    gotchisOwned {
-      id
-  	}
-  }
-}`;

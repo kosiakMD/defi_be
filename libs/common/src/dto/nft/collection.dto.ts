@@ -2,7 +2,7 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address } from '@app/common';
+import { Address, ChainIdEnum } from '@app/common';
 
 import { NftAssetDto, LinksDto } from '.';
 
@@ -34,11 +34,11 @@ export class CollectionDto {
 
   @Expose()
   @ApiProperty({ example: 0.05 })
-  averagePrice: number;
+  totalCollectionPrice: number;
 
   @Expose()
   @ApiProperty({ example: 1750 })
-  averagePriceUSD: number;
+  totalCollectionPriceUsd: number;
 
   @Expose()
   @ApiProperty({ example: 2 })
@@ -48,4 +48,8 @@ export class CollectionDto {
   @Type(() => LinksDto)
   @ApiProperty({ type: () => LinksDto })
   links: LinksDto;
+
+  @Expose()
+  @ApiProperty({ enum: ChainIdEnum })
+  chain: ChainIdEnum;
 }

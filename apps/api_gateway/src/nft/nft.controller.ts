@@ -6,7 +6,6 @@ import {
   Inject,
   Param,
 } from '@nestjs/common';
-import { Query } from '@nestjs/common';
 import { ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -48,16 +47,14 @@ export class NftController {
     @Param() { projectName }: NftAssetsParams,
     @AddressesArray('addresses') addresses: Address[],
     @ChainsArray('chains') chains: number[],
-    @Query('limit') limit = 20,
-    @Query('offset') offset = 0,
   ): Promise<NftAssetsByAccounts> {
     try {
       if (!Object.values(NftProjectEnum).includes(projectName)) {
         throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
       }
-      return await this.accountService.getNftAssets(projectName, addresses, chains, limit, offset);
+      return await this.accountService.getNftAssets(projectName, addresses, chains);
     } catch (e) {
-      this.logger.error(e);
+      this.logger.error(`Nft.getAssetsByProject: ${e}`);
       return e;
     }
   }

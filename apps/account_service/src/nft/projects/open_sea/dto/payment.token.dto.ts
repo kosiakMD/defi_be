@@ -25,9 +25,9 @@ export class PaymentTokenDto {
 
   @Expose({ name: 'eth_price' })
   @ApiProperty({ example: '0.8' })
-  priceETH: string;
+  priceEth: string;
 
   @Expose({ name: 'usd_price' })
   @ApiProperty({ example: '3650.098' })
-  priceUSD: string;
+  priceUsd: string;
 }

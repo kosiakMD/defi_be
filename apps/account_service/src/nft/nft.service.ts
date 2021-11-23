@@ -35,8 +35,6 @@ export class NftService {
     projectName: NftProjectEnum,
     addresses: Address[],
     chains: number[],
-    limit: number,
-    offset: number,
   ): Promise<NftAssetsByAccounts> {
     const project = this.getProjectByName(projectName);
 
@@ -54,6 +52,6 @@ export class NftService {
       );
     }
 
-    return project.getAssetsByAccounts(addresses, allowedChains, limit, offset);
+    return project.getAssetsByAccounts(addresses, allowedChains);
   }
 }

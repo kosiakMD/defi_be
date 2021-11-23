@@ -19,20 +19,4 @@ export class NftAssetsQueryDto {
       .join(','),
   })
   chains: ChainIdEnum[];
-
-  @ApiProperty({
-    type: Number,
-    example: 50,
-    default: 20,
-    required: false,
-  })
-  limit: number;
-
-  @ApiProperty({
-    type: Number,
-    example: 20,
-    default: 0,
-    required: false,
-  })
-  offset: number;
 }

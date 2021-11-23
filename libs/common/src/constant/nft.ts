@@ -7,10 +7,6 @@ export const aavegotchiTraits = [
   'Eye Color',
 ];
 
-export const aavegotchiCollectionEthereum = {
-  address: '0x1906fd9c4ac440561f7197da0a4bd2e88df5fa70',
-};
-
 export const aavegotchiCollectionPolygon = {
   address: '0x86935f11c86623dec8a25696e1c19a8659cbf95d',
   name: 'Aavegotchi',

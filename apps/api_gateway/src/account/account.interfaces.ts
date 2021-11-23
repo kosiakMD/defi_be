@@ -55,6 +55,7 @@ export interface AccountBalance {
 export type BalancesResponse = { [key: string]: AccountBalance };
 
 export interface AllBalancesResponse {
+  // TODO: Why is this separate field? Is it used?
   bscBalance: BalancesResponse;
   balance: BalancesResponse;
 }

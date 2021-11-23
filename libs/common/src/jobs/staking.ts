@@ -26,11 +26,12 @@ export class IntegrationERC20TokenDto extends ERC20Token {
 export class IntegrationClaimableTokenDto extends ERC20Token {
   claimableData?: ClaimableDto = plainToClass(ClaimableDto, {});
   price?: number = null;
+  apr?: number;
 }
 
 export class Stats {
   apy: number = null;
-  apr: number[] = [];
+  apr?: number[] = [];
   tvl: number = null;
 }
 

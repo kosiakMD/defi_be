@@ -21,10 +21,10 @@ export class JobsService {
     return { success: true, count: done.length };
   }
 
-  private updateCacheFeature(
+  private async updateCacheFeature(
     features: NotifyPayloadFeaturesDto,
   ): Promise<NotifyPayloadFeaturesDto> {
-    return this.cache.set(this.getCacheKey(features), features);
+    return await this.cache.set(this.getCacheKey(features), features);
   }
 
   private getCacheKey(features: NotifyPayloadFeaturesDto): string {

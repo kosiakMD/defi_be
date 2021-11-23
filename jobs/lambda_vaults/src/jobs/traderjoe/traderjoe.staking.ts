@@ -223,10 +223,6 @@ export class TraderJoeStaking implements JobInterface {
     return poolsInfoMap;
   }
 
-  async updateTracked(): Promise<void> {
-    //console.log('update existed tracking pools, just compare max pool id');
-  }
-
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
     const blackList = [
@@ -348,10 +344,10 @@ export class TraderJoeStaking implements JobInterface {
                 farmingPoolTVL: m.stats.tvl,
               };
 
-              m.stats.apr.push(calculateAPR(aprStats));
-              m.stats.apr.push(calculateAPRBonus(aprStatsBonus));
+              m.rewards[0].apr = calculateAPR(aprStats);
+              m.rewards[1].apr = calculateAPRBonus(aprStatsBonus);
             } else {
-              m.stats.apr.push(calculateAPR(aprStats));
+              m.rewards[0].apr = calculateAPR(aprStats);
             }
           } else {
             m = this.getDataFromMulticallRsp(multicallRsp, m, prices, TraderjoeAddresses.chiefV2);
@@ -376,7 +372,7 @@ export class TraderJoeStaking implements JobInterface {
               aprStats.farmingPoolTVL = m.stats.tvl;
             }
 
-            m.stats.apr.push(calculateAPR(aprStats));
+            m.rewards[0].apr = calculateAPR(aprStats);
           }
           return m;
         }

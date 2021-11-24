@@ -45,7 +45,10 @@ export abstract class DataProviderProtocol extends BasicProtocol {
       const data = await this.getData(addresses, chain);
 
       const rawPools = data.find((data) => data['liquidityPositions'])?.liquidityPositions;
-      const rawStaking = data.find((data) => data['stakingPositions'])?.stakingPositions;
+      const rawStaking = data.reduce((previous, current) => {
+        current['stakingPositions'] && previous.push(...current['stakingPositions']);
+        return previous;
+      }, []);
       const rawLending = data.find((data) => data['lendingPositions']);
       const rawBorrowing = data.find((data) => data['borrowingPositions']);
       const rawLeverageFarming = data.find(

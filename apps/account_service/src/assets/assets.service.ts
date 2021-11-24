@@ -24,15 +24,10 @@ export class AssetsService {
     private readonly web3Provider: Web3Provider,
   ) {}
   async queryAllAssets(): Promise<AssetDto[]> {
-    try {
-      const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
-      return storedAssets.map((asset) =>
-        plainToClass(AssetDto, asset, { excludeExtraneousValues: true }),
-      );
-    } catch (e) {
-      this.logger.error(e, 'AssetsService.queryAllAssets');
-      throw e;
-    }
+    const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
+    return storedAssets.map((asset) =>
+      plainToClass(AssetDto, asset, { excludeExtraneousValues: true }),
+    );
   }
 
   async findByAddressAndChain(address: Address, chainId: ChainIdEnum): Promise<AssetsEntity> {

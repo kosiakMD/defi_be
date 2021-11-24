@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, CacheModule } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ChainModule } from '../chain/chain.module';
@@ -11,6 +12,13 @@ import { AssetsPoolsEntity } from './entity/assets.pools.entity';
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('REDIS_ASSETS_CACHE_TTL') || 900,
+      }),
+      inject: [ConfigService],
+    }),
     TypeOrmModule.forFeature([AssetsEntity, AssetsRepository, AssetsPoolsEntity]),
     ChainModule,
   ],

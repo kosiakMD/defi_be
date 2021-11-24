@@ -2,6 +2,8 @@ import { Response } from 'express';
 
 import {
   Body,
+  CacheInterceptor,
+  CacheKey,
   Controller,
   Get,
   HttpStatus,
@@ -10,6 +12,7 @@ import {
   Post,
   Query,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -30,6 +33,7 @@ import { AssetDto, AssetQueryDto, AssetResponseDto, AssetTrackDto } from './dto/
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 
 @ApiTags('Assets')
+@UseInterceptors(CacheInterceptor)
 @Controller('assets')
 export class AssetsController {
   constructor(
@@ -37,6 +41,7 @@ export class AssetsController {
     private readonly assetsPoolsService: AssetsPoolsService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {}
+  @CacheKey('accountService_all_assets')
   @Get('/all')
   @ApiResponse({ status: 200, type: [AssetDto] })
   async getAllAssets(): Promise<AssetDto[]> {

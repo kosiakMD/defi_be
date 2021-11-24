@@ -57,6 +57,7 @@ configMaps:
     REDIS_HOST: 3.69.250.41
     REDIS_PORT: 6379
     REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
+    REDIS_ASSETS_CACHE_TTL: 900
     BSCSCAN_URL: https://api.bscscan.com/api
     BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
     BSCSCAN_API_URL: https://api.bscscan.com/api

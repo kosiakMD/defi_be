@@ -71,6 +71,7 @@ export const validationSchema = Joi.object({
   REDIS_PORT: Joi.number().required(),
   REDIS_AUTH: Joi.string().required(),
   REDIS_CACHE_TTL: Joi.number(),
+  REDIS_ASSETS_CACHE_TTL: Joi.number(),
   ETH_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),

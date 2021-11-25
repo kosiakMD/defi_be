@@ -1,4 +1,10 @@
-import { AbsoluteChainIdEnum, ChainAbbrEnum, ChainIdEnum } from '@app/common/enum';
+import { SOL_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
+import {
+  AbsoluteChainIdEnum,
+  ChainAbbrEnum,
+  ChainIdEnum,
+  CoingeckoPlatformEnum,
+} from '@app/common/enum';
 import { ChainId } from '@app/common/types';
 
 export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
@@ -57,4 +63,59 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.mriver]: ChainIdEnum.mriver,
   [ChainAbbrEnum.harm]: ChainIdEnum.harm,
   [ChainAbbrEnum.heco]: ChainIdEnum.heco,
+  [ChainAbbrEnum.sol]: ChainIdEnum.heco,
 };
+
+export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
+  [ChainIdEnum.eth]: CoingeckoPlatformEnum.eth,
+  [ChainIdEnum.bsc]: CoingeckoPlatformEnum.bsc,
+  [ChainIdEnum.plg]: CoingeckoPlatformEnum.plg,
+  [ChainIdEnum.ftm]: CoingeckoPlatformEnum.ftm,
+  [ChainIdEnum.arbi]: CoingeckoPlatformEnum.arbi,
+  [ChainIdEnum.avax]: CoingeckoPlatformEnum.avax,
+  [ChainIdEnum.xdai]: CoingeckoPlatformEnum.xdai,
+  [ChainIdEnum.celo]: CoingeckoPlatformEnum.celo,
+  [ChainIdEnum.mriver]: CoingeckoPlatformEnum.mriver,
+  [ChainIdEnum.harm]: CoingeckoPlatformEnum.harm,
+  [ChainIdEnum.heco]: CoingeckoPlatformEnum.heco,
+  [ChainIdEnum.sol]: CoingeckoPlatformEnum.sol,
+};
+
+export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
+  CoingeckoChainIds[chainId];
+
+export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
+  [ChainIdEnum.eth]: ZERO_ADDRESS,
+  [ChainIdEnum.bsc]: ZERO_ADDRESS,
+  [ChainIdEnum.plg]: ZERO_ADDRESS,
+  [ChainIdEnum.ftm]: ZERO_ADDRESS,
+  [ChainIdEnum.arbi]: ZERO_ADDRESS,
+  [ChainIdEnum.avax]: ZERO_ADDRESS,
+  [ChainIdEnum.xdai]: ZERO_ADDRESS,
+  [ChainIdEnum.celo]: ZERO_ADDRESS,
+  [ChainIdEnum.mriver]: ZERO_ADDRESS,
+  [ChainIdEnum.harm]: ZERO_ADDRESS,
+  [ChainIdEnum.heco]: ZERO_ADDRESS,
+  [ChainIdEnum.sol]: SOL_COIN_ADDRESS,
+};
+
+export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
+  CoingeckoChainIds[chainId];
+
+export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
+  [ChainIdEnum.eth]: '',
+  [ChainIdEnum.bsc]: '',
+  [ChainIdEnum.plg]: '',
+  [ChainIdEnum.ftm]: '',
+  [ChainIdEnum.arbi]: '',
+  [ChainIdEnum.avax]: '',
+  [ChainIdEnum.xdai]: '',
+  [ChainIdEnum.celo]: '',
+  [ChainIdEnum.mriver]: '',
+  [ChainIdEnum.harm]: '',
+  [ChainIdEnum.heco]: '',
+  [ChainIdEnum.sol]: 'solana',
+};
+
+export const getCoingeckoCoinId = (chainId: ChainId): string =>
+  CoingeckoCoinIds[chainId];

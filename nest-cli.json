@@ -151,6 +151,15 @@
       "compilerOptions": {
         "tsConfigPath": "jobs/lambda_prices/tsconfig.app.json"
       }
+    },
+    "lambda_external_prices": {
+      "type": "application",
+      "root": "jobs/lambda_external_prices",
+      "entryFile": "start",
+      "sourceRoot": "jobs/lambda_external_prices/src",
+      "compilerOptions": {
+        "tsConfigPath": "jobs/lambda_external_prices/tsconfig.app.json"
+      }
     }
   }
 }

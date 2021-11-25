@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainIdEnum, Logger } from '@app/common';
+import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
 import { retry } from '@app/common/utils/retry';
 
@@ -18,7 +19,7 @@ import { AssetsEntity } from '../assets/entity/assets.entity';
 import { BlacklistService } from '../blacklist/blacklist.service';
 import { Web3Provider } from '../chain/web3.provider';
 import { PriceService } from '../price/price.service';
-import { excludeSecondArray, getUniqList, unifyAddresses } from '../utils/utils';
+import { excludeSecondArray, getUniqList } from '../utils/utils';
 import {
   BalancesResponse,
   BlockTimestamp,
@@ -60,7 +61,9 @@ export class BalancesService {
   ): Promise<BalancesResponse> {
     try {
       // TODO: Remove this later
-      this.logger.debug(`Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+      this.logger.debug(
+        `Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+      );
 
       const chainsToHandle = getUniqList(chains);
       const addressesToHandle = await this.excludeBlacklisted(
@@ -75,7 +78,9 @@ export class BalancesService {
       const results = this.mapResults(balances);
 
       // TODO: Remove this later
-      this.logger.debug(`Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`);
+      this.logger.debug(
+        `Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`,
+      );
 
       return results;
     } catch (e) {
@@ -111,7 +116,11 @@ export class BalancesService {
   async get24HourReturns(addresses: string[], chains: ChainIdEnum[], assets?: Address[]) {
     try {
       // TODO: Remove this later
-      this.logger.debug(`Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+      this.logger.debug(
+        `Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(
+          chains,
+        )}`,
+      );
 
       // Get current & past balances & prices
       const [now, then] = await Promise.all([
@@ -122,7 +131,11 @@ export class BalancesService {
       const results = this.calculate24HourReturns({ now, then });
 
       // TODO: Remove this later
-      this.logger.debug(`Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+      this.logger.debug(
+        `Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(
+          chains,
+        )}`,
+      );
 
       return results;
     } catch (e) {

@@ -12,6 +12,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
+import { unifyAddress } from '@app/common/utils/addresses';
 import { dateToTimestamp, roundToNearestHour } from '@app/common/utils/dates';
 
 import { ChainService } from '../lookup/services/chain.service';
@@ -240,7 +241,7 @@ export class PriceService {
   }
 
   public async updateCurrentPrice(requestBody: PriceRequestCurrentDto[]): Promise<void> {
-    requestBody.forEach((dto) => (dto.address = dto.address.toLowerCase()));
+    requestBody.forEach((dto) => (dto.address = unifyAddress(dto.address)));
 
     // Cache prices for 24 hour return calculations
     this.cacheRawPriceRequest(requestBody);

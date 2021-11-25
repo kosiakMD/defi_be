@@ -126,8 +126,19 @@
     "lambda_prices-start:prod": "nest start lambda_prices",
     "lambda_prices-compile": "tsc --project jobs/lambda_prices/tsconfig.json",
     "lambda_prices-dev": "ts-node jobs/lambda_prices/src/start.ts",
-    "lambda_prices-start": "tsc --project jobs/lambda_prices/tsconfig.json && node ./dist/jobs/lambda_prices/src/start.js"
+    "lambda_prices-start": "tsc --project jobs/lambda_prices/tsconfig.json && node ./dist/jobs/lambda_prices/src/start.js",
 
+    "lambda_external_prices-prebuild": "rimraf ./dist/jobs/lambda_external_prices",
+    "lambda_external_prices-format": "yarn --cwd jobs/lambda_external_prices run format",
+    "lambda_external_prices-lint": "eslint \\\"jobs/lambda_external_prices/{src,config,test}/**/*.ts\\\"",
+    "lambda_external_prices-build": "nest build lambda_external_prices",
+    "lambda_external_prices-test": "yarn --cwd jobs/lambda_external_prices mocha tests/unit/",
+    "lambda_external_prices-start:dev": "nest start lambda_external_prices --watch",
+    "lambda_external_prices-start:debug": "nest start lambda_external_prices --debug --watch",
+    "lambda_external_prices-start:prod": "nest start lambda_external_prices",
+    "lambda_external_prices-compile": "tsc --project jobs/lambda_external_prices/tsconfig.json",
+    "lambda_external_prices-dev": "ts-node jobs/lambda_external_prices/src/start.ts",
+    "lambda_external_prices-start": "tsc --project jobs/lambda_external_prices/tsconfig.app.json && node ./dist/jobs/lambda_external_prices/src/start.js"
   },
   "repository": {
     "type": "git",

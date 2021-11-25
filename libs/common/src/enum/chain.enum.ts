@@ -10,6 +10,7 @@ export enum ChainAbbrEnum {
   mriver = 'mriver',
   harm = 'harm',
   heco = 'heco',
+  sol = 'sol',
 }
 
 export enum ChainNameEnum {
@@ -40,6 +41,21 @@ export enum ChainIdEnum {
   harm = 10,
   heco = 11,
   sol = 12,
+}
+
+export enum CoingeckoPlatformEnum {
+  eth = 'ethereum',
+  bsc = 'binance-smart-chain',
+  plg = 'polygon-pos',
+  ftm = 'fantom',
+  arbi = 'arbitrum-one',
+  avax = 'avalanche',
+  xdai = 'xdai',
+  celo = 'celo',
+  mriver = 'moonriver',
+  harm = 'harmony-shard-0',
+  heco = 'huobi-token',
+  sol = 'solana',
 }
 
 export enum AbsoluteChainIdEnum {

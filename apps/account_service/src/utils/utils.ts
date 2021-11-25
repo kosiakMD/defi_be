@@ -1,5 +1,5 @@
 import BigNumber, { BigNumber as BN } from 'bignumber.js';
-import { AbiItem, isAddress as isETHAddress } from 'web3-utils';
+import { AbiItem } from 'web3-utils';
 
 import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from '@app/common/constant';
 import { Address } from '@app/common/types';
@@ -23,16 +23,6 @@ export function getUniqueAndToLowerCaseArrayData(input: string | string[]): stri
   }
 
   return Array.from(set);
-}
-
-export function unifyAddresses(addresses: Address[]) {
-  return addresses.map((a) => {
-    if (isETHAddress(a)) {
-      return a.toLowerCase();
-    } else {
-      return a;
-    }
-  });
 }
 
 export function transferTokenAddressNotIn(

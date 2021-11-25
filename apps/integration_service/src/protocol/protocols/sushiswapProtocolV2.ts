@@ -318,7 +318,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       address: token.id,
       balance: collateralBalance,
       value: collateralBalance * collateralPrice,
-      APY: normalizeDecimals(apr, MAGIC_BENTOBOX_APR_DECIMALS),
+      apy: normalizeDecimals(apr, MAGIC_BENTOBOX_APR_DECIMALS),
       token: this.formatLendToken(token, collateralPrice),
     });
   }

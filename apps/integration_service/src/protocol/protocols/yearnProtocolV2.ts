@@ -232,7 +232,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
       address: position.assetAddress,
       balance: balance.toNumber(),
       value: value.toNumber(),
-      APY: Number(market.metadata.lendApyBips) / 100,
+      apy: Number(market.metadata.lendApyBips) / 100,
       token: plainToClass(LendingErcToken, {
         address: position.tokenAddress,
         decimals: token.decimals,

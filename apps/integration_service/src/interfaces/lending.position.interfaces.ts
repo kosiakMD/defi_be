@@ -7,7 +7,7 @@ export interface LendingPosition {
   totalDeposit?: string;
   balance: number;
   value: number;
-  APY: number;
+  apy: number;
   token: LendingErcToken;
 }
 export interface BorrowingPosition {

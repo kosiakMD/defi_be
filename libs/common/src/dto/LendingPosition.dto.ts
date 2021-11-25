@@ -5,6 +5,6 @@ export class LendingPositionDto {
   totalDeposit?: string;
   balance: number;
   value: number;
-  APY: number;
+  apy: number;
   token: LendingErcToken;
 }

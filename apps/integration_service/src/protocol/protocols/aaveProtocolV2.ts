@@ -350,7 +350,7 @@ export class AaveProtocolV2 extends DataProviderProtocol {
         .dividedBy(new BigNumber(10).pow(token.decimals))
         .multipliedBy(token.price)
         .toNumber(),
-      APY: new BigNumber(apy) //
+      apy: new BigNumber(apy) //
         .dividedBy(RAY)
         .multipliedBy(100)
         .toNumber(),

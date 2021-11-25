@@ -24,6 +24,7 @@ export class PriceService {
     this.getCurrentPricesUrl = `${url}/${getCurrentPricesUrl}`;
   }
 
+  // TODO: Response should not be any
   async getCurrentPrices(
     addresses: string,
     currency: CurrencyIdEnum,

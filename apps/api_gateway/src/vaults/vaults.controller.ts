@@ -15,7 +15,7 @@ import { IntegrationService } from '../integration/integration.service';
 const VAULTS_CACHE_TIME = 60; // 1 min
 
 @ApiTags('Vaults')
-@Controller('vaults')
+@Controller('v1/vaults')
 export class VaultsController {
   constructor(
     private integrationService: IntegrationService,

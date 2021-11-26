@@ -8,7 +8,7 @@ import BaseDataDto from '@app/common/dto/BaseData.dto';
 import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
-@Controller('pangolin')
+@Controller('v1/pangolin')
 export class PangolinController {
   constructor(
     private integrationService: IntegrationService,

@@ -8,7 +8,7 @@ import { SafeProxyService } from '../safe-proxy/safe.proxy.service';
 import { NetworkResponseDto } from './dto';
 
 @ApiTags('Safe')
-@Controller('networks')
+@Controller('v1/networks')
 export class NetworksController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

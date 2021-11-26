@@ -9,7 +9,7 @@ import { AccountService } from '../account/account.service';
 import { ProfitAndLossQueryDto, ProfitAndLossResponseDTO } from './dto';
 
 @ApiTags('Analytic')
-@Controller('analytic')
+@Controller('v1/analytic')
 export class AnalyticController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

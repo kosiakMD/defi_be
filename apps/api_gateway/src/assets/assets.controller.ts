@@ -11,7 +11,7 @@ import { AssetResponseDto, AssetsDto, AssetsQueryDto } from './assets.dto';
 import { AssetsService } from './assets.service';
 
 @ApiTags('Assets')
-@Controller('assets')
+@Controller('v1/assets')
 export class AssetsController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

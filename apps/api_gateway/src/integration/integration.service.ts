@@ -25,6 +25,7 @@ export class IntegrationService {
   private readonly getPoolsUrl: string;
   private readonly getVaultsUrl: string;
   private readonly protocolsUrl: string;
+  private readonly protocolsUrlV2: string;
   private readonly protocolsActiveUrl: string;
 
   constructor(
@@ -61,7 +62,9 @@ export class IntegrationService {
     this.getVaultsUrl = `${url}/${vaultsPath}`;
 
     const protocolsPath = this.configService.get<string>('INTEGRATION_PROTOCOLS');
+    const protocolsPathV2 = this.configService.get<string>('INTEGRATION_PROTOCOLS_V2');
     this.protocolsUrl = `${url}/${protocolsPath}`;
+    this.protocolsUrlV2 = `${url}/${protocolsPathV2}`;
 
     this.protocolsActiveUrl = `${url}/v1/protocols/active`;
   }
@@ -235,6 +238,23 @@ export class IntegrationService {
     addresses: Address,
   ): Promise<IntegrationsResponseDto> {
     const url = `${this.protocolsUrl}/${protocolName}/`;
+
+    this.logger.time(url);
+    const data = await this.httpService
+      .get(url, { params: { chains, addresses } })
+      .pipe(map((r) => r.data))
+      .toPromise();
+    this.logger.timeEnd(url);
+    return data;
+  }
+
+  @RequestErrorHandler()
+  async getProtocolFeaturesDataV2(
+    protocolName: ProtocolName,
+    chains: string,
+    addresses: Address[],
+  ): Promise<IntegrationsResponseDto> {
+    const url = `${this.protocolsUrlV2}/${protocolName}/`;
 
     this.logger.time(url);
     const data = await this.httpService

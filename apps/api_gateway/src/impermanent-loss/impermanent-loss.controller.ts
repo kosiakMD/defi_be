@@ -5,7 +5,7 @@ import { ImpermanentLossDto, ImpermanentLossResponseDto } from './dto/impermanen
 import { ImpermanentLossService } from './impermanent-loss.service';
 
 @ApiTags('Impermanent loss')
-@Controller('impermanent-loss')
+@Controller('v1/impermanent-loss')
 export class ImpermanentLossController {
   constructor(private service: ImpermanentLossService) {}
 

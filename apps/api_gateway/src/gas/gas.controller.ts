@@ -16,7 +16,7 @@ const GAS_CURRENT_CACHE_TIME = 30; // 30 sec as Gas current updates
 const GAS_HISTORY_CACHE_TIME = 15 * 60; // 15 min as Gas history updates
 
 @ApiTags('Gas')
-@Controller('gas')
+@Controller('v1/gas')
 export class GasController {
   constructor(
     private service: GasService,

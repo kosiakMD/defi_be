@@ -35,11 +35,7 @@ import { StoreModule } from './store/store.module';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [
-          'dist/**/*.entity{.ts,.js}',
-          'store/*.entity{.ts,.js}',
-          // 'jobs/lambda_vaults/**/*.entity{.ts,.js}',
-        ],
+        entities: ['dist/**/*.entity{.ts,.js}', 'store/*.entity{.ts,.js}'],
         synchronize: false,
         logging: true,
       }),

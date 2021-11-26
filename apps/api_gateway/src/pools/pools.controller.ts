@@ -15,7 +15,7 @@ import { IntegrationService } from '../integration/integration.service';
 const POOLS_CACHE_TIME = 60; // 1 min
 
 @ApiTags('Pools')
-@Controller('pools')
+@Controller('v1/pools')
 export class PoolsController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

@@ -7,7 +7,7 @@ import { ApprovalDTO } from '../account/account.dto';
 import { AccountService } from '../account/account.service';
 
 @ApiTags('Approvals')
-@Controller('approvals')
+@Controller('v1/approvals')
 export class ApprovalsController {
   constructor(
     private accountService: AccountService,

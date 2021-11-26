@@ -39,6 +39,7 @@ import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
 import { PricesService } from './prices/prices.service';
 import { ProtocolController } from './protocol/protocol.controller';
+import { ProtocolControllerV2 } from './protocol/protocol.controller.v2';
 import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
 import { SafeProxyService } from './safe-proxy/safe.proxy.service';
 import { ScansApiModule } from './scans-api/scans-api.module';
@@ -111,6 +112,7 @@ import { VaultsModule } from './vaults/vaults.module';
     SwapController,
     ProtocolController,
     NftController,
+    ProtocolControllerV2,
   ],
   providers: [
     // TODO: for global auto caching

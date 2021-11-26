@@ -14,7 +14,7 @@ import { CHAIN_ID_BSC, CHAIN_ID_ETH } from './modules/utils/utils';
 import { TransactionQueryDto, TransactionsDetailedResponseDto } from './scans-api.dto';
 
 @ApiTags('Transactions')
-@Controller('transactions')
+@Controller('v1/transactions')
 export class ScansApiController {
   private readonly ethChainId: number;
   private readonly bscChainId: number;

@@ -13,7 +13,7 @@ import {
 import { TransactionsResponse } from './transactions.interfaces';
 
 @ApiTags('Transactions')
-@Controller('transactions')
+@Controller('v1/transactions')
 export class TransactionsController {
   constructor(
     private service: AccountService,

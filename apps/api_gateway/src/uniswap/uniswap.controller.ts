@@ -8,7 +8,7 @@ import BaseDataDto from '@app/common/dto/BaseData.dto';
 import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
-@Controller('uniswap')
+@Controller('v1/uniswap')
 export class UniswapController {
   constructor(
     private integrationService: IntegrationService,

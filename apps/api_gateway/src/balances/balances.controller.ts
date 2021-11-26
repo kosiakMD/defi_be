@@ -9,7 +9,7 @@ import { AccountService } from '../account/account.service';
 import { BalancesQueryDto, BalancesResponseDto } from './balances.dto';
 
 @ApiTags('Balances')
-@Controller('balances')
+@Controller('v1/balances')
 export class BalancesController {
   constructor(
     private service: AccountService,

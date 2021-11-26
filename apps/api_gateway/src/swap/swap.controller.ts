@@ -7,7 +7,7 @@ import { TokensPricesByTokensResponseDto } from './dto/tokens.prices.by.tokens.r
 import { SwapPricesQuery } from './interfaces';
 
 @ApiTags('Swap')
-@Controller('swap')
+@Controller('v1/swap')
 export class SwapController {
   @Get('availabletokens')
   @ApiResponse({ status: 200, type: [String] })

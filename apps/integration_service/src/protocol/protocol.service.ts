@@ -646,16 +646,17 @@ export class ProtocolService {
       }
       if (d instanceof BaseDataStaking) {
         d.items.forEach((i) => {
-          i.stakingToken.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+          if (i.stakingToken.tokens?.length) {
+            i.stakingToken.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+          } else {
+            chainAssets.get(d.chain.id).add(i.stakingToken.address);
+          }
           i.rewards.forEach((rt) => chainAssets.get(d.chain.id).add(rt.address));
         });
       }
     });
 
-    const chainAssetPrices: Map<number, Map<string, number>> = new Map<
-      number,
-      Map<string, number>
-    >();
+    const chainAssetPrices = new Map<number, Map<string, number>>();
     try {
       const promises = [];
       // TODO: This currently only accounts for tokens that are priced
@@ -695,12 +696,18 @@ export class ProtocolService {
       if (d instanceof BaseDataStaking) {
         d.total = 0;
         d.items.forEach((i) => {
-          i.stakingToken.tokens.forEach((pt) => {
-            pt.price = chainAssetPrices.get(d.chain.id).get(pt.address) ?? pt.price;
-            pt.value = Number(pt.balance) * (pt.price ?? 0);
-            d.total += pt.value;
-          });
-
+          if (i.stakingToken.tokens?.length) {
+            i.stakingToken.tokens.forEach((pt) => {
+              pt.price = chainAssetPrices.get(d.chain.id).get(pt.address) ?? pt.price;
+              pt.value = Number(pt.balance) * (pt.price ?? 0);
+              d.total += pt.value;
+            });
+          } else {
+            i.stakingToken.price =
+              chainAssetPrices.get(d.chain.id).get(i.stakingToken.address) ?? i.stakingToken.price;
+            i.stakingToken.value = Number(i.stakingToken.balance) * (i.stakingToken.price ?? 0);
+            d.total += i.stakingToken.value;
+          }
           i.rewards.forEach((r) => {
             r.price = chainAssetPrices.get(d.chain.id).get(r.address) ?? r.price;
             r.claimableData.value = Number(r.claimableData.balance) * r.price;

@@ -12,7 +12,7 @@ import { TransfersResponse } from './transfers.interfaces';
 import { TransfersService } from './transfers.service';
 
 @ApiTags('Transfers')
-@Controller('transfers')
+@Controller('v1/transfers')
 export class TransfersController {
   constructor(
     private service: AccountService,

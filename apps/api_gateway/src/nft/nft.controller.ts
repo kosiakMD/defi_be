@@ -21,7 +21,7 @@ import {
 import { AccountService } from '../account/account.service';
 
 @ApiTags('Nft')
-@Controller('nft')
+@Controller('v1/nft')
 export class NftController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

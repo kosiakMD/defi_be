@@ -8,7 +8,7 @@ import BaseDataDto from '@app/common/dto/BaseData.dto';
 import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
-@Controller('pancake')
+@Controller('v1/pancake')
 export class PancakeController {
   constructor(
     private integrationService: IntegrationService,

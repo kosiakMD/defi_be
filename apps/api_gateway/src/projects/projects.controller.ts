@@ -9,7 +9,7 @@ import { SafeProxyService } from '../safe-proxy/safe.proxy.service';
 import { ProjectsResponseDto } from './dto';
 
 @ApiTags('Safe')
-@Controller('projects')
+@Controller('v1/projects')
 export class ProjectsController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

@@ -17,7 +17,7 @@ import { CurrencyListDto } from './dto/currency.list.dto';
 import { PricesService } from './prices.service';
 
 @ApiTags('Prices')
-@Controller('prices')
+@Controller('v1/prices')
 export class PricesController {
   constructor(private service: PricesService) {}
 

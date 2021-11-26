@@ -16,7 +16,6 @@ import {
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 
-import { CurvePoolInfoResponse } from '../../../../pools/dist/chain/dto/token';
 import { CallData } from '../../chain/dto/call.data';
 import { MulticallService } from '../../chain/multicall.service';
 import { Web3Provider } from '../../chain/web3.provider';
@@ -31,7 +30,6 @@ import { toDecimals } from '../../utils/number';
 import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
-import { APRStats } from '../dto/apr';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
@@ -105,9 +103,7 @@ export class EllipsisStaking implements JobInterface {
       decimals: busdRewardDto.decimals,
     });
 
-    const poolsInfo: Map<string, CurvePoolInfoResponse> = await this.getAllPoolInfo(
-      EllipsisAddresses.staker,
-    );
+    const poolsInfo: Map<string, any> = await this.getAllPoolInfo(EllipsisAddresses.staker);
 
     // use while one address for test
     for (const address of poolsInfo.keys()) {
@@ -219,10 +215,8 @@ export class EllipsisStaking implements JobInterface {
     });
   }
 
-  private async getAllPoolInfo(
-    stakerContract: EllipsisAddresses,
-  ): Promise<Map<string, CurvePoolInfoResponse>> {
-    const poolsInfoMap = new Map<string, CurvePoolInfoResponse>();
+  private async getAllPoolInfo(stakerContract: EllipsisAddresses): Promise<Map<string, any>> {
+    const poolsInfoMap = new Map<string, any>();
 
     const calls = new Map<string, CallData>();
     for (let i = 0; i < ellipsisPoolsMap.size - 1; i++) {
@@ -486,7 +480,7 @@ export class EllipsisStaking implements JobInterface {
 
           const { allocPoint } = multicallRsp.get(EllipsisStaking.poolInfoLabel(m.poolId)).output
             .data;
-          const aprStats: APRStats = {
+          const aprStats = {
             totalAllocPoints: totalAllocPoint,
             poolAllocPoints: allocPoint,
             rewardTokenPerBlock: toDecimals(rewardsPerSecond, m.rewards[0].decimals) * 3,
@@ -494,7 +488,7 @@ export class EllipsisStaking implements JobInterface {
             blockTime: 3,
             farmingPoolTVL: m.stats.tvl,
           };
-          m.stats.apr.push(this.calculateAPR(aprStats));
+          m.rewards[0].apr = this.calculateAPR(aprStats);
           m.stakingToken.tokens = tokens;
         } else {
           m.stakingToken.price = Number(prices[m.stakingToken.address]);
@@ -712,7 +706,7 @@ export class EllipsisStaking implements JobInterface {
     rewardTokenPrice,
     blockTime,
     farmingPoolTVL,
-  }: APRStats): number {
+  }): number {
     const poolRewardPerBlock = poolAllocPoints
       .div(totalAllocPoints)
       .times(rewardTokenPerBlock)

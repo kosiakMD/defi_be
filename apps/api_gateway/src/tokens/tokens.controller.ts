@@ -15,7 +15,7 @@ import { TokensService } from './tokens.service';
 const TOKENS_CACHE_TIME = 60 * 60 * 1e3; // 1 hour
 
 @ApiTags('Tokens')
-@Controller('tokens')
+@Controller('v1/tokens')
 export class TokensController {
   constructor(
     private service: TokensService,

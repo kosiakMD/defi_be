@@ -8,7 +8,7 @@ import BaseDataDto from '@app/common/dto/BaseData.dto';
 import { IntegrationService } from '../integration/integration.service';
 
 @ApiTags('Platform')
-@Controller('sushiswap')
+@Controller('v1/sushiswap')
 export class SushiswapController {
   constructor(
     private integrationService: IntegrationService,

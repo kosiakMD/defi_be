@@ -12,7 +12,7 @@ import {
 import { MailService } from './mail.service';
 
 @ApiTags('Hire')
-@Controller('mail')
+@Controller('v1/mail')
 export class MailController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

@@ -11,7 +11,7 @@ import { ScamFunctionResponseDto } from './dto/scam.function.response.dto';
 import { ScamTypeResponseDto } from './dto/scam.type.response.dto';
 
 @ApiTags('Safe')
-@Controller('scams')
+@Controller('v1/scams')
 export class ScamsController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

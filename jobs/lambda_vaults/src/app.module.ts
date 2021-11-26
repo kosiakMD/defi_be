@@ -38,7 +38,6 @@ import { StoreModule } from './store/store.module';
         entities: [
           'dist/**/*.entity{.ts,.js}',
           'store/*.entity{.ts,.js}',
-          // 'jobs/lambda_vaults/**/*.entity{.ts,.js}',
         ],
         synchronize: false,
         logging: true,

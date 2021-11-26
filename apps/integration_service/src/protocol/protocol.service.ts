@@ -22,6 +22,7 @@ import {
   Logger,
   PancakeProtocolEnum,
   ProtocolName,
+  ProtocolNameEnum,
   QuickswapProtocolEnum,
   ResultStatus,
   SpookySwapProtocolEnum,
@@ -48,6 +49,7 @@ import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
+import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
@@ -58,7 +60,6 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -624,8 +625,9 @@ export class ProtocolService {
     let [data, errors] = await protocol.getAllFeaturesBaseData(addresses, chain);
 
     // add prices here if needed
-    data = await this.adjustPrices(data);
-
+    if (protocolName !== ProtocolNameEnum.autofarm) {
+      data = await this.adjustPrices(data);
+    }
     return [data, errors];
   }
 

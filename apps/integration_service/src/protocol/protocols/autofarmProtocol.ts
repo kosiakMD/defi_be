@@ -1,13 +1,20 @@
 import BigNumber from 'bignumber.js';
-import { classToClass } from 'class-transformer';
+import { classToClass, plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, Logger } from '@app/common';
-import { FeatureEnum } from '@app/common';
-import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
+import {
+  Address,
+  ChainDto,
+  ClaimableDto,
+  FeatureEnum,
+  IntegrationClaimableTokenDto,
+  Logger,
+  ProtocolTypeEnum,
+} from '@app/common';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { AutofarmProtocolEnum, ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
 
 import { Web3Provider } from '../../chain/web3.provider';
@@ -17,9 +24,8 @@ import {
   IntegrationStakingPositionDto,
   LPToken,
   PoolTokenDto,
-  StakingPositionResponseDto,
 } from '../../integrations/integrations.dto';
-import { Asset, ERC20Token } from '../../interfaces/transactions.interfaces';
+import { Asset, BaseData, ERC20Token } from '../../interfaces/transactions.interfaces';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { decimalsDivider } from '../../utils/util';
@@ -55,21 +61,22 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
   }
 
   // override
-  async getDataByAddresses(
-    address: Address,
+  async getAllFeaturesBaseData(
+    addresses: Address[],
     chain: ChainDto,
-  ): Promise<StakingPositionResponseDto[]> {
+  ): Promise<[BaseData[], string[]]> {
+    const baseData: BaseData[] = [];
+    const errors: string[] = [];
     try {
-      const addressLowerCase = address.toLowerCase();
-
+      const addressesLowerCase = addresses.map((address) => address.toLowerCase());
       const web3Provider = this.web3Provider.getForChain(chain.abbr);
       const multicall = new LocalMultiCall(web3Provider, this.logger);
       const stakedPosition: StakingInterface[] = [];
-      await multicall.getStakedPositions(stakedPosition, addressLowerCase, chain.abbr);
+      await multicall.getStakedPositions(stakedPosition, addressesLowerCase, chain.abbr);
       const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chain.abbr);
       await Promise.all([
         multicall.getVaultUsersRewards(stakedPosition, chain.abbr),
-        multicall.checkAutoTokenStake(stakedPosition, addressLowerCase, poolsAddresses),
+        multicall.checkAutoTokenStake(stakedPosition, addressesLowerCase, poolsAddresses),
       ]);
 
       this.logger.log(
@@ -127,23 +134,45 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
         chain.abbr,
       );
 
-      return this.getResponse(stakingPositionsMap);
+      baseData.push(...this.getResponse(stakingPositionsMap, chain));
     } catch (e) {
       this.logger.error(e.message);
-      throw e;
+      errors.push(e.message);
     }
+    return [baseData, errors];
   }
 
   private getResponse(
     stakingPositionsMap: Map<string, IntegrationStakingPositionDto[]>,
-  ): StakingPositionResponseDto[] {
-    const responseData: StakingPositionResponseDto[] = [];
-    stakingPositionsMap.forEach((value) => {
-      const stakingResponse = new StakingPositionResponseDto();
-      stakingResponse.stakingPositions = value;
-      responseData.push(stakingResponse);
+    chain: ChainDto,
+  ): BaseData[] {
+    const base: BaseData[] = [];
+    stakingPositionsMap.forEach((value, key) => {
+      let total = 0;
+      value.forEach((staking) => {
+        total += staking.rewardToken.claimableData.value;
+        if (staking.stakingToken.tokens) {
+          staking.stakingToken.tokens.forEach((token) => {
+            total += token.value;
+          });
+        } else {
+          total += staking.stakingToken.value;
+        }
+      });
+      base.push(
+        plainToClass(BaseDataStaking, {
+          userAddress: key,
+          chain,
+          projectName: ProjectEnum.autofarm,
+          protocolName: AutofarmProtocolEnum.autofarm,
+          protocolType: ProtocolTypeEnum.staking,
+          items: value,
+          total,
+          feature: FeatureEnum.staking,
+        }),
+      );
     });
-    return responseData;
+    return base;
   }
 
   private getStakingPositionDtosMap(

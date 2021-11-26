@@ -30,20 +30,29 @@ export class LocalMultiCall extends MultiCall {
     };
   }
 
-  async checkAutoTokenStake(data: StakingInterface[], address: string, poolsTokens: string[]) {
-    const input1 = this.getInputsForAutoStake(address, 'stakedWantTokens');
-    const input2 = this.getInputsForAutoStake(address, 'userInfo');
-
-    const [, result] = await this.multiCall(AutoFactoryAbi, [input1, input2]);
-    if (!result[0].isZero()) {
-      data.push({
-        poolNum: 0,
-        userAddress: address,
-        amount: result[0]?.toString(),
-        claimable: result[1]?.toString(),
-        contractAddress: autofarmRewardToken,
+  async checkAutoTokenStake(data: StakingInterface[], addresses: string[], poolsTokens: string[]) {
+    try {
+      const addressesInputs = addresses.map((address) => {
+        const input1 = this.getInputsForAutoStake(address, 'stakedWantTokens');
+        const input2 = this.getInputsForAutoStake(address, 'userInfo');
+        return [input1, input2];
       });
-      poolsTokens.push(autofarmRewardToken);
+
+      const [, result] = await this.multiCall(AutoFactoryAbi, addressesInputs.flat());
+      for (let i = 0; i < result.length; i += 2) {
+        if (!result[0].isZero()) {
+          data.push({
+            poolNum: 0,
+            userAddress: addresses[i / 2],
+            amount: result[i]?.toString(),
+            claimable: result[i + 1]?.toString(),
+            contractAddress: autofarmRewardToken,
+          });
+          poolsTokens.push(autofarmRewardToken);
+        }
+      }
+    } catch (e) {
+      this.logger.error(e, 'checkAutoTokenStake');
     }
   }
 
@@ -70,34 +79,40 @@ export class LocalMultiCall extends MultiCall {
     data: StakingInterface[],
     chain: ChainAbbrEnum,
   ): Promise<VaultUserInfo[]> {
-    const inputs = data.map((pool) => {
-      const input: CallInput = {
-        target: autofarmFactoriesMap.get(chain),
-        function: 'pendingAUTO',
-        args: [pool.poolNum, pool.userAddress],
-      };
-      return input;
-    });
+    try {
+      const inputs = data.map((pool) => {
+        const input: CallInput = {
+          target: autofarmFactoriesMap.get(chain),
+          function: 'pendingAUTO',
+          args: [pool.poolNum, pool.userAddress],
+        };
+        return input;
+      });
 
-    const [, vaultUserInfo] = await this.multiCall(AutofarmVaultAbi, inputs);
-    vaultUserInfo?.forEach((info, index) => (data[index].claimable = info.toString()));
-    return vaultUserInfo;
+      const [, vaultUserInfo] = await this.multiCall(AutofarmVaultAbi, inputs);
+      vaultUserInfo?.forEach((info, index) => (data[index].claimable = info.toString()));
+      return vaultUserInfo;
+    } catch (e) {
+      this.logger.error(e, 'getVaultUsersRewards');
+      throw e;
+    }
   }
 
   async getStakedPositions(
     stakedPosition: StakingInterface[],
-    address: string,
+    addresses: string[],
     chain: ChainAbbrEnum,
   ): Promise<StakingInterface[]> {
     const inputs = [];
-
-    for (let i = 1; i <= autofarmPoolLength; i++) {
-      inputs.push({
-        target: autofarmFactoriesMap.get(chain),
-        function: 'stakedWantTokens',
-        args: [i, address],
-      });
-    }
+    addresses.forEach((address) => {
+      for (let i = 1; i <= autofarmPoolLength; i++) {
+        inputs.push({
+          target: autofarmFactoriesMap.get(chain),
+          function: 'stakedWantTokens',
+          args: [i, address],
+        });
+      }
+    });
 
     const step = 50;
     for (let i = 0; i < inputs.length; i += step) {
@@ -105,14 +120,17 @@ export class LocalMultiCall extends MultiCall {
       const [, stakedWantTokens] = await this.multiCall(AutoFactoryAbi, sliceInput);
       stakedWantTokens.forEach((amount, index) => {
         if (amount && !amount.isZero()) {
+          const poolIndex = i + index + 1;
+          const poolNum = poolIndex % autofarmPoolLength;
           stakedPosition.push({
-            poolNum: i + index + 1,
-            userAddress: address,
+            poolNum,
+            userAddress: addresses[Math.floor(poolIndex / autofarmPoolLength)],
             amount: amount.toString(),
           });
         }
       });
     }
+
     return stakedPosition;
   }
 

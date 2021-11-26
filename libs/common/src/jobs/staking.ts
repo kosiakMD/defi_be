@@ -16,11 +16,24 @@ export class IntegrationPoolTokenDto extends ERC20Token {
   positionInPool: number = null;
 }
 
+export class UnderlyingStakingLp extends ERC20Token {
+  poolId: number = null;
+  positionInPool: number = null;
+  tokens?: IntegrationPoolTokenDto[] = [];
+}
+
 export class IntegrationERC20TokenDto extends ERC20Token {
   price?: number = null;
   value?: number = null;
   balance?: number = null;
-  tokens?: IntegrationPoolTokenDto[] = [];
+  tokens?: Array<IntegrationPoolTokenDto> = [];
+}
+
+export class CurveIntegrationERC20TokenDto extends ERC20Token {
+  price?: number = null;
+  value?: number = null;
+  balance?: number = null;
+  tokens?: Array<IntegrationPoolTokenDto | UnderlyingStakingLp> = [];
 }
 
 export class IntegrationClaimableTokenDto extends ERC20Token {
@@ -42,5 +55,15 @@ export class IntegrationStakingPositionDto {
   staked: number = null;
   stats: Stats = plainToClass(Stats, {});
   stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
+  rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+}
+
+export class CurveIntegrationStakingPositionDto {
+  address: string = null;
+  poolId: number = null;
+  poolName: string = null;
+  staked: number = null;
+  stats: Stats = plainToClass(Stats, {});
+  stakingToken: CurveIntegrationERC20TokenDto = plainToClass(CurveIntegrationERC20TokenDto, {});
   rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
 }

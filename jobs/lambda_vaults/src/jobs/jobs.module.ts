@@ -3,6 +3,8 @@ import { Module } from '@nestjs/common';
 import { ChainModule } from '../chain/chain.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { EllipsisLp } from './ellipsis/ellipsis.lp';
+import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
@@ -25,6 +27,8 @@ import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
     TraderJoeStaking,
     DbMapping,
     SpookyswapPools,
+    EllipsisStaking,
+    EllipsisLp,
   ],
   exports: [JobsRunner, IntegrationDataConverter],
 })

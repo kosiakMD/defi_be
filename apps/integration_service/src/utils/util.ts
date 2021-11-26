@@ -9,7 +9,12 @@ export const CHAIN_ID_ETH: Chain = 1;
 
 export const decimalsDivider = (decimals: Decimals): BigNumber => new BN(10).pow(decimals);
 
-export const ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+export function toDecimals(amount, decimals): number {
+  if (amount instanceof BigNumber) {
+    return Number(amount.times(new BigNumber(10).pow(-Number(decimals))));
+  }
+  return Number(new BigNumber(amount).times(new BigNumber(10).pow(-Number(decimals))));
+}
 
 export function getUniqueAndToLowerCaseArrayData(array: string[]): string[] {
   const temp: string[] = [];

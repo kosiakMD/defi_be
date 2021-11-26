@@ -10,6 +10,10 @@ export enum ProjectEnum {
   uniswap = 'uniswap',
 }
 
+export enum EllipsisProtocolEnum {
+  ellipsis = 'Ellipsis',
+}
+
 export enum AutofarmProtocolEnum {
   autofarm = 'Autofarm',
 }
@@ -57,7 +61,8 @@ export type ProtocolName =
   | UniswapProtocolEnum
   | AlpacaProtocolEnum
   | AaveProtocolEnum
-  | YearnProtocolEnum;
+  | YearnProtocolEnum
+  | EllipsisProtocolEnum;
 
 export const ProtocolNameEnum = {
   ...AutofarmProtocolEnum,
@@ -70,4 +75,5 @@ export const ProtocolNameEnum = {
   ...AlpacaProtocolEnum,
   ...AaveProtocolEnum,
   ...YearnProtocolEnum,
+  ...EllipsisProtocolEnum,
 };

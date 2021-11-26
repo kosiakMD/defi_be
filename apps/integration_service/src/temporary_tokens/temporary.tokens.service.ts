@@ -3,7 +3,8 @@ import { getManager } from 'typeorm';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ETH_ADDRESS } from '../utils/util';
+import { ETH_ADDRESS } from '@app/common/constant';
+
 import { CoingeckoService } from './coingecko.service';
 import { Network, networks } from './network.util';
 import {

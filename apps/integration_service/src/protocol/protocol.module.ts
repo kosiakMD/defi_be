@@ -15,6 +15,9 @@ import { AlpacaApiService } from './protocols/alpaca/services/alpaca.api.service
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
+import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
+import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { Mapper } from './protocols/mappers/mapper';
 import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
 import { PancakeV2Pools } from './protocols/pancake/pancake-v2.pools';
@@ -47,6 +50,7 @@ const ProtocolList = [
   YearnProtocolV2,
 ];
 
+const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
 const Pancake = [PancakeProtocol, PancakeV2Pools, PancakeV2Staking, PancakeV2Legacy];
 
@@ -73,6 +77,7 @@ const Pancake = [PancakeProtocol, PancakeV2Pools, PancakeV2Staking, PancakeV2Leg
     ...ProtocolList,
     ...TraderJoe,
     ...Pancake,
+    ...Ellipsis,
     ProtocolService,
     Mapper,
     AlpacaApiService,

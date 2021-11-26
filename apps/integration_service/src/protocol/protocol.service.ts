@@ -58,6 +58,7 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -80,6 +81,7 @@ export class ProtocolService {
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly traderjoeProtocol: TraderJoeProtocol,
+    private readonly ellipsisProtocol: EllipsisProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -95,6 +97,7 @@ export class ProtocolService {
       yearnProtocolV1,
       yearnProtocolV2,
       traderjoeProtocol,
+      ellipsisProtocol,
     ];
   }
 

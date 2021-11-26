@@ -109,6 +109,7 @@ export class AssetResponseDto implements IAssetResponseDto {
   @Expose()
   positionInPool?: number;
 
+  @Expose()
   underlyingAssets?: AssetResponseDto[];
 }
 

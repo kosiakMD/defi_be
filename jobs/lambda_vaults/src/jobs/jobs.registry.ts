@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
+import { EllipsisLp } from './ellipsis/ellipsis.lp';
+import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { JobInterface } from './job.interface';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
@@ -17,11 +19,15 @@ export class JobsRegistry {
     traderjoeLp: TraderjoePools,
     traderjoeStaking: TraderJoeStaking,
     spookyswapLp: SpookyswapPools,
+    ellipsisLp: EllipsisLp,
+    ellipsisStaking: EllipsisStaking,
   ) {
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
     this.registry.set(pancakeLPV2.placeholder, pancakeLPV2);
     this.registry.set(traderjoeLp.placeholder, traderjoeLp);
     this.registry.set(traderjoeStaking.placeholder, traderjoeStaking);
     this.registry.set(spookyswapLp.placeholder, spookyswapLp);
+    this.registry.set(ellipsisLp.placeholder, ellipsisLp);
+    this.registry.set(ellipsisStaking.placeholder, ellipsisStaking);
   }
 }

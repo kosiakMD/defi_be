@@ -3,6 +3,7 @@ import {
   AlpacaProtocolEnum,
   AutofarmProtocolEnum,
   ChainIdEnum,
+  EllipsisProtocolEnum,
   LiquidityChangeTypeEnum,
   PancakeProtocolEnum,
   ProjectEnum,
@@ -31,7 +32,8 @@ export type ProtocolName =
   | AutofarmProtocolEnum
   | QuickswapProtocolEnum
   | AlpacaProtocolEnum
-  | AaveProtocolEnum;
+  | AaveProtocolEnum
+  | EllipsisProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;

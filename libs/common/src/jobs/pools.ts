@@ -38,3 +38,17 @@ export class LiquidityPoolFeature {
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
   tokens: PoolTokenDto[] = [];
 }
+
+export class CurveUnderlyingLpDto extends ERC20Token {
+  positionInPool: number = null;
+  tokens: PoolTokenDto[] = [];
+}
+
+export class CurveLiquidityPoolFeature {
+  address: string = null;
+  name: string = null;
+  lpToken: ERC20Token = null;
+  stats: Stats = plainToClass(Stats, {});
+  statistic: PoolStatistic = plainToClass(PoolStatistic, {});
+  tokens: Array<PoolTokenDto | CurveUnderlyingLpDto> = [];
+}

@@ -10,7 +10,13 @@ export class PoolsFeatureMapping {
     dbId: number;
     dtoName: string;
     positionInPool: number;
-    weight: number;
+    weight?: number;
+    tokens?: {
+      dbId: number;
+      dtoName: string;
+      positionInPool: number;
+    }[];
+    // lp?: { dbId: string; dtoName: string };
   }[];
 }
 
@@ -28,6 +34,11 @@ export class StakingFeatureMapping {
       dbId: number;
       dtoName: string;
       positionInPool: number;
+      tokens?: {
+        dbId: number;
+        dtoName: string;
+        positionInPool: number;
+      }[];
     }[];
   };
 }

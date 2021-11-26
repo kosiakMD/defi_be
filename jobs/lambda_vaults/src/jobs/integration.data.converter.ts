@@ -1,11 +1,19 @@
 import { plainToClass } from 'class-transformer';
 
-import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
+  CurveLiquidityPoolFeature,
+  CurveUnderlyingLpDto,
+  LiquidityPoolFeature,
+  PoolTokenDto,
+} from '@app/common/jobs/pools';
+import {
+  CurveIntegrationERC20TokenDto,
+  CurveIntegrationStakingPositionDto,
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
+  UnderlyingStakingLp,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 
@@ -43,6 +51,10 @@ export class IntegrationDataConverter {
 
   private static buildFeatureDtoByDtoName(dtoName: string): any {
     switch (dtoName) {
+      case CurveIntegrationStakingPositionDto.name:
+        return plainToClass(CurveIntegrationStakingPositionDto, {});
+      case CurveIntegrationERC20TokenDto.name:
+        return plainToClass(CurveIntegrationERC20TokenDto, {});
       case IntegrationStakingPositionDto.name:
         return plainToClass(IntegrationStakingPositionDto, {});
       case IntegrationClaimableTokenDto.name:
@@ -57,6 +69,12 @@ export class IntegrationDataConverter {
         return plainToClass(LiquidityPoolFeature, {});
       case ERC20Token.name:
         return plainToClass(ERC20Token, {});
+      case UnderlyingStakingLp.name:
+        return plainToClass(UnderlyingStakingLp, {});
+      case CurveUnderlyingLpDto.name:
+        return plainToClass(CurveUnderlyingLpDto, {});
+      case CurveLiquidityPoolFeature.name:
+        return plainToClass(CurveLiquidityPoolFeature, {});
     }
 
     return null;

@@ -1,3 +1,4 @@
+// to be removed once transition to v2 will be completed
 export const MASTER_CHEF_PANCAKE_ABI = [
   {
     inputs: [

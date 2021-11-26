@@ -1,5 +1,3 @@
-import { APRStats, APRStatsBonus } from '../dto/apr';
-
 export function calculateAPR({
   totalAllocPoints,
   poolAllocPoints,
@@ -7,7 +5,7 @@ export function calculateAPR({
   rewardTokenPrice,
   blockTime,
   farmingPoolTVL,
-}: APRStats): number {
+}): number {
   const poolRewardPerBlock = poolAllocPoints
     .div(totalAllocPoints)
     .times(rewardTokenPerBlock)
@@ -22,7 +20,7 @@ export function calculateAPRBonus({
   rewardTokenPrice,
   blockTime,
   farmingPoolTVL,
-}: APRStatsBonus): number {
+}): number {
   const poolRewardPerBlock = rewardTokenPerBlock * rewardTokenPrice;
   const aprPerBlock = (poolRewardPerBlock / farmingPoolTVL) * 100;
   const blocksPerYear = (86400 * 365) / blockTime;

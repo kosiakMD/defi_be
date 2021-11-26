@@ -29,7 +29,6 @@ import { toDecimals } from '../../utils/number';
 import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
-import { APRStats } from '../dto/apr';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
@@ -378,7 +377,7 @@ export class PancakeStaking implements JobInterface {
 
         const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m)).output.data;
 
-        const aprStats: APRStats = {
+        const aprStats = {
           totalAllocPoints: totalAllocPoint,
           poolAllocPoints: allocPoint,
           rewardTokenPerBlock: toDecimals(cakePerBlock, m.rewards[0].decimals),

@@ -25,7 +25,6 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
 import { concatStrings } from '../../utils/string';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
-import { APRStats, APRStatsBonus } from '../dto/apr';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { calculateAPR, calculateAPRBonus } from '../utils/apr';
@@ -291,7 +290,7 @@ export class TraderJoeStaking implements JobInterface {
               this.poolInfoLabel(m, TraderjoeAddresses.chiefV3),
             ).output.data;
 
-            const aprStats: APRStats = {
+            const aprStats = {
               totalAllocPoints: totalAllocPointV3,
               poolAllocPoints: allocPoint,
               rewardTokenPerBlock: toDecimals(joePerBlockV3, m.rewards[0].decimals) * blockTime,
@@ -327,7 +326,7 @@ export class TraderJoeStaking implements JobInterface {
 
               const res = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
 
-              const aprStatsBonus: APRStatsBonus = {
+              const aprStatsBonus = {
                 rewardTokenPerBlock:
                   toDecimals(
                     res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
@@ -358,7 +357,7 @@ export class TraderJoeStaking implements JobInterface {
               this.poolInfoLabel(m, TraderjoeAddresses.chiefV2),
             ).output.data;
 
-            const aprStats: APRStats = {
+            const aprStats = {
               totalAllocPoints: totalAllocPointV2,
               poolAllocPoints: allocPoint,
               rewardTokenPerBlock: toDecimals(joePerBlockV2, m.rewards[0].decimals),

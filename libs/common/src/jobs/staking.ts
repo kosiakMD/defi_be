@@ -43,8 +43,6 @@ export class IntegrationClaimableTokenDto extends ERC20Token {
 }
 
 export class Stats {
-  apy: number = null;
-  apr?: number[] = [];
   tvl: number = null;
 }
 

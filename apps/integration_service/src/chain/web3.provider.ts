@@ -37,8 +37,4 @@ export class Web3Provider {
   instanceBsc(): Web3 {
     return this.web3Map.get(ChainAbbrEnum.bsc);
   }
-
-  instanceFtm(): Web3 {
-    return this.web3Map.get(ChainAbbrEnum.ftm);
-  }
 }

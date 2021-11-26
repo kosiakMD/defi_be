@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
 
-import { splitToArray } from '../../utils/transform';
+import { splitToArrayAndUnify } from '../../utils/transform';
 
 export class PriceQueryDto {
   @Type(() => Number)
@@ -34,7 +34,7 @@ export class PriceQueryDto {
 
   @IsNotEmpty()
   @IsString({ each: true })
-  @Transform(({ value }) => splitToArray(value))
+  @Transform(({ value }) => splitToArrayAndUnify(value))
   @ApiProperty({
     type: String,
     required: true,

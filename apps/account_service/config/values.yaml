@@ -9,7 +9,7 @@ configMaps:
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
-    ETH_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/eth/mainnet/archive
+    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
     POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
     FTM_URL: https://rpc.ftm.tools/

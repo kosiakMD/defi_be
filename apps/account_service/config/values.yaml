@@ -13,7 +13,7 @@ configMaps:
     BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
     POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
     FTM_URL: https://rpc.ftm.tools/
-    AVAX_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet
+    AVAX_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
     ARBITRUM_URL: https://arb1.arbitrum.io/rpc
     XDAI_URL: https://xdai-archive.blockscout.com
     CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/

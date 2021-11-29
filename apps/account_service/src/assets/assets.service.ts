@@ -91,7 +91,7 @@ export class AssetsService {
         );
   }
 
-  async saveTrackingAsset({ assetAddress, assetChain }): Promise<any> {
+  async saveTrackingAsset({ assetAddress, assetChain }): Promise<AssetResponseDto> {
     const existedAsset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
       assetAddress,
       assetChain,

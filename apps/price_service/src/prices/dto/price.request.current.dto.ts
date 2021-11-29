@@ -3,8 +3,9 @@ import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
+import { IPriceRequestCurrent } from '@app/common/interfaces/price.request.current';
 
-export class PriceRequestCurrentDto {
+export class PriceRequestCurrentDto implements IPriceRequestCurrent {
   @IsNotEmpty()
   @IsString()
   @ApiProperty({

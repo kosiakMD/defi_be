@@ -128,6 +128,15 @@
     "lambda_prices-dev": "ts-node jobs/lambda_prices/src/start.ts",
     "lambda_prices-start": "tsc --project jobs/lambda_prices/tsconfig.json && node ./dist/jobs/lambda_prices/src/start.js",
 
+    "lambda_protocol-prices-format": "yarn --cwd ./apps/lambda_protocol_prices run format",
+    "lambda_protocol-prices-lint": "eslint \"./apps/lambda_protocol_prices/{src,config}/**/*.ts\"",
+    "lambda_protocol-prices-prebuild": "yarn yarn --cwd ./apps/lambda_protocol_prices run prebuild",
+    "lambda_protocol-prices-build": "nest build lambda_protocol_prices",
+    "lambda_protocol-prices-start": "node -r dotenv/config node_modules/.bin/nest start lambda_protocol_prices dotenv_config_path=jobs/lambda_protocol_prices/.env",
+    "lambda_protocol-prices-start:dev": "node -r dotenv/config node_modules/.bin/nest start lambda_protocol_prices dotenv_config_path=jobs/lambda_protocol_prices/.env --watch",
+    "lambda_protocol-prices-start:debug": "nest start lambda_protocol_prices --debug --watch",
+    "lambda_protocol-prices-start:prod": "nest start lambda_protocol_prices",
+
     "lambda_external_prices-prebuild": "rimraf ./dist/jobs/lambda_external_prices",
     "lambda_external_prices-format": "yarn --cwd jobs/lambda_external_prices run format",
     "lambda_external_prices-lint": "eslint \\\"jobs/lambda_external_prices/{src,config,test}/**/*.ts\\\"",

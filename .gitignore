@@ -134,5 +134,7 @@ dist
 ./dist
 
 # compiled sources
-**/src/**/*.js
 /deploy/
+**/src/**/*.js
+**/src/**/*.js.map
+**/src/**/*.d.ts

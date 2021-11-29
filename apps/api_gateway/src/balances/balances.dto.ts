@@ -8,6 +8,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Address, Chains } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 import { ERC20Token } from '@app/common/interfaces';
+import { splitToAddressesArray } from '@app/common/utils/addresses';
 
 import { AccountTokenBalance, ErrorMessage } from '../account/account.interfaces';
 import { splitToArray } from '../utils/transform';
@@ -15,7 +16,7 @@ import { Balance, BalanceToken } from './balances.interfaces';
 
 export class BalancesQueryDto {
   @IsNotEmpty()
-  @Transform(({ value }) => splitToArray(value))
+  @Transform(({ value }) => splitToAddressesArray(value))
   @IsString({ each: true })
   addresses: Address[];
 
@@ -31,7 +32,7 @@ export class BalancesQueryDto {
   chains: Chains;
 
   @IsOptional()
-  @Transform(({ value }) => splitToArray(value))
+  @Transform(({ value }) => splitToAddressesArray(value))
   @IsString({ each: true })
   assets: Address[];
 }

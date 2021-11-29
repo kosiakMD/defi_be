@@ -240,7 +240,7 @@ export class PriceService {
   }
 
   public async updateCurrentPrice(requestBody: PriceRequestCurrentDto[]): Promise<void> {
-
+    requestBody = requestBody.filter((dto) => dto.price);
     // Cache prices for 24 hour return calculations
     this.cacheRawPriceRequest(requestBody);
 

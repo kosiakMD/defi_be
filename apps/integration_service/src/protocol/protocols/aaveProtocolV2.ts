@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
-// import web3 from 'web3';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -18,13 +17,18 @@ import {
   LendingErcToken,
   IAssetResponseDto,
   ChainIdEnum,
+  ProtocolTypeEnum,
 } from '@app/common';
 import { FeatureEnum } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
+import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
+import { BaseDataHealth } from '@app/common/dto/base.data.health.dto';
+import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
 
+import { BaseData } from '../../interfaces/transactions.interfaces';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { RAY } from './aave/constants';
@@ -79,7 +83,80 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     this.dataProvider = this;
   }
 
-  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
+  public async getAllFeaturesBaseData(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    const userData = await Promise.allSettled(
+      addresses.flatMap((address) => {
+        return this.getAsBaseData(address, chain);
+      }),
+    );
+
+    const data = [];
+    const errors = [];
+    userData.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        data.push(r.value);
+      } else {
+        this.logger.error(r.reason, r.reason.stack, AaveProtocolEnum.AaveV2);
+        errors.push(r.reason.toString());
+      }
+    });
+    return [data.flat(), errors];
+  }
+
+  async getAsBaseData(address: Address, chain: ChainDto): Promise<BaseData[]> {
+    const featureData = await this.getAllFeaturesData(address, chain);
+    const factory = this.createBaseObjectFactory(
+      address,
+      chain,
+      featureData,
+      ProjectEnum.aave,
+      AaveProtocolEnum.AaveV2,
+    );
+    const lending = plainToClass(
+      BaseDataLending,
+      factory(ProtocolTypeEnum.lending, FeatureEnum.lending),
+    );
+    const borrowing = plainToClass(
+      BaseDataLending,
+      factory(ProtocolTypeEnum.borrowing, FeatureEnum.borrowing),
+    );
+    const claimable = plainToClass(
+      BaseDataClaimable,
+      factory(ProtocolTypeEnum.lending, FeatureEnum.claimable),
+    );
+    const health = plainToClass(
+      BaseDataHealth,
+      factory(ProtocolTypeEnum.borrowing, FeatureEnum.health),
+    );
+
+    return [lending, borrowing, claimable, health];
+  }
+
+  createBaseObjectFactory(
+    address: Address,
+    chain: ChainDto,
+    featureData: IntegrationFeaturesDataDto,
+    projectName: ProjectEnum,
+    protocolName: AaveProtocolEnum,
+  ) {
+    return function (protocolType: ProtocolTypeEnum, feature: FeatureEnum) {
+      return {
+        chain,
+        userAddress: address,
+        protocolType,
+        projectName,
+        protocolName,
+        total: featureData[feature].totalValue,
+        feature,
+        items: featureData[feature].items,
+      };
+    };
+  }
+
+  async getAllFeaturesData(address: Address, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     return this.getLendingAndBorrowingData(address.toLowerCase(), chain);
   }
 

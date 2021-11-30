@@ -1,4 +1,3 @@
-// eslint-disable-next-line max-classes-per-file
 import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
@@ -6,33 +5,34 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, CurrencyIdEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, Logger } from '@app/common';
 import { IPriceRequestCurrent } from '@app/common/interfaces/price.request.current';
 
-import { CallData } from '../../chain/dto/call.data';
-import { MulticallService } from '../../chain/multicall.service';
-import { AccountService } from '../../microservices/account.service';
-import { PriceService } from '../../microservices/price.service';
-import { IProtocolPriceUpdate } from '../interfaces/protocol.price.update';
+import { CallData } from '../../../chain/dto/call.data';
+import { MulticallService } from '../../../chain/multicall.service';
+import { AccountService } from '../../../microservices/account.service';
+import { PriceService } from '../../../microservices/price.service';
+import { IProtocolPriceUpdate } from '../../interfaces/protocol.price.update';
+import { ProtocolBase } from '../protocol.base';
 import { CErc20DelegateAbi } from './abis/CErc20DelegateAbi';
 import { tokens, underlying } from './constants';
 import { BasicCToken } from './dtos/BasicCToken';
 import { UnderlyingAssetInfo } from './dtos/UnderlyingAssetInfo';
 
 @Injectable()
-export class CompoundProtocol implements IProtocolPriceUpdate {
+export class CompoundProtocol extends ProtocolBase implements IProtocolPriceUpdate {
   chains = [ChainIdEnum.eth];
-  chain: ChainIdEnum;
   job = `CompoundProtocol_TokenPriceUpdate`;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly accountService: AccountService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly configService: ConfigService,
+    protected readonly accountService: AccountService,
+    protected readonly priceService: PriceService,
     private readonly multicallService: MulticallService,
-    private readonly priceService: PriceService,
-    private readonly configService: ConfigService,
   ) {
-    this.chain = configService.get('CHAIN_ID');
+    super();
+    this.chain = Number(configService.get('CHAIN_ID'));
   }
 
   async update() {
@@ -102,8 +102,8 @@ export class CompoundProtocol implements IProtocolPriceUpdate {
     const underlying = [...new Set(cTokenData.map((v) => v.underlying))];
 
     const [assets, prices] = await Promise.all([
-      this.accountService.getAssets(underlying, this.chain),
-      this.priceService.getPrices(underlying, this.chain),
+      this.fetchAssets(underlying),
+      this.fetchPrices(underlying),
     ]);
 
     return new Map<Address, UnderlyingAssetInfo>(
@@ -127,14 +127,11 @@ export class CompoundProtocol implements IProtocolPriceUpdate {
     return cTokenData.map((cToken) => {
       const asset = assetData.get(cToken.underlying);
 
-      return {
-        address: cToken.address,
-        price: this.formatExchangeRate(cToken.exchangeRate, asset.decimals)
-          .times(asset.price)
-          .toNumber(),
-        chainId: ChainIdEnum.eth,
-        currencyId: CurrencyIdEnum.usd,
-      };
+      const price = this.formatExchangeRate(cToken.exchangeRate, asset.decimals)
+        .times(asset.price)
+        .toNumber();
+
+      return this.formatPriceRequest(cToken.address, price);
     });
   }
 

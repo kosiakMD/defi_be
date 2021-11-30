@@ -1,6 +1,6 @@
 import { AbiItem } from 'web3-utils';
 
-import { BaseMultiCallProxy } from '../../utils/BaseMulticallProxy';
+import { BaseMultiCallProxy } from '../../../utils/BaseMulticallProxy';
 
 export class CErc20DelegateAbi extends BaseMultiCallProxy {
   static readonly exchangeRateStored: AbiItem = {

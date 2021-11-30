@@ -42,7 +42,11 @@ export class JobsRunner {
     this.logger.time(timeKey);
     const promises = this.jobs.map((job) => job.update());
     const tokens = (await Promise.all(promises)).flat();
-    await this.priceService.savePrices(tokens);
+
+    if (tokens?.length) {
+      await this.priceService.savePrices(tokens);
+    }
+
     this.logger.timeEnd(timeKey);
     this.logger.log(`Protocol Price Job Complete for Chain ${this.chain}`);
   }

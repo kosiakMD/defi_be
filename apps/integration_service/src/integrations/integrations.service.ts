@@ -58,7 +58,7 @@ export class IntegrationsService {
             feature.chain.id + '_' + protocol.name + '_' + ft,
           );
           if (cachedData) {
-            feature[ft] = this.getActive(ft, cachedData as NotifyPayloadFeaturesDto);
+            feature[ft] = (cachedData as NotifyPayloadFeaturesDto).items;
           }
         }
       }

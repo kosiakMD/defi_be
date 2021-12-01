@@ -61,6 +61,10 @@ export enum AlpacaProtocolEnum {
   alpaca = 'Alpaca',
 }
 
+export enum CurveProtocolEnum {
+  curve = 'Curve',
+}
+
 export enum TraderjoeProtocolEnum {
   traderjoe = 'TraderJoe',
 }
@@ -73,6 +77,7 @@ export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...CurveProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,

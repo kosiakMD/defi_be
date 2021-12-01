@@ -5,17 +5,17 @@ import { plainToClass } from 'class-transformer';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CurrencyIdEnum } from '@app/common';
+import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
+import { concatStrings } from '@app/common/utils';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { CallData } from '../../chain/dto/call.data';
-import { MulticallService } from '../../chain/multicall.service';
-import { Web3Provider } from '../../chain/web3.provider';
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -23,7 +23,6 @@ import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
-import { concatStrings } from '../../utils/string';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
@@ -35,8 +34,8 @@ import { DbMapping } from './dbmapping';
 @Injectable()
 export class TraderJoeStaking implements JobInterface {
   chain = ChainIdEnum.avax;
-  feature = 'staking';
-  protocol = 'TraderJoe';
+  feature = FeatureEnum.staking;
+  protocol = ProtocolNameEnum.traderjoe;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
 
@@ -45,10 +44,9 @@ export class TraderJoeStaking implements JobInterface {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly web3Provider: Web3Provider,
     private readonly accountService: AccountService,
     private readonly storeService: StoreService,
-    private readonly multicallService: MulticallService,
+    private readonly multicallService: MulticallAggregator,
     private readonly priceService: PriceService,
   ) {
     this.dbMapping = new DbMapping(storeService);

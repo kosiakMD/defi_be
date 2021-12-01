@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
+import { CurvePools } from './curve/curve.pools';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { JobInterface } from './job.interface';
@@ -14,6 +15,7 @@ export class JobsRegistry {
   public readonly registry: Map<string, JobInterface> = new Map<string, JobInterface>();
 
   constructor(
+    curvePools: CurvePools,
     pancakeStaking: PancakeStaking,
     pancakeLPV2: PancakePoolsV2,
     traderjoeLp: TraderjoePools,
@@ -22,6 +24,7 @@ export class JobsRegistry {
     ellipsisLp: EllipsisLp,
     ellipsisStaking: EllipsisStaking,
   ) {
+    this.registry.set(curvePools.placeholder, curvePools);
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
     this.registry.set(pancakeLPV2.placeholder, pancakeLPV2);
     this.registry.set(traderjoeLp.placeholder, traderjoeLp);

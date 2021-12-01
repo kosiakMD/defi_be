@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 
-import { ChainModule } from '../chain/chain.module';
+import { Web3ProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { CurvePools } from './curve/curve.pools';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
@@ -15,20 +18,27 @@ import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 
+const Jobs = [
+  CurvePools,
+  DbMapping,
+  EllipsisLp,
+  EllipsisStaking,
+  PancakePoolsV2,
+  PancakeStaking,
+  SpookyswapPools,
+  TraderJoeStaking,
+  TraderjoePools,
+];
+
 @Module({
-  imports: [MicroservicesModule, ChainModule, StoreModule],
+  imports: [MicroservicesModule, StoreModule],
   providers: [
     JobsRunner,
     JobsRegistry,
     IntegrationDataConverter,
-    PancakeStaking,
-    PancakePoolsV2,
-    TraderjoePools,
-    TraderJoeStaking,
-    DbMapping,
-    SpookyswapPools,
-    EllipsisStaking,
-    EllipsisLp,
+    MulticallAggregator,
+    Web3ProviderService,
+    ...Jobs,
   ],
   exports: [JobsRunner, IntegrationDataConverter],
 })

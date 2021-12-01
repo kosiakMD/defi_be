@@ -7,6 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
@@ -14,10 +15,9 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
+import { concatStrings } from '@app/common/utils';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { CallData } from '../../chain/dto/call.data';
-import { MulticallService } from '../../chain/multicall.service';
-import { Web3Provider } from '../../chain/web3.provider';
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -26,7 +26,6 @@ import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toDecimals } from '../../utils/number';
-import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { StakingFeatureMapping } from '../dto/mappings';
@@ -49,10 +48,9 @@ export class PancakeStaking implements JobInterface {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly web3Provider: Web3Provider,
     private readonly accountService: AccountService,
     private readonly storeService: StoreService,
-    private readonly multicallService: MulticallService,
+    private readonly multicallService: MulticallAggregator,
     private readonly priceService: PriceService,
   ) {
     this.availableDtosForConversion = new Map<string, string>([

@@ -15,6 +15,10 @@ export function decodeOutput(abi: AbiItem, outputResult) {
 }
 
 export function toInternalDataType(type: string, value: any) {
+  if (Array.isArray(value) && type.includes('[')) {
+    return value.map((v) => toInternalDataType(type.split('[')[0], v));
+  }
+
   if (type.includes('int')) {
     return new BigNumber(value);
   }

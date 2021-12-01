@@ -1,13 +1,10 @@
-// eslint-disable-next-line max-classes-per-file
+/* eslint-disable max-classes-per-file */
 import { plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
 
-import { ICallData, IInputOutput } from '@app/common';
+import { ICallData } from '@app/common';
 
-export class InputOutput implements IInputOutput {
-  data?: any = null;
-  plain?: string = null;
-}
+import { InputOutput } from './InputOutput';
 
 export class CallData implements ICallData {
   address: string;

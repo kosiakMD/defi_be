@@ -5,11 +5,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
+import { concatStrings } from '@app/common/utils';
+
 import { Logger } from '../logger/logger.service';
 import { IntegrationService } from '../microservices/integration.service';
 import { TrackedVault } from '../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
-import { concatStrings } from '../utils/string';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { TrackedVaultsMap } from './data/tracked.vaults.map';
 import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from './integrations.dto';
@@ -34,6 +36,7 @@ export class JobsRunner {
     const integrationServiceJobsPlaceholdersSet: Set<string> =
       await this.getIntegrationServiceConfiguration();
 
+    // All the Registered Jobs that also exist in the database
     const jobsPlaceholdersIntersection: Set<string> = new Set<string>();
 
     this.jobsRegistry.registry.forEach((_, v) => {
@@ -42,15 +45,15 @@ export class JobsRunner {
       }
     });
 
-    const dbJobs: TrackedVault[] = await this.integrationJobsMappingRepository.find();
-    const dbJobsItems: TrackedVaultItem[] = await this.integrationJobItemRepository.find();
+    const dbJobs = await this.integrationJobsMappingRepository.find();
+    const dbJobsItems = await this.integrationJobItemRepository.find();
 
     // set up objects to map in the other class to work with them simplier
     TrackedVaultsMap.add(dbJobs);
     TrackedVaultItemsMap.add(dbJobsItems);
 
     for (const placeholder of jobsPlaceholdersIntersection) {
-      const existedDbJob: TrackedVault = TrackedVaultsMap.get(placeholder) as TrackedVault;
+      const existedDbJob = TrackedVaultsMap.get(placeholder) as TrackedVault;
       if (existedDbJob) {
         this.logger.log(
           `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
@@ -62,11 +65,14 @@ export class JobsRunner {
         }
       }
     }
+
+    // TODO: add a way to initialize a new job so that we don't have to manually add/update it in the database
   }
 
   async update() {
-    const jobsData = [];
-    const promises = [];
+    const jobsData: Partial<NotifyPayloadFeaturesDto>[] = [];
+    const promises: Promise<NotifySupportedFeature[]>[] = [];
+
     for (const placeholder of this.jobsToRun.keys()) {
       const job = this.jobsToRun.get(placeholder);
       promises.push(job.updateWithChainData());
@@ -119,6 +125,11 @@ export class JobsRunner {
         });
       });
     });
+
+    // This has to be hardcoded for convex until Curve is supported on the front end
+    // TODO: remove after Curve integration is complete
+    jobPlaceholdersSet.add('1_Curve_pools');
+
     return jobPlaceholdersSet;
   }
 }

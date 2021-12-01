@@ -1,3 +1,4 @@
+// eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
@@ -5,11 +6,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
+import { CurveAddresses } from '@app/common/constant/addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 import { ellipsisPoolsMap } from '@app/common/jobs/ellipsis.pools.map';
 import { Address, Chains } from '@app/common/types';
 
+import { CURVE_REGISTRY } from '../chain/contracts/CURVE_REGISTRY';
 import { ELLIPSIS_LP } from '../chain/contracts/ELLIPSIS_LP';
 import { ERC20 } from '../chain/contracts/ERC20';
 import { MINTER } from '../chain/contracts/MINTER';
@@ -60,9 +63,13 @@ export class AssetsService {
       const assets = await this.assetRepository.findAllByAddressesAndChains(addresses, chains);
       this.logger.timeEnd(timeMark);
       response.data.push(
-        ...assets.map((asset) =>
-          plainToClass(AssetResponseDto, asset, { excludeExtraneousValues: true }),
-        ),
+        ...(await Promise.all(
+          assets.map(async (asset) => {
+            return plainToClass(AssetResponseDto, await this.withUnderlying(asset), {
+              excludeExtraneousValues: true,
+            });
+          }),
+        )),
       );
     } catch (e) {
       if (e.response) {
@@ -97,6 +104,11 @@ export class AssetsService {
       assetChain,
     );
 
+    // TODO: Curve uses actual ETH (not ERC20) with address 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
+    // Should we show wrapped eth instead, or...
+    // if (existedAsset && existedAsset.isLp) {
+    //   return this.withUnderlying(existedAsset);
+    // }
     if (existedAsset && (existedAsset.isTracked || existedAsset.isLp)) {
       return this.withUnderlying(existedAsset);
     }
@@ -127,6 +139,10 @@ export class AssetsService {
       assetToSave.isLp = await this.attemptUniswapLikePair(assetToSave);
     }
 
+    if (!assetToSave.isLp) {
+      assetToSave.isLp = await this.attemptCurveLikePool(assetToSave);
+    }
+
     if (ellipsisPoolsMap.get(assetAddress)) {
       assetToSave.isLp = await this.attemptEllipsisLikePair(assetToSave);
     }
@@ -136,6 +152,31 @@ export class AssetsService {
     assetToSave = await this.assetRepository.saveAsset(assetToSave);
 
     return this.withUnderlying(assetToSave);
+  }
+
+  async withUnderlying(asset: AssetsEntity): Promise<AssetResponseDto> {
+    if (asset.isLp === false) {
+      return plainToClass(AssetResponseDto, asset, { excludeExtraneousValues: true });
+    }
+
+    const underlyingAssets = await this.assetRepository.findAllUnderlying(asset.id);
+    const underlyingAssetsResponse: AssetResponseDto[] = [];
+    underlyingAssetsResponse.push(
+      ...(await Promise.all(
+        underlyingAssets.map(async (asset) => {
+          const filled = asset.isLp ? await this.withUnderlying(asset) : asset;
+          return plainToClass(AssetResponseDto, filled, {
+            excludeExtraneousValues: true,
+          });
+        }),
+      )),
+    );
+
+    const withUnderlying: AssetResponseDto = plainToClass(AssetResponseDto, asset, {
+      excludeExtraneousValues: true,
+    });
+    withUnderlying.underlyingAssets = underlyingAssetsResponse;
+    return withUnderlying;
   }
 
   private async attemptUniswapLikePair(asset: AssetsEntity) {
@@ -215,29 +256,39 @@ export class AssetsService {
     }
   }
 
-  async withUnderlying(asset: AssetsEntity): Promise<AssetResponseDto> {
-    if (asset.isLp === false) {
-      return plainToClass(AssetResponseDto, asset, { excludeExtraneousValues: true });
-    }
+  private async attemptCurveLikePool(asset: AssetsEntity) {
+    // TODO: Eth only for now
+    if (asset.chain !== ChainIdEnum.eth) return false;
 
-    const underlyingAssets: AssetsEntity[] = await this.assetRepository.findAllUnderlying(asset.id);
-    const underlyingAssetsResponse: AssetResponseDto[] = [];
+    try {
+      const registry = new CURVE_REGISTRY(
+        CurveAddresses.registry,
+        this.web3Provider.getInstanceByChainId(asset.chain),
+      );
 
-    underlyingAssetsResponse.push(
-      ...(await Promise.all(
-        underlyingAssets.map(async (asset) => {
-          const filled = asset.isLp ? await this.withUnderlying(asset) : asset;
-          return plainToClass(AssetResponseDto, filled, {
-            excludeExtraneousValues: true,
+      const coins = await registry.getCoinsForLpToken(asset.address);
+
+      // Call the curve specific functions. If its not a curve pool contract
+      // this will throw an error (and return false)
+      const newAssets = await Promise.all(
+        coins.map((address) => {
+          return this.saveTrackingAsset({
+            assetAddress: address,
+            assetChain: asset.chain,
           });
         }),
-      )),
-    );
+      );
 
-    const withUnderlying: AssetResponseDto = plainToClass(AssetResponseDto, asset, {
-      excludeExtraneousValues: true,
-    });
-    withUnderlying.underlyingAssets = underlyingAssetsResponse;
-    return withUnderlying;
+      // create relations between lp token and underlying tokens
+      await Promise.all(
+        newAssets.map((newAsset: any, idx: number) => {
+          return this.assetRepository.createRelation(asset.id, newAsset.id, idx);
+        }),
+      );
+
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

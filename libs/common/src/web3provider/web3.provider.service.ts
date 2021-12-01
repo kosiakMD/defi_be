@@ -4,10 +4,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { ChainIdEnum } from '..';
+import { MulticallContract } from './multicall.contract';
 
 @Injectable()
 export class Web3ProviderService {
   private readonly providers = new Map<ChainIdEnum, Web3>();
+  private readonly multicallContracts = new Map<ChainIdEnum, MulticallContract>();
 
   constructor(private readonly configService: ConfigService) {
     this.setProvider(ChainIdEnum.eth, 'ETH_URL');
@@ -15,13 +17,32 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.avax, 'AVAX_URL');
     this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
     this.setProvider(ChainIdEnum.ftm, 'FTM_URL');
+
+    // TODO: Move contracts to configs
+    this.setMulticall(ChainIdEnum.eth, '0x255f2a7712cc06944aeef4ea78349c54c22ffe1f');
+    this.setMulticall(ChainIdEnum.bsc, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');
+    this.setMulticall(ChainIdEnum.plg, '0xa1b2b503959aedd81512c37e9dce48164ec6a94d');
+    this.setMulticall(ChainIdEnum.ftm, '0x11473d6e641df17cd6331d45b135e35b49edbea8');
+    this.setMulticall(ChainIdEnum.avax, '0x92a09557707ab4888eacc034122120f27362da7f');
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {
     return this.providers.get(chain);
   }
 
+  public getMulticallByChainId(chain: ChainIdEnum): MulticallContract {
+    return this.multicallContracts.get(chain);
+  }
+
   private setProvider(chain: ChainIdEnum, env: string) {
     this.providers.set(chain, new Web3(this.configService.get(env)));
+  }
+
+  // TODO: pass 'env' selector instead of address (same as setProvider)
+  private setMulticall(chain: ChainIdEnum, address: string) {
+    this.multicallContracts.set(
+      chain,
+      new MulticallContract(this.getInstanceByChainId(chain), address),
+    );
   }
 }

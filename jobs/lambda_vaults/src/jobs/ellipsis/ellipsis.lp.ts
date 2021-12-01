@@ -5,6 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import { ellipsisPoolsMap } from '@app/common/jobs/ellipsis.pools.map';
 import {
   CurveLiquidityPoolFeature,
@@ -13,10 +14,9 @@ import {
   PoolTokenDto,
 } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
+import { concatStrings } from '@app/common/utils';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { CallData } from '../../chain/dto/call.data';
-import { MulticallService } from '../../chain/multicall.service';
-import { Web3Provider } from '../../chain/web3.provider';
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -28,7 +28,6 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toCurveLiquidityPoolFeature } from '../../utils/conventer';
 import { toDecimals } from '../../utils/number';
-import { concatStrings } from '../../utils/string';
 import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
@@ -53,10 +52,9 @@ export class EllipsisLp implements JobInterface {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly settingsService: SettingsService,
-    private readonly web3Provider: Web3Provider,
     private readonly accountService: AccountService,
     private readonly storeService: StoreService,
-    private readonly multicallService: MulticallService,
+    private readonly multicallService: MulticallAggregator,
     private readonly priceService: PriceService,
   ) {
     this.availableDtosForConversion = new Map<string, string>([
@@ -292,6 +290,7 @@ export class EllipsisLp implements JobInterface {
       ],
     ]);
     const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bsc);
+
     return callRsp.get(this.poolLengthLabel()).output.data;
   }
 
@@ -321,7 +320,7 @@ export class EllipsisLp implements JobInterface {
         lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
         const tokens = [];
         lp.tokens.forEach((token) => {
-          if ((token as CurveUnderlyingLpDto).tokens) {
+          if ((token as CurveUnderlyingLpDto).tokens?.length) {
             const lpTotalSupply = multicallRsp.get(this.totalSupplyLabel(token.address)).output
               .data;
             const lpTotalSupplyDec = toDecimals(lpTotalSupply, token.decimals);
@@ -399,9 +398,7 @@ export class EllipsisLp implements JobInterface {
   private getCallsForPool(liquidityPoolFeature: CurveLiquidityPoolFeature) {
     let calls = this.getReservesCallDataMap(liquidityPoolFeature.lpToken.address);
 
-    const lpUnderlyingToken = liquidityPoolFeature.tokens.find(
-      (token) => (token as CurveUnderlyingLpDto).tokens,
-    );
+    const lpUnderlyingToken = liquidityPoolFeature.tokens.find((token) => token.tokens.length);
 
     if (lpUnderlyingToken) {
       calls = new Map<string, CallData>([

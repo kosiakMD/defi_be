@@ -26,14 +26,16 @@ export class StoreService {
     return await this.trackedVaultItemRepository.findOne(itemWithId.id);
   }
 
-  async updateMapping(mapping: TrackedVault): Promise<TrackedVault> {
+  async updateMapping(trackedVault: TrackedVault): Promise<TrackedVault> {
     // todo: temporary solution
     const connection = await getConnection();
     if (!connection.isConnected) {
       await connection.connect();
     }
 
-    await this.trackedVaultRepository.update(mapping.id, mapping);
-    return await this.trackedVaultRepository.findOne(mapping.id);
+    trackedVault.updatedAt = new Date();
+
+    await this.trackedVaultRepository.update(trackedVault.id, trackedVault);
+    return await this.trackedVaultRepository.findOne(trackedVault.id);
   }
 }

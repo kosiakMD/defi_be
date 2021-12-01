@@ -2,6 +2,7 @@ import { plainToClass } from 'class-transformer';
 
 import {
   CurveLiquidityPoolFeature,
+  CurvePoolTokenDto,
   CurveUnderlyingLpDto,
   LiquidityPoolFeature,
   PoolTokenDto,
@@ -22,9 +23,13 @@ import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 
 export class IntegrationDataConverter {
   static toDTO(mapping) {
+    if (!mapping) return null;
     const itemData = TrackedVaultItemsMap.get(mapping['dbId']) as TrackedVaultItem;
     const dto = IntegrationDataConverter.buildFeatureDtoByDtoName(mapping['dtoName']);
 
+    if (!dto) {
+      throw new Error(`Failed to get DTO '${mapping['dtoName']}'`);
+    }
     Object.keys(dto).forEach((key) => {
       // set up simple types, null is also object
       if (dto[key] === null || typeof dto[key] !== 'object') {
@@ -69,11 +74,14 @@ export class IntegrationDataConverter {
         return plainToClass(LiquidityPoolFeature, {});
       case ERC20Token.name:
         return plainToClass(ERC20Token, {});
-      case UnderlyingStakingLp.name:
-        return plainToClass(UnderlyingStakingLp, {});
-      case CurveUnderlyingLpDto.name:
-        return plainToClass(CurveUnderlyingLpDto, {});
-      case CurveLiquidityPoolFeature.name:
+      // TODO:
+      case CurvePoolTokenDto.name: // mine
+        return plainToClass(CurvePoolTokenDto, {}); // mine
+      case UnderlyingStakingLp.name: // theirs
+        return plainToClass(UnderlyingStakingLp, {}); // theirs
+      case CurveUnderlyingLpDto.name: // theirs
+        return plainToClass(CurveUnderlyingLpDto, {}); // theirs
+      case CurveLiquidityPoolFeature.name: // theirs
         return plainToClass(CurveLiquidityPoolFeature, {});
     }
 

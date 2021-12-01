@@ -11,6 +11,7 @@ import {
   UniswapProtocolEnum,
   YearnProtocolEnum,
   TraderjoeProtocolEnum,
+  CurveProtocolEnum,
   EllipsisProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
@@ -21,6 +22,7 @@ export * from './protocol.types';
 export type ChainId = ChainIdEnum;
 
 export type ProtocolName =
+  | CurveProtocolEnum
   | AaveProtocolEnum
   | AlpacaProtocolEnum
   | AutofarmProtocolEnum

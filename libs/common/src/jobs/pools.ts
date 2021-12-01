@@ -28,6 +28,12 @@ export class PoolTokenDto extends ERC20Token {
   price: number = null;
   positionInPool: number = null;
   weight: number = null;
+  tokens?: PoolTokenDto[] = [];
+}
+
+// TODO: This should be built into 'PoolTokenDto' (don't need both)
+export class CurvePoolTokenDto extends PoolTokenDto {
+  tokens: CurvePoolTokenDto[] = [];
 }
 
 export class LiquidityPoolFeature {
@@ -39,9 +45,8 @@ export class LiquidityPoolFeature {
   tokens: PoolTokenDto[] = [];
 }
 
-export class CurveUnderlyingLpDto extends ERC20Token {
-  positionInPool: number = null;
-  tokens: PoolTokenDto[] = [];
+export class CurveUnderlyingLpDto extends PoolTokenDto {
+  //
 }
 
 export class CurveLiquidityPoolFeature {
@@ -50,5 +55,5 @@ export class CurveLiquidityPoolFeature {
   lpToken: ERC20Token = null;
   stats: Stats = plainToClass(Stats, {});
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
-  tokens: Array<PoolTokenDto | CurveUnderlyingLpDto> = [];
+  tokens: Array<CurveUnderlyingLpDto> = [];
 }

@@ -103,11 +103,11 @@
     "migration_token_consumer-start:prod": "nest start migration-token-consumer",
 
     "lambda_vault-format": "yarn --cwd jobs/lambda_vaults run format",
-    "lambda_vault-lint": "eslint \\\"jobs/lambda_vaults/{src,config}/**/*.ts\\\"",
+    "lambda_vault-lint": "eslint \"jobs/lambda_vaults/{src,config}/**/*.ts\"",
     "lambda_vault-prebuild": "rimraf ./dist/jobs/lambda_vaults",
     "lambda_vault-build": "nest build lambda_vaults",
-    "lambda_vault-start": "nest start lambda_vaults",
-    "lambda_vault-start:dev": "nest start lambda_vaults --watch",
+    "lambda_vault-start": "node -r dotenv/config node_modules/.bin/nest start lambda_vaults dotenv_config_path=jobs/lambda_vaults/.env",
+    "lambda_vault-start:dev": "node -r dotenv/config node_modules/.bin/nest start lambda_vaults dotenv_config_path=jobs/lambda_vaults/.env --watch",
     "lambda_vault-start:debug": "nest start lambda_vaults --debug --watch",
     "lambda_vault-start:prod": "nest start lambda_vaults",
     "lambda_vault-test": "yarn --cwd ./jobs/lambda_vaults run jest",
@@ -118,7 +118,7 @@
 
     "lambda_prices-prebuild": "rimraf ./dist/jobs/lambda_prices",
     "lambda_prices-format": "yarn --cwd jobs/lambda_prices run format",
-    "lambda_prices-lint": "eslint \\\"jobs/lambda_prices/{src,config,test}/**/*.ts\\\"",
+    "lambda_prices-lint": "eslint \"jobs/lambda_prices/{src,config,test}/**/*.ts\"",
     "lambda_prices-build": "nest build lambda_prices",
     "lambda_prices-test": "yarn --cwd jobs/lambda_prices mocha tests/unit/",
     "lambda_prices-start:dev": "nest start lambda_prices --watch",
@@ -187,7 +187,6 @@
     "prettier": "^2.2.1",
     "prettier-plugin-import-sort": "0.0.6",
     "typescript": "^4.2.3",
-
     "jest": "27.1.0",
     "supertest": "6.1.6",
     "ts-jest": "27.0.5",

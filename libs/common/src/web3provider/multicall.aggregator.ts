@@ -4,19 +4,19 @@ import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum } from '@app/common';
 
-import { decodeOutput } from '../utils/conventer';
+import { Web3ProviderService } from '.';
+import { CallData } from '../dto/CallData';
+import { decodeOutput } from '../utils/multicall';
 import { concatStrings } from '../utils/string';
-import { MulticallContract } from './contract/multicall.contract';
-import { CallData } from './dto/call.data';
-import { Web3Provider } from './web3.provider';
+import { MulticallContract } from './multicall.contract';
 
 @Injectable()
-export class MulticallService {
-  constructor(private readonly provider: Web3Provider) {}
+export class MulticallAggregator {
+  constructor(private readonly provider: Web3ProviderService) {}
 
   async handleInBatches(calls: Map<string, CallData>, chain: ChainIdEnum) {
-    const multicall: MulticallContract = this.provider.multicall(chain);
-    const web3: Web3 = this.provider.web3(chain);
+    const multicall: MulticallContract = this.provider.getMulticallByChainId(chain);
+    const web3: Web3 = this.provider.getInstanceByChainId(chain);
 
     const callsMap: Map<string, CallData> = new Map<string, CallData>();
 

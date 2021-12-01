@@ -18,15 +18,14 @@ export class PriceService {
     private configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
-    const url = this.configService.get<string>('PRICE_SERVICE_URL').replace(/\/$/, '');
+    const url = this.configService.get<string>('PRICE_SERVICE_URL');
     const getCurrentPricesUrl = 'v1/prices/fetch';
-
-    this.getCurrentPricesUrl = `${url}/${getCurrentPricesUrl}`;
+    this.getCurrentPricesUrl = new URL(getCurrentPricesUrl, url).href;
   }
 
   // TODO: Response should not be any
   async getCurrentPrices(
-    addresses: string,
+    addresses: string[] | string,
     currency: CurrencyIdEnum,
     chain: ChainIdEnum,
   ): Promise<any> {
@@ -35,7 +34,9 @@ export class PriceService {
         .post(this.getCurrentPricesUrl, {
           chain: chain,
           currency: currency,
-          addresses: addresses,
+          addresses: Array.isArray(addresses)
+            ? Array.from(new Set(addresses)).join(',') // dedupe & stringify
+            : addresses, // pass raw
         })
         .pipe(map((r) => r.data))
         .toPromise();

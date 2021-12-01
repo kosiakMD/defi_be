@@ -1,5 +1,6 @@
+import { concatStrings } from '@app/common/utils';
+
 import { TrackedVault } from '../../store/tracked.vault.entity';
-import { concatStrings } from '../../utils/string';
 
 // it is hard to manage this map in many places, so i decided to keep it here
 export class TrackedVaultsMap {

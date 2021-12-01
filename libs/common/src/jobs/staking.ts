@@ -1,7 +1,25 @@
 // eslint-disable-next-line max-classes-per-file
+// eslint-disable-next-line max-classes-per-file
+import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
 import { ERC20Token } from '@app/common/jobs/token';
+
+export class APRStats {
+  totalAllocPoints: BigNumber;
+  poolAllocPoints: BigNumber;
+  rewardTokenPerBlock: number;
+  rewardTokenPrice: number;
+  blockTime: number;
+  farmingPoolTVL: number;
+}
+
+export class APRStatsBonus {
+  rewardTokenPerBlock: number;
+  rewardTokenPrice: number;
+  blockTime: number;
+  farmingPoolTVL: number;
+}
 
 export class ClaimableDto {
   balance: number | string = null;

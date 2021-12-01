@@ -9,10 +9,10 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
+import { concatStrings } from '@app/common/utils';
 
 import { StoreService } from '../../store/store.service';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
-import { concatStrings } from '../../utils/string';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { TraderjoeAddresses } from './addresses';

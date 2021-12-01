@@ -233,7 +233,7 @@ export class IntegrationsService {
 
           existedChainData.total += bd.total;
           response.data.total += bd.total;
-          existedChainData[bd.feature] = bd.items;
+          existedChainData[bd.feature] = { totalValue: bd.total, items: bd.items };
         });
       }
     });

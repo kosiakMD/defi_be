@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ERC20Token } from '@app/common/dto/ERC20Token';
+import { PoolTokenDto } from '@app/common/dto/integrations.dto';
+import { ERC20Token } from '@app/common/jobs/token';
 
 export class LeverageErcToken extends ERC20Token {
   @ApiProperty({ type: Number, example: 3759.23 })
@@ -11,4 +12,7 @@ export class LeverageErcToken extends ERC20Token {
 
   @ApiProperty({ type: String, example: '123.6534' })
   balance?: string = null;
+
+  @ApiProperty({ type: [PoolTokenDto] })
+  tokens?: PoolTokenDto[] = [];
 }

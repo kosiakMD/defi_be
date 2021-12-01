@@ -2,7 +2,6 @@ import {
   BaseData,
   LeverageBorrowingTokenDto,
   LeverageErcToken,
-  LPToken,
   ProtocolTypeEnum,
 } from '@app/common';
 
@@ -11,7 +10,7 @@ export interface LeverageFarmingPosition {
   borrowToken?: LeverageBorrowingTokenDto;
   earned?: number;
   debtRatio?: number;
-  farmToken?: LPToken | LeverageErcToken;
+  farmToken?: LeverageErcToken;
 }
 
 export interface LeverageFarming extends BaseData<ProtocolTypeEnum.leverageFarming> {

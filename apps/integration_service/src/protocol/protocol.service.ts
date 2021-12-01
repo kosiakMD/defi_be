@@ -27,8 +27,10 @@ import {
   ResultStatus,
   SpookySwapProtocolEnum,
 } from '@app/common';
+import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { DetailedResponseDto } from '../dto';
@@ -46,6 +48,7 @@ import { ProtocolBasicInfo } from './features/features.dto';
 import { tokenDictionary } from './protocols.dictionaries';
 import { FeatureHandleDto, RawFeaturesDto } from './protocols.dto';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { alpacaDebtTokens } from './protocols/alpaca/multicall/util';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
@@ -654,6 +657,21 @@ export class ProtocolService {
           i.rewards.forEach((rt) => chainAssets.get(d.chain.id).add(rt.address));
         });
       }
+      if (d instanceof BaseDataLending) {
+        d.items.forEach((i) => {
+          chainAssets.get(d.chain.id).add(i.token.address);
+        });
+      }
+      if (d instanceof BaseLeverageFarming) {
+        d.items.forEach((i) => {
+          if (i.farmToken.tokens.length) {
+            i.farmToken.tokens.forEach((t) => chainAssets.get(d.chain.id).add(t.address));
+          } else {
+            chainAssets.get(d.chain.id).add(i.farmToken.address);
+          }
+          chainAssets.get(d.chain.id).add(i.borrowToken.address);
+        });
+      }
     });
 
     const chainAssetPrices = new Map<number, Map<string, number>>();
@@ -686,8 +704,7 @@ export class ProtocolService {
         d.total = 0;
         d.items.forEach((i) => {
           i.tokens.forEach((pt) => {
-            pt.price = chainAssetPrices.get(d.chain.id).get(pt.address);
-            pt.value = pt.balance * (pt.price ?? 0);
+            this.setTokenPriceAndValue(d.chain.id, pt, chainAssetPrices);
             d.total += pt.value;
           });
         });
@@ -696,27 +713,66 @@ export class ProtocolService {
       if (d instanceof BaseDataStaking) {
         d.total = 0;
         d.items.forEach((i) => {
-          if (i.stakingToken.tokens?.length) {
-            i.stakingToken.tokens.forEach((pt) => {
-              pt.price = chainAssetPrices.get(d.chain.id).get(pt.address) ?? pt.price;
-              pt.value = Number(pt.balance) * (pt.price ?? 0);
-              d.total += pt.value;
-            });
-          } else {
-            i.stakingToken.price =
-              chainAssetPrices.get(d.chain.id).get(i.stakingToken.address) ?? i.stakingToken.price;
-            i.stakingToken.value = Number(i.stakingToken.balance) * (i.stakingToken.price ?? 0);
-            d.total += i.stakingToken.value;
-          }
           i.rewards.forEach((r) => {
             r.price = chainAssetPrices.get(d.chain.id).get(r.address) ?? r.price;
             r.claimableData.value = Number(r.claimableData.balance) * r.price;
             d.total += r.claimableData.value;
           });
+
+          if (i.stakingToken.tokens?.length) {
+            i.stakingToken.tokens.forEach((pt) => {
+              this.setTokenPriceAndValue(d.chain.id, pt, chainAssetPrices);
+              d.total += pt.value;
+            });
+          } else {
+            if (alpacaDebtTokens.some((address) => address === i.stakingToken.address)) {
+              i.stakingToken.value = i.rewards[0].claimableData.value;
+            } else {
+              this.setTokenPriceAndValue(d.chain.id, i.stakingToken, chainAssetPrices);
+              d.total += i.stakingToken.value;
+            }
+          }
+        });
+      }
+
+      if (d instanceof BaseDataLending) {
+        d.total = 0;
+        d.items.forEach((i) => {
+          i.token.price = chainAssetPrices.get(d.chain.id).get(i.token.address) ?? i.token.price;
+          i.value = i.balance * i.token.price;
+          d.total += i.value;
+        });
+      }
+
+      if (d instanceof BaseLeverageFarming) {
+        d.total = 0;
+        d.items.forEach((i) => {
+          let leverageTotal = 0;
+          if (i.farmToken.tokens.length) {
+            i.farmToken.tokens.forEach((t) => {
+              this.setTokenPriceAndValue(d.chain.id, t, chainAssetPrices);
+              leverageTotal += t.value;
+            });
+          } else {
+            this.setTokenPriceAndValue(d.chain.id, i.farmToken, chainAssetPrices);
+            leverageTotal += i.farmToken.value;
+          }
+          this.setTokenPriceAndValue(d.chain.id, i.borrowToken, chainAssetPrices);
+          i.earned = leverageTotal - i.borrowToken.value;
+          d.total += i.earned;
+          i.debtRatio = (i.borrowToken.value / leverageTotal) * 100;
         });
       }
     });
-
     return data;
+  }
+
+  private setTokenPriceAndValue(
+    chainId: number,
+    token: any,
+    chainAssetPrices: Map<number, Map<string, number>>,
+  ) {
+    token.price = chainAssetPrices.get(chainId).get(token.address) ?? token.price;
+    token.value = Number(token.balance) * (token.price ?? 0);
   }
 }

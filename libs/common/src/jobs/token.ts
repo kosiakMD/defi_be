@@ -3,5 +3,5 @@ export class ERC20Token {
   name: string = null;
   symbol: string = null;
   decimals: number = null;
-  totalSupply: number = null;
+  totalSupply?: number = null;
 }

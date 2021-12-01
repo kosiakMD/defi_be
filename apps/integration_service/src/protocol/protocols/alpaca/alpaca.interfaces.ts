@@ -16,14 +16,6 @@ export interface AlpacaStakingInterface {
   userAddress: string;
   amount?: string;
   claimable?: string;
-  isLp?: boolean;
-  reserve0?: string;
-  reserve1?: string;
-  totalSupply?: string;
-  token0?: string;
-  token1?: string;
-  coefficient?: string;
-  tokenAddress?: string;
 }
 
 export interface VaultUserInfo {

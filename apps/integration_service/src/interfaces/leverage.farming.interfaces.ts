@@ -1,5 +1,6 @@
-import { LPToken, ProtocolTypeEnum } from '@app/common';
+import { ProtocolTypeEnum } from '@app/common';
 
+import { LPToken } from '../integrations/integrations.dto';
 import { BaseData, BorrowToken, LeverageErcToken } from './transactions.interfaces';
 
 export interface LeverageFarmingPosition {

@@ -4,7 +4,6 @@ import Web3 from 'web3';
 
 import { Address, ChainAbbrEnum, Logger } from '@app/common';
 
-import { LeverageFarmingInterface } from '../../../../alpaca/alpaca.interfaces';
 import { concatStrings } from '../../../../utils/string';
 import {
   AlpacaApiResponse,
@@ -13,7 +12,6 @@ import {
   BorrowBalance,
   TokenContractData,
   TokensBalance,
-  VaultUserInfo,
   WorkerContractData,
 } from '../alpaca.interfaces';
 import {
@@ -37,11 +35,11 @@ export class LocalMultiCall extends MultiCall {
   }
 
   async getLpTokensBalances(workersData: WorkerContractData[]): Promise<TokensBalance> {
-    const inputs = workersData.map((leverage) => {
+    const inputs = workersData.map((data) => {
       return {
-        target: leverage.worker,
+        target: data.worker,
         function: 'shareToBalance',
-        args: [leverage.shares],
+        args: [data.shares],
       };
     });
     const chunkSize = 50;
@@ -63,10 +61,11 @@ export class LocalMultiCall extends MultiCall {
     }
   }
 
-  async getVaultPoolsInfo(
+  async setVaultPoolsTokens(
     data: AlpacaStakingInterface[],
     chain: ChainAbbrEnum,
-  ): Promise<Set<string>> {
+    tokensAddresses: Set<string>,
+  ): Promise<void> {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
@@ -76,45 +75,47 @@ export class LocalMultiCall extends MultiCall {
     });
 
     const [, vaultPoolInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
-    const stakedTokensAddresses = new Set<string>();
     data.forEach((i, index) => {
       i.stakeToken = vaultPoolInfo[index].stakeToken.toLowerCase();
-      stakedTokensAddresses.add(i.stakeToken);
+      tokensAddresses.add(i.stakeToken);
     });
-    return stakedTokensAddresses;
   }
 
   async getStakingPositions(
     chain: ChainAbbrEnum,
-    address: Address,
+    addresses: Address[],
   ): Promise<AlpacaStakingInterface[]> {
     const inputs = [];
-    for (let i = 0; i < alpacaPoolsLength; i++) {
-      inputs.push({
-        target: alpacaFactoriesMap.get(chain),
-        function: 'userInfo',
-        args: [i, address],
-      });
-    }
-
-    const [, userInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
-    const stakingPositions: AlpacaStakingInterface[] = [];
-    userInfo.forEach((data, index) => {
-      if (!data.amount.isZero()) {
-        stakingPositions.push({
-          poolNum: index,
-          userAddress: address,
-          amount: data.amount.toString(),
+    addresses.forEach((address) => {
+      for (let i = 0; i < alpacaPoolsLength; i++) {
+        inputs.push({
+          target: alpacaFactoriesMap.get(chain),
+          function: 'userInfo',
+          args: [i, address],
         });
       }
     });
+
+    const stakingPositions: AlpacaStakingInterface[] = [];
+    const step = 50;
+    for (let i = 0; i < inputs.length; i += step) {
+      const sliceInput = inputs.slice(i, i + step);
+      const [, userInfo] = await this.multiCall(AlpacaStakeContractAbi, sliceInput);
+      userInfo.forEach((data, index) => {
+        if (!data.amount.isZero()) {
+          stakingPositions.push({
+            poolNum: (i + index) % alpacaPoolsLength,
+            userAddress: addresses[Math.floor((i + index) / alpacaPoolsLength)],
+            amount: data.amount.toString(),
+          });
+        }
+      });
+    }
+
     return stakingPositions;
   }
 
-  async getVaultUsersInfo(
-    data: AlpacaStakingInterface[],
-    chain: ChainAbbrEnum,
-  ): Promise<VaultUserInfo[]> {
+  async getVaultUsersInfo(data: AlpacaStakingInterface[], chain: ChainAbbrEnum): Promise<void> {
     const inputs = data.map((pool) => {
       return {
         target: alpacaFactoriesMap.get(chain),
@@ -124,8 +125,9 @@ export class LocalMultiCall extends MultiCall {
     });
 
     const [, vaultUserInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
-    data.forEach((i, index) => (i.claimable = vaultUserInfo[index].toString()));
-    return vaultUserInfo;
+    data.forEach((i, index) => {
+      i.claimable = vaultUserInfo[index].toString();
+    });
   }
 
   async getTokensInfoMap(
@@ -165,7 +167,7 @@ export class LocalMultiCall extends MultiCall {
   async getWorkerContractsData(
     positions: AlpacaApiResponse[],
     tokenAddresses: Set<string>,
-  ): Promise<LeverageFarmingInterface[]> {
+  ): Promise<WorkerContractData[]> {
     const workerFunctions = ['lpToken', 'baseToken', 'shares'];
     const inputs = positions.flatMap((position) => {
       return workerFunctions.map((func) => {
@@ -176,16 +178,16 @@ export class LocalMultiCall extends MultiCall {
       });
     });
 
-    const chunkSize = 45;
-    let count = 0;
+    const chunkSize = workerFunctions.length * 15;
     const workersData: WorkerContractData[] = [];
     for (let i = 0; i < inputs.length; i += chunkSize) {
       const to = i + chunkSize > inputs.length ? inputs.length : i + chunkSize;
       const slice = inputs.slice(i, to);
       const [, result] = await this.multiCall(workerAbi, slice);
       for (let k = 0; k < result.length; k += workerFunctions.length) {
-        const index = (count * chunkSize + k) / workerFunctions.length;
+        const index = (i + k) / workerFunctions.length;
         const workerData: WorkerContractData = {
+          address: positions[index].owner,
           vault: positions[index].vault,
           worker: positions[index].worker,
           positionId: positions[index].positionId,
@@ -204,7 +206,6 @@ export class LocalMultiCall extends MultiCall {
         workersData.push(workerData);
         this.addValuesToSet(tokenAddresses, [workerData.poolToken, workerData.baseToken]);
       }
-      count++;
     }
     return workersData;
   }
@@ -279,26 +280,38 @@ export class LocalMultiCall extends MultiCall {
   }
 
   async getLendingPoolsBalances(
-    address: string,
+    addresses: string[],
     stakedTokens: Set<string>,
-  ): Promise<Map<string, string>> {
-    const inputs = alpacaStakeContracts.map((contract) => {
-      return {
-        target: contract,
-        function: 'balanceOf',
-        args: [address],
-      };
+  ): Promise<Map<string, { [key: string]: string }>> {
+    const inputs = addresses.flatMap((address) => {
+      return alpacaStakeContracts.map((contract) => {
+        return {
+          target: contract,
+          function: 'balanceOf',
+          args: [address],
+        };
+      });
     });
 
-    const [, result] = await this.multiCall(StakedTokenAbi, inputs);
-    const lendingBalancesMap = new Map<string, string>();
+    const lendingBalancesMap = new Map<string, { [key: string]: string }>();
 
-    result.forEach((data, index) => {
-      if (!data.isZero() && !data.isNegative()) {
-        stakedTokens.add(alpacaStakeContracts[index]);
-        lendingBalancesMap.set(alpacaStakeContracts[index], data?.toString());
-      }
-    });
+    const step = 50;
+    for (let i = 0; i < inputs.length; i += step) {
+      const sliceInput = inputs.slice(i, i + step);
+      const [, result] = await this.multiCall(StakedTokenAbi, sliceInput);
+      result.forEach((data, index) => {
+        if (!data.isZero() && !data.isNegative()) {
+          const contractIndex = index + i;
+          const lendContract = alpacaStakeContracts[contractIndex % alpacaStakeContracts.length];
+          stakedTokens.add(lendContract);
+          const address = addresses[Math.floor(contractIndex / alpacaStakeContracts.length)];
+          const lendingBalanceItem = lendingBalancesMap.get(address);
+          lendingBalanceItem
+            ? (lendingBalanceItem[lendContract] = data?.toString())
+            : lendingBalancesMap.set(address, { [lendContract]: data?.toString() });
+        }
+      });
+    }
     return lendingBalancesMap;
   }
 

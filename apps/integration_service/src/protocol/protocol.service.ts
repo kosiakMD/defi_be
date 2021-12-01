@@ -642,11 +642,13 @@ export class ProtocolService {
       if (!chainAssets.get(d.chain.id)) {
         chainAssets.set(d.chain.id, new Set<string>());
       }
+
       if (d instanceof BaseDataLp) {
         d.items.forEach((i) => {
           i.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
         });
       }
+
       if (d instanceof BaseDataStaking) {
         d.items.forEach((i) => {
           if (i.stakingToken.tokens?.length) {
@@ -657,11 +659,13 @@ export class ProtocolService {
           i.rewards.forEach((rt) => chainAssets.get(d.chain.id).add(rt.address));
         });
       }
+
       if (d instanceof BaseDataLending) {
         d.items.forEach((i) => {
           chainAssets.get(d.chain.id).add(i.token.address);
         });
       }
+
       if (d instanceof BaseLeverageFarming) {
         d.items.forEach((i) => {
           if (i.farmToken.tokens.length) {
@@ -683,6 +687,7 @@ export class ProtocolService {
       chainAssets.forEach((assets, chainId) => {
         promises.push(this.priceService.getTokenPricesFetch(Array.from(assets), chainId));
       });
+
       // todo: need to update prices api to get prices from many chains
       const chainPrices = await Promise.allSettled(promises);
       chainPrices.forEach((cpr) => {
@@ -694,10 +699,15 @@ export class ProtocolService {
               .get(pricesData.chain.id)
               .set(address, Number(pricesData.prices[address]));
           });
+        } else {
+          this.logger.error(cpr.reason);
         }
       });
       // eslint-disable-next-line no-empty
-    } catch (e) {}
+    } catch (e) {
+      this.logger.error(`Failed getting token prices in protocol.service`);
+      this.logger.error(e);
+    }
 
     data.forEach((d) => {
       if (d instanceof BaseDataLp) {

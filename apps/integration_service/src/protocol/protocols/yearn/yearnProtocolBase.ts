@@ -4,19 +4,24 @@ import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
 import {
+  Address,
   ChainDto,
   FeatureEnum,
   FeatureResultDto,
   IntegrationFeaturesDataDto,
   Logger,
   ProjectEnum,
+  ProtocolTypeEnum,
 } from '@app/common';
+import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 
 import { Web3Provider } from '../../../chain/web3.provider';
 import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
 } from '../../../integrations/integrations.dto';
+import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { decimalsDivider } from '../../../utils/util';
@@ -38,14 +43,87 @@ export abstract class YearnProtocolBase extends BasicProtocol {
   protected readonly priceService: PriceService;
   protected readonly web3Provider: Web3Provider;
 
-  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
-    const response = plainToClass(IntegrationFeaturesDataDto, {
-      errors: [],
+  abstract getAllFeaturesData(
+    address: Address,
+    chain: ChainDto,
+  ): Promise<IntegrationFeaturesDataDto>;
+
+  public async getAllFeaturesBaseData(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    const userData = await Promise.allSettled(
+      addresses.flatMap((address) => {
+        return this.getAsBaseData(address, chain);
+      }),
+    );
+
+    const data = [];
+    const errors = [];
+    userData.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        data.push(r.value);
+      } else {
+        this.logger.error(r.reason, r.reason.stack, this.name);
+        errors.push(r.reason.toString());
+      }
     });
 
-    await this.getStakingData(response, address, chain);
+    return [data.flat(), errors];
+  }
+
+  async getAsBaseData(address: Address, chain: ChainDto): Promise<BaseData[]> {
+    const data = await this.getAllFeaturesData(address, chain);
+    const response: BaseData[] = [];
+    const factory = this.createBaseObjectFactory(address, chain, data);
+
+    if (data[FeatureEnum.staking]) {
+      response.push(
+        plainToClass(
+          BaseDataStaking, //
+          factory(ProtocolTypeEnum.staking, FeatureEnum.staking),
+        ),
+      );
+    }
+
+    if (data[FeatureEnum.lending]) {
+      response.push(
+        plainToClass(
+          BaseDataLending, //
+          factory(ProtocolTypeEnum.lending, FeatureEnum.lending),
+        ),
+      );
+    }
+
+    if (data[FeatureEnum.borrowing]) {
+      response.push(
+        plainToClass(
+          BaseDataLending, //
+          factory(ProtocolTypeEnum.borrowing, FeatureEnum.borrowing),
+        ),
+      );
+    }
 
     return response;
+  }
+
+  createBaseObjectFactory(
+    address: Address,
+    chain: ChainDto,
+    featureData: IntegrationFeaturesDataDto,
+  ) {
+    return (protocolType: ProtocolTypeEnum, feature: FeatureEnum) => {
+      return {
+        chain,
+        userAddress: address,
+        protocolType,
+        projectName: ProjectEnum.yearn,
+        protocolName: this.name,
+        total: featureData[feature].totalValue,
+        feature,
+        items: featureData[feature].items,
+      };
+    };
   }
 
   getPositionBalance(position: IVaultPosition) {

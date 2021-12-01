@@ -128,6 +128,7 @@ export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   protocolName?: ProtocolName;
   total?: number;
   feature?: FeatureEnum;
+  items?: any[];
 }
 
 export interface PlatformPoolToken {

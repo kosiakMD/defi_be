@@ -1,7 +1,17 @@
+import { plainToClass } from 'class-transformer';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainAbbrEnum, FeatureEnum, Logger, YearnProtocolEnum } from '@app/common';
+import {
+  Address,
+  ChainAbbrEnum,
+  ChainDto,
+  FeatureEnum,
+  IntegrationFeaturesDataDto,
+  Logger,
+  YearnProtocolEnum,
+} from '@app/common';
 
 import { Web3Provider } from '../../chain/web3.provider';
 import { AccountService } from '../../microservices/account.service';
@@ -26,5 +36,15 @@ export default class YearnProtocolV1 extends YearnProtocolBase {
     protected readonly web3Provider: Web3Provider,
   ) {
     super();
+  }
+
+  async getAllFeaturesData(address: Address, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
+    const response = plainToClass(IntegrationFeaturesDataDto, {
+      errors: [],
+    });
+
+    await this.getStakingData(response, address, chain);
+
+    return response;
   }
 }

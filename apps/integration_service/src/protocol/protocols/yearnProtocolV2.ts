@@ -64,7 +64,7 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
     ]);
   }
 
-  async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
+  async getAllFeaturesData(address: Address, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = plainToClass(IntegrationFeaturesDataDto, {
       errors: [],
     });

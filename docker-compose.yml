@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+
+  redis:
+    image: "bitnami/redis:latest"
+    ports:
+      - "6379:6379"
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+
+  price-service:
+    image: node:14
+    ports:
+      - "3002:3002"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: "yarn price-start:dev"
+    restart: always
+    env_file:
+      - "apps/price_service/config/.env"
+
+  account-service:
+    image: node:14
+    ports:
+      - "3003:3003"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: "yarn account-start:dev"
+    restart: always
+    env_file:
+      - "apps/account_service/config/.env"
+
+  integration-service:
+    image: node:14
+    ports:
+      - "3004:3004"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: "yarn integration-start:dev"
+    restart: always
+    env_file:
+      - "apps/integration_service/config/.env"
+
+  gateway-service:
+    image: node:14
+    ports:
+      - "3001:3001"
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    command: "yarn gateway-start:dev"
+    restart: always
+    env_file:
+      - "apps/api_gateway/config/.env"

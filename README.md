@@ -143,3 +143,30 @@ Run Linter checking `npm run lint`
 ### Access Documentation
 
 To get API documentation of each service need to run each service and get by link path `/api`, e.g. `localhost:3000/api`
+
+### Docker Compose
+
+To start backed with docker compose run (gateway: http://localhost:3000):
+
+`[sudo] docker-compose up`
+
+To start web with docker compose run (url: http://localhost:3333):
+
+`[sudo] docker-compose -f docker-compose-web.yml up`
+
+#### Troubleshooting
+
+`.env` files should use next rules / values:
+
+- hosts to access other services (instead of localhost):
+  * `redis`
+  * `price-service`
+  * `account-service`
+  * `integration-service`
+- `SERVICE_HOST` should be empty
+- next ports should be used:
+  * `web`: 3000
+  * `gateway-service`: 3001
+  * `price-service`: 3002
+  * `account-service`: 3003
+  * `integration-service`: 3004

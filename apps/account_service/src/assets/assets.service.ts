@@ -135,9 +135,7 @@ export class AssetsService {
     assetToSave.decimals = assetData.decimals;
     // define is token LP
 
-    if (!assetToSave.isLp) {
-      assetToSave.isLp = await this.attemptUniswapLikePair(assetToSave);
-    }
+    assetToSave.isLp = await this.attemptUniswapLikePair(assetToSave);
 
     if (!assetToSave.isLp) {
       assetToSave.isLp = await this.attemptCurveLikePool(assetToSave);

@@ -45,7 +45,7 @@ export class BalancesService {
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly configService: ConfigService,
     @InjectRepository(AssetsEntity)
-    private readonly assentsRepository: Repository<AssetsEntity>,
+    private readonly assetsRepository: Repository<AssetsEntity>,
     private readonly priceService: PriceService,
     private readonly blacklistService: BlacklistService,
     private readonly web3Provider: Web3Provider,
@@ -75,6 +75,7 @@ export class BalancesService {
       }
 
       const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
+
       const results = this.mapResults(balances);
 
       // TODO: Remove this later
@@ -456,16 +457,16 @@ export class BalancesService {
 
   private async getAssetsToHandle(chain: ChainIdEnum, requested?: Address[]) {
     if (requested?.length) {
-      return this.assentsRepository.find({ where: { address: In(requested) } });
+      return this.assetsRepository.find({ where: { chain, address: In(requested) } });
     }
-
     const cacheKey = `TRACKED_ASSETS_${chain}`;
     let cachedAssets = await this.cache.get<AssetsEntity[]>(cacheKey);
     if (cachedAssets?.length) {
       return cachedAssets;
     }
 
-    cachedAssets = await this.assentsRepository.find({ where: { chain, isTracked: true } });
+    cachedAssets = await this.assetsRepository.find({ where: { chain, isTracked: true } });
+
     // NOTE: We store data in cache and forget about it
     this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets, {
       ttl: this.configService.get<number>('CACHE_ASSETS_TTL'),

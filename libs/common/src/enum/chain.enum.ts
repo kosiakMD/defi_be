@@ -11,6 +11,11 @@ export enum ChainAbbrEnum {
   harm = 'harm',
   heco = 'heco',
   sol = 'sol',
+  okex = 'okex',
+  cro = 'cro',
+  boba = 'boba',
+  kcc = 'kcc',
+  opt = 'opt',
 }
 
 export enum ChainNameEnum {
@@ -26,6 +31,11 @@ export enum ChainNameEnum {
   harm = 'harmony',
   heco = 'heco',
   sol = 'solana',
+  okex = 'okex',
+  cro = 'cronos',
+  boba = 'boba',
+  kcc = 'kucoin',
+  opt = 'optimism',
 }
 
 export enum ChainIdEnum {
@@ -41,8 +51,14 @@ export enum ChainIdEnum {
   harm = 10,
   heco = 11,
   sol = 12,
+  okex = 13,
+  cro = 14,
+  boba = 15,
+  kcc = 16,
+  opt = 17,
 }
 
+// https://api.coingecko.com/api/v3/asset_platforms
 export enum CoingeckoPlatformEnum {
   eth = 'ethereum',
   bsc = 'binance-smart-chain',
@@ -56,6 +72,11 @@ export enum CoingeckoPlatformEnum {
   harm = 'harmony-shard-0',
   heco = 'huobi-token',
   sol = 'solana',
+  okex = 'okex-chain',
+  cro = 'cronos',
+  boba = 'boba',
+  kcc = 'kucoin-community-chain',
+  opt = 'optimistic-ethereum',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -71,6 +92,11 @@ export enum AbsoluteChainIdEnum {
   harm = 1666600000,
   heco = 128,
   sol = 101,
+  okex = 66,
+  cro = 25,
+  boba = 288,
+  kcc = 321,
+  opt = 10,
 }
 
 export enum CurrencyEnum {

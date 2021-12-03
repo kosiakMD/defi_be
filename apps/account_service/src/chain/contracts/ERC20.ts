@@ -16,6 +16,7 @@ export class ERC20 {
       this.contract.methods.symbol().call(),
       this.contract.methods.decimals().call(),
     ]);
+
     return {
       name: name,
       symbol: symbol,

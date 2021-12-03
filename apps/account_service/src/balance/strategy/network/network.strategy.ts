@@ -115,6 +115,14 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('MOONRIVER_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.heco:
         return this.config.get<string>('HECO_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.okex:
+        return this.config.get<string>('OKEX_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.cro:
+        return this.config.get<string>('CRONOS_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.kcc:
+        return this.config.get<string>('KCC_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.boba:
+        return this.config.get<string>('BOBA_BALANCES_CHECKER_ADDRESS');
     }
   }
 
@@ -142,6 +150,16 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<number>('HARMONY_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.heco:
         return this.config.get<number>('HECO_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.okex:
+        return this.config.get<number>('OKEX_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.cro:
+        return this.config.get<number>('CRONOS_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.boba:
+        return this.config.get<number>('BOBA_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.kcc:
+        return this.config.get<number>('KCC_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.opt:
+        return this.config.get<number>('OPTIMISM_BALANCES_CHECKER_BATCH_SIZE');
       default:
         return DEFAULT_BATCH_SIZE;
     }

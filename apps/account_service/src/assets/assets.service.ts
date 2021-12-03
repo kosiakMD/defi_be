@@ -60,7 +60,11 @@ export class AssetsService {
     try {
       const timeMark = `Query to asset_new table with addresses: ${addresses} and chains: ${chains}`;
       this.logger.time(timeMark);
-      const assets = await this.assetRepository.findAllByAddressesAndChains(addresses, chains);
+      const assets = await this.assetRepository.findAllByAddressesAndChains(
+        addresses.map((a) => a.toLowerCase()),
+        chains,
+      );
+
       this.logger.timeEnd(timeMark);
       response.data.push(
         ...(await Promise.all(
@@ -114,8 +118,10 @@ export class AssetsService {
     }
 
     const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
+
     // bind asset to LP token contract because it extends from ERC20 by default
     const assetContract = new ERC20(assetAddress, chainProvider);
+
     const assetData = await assetContract.getContractData();
 
     let assetToSave: AssetsEntity;

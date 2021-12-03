@@ -71,7 +71,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     chainId: ChainIdEnum,
   ): Promise<AssetsForLambdaResponse[]> {
     const lambdaAssetsSql = `
-      select 
+      select
         an.address,
         an.id,
         an.decimals,
@@ -83,7 +83,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
       from assets_new an
       full outer join assets_pools ap
         on an.id = ap.asset_id
-      where 
+      where
         an.chain_id = $1 and
         an.is_tracked = true and
         an.is_lp = false
@@ -97,7 +97,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     underlyingAssetId: number,
     positionInPool: number,
   ): Promise<void> {
-    const insertSql = `insert into assets_underlying (lp_asset_id, underlying_asset_id, position_in_pool) values (${lpAssetId}, ${underlyingAssetId}, ${positionInPool}) 
+    const insertSql = `insert into assets_underlying (lp_asset_id, underlying_asset_id, position_in_pool) values (${lpAssetId}, ${underlyingAssetId}, ${positionInPool})
         on conflict (lp_asset_id, underlying_asset_id) do update set position_in_pool = excluded.position_in_pool;
         `;
     return await this.query(insertSql);

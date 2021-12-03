@@ -12,18 +12,30 @@ export class Web3ProviderService {
   private readonly multicallContracts = new Map<ChainIdEnum, MulticallContract>();
 
   constructor(private readonly configService: ConfigService) {
-    this.setProvider(ChainIdEnum.eth, 'ETH_URL');
-    this.setProvider(ChainIdEnum.bsc, 'BSC_URL');
+    this.setProvider(ChainIdEnum.arbi, 'ARBITRUM_URL');
     this.setProvider(ChainIdEnum.avax, 'AVAX_URL');
-    this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
+    this.setProvider(ChainIdEnum.boba, 'BOBA_URL');
+    this.setProvider(ChainIdEnum.bsc, 'BSC_URL');
+    this.setProvider(ChainIdEnum.celo, 'CELO_URL');
+    this.setProvider(ChainIdEnum.cro, 'CRONOS_URL');
+    this.setProvider(ChainIdEnum.eth, 'ETH_URL');
     this.setProvider(ChainIdEnum.ftm, 'FTM_URL');
+    this.setProvider(ChainIdEnum.harm, 'HARM_URL');
+    this.setProvider(ChainIdEnum.kcc, 'KCC_URL');
+    this.setProvider(ChainIdEnum.mriver, 'MRIVER_URL');
+    this.setProvider(ChainIdEnum.okex, 'OKEX_URL');
+    this.setProvider(ChainIdEnum.opt, 'OPT_URL');
+    this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
+    this.setProvider(ChainIdEnum.xdai, 'XDAI_URL');
 
     // TODO: Move contracts to configs
-    this.setMulticall(ChainIdEnum.eth, '0x255f2a7712cc06944aeef4ea78349c54c22ffe1f');
-    this.setMulticall(ChainIdEnum.bsc, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');
-    this.setMulticall(ChainIdEnum.plg, '0xa1b2b503959aedd81512c37e9dce48164ec6a94d');
-    this.setMulticall(ChainIdEnum.ftm, '0x11473d6e641df17cd6331d45b135e35b49edbea8');
     this.setMulticall(ChainIdEnum.avax, '0x92a09557707ab4888eacc034122120f27362da7f');
+    this.setMulticall(ChainIdEnum.bsc, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');
+    this.setMulticall(ChainIdEnum.eth, '0x255f2a7712cc06944aeef4ea78349c54c22ffe1f');
+    this.setMulticall(ChainIdEnum.ftm, '0x11473d6e641df17cd6331d45b135e35b49edbea8');
+    this.setMulticall(ChainIdEnum.plg, '0xa1b2b503959aedd81512c37e9dce48164ec6a94d');
+    this.setMulticall(ChainIdEnum.okex, '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c');
+    this.setMulticall(ChainIdEnum.cro, '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c');
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {

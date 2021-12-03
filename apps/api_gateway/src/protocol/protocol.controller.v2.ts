@@ -1,12 +1,11 @@
 import { Controller, Get, NotAcceptableException, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { Address } from '@app/common';
+import { Address, ProtocolNameEnum } from '@app/common';
 
 import { ProtocolParams } from '../common/DTO/features.dto';
 import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
 import { ChainIdEnum, UniswapProtocolEnum } from '../common/enum';
-import { ProtocolNameEnum } from '../common/enum/projectEnum';
 
 import { IntegrationService } from '../integration/integration.service';
 

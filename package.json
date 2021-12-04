@@ -121,12 +121,12 @@
     "lambda_prices-lint": "eslint \"jobs/lambda_prices/{src,config,test}/**/*.ts\"",
     "lambda_prices-build": "nest build lambda_prices",
     "lambda_prices-test": "yarn --cwd jobs/lambda_prices mocha tests/unit/",
+    "lambda_prices-start": "tsc --project jobs/lambda_prices/tsconfig.json && node ./dist/jobs/lambda_prices/src/start.js",
     "lambda_prices-start:dev": "nest start lambda_prices --watch",
     "lambda_prices-start:debug": "nest start lambda_prices --debug --watch",
     "lambda_prices-start:prod": "nest start lambda_prices",
     "lambda_prices-compile": "tsc --project jobs/lambda_prices/tsconfig.json",
     "lambda_prices-dev": "ts-node jobs/lambda_prices/src/start.ts",
-    "lambda_prices-start": "tsc --project jobs/lambda_prices/tsconfig.json && node ./dist/jobs/lambda_prices/src/start.js",
 
     "lambda_protocol_prices-format": "yarn --cwd ./apps/lambda_protocol_prices run format",
     "lambda_protocol_prices-lint": "eslint \"./apps/lambda_protocol_prices/{src,config}/**/*.ts\"",

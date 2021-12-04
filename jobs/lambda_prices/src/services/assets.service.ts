@@ -1,8 +1,7 @@
 import axios from 'axios';
 
-import { ChainIdEnum } from '@app/common';
-
 import { tokenServiceUrl } from '../config';
+import { ChainIdEnum } from '../utils/constants';
 import { logger } from '../utils/logger';
 
 const SAVE_ASSETS_BATCH_SIZE = 50;

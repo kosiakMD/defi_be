@@ -9,6 +9,8 @@ import { PancakeStaking } from './pancake/pancake.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
+import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
+import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
 
 @Injectable()
 export class JobsRegistry {
@@ -23,6 +25,8 @@ export class JobsRegistry {
     spookyswapLp: SpookyswapPools,
     ellipsisLp: EllipsisLp,
     ellipsisStaking: EllipsisStaking,
+    autofarmStakingBSC: AutofarmStakingBSC,
+    autofarmStakingPLG: AutofarmStakingPLG,
   ) {
     this.registry.set(curvePools.placeholder, curvePools);
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
@@ -32,5 +36,7 @@ export class JobsRegistry {
     this.registry.set(spookyswapLp.placeholder, spookyswapLp);
     this.registry.set(ellipsisLp.placeholder, ellipsisLp);
     this.registry.set(ellipsisStaking.placeholder, ellipsisStaking);
+    this.registry.set(autofarmStakingBSC.placeholder, autofarmStakingBSC);
+    this.registry.set(autofarmStakingPLG.placeholder, autofarmStakingPLG);
   }
 }

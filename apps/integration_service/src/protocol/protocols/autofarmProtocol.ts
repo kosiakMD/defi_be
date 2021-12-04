@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
 import { classToClass, plainToClass } from 'class-transformer';
-import { AbiItem } from 'web3-utils';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -31,19 +30,22 @@ import { PriceService } from '../../microservices/price.service';
 import { decimalsDivider } from '../../utils/util';
 import AbstractProtocol from './abstractProtocol';
 import { AutofarmApiPools, StakingInterface } from './autofarm/autofarm.interfaces';
-import { LocalMultiCall } from './autofarm/multicall/local.multi.call';
-import { autofarmFactoriesMap, autofarmRewardToken, lpTokenAbi } from './autofarm/multicall/util';
+import { autofarmFactoriesMap, autofarmRewardToken } from './autofarm/multicall/util';
 import { AutofarmApiService } from './autofarm/services/autofarm.api.service';
 import { AutofarmSubgraph } from './autofarm/services/autofarm.subgraph';
 import DataProviderProtocol from './dataProviderProtocol';
+import { AutofarmStaking } from './autofarm/autofarm.staking';
 
 @Injectable()
 export class AutofarmProtocol extends DataProviderProtocol implements AbstractProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bsc, ChainAbbrEnum.plg];
   readonly project = ProjectEnum.autofarm;
   readonly name = AutofarmProtocolEnum.autofarm;
   readonly displayName = 'Autofarm';
-  readonly features = { [ChainAbbrEnum.bsc]: [FeatureEnum.staking] };
+  readonly features = {
+    [ChainAbbrEnum.bsc]: [FeatureEnum.staking],
+    [ChainAbbrEnum.plg]: [FeatureEnum.staking],
+  };
   protected dataProvider;
   public feeRate = 0.003;
 
@@ -54,92 +56,48 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
     private readonly web3Provider: Web3Provider,
     private readonly subgraph: AutofarmSubgraph,
     private readonly autofarmApiService: AutofarmApiService,
+    private readonly staking: AutofarmStaking,
   ) {
     super();
 
     this.dataProvider = this;
   }
 
-  // override
-  async getAllFeaturesBaseData(
+  public async getAllFeaturesBaseData(
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    const baseData: BaseData[] = [];
-    const errors: string[] = [];
-    try {
-      const addressesLowerCase = addresses.map((address) => address.toLowerCase());
-      const web3Provider = this.web3Provider.getForChain(chain.abbr);
-      const multicall = new LocalMultiCall(web3Provider, this.logger);
-      const stakedPosition: StakingInterface[] = [];
-      await multicall.getStakedPositions(stakedPosition, addressesLowerCase, chain.abbr);
-      const poolsAddresses = await multicall.getVaultPoolsInfo(stakedPosition, chain.abbr);
-      await Promise.all([
-        multicall.getVaultUsersRewards(stakedPosition, chain.abbr),
-        multicall.checkAutoTokenStake(stakedPosition, addressesLowerCase, poolsAddresses),
-      ]);
+    const chainFeatures = await Promise.allSettled(
+      this.features[chain.abbr].map((f) => {
+        return this.getFeatureData(addresses, chain, f);
+      }),
+    );
 
-      this.logger.log(
-        `Staked pools numbers - ${stakedPosition?.map((position) => position.poolNum).toString()}`,
-      );
+    const data = [];
+    const errors = [];
+    chainFeatures.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        data.push(r.value);
+      } else {
+        this.logger.error(r.reason, r.reason.stack, AutofarmProtocol.name);
+        errors.push(r.reason.toString());
+      }
+    });
 
-      await multicall.getTotalSupplies(poolsAddresses, stakedPosition);
+    return [data.flat(), errors];
+  }
 
-      const lpStaked: StakingInterface[] = [];
-      const tokensAddresses = new Set<string>();
-      tokensAddresses.add(autofarmRewardToken);
-      await Promise.all(
-        stakedPosition.map(async (staking) => {
-          try {
-            const poolContract = new web3Provider.eth.Contract(
-              lpTokenAbi as AbiItem[],
-              staking.contractAddress,
-            );
-            const reserves = await poolContract.methods.getReserves().call();
-            // eslint-disable-next-line no-underscore-dangle
-            staking.reserve0 = reserves._reserve0;
-            // eslint-disable-next-line no-underscore-dangle
-            staking.reserve1 = reserves._reserve1;
-            staking.isLp = true;
-            lpStaked.push(staking);
-          } catch (e) {
-            staking.isLp = false;
-            tokensAddresses.add(staking.contractAddress);
-          }
-        }),
-      );
-
-      // TODO getTokens coefficients and totalSupply via web3
-      // const tokensInfoMap = await multicall.getTokensInfoMap(stakedPosition, tokensAddresses);
-
-      await multicall.getToken0AndToken1FromLp(lpStaked, tokensAddresses);
-      const tokenAddressesArray = Array.from(tokensAddresses);
-      const [{ data }, price] = await Promise.all([
-        this.accountService.getAssets(tokenAddressesArray, [chain.id]),
-        this.priceService.getTokenPricesFetch(tokenAddressesArray, chain.id),
-      ]);
-
-      const autofarmPools: AutofarmApiPools = await this.autofarmApiService.getAutofarmPoolsData();
-
-      const assetsMap = new Map<string, Asset>();
-      data.forEach((asset) => assetsMap.set(asset.address, asset));
-
-      const claimableToken = AutofarmProtocol.getClaimableToken(assetsMap, price.prices);
-      const stakingPositionsMap = this.getStakingPositionDtosMap(
-        autofarmPools,
-        stakedPosition,
-        assetsMap,
-        price.prices,
-        claimableToken,
-        chain.abbr,
-      );
-
-      baseData.push(...this.getResponse(stakingPositionsMap, chain));
-    } catch (e) {
-      this.logger.error(e.message);
-      errors.push(e.message);
+  public async getFeatureData(
+    addresses: Address[],
+    chain: ChainDto,
+    feature: FeatureEnum,
+  ): Promise<BaseData[]> {
+    switch (feature) {
+      case FeatureEnum.staking:
+        return this.staking.getData(addresses, chain);
+      default:
+        return [];
     }
-    return [baseData, errors];
   }
 
   private getResponse(

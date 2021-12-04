@@ -22,7 +22,6 @@ import {
   Logger,
   PancakeProtocolEnum,
   ProtocolName,
-  ProtocolNameEnum,
   QuickswapProtocolEnum,
   ResultStatus,
   SpookySwapProtocolEnum,
@@ -628,9 +627,8 @@ export class ProtocolService {
     let [data, errors] = await protocol.getAllFeaturesBaseData(addresses, chain);
 
     // add prices here if needed
-    if (protocolName !== ProtocolNameEnum.autofarm) {
-      data = await this.adjustPrices(data);
-    }
+    data = await this.adjustPrices(data);
+    
     return [data, errors];
   }
 

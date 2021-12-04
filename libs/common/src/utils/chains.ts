@@ -20,6 +20,11 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.harm]: AbsoluteChainIdEnum.harm,
   [ChainIdEnum.heco]: AbsoluteChainIdEnum.heco,
   [ChainIdEnum.sol]: AbsoluteChainIdEnum.sol,
+  [ChainIdEnum.okex]: AbsoluteChainIdEnum.okex,
+  [ChainIdEnum.cro]: AbsoluteChainIdEnum.cro,
+  [ChainIdEnum.boba]: AbsoluteChainIdEnum.boba,
+  [ChainIdEnum.kcc]: AbsoluteChainIdEnum.kcc,
+  [ChainIdEnum.opt]: AbsoluteChainIdEnum.opt,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -47,6 +52,11 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.harm]: ChainIdEnum.harm,
   [AbsoluteChainIdEnum.heco]: ChainIdEnum.heco,
   [AbsoluteChainIdEnum.sol]: ChainIdEnum.sol,
+  [AbsoluteChainIdEnum.okex]: ChainIdEnum.okex,
+  [AbsoluteChainIdEnum.cro]: ChainIdEnum.cro,
+  [AbsoluteChainIdEnum.boba]: ChainIdEnum.boba,
+  [AbsoluteChainIdEnum.kcc]: ChainIdEnum.kcc,
+  [AbsoluteChainIdEnum.opt]: ChainIdEnum.opt,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -63,7 +73,12 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.mriver]: ChainIdEnum.mriver,
   [ChainAbbrEnum.harm]: ChainIdEnum.harm,
   [ChainAbbrEnum.heco]: ChainIdEnum.heco,
-  [ChainAbbrEnum.sol]: ChainIdEnum.heco,
+  [ChainAbbrEnum.sol]: ChainIdEnum.sol,
+  [ChainAbbrEnum.okex]: ChainIdEnum.okex,
+  [ChainAbbrEnum.cro]: ChainIdEnum.cro,
+  [ChainAbbrEnum.boba]: ChainIdEnum.boba,
+  [ChainAbbrEnum.kcc]: ChainIdEnum.kcc,
+  [ChainAbbrEnum.opt]: ChainIdEnum.opt,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -79,6 +94,11 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.harm]: CoingeckoPlatformEnum.harm,
   [ChainIdEnum.heco]: CoingeckoPlatformEnum.heco,
   [ChainIdEnum.sol]: CoingeckoPlatformEnum.sol,
+  [ChainIdEnum.okex]: CoingeckoPlatformEnum.okex,
+  [ChainIdEnum.cro]: CoingeckoPlatformEnum.cro,
+  [ChainIdEnum.boba]: CoingeckoPlatformEnum.boba,
+  [ChainIdEnum.kcc]: CoingeckoPlatformEnum.kcc,
+  [ChainIdEnum.opt]: CoingeckoPlatformEnum.opt,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -97,6 +117,11 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.harm]: ZERO_ADDRESS,
   [ChainIdEnum.heco]: ZERO_ADDRESS,
   [ChainIdEnum.sol]: SOL_COIN_ADDRESS,
+  [ChainIdEnum.okex]: ZERO_ADDRESS,
+  [ChainIdEnum.cro]: ZERO_ADDRESS,
+  [ChainIdEnum.boba]: ZERO_ADDRESS,
+  [ChainIdEnum.kcc]: ZERO_ADDRESS,
+  [ChainIdEnum.opt]: ZERO_ADDRESS,
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -115,7 +140,11 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.harm]: '',
   [ChainIdEnum.heco]: '',
   [ChainIdEnum.sol]: 'solana',
+  [ChainIdEnum.okex]: '',
+  [ChainIdEnum.cro]: '',
+  [ChainIdEnum.boba]: '',
+  [ChainIdEnum.kcc]: '',
+  [ChainIdEnum.opt]: '',
 };
 
-export const getCoingeckoCoinId = (chainId: ChainId): string =>
-  CoingeckoCoinIds[chainId];
+export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

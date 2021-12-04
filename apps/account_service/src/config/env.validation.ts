@@ -138,6 +138,36 @@ export const validationSchema = Joi.object({
   HECO_BALANCES_CHECKER_ADDRESS: Joi.string() //
     .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
+  OKEX_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  OKEX_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  CRONOS_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  CRONOS_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  BOBA_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  BOBA_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  KCC_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  KCC_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  OPTIMISM_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  OPTIMISM_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
 
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //

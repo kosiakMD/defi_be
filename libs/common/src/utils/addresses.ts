@@ -17,7 +17,7 @@ export function unifyAddresses(addresses: Address[]) {
 
 export function unifyAddress(address: Address) {
   if (isETHAddress(address)) {
-    return address.toLowerCase();
+    return address.toLowerCase().trim();
   } else {
     return address;
   }

@@ -15,6 +15,7 @@ import { AlpacaApiService } from './protocols/alpaca/services/alpaca.api.service
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
@@ -39,7 +40,6 @@ import YearnProtocolV2 from './protocols/yearnProtocolV2';
 const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
-  AutofarmProtocol,
   PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,
@@ -53,6 +53,7 @@ const ProtocolList = [
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
 const Pancake = [PancakeProtocol, PancakeV2Pools, PancakeV2Staking, PancakeV2Legacy];
+const Autofarm = [AutofarmProtocol, AutofarmStaking];
 
 @Module({
   imports: [
@@ -78,6 +79,7 @@ const Pancake = [PancakeProtocol, PancakeV2Pools, PancakeV2Staking, PancakeV2Leg
     ...TraderJoe,
     ...Pancake,
     ...Ellipsis,
+    ...Autofarm,
     ProtocolService,
     Mapper,
     AlpacaApiService,

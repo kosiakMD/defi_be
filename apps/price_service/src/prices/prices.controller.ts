@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-import { Body, Controller, HttpStatus, Inject, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Post, Req } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -110,6 +110,16 @@ export class PricesController {
         statusCode: HttpStatus.CREATED,
         message: 'Asset price has been successfully updated',
       };
+    } catch (error) {
+      this.logger.error(error);
+      throw error;
+    }
+  }
+
+  @Get('/current')
+  async getAllCurrentPrices() {
+    try {
+      return await this.priceService.getAllAssetsCurrentPrices();
     } catch (error) {
       this.logger.error(error);
       throw error;

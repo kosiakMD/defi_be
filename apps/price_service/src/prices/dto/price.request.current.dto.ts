@@ -1,8 +1,9 @@
-import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
+import { PriceSourcePriority } from '@app/common/enum/price.enum';
 import { IPriceRequestCurrent } from '@app/common/interfaces/price.request.current';
 
 export class PriceRequestCurrentDto implements IPriceRequestCurrent {
@@ -41,4 +42,13 @@ export class PriceRequestCurrentDto implements IPriceRequestCurrent {
     example: CurrencyIdEnum.usd,
   })
   currencyId: CurrencyIdEnum;
+
+  @IsOptional()
+  @IsInt()
+  @ApiProperty({
+    type: Number,
+    description: 'Source Id',
+    example: PriceSourcePriority.coingecko,
+  })
+  sourceId?: PriceSourcePriority;
 }

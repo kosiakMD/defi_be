@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { LookupModule } from '../lookup/lookup.module';
 import { Asset, AssetCurrentPrice, AssetPrice } from './models';
+import { PriceRepository } from './price.repository';
 import { PricesController } from './prices.controller';
 import { PriceService } from './prices.service';
 
@@ -27,7 +28,7 @@ import { PriceService } from './prices.service';
     TypeOrmModule.forFeature([AssetPrice, Asset, AssetCurrentPrice]),
   ],
   controllers: [PricesController],
-  providers: [PriceService],
+  providers: [PriceService, PriceRepository],
   exports: [PriceService],
 })
 export class PricesModule {}

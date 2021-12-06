@@ -45,3 +45,9 @@ export class CoingeckoService {
     }
   }
 }
+
+export interface CoingeckoRequest {
+  platformId: string;
+  contractAddresses: string;
+  vsCurrencies: string;
+}

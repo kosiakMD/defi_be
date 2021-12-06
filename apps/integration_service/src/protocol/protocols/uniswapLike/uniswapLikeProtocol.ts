@@ -1,6 +1,9 @@
 import { Address, ChainAbbrEnum, ChainDto, Logger, ProjectEnum, ProtocolName } from '@app/common';
 import { FeatureEnum } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
+import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
+import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/dto/liquidity.pool.dto';
+import { plainToClass } from 'class-transformer';
 
 import { SubgraphResponseDto } from '../../../subgraph/response.dto';
 import { UniswapLikeSubgraph } from '../../../thegraph/uniswap-like-subgraph.service';
@@ -25,6 +28,68 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
 
   protected constructor() {
     super();
+  }
+
+  public async getAllFeaturesBaseData(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    let data: BaseData[];
+    const errors: string[] = [];
+
+    try {
+      const response = await this.getSubgraphData(addresses, this.subgraph, chain.abbr);
+      data = await this.mapper.mapData(
+        response.userAddresses,
+        addresses,
+        response.response,
+        this.project,
+        this.name,
+        chain,
+      );
+      
+      data = data.map(d => {
+        const lpPosition: BaseDataLp = plainToClass(BaseDataLp, {
+          chain: d.chain,
+          projectName: d.projectName,
+          protocolName: d.projectName,
+          userAddress: d.userAddress,
+          feature: FeatureEnum.pools,
+          items: [],
+        });
+        
+        d.liquidityPositions.forEach(lp => {
+          const lpFeature: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
+            address: lp.pool.address,
+            lpToken: lp.lpToken,
+            tokens: [],
+          });
+          
+          lp.poolTokens.forEach((pt, i) => {
+            const poolToken: PoolTokenDto = plainToClass(PoolTokenDto, {
+              address: pt.address,
+              name: pt.name,
+              symbol: pt.symbol,
+              decimals: pt.decimals,
+              reserve: pt.reserve,
+              value: pt.amount * pt.priceUSD,
+              balance: pt.amount,
+              price: pt.priceUSD,
+              positionInPool: i,
+            });
+            
+            lpFeature.tokens.push(poolToken);
+          });
+          lpPosition.items.push(lpFeature);
+        })
+
+        return lpPosition;
+      });
+    } catch (e) {
+      errors.push(e.message);
+    }
+
+    return [data, errors];
   }
 
   public getAllFeaturesRawData = async (

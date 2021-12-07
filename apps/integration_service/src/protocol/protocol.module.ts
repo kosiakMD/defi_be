@@ -13,18 +13,19 @@ import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AlpacaApiService } from './protocols/alpaca/services/alpaca.api.service';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import { AutofarmApiService } from './protocols/autofarm/services/autofarm.api.service';
 import AutofarmProtocol from './protocols/autofarmProtocol';
-import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
+import { LiquidityPools } from './protocols/features/liquidity-pools';
 import { Mapper } from './protocols/mappers/mapper';
 import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
-import { PancakeV2Pools } from './protocols/pancake/pancake-v2.pools';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
+import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
@@ -48,11 +49,12 @@ const ProtocolList = [
   UniswapProtocolV3,
   YearnProtocolV1,
   YearnProtocolV2,
+  RaydiumProtocol,
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
-const Pancake = [PancakeProtocol, PancakeV2Pools, PancakeV2Staking, PancakeV2Legacy];
+const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeV2Legacy];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 
 @Module({
@@ -85,6 +87,7 @@ const Autofarm = [AutofarmProtocol, AutofarmStaking];
     AlpacaApiService,
     AutofarmApiService,
     Web3ProviderService,
+    LiquidityPools,
   ],
   exports: [ProtocolService],
 })

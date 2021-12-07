@@ -1,9 +1,15 @@
 import { Controller, Get, Param } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { Address, ChainIdEnum, ProtocolNameEnum, ProtocolParams } from '@app/common';
+import {
+  Address,
+  AddressesArray,
+  ChainIdEnum,
+  ChainsArray,
+  ProtocolNameEnum,
+  ProtocolParams,
+} from '@app/common';
 
-import { Addresses, Chains } from '../decorators/params';
 import { IntegrationsResponseV2Dto } from './integrations.dto';
 import { IntegrationsService } from './integrations.service';
 
@@ -44,8 +50,8 @@ export class IntegrationsControllerV2 {
   @Get('/:protocolName/')
   async getProtocolFeature(
     @Param() params: ProtocolParams,
-    @Addresses('addresses') addresses: Address[],
-    @Chains('chains') chains: ChainIdEnum[],
+    @AddressesArray('addresses') addresses: Address[],
+    @ChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IntegrationsResponseV2Dto> {
     const { protocolName } = params;
 

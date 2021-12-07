@@ -1,17 +1,15 @@
 // eslint-disable-next-line max-classes-per-file
 import { Expose, Transform } from 'class-transformer';
 import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import Web3 from 'web3';
 
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IAssetDto, IAssetResponseDto } from '@app/common';
 import { AssetState, ChainIdEnum } from '@app/common/enum';
+import { unifyAddress } from '@app/common/utils/addresses';
 
 import { Address } from '../../common/interfaces';
-
-const web3 = new Web3();
 
 export class AssetDto implements IAssetDto {
   @ApiProperty({ type: Number, example: 1066834 })
@@ -24,11 +22,11 @@ export class AssetDto implements IAssetDto {
 
   @ApiProperty({ type: String, example: '0x Protocol Token' })
   @Expose()
-  name: string;
+  name: string = null;
 
   @ApiProperty({ type: String, example: 'ZRX' })
   @Expose()
-  symbol: string;
+  symbol: string = null;
 
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   @Expose()
@@ -37,6 +35,10 @@ export class AssetDto implements IAssetDto {
   @ApiProperty({ type: Number, example: 18 })
   @Expose()
   decimals: number;
+
+  @ApiProperty({ type: Boolean, example: false })
+  @Expose()
+  isLp: boolean = false;
 
   @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.pending })
   @Expose()
@@ -100,7 +102,7 @@ export class AssetResponseDto implements IAssetResponseDto {
   @Transform(({ value }) => {
     return !!value;
   })
-  isLp: boolean;
+  isLp = false;
 
   @ApiProperty({ type: Boolean, example: true })
   @Expose()
@@ -117,10 +119,7 @@ export class AssetTrackDto {
   @Expose()
   @IsNotEmpty()
   @Transform(({ value }) => {
-    if (!web3.utils.isAddress(value)) {
-      throw new BadRequestException(`Asset address '${value}' is not valid`);
-    }
-    return value.toLowerCase();
+    return unifyAddress(value);
   })
   @ApiProperty({ type: String, example: '0xf411903cbc70a74d22900a5de66a2dda66507255' })
   address: string;

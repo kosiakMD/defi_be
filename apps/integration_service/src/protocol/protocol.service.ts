@@ -696,9 +696,10 @@ export class ProtocolService {
           const pricesData = cpr.value as PriceResponseDto<CurrentPricesPayload>;
           chainAssetPrices.set(pricesData.chain.id, new Map<string, number>());
           Object.keys(pricesData.prices).forEach((address) => {
+            const price = pricesData.prices[address] ? Number(pricesData.prices[address]) : null;
             chainAssetPrices
               .get(pricesData.chain.id)
-              .set(address, Number(pricesData.prices[address]));
+              .set(address, price);
           });
         } else {
           this.logger.error(cpr.reason);

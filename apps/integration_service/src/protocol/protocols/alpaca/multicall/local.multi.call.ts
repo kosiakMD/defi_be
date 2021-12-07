@@ -85,34 +85,44 @@ export class LocalMultiCall extends MultiCall {
     chain: ChainAbbrEnum,
     addresses: Address[],
   ): Promise<AlpacaStakingInterface[]> {
-    const inputs = [];
-    addresses.forEach((address) => {
-      for (let i = 0; i < alpacaPoolsLength; i++) {
-        inputs.push({
-          target: alpacaFactoriesMap.get(chain),
-          function: 'userInfo',
-          args: [i, address],
-        });
-      }
-    });
-
-    const stakingPositions: AlpacaStakingInterface[] = [];
-    const step = 50;
-    for (let i = 0; i < inputs.length; i += step) {
-      const sliceInput = inputs.slice(i, i + step);
-      const [, userInfo] = await this.multiCall(AlpacaStakeContractAbi, sliceInput);
-      userInfo.forEach((data, index) => {
-        if (!data.amount.isZero()) {
-          stakingPositions.push({
-            poolNum: (i + index) % alpacaPoolsLength,
-            userAddress: addresses[Math.floor((i + index) / alpacaPoolsLength)],
-            amount: data.amount.toString(),
+    try {
+      const inputs = [];
+      addresses.forEach((address) => {
+        for (let i = 0; i < alpacaPoolsLength; i++) {
+          inputs.push({
+            target: alpacaFactoriesMap.get(chain),
+            function: 'userInfo',
+            args: [i, address],
           });
         }
       });
-    }
 
-    return stakingPositions;
+      const stakingPositions: AlpacaStakingInterface[] = [];
+      const step = Math.ceil(100 / addresses.length);
+      const promisesArray = [];
+      for (let i = 0; i < inputs.length; i += step) {
+        const sliceInput = inputs.slice(i, i + step);
+        promisesArray.push(this.multiCall(AlpacaStakeContractAbi, sliceInput));
+      }
+
+      const multicallResp = await Promise.all(promisesArray);
+      multicallResp.forEach((resp, index) => {
+        resp[1].forEach((data, index2) => {
+          if (!data.amount.isZero()) {
+            stakingPositions.push({
+              poolNum: (index2 + index * step) % alpacaPoolsLength,
+              userAddress: addresses[Math.floor((index2 + index * step) / alpacaPoolsLength)],
+              amount: data.amount.toString(),
+            });
+          }
+        });
+      });
+
+      return stakingPositions;
+    } catch (e) {
+      this.logger.error(e, 'getStakingPositions');
+      throw e;
+    }
   }
 
   async getVaultUsersInfo(data: AlpacaStakingInterface[], chain: ChainAbbrEnum): Promise<void> {

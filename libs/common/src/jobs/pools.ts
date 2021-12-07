@@ -43,6 +43,8 @@ export class LiquidityPoolFeature {
   stats: Stats = plainToClass(Stats, {});
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
   tokens: PoolTokenDto[] = [];
+  // data not included to feature but need to have to get realtime data
+  extra?: any = {};
 }
 
 export class CurveUnderlyingLpDto extends PoolTokenDto {

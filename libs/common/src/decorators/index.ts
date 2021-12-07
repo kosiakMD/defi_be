@@ -1,23 +1,15 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AxiosError } from 'axios';
 
-import { HttpStatus } from '@nestjs/common';
-import { createParamDecorator, HttpException } from '@nestjs/common';
+import { createParamDecorator, HttpException, HttpStatus } from '@nestjs/common';
+
+import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
 
 import { Address, Logger } from '..';
 import { ChainIdEnum } from '../enum';
 import { filterByEnum } from '../utils';
 import { splitToArray } from '../utils/string';
 import { splitToNumberArray } from '../utils/transform';
-
-export const ChainsSplit = createParamDecorator((dataField, req): number[] => {
-  try {
-    const input: string = req.args[0].query[dataField];
-    return splitToNumberArray(input);
-  } catch (e) {
-    throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-});
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   try {
@@ -42,15 +34,6 @@ export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   }
 });
 
-export const AddressesSplit = createParamDecorator((dataField, req): Address[] => {
-  try {
-    const input: string = req.args[0].query[dataField];
-    return splitToArray(input);
-  } catch (e) {
-    throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-  }
-});
-
 export const AddressesArray = createParamDecorator((dataField, req): Address[] => {
   try {
     const input: string | Address[] = req.args[0].query[dataField];
@@ -59,7 +42,7 @@ export const AddressesArray = createParamDecorator((dataField, req): Address[] =
       throw 'User address is not provided';
     }
 
-    return Array.isArray(input) ? input.map((_) => _.toLocaleLowerCase()) : splitToArray(input);
+    return Array.isArray(input) ? unifyAddresses(input) : splitToArray(input).map(unifyAddress);
   } catch (e) {
     throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
   }

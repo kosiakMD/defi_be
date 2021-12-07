@@ -13,6 +13,7 @@ import {
   TraderjoeProtocolEnum,
   CurveProtocolEnum,
   EllipsisProtocolEnum,
+  RaydiumProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -34,7 +35,8 @@ export type ProtocolName =
   | UniswapProtocolEnum
   | YearnProtocolEnum
   | TraderjoeProtocolEnum
-  | EllipsisProtocolEnum;
+  | EllipsisProtocolEnum
+  | RaydiumProtocolEnum;
 
 export enum ColumnType {
   json = 'json',
@@ -57,10 +59,6 @@ export type Chains = ChainIdEnum[];
 export type BalancesResponse = { [key: string]: AccountBalance };
 
 export type TokenPrices = { [key: string]: number };
-
-export type TokenPricesV2 = { [key: string]: { price?: number; isLp?: boolean } };
-
-export type NoDbTokenBalances = { [key: string]: number };
 
 export type Timestamp = string;
 

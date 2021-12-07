@@ -26,13 +26,12 @@ export class IntegrationDataConverter {
     if (!mapping) return null;
     const itemData = TrackedVaultItemsMap.get(mapping['dbId']) as TrackedVaultItem;
     const dto = IntegrationDataConverter.buildFeatureDtoByDtoName(mapping['dtoName']);
-
     if (!dto) {
       throw new Error(`Failed to get DTO '${mapping['dtoName']}'`);
     }
     Object.keys(dto).forEach((key) => {
       // set up simple types, null is also object
-      if (dto[key] === null || typeof dto[key] !== 'object') {
+      if (dto[key] === null || typeof dto[key] !== 'object' || key === 'extra') {
         const defaultValue = dto[key];
         dto[key] =
           mapping[key] !== null && mapping[key] !== undefined ? mapping[key] : itemData.data[key];

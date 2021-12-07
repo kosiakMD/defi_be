@@ -223,8 +223,6 @@ export class RaydiumPools implements JobInterface {
   }
 
   async updateWithChainData(): Promise<any[]> {
-    this.mapping = this.mapping.slice(0, 2);
-
     const pricedTokenAddresses: string = Array.from(
       this.mapping.map((m) => {
         return m.tokens.map((t) => t.address);

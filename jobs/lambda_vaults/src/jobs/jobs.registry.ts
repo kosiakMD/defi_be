@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
+import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
+import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
 import { CurvePools } from './curve/curve.pools';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { JobInterface } from './job.interface';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
+import { RaydiumPools } from './raydium/raydium.pools';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
-import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
-import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
 
 @Injectable()
 export class JobsRegistry {
@@ -27,6 +28,7 @@ export class JobsRegistry {
     ellipsisStaking: EllipsisStaking,
     autofarmStakingBSC: AutofarmStakingBSC,
     autofarmStakingPLG: AutofarmStakingPLG,
+    raydiymPools: RaydiumPools,
   ) {
     this.registry.set(curvePools.placeholder, curvePools);
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
@@ -38,5 +40,6 @@ export class JobsRegistry {
     this.registry.set(ellipsisStaking.placeholder, ellipsisStaking);
     this.registry.set(autofarmStakingBSC.placeholder, autofarmStakingBSC);
     this.registry.set(autofarmStakingPLG.placeholder, autofarmStakingPLG);
+    this.registry.set(raydiymPools.placeholder, raydiymPools);
   }
 }

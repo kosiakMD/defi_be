@@ -10,6 +10,7 @@ import { PriceService } from '../../../microservices/price.service';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { LiquidityPools } from '../features/liquidity-pools';
 import { Mapper } from '../mappers/mapper';
+import { RaydiumStaking } from './raydium.staking';
 
 @Injectable()
 export default class RaydiumProtocol extends DataProviderProtocol {
@@ -18,7 +19,7 @@ export default class RaydiumProtocol extends DataProviderProtocol {
   readonly name = ProtocolNameEnum.raydium;
   readonly displayName = ProtocolNameEnum.raydium;
   readonly features = {
-    [ChainAbbrEnum.sol]: [FeatureEnum.pools],
+    [ChainAbbrEnum.sol]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   protected readonly dataProvider;
 
@@ -28,6 +29,7 @@ export default class RaydiumProtocol extends DataProviderProtocol {
     protected readonly priceService: PriceService,
     protected readonly mapper: Mapper,
     private readonly pools: LiquidityPools,
+    private readonly staking: RaydiumStaking,
   ) {
     super();
   }
@@ -68,6 +70,8 @@ export default class RaydiumProtocol extends DataProviderProtocol {
           projectName: this.project,
           chain: chain,
         });
+      case FeatureEnum.staking:
+        return this.staking.getData(addresses, chain);
       default:
         return [];
     }

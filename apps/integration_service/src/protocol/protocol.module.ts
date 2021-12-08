@@ -26,6 +26,7 @@ import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
+import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
@@ -56,6 +57,7 @@ const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
 const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeV2Legacy];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
+const Raydium = [RaydiumStaking];
 
 @Module({
   imports: [
@@ -82,6 +84,7 @@ const Autofarm = [AutofarmProtocol, AutofarmStaking];
     ...Pancake,
     ...Ellipsis,
     ...Autofarm,
+    ...Raydium,
     ProtocolService,
     Mapper,
     AlpacaApiService,

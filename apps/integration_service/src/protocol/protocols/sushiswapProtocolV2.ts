@@ -24,6 +24,10 @@ import {
 } from '@app/common';
 import { FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
+import { BaseData } from '@app/common/dto/BaseData';
+import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
 
@@ -43,10 +47,6 @@ import {
   ISushiSwapLiquidityPair,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
-import { BaseData } from '@app/common/dto/BaseData';
-import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
-import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 
 @Injectable()
 export class SushiSwapProtocolV2 extends BasicProtocol {
@@ -75,7 +75,9 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       FeatureEnum.pools,
       FeatureEnum.staking,
       FeatureEnum.lending,
+      FeatureEnum.collateral,
       FeatureEnum.borrowing,
+      // FeatureEnum.health // TODO
     ],
     [ChainAbbrEnum.ftm]: [FeatureEnum.pools],
     [ChainAbbrEnum.harm]: [FeatureEnum.pools],
@@ -117,10 +119,10 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
             feature: FeatureEnum.pools,
             items: addressData[FeatureEnum.pools].items,
           });
-    
+
           baseData.push(basePoolsInfo);
         }
-  
+
         if (addressData[FeatureEnum.staking]) {
           const baseStakingInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
             chain,
@@ -130,34 +132,49 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
             feature: FeatureEnum.staking,
             items: addressData[FeatureEnum.staking].items,
           });
-    
+
           baseData.push(baseStakingInfo);
         }
-  
+
         if (addressData[FeatureEnum.lending]) {
           const baseLendingInfo: BaseDataLending = plainToClass(BaseDataLending, {
             chain,
             projectName: ProjectEnum.sushiswap,
             protocolName: ProtocolNameEnum.sushiswapV2,
             userAddress: address,
+            protocolType: ProtocolTypeEnum.lending,
             feature: FeatureEnum.lending,
             items: addressData[FeatureEnum.lending].items,
           });
-    
+
           baseData.push(baseLendingInfo);
         }
-  
+
         if (addressData[FeatureEnum.borrowing]) {
           const baseBorrowingInfo: BaseDataLending = plainToClass(BaseDataLending, {
             chain,
             projectName: ProjectEnum.sushiswap,
             protocolName: ProtocolNameEnum.sushiswapV2,
             userAddress: address,
-            protocolType: ProtocolTypeEnum.borrowing,
+            protocolType: ProtocolTypeEnum.lending,
             feature: FeatureEnum.borrowing,
             items: addressData[FeatureEnum.borrowing].items,
           });
-    
+
+          baseData.push(baseBorrowingInfo);
+        }
+
+        if (addressData[FeatureEnum.collateral]) {
+          const baseBorrowingInfo: BaseDataLending = plainToClass(BaseDataLending, {
+            chain,
+            projectName: ProjectEnum.sushiswap,
+            protocolName: ProtocolNameEnum.sushiswapV2,
+            userAddress: address,
+            protocolType: ProtocolTypeEnum.lending,
+            feature: FeatureEnum.collateral,
+            items: addressData[FeatureEnum.collateral].items,
+          });
+
           baseData.push(baseBorrowingInfo);
         }
       }
@@ -183,7 +200,11 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       responsePromises.push(this[FeatureEnum.staking](response, address, chain));
     }
 
-    if (response[FeatureEnum.lending]) {
+    if (
+      response[FeatureEnum.lending] ||
+      response[FeatureEnum.borrowing] ||
+      response[FeatureEnum.collateral]
+    ) {
       // Lending and borrowing responses are returned from the same subgraph call
       // this will add both to the response instead of making the same request twice
       responsePromises.push(this[FeatureEnum.lending](response, address, chain));
@@ -202,35 +223,10 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     });
 
     this.features[chain.abbr].forEach((feature: FeatureEnum) => {
-      switch (feature) {
-        case FeatureEnum.pools:
-          response[FeatureEnum.pools] = {
-            totalValue: 0,
-            items: [],
-          } as FeatureResultDto<LiquidityPoolFeatureDto>;
-          break;
-
-        case FeatureEnum.staking:
-          response[FeatureEnum.staking] = {
-            totalValue: 0,
-            items: [],
-          } as FeatureResultDto<IntegrationStakingPositionDto>;
-          break;
-
-        case FeatureEnum.lending:
-          response[FeatureEnum.lending] = {
-            totalValue: 0,
-            items: [],
-          } as FeatureResultDto<LendingPositionDto>;
-          break;
-
-        case FeatureEnum.borrowing:
-          response[FeatureEnum.borrowing] = {
-            totalValue: 0,
-            items: [],
-          } as FeatureResultDto<LendingPositionDto>;
-          break;
-      }
+      response[feature] = {
+        totalValue: 0,
+        items: [],
+      };
     });
 
     return response;
@@ -357,10 +353,16 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     users.flatMap((user) => {
       user.kashiPairs.flatMap((kashiPair) => {
         const lendingPosition = this.formatLendingPosition(
+          kashiPair.assetFraction,
+          kashiPair.pair.asset,
+          prices,
+          kashiPair.pair.supplyAPR,
+        );
+
+        const collateralPosition = this.formatLendingPosition(
           kashiPair.collateralShare,
           kashiPair.pair.collateral,
           prices,
-          kashiPair.pair.supplyAPR,
         );
 
         const borrowingPosition = this.formatLendingPosition(
@@ -371,9 +373,11 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         );
 
         response[FeatureEnum.lending].items.push(lendingPosition);
+        response[FeatureEnum.collateral].items.push(collateralPosition);
         response[FeatureEnum.borrowing].items.push(borrowingPosition);
 
         response[FeatureEnum.lending].totalValue += lendingPosition.value;
+        response[FeatureEnum.collateral].totalValue += collateralPosition.value;
         response[FeatureEnum.borrowing].totalValue += borrowingPosition.value;
       });
     });
@@ -383,7 +387,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     share: string,
     token: ISushiSwapERC20Token,
     prices: CurrentPricesPayload,
-    apr: string,
+    apr = '0',
   ): LendingPositionDto {
     const collateralBalance = normalizeDecimals(share, token.decimals);
 

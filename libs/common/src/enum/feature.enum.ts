@@ -4,6 +4,7 @@ export enum FeatureEnum {
   farming = 'farming', // +
   claimable = 'claimable', // +
   lending = 'lending', // +
+  collateral = 'collateral', // +
   borrowing = 'borrowing', // +
   transactions = 'transactions', // -
   leverageFarming = 'leverageFarming',

@@ -19,7 +19,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.celo, 'CELO_URL');
     this.setProvider(ChainIdEnum.cro, 'CRONOS_URL');
     this.setProvider(ChainIdEnum.eth, 'ETH_URL');
-    this.setProvider(ChainIdEnum.eth, 'HECO_URL');
+    this.setProvider(ChainIdEnum.heco, 'HECO_URL');
     this.setProvider(ChainIdEnum.ftm, 'FTM_URL');
     this.setProvider(ChainIdEnum.harm, 'HARM_URL');
     this.setProvider(ChainIdEnum.kcc, 'KCC_URL');
@@ -32,7 +32,7 @@ export class Web3ProviderService {
     // TODO: Move contracts to configs
     this.setMulticall(ChainIdEnum.arbi, '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089');
     this.setMulticall(ChainIdEnum.avax, '0x92a09557707ab4888eacc034122120f27362da7f');
-    // this.setMulticall(ChainIdEnum.boba, '');
+    this.setMulticall(ChainIdEnum.boba, '0x92A09557707AB4888EACC034122120F27362dA7f');
     this.setMulticall(ChainIdEnum.bsc, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');
     this.setMulticall(ChainIdEnum.celo, '0xBc107e7E5e68Fc92E76A002381347846fD03F1C6');
     this.setMulticall(ChainIdEnum.cro, '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c');

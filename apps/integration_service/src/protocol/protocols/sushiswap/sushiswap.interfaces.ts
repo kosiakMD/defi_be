@@ -53,20 +53,19 @@ export interface ISushiSwapPoolUser {
   pool: ISushiSwapPool;
 }
 
+export interface ISushiSwapChef {
+  id: Address;
+  sushi: Address;
+}
+
 export interface ISushiSwapMasterChef {
   users: ISushiSwapPoolUser[];
-  masterChef: {
-    id: Address;
-    sushi: Address;
-  };
+  masterChef: ISushiSwapChef;
 }
 
 export interface ISushiSwapMiniChef {
   users: ISushiSwapPoolUser[];
-  miniChef: {
-    id: Address;
-    sushi: Address;
-  };
+  miniChef: ISushiSwapChef;
 }
 
 export interface ISushiSwapSushiBar extends ISushiSwapERC20Token {

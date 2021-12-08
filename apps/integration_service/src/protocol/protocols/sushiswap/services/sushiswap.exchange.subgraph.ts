@@ -17,17 +17,22 @@ export class SushiSwapExchangeSubgraph {
     private readonly httpService: HttpService,
   ) {
     this.subgraphUrls = new Map([
-      [ChainIdEnum.arbi, this.configService.get<string>('SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.avax, this.configService.get<string>('SUSHISWAP_AVAX_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.bsc, this.configService.get<string>('SUSHISWAP_BSC_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.celo, this.configService.get<string>('SUSHISWAP_CELO_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.eth, this.configService.get<string>('SUSHISWAP_ETH_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.ftm, this.configService.get<string>('SUSHISWAP_FTM_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.harm, this.configService.get<string>('SUSHISWAP_ONE_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.heco, this.configService.get<string>('SUSHISWAP_HECO_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.plg, this.configService.get<string>('SUSHISWAP_MATIC_EXCHANGE_SUBGRAPH_URL')],
-      [ChainIdEnum.xdai, this.configService.get<string>('SUSHISWAP_XDAI_EXCHANGE_SUBGRAPH_URL')],
+      [ChainIdEnum.arbi, this.getConfigSubgraph('ARBI')],
+      [ChainIdEnum.avax, this.getConfigSubgraph('AVAX')],
+      [ChainIdEnum.bsc, this.getConfigSubgraph('BSC')],
+      [ChainIdEnum.celo, this.getConfigSubgraph('CELO')],
+      [ChainIdEnum.eth, this.getConfigSubgraph('ETH')],
+      [ChainIdEnum.ftm, this.getConfigSubgraph('FTM')],
+      [ChainIdEnum.harm, this.getConfigSubgraph('ONE')],
+      [ChainIdEnum.heco, this.getConfigSubgraph('HECO')],
+      [ChainIdEnum.plg, this.getConfigSubgraph('MATIC')],
+      [ChainIdEnum.xdai, this.getConfigSubgraph('XDAI')],
+      [ChainIdEnum.mriver, this.getConfigSubgraph('MRIVER')],
     ]);
+  }
+
+  getConfigSubgraph(subgraphChain: string) {
+    return this.configService.get<string>(`SUSHISWAP_${subgraphChain}_EXCHANGE_SUBGRAPH_URL`);
   }
 
   isSupportedChain(chain: ChainDto) {

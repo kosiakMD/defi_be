@@ -5,6 +5,7 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { Web3ProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { ChainModule } from '../chain/chain.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
@@ -90,6 +91,7 @@ const Raydium = [RaydiumStaking];
     AlpacaApiService,
     AutofarmApiService,
     Web3ProviderService,
+    MulticallAggregator,
     LiquidityPools,
   ],
   exports: [ProtocolService],

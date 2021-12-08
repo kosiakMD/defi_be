@@ -29,13 +29,13 @@ import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { normalizeDecimals } from '@app/common/utils/number';
-import { Web3ProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { LPToken, IntegrationStakingPositionDto } from '../../integrations/integrations.dto';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import BasicProtocol from './basicProtocol';
-import { LocalMultiCall } from './sushiswap/multicall/local.multicall';
+import { SushiSwapMasterChefAbi } from './sushiswap/abi/masterchef';
 import { SushiSwapBentoBoxSubgraph } from './sushiswap/services/sushiswap.bentobox.subgraph';
 import { SushiSwapExchangeSubgraph } from './sushiswap/services/sushiswap.exchange.subgraph';
 import { SushiSwapMasterChefSubgraph } from './sushiswap/services/sushiswap.masterchef.subgraph';
@@ -43,8 +43,10 @@ import { SushiSwapMiniChefSubgraph } from './sushiswap/services/sushiswap.minich
 import { SushiSwapSushiBarSubgraph } from './sushiswap/services/sushiswap.sushibar.subgraph';
 import { MAGIC_BENTOBOX_APR_DECIMALS } from './sushiswap/sushiswap.constants';
 import {
+  ISushiSwapChef,
   ISushiSwapERC20Token,
   ISushiSwapLiquidityPair,
+  ISushiSwapPoolUser,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
 
@@ -59,18 +61,41 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     ChainAbbrEnum.ftm,
     ChainAbbrEnum.harm,
     // ChainAbbrEnum.heco, // TODO: find out why heco subgraph is returning 404
+    ChainAbbrEnum.mriver, // TODO
+    // ChainAbbrEnum.okex,
     ChainAbbrEnum.plg,
     ChainAbbrEnum.xdai,
-    // ChainAbbrEnum.mriver, // TODO
   ];
   readonly project = ProjectEnum.sushiswap;
   readonly name = SushiSwapProtocolEnum.sushiswapV2;
   readonly displayName = 'SushiSwap';
   readonly features = {
-    [ChainAbbrEnum.arbi]: [FeatureEnum.pools],
-    [ChainAbbrEnum.avax]: [FeatureEnum.pools],
-    [ChainAbbrEnum.bsc]: [FeatureEnum.pools],
-    [ChainAbbrEnum.celo]: [FeatureEnum.pools],
+    [ChainAbbrEnum.arbi]: [
+      FeatureEnum.pools,
+      FeatureEnum.staking,
+      FeatureEnum.lending,
+      FeatureEnum.collateral,
+      FeatureEnum.borrowing,
+      // FeatureEnum.health,
+    ],
+    [ChainAbbrEnum.avax]: [
+      FeatureEnum.pools,
+      // FeatureEnum.lending, // no subgraph
+      // FeatureEnum.collateral, // no subgraph
+      // FeatureEnum.borrowing, // no subgraph
+      // FeatureEnum.health, // no subgraph
+    ],
+    [ChainAbbrEnum.bsc]: [
+      FeatureEnum.pools,
+      FeatureEnum.lending,
+      FeatureEnum.collateral,
+      FeatureEnum.borrowing,
+      // FeatureEnum.health,
+    ],
+    [ChainAbbrEnum.celo]: [
+      FeatureEnum.pools, //
+      FeatureEnum.staking,
+    ],
     [ChainAbbrEnum.eth]: [
       FeatureEnum.pools,
       FeatureEnum.staking,
@@ -79,12 +104,35 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       FeatureEnum.borrowing,
       // FeatureEnum.health // TODO
     ],
-    [ChainAbbrEnum.ftm]: [FeatureEnum.pools],
-    [ChainAbbrEnum.harm]: [FeatureEnum.pools],
-    [ChainAbbrEnum.heco]: [FeatureEnum.pools],
-    [ChainAbbrEnum.plg]: [FeatureEnum.pools, FeatureEnum.staking],
-    [ChainAbbrEnum.xdai]: [FeatureEnum.pools],
-    [ChainAbbrEnum.mriver]: [FeatureEnum.pools],
+    [ChainAbbrEnum.ftm]: [
+      FeatureEnum.pools, //
+    ],
+    [ChainAbbrEnum.harm]: [
+      FeatureEnum.pools, //
+      FeatureEnum.staking,
+    ],
+    [ChainAbbrEnum.plg]: [
+      FeatureEnum.pools,
+      FeatureEnum.staking,
+      FeatureEnum.lending,
+      FeatureEnum.collateral,
+      FeatureEnum.borrowing,
+      // FeatureEnum.health,
+    ],
+    [ChainAbbrEnum.xdai]: [
+      FeatureEnum.pools,
+      FeatureEnum.staking,
+      FeatureEnum.lending,
+      FeatureEnum.collateral,
+      FeatureEnum.borrowing,
+      // FeatureEnum.health,
+    ],
+    // [ChainAbbrEnum.heco]: [FeatureEnum.pools], // app.sushi.com makes calls to 'undefined'
+    [ChainAbbrEnum.mriver]: [
+      FeatureEnum.pools, //
+      FeatureEnum.staking,
+    ],
+    // [ChainAbbrEnum.okex]: [FeatureEnum.pools], // app.sushi.com gets 401 error from https://graph.kkt.one/node/subgraphs/name/sushiswap/okex-exchange
   };
 
   constructor(
@@ -96,7 +144,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     protected readonly miniChefSubgraph: SushiSwapMiniChefSubgraph,
     protected readonly sushiBarSubgraph: SushiSwapSushiBarSubgraph,
     protected readonly bentoBoxSubgraph: SushiSwapBentoBoxSubgraph,
-    protected readonly web3Provider: Web3ProviderService,
+    private readonly multicallService: MulticallAggregator,
   ) {
     super();
   }
@@ -259,7 +307,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         user.liquidityPositions.flatMap(async (position) => {
           for (const token of [position.pair.token0, position.pair.token1]) {
             if (!prices[token.id]) {
-              this.logger.log(
+              this.logger.warn(
                 `Failed to fetch price for token ${token.name} (${token.symbol}) - ${token.id} on chain ${chain.id}. Perhaps consider tracking it.`,
               );
               return;
@@ -418,15 +466,15 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     switch (chain.id) {
       case ChainIdEnum.eth:
         return this.getEthStaking(address, chain);
-      case ChainIdEnum.plg:
-        return this.getPlgStaking(address, chain);
+      default:
+        return this.getMiniChefSubgraphStaking(address, chain);
     }
   }
 
   /**
    * Polygon Staking Helpers
    */
-  async getPlgStaking(
+  async getMiniChefSubgraphStaking(
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
@@ -435,7 +483,12 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       chain,
     );
 
-    return this.getGenericMasterChef(address, chain, users, miniChef);
+    try {
+      return await this.getGenericMasterChef(address, chain, users, miniChef);
+    } catch (e) {
+      this.logger.error(e);
+      throw new Error(`Chain: ${chain.id} - Failed to get minichef data`);
+    }
   }
 
   /**
@@ -511,13 +564,26 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       chain,
     );
 
-    return this.getGenericMasterChef(address, chain, users, masterChef);
+    try {
+      return this.getGenericMasterChef(address, chain, users, masterChef);
+    } catch (e) {
+      this.logger.error(e);
+      throw new Error(`Chain: ${chain.id} - Failed to get masterchef data`);
+    }
   }
 
   /**
    * Generic Helpers
    */
-  async getGenericMasterChef(address: Address, chain: ChainDto, users, masterChef) {
+  async getGenericMasterChef(
+    address: Address,
+    chain: ChainDto,
+    users: ISushiSwapPoolUser[],
+    masterChef: ISushiSwapChef,
+  ) {
+    if (!users.length) {
+      return { items: [], totalValue: 0 };
+    }
     const {
       data: [sushi],
     } = await this.accountService.getAssets([masterChef.sushi], [chain.id]);
@@ -534,16 +600,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       chain.id,
     );
 
-    const localMultiCall = new LocalMultiCall(
-      this.web3Provider.getInstanceByChainId(chain.id),
-      this.logger,
-    );
-
-    const pendingSushiMap = await localMultiCall.getPendingSushi(
-      users.flatMap((user) => user.pool.id),
-      address,
-      masterChef.id,
-    );
+    const pendingSushi = await this.getPendingSushi(users, masterChef, address, chain);
 
     let totalValue = 0;
     const items = users.flatMap((user) => {
@@ -572,9 +629,11 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         ],
       });
 
-      const rewardBalance = new BigNumber(pendingSushiMap.get(user.pool.id))
-        .dividedBy(new BigNumber(10).pow(sushi.decimals))
-        .toString();
+      const rewardBalance = pendingSushi.get(user.pool.id)
+        ? new BigNumber(pendingSushi.get(user.pool.id))
+            .dividedBy(new BigNumber(10).pow(sushi.decimals))
+            .toString()
+        : null;
 
       const rewardValue = Number(rewardBalance) * prices[masterChef.sushi];
 
@@ -605,6 +664,33 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
 
     return { items, totalValue };
   }
+
+  async getPendingSushi(
+    users: ISushiSwapPoolUser[],
+    masterChef: ISushiSwapChef,
+    address: Address,
+    chain: ChainDto,
+  ) {
+    const poolIds = users.flatMap((user) => user.pool.id);
+    const masterChefContract = new SushiSwapMasterChefAbi(masterChef.id);
+
+    // Build a call per pool
+    const calls = poolIds.reduce((calls, poolId) => {
+      return calls.set(`${poolId}-${address}`, masterChefContract.pendingSushi(poolId, address));
+    }, new Map());
+
+    // Make the multicall
+    const results = await this.multicallService.handleInBatches(calls, chain.id);
+
+    // Format the data to get the returned values
+    const pendingSushiMap = Array.from(results.values()).reduce((calls, result) => {
+      const [poolId] = result.input.data;
+      return calls.set(poolId, result.output.data.toString());
+    }, new Map());
+
+    return pendingSushiMap;
+  }
+
   getReserveUSDTotals(pair: ISushiSwapLiquidityPair, prices: CurrentPricesPayload) {
     const reserve0USD = this.getPairReserve(pair.reserve0, prices[pair.token0.id]);
 

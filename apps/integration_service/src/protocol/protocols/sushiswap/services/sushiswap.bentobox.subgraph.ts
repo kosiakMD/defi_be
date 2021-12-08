@@ -17,8 +17,16 @@ export class SushiSwapBentoBoxSubgraph {
     private readonly httpService: HttpService,
   ) {
     this.subgraphUrls = new Map([
-      [ChainIdEnum.eth, this.configService.get<string>('SUSHISWAP_ETH_BENTOBOX_SUBGRAPH_URL')],
+      [ChainIdEnum.arbi, this.getConfigSubgraph('ARBI')],
+      [ChainIdEnum.bsc, this.getConfigSubgraph('BSC')],
+      [ChainIdEnum.eth, this.getConfigSubgraph('ETH')],
+      [ChainIdEnum.plg, this.getConfigSubgraph('PLG')],
+      [ChainIdEnum.xdai, this.getConfigSubgraph('XDAI')],
     ]);
+  }
+
+  getConfigSubgraph(subgraphChain: string) {
+    return this.configService.get<string>(`SUSHISWAP_${subgraphChain}_BENTOBOX_SUBGRAPH_URL`);
   }
 
   isSupportedChain(chain: ChainDto) {

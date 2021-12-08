@@ -6,18 +6,18 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import configuration from '@app/common/config/configuration';
 import { Environment, winstonParams } from '@app/common/utils/winston';
 
-import { AnalyticModule } from './analytic/analytic.module';
-import { ApprovalsModule } from './approvals/approvals.module';
-import { AssetsModule } from './assets/assets.module';
-import { BalanceModule } from './balance/balance.module';
-import { BlacklistModule } from './blacklist/blacklist.module';
-import { ChainModule } from './chain/chain.module';
 import config from './config';
-import { DatabaseModule } from './database/database.module';
-import { HealthController } from './health/health.controller';
-import { NftModule } from './nft/nft.module';
-import { TransactionsModule } from './transactions/transcations.module';
-import { TransfersModule } from './transfers/transfers.module';
+import { HealthController } from './controllers/health.controller';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ApprovalsModule } from './modules/approvals/approvals.module';
+import { AssetsModule } from './modules/assets/assets.module';
+import { BalancesModule } from './modules/balances/balances.module';
+import { BlacklistModule } from './modules/blacklists/blacklist.module';
+import { ChainsModule } from './modules/chains.module';
+import { DatabaseModule } from './modules/database.module';
+import { NftModule } from './modules/nft/nft.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { TransfersModule } from './modules/transfers/transfers.module';
 
 @Module({
   imports: [
@@ -51,14 +51,14 @@ import { TransfersModule } from './transfers/transfers.module';
     }),
     TerminusModule,
     DatabaseModule,
-    ChainModule,
+    ChainsModule,
     // with controllers A-Z sort for Swagger API page
     ApprovalsModule,
     AssetsModule,
-    BalanceModule,
+    BalancesModule,
     TransactionsModule,
     TransfersModule,
-    AnalyticModule,
+    AnalyticsModule,
     BlacklistModule,
     NftModule,
   ],

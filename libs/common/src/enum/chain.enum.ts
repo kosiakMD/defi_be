@@ -107,10 +107,10 @@ export enum CurrencyIdEnum {
   usd = 1,
 }
 
-export enum ResultStatus {
-  ok = 'ok',
-  error = 'error',
-}
+// export enum ResultStatus {
+//   ok = 'ok',
+//   error = 'error',
+// }
 
 export enum EtherScanStatusEnum {
   ok = '1',

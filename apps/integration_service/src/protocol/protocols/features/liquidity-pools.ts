@@ -7,14 +7,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   AccountBalance,
-  Address,
   BalancesResponse,
-  ChainDto,
-  ChainIdEnum,
   FeatureEnum,
   Logger,
-  PancakeProtocolEnum,
-  ProjectEnum,
   ProtocolTypeEnum,
   TokenBalance,
 } from '@app/common';
@@ -24,18 +19,17 @@ import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { AccountService } from '../../../microservices/account.service';
-import PancakeProtocol from './pancake.protocol';
 
 @Injectable()
-export class PancakeV2Pools {
+export class LiquidityPools {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly accountService: AccountService,
   ) {}
 
-  public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
-    const cacheKey = `${chain.id}_${PancakeProtocolEnum.pancakeV2}_${FeatureEnum.pools}`;
+  public async getData({ addresses, protocolName, projectName, chain }): Promise<BaseData[]> {
+    const cacheKey = `${chain.id}_${protocolName}_${FeatureEnum.pools}`;
     const cachedPools: NotifyPools = await this.cache.get(cacheKey);
     if (!cachedPools) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
@@ -43,24 +37,20 @@ export class PancakeV2Pools {
 
     const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
       addresses,
-      [ChainIdEnum.bsc],
-      cachedPools.items.map((i) => i.address),
+      [chain.id],
+      cachedPools.items.map((i) => i.lpToken.address),
     );
-
     const baseData: BaseDataLp[] = [];
     addresses.forEach((a) => {
-      const existedPositions = this.toLp(lpBalances[a], cachedPools.items);
-      if (existedPositions.length > 0) {
-        const toAdd: BaseDataLp = plainToClass(BaseDataLp, {
-          chain: chain,
-          userAddress: a,
-          protocolType: ProtocolTypeEnum.amm,
-          projectName: ProjectEnum.pancake,
-          items: existedPositions,
-          feature: FeatureEnum.pools,
-        });
-        baseData.push(toAdd);
-      }
+      const toAdd: BaseDataLp = plainToClass(BaseDataLp, {
+        chain: chain,
+        userAddress: a,
+        protocolType: ProtocolTypeEnum.amm,
+        projectName: projectName,
+        items: this.toLp(lpBalances[a], cachedPools.items),
+        feature: FeatureEnum.pools,
+      });
+      baseData.push(toAdd);
     });
 
     return baseData;
@@ -71,14 +61,16 @@ export class PancakeV2Pools {
     cachedPools: LiquidityPoolFeature[],
   ): LiquidityPoolFeature[] {
     const cachedPoolsMap: Map<string, any> = new Map<string, any>(
-      cachedPools.map((i) => [i.address, i]),
+      cachedPools.map((i) => [i.lpToken.address, i]),
     );
 
-    return lpBalance.tokens.map((tb) => {
+    const liquidityPositions = [];
+    lpBalance.tokens.forEach((tb) => {
       if (tb.decimalsAmount > 0) {
-        return this.toPosition(tb, cachedPoolsMap.get(tb.token.address));
+        liquidityPositions.push(this.toPosition(tb, cachedPoolsMap.get(tb.token.address)));
       }
     });
+    return liquidityPositions;
   }
 
   private toPosition(balance: TokenBalance, poolData: LiquidityPoolFeature): LiquidityPoolFeature {
@@ -86,16 +78,14 @@ export class PancakeV2Pools {
       new BigNumber(poolData.lpToken.totalSupply),
     );
 
-    // simple rewriting pool data with user data, prices will be added later
+    // simple rewriting pool data with user data, prices will be added later if no price here
     const userData = poolData;
     userData.tokens.forEach((t) => {
-      const b = new BigNumber(t.reserve).times(poolShare).toNumber();
-      t.value = null;
-      t.price = null;
-      t.balance = b;
+      const b = new BigNumber(t.reserve).times(poolShare);
+      t.balance = b.toNumber();
+      t.value = t.balance * t.price;
     });
     userData.stats.share = poolShare.toNumber();
-    userData.stats.feeRate = PancakeProtocol.feeRate;
 
     return userData;
   }

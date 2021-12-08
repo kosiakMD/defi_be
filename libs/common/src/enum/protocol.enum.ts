@@ -13,6 +13,7 @@ export enum ProjectEnum {
   yearn = 'yearn',
   traderjoe = 'traderjoe',
   ellipsis = 'ellipsis',
+  raydium = 'raydium',
 }
 
 export enum YearnProtocolEnum {
@@ -73,6 +74,10 @@ export enum EllipsisProtocolEnum {
   ellipsis = 'Ellipsis',
 }
 
+export enum RaydiumProtocolEnum {
+  raydium = 'Raydium',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
@@ -87,4 +92,5 @@ export const ProtocolNameEnum = {
   ...YearnProtocolEnum,
   ...TraderjoeProtocolEnum,
   ...EllipsisProtocolEnum,
+  ...RaydiumProtocolEnum,
 };

@@ -54,6 +54,7 @@ import BasicProtocol from './protocols/basicProtocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
+import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
@@ -85,6 +86,7 @@ export class ProtocolService {
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly traderjoeProtocol: TraderJoeProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
+    private readonly raydiumProtocol: RaydiumProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -101,6 +103,7 @@ export class ProtocolService {
       yearnProtocolV2,
       traderjoeProtocol,
       ellipsisProtocol,
+      raydiumProtocol,
     ];
   }
 
@@ -628,7 +631,7 @@ export class ProtocolService {
 
     // add prices here if needed
     data = await this.adjustPrices(data);
-    
+
     return [data, errors];
   }
 

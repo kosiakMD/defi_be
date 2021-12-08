@@ -70,7 +70,7 @@ export class SolanaBalancesStrategy implements BalancesLoadingStrategy {
         };
       })
       .filter(
-        ({ amount, token }) => new BigNumber(amount).gt(0) || originalTokensSet.has(token.address),
+        ({ amount, token }) => new BigNumber(amount).gt(0) && originalTokensSet.has(token.address),
       );
     if (originalTokensSet.has(SOL_COIN_ADDRESS)) {
       tokenBalances.push({

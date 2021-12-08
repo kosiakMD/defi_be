@@ -295,4 +295,27 @@ export class AssetsService {
       return false;
     }
   }
+
+  async saveAsset(asset: AssetDto): Promise<AssetResponseDto> {
+    const existedAsset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
+      asset.address,
+      asset.chain,
+    );
+
+    if (existedAsset) {
+      return existedAsset;
+    }
+
+    const assetToSave = new AssetsEntity();
+    assetToSave.chain = asset.chain;
+    assetToSave.address = asset.address;
+    assetToSave.icon = null;
+    assetToSave.isLp = asset.isLp;
+    assetToSave.isAnalyticAvailable = false;
+    assetToSave.name = asset.name;
+    assetToSave.symbol = asset.symbol;
+    assetToSave.decimals = asset.decimals;
+    assetToSave.isTracked = asset.isLp !== true;
+    return await this.assetRepository.saveAsset(assetToSave);
+  }
 }

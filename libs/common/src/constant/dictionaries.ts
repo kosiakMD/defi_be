@@ -12,6 +12,7 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.mriver]: ChainAbbrEnum.mriver,
   [ChainIdEnum.harm]: ChainAbbrEnum.harm,
   [ChainIdEnum.heco]: ChainAbbrEnum.heco,
+  [ChainIdEnum.sol]: ChainAbbrEnum.sol,
 };
 
 export const ChainIdToName = {
@@ -26,4 +27,5 @@ export const ChainIdToName = {
   [ChainIdEnum.mriver]: ChainNameEnum.mriver,
   [ChainIdEnum.harm]: ChainNameEnum.harm,
   [ChainIdEnum.heco]: ChainNameEnum.heco,
+  [ChainIdEnum.sol]: ChainNameEnum.sol,
 };

@@ -96,6 +96,13 @@ export class AssetsController {
     });
   }
 
+  @Post('save')
+  @ApiBody({ type: AssetDto })
+  @ApiResponse({ status: 200, type: AssetResponseDto })
+  async saveAsset(@Body() asset: AssetDto): Promise<AssetResponseDto> {
+    return await this.assetsService.saveAsset(asset);
+  }
+
   @Get('/pools')
   @ApiQuery({
     name: 'chainId',

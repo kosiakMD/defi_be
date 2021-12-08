@@ -1,44 +1,37 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
-import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
+import { Address, ChainDto, FeatureEnum, Logger, ProtocolNameEnum } from '@app/common';
+import { ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
 
 import { BaseData } from '../../../interfaces/transactions.interfaces';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { PancakeSubgraph } from '../../../thegraph/pancake.subgraph';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { LiquidityPools } from '../features/liquidity-pools';
 import { Mapper } from '../mappers/mapper';
-import { PancakeV2Legacy } from './pancake-v2.legacy';
-import { PancakeV2Staking } from './pancake-v2.staking';
+import { RaydiumStaking } from './raydium.staking';
 
 @Injectable()
-export default class PancakeProtocol extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
-  readonly project = ProjectEnum.pancake;
-  readonly name = PancakeProtocolEnum.pancakeV2;
-  readonly displayName = 'Pancake V2';
+export default class RaydiumProtocol extends DataProviderProtocol {
+  readonly chains = [ChainAbbrEnum.sol];
+  readonly project = ProjectEnum.raydium;
+  readonly name = ProtocolNameEnum.raydium;
+  readonly displayName = ProtocolNameEnum.raydium;
   readonly features = {
-    [ChainAbbrEnum.bsc]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.sol]: [FeatureEnum.pools, FeatureEnum.staking],
   };
-  public static feeRate = 0.0025;
   protected readonly dataProvider;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
-    protected readonly subgraph: PancakeSubgraph,
     protected readonly mapper: Mapper,
-    private readonly staking: PancakeV2Staking,
-    private readonly pancakeV2Legacy: PancakeV2Legacy,
     private readonly pools: LiquidityPools,
+    private readonly staking: RaydiumStaking,
   ) {
     super();
-
-    this.dataProvider = pancakeV2Legacy;
   }
 
   public async getAllFeaturesBaseData(
@@ -57,7 +50,7 @@ export default class PancakeProtocol extends DataProviderProtocol {
       if (r.status === 'fulfilled') {
         data.push(r.value);
       } else {
-        this.logger.error(r.reason, r.reason.stack, PancakeProtocol.name);
+        this.logger.error(r.reason, r.reason.stack, RaydiumProtocol.name);
         errors.push(r.reason.toString());
       }
     });
@@ -70,8 +63,6 @@ export default class PancakeProtocol extends DataProviderProtocol {
     feature: FeatureEnum,
   ): Promise<BaseData[]> {
     switch (feature) {
-      case FeatureEnum.staking:
-        return this.staking.getData(addresses, chain);
       case FeatureEnum.pools:
         return this.pools.getData({
           addresses: addresses,
@@ -79,6 +70,8 @@ export default class PancakeProtocol extends DataProviderProtocol {
           projectName: this.project,
           chain: chain,
         });
+      case FeatureEnum.staking:
+        return this.staking.getData(addresses, chain);
       default:
         return [];
     }

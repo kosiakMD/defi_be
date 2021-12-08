@@ -81,9 +81,9 @@ export class LiquidityPools {
     // simple rewriting pool data with user data, prices will be added later if no price here
     const userData = poolData;
     userData.tokens.forEach((t) => {
-      const b = new BigNumber(t.reserve).times(poolShare).toNumber();
+      const b = new BigNumber(t.reserve).times(poolShare);
+      t.balance = b.toNumber();
       t.value = t.balance * t.price;
-      t.balance = b;
     });
     userData.stats.share = poolShare.toNumber();
 

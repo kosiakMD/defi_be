@@ -289,13 +289,13 @@ export function solanaStringsToKeys(strings) {
 export function tokensWithPrices(tokens: PoolTokenDto[], prices): PoolTokenDto[] {
   const t0 = tokens.find((t) => t.positionInPool === 0);
   const t1 = tokens.find((t) => t.positionInPool === 1);
-  let p0 = prices[t0.address];
-  let p1 = prices[t1.address];
+  let p0 = Number(prices[t0.address]);
+  let p1 = Number(prices[t1.address]);
   // if we have one price we can calculate other token price
-  if (p0 && !p1) {
+  if (p0 && p1 === 0) {
     p1 = (t0.balance / t1.balance) * p0;
   }
-  if (p1 && !p0) {
+  if (p1 && p0 === 0) {
     p0 = (t1.balance / t0.balance) * p1;
   }
   t0.price = p0;

@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, IAssetDto } from '@app/common';
+import { ChainIdEnum } from '@app/common';
 
 import { Logger } from '../logger/logger.service';
 import { RequestErrorHandler } from '../utils/decorators/error.decorator';

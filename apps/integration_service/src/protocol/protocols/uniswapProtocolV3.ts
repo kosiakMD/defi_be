@@ -14,6 +14,7 @@ import {
   PlatformPoolTokenDto,
   PriceResponseDto,
   ProjectEnum,
+  ProtocolNameEnum,
   UniswapProtocolEnum,
   UniswapV3Position,
 } from '@app/common';
@@ -25,6 +26,9 @@ import { PriceService } from '../../microservices/price.service';
 import { UniswapV3Subgraph } from '../../thegraph/uniswap.v3.subgraph';
 import { calculatePositionAmounts } from '../../utils/uniswapV3PositionMath';
 import DataProviderProtocol from './dataProviderProtocol';
+import { BaseData } from '@app/common/dto/BaseData';
+import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
+import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/dto/liquidity.pool.dto';
 
 @Injectable()
 export class UniswapProtocolV3 extends DataProviderProtocol {
@@ -46,6 +50,56 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
   ) {
     super();
     this.dataProvider = this;
+  }
+
+  public async getAllFeaturesBaseData(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    const baseData: BaseData[] = [];
+    const errors: string[] = [];
+    try {
+      for (const address of addresses) {
+        const lpPositions = await this.getData(address, chain)[0].liquidityPositions;
+
+        const basePoolsInfo: BaseDataLp = plainToClass(BaseDataLp, {
+          chain,
+          projectName: ProjectEnum.uniswap,
+          protocolName: ProtocolNameEnum.uniswapV3,
+          userAddress: address,
+          feature: FeatureEnum.pools,
+          items: [],
+        });
+
+        lpPositions.forEach(p => {
+          const lpFeature: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
+            address: p.pool.address,
+            lpToken: p.lpToken,
+          });
+          p.poolTokens.forEach((pt, i) => {
+            const poolToken: PoolTokenDto = plainToClass(PoolTokenDto, {
+              address: pt.address,
+              name: pt.name,
+              symbol: pt.symbol,
+              decimals: pt.decimals,
+              reserve: pt.reserve,
+              value: pt.amount * pt.priceUSD,
+              balance: pt.amount,
+              price: pt.priceUSD,
+              positionInPool: i,
+            });
+            lpFeature.tokens.push(poolToken);
+          });
+
+          basePoolsInfo.items.push(lpFeature);
+          baseData.push(basePoolsInfo);
+        });
+      }
+    } catch (e) {
+      errors.push(e.message);
+    }
+
+    return [baseData, errors];
   }
 
   // overrider

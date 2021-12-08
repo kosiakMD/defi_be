@@ -20,8 +20,9 @@ import {
   ChainIdEnum,
   LendingPositionDto,
   LendingErcToken,
+  ProtocolTypeEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
+import { FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
@@ -42,6 +43,10 @@ import {
   ISushiSwapLiquidityPair,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
+import { BaseData } from '@app/common/dto/BaseData';
+import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 
 @Injectable()
 export class SushiSwapProtocolV2 extends BasicProtocol {
@@ -92,6 +97,75 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     protected readonly web3Provider: Web3ProviderService,
   ) {
     super();
+  }
+
+  public async getAllFeaturesBaseData(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    const baseData: BaseData[] = [];
+    const errors: string[] = [];
+    try {
+      for (const address of addresses) {
+        const addressData = await this.getAllFeaturesData(address, chain);
+        if (addressData[FeatureEnum.pools]) {
+          const basePoolsInfo: BaseDataLp = plainToClass(BaseDataLp, {
+            chain,
+            projectName: ProjectEnum.sushiswap,
+            protocolName: ProtocolNameEnum.sushiswapV2,
+            userAddress: address,
+            feature: FeatureEnum.pools,
+            items: addressData[FeatureEnum.pools].items,
+          });
+    
+          baseData.push(basePoolsInfo);
+        }
+  
+        if (addressData[FeatureEnum.staking]) {
+          const baseStakingInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
+            chain,
+            projectName: ProjectEnum.sushiswap,
+            protocolName: ProtocolNameEnum.sushiswapV2,
+            userAddress: address,
+            feature: FeatureEnum.staking,
+            items: addressData[FeatureEnum.staking].items,
+          });
+    
+          baseData.push(baseStakingInfo);
+        }
+  
+        if (addressData[FeatureEnum.lending]) {
+          const baseLendingInfo: BaseDataLending = plainToClass(BaseDataLending, {
+            chain,
+            projectName: ProjectEnum.sushiswap,
+            protocolName: ProtocolNameEnum.sushiswapV2,
+            userAddress: address,
+            feature: FeatureEnum.lending,
+            items: addressData[FeatureEnum.lending].items,
+          });
+    
+          baseData.push(baseLendingInfo);
+        }
+  
+        if (addressData[FeatureEnum.borrowing]) {
+          const baseBorrowingInfo: BaseDataLending = plainToClass(BaseDataLending, {
+            chain,
+            projectName: ProjectEnum.sushiswap,
+            protocolName: ProtocolNameEnum.sushiswapV2,
+            userAddress: address,
+            protocolType: ProtocolTypeEnum.borrowing,
+            feature: FeatureEnum.borrowing,
+            items: addressData[FeatureEnum.borrowing].items,
+          });
+    
+          baseData.push(baseBorrowingInfo);
+        }
+      }
+    } catch (e) {
+      errors.push(e.message);
+    }
+
+    return [baseData, errors];
   }
 
   async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
@@ -520,7 +594,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         poolId: user.pool.id,
         poolName: `${pair.token0.symbol}/${pair.token1.symbol}`,
         staked: user.amount,
-        rewardToken: rewardToken,
+        rewards: [rewardToken],
         stakingToken: stakedToken,
       });
     });

@@ -264,6 +264,7 @@ export class BalancesService {
           const cachedBlock = await this.cache.get<BlockTimestamp>(cacheKey);
           if (cachedBlock) {
             blockMap.set(chain, cachedBlock);
+            return;
           }
 
           const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));

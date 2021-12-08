@@ -104,9 +104,7 @@ export interface ISushiSwapUserKashiPair {
 
 export interface ISushiSwapBentoBoxToken {
   share: string;
-  token: {
-    symbol: string;
-  };
+  token: ISushiSwapERC20Token;
 }
 export interface ISushiSwapBentoBoxUsers {
   id: Address;

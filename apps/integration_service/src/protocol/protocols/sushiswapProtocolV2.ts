@@ -387,12 +387,14 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     );
 
     const underlyingTokenAddresses = users.flatMap((user) =>
-      user.kashiPairs.flatMap((kashiPair) => [
-        kashiPair.pair.asset.id,
-        kashiPair.pair.collateral.id,
-      ]),
+      [].concat(
+        user.kashiPairs.flatMap((kashiPair) => [
+          kashiPair.pair.asset.id,
+          kashiPair.pair.collateral.id,
+        ]),
+        user.tokens.flatMap((token) => token.token.id),
+      ),
     );
-
     const { prices } = await this.priceService.getTokenPricesFetch(
       underlyingTokenAddresses,
       chain.id,
@@ -427,6 +429,35 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         response[FeatureEnum.lending].totalValue += lendingPosition.value;
         response[FeatureEnum.collateral].totalValue += collateralPosition.value;
         response[FeatureEnum.borrowing].totalValue += borrowingPosition.value;
+      });
+    });
+
+    // "Deposits"
+    users.flatMap((user) => {
+      user.tokens.forEach((token) => {
+        const balance = normalizeDecimals(token.share, token.token.decimals);
+        const price = prices[token.token.id];
+        const stakedToken = plainToClass(LPToken, {
+          address: token.token.id,
+          name: token.token.name,
+          symbol: token.token.symbol,
+          decimals: token.token.decimals,
+          balance,
+          value: price * balance,
+          price,
+        });
+
+        const position = plainToClass(IntegrationStakingPositionDto, {
+          address: null,
+          poolId: null,
+          poolName: token.token.symbol,
+          staked: balance,
+          rewards: [],
+          stakingToken: stakedToken,
+        });
+
+        response[FeatureEnum.staking].items.push(position);
+        response[FeatureEnum.staking].totalValue += position.stakingToken.value;
       });
     });
   }

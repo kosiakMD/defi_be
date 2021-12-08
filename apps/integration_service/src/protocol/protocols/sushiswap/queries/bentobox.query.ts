@@ -38,7 +38,10 @@ export const getLendingPositionsQuery = gql`
       tokens(where: { share_gt: 0 }) {
         share
         token {
+          id
+          name
           symbol
+          decimals
         }
       }
     }

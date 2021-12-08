@@ -44,6 +44,7 @@ export async function process(): Promise<void> {
     const assetsMap = buildAssetsMap(assets);
 
     const assetsToUpdate = await getAssetsWithNewPairs(baseAssetsMap, assetsMap);
+
     if (assetsToUpdate.length) {
       logger.info(`Saving asset pairs. ${assetsToUpdate.length} assets pairs found`);
       await AssetsService.saveAssetsPairs(assetsToUpdate);

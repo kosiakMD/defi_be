@@ -59,6 +59,10 @@ DTO:
   - apps/price_service/*
   - apps/price_service/**/*
 
+📚 Common Libraries:
+  - libs/common/*
+  - libs/common/**/*
+
 👷 Job:
   - jobs/*
   - jobs/**/*

@@ -3,18 +3,20 @@ import { map } from 'rxjs/operators';
 
 import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address } from '@app/common';
+import { Address, Logger } from '@app/common';
+import { gql } from '@app/common/utils/graphql';
 import { getKey } from '@app/common/utils/string';
 
 import { PairsDto, SubgraphResponseDto } from '../subgraph';
-import { wrapInQuotes } from '../utils/string';
 
 @Injectable()
 export class QuickswapSubgraph {
   protected readonly subgraphUrl: string;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
     @Inject(CACHE_MANAGER) protected readonly cache: Cache,
@@ -22,9 +24,9 @@ export class QuickswapSubgraph {
     this.subgraphUrl = this.configService.get<string>('QUICKSWAP_SUBGRAPH_URL');
   }
 
-  async getPairs(pairsAddresses: Address[]): Promise<SubgraphResponseDto<PairsDto>> {
+  async getPairs(addresses: Address[]): Promise<SubgraphResponseDto<PairsDto>> {
     const cachedPairs = await this.cache.get<SubgraphResponseDto<PairsDto>>(
-      getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses),
+      getKey('QuickSwap', 'subgraph', 'pairs', ...addresses),
     );
 
     if (cachedPairs) {
@@ -32,35 +34,41 @@ export class QuickswapSubgraph {
     } else {
       const pairs: SubgraphResponseDto<PairsDto> = await this.httpService
         .post(this.subgraphUrl, {
-          operationName: 'pairs',
-          query: `{
-          pairs(where: {id_in: [${pairsAddresses.map(wrapInQuotes)}]}) {
-            id
-            reserve0
-            reserve1
-            reserveUSD
-            totalSupply
-            token0Price
-            token1Price
-            token0 {
-              id
-              symbol
-              name
-              decimals
+          variables: { addresses },
+          query: gql`
+            query getPairs($addresses: [String!]!) {
+              pairs(where: { id_in: $addresses }) {
+                id
+                reserve0
+                reserve1
+                reserveUSD
+                totalSupply
+                token0Price
+                token1Price
+                token0 {
+                  id
+                  symbol
+                  name
+                  decimals
+                }
+                token1 {
+                  id
+                  symbol
+                  name
+                  decimals
+                }
+              }
             }
-            token1 {
-              id
-              symbol
-              name
-              decimals
-            }
-          }
-        }`,
+          `,
         })
         .pipe(map((response) => response.data))
         .toPromise();
 
-      await this.cache.set(getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses), pairs);
+      if (pairs.errors) {
+        this.logger.error(pairs.errors);
+      } else {
+        await this.cache.set(getKey('QuickSwap', 'subgraph', 'pairs', ...addresses), pairs);
+      }
 
       return pairs;
     }

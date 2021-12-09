@@ -47,7 +47,7 @@ export const sumOfProperties = <T = { [basePropertyName: string]: unknown }>(
   );
 
 export const mapToObject = <T extends Map<string, any>>(mapInstance: T): Record<string, any> =>
-  [...mapInstance.entries()].reduce((obj, [key, value]) => ({ ...obj, [key]: value }), {});
+  Object.fromEntries(mapInstance.entries());
 
 export const objectToMap = (objectInstance: Record<string, any>): Map<string, any> =>
   new Map(Object.entries(objectInstance));

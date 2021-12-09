@@ -26,7 +26,7 @@ export class Web3Provider {
     };
     Object.entries(chainProviders).forEach(([url, chain]) => {
       if (chain == 'sol') 
-        this.web3MapSol.set(chain, new Connection(this.configService.get<string>(url) || 'http://api.mainnet-beta.solana.com'));
+        this.web3MapSol.set(chain, new Connection(this.configService.get<string>(url)));
       else
         this.web3Map.set(chain, new Web3(this.configService.get<string>(url)));
     });

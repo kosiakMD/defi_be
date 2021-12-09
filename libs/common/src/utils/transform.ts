@@ -1,9 +1,10 @@
-export function splitToArray(value: string): string[] {
+// TODO: could be validation added
+export function splitToArray(value: string, toLowerCase = true): string[] {
   if (!value) {
     return [];
   }
 
-  return value.toLowerCase().split(',');
+  return toLowerCase ? value.toLowerCase().split(',') : value.split(',');
 }
 
 export function splitToNumberArray(value: string): number[] {

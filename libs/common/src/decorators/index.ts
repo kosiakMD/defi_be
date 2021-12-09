@@ -8,8 +8,7 @@ import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
 import { Address, Logger } from '..';
 import { ChainIdEnum } from '../enum';
 import { filterByEnum } from '../utils';
-import { splitToArray } from '../utils/string';
-import { splitToNumberArray } from '../utils/transform';
+import { splitToArray, splitToNumberArray } from '../utils/transform';
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   try {

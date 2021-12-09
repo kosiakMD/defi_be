@@ -107,11 +107,6 @@ export enum CurrencyIdEnum {
   usd = 1,
 }
 
-// export enum ResultStatus {
-//   ok = 'ok',
-//   error = 'error',
-// }
-
 export enum EtherScanStatusEnum {
   ok = '1',
   error = '0',
@@ -126,4 +121,11 @@ export enum EtherScanMessageEnum {
 export enum TransactionType {
   normal = 'normal',
   internal = 'internal',
+}
+
+export enum ChainSymbols {
+  eth = 'eth',
+  ETH = 'ETH',
+  bsc = 'bsc',
+  BSC = 'BSC',
 }

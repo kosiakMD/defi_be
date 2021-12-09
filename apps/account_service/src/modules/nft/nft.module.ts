@@ -1,7 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule } from '@nestjs/common';
-import { Module, HttpModule } from '@nestjs/common';
+import { CacheModule, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { PriceService } from '../../common/providers/microservices/price/price.service';
@@ -27,9 +26,8 @@ import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph'
       }),
       inject: [ConfigService],
     }),
-    AavegotchiSubgraph,
   ],
-  providers: [NftService, OpenSeaService, AavegotchiService, PriceService],
+  providers: [PriceService, NftService, OpenSeaService, AavegotchiService, AavegotchiSubgraph],
   controllers: [NftController],
 })
 export class NftModule {}

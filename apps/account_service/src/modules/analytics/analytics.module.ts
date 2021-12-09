@@ -9,8 +9,8 @@ import { TransfersModule } from '../transfers/transfers.module';
 import { ProfitAndLossService } from './profitandloss.service';
 
 @Module({
-  imports: [HttpModule, AssetsModule, TransfersModule, PriceService, BlacklistModule],
-  providers: [ProfitAndLossService],
+  imports: [HttpModule, AssetsModule, TransfersModule, BlacklistModule],
+  providers: [ProfitAndLossService, PriceService],
   controllers: [AnalyticsController],
 })
 export class AnalyticsModule {}

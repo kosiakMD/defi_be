@@ -83,6 +83,7 @@ export class PriceService {
   }
 
   constructor(
+    // @Inject('HttpService')
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,

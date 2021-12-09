@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -17,14 +18,15 @@ import { TransactionsService } from './transactions.service';
 
 @Module({
   imports: [
+    HttpModule,
     TypeOrmModule.forFeature([TransactionsNewEntity]),
     ChainsModule,
     ScansApiModule,
-    CovalentService,
     BlacklistModule,
   ],
   controllers: [TransactionsController],
   providers: [
+    CovalentService,
     TransactionsService,
     EtherscanTransactionsService,
     EtherscanApi,

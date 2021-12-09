@@ -25,10 +25,9 @@ import { AssetsModule } from './assets/assets.module';
       }),
       inject: [ConfigService],
     }),
-    PriceService,
     forwardRef(() => AssetsModule),
   ],
-  providers: [Web3Provider],
+  providers: [PriceService, Web3Provider],
   exports: [Web3Provider],
 })
 export class ChainsModule {}

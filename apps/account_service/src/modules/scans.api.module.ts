@@ -11,7 +11,7 @@ import { PriceService } from '../common/providers/microservices/price/price.serv
 @Module({
   imports: [
     HttpModule,
-    // ConfigModule,
+    ConfigModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -24,9 +24,8 @@ import { PriceService } from '../common/providers/microservices/price/price.serv
       }),
       inject: [ConfigService],
     }),
-    PriceService,
   ],
-  providers: [BscScanService, EtherScanService, PolygonScanService],
+  providers: [PriceService, BscScanService, EtherScanService, PolygonScanService],
   exports: [BscScanService, EtherScanService, PolygonScanService],
 })
 export class ScansApiModule {}

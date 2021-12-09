@@ -23,10 +23,8 @@ import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
     TypeOrmModule.forFeature([AssetsEntity]),
     HttpModule,
     ChainsModule,
-    PriceService,
     MulticallModule,
     AssetsModule,
-    CovalentService,
     BlacklistModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
@@ -43,6 +41,8 @@ import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
   ],
   controllers: [BalancesController],
   providers: [
+    PriceService,
+    CovalentService,
     BalancesService,
     CovalentBalancesStrategy,
     NetworkBalancesStrategy,

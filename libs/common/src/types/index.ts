@@ -5,6 +5,7 @@ import {
   ChainIdEnum,
   PancakeProtocolEnum,
   PangolinProtocolEnum,
+  PumpkinsProtocolEnum,
   QuickswapProtocolEnum,
   SpookySwapProtocolEnum,
   SushiSwapProtocolEnum,
@@ -36,7 +37,8 @@ export type ProtocolName =
   | YearnProtocolEnum
   | TraderjoeProtocolEnum
   | EllipsisProtocolEnum
-  | RaydiumProtocolEnum;
+  | RaydiumProtocolEnum
+  | PumpkinsProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

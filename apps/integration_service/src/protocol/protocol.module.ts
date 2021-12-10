@@ -38,6 +38,8 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import { PumpkinsStaking } from './protocols/pumpkins/pumpkins.staking';
+import PumpkinsProtocol from './protocols/pumpkins/pumpkins.protocol';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -52,6 +54,7 @@ const ProtocolList = [
   YearnProtocolV1,
   YearnProtocolV2,
   RaydiumProtocol,
+  PumpkinsProtocol,
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
@@ -59,6 +62,7 @@ const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
 const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeV2Legacy];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
+const Pumpkins = [PumpkinsStaking];
 
 @Module({
   imports: [
@@ -86,6 +90,7 @@ const Raydium = [RaydiumStaking];
     ...Ellipsis,
     ...Autofarm,
     ...Raydium,
+    ...Pumpkins,
     ProtocolService,
     Mapper,
     AlpacaApiService,

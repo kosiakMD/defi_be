@@ -53,6 +53,7 @@ import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
+import PumpkinsProtocol from './protocols/pumpkins/pumpkins.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SpookySwapProtocol from './protocols/spookyswapProtocol';
@@ -79,6 +80,7 @@ export class ProtocolService {
     private readonly pangolinProtocol: PangolinProtocol,
     private readonly pancakeProtocolV2: PancakeProtocol,
     private readonly quickswapProtocol: QuickswapProtocol,
+    private readonly pumpkinsProtocol: PumpkinsProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
     private readonly alpacaProtocol: AlpacaProtocol,
@@ -94,6 +96,7 @@ export class ProtocolService {
       autofarmProtocol,
       pancakeProtocolV2,
       pangolinProtocol,
+      pumpkinsProtocol,
       quickswapProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,

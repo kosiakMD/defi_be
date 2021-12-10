@@ -18,6 +18,7 @@ import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from './integrations.
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 
+
 @Injectable()
 export class JobsRunner {
   private jobsToRun: Map<string, JobInterface> = new Map<string, JobInterface>();
@@ -130,6 +131,9 @@ export class JobsRunner {
     // TODO: remove after Curve integration is complete
     jobPlaceholdersSet.add('1_Curve_pools');
     jobPlaceholdersSet.add('12_Raydium_pools');
+    
+    jobPlaceholdersSet.add('4_Pumpkins_staking');
+    jobPlaceholdersSet.add('4_Pumpkins_pools');
 
     return jobPlaceholdersSet;
   }

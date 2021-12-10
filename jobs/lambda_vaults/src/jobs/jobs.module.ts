@@ -20,6 +20,8 @@ import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
+import { PumpkinsStaking } from './pumpkins/pumpkins.staking';
+
 
 const Jobs = [
   CurvePools,
@@ -34,6 +36,7 @@ const Jobs = [
   AutofarmStakingBSC,
   AutofarmStakingPLG,
   RaydiumPools,
+  PumpkinsStaking,
 ];
 
 @Module({

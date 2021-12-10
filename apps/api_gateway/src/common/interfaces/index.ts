@@ -13,6 +13,7 @@ import {
   SushiSwapProtocolEnum,
   TransactionTypeEnum,
   UniswapProtocolEnum,
+  PumpkinsProtocolEnum,
 } from '@app/common/enum';
 
 export type Address = string;
@@ -33,7 +34,8 @@ export type ProtocolName =
   | QuickswapProtocolEnum
   | AlpacaProtocolEnum
   | AaveProtocolEnum
-  | EllipsisProtocolEnum;
+  | EllipsisProtocolEnum
+  | PumpkinsProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;

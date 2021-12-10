@@ -5,6 +5,7 @@ export enum ProjectEnum {
   curve = 'curve',
   pancake = 'pancake',
   pangolin = 'pangolin',
+  pumpkins = 'pumpkins',
   quickswap = 'quickswap',
   spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
@@ -78,6 +79,10 @@ export enum RaydiumProtocolEnum {
   raydium = 'Raydium',
 }
 
+export enum PumpkinsProtocolEnum {
+  pumpkins = 'Pumpkins',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
@@ -93,4 +98,5 @@ export const ProtocolNameEnum = {
   ...TraderjoeProtocolEnum,
   ...EllipsisProtocolEnum,
   ...RaydiumProtocolEnum,
+  ...PumpkinsProtocolEnum,
 };

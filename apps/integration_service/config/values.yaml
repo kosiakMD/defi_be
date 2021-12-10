@@ -47,7 +47,7 @@ configMaps:
     AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
     PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/pcv2-msc
     OPEN_SEA_URL: https://api.opensea.io/api/v1
-    AVAX_URL: https://rpc.ankr.com/avalanche
+    AVAX_URL: https://api.avax.network/ext/bc/C/rpc
     CELO_URL: https://forno.celo.org
     HARM_URL: https://api.harmony.one
     HECO_URL: https://http-mainnet-node.huobichain.com

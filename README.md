@@ -31,19 +31,17 @@ example: `luck-skywalker/bugfix/destroy-Death-star`
 
 ## Services:
 
-### API Gateway [link](./api_gateway)
+### API Gateway [link](./apps/api_gateway)
 
 <b>Should be run the last one as it depends on all the rest</b>
 
-### Account Service [link](./account_service)
+### Account Service [link](./apps/account_service)
 
-### Price Service [link](./price_service)
+### Price Service [link](./apps/price_service)
 
 <b>!Some of other services depend on this one!</b>
 
-### Integration Service [link](./integration_service)
-
-### Swap Service [link](./swap_service)
+### Integration Service [link](./apps/integration_service)
 
 ## Install
 

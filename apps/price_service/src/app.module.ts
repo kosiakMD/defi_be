@@ -10,9 +10,9 @@ import { LoggerMiddleware } from '@app/common/middlewares/logger.middleware';
 import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import config from './config';
-import { HealthModule } from './health/health.module';
-import { LookupModule } from './lookup/lookup.module';
-import { PricesModule } from './prices/prices.module';
+import { HealthModule } from './modules/health.module';
+import { LookupModule } from './modules/lookup/lookup.module';
+import { PricesModule } from './modules/prices/prices.module';
 
 @Module({
   imports: [

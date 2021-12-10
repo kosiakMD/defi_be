@@ -1,14 +1,14 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { AxiosError } from 'axios';
-
 import { createParamDecorator, HttpException, HttpStatus } from '@nestjs/common';
 
+import { ChainIdEnum } from '@app/common/enum';
+import { Address } from '@app/common/types';
+import { filterByEnum } from '@app/common/utils';
 import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
 
-import { Address, Logger } from '..';
-import { ChainIdEnum } from '../enum';
-import { filterByEnum } from '../utils';
 import { splitToArray, splitToNumberArray } from '../utils/transform';
+
+export * from './error.decorators';
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   try {
@@ -47,40 +47,13 @@ export const AddressesArray = createParamDecorator((dataField, req): Address[] =
   }
 });
 
-export const RequestErrorHandler = function () {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor): any {
-    const method = descriptor.value;
-
-    descriptor.value = async function (...args: any): Promise<any> {
-      const logger: Logger = this.logger;
-      try {
-        return await method.apply(this, args);
-      } catch (e: any | Error | AxiosError) {
-        const context = `${this.constructor.name}.${propertyKey}`;
-        if (e.isAxiosError) {
-          const stack = e.toJSON().stack;
-          logger.error(
-            `Error ${e.request.method} ${e.request.res.responseUrl}${
-              e.request.data ? `\n${e.request.data}` : ''
-            }`,
-            stack,
-            context,
-          );
-          if (e.request?.res) {
-            const error = new HttpException(e.request.res.statusMessage, e.request.res.statusCode);
-            logger.error(error, stack, context);
-            throw error;
-          }
-        } else {
-          logger.error(e, e.stack, context);
-          if (e.code) {
-            const error = new HttpException(e.message, e.code);
-            logger.error(error, e.stack, context);
-            throw error;
-          }
-        }
-        throw e;
-      }
-    };
-  };
-};
+export const ChainsParam = createParamDecorator((dataField, req) => {
+  const input = req.args[0].query[dataField];
+  let output: ChainIdEnum[];
+  try {
+    output = input.split(',').map(Number);
+  } catch (e) {
+    throw new HttpException(e, 500);
+  }
+  return output;
+});

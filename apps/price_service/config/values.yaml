@@ -20,8 +20,8 @@ configMaps:
     NODE_ENV: production
 
 secrets:
-- database
-- redis
-- bscscan
-- etherscan
-- logs
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs

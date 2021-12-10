@@ -3,7 +3,7 @@ import { AxiosError } from 'axios';
 
 import { HttpException } from '@nestjs/common';
 
-import { Logger } from '../Logger/Logger.service';
+import { Logger } from '@app/common';
 
 export const RequestErrorHandler = function () {
   return function (target: any, propertyKey: string, descriptor: PropertyDescriptor): any {

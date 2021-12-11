@@ -168,3 +168,7 @@ To start web with docker compose run (url: http://localhost:3333):
   * `price-service`: 3002
   * `account-service`: 3003
   * `integration-service`: 3004
+
+To clean up containers run:
+
+`[sudo] docker-compose down --remove-orphans`

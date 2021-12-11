@@ -15,7 +15,7 @@ import { BlacklistedAddressSaveDto } from '../modules/blacklists/dto/blacklisted
 
 @ApiTags('Blacklist')
 @Controller('blacklist')
-export class BlacklistsController {
+export class BlacklistController {
   constructor(private readonly blacklistService: BlacklistService) {}
 
   @Get()

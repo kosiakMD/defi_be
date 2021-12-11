@@ -10,7 +10,7 @@ import {
 } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
 
-import { camelize } from '../common/utils/string';
+import { camelize } from '@app/common/utils';
 
 enum StatusEnum {
   up = 'up',

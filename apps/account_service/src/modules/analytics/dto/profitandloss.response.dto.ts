@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ResultStatus } from '../../../common/enum';
+import { ResultStatus } from '@app/common/enum';
 
 import { ProfitAndLoss } from './profitAndLoss';
 

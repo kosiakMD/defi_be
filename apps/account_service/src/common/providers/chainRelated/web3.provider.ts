@@ -6,28 +6,42 @@ import { ConfigService } from '@nestjs/config';
 
 import { ChainIdEnum } from '@app/common/enum';
 
+const ChainsProvidersUrls = {
+  [ChainIdEnum.arbi]: 'ARBITRUM_URL',
+  [ChainIdEnum.avax]: 'AVAX_URL',
+  [ChainIdEnum.boba]: 'BOBA_URL',
+  [ChainIdEnum.bsc]: 'BSC_URL',
+  [ChainIdEnum.celo]: 'CELO_URL',
+  [ChainIdEnum.cro]: 'CRONOS_URL',
+  [ChainIdEnum.eth]: 'ETH_URL',
+  [ChainIdEnum.ftm]: 'FTM_URL',
+  [ChainIdEnum.harm]: 'HARM_URL',
+  [ChainIdEnum.heco]: 'HECO_URL',
+  [ChainIdEnum.kcc]: 'KCC_URL',
+  [ChainIdEnum.mriver]: 'MRIVER_URL',
+  [ChainIdEnum.okex]: 'OKEX_URL',
+  [ChainIdEnum.opt]: 'OPT_URL',
+  [ChainIdEnum.plg]: 'POLYGON_URL',
+  [ChainIdEnum.xdai]: 'XDAI_URL',
+};
+
 @Injectable()
 export class Web3Provider {
   private readonly providers = {};
 
   constructor(private readonly configService: ConfigService) {
-    this.providers[ChainIdEnum.arbi] = new Web3(this.configService.get<string>('ARBITRUM_URL'));
-    this.providers[ChainIdEnum.avax] = new Web3(this.configService.get<string>('AVAX_URL'));
-    this.providers[ChainIdEnum.boba] = new Web3(this.configService.get<string>('BOBA_URL'));
-    this.providers[ChainIdEnum.bsc] = new Web3(this.configService.get<string>('BSC_URL'));
-    this.providers[ChainIdEnum.celo] = new Web3(this.configService.get<string>('CELO_URL'));
-    this.providers[ChainIdEnum.cro] = new Web3(this.configService.get<string>('CRONOS_URL'));
-    this.providers[ChainIdEnum.eth] = new Web3(this.configService.get<string>('ETH_URL'));
-    this.providers[ChainIdEnum.ftm] = new Web3(this.configService.get<string>('FTM_URL'));
-    this.providers[ChainIdEnum.harm] = new Web3(this.configService.get<string>('HARM_URL'));
-    this.providers[ChainIdEnum.heco] = new Web3(this.configService.get<string>('HECO_URL'));
-    this.providers[ChainIdEnum.kcc] = new Web3(this.configService.get<string>('KCC_URL'));
-    this.providers[ChainIdEnum.mriver] = new Web3(this.configService.get<string>('MRIVER_URL'));
-    this.providers[ChainIdEnum.okex] = new Web3(this.configService.get<string>('OKEX_URL'));
-    this.providers[ChainIdEnum.opt] = new Web3(this.configService.get<string>('OPT_URL'));
-    this.providers[ChainIdEnum.plg] = new Web3(this.configService.get<string>('POLYGON_URL'));
+    this.initWeb3Providers();
+    this.initConnectionProviders();
+  }
+
+  private initWeb3Providers() {
+    Object.entries(ChainsProvidersUrls).forEach(([chainId, configName]) => {
+      this.providers[chainId] = new Web3(this.configService.get<string>(configName));
+    });
+  }
+
+  private initConnectionProviders() {
     this.providers[ChainIdEnum.sol] = new Connection(this.configService.get<string>('SOL_URL'));
-    this.providers[ChainIdEnum.xdai] = new Web3(this.configService.get<string>('XDAI_URL'));
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {

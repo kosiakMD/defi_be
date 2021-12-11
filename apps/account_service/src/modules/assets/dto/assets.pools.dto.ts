@@ -2,7 +2,8 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '../../../common/enum';
+import { ChainIdEnum } from '@app/common/enum';
+
 import { AssetsForLambdaResponse } from '../../../common/interfaces/assets.interface';
 
 import { PairDto } from './pair.dto';

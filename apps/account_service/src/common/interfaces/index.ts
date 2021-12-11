@@ -5,9 +5,9 @@ import {
   CurrencyEnum,
   CurrencyIdEnum,
 } from '@app/common';
+import { ProtocolTypeEnum, ResultStatus } from '@app/common/enum';
 
 import { TokenBalance } from '../../modules/balances/balances.interfaces';
-import { ProtocolTypeEnum, ResultStatus } from '../enum';
 import { BalancesRequest } from '../types';
 
 export type Address = string;

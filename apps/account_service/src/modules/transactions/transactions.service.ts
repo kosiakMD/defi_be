@@ -11,6 +11,7 @@ import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from '@app/common/cons
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 import { Address, ChainId } from '@app/common/types';
+import { getUniqList } from '@app/common/utils';
 import { getAbsoluteChainIds } from '@app/common/utils/chains';
 
 import { Covalent } from '../../common/interfaces/covalent.interface';
@@ -19,11 +20,7 @@ import { BscScanService } from '../../common/providers/chainRelated/scans/bsc-sc
 import { EtherScanService } from '../../common/providers/chainRelated/scans/ether-scan.service';
 import { ScanApiService } from '../../common/providers/chainRelated/scans/scan.api.service';
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
-import {
-  excludeSecondArray,
-  getUniqList,
-  getUniqueAndToLowerCaseArrayData,
-} from '../../common/utils';
+import { excludeSecondArray, getUniqueAndToLowerCaseArrayData } from '../../common/utils';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
 import { TransactionNewDto, TransactionsDto } from './dto/transactions.dto';

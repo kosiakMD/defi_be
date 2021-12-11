@@ -1,7 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ResultStatus } from '../enum';
+import { ResultStatus } from '@app/common/enum';
+
 import { DetailedResponse } from '../interfaces';
 
 export * from './contracts/contract.approval.response.dto';

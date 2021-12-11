@@ -8,9 +8,6 @@ import { ScanTransfer, TransfersResponse } from '../interfaces/transfers.common.
 
 export const EXCLUDE_TRANSFER_TOKEN_ADDRESSES = [WBNB_ADDRESS, imBTC, SNX];
 
-export const getUniqList = <T = string | number>(values: T[]): T[] => {
-  return Array.from(new Set(values));
-};
 // TODO refactor - transform toLowerCase in dto instead of here?
 export function getUniqueAndToLowerCaseArrayData(input: string | string[]): string[] {
   const set: Set<string> = new Set();
@@ -70,15 +67,6 @@ export const totalPrice = (amount: string, price: number, decimals: string | num
 
 export const getTokenDecimals = (decimals: number): number =>
   decimals ? Math.pow(10, -decimals) : DEFAULT_MULTIPLIER;
-
-// TODO: could be validation added
-export function splitToArray(value: string): string[] {
-  if (!value) {
-    return [];
-  }
-
-  return value.toLowerCase().split(',');
-}
 
 // notice: not best performant function imo
 export function mergeTransfersResponse(

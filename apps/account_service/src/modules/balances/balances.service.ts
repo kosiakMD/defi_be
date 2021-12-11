@@ -9,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainIdEnum, Logger } from '@app/common';
+import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
 import { retry } from '@app/common/utils/retry';
@@ -17,7 +18,7 @@ import { BLACKLISTED_TOKENS } from '../../common/constatnt';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
-import { excludeSecondArray, getUniqList } from '../../common/utils';
+import { excludeSecondArray } from '../../common/utils';
 
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';

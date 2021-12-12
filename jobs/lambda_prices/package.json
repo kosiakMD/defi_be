@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "test": "mocha tests/unit/",
-    "compile": "tsc",
+    "compile": "npx tsc",
     "start": "tsc && node built/index.js",
     "dev": "ts-node ./src/start.ts"
   },

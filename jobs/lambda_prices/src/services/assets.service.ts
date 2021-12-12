@@ -9,7 +9,9 @@ const SAVE_ASSETS_BATCH_SIZE = 50;
 export class AssetsService {
   static async getAssetsAndPairsByChain(chainId: ChainIdEnum): Promise<AssetsApiDto[]> {
     try {
-      logger.info(`Before requerst`);
+      logger.info(`Before requerst. ${tokenServiceUrl}/v1/assets/pools. ${JSON.stringify({
+        params: { chainId },
+      })}`);
       const { data } = await axios.get(`${tokenServiceUrl}/v1/assets/pools`, {
         params: { chainId },
       });

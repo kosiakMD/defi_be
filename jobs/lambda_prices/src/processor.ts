@@ -33,6 +33,7 @@ export async function process(): Promise<void> {
     logger.info(`Starting job. Chain id: ${chainId}. Currency Id: ${currencyId}`);
 
     const assets = await AssetsService.getAssetsAndPairsByChain(chainId);
+    logger.info(`Assets: ${JSON.stringify(assets)}`)
     if (!assets.length) {
       logger.warn('No assets found');
       return;

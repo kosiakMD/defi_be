@@ -9,9 +9,11 @@ const SAVE_ASSETS_BATCH_SIZE = 50;
 export class AssetsService {
   static async getAssetsAndPairsByChain(chainId: ChainIdEnum): Promise<AssetsApiDto[]> {
     try {
+      logger.info(`Before requerst`);
       const { data } = await axios.get(`${tokenServiceUrl}/v1/assets/pools`, {
         params: { chainId },
       });
+      logger.info(`After request`);
       return data;
     } catch (e) {
       logger.error('Get assets failed', e);

@@ -16,8 +16,11 @@ export class AssetsService {
       logger.info(`After request`);
       return data;
     } catch (e) {
+      logger.info(`Request error`);
       logger.error('Get assets failed', e);
       throw e;
+    } finally {
+      logger.info(`Request finally`);
     }
   }
 

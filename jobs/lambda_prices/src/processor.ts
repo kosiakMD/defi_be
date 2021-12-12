@@ -30,7 +30,7 @@ const uniswapMulticall = new UniSwapV2PairMulticall();
 
 export async function process(): Promise<void> {
   try {
-    logger.info(`Starting job. Chain id: ${chainId}. Currency Id: ${currencyId}`);
+    logger.info(`Started job. Chain id: ${chainId}. Currency Id: ${currencyId}`);
 
     const assets = await AssetsService.getAssetsAndPairsByChain(chainId);
     logger.info(`Assets: ${JSON.stringify(assets)}`)

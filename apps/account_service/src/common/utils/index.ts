@@ -1,8 +1,9 @@
-import BigNumber, { BigNumber as BN } from 'bignumber.js';
+import { BigNumber as BN } from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
 import { DEFAULT_MULTIPLIER, imBTC, SNX, WBNB_ADDRESS } from '@app/common/constant';
 import { Address } from '@app/common/types';
+import { decimalsDivider } from '@app/common/utils';
 
 import { ScanTransfer, TransfersResponse } from '../interfaces/transfers.common.interfaces';
 
@@ -39,8 +40,6 @@ type Decimals = string | number;
 export function toDecimals(amount: number, decimals: number): number {
   return amount * Math.pow(10, -decimals);
 }
-
-export const decimalsDivider = (decimals: Decimals): BigNumber => new BN(10).pow(decimals);
 
 export const decimalsAmount = (amount: string, decimals: Decimals): number =>
   new BN(amount) //

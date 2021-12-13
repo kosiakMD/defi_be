@@ -6,9 +6,11 @@ import { ConfigService } from '@nestjs/config';
 import { ChainIdEnum } from '..';
 import { MulticallContract } from './multicall.contract';
 
+export type Web3Interface = Web3;
+
 @Injectable()
 export class Web3ProviderService {
-  private readonly providers = new Map<ChainIdEnum, Web3>();
+  private readonly providers = new Map<ChainIdEnum, Web3Interface>();
   private readonly multicallContracts = new Map<ChainIdEnum, MulticallContract>();
 
   constructor(private readonly configService: ConfigService) {
@@ -47,7 +49,7 @@ export class Web3ProviderService {
     this.setMulticall(ChainIdEnum.xdai, '0xe849A78ed40691d1e1512DbCBB3bcd78491ddba9');
   }
 
-  public getInstanceByChainId(chain: ChainIdEnum): Web3 {
+  public getInstanceByChainId(chain: ChainIdEnum): Web3Interface {
     return this.providers.get(chain);
   }
 

@@ -1,7 +1,8 @@
+// eslint-disable-next-line max-classes-per-file
 import {
-  StakingPositionFeatureDto,
-  LiquidityPoolFeatureDto,
   LendingPositionDto,
+  LiquidityPoolFeatureDto,
+  StakingPositionFeatureDto,
 } from '@app/common/dto';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
@@ -26,10 +27,4 @@ export interface FeatureResult<T extends Features> {
 }
 
 // TODO remove StakingPosition after StakingPositionFeatureDto will be done
-export type FeatureDto<T extends Features> = Record<FeatureName, FeatureResult<T>>;
-
-export class FeatureResultDto<T extends Features> {
-  totalValue = 0;
-  items: T[] = [];
-  errors?: string[] = [];
-}
+export type FeatureDtoType<T extends Features> = Record<FeatureName, FeatureResult<T>>;

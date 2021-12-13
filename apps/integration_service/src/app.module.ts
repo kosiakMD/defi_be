@@ -10,12 +10,12 @@ import configuration from '@app/common/config/configuration';
 import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import config from './config';
-import { HealthController } from './health/health.controller';
-import { IntegrationsModule } from './integrations/integrations.module';
-import { JobsModule } from './jobs/jobs.module';
-import { ProtocolModule } from './protocol/protocol.module';
-import { TemporaryTokensModule } from './temporary_tokens/temporary.tokens.module';
-import { ThegraphModule } from './thegraph/thegraph.module';
+import { HealthController } from './controllers/health.controller';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
+import { JobsModule } from './modules/jobs/jobs.module';
+import { ProtocolModule } from './modules/protocols/protocol.module';
+import { ThegraphModule } from './modules/subgraphs/thegraph.module';
+import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.tokens.module';
 
 @Module({
   imports: [

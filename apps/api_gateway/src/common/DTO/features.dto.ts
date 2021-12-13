@@ -22,7 +22,7 @@ export interface ProtocolParams {
 
 
 export class ProtocolFeaturesExportDto {
-  // [FeatureEnum.pools]: FeatureDto;
+  // [FeatureEnum.pools]: FeatureDtoType;
   chain: ChainDto;
   list: FeatureEnum[];
 }

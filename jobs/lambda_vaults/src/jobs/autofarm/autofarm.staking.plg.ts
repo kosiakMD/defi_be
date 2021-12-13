@@ -6,15 +6,16 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
-
-import { CallData } from '@app/common/dto/CallData';
+import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -22,14 +23,13 @@ import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
-import { concatStrings } from '@app/common/utils';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
+import { APRStats } from '../dto/apr';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { AutofarmAddressesPLG as AutofarmAddresses } from './addresses';
 import { DbMapping } from './dbmapping';
-import { APRStats } from '../dto/apr';
 
 @Injectable()
 export class AutofarmStakingPLG implements JobInterface {
@@ -92,12 +92,14 @@ export class AutofarmStakingPLG implements JobInterface {
       decimals: accountTokenMATICDto.decimals,
     });
 
-    const poolsInfoPolygon: Map<string, any> = await this.getAllPoolInfo(AutofarmAddresses.chiefV2Polygon);
+    const poolsInfoPolygon: Map<string, any> = await this.getAllPoolInfo(
+      AutofarmAddresses.chiefV2Polygon,
+    );
 
     const poolsInfoArray = [
       { poolsInfo: poolsInfoPolygon, chiefContract: AutofarmAddresses.chiefV2Polygon },
     ];
-    
+
     for (const { poolsInfo, chiefContract } of poolsInfoArray) {
       for (const address of poolsInfo.keys()) {
         try {
@@ -127,13 +129,16 @@ export class AutofarmStakingPLG implements JobInterface {
             });
           }
 
-          const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-            address: chiefContract,
-            poolId: poolsInfo.get(address).id.toString(),
-            poolName: null,
-            rewards: [rewardTokenAUTO, rewardTokenMATIC],
-            stakingToken: stakingToken,
-          });
+          const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+            IntegrationStakingPositionDto,
+            {
+              address: chiefContract,
+              poolId: poolsInfo.get(address).id.toString(),
+              poolName: null,
+              rewards: [rewardTokenAUTO, rewardTokenMATIC],
+              stakingToken: stakingToken,
+            },
+          );
 
           stakingFeatures.push(stakingPoolFeature);
         } catch (e) {
@@ -144,14 +149,14 @@ export class AutofarmStakingPLG implements JobInterface {
         }
       }
     }
-    
+
     const mappings = [];
     for (let i = 0; i < stakingFeatures.length; i++) {
       mappings.push(await this.dbMapping.toDbMapping(stakingFeatures[i], this.chain));
     }
 
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -227,23 +232,20 @@ export class AutofarmStakingPLG implements JobInterface {
         ]);
       }
     });
-    
+
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(
-        pricedTokenAddresses,
-        CurrencyIdEnum.usd,
-        ChainIdEnum.plg,
-      ),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.plg),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.plg),
     ]);
 
     let calls = new Map<string, CallData>();
 
-    this.mapping.forEach((m) => { 
+    this.mapping.forEach((m) => {
       if (m instanceof IntegrationStakingPositionDto) {
-        let { strat } = multicallRsp.get(this.poolInfoLabel(m, AutofarmAddresses.chiefV2Polygon)).output.data;
+        const { strat } = multicallRsp.get(this.poolInfoLabel(m, AutofarmAddresses.chiefV2Polygon))
+          .output.data;
 
         calls = new Map<string, CallData>([
           ...calls,
@@ -251,24 +253,24 @@ export class AutofarmStakingPLG implements JobInterface {
         ]);
       }
     });
-    
-    let multicallVaults = await this.multicallService.handleInBatches(calls, ChainIdEnum.plg);
+
+    const multicallVaults = await this.multicallService.handleInBatches(calls, ChainIdEnum.plg);
 
     this.mapping = await Promise.all(
       this.mapping.map(async (m) => {
         if (m instanceof IntegrationStakingPositionDto) {
-
           const lockedTotal: BigNumber = multicallVaults.get(this.wantLockedTotalLabel(m.poolId))
             .output.data;
 
-          let token0Address = multicallVaults.get(this.tokenAddressLabel(m.poolId, 0)).output.data;
+          const token0Address = multicallVaults.get(this.tokenAddressLabel(m.poolId, 0)).output
+            .data;
 
-          let { prices: priceToken0 } = await this.priceService.getCurrentPrices(
+          const { prices: priceToken0 } = await this.priceService.getCurrentPrices(
             token0Address,
             CurrencyIdEnum.usd,
             ChainIdEnum.bsc,
           );
-          
+
           m = this.getDataFromMulticallRsp(multicallRsp, m, lockedTotal, prices, priceToken0);
 
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
@@ -280,9 +282,9 @@ export class AutofarmStakingPLG implements JobInterface {
         }
 
         return m;
-      })
+      }),
     );
-    
+
     return this.mapping;
   }
 
@@ -291,12 +293,11 @@ export class AutofarmStakingPLG implements JobInterface {
     stakingPos: IntegrationStakingPositionDto,
     lockedTotal: BigNumber,
     prices: any,
-    priceToken0: number
+    priceToken0: number,
   ) {
-
     stakingPos.staked = toDecimals(lockedTotal, stakingPos.stakingToken.decimals);
     stakingPos.stakingToken.balance = toDecimals(lockedTotal, stakingPos.stakingToken.decimals);
-    
+
     // m.p
     if (stakingPos.stakingToken.tokens.length === 2) {
       const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(stakingPos)).output
@@ -383,7 +384,7 @@ export class AutofarmStakingPLG implements JobInterface {
   }
 
   private getCallsForVault(vault: string, pool) {
-    return new Map<string, CallData>([ 
+    return new Map<string, CallData>([
       [
         this.wantLockedTotalLabel(pool),
         {
@@ -473,11 +474,7 @@ export class AutofarmStakingPLG implements JobInterface {
     stakingPosition: IntegrationStakingPositionDto,
     chiefContract: AutofarmAddresses,
   ) {
-    return concatStrings(
-      Abis.poolInfo.name,
-      chiefContract,
-      stakingPosition.poolId,
-    );
+    return concatStrings(Abis.poolInfo.name, chiefContract, stakingPosition.poolId);
   }
 
   private poolLengthLabel(chiefContract: AutofarmAddresses) {
@@ -489,6 +486,6 @@ export class AutofarmStakingPLG implements JobInterface {
   }
 
   private tokenAddressLabel(pool, tokenPosition) {
-    return concatStrings("tokenAddress", pool, tokenPosition);
+    return concatStrings('tokenAddress', pool, tokenPosition);
   }
 }

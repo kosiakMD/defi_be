@@ -28,7 +28,7 @@ export class Abis {
       { type: 'uint256', name: 'allocPoint', internalType: 'uint256' },
       { type: 'uint256', name: 'lastRewardBlock', internalType: 'uint256' },
       { type: 'uint256', name: 'accAUTOPerShare', internalType: 'uint256' },
-      { internalType: 'address', name: 'strat', type: 'address' }
+      { internalType: 'address', name: 'strat', type: 'address' },
     ],
     stateMutability: 'view',
     type: 'function',
@@ -59,16 +59,16 @@ export class Abis {
   };
   static readonly poolLength: AbiItem = {
     inputs: [],
-    name: "poolLength",
+    name: 'poolLength',
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly balance: AbiItem = {
     type: 'function',
@@ -111,162 +111,158 @@ export class Abis {
   };
   static readonly AUTOPerBlock: AbiItem = {
     inputs: [],
-    name: "AUTOPerBlock",
+    name: 'AUTOPerBlock',
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly wantLockedTotal: AbiItem = {
     inputs: [],
-    name: "wantLockedTotal",
-    outputs:[
+    name: 'wantLockedTotal',
+    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly sharesTotal: AbiItem = {
     inputs: [],
-    name: "sharesTotal",
-    outputs:[
+    name: 'sharesTotal',
+    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly alpacaPerBlock: AbiItem = {
     inputs: [],
-    name: "alpacaPerBlock",
+    name: 'alpacaPerBlock',
     outputs: [
       {
-        internalType:"uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly cakePerBlock: AbiItem = {
     inputs: [],
-    name: "cakePerBlock",
-    outputs:[
+    name: 'cakePerBlock',
+    outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly beltPerBlock: AbiItem = {
     inputs: [],
-    name: "BELTPerBlock",
+    name: 'BELTPerBlock',
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly mdxPerBlock: AbiItem = {
     inputs: [],
-    name: "mdxPerBlock",
+    name: 'mdxPerBlock',
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly xmsPerBlock: AbiItem = {
     inputs: [],
-    name: "xmsPerBlock",
+    name: 'xmsPerBlock',
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly pid: AbiItem = {
     inputs: [],
-    name: "pid",
+    name: 'pid',
     outputs: [
       {
-        internalType: "uint256",
-        name: "",
-        type: "uint256"
-      }
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly farmContractAddress: AbiItem = {
     inputs: [],
-    name: "farmContractAddress",
+    name: 'farmContractAddress',
     outputs: [
       {
-        internalType: "address",
-        name: "",
-        type: "address"
-      }
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly token0Address: AbiItem = {
-    inputs: [
-      
-    ],
-    name: "token0Address",
-    outputs:[
+    inputs: [],
+    name: 'token0Address',
+    outputs: [
       {
-        internalType:"address",
-        name: "",
-        type: "address"
-      }
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
   static readonly token1Address: AbiItem = {
-    inputs: [
-      
-    ],
-    name: "token1Address",
-    outputs:[
+    inputs: [],
+    name: 'token1Address',
+    outputs: [
       {
-        internalType:"address",
-        name: "",
-        type: "address"
-      }
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
     ],
-    stateMutability: "view",
-    type: "function"
+    stateMutability: 'view',
+    type: 'function',
   };
 }

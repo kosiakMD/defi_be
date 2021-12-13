@@ -38,7 +38,7 @@ export class AssetDto implements IAssetDto {
 
   @ApiProperty({ type: Boolean, example: false })
   @Expose()
-  isLp: boolean = false;
+  isLp = false;
 
   @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.pending })
   @Expose()

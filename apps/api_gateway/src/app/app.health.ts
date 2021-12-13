@@ -4,11 +4,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { HealthServiceStatusEnum, HealthStatusEnum } from '@app/common/enum';
+import { toCamelCase } from '@app/common/utils';
 
 import { AccountService } from '../account/account.service';
 import { IntegrationService } from '../integration/integration.service';
 import { PricesService } from '../prices/prices.service';
-import { toCamelCase } from '../utils/string';
 
 // example
 // interface HealthCheckResult {

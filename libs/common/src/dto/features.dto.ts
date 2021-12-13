@@ -2,6 +2,7 @@
 import { Exclude } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
+
 import {
   ChainAbbrEnum,
   FeatureEnum,
@@ -9,16 +10,17 @@ import {
   ProjectEnum,
   ProtocolNameEnum,
   SushiSwapProtocolEnum,
-  UniswapProtocolEnum
+  UniswapProtocolEnum,
 } from '@app/common/enum';
-import { FeaturesType, ProtocolName } from '@app/common';
+import { FeatureDtoType, Features, FeaturesType, ProtocolName } from '@app/common/types';
 
+import { StakingPositionFeatureDto } from './StakingPositionFeatureDto';
 import { ChainDto } from './chain.dto';
-
+import { LiquidityPoolFeature } from './liquidity.pool.dto';
 import { ResponseDto } from './response.dto';
 
 export class ProtocolFeaturesExportDto {
-  // [FeatureEnum.pools]: FeatureDto;
+  // [FeatureEnum.pools]: FeatureDtoType;
   chain: ChainDto;
   list: FeatureEnum[];
 }
@@ -90,4 +92,17 @@ export class ProtocolDataDto {
 export class FeaturesResponseDto extends ResponseDto<ProtocolDataDto[]> {
   @ApiProperty({ type: [ProtocolDataDto] })
   data: ProtocolDataDto[];
+}
+
+export class FeatureResultDto<T extends Features> {
+  totalValue = 0;
+  items: T[] = [];
+  errors?: string[] = [];
+}
+
+export class ProtocolFeaturesDataDto /*implements ProtocolFeaturesData*/ {
+  [FeatureEnum.pools]?: FeatureDtoType<LiquidityPoolFeature>;
+  [FeatureEnum.staking]?: FeatureDtoType<StakingPositionFeatureDto>;
+  [FeatureEnum.transactions]?: FeatureDtoType<Features>;
+  [FeatureEnum.farming]?: FeatureDtoType<Features>;
 }

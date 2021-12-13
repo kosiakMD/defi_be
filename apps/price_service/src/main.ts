@@ -3,6 +3,7 @@ import { json, urlencoded } from 'express';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -16,7 +17,7 @@ const logger = createLogger(logFileDir);
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     abortOnError: false,
     logger: logger,

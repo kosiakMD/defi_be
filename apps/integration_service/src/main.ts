@@ -7,11 +7,11 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { addTimeLogFeature } from '@app/common';
 import { createLogger } from '@app/common/utils/winston';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
-import { addTimeLogFeature } from './logger/logger.service';
 
 const logger = createLogger(logFileDir);
 install({ environment: 'node' /*, hookRequire: process.env.NODE_ENV === 'development' */ });

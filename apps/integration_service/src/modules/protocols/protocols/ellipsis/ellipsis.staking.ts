@@ -18,7 +18,11 @@ import {
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { ellipsisPoolsMap } from '@app/common/jobs/ellipsis.pools.map';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
-import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import {
+  IntegrationPoolTokenDto,
+  IntegrationStakingPositionDto,
+  UnderlyingStakingLp,
+} from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
 
 import { CallData } from '../../../../common/dto/call.dto';
@@ -58,7 +62,7 @@ export class EllipsisStaking {
           chain: chain,
           userAddress: a,
           protocolType: ProtocolTypeEnum.staking,
-          projectName: ProjectEnum.pancake,
+          projectName: ProjectEnum.ellipsis,
           feature: FeatureEnum.staking,
           items: [],
         }),
@@ -81,11 +85,16 @@ export class EllipsisStaking {
         } = stakingData;
         stakingPosition.staked = stakingBalance;
         if (stakingToken.tokens.length) {
-          const poolShare = new BigNumber(stakingBalance).div(stakingToken.totalSupply);
+          const poolShare = new BigNumber(stakingBalance) //
+            .div(stakingToken.totalSupply)
+            .toString();
           stakingToken.tokens.forEach((token) => {
-            token.price = null;
-            token.value = null;
-            token.balance = poolShare.multipliedBy(token.reserve).toNumber();
+            this.modifyUnderlyingToken(token, poolShare);
+            if ((token as UnderlyingStakingLp).tokens?.length) {
+              (token as UnderlyingStakingLp).tokens.forEach((underlyingToken) => {
+                this.modifyUnderlyingToken(underlyingToken, poolShare);
+              });
+            }
           });
         } else {
           stakingPosition.stakingToken = {
@@ -109,6 +118,15 @@ export class EllipsisStaking {
       });
     });
     return Array.from(baseDataStakingMap.values());
+  }
+
+  private modifyUnderlyingToken(token: UnderlyingTokenDto, poolShare: string) {
+    token.price = null;
+    token.value = null;
+    token.reserve = token.balance;
+    token.balance = new BigNumber(poolShare) //
+      .multipliedBy(token.reserve)
+      .toNumber();
   }
 
   private getStakingBalanceAndClaimableRewards(
@@ -248,3 +266,5 @@ export interface StakingDataInterface {
   stakingPosition: IntegrationStakingPositionDto;
   claimableReward: [{ rewardToken: string; rewardValue: string }];
 }
+
+export type UnderlyingTokenDto = IntegrationPoolTokenDto | UnderlyingStakingLp;

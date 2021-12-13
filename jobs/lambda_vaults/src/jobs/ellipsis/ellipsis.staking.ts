@@ -420,10 +420,7 @@ export class EllipsisStaking implements JobInterface {
           EllipsisStaking.totalSupplyLabel(m.stakingToken.address),
         ).output.data;
         m.stakingToken.totalSupply = toDecimals(totalSupply, m.stakingToken.decimals);
-        // m.p
-        const tokens = [];
         if (m.stakingToken.tokens.length) {
-          const poolShare = m.stakingToken.balance / m.stakingToken.totalSupply;
           m.stakingToken.tokens.map((t) => {
             if ((t as UnderlyingStakingLp).tokens) {
               const lpTotalSupply = multicallRsp.get(EllipsisStaking.totalSupplyLabel(t.address))
@@ -433,51 +430,46 @@ export class EllipsisStaking implements JobInterface {
                 .get(EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool))
                 .output.data?.toString();
               const lpTokenReserveDec = toDecimals(lpTokenReserve, t.decimals);
+              t.totalSupply = lpTotalSupplyDec;
+              t.reserve = lpTokenReserve;
+              t.balance = lpTokenReserveDec;
+              let lpValue = 0;
               (t as UnderlyingStakingLp).tokens.forEach((underlying) => {
                 const tokenReserve = multicallRsp
                   .get(EllipsisStaking.getBalancesLabel(t.address, underlying.positionInPool))
                   .output.data?.toString();
                 underlying.reserve = EllipsisStaking.getUnderlyingTokensBalances(
-                  lpTokenReserveDec,
-                  lpTotalSupplyDec,
-                  toDecimals(tokenReserve, t.decimals),
+                  lpTokenReserve,
+                  lpTotalSupply,
+                  tokenReserve,
                 );
-                m.stats.tvl += EllipsisStaking.getTokenValue(underlying, prices, poolShare);
-                tokens.push(underlying);
+                lpValue += EllipsisStaking.getTokenValue(underlying, prices);
               });
+              t.value = lpValue;
             } else {
               if (!ellipsisPoolsMap.get(m.stakingToken.address).minter) {
                 const reserves = Object.values(
                   multicallRsp.get(EllipsisStaking.getReservesLabel(m.stakingToken.address)).output
                     .data,
                 );
-                (t as IntegrationPoolTokenDto).reserve = toDecimals(
-                  reserves[t.positionInPool],
-                  t.decimals,
-                );
+                (t as IntegrationPoolTokenDto).reserve = Number(reserves[t.positionInPool]);
               } else {
-                (t as IntegrationPoolTokenDto).reserve = toDecimals(
-                  multicallRsp.get(
-                    EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool),
-                  ).output.data,
-                  t.decimals,
-                );
+                (t as IntegrationPoolTokenDto).reserve = multicallRsp.get(
+                  EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool),
+                ).output.data;
               }
-
-              m.stats.tvl += EllipsisStaking.getTokenValue(
-                t as IntegrationPoolTokenDto,
-                prices,
-                poolShare,
-              );
-              tokens.push(t);
+              m.stats.tvl += EllipsisStaking.getTokenValue(t as IntegrationPoolTokenDto, prices);
             }
             return t;
           });
 
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
 
-          const { allocPoint } = multicallRsp.get(EllipsisStaking.poolInfoLabel(m.poolId)).output
-            .data;
+          const allocPoint =
+            Number(m.poolId) === 0
+              ? totalAllocPoint.times(0.2)
+              : multicallRsp.get(EllipsisStaking.poolInfoLabel(m.poolId)).output?.data?.allocPoint;
+
           const aprStats = {
             totalAllocPoints: totalAllocPoint,
             poolAllocPoints: allocPoint,
@@ -487,7 +479,7 @@ export class EllipsisStaking implements JobInterface {
             farmingPoolTVL: m.stats.tvl,
           };
           m.rewards[0].apr = this.calculateAPR(aprStats);
-          m.stakingToken.tokens = tokens;
+          // m.stakingToken.tokens = tokens;
         } else {
           m.stakingToken.price = Number(prices[m.stakingToken.address]);
           m.stakingToken.value = m.stakingToken.balance * m.stakingToken.price;
@@ -501,9 +493,9 @@ export class EllipsisStaking implements JobInterface {
     return this.mapping;
   }
 
-  private static getTokenValue(token: IntegrationPoolTokenDto, prices: any, poolShare: number) {
+  private static getTokenValue(token: IntegrationPoolTokenDto, prices: any) {
     token.price = Number(prices[token.address]);
-    token.balance = token.reserve * poolShare;
+    token.balance = toDecimals(token.reserve, token.decimals);
     token.value = token.balance * token.price;
     return token.value;
   }
@@ -525,6 +517,10 @@ export class EllipsisStaking implements JobInterface {
         calls.set(
           EllipsisStaking.totalSupplyLabel(lpUnderlyingToken.address),
           EllipsisStaking.getTotalSupplyCallData(lpUnderlyingToken.address),
+        );
+        calls.set(
+          EllipsisStaking.balanceOfLabel(lpUnderlyingToken.address),
+          EllipsisStaking.getBalanceOfLpCallData(lpUnderlyingToken.address),
         );
       }
       // total supply supply of staking lp token

@@ -31,6 +31,7 @@ import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
 import { ChainIdEnum } from '@app/common/enum';
+import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
 import { DetailedResponseDto } from '../../common/dto';
 import {
@@ -640,48 +641,58 @@ export class ProtocolService {
     const chainAssets: Map<number, Set<string>> = new Map<number, Set<string>>();
 
     // get all assets for prices
-    data.forEach((d) => {
+    data.forEach((baseData) => {
       try {
-        if (!chainAssets.get(d.chain.id)) {
-          chainAssets.set(d.chain.id, new Set<string>());
+        const setChainAsset = (instance) =>
+          chainAssets.get(baseData.chain.id).add(instance.address);
+        const setChainAssetsArray = (instance) => instance.forEach((token) => setChainAsset(token));
+
+        if (!chainAssets.get(baseData.chain.id)) {
+          chainAssets.set(baseData.chain.id, new Set<string>());
         }
 
-        if (d instanceof BaseDataLp) {
-          d.items.forEach((i) => {
-            i.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+        if (baseData instanceof BaseDataLp) {
+          baseData.items.forEach((poolFeature) => {
+            setChainAssetsArray(poolFeature.tokens);
           });
         }
 
-        if (d instanceof BaseDataStaking) {
-          d.items.forEach((i) => {
-            if (i.stakingToken.tokens?.length) {
-              i.stakingToken.tokens.forEach((pt) => chainAssets.get(d.chain.id).add(pt.address));
+        if (baseData instanceof BaseDataStaking) {
+          baseData.items.forEach((stakingPosition) => {
+            if (stakingPosition.stakingToken.tokens?.length) {
+              stakingPosition.stakingToken.tokens.forEach((poolToken) => {
+                if ((poolToken as UnderlyingStakingLp).tokens?.length) {
+                  setChainAssetsArray((poolToken as UnderlyingStakingLp).tokens);
+                } else {
+                  setChainAsset(poolToken);
+                }
+              });
             } else {
-              chainAssets.get(d.chain.id).add(i.stakingToken.address);
+              setChainAsset(stakingPosition.stakingToken);
             }
-            i.rewards?.forEach((rt) => chainAssets.get(d.chain.id).add(rt.address));
+            setChainAssetsArray(stakingPosition.rewards);
           });
         }
 
-        if (d instanceof BaseDataLending) {
-          d.items.forEach((i) => {
-            chainAssets.get(d.chain.id).add(i.token.address);
+        if (baseData instanceof BaseDataLending) {
+          baseData.items.forEach((i) => {
+            setChainAsset(i.token);
           });
         }
 
-        if (d instanceof BaseLeverageFarming) {
-          d.items.forEach((i) => {
-            if (i.farmToken.tokens.length) {
-              i.farmToken.tokens.forEach((t) => chainAssets.get(d.chain.id).add(t.address));
+        if (baseData instanceof BaseLeverageFarming) {
+          baseData.items.forEach((leverageFarming) => {
+            if (leverageFarming.farmToken.tokens.length) {
+              setChainAssetsArray(leverageFarming.farmToken.tokens);
             } else {
-              chainAssets.get(d.chain.id).add(i.farmToken.address);
+              setChainAsset(leverageFarming.farmToken);
             }
-            chainAssets.get(d.chain.id).add(i.borrowToken.address);
+            setChainAsset(leverageFarming.borrowToken);
           });
         }
       } catch (e) {
         this.logger.error(e);
-        errors.push(`Failed collecting assets for chain ${d?.chain?.id}`);
+        errors.push(`Failed collecting assets for chain ${baseData?.chain?.id}`);
       }
     });
 
@@ -715,69 +726,94 @@ export class ProtocolService {
       errors.push(`Failed getting token prices in protocol.service`);
     }
 
-    data.forEach((d) => {
+    data.forEach((baseData) => {
       try {
-        if (d instanceof BaseDataLp) {
-          d.total = 0;
-          d.items.forEach((i) => {
-            i.tokens.forEach((pt) => {
-              this.setTokenPriceAndValue(d.chain.id, pt, chainAssetPrices);
-              d.total += pt.value;
+        if (baseData instanceof BaseDataLp) {
+          baseData.total = 0;
+          baseData.items.forEach((poolFeature) => {
+            poolFeature.tokens.forEach((poolToken) => {
+              this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
+              baseData.total += poolToken.value;
             });
           });
         }
 
-        if (d instanceof BaseDataStaking) {
-          d.total = 0;
-          d.items.forEach((i) => {
-            i.rewards?.forEach((r) => {
-              r.price = chainAssetPrices.get(d.chain.id).get(r.address) ?? r.price;
-              r.claimableData.value = Number(r.claimableData.balance) * r.price;
-              d.total += r.claimableData.value;
+        if (baseData instanceof BaseDataStaking) {
+          baseData.total = 0;
+          baseData.items.forEach((stakingPosition) => {
+            stakingPosition.rewards.forEach((reward) => {
+              reward.price =
+                chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
+              reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;
+              baseData.total += reward.claimableData.value;
             });
 
-            if (i.stakingToken.tokens?.length) {
-              i.stakingToken.tokens.forEach((pt) => {
-                this.setTokenPriceAndValue(d.chain.id, pt, chainAssetPrices);
-                d.total += pt.value;
+            if (stakingPosition.stakingToken.tokens?.length) {
+              stakingPosition.stakingToken.tokens.forEach((poolToken) => {
+                if ((poolToken as UnderlyingStakingLp).tokens?.length) {
+                  this.underlyingStakingTokensHandling(
+                    poolToken as UnderlyingStakingLp,
+                    chainAssetPrices,
+                    baseData,
+                  );
+                } else {
+                  this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
+                  baseData.total += poolToken.value;
+                }
               });
             } else {
-              if (alpacaDebtTokens.some((address) => address === i.stakingToken.address)) {
-                i.stakingToken.value = i.rewards[0].claimableData.value;
+              if (
+                alpacaDebtTokens.some((address) => address === stakingPosition.stakingToken.address)
+              ) {
+                stakingPosition.stakingToken.value = stakingPosition.rewards[0].claimableData.value;
               } else {
-                this.setTokenPriceAndValue(d.chain.id, i.stakingToken, chainAssetPrices);
-                d.total += i.stakingToken.value;
+                this.setTokenPriceAndValue(
+                  baseData.chain.id,
+                  stakingPosition.stakingToken,
+                  chainAssetPrices,
+                );
+                baseData.total += stakingPosition.stakingToken.value;
               }
             }
           });
         }
 
-        if (d instanceof BaseDataLending) {
-          d.total = 0;
-          d.items.forEach((i) => {
-            i.token.price = chainAssetPrices.get(d.chain.id).get(i.token.address) ?? i.token.price;
-            i.value = i.balance * i.token.price;
-            d.total += i.value;
+        if (baseData instanceof BaseDataLending) {
+          baseData.total = 0;
+          baseData.items.forEach((lendingPosition) => {
+            lendingPosition.token.price =
+              chainAssetPrices.get(baseData.chain.id).get(lendingPosition.token.address) ??
+              lendingPosition.token.price;
+            lendingPosition.value = lendingPosition.balance * lendingPosition.token.price;
+            baseData.total += lendingPosition.value;
           });
         }
 
-        if (d instanceof BaseLeverageFarming) {
-          d.total = 0;
-          d.items.forEach((i) => {
+        if (baseData instanceof BaseLeverageFarming) {
+          baseData.total = 0;
+          baseData.items.forEach((leverageFarming) => {
             let leverageTotal = 0;
-            if (i.farmToken.tokens.length) {
-              i.farmToken.tokens.forEach((t) => {
-                this.setTokenPriceAndValue(d.chain.id, t, chainAssetPrices);
-                leverageTotal += t.value;
+            if (leverageFarming.farmToken.tokens.length) {
+              leverageFarming.farmToken.tokens.forEach((poolToken) => {
+                this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
+                leverageTotal += poolToken.value;
               });
             } else {
-              this.setTokenPriceAndValue(d.chain.id, i.farmToken, chainAssetPrices);
-              leverageTotal += i.farmToken.value;
+              this.setTokenPriceAndValue(
+                baseData.chain.id,
+                leverageFarming.farmToken,
+                chainAssetPrices,
+              );
+              leverageTotal += leverageFarming.farmToken.value;
             }
-            this.setTokenPriceAndValue(d.chain.id, i.borrowToken, chainAssetPrices);
-            i.earned = leverageTotal - i.borrowToken.value;
-            d.total += i.earned;
-            i.debtRatio = (i.borrowToken.value / leverageTotal) * 100;
+            this.setTokenPriceAndValue(
+              baseData.chain.id,
+              leverageFarming.borrowToken,
+              chainAssetPrices,
+            );
+            leverageFarming.earned = leverageTotal - leverageFarming.borrowToken.value;
+            baseData.total += leverageFarming.earned;
+            leverageFarming.debtRatio = (leverageFarming.borrowToken.value / leverageTotal) * 100;
           });
         }
       } catch (e) {
@@ -786,6 +822,21 @@ export class ProtocolService {
       }
     });
     return [data, errors];
+  }
+
+  private underlyingStakingTokensHandling(
+    poolToken: UnderlyingStakingLp,
+    chainAssetPrices: Map<number, Map<string, number>>,
+    baseData: BaseData,
+  ) {
+    let lpValue = 0;
+    poolToken.tokens.forEach((underlying) => {
+      this.setTokenPriceAndValue(baseData.chain.id, underlying, chainAssetPrices);
+      lpValue += underlying.value;
+    });
+    poolToken.value = lpValue;
+    baseData.total += lpValue;
+    delete (poolToken as UnderlyingStakingLp).tokens;
   }
 
   private setTokenPriceAndValue(

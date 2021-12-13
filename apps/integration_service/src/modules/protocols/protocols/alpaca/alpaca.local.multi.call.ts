@@ -23,7 +23,6 @@ import {
   AlpacaStakingInterface,
   AlpacaTokenInfo,
   BorrowBalance,
-  LeverageFarmingInterface,
   TokenContractData,
   TokensBalance,
   WorkerContractData,
@@ -33,27 +32,6 @@ export class LocalMultiCall extends MultiCall {
   constructor(private readonly web3: Web3, private readonly logger: Logger) {
     super(web3);
     this.logger = logger;
-  }
-
-  async getVaultPoolsInfo(
-    data: AlpacaStakingInterface[],
-    chain: ChainAbbrEnum,
-  ): Promise<Set<string>> {
-    const inputs = data.map((pool) => {
-      return {
-        target: alpacaFactoriesMap.get(chain),
-        function: 'poolInfo',
-        args: [pool.poolNum],
-      };
-    });
-
-    const [, vaultPoolInfo] = await this.multiCall(AlpacaStakeContractAbi, inputs);
-    const stakedTokensAddresses = new Set<string>();
-    data.forEach((i, index) => {
-      i.stakeToken = vaultPoolInfo[index].stakeToken.toLowerCase();
-      stakedTokensAddresses.add(i.stakeToken);
-    });
-    return stakedTokensAddresses;
   }
 
   async getLpTokensBalances(workersData: WorkerContractData[]): Promise<TokensBalance> {
@@ -196,49 +174,6 @@ export class LocalMultiCall extends MultiCall {
     return tokensMap;
   }
 
-  async getWorkerTokensData(
-    positions: AlpacaApiResponse[],
-    tokenAddresses: Set<string>,
-  ): Promise<LeverageFarmingInterface[]> {
-    const workerFunctions = ['lpToken', 'getReversedPath', 'baseToken'];
-    const inputs = positions.flatMap((position) => {
-      return workerFunctions.map((func) => {
-        return { target: position.worker, function: func };
-      });
-    });
-    const leverageInterface: LeverageFarmingInterface[] = [];
-    const [, result] = await this.multiCall(workerAbi, inputs);
-    let count = 0;
-    for (let i = 0; i < result.length; i += 3) {
-      const leverageFarming: LeverageFarmingInterface = {
-        vault: positions[count].vault,
-        positionId: positions[count].positionId,
-        baseToken: result[i + 2].toLowerCase(),
-        isLp: false,
-      };
-
-      if (result[i] !== zeroAddress) {
-        leverageFarming.poolToken = result[i].toLowerCase();
-        leverageFarming.isLp = true;
-        leverageFarming.token0 = result[i + 1][0]?.toLowerCase();
-        leverageFarming.token1 = result[i + 1][1]?.toLowerCase();
-      } else {
-        leverageFarming.poolToken = cakeAddress;
-      }
-
-      leverageInterface.push(leverageFarming);
-      this.addValuesToSet(tokenAddresses, [
-        leverageFarming.poolToken,
-        leverageFarming.token0,
-        leverageFarming.token1,
-        leverageFarming.baseToken,
-      ]);
-
-      count++;
-    }
-    return leverageInterface;
-  }
-
   async getWorkerContractsData(
     positions: AlpacaApiResponse[],
     tokenAddresses: Set<string>,
@@ -325,23 +260,6 @@ export class LocalMultiCall extends MultiCall {
       this.logger.error(e, 'getLpTokenData');
       throw e;
     }
-  }
-
-  async getLpTokenBalanceAndBorrow(leverageInterface: LeverageFarmingInterface[]): Promise<void> {
-    const inputs = leverageInterface.map((position) => {
-      return {
-        target: position.vault,
-        function: 'positionInfo',
-        args: [position.positionId],
-      };
-    });
-
-    const [, result] = await this.multiCall(StakedTokenAbi, inputs);
-    leverageInterface.forEach((position, index) => {
-      const balances = result[index];
-      position.baseTokenBalance = balances[0]?.toString();
-      position.borrow = balances[1]?.toString();
-    });
   }
 
   async getBorrowBalances(workersData: WorkerContractData[]): Promise<BorrowBalance> {

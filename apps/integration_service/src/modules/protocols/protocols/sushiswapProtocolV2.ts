@@ -241,6 +241,10 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
 
           baseData.push(baseBorrowingInfo);
         }
+
+        if (addressData.errors) {
+          errors.push(...addressData.errors);
+        }
       }
     } catch (e) {
       errors.push(e.message);
@@ -384,7 +388,8 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     address: Address,
     chain: ChainDto,
   ): Promise<void> {
-    const stakingFeature = await this.getChainSpecificStakingData(address, chain);
+    const [stakingFeature, errors] = await this.getChainSpecificStakingData(address, chain);
+    response.errors.push(...errors);
     response[FeatureEnum.staking].totalValue += stakingFeature.totalValue;
     response[FeatureEnum.staking].items.push(...stakingFeature.items);
   }
@@ -510,7 +515,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
   getChainSpecificStakingData(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
+  ): Promise<[FeatureResultDto<IntegrationStakingPositionDto>, string[]]> {
     switch (chain.id) {
       case ChainIdEnum.eth:
         return this.getEthStaking(address, chain);
@@ -525,17 +530,24 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
   async getMiniChefSubgraphStaking(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
+  ): Promise<[FeatureResultDto<IntegrationStakingPositionDto>, string[]]> {
     try {
       const { users, masterChef } = await this.miniChefSubgraph.getMiniChefPositions(
         address.toLowerCase().split(','),
         chain,
       );
 
-      return await this.getGenericMasterChef(address, chain, users, masterChef);
+      const staking = await this.getGenericMasterChef(address, chain, users, masterChef);
+      return [staking, []];
     } catch (e) {
       this.logger.error(e);
-      throw new Error(`Chain: ${chain.id} - Failed to get minichef data`);
+      return [
+        {
+          totalValue: 0,
+          items: [],
+        },
+        [`Chain: ${chain.id} - Failed to get minichef data`],
+      ];
     }
   }
 
@@ -545,33 +557,41 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
   async getEthStaking(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
+  ): Promise<[FeatureResultDto<IntegrationStakingPositionDto>, string[]]> {
+    const errors = [];
     const stakingFeature = {
       totalValue: 0,
       items: [],
     };
 
-    const [
-      masterChef, //
-      masterChefV2,
-      sushiBar,
-    ] = await Promise.all([
+    const stakingDataResults = await Promise.allSettled([
       this.getMasterChef(address, chain),
       this.getMasterChefV2(address, chain),
       this.getSushiBar(address, chain),
     ]);
 
-    stakingFeature.totalValue += masterChef.totalValue;
-    stakingFeature.totalValue += masterChefV2.totalValue;
-    stakingFeature.totalValue += sushiBar.totalValue;
+    const accepted = stakingDataResults
+      .filter(
+        (a): a is PromiseFulfilledResult<FeatureResultDto<IntegrationStakingPositionDto>> =>
+          a.status === 'fulfilled',
+      )
+      .map((a) => a.value);
 
-    stakingFeature.items.push(
-      ...masterChef.items, //
-      ...masterChefV2.items,
-      ...sushiBar.items,
-    );
+    const denied = stakingDataResults
+      .filter((a): a is PromiseRejectedResult => a.status !== 'fulfilled')
+      .map((a) => a.reason);
 
-    return stakingFeature;
+    accepted.forEach((result) => {
+      stakingFeature.totalValue += result.totalValue;
+      stakingFeature.items.push(...result.items);
+    });
+
+    denied.forEach((reason) => {
+      this.logger.error(reason);
+      errors.push(reason.message);
+    });
+
+    return [stakingFeature, errors];
   }
 
   async getSushiBar(

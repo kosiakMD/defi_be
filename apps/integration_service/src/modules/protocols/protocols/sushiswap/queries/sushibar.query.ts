@@ -6,7 +6,7 @@ export const getSushiBarPositionsQuery = gql`
   ${barFields}
   query getSushiBarPositions($addresses: [String]) {
     bars(first: 1) {
-      ...erc20Fields
+      ...barFields
       totalSupply
       ratio
       sushi

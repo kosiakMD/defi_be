@@ -639,7 +639,6 @@ export class ProtocolService {
 
   async adjustPrices(data: BaseData[], errors: string[]): Promise<[BaseData[], string[]]> {
     const chainAssets: Map<number, Set<string>> = new Map<number, Set<string>>();
-
     // get all assets for prices
     data.forEach((baseData) => {
       try {
@@ -670,7 +669,10 @@ export class ProtocolService {
             } else {
               setChainAsset(stakingPosition.stakingToken);
             }
-            setChainAssetsArray(stakingPosition.rewards);
+
+            if (stakingPosition.rewards?.length) {
+              setChainAssetsArray(stakingPosition.rewards);
+            }
           });
         }
 
@@ -741,7 +743,7 @@ export class ProtocolService {
         if (baseData instanceof BaseDataStaking) {
           baseData.total = 0;
           baseData.items.forEach((stakingPosition) => {
-            stakingPosition.rewards.forEach((reward) => {
+            stakingPosition.rewards?.forEach((reward) => {
               reward.price =
                 chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
               reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;

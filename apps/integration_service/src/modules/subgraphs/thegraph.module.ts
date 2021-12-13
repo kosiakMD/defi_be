@@ -17,6 +17,7 @@ import { SpookyswapFarmSubgraph } from './subgraphs/spookyswap.farm.subgraph';
 import { SushiSwapBentoBoxSubgraph } from './subgraphs/sushiswap.bentobox.subgraph';
 import { SushiSwapExchangeSubgraph } from './subgraphs/sushiswap.exchange.subgraph';
 import { SushiSwapMasterChefSubgraph } from './subgraphs/sushiswap.masterchef.subgraph';
+import { SushiSwapMasterChefV2Subgraph } from './subgraphs/sushiswap.masterchef.v2.subgraph';
 import { SushiSwapMiniChefSubgraph } from './subgraphs/sushiswap.minichef.subgraph';
 import { SushiSwapSushiBarSubgraph } from './subgraphs/sushiswap.sushibar.subgraph';
 import { UniswapSubgraph } from './subgraphs/uniswap.subgraph';
@@ -52,6 +53,7 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     SpookyswapAceLabSubgraph,
     SpookyswapFarmSubgraph,
     SushiSwapMasterChefSubgraph,
+    SushiSwapMasterChefV2Subgraph,
     SushiSwapMiniChefSubgraph,
     SushiSwapExchangeSubgraph,
     SushiSwapSushiBarSubgraph,
@@ -74,6 +76,7 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     SpookyswapAceLabSubgraph,
     SpookyswapFarmSubgraph,
     SushiSwapMasterChefSubgraph,
+    SushiSwapMasterChefV2Subgraph,
     SushiSwapMiniChefSubgraph,
     SushiSwapExchangeSubgraph,
     SushiSwapSushiBarSubgraph,

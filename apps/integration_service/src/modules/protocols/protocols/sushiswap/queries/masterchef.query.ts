@@ -1,19 +1,20 @@
 import { gql } from '@app/common/utils/graphql';
 
+import { poolFields } from './fragments/pool.fragment';
+import { userFields } from './fragments/user.fragment';
+
 export const getMasterChefPositionsQuery = gql`
+  ${userFields}
+  ${poolFields}
   query getMasterChefPositions($addresses: [String]) {
     users(where: { address_in: $addresses, pool_not: null, amount_not: 0 }) {
-      id
-      amount
+      ...userFields
       pool {
-        id
-        pair
-        accSushiPerShare
+        ...poolFields
       }
     }
     masterChefs(first: 1) {
       id
-      sushi
     }
   }
 `;

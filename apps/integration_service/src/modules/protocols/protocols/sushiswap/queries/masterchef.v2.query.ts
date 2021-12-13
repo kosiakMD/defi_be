@@ -3,17 +3,21 @@ import { gql } from '@app/common/utils/graphql';
 import { poolFields } from './fragments/pool.fragment';
 import { userFields } from './fragments/user.fragment';
 
-export const getMiniChefPositionsQuery = gql`
+export const getMasterChefV2PositionsQuery = gql`
   ${userFields}
   ${poolFields}
-  query getMiniChefPositions($addresses: [String]) {
+  query getMasterChefPositions($addresses: [String]) {
     users(where: { address_in: $addresses, pool_not: null, amount_not: 0 }) {
       ...userFields
       pool {
         ...poolFields
+        rewarder {
+          id
+          rewardToken
+        }
       }
     }
-    miniChefs(first: 1) {
+    masterChefs(first: 1) {
       id
     }
   }

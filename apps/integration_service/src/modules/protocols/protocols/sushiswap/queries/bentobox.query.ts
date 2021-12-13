@@ -1,10 +1,16 @@
 import { gql } from '@app/common/utils/graphql';
 
+import { erc20Fields } from './fragments/token.fragment';
+
 export const getLendingPositionsQuery = gql`
+  ${erc20Fields}
   query getLendingPositions($addresses: [String]) {
     users(where: { id_in: $addresses }) {
       id
       kashiPairs {
+        borrowPart
+        collateralShare
+        assetFraction
         pair {
           id
           type
@@ -16,32 +22,19 @@ export const getLendingPositionsQuery = gql`
           utilization
 
           asset {
-            name
-            symbol
-            decimals
-            id
+            ...erc20Fields
           }
 
           collateral {
-            id
-            name
-            symbol
-            decimals
+            ...erc20Fields
           }
         }
-
-        borrowPart
-        collateralShare
-        assetFraction
       }
 
       tokens(where: { share_gt: 0 }) {
         share
         token {
-          id
-          name
-          symbol
-          decimals
+          ...erc20Fields
         }
       }
     }

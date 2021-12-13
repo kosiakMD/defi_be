@@ -1,5 +1,7 @@
-export const barFields = `
-fragment barFields on Bar {
+import { gql } from '@app/common/utils';
+
+export const barFields = gql`
+  fragment barFields on Bar {
     id
     name
     symbol
@@ -7,4 +9,5 @@ fragment barFields on Bar {
     decimals
     ratio
     sushi
-}`;
+  }
+`;

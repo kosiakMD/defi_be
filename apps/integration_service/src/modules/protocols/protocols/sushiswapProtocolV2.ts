@@ -10,7 +10,6 @@ import {
   ChainDto,
   ChainIdEnum,
   ClaimableDto,
-  CurrentPricesPayload,
   ERC20TokenDto,
   FeatureEnum,
   FeatureResultDto,
@@ -34,22 +33,33 @@ import { normalizeDecimals } from '@app/common/utils/number';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { IntegrationStakingPositionDto, LPToken } from '../../../common/dto/integrations.dto';
+import { Asset } from '../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { SushiSwapBentoBoxSubgraph } from '../../subgraphs/subgraphs/sushiswap.bentobox.subgraph';
 import { SushiSwapExchangeSubgraph } from '../../subgraphs/subgraphs/sushiswap.exchange.subgraph';
 import { SushiSwapMasterChefSubgraph } from '../../subgraphs/subgraphs/sushiswap.masterchef.subgraph';
+import { SushiSwapMasterChefV2Subgraph } from '../../subgraphs/subgraphs/sushiswap.masterchef.v2.subgraph';
 import { SushiSwapMiniChefSubgraph } from '../../subgraphs/subgraphs/sushiswap.minichef.subgraph';
 import { SushiSwapSushiBarSubgraph } from '../../subgraphs/subgraphs/sushiswap.sushibar.subgraph';
 import BasicProtocol from './basicProtocol';
+// import { SushiSwapMasterChefAbi } from './sushiswap/abi/masterchef';
+import { SushiSwapRewarder } from './sushiswap/contracts/rewarder';
 import { SushiSwapMasterChefAbi } from './sushiswap/contracts/sushiswap.masterchef';
-import { MAGIC_BENTOBOX_APR_DECIMALS } from './sushiswap/sushiswap.constants';
+// import { SushiSwapBentoBoxSubgraph } from './sushiswap/services/sushiswap.bentobox.subgraph';
+// import { SushiSwapExchangeSubgraph } from './sushiswap/services/sushiswap.exchange.subgraph';
+// import { SushiSwapMasterChefSubgraph } from './sushiswap/services/sushiswap.masterchef.subgraph';
+// import { SushiSwapMiniChefSubgraph } from './sushiswap/services/sushiswap.minichef.subgraph';
+// import { SushiSwapSushiBarSubgraph } from './sushiswap/services/sushiswap.sushibar.subgraph';
+import { MAGIC_BENTOBOX_APR_DECIMALS, SUSHI_ADDRESS } from './sushiswap/sushiswap.constants';
 import {
   ISushiSwapChef,
   ISushiSwapERC20Token,
   ISushiSwapLiquidityPair,
   ISushiSwapPoolUser,
+  ISushiSwapPoolUserV2,
+  ISushiSwapPoolV2,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
 
@@ -144,6 +154,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     protected readonly priceService: PriceService,
     protected readonly exchangeSubgraph: SushiSwapExchangeSubgraph,
     protected readonly masterChefSubgraph: SushiSwapMasterChefSubgraph,
+    protected readonly masterChefV2Subgraph: SushiSwapMasterChefV2Subgraph,
     protected readonly miniChefSubgraph: SushiSwapMiniChefSubgraph,
     protected readonly sushiBarSubgraph: SushiSwapSushiBarSubgraph,
     protected readonly bentoBoxSubgraph: SushiSwapBentoBoxSubgraph,
@@ -152,6 +163,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     super();
   }
 
+  // V2 Controller
   public async getAllFeaturesBaseData(
     addresses: Address[],
     chain: ChainDto,
@@ -160,6 +172,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     const errors: string[] = [];
     try {
       for (const address of addresses) {
+        // Get V1 data and reformat for V2
         const addressData = await this.getAllFeaturesData(address, chain);
         if (addressData[FeatureEnum.pools]) {
           const basePoolsInfo: BaseDataLp = plainToClass(BaseDataLp, {
@@ -236,6 +249,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     return [baseData, errors];
   }
 
+  // V1 Controller
   async getAllFeaturesData(address: string, chain: ChainDto): Promise<IntegrationFeaturesDataDto> {
     const response = this.initializeResponseForChain(chain);
 
@@ -300,10 +314,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       ]),
     );
 
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      underlyingTokenAddresses,
-      chain.id,
-    );
+    const prices = await this.getPrices(underlyingTokenAddresses, chain);
 
     await Promise.all(
       users.flatMap((user) =>
@@ -398,13 +409,10 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         user.tokens.flatMap((token) => token.token.id),
       ),
     );
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      underlyingTokenAddresses,
-      chain.id,
-    );
+    const prices = await this.getPrices(underlyingTokenAddresses, chain);
 
-    users.flatMap((user) => {
-      user.kashiPairs.flatMap((kashiPair) => {
+    users.forEach((user) => {
+      user.kashiPairs.forEach((kashiPair) => {
         const lendingPosition = this.formatLendingPosition(
           kashiPair.assetFraction,
           kashiPair.pair.asset,
@@ -436,50 +444,56 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     });
 
     // "Deposits"
-    users.flatMap((user) => {
-      user.tokens.forEach((token) => {
-        const balance = normalizeDecimals(token.share, token.token.decimals);
-        const price = prices[token.token.id];
-        const stakedToken = plainToClass(LPToken, {
-          address: token.token.id,
-          name: token.token.name,
-          symbol: token.token.symbol,
-          decimals: token.token.decimals,
-          balance,
-          value: price * balance,
-          price,
-        });
+    // TODO: I can't find the interface for these deposits, however they show up in debank & on the subgraph
+    // BSC has no deposits available, however tokens are returned from the subgraph
+    // (Also TVL is _very) low, so not a big issue I don't think)
+    if (response[FeatureEnum.staking]) {
+      users.flatMap((user) => {
+        user.tokens.forEach((token) => {
+          const balance = normalizeDecimals(token.share, token.token.decimals);
+          const price = prices.get(token.token.id);
+          const stakedToken = plainToClass(LPToken, {
+            address: token.token.id,
+            name: token.token.name,
+            symbol: token.token.symbol,
+            decimals: token.token.decimals,
+            balance,
+            value: price * balance,
+            price,
+          });
 
-        const position = plainToClass(IntegrationStakingPositionDto, {
-          address: null,
-          poolId: null,
-          poolName: token.token.symbol,
-          staked: balance,
-          rewards: [],
-          stakingToken: stakedToken,
-        });
+          const position = plainToClass(IntegrationStakingPositionDto, {
+            address: null,
+            poolId: null,
+            poolName: token.token.symbol,
+            staked: balance,
+            rewards: [],
+            stakingToken: stakedToken,
+          });
 
-        response[FeatureEnum.staking].items.push(position);
-        response[FeatureEnum.staking].totalValue += position.stakingToken.value;
+          response[FeatureEnum.staking].items.push(position);
+          response[FeatureEnum.staking].totalValue += position.stakingToken.value;
+        });
       });
-    });
+    }
   }
 
   formatLendingPosition(
     share: string,
     token: ISushiSwapERC20Token,
-    prices: CurrentPricesPayload,
+    prices: Map<Address, number>,
     apr = '0',
   ): LendingPositionDto {
     const collateralBalance = normalizeDecimals(share, token.decimals);
 
-    const collateralPrice = Number(prices[token.id]);
+    const price = prices.get(token.id);
+
     return plainToClass(LendingPositionDto, {
       address: token.id,
       balance: collateralBalance,
-      value: collateralBalance * collateralPrice,
+      value: collateralBalance * price,
       apy: normalizeDecimals(apr, MAGIC_BENTOBOX_APR_DECIMALS),
-      token: this.formatLendToken(token, collateralPrice),
+      token: this.formatLendToken(token, price),
     });
   }
 
@@ -512,13 +526,13 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
-    const { users, miniChef } = await this.miniChefSubgraph.getMiniChefPositions(
-      address.toLowerCase().split(','),
-      chain,
-    );
-
     try {
-      return await this.getGenericMasterChef(address, chain, users, miniChef);
+      const { users, masterChef } = await this.miniChefSubgraph.getMiniChefPositions(
+        address.toLowerCase().split(','),
+        chain,
+      );
+
+      return await this.getGenericMasterChef(address, chain, users, masterChef);
     } catch (e) {
       this.logger.error(e);
       throw new Error(`Chain: ${chain.id} - Failed to get minichef data`);
@@ -537,20 +551,30 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       items: [],
     };
 
-    const [masterChef, sushiBar] = await Promise.all([
-      this.getEthMasterChef(address, chain),
-      this.getEthSushiBar(address, chain),
+    const [
+      masterChef, //
+      masterChefV2,
+      sushiBar,
+    ] = await Promise.all([
+      this.getMasterChef(address, chain),
+      this.getMasterChefV2(address, chain),
+      this.getSushiBar(address, chain),
     ]);
 
     stakingFeature.totalValue += masterChef.totalValue;
+    stakingFeature.totalValue += masterChefV2.totalValue;
     stakingFeature.totalValue += sushiBar.totalValue;
 
-    stakingFeature.items.push(...masterChef.items, ...sushiBar.items);
+    stakingFeature.items.push(
+      ...masterChef.items, //
+      ...masterChefV2.items,
+      ...sushiBar.items,
+    );
 
     return stakingFeature;
   }
 
-  async getEthSushiBar(
+  async getSushiBar(
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
@@ -559,11 +583,14 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       chain,
     );
 
-    const { prices } = await this.priceService.getTokenPricesFetch([bar.sushi], chain.id);
+    const { prices } = await this.priceService.getTokenPricesFetch(
+      [SUSHI_ADDRESS.get(chain.id)],
+      chain.id,
+    );
 
     let totalValue = 0;
     const items = users.map((user) => {
-      const price = Number(bar.ratio) * prices[bar.sushi];
+      const price = Number(bar.ratio) * prices[SUSHI_ADDRESS.get(chain.id)];
 
       const stakedToken = plainToClass(LPToken, {
         address: bar.id,
@@ -589,11 +616,28 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     return { totalValue, items };
   }
 
-  async getEthMasterChef(
+  async getMasterChef(
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
     const { users, masterChef } = await this.masterChefSubgraph.getMasterChefPositions(
+      address.toLowerCase().split(','),
+      chain,
+    );
+
+    try {
+      return this.getGenericMasterChef(address, chain, users, masterChef);
+    } catch (e) {
+      this.logger.error(e);
+      throw new Error(`Chain: ${chain.id} - Failed to get masterchef data`);
+    }
+  }
+
+  async getMasterChefV2(
+    address: Address,
+    chain: ChainDto,
+  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
+    const { users, masterChef } = await this.masterChefV2Subgraph.getMasterChefPositions(
       address.toLowerCase().split(','),
       chain,
     );
@@ -612,16 +656,12 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
   async getGenericMasterChef(
     address: Address,
     chain: ChainDto,
-    users: ISushiSwapPoolUser[],
+    users: ISushiSwapPoolUser[] | ISushiSwapPoolUserV2[],
     masterChef: ISushiSwapChef,
   ) {
     if (!users.length) {
       return { items: [], totalValue: 0 };
     }
-    const {
-      data: [sushi],
-    } = await this.accountService.getAssets([masterChef.sushi], [chain.id]);
-
     const pairAddresses = users.flatMap((user: any) => user.pool.pair);
     const pairsData = await this.exchangeSubgraph.getPairs(pairAddresses, chain);
     const pairs = new Map<string, ISushiSwapLiquidityPair>(
@@ -629,12 +669,21 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     );
 
     const underlyingTokenAddresses = pairsData.flatMap((pair) => [pair.token0.id, pair.token1.id]);
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      underlyingTokenAddresses.concat(masterChef.sushi),
-      chain.id,
-    );
 
-    const pendingSushi = await this.getPendingSushi(users, masterChef, address, chain);
+    const poolRewarders = users
+      .flatMap((user: ISushiSwapPoolUser | ISushiSwapPoolUserV2) => user.pool)
+      .filter((pool): pool is ISushiSwapPoolV2 => 'rewarder' in pool);
+
+    const rewardTokens = poolRewarders
+      .map((pool) => pool.rewarder.rewardToken)
+      .concat(SUSHI_ADDRESS.get(chain.id));
+
+    const [pendingSushi, pendingRewards, assets, prices] = await Promise.all([
+      this.getPendingSushi(users, masterChef, address, chain),
+      this.getPendingRewards(poolRewarders, address, chain),
+      this.getAssets(rewardTokens, chain), // we only need reward tokens, the rest of the assets come from the subgraph
+      this.getPrices(underlyingTokenAddresses.concat(rewardTokens), chain),
+    ]);
 
     let totalValue = 0;
     const items = users.flatMap((user) => {
@@ -663,40 +712,101 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         ],
       });
 
-      const rewardBalance = pendingSushi.get(user.pool.id)
-        ? new BigNumber(pendingSushi.get(user.pool.id))
+      const sushi = assets.get(SUSHI_ADDRESS.get(chain.id));
+      const sushiPrice = prices.get(SUSHI_ADDRESS.get(chain.id));
+      const rewardBalance = pendingSushi.get(`${user.pool.id}-${address}`)
+        ? new BigNumber(pendingSushi.get(`${user.pool.id}-${address}`))
             .dividedBy(new BigNumber(10).pow(sushi.decimals))
             .toString()
         : null;
 
-      const rewardValue = Number(rewardBalance) * prices[masterChef.sushi];
-
-      const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
-        price: prices[masterChef.sushi],
-        symbol: sushi.symbol,
-        name: sushi.name,
-        address: sushi.address,
-        decimals: sushi.decimals,
-        claimableData: plainToClass(ClaimableDto, {
-          balance: rewardBalance,
-          value: rewardValue,
+      const rewards = [
+        plainToClass(IntegrationClaimableTokenDto, {
+          price: sushiPrice,
+          symbol: sushi.symbol,
+          name: sushi.name,
+          address: sushi.address,
+          decimals: sushi.decimals,
+          claimableData: plainToClass(ClaimableDto, {
+            balance: rewardBalance,
+            value: Number(rewardBalance) * sushiPrice,
+          }),
         }),
+      ];
+
+      // Each rewarder has an array of additional rewards (optional, only available in masterchef v2)
+      pendingRewards.get(`${user.pool.id}-${address}`)?.forEach(({ amount, address }) => {
+        const token = assets.get(address);
+        const price = prices.get(address);
+        const balance = normalizeDecimals(amount, token.decimals);
+        rewards.push(
+          plainToClass(IntegrationClaimableTokenDto, {
+            price,
+            symbol: token.symbol,
+            name: token.name,
+            address: token.address,
+            decimals: token.decimals,
+            claimableData: plainToClass(ClaimableDto, {
+              balance,
+              value: balance * price,
+            }),
+          }),
+        );
       });
 
-      totalValue += Number(userValue);
-      totalValue += Number(rewardValue);
+      // Tally the farm & reward balance
+      totalValue += rewards.reduce((acc, cur) => acc + cur.claimableData.value, Number(userValue));
 
       return plainToClass(IntegrationStakingPositionDto, {
         address: masterChef.id,
         poolId: user.pool.id,
         poolName: `${pair.token0.symbol}/${pair.token1.symbol}`,
         staked: user.amount,
-        rewards: [rewardToken],
+        rewards: rewards,
         stakingToken: stakedToken,
       });
     });
 
     return { items, totalValue };
+  }
+
+  private async getAssets(tokens, chain): Promise<Map<Address, Asset>> {
+    const { data } = await this.accountService.getAssets(tokens, [chain.id]);
+    return new Map(data.map((cur) => [cur.address, cur]));
+  }
+
+  private async getPrices(tokens, chain): Promise<Map<Address, number>> {
+    const { prices } = await this.priceService.getTokenPricesFetch(tokens, chain.id);
+    // TODO: priceService type is typed as 'number' but actually returns a string
+    return new Map(Object.entries(prices).map(([address, price]) => [address, Number(price)]));
+  }
+
+  async getPendingRewards(pools: ISushiSwapPoolV2[], address: Address, chain: ChainDto) {
+    const calls = new Map();
+    pools.map((pool) => {
+      const rewarderContract = new SushiSwapRewarder(pool.rewarder.id);
+
+      calls.set(
+        `${pool.id}-${pool.rewarder.id}-${address}`,
+        rewarderContract.pendingTokens(pool.id, address, 0), // ? I think the last argument doesn't do anything? e.g. 0x7519C93fC5073E15d89131fD38118D73A72370F8
+      );
+    });
+
+    const rawResults = await this.multicallService.handleInBatches(calls, chain.id);
+    return Array.from(rawResults.values()).reduce((calls, result) => {
+      const [poolId, user] = result.input.data;
+      const { rewardTokens, rewardAmounts } = result.output.data;
+
+      return calls.set(
+        `${poolId}-${user}`,
+        rewardTokens.map((token, idx) => {
+          return {
+            address: token.toLowerCase(),
+            amount: rewardAmounts[idx].toString(),
+          };
+        }),
+      );
+    }, new Map());
   }
 
   async getPendingSushi(
@@ -717,18 +827,16 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     const results = await this.multicallService.handleInBatches(calls, chain.id);
 
     // Format the data to get the returned values
-    const pendingSushiMap = Array.from(results.values()).reduce((calls, result) => {
+    return Array.from(results.values()).reduce((calls, result) => {
       const [poolId] = result.input.data;
-      return calls.set(poolId, result.output.data.toString());
+      return calls.set(`${poolId}-${address}`, result.output.data.toString());
     }, new Map());
-
-    return pendingSushiMap;
   }
 
-  getReserveUSDTotals(pair: ISushiSwapLiquidityPair, prices: CurrentPricesPayload) {
-    const reserve0USD = this.getPairReserve(pair.reserve0, prices[pair.token0.id]);
+  getReserveUSDTotals(pair: ISushiSwapLiquidityPair, prices: Map<Address, number>) {
+    const reserve0USD = this.getPairReserve(pair.reserve0, prices.get(pair.token0.id));
 
-    const reserve1USD = this.getPairReserve(pair.reserve1, prices[pair.token1.id]);
+    const reserve1USD = this.getPairReserve(pair.reserve1, prices.get(pair.token1.id));
 
     const TVL = new BigNumber(reserve1USD) //
       .plus(reserve0USD)
@@ -754,7 +862,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     reserve: string,
     userPoolShare: string,
     reserveUSD: string,
-    prices: CurrentPricesPayload,
+    prices: Map<Address, number>,
   ): PoolTokenDto {
     const value = Number(userPoolShare) * Number(reserveUSD);
 
@@ -765,8 +873,8 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       reserve: reserve,
       decimals: Number(token.decimals),
       value: value.toString(),
-      balance: value / prices[token.id],
-      price: Number(prices[token.id]),
+      balance: value / prices.get(token.id),
+      price: prices.get(token.id),
     });
   }
 }

@@ -7,11 +7,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, ChainIdEnum, Logger } from '@app/common';
 
-import { getMasterChefPositionsQuery } from '../../protocols/protocols/sushiswap/queries/masterchef.query';
-import { ISushiSwapMasterChef } from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
+import { getMasterChefV2PositionsQuery } from '../../protocols/protocols/sushiswap/queries/masterchef.v2.query';
+import { ISushiSwapMasterChefV2 } from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
 
 @Injectable()
-export class SushiSwapMasterChefSubgraph {
+export class SushiSwapMasterChefV2Subgraph {
   protected readonly subgraphUrls: Map<ChainIdEnum, string>;
 
   constructor(
@@ -20,7 +20,7 @@ export class SushiSwapMasterChefSubgraph {
     private readonly httpService: HttpService,
   ) {
     this.subgraphUrls = new Map([
-      [ChainIdEnum.eth, this.configService.get<string>('SUSHISWAP_ETH_MASTERCHEF_SUBGRAPH_URL')],
+      [ChainIdEnum.eth, this.configService.get<string>('SUSHISWAP_ETH_MASTERCHEF_V2_SUBGRAPH_URL')],
     ]);
   }
 
@@ -35,12 +35,12 @@ export class SushiSwapMasterChefSubgraph {
   async getMasterChefPositions(
     addresses: Address[],
     chain: ChainDto,
-  ): Promise<ISushiSwapMasterChef> {
+  ): Promise<ISushiSwapMasterChefV2> {
     if (!this.isSupportedChain(chain)) return;
 
     const response$ = this.httpService.post(this.getSubgraphUrl(chain), {
       variables: { addresses },
-      query: getMasterChefPositionsQuery,
+      query: getMasterChefV2PositionsQuery,
     });
 
     const response = await firstValueFrom(response$);

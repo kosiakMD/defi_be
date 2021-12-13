@@ -1,9 +1,11 @@
-import { map } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, ChainIdEnum } from '@app/common';
+import { Address, ChainDto, ChainIdEnum, Logger } from '@app/common';
 
 import { getLendingPositionsQuery } from '../../protocols/protocols/sushiswap/queries/bentobox.query';
 import { ISushiSwapBentoBoxUsers } from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
@@ -13,6 +15,7 @@ export class SushiSwapBentoBoxSubgraph {
   protected readonly subgraphUrls: Map<ChainIdEnum, string>;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
@@ -43,12 +46,18 @@ export class SushiSwapBentoBoxSubgraph {
   ): Promise<ISushiSwapBentoBoxUsers[]> {
     if (!this.isSupportedChain(chain)) return;
 
-    return this.httpService
-      .post(this.getSubgraphUrl(chain), {
-        variables: { addresses },
-        query: getLendingPositionsQuery,
-      })
-      .pipe(map((response) => response.data.data.users))
-      .toPromise();
+    const response$ = this.httpService.post(this.getSubgraphUrl(chain), {
+      variables: { addresses },
+      query: getLendingPositionsQuery,
+    });
+
+    const response = await firstValueFrom(response$);
+
+    if (response.data.errors) {
+      this.logger.error(response.data.errors);
+      return;
+    }
+
+    return response.data.data.users;
   }
 }

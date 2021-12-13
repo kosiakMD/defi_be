@@ -6,7 +6,10 @@ export const getSushiBarPositionsQuery = gql`
   ${barFields}
   query getSushiBarPositions($addresses: [String]) {
     bars(first: 1) {
-      ...barFields
+      ...erc20Fields
+      totalSupply
+      ratio
+      sushi
     }
     users(where: { id_in: $addresses }) {
       id

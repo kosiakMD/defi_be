@@ -69,6 +69,9 @@ export class PangolinProtocol extends UniswapLikeProtocol implements AbstractPro
             address: cur.pair.id,
             name: null,
             lpToken: PangolinProtocol.formatLpToken(cur.pair),
+            user: {
+              share: userShare,
+            },
             tokens: [
               PangolinProtocol.formatPoolToken(cur.pair.token0, cur.pair.reserve0, userShare),
               PangolinProtocol.formatPoolToken(cur.pair.token1, cur.pair.reserve1, userShare),

@@ -552,8 +552,6 @@ export class PriceService {
       );
       // store to cache all prices not found in DB with value=null
       unknownAddresses.forEach((address) => {
-        const key = PriceService.getCurrentPriceKey(chain, currency, address);
-        this.cache.set(key, { value: null });
         foundPrices.push({ address, value: null });
       });
     }

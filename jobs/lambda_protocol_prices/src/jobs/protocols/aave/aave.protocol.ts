@@ -10,6 +10,7 @@ import { IAaveGenericToken } from '../../../thegraph/aave/interfaces';
 import { AaveSubgraph } from '../../../thegraph/aave/subgraph';
 import { IProtocolPriceUpdate } from '../../interfaces/protocol.price.update';
 import { ProtocolBase } from '../protocol.base';
+import { ADDITIONAL_TOKENS } from './tokens';
 
 @Injectable()
 export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
@@ -32,19 +33,21 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
     try {
       this.logger.time(timeKey);
 
+      const additional = ADDITIONAL_TOKENS[this.chain] ?? [];
       const { atokens } = await this.subgraph.getTokens();
+      const tokens = atokens.concat(additional);
 
-      const underlying = this.getUniqueUnderlyingTokenArray(atokens);
+      const underlying = this.getUniqueUnderlyingTokenArray(tokens);
 
       const { prices } = await this.fetchPrices(underlying);
 
-      const results = atokens.reduce(this.reduceTokensToResults(prices), []);
+      const results = tokens.reduce(this.reduceTokensToResults(prices), []);
 
       this.logger.timeEnd(timeKey);
 
       return results;
     } catch (e) {
-      this.logger.error('Failed to update aave.com a/s/v token prices');
+      this.logger.error('Failed to update aave.com specific token prices');
       this.logger.error(e);
       return [];
     }
@@ -73,9 +76,9 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
     };
   }
 
-  getUniqueUnderlyingTokenArray(atokens: IAaveGenericToken[]): Address[] {
+  getUniqueUnderlyingTokenArray(tokens: IAaveGenericToken[]): Address[] {
     return Array.from(
-      new Set(atokens.map((token: IAaveGenericToken) => token.underlyingAssetAddress)),
+      new Set(tokens.map((token: IAaveGenericToken) => token.underlyingAssetAddress)),
     );
   }
 }

@@ -1,12 +1,13 @@
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { BlacklistedAddress } from './dto/blacklisted.address';
 import { BlacklistedAddressSaveDto } from './dto/blacklisted.address.save.dto';
 import { AddressesRepository } from './repositories/addresses.repository';
 
+@Injectable()
 export class BlacklistService {
   private readonly addressesCacheKey = 'addresses_blacklisted';
   private readonly cacheTTLInSeconds: number;
@@ -27,7 +28,7 @@ export class BlacklistService {
     const blacklistedAddresses: { 0: string; 1: boolean }[] = await this.cache.get(
       this.addressesCacheKey,
     );
-    if (blacklistedAddresses === null) {
+    if (!blacklistedAddresses) {
       const blacklistedAddressesMap = new Map<string, boolean>();
       (await this.getAll()).forEach((ca) => {
         blacklistedAddressesMap.set(ca.address, true);

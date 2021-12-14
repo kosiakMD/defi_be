@@ -1,4 +1,4 @@
-import { NotImplementedException } from '@nestjs/common';
+import { Injectable, NotImplementedException } from '@nestjs/common';
 
 import { Address, NftProjectEnum } from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
@@ -8,6 +8,7 @@ import { AavegotchiService } from './aavegotchi.service';
 import { NftAbstractService } from './nft.abstract.service';
 import { OpenSeaService } from './open.sea.service';
 
+@Injectable()
 export class NftService {
   private readonly projects: NftAbstractService[] = [];
 

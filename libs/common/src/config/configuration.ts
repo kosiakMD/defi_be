@@ -3,8 +3,9 @@ import { join } from 'path';
 
 import { ConfigModuleOptions } from '@nestjs/config';
 
-import { createLogger } from '../utils/winston';
+import { createLogger } from '../Logger/winston';
 
+// TODO add dependencies from env names as new string enum literal?
 const envFiles = [
   '.env.development.local',
   '.env.development',

@@ -57,3 +57,14 @@ export const ChainsParam = createParamDecorator((dataField, req) => {
   }
   return output;
 });
+
+export const Addresses = createParamDecorator((dataField, req) => {
+  const input = req.args[0].query[dataField];
+  let output: Address[];
+  try {
+    output = Array.from(new Set(input.split(',').map((a) => a.toLowerCase())));
+  } catch (e) {
+    throw new HttpException(e, 500);
+  }
+  return output;
+});

@@ -114,13 +114,11 @@ export const createJobLogger = (workFolder: string): LoggerService => {
   const logCombineLog = join(workFolder, process.env.LOG_COMBINED_FILE);
   const transports = createBaseTransports(logErrorFile, logCombineLog);
 
-  const logger = WinstonModule.createLogger({
+  return WinstonModule.createLogger({
     // TODO: for custom logger
     level: process.env.LOG_LEVEL || 'info',
     format: winston.format.json(),
     defaultMeta: { service: process.env.SERVICE_NAME },
     transports: transports,
   });
-
-  return logger;
 };

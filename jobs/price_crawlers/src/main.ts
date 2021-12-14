@@ -3,7 +3,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
-import { createJobLogger } from '@app/common/utils/winston';
+import { createJobLogger } from '@app/common/Logger/winston';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';

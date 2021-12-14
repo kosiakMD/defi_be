@@ -6,10 +6,14 @@ import { HttpException } from '@nestjs/common';
 import { Logger } from '@app/common';
 
 export const RequestErrorHandler = function () {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor): any {
-    const method = descriptor.value;
+  return function (
+    target: any,
+    propertyKey: string,
+    propertyDescriptor: PropertyDescriptor,
+  ): PropertyDescriptor {
+    const method = propertyDescriptor.value;
 
-    descriptor.value = async function (...args: any): Promise<any> {
+    propertyDescriptor.value = async function (...args: any): Promise<any> {
       const logger: Logger = this.logger;
       try {
         return await method.apply(this, args);
@@ -18,7 +22,7 @@ export const RequestErrorHandler = function () {
         if (e.isAxiosError) {
           const stack = e.toJSON().stack;
           logger.error(
-            `Error ${e.request.method} ${e.request.res?.responseUrl}${
+            `Error ${e.request.method} ${e.request.res.responseUrl}${
               e.request.data ? `\n${e.request.data}` : ''
             }`,
             stack,
@@ -40,5 +44,7 @@ export const RequestErrorHandler = function () {
         throw e;
       }
     };
+
+    return propertyDescriptor;
   };
 };

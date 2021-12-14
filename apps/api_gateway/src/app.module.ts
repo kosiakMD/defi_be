@@ -12,8 +12,10 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { LoggerMiddleware } from '@app/common';
+import { Logger } from '@app/common';
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { Environment, winstonParams } from '@app/common/utils/winston';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -24,8 +26,7 @@ import { AppService } from './app/app.service';
 import { AssetsController } from './assets/assets.controller';
 import { AssetsService } from './assets/assets.service';
 import { BalancesController } from './balances/balances.controller';
-import { Logger } from './common/Logger/Logger.service';
-import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { RequestIdMiddleware } from './common/middlewares/req-id.middleware';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
@@ -60,20 +61,7 @@ import { VaultsModule } from './vaults/vaults.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams({
-          identifier: 'gateway',
-          environment: configService.get<Environment>('NODE_ENV'),
-          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
-          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
-          serviceName: configService.get<string>('SERVICE_NAME'),
-          level: configService.get<string>('LOG_LEVEL'),
-          meta: { env: configService.get<string>('ENV') },
-          awsConfig: {
-            region: configService.get<string>('AWS_REGION'),
-            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-          },
-        }),
+        getWinstonParams('gateway', configService),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],
@@ -115,6 +103,10 @@ import { VaultsModule } from './vaults/vaults.module';
     ProtocolControllerV2,
   ],
   providers: [
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: TransformHeadersInterceptor,
+    // },
     // TODO: for global auto caching
     // {
     // 	provide: APP_INTERCEPTOR,
@@ -146,7 +138,7 @@ import { VaultsModule } from './vaults/vaults.module';
 })
 export class AppModule implements OnModuleInit, NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(LoggerMiddleware).forRoutes('/');
+    consumer.apply(RequestIdMiddleware, LoggerMiddleware).forRoutes('/');
   }
 
   onModuleInit(): void {

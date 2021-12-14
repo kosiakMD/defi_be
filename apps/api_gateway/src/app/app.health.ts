@@ -20,12 +20,22 @@ import { PricesService } from '../prices/prices.service';
 
 @Injectable()
 export class ServiceHealthIndicator extends HealthIndicator {
-  private static async isHealthy(
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private accountService: AccountService,
+    private integrationService: IntegrationService,
+    private priceService: PricesService,
+  ) {
+    super();
+  }
+
+  private async isHealthy(
     service: AccountService | IntegrationService | PricesService,
   ): Promise<HealthCheckResult> {
     try {
       return await service.isHealthy();
     } catch (e) {
+      this.logger.error(e);
       return {
         status: HealthStatusEnum.shuttingDown,
         info: {
@@ -47,24 +57,15 @@ export class ServiceHealthIndicator extends HealthIndicator {
     }
   }
 
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private accountService: AccountService,
-    private integrationService: IntegrationService,
-    private priceService: PricesService,
-  ) {
-    super();
-  }
-
   async isAccountHealthy(): Promise<HealthCheckResult> {
-    return ServiceHealthIndicator.isHealthy(this.accountService);
+    return this.isHealthy(this.accountService);
   }
 
   async isIntegrationHealthy(): Promise<HealthCheckResult> {
-    return ServiceHealthIndicator.isHealthy(this.integrationService);
+    return this.isHealthy(this.integrationService);
   }
 
   async isPriceHealthy(): Promise<HealthCheckResult> {
-    return ServiceHealthIndicator.isHealthy(this.priceService);
+    return this.isHealthy(this.priceService);
   }
 }

@@ -5,9 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { Logger, LoggerModule } from '@app/common/Logger';
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { LoggerMiddleware } from '@app/common/middlewares/logger.middleware';
-import { Environment, winstonParams } from '@app/common/utils/winston';
+import { LoggerMiddleware } from '@app/common/middlewares';
 
 import config from './config';
 import { HealthModule } from './modules/health.module';
@@ -20,21 +20,7 @@ import { PricesModule } from './modules/prices/prices.module';
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) =>
-        winstonParams({
-          identifier: 'prices',
-          environment: configService.get<Environment>('NODE_ENV'),
-          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
-          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
-          serviceName: configService.get<string>('SERVICE_NAME'),
-          level: configService.get<string>('LOG_LEVEL'),
-          meta: { env: configService.get<string>('ENV') },
-          awsConfig: {
-            region: configService.get<string>('AWS_REGION'),
-            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-          },
-        }),
+      useFactory: async (configService: ConfigService) => getWinstonParams('prices', configService),
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

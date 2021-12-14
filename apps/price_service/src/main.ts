@@ -8,7 +8,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
-import { createLogger } from '@app/common/utils/winston';
+import { createLogger } from '@app/common/Logger/winston';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';

@@ -32,7 +32,7 @@ import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { IntegrationStakingPositionDto, LPToken } from '../../../common/dto/integrations.dto';
+import { IntegrationStakingPositionDto, LPToken } from '../../../common/dto';
 import { Asset } from '../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../microservices/account.service';

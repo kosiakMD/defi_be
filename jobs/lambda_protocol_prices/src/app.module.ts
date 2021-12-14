@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WinstonModule } from 'nest-winston';
 
-import { Environment, winstonParams } from '@app/common/utils/winston';
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 
 import { lambdaConfiguration } from './config';
 import { JobsModule } from './jobs/jobs.module';
@@ -18,20 +18,7 @@ import { JobsModule } from './jobs/jobs.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams({
-          identifier: 'protocol_prices',
-          environment: configService.get<Environment>('NODE_ENV'),
-          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
-          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
-          serviceName: configService.get<string>('SERVICE_NAME'),
-          level: configService.get<string>('LOG_LEVEL'),
-          meta: { env: configService.get<string>('ENV') },
-          awsConfig: {
-            region: configService.get<string>('AWS_REGION'),
-            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-          },
-        }),
+        getWinstonParams('protocol_prices', configService),
     }),
     JobsModule,
   ],

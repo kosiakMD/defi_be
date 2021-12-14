@@ -5,9 +5,9 @@ import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { LoggerMiddleware } from '@app/common';
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { Environment, winstonParams } from '@app/common/utils/winston';
+import { LoggerMiddleware } from '@app/common/middlewares';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
@@ -24,20 +24,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        winstonParams({
-          identifier: 'integration',
-          environment: configService.get<Environment>('NODE_ENV'),
-          logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
-          logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
-          serviceName: configService.get<string>('SERVICE_NAME'),
-          level: configService.get<string>('LOG_LEVEL'),
-          meta: { env: configService.get<string>('ENV') },
-          awsConfig: {
-            region: configService.get<string>('AWS_REGION'),
-            accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
-            secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),
-          },
-        }),
+        getWinstonParams('integration', configService),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],
@@ -74,22 +61,19 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(LoggerMiddleware).forRoutes('/');
-    this.log();
   }
 
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {
-    this.log();
-  }
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
-  private log() {
-    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+  onModuleInit(): void {
+    const { ENV, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
-        name: SERVICE_NAME,
+        env: ENV,
         host: SERVICE_HOST,
         port: SERVICE_PORT,
       },
-      'AppModule',
+      'App',
     );
   }
 }

@@ -7,10 +7,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Pool, ProtocolName, Vault } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
+import { RequestErrorHandler } from '@app/common/decorators';
 
 import { FeaturesResponseDto } from '../common/DTO/features.dto';
 import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
-import { RequestErrorHandler } from '../common/decorators';
 
 import { BalancesResponse } from '../account/account.interfaces';
 

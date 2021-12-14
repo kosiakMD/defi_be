@@ -2,7 +2,8 @@ import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../common/Logger/Logger.service';
+import { Logger } from '@app/common';
+
 import { ChainIdEnum } from '../common/enum';
 
 import { AccountService } from '../account/account.service';

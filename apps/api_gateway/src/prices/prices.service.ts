@@ -6,8 +6,7 @@ import { HealthCheckResult } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-
-import { RequestErrorHandler } from '../common/decorators';
+import { RequestErrorHandler } from '@app/common/decorators';
 
 import {
   ChainDto,
@@ -59,7 +58,7 @@ export class PricesService {
     this.getRangePath = `${url}/${rangePath}`;
   }
 
-  @RequestErrorHandler()
+  // @RequestErrorHandler()
   async isHealthy(): Promise<HealthCheckResult> {
     const timeMark = 'request: ' + this.getStatusUrl;
 

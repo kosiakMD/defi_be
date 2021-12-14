@@ -5,7 +5,7 @@ import { Inject, NestMiddleware } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '../Logger/Logger.service';
+import { Logger } from '@app/common';
 
 export class ProxyMiddleware implements NestMiddleware {
   constructor(

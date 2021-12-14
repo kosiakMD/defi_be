@@ -10,6 +10,3 @@ export * from './object';
 export * from './retry';
 export * from './string';
 export * from './transform';
-export * from './winston';
-export * from './transform';
-export * from './winston';

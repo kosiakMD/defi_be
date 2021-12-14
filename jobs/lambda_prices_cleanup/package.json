@@ -1,0 +1,20 @@
+{
+  "name": "lambda-prices-cleanup",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha tests/unit/",
+    "compile": "tsc",
+    "cleanup": "rm -rf dist && rm -rf output",
+    "build": "yarn && yarn cleanup && yarn compile && mkdir output && mv node_modules dist/node_modules && cd dist && zip -r ../output/lambda.zip *",
+    "start": "tsc && node dist/index.js",
+    "dev": "ts-node ./src/start.ts"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "pg": "^8.7.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.6.1"
+  }
+}

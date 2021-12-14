@@ -47,9 +47,10 @@ export async function process(): Promise<void> {
 
       for (let from = 0; from < total; from += batchSize) {
         try {
-          logger.info(`Checking pair from ${from} to ${from + batchSize - 1} of ${total}. (new: ${missingAssets.length})`);
+          const fixedBatchSize = Math.min(batchSize, total - from);
+          logger.info(`Checking pair from ${from} to ${from + fixedBatchSize} of ${total}. (new: ${missingAssets.length})`);
 
-          const pairIds = Array.from(Array(batchSize - 1).keys()).map(key => from + key);
+          const pairIds = Array.from(Array(fixedBatchSize - 1).keys()).map(key => from + key);
           const pairAddresses = await uniswapMulticall.getPairs(protocol.address, pairIds);
 
           let pairsTokens = await uniswapMulticall.getTokensForPairs(pairAddresses);

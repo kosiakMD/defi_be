@@ -324,7 +324,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       users.flatMap((user) =>
         user.liquidityPositions.flatMap(async (position) => {
           for (const token of [position.pair.token0, position.pair.token1]) {
-            if (!prices[token.id]) {
+            if (!prices.has(token.id)) {
               this.logger.warn(
                 `Failed to fetch price for token ${token.name} (${token.symbol}) - ${token.id} on chain ${chain.id}. Perhaps consider tracking it.`,
               );
@@ -338,7 +338,6 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
           );
 
           const { reserve0USD, reserve1USD, TVL } = this.getReserveUSDTotals(position.pair, prices);
-
           const userData = {
             value: Number(new BigNumber(userPoolShare).multipliedBy(TVL)),
             share: Number(userPoolShare),

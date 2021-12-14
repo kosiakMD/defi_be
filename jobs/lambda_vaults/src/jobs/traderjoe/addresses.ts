@@ -2,5 +2,5 @@ export enum TraderjoeAddresses {
   chiefV2 = '0xd6a4f121ca35509af06a0be99093d08462f53052',
   chiefV3 = '0x188bed1968b795d5c9022f6a0bb5931ac4c18f00',
   joe = '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd',
-  avax = '0x0000000000000000000000000000000000000000',
+  avax = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
 }

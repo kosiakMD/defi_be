@@ -30,6 +30,7 @@ import { calculateAPR, calculateAPRBonus } from '../utils/apr';
 import { Abis } from './abis';
 import { TraderjoeAddresses } from './addresses';
 import { DbMapping } from './dbmapping';
+import { isTimeToDo } from '../../utils/time';
 
 @Injectable()
 export class TraderJoeStaking implements JobInterface {
@@ -55,7 +56,10 @@ export class TraderJoeStaking implements JobInterface {
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
-    if (!jobMapping.mapping) {
+    if (
+      !jobMapping.mapping || 
+      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
+    ) {
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
 

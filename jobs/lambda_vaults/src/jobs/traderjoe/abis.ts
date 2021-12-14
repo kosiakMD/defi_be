@@ -12,6 +12,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly balanceOf: AbiItem = {
     constant: true,
     inputs: [{ internalType: 'address', name: '', type: 'address' }],
@@ -21,6 +22,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly poolInfoV2: AbiItem = {
     inputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
     name: 'poolInfo',
@@ -34,6 +36,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly poolInfoV3: AbiItem = {
     inputs: [
       {
@@ -53,6 +56,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly totalSupply: AbiItem = {
     constant: true,
     inputs: [],
@@ -62,6 +66,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly totalAllocPoint: AbiItem = {
     inputs: [],
     name: 'totalAllocPoint',
@@ -69,6 +74,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly poolLength: AbiItem = {
     inputs: [],
     name: 'poolLength',
@@ -76,6 +82,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly joePerSecV2: AbiItem = {
     inputs: [],
     name: 'joePerSec',
@@ -83,6 +90,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly joePerSecV3: AbiItem = {
     inputs: [],
     name: 'joePerSec',
@@ -90,6 +98,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly balance: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -103,6 +112,7 @@ export class Abis {
     name: 'balance',
     inputs: [],
   };
+
   static readonly rewardToken: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -116,6 +126,7 @@ export class Abis {
     name: 'rewardToken',
     inputs: [],
   };
+  
   static readonly tokenPerSec: AbiItem = {
     type: 'function',
     stateMutability: 'view',

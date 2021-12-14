@@ -15,8 +15,6 @@ import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
-import { SettingsService } from '../../store/service/settings.service';
-import { Setting } from '../../store/setting.entity';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
@@ -29,6 +27,7 @@ import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { TraderjoeAddresses } from './addresses';
+import { isTimeToDo } from '../../utils/time';
 
 @Injectable()
 export class TraderjoePools implements JobInterface {
@@ -43,7 +42,6 @@ export class TraderjoePools implements JobInterface {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly settingsService: SettingsService,
     private readonly accountService: AccountService,
     private readonly storeService: StoreService,
     private readonly multicallService: MulticallAggregator,
@@ -58,7 +56,11 @@ export class TraderjoePools implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    if (!jobMapping.mapping) {
+    
+    if (
+      !jobMapping.mapping || 
+      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
+    ) {
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
 
@@ -71,32 +73,39 @@ export class TraderjoePools implements JobInterface {
     this.logger.log('building initial mapping', this.placeholder);
 
     const liquidityPools: LiquidityPoolFeature[] = [];
-    const settingId = concatStrings(this.placeholder, 'chief_pool_length');
-
-    let dbPoolLenthSetting: Setting = await this.settingsService.findByName(settingId);
-    if (!dbPoolLenthSetting) {
-      dbPoolLenthSetting = plainToClass(Setting, {});
-      dbPoolLenthSetting.name = settingId;
-      dbPoolLenthSetting = await this.settingsService.create(dbPoolLenthSetting);
-    }
-
-    const poolIdTo = (await this.getChainPoolLength()).toNumber() - 1;
-
-    const poolIdFrom = Number(dbPoolLenthSetting.value);
-    if (poolIdFrom >= poolIdTo) {
+    
+    const [ poolLengthV2, poolLengthV3 ] = await this.getChainPoolLength();
+    const poolsArray = jobMapping.mapping ? 
+      Object.keys(jobMapping.mapping)
+        .filter(key => !isNaN(Number(key)))
+        .map(key => jobMapping.mapping[key]) : [];
+    
+    if (poolsArray.length >= poolLengthV2 + poolLengthV3) {
       this.logger.log(
-        `not necessary to update existed mapping, db poolLength ${poolIdFrom}, chain poolLength ${poolIdTo}`,
+        `not necessary to update existed mapping, db poolLength ${poolsArray.length}, chain poolLength ${poolLengthV2 + poolLengthV3}`,
         this.placeholder,
       );
       return [];
     }
-
-    // Go throw all pools
+    
+    // Go throw all pools for masterchef v2
     const calls = new Map<string, CallData>();
-    for (let i = poolIdFrom; i <= poolIdTo; i++) {
-      calls.set(this.poolInfoLabel(i), {
+    for (let i = 0; i < poolLengthV2; i++) {
+      calls.set(this.poolInfoLabel(i, TraderjoeAddresses.chiefV2), {
         address: TraderjoeAddresses.chiefV2,
         abi: Abis.poolInfoV2,
+        input: {
+          data: [i],
+        },
+        output: {},
+      });
+    }
+
+    // Go throw all pools for masterchef v3
+    for (let i = 0; i < poolLengthV3; i++) {
+      calls.set(this.poolInfoLabel(i, TraderjoeAddresses.chiefV3), {
+        address: TraderjoeAddresses.chiefV3,
+        abi: Abis.poolInfoV3,
         input: {
           data: [i],
         },
@@ -107,28 +116,17 @@ export class TraderjoePools implements JobInterface {
     // make this call
     const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
 
-    for (let i = poolIdFrom; i <= poolIdTo; i++) {
-      const tokenAddress = callsRsp.get(this.poolInfoLabel(i)).output.data.lpToken;
-      try {
-        const trackedLiquidityPoolTokenData: LiquidityPoolTokenDto =
-          await this.accountService.saveTrackingAsset(tokenAddress, this.chain);
-        if (trackedLiquidityPoolTokenData.isLp) {
-          this.logger.log(
-            `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
-            this.placeholder,
-          );
-          liquidityPools.push(toLiquidityPoolFeature(trackedLiquidityPoolTokenData));
-        }
-      } catch (e) {
-        this.logger.error(
-          `error to get token data to account service, chain [${this.chain}], address [${tokenAddress}]`,
-          this.placeholder,
-        );
-      }
+    for (let i = 0; i < poolLengthV2; i++) {
+      const tokenAddress = callsRsp.get(this.poolInfoLabel(i, TraderjoeAddresses.chiefV2)).output.data.lpToken;
+      await this.lpProcessing(tokenAddress, liquidityPools);
     }
 
+    for (let i = 0; i < poolLengthV3; i++) {
+      const tokenAddress = callsRsp.get(this.poolInfoLabel(i, TraderjoeAddresses.chiefV3)).output.data.lpToken;
+      await this.lpProcessing(tokenAddress, liquidityPools);
+    }
+    
     // add to DB
-
     const mappings = [];
     for (const lp of liquidityPools) {
       mappings.push(await this.toDbMapping(lp));
@@ -139,8 +137,22 @@ export class TraderjoePools implements JobInterface {
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
 
-    await this.settingsService.update(dbPoolLenthSetting);
     return updatedMapping;
+  }
+
+  async lpProcessing(tokenAddress, liquidityPools) {
+    try {
+      const trackedLiquidityPoolTokenData: LiquidityPoolTokenDto =
+        await this.accountService.saveTrackingAsset(tokenAddress, this.chain);
+      if (trackedLiquidityPoolTokenData.isLp) {
+        liquidityPools.push(toLiquidityPoolFeature(trackedLiquidityPoolTokenData));
+      }
+    } catch (e) {
+      this.logger.error(
+        `error to get token data to account service, chain [${this.chain}], address [${tokenAddress}]`,
+        this.placeholder,
+      );
+    }
   }
 
   async toDbMapping(liquidityPool: LiquidityPoolFeature) {
@@ -227,10 +239,10 @@ export class TraderjoePools implements JobInterface {
     return savedItem;
   }
 
-  async getChainPoolLength(): Promise<BigNumber> {
-    const call = new Map<string, CallData>([
+  async getChainPoolLength(): Promise<number[]> {
+    const calls = new Map<string, CallData>([
       [
-        this.poolLengthLabel(),
+        this.poolLengthLabel(TraderjoeAddresses.chiefV2),
         {
           address: TraderjoeAddresses.chiefV2,
           abi: Abis.poolLength,
@@ -240,9 +252,24 @@ export class TraderjoePools implements JobInterface {
           output: {},
         },
       ],
+      [
+        this.poolLengthLabel(TraderjoeAddresses.chiefV3),
+        {
+          address: TraderjoeAddresses.chiefV3,
+          abi: Abis.poolLength,
+          input: {
+            data: [],
+          },
+          output: {},
+        },
+      ],
     ]);
-    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.avax);
-    return callRsp.get(this.poolLengthLabel()).output.data;
+
+    const callRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
+    const poolLengthV2 = Number(callRsp.get(this.poolLengthLabel(TraderjoeAddresses.chiefV2)).output.data);
+    const poolLengthV3 = Number(callRsp.get(this.poolLengthLabel(TraderjoeAddresses.chiefV3)).output.data);
+
+    return [poolLengthV2, poolLengthV3];
   }
 
   updateTracked(): Promise<void> {
@@ -335,12 +362,12 @@ export class TraderjoePools implements JobInterface {
     return addressesSet;
   }
 
-  poolLengthLabel() {
-    return concatStrings(Abis.poolLength.name, TraderjoeAddresses.chiefV2);
+  poolLengthLabel(contract: TraderjoeAddresses) {
+    return concatStrings(Abis.poolLength.name, contract);
   }
 
-  poolInfoLabel(poolId) {
-    return concatStrings(Abis.poolInfoV2.name, TraderjoeAddresses.chiefV2, poolId);
+  poolInfoLabel(poolId, contract) {
+    return concatStrings(Abis.poolInfoV2.name, contract, poolId);
   }
 
   getReservesLabel(liquidityPoolFeature: LiquidityPoolFeature) {

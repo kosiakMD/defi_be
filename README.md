@@ -94,6 +94,16 @@ We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and d
 - `npm run format` - apply Prettier [rules](/../.prettierrc) to `*.ts` files;
   could be run from the project root or service root pointwise;
 
+### Migrations
+We use TypeORM migrations in order to generate or create migrations by hand. If you want to create a migration: 
+- Create a new entity or modify existing one. Be aware that entity should always have '.entity.ts' file format;
+- Create a build for your particular service or entire project;
+- `npm run migration:generate -- -n yourMigrationName` for generating new migration;
+- `npm run migration` - run migrations against your database;
+- `npm run migration:revert` - revert your last migration;
+
+All configurations can be found at <b>ormconfig.js</b> which is in the root directory.
+
 ### <span style='display:flex; '>Swagger <img src="https://static1.smartbear.co/swagger/media/assets/images/swagger_logo.svg" width='100'/></span>
 
 We use OpenAPI documentation by [Swagger](https://swagger.io/)

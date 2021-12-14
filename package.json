@@ -147,7 +147,12 @@
     "lambda_external_prices-start:prod": "nest start lambda_external_prices",
     "lambda_external_prices-compile": "tsc --project jobs/lambda_external_prices/tsconfig.json",
     "lambda_external_prices-dev": "ts-node jobs/lambda_external_prices/src/start.ts",
-    "lambda_external_prices-start": "tsc --project jobs/lambda_external_prices/tsconfig.app.json && node ./dist/jobs/lambda_external_prices/src/start.js"
+    "lambda_external_prices-start": "tsc --project jobs/lambda_external_prices/tsconfig.app.json && node ./dist/jobs/lambda_external_prices/src/start.js",
+
+    "migration": "npm run build-monorepo && ts-node ./node_modules/typeorm/cli.js migration:run",
+    "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate",
+    "migration:create": "ts-node ./node_modules/typeorm/cli.js migration:create",
+    "migration:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert"
   },
   "repository": {
     "type": "git",

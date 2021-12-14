@@ -1,7 +1,6 @@
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
-import { ChainDto } from 'account_service_consumers/apps/migration_transactions_consumer/src/price/dto/chain.dto';
 
-import { Address, Logger } from '@app/common';
+import { Address, Logger, ChainDto } from '@app/common';
 import { Web3Interface } from '@app/common/web3provider';
 
 import { AaveIncentivesControllerAbi } from '../../../../controllers/aave.incentives.controller.abi';

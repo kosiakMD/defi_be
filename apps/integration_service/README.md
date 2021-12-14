@@ -2,7 +2,6 @@
 
 <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="50" alt="Nest Logo" /></a> <span align="top"> Nest - Node.js TypeScript framework. Here is the [documentation](https://docs.nestjs.com). </span>
 
-
 ## Installation
 
 ```bash

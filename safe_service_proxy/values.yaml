@@ -1,4 +1,0 @@
-configMaps:
-  links:
-    PAIRS_REQUEST_URL: https://api.bscgraph.org/subgraphs/id/QmUDNRjYZ7XbgTvfVnXHj6LcTNacDD9GPXHWLjdTKi6om6
-    BLOCKS_REQUEST_URL: https://api.bscgraph.org/subgraphs/name/bsc-blocks

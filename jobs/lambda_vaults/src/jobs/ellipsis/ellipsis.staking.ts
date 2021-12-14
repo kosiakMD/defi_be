@@ -454,9 +454,9 @@ export class EllipsisStaking implements JobInterface {
                 );
                 (t as IntegrationPoolTokenDto).reserve = Number(reserves[t.positionInPool]);
               } else {
-                (t as IntegrationPoolTokenDto).reserve = multicallRsp.get(
-                  EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool),
-                ).output.data;
+                (t as IntegrationPoolTokenDto).reserve = multicallRsp
+                  .get(EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool))
+                  .output.data?.toString();
               }
               m.stats.tvl += EllipsisStaking.getTokenValue(t as IntegrationPoolTokenDto, prices);
             }

@@ -75,7 +75,7 @@ configMaps:
     DB_DATABASE: defi
     DB_USERNAME: prodashuser
     DB_PASSWORD: FhRM4BHV4Rjnj6RQ
-    REDIS_HOST: 3.69.250.41
+    REDIS_HOST: 3.122.102.112
     REDIS_PORT: 6379
     REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
     BSCSCAN_URL: https://api.bscscan.com/api

@@ -28,6 +28,7 @@ import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { TraderjoeAddresses } from './addresses';
 import { isTimeToDo } from '../../utils/time';
+import { TraderJoeSubgraph } from './traderjoe.subgraph';
 
 @Injectable()
 export class TraderjoePools implements JobInterface {
@@ -46,6 +47,7 @@ export class TraderjoePools implements JobInterface {
     private readonly storeService: StoreService,
     private readonly multicallService: MulticallAggregator,
     private readonly priceService: PriceService,
+    private readonly subgraph: TraderJoeSubgraph,
   ) {
     this.availableDtosForConversion = new Map<string, string>([
       [LiquidityPoolFeature.name, LiquidityPoolFeature.name],
@@ -73,56 +75,11 @@ export class TraderjoePools implements JobInterface {
     this.logger.log('building initial mapping', this.placeholder);
 
     const liquidityPools: LiquidityPoolFeature[] = [];
+
+    const lpTokenAddresses: string[] = await this.getPools(this.chain);
     
-    const [ poolLengthV2, poolLengthV3 ] = await this.getChainPoolLength();
-    const poolsArray = jobMapping.mapping ? 
-      Object.keys(jobMapping.mapping)
-        .filter(key => !isNaN(Number(key)))
-        .map(key => jobMapping.mapping[key]) : [];
-    
-    if (poolsArray.length >= poolLengthV2 + poolLengthV3) {
-      this.logger.log(
-        `not necessary to update existed mapping, db poolLength ${poolsArray.length}, chain poolLength ${poolLengthV2 + poolLengthV3}`,
-        this.placeholder,
-      );
-      return [];
-    }
-    
-    // Go throw all pools for masterchef v2
-    const calls = new Map<string, CallData>();
-    for (let i = 0; i < poolLengthV2; i++) {
-      calls.set(this.poolInfoLabel(i, TraderjoeAddresses.chiefV2), {
-        address: TraderjoeAddresses.chiefV2,
-        abi: Abis.poolInfoV2,
-        input: {
-          data: [i],
-        },
-        output: {},
-      });
-    }
-
-    // Go throw all pools for masterchef v3
-    for (let i = 0; i < poolLengthV3; i++) {
-      calls.set(this.poolInfoLabel(i, TraderjoeAddresses.chiefV3), {
-        address: TraderjoeAddresses.chiefV3,
-        abi: Abis.poolInfoV3,
-        input: {
-          data: [i],
-        },
-        output: {},
-      });
-    }
-
-    // make this call
-    const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
-
-    for (let i = 0; i < poolLengthV2; i++) {
-      const tokenAddress = callsRsp.get(this.poolInfoLabel(i, TraderjoeAddresses.chiefV2)).output.data.lpToken;
-      await this.lpProcessing(tokenAddress, liquidityPools);
-    }
-
-    for (let i = 0; i < poolLengthV3; i++) {
-      const tokenAddress = callsRsp.get(this.poolInfoLabel(i, TraderjoeAddresses.chiefV3)).output.data.lpToken;
+    for (let i = 0; i < lpTokenAddresses.length; i++) {
+      const tokenAddress = lpTokenAddresses[i];
       await this.lpProcessing(tokenAddress, liquidityPools);
     }
     
@@ -138,6 +95,14 @@ export class TraderjoePools implements JobInterface {
     TrackedVaultsMap.add(updatedMapping);
 
     return updatedMapping;
+  }
+
+  private async getPools(chainId) {
+    const response = await this.subgraph.getPools(chainId);
+    
+    const lpAddresses = response.pairs.map(lp => lp.id);
+    
+    return lpAddresses;
   }
 
   async lpProcessing(tokenAddress, liquidityPools) {

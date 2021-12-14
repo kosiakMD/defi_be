@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
 
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -20,6 +21,7 @@ import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
+import { TraderJoeSubgraph } from './traderjoe/traderjoe.subgraph';
 
 const Jobs = [
   CurvePools,
@@ -37,13 +39,21 @@ const Jobs = [
 ];
 
 @Module({
-  imports: [MicroservicesModule, StoreModule],
+  imports: [
+    MicroservicesModule, 
+    StoreModule,
+    HttpModule.register({
+      timeout: 5000,
+      maxRedirects: 5,
+    }),
+  ],
   providers: [
     JobsRunner,
     JobsRegistry,
     IntegrationDataConverter,
     MulticallAggregator,
     Web3ProviderService,
+    TraderJoeSubgraph,
     Web3SolanaProviderService,
     ...Jobs,
   ],

@@ -9,6 +9,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 import BasicProtocol from '../basicProtocol';
 import { TraderJoePools } from './trader-joe.pools';
 import { TraderJoeStaking } from './trader-joe.staking';
+import { TraderJoeFarm } from './trader-joe.farm';
 
 @Injectable()
 export default class TraderJoeProtocol extends BasicProtocol {
@@ -17,7 +18,7 @@ export default class TraderJoeProtocol extends BasicProtocol {
   readonly name = TraderjoeProtocolEnum.traderjoe;
   readonly displayName = 'Trader Joe';
   readonly features = {
-    [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking, FeatureEnum.farming],
   };
   public static feeRate = 0.0025;
   protected readonly dataProvider;
@@ -26,6 +27,7 @@ export default class TraderJoeProtocol extends BasicProtocol {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly staking: TraderJoeStaking,
     private readonly pools: TraderJoePools,
+    private readonly farming: TraderJoeFarm,
   ) {
     super();
   }
@@ -64,6 +66,8 @@ export default class TraderJoeProtocol extends BasicProtocol {
         return this.staking.getData(addresses, chain);
       case FeatureEnum.pools:
         return this.pools.getData(addresses, chain);
+      case FeatureEnum.farming:
+        return this.farming.getData(addresses, chain);
       default:
         return [];
     }

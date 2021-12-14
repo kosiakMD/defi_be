@@ -33,6 +33,7 @@ import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
+import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -55,7 +56,7 @@ const ProtocolList = [
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking];
+const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm];
 const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeV2Legacy];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];

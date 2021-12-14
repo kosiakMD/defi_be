@@ -226,10 +226,6 @@ export class TraderJoeStaking implements JobInterface {
 
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
-    const blackList = [
-      '0x6bcddcfa89119b0f3ede7fa45c627dcb704ac9a8',
-      '0x0208a6aa8ac236b5f5fd01d814b7eccf0d9aeb7e',
-    ];
 
     this.mapping.forEach((m) => {
       if (m instanceof IntegrationStakingPositionDto) {
@@ -253,7 +249,6 @@ export class TraderJoeStaking implements JobInterface {
     ]);
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
-
     const [{ prices }, multicallRsp] = await Promise.all([
       this.priceService.getCurrentPrices(
         pricedTokenAddresses,
@@ -304,10 +299,9 @@ export class TraderJoeStaking implements JobInterface {
             const { rewarder } = multicallRsp.get(this.poolInfoLabel(m, TraderjoeAddresses.chiefV3))
               .output.data;
 
-            if (
-              rewarder !== TraderjoeAddresses.avax &&
-              !blackList.includes(rewarder.toLowerCase())
-            ) {
+            m.rewards[0].apr = calculateAPR(aprStats);
+
+            if (rewarder !== TraderjoeAddresses.zeroAddress) {
               const calls: Map<string, CallData> = new Map<string, CallData>();
               calls.set(concatStrings(Abis.rewardToken.name, rewarder), {
                 address: rewarder,
@@ -326,17 +320,23 @@ export class TraderJoeStaking implements JobInterface {
                 output: {},
               });
 
-              const res = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
+              let rewardInfo;
 
+              try {
+                rewardInfo = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
+              } catch (e) {
+                return m;
+              }
+              
               const aprStatsBonus = {
                 rewardTokenPerBlock:
                   toDecimals(
-                    res.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
+                    rewardInfo.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
                     18,
                   ) * blockTime,
                 rewardTokenPrice: Number(
                   prices[
-                    res
+                    rewardInfo
                       .get(concatStrings(Abis.rewardToken.name, rewarder))
                       .output.data.toLowerCase()
                   ],
@@ -345,7 +345,6 @@ export class TraderJoeStaking implements JobInterface {
                 farmingPoolTVL: m.stats.tvl,
               };
 
-              m.rewards[0].apr = calculateAPR(aprStats);
               m.rewards[1].apr = calculateAPRBonus(aprStatsBonus);
             } else {
               m.rewards[0].apr = calculateAPR(aprStats);
@@ -372,9 +371,10 @@ export class TraderJoeStaking implements JobInterface {
               m.stats.tvl = m.stakingToken.balance * m.rewards[0].price;
               aprStats.farmingPoolTVL = m.stats.tvl;
             }
-
+            
             m.rewards[0].apr = calculateAPR(aprStats);
           }
+
           return m;
         }
       }),

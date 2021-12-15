@@ -58,7 +58,7 @@ export async function process(): Promise<void> {
 
           // TODO: This one is temporary solution, we should keep it in database
           if (containsBlacklistedToken(pairsTokens)) {
-            return;
+            continue;
           }
 
           pairsTokens = filterKnownTokenPairs(pairsTokens, pairsMap);

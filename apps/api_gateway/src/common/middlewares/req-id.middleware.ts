@@ -18,13 +18,13 @@ export class RequestIdMiddleware implements NestMiddleware {
 
     req.headers['x-req-uuid'] = reqId;
 
+    this.httpService.axiosRef.defaults.headers.common['x-req-uuid'] = reqId;
     // simpler hardcoded variant, left for as example
-    // this.httpService.axiosRef.defaults.headers.common['x-req-uuid'] = reqId;
-    this.httpService.axiosRef.interceptors.request.use((config) => {
-      config.headers.common['x-req-uuid'] = reqId;
-
-      return config;
-    });
+    // this.httpService.axiosRef.interceptors.request.use((config) => {
+    //   config.headers.common['x-req-uuid'] = reqId;
+    //
+    //   return config;
+    // });
 
     next();
   }

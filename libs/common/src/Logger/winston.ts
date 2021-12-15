@@ -13,7 +13,7 @@ export type Environment = 'development' | 'production' | 'test' | 'provision' | 
 
 const AWS_CW_LOGS_ENVIRONMENTS: Environment[] = ['development', 'production'];
 
-type LogConfig = {
+export type LogConfig = {
   identifier: string;
   logErrorFile: string;
   logCombineLog: string;

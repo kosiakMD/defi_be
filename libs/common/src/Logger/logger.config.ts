@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 
-import { Environment, winstonParams } from '@app/common/Logger/winston';
+import { Environment, LogConfig, winstonParams } from '@app/common/Logger/winston';
 
-export const getAwsConfig = (configService: ConfigService) => ({
+export const getAwsConfig = (configService: ConfigService): LogConfig['awsConfig'] => ({
   region: configService.get<string>('AWS_REGION'),
   accessKeyId: configService.get<string>('AWS_ACCESS_KEY_ID'),
   secretAccessKey: configService.get<string>('AWS_SECRET_ACCESS_KEY'),

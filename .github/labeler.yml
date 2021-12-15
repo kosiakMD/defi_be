@@ -27,7 +27,7 @@
 🏗️ Env:
   - 'apps/**/.env.*'
 
-DTO:
+🧱 DTO:
   - 'apps/**/*.dto.ts'
   - 'apps/**/*Dto.ts'
   - 'apps/**/*DTO.ts'

@@ -1,13 +1,16 @@
 import { HttpModule } from '@nestjs/axios';
 import { Inject, LoggerService, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
 import { LoggerMiddleware } from '@app/common/middlewares';
+import { RequestIdMiddleware } from '@app/common/middlewares/req-id.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
@@ -57,10 +60,16 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
     JobsModule,
   ],
   controllers: [HealthController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(LoggerMiddleware).forRoutes('/');
+    consumer.apply(RequestIdMiddleware, LoggerMiddleware).forRoutes('/');
   }
 
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}

@@ -24,14 +24,14 @@ async function bootstrap(): Promise<void> {
     logger,
   });
 
-  app.enableShutdownHooks();
+  // app.useGlobalFilters(new AllExceptionsFilter());
+
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useLogger(enhancedLogger);
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
 
   const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
@@ -49,5 +49,5 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap().catch((e) => {
-  logger.error(e, null, 'Bootstrap');
+  logger.error(e, undefined, 'Bootstrap');
 });

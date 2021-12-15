@@ -4,8 +4,7 @@ import { ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/c
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
-
-const key = 'x-req-uuid';
+import { HEADER_REQUEST_ID } from '@app/common/constant';
 
 @Injectable()
 export class TransformHeadersInterceptor implements NestInterceptor {
@@ -14,7 +13,7 @@ export class TransformHeadersInterceptor implements NestInterceptor {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   intercept(context: ExecutionContext, call$: Observable<any>): Observable<any> {
-    const reqId = context.switchToHttp().getRequest().headers[key];
+    const reqId = context.switchToHttp().getRequest().headers[HEADER_REQUEST_ID];
     this.logger.log('intercept reqId', reqId);
 
     return call$;

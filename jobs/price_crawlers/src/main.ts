@@ -18,7 +18,6 @@ async function bootstrap() {
     bodyParser: false,
   });
   app.useLogger(logger);
-  app.enableShutdownHooks();
 
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);

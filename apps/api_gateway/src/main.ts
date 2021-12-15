@@ -24,8 +24,6 @@ async function bootstrap() {
     logger,
   });
 
-  app.enableShutdownHooks();
-
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);
 
@@ -47,5 +45,5 @@ async function bootstrap() {
 }
 
 bootstrap().catch((e) => {
-  logger.error(e, null, 'Bootstrap');
+  logger.error(e, undefined, 'Bootstrap');
 });

@@ -4,7 +4,8 @@ import { v4 as uuid } from 'uuid';
 import { HttpService, Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { Logger } from '@app/common/Logger';
+import { HEADER_REQUEST_ID } from '@app/common/constant';
 
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {
@@ -14,14 +15,19 @@ export class RequestIdMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    const reqId = uuid();
+    let reqId = req.headers[HEADER_REQUEST_ID];
+    if (!reqId) {
+      reqId = uuid();
+      req.headers[HEADER_REQUEST_ID] = reqId;
+    }
 
-    req.headers['x-req-uuid'] = reqId;
-
-    this.httpService.axiosRef.defaults.headers.common['x-req-uuid'] = reqId;
     // simpler hardcoded variant, left for as example
+    this.httpService.axiosRef.defaults.headers.common[HEADER_REQUEST_ID] = reqId as string;
+
+    // in this right case we need to eject() each previous callback
+    // because it creates a new callback and assign to the listener callbacks set
     // this.httpService.axiosRef.interceptors.request.use((config) => {
-    //   config.headers.common['x-req-uuid'] = reqId;
+    //   config.headers.common[HEADER_REQUEST_ID] = reqId;
     //
     //   return config;
     // });

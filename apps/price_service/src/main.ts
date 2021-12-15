@@ -23,8 +23,8 @@ async function bootstrap(): Promise<void> {
     logger: logger,
   });
 
-  app.useLogger(logger);
-  app.enableShutdownHooks();
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useLogger(enhancedLogger);
 
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
@@ -47,14 +47,11 @@ async function bootstrap(): Promise<void> {
     SwaggerModule.setup('api', app, document);
   }
 
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
-
   const port = configService.get<string>('SERVICE_PORT') || 3000;
   const host = configService.get<string>('SERVICE_HOST');
   await app.listen(port, host);
 }
 
 bootstrap().catch((e) => {
-  logger.error(e, null, 'Bootstrap');
+  logger.error(e, undefined, 'Bootstrap');
 });

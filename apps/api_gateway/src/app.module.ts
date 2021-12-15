@@ -7,7 +7,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -16,6 +16,8 @@ import { LoggerMiddleware } from '@app/common';
 import { Logger } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { RequestIdMiddleware } from '@app/common/middlewares/req-id.middleware';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -26,7 +28,6 @@ import { AppService } from './app/app.service';
 import { AssetsController } from './assets/assets.controller';
 import { AssetsService } from './assets/assets.service';
 import { BalancesController } from './balances/balances.controller';
-import { RequestIdMiddleware } from './common/middlewares/req-id.middleware';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
@@ -103,6 +104,10 @@ import { VaultsModule } from './vaults/vaults.module';
     ProtocolControllerV2,
   ],
   providers: [
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
     // {
     //   provide: APP_INTERCEPTOR,
     //   useClass: TransformHeadersInterceptor,

@@ -1,13 +1,16 @@
 import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/common/http/http.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { Logger, LoggerModule } from '@app/common/Logger';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
 import { LoggerMiddleware } from '@app/common/middlewares';
+import { RequestIdMiddleware } from '@app/common/middlewares/req-id.middleware';
 
 import config from './config';
 import { HealthModule } from './modules/health.module';
@@ -50,10 +53,16 @@ import { PricesModule } from './modules/prices/prices.module';
     LookupModule,
     LoggerModule,
   ],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(LoggerMiddleware).forRoutes('/');
+    consumer.apply(RequestIdMiddleware, LoggerMiddleware).forRoutes('/');
   }
 
   onModuleInit(): void {

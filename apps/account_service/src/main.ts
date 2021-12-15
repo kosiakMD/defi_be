@@ -24,8 +24,6 @@ async function bootstrap() {
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);
 
-  app.enableShutdownHooks();
-
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
 
@@ -45,5 +43,5 @@ async function bootstrap() {
 }
 
 bootstrap().catch((e) => {
-  logger.error(e, null, 'Bootstrap');
+  logger.error(e, undefined, 'Bootstrap');
 });

@@ -20,7 +20,9 @@ export const validationSchema = Joi.object({
   SERVICE_HOST: Joi.string() //
     .allow('')
     .required(),
-  SERVICE_PORT: Joi.number().default(3000),
+  SERVICE_PORT: Joi.number() //
+    .default(3000)
+    .required(),
   // LOG
   LOG_ERROR_FILE: Joi.string() //
     .pattern(logFileRE)

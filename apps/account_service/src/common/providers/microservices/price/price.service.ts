@@ -1,6 +1,7 @@
 import { map } from 'rxjs/operators';
 
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -142,7 +143,7 @@ export class PriceService {
     try {
       this.logger.time(timerKey);
 
-      const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
+      const response = await this.httpService
         .post(this.fetchPricesUrl, request)
         .pipe(map((response) => response.data))
         .toPromise();
@@ -170,16 +171,16 @@ export class PriceService {
     timestamp: number,
     currency?: CurrencyId,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    this.logger.time(this.fetchTimestampPricesUrl);
-
+    const timeKey = `${this.fetchTimestampPricesUrl}-${chain}-${timestamp}`;
+    this.logger.time(timeKey);
     const request = new FetchTimestampPricesRequestDto(tokens, chain, timestamp, currency);
 
-    const response: PriceServiceResponse<CurrentPricesPayload> = await this.httpService
+    const response = await this.httpService
       .post(this.fetchTimestampPricesUrl, request)
       .pipe(map((response) => response.data))
       .toPromise();
 
-    this.logger.timeEnd(this.fetchTimestampPricesUrl);
+    this.logger.timeEnd(timeKey);
 
     return response;
   }

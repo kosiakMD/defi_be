@@ -17,6 +17,7 @@ import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { PriceService } from './services/price.service';
 
 import { normalizeDecimals } from './utils';
+import { blacklisted } from './utils/blacklisted';
 import { logger } from './utils/logger';
 
 export async function process(): Promise<void> {
@@ -54,6 +55,12 @@ export async function process(): Promise<void> {
           const pairAddresses = await uniswapMulticall.getPairs(protocol.address, pairIds);
 
           let pairsTokens = await uniswapMulticall.getTokensForPairs(pairAddresses);
+
+          // TODO: This one is temporary solution, we should keep it in database
+          if (containsBlacklistedToken(pairsTokens)) {
+            return;
+          }
+
           pairsTokens = filterKnownTokenPairs(pairsTokens, pairsMap);
 
           const pairs = await getPairsDetails(uniswapMulticall, pairsTokens);
@@ -237,6 +244,14 @@ async function buildPricesMap() {
     }
   }
   return pricesMap;
+}
+
+function containsBlacklistedToken(pairsTokens: PairTokens[]) {
+  return pairsTokens.some(
+    ({ token1, token0 }) =>
+      blacklisted.includes(token0.toLowerCase()) ||
+      blacklisted.includes(token1.toLowerCase())
+  );
 }
 
 export type PairToken = {

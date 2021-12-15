@@ -1,11 +1,5 @@
-import {
-  HttpModule,
-  Inject,
-  LoggerService,
-  MiddlewareConsumer,
-  Module,
-  OnModuleInit,
-} from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';

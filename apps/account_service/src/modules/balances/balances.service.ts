@@ -26,7 +26,6 @@ import { getBalancesSafe } from './balances.helpers';
 import {
   BalancesResponse,
   BlockTimestamp,
-  ERC20Token,
   ErrorMessage,
   TokenBalance,
 } from './balances.interfaces';
@@ -127,7 +126,12 @@ export class BalancesService {
       // Get current & past balances & prices
       const [now, then] = await Promise.all([
         this.getBalance(addresses, chains, assets),
-        this.getBalanceAtBlock(addresses, await this.getBlock24HoursAgo(chains), chains, assets),
+        this.getBalanceAtBlock(
+          addresses,
+          await this.getChainBlocks24HoursAgo(chains),
+          chains,
+          assets,
+        ),
       ]);
 
       const results = this.calculate24HourReturns({ now, then });
@@ -207,16 +211,22 @@ export class BalancesService {
       Object.entries(now).map(([account, balances]) => {
         let currentTotal = 0;
         let pastTotal = 0;
-        const tokens = balances.tokens.reduce((allTokens, nowToken) => {
-          const thenToken = then[account].tokens.find((token) =>
-            BalancesService.isTokenTheSame(token.token, nowToken.token),
-          );
 
-          currentTotal += nowToken.totalPriceUSD ?? 0;
+        const thenTokenMap = new Map(
+          then[account].tokens.map((token) => [
+            `${token.token.chainId}_${token.token.address}`,
+            token,
+          ]),
+        );
+
+        const tokens = balances.tokens.reduce((allTokens, nowToken) => {
+          const thenToken = thenTokenMap.get(`${nowToken.token.chainId}_${nowToken.token.address}`);
+
           if (!thenToken) {
             return allTokens;
           }
 
+          currentTotal += nowToken.totalPriceUSD ?? 0;
           pastTotal += thenToken.totalPriceUSD ?? 0;
           const change = nowToken.decimalsAmount - thenToken.decimalsAmount;
           const changeUSD = nowToken.totalPriceUSD - thenToken.totalPriceUSD;
@@ -238,6 +248,7 @@ export class BalancesService {
         return [
           account,
           {
+            errors: [].concat(now[account].errors, then[account].errors),
             account,
             totalUSD: currentTotal - pastTotal,
             totalPercent: (currentTotal - pastTotal) / currentTotal,
@@ -248,52 +259,63 @@ export class BalancesService {
     );
   }
 
-  private static isTokenTheSame(one: ERC20Token, two: ERC20Token): boolean {
-    return one.address.toLowerCase() === two.address.toLowerCase() && one.chainId === two.chainId;
-  }
-
-  private async getBlock24HoursAgo(
+  private async getChainBlocks24HoursAgo(
     chains: ChainIdEnum[],
   ): Promise<Map<ChainIdEnum, BlockTimestamp>> {
     const blockMap = new Map<ChainIdEnum, BlockTimestamp>();
 
     await Promise.all(
       chains.map(async (chain) => {
-        try {
-          // TODO: Not the best place to cache here. Split into other methods
-          const cacheKey = `24hour_ago_block_${chain}`;
-          const cachedBlock = await this.cache.get<BlockTimestamp>(cacheKey);
-          if (cachedBlock) {
-            blockMap.set(chain, cachedBlock);
-            return;
-          }
-
-          const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
-          const block: BlockTimestamp = await this.getBlockFromDate(
-            roundToNearestHour(yesterday),
-            this.web3Provider.getInstanceByChainId(chain),
-          );
-
-          this.logger.log(`24h ago block for ${chain} chain: ${JSON.stringify(block)}`);
-          blockMap.set(chain, block);
-
-          // TODO: TTL should be in config
-          await this.cache.set(cacheKey, block, { ttl: 5 * 60 });
-          // TODO: Catch real error here and log
-        } catch {
-          this.logger.error(
-            `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
-          );
-        }
+        const block = await this.getBlock24HoursAgo(chain);
+        blockMap.set(chain, block);
       }),
     );
 
     return blockMap;
   }
 
+  async getBlock24HoursAgo(chain: ChainIdEnum) {
+    const hour = this.getDate24HoursAgo();
+
+    // TODO: TTL should be in config
+    const cacheTTL = 65 * 60; // 1 hour 5 minutes to ensure a little overlap (block is rounded to the nearest hour)
+    const cacheKey = `24hour_ago_block_${chain}_${hour.getTime()}`;
+
+    return this.getOrSetCache(cacheKey, cacheTTL, async () => {
+      try {
+        return await this.getBlockFromDate(hour, this.web3Provider.getInstanceByChainId(chain));
+        // TODO: Catch real error here and log
+      } catch (e) {
+        this.logger.error(
+          `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
+        );
+        this.logger.error(e);
+      }
+    });
+  }
+
+  getDate24HoursAgo() {
+    const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
+    return roundToNearestHour(yesterday);
+  }
+
   private async excludeBlacklisted(addresses: Address[]): Promise<Address[]> {
     const blacklistedAddresses = await this.blacklistService.filterIsBlacklisted(addresses);
     return excludeSecondArray(addresses, blacklistedAddresses);
+  }
+
+  async getOrSetCache<T>(cacheKey: string, ttl: number, callback: () => Promise<T>): Promise<T> {
+    const cacheValue = await this.cache.get<T>(cacheKey);
+    if (cacheValue) {
+      return cacheValue;
+    }
+
+    const response = await callback();
+    if (typeof response !== 'undefined') {
+      await this.cache.set(cacheKey, response, { ttl });
+    }
+
+    return response;
   }
 
   private async getRawBalances(
@@ -313,7 +335,7 @@ export class BalancesService {
   private async getBalancesPerChain(
     chainId: ChainIdEnum,
     addresses: Address[],
-    assets: Address[],
+    assets?: Address[],
     block: BlockTimestamp = null,
   ) {
     const strategies = this.getBalancesStrategiesPerChain(chainId);
@@ -413,13 +435,26 @@ export class BalancesService {
     strategies: BalancesLoadingStrategy[],
     block?: BlockTimestamp,
   ): Promise<PartialBalancesResponse> {
+    // If its a historic block we can cache for much longer,
+    // as the target block only updates once an hour
+    const cacheKey = block
+      ? [chainId, address, assets, block.block, this.getDate24HoursAgo().getTime()].join('-')
+      : [chainId, address, assets, 'latest'].join('-');
+    const ttl = block ? 65 * 60 : 50;
+
+    const cacheValue = await this.cache.get<PartialBalancesResponse>(cacheKey);
+    if (cacheValue) {
+      return cacheValue;
+    }
+
     const results = await Promise.all(
-      strategies.map((strategy) =>
-        getBalancesSafe(strategy, { chainId, address, tokens: assets, block }, this.logger),
-      ),
+      strategies.map(async (strategy) => {
+        //
+        return getBalancesSafe(strategy, { chainId, address, tokens: assets, block }, this.logger);
+      }),
     );
 
-    return results.reduce<PartialBalancesResponse>(
+    const final = results.reduce<PartialBalancesResponse>(
       (response, curr) =>
         curr.success
           ? { ...response, balances: this.mergeBalances(response.balances, curr.balances) }
@@ -437,6 +472,12 @@ export class BalancesService {
         balances: [],
       },
     );
+
+    if (!final.errors.length) {
+      await this.cache.set(cacheKey, final, { ttl });
+    }
+
+    return final;
   }
 
   private mergeBalances(base: TokenBalance[], more: TokenBalance[]): TokenBalance[] {

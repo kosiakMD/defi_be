@@ -1,3 +1,4 @@
+import { BigNumber } from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -63,7 +64,10 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     const errors: string[] = [];
     try {
       for (const address of addresses) {
-        const lpPositions = await this.getData(address, chain)[0].liquidityPositions;
+        const getDataResponse = await this.getData(address, chain);
+        const lpPositions: LiquidityPositionDto[] = getDataResponse.find((data) =>
+          Object.prototype.hasOwnProperty.call(data, 'liquidityPositions'),
+        ).liquidityPositions;
 
         const basePoolsInfo: BaseDataLp = plainToClass(BaseDataLp, {
           chain,
@@ -86,7 +90,9 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
               symbol: pt.symbol,
               decimals: pt.decimals,
               reserve: pt.reserve,
-              value: pt.amount * pt.priceUSD,
+              value: new BigNumber(pt.amount) //
+                .times(pt.priceUSD)
+                .toNumber(),
               balance: pt.amount,
               price: pt.priceUSD,
               positionInPool: i,

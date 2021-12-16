@@ -29,6 +29,8 @@ import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { AutofarmAddressesBSC as AutofarmAddresses } from './addresses';
+import { AutofarmApiService } from './autofarm.api.service';
+import { AutofarmApiPools } from './autofarm.interfaces';
 import { DbMapping } from './dbmapping';
 
 @Injectable()
@@ -48,6 +50,7 @@ export class AutofarmStakingBSC implements JobInterface {
     private readonly storeService: StoreService,
     private readonly multicallService: MulticallAggregator,
     private readonly priceService: PriceService,
+    private readonly autofarmApiService: AutofarmApiService,
   ) {
     this.dbMapping = new DbMapping(storeService);
   }
@@ -89,14 +92,14 @@ export class AutofarmStakingBSC implements JobInterface {
     ];
 
     for (const { poolsInfo, chiefContract } of poolsInfoArray) {
-      for (const address of poolsInfo.keys()) {
+      for (const value of poolsInfo.values()) {
         try {
           if (
-            address !== AutofarmAddresses.burnAddress &&
-            address !== AutofarmAddresses.chiefV2BSC
+            value.want !== AutofarmAddresses.burnAddress &&
+            value.want !== AutofarmAddresses.chiefV2BSC
           ) {
             const poolTokenData: LiquidityPoolTokenDto =
-              await this.accountService.saveTrackingAsset(address, this.chain);
+              await this.accountService.saveTrackingAsset(value.want, this.chain);
 
             const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
               address: poolTokenData.address,
@@ -123,7 +126,7 @@ export class AutofarmStakingBSC implements JobInterface {
               IntegrationStakingPositionDto,
               {
                 address: chiefContract,
-                poolId: poolsInfo.get(address).id.toString(),
+                poolId: value.id.toString(),
                 poolName: null,
                 rewards: [rewardTokenAUTO],
                 stakingToken: stakingToken,
@@ -134,7 +137,7 @@ export class AutofarmStakingBSC implements JobInterface {
           }
         } catch (e) {
           this.logger.error(
-            `error to get token data from account service, chain [${this.chain}], address [${address}]`,
+            `error to get token data from account service, chain [${this.chain}], address [${value.want}]`,
             this.placeholder,
           );
         }
@@ -192,10 +195,11 @@ export class AutofarmStakingBSC implements JobInterface {
 
     let i = 0;
     for (const poolInfo of poolInfos.values()) {
-      poolsInfoMap.set(poolInfo.output.data.want.toLowerCase(), {
+      const wantToken = poolInfo.output.data.want.toLowerCase();
+      poolsInfoMap.set(concatStrings(wantToken, i), {
         // covert to lower case once received!
         id: i,
-        want: poolInfo.output.data.want.toLowerCase(),
+        want: wantToken,
         allocPoint: poolInfo.output.data.allocPoint,
         lastRewardBlock: poolInfo.output.data.lastRewardBlock,
         accAUTOPerShare: poolInfo.output.data.accAUTOPerShare,
@@ -222,9 +226,13 @@ export class AutofarmStakingBSC implements JobInterface {
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
-    const [{ prices }, multicallRsp] = await Promise.all([
+    const [{ prices }, multicallRsp, autofarmApiData] = await Promise.all([
       this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bsc),
+      /* added for the case when there is no token price in bd
+      and we can get want token price from this api data(temporary decision)
+       */
+      this.autofarmApiService.getAutofarmPoolsData(),
     ]);
 
     this.mapping = await Promise.all(
@@ -245,26 +253,14 @@ export class AutofarmStakingBSC implements JobInterface {
             return m;
           }
 
-          const token0Address = multicallVault.get(this.tokenAddressLabel(m.poolId, 0)).output.data;
-
-          const { prices: priceToken0 } = await this.priceService.getCurrentPrices(
-            token0Address,
-            CurrencyIdEnum.usd,
-            ChainIdEnum.bsc,
-          );
-
           const lockedTotal: BigNumber = multicallVault.get(this.wantLockedTotalLabel(m.poolId))
             .output.data;
 
-          m = this.getDataFromMulticallRsp(
-            multicallRsp,
-            m,
-            lockedTotal,
-            prices,
-            priceToken0[token0Address.toLowerCase()],
-          );
+          m = this.getDataFromMulticallRsp(multicallRsp, m, lockedTotal, prices, autofarmApiData);
 
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
+
+          m.stats.apy = null;
         }
 
         return m;
@@ -279,7 +275,7 @@ export class AutofarmStakingBSC implements JobInterface {
     stakingPos: IntegrationStakingPositionDto,
     lockedTotal: BigNumber,
     prices: any,
-    priceToken0: number,
+    autofarmApiData: AutofarmApiPools,
   ) {
     stakingPos.staked = toDecimals(lockedTotal, stakingPos.stakingToken.decimals).toString();
     stakingPos.stakingToken.balance = toDecimals(lockedTotal, stakingPos.stakingToken.decimals);
@@ -311,7 +307,10 @@ export class AutofarmStakingBSC implements JobInterface {
         return t;
       });
     } else {
-      stakingPos.stakingToken.price = Number(priceToken0);
+      stakingPos.stakingToken.price =
+        Number(prices[stakingPos.stakingToken.address]) ||
+        Number(autofarmApiData[stakingPos.poolId]?.wantPrice) ||
+        null;
       stakingPos.stakingToken.value =
         stakingPos.stakingToken.balance * stakingPos.stakingToken.price;
       stakingPos.stats.tvl += stakingPos.stakingToken.value;
@@ -377,72 +376,6 @@ export class AutofarmStakingBSC implements JobInterface {
         {
           address: vault,
           abi: Abis.wantLockedTotal,
-          input: {
-            data: [],
-          },
-          output: {},
-        },
-      ],
-      [
-        this.sharesTotalLabel(pool),
-        {
-          address: vault,
-          abi: Abis.sharesTotal,
-          input: {
-            data: [],
-          },
-          output: {},
-        },
-      ],
-      [
-        this.farmContractAddressLabel(pool),
-        {
-          address: vault,
-          abi: Abis.farmContractAddress,
-          input: {
-            data: [],
-          },
-          output: {},
-        },
-      ],
-      [
-        this.pidLabel(pool),
-        {
-          address: vault,
-          abi: Abis.pid,
-          input: {
-            data: [],
-          },
-          output: {},
-        },
-      ],
-      [
-        this.pidLabel(pool),
-        {
-          address: vault,
-          abi: Abis.pid,
-          input: {
-            data: [],
-          },
-          output: {},
-        },
-      ],
-      [
-        this.tokenAddressLabel(pool, 0),
-        {
-          address: vault,
-          abi: Abis.token0Address,
-          input: {
-            data: [],
-          },
-          output: {},
-        },
-      ],
-      [
-        this.tokenAddressLabel(pool, 1),
-        {
-          address: vault,
-          abi: Abis.token1Address,
           input: {
             data: [],
           },
@@ -525,31 +458,11 @@ export class AutofarmStakingBSC implements JobInterface {
     return concatStrings(Abis.poolInfo.name, chiefContract, stakingPosition.poolId);
   }
 
-  private totalAllocPointLabel(chiefContract: AutofarmAddresses) {
-    return concatStrings(Abis.totalAllocPoint.name, chiefContract);
-  }
-
   private poolLengthLabel(chiefContract: AutofarmAddresses) {
     return concatStrings(Abis.poolLength.name, chiefContract);
   }
 
   private wantLockedTotalLabel(pool) {
     return concatStrings(Abis.wantLockedTotal.name, pool);
-  }
-
-  private sharesTotalLabel(pool) {
-    return concatStrings(Abis.sharesTotal.name, pool);
-  }
-
-  private pidLabel(pool) {
-    return concatStrings(Abis.pid.name, pool);
-  }
-
-  private tokenAddressLabel(pool, tokenPosition) {
-    return concatStrings('tokenAddress', pool, tokenPosition);
-  }
-
-  private farmContractAddressLabel(pool) {
-    return concatStrings(Abis.farmContractAddress.name, pool);
   }
 }

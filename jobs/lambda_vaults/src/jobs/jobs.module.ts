@@ -6,6 +6,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { AutofarmApiService } from './autofarm/autofarm.api.service';
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
 import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
 import { CurvePools } from './curve/curve.pools';
@@ -38,6 +39,7 @@ const Jobs = [
   AutofarmStakingPLG,
   RaydiumPools,
   RaydiumStaking,
+  AutofarmApiService,
 ];
 
 @Module({

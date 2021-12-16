@@ -75,11 +75,12 @@ export class TraderJoePools {
       cachedPools.map((i) => [i.address, i]),
     );
 
-    return lpBalance.tokens.map((tb) => {
+    return lpBalance.tokens.reduce((ar, tb) => {
       if (tb.decimalsAmount > 0) {
-        return this.toPosition(tb, cachedPoolsMap.get(tb.token.address));
+        ar.push(this.toPosition(tb, cachedPoolsMap.get(tb.token.address)));
       }
-    });
+      return ar;
+    }, []);
   }
 
   private toPosition(balance: TokenBalance, poolData: LiquidityPoolFeature): LiquidityPoolFeature {

@@ -38,6 +38,7 @@ import { RAY } from './aave/aave.constants';
 import { IReserve } from './aave/aave.interfaces';
 import { AaveLocalMulticall } from './aave/aave.local.multicall';
 import DataProviderProtocol from './dataProviderProtocol';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class AaveProtocolV2 extends DataProviderProtocol {
@@ -88,6 +89,7 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const userData = await Promise.allSettled(
       addresses.flatMap((address) => {
         return this.getAsBaseData(address, chain);

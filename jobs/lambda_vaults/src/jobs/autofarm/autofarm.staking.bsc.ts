@@ -55,7 +55,8 @@ export class AutofarmStakingBSC implements JobInterface {
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
-    if (!jobMapping.mapping) {
+    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
+      this.logger.log('it is time to update mapping', this.placeholder);
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
 
@@ -207,10 +208,6 @@ export class AutofarmStakingBSC implements JobInterface {
     return poolsInfoMap;
   }
 
-  async updateTracked(): Promise<void> {
-    //console.log('update existed tracking pools, just compare max pool id');
-  }
-
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
 
@@ -268,10 +265,6 @@ export class AutofarmStakingBSC implements JobInterface {
           );
 
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
-
-          m.stats.apr.push(null);
-
-          m.stats.apy = null;
         }
 
         return m;
@@ -288,7 +281,7 @@ export class AutofarmStakingBSC implements JobInterface {
     prices: any,
     priceToken0: number,
   ) {
-    stakingPos.staked = toDecimals(lockedTotal, stakingPos.stakingToken.decimals);
+    stakingPos.staked = toDecimals(lockedTotal, stakingPos.stakingToken.decimals).toString();
     stakingPos.stakingToken.balance = toDecimals(lockedTotal, stakingPos.stakingToken.decimals);
 
     // m.p

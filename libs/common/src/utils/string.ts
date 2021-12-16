@@ -10,8 +10,6 @@ export function camelize(...texts: string[]): string {
   return result;
 }
 
-export const isAllUppercase = (s: string): boolean => /[A-Z_]/y.test(s);
-
 // TODO: Warning:(16, 26) Unnecessary non-capturing group '(?:^\w|[A-Z]|\b\w|\s+)'
 export function toCamelCase(string: string): string {
   return string.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function (match: string, index: number): string {
@@ -24,10 +22,24 @@ export function capitalizeFirstLetter(string: string): string {
   return string[0].toUpperCase() + string.slice(1);
 }
 
-export const wrapInQuotes = (v: string): string => '"' + v + '"';
+export function splitToArray(value: string): string[] {
+  if (!value) {
+    return [];
+  }
+
+  return value.split(',');
+}
 
 export const getKey = (...seed: Array<string | number>): string => seed.join('_');
 
 export function concatStrings(...args): string {
   return args.join('_');
+}
+
+export function objToString(object) {
+  const stringValues = {};
+  Object.keys(object).forEach((k) => {
+    stringValues[k] = object[k].toString();
+  });
+  return stringValues;
 }

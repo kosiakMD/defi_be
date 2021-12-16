@@ -21,9 +21,9 @@ import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings, decimalsDivider } from '@app/common/utils';
 
+import { PriceService } from '../../../microservices/price.service';
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
-import { PriceService } from '../../../microservices/price.service';
 import { Abis } from './contracts/abis';
 
 @Injectable()
@@ -44,6 +44,7 @@ export class AutofarmStaking {
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseDataStaking[]> {
     const key = `${chain.id}_${AutofarmProtocolEnum.autofarm}_${FeatureEnum.staking}`;
+
     const pools: NotifyStaking = await this.cache.get(key);
 
     if (!pools) {
@@ -53,9 +54,8 @@ export class AutofarmStaking {
     const multicall: MulticallService = this.multicallProvider.getForChain(chain.abbr);
     const masterContract: string = this.masterChiefAddresses[chain.id];
 
-    addresses = addresses.map((a) => a.toLowerCase());
-
     const base: BaseDataStaking[] = [];
+
     const multicallData = await this.getDataWithMulticall(
       addresses,
       multicall,
@@ -160,7 +160,7 @@ export class AutofarmStaking {
       });
 
       const pendingTokensCalls = new Map<string, ICallData>();
-      claimableRewards.map((d) => {
+      claimableRewards.forEach((d) => {
         pendingTokensCalls.set(this.pendingTokensLabel(d.userAddress, d.contract, d.poolId), {
           address: d.contract,
           abi: Abis.pendingAUTO,
@@ -224,7 +224,7 @@ export class AutofarmStaking {
         );
       }
 
-      stakingPosition.staked = Number(b.balance);
+      stakingPosition.staked = b.balance;
 
       // find and set claimable rewards:
       const claimableReward = claimableRewards.find(

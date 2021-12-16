@@ -33,6 +33,7 @@ import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { UniswapV3Subgraph } from '../../subgraphs/subgraphs/uniswap.v3.subgraph';
 import DataProviderProtocol from './dataProviderProtocol';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class UniswapProtocolV3 extends DataProviderProtocol {
@@ -60,6 +61,7 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const baseData: BaseData[] = [];
     const errors: string[] = [];
     try {

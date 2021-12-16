@@ -391,7 +391,7 @@ export class TraderJoeStaking implements JobInterface {
   ) {
     const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(stakingPos, chiefContract))
       .output.data;
-    stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals);
+    stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals).toString();
     stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
 
     // m.p

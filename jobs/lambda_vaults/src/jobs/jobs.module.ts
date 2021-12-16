@@ -1,5 +1,5 @@
-import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
+import { Module } from '@nestjs/common';
 
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -17,6 +17,7 @@ import { JobsRunner } from './jobs.runner';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
 import { RaydiumPools } from './raydium/raydium.pools';
+import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
@@ -36,11 +37,12 @@ const Jobs = [
   AutofarmStakingBSC,
   AutofarmStakingPLG,
   RaydiumPools,
+  RaydiumStaking,
 ];
 
 @Module({
   imports: [
-    MicroservicesModule, 
+    MicroservicesModule,
     StoreModule,
     HttpModule.register({
       timeout: 5000,

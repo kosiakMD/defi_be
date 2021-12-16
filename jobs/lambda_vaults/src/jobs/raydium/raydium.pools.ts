@@ -3,7 +3,7 @@ import {
   LiquidityPoolKeysV4,
   MAINNET_OFFICIAL_LIQUIDITY_POOLS,
 } from '@raydium-io/raydium-sdk';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -13,6 +13,8 @@ import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
+import { solanaKeysToStrings, solanaStringsToKeys } from '@app/common/utils/solana';
+import { tokensWithPrices } from '@app/common/utils/solana';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { Logger } from '../../logger/logger.service';
@@ -260,46 +262,4 @@ export class RaydiumPools implements JobInterface {
     }
     return this.mapping;
   }
-}
-
-export function solanaKeysToStrings(keys) {
-  const converted = {};
-  Object.keys(keys).forEach((k) => {
-    if (keys[k] instanceof PublicKey) {
-      converted[k] = keys[k].toBase58();
-    } else {
-      converted[k] = keys[k];
-    }
-  });
-  return converted;
-}
-
-export function solanaStringsToKeys(strings) {
-  const converted = {};
-  Object.keys(strings).forEach((k) => {
-    if (typeof strings[k] === 'string') {
-      converted[k] = new PublicKey(strings[k]);
-    } else {
-      converted[k] = strings[k];
-    }
-  });
-  return converted;
-}
-
-export function tokensWithPrices(tokens: PoolTokenDto[], prices): PoolTokenDto[] {
-  const t0 = tokens.find((t) => t.positionInPool === 0);
-  const t1 = tokens.find((t) => t.positionInPool === 1);
-  let p0 = Number(prices[t0.address]);
-  let p1 = Number(prices[t1.address]);
-  // if we have one price we can calculate other token price
-  if (p0 && p1 === 0) {
-    p1 = (t0.balance / t1.balance) * p0;
-  }
-  if (p1 && p0 === 0) {
-    p0 = (t1.balance / t0.balance) * p1;
-  }
-  t0.price = p0;
-  t1.price = p1;
-
-  return [t0, t1];
 }

@@ -78,7 +78,7 @@ export class PancakeV2Staking {
       if (vault.stakingToken.tokens.length !== 0) {
         // for lp token we calculate pool share
         const poolShare = balance.div(new BN(vault.stakingToken.totalSupply));
-        stakingPosition.staked = balance.toNumber();
+        stakingPosition.staked = balance.toString();
         stakingPosition.stakingToken.tokens.forEach((st) => {
           st.price = null;
           st.value = null;

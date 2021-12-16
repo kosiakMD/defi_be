@@ -8,31 +8,37 @@ import {
   AccountBalance,
   Address,
   BalancesResponse,
+  ChainAbbrEnum,
   ChainDto,
   ChainIdEnum,
   FeatureEnum,
+  ICallData,
   Logger,
   ProjectEnum,
   ProtocolTypeEnum,
   TokenBalance,
-  ICallData,
-  ChainAbbrEnum,
 } from '@app/common';
-import { toDecimals } from '../../../../common/utils/util';
-import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
-import { AccountService } from '../../../microservices/account.service';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { IntegrationStakingPositionDto, IntegrationERC20TokenDto, IntegrationPoolTokenDto } from '@app/common/jobs/staking';
+import {
+  IntegrationERC20TokenDto,
+  IntegrationPoolTokenDto,
+  IntegrationStakingPositionDto,
+} from '@app/common/jobs/staking';
+
+import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+import { toDecimals } from '../../../../common/utils/util';
+
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
+import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { TraderjoeAbis } from './contracts/traderjoe.abis';
 
 @Injectable()
 export class TraderJoeFarm {
   private readonly multicallService: MulticallService;
-  xJOEAddress: string = '0x57319d41f71e81f3c65f2a47ca4e001ebafd4f33';
-  JOEAddress: string = '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd';
+  xJOEAddress = '0x57319d41f71e81f3c65f2a47ca4e001ebafd4f33';
+  JOEAddress = '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd';
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -51,8 +57,8 @@ export class TraderJoeFarm {
       [this.xJOEAddress],
     );
 
-    const xJOEStaking = await this.getStakingPosition()
-    
+    const xJOEStaking = await this.getStakingPosition();
+
     const baseData: BaseDataStaking[] = addresses.map((a) => {
       const toAdd: BaseDataStaking = plainToClass(BaseDataStaking, {
         chain: chain,
@@ -70,7 +76,7 @@ export class TraderJoeFarm {
 
       return toAdd;
     });
-    
+
     return baseData;
   }
 
@@ -123,13 +129,16 @@ export class TraderJoeFarm {
     });
   }
 
-  private toPosition(balance: TokenBalance, stakingData: IntegrationStakingPositionDto): IntegrationStakingPositionDto {
+  private toPosition(
+    balance: TokenBalance,
+    stakingData: IntegrationStakingPositionDto,
+  ): IntegrationStakingPositionDto {
     const userData = stakingData;
-    userData.staked = Number(balance.amount);
+    userData.staked = balance.amount;
     userData.stakingToken.balance = balance.decimalsAmount;
     userData.stakingToken.price = balance.tokenPriceUSD;
     userData.stakingToken.value = balance.tokenPriceUSD * userData.stakingToken.balance;
-    userData.stakingToken.tokens[0].balance = 
+    userData.stakingToken.tokens[0].balance =
       userData.stakingToken.value / userData.stakingToken.tokens[0].price;
 
     userData.stats.tvl = stakingData.stakingToken.totalSupply * balance.tokenPriceUSD;
@@ -148,9 +157,9 @@ export class TraderJoeFarm {
       output: {},
     });
 
-    const totalSupplyRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(totalSupplyCall);
-    const totalSupply = toDecimals(totalSupplyRsp.get(address).output.data, 18);
-
-    return totalSupply;
+    const totalSupplyRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
+      totalSupplyCall,
+    );
+    return toDecimals(totalSupplyRsp.get(address).output.data, 18);
   }
 }

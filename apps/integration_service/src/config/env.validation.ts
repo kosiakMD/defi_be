@@ -136,6 +136,7 @@ export const validationSchema = Joi.object({
   MRIVER_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   XDAI_URL: Joi.string().required(),
+  SOL_URL: Joi.string().required(),
 
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),

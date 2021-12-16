@@ -343,7 +343,7 @@ export class PancakeStaking implements JobInterface {
     this.mapping = this.mapping.map((m) => {
       if (m instanceof IntegrationStakingPositionDto) {
         const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(m)).output.data;
-        m.staked = toDecimals(balance, m.stakingToken.decimals);
+        m.staked = toDecimals(balance, m.stakingToken.decimals).toString();
         m.stakingToken.balance = toDecimals(balance, m.stakingToken.decimals);
 
         // m.p

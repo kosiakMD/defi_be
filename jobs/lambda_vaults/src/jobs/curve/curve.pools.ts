@@ -135,6 +135,7 @@ export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements Jo
         `not necessary to update existed mapping, db poolLength ${poolIdFrom}, chain poolLength ${poolIdTo}`,
         this.placeholder,
       );
+      await this.storeService.updateMapping(jobMapping);
       return jobMapping;
     }
 

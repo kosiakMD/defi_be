@@ -9,6 +9,7 @@ import { JobInterface } from './job.interface';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
 import { RaydiumPools } from './raydium/raydium.pools';
+import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
@@ -29,6 +30,7 @@ export class JobsRegistry {
     autofarmStakingBSC: AutofarmStakingBSC,
     autofarmStakingPLG: AutofarmStakingPLG,
     raydiymPools: RaydiumPools,
+    raydiumStaking: RaydiumStaking,
   ) {
     this.registry.set(curvePools.placeholder, curvePools);
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
@@ -41,5 +43,6 @@ export class JobsRegistry {
     this.registry.set(autofarmStakingBSC.placeholder, autofarmStakingBSC);
     this.registry.set(autofarmStakingPLG.placeholder, autofarmStakingPLG);
     this.registry.set(raydiymPools.placeholder, raydiymPools);
+    this.registry.set(raydiumStaking.placeholder, raydiumStaking);
   }
 }

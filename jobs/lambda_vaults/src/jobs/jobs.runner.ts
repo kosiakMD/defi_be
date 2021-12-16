@@ -129,6 +129,7 @@ export class JobsRunner {
     // This has to be hardcoded for convex until Curve is supported on the front end
     // TODO: remove after Curve integration is complete
     jobPlaceholdersSet.add('1_Curve_pools');
+    jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
 
     return jobPlaceholdersSet;

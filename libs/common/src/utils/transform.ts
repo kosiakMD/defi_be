@@ -1,11 +1,4 @@
-// TODO: could be validation added
-export function splitToArray(value: string, toLowerCase = true): string[] {
-  if (!value) {
-    return [];
-  }
-
-  return toLowerCase ? value.toLowerCase().split(',') : value.split(',');
-}
+import { splitToArray } from '@app/common/utils/string';
 
 export function splitToNumberArray(value: string): number[] {
   return splitToArray(value).map(Number);

@@ -57,6 +57,7 @@ import {
 } from './contracts/quickswap.constants';
 import { PairDto } from './dto/pair.dto';
 import { QuickswapMulticallService } from './quickswap.multicall.service';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class QuickswapProtocol extends DataProviderProtocol implements AbstractProtocol {
@@ -450,6 +451,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

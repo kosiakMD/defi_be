@@ -3,10 +3,9 @@ import { createParamDecorator, HttpException, HttpStatus } from '@nestjs/common'
 
 import { ChainIdEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
-import { filterByEnum } from '@app/common/utils';
+import { filterByEnum, splitToArray } from '@app/common/utils';
+import { splitToNumberArray } from '@app/common/utils';
 import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
-
-import { splitToArray, splitToNumberArray } from '../utils/transform';
 
 export * from './error.decorators';
 

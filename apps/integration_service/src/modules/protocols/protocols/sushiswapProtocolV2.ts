@@ -62,6 +62,7 @@ import {
   ISushiSwapPoolV2,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class SushiSwapProtocolV2 extends BasicProtocol {
@@ -168,6 +169,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const baseData: BaseData[] = [];
     const errors: string[] = [];
     try {

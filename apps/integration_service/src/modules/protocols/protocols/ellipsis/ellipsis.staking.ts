@@ -78,7 +78,7 @@ export class EllipsisStaking {
     usersStakingPositions.forEach((value, key) => {
       const staking = baseDataStakingMap.get(key);
       value.forEach((stakingData) => {
-        const stakingBalance = stakingData.stakingBalance;
+        const stakingBalance = stakingData.stakingBalance.toString();
         const {
           stakingPosition,
           stakingPosition: { stakingToken },
@@ -99,7 +99,7 @@ export class EllipsisStaking {
         } else {
           stakingPosition.stakingToken = {
             ...stakingPosition.stakingToken,
-            balance: stakingBalance,
+            balance: Number(stakingBalance),
             price: null,
             value: null,
           };

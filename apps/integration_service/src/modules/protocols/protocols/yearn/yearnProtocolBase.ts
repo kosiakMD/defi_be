@@ -15,7 +15,7 @@ import {
 } from '@app/common';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { decimalsDivider } from '@app/common/utils';
+import { decimalsDivider, keepETHAddresses } from '@app/common/utils';
 
 import {
   IntegrationERC20TokenDto,
@@ -53,6 +53,7 @@ export abstract class YearnProtocolBase extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const userData = await Promise.allSettled(
       addresses.flatMap((address) => {
         return this.getAsBaseData(address, chain);

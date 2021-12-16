@@ -11,10 +11,12 @@ import { ChainsModule } from '../chains/chains.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ThegraphModule } from '../subgraphs/thegraph.module';
 import { LiquidityPools } from './features/liquidity-pools';
+import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AlpacaApiService } from './protocols/alpaca/alpaca.api.service';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
@@ -31,6 +33,7 @@ import { ScanApi } from './protocols/pancake/scan.api';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import { RaydiumStaking } from './protocols/raydium/raydium.staking';
+import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
@@ -41,9 +44,6 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
-import { Mapper } from './helpers/mappers/mapper';
-import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [

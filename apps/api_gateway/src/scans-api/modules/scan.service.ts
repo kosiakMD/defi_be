@@ -1,7 +1,7 @@
 import { Cache } from 'cache-manager';
 import { map } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { Logger } from '@app/common/Logger/Logger.service';

@@ -1,6 +1,7 @@
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { IAssetResponseDto } from '@app/common';
@@ -10,13 +11,13 @@ import { Address, BalancesResponse } from '@app/common/types';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
 
+
 @Injectable()
 export class AccountService {
   private readonly cacheTTLInSeconds: number;
 
   private getBalanceUrl: string;
   private getAssetsUrl: string;
-  private getBalanceCovalentUrl: string;
 
   constructor(
     private httpService: HttpService,

@@ -1,6 +1,7 @@
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, HttpService, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

@@ -1,6 +1,7 @@
 import { map } from 'rxjs/operators';
 
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -8,6 +9,7 @@ import { Logger } from '@app/common/Logger/Logger.service';
 
 import { ImpermanentLossResponseDto } from './dto/impermanentLoss.dto';
 import { ImpermanentLossDto } from './dto/impermanentLoss.dto';
+
 
 @Injectable()
 export class ImpermanentLossService {

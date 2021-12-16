@@ -1,4 +1,5 @@
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { IntegrationService } from '../integration/integration.service';

@@ -87,8 +87,10 @@ export class AutofarmStakingBSC implements JobInterface {
     });
 
     const poolsInfoBSC: Map<string, any> = await this.getAllPoolInfo(AutofarmAddresses.chiefV2BSC);
+    const poolsInfoAuto: Map<string, any> = await this.getAllPoolInfo(AutofarmAddresses.autoFarmContractBSC);
     const poolsInfoArray = [
       { poolsInfo: poolsInfoBSC, chiefContract: AutofarmAddresses.chiefV2BSC },
+      { poolsInfo: poolsInfoAuto, chiefContract: AutofarmAddresses.autoFarmContractBSC },
     ];
 
     for (const { poolsInfo, chiefContract } of poolsInfoArray) {

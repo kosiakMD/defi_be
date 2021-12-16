@@ -32,7 +32,7 @@ export class AutofarmStaking {
     [ChainIdEnum.bsc]: '0x0895196562c7868c5be92459fae7f877ed450452',
     [ChainIdEnum.plg]: '0x89d065572136814230a55ddeeddec9df34eb0b76',
   };
-  private readonly badAddress = '0x000000000000000000000000000000000000dead';
+  private readonly autofarmVault = '0x763a05bdb9f8946d8c3fa72d1e0d3f5e68647e5c';
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -87,25 +87,9 @@ export class AutofarmStaking {
   }
 
   private async getDataWithMulticall(addresses: Address[], multicall, contract, pools) {
-    const calls = new Map<string, ICallData>();
-
-    for (const address of addresses) {
-      for (const pool of pools.items) {
-        if (pool.address !== this.badAddress) {
-          calls.set(this.balanceOfLabel(contract, address, pool.poolId), {
-            address: contract,
-            abi: Abis.stakedWantTokens,
-            input: {
-              data: [pool.poolId, address],
-            },
-            output: {},
-          });
-        }
-      }
-    }
+    const userInfos = await this.getStakedTokens(addresses, multicall, pools);
 
     const poolsWithBalance = [];
-    const userInfos: Map<string, ICallData> = await multicall.handleInBatches(calls);
 
     for (const userInfo of userInfos.entries()) {
       if (Number(userInfo[1].output.data) > 0) {
@@ -152,11 +136,13 @@ export class AutofarmStaking {
 
     if (contract === this.masterChiefAddresses[ChainIdEnum.bsc]) {
       balances.forEach((b) => {
-        claimableRewards.push({
-          contract: b.contract,
-          poolId: Number(b.id.split('_')[2]),
-          userAddress: b.user.id,
-        });
+        if (b.contract !== this.autofarmVault) {
+          claimableRewards.push({
+            contract: b.contract,
+            poolId: Number(b.id.split('_')[2]),
+            userAddress: b.user.id,
+          });
+        }
       });
 
       const pendingTokensCalls = new Map<string, ICallData>();
@@ -184,6 +170,29 @@ export class AutofarmStaking {
     }
 
     return { balances, claimableRewards };
+  }
+
+  private async getStakedTokens(addresses: Address[], multicall, pools) {
+    const calls = new Map<string, ICallData>();
+
+    addresses.forEach(address => {
+      pools.items.forEach(pool => {
+        if (pool.poolId !== '331') { // 331 pool was broken and returning 'execution reverted' error
+          calls.set(this.balanceOfLabel(pool.address, address, pool.poolId), {
+            address: pool.address,
+            abi: Abis.stakedWantTokens,
+            input: {
+              data: [pool.poolId, address],
+            },
+            output: {},
+          });
+        }
+      });
+    });
+
+    const userInfos: Map<string, ICallData> = await multicall.handleInBatches(calls);
+
+    return userInfos;
   }
 
   private getMulticallDataForAddress(multicallData, userAddress: string) {

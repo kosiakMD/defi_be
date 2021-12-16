@@ -2,7 +2,8 @@ import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { map } from 'rxjs/operators';
 
-import { HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

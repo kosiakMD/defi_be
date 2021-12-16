@@ -1,6 +1,6 @@
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -10,6 +10,7 @@ import { Address } from '@app/common/types';
 
 import { PriceService } from '../../microservices/price/price.service';
 import { ScanApiService } from './scan.api.service';
+import { HttpService } from '@nestjs/axios';
 
 @Injectable()
 export class BscScanService extends ScanApiService {

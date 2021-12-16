@@ -28,9 +28,9 @@
   - 'apps/**/.env.*'
 
 🧱 DTO:
-  - 'apps/**/*.dto.ts'
-  - 'apps/**/*Dto.ts'
-  - 'apps/**/*DTO.ts'
+  - '**/*.dto.ts'
+  - '**/*Dto.ts'
+  - '**/*DTO.ts'
 
 🧪 Tests:
   - apps/**/*.spec.*

@@ -38,8 +38,8 @@ import {
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   PoolTokenDto,
-} from '../../common/dto/integrations.dto';
-import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto/price.response.dto';
+} from '../../common/dto';
+import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 import { Asset, BaseData, PoolToken } from '../../common/interfaces/transactions.interfaces';
 import { objectUpdate } from '../../common/utils/object';
 
@@ -55,6 +55,7 @@ import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
+import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
@@ -89,6 +90,7 @@ export class ProtocolService {
     private readonly traderjoeProtocol: TraderJoeProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly raydiumProtocol: RaydiumProtocol,
+    private readonly pancakeProtocolV1: PancakeProtocolV1,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -106,6 +108,7 @@ export class ProtocolService {
       traderjoeProtocol,
       ellipsisProtocol,
       raydiumProtocol,
+      pancakeProtocolV1,
     ];
   }
 

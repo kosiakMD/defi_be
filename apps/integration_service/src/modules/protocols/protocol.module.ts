@@ -20,17 +20,22 @@ import AutofarmProtocol from './protocols/autofarmProtocol';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
+import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
+import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
+import { PancakeService } from './protocols/pancake/pancake.service';
+import { PoolsService } from './protocols/pancake/pools.service';
+import { ScanApi } from './protocols/pancake/scan.api';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
-import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -57,7 +62,16 @@ const ProtocolList = [
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm];
-const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeV2Legacy];
+const Pancake = [
+  PancakeProtocol,
+  PancakeV2Staking,
+  PancakeV2Legacy,
+  PancakeProtocolV1,
+  PancakeService,
+  PoolsService,
+  EtherscanService,
+  ScanApi,
+];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
 

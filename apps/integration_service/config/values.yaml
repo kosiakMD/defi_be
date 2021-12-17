@@ -69,6 +69,7 @@ configMaps:
     POLYGON_URL: https://polygon-rpc.com/
     SOL_URL: http://api.mainnet-beta.solana.com
   endpoints:
+    ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_URL: http://price-service
     PRICE_SERVICE_PORT: 80

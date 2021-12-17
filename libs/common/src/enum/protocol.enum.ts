@@ -3,6 +3,7 @@ export enum ProjectEnum {
   autofarm = 'autofarm',
   balancer = 'balancer',
   curve = 'curve',
+  compound = 'compound',
   pancake = 'pancake',
   pangolin = 'pangolin',
   quickswap = 'quickswap',
@@ -63,6 +64,10 @@ export enum AlpacaProtocolEnum {
   alpaca = 'Alpaca',
 }
 
+export enum CompoundProtocolEnum {
+  compound = 'Compound',
+}
+
 export enum CurveProtocolEnum {
   curve = 'Curve',
 }
@@ -87,6 +92,7 @@ export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...CompoundProtocolEnum,
   ...CurveProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,

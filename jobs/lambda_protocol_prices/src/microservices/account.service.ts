@@ -36,7 +36,7 @@ export class AccountService {
 
   @RequestErrorHandler()
   async saveTrackingAsset(address: string, chain: ChainIdEnum): Promise<IAssetResponseDto> {
-    const timeKey = `POST: ${this.assetsUrl} - Chain: ${chain}`;
+    const timeKey = `POST: ${this.assetsUrl} - Address: ${address} Chain: ${chain}`;
     this.logger.time(timeKey);
     const data = await this.httpService
       .post(this.assetsUrl, {

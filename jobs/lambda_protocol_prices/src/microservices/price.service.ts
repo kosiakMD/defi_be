@@ -38,7 +38,7 @@ export class PriceService {
     addresses: Address[],
     chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    const timeKey = `POST: ${this.pricesFetchUrl} - Chain: ${chain}`;
+    const timeKey = `POST: ${this.pricesFetchUrl} - Chain: ${chain} - Key ~~${Math.random()}~~`;
     this.logger.time(timeKey);
     const data$ = await this.httpService
       .post(this.pricesFetchUrl, {
@@ -54,7 +54,7 @@ export class PriceService {
 
   @RequestErrorHandler()
   async savePrices(prices: IPriceRequestCurrent[]): Promise<void> {
-    const timeKey = `POST: ${this.pricesCurrentUrl} - Prices Updating: ${prices.length}`;
+    const timeKey = `POST: ${this.pricesCurrentUrl} - Key ~~${Math.random()}~~`;
 
     this.logger.time(timeKey);
 

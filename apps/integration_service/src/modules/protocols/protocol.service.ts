@@ -26,6 +26,7 @@ import {
   ResultStatus,
   SpookySwapProtocolEnum,
 } from '@app/common';
+import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
@@ -53,6 +54,7 @@ import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BasicProtocol from './protocols/basicProtocol';
+import { CompoundProtocol } from './protocols/compoundProtocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
@@ -64,9 +66,9 @@ import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -77,41 +79,43 @@ export class ProtocolService {
     private readonly accountService: AccountService,
     private readonly priceService: PriceService,
     private readonly aaveProtocolV2: AaveProtocolV2,
+    private readonly alpacaProtocol: AlpacaProtocol,
+    private readonly autofarmProtocol: AutofarmProtocol,
+    private readonly compoundProtocol: CompoundProtocol,
+    private readonly ellipsisProtocol: EllipsisProtocol,
+    private readonly pancakeProtocolV1: PancakeProtocolV1,
+    private readonly pancakeProtocolV2: PancakeProtocol,
+    private readonly pangolinProtocol: PangolinProtocol,
+    private readonly quickswapProtocol: QuickswapProtocol,
+    private readonly raydiumProtocol: RaydiumProtocol,
+    private readonly spookySwapProtocol: SpookySwapProtocol,
+    private readonly sushiswapProtocolV2: SushiswapProtocolV2,
+    private readonly traderjoeProtocol: TraderJoeProtocol,
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly uniswapProtocolV3: UniswapProtocolV3,
-    private readonly sushiswapProtocolV2: SushiswapProtocolV2,
-    private readonly pangolinProtocol: PangolinProtocol,
-    private readonly pancakeProtocolV2: PancakeProtocol,
-    private readonly quickswapProtocol: QuickswapProtocol,
-    private readonly autofarmProtocol: AutofarmProtocol,
-    private readonly spookySwapProtocol: SpookySwapProtocol,
-    private readonly alpacaProtocol: AlpacaProtocol,
+    private readonly viperswapProtocol: ViperswapProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
-    private readonly traderjoeProtocol: TraderJoeProtocol,
-    private readonly ellipsisProtocol: EllipsisProtocol,
-    private readonly raydiumProtocol: RaydiumProtocol,
-    private readonly pancakeProtocolV1: PancakeProtocolV1,
-    private readonly viperswapProtocol: ViperswapProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
       alpacaProtocol,
       autofarmProtocol,
+      compoundProtocol,
+      ellipsisProtocol,
+      pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocol,
       quickswapProtocol,
+      raydiumProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
+      traderjoeProtocol,
       uniswapProtocolV2,
       uniswapProtocolV3,
+      viperswapProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
-      traderjoeProtocol,
-      ellipsisProtocol,
-      raydiumProtocol,
-      pancakeProtocolV1,
-      viperswapProtocol,
     ];
   }
 
@@ -648,9 +652,10 @@ export class ProtocolService {
     // get all assets for prices
     data.forEach((baseData) => {
       try {
-        const setChainAsset = (instance) =>
+        const setChainAsset = (instance: { address: Address }) =>
           chainAssets.get(baseData.chain.id).add(instance.address);
-        const setChainAssetsArray = (instance) => instance.forEach((token) => setChainAsset(token));
+        const setChainAssetsArray = (instance: { address: Address }[]) =>
+          instance.forEach((token) => setChainAsset(token));
 
         if (!chainAssets.get(baseData.chain.id)) {
           chainAssets.set(baseData.chain.id, new Set<string>());
@@ -660,9 +665,11 @@ export class ProtocolService {
           baseData.items.forEach((poolFeature) => {
             setChainAssetsArray(poolFeature.tokens);
           });
-        }
-
-        if (baseData instanceof BaseDataStaking) {
+        } else if (baseData instanceof BaseDataClaimable) {
+          baseData.items.forEach((claimable) => {
+            setChainAsset(claimable);
+          });
+        } else if (baseData instanceof BaseDataStaking) {
           baseData.items.forEach((stakingPosition) => {
             if (stakingPosition.stakingToken.tokens?.length) {
               stakingPosition.stakingToken.tokens.forEach((poolToken) => {
@@ -680,15 +687,11 @@ export class ProtocolService {
               setChainAssetsArray(stakingPosition.rewards);
             }
           });
-        }
-
-        if (baseData instanceof BaseDataLending) {
+        } else if (baseData instanceof BaseDataLending) {
           baseData.items.forEach((i) => {
             setChainAsset(i.token);
           });
-        }
-
-        if (baseData instanceof BaseLeverageFarming) {
+        } else if (baseData instanceof BaseLeverageFarming) {
           baseData.items.forEach((leverageFarming) => {
             if (leverageFarming.farmToken.tokens.length) {
               setChainAssetsArray(leverageFarming.farmToken.tokens);
@@ -744,9 +747,13 @@ export class ProtocolService {
               baseData.total += poolToken.value;
             });
           });
-        }
-
-        if (baseData instanceof BaseDataStaking) {
+        } else if (baseData instanceof BaseDataClaimable) {
+          baseData.total = 0;
+          baseData.items.forEach((token) => {
+            token.price = chainAssetPrices.get(baseData.chain.id).get(token.address) ?? token.price;
+            token.claimableData.value = token.price * Number(token.claimableData.balance);
+          });
+        } else if (baseData instanceof BaseDataStaking) {
           baseData.total = 0;
           baseData.items.forEach((stakingPosition) => {
             stakingPosition.rewards?.forEach((reward) => {
@@ -784,9 +791,7 @@ export class ProtocolService {
               }
             }
           });
-        }
-
-        if (baseData instanceof BaseDataLending) {
+        } else if (baseData instanceof BaseDataLending) {
           baseData.total = 0;
           baseData.items.forEach((lendingPosition) => {
             lendingPosition.token.price =
@@ -795,9 +800,7 @@ export class ProtocolService {
             lendingPosition.value = lendingPosition.balance * lendingPosition.token.price;
             baseData.total += lendingPosition.value;
           });
-        }
-
-        if (baseData instanceof BaseLeverageFarming) {
+        } else if (baseData instanceof BaseLeverageFarming) {
           baseData.total = 0;
           baseData.items.forEach((leverageFarming) => {
             let leverageTotal = 0;

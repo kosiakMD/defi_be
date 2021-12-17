@@ -20,6 +20,12 @@ export abstract class ProtocolBase {
     return this.accountService.getAssets(addresses, this.chain);
   }
 
+  saveAssets(addresses: Address[]) {
+    return Promise.allSettled(
+      addresses.map((address) => this.accountService.saveTrackingAsset(address, this.chain)),
+    );
+  }
+
   fetchPrices(addresses: Address[]) {
     return this.priceService.getPrices(addresses, this.chain);
   }

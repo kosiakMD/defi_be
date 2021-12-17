@@ -19,6 +19,7 @@ import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import { CompoundProtocol } from './protocols/compoundProtocol';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
@@ -52,6 +53,7 @@ import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
+  CompoundProtocol,
   PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,

@@ -89,6 +89,7 @@ export const validationSchema = Joi.object({
   AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
   QUICKSWAP_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  COMPOUND_ETH_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_AVAX_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_BSC_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_CELO_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),

@@ -29,6 +29,7 @@ import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { keepETHAddresses } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -44,14 +45,8 @@ import { SushiSwapMasterChefV2Subgraph } from '../../subgraphs/subgraphs/sushisw
 import { SushiSwapMiniChefSubgraph } from '../../subgraphs/subgraphs/sushiswap.minichef.subgraph';
 import { SushiSwapSushiBarSubgraph } from '../../subgraphs/subgraphs/sushiswap.sushibar.subgraph';
 import BasicProtocol from './basicProtocol';
-// import { SushiSwapMasterChefAbi } from './sushiswap/abi/masterchef';
 import { SushiSwapRewarder } from './sushiswap/contracts/rewarder';
 import { SushiSwapMasterChefAbi } from './sushiswap/contracts/sushiswap.masterchef';
-// import { SushiSwapBentoBoxSubgraph } from './sushiswap/services/sushiswap.bentobox.subgraph';
-// import { SushiSwapExchangeSubgraph } from './sushiswap/services/sushiswap.exchange.subgraph';
-// import { SushiSwapMasterChefSubgraph } from './sushiswap/services/sushiswap.masterchef.subgraph';
-// import { SushiSwapMiniChefSubgraph } from './sushiswap/services/sushiswap.minichef.subgraph';
-// import { SushiSwapSushiBarSubgraph } from './sushiswap/services/sushiswap.sushibar.subgraph';
 import { MAGIC_BENTOBOX_APR_DECIMALS, SUSHI_ADDRESS } from './sushiswap/sushiswap.constants';
 import {
   ISushiSwapChef,
@@ -62,7 +57,6 @@ import {
   ISushiSwapPoolV2,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class SushiSwapProtocolV2 extends BasicProtocol {

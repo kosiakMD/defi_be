@@ -9,6 +9,7 @@ import {
   BalancesPostQueryDto,
   BalancesQueryDto,
   BalancesResponseDto,
+  ReturnsResponse,
 } from '../modules/balances/dto/balance.dto';
 
 @ApiTags('Balances')
@@ -72,22 +73,11 @@ export class BalancesController {
     isArray: true,
     description: 'Array of user address',
     example: [
-      '0x0000000000000000000000000000000000000000',
-      '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
+      '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
+      '0x60dE7F647dF2448eF17b9E0123411724De6e373D',
     ],
   })
-  @ApiQuery({
-    name: 'assets',
-    type: String,
-    isArray: true,
-    required: false,
-    description: 'Array of token addresses',
-    example: [
-      '0x0000000000000000000000000000000000000000',
-      '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
-    ],
-  })
-  getUser24HourReturns(@Query() query: BalancesQueryDto): Promise<any> {
+  getUser24HourReturns(@Query() query: BalancesQueryDto): Promise<ReturnsResponse> {
     const { addresses, chains, assets } = query;
     return this.balancesService.get24HourReturns(addresses, chains, assets);
   }

@@ -44,6 +44,7 @@ configMaps:
     SUSHISWAP_XDAI_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/matthewlilley/xdai-minichef
     SUSHISWAP_MRIVER_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/moonriver-exchange
     SUSHISWAP_ETH_MASTERCHEF_V2_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2
+    COMPOUND_ETH_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/cavanmflynn/compound-v2
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
     BLOCKS_BSC_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/pancakeswap/blocks

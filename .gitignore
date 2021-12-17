@@ -126,6 +126,8 @@ dist
 ./.idea/
 .DS_Store
 .idea2
+/.chart/
+/.ci/
 /jobs/cron/
 /jobs/deploy/
 

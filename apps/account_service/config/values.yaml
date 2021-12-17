@@ -1,95 +1,31 @@
 configMaps:
   amm:
-    AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
     AMM_UNISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2
     AMM_BALANCER_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dashvm7/balancer
-    AAVEGOTCHI_SUBGRAPH_ETHEREUM: https://api.thegraph.com/subgraphs/name/aavegotchi/aavegotchi-ethereum
-    AAVEGOTCHI_SUBGRAPH_POLYGON: https://api.thegraph.com/subgraphs/name/aavegotchi/aavegotchi-core-matic
-    AAVEGOTCHI_SUBGRAPH_SVG: https://api.thegraph.com/subgraphs/name/froid1911/aavegotchi-svg
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
-  links:
-    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
-    POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
+  nodes:
+    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    BSC_URL: https://bsc-dataseed.binance.org
+    POLYGON_URL: https://polygon-mainnet.infura.io/v3/2f6833b1ce1649e0869b7250a6ea169b
     FTM_URL: https://rpc.ftm.tools/
-    AVAX_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
-    ARBITRUM_URL: https://rpc.ankr.com/arbitrum
-    XDAI_URL: https://xdai-archive.blockscout.com
-    CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
-    MRIVER_URL: https://rpc.moonriver.moonbeam.network
-    HARM_URL: https://a.api.s0.t.hmny.io
-    HECO_URL: https://pub001.hg.network/rpc
-    POLYGON_RPC_URL: https://polygon-rpc.com/
-    SOL_URL: http://api.mainnet-beta.solana.com
-    OKEX_URL: https://exchainrpc.okex.org
-    CRONOS_URL: https://evm-cronos.crypto.org
-    BOBA_URL: https://mainnet.boba.network/
-    KCC_URL: https://rpc-mainnet.kcc.network
-    OPT_URL: https://mainnet.optimism.io/
+    AVAX_URL: https://api.avax.network/ext/bc/C/rpc
+    ARBITRUM_URL: https://arb1.arbitrum.io/rpc
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
     PRICE_SERVICE_MAIN_COIN_ADDRESS: 0x0000000000000000000000000000000000000000
-  contracts:
-    ETH_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    BSC_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    POLYGON_BALANCES_CHECKER_ADDRESS: '0x1502c3c8e63873b1b162ed27a218069dc1486f51'
-    FTM_BALANCES_CHECKER_ADDRESS: '0x1861eb1Cc764032509e4d2FF545138Be0ad3B240'
-    AVAX_BALANCES_CHECKER_ADDRESS: '0x1861eb1Cc764032509e4d2FF545138Be0ad3B240'
-    ARBITRUM_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    XDAI_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    HARMONY_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    CELO_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    MOONRIVER_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    HECO_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    OKEX_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-    CRONOS_BALANCES_CHECKER_ADDRESS: '0xE5B89aA6fb36E31BeA8AB13B73eB3291De95D4E7'
-    KCC_BALANCES_CHECKER_ADDRESS: '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c'
-  nft:
-    OPEN_SEA_URL: https://api.opensea.io/api/v1
-    OPEN_SEA_API_KEY: df9bceb365ed42a99ea5bac8cda8dc32
-    OPEN_SEA_INTERVAL: 2
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: production
-  params:
-    ETH_BALANCES_CHECKER_BATCH_SIZE: 2000
-  temp:
-    DB_HOST: productionm.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    DB_PORT: 5432
-    DB_DATABASE: defi
-    DB_USERNAME: prodashuser
-    DB_PASSWORD: FhRM4BHV4Rjnj6RQ
-    REDIS_HOST: 3.69.250.41
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    REDIS_ASSETS_CACHE_TTL: 900
-    BSCSCAN_URL: https://api.bscscan.com/api
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    ETHERSCAN_URL: https://api.etherscan.io/api
-    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    ETHERSCAN_API_URL: https://api.etherscan.io/api
-    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    AWS_REGION: eu-central-1
-    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
-    AWS_SECRET_ACCESS_KEY: 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
-    COVALENT_URL: https://api.covalenthq.com/v1
-    COVALENT_KEY: ckey_8a12ec5b8243410b9960bb90ad0
-    POLYGONSCAN_URL: https://api.polygonscan.com/api
-    POLYGONSCAN_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
-
-
 
 secrets:
-- database
-- redis
-- bscscan
-- etherscan
-- logs
-- covalent
-- polygonscan
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - covalent
+  - polygonscan

@@ -40,6 +40,10 @@ export class MulticallProvider {
         rpcConfigPath: 'AVAX_URL',
         multicallAddress: '0x92a09557707ab4888eacc034122120f27362da7f',
       },
+      [ChainAbbrEnum.harm]: {
+        rpcConfigPath: 'HARM_URL',
+        multicallAddress: '0x34b415f4d3b332515e66f70595ace1dcf36254c5',
+      },
     };
     Object.entries(providersData).forEach(([chainAbbr, config]) => {
       this.multicallsMap.set(

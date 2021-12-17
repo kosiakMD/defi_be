@@ -132,6 +132,9 @@ export class JobsRunner {
     jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
 
+    jobPlaceholdersSet.add('10_Viperswap_staking');
+    jobPlaceholdersSet.add('10_Viperswap_pools');
+
     return jobPlaceholdersSet;
   }
 }

@@ -14,6 +14,7 @@ import {
   CurveProtocolEnum,
   EllipsisProtocolEnum,
   RaydiumProtocolEnum,
+  ViperswapProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -36,7 +37,8 @@ export type ProtocolName =
   | YearnProtocolEnum
   | TraderjoeProtocolEnum
   | EllipsisProtocolEnum
-  | RaydiumProtocolEnum;
+  | RaydiumProtocolEnum
+  | ViperswapProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

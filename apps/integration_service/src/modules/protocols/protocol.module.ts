@@ -44,6 +44,9 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
+import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
+import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -74,6 +77,7 @@ const Pancake = [
 ];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
+const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 
 @Module({
   imports: [
@@ -101,6 +105,7 @@ const Raydium = [RaydiumStaking];
     ...Ellipsis,
     ...Autofarm,
     ...Raydium,
+    ...Viperswap,
     ProtocolService,
     Mapper,
     AlpacaApiService,

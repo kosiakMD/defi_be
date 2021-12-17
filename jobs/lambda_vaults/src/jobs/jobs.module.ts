@@ -24,6 +24,8 @@ import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { TraderJoeSubgraph } from './traderjoe/traderjoe.subgraph';
+import { ViperswapStaking } from './viperswap/viperswap.staking';
+import { ViperswapPools } from './viperswap/viperswap.pools';
 
 const Jobs = [
   CurvePools,
@@ -40,6 +42,8 @@ const Jobs = [
   RaydiumPools,
   RaydiumStaking,
   AutofarmApiService,
+  ViperswapStaking,
+  ViperswapPools,
 ];
 
 @Module({

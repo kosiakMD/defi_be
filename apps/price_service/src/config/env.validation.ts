@@ -1,10 +1,12 @@
 import * as Joi from 'joi';
 
+import { EnvEnum } from '@app/common';
+
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
-    .equal('development', 'production', 'test', 'provision', 'local')
+    .equal(...Object.values(EnvEnum))
     .default('local'),
   ENV: Joi.string()
     .equal(

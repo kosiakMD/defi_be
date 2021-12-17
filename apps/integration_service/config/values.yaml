@@ -1,16 +1,50 @@
 configMaps:
   amm:
+    AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
     AMM_UNISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2
     AMM_PANCAKE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
-    QUICKSWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sameepsi/quickswap06
     AMM_PANGOLIN_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/dasconnor/pangolin-dex
     AUTOFARM_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/mikephul/autofarm
     AAVE_ETH_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/aave/protocol-v2
     AAVE_PLG_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/aave/aave-v2-matic
-    AMM_UNISWAP_V3_ETH_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/benesjan/uniswap-v3-subgraph
+    AMM_UNISWAP_V3_ETH_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3
     SPOOKYSWAP_FARM_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/spookyswap-farm
     SPOOKYSWAP_ACELAB_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/spookyswap-acelab
-    QUICKSWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/proy24/quickswap-polygon
+    QUICKSWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sameepsi/quickswap05
+    ALPACA_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/alpaca-fair-launch
+    ALPACA_API_URL: https://api.alpacafinance.org/v1/positions
+    YEARN_V1_ETH_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/iearn-finance/yearn-finance
+    SUSHISWAP_ETH_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/exchange
+    SUSHISWAP_BSC_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/bsc-exchange
+    SUSHISWAP_OKEX_EXCHANGE_SUBGRAPH_URL: https://q.hg.network/okex-exchange/oec
+    SUSHISWAP_XDAI_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-exchange
+    SUSHISWAP_HECO_EXCHANGE_SUBGRAPH_URL: https://q.hg.network/heco-exchange/heco
+    SUSHISWAP_MATIC_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/matic-exchange
+    SUSHISWAP_FTM_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/fantom-exchange
+    SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/arbitrum-exchange
+    SUSHISWAP_CELO_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/celo-exchange
+    SUSHISWAP_AVAX_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/avalanche-exchange
+    SUSHISWAP_ONE_EXCHANGE_SUBGRAPH_URL: https://sushi.graph.t.hmny.io/subgraphs/name/sushiswap/harmony-exchange
+    SUSHISWAP_ETH_MASTERCHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
+    SUSHISWAP_ETH_SUSHIBAR_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/sushi-bar
+    SUSHISWAP_ETH_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/bentobox
+    SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/matic-minichef
+    AAVE_AVAX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/aave/protocol-v2-avalanche
+    YEARN_ETH_SUBGRAPH_URL: 'https://api.thegraph.com/subgraphs/name/salazarguille/yearn-vaults-v2-subgraph-mainnet'
+    YEARN_FTM_SUBGRAPH_URL: 'https://api.thegraph.com/subgraphs/name/yearn/yearn-vaults-v2-fantom'
+    SUSHISWAP_ARBI_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/arbitrum-bentobox
+    SUSHISWAP_BSC_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/bsc-bentobox
+    SUSHISWAP_PLG_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/matic-bentobox
+    SUSHISWAP_XDAI_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-bentobox
+    SUSHISWAP_ARBI_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/matthewlilley/arbitrum-minichef
+    SUSHISWAP_CELO_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/celo-minichef
+    SUSHISWAP_MRIVER_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/moonriver-minichef
+    SUSHISWAP_ONE_MINICHEF_SUBGRAPH_URL: https://sushi.graph.t.hmny.io/subgraphs/name/sushiswap/harmony-minichef
+    SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/matic-minichef
+    SUSHISWAP_XDAI_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/matthewlilley/xdai-minichef
+    SUSHISWAP_MRIVER_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/moonriver-exchange
+    SUSHISWAP_ETH_MASTERCHEF_V2_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2
+    COMPOUND_ETH_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/cavanmflynn/compound-v2
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
     BLOCKS_BSC_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/pancakeswap/blocks
@@ -18,26 +52,59 @@ configMaps:
     VAULT_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/
     THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
-  nodes:
-    ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
+    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     BSC_URL: https://bsc-dataseed.binance.org
-    POLYGON_URL: https://polygon-rpc.com/
+    POLYGON_RPC_URL: https://polygon-rpc.com/
+    FTM_RPC_URL: https://rpc.ftm.tools
     FTM_URL: https://rpc.ftm.tools
-  price_endpoints:
+    AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
+    PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/pcv2-msc
+    OPEN_SEA_URL: https://api.opensea.io/api/v1
+    AVAX_URL: https://api.avax.network/ext/bc/C/rpc
+    CELO_URL: https://forno.celo.org
+    HARM_URL: https://api.harmony.one
+    HECO_URL: https://http-mainnet-node.huobichain.com
+    MRIVER_URL: https://rpc.moonriver.moonbeam.network
+    XDAI_URL: https://rpc.xdaichain.com
+    POLYGON_URL: https://polygon-rpc.com/
+    SOL_URL: http://api.mainnet-beta.solana.com
+  endpoints:
     PRICE_SERVICE_HOST: http://price-service
+    PRICE_SERVICE_URL: http://price-service
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
-  account_endpoints:
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_BALANCE: v1/balances
     ACCOUNT_ASSETS: v1/assets
+    ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
   params:
     JOBS_CACHE_TTL_IN_SECONDS: 86400
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: production
+  temp:
+    DB_HOST: productionm.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
+    DB_PORT: 5432
+    DB_DATABASE: defi
+    DB_USERNAME: prodashuser
+    DB_PASSWORD: FhRM4BHV4Rjnj6RQ
+    REDIS_HOST: 3.69.250.41
+    REDIS_PORT: 6379
+    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
+    BSCSCAN_URL: https://api.bscscan.com/api
+    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
+    BSCSCAN_API_URL: https://api.bscscan.com/api
+    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
+    ETHERSCAN_URL: https://api.etherscan.io/api
+    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
+    ETHERSCAN_API_URL: https://api.etherscan.io/api
+    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
+    AWS_REGION: eu-central-1
+    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
+    AWS_SECRET_ACCESS_KEY: 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
+
 
 secrets:
 - database

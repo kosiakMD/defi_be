@@ -77,7 +77,9 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   JOBS_CACHE_TTL_IN_SECONDS: Joi.number(),
   POOLS_CACHE_TTL_IN_SECONDS: Joi.number(),

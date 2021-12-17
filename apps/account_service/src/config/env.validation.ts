@@ -71,7 +71,9 @@ export const validationSchema = Joi.object({
   BLOCKS_SUBGRAPH_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   REDIS_ASSETS_CACHE_TTL: Joi.number(),
   ETH_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //

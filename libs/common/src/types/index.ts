@@ -4,6 +4,7 @@ import {
   AlpacaProtocolEnum,
   AutofarmProtocolEnum,
   CompoundProtocolEnum,
+  ConvexProtocolEnum,
   CurveProtocolEnum,
   EllipsisProtocolEnum,
   PancakeProtocolEnum,
@@ -30,6 +31,7 @@ export type ProtocolName =
   | AlpacaProtocolEnum
   | AutofarmProtocolEnum
   | CompoundProtocolEnum
+  | ConvexProtocolEnum
   | CurveProtocolEnum
   | EllipsisProtocolEnum
   | PancakeProtocolEnum

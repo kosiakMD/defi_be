@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ChainIdEnum } from '@app/common';
 
 import { Web3ProviderService } from '.';
+import { ChainDto } from '../dto';
 import { CallData } from '../dto/CallData';
 import { decodeOutput } from '../utils/multicall';
 import { concatStrings } from '../utils/string';
@@ -11,9 +12,14 @@ import { concatStrings } from '../utils/string';
 export class MulticallAggregator {
   constructor(private readonly provider: Web3ProviderService) {}
 
-  async handleInBatches(calls: Map<string, CallData>, chain: ChainIdEnum) {
-    const multicall = this.provider.getMulticallByChainId(chain);
-    const web3 = this.provider.getInstanceByChainId(chain);
+  async handleInBatches<TOutput = any, TInput = any>(
+    calls: Map<string, CallData>,
+    chain: ChainIdEnum | ChainDto,
+  ): Promise<Map<string, CallData<TOutput, TInput>>> {
+    const chainId = chain instanceof ChainDto ? chain.id : chain;
+
+    const multicall = this.provider.getMulticallByChainId(chainId);
+    const web3 = this.provider.getInstanceByChainId(chainId);
 
     const callsMap: Map<string, CallData> = new Map<string, CallData>();
 
@@ -49,7 +55,7 @@ export class MulticallAggregator {
         callInMap.abi.outputs,
         callInMap.output.plain,
       );
-      callInMap.output.data = decodeOutput(callInMap.abi, outputResult);
+      callInMap.output.data = decodeOutput(callInMap.abi, outputResult) as TOutput;
     });
 
     // create response with given ids
@@ -59,5 +65,22 @@ export class MulticallAggregator {
     });
 
     return calls;
+  }
+
+  // This is copied from https://github.com/defiyield-info/defiyield-backend-v2/pull/812/files
+  // Doesn't need to be in both once thats merged, delete here
+  async call(call: CallData, chain: ChainDto) {
+    const results = await this.handleInBatches(new Map([['single-call', call]]), chain.id);
+    return results.get('single-call').output.data;
+  }
+
+  async all<TOutput = any>(
+    calls: Map<string, CallData<TOutput>>,
+    chain: ChainDto,
+  ): Promise<Map<string, TOutput>> {
+    const results = await this.handleInBatches<TOutput>(calls, chain.id);
+    const map = new Map<string, TOutput>();
+    results.forEach((value, key) => map.set(key, value.output.data));
+    return map;
   }
 }

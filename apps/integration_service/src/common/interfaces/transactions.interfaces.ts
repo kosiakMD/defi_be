@@ -3,7 +3,7 @@ import { Exclude, Expose } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainDto, FeatureEnum } from '@app/common';
+import { ChainDto, FeatureEnum, ChainIdEnum } from '@app/common';
 import { IncomeLiquidityPosition } from '@app/common/dto/liquidity.position.dto';
 import { ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 import { ProtocolName } from '@app/common/types';
@@ -64,8 +64,11 @@ export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
 
 export interface Asset extends ERC20Token {
   id: number;
-  chainId: number;
+  chain: ChainIdEnum;
+  isLp: boolean;
   isTracked: boolean;
+  positionInPool: number;
+  underlyingAssets?: Asset[];
 }
 
 export class PoolTokenDto extends ERC20Token implements PoolToken {

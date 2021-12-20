@@ -180,7 +180,9 @@ export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements Jo
 
     // TODO: handle 0xeeeeeee (eth) pairs
 
-    jobMapping.mapping = await Promise.all(liquidityPools.map((lp) => this.toDbMapping(lp)));
+    jobMapping.mapping = (await Promise.all(
+      liquidityPools.map((lp) => this.toDbMapping(lp)),
+    )) as any[];
 
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);

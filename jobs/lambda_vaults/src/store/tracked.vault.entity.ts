@@ -2,13 +2,28 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { ChainIdEnum } from '@app/common';
 
+interface MapItem {
+  dbId: string; // '123'
+  dtoName: string; // 'IntegrationPoolTokenDto'
+}
+
+interface MappingToken extends MapItem {
+  positionInPool?: number;
+  tokens?: MappingToken[];
+}
+
+interface Mapping extends MapItem {
+  rewards: MappingToken[];
+  stakingToken: MappingToken;
+}
+
 @Entity({ name: 'tracked_vault' })
 export class TrackedVault {
   @PrimaryColumn({ name: 'id' })
   id: number;
 
   @Column({ name: 'mapping', type: 'json' })
-  mapping: any;
+  mapping: Mapping[];
 
   @Column({ name: 'feature' })
   feature: string;

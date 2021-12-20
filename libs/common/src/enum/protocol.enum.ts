@@ -1,22 +1,27 @@
 export enum ProjectEnum {
   aave = 'aave',
+  alpaca = 'alpaca',
   autofarm = 'autofarm',
+  badger = 'badger',
   balancer = 'balancer',
-  curve = 'curve',
   compound = 'compound',
+  convex = 'convex',
+  curve = 'curve',
+  ellipsis = 'ellipsis',
   pancake = 'pancake',
   pangolin = 'pangolin',
   quickswap = 'quickswap',
+  raydium = 'raydium',
   spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
-  uniswap = 'uniswap',
-  alpaca = 'alpaca',
-  yearn = 'yearn',
   traderjoe = 'traderjoe',
-  ellipsis = 'ellipsis',
-  raydium = 'raydium',
+  uniswap = 'uniswap',
   viperswap = 'viperswap',
-  badger = 'badger',
+  yearn = 'yearn',
+}
+
+export enum ConvexProtocolEnum {
+  Convex = 'Convex',
 }
 
 export enum YearnProtocolEnum {
@@ -98,6 +103,7 @@ export const ProtocolNameEnum = {
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
   ...CompoundProtocolEnum,
+  ...ConvexProtocolEnum,
   ...CurveProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,

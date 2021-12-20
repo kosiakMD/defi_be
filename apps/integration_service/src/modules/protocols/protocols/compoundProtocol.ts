@@ -1,4 +1,4 @@
-import { plainToClass } from 'class-transformer';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -11,7 +11,6 @@ import {
   ChainDto,
   ChainIdEnum,
   IntegrationClaimableTokenDto,
-  IntegrationFeaturesDataDto,
   LendingErcToken,
   LendingPositionDto,
   Logger,
@@ -43,10 +42,6 @@ import {
 import { CToken } from './compound/contracts/CToken';
 import { Comptroller } from './compound/contracts/Comptroller';
 
-export declare type ClassConstructor<T> = {
-  new (...args: any[]): T;
-};
-
 @Injectable()
 export class CompoundProtocol extends BasicProtocol {
   readonly chains = [ChainAbbrEnum.eth];
@@ -71,11 +66,6 @@ export class CompoundProtocol extends BasicProtocol {
   ) {
     super();
   }
-
-  public getAllFeaturesData?(
-    address: Address,
-    chain?: ChainDto,
-  ): Promise<IntegrationFeaturesDataDto>;
 
   public async getAllFeaturesBaseData(
     addresses: Address[],

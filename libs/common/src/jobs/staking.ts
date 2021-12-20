@@ -27,14 +27,12 @@ export class UnderlyingStakingLp extends ERC20Token {
 }
 
 export class IntegrationERC20TokenDto extends ERC20Token {
-  price?: number = null;
   value?: number = null;
   balance?: number = null;
   tokens?: Array<IntegrationPoolTokenDto | UnderlyingStakingLp> = [];
 }
 
 export class CurveIntegrationERC20TokenDto extends ERC20Token {
-  price?: number = null;
   value?: number = null;
   balance?: number = null;
   tokens?: Array<IntegrationPoolTokenDto | UnderlyingStakingLp> = [];
@@ -42,7 +40,6 @@ export class CurveIntegrationERC20TokenDto extends ERC20Token {
 
 export class IntegrationClaimableTokenDto extends ERC20Token {
   claimableData?: ClaimableDto = plainToClass(ClaimableDto, {});
-  price?: number = null;
   apr?: number;
 }
 
@@ -57,7 +54,7 @@ export class IntegrationStakingPositionDto {
   staked: string = null;
   stats: Stats = plainToClass(Stats, {});
   stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
-  rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  rewards: IntegrationClaimableTokenDto[] = [];
   // data not included to feature but need to have to get realtime data
   extra?: any = {};
 }

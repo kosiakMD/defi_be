@@ -247,7 +247,7 @@ export class BalancesService {
     });
   }
 
-  private getPastDate(seconds = 86400) {
+  private getPastDate(seconds) {
     const past = new Date(new Date().setSeconds(new Date().getSeconds() - seconds));
     return roundToNearestHour(past);
   }
@@ -391,7 +391,7 @@ export class BalancesService {
     // If its a historic block we can cache for much longer,
     // as the target block only updates once an hour
     const cacheKey = block
-      ? [chainId, address, assets, block.block, this.getPastDate(86400).getTime()].join('-')
+      ? [chainId, address, assets, block.block].join('-')
       : [chainId, address, assets, 'latest'].join('-');
     const ttl = block ? 65 * 60 : 50;
 

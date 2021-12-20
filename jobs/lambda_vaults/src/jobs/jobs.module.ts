@@ -26,6 +26,9 @@ import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { TraderJoeSubgraph } from './traderjoe/traderjoe.subgraph';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { ViperswapPools } from './viperswap/viperswap.pools';
+import { BadgerStakingPLG } from './badger/badger.staking.plg';
+import { BadgerStakingArbi } from './badger/badger.staking.arbi';
+import { BadgerStakingEth } from './badger/badger.staking.eth';
 
 const Jobs = [
   CurvePools,
@@ -44,6 +47,9 @@ const Jobs = [
   AutofarmApiService,
   ViperswapStaking,
   ViperswapPools,
+  BadgerStakingPLG,
+  BadgerStakingArbi,
+  BadgerStakingEth,
 ];
 
 @Module({

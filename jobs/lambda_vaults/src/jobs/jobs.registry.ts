@@ -15,6 +15,9 @@ import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { ViperswapPools } from './viperswap/viperswap.pools';
+import { BadgerStakingPLG } from './badger/badger.staking.plg';
+import { BadgerStakingArbi } from './badger/badger.staking.arbi';
+import { BadgerStakingEth } from './badger/badger.staking.eth';
 
 @Injectable()
 export class JobsRegistry {
@@ -35,6 +38,9 @@ export class JobsRegistry {
     raydiumStaking: RaydiumStaking,
     viperswapStaking: ViperswapStaking,
     viperswapPools: ViperswapPools,
+    badgerStakingPLG: BadgerStakingPLG,
+    badgerStakingArbi: BadgerStakingArbi,
+    badgerStakingEth: BadgerStakingEth,
   ) {
     this.registry.set(curvePools.placeholder, curvePools);
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
@@ -50,5 +56,8 @@ export class JobsRegistry {
     this.registry.set(raydiumStaking.placeholder, raydiumStaking);
     this.registry.set(viperswapStaking.placeholder, viperswapStaking);
     this.registry.set(viperswapPools.placeholder, viperswapPools);
+    this.registry.set(badgerStakingPLG.placeholder, badgerStakingPLG);
+    this.registry.set(badgerStakingArbi.placeholder, badgerStakingArbi);
+    this.registry.set(badgerStakingEth.placeholder, badgerStakingEth);
   }
 }

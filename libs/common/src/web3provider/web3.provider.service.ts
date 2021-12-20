@@ -30,6 +30,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.opt, 'OPT_URL');
     this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
     this.setProvider(ChainIdEnum.xdai, 'XDAI_URL');
+    this.setProvider(ChainIdEnum.arbi, 'ARBITRUM_URL');
 
     // TODO: Move contracts to configs
     this.setMulticall(ChainIdEnum.arbi, '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089');
@@ -47,6 +48,7 @@ export class Web3ProviderService {
     // this.setMulticall(ChainIdEnum.opt, '');
     this.setMulticall(ChainIdEnum.plg, '0xa1b2b503959aedd81512c37e9dce48164ec6a94d');
     this.setMulticall(ChainIdEnum.xdai, '0xe849A78ed40691d1e1512DbCBB3bcd78491ddba9');
+    this.setMulticall(ChainIdEnum.arbi, '0xAb16069D3E9E352343B2040ce7d7715C585994f9');
   }
 
   public getInstanceByChainId(chain: ChainIdEnum): Web3Interface {

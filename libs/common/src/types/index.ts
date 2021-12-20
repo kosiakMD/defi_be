@@ -16,6 +16,7 @@ import {
   UniswapProtocolEnum,
   ViperswapProtocolEnum,
   YearnProtocolEnum,
+  BadgerProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -40,7 +41,8 @@ export type ProtocolName =
   | TraderjoeProtocolEnum
   | UniswapProtocolEnum
   | ViperswapProtocolEnum
-  | YearnProtocolEnum;
+  | YearnProtocolEnum
+  | BadgerProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

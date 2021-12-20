@@ -48,6 +48,8 @@ import YearnProtocolV2 from './protocols/yearnProtocolV2';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
+import BadgerProtocol from './protocols/badger/badger.protocol';
+import { BadgerStaking } from './protocols/badger/badger.staking';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -80,6 +82,7 @@ const Pancake = [
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
+const Badger = [BadgerProtocol, BadgerStaking];
 
 @Module({
   imports: [
@@ -108,6 +111,7 @@ const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
     ...Autofarm,
     ...Raydium,
     ...Viperswap,
+    ...Badger,
     ProtocolService,
     Mapper,
     AlpacaApiService,

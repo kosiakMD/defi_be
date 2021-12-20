@@ -126,6 +126,11 @@ export class JobsRunner {
       });
     });
 
+    // will be removed in future
+    jobPlaceholdersSet.add('3_BadgerDAO_staking');
+    jobPlaceholdersSet.add('5_BadgerDAO_staking');
+    jobPlaceholdersSet.add('1_BadgerDAO_staking');
+
     // This has to be hardcoded for convex until Curve is supported on the front end
     // TODO: remove after Curve integration is complete
     jobPlaceholdersSet.add('1_Curve_pools');

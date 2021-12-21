@@ -1,14 +1,12 @@
+import axios from 'axios';
+
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
 import { concatStrings } from '@app/common/utils';
-import {
-  ChainCoinAddresses,
-  CoingeckoCoinIds,
-  getCoingeckoPlatformId,
-} from '@app/common/utils/chains';
+import { ChainCoinAddresses, getCoingeckoPlatformId } from '@app/common/utils/chains';
 import { toChunkedArray } from '@app/common/utils/transform';
 
-import { priceUpdateLimitInHour } from './config';
+import { priceUpdateLimitInHour, solPublicAssetsApi } from './config';
 import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { CoingeckoRequest, CoingeckoService } from './services/coingecko.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
@@ -33,6 +31,8 @@ export async function process(): Promise<void> {
     const filteredAssets = getFilterDbAssets(allAssets, allCurrentPricesMap);
 
     const chainAssetsMap = await getAssetsPerChainMap(filteredAssets);
+    // remove solana assets
+    chainAssetsMap.delete(ChainIdEnum.sol.toString());
 
     const requestMap = buildCoingeckoRequestsMap(chainAssetsMap);
 
@@ -42,7 +42,7 @@ export async function process(): Promise<void> {
       ),
     );
 
-    const chainsPrices: CurrentPriceInterface[] = [];
+    let chainsPrices: CurrentPriceInterface[] = [];
     let index = 0;
     for (const key of requestMap.keys()) {
       // in this case status will always be fulfilled, check is not required
@@ -72,20 +72,35 @@ export async function process(): Promise<void> {
     }
 
     // only solana:
-    const executedNativeCoinsRequests = await CoingeckoService.simplePrice({
-      ids: CoingeckoCoinIds[ChainIdEnum.sol],
-      vsCurrencies: CurrencyEnum.usd,
+    const solPriceRequests = getSolanaPriceRequests();
+    const executedSolPriceRequests = await Promise.allSettled(
+      solPriceRequests.map((url) => {
+        return axios.get(url);
+      }),
+    );
+    const solPrices: CurrentPriceInterface[] = [];
+    executedSolPriceRequests.forEach((result) => {
+      if (result.status !== 'rejected') {
+        result.value.data.data.forEach((asset) => {
+          if (asset.priceUst && (!asset.tag || (asset.tag && !asset.tag.includes('lp-token')))) {
+            solPrices.push({
+              address:
+                asset.mintAddress === 'So11111111111111111111111111111111111111112'
+                  ? ChainCoinAddresses[ChainIdEnum.sol]
+                  : asset.mintAddress,
+              price: asset.priceUst,
+              chainId: ChainIdEnum.sol,
+              currencyId: CurrencyIdEnum.usd,
+              sourceId: PriceSourcePriority.coingecko,
+            });
+          }
+        });
+      }
     });
-    chainsPrices.push({
-      address: ChainCoinAddresses[ChainIdEnum.sol],
-      price: executedNativeCoinsRequests[CoingeckoCoinIds[ChainIdEnum.sol]].usd,
-      chainId: ChainIdEnum.sol,
-      currencyId: CurrencyIdEnum.usd,
-      sourceId: PriceSourcePriority.coingecko,
-    });
+
+    chainsPrices = chainsPrices.concat(solPrices);
 
     await PriceService.saveAssetsPrices(chainsPrices);
-
     logger.info(`${chainsPrices.length} prices stored`);
   } catch (e) {
     logger.error('Processing prices failed', e.message);
@@ -127,6 +142,28 @@ function getAssetsPerChainMap(assets: AssetsApiDto[]): Map<string, AssetsApiDto[
     assetsMap.get(chainId).push(a);
   });
   return assetsMap;
+}
+
+function getSolanaPriceRequests() {
+  const requests: string[] = [];
+  const limit = 50;
+  const totalLimit = 600;
+  // get first 1000 assets from api
+  for (let i = 0; i < totalLimit; i += limit) {
+    requests.push(
+      solPublicAssetsApi +
+        '/token/list' +
+        '?' +
+        'sortBy=market_cap' +
+        '&' +
+        'direction=desc' +
+        '&' +
+        `limit=${limit}` +
+        '&' +
+        `offset=${i}`,
+    );
+  }
+  return requests;
 }
 
 function getFilterDbAssets(

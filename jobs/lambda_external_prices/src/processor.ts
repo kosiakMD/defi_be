@@ -31,8 +31,6 @@ export async function process(): Promise<void> {
     const filteredAssets = getFilterDbAssets(allAssets, allCurrentPricesMap);
 
     const chainAssetsMap = await getAssetsPerChainMap(filteredAssets);
-    // remove solana assets
-    chainAssetsMap.delete(ChainIdEnum.sol.toString());
 
     const requestMap = buildCoingeckoRequestsMap(chainAssetsMap);
 
@@ -78,7 +76,7 @@ export async function process(): Promise<void> {
         return axios.get(url);
       }),
     );
-    const solPrices: CurrentPriceInterface[] = [];
+    let solPrices: CurrentPriceInterface[] = [];
     executedSolPriceRequests.forEach((result) => {
       if (result.status !== 'rejected') {
         result.value.data.data.forEach((asset) => {
@@ -97,7 +95,7 @@ export async function process(): Promise<void> {
         });
       }
     });
-
+    solPrices = solPrices.filter((sp) => !chainsPrices.find((cp) => cp.address === sp.address));
     chainsPrices = chainsPrices.concat(solPrices);
 
     await PriceService.saveAssetsPrices(chainsPrices);

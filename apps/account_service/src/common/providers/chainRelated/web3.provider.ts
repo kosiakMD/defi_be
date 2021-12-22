@@ -23,6 +23,7 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.opt]: 'OPT_URL',
   [ChainIdEnum.plg]: 'POLYGON_URL',
   [ChainIdEnum.xdai]: 'XDAI_URL',
+  [ChainIdEnum.near]: 'NEAR_URL'
 };
 
 @Injectable()

@@ -172,6 +172,12 @@ export const validationSchema = Joi.object({
   OPTIMISM_BALANCES_CHECKER_ADDRESS: Joi.string() //
     .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
+  NEAR_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  NEAR_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
 
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //

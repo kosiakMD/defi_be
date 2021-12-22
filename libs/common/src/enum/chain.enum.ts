@@ -16,6 +16,7 @@ export enum ChainAbbrEnum {
   boba = 'boba',
   kcc = 'kcc',
   opt = 'opt',
+  near = 'near'
 }
 
 export enum ChainNameEnum {
@@ -36,6 +37,7 @@ export enum ChainNameEnum {
   boba = 'boba',
   kcc = 'kucoin',
   opt = 'optimism',
+  near = 'aurora'
 }
 
 export enum ChainIdEnum {
@@ -56,6 +58,7 @@ export enum ChainIdEnum {
   boba = 15,
   kcc = 16,
   opt = 17,
+  near = 18
 }
 
 // https://api.coingecko.com/api/v3/asset_platforms
@@ -77,6 +80,7 @@ export enum CoingeckoPlatformEnum {
   boba = 'boba',
   kcc = 'kucoin-community-chain',
   opt = 'optimistic-ethereum',
+  near = 'near-protocol'
 }
 
 export enum AbsoluteChainIdEnum {
@@ -97,6 +101,7 @@ export enum AbsoluteChainIdEnum {
   boba = 288,
   kcc = 321,
   opt = 10,
+  near = 1313161554
 }
 
 export enum CurrencyEnum {

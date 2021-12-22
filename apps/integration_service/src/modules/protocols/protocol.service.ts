@@ -70,6 +70,7 @@ import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 import BadgerProtocol from './protocols/badger/badger.protocol';
+import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -98,6 +99,7 @@ export class ProtocolService {
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly badgerProtocol: BadgerProtocol,
+    private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -119,6 +121,7 @@ export class ProtocolService {
       yearnProtocolV1,
       yearnProtocolV2,
       badgerProtocol,
+      defiKingdomsProtocol,
     ];
   }
 

@@ -29,6 +29,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { BadgerStakingPLG } from './badger/badger.staking.plg';
 import { BadgerStakingArbi } from './badger/badger.staking.arbi';
 import { BadgerStakingEth } from './badger/badger.staking.eth';
+import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
+import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 
 const Jobs = [
   CurvePools,
@@ -50,6 +52,8 @@ const Jobs = [
   BadgerStakingPLG,
   BadgerStakingArbi,
   BadgerStakingEth,
+  DefiKingdomsStaking,
+  DefiKingdomsPools,
 ];
 
 @Module({

@@ -50,6 +50,9 @@ import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
+import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
+import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
+import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -83,6 +86,7 @@ const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
+const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
 
 @Module({
   imports: [
@@ -112,6 +116,7 @@ const Badger = [BadgerProtocol, BadgerStaking];
     ...Raydium,
     ...Viperswap,
     ...Badger,
+    ...DefiKingdoms,
     ProtocolService,
     Mapper,
     AlpacaApiService,

@@ -136,6 +136,9 @@ export class JobsRunner {
     jobPlaceholdersSet.add('1_Curve_pools');
     jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
+    
+    jobPlaceholdersSet.add('10_DefiKingdoms_staking');
+    jobPlaceholdersSet.add('10_DefiKingdoms_pools');
 
     jobPlaceholdersSet.add('10_Viperswap_staking');
     jobPlaceholdersSet.add('10_Viperswap_pools');

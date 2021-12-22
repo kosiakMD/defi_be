@@ -18,6 +18,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { BadgerStakingPLG } from './badger/badger.staking.plg';
 import { BadgerStakingArbi } from './badger/badger.staking.arbi';
 import { BadgerStakingEth } from './badger/badger.staking.eth';
+import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
+import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 
 @Injectable()
 export class JobsRegistry {
@@ -41,6 +43,8 @@ export class JobsRegistry {
     badgerStakingPLG: BadgerStakingPLG,
     badgerStakingArbi: BadgerStakingArbi,
     badgerStakingEth: BadgerStakingEth,
+    defiKingdomsStaking: DefiKingdomsStaking,
+    defiKingdomsPools: DefiKingdomsPools,
   ) {
     this.registry.set(curvePools.placeholder, curvePools);
     this.registry.set(pancakeStaking.placeholder, pancakeStaking);
@@ -59,5 +63,7 @@ export class JobsRegistry {
     this.registry.set(badgerStakingPLG.placeholder, badgerStakingPLG);
     this.registry.set(badgerStakingArbi.placeholder, badgerStakingArbi);
     this.registry.set(badgerStakingEth.placeholder, badgerStakingEth);
+    this.registry.set(defiKingdomsStaking.placeholder, defiKingdomsStaking);
+    this.registry.set(defiKingdomsPools.placeholder, defiKingdomsPools);
   }
 }

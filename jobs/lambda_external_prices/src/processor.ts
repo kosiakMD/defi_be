@@ -40,6 +40,7 @@ export async function process(): Promise<void> {
       ),
     );
 
+    const setOfExistedPrices: Set<string> = new Set<string>();
     let chainsPrices: CurrentPriceInterface[] = [];
     let index = 0;
     for (const key of requestMap.keys()) {
@@ -54,6 +55,7 @@ export async function process(): Promise<void> {
         }
         const pricesToPriceService: CurrentPriceInterface[] = Object.keys(chainResp.value).map(
           (address) => {
+            setOfExistedPrices.add(key + '_' + address);
             return {
               address: address,
               price: chainResp.value[address].usd,
@@ -95,7 +97,9 @@ export async function process(): Promise<void> {
         });
       }
     });
-    solPrices = solPrices.filter((sp) => !chainsPrices.find((cp) => cp.address === sp.address));
+      solPrices = solPrices.filter(
+      (sp) => !setOfExistedPrices.has(sp.chainId.toString() + '_' + sp.address),
+    );
     chainsPrices = chainsPrices.concat(solPrices);
 
     await PriceService.saveAssetsPrices(chainsPrices);

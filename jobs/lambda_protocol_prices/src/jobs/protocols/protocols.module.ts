@@ -6,6 +6,7 @@ import { TheGraphModule } from '../../thegraph/thegraph.module';
 import { AaveProtocol } from './aave/aave.protocol';
 import { CompoundProtocol } from './compound/compound.protocol';
 import { IearnProtocol } from './iearn/iearn.protocol';
+import { SynthetixProtocol } from './synthetix/synthetix.protocol';
 import { YearnProtocol } from './yearn/yearn.protocol';
 
 const protocols = [
@@ -13,6 +14,7 @@ const protocols = [
   CompoundProtocol,
   YearnProtocol,
   IearnProtocol,
+  SynthetixProtocol,
 ];
 
 @Module({

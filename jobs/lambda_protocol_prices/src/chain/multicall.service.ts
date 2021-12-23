@@ -56,4 +56,9 @@ export class MulticallService {
 
     return response;
   }
+
+  async call(call: CallData) {
+    const results = await this.handleInBatches(new Map([['single-call', call]]));
+    return results.get('single-call').output.data;
+  }
 }

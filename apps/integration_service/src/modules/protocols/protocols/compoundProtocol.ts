@@ -33,7 +33,12 @@ import { Asset, BaseData } from '../../../common/interfaces/transactions.interfa
 import { AccountService } from '../../microservices/account.service';
 import { CompoundSubgraph } from '../../subgraphs/subgraphs/compound.subgraph';
 import BasicProtocol from './basicProtocol';
-import { COMPTROLLER, CTOKEN_DECIMALS, REWARD_TOKEN } from './compound/compound.constants';
+import {
+  COMPOUND_LENS,
+  COMPTROLLER,
+  CTOKEN_DECIMALS,
+  REWARD_TOKEN,
+} from './compound/compound.constants';
 import {
   ICompoundAccount,
   ICompoundAccountResponse,
@@ -41,7 +46,7 @@ import {
   ICompoundToken,
 } from './compound/compound.interfaces';
 import { CToken } from './compound/contracts/CToken';
-import { Comptroller } from './compound/contracts/Comptroller';
+import { CompoundLens } from './compound/contracts/CompoundLens';
 
 @Injectable()
 export class CompoundProtocol extends BasicProtocol {
@@ -158,8 +163,15 @@ export class CompoundProtocol extends BasicProtocol {
       }),
     );
 
-    const comptroller = new Comptroller(COMPTROLLER[chain.id]);
-    balanceCalls.set(this.claimableLabel(account), comptroller.compAccrued(account.id));
+    const compoundLens = new CompoundLens(COMPOUND_LENS[chain.id]);
+    balanceCalls.set(
+      this.claimableLabel(account),
+      compoundLens.getCompBalanceMetadataExt(
+        REWARD_TOKEN[chain.id],
+        COMPTROLLER[chain.id],
+        account.id,
+      ),
+    );
     return this.multicall.handleInBatches(balanceCalls, chain.id);
   }
 
@@ -231,10 +243,9 @@ export class CompoundProtocol extends BasicProtocol {
     rewardToken,
   ): BaseDataClaimable {
     const items = [];
-    const claimable = normalizeDecimals(
-      multicallResults.get(this.claimableLabel(account)).output.data.toString(),
-      18,
-    );
+    const raw = multicallResults.get(this.claimableLabel(account)).output.data;
+
+    const claimable = normalizeDecimals(raw.allocated, 18);
 
     if (claimable) {
       items.push(this.getClaimableRewardDto(rewardToken, claimable));

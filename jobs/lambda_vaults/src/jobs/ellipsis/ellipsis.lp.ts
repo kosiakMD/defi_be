@@ -216,7 +216,7 @@ export class EllipsisLp implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp = TrackedVaultItemsMap.get(uniqueId);
     return temp ?? (await this.saveItemToDb(item, uniqueId));
   }
 

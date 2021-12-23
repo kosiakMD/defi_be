@@ -109,13 +109,8 @@ export class DbMapping {
   }
 
   async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
-    if (temp) {
-      return temp;
-    }
-    if (!temp) {
-      return await this.saveItemToDb(item, uniqueId);
-    }
+    const temp = TrackedVaultItemsMap.get(uniqueId);
+    return temp ?? this.saveItemToDb(item, uniqueId);
   }
 
   async saveItemToDb(item, uniqueId: string): Promise<TrackedVaultItem> {

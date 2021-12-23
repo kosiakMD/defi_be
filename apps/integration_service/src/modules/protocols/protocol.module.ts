@@ -19,7 +19,13 @@ import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import BadgerProtocol from './protocols/badger/badger.protocol';
+import { BadgerStaking } from './protocols/badger/badger.staking';
+import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
+import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
+import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
@@ -43,21 +49,17 @@ import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
-import YearnProtocolV1 from './protocols/yearnProtocolV1';
-import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
-import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
-import BadgerProtocol from './protocols/badger/badger.protocol';
-import { BadgerStaking } from './protocols/badger/badger.staking';
-import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
-import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
-import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
+import YearnProtocolV1 from './protocols/yearnProtocolV1';
+import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
+  BeefyProtocol,
   CompoundProtocol,
   PangolinProtocol,
   QuickswapProtocol,

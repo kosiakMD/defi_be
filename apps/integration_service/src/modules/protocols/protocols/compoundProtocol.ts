@@ -1,4 +1,4 @@
-import { plainToClass } from 'class-transformer';
+import { ClassConstructor, plainToClass } from 'class-transformer';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -42,10 +42,6 @@ import {
 } from './compound/compound.interfaces';
 import { CToken } from './compound/contracts/CToken';
 import { Comptroller } from './compound/contracts/Comptroller';
-
-export declare type ClassConstructor<T> = {
-  new (...args: any[]): T;
-};
 
 @Injectable()
 export class CompoundProtocol extends BasicProtocol {

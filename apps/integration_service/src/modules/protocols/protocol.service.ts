@@ -53,8 +53,11 @@ import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
+import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
@@ -69,8 +72,6 @@ import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import BadgerProtocol from './protocols/badger/badger.protocol';
-import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -83,7 +84,10 @@ export class ProtocolService {
     private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly alpacaProtocol: AlpacaProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
+    private readonly badgerProtocol: BadgerProtocol,
+    private readonly beefyProtocol: BeefyProtocol,
     private readonly compoundProtocol: CompoundProtocol,
+    private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pancakeProtocolV2: PancakeProtocol,
@@ -98,14 +102,15 @@ export class ProtocolService {
     private readonly viperswapProtocol: ViperswapProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
-    private readonly badgerProtocol: BadgerProtocol,
-    private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
       alpacaProtocol,
       autofarmProtocol,
+      badgerProtocol,
+      beefyProtocol,
       compoundProtocol,
+      defiKingdomsProtocol,
       ellipsisProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
@@ -120,8 +125,6 @@ export class ProtocolService {
       viperswapProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
-      badgerProtocol,
-      defiKingdomsProtocol,
     ];
   }
 

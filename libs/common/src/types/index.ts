@@ -3,6 +3,7 @@ import {
   AaveProtocolEnum,
   AlpacaProtocolEnum,
   AutofarmProtocolEnum,
+  BeefyProtocolEnum,
   CompoundProtocolEnum,
   CurveProtocolEnum,
   EllipsisProtocolEnum,
@@ -30,6 +31,7 @@ export type ProtocolName =
   | AaveProtocolEnum
   | AlpacaProtocolEnum
   | AutofarmProtocolEnum
+  | BeefyProtocolEnum
   | CompoundProtocolEnum
   | CurveProtocolEnum
   | EllipsisProtocolEnum

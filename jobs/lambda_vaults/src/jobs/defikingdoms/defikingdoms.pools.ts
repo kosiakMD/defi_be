@@ -21,17 +21,15 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toLiquidityPoolFeature } from '../../utils/conventer';
 import { toDecimals } from '../../utils/number';
-import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
-import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { JobBase } from '../job.base';
-import { Abis } from './contracts/abis';
+import { JobPoolsBase } from '../job.pools.base';
 import { DefiKingdomsAddresses } from './addresses';
+import { Abis } from './contracts/abis';
 
 @Injectable()
-export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements JobInterface {
+export class DefiKingdomsPools extends JobPoolsBase<LiquidityPoolFeature> implements JobInterface {
   chain = ChainIdEnum.harm;
   feature = FeatureEnum.pools;
   protocol = ProtocolNameEnum.defikingdoms;
@@ -59,23 +57,7 @@ export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements 
     this.contract = new Abis(DefiKingdomsAddresses.masterGardener);
   }
 
-  async manageMapping(): Promise<void> {
-    let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-
-    if (
-      !jobMapping.mapping || 
-      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
-    ) {
-      this.logger.log('it is time to update mapping', this.placeholder);
-      jobMapping = await this.rebuildMapping(jobMapping);
-    }
-
-    jobMapping.mapping.forEach((jm) => {
-      this.mapping.push(IntegrationDataConverter.toDTO(jm));
-    });
-  }
-
-  async rebuildMapping(jobMapping: TrackedVault): Promise<any> {
+  async rebuildMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
     this.logger.log('building initial mapping', this.placeholder);
 
     const liquidityPools: LiquidityPoolFeature[] = [];
@@ -96,7 +78,8 @@ export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements 
         `not necessary to update existed mapping, db poolLength ${poolIdFrom}, chain poolLength ${poolIdTo}`,
         this.placeholder,
       );
-      return [];
+
+      return jobMapping;
     }
 
     // Go throw all pools
@@ -129,7 +112,9 @@ export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements 
     }
 
     // add to DB
-    const mappings = await Promise.all(liquidityPools.map(async (lp) => await this.toDbMapping(lp)));
+    const mappings = await Promise.all(
+      liquidityPools.map(async (lp) => await this.toDbMapping(lp)),
+    );
 
     jobMapping.mapping = mappings;
 
@@ -157,7 +142,7 @@ export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements 
     // pool tokens
     mappedDto.tokens = [];
 
-    const promisesArr = liquidityPool.tokens.map(t => {
+    const promisesArr = liquidityPool.tokens.map((t) => {
       const tokenId = concatStrings(this.chain, t.address);
       return this.getDbItem(t, tokenId).then((tokenItem: TrackedVaultItem) => {
         mappedDto.tokens.push({
@@ -180,9 +165,7 @@ export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements 
   }
 
   async getChainPoolLength(): Promise<BigNumber> {
-    const call = new Map<string, CallData>([
-      [ this.poolLengthLabel(), this.contract.poolLength() ],
-    ]);
+    const call = new Map<string, CallData>([[this.poolLengthLabel(), this.contract.poolLength()]]);
     const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.harm);
     return callRsp.get(this.poolLengthLabel()).output.data;
   }
@@ -191,7 +174,7 @@ export class DefiKingdomsPools extends JobBase<LiquidityPoolFeature> implements 
     return Promise.resolve(undefined);
   }
 
-  async updateWithChainData(): Promise<any[]> {
+  async fillChainData(): Promise<LiquidityPoolFeature[]> {
     const batchCalls = [];
     this.mapping.forEach((m) => {
       if (m instanceof LiquidityPoolFeature) {

@@ -2,6 +2,7 @@ export enum ProjectEnum {
   aave = 'aave',
   autofarm = 'autofarm',
   balancer = 'balancer',
+  beefy = 'beefy',
   curve = 'curve',
   compound = 'compound',
   pancake = 'pancake',
@@ -27,6 +28,10 @@ export enum YearnProtocolEnum {
 
 export enum AaveProtocolEnum {
   AaveV2 = 'AaveV2',
+}
+
+export enum BeefyProtocolEnum {
+  Beefy = 'Beefy',
 }
 
 export enum UniswapProtocolEnum {
@@ -102,6 +107,7 @@ export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...BeefyProtocolEnum,
   ...CompoundProtocolEnum,
   ...CurveProtocolEnum,
   ...PancakeProtocolEnum,

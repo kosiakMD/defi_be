@@ -42,6 +42,8 @@ export class JobsRunner {
     this.jobsRegistry.registry.forEach((_, v) => {
       if (integrationServiceJobsPlaceholdersSet.has(v)) {
         jobsPlaceholdersIntersection.add(v);
+      } else {
+        this.logger.warn(`[${v}] was registered manually but is not running`);
       }
     });
 
@@ -54,15 +56,21 @@ export class JobsRunner {
 
     for (const placeholder of jobsPlaceholdersIntersection) {
       const existedDbJob = TrackedVaultsMap.get(placeholder) as TrackedVault;
-      if (existedDbJob) {
-        this.logger.log(
-          `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
-          JobsRunner.name,
+      if (!existedDbJob) {
+        this.logger.warn(
+          `[${placeholder}] has been registered but is missing the row in the database. Skipping.`,
         );
-        if (existedDbJob.isEnabled) {
-          await this.jobsRegistry.registry.get(placeholder).manageMapping();
-          this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
-        }
+        continue;
+      }
+
+      this.logger.log(
+        `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
+        JobsRunner.name,
+      );
+
+      if (existedDbJob.isEnabled) {
+        await this.jobsRegistry.registry.get(placeholder).manageMapping();
+        this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
       }
     }
 
@@ -136,12 +144,18 @@ export class JobsRunner {
     jobPlaceholdersSet.add('1_Curve_pools');
     jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
-    
+
     jobPlaceholdersSet.add('10_DefiKingdoms_staking');
     jobPlaceholdersSet.add('10_DefiKingdoms_pools');
 
     jobPlaceholdersSet.add('10_Viperswap_staking');
     jobPlaceholdersSet.add('10_Viperswap_pools');
+
+    jobPlaceholdersSet.add('2_Beefy_staking');
+    jobPlaceholdersSet.add('4_Beefy_staking');
+    jobPlaceholdersSet.add('6_Beefy_staking');
+    jobPlaceholdersSet.add('9_Beefy_staking');
+    jobPlaceholdersSet.add('14_Beefy_staking');
 
     return jobPlaceholdersSet;
   }

@@ -183,7 +183,7 @@ export class RaydiumPools implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId);
     if (temp) {
       return temp;
     }

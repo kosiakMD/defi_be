@@ -267,7 +267,13 @@ export class AutofarmStakingPLG implements JobInterface {
             ChainIdEnum.bsc,
           );
 
-          m = this.getDataFromMulticallRsp(multicallRsp, m, lockedTotal, prices, priceToken0);
+          m = this.getDataFromMulticallRsp(
+            multicallRsp,
+            m,
+            lockedTotal,
+            prices,
+            priceToken0[token0Address],
+          );
 
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
           m.rewards[1].price = Number(prices[m.rewards[1].address]);

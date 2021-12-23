@@ -20,6 +20,7 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toLiquidityPoolFeature } from '../../utils/conventer';
 import { toDecimals } from '../../utils/number';
+import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
@@ -27,7 +28,6 @@ import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { TraderjoeAddresses } from './addresses';
-import { isTimeToDo } from '../../utils/time';
 import { TraderJoeSubgraph } from './traderjoe.subgraph';
 
 @Injectable()
@@ -58,9 +58,9 @@ export class TraderjoePools implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    
+
     if (
-      !jobMapping.mapping || 
+      !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       jobMapping = await this.buildInitialMapping(jobMapping);
@@ -77,12 +77,12 @@ export class TraderjoePools implements JobInterface {
     const liquidityPools: LiquidityPoolFeature[] = [];
 
     const lpTokenAddresses: string[] = await this.getPools(this.chain);
-    
+
     for (let i = 0; i < lpTokenAddresses.length; i++) {
       const tokenAddress = lpTokenAddresses[i];
       await this.lpProcessing(tokenAddress, liquidityPools);
     }
-    
+
     // add to DB
     const mappings = [];
     for (const lp of liquidityPools) {
@@ -99,9 +99,9 @@ export class TraderjoePools implements JobInterface {
 
   private async getPools(chainId) {
     const response = await this.subgraph.getPools(chainId);
-    
-    const lpAddresses = response.pairs.map(lp => lp.id);
-    
+
+    const lpAddresses = response.pairs.map((lp) => lp.id);
+
     return lpAddresses;
   }
 
@@ -162,7 +162,7 @@ export class TraderjoePools implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId);
     if (temp) {
       return temp;
     }
@@ -231,8 +231,12 @@ export class TraderjoePools implements JobInterface {
     ]);
 
     const callRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
-    const poolLengthV2 = Number(callRsp.get(this.poolLengthLabel(TraderjoeAddresses.chiefV2)).output.data);
-    const poolLengthV3 = Number(callRsp.get(this.poolLengthLabel(TraderjoeAddresses.chiefV3)).output.data);
+    const poolLengthV2 = Number(
+      callRsp.get(this.poolLengthLabel(TraderjoeAddresses.chiefV2)).output.data,
+    );
+    const poolLengthV3 = Number(
+      callRsp.get(this.poolLengthLabel(TraderjoeAddresses.chiefV3)).output.data,
+    );
 
     return [poolLengthV2, poolLengthV3];
   }

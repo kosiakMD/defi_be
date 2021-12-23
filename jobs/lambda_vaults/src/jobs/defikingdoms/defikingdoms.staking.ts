@@ -13,35 +13,37 @@ import {
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
-import { concatStrings } from '@app/common/utils';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 import { ERC20Token } from '@app/common/jobs/token';
+import { concatStrings } from '@app/common/utils';
+import { Web3ProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
-import { toDecimals } from '../../utils/number';
-import { isTimeToDo } from '../../utils/time';
-import { TrackedVaultsMap } from '../data/tracked.vaults.map';
-import { IntegrationDataConverter } from '../integration.data.converter';
-import { JobInterface } from '../job.interface';
-import { JobBase } from '../job.base';
-import { calculateAPR } from '../utils/apr';
-import { Abis } from './contracts/abis';
-import { DefiKingdomsAddresses } from './addresses';
-import { StakingFeatureMapping } from '../dto/mappings';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
-import { Web3ProviderService } from '@app/common/web3provider';
+import { toDecimals } from '../../utils/number';
+import { TrackedVaultsMap } from '../data/tracked.vaults.map';
+import { StakingFeatureMapping } from '../dto/mappings';
+import { JobBase } from '../job.base';
+import { JobInterface } from '../job.interface';
+import { calculateAPR } from '../utils/apr';
+import { DefiKingdomsAddresses } from './addresses';
+import { Abis } from './contracts/abis';
 
 @Injectable()
-export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> implements JobInterface {
+export class DefiKingdomsStaking
+  extends JobBase<IntegrationStakingPositionDto>
+  implements JobInterface
+{
   chain = ChainIdEnum.harm;
   feature = FeatureEnum.staking;
   protocol = ProtocolNameEnum.defikingdoms;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
-  
+
   private contract: Abis;
   protected mapping = [];
 
@@ -64,22 +66,6 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
     ]);
   }
 
-  async manageMapping(): Promise<void> {
-    let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    
-    if (
-      !jobMapping.mapping || 
-      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
-    ) {
-      this.logger.log('it is time to update mapping', this.placeholder);
-      jobMapping = await this.rebuildMapping(jobMapping);
-    }
-
-    jobMapping.mapping.forEach((jm) => {
-      this.mapping.push(IntegrationDataConverter.toDTO(jm));
-    });
-  }
-
   /** completed for masterchief contract */
   async rebuildMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
     this.logger.log('building initial mapping', this.placeholder);
@@ -97,56 +83,65 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
       decimals: accountTokenDto.decimals,
     });
 
-    const poolsInfo: Map<string, any> = await this.getAllPoolInfo(DefiKingdomsAddresses.masterGardener);
+    const poolsInfo: Map<string, any> = await this.getAllPoolInfo(
+      DefiKingdomsAddresses.masterGardener,
+    );
 
-    await Promise.all(Array.from(poolsInfo.keys()).map(async (address) => {
-      try {
-        const poolTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
-          address,
-          this.chain,
-        );
+    await Promise.all(
+      Array.from(poolsInfo.keys()).map(async (address) => {
+        try {
+          const poolTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
+            address,
+            this.chain,
+          );
 
-        const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
-          address: poolTokenData.address,
-          name: poolTokenData.name,
-          symbol: poolTokenData.symbol,
-          decimals: poolTokenData.decimals,
-        });
-
-        if (poolTokenData.underlyingAssets) {
-          stakingToken.tokens = poolTokenData.underlyingAssets.map((pt) => {
-            const poolToken: IntegrationPoolTokenDto = plainToClass(IntegrationPoolTokenDto, {
-              address: pt.address,
-              name: pt.name,
-              symbol: pt.symbol,
-              decimals: pt.decimals,
-              positionInPool: pt.positionInPool,
-            });
-            return poolToken;
+          const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
+            address: poolTokenData.address,
+            name: poolTokenData.name,
+            symbol: poolTokenData.symbol,
+            decimals: poolTokenData.decimals,
           });
+
+          if (poolTokenData.underlyingAssets) {
+            stakingToken.tokens = poolTokenData.underlyingAssets.map((pt) => {
+              const poolToken: IntegrationPoolTokenDto = plainToClass(IntegrationPoolTokenDto, {
+                address: pt.address,
+                name: pt.name,
+                symbol: pt.symbol,
+                decimals: pt.decimals,
+                positionInPool: pt.positionInPool,
+              });
+              return poolToken;
+            });
+          }
+
+          const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+            IntegrationStakingPositionDto,
+            {
+              address: DefiKingdomsAddresses.masterGardener,
+              poolId: poolsInfo.get(address).id.toString(),
+              poolName: null,
+              rewards: [rewardToken],
+              stakingToken: stakingToken,
+            },
+          );
+
+          stakingFeatures.push(stakingPoolFeature);
+        } catch (e) {
+          this.logger.error(
+            `error to get token data from account service, chain [${this.chain}], address [${address}]`,
+            this.placeholder,
+          );
         }
-        
-        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-          address: DefiKingdomsAddresses.masterGardener,
-          poolId: poolsInfo.get(address).id.toString(),
-          poolName: null,
-          rewards: [rewardToken],
-          stakingToken: stakingToken,
-        });
+      }),
+    );
 
-        stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
-        this.logger.error(
-          `error to get token data from account service, chain [${this.chain}], address [${address}]`,
-          this.placeholder,
-        );
-      }
-    }));
+    const mappings = await Promise.all(
+      stakingFeatures.map(async (sf) => await this.toDbMapping(sf, this.chain)),
+    );
 
-    const mappings = await Promise.all(stakingFeatures.map(async sf => await this.toDbMapping(sf, this.chain)));
-    
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -203,10 +198,7 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
     await stakingPosition.rewards.forEach(async (reward) => {
       const rewardTokenUniqueId = concatStrings(chain, reward.address);
 
-      const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-        reward,
-        rewardTokenUniqueId,
-      );
+      const rewardTokenItem: TrackedVaultItem = await this.getDbItem(reward, rewardTokenUniqueId);
 
       mappedDto.rewards.push({
         dbId: rewardTokenItem.id,
@@ -249,7 +241,7 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
     return mappedDto;
   }
 
-  async updateWithChainData(): Promise<any[]> {
+  async fillChainData(): Promise<IntegrationStakingPositionDto[]> {
     const batchCalls = [];
 
     this.mapping.forEach((m) => {
@@ -258,17 +250,13 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
       }
     });
     batchCalls.push(...this.getCallsForChief(DefiKingdomsAddresses.masterGardener).entries());
-    
+
     const batchCallsMap = new Map<string, CallData>(batchCalls);
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(
-        pricedTokenAddresses,
-        CurrencyIdEnum.usd,
-        this.chain,
-      ),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.harm),
     ]);
 
@@ -281,14 +269,17 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
 
     this.mapping = this.mapping.map((m) => {
       if (m instanceof IntegrationStakingPositionDto) {
-        m = this.getDataFromMulticallRsp(multicallRsp, m, prices, DefiKingdomsAddresses.masterGardener);
+        m = this.getDataFromMulticallRsp(
+          multicallRsp,
+          m,
+          prices,
+          DefiKingdomsAddresses.masterGardener,
+        );
 
-        const { allocPoint } = multicallRsp.get(
-          this.poolInfoLabel(m),
-        ).output.data;
+        const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m)).output.data;
 
         m.rewards[0].price = Number(prices[m.rewards[0].address]);
-        
+
         const aprStats = {
           totalAllocPoints: totalAllocPoint,
           poolAllocPoints: allocPoint,
@@ -297,9 +288,9 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
           blockTime: blockTime,
           farmingPoolTVL: m.stats.tvl,
         };
-        
+
         m.rewards[0].apr = calculateAPR(aprStats);
-        
+
         return m;
       }
     });
@@ -369,27 +360,27 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
     }
 
     // balance of lp token on masterchief contract
-    calls.set(this.balanceOfLabel(stakingPosition, chiefContract), poolContract.balanceOf(chiefContract));
+    calls.set(
+      this.balanceOfLabel(stakingPosition, chiefContract),
+      poolContract.balanceOf(chiefContract),
+    );
 
     // poolInfo to calculate APR
     calls.set(this.poolInfoLabel(stakingPosition), this.contract.poolInfo(stakingPosition.poolId));
 
     // getNewRewardPerBlock to calculate APR
-    calls.set(this.getNewRewardPerBlock(stakingPosition), this.contract.getNewRewardPerBlock(stakingPosition.poolId));
+    calls.set(
+      this.getNewRewardPerBlock(stakingPosition),
+      this.contract.getNewRewardPerBlock(stakingPosition.poolId),
+    );
 
     return calls;
   }
 
   private getCallsForChief(chiefContract: DefiKingdomsAddresses) {
     return new Map<string, CallData>([
-      [
-        this.totalAllocPointLabel(chiefContract),
-        this.contract.totalAllocPoint(),
-      ],
-      [
-        this.rewardPerBlockLabel(chiefContract),
-        this.contract.rewardPerBlock(),
-      ],
+      [this.totalAllocPointLabel(chiefContract), this.contract.totalAllocPoint()],
+      [this.rewardPerBlockLabel(chiefContract), this.contract.rewardPerBlock()],
     ]);
   }
 
@@ -414,7 +405,9 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
   }
 
   private async getJewelsPerBlock() {
-    const currentBlock = await this.web3Provider.getInstanceByChainId(this.chain).eth.getBlockNumber();
+    const currentBlock = await this.web3Provider
+      .getInstanceByChainId(this.chain)
+      .eth.getBlockNumber();
 
     if (currentBlock < 20_583_967) {
       return 14;
@@ -422,7 +415,7 @@ export class DefiKingdomsStaking extends JobBase<IntegrationStakingPositionDto> 
       return 13;
     } else if (currentBlock < 21_188_767) {
       return 12;
-    } else if (currentBlock < 21_491_167 ) {
+    } else if (currentBlock < 21_491_167) {
       return 11;
     } else if (currentBlock < 21_793_567) {
       return 10;

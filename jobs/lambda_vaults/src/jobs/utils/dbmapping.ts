@@ -1,6 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { classToPlain, plainToClass } from 'class-transformer';
 
+import { Injectable } from '@nestjs/common';
+
 import { ChainIdEnum } from '@app/common';
 import {
   IntegrationClaimableTokenDto,
@@ -16,6 +18,7 @@ import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { StakingFeatureMapping } from '../dto/mappings';
 
+@Injectable()
 export class DbMapping {
   private availableDtosForConversion: Map<string, string>;
 
@@ -38,10 +41,7 @@ export class DbMapping {
     await stakingPosition.rewards.forEach(async (reward) => {
       const rewardTokenUniqueId = concatStrings(chain, reward.address);
 
-      const rewardTokenItem: TrackedVaultItem = await this.getDbItem(
-        reward,
-        rewardTokenUniqueId,
-      );
+      const rewardTokenItem = await this.getDbItem(reward, rewardTokenUniqueId);
 
       mappedDto.rewards.push({
         dbId: rewardTokenItem.id,
@@ -51,10 +51,7 @@ export class DbMapping {
 
     // staking token
     const stakingTokenUniqueId = concatStrings(chain, stakingPosition.stakingToken.address);
-    const stakingToken: TrackedVaultItem = await this.getDbItem(
-      stakingPosition.stakingToken,
-      stakingTokenUniqueId,
-    );
+    const stakingToken = await this.getDbItem(stakingPosition.stakingToken, stakingTokenUniqueId);
     mappedDto.stakingToken = {
       dbId: stakingToken.id,
       dtoName: stakingPosition.stakingToken.constructor.name,
@@ -64,9 +61,9 @@ export class DbMapping {
     if (stakingPosition.stakingToken.tokens) {
       mappedDto.stakingToken.tokens = [];
 
-      await stakingPosition.stakingToken.tokens.forEach(async t => {
+      await stakingPosition.stakingToken.tokens.forEach(async (t) => {
         const tokenId = concatStrings(chain, t.address);
-        const tokenItem: TrackedVaultItem = await this.getDbItem(t, tokenId);
+        const tokenItem = await this.getDbItem(t, tokenId);
         mappedDto.stakingToken.tokens.push({
           dbId: tokenItem.id,
           dtoName: t.constructor.name,
@@ -78,7 +75,7 @@ export class DbMapping {
     // position
     const positionUniqueId = concatStrings(chain, stakingPosition.address, stakingPosition.poolId);
 
-    const position: TrackedVaultItem = await this.getDbItem(stakingPosition, positionUniqueId);
+    const position = await this.getDbItem(stakingPosition, positionUniqueId);
     mappedDto.dbId = position.id;
     mappedDto.dtoName = stakingPosition.constructor.name;
 
@@ -86,12 +83,8 @@ export class DbMapping {
   }
 
   async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
-    if (temp) {
-      return temp;
-    } else {
-      return await this.saveItemToDb(item, uniqueId);
-    }
+    const temp = TrackedVaultItemsMap.get(uniqueId);
+    return temp ?? this.saveItemToDb(item, uniqueId);
   }
 
   async saveItemToDb(item, uniqueId: string): Promise<TrackedVaultItem> {

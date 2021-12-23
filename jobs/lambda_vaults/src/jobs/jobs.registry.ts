@@ -1,8 +1,19 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable } from '@nestjs/common';
 
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
 import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
+import { BadgerStakingArbi } from './badger/badger.staking.arbi';
+import { BadgerStakingEth } from './badger/badger.staking.eth';
+import { BadgerStakingPLG } from './badger/badger.staking.plg';
+import { BeefyStakingAvax } from './beefy/beefy.staking.avax';
+import { BeefyStakingBsc } from './beefy/beefy.staking.bsc';
+import { BeefyStakingCro } from './beefy/beefy.staking.cro';
+import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
+import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
 import { CurvePools } from './curve/curve.pools';
+import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
+import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { JobInterface } from './job.interface';
@@ -13,57 +24,66 @@ import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
-import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { ViperswapPools } from './viperswap/viperswap.pools';
-import { BadgerStakingPLG } from './badger/badger.staking.plg';
-import { BadgerStakingArbi } from './badger/badger.staking.arbi';
-import { BadgerStakingEth } from './badger/badger.staking.eth';
-import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
-import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
+import { ViperswapStaking } from './viperswap/viperswap.staking';
 
 @Injectable()
 export class JobsRegistry {
   public readonly registry: Map<string, JobInterface> = new Map<string, JobInterface>();
 
   constructor(
-    curvePools: CurvePools,
-    pancakeStaking: PancakeStaking,
-    pancakeLPV2: PancakePoolsV2,
-    traderjoeLp: TraderjoePools,
-    traderjoeStaking: TraderJoeStaking,
-    spookyswapLp: SpookyswapPools,
-    ellipsisLp: EllipsisLp,
-    ellipsisStaking: EllipsisStaking,
     autofarmStakingBSC: AutofarmStakingBSC,
     autofarmStakingPLG: AutofarmStakingPLG,
-    raydiymPools: RaydiumPools,
-    raydiumStaking: RaydiumStaking,
-    viperswapStaking: ViperswapStaking,
-    viperswapPools: ViperswapPools,
-    badgerStakingPLG: BadgerStakingPLG,
     badgerStakingArbi: BadgerStakingArbi,
     badgerStakingEth: BadgerStakingEth,
-    defiKingdomsStaking: DefiKingdomsStaking,
+    badgerStakingPLG: BadgerStakingPLG,
+    beefyStakingFtm: BeefyStakingFtm,
+    beefyStakingBsc: BeefyStakingBsc,
+    beefyStakingAvax: BeefyStakingAvax,
+    beefyStakingCro: BeefyStakingCro,
+    beefyStakingMoonRiver: BeefyStakingMoonRiver,
+    curvePools: CurvePools,
     defiKingdomsPools: DefiKingdomsPools,
+    defiKingdomsStaking: DefiKingdomsStaking,
+    ellipsisLp: EllipsisLp,
+    ellipsisStaking: EllipsisStaking,
+    pancakeLPV2: PancakePoolsV2,
+    pancakeStaking: PancakeStaking,
+    raydiumStaking: RaydiumStaking,
+    raydiymPools: RaydiumPools,
+    spookyswapLp: SpookyswapPools,
+    traderjoeLp: TraderjoePools,
+    traderjoeStaking: TraderJoeStaking,
+    viperswapPools: ViperswapPools,
+    viperswapStaking: ViperswapStaking,
   ) {
-    this.registry.set(curvePools.placeholder, curvePools);
-    this.registry.set(pancakeStaking.placeholder, pancakeStaking);
-    this.registry.set(pancakeLPV2.placeholder, pancakeLPV2);
-    this.registry.set(traderjoeLp.placeholder, traderjoeLp);
-    this.registry.set(traderjoeStaking.placeholder, traderjoeStaking);
-    this.registry.set(spookyswapLp.placeholder, spookyswapLp);
-    this.registry.set(ellipsisLp.placeholder, ellipsisLp);
-    this.registry.set(ellipsisStaking.placeholder, ellipsisStaking);
-    this.registry.set(autofarmStakingBSC.placeholder, autofarmStakingBSC);
-    this.registry.set(autofarmStakingPLG.placeholder, autofarmStakingPLG);
-    this.registry.set(raydiymPools.placeholder, raydiymPools);
-    this.registry.set(raydiumStaking.placeholder, raydiumStaking);
-    this.registry.set(viperswapStaking.placeholder, viperswapStaking);
-    this.registry.set(viperswapPools.placeholder, viperswapPools);
-    this.registry.set(badgerStakingPLG.placeholder, badgerStakingPLG);
-    this.registry.set(badgerStakingArbi.placeholder, badgerStakingArbi);
-    this.registry.set(badgerStakingEth.placeholder, badgerStakingEth);
-    this.registry.set(defiKingdomsStaking.placeholder, defiKingdomsStaking);
-    this.registry.set(defiKingdomsPools.placeholder, defiKingdomsPools);
+    // this.register(curvePools); // TODO: temp disabled
+    this.register(autofarmStakingBSC);
+    this.register(autofarmStakingPLG);
+    this.register(badgerStakingArbi);
+    this.register(badgerStakingEth);
+    this.register(badgerStakingPLG);
+    this.register(beefyStakingAvax);
+    this.register(beefyStakingBsc);
+    this.register(beefyStakingCro);
+    this.register(beefyStakingFtm);
+    this.register(beefyStakingMoonRiver);
+    this.register(defiKingdomsPools);
+    this.register(defiKingdomsStaking);
+    this.register(ellipsisLp);
+    this.register(ellipsisStaking);
+    this.register(pancakeLPV2);
+    this.register(pancakeStaking);
+    this.register(raydiumStaking);
+    this.register(raydiymPools);
+    this.register(spookyswapLp);
+    this.register(traderjoeLp);
+    this.register(traderjoeStaking);
+    this.register(viperswapPools);
+    this.register(viperswapStaking);
+  }
+
+  private register(job: JobInterface) {
+    this.registry.set(job.placeholder, job);
   }
 }

@@ -28,8 +28,8 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { Abis } from './contracts/abis';
 import { ViperswapAddresses } from './addresses';
+import { Abis } from './contracts/abis';
 
 @Injectable()
 export class ViperswapPools implements JobInterface {
@@ -61,7 +61,7 @@ export class ViperswapPools implements JobInterface {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
     if (
-      !jobMapping.mapping || 
+      !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       this.logger.log('it is time to update mapping', this.placeholder);
@@ -134,7 +134,9 @@ export class ViperswapPools implements JobInterface {
     }
 
     // add to DB
-    const mappings = await Promise.all(liquidityPools.map(async lp => await this.toDbMapping(lp)));
+    const mappings = await Promise.all(
+      liquidityPools.map(async (lp) => await this.toDbMapping(lp)),
+    );
 
     jobMapping.mapping = mappings;
 
@@ -162,7 +164,7 @@ export class ViperswapPools implements JobInterface {
     // pool tokens
     mappedDto.tokens = [];
 
-    const promisesArr = liquidityPool.tokens.map(t => {
+    const promisesArr = liquidityPool.tokens.map((t) => {
       const tokenId = concatStrings(this.chain, t.address);
       return this.getDbItem(t, tokenId).then((tokenItem: TrackedVaultItem) => {
         mappedDto.tokens.push({
@@ -171,7 +173,7 @@ export class ViperswapPools implements JobInterface {
           positionInPool: t.positionInPool,
           weight: t.weight,
         });
-      })
+      });
     });
 
     await Promise.all(promisesArr);
@@ -185,7 +187,7 @@ export class ViperswapPools implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId);
     if (temp) {
       return temp;
     } else {

@@ -1,4 +1,3 @@
-// import * as proxy from 'http-proxy-middleware';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import { Inject, NestMiddleware } from '@nestjs/common';

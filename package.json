@@ -135,7 +135,6 @@
     "lambda_external_prices-compile": "tsc --project jobs/lambda_external_prices/tsconfig.json",
     "lambda_external_prices-dev": "ts-node jobs/lambda_external_prices/src/start.ts",
     "lambda_external_prices-start": "tsc --project jobs/lambda_external_prices/tsconfig.app.json && node ./dist/jobs/lambda_external_prices/src/start.js",
-
     "migration": "npm run build-monorepo && ts-node ./node_modules/typeorm/cli.js migration:run",
     "migration:generate": "ts-node ./node_modules/typeorm/cli.js migration:generate",
     "migration:create": "ts-node ./node_modules/typeorm/cli.js migration:create",
@@ -168,6 +167,7 @@
     "@types/node": "^14.14.31",
     "@types/pg": "^8.6.1",
     "@types/supertest": "^2.0.10",
+    "@types/uuid": "^8.3.3",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "danger": "^10.6.3",
@@ -182,6 +182,7 @@
     "pg-promise": "^10.10.1",
     "prettier": "^2.2.1",
     "prettier-plugin-import-sort": "0.0.6",
+    "rimraf": "^3.0.2",
     "supertest": "6.1.6",
     "ts-jest": "27.0.5",
     "ts-loader": "9.2.5",
@@ -205,17 +206,11 @@
     "@nestjsx/api-version": "^0.1.1",
     "@raydium-io/raydium-sdk": "^1.0.1-beta.7",
     "@solana/spl-token": "^0.1.8",
-    "@solana/web3.js": "^1.31.0",
     "@solana/web3.js": "^1.30.2",
-    "@types/uuid": "^8.3.3",
     "agenda": "^4.1.2",
-    "agendash": "^2.1.1",
-    "amqp-connection-manager": "^3.2.2",
-    "amqplib": "^0.8.0",
     "async-retry": "^1.3.1",
     "axios": "^0.21.2",
     "axios-rate-limit": "^1.3.0",
-    "axios-retry": "^3.1.9",
     "bignumber.js": "^9.0.1",
     "bn.js": "^4.12.0",
     "cache-manager": "^3.4.3",
@@ -223,11 +218,9 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^10.0.0",
-    "es5": "^1.0.0",
-    "es6": "0.0.7",
     "es6-promise-pool": "^2.5.0",
     "ethers": "^5.0.19",
-    "fastify-swagger": "^4.8.0",
+    "group-dependencies": "^0.0.11",
     "http-proxy-middleware": "^1.1.0",
     "inversify": "^5.0.5",
     "joi": "^17.4.0",
@@ -236,19 +229,82 @@
     "nestjs-agenda": "^2.0.0",
     "nestjs-config": "^1.4.7",
     "nestjs-pgpromise": "^1.4.3",
-    "nodemailer": "^6.6.1",
-    "p-limit": "^3.1.0",
     "pg": "^8.5.1",
-    "reflect-metadata": "^0.1.13",
-    "rimraf": "^3.0.2",
     "rxjs": "^7.3.0",
     "source-map-support": "^0.5.20",
-    "swagger-ui-express": "^4.1.6",
     "tor-axios": "^1.0.9",
     "typeorm": "^0.2.37",
     "uuid": "^8.3.2",
     "web3": "^1.6.0",
     "winston": "^3.3.3",
     "winston-aws-cloudwatch": "^3.0.0"
-  }
+  },
+  "commonDependencies": [
+    "@nestjs/axios",
+    "@nestjs/common",
+    "@nestjs/config",
+    "@nestjs/core",
+    "@nestjs/platform-express",
+    "@nestjs/terminus",
+    "@nestjs/typeorm",
+    "axios",
+    "bignumber.js",
+    "class-transformer",
+    "joi",
+    "rxjs",
+    "typeorm"
+  ],
+  "libsDependencies": [
+    "@indexed-finance/multicall",
+    "@solana/web3.js",
+    "@nestjs/swagger",
+    "bn.js",
+    "class-validator",
+    "http-proxy-middleware",
+    "uuid",
+    "winston-aws-cloudwatch"
+  ],
+  "appsDependencies": [
+    "cache-manager",
+    "cache-manager-redis-store",
+    "source-map-support"
+  ],
+  "appAccountDependencies": [
+    "@solana/spl-token",
+    "limiter"
+  ],
+  "appGatewayDependencies": [
+    "@nestjs-modules/mailer",
+    "@nestjsx/api-version"
+  ],
+  "appsIntegrationDependencies": [
+    "@ethersproject/providers",
+    "ethers"
+  ],
+  "jobsDependencies": [
+    "@nestjs/microservices",
+    "dotenv",
+    "pg"
+  ],
+  "jobsMigrationDependencies": [
+    "agenda",
+    "cache-manager",
+    "cache-manager-redis-store"
+  ],
+  "jobsVaultsDependencies": [
+    "@raydium-io/raydium-sdk",
+    "@solana/web3.js"
+  ],
+  "crawlersDependencies": [
+    "inversify",
+    "nestjs-pgpromise",
+    "tor-axios"
+  ],
+  "crawlerPriceDependencies": [
+    "agenda",
+    "async-retry",
+    "axios-rate-limit",
+    "es6-promise-pool",
+    "nestjs-agenda"
+  ]
 }

@@ -64,9 +64,10 @@ import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+// TODO: Temporary hidden on production
+// import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -91,8 +92,9 @@ export class ProtocolService {
     private readonly traderjoeProtocol: TraderJoeProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly raydiumProtocol: RaydiumProtocol,
+    // TODO: Temporary hidden on production
+    // private readonly viperswapProtocol: ViperswapProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
-    private readonly viperswapProtocol: ViperswapProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -111,7 +113,8 @@ export class ProtocolService {
       ellipsisProtocol,
       raydiumProtocol,
       pancakeProtocolV1,
-      viperswapProtocol,
+      // TODO: Temporary hidden on production
+      // viperswapProtocol,
     ];
   }
 

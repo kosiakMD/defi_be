@@ -42,11 +42,12 @@ import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+// TODO: Temporary hidden on production
+// import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
+// import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
+// import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
-import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
-import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -77,7 +78,8 @@ const Pancake = [
 ];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
-const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
+// TODO: Temporary hidden on production
+// const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 
 @Module({
   imports: [
@@ -105,7 +107,8 @@ const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
     ...Ellipsis,
     ...Autofarm,
     ...Raydium,
-    ...Viperswap,
+    // TODO: Temporary hidden on production
+    // ...Viperswap,
     ProtocolService,
     Mapper,
     AlpacaApiService,

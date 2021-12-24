@@ -31,13 +31,13 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { FeatureMappingPoolToken, PoolsFeatureMapping } from '../dto/mappings';
-import { JobBase } from '../job.base';
 import { JobInterface } from '../job.interface';
+import { JobPoolsBase } from '../job.pools.base';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 import { CurveAddresses } from './addresses';
 
-export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements JobInterface {
+export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implements JobInterface {
   chain = ChainIdEnum.eth;
 
   feature = FeatureEnum.pools;
@@ -50,9 +50,9 @@ export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements Jo
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly settingsService: SettingsService,
     protected readonly storeService: StoreService,
-    private readonly multicallService: MulticallAggregator,
-    private readonly accountService: AccountService,
-    private readonly priceService: PriceService,
+    protected readonly multicallService: MulticallAggregator,
+    protected readonly accountService: AccountService,
+    protected readonly priceService: PriceService,
   ) {
     super();
     this.availableDtosForConversion = new Map<string, string>([
@@ -135,6 +135,7 @@ export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements Jo
         `not necessary to update existed mapping, db poolLength ${poolIdFrom}, chain poolLength ${poolIdTo}`,
         this.placeholder,
       );
+      await this.storeService.updateMapping(jobMapping);
       return jobMapping;
     }
 
@@ -317,7 +318,7 @@ export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements Jo
     return Number(decimal);
   }
 
-  async updateWithChainData(): Promise<CurveLiquidityPoolFeature[]> {
+  async fillChainData(): Promise<CurveLiquidityPoolFeature[]> {
     const poolsMap = await this.getPoolsMap();
 
     const registry = new CurveRegistryAbi(CurveAddresses.registry);
@@ -471,5 +472,48 @@ export class CurvePools extends JobBase<CurveLiquidityPoolFeature> implements Jo
     });
 
     return this.mapping;
+  }
+
+  getItemAsDto(item) {
+    const toUniversalDtoName = this.availableDtosForConversion.get(item.constructor.name);
+    switch (toUniversalDtoName) {
+      case CurvePoolTokenDto.name:
+        return plainToClass(CurvePoolTokenDto, {
+          address: item.address,
+          name: item.name,
+          symbol: item.symbol,
+          decimals: item.decimals,
+          isLp: item.isLp,
+          lp: item.lpAddress,
+          positionInPool: null,
+          totalSupply: null,
+          weight: null,
+          reserve: null,
+          value: null,
+          balance: null,
+          price: null,
+          tokens: item.tokens,
+        } as CurvePoolTokenDto);
+
+      case ERC20Token.name:
+        return plainToClass(ERC20Token, {
+          address: item.address,
+          name: item.name,
+          symbol: item.symbol,
+          decimals: item.decimals,
+        } as ERC20Token);
+
+      case LiquidityPoolFeature.name:
+        return plainToClass(LiquidityPoolFeature, {
+          address: item.address,
+          name: item.name,
+        } as LiquidityPoolFeature);
+
+      case CurveLiquidityPoolFeature.name:
+        return plainToClass(CurveLiquidityPoolFeature, {
+          address: item.address,
+          name: item.name,
+        } as CurveLiquidityPoolFeature);
+    }
   }
 }

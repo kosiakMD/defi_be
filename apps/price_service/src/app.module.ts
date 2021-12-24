@@ -1,5 +1,5 @@
 import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
-import { HttpModule } from '@nestjs/common/http/http.module';
+import { HttpModule } from '@nestjs/axios';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';

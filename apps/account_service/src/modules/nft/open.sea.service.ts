@@ -5,7 +5,8 @@ import { plainToClass } from 'class-transformer';
 import { RateLimiter } from 'limiter';
 import { map } from 'rxjs/operators';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

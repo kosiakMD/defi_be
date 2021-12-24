@@ -1,12 +1,14 @@
 import * as Joi from 'joi';
 
+import { EnvEnum } from '@app/common';
+
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
 const COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240';
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
-    .equal('development', 'production', 'test', 'provision', 'local')
+    .equal(...Object.values(EnvEnum))
     .default('local'),
   ENV: Joi.string()
     .equal(
@@ -69,7 +71,9 @@ export const validationSchema = Joi.object({
   BLOCKS_SUBGRAPH_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   REDIS_ASSETS_CACHE_TTL: Joi.number(),
   ETH_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
@@ -166,6 +170,12 @@ export const validationSchema = Joi.object({
     .default(3000)
     .optional(),
   OPTIMISM_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  NEAR_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  NEAR_BALANCES_CHECKER_ADDRESS: Joi.string() //
     .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
 

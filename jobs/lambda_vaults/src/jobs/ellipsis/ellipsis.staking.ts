@@ -328,7 +328,7 @@ export class EllipsisStaking implements JobInterface {
   }
 
   async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp = TrackedVaultItemsMap.get(uniqueId);
     return temp ?? (await this.saveItemToDb(item, uniqueId));
   }
 

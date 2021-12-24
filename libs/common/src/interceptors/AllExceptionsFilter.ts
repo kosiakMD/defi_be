@@ -6,10 +6,11 @@ import {
   HttpStatus,
   Inject,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
 import { HEADER_REQUEST_ID } from '@app/common/constant';
 
 @Catch()
@@ -17,6 +18,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    protected readonly configService: ConfigService,
   ) {}
 
   catch(exception: Error, host: ArgumentsHost): void {
@@ -31,8 +33,20 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     const request = ctx.getRequest<Request>();
 
-    const responseBody = {
+    let errorMessage;
+    if (
+      this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production &&
+      exception.message.startsWith('connect ECONNREFUSED') &&
+      !exception.message.endsWith('Service')
+    ) {
+      errorMessage = 'connect ECONNREFUSED';
+    } else {
+      errorMessage = exception.message;
+    }
+
+    const responseBody: ErrorResponseDto = {
       statusCode: httpStatus,
+      message: errorMessage,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(request),
       reqId: request.headers[HEADER_REQUEST_ID],

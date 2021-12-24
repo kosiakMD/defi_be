@@ -7,18 +7,18 @@ import * as Transport from 'winston-transport';
 import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
+import { EnvEnum } from '@app/common';
+
 import { ensureDotEnvInitiated } from '../config/configuration';
 
-export type Environment = 'development' | 'production' | 'test' | 'provision' | 'local';
-
-const AWS_CW_LOGS_ENVIRONMENTS: Environment[] = ['development', 'production'];
+const AWS_CW_LOGS_ENVIRONMENTS: EnvEnum[] = [EnvEnum.development, EnvEnum.production];
 
 export type LogConfig = {
   identifier: string;
   logErrorFile: string;
   logCombineLog: string;
   serviceName: string;
-  environment: Environment;
+  environment: EnvEnum;
   level?: string;
   meta?: Record<string, any>;
   awsConfig: {
@@ -93,7 +93,7 @@ export const createLogger = (workFolder: string): LoggerService => {
     logCombineLog: join(workFolder, process.env.LOG_COMBINED_FILE),
     serviceName: process.env.SERVICE_NAME,
     level: process.env.LOG_LEVEL,
-    environment: process.env.NODE_ENV as Environment,
+    environment: process.env.NODE_ENV as EnvEnum,
     meta: { env: process.env.ENV },
     awsConfig: {
       region: process.env.AWS_REGION,

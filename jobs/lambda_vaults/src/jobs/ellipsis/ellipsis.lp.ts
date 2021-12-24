@@ -28,7 +28,6 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toCurveLiquidityPoolFeature } from '../../utils/conventer';
 import { toDecimals } from '../../utils/number';
-import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
@@ -68,11 +67,7 @@ export class EllipsisLp implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    if (
-      !jobMapping.mapping ||
-      !jobMapping.updatedAt ||
-      isTimeToDo(jobMapping.updatedAt, jobMapping.updateFrequency)
-    ) {
+    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
       this.logger.log('it is time to update mapping', this.placeholder);
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
@@ -221,7 +216,7 @@ export class EllipsisLp implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp = TrackedVaultItemsMap.get(uniqueId);
     return temp ?? (await this.saveItemToDb(item, uniqueId));
   }
 

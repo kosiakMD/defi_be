@@ -1,10 +1,12 @@
 import * as Joi from 'joi';
 
+import { EnvEnum } from '@app/common';
+
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
-    .equal('development', 'production', 'test', 'provision', 'local')
+    .equal(...Object.values(EnvEnum))
     .default('local'),
   ENV: Joi.string()
     .equal(
@@ -75,7 +77,9 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   JOBS_CACHE_TTL_IN_SECONDS: Joi.number(),
   POOLS_CACHE_TTL_IN_SECONDS: Joi.number(),
@@ -85,6 +89,7 @@ export const validationSchema = Joi.object({
   AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
   QUICKSWAP_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  COMPOUND_ETH_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_AVAX_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_BSC_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_CELO_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
@@ -136,6 +141,7 @@ export const validationSchema = Joi.object({
   MRIVER_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   XDAI_URL: Joi.string().required(),
+  SOL_URL: Joi.string().required(),
 
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),

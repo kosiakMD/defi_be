@@ -180,3 +180,27 @@ export class BalancesResponseDto {
   })
   '0x782629c9578889a9b8464f051f23843734f72599': BalanceDto;
 }
+
+export class TokenChange {
+  token: ERC20Token;
+  balance: number; // value of change in user balance
+  price: number; // value of change in token price
+  totalUSD: number; // total change (in USD) of balance & price over timespan
+}
+
+export class ChainChange {
+  chainId: ChainIdEnum;
+  totalUSD: number; // total Change in USD for this change
+}
+
+export class AccountReturns {
+  account: Address;
+  errors: string[];
+  tokens: TokenChange[];
+  chains: ChainChange[];
+  totalUSD: number;
+}
+
+export class ReturnsResponse {
+  [key: Address]: AccountReturns;
+}

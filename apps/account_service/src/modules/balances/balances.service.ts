@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
+import { plainToClass } from 'class-transformer';
 import { In, Repository } from 'typeorm';
 import Web3 from 'web3';
 
@@ -29,6 +30,7 @@ import {
   ErrorMessage,
   TokenBalance,
 } from './balances.interfaces';
+import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
@@ -38,7 +40,6 @@ type PartialBalancesResponse = {
   errors: ErrorMessage[];
   balances: TokenBalance[];
 };
-
 export class BalancesService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -58,13 +59,9 @@ export class BalancesService {
     addresses: Address[],
     chains?: ChainIdEnum[],
     assets?: Address[],
+    blocks?: Map<ChainIdEnum, BlockTimestamp>,
   ): Promise<BalancesResponse> {
     try {
-      // TODO: Remove this later
-      this.logger.debug(
-        `Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
-      );
-
       const chainsToHandle = getUniqList(chains);
       const addressesToHandle = await this.excludeBlacklisted(
         unifyAddresses(getUniqList(addresses)),
@@ -74,14 +71,9 @@ export class BalancesService {
         return {};
       }
 
-      const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets);
+      const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets, blocks);
 
       const results = this.mapResults(balances);
-
-      // TODO: Remove this later
-      this.logger.debug(
-        `Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`,
-      );
 
       return results;
     } catch (e) {
@@ -97,64 +89,22 @@ export class BalancesService {
     }
   }
 
-  public async getBalanceAtBlock(
+  async get24HourReturns(
     addresses: Address[],
-    blocks: Map<ChainIdEnum, BlockTimestamp>,
-    chains?: ChainIdEnum[],
+    chains: ChainIdEnum[],
     assets?: Address[],
-  ): Promise<BalancesResponse> {
-    const chainsToHandle = getUniqList(chains);
-    const addressesToHandle = await this.excludeBlacklisted(unifyAddresses(getUniqList(addresses)));
+  ): Promise<ReturnsResponse> {
+    const offset = 86400; // seconds ago from now 86400 = 1 day
+    const date = this.getPastDate(offset);
+    const blocks = await this.getChainBlocksAtDate(chains, date);
 
-    if (!addressesToHandle.length || !chainsToHandle.length) {
-      return {};
-    }
+    // Get current & past balances & prices
+    const [now, then] = await Promise.all([
+      this.getBalance(addresses, chains, assets),
+      this.getBalance(addresses, chains, assets, blocks),
+    ]);
 
-    const balances = await this.getRawBalances(chainsToHandle, addressesToHandle, assets, blocks);
-    return this.mapResults(balances);
-  }
-
-  async get24HourReturns(addresses: string[], chains: ChainIdEnum[], assets?: Address[]) {
-    try {
-      // TODO: Remove this later
-      this.logger.debug(
-        `Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(
-          chains,
-        )}`,
-      );
-
-      // Get current & past balances & prices
-      const [now, then] = await Promise.all([
-        this.getBalance(addresses, chains, assets),
-        this.getBalanceAtBlock(
-          addresses,
-          await this.getChainBlocks24HoursAgo(chains),
-          chains,
-          assets,
-        ),
-      ]);
-
-      const results = this.calculate24HourReturns({ now, then });
-
-      // TODO: Remove this later
-      this.logger.debug(
-        `Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(
-          chains,
-        )}`,
-      );
-
-      return results;
-    } catch (e) {
-      // TODO: This should be handled with global error handler
-      this.logger.error(
-        `Unhandled error while calculating 24h returns for ${JSON.stringify(
-          addresses,
-        )} networks ${JSON.stringify(chains)}`,
-        e,
-      );
-
-      throw e;
-    }
+    return this.calculate24HourReturns(now, then);
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {
@@ -206,67 +156,72 @@ export class BalancesService {
     );
   }
 
-  private calculate24HourReturns({ now, then }: { now: BalancesResponse; then: BalancesResponse }) {
-    return Object.fromEntries(
-      Object.entries(now).map(([account, balances]) => {
-        let currentTotal = 0;
-        let pastTotal = 0;
-
-        const thenTokenMap = new Map(
-          then[account].tokens.map((token) => [
-            `${token.token.chainId}_${token.token.address}`,
-            token,
-          ]),
-        );
-
-        const tokens = balances.tokens.reduce((allTokens, nowToken) => {
-          const thenToken = thenTokenMap.get(`${nowToken.token.chainId}_${nowToken.token.address}`);
-
-          if (!thenToken) {
-            return allTokens;
-          }
-
-          currentTotal += nowToken.totalPriceUSD ?? 0;
-          pastTotal += thenToken.totalPriceUSD ?? 0;
-          const change = nowToken.decimalsAmount - thenToken.decimalsAmount;
-          const changeUSD = nowToken.totalPriceUSD - thenToken.totalPriceUSD;
-          const percent =
-            (nowToken.totalPriceUSD - thenToken.totalPriceUSD) / thenToken.totalPriceUSD;
-
-          if (changeUSD) {
-            allTokens.push({
-              token: nowToken.token,
-              change,
-              changeUSD,
-              percent,
-            });
-          }
-
-          return allTokens;
-        }, []);
-
-        return [
-          account,
-          {
-            errors: [].concat(now[account].errors, then[account].errors),
-            account,
-            totalUSD: currentTotal - pastTotal,
-            totalPercent: (currentTotal - pastTotal) / currentTotal,
-            tokens,
-          },
-        ];
-      }),
-    );
+  private getTokenKey(token: TokenBalance): string {
+    return `${token.token.chainId}_${token.token.address}`;
   }
 
-  private async getChainBlocks24HoursAgo(
+  private calculate24HourReturns(now: BalancesResponse, then: BalancesResponse): ReturnsResponse {
+    const responseEntries = Object.entries(now).map(
+      ([account, balances]): [Address, AccountReturns] => {
+        const accountReturnsEmpty = plainToClass(AccountReturns, {
+          account,
+          errors: [].concat(now[account].errors, then[account].errors),
+          totalUSD: 0,
+          chains: Array.from(new Set(now[account].tokens.map((t) => t.token.chainId))).map(
+            (chainId) => ({ chainId, totalUSD: 0 }),
+          ),
+          tokens: [],
+        });
+
+        // Map historic tokens for easy access
+        const thenTokenMap = new Map(
+          then[account].tokens.map((token) => [this.getTokenKey(token), token]),
+        );
+
+        const accountReturns = balances.tokens.reduce((accountReturns, nowToken) => {
+          const thenToken = thenTokenMap.get(this.getTokenKey(nowToken));
+
+          if (!thenToken) return accountReturns; // no change, no historic data
+
+          const tokenChange = plainToClass(TokenChange, {
+            token: nowToken.token,
+            balance: nowToken.decimalsAmount - thenToken.decimalsAmount, // number of tokens change
+            price: nowToken.tokenPriceUSD - thenToken.tokenPriceUSD, // token price change
+            totalUSD: nowToken.totalPriceUSD - thenToken.totalPriceUSD, // total change in USD for this token
+          });
+
+          // Filtering out any tokens that we don't track a monetary change for
+          // often LP tokens and the like
+          if (!tokenChange.totalUSD) {
+            return accountReturns;
+          }
+
+          accountReturns.tokens.push(tokenChange);
+          accountReturns.totalUSD += tokenChange.totalUSD;
+
+          accountReturns.chains.forEach((chain) => {
+            if (chain.chainId !== nowToken.token.chainId) return;
+            chain.totalUSD += tokenChange.totalUSD;
+          });
+
+          return accountReturns;
+        }, accountReturnsEmpty);
+
+        return [account, accountReturns];
+      },
+    );
+
+    return Object.fromEntries(responseEntries);
+  }
+  private async getChainBlocksAtDate(
     chains: ChainIdEnum[],
+    date: Date,
   ): Promise<Map<ChainIdEnum, BlockTimestamp>> {
     const blockMap = new Map<ChainIdEnum, BlockTimestamp>();
 
     await Promise.all(
       chains.map(async (chain) => {
-        const block = await this.getBlock24HoursAgo(chain);
+        const block = await this.getBlockAtDate(chain, date);
         blockMap.set(chain, block);
       }),
     );
@@ -274,16 +229,14 @@ export class BalancesService {
     return blockMap;
   }
 
-  async getBlock24HoursAgo(chain: ChainIdEnum) {
-    const hour = this.getDate24HoursAgo();
-
+  async getBlockAtDate(chain: ChainIdEnum, date: Date) {
     // TODO: TTL should be in config
     const cacheTTL = 65 * 60; // 1 hour 5 minutes to ensure a little overlap (block is rounded to the nearest hour)
-    const cacheKey = `24hour_ago_block_${chain}_${hour.getTime()}`;
+    const cacheKey = `24hour_ago_block_${chain}_${date.getTime()}`;
 
     return this.getOrSetCache(cacheKey, cacheTTL, async () => {
       try {
-        return await this.getBlockFromDate(hour, this.web3Provider.getInstanceByChainId(chain));
+        return await this.getBlockFromDate(date, this.web3Provider.getInstanceByChainId(chain));
         // TODO: Catch real error here and log
       } catch (e) {
         this.logger.error(
@@ -294,9 +247,9 @@ export class BalancesService {
     });
   }
 
-  getDate24HoursAgo() {
-    const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
-    return roundToNearestHour(yesterday);
+  private getPastDate(seconds) {
+    const past = new Date(new Date().setSeconds(new Date().getSeconds() - seconds));
+    return roundToNearestHour(past);
   }
 
   private async excludeBlacklisted(addresses: Address[]): Promise<Address[]> {
@@ -438,7 +391,7 @@ export class BalancesService {
     // If its a historic block we can cache for much longer,
     // as the target block only updates once an hour
     const cacheKey = block
-      ? [chainId, address, assets, block.block, this.getDate24HoursAgo().getTime()].join('-')
+      ? [chainId, address, assets, block.block].join('-')
       : [chainId, address, assets, 'latest'].join('-');
     const ttl = block ? 65 * 60 : 50;
 

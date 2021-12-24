@@ -15,7 +15,7 @@ import {
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { AutofarmProtocolEnum, ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
-import { decimalsDivider } from '@app/common/utils';
+import { decimalsDivider, keepETHAddresses } from '@app/common/utils';
 
 import {
   IntegrationERC20TokenDto,
@@ -68,6 +68,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

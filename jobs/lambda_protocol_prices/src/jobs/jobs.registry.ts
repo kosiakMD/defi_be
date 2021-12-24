@@ -4,6 +4,7 @@ import { IProtocolPriceUpdate } from './interfaces/protocol.price.update';
 import { AaveProtocol } from './protocols/aave/aave.protocol';
 import { CompoundProtocol } from './protocols/compound/compound.protocol';
 import { IearnProtocol } from './protocols/iearn/iearn.protocol';
+import { SynthetixProtocol } from './protocols/synthetix/synthetix.protocol';
 import { YearnProtocol } from './protocols/yearn/yearn.protocol';
 
 @Injectable()
@@ -18,11 +19,17 @@ export class JobsRegistry {
     private readonly compoundProtocol: CompoundProtocol,
     private readonly yearnProtocol: YearnProtocol,
     private readonly iearnProtocol: IearnProtocol,
+    private readonly synthetixProtocol: SynthetixProtocol,
   ) {
-    this.register(aaveProtocol);
-    this.register(compoundProtocol);
-    this.register(iearnProtocol);
-    this.register(yearnProtocol);
+    const protocols: IProtocolPriceUpdate[] = [
+      aaveProtocol,
+      compoundProtocol,
+      iearnProtocol,
+      yearnProtocol,
+      synthetixProtocol,
+    ];
+
+    protocols.forEach((protocol) => this.register(protocol));
   }
 
   private register(protocol: IProtocolPriceUpdate) {

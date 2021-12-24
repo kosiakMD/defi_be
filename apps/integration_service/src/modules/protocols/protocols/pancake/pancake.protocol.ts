@@ -14,6 +14,7 @@ import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { PancakeV2Legacy } from './pancake-v2.legacy';
 import { PancakeV2Staking } from './pancake-v2.staking';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export default class PancakeProtocol extends DataProviderProtocol {
@@ -46,6 +47,7 @@ export default class PancakeProtocol extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

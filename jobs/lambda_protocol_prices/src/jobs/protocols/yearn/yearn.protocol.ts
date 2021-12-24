@@ -45,6 +45,12 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
 
       const { prices } = await this.fetchPrices(underlyingTokens);
 
+      const newUnderlying = vaults.filter((vault) => !prices[vault.token.id]);
+
+      if (newUnderlying.length) {
+        await this.saveAssets(newUnderlying.map((a) => a.token.id));
+      }
+
       const response = vaults.reduce((acc, vault) => {
         if (!prices[vault.token.id]) {
           this.logger.warn(

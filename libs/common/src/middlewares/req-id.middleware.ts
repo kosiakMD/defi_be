@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { v4 as uuid } from 'uuid';
 
-import { HttpService, Inject, Injectable, NestMiddleware } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger';

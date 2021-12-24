@@ -34,13 +34,7 @@ export abstract class BaseMultiCallProxy {
     return new Proxy(
       {},
       {
-        get: (target, propKey: string) => {
-          // Return the raw class object so each call is accessible (i.e. to get the name of the call)
-          // example: MyContractAbi.abi.balanceOf.name
-          if (propKey === 'abi') {
-            return this.constructor;
-          }
-
+        get: (target, propKey: keyof typeof this.constructor) => {
           // Convert each call to CallData
           return (...args: any) => {
             return plainToClass(CallData, {

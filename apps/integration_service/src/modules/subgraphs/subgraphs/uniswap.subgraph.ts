@@ -1,16 +1,8 @@
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { Pair } from '../dto/uniswaplike.subgraph.pair.dto';
 import { UniswapLikeSubgraph } from './uniswap-like-subgraph.service';
-
-export interface ResponseData {
-  data: {
-    from0to1000: Pair[];
-    from1000to2000: Pair[];
-    from2000to3000: Pair[];
-  };
-}
 
 @Injectable()
 export class UniswapSubgraph extends UniswapLikeSubgraph {

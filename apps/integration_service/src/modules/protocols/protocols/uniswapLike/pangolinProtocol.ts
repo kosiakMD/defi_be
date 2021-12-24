@@ -25,6 +25,7 @@ import { PangolinSubgraph } from '../../../subgraphs/subgraphs/pangolin.subgraph
 import { Mapper } from '../../helpers/mappers/mapper';
 import AbstractProtocol from '../abstractProtocol';
 import UniswapLikeProtocol from './uniswapLikeProtocol';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class PangolinProtocol extends UniswapLikeProtocol implements AbstractProtocol {
@@ -51,6 +52,7 @@ export class PangolinProtocol extends UniswapLikeProtocol implements AbstractPro
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const baseData: BaseData[] = [];
     const errors: string[] = [];
 

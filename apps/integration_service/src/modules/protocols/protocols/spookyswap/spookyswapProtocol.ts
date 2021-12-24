@@ -44,6 +44,7 @@ import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { acelabMap, booMap, farmsMap, xBooMap } from './helpers/multicall.helpers';
 import { SpookyswapLocalMultiCall } from './spookyswap.local.multi.call';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class SpookySwapProtocol extends DataProviderProtocol {
@@ -75,6 +76,7 @@ export class SpookySwapProtocol extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

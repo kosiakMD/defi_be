@@ -1,5 +1,3 @@
-import { classToPlain } from 'class-transformer';
-
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -107,7 +105,7 @@ export class TransactionsController {
   // TODO rename after finished
   public async getInternalV2(@Query() query: TransactionsQueryDto): Promise<any> {
     const { addresses, chains } = query;
-    return classToPlain(this.transactionsService.getTransactionsNew(addresses, chains));
+    return this.transactionsService.getTransactionsNew(addresses, chains);
   }
 
   @Get('/internal_v1')

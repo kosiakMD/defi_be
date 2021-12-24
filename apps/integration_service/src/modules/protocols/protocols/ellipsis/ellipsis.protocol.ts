@@ -12,6 +12,7 @@ import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { EllipsisPools } from './ellipsis.pools';
 import { EllipsisStaking } from './ellipsis.staking';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export default class EllipsisProtocol extends DataProviderProtocol {
@@ -40,6 +41,7 @@ export default class EllipsisProtocol extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

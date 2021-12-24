@@ -2,7 +2,9 @@ export enum ProjectEnum {
   aave = 'aave',
   autofarm = 'autofarm',
   balancer = 'balancer',
+  beefy = 'beefy',
   curve = 'curve',
+  compound = 'compound',
   pancake = 'pancake',
   pangolin = 'pangolin',
   quickswap = 'quickswap',
@@ -14,6 +16,9 @@ export enum ProjectEnum {
   traderjoe = 'traderjoe',
   ellipsis = 'ellipsis',
   raydium = 'raydium',
+  viperswap = 'viperswap',
+  badger = 'badger',
+  defikingdoms = 'defikingdoms',
 }
 
 export enum YearnProtocolEnum {
@@ -23,6 +28,10 @@ export enum YearnProtocolEnum {
 
 export enum AaveProtocolEnum {
   AaveV2 = 'AaveV2',
+}
+
+export enum BeefyProtocolEnum {
+  Beefy = 'Beefy',
 }
 
 export enum UniswapProtocolEnum {
@@ -62,6 +71,10 @@ export enum AlpacaProtocolEnum {
   alpaca = 'Alpaca',
 }
 
+export enum CompoundProtocolEnum {
+  compound = 'Compound',
+}
+
 export enum CurveProtocolEnum {
   curve = 'Curve',
 }
@@ -78,10 +91,24 @@ export enum RaydiumProtocolEnum {
   raydium = 'Raydium',
 }
 
+export enum ViperswapProtocolEnum {
+  viperswap = 'Viperswap',
+}
+
+export enum BadgerProtocolEnum {
+  badger = 'BadgerDAO',
+}
+
+export enum DefiKingdomsProtocolEnum {
+  defikingdoms = 'DefiKingdoms',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...BeefyProtocolEnum,
+  ...CompoundProtocolEnum,
   ...CurveProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
@@ -92,5 +119,8 @@ export const ProtocolNameEnum = {
   ...YearnProtocolEnum,
   ...TraderjoeProtocolEnum,
   ...EllipsisProtocolEnum,
+  ...BadgerProtocolEnum,
   ...RaydiumProtocolEnum,
+  ...ViperswapProtocolEnum,
+  ...DefiKingdomsProtocolEnum,
 };

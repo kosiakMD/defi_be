@@ -1,0 +1,76 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Address, ChainDto, Logger } from '@app/common';
+import { FeatureEnum } from '@app/common';
+import { BaseData } from '@app/common/dto/BaseData';
+import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
+
+import { AccountService } from '../../../microservices/account.service';
+import { PriceService } from '../../../microservices/price.service';
+import { PancakeSubgraph } from '../../../subgraphs/subgraphs/pancake.subgraph';
+import { Mapper } from '../../helpers/mappers/mapper';
+import DataProviderProtocol from '../dataProviderProtocol';
+import { PancakeService } from './pancake.service';
+
+@Injectable()
+export default class PancakeProtocolV1 extends DataProviderProtocol {
+  readonly chains = [ChainAbbrEnum.bsc];
+  readonly project = ProjectEnum.pancake;
+  readonly name = PancakeProtocolEnum.pancakeV1;
+  readonly displayName = 'Pancake V1';
+  readonly features = {
+    [ChainAbbrEnum.bsc]: [FeatureEnum.pools],
+  };
+  public feeRate = 0.003;
+  protected readonly dataProvider;
+
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly accountService: AccountService,
+    protected readonly priceService: PriceService,
+    protected readonly subgraph: PancakeSubgraph,
+    protected readonly mapper: Mapper,
+    private readonly pancakeService: PancakeService,
+  ) {
+    super();
+
+    this.dataProvider = this;
+  }
+
+  public async getAllFeaturesBaseData(
+    addresses: Address[],
+    chain: ChainDto,
+  ): Promise<[BaseData[], string[]]> {
+    const chainFeatures = await Promise.allSettled(
+      this.features[chain.abbr].map((f) => {
+        return this.getFeatureData(addresses, chain, f);
+      }),
+    );
+
+    const data = [];
+    const errors = [];
+    chainFeatures.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        data.push(r.value);
+      } else {
+        this.logger.error(r.reason, r.reason.stack, PancakeProtocolV1.name);
+        errors.push(r.reason.toString());
+      }
+    });
+    return [data.flat(), errors];
+  }
+
+  public async getFeatureData(
+    addresses: Address[],
+    chain: ChainDto,
+    feature: FeatureEnum,
+  ): Promise<BaseData[]> {
+    switch (feature) {
+      case FeatureEnum.pools:
+        return this.pancakeService.getDataByAddresses(addresses, chain, this.name);
+      default:
+        return [];
+    }
+  }
+}

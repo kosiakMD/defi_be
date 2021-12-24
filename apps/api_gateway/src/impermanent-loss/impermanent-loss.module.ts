@@ -1,15 +1,15 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 // import { LoggerModule } from  '@app/common/Logger/LoggerModule';
 import { ImpermanentLossController } from './impermanent-loss.controller';
 import { ImpermanentLossService } from './impermanent-loss.service';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
     HttpModule,
     ConfigModule,
-    // LoggerModule,
   ],
   providers: [ImpermanentLossService],
   controllers: [ImpermanentLossController],

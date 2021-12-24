@@ -35,11 +35,23 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
 
       const additional = ADDITIONAL_TOKENS[this.chain] ?? [];
       const { atokens } = await this.subgraph.getTokens();
-      const tokens = atokens.concat(additional);
+
+      // Aave subgraph has a bug where it returns variable debt bearing tokens in the atokens result
+      // with the underlying asset being set to '0x00'. We do not want to price these tokens currently
+      const tokens = atokens
+        .concat(additional)
+        .filter((token) => token.underlyingAssetAddress !== '0x00');
 
       const underlying = this.getUniqueUnderlyingTokenArray(tokens);
 
       const { prices } = await this.fetchPrices(underlying);
+
+      // Check for tokens that don't have a price currently, track & track them for next time
+      const newUnderlying = tokens.filter((token) => !prices[token.underlyingAssetAddress]);
+
+      if (newUnderlying.length) {
+        await this.saveAssets(newUnderlying.map((a) => a.underlyingAssetAddress));
+      }
 
       const results = tokens.reduce(this.reduceTokensToResults(prices), []);
 
@@ -55,12 +67,6 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
 
   reduceTokensToResults(prices: CurrentPricesPayload) {
     return (accumulator, token) => {
-      // Aave subgraph has a bug where it returns variable debt bearing tokens in the atokens result
-      // with the underlying asset being set to '0x00'. We do not want to price these tokens currently
-      if (token.underlyingAssetAddress === '0x00') {
-        return accumulator;
-      }
-
       if (!prices[token.underlyingAssetAddress]) {
         this.logger.warn(
           `[Aave Pricing] Failed to fetch prices for token ${token.id} - (underlying: ${token.underlyingAssetAddress})`,

@@ -1,10 +1,12 @@
 import * as Joi from 'joi';
 
+import { EnvEnum } from '@app/common';
+
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
-    .equal('development', 'production', 'test', 'provision', 'local')
+    .equal(...Object.values(EnvEnum))
     .default('local'),
   ENV: Joi.string()
     .equal(
@@ -104,7 +106,9 @@ export const validationSchema = Joi.object({
   //  TODO: temporary
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   // e-mails
   MAILER_HOST: Joi.string() //

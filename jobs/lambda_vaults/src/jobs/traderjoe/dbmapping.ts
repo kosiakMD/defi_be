@@ -109,7 +109,7 @@ export class DbMapping {
   }
 
   async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId);
     if (temp) {
       return temp;
     }

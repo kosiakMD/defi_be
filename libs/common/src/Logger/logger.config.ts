@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 
-import { Environment, LogConfig, winstonParams } from '@app/common/Logger/winston';
+import { EnvEnum } from '@app/common';
+import { LogConfig, winstonParams } from '@app/common/Logger/winston';
 
 export const getAwsConfig = (configService: ConfigService): LogConfig['awsConfig'] => ({
   region: configService.get<string>('AWS_REGION'),
@@ -11,7 +12,7 @@ export const getAwsConfig = (configService: ConfigService): LogConfig['awsConfig
 export const getWinstonParams = (identifier: string, configService: ConfigService) =>
   winstonParams({
     identifier: identifier,
-    environment: configService.get<Environment>('NODE_ENV'),
+    environment: configService.get<EnvEnum>('NODE_ENV'),
     logErrorFile: configService.get<string>('LOG_ERROR_FILE'),
     logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
     serviceName: configService.get<string>('SERVICE_NAME'),

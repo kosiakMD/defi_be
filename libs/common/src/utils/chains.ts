@@ -25,6 +25,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.boba]: AbsoluteChainIdEnum.boba,
   [ChainIdEnum.kcc]: AbsoluteChainIdEnum.kcc,
   [ChainIdEnum.opt]: AbsoluteChainIdEnum.opt,
+  [ChainIdEnum.near]: AbsoluteChainIdEnum.near
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -57,6 +58,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.boba]: ChainIdEnum.boba,
   [AbsoluteChainIdEnum.kcc]: ChainIdEnum.kcc,
   [AbsoluteChainIdEnum.opt]: ChainIdEnum.opt,
+  [AbsoluteChainIdEnum.near]: ChainIdEnum.near
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -79,6 +81,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.boba]: ChainIdEnum.boba,
   [ChainAbbrEnum.kcc]: ChainIdEnum.kcc,
   [ChainAbbrEnum.opt]: ChainIdEnum.opt,
+  [ChainAbbrEnum.near]: ChainIdEnum.near
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -99,6 +102,7 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.boba]: CoingeckoPlatformEnum.boba,
   [ChainIdEnum.kcc]: CoingeckoPlatformEnum.kcc,
   [ChainIdEnum.opt]: CoingeckoPlatformEnum.opt,
+  [ChainIdEnum.near]: CoingeckoPlatformEnum.near
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -122,6 +126,7 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.boba]: ZERO_ADDRESS,
   [ChainIdEnum.kcc]: ZERO_ADDRESS,
   [ChainIdEnum.opt]: ZERO_ADDRESS,
+  [ChainIdEnum.near]: ZERO_ADDRESS
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -145,6 +150,7 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.boba]: '',
   [ChainIdEnum.kcc]: '',
   [ChainIdEnum.opt]: '',
+  [ChainIdEnum.near]: ''
 };
 
 export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

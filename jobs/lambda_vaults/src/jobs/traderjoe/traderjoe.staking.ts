@@ -23,6 +23,7 @@ import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
+import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
@@ -30,7 +31,6 @@ import { calculateAPR, calculateAPRBonus } from '../utils/apr';
 import { Abis } from './abis';
 import { TraderjoeAddresses } from './addresses';
 import { DbMapping } from './dbmapping';
-import { isTimeToDo } from '../../utils/time';
 
 @Injectable()
 export class TraderJoeStaking implements JobInterface {
@@ -57,7 +57,7 @@ export class TraderJoeStaking implements JobInterface {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
     if (
-      !jobMapping.mapping || 
+      !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       jobMapping = await this.buildInitialMapping(jobMapping);
@@ -327,7 +327,7 @@ export class TraderJoeStaking implements JobInterface {
               } catch (e) {
                 return m;
               }
-              
+
               const aprStatsBonus = {
                 rewardTokenPerBlock:
                   toDecimals(
@@ -371,7 +371,7 @@ export class TraderJoeStaking implements JobInterface {
               m.stats.tvl = m.stakingToken.balance * m.rewards[0].price;
               aprStats.farmingPoolTVL = m.stats.tvl;
             }
-            
+
             m.rewards[0].apr = calculateAPR(aprStats);
           }
 
@@ -391,7 +391,7 @@ export class TraderJoeStaking implements JobInterface {
   ) {
     const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(stakingPos, chiefContract))
       .output.data;
-    stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals);
+    stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals).toString();
     stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
 
     // m.p

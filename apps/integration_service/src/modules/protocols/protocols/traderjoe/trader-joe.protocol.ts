@@ -10,6 +10,7 @@ import BasicProtocol from '../basicProtocol';
 import { TraderJoePools } from './trader-joe.pools';
 import { TraderJoeStaking } from './trader-joe.staking';
 import { TraderJoeFarm } from './trader-joe.farm';
+import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export default class TraderJoeProtocol extends BasicProtocol {
@@ -36,6 +37,7 @@ export default class TraderJoeProtocol extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
+    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

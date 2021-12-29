@@ -10,7 +10,7 @@ import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-
+import { fillUnderlyingTokens } from '../utils/token';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -200,18 +200,7 @@ export class DefiKingdomsPools extends JobPoolsBase<LiquidityPoolFeature> implem
         const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(lp)).output.data;
         lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
         const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(lp)).output.data;
-        lp.tokens.map((t) => {
-          t.reserve =
-            t.positionInPool === 0
-              ? toDecimals(_reserve0, t.decimals)
-              : toDecimals(_reserve1, t.decimals);
-          t.balance = t.reserve;
-          t.price = Number(prices[t.address]);
-          t.value = t.balance * t.price;
-
-          lp.stats.tvl += t.value;
-          return t;
-        });
+        lp.stats.tvl = fillUnderlyingTokens(lp.tokens, [_reserve0, _reserve1], prices);
 
         return lp;
       }

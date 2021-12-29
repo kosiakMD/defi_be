@@ -1,6 +1,7 @@
 import { AbiItem } from 'web3-utils';
+import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
-export class Abis {
+export class Abis extends MultiCallAbiProxy {
   static readonly poolLength: AbiItem = {
     name: 'poolLength',
     stateMutability: 'view',
@@ -76,6 +77,27 @@ export class Abis {
         name: '',
       },
     ],
+  };
+
+  static readonly rewardMultiplier: AbiItem = {
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [
+      {
+        name: '',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+    ],
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    name: 'REWARD_MULTIPLIER',
+    constant: true,
   };
 
   static readonly getReserves: AbiItem = {

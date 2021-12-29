@@ -251,10 +251,12 @@ function getAssetsPerChainMap(assets: AssetsApiDto[]): Map<string, AssetsApiDto[
   const assetsMap: Map<string, AssetsApiDto[]> = new Map<string, AssetsApiDto[]>();
   assets.forEach((a) => {
     const chainId = a.chain?.toString();
-    if (chainId && !assetsMap.get(chainId)) {
-      assetsMap.set(chainId, []);
+    if (chainId) {
+      if (!assetsMap.get(chainId)) {
+        assetsMap.set(chainId, []);
+      }
+      assetsMap.get(chainId).push(a);
     }
-    assetsMap.get(chainId).push(a);
   });
   return assetsMap;
 }

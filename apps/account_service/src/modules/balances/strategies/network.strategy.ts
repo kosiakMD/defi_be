@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -33,7 +34,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     block,
   }: BalancesRequest): Promise<TokenBalance[]> {
     const web3 = this.web3Provider.getInstanceByChainId(chainId);
-    if (!originalTokens.length || !web3.utils.isAddress(address)) {
+    if (!originalTokens.length || !isETHAddress(address)) {
       return [];
     }
 

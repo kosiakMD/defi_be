@@ -205,6 +205,7 @@
     "@nestjsx/api-version": "^0.1.1",
     "@raydium-io/raydium-sdk": "^1.0.1-beta.7",
     "@solana/web3.js": "^1.31.0",
+    "@terra-money/terra.js": "^3.0.2",
     "@types/uuid": "^8.3.3",
     "agenda": "^4.1.2",
     "agendash": "^2.1.1",

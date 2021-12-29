@@ -34,6 +34,7 @@ import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto'
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
+import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -53,6 +54,7 @@ export class BalancesService {
     private readonly networkBalancesStrategy: NetworkBalancesStrategy,
     private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
     private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
+    private readonly terraBalancesStrategy: TerraBalancesStrategy,
   ) {}
 
   public async getBalance(
@@ -449,6 +451,8 @@ export class BalancesService {
     switch (chain) {
       case ChainIdEnum.sol:
         return [this.solanaBalancesStrategy];
+      case ChainIdEnum.terra:
+        return [this.terraBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }

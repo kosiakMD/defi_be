@@ -54,6 +54,7 @@ import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import VenusProtocol from './protocols/venusProtocol';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -70,6 +71,7 @@ const ProtocolList = [
   YearnProtocolV1,
   YearnProtocolV2,
   RaydiumProtocol,
+  VenusProtocol,
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];

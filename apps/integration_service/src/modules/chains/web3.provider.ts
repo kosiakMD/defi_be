@@ -27,6 +27,7 @@ export class Web3Provider {
       ['AVAX_URL']: ChainAbbrEnum.avax,
       ['SOL_URL']: ChainAbbrEnum.sol,
       ['ARBITRUM_URL']: ChainAbbrEnum.arbi,
+      ['HARM_URL']: ChainAbbrEnum.harm,
     };
     Object.entries(chainProviders).forEach(([url, chain]) => {
       if (chain === ChainAbbrEnum.sol)

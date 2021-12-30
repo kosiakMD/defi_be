@@ -764,11 +764,16 @@ export class ProtocolService {
           });
         } else if (baseData instanceof BaseDataStaking) {
           baseData.total = 0;
+          baseData.locked = 0;
           baseData.items.forEach((stakingPosition) => {
             stakingPosition.rewards?.forEach((reward) => {
               reward.price =
                 chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
               reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;
+              if (reward.claimableData.lockedBalance) {
+                reward.claimableData.lockedValue = Number(reward.claimableData.lockedBalance) * reward.price;
+                baseData.locked += reward.claimableData.lockedValue;
+              }
               baseData.total += reward.claimableData.value;
             });
 

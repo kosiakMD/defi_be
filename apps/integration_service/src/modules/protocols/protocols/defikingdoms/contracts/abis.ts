@@ -81,4 +81,77 @@ export class Abis extends MultiCallAbiProxy {
     ],
     stateMutability: 'view',
   };
+
+  static readonly balanceOf: AbiItem = {
+    stateMutability: 'view',
+    inputs: [
+      {
+        name: 'account',
+        internalType: 'address',
+        type: 'address',
+      },
+    ],
+    name: 'balanceOf',
+    type: 'function',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    constant: true,
+  };
+
+  static readonly lockOf: AbiItem = {
+    type: 'function',
+    outputs: [
+      {
+        type: 'uint256',
+        internalType: 'uint256',
+        name: '',
+      },
+    ],
+    stateMutability: 'view',
+    inputs: [
+      {
+        type: 'address',
+        internalType: 'address',
+        name: '_holder',
+      },
+    ],
+    name: 'lockOf',
+    constant: true,
+  };
+
+  static readonly getLockPercent: AbiItem = {
+    inputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    outputs: [
+      {
+        internalType: 'uint256',
+        type: 'uint256',
+        name: '',
+      },
+    ],
+    type: 'function',
+    stateMutability: 'view',
+    name: 'PERCENT_LOCK_BONUS_REWARD',
+    constant: true,
+  };
+
+  static readonly totalSupply: AbiItem = {
+    constant: true,
+    inputs: [],
+    name: 'totalSupply',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

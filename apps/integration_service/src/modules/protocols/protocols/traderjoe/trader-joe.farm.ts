@@ -62,8 +62,10 @@ export class TraderJoeFarm {
         items: [],
         feature: FeatureEnum.farming,
       });
-
-      toAdd.items = [this.toPosition(userBalance, xJOEStaking, xJOEPrice)];
+      
+      if (Number(userBalance) > 0) {
+        toAdd.items = [this.toPosition(userBalance, xJOEStaking, xJOEPrice)];
+      }
 
       return toAdd;
     }));

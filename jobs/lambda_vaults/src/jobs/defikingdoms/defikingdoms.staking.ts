@@ -43,7 +43,6 @@ export class DefiKingdomsStaking
   protocol = ProtocolNameEnum.defikingdoms;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
-
   private contract: Abis;
   protected mapping = [];
 
@@ -250,7 +249,6 @@ export class DefiKingdomsStaking
       }
     });
     batchCalls.push(...this.getCallsForChief(DefiKingdomsAddresses.masterGardener).entries());
-
     const batchCallsMap = new Map<string, CallData>(batchCalls);
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');

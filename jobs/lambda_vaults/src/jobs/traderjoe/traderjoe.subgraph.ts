@@ -1,6 +1,7 @@
 import { map } from 'rxjs/operators';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { ChainIdEnum } from '@app/common';

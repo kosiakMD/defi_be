@@ -21,9 +21,9 @@ import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings, decimalsDivider } from '@app/common/utils';
 
-import { PriceService } from '../../../microservices/price.service';
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
+import { PriceService } from '../../../microservices/price.service';
 import { Abis } from './contracts/abis';
 
 @Injectable()
@@ -175,9 +175,10 @@ export class AutofarmStaking {
   private async getStakedTokens(addresses: Address[], multicall, pools) {
     const calls = new Map<string, ICallData>();
 
-    addresses.forEach(address => {
-      pools.items.forEach(pool => {
-        if (pool.poolId !== '331') { // 331 pool was broken and returning 'execution reverted' error
+    addresses.forEach((address) => {
+      pools.items.forEach((pool) => {
+        if (pool.poolId !== '331') {
+          // 331 pool was broken and returning 'execution reverted' error
           calls.set(this.balanceOfLabel(pool.address, address, pool.poolId), {
             address: pool.address,
             abi: Abis.stakedWantTokens,
@@ -190,9 +191,16 @@ export class AutofarmStaking {
       });
     });
 
-    const userInfos: Map<string, ICallData> = await multicall.handleInBatches(calls);
+    const mapEntries = Array.from(calls.entries());
+    const chunk = 1500;
+    const promises = [];
+    for (let i = 0; i < calls.size; i += chunk) {
+      const sliceCalls = mapEntries.slice(i, i + chunk);
+      promises.push(multicall.handleInBatches(new Map(sliceCalls.flatMap((call) => [call]))));
+    }
 
-    return userInfos;
+    const promisesResp = await Promise.all(promises);
+    return new Map<string, ICallData>(promisesResp.flatMap((resp) => Array.from(resp.entries())));
   }
 
   private getMulticallDataForAddress(multicallData, userAddress: string) {

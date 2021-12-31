@@ -67,7 +67,6 @@ export class IearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
   async getRequiredVaultDetails(vaults: Address[]): Promise<IVaultDetails[]> {
     const calls = vaults.reduce((acc, address) => {
       const proxy = new ShareTokenAbi(address);
-      acc.set(`${address}-decimals`, proxy.decimals());
       acc.set(`${address}-token`, proxy.token());
       acc.set(`${address}-getPricePerFullShare`, proxy.getPricePerFullShare());
       return acc;
@@ -77,11 +76,10 @@ export class IearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
 
     const response = new Map<Address, IVaultDetails>();
     vaults.forEach((address) => {
-      const decimals = Number(rawResponse.get(`${address}-decimals`).output.data.toString());
       const token = rawResponse.get(`${address}-token`).output.data.toString().toLowerCase();
       const getPricePerFullShare = normalizeDecimals(
         rawResponse.get(`${address}-getPricePerFullShare`).output.data.toString(),
-        decimals,
+        18,
       );
 
       response.set(address.toString(), {

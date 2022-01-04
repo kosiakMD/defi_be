@@ -5,6 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainIdEnum } from '@app/common';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { concatStrings } from '@app/common/utils';
 
@@ -151,11 +152,15 @@ export class JobsRunner {
     jobPlaceholdersSet.add('10_Viperswap_staking');
     jobPlaceholdersSet.add('10_Viperswap_pools');
 
-    jobPlaceholdersSet.add('2_Beefy_staking');
-    jobPlaceholdersSet.add('4_Beefy_staking');
-    jobPlaceholdersSet.add('6_Beefy_staking');
-    jobPlaceholdersSet.add('9_Beefy_staking');
-    jobPlaceholdersSet.add('14_Beefy_staking');
+    jobPlaceholdersSet.add(`${ChainIdEnum.arbi}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.bsc}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.celo}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.cro}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Beefy_staking`);
 
     return jobPlaceholdersSet;
   }

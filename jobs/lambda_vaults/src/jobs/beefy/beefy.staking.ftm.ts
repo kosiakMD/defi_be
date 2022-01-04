@@ -30,6 +30,5 @@ export class BeefyStakingFtm extends BeefyStakingBase implements JobInterface {
   ) {
     super();
     this.dbMapping = new DbMapping(storeService);
-    api.initialize(this.chain);
   }
 }

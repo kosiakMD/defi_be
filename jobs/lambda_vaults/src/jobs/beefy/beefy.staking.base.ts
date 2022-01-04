@@ -66,7 +66,7 @@ export abstract class BeefyStakingBase
 
   async rebuildMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
     this.logger.log('Building Job Mapping', this.placeholder);
-    const vaults = await this.api.fetchVaults();
+    const vaults = await this.api.fetchVaults(this.chain);
 
     const stakingFeatures = await this.createStakingFeaturesFromVaults(vaults);
 

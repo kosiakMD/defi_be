@@ -15,8 +15,8 @@ import { BeefyApiService } from './beefy.api.service';
 import { BeefyStakingBase } from './beefy.staking.base';
 
 @Injectable()
-export class BeefyStakingMoonRiver extends BeefyStakingBase implements JobInterface {
-  chain = ChainIdEnum.mriver;
+export class BeefyStakingCelo extends BeefyStakingBase implements JobInterface {
+  chain = ChainIdEnum.celo;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
 
   constructor(

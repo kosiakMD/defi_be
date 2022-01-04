@@ -1,7 +1,6 @@
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
-import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -28,19 +27,36 @@ import { AccountService } from '../../microservices/account.service';
 import BasicProtocol from './basicProtocol';
 
 export class BeefyProtocol extends BasicProtocol {
-  readonly chains = [ChainAbbrEnum.ftm];
+  readonly chains = [
+    ChainAbbrEnum.arbi,
+    ChainAbbrEnum.avax,
+    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.celo,
+    ChainAbbrEnum.cro,
+    ChainAbbrEnum.ftm,
+    ChainAbbrEnum.harm,
+    ChainAbbrEnum.mriver,
+    ChainAbbrEnum.plg,
+  ];
   readonly project = ProjectEnum.beefy;
   readonly name = ProtocolNameEnum.Beefy;
   readonly displayName = 'Beefy Finance';
   readonly features = {
+    [ChainAbbrEnum.arbi]: [FeatureEnum.staking],
+    [ChainAbbrEnum.avax]: [FeatureEnum.staking],
+    [ChainAbbrEnum.bsc]: [FeatureEnum.staking],
+    [ChainAbbrEnum.celo]: [FeatureEnum.staking],
+    [ChainAbbrEnum.cro]: [FeatureEnum.staking],
     [ChainAbbrEnum.ftm]: [FeatureEnum.staking],
+    [ChainAbbrEnum.harm]: [FeatureEnum.staking],
+    [ChainAbbrEnum.mriver]: [FeatureEnum.staking],
+    [ChainAbbrEnum.plg]: [FeatureEnum.staking],
   };
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     protected readonly accountService: AccountService,
-    private readonly http: HttpService,
     private readonly multicall: MulticallAggregator,
   ) {
     super();

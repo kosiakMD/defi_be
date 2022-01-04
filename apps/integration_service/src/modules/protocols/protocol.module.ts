@@ -44,6 +44,7 @@ import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
+import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
@@ -75,7 +76,7 @@ const ProtocolList = [
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm];
+const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm, TraderJoeLending];
 const Pancake = [
   PancakeProtocol,
   PancakeV2Staking,

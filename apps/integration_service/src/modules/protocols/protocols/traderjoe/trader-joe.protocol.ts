@@ -10,6 +10,7 @@ import BasicProtocol from '../basicProtocol';
 import { TraderJoePools } from './trader-joe.pools';
 import { TraderJoeStaking } from './trader-joe.staking';
 import { TraderJoeFarm } from './trader-joe.farm';
+import { TraderJoeLending } from './trader-joe.lending';
 import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
@@ -19,7 +20,14 @@ export default class TraderJoeProtocol extends BasicProtocol {
   readonly name = TraderjoeProtocolEnum.traderjoe;
   readonly displayName = 'Trader Joe';
   readonly features = {
-    [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking, FeatureEnum.farming],
+    [ChainAbbrEnum.avax]: [
+      FeatureEnum.pools, 
+      FeatureEnum.staking, 
+      FeatureEnum.farming, 
+      FeatureEnum.lending, 
+      FeatureEnum.borrowing,
+      FeatureEnum.claimable,
+    ],
   };
   public static feeRate = 0.0025;
   protected readonly dataProvider;
@@ -29,6 +37,7 @@ export default class TraderJoeProtocol extends BasicProtocol {
     private readonly staking: TraderJoeStaking,
     private readonly pools: TraderJoePools,
     private readonly farming: TraderJoeFarm,
+    private readonly lending: TraderJoeLending,
   ) {
     super();
   }
@@ -70,6 +79,8 @@ export default class TraderJoeProtocol extends BasicProtocol {
         return this.pools.getData(addresses, chain);
       case FeatureEnum.farming:
         return this.farming.getData(addresses, chain);
+      case FeatureEnum.lending:
+        return this.lending.getData(addresses, chain);
       default:
         return [];
     }

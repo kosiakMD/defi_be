@@ -23,7 +23,7 @@ export class CovalentBalancesStrategy implements BalancesLoadingStrategy {
     this.logger.time(message);
 
     const chainId = getAbsoluteChainId(request.chainId);
-    const balances = await this.service.getBalances(request.address, chainId);
+    const balances = await this.service.getBalances(request.address, chainId as number);
     const response = this.mapCovalentResponse(balances);
 
     this.logger.timeEnd(message);

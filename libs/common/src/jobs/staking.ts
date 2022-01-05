@@ -7,6 +7,8 @@ import { ERC20Token } from '@app/common/jobs/token';
 export class ClaimableDto {
   balance: number | string = null;
   value: number = null;
+  lockedBalance?: string;
+  lockedValue?: number;
 }
 
 export class IntegrationPoolTokenDto extends ERC20Token {

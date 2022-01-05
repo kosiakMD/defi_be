@@ -17,7 +17,7 @@ import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-
+import { fillUnderlyingTokens } from '../utils/token';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -43,7 +43,6 @@ export class DefiKingdomsStaking
   protocol = ProtocolNameEnum.defikingdoms;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
-
   private contract: Abis;
   protected mapping = [];
 
@@ -250,7 +249,6 @@ export class DefiKingdomsStaking
       }
     });
     batchCalls.push(...this.getCallsForChief(DefiKingdomsAddresses.masterGardener).entries());
-
     const batchCallsMap = new Map<string, CallData>(batchCalls);
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
@@ -321,19 +319,7 @@ export class DefiKingdomsStaking
       const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
         .data;
 
-      stakingPos.stakingToken.tokens.map((t) => {
-        t.reserve =
-          t.positionInPool === 0
-            ? toDecimals(_reserve0, t.decimals)
-            : toDecimals(_reserve1, t.decimals);
-        t.price = Number(prices[t.address]);
-        t.balance = t.reserve * poolShare;
-        t.value = t.balance * t.price;
-
-        stakingPos.stats.tvl += t.value;
-
-        return t;
-      });
+      stakingPos.stats.tvl = fillUnderlyingTokens(stakingPos.stakingToken.tokens, [_reserve0, _reserve1], prices, poolShare);
     } else {
       stakingPos.stakingToken.price = Number(prices[stakingPos.stakingToken.address]);
       stakingPos.stakingToken.value =

@@ -30,6 +30,5 @@ export class BeefyStakingMoonRiver extends BeefyStakingBase implements JobInterf
   ) {
     super();
     this.dbMapping = new DbMapping(storeService);
-    api.initialize(this.chain);
   }
 }

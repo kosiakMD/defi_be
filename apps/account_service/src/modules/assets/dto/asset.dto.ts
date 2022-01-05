@@ -43,6 +43,9 @@ export class AssetDto implements IAssetDto {
   @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.pending })
   @Expose()
   status: AssetState;
+
+  @Expose()
+  extensions: any;
 }
 
 export class AssetQueryDto {

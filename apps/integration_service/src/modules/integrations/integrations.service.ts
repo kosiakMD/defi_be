@@ -240,6 +240,10 @@ export class IntegrationsService {
           }
 
           existedChainData[bd.feature] = { totalValue: bd.total, items: bd.items };
+
+          if (bd.locked) {
+            existedChainData[bd.feature].lockedValue = bd.locked;
+          }
         });
       }
     });

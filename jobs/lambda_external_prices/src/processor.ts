@@ -31,7 +31,8 @@ export async function process(): Promise<void> {
     const filteredAssets = getFilterDbAssets(allAssets, allCurrentPricesMap);
 
     const chainAssetsMap = await getAssetsPerChainMap(filteredAssets);
-    // remove solana assets
+    // TODO: Why do we do this?
+    // remove Solana assets
     chainAssetsMap.delete(ChainIdEnum.sol.toString());
 
     const requestMap = buildCoingeckoRequestsMap(chainAssetsMap);
@@ -71,7 +72,8 @@ export async function process(): Promise<void> {
       index++;
     }
 
-    // only solana:
+    // TODO: This is temporary solution. This code should not be here
+    // Only Solana
     const solPriceRequests = getSolanaPriceRequests();
     const executedSolPriceRequests = await Promise.allSettled(
       solPriceRequests.map((url) => {
@@ -135,8 +137,8 @@ function buildCoingeckoRequestsMap(
 function getAssetsPerChainMap(assets: AssetsApiDto[]): Map<string, AssetsApiDto[]> {
   const assetsMap: Map<string, AssetsApiDto[]> = new Map<string, AssetsApiDto[]>();
   assets.forEach((a) => {
-    const chainId = a.chain.toString();
-    if (!assetsMap.get(chainId)) {
+    const chainId = a.chain?.toString();
+    if (chainId && !assetsMap.get(chainId)) {
       assetsMap.set(chainId, []);
     }
     assetsMap.get(chainId).push(a);
@@ -148,19 +150,10 @@ function getSolanaPriceRequests() {
   const requests: string[] = [];
   const limit = 50;
   const totalLimit = 600;
-  // get first 1000 assets from api
+  // get first N assets from api
   for (let i = 0; i < totalLimit; i += limit) {
     requests.push(
-      solPublicAssetsApi +
-        '/token/list' +
-        '?' +
-        'sortBy=market_cap' +
-        '&' +
-        'direction=desc' +
-        '&' +
-        `limit=${limit}` +
-        '&' +
-        `offset=${i}`,
+      `${solPublicAssetsApi}/token/list?sortBy=market_cap&direction=desc&limit=${limit}&offset=${i}`,
     );
   }
   return requests;

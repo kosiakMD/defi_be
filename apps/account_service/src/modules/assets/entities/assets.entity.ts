@@ -42,6 +42,9 @@ export class AssetsEntity {
   @Column({ name: 'is_tracked' })
   isTracked: boolean;
 
+  @Column({ name: 'extensions', type: 'json' })
+  extensions: any;
+
   status: AssetState;
 
   positionInPool: number;

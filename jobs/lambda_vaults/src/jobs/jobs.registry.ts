@@ -6,11 +6,15 @@ import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
 import { BadgerStakingArbi } from './badger/badger.staking.arbi';
 import { BadgerStakingEth } from './badger/badger.staking.eth';
 import { BadgerStakingPLG } from './badger/badger.staking.plg';
+import { BeefyStakingArbi } from './beefy/beefy.staking.arbi';
 import { BeefyStakingAvax } from './beefy/beefy.staking.avax';
 import { BeefyStakingBsc } from './beefy/beefy.staking.bsc';
+import { BeefyStakingCelo } from './beefy/beefy.staking.celo';
 import { BeefyStakingCro } from './beefy/beefy.staking.cro';
 import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
 import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
+import { BeefyStakingOne } from './beefy/beefy.staking.one';
+import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
 import { CurvePools } from './curve/curve.pools';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
@@ -26,6 +30,8 @@ import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
+import { VVSPools } from './vvs/vvs.pools';
+import { VVSStaking } from './vvs/vvs.staking';
 
 @Injectable()
 export class JobsRegistry {
@@ -40,6 +46,10 @@ export class JobsRegistry {
     beefyStakingFtm: BeefyStakingFtm,
     beefyStakingBsc: BeefyStakingBsc,
     beefyStakingAvax: BeefyStakingAvax,
+    beefyStakingCelo: BeefyStakingCelo,
+    beefyStakingArbi: BeefyStakingArbi,
+    beefyStakingOne: BeefyStakingOne,
+    beefyStakingPlg: BeefyStakingPlg,
     beefyStakingCro: BeefyStakingCro,
     beefyStakingMoonRiver: BeefyStakingMoonRiver,
     curvePools: CurvePools,
@@ -56,6 +66,8 @@ export class JobsRegistry {
     traderjoeStaking: TraderJoeStaking,
     viperswapPools: ViperswapPools,
     viperswapStaking: ViperswapStaking,
+    vvsStaking: VVSStaking,
+    vvsPools: VVSPools,
   ) {
     // this.register(curvePools); // TODO: temp disabled
     this.register(autofarmStakingBSC);
@@ -63,11 +75,15 @@ export class JobsRegistry {
     this.register(badgerStakingArbi);
     this.register(badgerStakingEth);
     this.register(badgerStakingPLG);
+    this.register(beefyStakingArbi);
     this.register(beefyStakingAvax);
     this.register(beefyStakingBsc);
+    this.register(beefyStakingCelo);
     this.register(beefyStakingCro);
     this.register(beefyStakingFtm);
     this.register(beefyStakingMoonRiver);
+    this.register(beefyStakingOne);
+    this.register(beefyStakingPlg);
     this.register(defiKingdomsPools);
     this.register(defiKingdomsStaking);
     this.register(ellipsisLp);
@@ -81,6 +97,8 @@ export class JobsRegistry {
     this.register(traderjoeStaking);
     this.register(viperswapPools);
     this.register(viperswapStaking);
+    this.register(vvsPools);
+    this.register(vvsStaking);
   }
 
   private register(job: JobInterface) {

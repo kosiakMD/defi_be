@@ -68,28 +68,30 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
         });
 
         d.liquidityPositions.forEach((lp) => {
-          const lpFeature: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
-            address: lp.pool.address,
-            lpToken: lp.lpToken,
-            tokens: [],
-          });
-
-          lp.poolTokens.forEach((pt, i) => {
-            const poolToken: PoolTokenDto = plainToClass(PoolTokenDto, {
-              address: pt.address,
-              name: pt.name,
-              symbol: pt.symbol,
-              decimals: pt.decimals,
-              reserve: pt.reserve,
-              value: pt.amount * pt.priceUSD,
-              balance: pt.amount,
-              price: pt.priceUSD,
-              positionInPool: i,
+          if (!lp.poolTokens.some((pt) => pt.amount === '0')) {
+            const lpFeature: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
+              address: lp.pool.address,
+              lpToken: lp.lpToken,
+              tokens: [],
             });
 
-            lpFeature.tokens.push(poolToken);
-          });
-          lpPosition.items.push(lpFeature);
+            lp.poolTokens.forEach((pt, i) => {
+              const poolToken: PoolTokenDto = plainToClass(PoolTokenDto, {
+                address: pt.address,
+                name: pt.name,
+                symbol: pt.symbol,
+                decimals: pt.decimals,
+                reserve: pt.reserve,
+                value: pt.amount * pt.priceUSD,
+                balance: pt.amount,
+                price: pt.priceUSD,
+                positionInPool: i,
+              });
+
+              lpFeature.tokens.push(poolToken);
+            });
+            lpPosition.items.push(lpFeature);
+          }
         });
 
         return lpPosition;

@@ -44,14 +44,19 @@ import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
+import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+import VenusProtocol from './protocols/venusProtocol';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
+import { VVSPools } from './protocols/vvs/vvs.pools';
+import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+import { VVSStaking } from './protocols/vvs/vvs.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
@@ -70,10 +75,11 @@ const ProtocolList = [
   YearnProtocolV1,
   YearnProtocolV2,
   RaydiumProtocol,
+  VenusProtocol,
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm];
+const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm, TraderJoeLending];
 const Pancake = [
   PancakeProtocol,
   PancakeV2Staking,
@@ -89,6 +95,7 @@ const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
 const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
+const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
 @Module({
   imports: [
@@ -119,6 +126,7 @@ const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaki
     ...Viperswap,
     ...Badger,
     ...DefiKingdoms,
+    ...VVS,
     ProtocolService,
     Mapper,
     AlpacaApiService,

@@ -348,6 +348,8 @@ export class RaydiumStaking implements JobInterface {
           mapping.stakingToken.price * toDecimals(mapping.staked, mapping.stakingToken.decimals);
         mapping.stats.tvl = mapping.stakingToken.value;
       } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const poolInfo = await Liquidity.getInfo(
           this.web3,
           solanaStringsToKeys(this.mapping[index].extra.pool) as LiquidityPoolKeysV4,

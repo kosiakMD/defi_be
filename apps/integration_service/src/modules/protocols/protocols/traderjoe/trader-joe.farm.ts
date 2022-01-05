@@ -5,9 +5,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  AccountBalance,
   Address,
-  BalancesResponse,
   ChainAbbrEnum,
   ChainDto,
   ChainIdEnum,
@@ -16,7 +14,6 @@ import {
   Logger,
   ProjectEnum,
   ProtocolTypeEnum,
-  TokenBalance,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import {
@@ -30,7 +27,6 @@ import { toDecimals } from '../../../../common/utils/util';
 
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
-import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { TraderjoeAbis } from './contracts/traderjoe.abis';
 
@@ -39,11 +35,12 @@ export class TraderJoeFarm {
   private readonly multicallService: MulticallService;
   xJOEAddress = '0x57319d41f71e81f3c65f2a47ca4e001ebafd4f33';
   JOEAddress = '0x6e84a6216ea6dacc71ee8e6b0a5b7322eebc0fdd';
+  jXJOEAddress = '0xc146783a59807154f92084f9243eb139d58da696';
+  priceOracle = '0xd7ae651985a871c1bc254748c40ecc733110bc2e';
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    private readonly accountService: AccountService,
     private readonly multicallProvider: MulticallProvider,
     private readonly priceService: PriceService,
   ) {
@@ -51,15 +48,12 @@ export class TraderJoeFarm {
   }
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
-    const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
-      addresses,
-      [ChainIdEnum.avax],
-      [this.xJOEAddress],
-    );
-
     const xJOEStaking = await this.getStakingPosition();
+    const xJOEPrice = await this.getXJOEprice();
 
-    const baseData: BaseDataStaking[] = addresses.map((a) => {
+    const baseData: BaseDataStaking[] = await Promise.all(addresses.map(async (a) => {
+      const userBalance = await this.getBalanceOf(a);
+
       const toAdd: BaseDataStaking = plainToClass(BaseDataStaking, {
         chain: chain,
         userAddress: a,
@@ -68,14 +62,13 @@ export class TraderJoeFarm {
         items: [],
         feature: FeatureEnum.farming,
       });
-
-      const existedPositions = this.toStaking(lpBalances[a], [xJOEStaking]);
-      if (existedPositions.length > 0) {
-        toAdd.items = existedPositions;
+      
+      if (Number(userBalance) > 0) {
+        toAdd.items = [this.toPosition(userBalance, xJOEStaking, xJOEPrice)];
       }
 
       return toAdd;
-    });
+    }));
 
     return baseData;
   }
@@ -99,7 +92,7 @@ export class TraderJoeFarm {
     });
 
     const { prices } = await this.priceService.getTokenPricesFetch(
-      [this.JOEAddress, this.xJOEAddress],
+      [this.JOEAddress],
       ChainIdEnum.avax,
     );
 
@@ -114,34 +107,20 @@ export class TraderJoeFarm {
     return xJOE;
   }
 
-  private toStaking(
-    lpBalance: AccountBalance,
-    cachedStakingPos: IntegrationStakingPositionDto[],
-  ): IntegrationStakingPositionDto[] {
-    const cachedStakingPosMap: Map<string, any> = new Map<string, any>(
-      cachedStakingPos.map((i) => [i.address, i]),
-    );
-
-    return lpBalance.tokens.map((tb) => {
-      if (tb.decimalsAmount > 0) {
-        return this.toPosition(tb, cachedStakingPosMap.get(tb.token.address));
-      }
-    });
-  }
-
   private toPosition(
-    balance: TokenBalance,
+    balance: number,
     stakingData: IntegrationStakingPositionDto,
+    xJOEPrice: number,
   ): IntegrationStakingPositionDto {
     const userData = stakingData;
-    userData.staked = balance.amount;
-    userData.stakingToken.balance = balance.decimalsAmount;
-    userData.stakingToken.price = balance.tokenPriceUSD;
-    userData.stakingToken.value = balance.tokenPriceUSD * userData.stakingToken.balance;
+    userData.staked = balance.toString();
+    userData.stakingToken.balance = toDecimals(balance, 18);
+    userData.stakingToken.price = xJOEPrice;
+    userData.stakingToken.value = xJOEPrice * userData.stakingToken.balance;
     userData.stakingToken.tokens[0].balance =
       userData.stakingToken.value / userData.stakingToken.tokens[0].price;
 
-    userData.stats.tvl = stakingData.stakingToken.totalSupply * balance.tokenPriceUSD;
+    userData.stats.tvl = stakingData.stakingToken.totalSupply * xJOEPrice;
 
     return userData;
   }
@@ -161,5 +140,33 @@ export class TraderJoeFarm {
       totalSupplyCall,
     );
     return toDecimals(totalSupplyRsp.get(address).output.data, 18);
+  }
+
+  private async getBalanceOf(userAddress: string) {
+    const xJOEContract = new TraderjoeAbis(this.xJOEAddress);
+
+    const balanceCall = new Map<string, ICallData>([
+      [userAddress, xJOEContract.balanceOf(userAddress)]
+    ]);
+
+    const balanceRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
+      balanceCall,
+    );
+    
+    return balanceRsp.get(userAddress).output.data;
+  }
+
+  private async getXJOEprice() {
+    const oracleContract = new TraderjoeAbis(this.priceOracle);
+
+    const priceCall = new Map<string, ICallData>([
+      [this.xJOEAddress, oracleContract.getUnderlyingPrice(this.jXJOEAddress)]
+    ]);
+
+    const priceRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
+      priceCall,
+    );
+
+    return toDecimals(priceRsp.get(this.xJOEAddress).output.data, 18);
   }
 }

@@ -238,6 +238,8 @@ export class RaydiumPools implements JobInterface {
 
     // RPC is trottling even with 2 promises in paralel
     for (const lpf of this.mapping) {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       const pi = await Liquidity.getInfo(
         this.web3,
         solanaStringsToKeys(lpf.extra.pool) as LiquidityPoolKeysV4,

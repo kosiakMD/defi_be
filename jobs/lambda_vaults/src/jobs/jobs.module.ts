@@ -41,6 +41,8 @@ import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { TraderJoeSubgraph } from './traderjoe/traderjoe.subgraph';
 import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
+import { VVSPools } from './vvs/vvs.pools';
+import { VVSStaking } from './vvs/vvs.staking';
 
 const Jobs = [
   AutofarmStakingBSC,
@@ -72,6 +74,8 @@ const Jobs = [
   TraderjoePools,
   ViperswapPools,
   ViperswapStaking,
+  VVSStaking,
+  VVSPools,
 ];
 
 const Helpers = [AutofarmApiService, BeefyApiService];

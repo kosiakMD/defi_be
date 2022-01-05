@@ -20,6 +20,7 @@ import {
   BadgerProtocolEnum,
   DefiKingdomsProtocolEnum,
   VenusProtocolEnum,
+  VVSProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -48,7 +49,8 @@ export type ProtocolName =
   | YearnProtocolEnum
   | BadgerProtocolEnum
   | DefiKingdomsProtocolEnum
-  | VenusProtocolEnum;
+  | VenusProtocolEnum
+  | VVSProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

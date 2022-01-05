@@ -50,12 +50,15 @@ import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
+import VenusProtocol from './protocols/venusProtocol';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
+import { VVSPools } from './protocols/vvs/vvs.pools';
+import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+import { VVSStaking } from './protocols/vvs/vvs.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import VenusProtocol from './protocols/venusProtocol';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -92,6 +95,7 @@ const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
 const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
+const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
 @Module({
   imports: [
@@ -122,6 +126,7 @@ const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaki
     ...Viperswap,
     ...Badger,
     ...DefiKingdoms,
+    ...VVS,
     ProtocolService,
     Mapper,
     AlpacaApiService,

@@ -1,0 +1,4 @@
+export enum VVSAddresses {
+  chief = '0xDccd6455AE04b03d785F12196B492b18129564bc',
+  reward = '0x2D03bECE6747ADC00E1a131BBA1469C15fD11e03',
+}

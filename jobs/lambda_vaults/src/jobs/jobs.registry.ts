@@ -30,6 +30,8 @@ import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
+import { VVSPools } from './vvs/vvs.pools';
+import { VVSStaking } from './vvs/vvs.staking';
 
 @Injectable()
 export class JobsRegistry {
@@ -64,6 +66,8 @@ export class JobsRegistry {
     traderjoeStaking: TraderJoeStaking,
     viperswapPools: ViperswapPools,
     viperswapStaking: ViperswapStaking,
+    vvsStaking: VVSStaking,
+    vvsPools: VVSPools,
   ) {
     // this.register(curvePools); // TODO: temp disabled
     this.register(autofarmStakingBSC);
@@ -93,6 +97,8 @@ export class JobsRegistry {
     this.register(traderjoeStaking);
     this.register(viperswapPools);
     this.register(viperswapStaking);
+    this.register(vvsPools);
+    this.register(vvsStaking);
   }
 
   private register(job: JobInterface) {

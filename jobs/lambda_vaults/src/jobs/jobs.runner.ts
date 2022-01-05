@@ -162,6 +162,9 @@ export class JobsRunner {
     jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Beefy_staking`);
     jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Beefy_staking`);
 
+    jobPlaceholdersSet.add('14_VVS_pools');
+    jobPlaceholdersSet.add('14_VVS_staking');
+
     return jobPlaceholdersSet;
   }
 }

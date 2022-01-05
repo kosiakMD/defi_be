@@ -85,6 +85,7 @@ export enum CoingeckoPlatformEnum {
   opt = 'optimistic-ethereum',
   near = 'near-protocol',
   terra = 'terra',
+  vvs = 'vvs',
 }
 
 export enum AbsoluteChainIdEnum {

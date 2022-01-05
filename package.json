@@ -274,6 +274,7 @@
   ],
   "appAccountDependencies": [
     "@solana/spl-token",
+    "@terra-money/terra.js",
     "limiter"
   ],
   "appGatewayDependencies": [

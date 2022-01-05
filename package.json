@@ -8,7 +8,7 @@
     "yarn": ">=1.13.0"
   },
   "scripts": {
-    "begin": "yarn add group-dependencies@git+https://github.com/defiyield-info/group-dependencies#v0.1.0-beta.9",
+    "begin": "yarn add group-dependencies@git+https://github.com/defiyield-info/group-dependencies#v0.1.0-beta.10",
     "pre-commit": "yarn run lint && yarn run format-check",
     "prepare": "husky install",
     "build-monorepo": "yarn common-build && yarn gateway-build && yarn account-build && yarn integration-build && yarn price-build",
@@ -176,7 +176,6 @@
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.3.1",
-    "hasura-cli": "^2.0.5",
     "husky": "^6.0.0",
     "jest": "27.1.0",
     "nestjs-pgpromise": "^1.4.3",
@@ -210,6 +209,7 @@
     "@solana/web3.js": "^1.31.0",
     "@terra-money/terra.js": "^3.0.2",
     "agenda": "^4.1.2",
+    "apollo-enchanted-cache-inmemory": "^1.2.0",
     "async-retry": "^1.3.1",
     "axios": "^0.21.2",
     "axios-rate-limit": "^1.3.0",
@@ -222,7 +222,7 @@
     "dotenv": "^10.0.0",
     "es6-promise-pool": "^2.5.0",
     "ethers": "^5.0.19",
-    "group-dependencies": "git+https://github.com/defiyield-info/group-dependencies#v0.1.0-beta.8",
+    "group-dependencies": "git+https://github.com/defiyield-info/group-dependencies.git#v0.1.0-beta.10",
     "http-proxy-middleware": "^1.1.0",
     "inversify": "^5.0.5",
     "joi": "^17.4.0",
@@ -310,5 +310,8 @@
     "axios-rate-limit",
     "es6-promise-pool",
     "nestjs-agenda"
+  ],
+  "testDependencies": [
+    "apollo-enchanted-cache-inmemory"
   ]
 }

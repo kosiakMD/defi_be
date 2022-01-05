@@ -2440,6 +2440,11 @@ anymatch@^3.0.3, anymatch@~3.1.1, anymatch@~3.1.2:
     normalize-path "^3.0.0"
     picomatch "^2.0.4"
 
+apollo-enchanted-cache-inmemory@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/apollo-enchanted-cache-inmemory/-/apollo-enchanted-cache-inmemory-1.2.0.tgz#40109c6b5ae1c1f2d6f441377a054fc63eaee52c"
+  integrity sha512-vrm+uLic+k/V9Zgjd34EruI4NTOEwyyZgJPvMHW78ihCJHYQbPG8lGyP2P/ZDXeMb8bA22x9Qit0o4sh+S2FCQ==
+
 app-root-path@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/app-root-path/-/app-root-path-3.0.0.tgz#210b6f43873227e18a4b810a032283311555d5ad"
@@ -5459,9 +5464,9 @@ graceful-fs@^4.1.2, graceful-fs@^4.1.6, graceful-fs@^4.2.0, graceful-fs@^4.2.4:
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.8.tgz#e412b8d33f5e006593cbd3cee6df9f2cebbe802a"
   integrity sha512-qkIilPUYcNhJpd33n0GBXTB1MMPp14TxEsEs0pTrsSVucApsYzW5V+Q8Qxhik6KU3evy+qkAAowTByymK0avdg==
 
-"group-dependencies@git+https://github.com/defiyield-info/group-dependencies#v0.1.0-beta.8":
-  version "0.1.0-beta.7"
-  resolved "git+https://github.com/defiyield-info/group-dependencies#199e51cf313195fc139b594fec39db3562cad0a6"
+"group-dependencies@git+https://github.com/defiyield-info/group-dependencies.git#v0.1.0-beta.10":
+  version "0.1.0-beta.10"
+  resolved "git+https://github.com/defiyield-info/group-dependencies.git#724de3187cf388e4120bcc5bd5b916f8c47b4a3d"
   dependencies:
     colors "^1.4.0"
 

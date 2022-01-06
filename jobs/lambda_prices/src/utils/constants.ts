@@ -27,4 +27,8 @@ export enum ChainIdEnum {
   boba = 15,
   kcc = 16,
   opt = 17,
+  near = 18,
+  terra = 19,
+  klay = 20,
+  fuse = 21
 }

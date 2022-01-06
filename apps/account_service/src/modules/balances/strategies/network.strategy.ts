@@ -127,6 +127,10 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('BOBA_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.near:
         return this.config.get<string>('NEAR_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.klay:
+        return this.config.get<string>('KLAYTN_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.fuse:
+        return this.config.get<string>('FUSE_BALANCES_CHECKER_ADDRESS');
     }
   }
 
@@ -166,6 +170,10 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<number>('OPTIMISM_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.near:
         return this.config.get<number>('NEAR_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.klay:
+        return this.config.get<number>('KLAYTN_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.fuse:
+        return this.config.get<number>('FUSE_BALANCES_CHECKER_BATCH_SIZE');
       default:
         return DEFAULT_BATCH_SIZE;
     }

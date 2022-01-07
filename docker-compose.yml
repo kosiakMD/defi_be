@@ -8,13 +8,23 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
 
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+
   price-service:
     image: node:14
     ports:
-      - "${PRICE_SERVICE_PORT:-3002}"
+      - "${PRICE_SERVICE_PORT:-3002}:${PRICE_SERVICE_PORT:-3002}"
     working_dir: /usr/src/app
     depends_on:
       - redis
+      - postgres
     volumes:
       - .:/usr/src/app
     command: "yarn price-start:dev"
@@ -28,10 +38,11 @@ services:
   account-service:
     image: node:14
     ports:
-      - "${ACCOUNT_SERVICE_PORT:-3003}"
+      - "${ACCOUNT_SERVICE_PORT:-3003}:${ACCOUNT_SERVICE_PORT:-3003}"
     working_dir: /usr/src/app
     depends_on:
       - redis
+      - postgres
       - price-service
     volumes:
       - .:/usr/src/app
@@ -46,10 +57,11 @@ services:
   integration-service:
     image: node:14
     ports:
-      - "${INTEGRATION_SERVICE_PORT:-3004}"
+      - "${INTEGRATION_SERVICE_PORT:-3004}:${INTEGRATION_SERVICE_PORT:-3004}"
     working_dir: /usr/src/app
     depends_on:
       - redis
+      - postgres
       - price-service
       - account-service
     volumes:
@@ -67,10 +79,11 @@ services:
   gateway-service:
     image: node:14
     ports:
-      - "${GATEWAY_SERVICE_PORT:-3001}"
+      - "${GATEWAY_SERVICE_PORT:-3001}:${GATEWAY_SERVICE_PORT:-3001}"
     working_dir: /usr/src/app
     depends_on:
       - redis
+      - postgres
       - price-service
       - integration-service
       - account-service

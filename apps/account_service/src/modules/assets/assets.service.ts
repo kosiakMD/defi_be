@@ -309,7 +309,7 @@ export class AssetsService {
     assetToSave.name = asset.name;
     assetToSave.symbol = asset.symbol;
     assetToSave.decimals = asset.decimals;
-    assetToSave.isTracked = asset.isLp !== true;
+    assetToSave.isTracked = !asset.isLp;
     return await this.assetRepository.saveAsset(assetToSave);
   }
 }

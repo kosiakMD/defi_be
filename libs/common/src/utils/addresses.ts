@@ -10,18 +10,13 @@ export function splitToAddressesArray(addresses: string): Address[] {
   return addresses.split(',').map(unifyAddress);
 }
 
-export function unifyAddresses(addresses: Address[]) {
-  return addresses.map((a) => {
-    return unifyAddress(a);
-  });
+// TODO: TBD why only if ETH valid pattern?
+export function unifyAddress(address: Address) {
+  return isETHAddress(address) ? address.toLowerCase().trim() : address;
 }
 
-export function unifyAddress(address: Address) {
-  if (isETHAddress(address)) {
-    return address.toLowerCase().trim();
-  } else {
-    return address;
-  }
+export function unifyAddresses(addresses: Address[]) {
+  return addresses.map(unifyAddress);
 }
 
 export function keepSolAddresses(addresses: Address[]): Address[] {

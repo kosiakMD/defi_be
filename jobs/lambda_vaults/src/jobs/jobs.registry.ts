@@ -69,7 +69,6 @@ export class JobsRegistry {
     vvsStaking: VVSStaking,
     vvsPools: VVSPools,
   ) {
-    // this.register(curvePools); // TODO: temp disabled
     this.register(autofarmStakingBSC);
     this.register(autofarmStakingPLG);
     this.register(badgerStakingArbi);

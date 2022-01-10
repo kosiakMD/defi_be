@@ -9,7 +9,6 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import { CurveAddresses } from '@app/common/constant/addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
-import { ellipsisPoolsMap } from '@app/common/jobs/ellipsis.pools.map';
 import { Address, Chains } from '@app/common/types';
 
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
@@ -147,7 +146,7 @@ export class AssetsService {
       assetToSave.isLp = await this.attemptCurveLikePool(assetToSave);
     }
 
-    if (ellipsisPoolsMap.get(assetAddress)) {
+    if (!assetToSave.isLp) {
       assetToSave.isLp = await this.attemptEllipsisLikePair(assetToSave);
     }
 
@@ -228,14 +227,9 @@ export class AssetsService {
       const chainProvider = this.web3Provider.getInstanceByChainId(asset.chain);
       const assetContract = new ELLIPSIS_LP(asset.address, chainProvider);
       const minterAddress = await assetContract.minter();
-      const minterContract = new MINTER(minterAddress, chainProvider);
+      const minterContract = new MINTER(minterAddress, chainProvider, this.logger);
 
-      const underlyingCoins = [];
-      const lpData = ellipsisPoolsMap.get(asset.address);
-      for (let i = 0; i < lpData?.coins; i++) {
-        const coin = await minterContract.coins(i);
-        underlyingCoins.push(coin.toLowerCase());
-      }
+      const underlyingCoins = await minterContract.getCoinsArray();
 
       if (underlyingCoins.length) {
         const dbTokens = await Promise.all(

@@ -60,4 +60,12 @@ export class Abis {
     outputs: [{ name: '', type: 'uint256' }],
     gas: 1633,
   };
+
+  static readonly minter = {
+    inputs: [],
+    name: 'minter',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

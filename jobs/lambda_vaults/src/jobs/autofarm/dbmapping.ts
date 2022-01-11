@@ -40,11 +40,11 @@ export class DbMapping {
 
       const rewardTokenItemMATIC: TrackedVaultItem = await this.getDbItem(
         stakingPosition.rewards[0],
-        rewardTokenUniqueIdMATIC,
+        rewardTokenUniqueIdAUTO, 
       );
       const rewardTokenItemAUTO: TrackedVaultItem = await this.getDbItem(
         stakingPosition.rewards[1],
-        rewardTokenUniqueIdAUTO,
+        rewardTokenUniqueIdMATIC,
       );
 
       mappedDto.rewards = [

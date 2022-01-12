@@ -29,6 +29,7 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toCurveLiquidityPoolFeature } from '../../utils/conventer';
 import { toDecimals } from '../../utils/number';
+import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
@@ -69,7 +70,10 @@ export class EllipsisLp implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
+    if (
+      !jobMapping.mapping ||
+      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
+    ) {
       this.logger.log('it is time to update mapping', this.placeholder);
       jobMapping = await this.buildInitialMapping(jobMapping);
     }

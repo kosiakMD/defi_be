@@ -1,0 +1,79 @@
+import axios from 'axios';
+
+import { Logger } from '../../logger/logger.service';
+import {
+  FactoryAPYItem,
+  FactoryV2PoolItem,
+  PoolsAprs,
+  MainPoolsGaugeRewards,
+  CrvAprs,
+} from './curve.api.interfaces';
+
+export const curveApiUrl = 'https://api.curve.fi/api';
+
+export class CurveApi {
+  protected logger: Logger;
+  constructor(logger: Logger) {
+    this.logger = logger;
+  }
+
+  async getMainPoolsAprs(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprs');
+      throw e;
+    }
+  }
+
+  async getMainPoolsCryptoAprs(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get('https://stats.curve.fi/raw-stats-crypto/apys.json');
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsCryptoAprs');
+      throw e;
+    }
+  }
+
+  async getCrvAprForMainPools(): Promise<CrvAprs> {
+    try {
+      const { data } = await axios.get(`${curveApiUrl}/getApys`);
+      return data?.data;
+    } catch (e) {
+      this.logger.error(e, 'getCrvAprForMainPools');
+      throw e;
+    }
+  }
+
+  async getAdditionalRewardTokensInfo(): Promise<MainPoolsGaugeRewards> {
+    try {
+      const { data } = await axios.get(`${curveApiUrl}/getMainPoolsGaugeRewards`);
+      return data?.data?.mainPoolsGaugeRewards;
+    } catch (e) {
+      this.logger.error(e, 'getAdditionalRewardTokensInfo');
+      throw e;
+    }
+  }
+
+  async getFactoryApysV2(): Promise<FactoryAPYItem[]> {
+    try {
+      const { data } = await axios.get(`${curveApiUrl}/getFactoryAPYs?version=2`);
+      return data?.data?.poolDetails;
+    } catch (e) {
+      this.logger.error(e, 'getFactoryApysV2');
+      throw e;
+    }
+  }
+
+  async getFactoryV2Pools(): Promise<FactoryV2PoolItem[]> {
+    try {
+      const { data } = await axios.get(`${curveApiUrl}/getFactoryV2Pools`);
+      return data?.data?.poolData;
+    } catch (e) {
+      this.logger.error(e, 'getFactoryV2Pools');
+      throw e;
+    }
+  }
+}

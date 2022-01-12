@@ -23,6 +23,9 @@ import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
 import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import { CurvePools } from './protocols/curve/curve.pools';
+import CurveProtocol from './protocols/curve/curve.protocol';
+import { CurveStaking } from './protocols/curve/curve.staking';
 import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
@@ -43,8 +46,8 @@ import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
-import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
+import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
@@ -79,7 +82,13 @@ const ProtocolList = [
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm, TraderJoeLending];
+const TraderJoe = [
+  TraderJoeProtocol,
+  TraderJoePools,
+  TraderJoeStaking,
+  TraderJoeFarm,
+  TraderJoeLending,
+];
 const Pancake = [
   PancakeProtocol,
   PancakeV2Staking,
@@ -90,6 +99,7 @@ const Pancake = [
   EtherscanService,
   ScanApi,
 ];
+const Curve = [CurveProtocol, CurvePools, CurveStaking];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
@@ -127,6 +137,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
     ...Badger,
     ...DefiKingdoms,
     ...VVS,
+    ...Curve,
     ProtocolService,
     Mapper,
     AlpacaApiService,

@@ -277,7 +277,7 @@ export class EllipsisStaking {
 export interface StakingDataInterface {
   stakingBalance: number;
   stakingPosition: IntegrationStakingPositionDto;
-  claimableReward: [{ rewardToken: string; rewardValue: string }];
+  claimableReward?: [{ rewardToken: string; rewardValue: string }];
 }
 
 export type UnderlyingTokenDto = IntegrationPoolTokenDto | UnderlyingStakingLp;

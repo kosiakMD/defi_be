@@ -190,6 +190,7 @@ export class EllipsisStaking implements JobInterface {
     }
 
     jobMapping.mapping = mappings;
+    jobMapping.updatedAt = new Date();
 
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);

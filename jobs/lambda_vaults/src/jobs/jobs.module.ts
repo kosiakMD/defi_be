@@ -22,6 +22,7 @@ import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
 import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
 import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
+import { CurveGauges } from './curve/curve.gauges';
 import { CurvePools } from './curve/curve.pools';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
@@ -60,6 +61,7 @@ const Jobs = [
   BeefyStakingOne,
   BeefyStakingPlg,
   CurvePools,
+  CurveGauges,
   DbMapping,
   DefiKingdomsPools,
   DefiKingdomsStaking,

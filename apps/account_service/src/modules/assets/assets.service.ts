@@ -1,11 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 
-import { HttpStatus, Inject } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
@@ -13,6 +14,7 @@ import { Address, Chains } from '@app/common/types';
 
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 
+import { CURVE_LP } from '../approvals/contracts/CURVE_LP';
 import { CURVE_REGISTRY } from '../approvals/contracts/CURVE_REGISTRY';
 import { ELLIPSIS_LP } from '../approvals/contracts/ELLIPSIS_LP';
 import { ERC20 } from '../approvals/contracts/ERC20';
@@ -23,6 +25,7 @@ import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.d
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
 
+@Injectable()
 export class AssetsService {
   constructor(
     @InjectRepository(AssetsRepository) private readonly assetRepository: AssetsRepository,
@@ -264,10 +267,10 @@ export class AssetsService {
         this.web3Provider.getInstanceByChainId(asset.chain),
       );
 
-      const coins = await registry.getCoinsForLpToken(asset.address);
-
       // Call the curve specific functions. If its not a curve pool contract
       // this will throw an error (and return false)
+      const pool = await registry.getPoolFromLpToken(asset.address);
+      const coins = await this.findCurvePoolCoins(asset, registry, pool);
       const newAssets = await Promise.all(
         coins.map((address) => {
           return this.saveTrackingAsset({
@@ -311,5 +314,30 @@ export class AssetsService {
     assetToSave.decimals = asset.decimals;
     assetToSave.isTracked = !asset.isLp;
     return await this.assetRepository.saveAsset(assetToSave);
+  }
+
+  async findCurvePoolCoins(
+    asset: AssetsEntity,
+    registry: CURVE_REGISTRY,
+    pool: string,
+  ): Promise<string[]> {
+    if (pool === ZERO_ADDRESS) {
+      let curveLpPool = new CURVE_LP(
+        asset.address,
+        this.logger,
+        this.web3Provider.getInstanceByChainId(asset.chain),
+      );
+      const minter = await curveLpPool.getMinter();
+      if (minter !== ZERO_ADDRESS) {
+        curveLpPool = new CURVE_LP(
+          minter,
+          this.logger,
+          this.web3Provider.getInstanceByChainId(asset.chain),
+        );
+      }
+      return await curveLpPool.getCoinsForLpToken();
+    } else {
+      return await registry.getCoinsForLpToken(asset.address, pool);
+    }
   }
 }

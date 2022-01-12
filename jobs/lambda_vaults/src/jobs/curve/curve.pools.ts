@@ -1,6 +1,6 @@
 import { plainToClass } from 'class-transformer';
 
-import { Inject } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -12,6 +12,7 @@ import {
   PoolTokenDto,
   ProtocolNameEnum,
 } from '@app/common';
+import { ETH_ADDRESS, WETH_ADDRESS } from '@app/common/constant';
 import { CallData } from '@app/common/dto/CallData';
 import { ERC20Token } from '@app/common/dto/ERC20Token';
 import {
@@ -31,12 +32,14 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { FeatureMappingPoolToken, PoolsFeatureMapping } from '../dto/mappings';
+import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { JobPoolsBase } from '../job.pools.base';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 import { CurveAddresses } from './addresses';
 
+@Injectable()
 export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implements JobInterface {
   chain = ChainIdEnum.eth;
 
@@ -77,21 +80,10 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
     return concatStrings(CurveRegistryAbi.getLpToken.name, CurveAddresses.registry, poolAddress);
   }
 
-  getPoolLabel(tokenAddress: Address) {
-    return concatStrings(
-      CurveRegistryAbi.getPoolFromLpToken.name,
-      CurveAddresses.registry,
-      tokenAddress,
-    );
-  }
-
   getBalancesLabel(poolAddress: Address) {
     return concatStrings(CurveRegistryAbi.getBalances.name, CurveAddresses.registry, poolAddress);
   }
 
-  getDecimalsLabel(poolAddress: Address) {
-    return concatStrings(CurveRegistryAbi.getDecimals.name, CurveAddresses.registry, poolAddress);
-  }
   getUnderlyingBalancesLabel(poolAddress: Address) {
     return concatStrings(
       CurveRegistryAbi.getUnderlyingBalances.name,
@@ -100,13 +92,6 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
     );
   }
 
-  getUnderlyingDecimalsLabel(poolAddress: Address) {
-    return concatStrings(
-      CurveRegistryAbi.getUnderlyingDecimals.name,
-      CurveAddresses.registry,
-      poolAddress,
-    );
-  }
   getVirtualPriceFromLpTokenLabel(poolAddress: Address) {
     return concatStrings(
       CurveRegistryAbi.getVirtualPriceFromLpToken.name,
@@ -114,8 +99,21 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
       poolAddress,
     );
   }
+
   getTotalSupplyLabel(tokenAddress: Address) {
     return concatStrings(ERC20Abi.totalSupply.name, tokenAddress);
+  }
+
+  async manageMapping(): Promise<void> {
+    let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
+    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
+      this.logger.log('it is time to update mapping', this.placeholder);
+      jobMapping = await this.rebuildMapping(jobMapping);
+    }
+
+    jobMapping.mapping.forEach((jm) => {
+      this.mapping.push(IntegrationDataConverter.toDTO(jm));
+    });
   }
 
   protected async rebuildMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
@@ -157,10 +155,13 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
 
     const lpTokenResponse = await this.multicallService.handleInBatches(lpTokenCalls, this.chain);
 
-    const lpTokens = [...lpTokenResponse.values()].map((r) => r.output.data.toLowerCase());
+    const poolLpTokensMap = new Map<string, string>();
+    lpTokenResponse.forEach((value) => {
+      poolLpTokensMap.set(value.output.data.toLowerCase(), value.input.data[0].toLowerCase());
+    });
 
     await Promise.all(
-      lpTokens.map(async (token) => {
+      Array.from(poolLpTokensMap.keys()).map(async (token) => {
         const trackedLiquidityPoolTokenData = await this.accountService.saveTrackingAsset(
           token,
           this.chain,
@@ -171,14 +172,17 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
             `found new lp token to track, address: [${trackedLiquidityPoolTokenData.address}], chain: [${this.chain}]`,
             this.placeholder,
           );
-          liquidityPools.push(this.toCurveLiquidityPoolFeature(trackedLiquidityPoolTokenData));
+          liquidityPools.push(
+            this.toCurveLiquidityPoolFeature(
+              trackedLiquidityPoolTokenData,
+              poolLpTokensMap.get(token),
+            ),
+          );
         }
 
         return trackedLiquidityPoolTokenData;
       }),
     );
-
-    // TODO: handle 0xeeeeeee (eth) pairs
 
     jobMapping.mapping = await Promise.all(liquidityPools.map((lp) => this.toDbMapping(lp)));
 
@@ -193,9 +197,10 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
 
   private toCurveLiquidityPoolFeature(
     lpTokenData: any, // TODO: IAssetToken | IAssetResponseDto,
+    poolAddress: string,
   ): CurveLiquidityPoolFeature {
     const poolFeature = plainToClass(CurveLiquidityPoolFeature, {
-      address: lpTokenData.address,
+      address: poolAddress,
       name: lpTokenData.underlyingAssets
         ?.sort((a, b) => a.positionInPool - b.positionInPool)
         .map((pt) => pt.symbol)
@@ -219,7 +224,7 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
         positionInPool: pt.positionInPool,
       });
 
-      if (pt.underlyingAssets.length) {
+      if (pt.underlyingAssets?.length) {
         token.tokens = pt.underlyingAssets.map((underlying) => {
           return plainToClass(CurvePoolTokenDto, {
             address: underlying.address.toLowerCase(),
@@ -239,9 +244,9 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
 
   private async getPoolCount(): Promise<number> {
     const registry = new CurveRegistryAbi(CurveAddresses.registry);
-    const call = new Map<string, CallData>([[registry.abi.poolCount.name, registry.poolCount()]]);
+    const call = new Map<string, CallData>([[registry.poolCount.name, registry.poolCount()]]);
     const callRsp = await this.multicallService.handleInBatches(call, this.chain);
-    return Number(callRsp.get(registry.abi.poolCount.name).output.data.toString());
+    return Number(callRsp.get(registry.poolCount.name).output.data.toString());
   }
 
   private async toDbMapping(liquidityPool: CurveLiquidityPoolFeature) {
@@ -288,87 +293,8 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
     return mappedDto;
   }
 
-  private async getPoolsMap() {
-    const registry = new CurveRegistryAbi(CurveAddresses.registry);
-    // get pool calls
-    const poolCalls = new Map(
-      this.mapping.map((lpToken) => [
-        this.getPoolLabel(lpToken.address),
-        registry.getPoolFromLpToken(lpToken.address),
-      ]),
-    );
-
-    // Get pool addresses
-    const poolResponse = await this.multicallService.handleInBatches(poolCalls, this.chain);
-
-    // map each lptoken to its pool address
-    return new Map(
-      this.mapping.map((lpToken) => [
-        lpToken.address,
-        poolResponse.get(this.getPoolLabel(lpToken.address)).output.data.toLowerCase(),
-      ]),
-    );
-  }
-
-  private getFormattedDecimals(decimal, lpToken, coin) {
-    if (lpToken.address === CurveAddresses.crvEurtUsd && coin.address === CurveAddresses.threeCrv) {
-      return 18; // The smart contract is wrong for this pool and this token
-    }
-
-    return Number(decimal);
-  }
-
   async fillChainData(): Promise<CurveLiquidityPoolFeature[]> {
-    const poolsMap = await this.getPoolsMap();
-
-    const registry = new CurveRegistryAbi(CurveAddresses.registry);
-
-    const calls = new Map();
-    // Get all balance Calls
-    this.mapping.forEach((poolFeature) => {
-      // Registry uses pool address for most calls
-      const poolAddress = poolsMap.get(poolFeature.lpToken.address);
-      const lpTokenContract = new ERC20Abi(poolFeature.lpToken.address);
-
-      calls.set(
-        this.getTotalSupplyLabel(poolFeature.lpToken.address),
-        lpTokenContract.totalSupply(),
-      );
-
-      calls.set(
-        this.getBalancesLabel(poolFeature.lpToken.address),
-        registry.getBalances(poolAddress),
-      );
-      calls.set(
-        this.getDecimalsLabel(poolFeature.lpToken.address),
-        registry.getDecimals(poolAddress),
-      );
-      calls.set(
-        this.getUnderlyingBalancesLabel(poolFeature.lpToken.address),
-        registry.getUnderlyingBalances(poolAddress),
-      );
-      calls.set(
-        this.getUnderlyingDecimalsLabel(poolFeature.lpToken.address),
-        registry.getUnderlyingDecimals(poolAddress),
-      );
-      calls.set(
-        this.getVirtualPriceFromLpTokenLabel(poolFeature.lpToken.address),
-        registry.getVirtualPriceFromLpToken(poolFeature.lpToken.address),
-      );
-
-      poolFeature.tokens.forEach((coin) => {
-        // If its an underlying LP, get the virtual prices for it too
-        if (coin.tokens.length) {
-          calls.set(
-            this.getVirtualPriceFromLpTokenLabel(coin.address),
-            registry.getVirtualPriceFromLpToken(coin.address),
-          );
-        }
-
-        const lpTokenContract = new ERC20Abi(coin.address);
-        calls.set(this.getTotalSupplyLabel(coin.address), lpTokenContract.totalSupply());
-      });
-    });
+    const calls = this.getCallsMap();
 
     const tokenAddresses = this.mapping.flatMap((curveLiquidityPoolFeature) => {
       return curveLiquidityPoolFeature.tokens.flatMap((token) => [
@@ -383,95 +309,125 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
     ]);
 
     this.mapping = this.mapping.map((curveLiquidityPoolFeature) => {
-      const balances = multicallResponses.get(
-        this.getBalancesLabel(curveLiquidityPoolFeature.address),
-      ).output.data;
-      const decimals = multicallResponses.get(
-        this.getDecimalsLabel(curveLiquidityPoolFeature.address),
-      ).output.data;
+      try {
+        const balances = multicallResponses.get(
+          this.getBalancesLabel(curveLiquidityPoolFeature.lpToken.address),
+        ).output.data;
 
-      const underlyingBalances = multicallResponses.get(
-        this.getUnderlyingBalancesLabel(curveLiquidityPoolFeature.address),
-      ).output.data;
-      const underlyingDecimals = multicallResponses.get(
-        this.getUnderlyingDecimalsLabel(curveLiquidityPoolFeature.address),
-      ).output.data;
+        const underlyingBalances = multicallResponses.get(
+          this.getUnderlyingBalancesLabel(curveLiquidityPoolFeature.lpToken.address),
+        ).output.data;
 
-      const lpVirtualPrice = multicallResponses.get(
-        this.getVirtualPriceFromLpTokenLabel(curveLiquidityPoolFeature.address),
-      ).output.data;
+        const lpVirtualPrice = multicallResponses.get(
+          this.getVirtualPriceFromLpTokenLabel(curveLiquidityPoolFeature.lpToken.address),
+        ).output.data;
 
-      curveLiquidityPoolFeature.lpToken.price = normalizeDecimals(
-        lpVirtualPrice,
-        curveLiquidityPoolFeature.lpToken.decimals,
-      );
-
-      const lpTokenTotalSupply = multicallResponses
-        .get(this.getTotalSupplyLabel(curveLiquidityPoolFeature.address))
-        ?.output.data.toString();
-
-      curveLiquidityPoolFeature.lpToken.totalSupply = normalizeDecimals(
-        lpTokenTotalSupply,
-        curveLiquidityPoolFeature.lpToken.decimals,
-      );
-
-      curveLiquidityPoolFeature.tokens.forEach((coin, idx) => {
-        const coinVirtualPrice = multicallResponses.get(
-          this.getVirtualPriceFromLpTokenLabel(coin.address),
-        )?.output.data;
-
-        const coinTotalSupply = multicallResponses
-          .get(this.getTotalSupplyLabel(coin.address))
-          ?.output.data.toString();
-
-        const decimal = this.getFormattedDecimals(
-          decimals[idx].toString(),
-          curveLiquidityPoolFeature.lpToken,
-          coin,
+        curveLiquidityPoolFeature.lpToken.price = normalizeDecimals(
+          lpVirtualPrice,
+          curveLiquidityPoolFeature.lpToken.decimals,
         );
 
-        const reserve = normalizeDecimals(balances[idx].toString(), decimal);
-        const price =
-          (coinVirtualPrice && normalizeDecimals(coinVirtualPrice.toString(), decimal)) ??
-          Number(prices[coin.address]);
+        const lpTokenTotalSupply = multicallResponses
+          .get(this.getTotalSupplyLabel(curveLiquidityPoolFeature.lpToken.address))
+          ?.output.data.toString();
 
-        // Reserve & Balance are the same in this context
-        coin.totalSupply = normalizeDecimals(coinTotalSupply, decimal);
-        coin.reserve = coin.balance = reserve;
-        coin.price = price;
-        coin.value = reserve * price;
+        curveLiquidityPoolFeature.lpToken.totalSupply = normalizeDecimals(
+          lpTokenTotalSupply,
+          curveLiquidityPoolFeature.lpToken.decimals,
+        );
 
-        // Update parent stats
-        curveLiquidityPoolFeature.stats.tvl += coin.value;
+        curveLiquidityPoolFeature.tokens.forEach((coin, idx) => {
+          const coinVirtualPrice = multicallResponses.get(
+            this.getVirtualPriceFromLpTokenLabel(coin.address),
+          )?.output.data;
 
-        if (!price) {
-          this.logger.warn(
-            `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
-          );
-        }
+          const coinTotalSupply = multicallResponses
+            .get(this.getTotalSupplyLabel(coin.address))
+            ?.output.data.toString();
 
-        coin.tokens.forEach((underlyingToken, underlyingIdx) => {
-          const underlyingDecimal = underlyingDecimals[underlyingIdx].toString();
-          const underlyingReserve = normalizeDecimals(
-            underlyingBalances[underlyingIdx].toString(),
-            underlyingDecimal,
-          );
-          const underlyingPrice = prices[underlyingToken.address.toLowerCase()];
-          underlyingToken.reserve = underlyingToken.balance = underlyingReserve;
-          underlyingToken.price = underlyingPrice;
-          underlyingToken.value = underlyingReserve * underlyingPrice;
+          const reserve = normalizeDecimals(balances[idx].toString(), coin.decimals);
+          const price =
+            (coinVirtualPrice && normalizeDecimals(coinVirtualPrice.toString(), coin.decimals)) ??
+            Number(prices[coin.address]);
 
-          if (!underlyingPrice) {
+          // Reserve & Balance are the same in this context
+          coin.totalSupply = normalizeDecimals(coinTotalSupply, coin.decimals);
+          coin.reserve = coin.balance = reserve;
+          coin.price = price;
+          coin.value = reserve * price;
+
+          // Update parent stats
+          curveLiquidityPoolFeature.stats.tvl += coin.value;
+          if (!price) {
             this.logger.warn(
-              `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
+              `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
             );
           }
+
+          coin.tokens.forEach((underlyingToken, underlyingIdx) => {
+            const underlyingReserve = normalizeDecimals(
+              underlyingBalances[underlyingIdx].toString(),
+              underlyingToken.decimals,
+            );
+            const underlyingPrice = prices[underlyingToken.address.toLowerCase()];
+            underlyingToken.reserve = underlyingToken.balance = underlyingReserve;
+            underlyingToken.price = underlyingPrice;
+            underlyingToken.value = underlyingReserve * underlyingPrice;
+
+            if (!underlyingPrice) {
+              this.logger.warn(
+                `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
+              );
+            }
+          });
         });
-      });
-      return curveLiquidityPoolFeature;
+        return curveLiquidityPoolFeature;
+      } catch (e) {
+        this.logger.error(e, 'fillChainData');
+      }
     });
 
     return this.mapping;
+  }
+
+  private getCallsMap(): Map<string, CallData> {
+    const calls = new Map<string, CallData>();
+    const registry = new CurveRegistryAbi(CurveAddresses.registry);
+    this.mapping.forEach((poolFeature) => {
+      const lpTokenContract = new ERC20Abi(poolFeature.lpToken.address);
+
+      calls.set(
+        this.getTotalSupplyLabel(poolFeature.lpToken.address),
+        lpTokenContract.totalSupply(),
+      );
+
+      calls.set(
+        this.getBalancesLabel(poolFeature.lpToken.address),
+        registry.getBalances(poolFeature.address),
+      );
+      calls.set(
+        this.getUnderlyingBalancesLabel(poolFeature.lpToken.address),
+        registry.getUnderlyingBalances(poolFeature.address),
+      );
+      calls.set(
+        this.getVirtualPriceFromLpTokenLabel(poolFeature.lpToken.address),
+        registry.getVirtualPriceFromLpToken(poolFeature.lpToken.address),
+      );
+      poolFeature.tokens.forEach((coin) => {
+        // If its an underlying LP, get the virtual prices for it too
+        if (coin.tokens.length) {
+          calls.set(
+            this.getVirtualPriceFromLpTokenLabel(coin.address),
+            registry.getVirtualPriceFromLpToken(coin.address),
+          );
+        }
+        const lpTokenContract = new ERC20Abi(
+          coin.address === ETH_ADDRESS ? WETH_ADDRESS : coin.address,
+        );
+        calls.set(this.getTotalSupplyLabel(coin.address), lpTokenContract.totalSupply());
+      });
+    });
+    return calls;
   }
 
   getItemAsDto(item) {

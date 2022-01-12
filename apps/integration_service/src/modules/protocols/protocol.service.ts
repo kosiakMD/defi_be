@@ -57,6 +57,7 @@ import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
 import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
@@ -106,6 +107,7 @@ export class ProtocolService {
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly venusProtocol: VenusProtocol,
     private readonly vvsProtocol: VVSProtocol,
+    private readonly curveProtocol: CurveProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -131,6 +133,7 @@ export class ProtocolService {
       yearnProtocolV2,
       venusProtocol,
       vvsProtocol,
+      curveProtocol,
     ];
   }
 

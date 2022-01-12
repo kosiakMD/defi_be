@@ -120,10 +120,10 @@ export class CompoundProtocol extends ProtocolBase implements IProtocolPriceUpda
     );
   }
 
-  async formatExchangeRatePrices(
+  formatExchangeRatePrices(
     cTokenData: BasicCToken[],
     assetData: Map<string, any>,
-  ): Promise<IPriceRequestCurrent[]> {
+  ): IPriceRequestCurrent[] {
     return cTokenData.map((cToken) => {
       const asset = assetData.get(cToken.underlying);
 

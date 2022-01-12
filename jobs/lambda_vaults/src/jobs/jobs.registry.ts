@@ -15,6 +15,7 @@ import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
 import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
 import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
+import { CurveGauges } from './curve/curve.gauges';
 import { CurvePools } from './curve/curve.pools';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
@@ -53,6 +54,7 @@ export class JobsRegistry {
     beefyStakingCro: BeefyStakingCro,
     beefyStakingMoonRiver: BeefyStakingMoonRiver,
     curvePools: CurvePools,
+    curveGauges: CurveGauges,
     defiKingdomsPools: DefiKingdomsPools,
     defiKingdomsStaking: DefiKingdomsStaking,
     ellipsisLp: EllipsisLp,
@@ -98,6 +100,8 @@ export class JobsRegistry {
     this.register(viperswapStaking);
     this.register(vvsPools);
     this.register(vvsStaking);
+    this.register(curvePools);
+    this.register(curveGauges);
   }
 
   private register(job: JobInterface) {

@@ -19,7 +19,7 @@ export enum ChainAbbrEnum {
   near = 'near',
   terra = 'terra',
   klay = 'klay',
-  fuse = 'fuse'
+  fuse = 'fuse',
 }
 
 export enum ChainNameEnum {
@@ -43,7 +43,7 @@ export enum ChainNameEnum {
   near = 'aurora',
   terra = 'terra',
   klay = 'klaytn',
-  fuse = 'fuse'
+  fuse = 'fuse',
 }
 
 export enum ChainIdEnum {
@@ -67,7 +67,7 @@ export enum ChainIdEnum {
   near = 18,
   terra = 19,
   klay = 20,
-  fuse = 21
+  fuse = 21,
 }
 
 // https://api.coingecko.com/api/v3/asset_platforms
@@ -93,7 +93,7 @@ export enum CoingeckoPlatformEnum {
   terra = 'terra',
   vvs = 'vvs',
   klay = 'klay-token',
-  fuse = ''
+  fuse = '',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -117,7 +117,7 @@ export enum AbsoluteChainIdEnum {
   near = 1313161554,
   terra = 'columbus-5',
   klay = 8217,
-  fuse = 122
+  fuse = 122,
 }
 
 export enum CurrencyEnum {

@@ -433,13 +433,19 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
           kashiPair.pair.borrowAPR,
         );
 
-        response[FeatureEnum.lending].items.push(lendingPosition);
-        response[FeatureEnum.collateral].items.push(collateralPosition);
-        response[FeatureEnum.borrowing].items.push(borrowingPosition);
+        if (Number(kashiPair.assetFraction)) {
+          response[FeatureEnum.lending].items.push(lendingPosition);
+          response[FeatureEnum.lending].totalValue += lendingPosition.value;
+        }
 
-        response[FeatureEnum.lending].totalValue += lendingPosition.value;
-        response[FeatureEnum.collateral].totalValue += collateralPosition.value;
-        response[FeatureEnum.borrowing].totalValue += borrowingPosition.value;
+        if (Number(kashiPair.collateralShare)) {
+          response[FeatureEnum.collateral].items.push(collateralPosition);
+          response[FeatureEnum.collateral].totalValue += collateralPosition.value;
+        }
+        if (Number(kashiPair.borrowPart)) {
+          response[FeatureEnum.borrowing].items.push(borrowingPosition);
+          response[FeatureEnum.borrowing].totalValue += borrowingPosition.value;
+        }
       });
     });
 

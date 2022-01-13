@@ -37,9 +37,15 @@ export abstract class MultiCallAbiProxy {
         get: (target, propKey: string) => {
           // Convert each call to CallData
           return (...args: any) => {
+            const abi = this.constructor[propKey];
+
+            if (!abi)
+              throw new Error(
+                `Missing ABI for call: ${this.constructor.name}.${propKey} (${address})`,
+              );
             return plainToClass(CallData, {
               address,
-              abi: this.constructor[propKey],
+              abi,
               input: { data: args },
             });
           };

@@ -55,7 +55,7 @@ import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
-import { BeefyProtocol } from './protocols/beefyProtocol';
+// import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
@@ -72,7 +72,7 @@ import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
-import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+// import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
@@ -88,7 +88,7 @@ export class ProtocolService {
     private readonly alpacaProtocol: AlpacaProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly badgerProtocol: BadgerProtocol,
-    private readonly beefyProtocol: BeefyProtocol,
+    // private readonly beefyProtocol: BeefyProtocol,
     private readonly compoundProtocol: CompoundProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
@@ -106,7 +106,7 @@ export class ProtocolService {
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly venusProtocol: VenusProtocol,
-    private readonly vvsProtocol: VVSProtocol,
+    // private readonly vvsProtocol: VVSProtocol,
     private readonly curveProtocol: CurveProtocol,
   ) {
     this.protocols = [
@@ -114,7 +114,8 @@ export class ProtocolService {
       alpacaProtocol,
       autofarmProtocol,
       badgerProtocol,
-      beefyProtocol,
+      // TODO: Disabled For Release
+      // beefyProtocol,
       compoundProtocol,
       defiKingdomsProtocol,
       ellipsisProtocol,
@@ -132,7 +133,8 @@ export class ProtocolService {
       yearnProtocolV1,
       yearnProtocolV2,
       venusProtocol,
-      vvsProtocol,
+      // TODO: Disabled For Release
+      // vvsProtocol,
       curveProtocol,
     ];
   }

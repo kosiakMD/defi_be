@@ -37,7 +37,6 @@ export class JoeProtocol extends ProtocolBase implements IProtocolPriceUpdate {
   async update() {
     const prices: PriceRequestCurrentDto[] = [];
     prices.push(await this.getXJoePrice());
-
     return prices;
   }
 

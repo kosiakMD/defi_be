@@ -21,7 +21,7 @@ import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
-import { BeefyProtocol } from './protocols/beefyProtocol';
+// import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
 import { CurvePools } from './protocols/curve/curve.pools';
 import CurveProtocol from './protocols/curve/curve.protocol';
@@ -57,9 +57,9 @@ import VenusProtocol from './protocols/venusProtocol';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
-import { VVSPools } from './protocols/vvs/vvs.pools';
-import { VVSProtocol } from './protocols/vvs/vvs.protocol';
-import { VVSStaking } from './protocols/vvs/vvs.staking';
+// import { VVSPools } from './protocols/vvs/vvs.pools';
+// import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+// import { VVSStaking } from './protocols/vvs/vvs.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
@@ -67,7 +67,8 @@ import YearnProtocolV2 from './protocols/yearnProtocolV2';
 const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
-  BeefyProtocol,
+  // TODO: Disabled For Release
+  // BeefyProtocol,
   CompoundProtocol,
   PangolinProtocol,
   QuickswapProtocol,
@@ -105,7 +106,8 @@ const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
 const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
-const VVS = [VVSProtocol, VVSStaking, VVSPools];
+// TODO: Disabled For Release
+// const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
 @Module({
   imports: [
@@ -136,7 +138,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
     ...Viperswap,
     ...Badger,
     ...DefiKingdoms,
-    ...VVS,
+    // ...VVS,
     ...Curve,
     ProtocolService,
     Mapper,

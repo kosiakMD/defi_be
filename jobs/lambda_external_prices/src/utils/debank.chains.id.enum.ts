@@ -1,0 +1,15 @@
+export enum DebankChainsIdEnum {
+  matic = 3,
+  op = 17,
+  movr = 9,
+  arb = 5,
+  eth = 1,
+  bsc = 2,
+  ftm = 4,
+  xdai = 7,
+  heco = 11,
+  avax = 6,
+  celo = 8,
+  cro = 14,
+  boba = 15,
+}

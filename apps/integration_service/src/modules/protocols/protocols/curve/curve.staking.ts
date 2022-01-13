@@ -25,6 +25,7 @@ import { toDecimals } from '../../../../common/utils/util';
 
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
+import { UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
 import { CurveMulticall } from './curve.multicall';
 
 @Injectable()
@@ -78,12 +79,16 @@ export class CurveStaking {
         } = stakingData;
         stakingPosition.staked = String(stakingBalance);
         if (stakingToken.tokens.length) {
-          const poolShare = new BigNumber(stakingBalance).div(stakingToken.totalSupply);
+          const poolShare = new BigNumber(stakingBalance) //
+            .div(stakingToken.totalSupply)
+            .toString();
           stakingToken.tokens.forEach((token) => {
-            token.reserve = toDecimals(token.reserve, token.decimals);
-            token.price = null;
-            token.value = null;
-            token.balance = poolShare.multipliedBy(token.reserve).toNumber();
+            this.modifyUnderlyingToken(token, poolShare);
+            if (token.tokens?.length) {
+              token.tokens.forEach((underlying) => {
+                this.modifyUnderlyingToken(underlying, poolShare);
+              });
+            }
           });
         } else {
           stakingPosition.stakingToken = {
@@ -109,5 +114,14 @@ export class CurveStaking {
       });
     });
     return Array.from(baseDataStakingMap.values());
+  }
+
+  private modifyUnderlyingToken(token: UnderlyingTokenDto, poolShare: string) {
+    token.price = null;
+    token.value = null;
+    token.reserve = token.balance;
+    token.balance = new BigNumber(poolShare) //
+      .multipliedBy(token.reserve)
+      .toNumber();
   }
 }

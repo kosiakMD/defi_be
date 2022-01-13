@@ -100,8 +100,8 @@ export class EllipsisStaking {
             .toString();
           stakingToken.tokens.forEach((token) => {
             this.modifyUnderlyingToken(token, poolShare);
-            if ((token as UnderlyingStakingLp).tokens?.length) {
-              (token as UnderlyingStakingLp).tokens.forEach((underlyingToken) => {
+            if (token.tokens?.length) {
+              token.tokens.forEach((underlyingToken) => {
                 this.modifyUnderlyingToken(underlyingToken, poolShare);
               });
             }

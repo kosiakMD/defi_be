@@ -28,6 +28,30 @@ export class GaugeAbi extends MultiCallAbiProxy {
   };
 }
 
+export const GaugeAbis = [
+  {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'lp_token',
+    inputs: [],
+    outputs: [{ name: '', type: 'address' }],
+  },
+  {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'balanceOf',
+    inputs: [{ name: 'arg0', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+  },
+  {
+    name: 'minter',
+    outputs: [{ type: 'address', name: '' }],
+    inputs: [],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
+
 export const GaugeRewardAbi = [
   {
     stateMutability: 'view',

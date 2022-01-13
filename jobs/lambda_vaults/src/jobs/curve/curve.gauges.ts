@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -551,14 +552,47 @@ export class CurveGauges implements JobInterface {
           toDecimals(nonRegisterLpVirtualPrices.get(coin.address), coin.decimals) ||
           prices[coin.address];
         coin.price = Number(price);
-        coin.totalSupply = multicallResponses
+        const coinTotalSupply = multicallResponses
           .get(this.getTotalSupplyLabel(coin.address))
           ?.output.data.toString();
+        coin.totalSupply = normalizeDecimals(coinTotalSupply, coin.decimals);
         coin.reserve = reserve;
         coin.balance = reserveDec;
-        coin.value = Number(reserveDec) * price;
-        // Doing like in ellipsis integration
-        stakingPosition.stats.tvl += coin.tokens?.length ? 0 : coin.value;
+        if (coin.tokens?.length) {
+          let lpValue = 0;
+          const underlyingReserves = multicallResponses.get(this.getBalancesLabel(coin.address))
+            ?.output.data;
+
+          coin.tokens?.forEach((underlyingToken) => {
+            const nonRegisterReserve = multicallResponses
+              .get(this.getGaugeLpBalancesLabel(coin.address, underlyingToken.positionInPool))
+              ?.output.data.toString();
+            const tokenReserveDec = toDecimals(
+              nonRegisterReserve ?? underlyingReserves[underlyingToken.positionInPool]?.toString(),
+              underlyingToken.decimals,
+            );
+            const underlyingReserve = CurveGauges.getUnderlyingTokensBalances(
+              coin.balance,
+              coin.totalSupply,
+              tokenReserveDec,
+            );
+
+            underlyingToken.reserve = underlyingToken.balance = underlyingReserve;
+            underlyingToken.price = Number(prices[underlyingToken.address.toLowerCase()]);
+            underlyingToken.value = underlyingToken.reserve * underlyingToken.price;
+            lpValue += underlyingToken.value;
+
+            if (!underlyingToken.price) {
+              this.logger.warn(
+                `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
+              );
+            }
+          });
+          coin.value = lpValue;
+        } else {
+          coin.value = reserveDec * price;
+          stakingPosition.stats.tvl += coin.value;
+        }
       });
       return stakingPosition;
     } catch (e) {
@@ -760,10 +794,6 @@ export class CurveGauges implements JobInterface {
     const balances = multicallResponses.get(this.getBalancesLabel(position.stakingToken.address))
       .output.data;
 
-    const underlyingBalances = multicallResponses.get(
-      this.getUnderlyingBalancesLabel(position.stakingToken.address),
-    ).output.data;
-
     const lpVirtualPrice = multicallResponses.get(
       this.getVirtualPriceFromLpTokenLabel(position.stakingToken.address),
     ).output.data;
@@ -803,7 +833,6 @@ export class CurveGauges implements JobInterface {
     position.stats.poolApy =
       mainPoolsAprs[this.handleCurvePoolsNames(position.poolName)] ??
       mainPoolsCryptoAprs[this.handleCurvePoolsNames(position.poolName)];
-
     position.stakingToken.tokens?.forEach((coin) => {
       const coinVirtualPrice = multicallResponses.get(
         this.getVirtualPriceFromLpTokenLabel(coin.address),
@@ -823,7 +852,6 @@ export class CurveGauges implements JobInterface {
       coin.reserve = balances[coin.positionInPool].toString();
       coin.balance = reserveDec;
       coin.price = price;
-      coin.value = reserveDec * price;
 
       // Update parent stats
       position.stats.tvl += coin.value;
@@ -834,24 +862,43 @@ export class CurveGauges implements JobInterface {
         );
       }
 
-      coin.tokens?.forEach((underlyingToken, underlyingIdx) => {
-        const underlyingReserve = normalizeDecimals(
-          underlyingBalances[coin.positionInPool + underlyingIdx].toString(),
-          underlyingToken.decimals,
-        );
-        const underlyingPrice = prices[underlyingToken.address.toLowerCase()];
-        underlyingToken.reserve = underlyingToken.balance = underlyingReserve;
-        underlyingToken.price = underlyingPrice;
-        underlyingToken.value = underlyingReserve * underlyingPrice;
+      if (coin.tokens?.length) {
+        let lpValue = 0;
+        coin.tokens?.forEach((underlyingToken) => {
+          const balancesUnderlying = multicallResponses.get(this.getBalancesLabel(coin.address))
+            ?.output.data;
+          const coinReserve = balancesUnderlying[coin.positionInPool]?.toString();
+          const coinReserveDec = toDecimals(coinReserve, underlyingToken.decimals);
+          underlyingToken.reserve = underlyingToken.balance =
+            CurveGauges.getUnderlyingTokensBalances(coin.balance, coin.totalSupply, coinReserveDec);
+          underlyingToken.price = Number(prices[underlyingToken.address.toLowerCase()]);
+          underlyingToken.value = underlyingToken.reserve * underlyingToken.price;
+          lpValue += underlyingToken.value;
 
-        if (!underlyingPrice) {
-          this.logger.warn(
-            `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
-          );
-        }
-      });
+          if (!underlyingToken.price) {
+            this.logger.warn(
+              `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
+            );
+          }
+        });
+        coin.value = lpValue;
+      } else {
+        coin.value = reserveDec * price;
+        position.stats.tvl += coin.value;
+      }
     });
     return position;
+  }
+
+  private static getUnderlyingTokensBalances(
+    lpTokenReserve: number,
+    lpTokenTotalSupply: number,
+    underlyingReserve: number,
+  ) {
+    return new BigNumber(lpTokenReserve) //
+      .div(lpTokenTotalSupply)
+      .times(underlyingReserve)
+      .toNumber();
   }
 }
 

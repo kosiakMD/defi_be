@@ -44,6 +44,49 @@ export class Abis {
   };
 }
 
+export const CurveAbis = [
+  {
+    name: 'balanceOf',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'address', name: 'arg0' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'claimable_reward',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [
+      { type: 'address', name: '_addr' },
+      { type: 'address', name: '_token' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'claimable_tokens',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'address', name: 'addr' }],
+    stateMutability: 'view',
+    type: 'function',
+    constant: true,
+    // signature: '0x33134583',
+  },
+  {
+    name: 'claimable_reward',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'address', name: 'addr' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'claimed_rewards_for',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'address', name: 'arg0' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];
+
 export const GaugeAbi = [
   {
     name: 'balanceOf',

@@ -48,3 +48,48 @@ export class CurveLpAbi extends MultiCallAbiProxy {
     type: 'function',
   };
 }
+
+export const CurveLpAbis = [
+  {
+    name: 'balances',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'uint256', name: 'arg0' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'balanceOf',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'address', name: 'arg0' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'coins',
+    outputs: [{ type: 'address', name: '' }],
+    inputs: [{ type: 'uint256', name: 'arg0' }],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'decimals',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'totalSupply',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    name: 'get_virtual_price',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [],
+    stateMutability: 'view',
+    type: 'function',
+  },
+];

@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
@@ -314,10 +315,6 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
           this.getBalancesLabel(curveLiquidityPoolFeature.lpToken.address),
         ).output.data;
 
-        const underlyingBalances = multicallResponses.get(
-          this.getUnderlyingBalancesLabel(curveLiquidityPoolFeature.lpToken.address),
-        ).output.data;
-
         const lpVirtualPrice = multicallResponses.get(
           this.getVirtualPriceFromLpTokenLabel(curveLiquidityPoolFeature.lpToken.address),
         ).output.data;
@@ -336,7 +333,8 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
           curveLiquidityPoolFeature.lpToken.decimals,
         );
 
-        curveLiquidityPoolFeature.tokens.forEach((coin, idx) => {
+        const tokens = [];
+        curveLiquidityPoolFeature.tokens.forEach((coin) => {
           const coinVirtualPrice = multicallResponses.get(
             this.getVirtualPriceFromLpTokenLabel(coin.address),
           )?.output.data;
@@ -345,42 +343,53 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
             .get(this.getTotalSupplyLabel(coin.address))
             ?.output.data.toString();
 
-          const reserve = normalizeDecimals(balances[idx].toString(), coin.decimals);
+          const reserve = normalizeDecimals(
+            balances[coin.positionInPool].toString(),
+            coin.decimals,
+          );
+
+          coin.totalSupply = normalizeDecimals(coinTotalSupply, coin.decimals);
+          coin.reserve = coin.balance = reserve;
           const price =
             (coinVirtualPrice && normalizeDecimals(coinVirtualPrice.toString(), coin.decimals)) ??
             Number(prices[coin.address]);
-
-          // Reserve & Balance are the same in this context
-          coin.totalSupply = normalizeDecimals(coinTotalSupply, coin.decimals);
-          coin.reserve = coin.balance = reserve;
           coin.price = price;
-          coin.value = reserve * price;
+          if (coin.tokens?.length) {
+            let lpValue = 0;
+            coin.tokens.forEach((poolToken) => {
+              const poolTokenPrice = Number(prices[poolToken.address]);
+              const coinReserves = multicallResponses.get(this.getBalancesLabel(coin.address))
+                .output.data;
+              const coinReserveDec = normalizeDecimals(
+                coinReserves[poolToken.positionInPool],
+                poolToken.decimals,
+              );
 
-          // Update parent stats
-          curveLiquidityPoolFeature.stats.tvl += coin.value;
+              poolToken.reserve = poolToken.balance = CurvePools.getUnderlyingTokensReserves(
+                coin.reserve,
+                coin.totalSupply,
+                coinReserveDec,
+              );
+
+              poolToken.price = poolTokenPrice;
+              poolToken.value = poolToken.balance * poolTokenPrice;
+              lpValue += poolToken.value;
+              tokens.push(poolToken);
+            });
+            curveLiquidityPoolFeature.stats.tvl += lpValue;
+          } else {
+            coin.value = price * reserve;
+            curveLiquidityPoolFeature.stats.tvl += coin.value;
+            tokens.push(coin);
+          }
+
           if (!price) {
             this.logger.warn(
               `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
             );
           }
-
-          coin.tokens.forEach((underlyingToken, underlyingIdx) => {
-            const underlyingReserve = normalizeDecimals(
-              underlyingBalances[underlyingIdx].toString(),
-              underlyingToken.decimals,
-            );
-            const underlyingPrice = prices[underlyingToken.address.toLowerCase()];
-            underlyingToken.reserve = underlyingToken.balance = underlyingReserve;
-            underlyingToken.price = underlyingPrice;
-            underlyingToken.value = underlyingReserve * underlyingPrice;
-
-            if (!underlyingPrice) {
-              this.logger.warn(
-                `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
-              );
-            }
-          });
         });
+        curveLiquidityPoolFeature.tokens = tokens;
         return curveLiquidityPoolFeature;
       } catch (e) {
         this.logger.error(e, 'fillChainData');
@@ -471,5 +480,16 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
           name: item.name,
         } as CurveLiquidityPoolFeature);
     }
+  }
+
+  private static getUnderlyingTokensReserves(
+    lpTokenReserve: number,
+    lpTokenTotalSupply: number,
+    underlyingReserve: number,
+  ) {
+    return new BigNumber(lpTokenReserve) //
+      .div(lpTokenTotalSupply)
+      .times(underlyingReserve)
+      .toNumber();
   }
 }

@@ -448,9 +448,9 @@ export class EllipsisStaking implements JobInterface {
           EllipsisStaking.totalSupplyLabel(m.stakingToken.address),
         ).output.data;
         m.stakingToken.totalSupply = toDecimals(totalSupply, m.stakingToken.decimals);
-        if (m.stakingToken.tokens.length) {
+        if (m.stakingToken.tokens?.length) {
           m.stakingToken.tokens.map((t) => {
-            if ((t as UnderlyingStakingLp).tokens) {
+            if (t.tokens?.length) {
               const lpTotalSupply = multicallRsp.get(EllipsisStaking.totalSupplyLabel(t.address))
                 .output.data;
               const lpTotalSupplyDec = toDecimals(lpTotalSupply, t.decimals);
@@ -462,7 +462,7 @@ export class EllipsisStaking implements JobInterface {
               t.reserve = lpTokenReserve;
               t.balance = lpTokenReserveDec;
               let lpValue = 0;
-              (t as UnderlyingStakingLp).tokens.forEach((underlying) => {
+              t.tokens.forEach((underlying) => {
                 const tokenReserve = multicallRsp
                   .get(EllipsisStaking.getBalancesLabel(t.address, underlying.positionInPool))
                   .output.data?.toString();
@@ -480,9 +480,9 @@ export class EllipsisStaking implements JobInterface {
                   multicallRsp.get(EllipsisStaking.getReservesLabel(m.stakingToken.address)).output
                     .data,
                 );
-                (t as IntegrationPoolTokenDto).reserve = Number(reserves[t.positionInPool]);
+                t.reserve = Number(reserves[t.positionInPool]);
               } else {
-                (t as IntegrationPoolTokenDto).reserve = multicallRsp
+                t.reserve = multicallRsp
                   .get(EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool))
                   .output.data?.toString();
               }

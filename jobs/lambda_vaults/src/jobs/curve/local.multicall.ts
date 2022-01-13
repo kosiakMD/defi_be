@@ -1,4 +1,3 @@
-import { JsonFragment } from '@ethersproject/abi';
 import { MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
 
@@ -6,8 +5,8 @@ import { ZERO_ADDRESS } from '@app/common/constant';
 import { MulticallMethodsEnum } from '@app/common/jobs/multicall.methods.enum';
 
 import { Logger } from '../../logger/logger.service';
-import { CurveLpAbi } from './abis/CurveLpAbi';
-import { GaugeAbi, GaugeRewardAbi } from './abis/GaugeAbi';
+import { CurveLpAbis } from './abis/CurveLpAbi';
+import { GaugeAbi, GaugeAbis, GaugeRewardAbi } from './abis/GaugeAbi';
 
 export class LocalMultiCall extends MultiCall {
   constructor(private readonly web3: Web3, private readonly logger: Logger) {
@@ -29,7 +28,7 @@ export class LocalMultiCall extends MultiCall {
       inputs.push(getCallData(minter ?? address));
     });
 
-    const [, resp] = await this.multiCall([CurveLpAbi.virtualPrice] as JsonFragment[], inputs);
+    const [, resp] = await this.multiCall(CurveLpAbis, inputs);
     return new Map<string, string>(
       resp.map((r, index) => {
         const virtualPrice = r ? r.toString() : '0';
@@ -94,7 +93,7 @@ export class LocalMultiCall extends MultiCall {
       };
     });
 
-    const [, result] = await this.multiCall([GaugeAbi.minter] as JsonFragment[], inputs);
+    const [, result] = await this.multiCall(GaugeAbis, inputs);
     result.forEach((minter, index) => {
       if (minter) {
         lpMintersMap.set(nonRegisterLps[index], minter.toLowerCase());

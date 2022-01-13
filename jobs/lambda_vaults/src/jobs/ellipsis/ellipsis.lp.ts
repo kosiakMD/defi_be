@@ -327,7 +327,7 @@ export class EllipsisLp implements JobInterface {
         lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
         const tokens = [];
         lp.tokens.forEach((token) => {
-          if ((token as CurveUnderlyingLpDto).tokens?.length) {
+          if (token.tokens?.length) {
             const lpTotalSupply = multicallRsp.get(this.totalSupplyLabel(token.address)).output
               .data;
             const lpTotalSupplyDec = toDecimals(lpTotalSupply, token.decimals);
@@ -335,7 +335,7 @@ export class EllipsisLp implements JobInterface {
               .get(this.getBalancesLabel(lp.lpToken.address, token.positionInPool))
               .output.data?.toString();
             const lpTokenReserveDec = toDecimals(lpTokenReserve, token.decimals);
-            (token as CurveUnderlyingLpDto).tokens.forEach((poolToken) => {
+            token.tokens.forEach((poolToken) => {
               const poolTokenReserve = multicallRsp
                 .get(this.getBalancesLabel(token.address, poolToken.positionInPool))
                 .output.data?.toString();
@@ -348,7 +348,7 @@ export class EllipsisLp implements JobInterface {
               tokens.push(poolToken);
             });
           } else {
-            (token as PoolTokenDto).reserve = toDecimals(
+            token.reserve = toDecimals(
               this.getTokenReserve(
                 lp.lpToken.address,
                 token as PoolTokenDto,
@@ -357,7 +357,7 @@ export class EllipsisLp implements JobInterface {
               ),
               token.decimals,
             );
-            EllipsisLp.setDataToPoolToken(token as PoolTokenDto, prices, lp);
+            EllipsisLp.setDataToPoolToken(token, prices, lp);
             tokens.push(token);
           }
         });

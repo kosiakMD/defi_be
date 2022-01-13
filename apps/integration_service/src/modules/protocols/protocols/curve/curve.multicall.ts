@@ -1,4 +1,3 @@
-import { JsonFragment } from '@ethersproject/abi';
 import { MultiCall } from '@indexed-finance/multicall';
 import { CallInput } from '@indexed-finance/multicall/dist/types';
 import Web3 from 'web3';
@@ -10,7 +9,7 @@ import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { toDecimals } from '../../../../common/utils/util';
 
 import { StakingDataInterface } from '../ellipsis/ellipsis.staking';
-import { Abis, GaugeAbi, GaugeRewardAbi } from './abis';
+import { Abis, CurveAbis, GaugeAbi, GaugeRewardAbi } from './abis';
 
 export class CurveMulticall extends MultiCall {
   constructor(private readonly web3: Web3, private readonly logger: Logger) {
@@ -27,7 +26,7 @@ export class CurveMulticall extends MultiCall {
       }));
     });
 
-    const promises = this.getPromisesArray(inputs, [Abis.balanceOf] as JsonFragment[]);
+    const promises = this.getPromisesArray(inputs, CurveAbis);
 
     const result = await this.getPromisesResponse(promises);
     const balanceMap = new Map<string, StakingDataInterface[]>();
@@ -123,7 +122,7 @@ export class CurveMulticall extends MultiCall {
     return resultMap;
   }
 
-  async getAdditionalRewardsBalances(inputsMap: Map<string, CallInput[]>, abi: JsonFragment[]) {
+  async getAdditionalRewardsBalances(inputsMap: Map<string, CallInput[]>, abi: any) {
     const resultMap = new Map<string, string[]>();
     const promises = this.getPromisesArray(Array.from(inputsMap.values()).flat(), abi);
     const result = await this.getPromisesResponse(promises);
@@ -141,7 +140,7 @@ export class CurveMulticall extends MultiCall {
     return resultMap;
   }
 
-  private getPromisesArray(inputs: CallInput[], abi: JsonFragment[]) {
+  private getPromisesArray(inputs: CallInput[], abi: any) {
     const chunk = 50;
     const promises = [];
     for (let i = 0; i < inputs.length; i += chunk) {

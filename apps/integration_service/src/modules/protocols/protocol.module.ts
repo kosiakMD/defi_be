@@ -62,6 +62,9 @@ import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 // import { VVSStaking } from './protocols/vvs/vvs.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
+import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
+import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -106,6 +109,7 @@ const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
 const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
+const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
 // TODO: Disabled For Release
 // const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
@@ -140,6 +144,7 @@ const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaki
     ...DefiKingdoms,
     // ...VVS,
     ...Curve,
+    ...Mojitoswap,
     ProtocolService,
     Mapper,
     AlpacaApiService,

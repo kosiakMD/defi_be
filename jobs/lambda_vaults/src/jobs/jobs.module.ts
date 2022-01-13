@@ -44,6 +44,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
+import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
+import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 
 const Jobs = [
   AutofarmStakingBSC,
@@ -78,6 +80,8 @@ const Jobs = [
   ViperswapStaking,
   VVSStaking,
   VVSPools,
+  MojitoswapPools,
+  MojitoswapStaking,
 ];
 
 const Helpers = [AutofarmApiService, BeefyApiService];

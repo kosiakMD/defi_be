@@ -38,6 +38,10 @@ export abstract class BadgerStaking {
   protected abis;
   protected addresses;
 
+  static cvxStategy = '0xa696a63cc78dffa1a63e9e50587c197387ff6c7e';
+  static cvxVault = '0x4b92d19c11435614cd49af1b589001b7c08cd4d5';
+  static bBadgerPool = '0x7e7e112a68d8d2e221e11047a72ffc1065c38e1a';
+
   protected readonly logger: Logger;
   protected readonly multicallService: MulticallAggregator;
   protected readonly accountService: AccountService;
@@ -46,7 +50,7 @@ export abstract class BadgerStaking {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    
+
     if (
       !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
@@ -208,12 +212,21 @@ export abstract class BadgerStaking {
     strategy
   ) {
     const stakingTokenAddress = stakingPos.stakingToken.address.toLowerCase();
-    const balance: BigNumber = multicallRsp.get(this.getBalanceLabel(strategy)).output.data;
-    stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals).toString();
-    stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
 
     if (stakingPos.stakingToken.tokens.length > 0) {
-      const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(stakingTokenAddress)).output.data;
+      let totalSupply: BigNumber;
+      let balance: BigNumber;
+      if (stakingTokenAddress === BadgerStaking.cvxVault) {
+        totalSupply = multicallRsp.get(this.getBalanceLabel(strategy)).output.data;
+        balance = multicallRsp.get(this.totalSupplyLabel(stakingTokenAddress)).output.data;
+      } else {
+        totalSupply = multicallRsp.get(this.totalSupplyLabel(stakingTokenAddress)).output.data;
+        balance = multicallRsp.get(this.getBalanceLabel(strategy)).output.data;
+      }
+
+      stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals).toString();
+      stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
+
       stakingPos.stakingToken.totalSupply = toDecimals(
         totalSupply,
         stakingPos.stakingToken.decimals,
@@ -238,6 +251,27 @@ export abstract class BadgerStaking {
   
           return t;
         });
+      } else if (stakingPos.stakingToken.tokens.length === 1) {
+        const vault = stakingPos.address.toLowerCase();
+        let reserve;
+
+        if (stakingTokenAddress === BadgerStaking.cvxVault) {
+          reserve = multicallRsp.get(this.getBalanceLabel(strategy)).output.data;
+        } else {
+          reserve = multicallRsp.get(this.totalSupplyLabel(vault)).output
+            .data;
+        }
+
+        stakingPos.stakingToken.tokens.map((t) => {
+          t.reserve = toDecimals(reserve, t.decimals);
+          t.price = Number(prices[t.address.toLowerCase()]);
+          t.balance = t.reserve * poolShare;
+          t.value = t.balance * t.price;
+
+          stakingPos.stats.tvl += t.value;
+
+          return t;
+        });
       } else {
         const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
           .data;
@@ -256,7 +290,7 @@ export abstract class BadgerStaking {
           return t;
         });
       }
-    } else if (stakingPos.address === '0x7e7e112a68d8d2e221e11047a72ffc1065c38e1a') { // bBadger pool
+    } else if (stakingPos.address === BadgerStaking.bBadgerPool) { // bBadger pool
       const vault = stakingPos.address.toLowerCase();
       const balance = 
         toDecimals(multicallRsp.get(this.getBalanceLabel(vault)).output.data, stakingPos.rewards[0].decimals);
@@ -302,14 +336,25 @@ export abstract class BadgerStaking {
   protected getCallsForVault(vault: string) {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
-    calls.set(this.getBalanceLabel(vault), {
-      address: vault,
-      abi: Abis.getBalance,
-      input: {
-        data: [],
-      },
-      output: {},
-    });
+    if (vault.toLowerCase() !== BadgerStaking.cvxVault) {
+      calls.set(this.getBalanceLabel(vault), {
+        address: vault,
+        abi: Abis.getBalance,
+        input: {
+          data: [],
+        },
+        output: {},
+      });
+    } else {
+      calls.set(this.getBalanceLabel(vault), {
+        address: vault,
+        abi: Abis.totalAssets,
+        input: {
+          data: [],
+        },
+        output: {},
+      });
+    }
 
     calls.set(this.totalSupplyLabel(vault), {
       address: vault,
@@ -328,7 +373,7 @@ export abstract class BadgerStaking {
 
     calls.set(this.getBalanceLabel(strategy), {
       address: strategy,
-      abi: Abis.stratGetBalanceOf,
+      abi: strategy.toLowerCase() !== BadgerStaking.cvxStategy ? Abis.stratGetBalanceOf : Abis.strategyTotalAssets,
       input: {
         data: [],
       },

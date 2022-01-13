@@ -6,6 +6,7 @@ enum rewards {
   MTA = '0xa3bed4e1c75d00fa6f4e5e6922db7261b5e9acd2',
   CRV = '0xD533a949740bb3306d119CC777fa900bA034cd52',
   SUSHI = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2',
+  yCRW = '0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8',
 }
 
 const crvPools = {
@@ -53,6 +54,7 @@ const vaultToReward = {
   bimBTC: rewards.MTA, 
   bFpMbtcHbtc: rewards.MTA, 
   bbveCVX: rewards.CRV, 
+  byvWBTC: rewards.yCRW,
 }
 
 enum settStrategies {
@@ -78,6 +80,7 @@ enum settStrategies {
   bimBTC = '0xd409C506742b7f76f164909025Ab29A47e06d30A', 
   bFpMbtcHbtc = '0x54D06A0E1cE55a7a60Ee175AbCeaC7e363f603f3', 
   bbveCVX = '0x98Ca7AFa876f0e15494E76E92C5b3658cdE1Ffe1', 
+  byvWBTC = '0xA696a63cc78DfFa1a63E9E50587C197387FF6C7E',
 }
 
 enum settVaults {
@@ -103,6 +106,7 @@ enum settVaults {
   bimBTC = '0x599D92B453C010b1050d31C364f6ee17E819f193',
   bFpMbtcHbtc = '0x26B8efa69603537AC8ab55768b6740b67664D518',
   bbveCVX = '0x937B8E917d0F36eDEBBA8E459C5FB16F3b315551',
+  byvWBTC = '0x4b92d19c11435614CD49Af1b589001b7c08cD4D5',
 }
 
 enum tokens {
@@ -113,7 +117,7 @@ enum tokens {
 
 const stakingKeys = ['bDIGG', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
   'bslpWbtcDigg', 'bslpWbtcEth', 'bcrvHBTC', 'bcrvPBTC', 'bcrvOBTC', 'bcrvBBTC', 'bcrvIbBTC', 
-  'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX'
+  'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX', 'byvWBTC'
 ];
 
 export default { 

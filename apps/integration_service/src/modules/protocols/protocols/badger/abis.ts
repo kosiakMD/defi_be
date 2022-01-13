@@ -21,6 +21,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function'
   };
+
   // calls for crv pools
   static readonly baseRewardsPool: AbiItem = {
     inputs: [],
@@ -35,6 +36,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function'
   };
+
   static readonly earned: AbiItem = {
     inputs:[
       {

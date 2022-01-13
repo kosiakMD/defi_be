@@ -70,6 +70,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
     this.logger.log('building initial mapping', this.placeholder);
 
     const stakingFeatures: IntegrationStakingPositionDto[] = [];
+    await this.setConvexPoolInfo(stakingFeatures);
 
     const poolsInfo: Map<string, any> = await this.getAllPoolInfo();
 
@@ -231,41 +232,94 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
     const poolsInfoMap: Map<string, any> = new Map<string, any>();
 
     for (let stakingKey of this.addresses.stakingKeys) {
-      const settVault = this.addresses.settVaults[stakingKey].toLowerCase();
-      const settStrategy = this.addresses.settStrategies[stakingKey].toLowerCase();
+      if (stakingKey !== 'byvWBTC') {
+        const settVault = this.addresses.settVaults[stakingKey].toLowerCase();
+        const settStrategy = this.addresses.settStrategies[stakingKey].toLowerCase();
 
-      const calls = new Map<string, CallData>();
-      calls.set(this.getWantLabel(settStrategy), {
-        address: settStrategy,
-        abi: Abis.getWantAddress,
-        input: {
-          data: [],
-        },
-        output: {},
-      });
+        const calls = new Map<string, CallData>();
+        calls.set(this.getWantLabel(settStrategy), {
+          address: settStrategy,
+          abi: Abis.getWantAddress,
+          input: {
+            data: [],
+          },
+          output: {},
+        });
 
-      let multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
-        calls,
-        this.chain,
-      );
+        let multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
+          calls,
+          this.chain,
+        );
 
-      const wantAddress = multicallRsp.get(this.getWantLabel(settStrategy)).output.data.toLowerCase();
-      const rewardAddress = BadgerAddresses.vaultToReward[stakingKey];
+        const wantAddress = multicallRsp.get(this.getWantLabel(settStrategy)).output.data.toLowerCase();
+        const rewardAddress = BadgerAddresses.vaultToReward[stakingKey];
 
-      const lpToken = this.addresses.stakingKeys[0] !== stakingKey ? wantAddress : settVault;
+        const lpToken = this.addresses.stakingKeys[0] !== stakingKey ? wantAddress : settVault;
 
-      poolsInfoMap.set(lpToken, {
-        // covert to lower case once received!
-        id: 0,
-        lpToken,
-        allocPoint: 0,
-        lastRewardTimestamp: 0,
-        reward: rewardAddress,
-        vault: settVault,
-      });
+        poolsInfoMap.set(lpToken, {
+          // covert to lower case once received!
+          id: 0,
+          lpToken,
+          allocPoint: 0,
+          lastRewardTimestamp: 0,
+          reward: rewardAddress,
+          vault: settVault,
+        });
+      }
     }
 
     return poolsInfoMap;
+  }
+
+  private async setConvexPoolInfo(stakingFeatures: IntegrationStakingPositionDto[]): Promise<void> {
+    const rewardTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
+      BadgerAddresses.vaultToReward.byvWBTC,
+      this.chain,
+    );
+    
+    const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
+      address: rewardTokenData.address,
+      name: rewardTokenData.name,
+      symbol: rewardTokenData.symbol,
+      decimals: rewardTokenData.decimals,
+    });
+
+    const poolTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
+      BadgerAddresses.settVaults.byvWBTC,
+      this.chain,
+    );
+
+    const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
+      address: poolTokenData.address,
+      name: poolTokenData.name,
+      symbol: poolTokenData.symbol,
+      decimals: poolTokenData.decimals,
+    });
+
+    const underlyingTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
+      BadgerAddresses.tokens.wBTC,
+      this.chain,
+    );
+
+    const token = plainToClass(IntegrationPoolTokenDto, {
+      address: underlyingTokenData.address,
+      name: underlyingTokenData.name,
+      symbol: underlyingTokenData.symbol,
+      decimals: underlyingTokenData.decimals,
+      positionInPool: 0,
+    });
+
+    stakingToken.tokens.push(token);
+
+    const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
+      address: BadgerAddresses.settVaults.byvWBTC,
+      poolId: null,
+      poolName: null,
+      rewards: [rewardToken],
+      stakingToken: stakingToken,
+    });
+
+    stakingFeatures.push(stakingPoolFeature);
   }
 
   getCallsForWant(

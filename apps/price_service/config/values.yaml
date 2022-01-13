@@ -13,7 +13,6 @@ configMaps:
     BSC_URL: https://bsc-dataseed.binance.org
     CURRENCYLAYER_API_KEY: 82aa76fc01397164f25dc02a7acc652b
     CURRENCYLAYER_ENDPOINT: http://api.currencylayer.com/live
-
   logs:
     LOG_AWS_ENABLED: true
     NODE_ENV: production

@@ -57,6 +57,7 @@ export class ViperswapStaking {
     }
 
     const multicallData = await this.getDataWithMulticall(addresses, pools);
+    const lockPercent = await this.getLockPercent();
 
     const base: BaseDataStaking[] = addresses.map(a => {
       const baseInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
@@ -72,7 +73,7 @@ export class ViperswapStaking {
       const userMulticallData = this.getMulticallDataForAddress(multicallData, a);
 
       const userStakingPositions: IntegrationStakingPositionDto[] =
-        this.getStakingPositionsForAddress(userMulticallData, pools);
+        this.getStakingPositionsForAddress(userMulticallData, pools, lockPercent);
 
       baseInfo.items = userStakingPositions;
       return baseInfo;
@@ -156,7 +157,7 @@ export class ViperswapStaking {
     return balances;
   }
 
-  private getStakingPositionsForAddress(balances, pools: NotifyStaking) {
+  private getStakingPositionsForAddress(balances, pools: NotifyStaking, lockPercent: number) {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
     const indexedSPByPoolIdAndAddress = new Map<string, IntegrationStakingPositionDto>(pools.items.map((sp) => [sp.address + sp.poolId, sp]));
@@ -182,12 +183,27 @@ export class ViperswapStaking {
         stakingPosition.rewards[0].claimableData.balance = b.pendingViper
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
           .toString();
+        stakingPosition.rewards[0].claimableData.lockedBalance = 
+          (Number(stakingPosition.rewards[0].claimableData.balance) * lockPercent).toString();
       }
 
       stakingPositions.push(stakingPosition);
     });
 
     return stakingPositions;
+  }
+
+  private async getLockPercent() {
+    const masterBreeder = new Abis(this.masterBreeder);
+
+    const call = new Map<string, ICallData>();
+    call.set(Abis.getLockPercent.name, masterBreeder.getLockPercent());
+
+    const lockPercentCall: Map<string, ICallData> = await this.multicallService.handleInBatches(
+      call,
+    );
+
+    return lockPercentCall.get(Abis.getLockPercent.name).output.data / 100;
   }
 
   private contractCallLabel(address: string, contract: string, poolId: number) {

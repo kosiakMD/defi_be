@@ -277,7 +277,6 @@ export class MojitoswapStaking
       }
       return mapping;
     }, []);
-    this.logger.log(this.mapping)
 
     return this.mapping;
   }

@@ -73,6 +73,7 @@ configMaps:
     KCC_URL: https://rpc-mainnet.kcc.network
     OKEX_URL: https://exchainrpc.okex.org/
     OPT_URL: https://mainnet.optimism.io/
+    ARBITRUM_URL: https://rpc.ankr.com/arbitrum
   endpoints:
     ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service

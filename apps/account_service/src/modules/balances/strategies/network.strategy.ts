@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -33,7 +34,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     block,
   }: BalancesRequest): Promise<TokenBalance[]> {
     const web3 = this.web3Provider.getInstanceByChainId(chainId);
-    if (!originalTokens.length || !web3.utils.isAddress(address)) {
+    if (!originalTokens.length || !isETHAddress(address)) {
       return [];
     }
 
@@ -124,6 +125,12 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('KCC_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.boba:
         return this.config.get<string>('BOBA_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.near:
+        return this.config.get<string>('NEAR_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.klay:
+        return this.config.get<string>('KLAYTN_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.fuse:
+        return this.config.get<string>('FUSE_BALANCES_CHECKER_ADDRESS');
     }
   }
 
@@ -161,6 +168,12 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<number>('KCC_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.opt:
         return this.config.get<number>('OPTIMISM_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.near:
+        return this.config.get<number>('NEAR_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.klay:
+        return this.config.get<number>('KLAYTN_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.fuse:
+        return this.config.get<number>('FUSE_BALANCES_CHECKER_BATCH_SIZE');
       default:
         return DEFAULT_BATCH_SIZE;
     }

@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CurrencyIdEnum } from '@app/common';
+import { ChainIdEnum, CurrencyIdEnum, CurrentPricesPayload, PriceResponseDto } from '@app/common';
 
 import { Logger } from '../logger/logger.service';
 
@@ -23,12 +23,11 @@ export class PriceService {
     this.getCurrentPricesUrl = new URL(getCurrentPricesUrl, url).href;
   }
 
-  // TODO: Response should not be any
   async getCurrentPrices(
     addresses: string[] | string,
     currency: CurrencyIdEnum,
     chain: ChainIdEnum,
-  ): Promise<any> {
+  ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     try {
       return await this.httpService
         .post(this.getCurrentPricesUrl, {

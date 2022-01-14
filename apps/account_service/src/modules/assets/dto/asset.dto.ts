@@ -43,6 +43,9 @@ export class AssetDto implements IAssetDto {
   @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.pending })
   @Expose()
   status: AssetState;
+
+  @Expose()
+  extensions: any;
 }
 
 export class AssetQueryDto {
@@ -99,9 +102,7 @@ export class AssetResponseDto implements IAssetResponseDto {
 
   @ApiProperty({ type: Boolean, example: true })
   @Expose()
-  @Transform(({ value }) => {
-    return !!value;
-  })
+  @Transform(({ value }) => Boolean(value))
   isLp = false;
 
   @ApiProperty({ type: Boolean, example: true })

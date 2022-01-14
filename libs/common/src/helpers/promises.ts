@@ -10,4 +10,4 @@ export const handlePromiseAllSettled = (promises) => {
   });
 
   return [data, errors];
-}
+};

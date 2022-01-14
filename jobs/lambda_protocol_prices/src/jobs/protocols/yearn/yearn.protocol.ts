@@ -23,7 +23,7 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
     protected readonly configService: ConfigService,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
-    private readonly multicallService: MulticallService,
+    protected readonly multicallService: MulticallService,
     private readonly subgraph: YearnSubgraph,
   ) {
     super();
@@ -44,6 +44,12 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
       const underlyingTokens = Array.from(new Set(vaults.map((vault) => vault.token.id)));
 
       const { prices } = await this.fetchPrices(underlyingTokens);
+
+      const newUnderlying = vaults.filter((vault) => !prices[vault.token.id]);
+
+      if (newUnderlying.length) {
+        await this.saveAssets(newUnderlying.map((a) => a.token.id));
+      }
 
       const response = vaults.reduce((acc, vault) => {
         if (!prices[vault.token.id]) {

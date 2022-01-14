@@ -70,8 +70,8 @@ export class CompoundProtocol extends ProtocolBase implements IProtocolPriceUpda
     addresses.forEach((address) => {
       const proxy = new CErc20DelegateAbi(address);
 
-      const exchangeKey = `${proxy.abi.exchangeRateStored.name}-${address}`;
-      const underlyingKey = `${proxy.abi.underlying.name}-${address}`;
+      const exchangeKey = `${CErc20DelegateAbi.exchangeRateStored.name}-${address}`;
+      const underlyingKey = `${CErc20DelegateAbi.underlying.name}-${address}`;
 
       callIds.set(address, [exchangeKey, underlyingKey]);
       calls.set(exchangeKey, proxy.exchangeRateStored());
@@ -120,10 +120,10 @@ export class CompoundProtocol extends ProtocolBase implements IProtocolPriceUpda
     );
   }
 
-  async formatExchangeRatePrices(
+  formatExchangeRatePrices(
     cTokenData: BasicCToken[],
     assetData: Map<string, any>,
-  ): Promise<IPriceRequestCurrent[]> {
+  ): IPriceRequestCurrent[] {
     return cTokenData.map((cToken) => {
       const asset = assetData.get(cToken.underlying);
 

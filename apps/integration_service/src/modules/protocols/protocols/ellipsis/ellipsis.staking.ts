@@ -9,6 +9,7 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  ChainIdEnum,
   EllipsisProtocolEnum,
   FeatureEnum,
   Logger,
@@ -16,7 +17,7 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { ellipsisPoolsMap } from '@app/common/jobs/ellipsis.pools.map';
+import { EllipsisMulticall } from '@app/common/jobs/ellipsis/ellipsis.multicall';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import {
   IntegrationPoolTokenDto,
@@ -24,8 +25,9 @@ import {
   UnderlyingStakingLp,
 } from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
+import { Web3ProviderService } from '@app/common/web3provider';
 
-import { CallData } from '../../../../common/dto/call.dto';
+import { CallData } from '../../../../common/dto';
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 import { toDecimals } from '../../../../common/utils/util';
 
@@ -42,6 +44,7 @@ export class EllipsisStaking {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly multicallProvider: MulticallProvider,
+    private readonly web3ProviderService: Web3ProviderService,
   ) {
     this.multicall = multicallProvider.getForChain(ChainAbbrEnum.bsc);
   }
@@ -53,7 +56,14 @@ export class EllipsisStaking {
       throw new Error(`not found cached data for key '${cacheKey}'`);
     }
 
-    const calls = this.getCallData(addresses, cachedPools.items);
+    const ellipsisMulticall = new EllipsisMulticall(
+      this.web3ProviderService.getInstanceByChainId(ChainIdEnum.bsc),
+    );
+    const poolsMinters = await ellipsisMulticall.getMinters(
+      cachedPools.items.map((item) => item.stakingToken.address),
+    );
+
+    const calls = this.getCallData(addresses, cachedPools.items, poolsMinters);
     const resp: Map<string, CallData> = await this.multicall.handleInBatches(calls);
     const baseDataStakingMap: Map<string, BaseDataStaking> = new Map<string, BaseDataStaking>(
       addresses.map((a) => [
@@ -90,8 +100,8 @@ export class EllipsisStaking {
             .toString();
           stakingToken.tokens.forEach((token) => {
             this.modifyUnderlyingToken(token, poolShare);
-            if ((token as UnderlyingStakingLp).tokens?.length) {
-              (token as UnderlyingStakingLp).tokens.forEach((underlyingToken) => {
+            if (token.tokens?.length) {
+              token.tokens.forEach((underlyingToken) => {
                 this.modifyUnderlyingToken(underlyingToken, poolShare);
               });
             }
@@ -137,12 +147,11 @@ export class EllipsisStaking {
     const balanceMap: Map<string, StakingDataInterface[]> = new Map();
     addresses.forEach((address) => {
       pools.forEach((value) => {
-        const stakingTokenData = ellipsisPoolsMap.get(value.stakingToken.address);
         const [balance, reward] = this.getRewardAndBalance(
           multicallResp,
           address,
           value,
-          stakingTokenData.coins,
+          value.stakingToken.tokens?.length,
         );
         if (!balance.isZero()) {
           const result: StakingDataInterface = {
@@ -189,16 +198,20 @@ export class EllipsisStaking {
     return [balance, reward];
   }
 
-  private getCallData(addresses: string[], pools: IntegrationStakingPositionDto[]) {
+  private getCallData(
+    addresses: string[],
+    pools: IntegrationStakingPositionDto[],
+    poolsMinters: Map<string, string>,
+  ) {
     const calls: Map<string, CallData> = new Map<string, CallData>();
     addresses.forEach((address) => {
       pools.forEach((value) => {
-        const stakingTokenData = ellipsisPoolsMap.get(value.stakingToken.address);
-        if (!stakingTokenData.coins) {
+        const minter = poolsMinters.get(value.stakingToken.address);
+        if (!value.stakingToken.tokens?.length) {
           calls.set(
             EllipsisStaking.getTotalBalanceLabel(address),
             plainToClass(CallData, {
-              address: stakingTokenData.minter,
+              address: minter,
               abi: Abis.totalBalance,
               input: {
                 data: [address],
@@ -208,7 +221,7 @@ export class EllipsisStaking {
           calls.set(
             EllipsisStaking.getClaimableRewardsLabel(address),
             plainToClass(CallData, {
-              address: stakingTokenData.minter,
+              address: minter,
               abi: Abis.claimableRewards,
               input: {
                 data: [address],
@@ -264,7 +277,7 @@ export class EllipsisStaking {
 export interface StakingDataInterface {
   stakingBalance: number;
   stakingPosition: IntegrationStakingPositionDto;
-  claimableReward: [{ rewardToken: string; rewardValue: string }];
+  claimableReward?: [{ rewardToken: string; rewardValue: string }];
 }
 
 export type UnderlyingTokenDto = IntegrationPoolTokenDto | UnderlyingStakingLp;

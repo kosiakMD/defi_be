@@ -18,13 +18,12 @@ import {
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 
-import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 
 export class IntegrationDataConverter {
   static toDTO(mapping) {
     if (!mapping) return null;
-    const itemData = TrackedVaultItemsMap.get(mapping['dbId']) as TrackedVaultItem;
+    const itemData = TrackedVaultItemsMap.get(mapping['dbId']);
     const dto = IntegrationDataConverter.buildFeatureDtoByDtoName(mapping['dtoName']);
     if (!dto) {
       throw new Error(`Failed to get DTO '${mapping['dtoName']}'`);

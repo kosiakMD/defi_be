@@ -1,7 +1,5 @@
-import { AbiItem } from 'web3-utils';
-
 export class MinterAbi {
-  static readonly coins: AbiItem = {
+  static readonly coins = {
     stateMutability: 'view',
     type: 'function',
     name: 'coins',

@@ -229,9 +229,21 @@ export class IntegrationsService {
             walletData.chains.push(existedChainData);
           }
 
-          existedChainData.total += bd.total;
-          response.data.total += bd.total;
+          if (bd.total) {
+            if (FeatureEnum.borrowing === bd.feature) {
+              existedChainData.total -= bd.total;
+              response.data.total -= bd.total;
+            } else {
+              existedChainData.total += bd.total;
+              response.data.total += bd.total;
+            }
+          }
+
           existedChainData[bd.feature] = { totalValue: bd.total, items: bd.items };
+
+          if (bd.locked) {
+            existedChainData[bd.feature].lockedValue = bd.locked;
+          }
         });
       }
     });

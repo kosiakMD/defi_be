@@ -44,6 +44,14 @@ export class MulticallProvider {
         rpcConfigPath: 'HARM_URL',
         multicallAddress: '0x34b415f4d3b332515e66f70595ace1dcf36254c5',
       },
+      [ChainAbbrEnum.arbi]: {
+        rpcConfigPath: 'ARBITRUM_URL',
+        multicallAddress: '0xAb16069D3E9E352343B2040ce7d7715C585994f9',
+      },
+      [ChainAbbrEnum.cro]: {
+        rpcConfigPath: 'CRO_URL',
+        multicallAddress: '0x8cCB17c781A886c1e9e4b7128C12A41A53d9E4E1',
+      },
     };
     Object.entries(providersData).forEach(([chainAbbr, config]) => {
       this.multicallsMap.set(

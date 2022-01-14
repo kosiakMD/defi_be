@@ -14,6 +14,7 @@ export const ESD_ADDRESS = '0x36f3fd68e7325a35eb768f1aedaae9ea0689d723';
 export const GHST_ADDRESS_POLYGON = '0x385eeac5cb85a38a9a07a70c73e0a3271cfb54a7';
 export const imBTC = '0x3212b29e33587a00fb1c83346f5dbfa69a458923';
 export const SNX = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f';
+export const CURVE_MAIN_COIN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE';
 
 export const COIN_ADDRESS = ZERO_ADDRESS;
 export const SOL_COIN_ADDRESS = '00000000000000000000000000000000000000000000';

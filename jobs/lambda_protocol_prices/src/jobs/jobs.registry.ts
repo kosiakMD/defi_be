@@ -1,28 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 
 import { IProtocolPriceUpdate } from './interfaces/protocol.price.update';
-import { AaveProtocol } from './protocols/aave/aave.protocol';
-import { CompoundProtocol } from './protocols/compound/compound.protocol';
-import { IearnProtocol } from './protocols/iearn/iearn.protocol';
-import { YearnProtocol } from './protocols/yearn/yearn.protocol';
+import { ActiveProtocols } from './protocols/protocols.module';
+
+type ProtocolRegistryMap = Map<string, IProtocolPriceUpdate>;
 
 @Injectable()
 export class JobsRegistry {
-  public readonly registry: Map<string, IProtocolPriceUpdate> = new Map<
-    string,
-    IProtocolPriceUpdate
-  >();
+  public readonly registry: ProtocolRegistryMap = new Map();
 
-  constructor(
-    private readonly aaveProtocol: AaveProtocol,
-    private readonly compoundProtocol: CompoundProtocol,
-    private readonly yearnProtocol: YearnProtocol,
-    private readonly iearnProtocol: IearnProtocol,
-  ) {
-    this.register(aaveProtocol);
-    this.register(compoundProtocol);
-    this.register(iearnProtocol);
-    this.register(yearnProtocol);
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  async onModuleInit() {
+    await Promise.all(
+      ActiveProtocols.map(async (protocol) => {
+        this.register(await this.moduleRef.create(protocol));
+      }),
+    );
   }
 
   private register(protocol: IProtocolPriceUpdate) {

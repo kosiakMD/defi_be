@@ -271,7 +271,7 @@ export class RaydiumStaking implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId);
     if (temp) {
       return temp;
     }
@@ -348,6 +348,8 @@ export class RaydiumStaking implements JobInterface {
           mapping.stakingToken.price * toDecimals(mapping.staked, mapping.stakingToken.decimals);
         mapping.stats.tvl = mapping.stakingToken.value;
       } else {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         const poolInfo = await Liquidity.getInfo(
           this.web3,
           solanaStringsToKeys(this.mapping[index].extra.pool) as LiquidityPoolKeysV4,

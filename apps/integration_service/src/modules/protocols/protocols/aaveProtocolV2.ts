@@ -25,6 +25,7 @@ import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataHealth } from '@app/common/dto/base.data.health.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { keepETHAddresses } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
 
@@ -38,7 +39,6 @@ import { RAY } from './aave/aave.constants';
 import { IReserve } from './aave/aave.interfaces';
 import { AaveLocalMulticall } from './aave/aave.local.multicall';
 import DataProviderProtocol from './dataProviderProtocol';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class AaveProtocolV2 extends DataProviderProtocol {

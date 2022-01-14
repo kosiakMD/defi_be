@@ -77,7 +77,9 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   JOBS_CACHE_TTL_IN_SECONDS: Joi.number(),
   POOLS_CACHE_TTL_IN_SECONDS: Joi.number(),
@@ -87,6 +89,7 @@ export const validationSchema = Joi.object({
   AUTOFARM_SUBGRAPH_URL: Joi.string().required(),
   QUICKSWAP_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ARBI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  COMPOUND_ETH_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_AVAX_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_BSC_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_CELO_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
@@ -128,17 +131,23 @@ export const validationSchema = Joi.object({
     .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
     .optional(),
 
+  ARBITRUM_URL: Joi.string().required(),
   AVAX_URL: Joi.string().required(),
+  BOBA_URL: Joi.string().required(),
   BSC_URL: Joi.string().required(),
   CELO_URL: Joi.string().required(),
+  CRONOS_URL: Joi.string().required(),
   ETH_URL: Joi.string().required(),
   FTM_URL: Joi.string().required(),
   HARM_URL: Joi.string().required(),
   HECO_URL: Joi.string().required(),
+  KCC_URL: Joi.string().required(),
   MRIVER_URL: Joi.string().required(),
+  OKEX_URL: Joi.string().required(),
+  OPT_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
-  XDAI_URL: Joi.string().required(),
   SOL_URL: Joi.string().required(),
+  XDAI_URL: Joi.string().required(),
 
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),

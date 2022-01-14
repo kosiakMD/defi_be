@@ -18,7 +18,7 @@ export class PriceRepository {
     return await getManager().query(`
       INSERT INTO prices.asset_current_price(asset_id, currency_id, value, source_id, updated_at)
       VALUES ${sqlValues}
-      ON CONFLICT (asset_id) 
+      ON CONFLICT (asset_id)
       DO UPDATE SET value=EXCLUDED.value, source_id=EXCLUDED.source_id, updated_at=NOW()
       RETURNING *`);
   }
@@ -26,8 +26,8 @@ export class PriceRepository {
   async getAllCurrentPrices() {
     return await getManager().query(`
       SELECT a.address, a.chain_id, ap.value, ap.source_id, ap.updated_at
-          FROM prices.asset a 
-          JOIN prices.asset_current_price ap 
+          FROM prices.asset a
+          JOIN prices.asset_current_price ap
             ON a.id = ap.asset_id
             `);
   }

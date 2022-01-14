@@ -71,7 +71,9 @@ export const validationSchema = Joi.object({
   BLOCKS_SUBGRAPH_URL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string().required(),
+  REDIS_AUTH: Joi.string() //
+    .allow('')
+    .required(),
   REDIS_CACHE_TTL: Joi.number(),
   REDIS_ASSETS_CACHE_TTL: Joi.number(),
   ETH_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
@@ -168,6 +170,24 @@ export const validationSchema = Joi.object({
     .default(3000)
     .optional(),
   OPTIMISM_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  NEAR_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  NEAR_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  KLAYTN_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  KLAYTN_BALANCES_CHECKER_ADDRESS: Joi.string() //
+    .default(COMMON_BALANCE_CHECKER_ADDRESS)
+    .optional(),
+  FUSE_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+    .default(3000)
+    .optional(),
+  FUSE_BALANCES_CHECKER_ADDRESS: Joi.string() //
     .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
 

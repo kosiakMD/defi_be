@@ -197,7 +197,7 @@ export class PancakePoolsV2 implements JobInterface {
   }
 
   private async getDbItem(item, uniqueId: string) {
-    const temp: TrackedVaultItem = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
+    const temp = TrackedVaultItemsMap.get(uniqueId);
     if (temp) {
       return temp;
     }

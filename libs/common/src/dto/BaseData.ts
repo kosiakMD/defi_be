@@ -1,4 +1,6 @@
-import { ChainDto, FeatureEnum, ProjectEnum, ProtocolName, ProtocolTypeEnum } from '@app/common';
+import { FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '../enum';
+import { ProtocolName } from '../types';
+import { ChainDto } from './chain.dto';
 
 export class BaseData<T = keyof typeof ProtocolTypeEnum> {
   chain: ChainDto;

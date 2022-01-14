@@ -35,6 +35,7 @@ export class JobsRunner {
       this.jobsToRun.set(key, job);
     });
     this.logger.timeEnd(timeKey);
+    this.logger.log(`Found ${this.jobsToRun.size} Jobs for chain ${this.chain}`, 'JobsRunner');
   }
 
   async update() {
@@ -48,6 +49,6 @@ export class JobsRunner {
     }
 
     this.logger.timeEnd(timeKey);
-    this.logger.log(`Protocol Price Job Complete for Chain ${this.chain}`);
+    this.logger.log(`Protocol Price Job Complete for Chain ${this.chain}`, 'JobsRunner');
   }
 }

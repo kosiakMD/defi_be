@@ -5,6 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainIdEnum } from '@app/common';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { concatStrings } from '@app/common/utils';
 
@@ -42,6 +43,8 @@ export class JobsRunner {
     this.jobsRegistry.registry.forEach((_, v) => {
       if (integrationServiceJobsPlaceholdersSet.has(v)) {
         jobsPlaceholdersIntersection.add(v);
+      } else {
+        this.logger.warn(`[${v}] was registered manually but is not running`);
       }
     });
 
@@ -54,15 +57,21 @@ export class JobsRunner {
 
     for (const placeholder of jobsPlaceholdersIntersection) {
       const existedDbJob = TrackedVaultsMap.get(placeholder) as TrackedVault;
-      if (existedDbJob) {
-        this.logger.log(
-          `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
-          JobsRunner.name,
+      if (!existedDbJob) {
+        this.logger.warn(
+          `[${placeholder}] has been registered but is missing the row in the database. Skipping.`,
         );
-        if (existedDbJob.isEnabled) {
-          await this.jobsRegistry.registry.get(placeholder).manageMapping();
-          this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
-        }
+        continue;
+      }
+
+      this.logger.log(
+        `found job to run [${placeholder}], isEnabled: [${existedDbJob.isEnabled}]`,
+        JobsRunner.name,
+      );
+
+      if (existedDbJob.isEnabled) {
+        await this.jobsRegistry.registry.get(placeholder).manageMapping();
+        this.jobsToRun.set(placeholder, this.jobsRegistry.registry.get(placeholder));
       }
     }
 
@@ -126,14 +135,38 @@ export class JobsRunner {
       });
     });
 
+    // will be removed in future
+    jobPlaceholdersSet.add('3_BadgerDAO_staking');
+    jobPlaceholdersSet.add('5_BadgerDAO_staking');
+    jobPlaceholdersSet.add('1_BadgerDAO_staking');
+
     // This has to be hardcoded for convex until Curve is supported on the front end
     // TODO: remove after Curve integration is complete
     jobPlaceholdersSet.add('1_Curve_pools');
     jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
 
+    jobPlaceholdersSet.add('10_DefiKingdoms_staking');
+    jobPlaceholdersSet.add('10_DefiKingdoms_pools');
+
     jobPlaceholdersSet.add('10_Viperswap_staking');
     jobPlaceholdersSet.add('10_Viperswap_pools');
+
+    jobPlaceholdersSet.add(`${ChainIdEnum.arbi}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.bsc}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.celo}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.cro}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Beefy_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Beefy_staking`);
+
+    jobPlaceholdersSet.add('14_VVS_pools');
+    jobPlaceholdersSet.add('14_VVS_staking');
+
+    jobPlaceholdersSet.add('16_Mojitoswap_pools');
+    jobPlaceholdersSet.add('16_Mojitoswap_staking');
 
     return jobPlaceholdersSet;
   }

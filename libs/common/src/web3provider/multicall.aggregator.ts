@@ -60,4 +60,9 @@ export class MulticallAggregator {
 
     return calls;
   }
+
+  async call(call: CallData, chain: ChainIdEnum) {
+    const results = await this.handleInBatches(new Map([['single-call', call]]), chain);
+    return results.get('single-call').output.data;
+  }
 }

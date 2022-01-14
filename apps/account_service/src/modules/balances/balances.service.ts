@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
-import { In, Repository } from 'typeorm';
+import { In, Raw, Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { CACHE_MANAGER, HttpStatus, Inject } from '@nestjs/common';
@@ -34,6 +34,7 @@ import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto'
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
+import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -53,6 +54,7 @@ export class BalancesService {
     private readonly networkBalancesStrategy: NetworkBalancesStrategy,
     private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
     private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
+    private readonly terraBalancesStrategy: TerraBalancesStrategy,
   ) {}
 
   public async getBalance(
@@ -247,7 +249,7 @@ export class BalancesService {
     });
   }
 
-  private getPastDate(seconds = 86400) {
+  private getPastDate(seconds) {
     const past = new Date(new Date().setSeconds(new Date().getSeconds() - seconds));
     return roundToNearestHour(past);
   }
@@ -292,7 +294,7 @@ export class BalancesService {
     block: BlockTimestamp = null,
   ) {
     const strategies = this.getBalancesStrategiesPerChain(chainId);
-    const assetsToHandle = await this.getAssetsToHandle(chainId, assets);
+    const assetsToHandle = await this.getAssetsToHandle(chainId, assets, block);
     const assetAddresses = assetsToHandle.map(({ address }) => address);
 
     let results = await Promise.all(
@@ -391,7 +393,7 @@ export class BalancesService {
     // If its a historic block we can cache for much longer,
     // as the target block only updates once an hour
     const cacheKey = block
-      ? [chainId, address, assets, block.block, this.getPastDate(86400).getTime()].join('-')
+      ? [chainId, address, assets, block.block].join('-')
       : [chainId, address, assets, 'latest'].join('-');
     const ttl = block ? 65 * 60 : 50;
 
@@ -449,22 +451,46 @@ export class BalancesService {
     switch (chain) {
       case ChainIdEnum.sol:
         return [this.solanaBalancesStrategy];
+      case ChainIdEnum.terra:
+        return [this.terraBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }
   }
 
-  private async getAssetsToHandle(chain: ChainIdEnum, requested?: Address[]) {
+  private async getAssetsToHandle(
+    chain: ChainIdEnum,
+    requested?: Address[],
+    block?: BlockTimestamp,
+  ) {
+    // If its a historic block, only return results that where inserted at least 24 hours ago
+    // This fixes the issue with checking 24 hours returns and multicall failing when checking
+    // tokens less than 24 hours old.
+    const createdAtQuery = { createdAt: Raw((alias) => `${alias} < NOW() - INTERVAL '24 HOURS'`) };
+
     if (requested?.length) {
-      return this.assetsRepository.find({ where: { chain, address: In(requested) } });
+      return this.assetsRepository.find({
+        where: {
+          chain,
+          address: In(requested),
+          ...(block && createdAtQuery),
+        },
+      });
     }
-    const cacheKey = `TRACKED_ASSETS_${chain}`;
+
+    const cacheKey = `TRACKED_ASSETS_${chain}-${block ? block.block : 'latest'}`;
     let cachedAssets = await this.cache.get<AssetsEntity[]>(cacheKey);
     if (cachedAssets?.length) {
       return cachedAssets;
     }
 
-    cachedAssets = await this.assetsRepository.find({ where: { chain, isTracked: true } });
+    cachedAssets = await this.assetsRepository.find({
+      where: {
+        chain,
+        isTracked: true,
+        ...(block && createdAtQuery),
+      },
+    });
 
     // NOTE: We store data in cache and forget about it
     this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets, {

@@ -8,50 +8,91 @@ services:
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
 
+  postgres:
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_DATABASE}
+
   price-service:
     image: node:14
     ports:
-      - "3002:3002"
+      - "${PRICE_SERVICE_PORT:-3002}:${PRICE_SERVICE_PORT:-3002}"
     working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
     volumes:
       - .:/usr/src/app
     command: "yarn price-start:dev"
     restart: always
+    environment:
+      - SERVICE_PORT=${PRICE_SERVICE_PORT:-3002}
     env_file:
       - "apps/price_service/config/.env"
+      - ".env"
 
   account-service:
     image: node:14
     ports:
-      - "3003:3003"
+      - "${ACCOUNT_SERVICE_PORT:-3003}:${ACCOUNT_SERVICE_PORT:-3003}"
     working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
+      - price-service
     volumes:
       - .:/usr/src/app
     command: "yarn account-start:dev"
     restart: always
+    environment:
+      - SERVICE_PORT=${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
       - "apps/account_service/config/.env"
+      - ".env"
 
   integration-service:
     image: node:14
     ports:
-      - "3004:3004"
+      - "${INTEGRATION_SERVICE_PORT:-3004}:${INTEGRATION_SERVICE_PORT:-3004}"
     working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
+      - price-service
+      - account-service
     volumes:
       - .:/usr/src/app
     command: "yarn integration-start:dev"
     restart: always
+    environment:
+      - SERVICE_PORT=${INTEGRATION_SERVICE_PORT:-3004}
+      - PRICE_SERVICE_URL=${PRICE_SERVICE_HOST}:${PRICE_SERVICE_PORT:-3002}
+      - ACCOUNT_SERVICE_URL=${ACCOUNT_SERVICE_HOST}:${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
       - "apps/integration_service/config/.env"
+      - ".env"
 
   gateway-service:
     image: node:14
     ports:
-      - "3001:3001"
+      - "${GATEWAY_SERVICE_PORT:-3001}:${GATEWAY_SERVICE_PORT:-3001}"
     working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
+      - price-service
+      - integration-service
+      - account-service
     volumes:
       - .:/usr/src/app
     command: "yarn gateway-start:dev"
     restart: always
+    environment:
+      - SERVICE_PORT=${GATEWAY_SERVICE_PORT:-3001}
     env_file:
       - "apps/api_gateway/config/.env"
+      - ".env"

@@ -19,6 +19,16 @@ import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
+import BadgerProtocol from './protocols/badger/badger.protocol';
+import { BadgerStaking } from './protocols/badger/badger.staking';
+// import { BeefyProtocol } from './protocols/beefyProtocol';
+import { CompoundProtocol } from './protocols/compoundProtocol';
+import { CurvePools } from './protocols/curve/curve.pools';
+import CurveProtocol from './protocols/curve/curve.protocol';
+import { CurveStaking } from './protocols/curve/curve.staking';
+import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
+import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
+import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
@@ -36,23 +46,33 @@ import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
+import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
-// TODO: Temporary hidden on production
-// import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
-// import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
-// import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
+import VenusProtocol from './protocols/venusProtocol';
+import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
+import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
+import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
+// import { VVSPools } from './protocols/vvs/vvs.pools';
+// import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+// import { VVSStaking } from './protocols/vvs/vvs.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
+import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
+import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
+  // TODO: Disabled For Release
+  // BeefyProtocol,
+  CompoundProtocol,
   PangolinProtocol,
   QuickswapProtocol,
   SpookySwapProtocol,
@@ -62,10 +82,17 @@ const ProtocolList = [
   YearnProtocolV1,
   YearnProtocolV2,
   RaydiumProtocol,
+  VenusProtocol,
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm];
+const TraderJoe = [
+  TraderJoeProtocol,
+  TraderJoePools,
+  TraderJoeStaking,
+  TraderJoeFarm,
+  TraderJoeLending,
+];
 const Pancake = [
   PancakeProtocol,
   PancakeV2Staking,
@@ -76,10 +103,15 @@ const Pancake = [
   EtherscanService,
   ScanApi,
 ];
+const Curve = [CurveProtocol, CurvePools, CurveStaking];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
-// TODO: Temporary hidden on production
-// const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
+const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
+const Badger = [BadgerProtocol, BadgerStaking];
+const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
+const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
+// TODO: Disabled For Release
+// const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
 @Module({
   imports: [
@@ -107,8 +139,12 @@ const Raydium = [RaydiumStaking];
     ...Ellipsis,
     ...Autofarm,
     ...Raydium,
-    // TODO: Temporary hidden on production
-    // ...Viperswap,
+    ...Viperswap,
+    ...Badger,
+    ...DefiKingdoms,
+    // ...VVS,
+    ...Curve,
+    ...Mojitoswap,
     ProtocolService,
     Mapper,
     AlpacaApiService,

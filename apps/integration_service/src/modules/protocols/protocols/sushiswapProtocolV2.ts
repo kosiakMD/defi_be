@@ -741,19 +741,21 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
             .toString()
         : null;
 
-      const rewards = [
-        plainToClass(IntegrationClaimableTokenDto, {
-          price: sushiPrice,
-          symbol: sushi.symbol,
-          name: sushi.name,
-          address: sushi.address,
-          decimals: sushi.decimals,
-          claimableData: plainToClass(ClaimableDto, {
-            balance: rewardBalance,
-            value: Number(rewardBalance) * sushiPrice,
-          }),
-        }),
-      ];
+      const rewards = rewardBalance
+        ? [
+            plainToClass(IntegrationClaimableTokenDto, {
+              price: sushiPrice,
+              symbol: sushi.symbol,
+              name: sushi.name,
+              address: sushi.address,
+              decimals: sushi.decimals,
+              claimableData: plainToClass(ClaimableDto, {
+                balance: rewardBalance,
+                value: Number(rewardBalance) * sushiPrice,
+              }),
+            }),
+          ]
+        : [];
 
       // Each rewarder has an array of additional rewards (optional, only available in masterchef v2)
       pendingRewards.get(`${user.pool.id}-${address}`)?.forEach(({ amount, address }) => {
@@ -803,31 +805,35 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
   }
 
   async getPendingRewards(pools: ISushiSwapPoolV2[], address: Address, chain: ChainDto) {
-    const calls = new Map();
-    pools.map((pool) => {
-      const rewarderContract = new SushiSwapRewarder(pool.rewarder.id);
+    try {
+      const calls = new Map();
+      pools.map((pool) => {
+        const rewarderContract = new SushiSwapRewarder(pool.rewarder.id);
 
-      calls.set(
-        `${pool.id}-${pool.rewarder.id}-${address}`,
-        rewarderContract.pendingTokens(pool.id, address, 0), // ? I think the last argument doesn't do anything? e.g. 0x7519C93fC5073E15d89131fD38118D73A72370F8
-      );
-    });
+        calls.set(
+          `${pool.id}-${pool.rewarder.id}-${address}`,
+          rewarderContract.pendingTokens(pool.id, address, 0), // ? I think the last argument doesn't do anything? e.g. 0x7519C93fC5073E15d89131fD38118D73A72370F8
+        );
+      });
+      const rawResults = await this.multicallService.handleInBatches(calls, chain.id);
+      return Array.from(rawResults.values()).reduce((calls, result) => {
+        const [poolId, user] = result.input.data;
+        const { rewardTokens, rewardAmounts } = result.output.data;
 
-    const rawResults = await this.multicallService.handleInBatches(calls, chain.id);
-    return Array.from(rawResults.values()).reduce((calls, result) => {
-      const [poolId, user] = result.input.data;
-      const { rewardTokens, rewardAmounts } = result.output.data;
-
-      return calls.set(
-        `${poolId}-${user}`,
-        rewardTokens.map((token, idx) => {
-          return {
-            address: token.toLowerCase(),
-            amount: rewardAmounts[idx].toString(),
-          };
-        }),
-      );
-    }, new Map());
+        return calls.set(
+          `${poolId}-${user}`,
+          rewardTokens.map((token, idx) => {
+            return {
+              address: token.toLowerCase(),
+              amount: rewardAmounts[idx].toString(),
+            };
+          }),
+        );
+      }, new Map());
+    } catch {
+      this.logger.error(`Failed to get Sushiswap pendingRewards for chain ${chain.id}`);
+      return new Map();
+    }
   }
 
   async getPendingSushi(
@@ -836,22 +842,27 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     address: Address,
     chain: ChainDto,
   ) {
-    const poolIds = users.flatMap((user) => user.pool.id);
-    const masterChefContract = new SushiSwapMasterChefAbi(masterChef.id);
+    try {
+      const poolIds = users.flatMap((user) => user.pool.id);
+      const masterChefContract = new SushiSwapMasterChefAbi(masterChef.id);
 
-    // Build a call per pool
-    const calls = poolIds.reduce((calls, poolId) => {
-      return calls.set(`${poolId}-${address}`, masterChefContract.pendingSushi(poolId, address));
-    }, new Map());
+      // Build a call per pool
+      const calls = poolIds.reduce((calls, poolId) => {
+        return calls.set(`${poolId}-${address}`, masterChefContract.pendingSushi(poolId, address));
+      }, new Map());
 
-    // Make the multicall
-    const results = await this.multicallService.handleInBatches(calls, chain.id);
+      // Make the multicall
+      const results = await this.multicallService.handleInBatches(calls, chain.id);
 
-    // Format the data to get the returned values
-    return Array.from(results.values()).reduce((calls, result) => {
-      const [poolId] = result.input.data;
-      return calls.set(`${poolId}-${address}`, result.output.data.toString());
-    }, new Map());
+      // Format the data to get the returned values
+      return Array.from(results.values()).reduce((calls, result) => {
+        const [poolId] = result.input.data;
+        return calls.set(`${poolId}-${address}`, result.output.data.toString());
+      }, new Map());
+    } catch {
+      this.logger.error(`Failed to get Sushiswap pendingSushi for chain ${chain.id}`);
+      return new Map();
+    }
   }
 
   getReserveUSDTotals(pair: ISushiSwapLiquidityPair, prices: Map<Address, number>) {

@@ -21,7 +21,7 @@ import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
-// import { BeefyProtocol } from './protocols/beefyProtocol';
+import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
 import { CurvePools } from './protocols/curve/curve.pools';
 import CurveProtocol from './protocols/curve/curve.protocol';
@@ -32,6 +32,9 @@ import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staki
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
+import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
+import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
+import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
@@ -57,21 +60,17 @@ import VenusProtocol from './protocols/venusProtocol';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
-// import { VVSPools } from './protocols/vvs/vvs.pools';
-// import { VVSProtocol } from './protocols/vvs/vvs.protocol';
-// import { VVSStaking } from './protocols/vvs/vvs.staking';
+import { VVSPools } from './protocols/vvs/vvs.pools';
+import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+import { VVSStaking } from './protocols/vvs/vvs.staking';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
-import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
-import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AaveProtocolV2,
   AlpacaProtocol,
-  // TODO: Disabled For Release
-  // BeefyProtocol,
+  BeefyProtocol,
   CompoundProtocol,
   PangolinProtocol,
   QuickswapProtocol,
@@ -110,8 +109,7 @@ const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
 const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
 const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
-// TODO: Disabled For Release
-// const VVS = [VVSProtocol, VVSStaking, VVSPools];
+const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
 @Module({
   imports: [
@@ -142,7 +140,7 @@ const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
     ...Viperswap,
     ...Badger,
     ...DefiKingdoms,
-    // ...VVS,
+    ...VVS,
     ...Curve,
     ...Mojitoswap,
     ProtocolService,

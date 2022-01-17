@@ -5,12 +5,22 @@ import {
   NotImplementedException,
   Inject,
   Param,
+  Query,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, AddressesArray, ChainsArray, Logger, NftProjectEnum } from '@app/common';
+import {
+  Address,
+  AddressesArray,
+  ChainsArray,
+  Logger,
+  NftEndpointsEnum,
+  NftProjectEnum,
+} from '@app/common';
 import { NftAssetsQueryDto, NftProjectResponseDto } from '@app/common/dto/nft';
+import { NftCollectionsQueryDto } from '@app/common/dto/nft/nft.collections.query.dto';
+import { NftCollectionsResponseDto } from '@app/common/dto/nft/nft.collections.response.dto';
 import { NftResponseDto } from '@app/common/dto/nft/nft.response.dto';
 import {
   NftAssetsByAccounts,
@@ -21,7 +31,7 @@ import {
 import { NftService } from '../modules/nft/nft.service';
 
 @ApiTags('Nft')
-@Controller('nft')
+@Controller(NftEndpointsEnum.nft)
 export class NftController {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -29,7 +39,7 @@ export class NftController {
   ) {}
 
   @ApiResponse({ status: HttpStatus.OK, type: [NftProjectResponseDto] })
-  @Get('projects')
+  @Get(NftEndpointsEnum.projects)
   public getProjects(): NftServiceInfo[] {
     try {
       return this.nftService.getProjects();
@@ -39,21 +49,43 @@ export class NftController {
     }
   }
 
+  @Get(NftEndpointsEnum.collectionsByProjectName)
+  @ApiQuery({ type: NftCollectionsQueryDto })
+  @ApiResponse({ status: HttpStatus.OK, type: NftCollectionsResponseDto })
+  async getCollections(
+    @Param() { projectName }: NftAssetsParams,
+    @AddressesArray('addresses') addresses: Address[],
+    @ChainsArray('chains') chains: number[],
+    @Query('collection') collection: string,
+  ) {
+    if (!Object.values(NftProjectEnum).includes(projectName)) {
+      throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
+    }
+
+    try {
+      return await this.nftService.getCollections(projectName, addresses, chains, collection);
+    } catch (error) {
+      this.logger.error(`Nft.getCollections: ${error}`);
+      throw error;
+    }
+  }
+
   @ApiResponse({ status: HttpStatus.OK, type: NftResponseDto })
   @ApiParam({ enum: NftProjectEnum, name: 'projectName' })
   @ApiQuery({ type: NftAssetsQueryDto })
-  @Get('assets/:projectName')
+  @Get(NftEndpointsEnum.assetsByProjectName)
   public async getAssets(
     @Param() { projectName }: NftAssetsParams,
     @AddressesArray('addresses') addresses: Address[],
     @ChainsArray('chains') chains: number[],
+    @Query('collection') collection: string,
   ): Promise<NftAssetsByAccounts> {
-    try {
-      if (!Object.values(NftProjectEnum).includes(projectName)) {
-        throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
-      }
+    if (!Object.values(NftProjectEnum).includes(projectName)) {
+      throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
+    }
 
-      return await this.nftService.getAssets(projectName, addresses, chains);
+    try {
+      return await this.nftService.getAssets(projectName, addresses, collection, chains);
     } catch (error) {
       this.logger.error(`Nft.getAssets: ${error}`);
       throw error;

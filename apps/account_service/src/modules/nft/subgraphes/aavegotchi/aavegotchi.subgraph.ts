@@ -7,8 +7,12 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';
 
-import { Aavegotchis, Response, Svg, Users, User } from '../../interfaces/aavegotchi.interface';
-import { svgQuery, usersPolygonQuery } from './aavegotchi.query';
+import { Aavegotchis, Response, Svg, Users, User, Id } from '../../interfaces/aavegotchi.interface';
+import {
+  svgQuery,
+  usersPortalsGotchisQuery,
+  usersPortalsGotchisIdsQuery,
+} from './aavegotchi.query';
 
 @Injectable()
 export class AavegotchiSubgraph {
@@ -39,9 +43,20 @@ export class AavegotchiSubgraph {
       .post(this.urlPolygon, {
         operationName: 'users',
         variables: { addresses },
-        query: usersPolygonQuery,
+        query: usersPortalsGotchisQuery,
       })
       .pipe(map(({ data }: AxiosResponse<Response<Users>>) => data.data.users))
+      .toPromise();
+  }
+
+  public async getPortalsGotchisIds(addresses: Address[]): Promise<User<Id, Id>[]> {
+    return this.httpService
+      .post(this.urlPolygon, {
+        operationName: 'users',
+        variables: { addresses },
+        query: usersPortalsGotchisIdsQuery,
+      })
+      .pipe(map(({ data }: AxiosResponse<Response<Users<User<Id, Id>>>>) => data.data.users))
       .toPromise();
   }
 }

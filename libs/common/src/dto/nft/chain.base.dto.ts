@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainInfoDto, CollectionDto } from '.';
+import { ChainInfoDto } from '.';
 
-export class ChainDto {
+export class ChainBaseDto {
   @ApiProperty({ type: () => ChainInfoDto })
   chain: ChainInfoDto;
 
@@ -11,7 +11,4 @@ export class ChainDto {
 
   @ApiProperty({ type: Number })
   totalChainPriceUsd: number;
-
-  @ApiProperty({ type: () => [CollectionDto] })
-  collections: CollectionDto[];
 }

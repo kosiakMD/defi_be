@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { Address, ChainIdEnum } from '@app/common';
 
-export class NftAssetsQueryDto {
+export class NftCollectionsQueryDto {
   @ApiProperty({
     type: [String],
     example: [

@@ -12,25 +12,35 @@ interface Listing {
   priceInWei: string;
 }
 
-export interface GotchiOwned {
+export interface Id {
   id: string;
-  gotchiId?: string;
-  name?: string;
-  modifiedNumericTraits?: number[];
-  listings?: Listing[];
 }
 
-export interface User {
+export interface GotchiOwned extends Id {
+  gotchiId: string;
+  name: string;
+  modifiedNumericTraits: number[];
+  listings: Listing[];
+}
+
+export interface PortalsOwned extends Id {
+  hauntId: string;
+  openedAt: string;
+  historicalPrices: string[];
+}
+
+export interface User<G extends Id = GotchiOwned, P extends Id = PortalsOwned> {
   id: Address;
-  gotchisOwned: GotchiOwned[];
+  gotchisOwned: G[];
+  portalsOwned: P[];
 }
 
 export interface Aavegotchis {
   aavegotchis: Svg[];
 }
 
-export interface Users {
-  users: User[];
+export interface Users<U extends Id = User> {
+  users: U[];
 }
 
 export interface Response<T = any> {

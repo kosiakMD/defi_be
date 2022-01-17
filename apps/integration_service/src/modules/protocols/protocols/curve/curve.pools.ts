@@ -43,7 +43,7 @@ export class CurvePools {
     const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
       addressesLowerCase,
       [chain.id],
-      cachedPools.items.map((i) => i.address),
+      cachedPools.items.map((i) => i.lpToken.address),
     );
 
     const baseData: BaseDataLp[] = [];

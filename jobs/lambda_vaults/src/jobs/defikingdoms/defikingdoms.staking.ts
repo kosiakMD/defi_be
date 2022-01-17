@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import BigNumber from 'bignumber.js';
-import { plainToClass } from 'class-transformer';
+import { classToPlain, plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -17,7 +17,7 @@ import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -25,11 +25,13 @@ import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toDecimals } from '../../utils/number';
+import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { JobBase } from '../job.base';
 import { JobInterface } from '../job.interface';
 import { calculateAPR } from '../utils/apr';
+import { fillUnderlyingTokens } from '../utils/token';
 import { DefiKingdomsAddresses } from './addresses';
 import { Abis } from './contracts/abis';
 
@@ -194,16 +196,18 @@ export class DefiKingdomsStaking
 
     //reward tokens
 
-    await stakingPosition.rewards.forEach(async (reward) => {
-      const rewardTokenUniqueId = concatStrings(chain, reward.address);
+    await Promise.all(
+      stakingPosition.rewards.map(async (reward) => {
+        const rewardTokenUniqueId = concatStrings(chain, reward.address);
 
-      const rewardTokenItem: TrackedVaultItem = await this.getDbItem(reward, rewardTokenUniqueId);
+        const rewardTokenItem: TrackedVaultItem = await this.getDbItem(reward, rewardTokenUniqueId);
 
-      mappedDto.rewards.push({
-        dbId: rewardTokenItem.id,
-        dtoName: reward.constructor.name,
-      });
-    });
+        mappedDto.rewards.push({
+          dbId: rewardTokenItem.id,
+          dtoName: reward.constructor.name,
+        });
+      }),
+    );
 
     // staking token
     const stakingTokenUniqueId = concatStrings(chain, stakingPosition.stakingToken.address);
@@ -238,6 +242,47 @@ export class DefiKingdomsStaking
     mappedDto.dtoName = stakingPosition.constructor.name;
 
     return mappedDto;
+  }
+
+  async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
+    const temp = TrackedVaultItemsMap.get(uniqueId);
+    return temp ?? (await this.saveItemToDb(item, uniqueId));
+  }
+
+  async saveItemToDb(item, uniqueId: string): Promise<TrackedVaultItem> {
+    let universalDto;
+
+    const newIntegrationJobItem: TrackedVaultItem = plainToClass(TrackedVaultItem, {});
+    const toUniversalDtoName = this.availableDtosForConversion.get(item.constructor.name);
+    newIntegrationJobItem.type = toUniversalDtoName;
+
+    if (toUniversalDtoName === ERC20Token.name) {
+      universalDto = {
+        address: item.address,
+        name: item.name,
+        symbol: item.symbol,
+        decimals: item.decimals,
+      };
+      newIntegrationJobItem.name = universalDto.name;
+      newIntegrationJobItem.idUnique = uniqueId;
+    }
+    if (toUniversalDtoName === IntegrationStakingPositionDto.name) {
+      universalDto = {
+        address: item.address,
+        poolId: item.poolId,
+        poolName: item.poolName,
+      };
+      newIntegrationJobItem.name = universalDto.poolName
+        ? universalDto.poolName
+        : universalDto.poolId;
+      newIntegrationJobItem.idUnique = uniqueId;
+    }
+
+    newIntegrationJobItem.data = classToPlain(universalDto);
+    const savedItem: TrackedVaultItem = await this.storeService.saveItem(newIntegrationJobItem);
+    // it is important to add item to database
+    TrackedVaultItemsMap.add(savedItem);
+    return savedItem;
   }
 
   async fillChainData(): Promise<IntegrationStakingPositionDto[]> {
@@ -319,7 +364,12 @@ export class DefiKingdomsStaking
       const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
         .data;
 
-      stakingPos.stats.tvl = fillUnderlyingTokens(stakingPos.stakingToken.tokens, [_reserve0, _reserve1], prices, poolShare);
+      stakingPos.stats.tvl = fillUnderlyingTokens(
+        stakingPos.stakingToken.tokens,
+        [_reserve0, _reserve1],
+        prices,
+        poolShare,
+      );
     } else {
       stakingPos.stakingToken.price = Number(prices[stakingPos.stakingToken.address]);
       stakingPos.stakingToken.value =

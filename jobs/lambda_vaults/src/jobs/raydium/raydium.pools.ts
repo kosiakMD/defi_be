@@ -74,6 +74,8 @@ export class RaydiumPools implements JobInterface {
   async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
     this.logger.log('building initial mapping', this.placeholder);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const allPools = await Liquidity.getPools(this.web3);
 
     const mainnetPools = allPools.filter((p) =>

@@ -194,10 +194,9 @@
     "@ethersproject/providers": "5.4.5",
     "@indexed-finance/multicall": "^2.0.0",
     "@nestjs-modules/mailer": "^1.6.0",
-    "@nestjs/axios": "^0.0.2",
-    "@nestjs/common": "^8.2.3",
-    "@nestjs/config": "^0.6.3",
-    "@nestjs/core": "^8.2.3",
+    "@nestjs/axios": "0.0.2",
+    "@nestjs/common": "^8.2.5",
+    "@nestjs/core": "^8.2.5",
     "@nestjs/microservices": "^7.6.17",
     "@nestjs/platform-express": "^7.6.18",
     "@nestjs/swagger": "^4.8.2",
@@ -211,9 +210,9 @@
     "agenda": "^4.1.2",
     "apollo-enchanted-cache-inmemory": "^1.2.0",
     "async-retry": "^1.3.1",
-    "axios": "^0.21.2",
+    "axios": "^0.21.4",
     "axios-rate-limit": "^1.3.0",
-    "bignumber.js": "^9.0.1",
+    "bignumber.js": "^9.0.2",
     "bn.js": "^4.12.0",
     "cache-manager": "^3.4.3",
     "cache-manager-redis-store": "^2.0.0",
@@ -225,7 +224,7 @@
     "group-dependencies": "git+https://github.com/defiyield-info/group-dependencies.git#v0.1.0-beta.10",
     "http-proxy-middleware": "^1.1.0",
     "inversify": "^5.0.5",
-    "joi": "^17.4.0",
+    "joi": "^17.5.0",
     "limiter": "^2.1.0",
     "lodash": "^4.17.21",
     "nest-winston": "^1.4.1",
@@ -233,12 +232,13 @@
     "nestjs-config": "^1.4.7",
     "nestjs-pgpromise": "^1.4.3",
     "pg": "^8.5.1",
-    "rxjs": "^7.3.0",
+    "rxjs": "^7.5.2",
     "source-map-support": "^0.5.20",
+    "swagger-ui-express": "^4.3.0",
     "tor-axios": "^1.0.9",
-    "typeorm": "^0.2.37",
+    "typeorm": "^0.2.41",
     "uuid": "^8.3.2",
-    "web3": "^1.6.0",
+    "web3": "^1.6.1",
     "winston": "^3.3.3",
     "winston-aws-cloudwatch": "^3.0.0"
   },
@@ -255,7 +255,8 @@
     "class-transformer",
     "joi",
     "rxjs",
-    "typeorm"
+    "typeorm",
+    "web3"
   ],
   "libsDependencies": [
     "@indexed-finance/multicall",
@@ -290,6 +291,11 @@
     "dotenv",
     "pg"
   ],
+  "jobsExternalPricesDependencies": [
+    "axios",
+    "dotenv",
+    "winston"
+  ],
   "jobsMigrationDependencies": [
     "agenda",
     "cache-manager",
@@ -298,6 +304,13 @@
   "jobsVaultsDependencies": [
     "@raydium-io/raydium-sdk",
     "@solana/web3.js"
+  ],
+  "jobsPricesCleanupDependencies": [
+    "pg"
+  ],
+  "jobsProtocolPricesDependencies": [
+    "nest-winston",
+    "web3-eth-contract"
   ],
   "crawlersDependencies": [
     "inversify",

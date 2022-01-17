@@ -171,7 +171,7 @@ export class DefiKingdomsStaking {
 
     const balance = bankBalanceCall.get(Abis.balanceOf.name).output.data;
 
-    if (!balance) {
+    if (!Number(balance)) {
       return;
     }
 

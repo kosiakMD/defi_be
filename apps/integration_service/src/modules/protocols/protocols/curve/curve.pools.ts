@@ -70,7 +70,7 @@ export class CurvePools {
     cachedPools: LiquidityPoolFeature[],
   ): LiquidityPoolFeature[] {
     const cachedPoolsMap = new Map<string, LiquidityPoolFeature>(
-      cachedPools.map((i) => [i.address, i]),
+      cachedPools.map((i) => [i.lpToken.address, i]),
     );
 
     return lpBalance.tokens.map((tb) => {

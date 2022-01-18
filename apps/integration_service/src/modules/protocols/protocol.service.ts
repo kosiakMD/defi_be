@@ -76,6 +76,7 @@ import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import WePiggyProtocol from './protocols/wepiggyProtocol';
 
 @Injectable()
 export class ProtocolService {
@@ -110,6 +111,7 @@ export class ProtocolService {
     private readonly vvsProtocol: VVSProtocol,
     private readonly curveProtocol: CurveProtocol,
     private readonly mojitoswapProtocol: MojitoswapProtocol,
+    private readonly wePiggyProtocol: WePiggyProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -137,6 +139,7 @@ export class ProtocolService {
       vvsProtocol,
       curveProtocol,
       mojitoswapProtocol,
+      wePiggyProtocol,
     ];
   }
 

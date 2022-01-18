@@ -22,6 +22,7 @@ import {
   VenusProtocolEnum,
   VVSProtocolEnum,
   MojitoswapProtocolEnum,
+  WePiggyProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -52,7 +53,8 @@ export type ProtocolName =
   | DefiKingdomsProtocolEnum
   | VenusProtocolEnum
   | VVSProtocolEnum
-  | MojitoswapProtocolEnum;
+  | MojitoswapProtocolEnum
+  | WePiggyProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

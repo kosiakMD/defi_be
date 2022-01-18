@@ -63,6 +63,7 @@ import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
+import WePiggyProtocol from './protocols/wepiggyProtocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
@@ -82,6 +83,7 @@ const ProtocolList = [
   YearnProtocolV2,
   RaydiumProtocol,
   VenusProtocol,
+  WePiggyProtocol,
 ];
 
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];

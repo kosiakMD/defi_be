@@ -31,12 +31,8 @@ import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
-import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
-import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
-import { PangolinPoolsAvax } from './pangolin/pangolin.pools.avax';
-import { PangolinStakingAvax } from './pangolin/pangolin.staking.avax';
 import { RaydiumPools } from './raydium/raydium.pools';
 import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
@@ -48,6 +44,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
+import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
+import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 
 const Jobs = [
   AutofarmStakingBSC,
@@ -82,8 +80,6 @@ const Jobs = [
   ViperswapStaking,
   VVSStaking,
   VVSPools,
-  PangolinStakingAvax,
-  PangolinPoolsAvax,
   MojitoswapPools,
   MojitoswapStaking,
 ];

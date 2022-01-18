@@ -168,8 +168,6 @@ export class JobsRunner {
     jobPlaceholdersSet.add('16_Mojitoswap_pools');
     jobPlaceholdersSet.add('16_Mojitoswap_staking');
 
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Pangolin_staking`);
-
     return jobPlaceholdersSet;
   }
 }

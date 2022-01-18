@@ -63,12 +63,12 @@ import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
+import { PangolinV2Protocol } from './protocols/pangoline/pangolinV2.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
-import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
@@ -95,7 +95,7 @@ export class ProtocolService {
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pancakeProtocolV2: PancakeProtocol,
-    private readonly pangolinProtocol: PangolinProtocol,
+    private readonly pangolinProtocolV2: PangolinV2Protocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly raydiumProtocol: RaydiumProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
@@ -122,7 +122,7 @@ export class ProtocolService {
       ellipsisProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
-      pangolinProtocol,
+      pangolinProtocolV2,
       quickswapProtocol,
       raydiumProtocol,
       spookySwapProtocol,

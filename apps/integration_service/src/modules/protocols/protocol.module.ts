@@ -43,6 +43,9 @@ import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PancakeService } from './protocols/pancake/pancake.service';
 import { PoolsService } from './protocols/pancake/pools.service';
 import { ScanApi } from './protocols/pancake/scan.api';
+import { PangolinPools } from './protocols/pangoline/pangolin.pools';
+import { PangolinStaking } from './protocols/pangoline/pangolin.staking';
+import { PangolinV2Protocol } from './protocols/pangoline/pangolinV2.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import { RaydiumStaking } from './protocols/raydium/raydium.staking';
@@ -84,6 +87,7 @@ const ProtocolList = [
   VenusProtocol,
 ];
 
+const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const TraderJoe = [
   TraderJoeProtocol,
@@ -141,6 +145,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
     ...Badger,
     ...DefiKingdoms,
     ...VVS,
+    ...Pangolin,
     ...Curve,
     ...Mojitoswap,
     ProtocolService,

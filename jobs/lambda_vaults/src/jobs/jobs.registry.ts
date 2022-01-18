@@ -24,6 +24,8 @@ import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { JobInterface } from './job.interface';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
+import { PangolinPoolsAvax } from './pangolin/pangolin.pools.avax';
+import { PangolinStakingAvax } from './pangolin/pangolin.staking.avax';
 import { RaydiumPools } from './raydium/raydium.pools';
 import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
@@ -74,6 +76,8 @@ export class JobsRegistry {
     vvsPools: VVSPools,
     mojitoswapPools: MojitoswapPools,
     mojitoswapStaking: MojitoswapStaking,
+    pangolinStakingAvax: PangolinStakingAvax,
+    pangolinPoolsAvax: PangolinPoolsAvax,
   ) {
     this.register(autofarmStakingBSC);
     this.register(autofarmStakingPLG);
@@ -108,6 +112,8 @@ export class JobsRegistry {
     this.register(curveGauges);
     this.register(mojitoswapPools);
     this.register(mojitoswapStaking);
+    this.register(pangolinStakingAvax);
+    this.register(pangolinPoolsAvax);
   }
 
   private register(job: JobInterface) {

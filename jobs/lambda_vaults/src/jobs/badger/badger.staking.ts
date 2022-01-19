@@ -40,7 +40,8 @@ export abstract class BadgerStaking {
 
   static cvxStategy = '0xa696a63cc78dffa1a63e9e50587c197387ff6c7e';
   static cvxVault = '0x4b92d19c11435614cd49af1b589001b7c08cd4d5';
-  static bBadgerPool = '0x7e7e112a68d8d2e221e11047a72ffc1065c38e1a';
+  static bDIGGPool = '0x7e7e112a68d8d2e221e11047a72ffc1065c38e1a';
+  static bBadgerPool = '0x19d97d8fa813ee2f51ad4b4e04ea08baf4dffc28';
 
   protected readonly logger: Logger;
   protected readonly multicallService: MulticallAggregator;
@@ -290,7 +291,7 @@ export abstract class BadgerStaking {
           return t;
         });
       }
-    } else if (stakingPos.address === BadgerStaking.bBadgerPool) { // bBadger pool
+    } else if ([BadgerStaking.bDIGGPool, BadgerStaking.bBadgerPool].includes(stakingPos.address)) { // bBadger or bDIGG pool
       const vault = stakingPos.address.toLowerCase();
       const balance = 
         toDecimals(multicallRsp.get(this.getBalanceLabel(vault)).output.data, stakingPos.rewards[0].decimals);

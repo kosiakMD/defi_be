@@ -1,4 +1,5 @@
 enum settStrategies {
+  bBADGER = '0x75b8E21BD623012Efb3b69E1B562465A68944eE6',
   bDIGG = '0x4a8651F2edD68850B944AD93f2c67af817F39F62', 
   bcrvRenBTC = '0x61e16b46F74aEd8f9c2Ec6CB2dCb2258Bdfc7071', 
   bcrvSBTC = '0xCce0D2d1Eb2310F7e67e128bcFE3CE870A3D3a3d', 
@@ -25,6 +26,7 @@ enum settStrategies {
 }
 
 enum settVaults {
+  bBADGER = '0x19D97D8fA813EE2f51aD4B4e04EA08bAf4DFfC28',
   bDIGG = '0x7e7E112A68d8D2E221E11047a72fFC1065c38e1a',
   bcrvRenBTC = '0x6dEf55d2e18486B9dDfaA075bc4e4EE0B28c1545',
   bcrvSBTC = '0xd04c48A53c111300aD41190D63681ed3dAd998eC',
@@ -50,7 +52,7 @@ enum settVaults {
   byvWBTC = '0x4b92d19c11435614CD49Af1b589001b7c08cD4D5',
 }
 
-const stakingKeys = ['bDIGG', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
+const stakingKeys = ['bBADGER', 'bDIGG', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
   'bslpWbtcDigg', 'bslpWbtcEth', 'bcrvHBTC', 'bcrvPBTC', 'bcrvOBTC', 'bcrvBBTC', 'bcrvIbBTC', 
   'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX', 'byvWBTC'
 ];

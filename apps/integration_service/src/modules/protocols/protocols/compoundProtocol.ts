@@ -150,9 +150,13 @@ export class CompoundProtocol extends BasicProtocol {
       });
     });
 
-    await Promise.all(promises);
-
-    return { errors, baseData };
+    try {
+      await Promise.all(promises);
+      return { errors, baseData };
+    } catch (err) {
+      errors.push(err.message);
+      return { errors, baseData };
+    }
   }
 
   /**
@@ -333,10 +337,10 @@ export class CompoundProtocol extends BasicProtocol {
     httpAccount: ICompoundHttpAccount,
   ): BaseDataHealth {
     const items = [];
-    if (Number(httpAccount.health.value)) {
+    if (Number(httpAccount.health?.value)) {
       items.push(
         plainToClass(HealthFactorDto, {
-          healthFactor: Number(httpAccount.health.value),
+          healthFactor: Number(httpAccount.health?.value),
         }),
       );
     }

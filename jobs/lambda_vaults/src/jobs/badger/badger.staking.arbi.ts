@@ -250,5 +250,6 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
 
   protected removeZeroPrices(prices) {
     prices[this.addresses.tokens.ibBTC] = prices[this.addresses.tokens.wBTC];
+    prices[this.addresses.tokens.renBTC] = prices[this.addresses.tokens.wBTC];
   }
 }

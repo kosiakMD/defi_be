@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 import {
   ExceptionFilter,
   Catch,
@@ -49,6 +51,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message: errorMessage,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(request),
+      reqId: request.headers[HEADER_REQUEST_ID].toString(),
       reqId: request.headers.get(HEADER_REQUEST_ID),
     };
 

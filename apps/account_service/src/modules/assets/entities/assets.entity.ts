@@ -45,6 +45,9 @@ export class AssetsEntity {
   @Column({ name: 'extensions', type: 'json' })
   extensions: any;
 
+  @Column({ name: 'created_at', type: 'timestamp' })
+  createdAt: string;
+
   status: AssetState;
 
   positionInPool: number;

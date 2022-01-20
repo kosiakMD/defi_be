@@ -23,12 +23,18 @@ import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
 import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import { CurvePools } from './protocols/curve/curve.pools';
+import CurveProtocol from './protocols/curve/curve.protocol';
+import { CurveStaking } from './protocols/curve/curve.staking';
 import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
+import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
+import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
+import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
@@ -37,14 +43,17 @@ import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PancakeService } from './protocols/pancake/pancake.service';
 import { PoolsService } from './protocols/pancake/pools.service';
 import { ScanApi } from './protocols/pancake/scan.api';
+import { PangolinPools } from './protocols/pangolin/pangolin.pools';
+import { PangolinStaking } from './protocols/pangolin/pangolin.staking';
+import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
-import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
+import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
@@ -57,6 +66,7 @@ import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
 import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
+import WePiggyProtocol from './protocols/wepiggyProtocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
@@ -76,10 +86,18 @@ const ProtocolList = [
   YearnProtocolV2,
   RaydiumProtocol,
   VenusProtocol,
+  WePiggyProtocol,
 ];
 
+const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const TraderJoe = [TraderJoeProtocol, TraderJoePools, TraderJoeStaking, TraderJoeFarm, TraderJoeLending];
+const TraderJoe = [
+  TraderJoeProtocol,
+  TraderJoePools,
+  TraderJoeStaking,
+  TraderJoeFarm,
+  TraderJoeLending,
+];
 const Pancake = [
   PancakeProtocol,
   PancakeV2Staking,
@@ -90,11 +108,13 @@ const Pancake = [
   EtherscanService,
   ScanApi,
 ];
+const Curve = [CurveProtocol, CurvePools, CurveStaking];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
 const Badger = [BadgerProtocol, BadgerStaking];
 const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
+const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 
 @Module({
@@ -127,6 +147,9 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
     ...Badger,
     ...DefiKingdoms,
     ...VVS,
+    ...Pangolin,
+    ...Curve,
+    ...Mojitoswap,
     ProtocolService,
     Mapper,
     AlpacaApiService,

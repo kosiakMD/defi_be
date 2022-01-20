@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
-import { In, Repository } from 'typeorm';
+import { In, Raw, Repository } from 'typeorm';
 import Web3 from 'web3';
 
 import { CACHE_MANAGER, HttpStatus, Inject } from '@nestjs/common';
@@ -294,7 +294,7 @@ export class BalancesService {
     block: BlockTimestamp = null,
   ) {
     const strategies = this.getBalancesStrategiesPerChain(chainId);
-    const assetsToHandle = await this.getAssetsToHandle(chainId, assets);
+    const assetsToHandle = await this.getAssetsToHandle(chainId, assets, block);
     const assetAddresses = assetsToHandle.map(({ address }) => address);
 
     let results = await Promise.all(
@@ -458,17 +458,39 @@ export class BalancesService {
     }
   }
 
-  private async getAssetsToHandle(chain: ChainIdEnum, requested?: Address[]) {
+  private async getAssetsToHandle(
+    chain: ChainIdEnum,
+    requested?: Address[],
+    block?: BlockTimestamp,
+  ) {
+    // If its a historic block, only return results that where inserted at least 24 hours ago
+    // This fixes the issue with checking 24 hours returns and multicall failing when checking
+    // tokens less than 24 hours old.
+    const createdAtQuery = { createdAt: Raw((alias) => `${alias} < NOW() - INTERVAL '24 HOURS'`) };
+
     if (requested?.length) {
-      return this.assetsRepository.find({ where: { chain, address: In(requested) } });
+      return this.assetsRepository.find({
+        where: {
+          chain,
+          address: In(requested),
+          ...(block && createdAtQuery),
+        },
+      });
     }
-    const cacheKey = `TRACKED_ASSETS_${chain}`;
+
+    const cacheKey = `TRACKED_ASSETS_${chain}-${block ? block.block : 'latest'}`;
     let cachedAssets = await this.cache.get<AssetsEntity[]>(cacheKey);
     if (cachedAssets?.length) {
       return cachedAssets;
     }
 
-    cachedAssets = await this.assetsRepository.find({ where: { chain, isTracked: true } });
+    cachedAssets = await this.assetsRepository.find({
+      where: {
+        chain,
+        isTracked: true,
+        ...(block && createdAtQuery),
+      },
+    });
 
     // NOTE: We store data in cache and forget about it
     this.cache.set<AssetsEntity[]>(cacheKey, cachedAssets, {

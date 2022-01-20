@@ -60,7 +60,7 @@ export class Abis {
     type: 'function',
   };
 
-  static readonly minter: AbiItem = {
+  static readonly minter = {
     inputs: [],
     name: 'minter',
     outputs: [{ internalType: 'address', name: '', type: 'address' }],

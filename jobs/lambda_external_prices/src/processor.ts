@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { partition } from 'lodash';
 
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
@@ -7,14 +8,22 @@ import { ChainCoinAddresses, getCoingeckoPlatformId } from '@app/common/utils/ch
 import { toChunkedArray } from '@app/common/utils/transform';
 
 import { priceUpdateLimitInHour, solPublicAssetsApi } from './config';
+import {
+  LIMIT,
+  TOTAL_LIMIT,
+  CHUNK_SIZE,
+  DEFAULT_LIMIT_HOURS,
+  MS_IN_HOUR,
+  DEBANK_CHUNK,
+} from './constants/processor.constant';
+import { CoingeckoRequestContracts, CoingeckoRequestIds } from './interfaces/coingecko.interface';
 import { AssetsApiDto, AssetsService } from './services/assets.service';
-import { CoingeckoRequest, CoingeckoService } from './services/coingecko.service';
+import { CoingeckoService } from './services/coingecko.service';
+import { DebankService } from './services/debank.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
+import { DebankChainsIdEnum } from './utils/debank.chains.id.enum';
+import { duplicateAssetsPricesMap } from './utils/duplicate.assets.prices.map';
 import { logger } from './utils/logger';
-
-const CHUNK_SIZE = 175;
-const DEFAULT_LIMIT_HOURS = 24;
-const MS_IN_HOUR = 1000 * 60 * 60;
 
 export async function process(): Promise<void> {
   try {
@@ -36,41 +45,35 @@ export async function process(): Promise<void> {
     chainAssetsMap.delete(ChainIdEnum.sol.toString());
 
     const requestMap = buildCoingeckoRequestsMap(chainAssetsMap);
+    const requestValuesArray = Array.from(requestMap.values());
 
-    const executedPriceRequests = await Promise.allSettled(
-      [...requestMap.values()].map((chainMap) =>
-        Promise.allSettled(chainMap.map((request) => CoingeckoService.simpleTokenPrice(request))),
+    const executedPriceRequests = await Promise.all(
+      requestValuesArray.map((chainMap) =>
+        Promise.allSettled(
+          chainMap.map((request) =>
+            request.contractAddresses
+              ? CoingeckoService.simpleTokenPrice(request)
+              : CoingeckoService.simplePrice(request),
+          ),
+        ),
       ),
     );
 
-    let chainsPrices: CurrentPriceInterface[] = [];
-    let index = 0;
-    for (const key of requestMap.keys()) {
-      // in this case status will always be fulfilled, check is not required
-      const { value } = executedPriceRequests[index] as PromiseFulfilledResult<any>;
-      value?.forEach((chainResp) => {
-        if (chainResp.status === 'rejected') {
-          logger.warn(
-            `Status of price request is "rejected" for chain ${key}, message: ${chainResp.reason.message}`,
-          );
-          return;
-        }
-        const pricesToPriceService: CurrentPriceInterface[] = Object.keys(chainResp.value).map(
-          (address) => {
-            return {
-              address: address,
-              price: chainResp.value[address].usd,
-              chainId: Number(key),
-              currencyId: CurrencyIdEnum.usd,
-              sourceId: PriceSourcePriority.coingecko,
-            };
-          },
-        );
+    // eslint-disable-next-line prefer-const
+    let [chainsPrices, missedChainPricesMap] = handleCoingeckoResponse(
+      executedPriceRequests,
+      requestMap,
+      requestValuesArray,
+    );
 
-        chainsPrices.push(...pricesToPriceService);
-      });
-      index++;
-    }
+    const debankRequestIdsMap = getDebankRequestsIdsMap(missedChainPricesMap);
+    const debankResponse = await Promise.all(
+      [...debankRequestIdsMap.values()].map((chainMap) =>
+        Promise.allSettled(chainMap.map((request) => DebankService.getTokensPrices(request))),
+      ),
+    );
+
+    chainsPrices.push(...handleDebankResponse(debankResponse));
 
     // TODO: This is temporary solution. This code should not be here
     // Only Solana
@@ -110,28 +113,138 @@ export async function process(): Promise<void> {
   }
 }
 
+function handleCoingeckoResponse(
+  executedPriceRequests: PromiseSettledResult<any>[][],
+  requestMap: Map<string, CoingeckoRequestContracts[] | CoingeckoRequestIds[]>,
+  requestValuesArray: any[][],
+): [CurrentPriceInterface[], Map<string, string[]>] {
+  const chainsPrices = [];
+  let index = 0;
+  const missedChainPricesMap = new Map<string, string[]>();
+  for (const key of requestMap.keys()) {
+    const value = executedPriceRequests[index];
+    value?.forEach((chainResp, i) => {
+      if (chainResp.status === 'rejected') {
+        logger.warn(
+          `Status of price request is "rejected" for chain ${key}, message: ${chainResp.reason.message}`,
+        );
+        return;
+      }
+      if (requestValuesArray[index][i].contractAddresses) {
+        const addresses = requestValuesArray[index][i].contractAddresses.split(',');
+        addresses.forEach((address) => {
+          const price = chainResp.value[address]?.usd;
+          if (price === undefined || price === null) {
+            const chainAssets = missedChainPricesMap.get(key);
+            chainAssets ? chainAssets.push(address) : missedChainPricesMap.set(key, [address]);
+          } else {
+            chainsPrices.push(...handleDuplicatePriceAssets(address, price));
+            chainsPrices.push({
+              address: address,
+              price: price,
+              chainId: Number(key),
+              currencyId: CurrencyIdEnum.usd,
+              sourceId: PriceSourcePriority.coingecko,
+            });
+          }
+        });
+      } else if (requestValuesArray[index][i].extras) {
+        Object.keys(requestValuesArray[index][i].extras).forEach((k) => {
+          const address = requestValuesArray[index][i].extras[k].address;
+          const price = chainResp.value[address]?.usd;
+          if (price === undefined || price === null) {
+            const chainAssets = missedChainPricesMap.get(key);
+            chainAssets ? chainAssets.push(address) : missedChainPricesMap.set(key, [address]);
+          } else {
+            chainsPrices.push(...handleDuplicatePriceAssets(address, price));
+            chainsPrices.push({
+              address: address,
+              price: price,
+              chainId: Number(key),
+              currencyId: CurrencyIdEnum.usd,
+              sourceId: PriceSourcePriority.coingecko,
+            });
+          }
+        });
+      }
+    });
+    index++;
+  }
+  return [chainsPrices, missedChainPricesMap];
+}
+
+function handleDuplicatePriceAssets(address: string, price: number) {
+  const duplicateAssets = duplicateAssetsPricesMap.get(address);
+  if (duplicateAssets) {
+    return duplicateAssets.map((asset) => ({
+      address: asset.address,
+      price: price,
+      chainId: asset.chain,
+      currencyId: CurrencyIdEnum.usd,
+      sourceId: PriceSourcePriority.coingecko,
+    }));
+  }
+  return [];
+}
+
 function buildCoingeckoRequestsMap(
   chainAssetsMap: Map<string, AssetsApiDto[]>,
-): Map<string, CoingeckoRequest[]> {
-  const testMap = new Map<string, CoingeckoRequest[]>();
+): Map<string, CoingeckoRequestContracts[] | CoingeckoRequestIds[]> {
+  const testMap = new Map<string, CoingeckoRequestContracts[] | CoingeckoRequestIds[]>();
   for (const [chain, assets] of chainAssetsMap) {
     const coingeckoPlatform = getCoingeckoPlatformId(Number(chain));
     const chunks = toChunkedArray(
-      assets.map((a) => a.address),
+      assets.map((d) =>
+        d.extensions.coingeckoId
+          ? { address: d.address, coingeckoId: d.extensions.coingeckoId }
+          : d.address,
+      ),
       CHUNK_SIZE,
     );
-    chunks.forEach((c) => {
-      const requestItem = {
-        platformId: coingeckoPlatform,
-        contractAddresses: c.join(','),
-        vsCurrencies: CurrencyEnum.usd,
-      };
 
-      const mapItem = testMap.get(chain);
-      mapItem ? mapItem.push(requestItem) : testMap.set(chain, [requestItem]);
+    const mapItem = chunks.flatMap((c) => {
+      const [ids, contracts] = partition(c, (i) => typeof i !== 'string');
+      const requestItem = [];
+      if (ids.length > 0) {
+        requestItem.push({
+          ids: ids.map((i) => i.coingeckoId).join(','),
+          vsCurrencies: CurrencyEnum.usd,
+          extras: Object.fromEntries(
+            ids.map(({ coingeckoId, address }) => [coingeckoId, { address }]),
+          ),
+        });
+      }
+
+      if (contracts.length > 0) {
+        requestItem.push({
+          platformId: coingeckoPlatform,
+          contractAddresses: contracts.join(','),
+          vsCurrencies: CurrencyEnum.usd,
+        });
+      }
+      return requestItem;
     });
+    testMap.set(chain, mapItem);
   }
   return testMap;
+}
+
+function getDebankRequestsIdsMap(chainAssetsMap: Map<string, string[]>): Map<string, string[]> {
+  const requestMap = new Map<string, string[]>();
+  for (const [chain, assets] of chainAssetsMap) {
+    const chunks = toChunkedArray(assets, DEBANK_CHUNK);
+    chunks.forEach((c) => {
+      const chainAbbr = DebankChainsIdEnum[chain];
+      if (!chainAbbr) {
+        return;
+      }
+      const ids = c.join(',');
+      const requestStr = `chain_id=${chainAbbr}&ids=${ids}`;
+      const mapItem = requestMap.get(chain);
+      mapItem ? mapItem.push(requestStr) : requestMap.set(chain, [requestStr]);
+    });
+  }
+  return requestMap;
 }
 
 function getAssetsPerChainMap(assets: AssetsApiDto[]): Map<string, AssetsApiDto[]> {
@@ -148,12 +261,10 @@ function getAssetsPerChainMap(assets: AssetsApiDto[]): Map<string, AssetsApiDto[
 
 function getSolanaPriceRequests() {
   const requests: string[] = [];
-  const limit = 50;
-  const totalLimit = 600;
   // get first N assets from api
-  for (let i = 0; i < totalLimit; i += limit) {
+  for (let i = 0; i < TOTAL_LIMIT; i += LIMIT) {
     requests.push(
-      `${solPublicAssetsApi}/token/list?sortBy=market_cap&direction=desc&limit=${limit}&offset=${i}`,
+      `${solPublicAssetsApi}/token/list?sortBy=market_cap&direction=desc&limit=${LIMIT}&offset=${i}`,
     );
   }
   return requests;
@@ -178,4 +289,31 @@ function getFilterDbAssets(
     }
   });
   return filteredAssets;
+}
+
+function handleDebankResponse(debankResponse: PromiseSettledResult<any>[][]) {
+  const chainsPrices = [];
+  debankResponse.forEach((value) => {
+    value.forEach((resp) => {
+      if (resp.status === 'rejected') {
+        logger.warn(
+          `Status of price request is "rejected" for debank api, message: ${resp.reason.message}`,
+        );
+        return;
+      }
+      resp.value.forEach((token) => {
+        if (token.price) {
+          chainsPrices.push(...handleDuplicatePriceAssets(token.id, token.price));
+          chainsPrices.push({
+            address: token.id,
+            price: token.price,
+            chainId: Number(DebankChainsIdEnum[token.chain]),
+            currencyId: CurrencyIdEnum.usd,
+            sourceId: PriceSourcePriority.coingecko,
+          });
+        }
+      });
+    });
+  });
+  return chainsPrices;
 }

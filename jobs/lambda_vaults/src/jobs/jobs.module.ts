@@ -22,6 +22,7 @@ import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
 import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
 import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
+import { CurveGauges } from './curve/curve.gauges';
 import { CurvePools } from './curve/curve.pools';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
@@ -30,8 +31,12 @@ import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
+import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
+import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
+import { PangolinPoolsAvax } from './pangolin/pangolin.pools.avax';
+import { PangolinStakingAvax } from './pangolin/pangolin.staking.avax';
 import { RaydiumPools } from './raydium/raydium.pools';
 import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
@@ -60,6 +65,7 @@ const Jobs = [
   BeefyStakingOne,
   BeefyStakingPlg,
   CurvePools,
+  CurveGauges,
   DbMapping,
   DefiKingdomsPools,
   DefiKingdomsStaking,
@@ -76,6 +82,10 @@ const Jobs = [
   ViperswapStaking,
   VVSStaking,
   VVSPools,
+  PangolinStakingAvax,
+  PangolinPoolsAvax,
+  MojitoswapPools,
+  MojitoswapStaking,
 ];
 
 const Helpers = [AutofarmApiService, BeefyApiService];

@@ -27,7 +27,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { APRStats } from '../dto/apr';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { Abis } from './abis';
+import { Abis } from './abis/abis';
 import { AutofarmAddressesBSC as AutofarmAddresses } from './addresses';
 import { AutofarmApiService } from './autofarm.api.service';
 import { AutofarmApiPools } from './autofarm.interfaces';

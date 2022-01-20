@@ -22,6 +22,7 @@ enum settVaults {
 
 enum tokens {
   ibBTC = '0x9ab3fd50fcae73a1aeda959468fd0d662c881b42',
+  renBTC = '0xdbf31df14b66535af65aac99c32e9ea844e14501',
   wBTC = '0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f',
 }
 

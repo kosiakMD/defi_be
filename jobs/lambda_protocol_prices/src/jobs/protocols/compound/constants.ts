@@ -15,6 +15,10 @@ export const tokens = {
   cUSDT: '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
   cWBTC: '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4',
   cZRX: '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407',
+
+  cyUSDC: '0x76eb2fe28b36b3ee97f3adae0c69606eedb2a37c',
+  cyDAI: '0x8e595470ed749b85c6f7669de83eae304c2ec68f',
+  cyUSDT: '0x48759f220ed983db51fa7a8c0d2aab8f3ce4166a',
 };
 
 export const underlying = {

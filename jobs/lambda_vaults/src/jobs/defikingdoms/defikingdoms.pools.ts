@@ -10,7 +10,7 @@ import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -25,6 +25,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { JobInterface } from '../job.interface';
 import { JobPoolsBase } from '../job.pools.base';
+import { fillUnderlyingTokens } from '../utils/token';
 import { DefiKingdomsAddresses } from './addresses';
 import { Abis } from './contracts/abis';
 

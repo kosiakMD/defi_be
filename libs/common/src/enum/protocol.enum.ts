@@ -21,6 +21,8 @@ export enum ProjectEnum {
   defikingdoms = 'defikingdoms',
   venus = 'venus',
   vvs = 'vvs',
+  mojitoswap = 'mojitoswap',
+  wepiggy = 'wepiggy',
 }
 
 export enum YearnProtocolEnum {
@@ -113,6 +115,14 @@ export enum VVSProtocolEnum {
   vvs = 'VVS',
 }
 
+export enum MojitoswapProtocolEnum {
+  mojitoswap = 'Mojitoswap',
+}
+
+export enum WePiggyProtocolEnum {
+  wepiggy = 'WePiggy',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
@@ -135,4 +145,6 @@ export const ProtocolNameEnum = {
   ...DefiKingdomsProtocolEnum,
   ...VenusProtocolEnum,
   ...VVSProtocolEnum,
+  ...MojitoswapProtocolEnum,
+  ...WePiggyProtocolEnum,
 };

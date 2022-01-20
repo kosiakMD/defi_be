@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
-import { ellipsisPoolsMap } from '@app/common/jobs/ellipsis.pools.map';
+import { EllipsisMulticall } from '@app/common/jobs/ellipsis/ellipsis.multicall';
 import {
   CurveIntegrationERC20TokenDto,
   CurveIntegrationStakingPositionDto,
@@ -17,6 +17,7 @@ import {
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
+import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Logger } from '../../logger/logger.service';
@@ -53,6 +54,7 @@ export class EllipsisStaking implements JobInterface {
     private readonly storeService: StoreService,
     private readonly multicallService: MulticallAggregator,
     private readonly priceService: PriceService,
+    private readonly web3ProviderService: Web3ProviderService,
   ) {
     this.availableDtosForConversion = new Map<string, string>([
       [CurveIntegrationStakingPositionDto.name, CurveIntegrationStakingPositionDto.name],
@@ -188,6 +190,7 @@ export class EllipsisStaking implements JobInterface {
     }
 
     jobMapping.mapping = mappings;
+    jobMapping.updatedAt = new Date();
 
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
@@ -198,9 +201,8 @@ export class EllipsisStaking implements JobInterface {
     epsReward: IntegrationClaimableTokenDto,
     busdReward: IntegrationClaimableTokenDto,
   ): CurveIntegrationStakingPositionDto {
-    const espData = ellipsisPoolsMap.get(EllipsisAddresses.eps);
     return plainToClass(CurveIntegrationStakingPositionDto, {
-      address: espData.minter,
+      address: EllipsisAddresses.epsStaker,
       poolId: null,
       poolName: null,
       rewards: [epsReward, busdReward],
@@ -215,9 +217,10 @@ export class EllipsisStaking implements JobInterface {
 
   private async getAllPoolInfo(stakerContract: EllipsisAddresses): Promise<Map<string, any>> {
     const poolsInfoMap = new Map<string, any>();
+    const poolLength = (await this.getChainPoolLength()).toNumber();
 
     const calls = new Map<string, CallData>();
-    for (let i = 0; i < ellipsisPoolsMap.size - 1; i++) {
+    for (let i = 0; i < poolLength; i++) {
       const mappedDTO = plainToClass(IntegrationStakingPositionDto, {});
       mappedDTO.poolId = i;
 
@@ -332,6 +335,25 @@ export class EllipsisStaking implements JobInterface {
     return temp ?? (await this.saveItemToDb(item, uniqueId));
   }
 
+  private async getChainPoolLength(): Promise<BigNumber> {
+    const call = new Map<string, CallData>([
+      [
+        EllipsisStaking.poolLengthLabel(),
+        {
+          address: EllipsisAddresses.staker,
+          abi: Abis.poolLength,
+          input: {
+            data: [],
+          },
+          output: {},
+        },
+      ],
+    ]);
+    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bsc);
+
+    return callRsp.get(EllipsisStaking.poolLengthLabel()).output.data;
+  }
+
   async saveItemToDb(item, uniqueId: string): Promise<TrackedVaultItem> {
     let universalDto;
 
@@ -383,12 +405,18 @@ export class EllipsisStaking implements JobInterface {
 
   async updateWithChainData(): Promise<any[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
+    const ellipsisMulticall = new EllipsisMulticall(
+      this.web3ProviderService.getInstanceByChainId(this.chain),
+    );
+    const poolsMinters = await ellipsisMulticall.getMinters(
+      this.mapping.map((item) => item.stakingToken.address),
+    );
 
     this.mapping.forEach((m) => {
       if (m instanceof CurveIntegrationStakingPositionDto) {
         batchCallsMap = new Map<string, CallData>([
           ...batchCallsMap.entries(),
-          ...EllipsisStaking.getCallsForPool(m).entries(),
+          ...EllipsisStaking.getCallsForPool(m, poolsMinters).entries(),
         ]);
       }
     });
@@ -420,9 +448,9 @@ export class EllipsisStaking implements JobInterface {
           EllipsisStaking.totalSupplyLabel(m.stakingToken.address),
         ).output.data;
         m.stakingToken.totalSupply = toDecimals(totalSupply, m.stakingToken.decimals);
-        if (m.stakingToken.tokens.length) {
+        if (m.stakingToken.tokens?.length) {
           m.stakingToken.tokens.map((t) => {
-            if ((t as UnderlyingStakingLp).tokens) {
+            if (t.tokens?.length) {
               const lpTotalSupply = multicallRsp.get(EllipsisStaking.totalSupplyLabel(t.address))
                 .output.data;
               const lpTotalSupplyDec = toDecimals(lpTotalSupply, t.decimals);
@@ -434,7 +462,7 @@ export class EllipsisStaking implements JobInterface {
               t.reserve = lpTokenReserve;
               t.balance = lpTokenReserveDec;
               let lpValue = 0;
-              (t as UnderlyingStakingLp).tokens.forEach((underlying) => {
+              t.tokens.forEach((underlying) => {
                 const tokenReserve = multicallRsp
                   .get(EllipsisStaking.getBalancesLabel(t.address, underlying.positionInPool))
                   .output.data?.toString();
@@ -447,14 +475,14 @@ export class EllipsisStaking implements JobInterface {
               });
               t.value = lpValue;
             } else {
-              if (!ellipsisPoolsMap.get(m.stakingToken.address).minter) {
+              if (!poolsMinters.get(m.stakingToken.address)) {
                 const reserves = Object.values(
                   multicallRsp.get(EllipsisStaking.getReservesLabel(m.stakingToken.address)).output
                     .data,
                 );
-                (t as IntegrationPoolTokenDto).reserve = Number(reserves[t.positionInPool]);
+                t.reserve = Number(reserves[t.positionInPool]);
               } else {
-                (t as IntegrationPoolTokenDto).reserve = multicallRsp
+                t.reserve = multicallRsp
                   .get(EllipsisStaking.getBalancesLabel(m.stakingToken.address, t.positionInPool))
                   .output.data?.toString();
               }
@@ -500,24 +528,36 @@ export class EllipsisStaking implements JobInterface {
     return token.value;
   }
 
-  private static getCallsForPool(stakingPosition: CurveIntegrationStakingPositionDto) {
+  private static getCallsForPool(
+    stakingPosition: CurveIntegrationStakingPositionDto,
+    poolsMinters: Map<string, string>,
+  ) {
     let calls: Map<string, CallData> = new Map<string, CallData>();
-    if (stakingPosition.stakingToken.tokens.length) {
-      calls = EllipsisStaking.getReservesCallDataMap(stakingPosition.stakingToken.address);
+    if (stakingPosition.stakingToken.tokens?.length) {
+      calls = EllipsisStaking.getReservesCallDataMap(
+        stakingPosition.stakingToken.address,
+        stakingPosition.stakingToken.tokens.length,
+        poolsMinters.get(stakingPosition.stakingToken.address),
+      );
 
       const lpUnderlyingToken = stakingPosition.stakingToken.tokens.find(
-        (token) => (token as UnderlyingStakingLp).tokens,
+        (token) => token.tokens?.length,
       );
 
       if (lpUnderlyingToken) {
         calls = new Map<string, CallData>([
           ...calls.entries(),
-          ...EllipsisStaking.getReservesCallDataMap(lpUnderlyingToken.address).entries(),
+          ...EllipsisStaking.getReservesCallDataMap(
+            lpUnderlyingToken.address,
+            (lpUnderlyingToken as UnderlyingStakingLp).tokens?.length,
+            poolsMinters.get(lpUnderlyingToken.address),
+          ).entries(),
         ]);
         calls.set(
           EllipsisStaking.totalSupplyLabel(lpUnderlyingToken.address),
           EllipsisStaking.getTotalSupplyCallData(lpUnderlyingToken.address),
         );
+
         calls.set(
           EllipsisStaking.balanceOfLabel(lpUnderlyingToken.address),
           EllipsisStaking.getBalanceOfLpCallData(lpUnderlyingToken.address),
@@ -548,9 +588,10 @@ export class EllipsisStaking implements JobInterface {
       address: lpAddress,
       abi: Abis.balanceOf,
       input: {
-        data: ellipsisPoolsMap.get(lpAddress).coins
-          ? [EllipsisAddresses.staker]
-          : [EllipsisAddresses.epsStaker],
+        data:
+          lpAddress !== EllipsisAddresses.eps
+            ? [EllipsisAddresses.staker]
+            : [EllipsisAddresses.epsStaker],
       },
       output: {},
     };
@@ -567,10 +608,13 @@ export class EllipsisStaking implements JobInterface {
     };
   }
 
-  private static getReservesCallDataMap(lpAddress: string): Map<string, CallData> {
-    const lpData = ellipsisPoolsMap.get(lpAddress);
+  private static getReservesCallDataMap(
+    lpAddress: string,
+    coins: number,
+    minter?: string,
+  ): Map<string, CallData> {
     const calls: Map<string, CallData> = new Map<string, CallData>();
-    if (!lpData.minter) {
+    if (!minter) {
       calls.set(EllipsisStaking.getReservesLabel(lpAddress), {
         address: lpAddress,
         abi: Abis.getReserves,
@@ -581,9 +625,10 @@ export class EllipsisStaking implements JobInterface {
       });
       return calls;
     }
-    for (let i = 0; i < lpData.coins; i++) {
+
+    for (let i = 0; i < coins; i++) {
       calls.set(EllipsisStaking.getBalancesLabel(lpAddress, i), {
-        address: lpData.minter,
+        address: minter,
         abi: Abis.balances,
         input: {
           data: [i],
@@ -657,6 +702,10 @@ export class EllipsisStaking implements JobInterface {
 
   private static balanceOfLabel(stakingTokenAddress: string) {
     return concatStrings(Abis.balanceOf.name, EllipsisAddresses.staker, stakingTokenAddress);
+  }
+
+  private static poolLengthLabel() {
+    return concatStrings(Abis.poolLength.name, EllipsisAddresses.staker);
   }
 
   private static poolInfoLabel(poolId: number) {

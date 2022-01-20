@@ -8,12 +8,13 @@ export class Abis {
       {
         internalType: 'address',
         name: '',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly getRewardAddress: AbiItem = {
     inputs: [],
     name: 'reward',
@@ -21,12 +22,13 @@ export class Abis {
       {
         internalType: 'address',
         name: '',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly getBalance: AbiItem = {
     inputs: [],
     name: 'balance',
@@ -34,12 +36,13 @@ export class Abis {
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly totalSupply: AbiItem = {
     inputs: [],
     name: 'totalSupply',
@@ -47,12 +50,13 @@ export class Abis {
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly stratGetBalanceOf: AbiItem = {
     inputs: [],
     name: 'balanceOf',
@@ -60,12 +64,13 @@ export class Abis {
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly getReserves: AbiItem = {
     inputs: [],
     name: 'getReserves',
@@ -73,22 +78,23 @@ export class Abis {
       {
         internalType: 'uint112',
         name: '_reserve0',
-        type: 'uint112'
+        type: 'uint112',
       },
       {
         internalType: 'uint112',
         name: '_reserve1',
-        type: 'uint112'
+        type: 'uint112',
       },
       {
         internalType: 'uint32',
         name: '_blockTimestampLast',
-        type: 'uint32'
-      }
+        type: 'uint32',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   // tokens info
   static readonly getName: AbiItem = {
     constant: true,
@@ -98,13 +104,14 @@ export class Abis {
       {
         internalType: 'string',
         name: '',
-        type: 'string'
-      }
+        type: 'string',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly getDecimals: AbiItem = {
     constant: true,
     inputs: [],
@@ -113,13 +120,14 @@ export class Abis {
       {
         internalType: 'uint8',
         name: '',
-        type: 'uint8'
-      }
+        type: 'uint8',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
+
   static readonly getSymbol: AbiItem = {
     constant: true,
     inputs: [],
@@ -128,11 +136,39 @@ export class Abis {
       {
         internalType: 'string',
         name: '',
-        type: 'string'
-      }
+        type: 'string',
+      },
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
+  };
+
+  static readonly totalAssets: AbiItem = {
+    inputs: [],
+    name: 'totalAssets',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: 'assets',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static readonly strategyTotalAssets: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'totalAssets',
+    inputs: [],
+    outputs: [
+      {
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    gas: 4098,
   };
 }

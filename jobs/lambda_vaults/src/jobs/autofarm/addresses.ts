@@ -45,3 +45,10 @@ export enum AutofarmAddressesPLG {
   sushiSwapFarmContractPLG = '0x0769fd68dfb93167989c6f7254cd0d766fb2841f',
   sushiPLG = '0x0b3f868e0be5597d5db7feb59e1cadbb0fdda50a',
 }
+
+export const curveLpToMinter = new Map([
+  ['0xbece5d20a8a104c54183cc316c8286e3f00ffc71', '0x92577943c7ac4accb35288ab2cc84d75fec330af'],
+  ['0x8096ac61db23291252574d49f036f0f9ed8ab390', '0x751b1e21756bdbc307cbcc5085c042a0e9aaef36'],
+  ['0xe7a24ef0c5e95ffb0f6684b813a78f2a3ad7d171', '0x445fe580ef8d70ff569ab36e80c647af338db351'],
+  ['0xdad97f7713ae9437fa9249920ec8507e5fbb23d3', '0x92215849c439e1f8612b6646060b4e3e5ef822cc'],
+]);

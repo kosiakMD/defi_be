@@ -18,7 +18,7 @@ export function fillUnderlyingTokens(
 
     // if we are not able to get price from price service, we try to calculate it by using the price of the neighbourhood token
     t.price = Number(prices[t.address]) === 0 
-      ? calcTokenPrice(reserves, t.positionInPool, prices[tokens[(i + 1) % 2].address].toString()) 
+      ? calcTokenPrice(reserves, t.positionInPool, prices[tokens[(i + 1) % 2].address]?.toString()) 
       : Number(prices[t.address]);
     t.balance = poolShare ? t.reserve * poolShare : t.reserve;
     t.value = t.balance * t.price;

@@ -1,6 +1,7 @@
 import { AbiItem } from 'web3-utils';
+import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
-export class Abis {
+export class Abis extends MultiCallAbiProxy {
   static readonly userInfo: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -79,5 +80,20 @@ export class Abis {
       },
     ],
     stateMutability: 'view',
+  };
+
+  static readonly getLockPercent: AbiItem = {
+    type: 'function',
+    name: 'PERCENT_LOCK_BONUS_REWARD',
+    inputs: [],
+    outputs: [
+      {
+        name: '',
+        type: 'uint256',
+        internalType: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    constant: true,
   };
 }

@@ -23,7 +23,7 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
     protected readonly configService: ConfigService,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
-    private readonly multicallService: MulticallService,
+    protected readonly multicallService: MulticallService,
     private readonly subgraph: YearnSubgraph,
   ) {
     super();

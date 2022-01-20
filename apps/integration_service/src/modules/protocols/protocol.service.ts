@@ -57,16 +57,18 @@ import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
 import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
+import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
+import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
-import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
@@ -74,6 +76,7 @@ import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import WePiggyProtocol from './protocols/wepiggyProtocol';
 
 @Injectable()
 export class ProtocolService {
@@ -93,7 +96,7 @@ export class ProtocolService {
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pancakeProtocolV2: PancakeProtocol,
-    private readonly pangolinProtocol: PangolinProtocol,
+    private readonly pangolinProtocolV2: PangolinV2Protocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly raydiumProtocol: RaydiumProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
@@ -106,6 +109,9 @@ export class ProtocolService {
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly venusProtocol: VenusProtocol,
     private readonly vvsProtocol: VVSProtocol,
+    private readonly curveProtocol: CurveProtocol,
+    private readonly mojitoswapProtocol: MojitoswapProtocol,
+    private readonly wePiggyProtocol: WePiggyProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -118,7 +124,7 @@ export class ProtocolService {
       ellipsisProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
-      pangolinProtocol,
+      pangolinProtocolV2,
       quickswapProtocol,
       raydiumProtocol,
       spookySwapProtocol,
@@ -131,6 +137,9 @@ export class ProtocolService {
       yearnProtocolV2,
       venusProtocol,
       vvsProtocol,
+      curveProtocol,
+      mojitoswapProtocol,
+      wePiggyProtocol,
     ];
   }
 

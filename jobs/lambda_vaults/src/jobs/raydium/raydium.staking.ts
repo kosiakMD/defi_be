@@ -98,6 +98,8 @@ export class RaydiumStaking implements JobInterface {
     //farms = farms.filter((f) => f.programId === RaydiymFarm.version3.programId);
     farms = farms.map(solanaStringsToKeys);
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const lpPools = await Liquidity.getPools(this.web3);
 
     const stakingFeatures: IntegrationStakingPositionDto[] = [];

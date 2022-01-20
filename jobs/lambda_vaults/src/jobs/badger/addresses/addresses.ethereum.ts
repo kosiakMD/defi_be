@@ -6,6 +6,7 @@ enum rewards {
   MTA = '0xa3bed4e1c75d00fa6f4e5e6922db7261b5e9acd2',
   CRV = '0xD533a949740bb3306d119CC777fa900bA034cd52',
   SUSHI = '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2',
+  yCRW = '0xdf5e0e81dff6faf3a7e52ba697820c5e32d806a8',
 }
 
 const crvPools = {
@@ -31,6 +32,7 @@ const sushiPools = {
 }
 
 const vaultToReward = {
+  bBADGER: rewards.BADGER,
   bDIGG: rewards.DIGG, 
   bcrvRenBTC: rewards.cvxCRV, 
   bcrvSBTC: rewards.cvxCRV, 
@@ -53,9 +55,11 @@ const vaultToReward = {
   bimBTC: rewards.MTA, 
   bFpMbtcHbtc: rewards.MTA, 
   bbveCVX: rewards.CRV, 
+  byvWBTC: rewards.yCRW,
 }
 
 enum settStrategies {
+  bBADGER = '0x75b8E21BD623012Efb3b69E1B562465A68944eE6',
   bDIGG = '0x4a8651F2edD68850B944AD93f2c67af817F39F62', 
   bcrvRenBTC = '0x61e16b46F74aEd8f9c2Ec6CB2dCb2258Bdfc7071', 
   bcrvSBTC = '0xCce0D2d1Eb2310F7e67e128bcFE3CE870A3D3a3d', 
@@ -78,9 +82,11 @@ enum settStrategies {
   bimBTC = '0xd409C506742b7f76f164909025Ab29A47e06d30A', 
   bFpMbtcHbtc = '0x54D06A0E1cE55a7a60Ee175AbCeaC7e363f603f3', 
   bbveCVX = '0x98Ca7AFa876f0e15494E76E92C5b3658cdE1Ffe1', 
+  byvWBTC = '0xA696a63cc78DfFa1a63E9E50587C197387FF6C7E',
 }
 
 enum settVaults {
+  bBADGER = '0x19D97D8fA813EE2f51aD4B4e04EA08bAf4DFfC28',
   bDIGG = '0x7e7E112A68d8D2E221E11047a72fFC1065c38e1a',
   bcrvRenBTC = '0x6dEf55d2e18486B9dDfaA075bc4e4EE0B28c1545',
   bcrvSBTC = '0xd04c48A53c111300aD41190D63681ed3dAd998eC',
@@ -103,6 +109,7 @@ enum settVaults {
   bimBTC = '0x599D92B453C010b1050d31C364f6ee17E819f193',
   bFpMbtcHbtc = '0x26B8efa69603537AC8ab55768b6740b67664D518',
   bbveCVX = '0x937B8E917d0F36eDEBBA8E459C5FB16F3b315551',
+  byvWBTC = '0x4b92d19c11435614CD49Af1b589001b7c08cD4D5',
 }
 
 enum tokens {
@@ -111,9 +118,9 @@ enum tokens {
   wBTC = '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
 }
 
-const stakingKeys = ['bDIGG', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
+const stakingKeys = ['bDIGG', 'bBADGER', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
   'bslpWbtcDigg', 'bslpWbtcEth', 'bcrvHBTC', 'bcrvPBTC', 'bcrvOBTC', 'bcrvBBTC', 'bcrvIbBTC', 
-  'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX'
+  'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX', 'byvWBTC'
 ];
 
 export default { 

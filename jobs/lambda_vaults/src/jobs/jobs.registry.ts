@@ -15,6 +15,7 @@ import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
 import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
 import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
+import { CurveGauges } from './curve/curve.gauges';
 import { CurvePools } from './curve/curve.pools';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
@@ -23,6 +24,8 @@ import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { JobInterface } from './job.interface';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
+import { PangolinPoolsAvax } from './pangolin/pangolin.pools.avax';
+import { PangolinStakingAvax } from './pangolin/pangolin.staking.avax';
 import { RaydiumPools } from './raydium/raydium.pools';
 import { RaydiumStaking } from './raydium/raydium.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
@@ -32,6 +35,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
+import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
+import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 
 @Injectable()
 export class JobsRegistry {
@@ -53,6 +58,7 @@ export class JobsRegistry {
     beefyStakingCro: BeefyStakingCro,
     beefyStakingMoonRiver: BeefyStakingMoonRiver,
     curvePools: CurvePools,
+    curveGauges: CurveGauges,
     defiKingdomsPools: DefiKingdomsPools,
     defiKingdomsStaking: DefiKingdomsStaking,
     ellipsisLp: EllipsisLp,
@@ -68,8 +74,11 @@ export class JobsRegistry {
     viperswapStaking: ViperswapStaking,
     vvsStaking: VVSStaking,
     vvsPools: VVSPools,
+    mojitoswapPools: MojitoswapPools,
+    mojitoswapStaking: MojitoswapStaking,
+    pangolinStakingAvax: PangolinStakingAvax,
+    pangolinPoolsAvax: PangolinPoolsAvax,
   ) {
-    // this.register(curvePools); // TODO: temp disabled
     this.register(autofarmStakingBSC);
     this.register(autofarmStakingPLG);
     this.register(badgerStakingArbi);
@@ -99,6 +108,12 @@ export class JobsRegistry {
     this.register(viperswapStaking);
     this.register(vvsPools);
     this.register(vvsStaking);
+    this.register(curvePools);
+    this.register(curveGauges);
+    this.register(mojitoswapPools);
+    this.register(mojitoswapStaking);
+    this.register(pangolinStakingAvax);
+    this.register(pangolinPoolsAvax);
   }
 
   private register(job: JobInterface) {

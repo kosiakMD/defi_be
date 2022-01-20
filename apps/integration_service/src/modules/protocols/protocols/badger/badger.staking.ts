@@ -86,6 +86,7 @@ export class BadgerStaking {
       multicall,
       pools,
       addressesMap,
+      chain,
     );
 
     addresses.forEach(a => {
@@ -110,10 +111,12 @@ export class BadgerStaking {
     return base;
   }
 
-  private async getDataWithMulticall(addresses: Address[], multicall, pools, addressesMap) {
+  private async getDataWithMulticall(addresses: Address[], multicall, pools, addressesMap, chain: ChainDto) {
     const balances = await this.getBalances(addresses, pools, multicall);
 
-    const rewardBalances: Map<string, ICallData> = await this.getRewards(balances, addressesMap, multicall);
+    const rewardBalances: Map<string, ICallData> = chain.id === ChainIdEnum.arbi 
+      ? new Map<string, ICallData>()
+      : await this.getRewards(balances, addressesMap, multicall);
 
     const claimableRewards: {
       vault: string,

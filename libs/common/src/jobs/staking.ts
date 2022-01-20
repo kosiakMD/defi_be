@@ -17,6 +17,7 @@ export class IntegrationPoolTokenDto extends ERC20Token {
   balance: number = null;
   price: number = null;
   positionInPool: number = null;
+  tokens?: IntegrationPoolTokenDto[] = [];
 }
 
 export class UnderlyingStakingLp extends ERC20Token {
@@ -50,6 +51,7 @@ export class IntegrationClaimableTokenDto extends ERC20Token {
 
 export class Stats {
   tvl: number = null;
+  poolApy: number = null;
 }
 
 export class IntegrationStakingPositionDto {

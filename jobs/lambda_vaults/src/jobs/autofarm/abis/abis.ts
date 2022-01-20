@@ -13,6 +13,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly balanceOf: AbiItem = {
     inputs: [{ internalType: 'address', name: '', type: 'address' }],
     name: 'balanceOf',
@@ -33,6 +34,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly poolInfoV2: AbiItem = {
     inputs: [{ type: 'uint256', name: '', internalType: 'uint256' }],
     name: 'poolInfo',
@@ -43,6 +45,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly totalSupply: AbiItem = {
     inputs: [],
     name: 'totalSupply',
@@ -50,6 +53,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly totalAllocPoint: AbiItem = {
     inputs: [],
     name: 'totalAllocPoint',
@@ -57,6 +61,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly poolLength: AbiItem = {
     inputs: [],
     name: 'poolLength',
@@ -70,6 +75,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly balance: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -83,6 +89,7 @@ export class Abis {
     name: 'balance',
     inputs: [],
   };
+
   static readonly rewardToken: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -96,6 +103,7 @@ export class Abis {
     name: 'rewardToken',
     inputs: [],
   };
+
   static readonly tokenPerSec: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -109,6 +117,7 @@ export class Abis {
     name: 'tokenPerSec',
     inputs: [],
   };
+
   static readonly AUTOPerBlock: AbiItem = {
     inputs: [],
     name: 'AUTOPerBlock',
@@ -122,6 +131,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly wantLockedTotal: AbiItem = {
     inputs: [],
     name: 'wantLockedTotal',
@@ -135,6 +145,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly sharesTotal: AbiItem = {
     inputs: [],
     name: 'sharesTotal',
@@ -148,6 +159,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly alpacaPerBlock: AbiItem = {
     inputs: [],
     name: 'alpacaPerBlock',
@@ -161,6 +173,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly cakePerBlock: AbiItem = {
     inputs: [],
     name: 'cakePerBlock',
@@ -174,6 +187,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly beltPerBlock: AbiItem = {
     inputs: [],
     name: 'BELTPerBlock',
@@ -187,6 +201,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly mdxPerBlock: AbiItem = {
     inputs: [],
     name: 'mdxPerBlock',
@@ -200,6 +215,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly xmsPerBlock: AbiItem = {
     inputs: [],
     name: 'xmsPerBlock',
@@ -213,6 +229,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly pid: AbiItem = {
     inputs: [],
     name: 'pid',
@@ -226,6 +243,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly farmContractAddress: AbiItem = {
     inputs: [],
     name: 'farmContractAddress',
@@ -239,6 +257,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly token0Address: AbiItem = {
     inputs: [],
     name: 'token0Address',
@@ -252,6 +271,7 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly token1Address: AbiItem = {
     inputs: [],
     name: 'token1Address',

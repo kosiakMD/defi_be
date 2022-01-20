@@ -14,13 +14,18 @@ import { Address, ChainAbbrEnum, ChainIdEnum, CurrentPricesPayload, Logger } fro
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
 import {
-  CollectionDto,
   NftAssetDto,
-  ChainDto as NftChainDto,
+  ChainCollectionsDto as NftChainDto,
   ChainsDto as NftChainsDto,
+  CollectionChainsDto,
+  CollectionBaseDto,
+  CollectionDto,
 } from '@app/common/dto/nft';
 import { NftProjectEnum } from '@app/common/enum/nft.enum';
-import { NftAssetsByAccounts } from '@app/common/interfaces/nft.interface';
+import {
+  NftAssetsByAccounts,
+  NftCollectionsByAccounts,
+} from '@app/common/interfaces/nft.interface';
 import { decimalsDivider } from '@app/common/utils/number';
 import { groupBy, mapToObject, objectToMap, sumOfProperties } from '@app/common/utils/object';
 import { getKey } from '@app/common/utils/string';
@@ -29,6 +34,7 @@ import {
   NftAssetDto as OpenSeaNftAssetDto,
   OrderDto,
   CollectionDto as OpenSeaCollectionDto,
+  BaseCollectionDto,
 } from '../../common/dto';
 
 import { NftBasicService } from './nft.basic.service';
@@ -45,6 +51,7 @@ export class OpenSeaService extends NftBasicService {
   protected readonly url: string;
   private readonly API_KEY: string;
   private readonly openSeaApiLimit: number;
+  private readonly openSeaApiCollectionsLimit: number;
 
   private readonly limiter: RateLimiter;
 
@@ -59,6 +66,7 @@ export class OpenSeaService extends NftBasicService {
     this.url = this.configService.get<string>('OPEN_SEA_URL');
     this.API_KEY = this.configService.get<string>('OPEN_SEA_API_KEY');
     this.openSeaApiLimit = 50;
+    this.openSeaApiCollectionsLimit = 300;
 
     this.limiter = new RateLimiter({
       tokensPerInterval: this.configService.get<number>('OPEN_SEA_INTERVAL'),
@@ -74,16 +82,149 @@ export class OpenSeaService extends NftBasicService {
     return `${this.url}/assets`;
   }
 
+  private getCollectionsUrl() {
+    return `${this.url}/collections`;
+  }
+
   private static getAssetKey(...seed: Array<string | number>): string {
     return getKey('asset', ...seed);
+  }
+
+  private static getCollectionKey(...seed: Array<string | number>): string {
+    return getKey('collection', ...seed);
   }
 
   private static getAssetSeed(contract: string, id?: string): string {
     return `${contract}/${id}`;
   }
 
+  private mapCollections(collections: BaseCollectionDto[]): CollectionBaseDto[] {
+    return collections.map(
+      ({
+        bannerImageUrl: bannerImage,
+        slug,
+        name,
+        imageUrl: image,
+        symbol,
+        externalUrl: site,
+        description,
+      }) => ({
+        description,
+        links: {
+          bannerImage,
+          image,
+          site,
+        },
+        name,
+        slug,
+        symbol,
+        chain: ChainIdEnum.eth,
+        project: this.project,
+      }),
+    );
+  }
+
+  private async fetchRawCollections(
+    account: Address,
+    offset: number,
+    limit = this.openSeaApiCollectionsLimit,
+  ): Promise<BaseCollectionDto[]> {
+    try {
+      await this.limiter.removeTokens(1);
+      return await this.httpService
+        .get(this.getCollectionsUrl(), {
+          headers: {
+            'X-API-KEY': this.API_KEY,
+          },
+          params: {
+            // eslint-disable-next-line
+            asset_owner: account,
+            limit,
+            offset,
+          },
+        })
+        .pipe(map((response) => response.data.map(plainToClass.bind(this, BaseCollectionDto))))
+        .toPromise();
+    } catch (error) {
+      this.logger.error(`Nft.fetchRawCollections OpenSea API error: ${error}`);
+      throw error;
+    }
+  }
+
+  private async getRawCollectionsByAccount(
+    account: Address,
+    collectionSlug: string,
+  ): Promise<CollectionBaseDto[]> {
+    const cachedRawCollections = await this.cache.get<CollectionBaseDto[]>(
+      OpenSeaService.getCollectionKey(account),
+    );
+
+    if (cachedRawCollections) {
+      return cachedRawCollections;
+    }
+
+    const rawCollections: CollectionBaseDto[] = [];
+
+    let offset = 0;
+
+    // eslint-disable-next-line
+    while (true) {
+      const fetchedRawCollections = this.mapCollections(
+        await this.fetchRawCollections(account, offset),
+      );
+      rawCollections.push(
+        ...fetchedRawCollections.filter(
+          (collection) => !collectionSlug || collection.slug === collectionSlug,
+        ),
+      );
+      if (fetchedRawCollections.length < this.openSeaApiCollectionsLimit) {
+        break;
+      }
+      offset += this.openSeaApiCollectionsLimit;
+    }
+
+    await this.cache.set(OpenSeaService.getAssetKey(account), rawCollections);
+
+    return rawCollections;
+  }
+
+  public async getCollectionsByAccounts(
+    accounts: Address[],
+    chains: ChainIdEnum[],
+    collection?: string,
+  ): Promise<NftCollectionsByAccounts> {
+    const collectionsByAccounts = new Map<Address, CollectionChainsDto>();
+    const rawCollectionsByAccounts = await Promise.all(
+      accounts.map(async (account) => ({
+        [account]: await this.getRawCollectionsByAccount(account, collection),
+      })),
+    );
+
+    rawCollectionsByAccounts.forEach((rawCollectionsByAccount) =>
+      objectToMap(rawCollectionsByAccount).forEach((collections, account) => {
+        return chains.forEach((chain) =>
+          collectionsByAccounts.set(account, {
+            chains: [
+              {
+                chain: {
+                  id: chain,
+                  abbr: ChainIdToAbbr[chain],
+                  name: ChainIdToName[chain],
+                },
+                collections,
+              },
+            ],
+          }),
+        );
+      }),
+    );
+
+    return mapToObject(collectionsByAccounts);
+  }
+
   private async fetchRawAssets(
     owner: Address,
+    collection: string,
     offset: number,
     limit = this.openSeaApiLimit,
   ): Promise<OpenSeaNftAssetDto[]> {
@@ -98,6 +239,7 @@ export class OpenSeaService extends NftBasicService {
             owner,
             limit,
             offset,
+            collection,
           },
         })
         .pipe(
@@ -114,9 +256,12 @@ export class OpenSeaService extends NftBasicService {
     }
   }
 
-  private async getRawAssetsByAccount(account: Address): Promise<OpenSeaNftAssetDto[]> {
+  private async getRawAssetsByAccount(
+    account: Address,
+    collection: string,
+  ): Promise<OpenSeaNftAssetDto[]> {
     const cachedRawAssets = await this.cache.get<OpenSeaNftAssetDto[]>(
-      OpenSeaService.getAssetKey(account),
+      OpenSeaService.getAssetKey(account, collection),
     );
 
     if (cachedRawAssets) {
@@ -129,7 +274,7 @@ export class OpenSeaService extends NftBasicService {
 
     // eslint-disable-next-line
     while (true) {
-      const fetchedRawAssets = await this.fetchRawAssets(account, offset);
+      const fetchedRawAssets = await this.fetchRawAssets(account, collection, offset);
       rawAssets.push(...fetchedRawAssets);
       if (fetchedRawAssets.length < this.openSeaApiLimit) {
         break;
@@ -137,7 +282,7 @@ export class OpenSeaService extends NftBasicService {
       offset += this.openSeaApiLimit;
     }
 
-    await this.cache.set(OpenSeaService.getAssetKey(account), rawAssets);
+    await this.cache.set(OpenSeaService.getAssetKey(account, collection), rawAssets);
 
     return rawAssets;
   }
@@ -242,6 +387,7 @@ export class OpenSeaService extends NftBasicService {
         externalUrl,
         imageUrl,
         bannerImageUrl,
+        slug,
       }: OpenSeaCollectionDto = value[1][0].collection;
 
       const assets: NftAssetDto[] = value[1].map(({ name, tokenId, traits, imageUrl }) => {
@@ -269,9 +415,11 @@ export class OpenSeaService extends NftBasicService {
         name,
         symbol,
         description,
+        slug,
         totalCollectionPrice: totalCollectionPrice || null,
         totalCollectionPriceUsd: totalCollectionPriceUsd || null,
         balance: assets.length,
+        project: this.project,
         links: {
           site: externalUrl,
           image: imageUrl,
@@ -344,11 +492,12 @@ export class OpenSeaService extends NftBasicService {
 
   private async getAssetsByAccount(
     account: Address,
+    collection: string,
     chainsIds: number[],
   ): Promise<NftAssetsByAccounts> {
     const { prices } = await this.priceService.fetchTokenPrices([ZERO_ADDRESS], ChainIdEnum.eth);
 
-    const rawAssets = await this.getRawAssetsByAccount(account);
+    const rawAssets = await this.getRawAssetsByAccount(account, collection);
 
     const rawExtendedAssets = await Promise.all(
       rawAssets.map(
@@ -375,6 +524,7 @@ export class OpenSeaService extends NftBasicService {
 
   public async getAssetsByAccounts(
     accounts: Address[],
+    collection: string,
     chains: number[],
   ): Promise<NftAssetsByAccounts> {
     const assetsByAccounts = new Map<Address, NftChainsDto>();
@@ -386,7 +536,7 @@ export class OpenSeaService extends NftBasicService {
           totalAccountPrice: null,
           totalAccountPriceUsd: null,
         });
-        return await this.getAssetsByAccount(account, chains);
+        return await this.getAssetsByAccount(account, collection, chains);
       }),
     );
     rawAssetsByAccounts.forEach((assetsByAccount) => {

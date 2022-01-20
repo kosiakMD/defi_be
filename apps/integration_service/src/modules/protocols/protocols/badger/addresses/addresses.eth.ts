@@ -1,4 +1,5 @@
 enum settStrategies {
+  bBADGER = '0x75b8E21BD623012Efb3b69E1B562465A68944eE6',
   bDIGG = '0x4a8651F2edD68850B944AD93f2c67af817F39F62', 
   bcrvRenBTC = '0x61e16b46F74aEd8f9c2Ec6CB2dCb2258Bdfc7071', 
   bcrvSBTC = '0xCce0D2d1Eb2310F7e67e128bcFE3CE870A3D3a3d', 
@@ -15,15 +16,17 @@ enum settStrategies {
   bcrvIbBTC = '0x6D4BA00Fd7BB73b5aa5b3D6180c6f1B0c89f70D1', 
   bcrvTricrypto = '0x05ec4356e1acd89cc2d16adc7415c8c95e736ac1', 
   bcrvTricrypto2 = '0x647eeb5C5ED5A71621183f09F6CE8fa66b96827d', 
-  bcvxCRV = '0x826048381d65a65DAa51342C51d464428d301896', 
+  bcvxCRV = '0x826048381d65a65DAa51342C51d464428d301896',
   bCVX = '0xBCee2c6CfA7A4e29892c3665f464Be5536F16D95', 
   bveCVX = '0x3ff634ce65cDb8CC0D569D6d1697c41aa666cEA9', 
   bimBTC = '0xd409C506742b7f76f164909025Ab29A47e06d30A', 
-  bFpMbtcHbtc = '0x54D06A0E1cE55a7a60Ee175AbCeaC7e363f603f3',
-  bbveCVX = '0x98Ca7AFa876f0e15494E76E92C5b3658cdE1Ffe1',
+  bFpMbtcHbtc = '0x54D06A0E1cE55a7a60Ee175AbCeaC7e363f603f3', 
+  bbveCVX = '0x98Ca7AFa876f0e15494E76E92C5b3658cdE1Ffe1', 
+  byvWBTC = '0xA696a63cc78DfFa1a63E9E50587C197387FF6C7E',
 }
 
 enum settVaults {
+  bBADGER = '0x19D97D8fA813EE2f51aD4B4e04EA08bAf4DFfC28',
   bDIGG = '0x7e7E112A68d8D2E221E11047a72fFC1065c38e1a',
   bcrvRenBTC = '0x6dEf55d2e18486B9dDfaA075bc4e4EE0B28c1545',
   bcrvSBTC = '0xd04c48A53c111300aD41190D63681ed3dAd998eC',
@@ -46,11 +49,12 @@ enum settVaults {
   bimBTC = '0x599D92B453C010b1050d31C364f6ee17E819f193',
   bFpMbtcHbtc = '0x26B8efa69603537AC8ab55768b6740b67664D518',
   bbveCVX = '0x937B8E917d0F36eDEBBA8E459C5FB16F3b315551',
+  byvWBTC = '0x4b92d19c11435614CD49Af1b589001b7c08cD4D5',
 }
 
-const stakingKeys = ['bDIGG', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
+const stakingKeys = ['bBADGER', 'bDIGG', 'bcrvRenBTC', 'bcrvSBTC', 'bcrvTBTC', 'buniWbtcBadger', 'bslpWbtcBadger', 'bslpWbtcibBTC', 
   'bslpWbtcDigg', 'bslpWbtcEth', 'bcrvHBTC', 'bcrvPBTC', 'bcrvOBTC', 'bcrvBBTC', 'bcrvIbBTC', 
-  'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX'
+  'bcrvTricrypto', 'bcrvTricrypto2', 'bcvxCRV', 'bCVX', 'bveCVX', 'bimBTC', 'bFpMbtcHbtc', 'bbveCVX', 'byvWBTC'
 ];
 
 const crvPools = [

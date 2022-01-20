@@ -3,6 +3,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, EllipsisProtocolEnum, FeatureEnum, Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
+import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -12,7 +13,6 @@ import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { EllipsisPools } from './ellipsis.pools';
 import { EllipsisStaking } from './ellipsis.staking';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export default class EllipsisProtocol extends DataProviderProtocol {

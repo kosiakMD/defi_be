@@ -4,6 +4,7 @@ export * from './feature.enum';
 export * from './protocol.enum';
 export * from './nft.enum';
 export * from './env.enum';
+export * from './endpoints.enum';
 
 export enum ResultStatus {
   ok = 'ok',

@@ -102,9 +102,7 @@ export class AssetResponseDto implements IAssetResponseDto {
 
   @ApiProperty({ type: Boolean, example: true })
   @Expose()
-  @Transform(({ value }) => {
-    return !!value;
-  })
+  @Transform(({ value }) => Boolean(value))
   isLp = false;
 
   @ApiProperty({ type: Boolean, example: true })

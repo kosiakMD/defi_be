@@ -20,6 +20,7 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { FeatureEnum } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { CallData } from '@app/common/dto/CallData';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
@@ -31,7 +32,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { Asset, BaseData } from '../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../microservices/account.service';
-import { CompoundSubgraph } from '../../subgraphs/subgraphs/compound.subgraph';
+import { PriceService } from '../../microservices/price.service';
 import BasicProtocol from './basicProtocol';
 import {
   COMPOUND_LENS,
@@ -40,10 +41,9 @@ import {
   REWARD_TOKEN,
 } from './compound/compound.constants';
 import {
-  ICompoundAccount,
-  ICompoundAccountResponse,
   ICompoundHttpAccount,
-  ICompoundToken,
+  ICompoundHttpCToken,
+  ICompoundHttpToken,
 } from './compound/compound.interfaces';
 import { CToken } from './compound/contracts/CToken';
 import { CompoundLens } from './compound/contracts/CompoundLens';
@@ -66,7 +66,7 @@ export class CompoundProtocol extends BasicProtocol {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly accountService: AccountService,
-    private readonly subgraph: CompoundSubgraph,
+    protected readonly priceService: PriceService,
     private readonly http: HttpService,
     private readonly multicall: MulticallAggregator,
   ) {
@@ -86,39 +86,47 @@ export class CompoundProtocol extends BasicProtocol {
     const baseData: BaseData[] = [];
 
     // claimable, lending, borrowing, collateral
+    const { errors: _errors, baseData: userBaseData } = await this.fillBaseData(addresses, chain);
 
-    const { errors: _subgraphErrors, accounts } = await this.getSubgraphData(addresses, chain);
-    const { errors: _errors, baseData: userBaseData } = await this.fillBaseData(accounts, chain);
-
-    errors.push(..._subgraphErrors, ..._errors);
+    errors.push(..._errors);
     baseData.push(...userBaseData);
 
     return [baseData, errors];
   }
 
-  private suppliedLabel(account: ICompoundAccount, token: ICompoundToken): string {
-    return `supplied_${account.id}_${token.market.id}`;
+  private suppliedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
+    return `supplied_${account.address}_${token.address}`;
   }
-  private borrowedLabel(account: ICompoundAccount, token: ICompoundToken): string {
-    return `borrowed_${account.id}_${token.market.id}`;
+  private borrowedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
+    return `borrowed_${account.address}_${token.address}`;
   }
   private claimableLabel(account): string {
     return `claimable_${account.id}`;
   }
 
   async fillBaseData(
-    accounts: ICompoundAccount[],
+    addresses: Address[],
     chain: ChainDto,
   ): Promise<{ errors: string[]; baseData: BaseData[] }> {
     const errors: string[] = [];
     const baseData: BaseData[] = [];
 
-    const promises = accounts.map(async (account) => {
-      if (!account.tokens.length) return;
+    const [accounts, cTokenMap] = await Promise.all([
+      this.getHttpAccountData(addresses),
+      this.getHttpCTokenData(),
+    ]);
 
-      const [multicallDataResult, httpAccountResult, rewareTokenResult] = await Promise.all([
+    const tokenMap = await this.getUnderlyingAssets(
+      // Will use WETH in place of ETH
+      Array.from(cTokenMap.values())
+        .map((c) => c.underlying_address)
+        .concat(ZERO_ADDRESS),
+      chain,
+    );
+
+    const promises = accounts.map(async (account) => {
+      const [multicallDataResult, rewareTokenResult] = await Promise.all([
         this.getMulticallData(account, chain),
-        this.getHttpData(account, chain),
         this.getRewardToken(chain),
       ]);
 
@@ -132,9 +140,12 @@ export class CompoundProtocol extends BasicProtocol {
           account,
           chain,
           multicallDataResult,
-          httpAccountResult,
+          account,
           rewareTokenResult,
+          cTokenMap,
+          tokenMap,
         );
+
         if (positions.items.length) baseData.push(positions);
       });
     });
@@ -152,13 +163,18 @@ export class CompoundProtocol extends BasicProtocol {
     return data[0];
   }
 
-  getMulticallData(account: ICompoundAccount, chain: ChainDto): Promise<Map<string, CallData>> {
+  async getUnderlyingAssets(assets: Address[], chain: ChainDto) {
+    const { data } = await this.accountService.getAssets(assets, [chain.id]);
+    return new Map(data.map((token) => [token.address.toLowerCase(), token]));
+  }
+
+  getMulticallData(account: ICompoundHttpAccount, chain: ChainDto): Promise<Map<string, CallData>> {
     const balanceCalls = new Map(
       account.tokens.flatMap((token) => {
-        const contract = new CToken(token.market.id);
+        const contract = new CToken(token.address);
         return [
-          [this.suppliedLabel(account, token), contract.balanceOf(account.id)],
-          [this.borrowedLabel(account, token), contract.borrowBalanceStored(account.id)],
+          [this.suppliedLabel(account, token), contract.balanceOf(account.address)],
+          [this.borrowedLabel(account, token), contract.borrowBalanceStored(account.address)],
         ];
       }),
     );
@@ -169,78 +185,129 @@ export class CompoundProtocol extends BasicProtocol {
       compoundLens.getCompBalanceMetadataExt(
         REWARD_TOKEN[chain.id],
         COMPTROLLER[chain.id],
-        account.id,
+        account.address,
       ),
     );
     return this.multicall.handleInBatches(balanceCalls, chain.id);
   }
 
-  async getHttpData(account: ICompoundAccount, chain: ChainDto): Promise<ICompoundHttpAccount> {
-    if (chain.id !== ChainIdEnum.eth) return null;
-
-    const data$ = this.http.get(
-      `https://api.compound.finance/api/v2/account?addresses[]=${account.id}&page_size=1`,
+  async getHttpAccountData(addresses: Address[]): Promise<ICompoundHttpAccount[]> {
+    const accountData$ = this.http.get(
+      `https://api.compound.finance/api/v2/account?addresses[]=${addresses.join(
+        '&addresses[]=',
+      )}&page_size=1`,
     );
 
-    const { data } = await firstValueFrom(data$);
+    const {
+      data: { accounts },
+    } = await firstValueFrom(accountData$);
 
-    return data.accounts.find((a) => a.address.toLowerCase() === account.id);
+    return accounts;
   }
 
-  async getSubgraphData(addresses: Address[], chain: ChainDto): Promise<ICompoundAccountResponse> {
-    const { errors, accounts } = await this.subgraph.getUserData(addresses, chain);
+  async getHttpCTokenData(): Promise<Map<Address, ICompoundHttpCToken>> {
+    const tokenData$ = this.http.get(`https://api.compound.finance/api/v2/ctoken`);
 
-    return { errors: errors ?? [], accounts };
+    const [
+      {
+        data: { cToken },
+      },
+      { prices },
+    ] = await Promise.all([
+      firstValueFrom(tokenData$),
+      this.priceService.getTokenPricesFetch([ZERO_ADDRESS], ChainIdEnum.eth), // all tokens are priced in eth
+    ]);
+
+    return new Map(
+      cToken.map((cToken: ICompoundHttpCToken) => {
+        // Update fallback price to be in USD instead of ETH
+        // eslint-disable-next-line camelcase
+        cToken.underlying_price.value = (
+          Number(cToken.underlying_price.value) * prices[ZERO_ADDRESS]
+        ).toString();
+
+        return [cToken.token_address.toLowerCase(), cToken];
+      }),
+    );
   }
 
   getLendingPositions(
-    account: ICompoundAccount,
+    account: ICompoundHttpAccount,
     chain: ChainDto,
     multicallResults: Map<string, CallData>,
+    httpAccount: ICompoundHttpAccount,
+    rewardToken: Asset,
+    cTokens: Map<Address, ICompoundHttpCToken>,
+    underlyingTokens: Map<Address, Asset>,
   ): BaseDataLending {
-    const items = account.tokens.reduce((acc, token) => {
+    const items = account.tokens.reduce((acc, accountToken) => {
+      const cToken = cTokens.get(accountToken.address);
+      const underlying = underlyingTokens.get(cToken.underlying_address ?? ZERO_ADDRESS);
+
       const balance = normalizeDecimals(
-        multicallResults.get(this.suppliedLabel(account, token)).output.data.toString(),
+        multicallResults.get(this.suppliedLabel(account, accountToken)).output.data.toString(),
         CTOKEN_DECIMALS,
       );
 
       if (balance) {
-        acc.push(this.getLendingPositionDto(token, balance * Number(token.market.exchangeRate)));
+        acc.push(
+          this.getLendingPositionDto(
+            cToken,
+            underlying,
+            balance * Number(cToken.exchange_rate.value),
+          ),
+        );
       }
 
       return acc;
     }, []);
 
-    return this.formatBaseData(account.id, chain, FeatureEnum.lending, BaseDataLending, items);
+    return this.formatBaseData(account.address, chain, FeatureEnum.lending, BaseDataLending, items);
   }
 
   getBorrowingPositions(
-    account: ICompoundAccount,
+    account: ICompoundHttpAccount,
     chain: ChainDto,
     multicallResults: Map<string, CallData>,
+    httpAccount: ICompoundHttpAccount,
+    rewardToken: Asset,
+    cTokens: Map<Address, ICompoundHttpCToken>,
+    underlyingTokens: Map<Address, Asset>,
   ): BaseDataLending {
-    const items = account.tokens.reduce((acc, token) => {
+    const items = account.tokens.reduce((acc, accountToken) => {
+      const cToken = cTokens.get(accountToken.address.toLowerCase());
+      const underlying = underlyingTokens.get(
+        // underlying_token is null for native eth
+        cToken.underlying_address?.toLowerCase() ?? ZERO_ADDRESS,
+      );
+
       const balance = normalizeDecimals(
-        multicallResults.get(this.borrowedLabel(account, token)).output.data.toString(),
-        token.market.underlyingDecimals,
+        multicallResults.get(this.borrowedLabel(account, accountToken)).output.data.toString(),
+        underlying.decimals,
       );
 
       if (balance) {
-        acc.push(this.getLendingPositionDto(token, balance));
+        acc.push(this.getBorrowingPositionDto(cToken, underlying, balance));
       }
 
       return acc;
     }, []);
 
-    return this.formatBaseData(account.id, chain, FeatureEnum.borrowing, BaseDataLending, items);
+    return this.formatBaseData(
+      account.address,
+      chain,
+      FeatureEnum.borrowing,
+      BaseDataLending,
+      items,
+    );
   }
 
   getClaimableRewards(
-    account: ICompoundAccount,
+    account: ICompoundHttpAccount,
     chain: ChainDto,
     multicallResults: Map<string, CallData>,
     httpAccount: ICompoundHttpAccount,
-    rewardToken,
+    rewardToken: Asset,
   ): BaseDataClaimable {
     const items = [];
     const raw = multicallResults.get(this.claimableLabel(account)).output.data;
@@ -250,11 +317,17 @@ export class CompoundProtocol extends BasicProtocol {
     if (claimable) {
       items.push(this.getClaimableRewardDto(rewardToken, claimable));
     }
-    return this.formatBaseData(account.id, chain, FeatureEnum.claimable, BaseDataClaimable, items);
+    return this.formatBaseData(
+      account.address,
+      chain,
+      FeatureEnum.claimable,
+      BaseDataClaimable,
+      items,
+    );
   }
 
   getHealthFactor(
-    account: ICompoundAccount,
+    account: ICompoundHttpAccount,
     chain: ChainDto,
     multicallResults: Map<string, CallData>,
     httpAccount: ICompoundHttpAccount,
@@ -268,21 +341,45 @@ export class CompoundProtocol extends BasicProtocol {
       );
     }
 
-    return this.formatBaseData(account.id, chain, FeatureEnum.health, BaseDataHealth, items);
+    return this.formatBaseData(account.address, chain, FeatureEnum.health, BaseDataHealth, items);
   }
 
-  getLendingPositionDto(token: ICompoundToken, balance: number): LendingPositionDto {
+  getLendingPositionDto(
+    ctoken: ICompoundHttpCToken,
+    token: Asset,
+    balance: number,
+  ): LendingPositionDto {
     return plainToClass(LendingPositionDto, {
-      address: token.market.underlyingAddress,
+      address: ctoken.token_address,
       balance,
-      value: null,
-      apy: Number(token.market.supplyRate),
+      value: Number(ctoken.underlying_price.value) * balance,
+      apy: Number(ctoken.supply_rate.value),
       token: plainToClass(LendingErcToken, {
-        address: token.market.underlyingAddress,
-        decimals: token.market.underlyingDecimals,
-        name: token.market.underlyingName,
-        symbol: token.market.underlyingSymbol,
-        price: null,
+        address: token.address,
+        decimals: token.decimals,
+        name: token.name,
+        symbol: token.symbol,
+        price: Number(ctoken.underlying_price.value),
+      }),
+    });
+  }
+
+  getBorrowingPositionDto(
+    ctoken: ICompoundHttpCToken,
+    token: Asset,
+    balance: number,
+  ): LendingPositionDto {
+    return plainToClass(LendingPositionDto, {
+      address: ctoken.token_address,
+      balance,
+      value: Number(ctoken.underlying_price) * balance,
+      apy: Number(ctoken.borrow_rate.value),
+      token: plainToClass(LendingErcToken, {
+        address: token.address,
+        decimals: token.decimals,
+        name: token.name,
+        symbol: token.symbol,
+        price: ctoken.underlying_price,
       }),
     });
   }

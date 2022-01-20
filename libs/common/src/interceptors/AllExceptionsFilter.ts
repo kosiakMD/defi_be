@@ -49,7 +49,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message: errorMessage,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(request),
-      reqId: request.headers[HEADER_REQUEST_ID],
+      reqId: request.headers.get(HEADER_REQUEST_ID),
     };
 
     this.logger.error(

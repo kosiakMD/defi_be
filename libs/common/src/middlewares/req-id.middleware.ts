@@ -16,11 +16,17 @@ export class RequestIdMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    let reqId = req.headers[HEADER_REQUEST_ID];
+    // console.debug('reqId 0', req.header(HEADER_REQUEST_ID));
+    // console.debug('reqId 0-0', req.get(HEADER_REQUEST_ID));
+    let reqId = req.header(HEADER_REQUEST_ID);
+    // console.debug('req.headers', req.headers);
+    // console.debug('reqId 1', reqId);
     if (!reqId) {
       reqId = uuid();
-      req.headers[HEADER_REQUEST_ID] = reqId;
+      req.headers[HEADER_REQUEST_ID] = reqId; // hard override if no method to change/set as it's Request, not Resp
     }
+    // console.debug('reqId 2', reqId);
+    // this.logger.warn(reqId);
 
     // simpler hardcoded variant, left for as example
     this.httpService.axiosRef.defaults.headers.common[HEADER_REQUEST_ID] = reqId as string;

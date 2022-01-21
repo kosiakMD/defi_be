@@ -10,6 +10,7 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  ChainIdEnum,
   ClaimableDto,
   ICallData,
   Logger,
@@ -21,12 +22,11 @@ import {
   ProjectEnum,
   ProtocolTypeEnum,
   DefiKingdomsProtocolEnum,
-  ChainIdEnum,
 } from '@app/common/enum';
-import {
+import { 
+  IntegrationStakingPositionDto, 
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
-  IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { concatStrings } from '@app/common/utils';
@@ -40,14 +40,16 @@ import { Abis } from './contracts/abis';
 
 @Injectable()
 export class DefiKingdomsStaking {
-  private readonly masterGardener = '0xdb30643c71ac9e2122ca0341ed77d09d5f99f924';
-  private readonly xJEWEL = '0xa9ce83507d872c5e1273e745abcfda849daa654f';
-  private readonly JEWEL = '0x72cb10c6bfa5624dd07ef608027e366bd690048f';
+  private readonly contracts = {
+    harmony: {
+      masterGardener: '0xdb30643c71ac9e2122ca0341ed77d09d5f99f924',
+      xJEWEL: '0xa9ce83507d872c5e1273e745abcfda849daa654f',
+      JEWEL: '0x72cb10c6bfa5624dd07ef608027e366bd690048f',
+    },
+  };
 
   static startBlock: number = 19_071_967; // start of the 10th epoch
   static epochDuration: number = 302400;
-
-  private readonly multicallService: MulticallService;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -56,11 +58,10 @@ export class DefiKingdomsStaking {
     private readonly priceService: PriceService,
     private readonly multicallProvider: MulticallProvider,
     private readonly web3Provider: Web3Provider,
-  ) {
-    this.multicallService = multicallProvider.getForChain(ChainAbbrEnum.harm);
-  }
+  ) {}
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseDataStaking[]> {
+    const multicallService: MulticallService = this.multicallProvider.getForChain(chain.abbr);
     const key = `${chain.id}_${DefiKingdomsProtocolEnum.defikingdoms}_${FeatureEnum.staking}`;
     
     const pools: NotifyStaking = await this.cache.get(key);
@@ -69,8 +70,8 @@ export class DefiKingdomsStaking {
       throw new Error(`not found cached data for '${key}'`);
     }
 
-    const multicallData = await this.getDataWithMulticall(addresses, pools);
-    const lockPercent = await this.getLockPercent();
+    const multicallData = await this.getDataWithMulticall(addresses, pools, multicallService, chain);
+    const lockPercent = await this.getLockPercent(multicallService, chain);
 
     const base: BaseDataStaking[] = await Promise.all(addresses.map(async (a) => {
       const baseInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
@@ -89,7 +90,8 @@ export class DefiKingdomsStaking {
         this.getStakingPositionsForAddress(userMulticallData, pools, lockPercent);
 
       baseInfo.items.push(...userStakingPositions);
-      const bankData = await this.getBankData(a);
+
+      const bankData = await this.getBankData(a, multicallService, chain);
       bankData && baseInfo.items.push(bankData);
       return baseInfo;
     }));
@@ -97,9 +99,9 @@ export class DefiKingdomsStaking {
     return base;
   }
 
-  private async getDataWithMulticall(addresses: Address[], pools: NotifyStaking) {
+  private async getDataWithMulticall(addresses: Address[], pools: NotifyStaking, multicallService: MulticallService, chain: ChainDto) {
     const calls = new Map<string, ICallData>();
-    const contract = new Abis(this.masterGardener);
+    const contract = new Abis(this.contracts[chain.name].masterGardener);
 
     addresses.forEach(address => {
       pools.items.forEach(pool => {
@@ -114,7 +116,7 @@ export class DefiKingdomsStaking {
       });
     });
 
-    const userBalances: Map<string, ICallData> = await this.multicallService.handleInBatches(calls);
+    const userBalances: Map<string, ICallData> = await multicallService.handleInBatches(calls);
 
     const balances: {
       id: string;
@@ -146,7 +148,7 @@ export class DefiKingdomsStaking {
       balances.map((b) => [this.contractCallLabel(b.user.address, b.contract, b.poolId), contract.pendingReward(b.poolId, b.user.address)])
     );
 
-    const claimableRewardsRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
+    const claimableRewardsRsp: Map<string, ICallData> = await multicallService.handleInBatches(
       pendingTokensCalls,
     );
 
@@ -160,12 +162,14 @@ export class DefiKingdomsStaking {
     return balances;
   }
 
-  private async getBankData(userAddress: string) {
-    const bankContract = new Abis(this.xJEWEL);
+  private async getBankData(userAddress: string, multicallService: MulticallService, chain: ChainDto): Promise<IntegrationStakingPositionDto> {
+    const xJEWELAddress = this.contracts[chain.name].xJEWEL;
+    const JEWELAddress = this.contracts[chain.name].JEWEL;
+    const bankContract = new Abis(xJEWELAddress);
 
     const call = new Map<string, ICallData>([[Abis.balanceOf.name, bankContract.balanceOf(userAddress)]]);
 
-    const bankBalanceCall: Map<string, ICallData> = await this.multicallService.handleInBatches(
+    const bankBalanceCall: Map<string, ICallData> = await multicallService.handleInBatches(
       call,
     );
 
@@ -175,35 +179,37 @@ export class DefiKingdomsStaking {
       return;
     }
 
+    const [xJEWELSupply, JEWELSupply] = await this.getTotalSupplies(multicallService, chain);
+
     const stakingToken = plainToClass(IntegrationERC20TokenDto, {
-      address: this.xJEWEL,
+      address: xJEWELAddress,
       name: 'xJewel',
       symbol: 'xJEWEL',
       decimals: 18,
-      totalSupply: await this.getTotalSupply(this.xJEWEL),
+      totalSupply: xJEWELSupply,
     });
 
     const token = plainToClass(IntegrationPoolTokenDto, {
-      address: this.JEWEL,
+      address: JEWELAddress,
       name: 'Jewel',
       symbol: 'JEWEL',
       decimals: 18,
-      totalSupply: await this.getTotalSupply(this.JEWEL),
+      totalSupply: JEWELSupply,
       positionInPool: 0,
     });
 
     const { prices } = await this.priceService.getTokenPricesFetch(
-      [this.JEWEL],
+      [JEWELAddress],
       ChainIdEnum.harm,
     );
 
-    const xJEWELPrice = await this.calcXJEWELPrice(Number(prices[this.JEWEL]));
+    const xJEWELPrice = await this.calcXJEWELPrice(Number(prices[JEWELAddress]), multicallService, chain);
 
     stakingToken.tokens.push(token);
-    stakingToken.tokens[0].price = Number(prices[this.JEWEL]);
+    stakingToken.tokens[0].price = Number(prices[JEWELAddress]);
 
     const xJEWEL = plainToClass(IntegrationStakingPositionDto, {
-      address: this.xJEWEL,
+      address: JEWELAddress,
       stakingToken,
     });
 
@@ -227,16 +233,18 @@ export class DefiKingdomsStaking {
     return stakingData;
   }
 
-  private async calcXJEWELPrice(jewelPrice: number) {
-    const jewelContract = new Abis(this.JEWEL);
-    const bankContract = new Abis(this.xJEWEL);
+  private async calcXJEWELPrice(jewelPrice: number, multicallService: MulticallService, chain: ChainDto) {
+    const xJEWELAddress = this.contracts[chain.name].xJEWEL;
+    const JEWELAddress = this.contracts[chain.name].JEWEL;
+    const jewelContract = new Abis(JEWELAddress);
+    const bankContract = new Abis(xJEWELAddress);
 
     const calls = new Map<string, ICallData>([
-      [Abis.balanceOf.name, jewelContract.balanceOf(this.xJEWEL)],
+      [Abis.balanceOf.name, jewelContract.balanceOf(xJEWELAddress)],
       [Abis.totalSupply.name, bankContract.totalSupply()],
     ]);
 
-    const callRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
+    const callRsp: Map<string, ICallData> = await multicallService.handleInBatches(
       calls,
     );
 
@@ -244,6 +252,27 @@ export class DefiKingdomsStaking {
     const JEWELQuantity = toDecimals(callRsp.get(Abis.balanceOf.name).output.data, 18);
 
     return (JEWELQuantity / xJEWELQuantity) * jewelPrice;
+  }
+
+  private async getTotalSupplies(multicallService: MulticallService, chain: ChainDto) {
+    const xJEWELAddress = this.contracts[chain.name].xJEWEL;
+    const JEWELAddress = this.contracts[chain.name].JEWEL;
+    const xJEWELContract = new Abis(xJEWELAddress);
+    const JEWELContract = new Abis(JEWELAddress);
+
+    const totalSupplyCall = new Map<string, ICallData>([
+      [xJEWELAddress, xJEWELContract.totalSupply()],
+      [JEWELAddress, JEWELContract.totalSupply()],
+    ]);
+
+    const totalSupplyRsp: Map<string, ICallData> = await multicallService.handleInBatches(
+      totalSupplyCall,
+    );
+
+    return [
+      toDecimals(totalSupplyRsp.get(xJEWELAddress).output.data, 18),
+      toDecimals(totalSupplyRsp.get(JEWELAddress).output.data, 18),
+    ];
   }
 
   private getMulticallDataForAddress(multicallData, userAddress: string) {
@@ -289,25 +318,14 @@ export class DefiKingdomsStaking {
     return stakingPositions;
   }
 
-  private async getTotalSupply(address: string) {
-    const contract = new Abis(address);
-    const totalSupplyCall = new Map<string, ICallData>();
-    totalSupplyCall.set(address, contract.totalSupply());
-
-    const totalSupplyRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
-      totalSupplyCall,
-    );
-    return toDecimals(totalSupplyRsp.get(address).output.data, 18);
-  }
-
-  private async getLockPercent() {
-    const masterGardener = new Abis(this.masterGardener);
+  private async getLockPercent(multicallService: MulticallService, chain: ChainDto) {
+    const masterGardener = new Abis(this.contracts[chain.name].masterGardener);
     const currentEpoch = await this.getCurrentEpoch();
 
     const call = new Map<string, ICallData>();
     call.set(Abis.getLockPercent.name, masterGardener.getLockPercent(currentEpoch - 1));
 
-    const lockPercentCall: Map<string, ICallData> = await this.multicallService.handleInBatches(
+    const lockPercentCall: Map<string, ICallData> = await multicallService.handleInBatches(
       call,
     );
     return lockPercentCall.get(Abis.getLockPercent.name).output.data / 100;

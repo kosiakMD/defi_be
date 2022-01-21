@@ -31,6 +31,7 @@ import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
+import { BaseDataLocked } from '@app/common/dto/base.data.locked.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
@@ -724,6 +725,10 @@ export class ProtocolService {
             }
             setChainAsset(leverageFarming.borrowToken);
           });
+        } else if (baseData instanceof BaseDataLocked) {
+          baseData.items.forEach((token) => {
+            setChainAsset(token);
+          });
         }
       } catch (e) {
         this.logger.error(e);
@@ -856,6 +861,15 @@ export class ProtocolService {
             leverageFarming.earned = leverageTotal - leverageFarming.borrowToken.value;
             baseData.total += leverageFarming.earned;
             leverageFarming.debtRatio = (leverageFarming.borrowToken.value / leverageTotal) * 100;
+          });
+        } else if (baseData instanceof BaseDataLocked) {
+          baseData.total = 0;
+          baseData.items.forEach((token) => {
+            token.price = chainAssetPrices.get(baseData.chain.id).get(token.address) ?? token.price;
+            token.locked.value = token.price * Number(token.locked.balance);
+            token.unlocked.value = token.price * Number(token.unlocked.balance);
+            token.totalValue = token.locked.value + token.unlocked.value;
+            baseData.total += token.totalValue;
           });
         }
       } catch (e) {

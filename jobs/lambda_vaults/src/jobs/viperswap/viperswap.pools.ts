@@ -86,6 +86,12 @@ export class ViperswapPools implements JobInterface {
       dbPoolLenthSetting = await this.settingsService.create(dbPoolLenthSetting);
     }
 
+    // set the pool length in the setting service to zero if the db was set to null
+    if (!jobMapping.mapping) {
+      dbPoolLenthSetting.value = 0;
+      await this.settingsService.update(dbPoolLenthSetting);
+    }
+
     const poolIdTo = (await this.getChainPoolLength()).toNumber() - 1;
 
     const poolIdFrom = Number(dbPoolLenthSetting.value);

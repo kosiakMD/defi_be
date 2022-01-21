@@ -29,6 +29,7 @@ import { CurveStaking } from './protocols/curve/curve.staking';
 import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
+import { DefiKingdomsLocked } from './protocols/defikingdoms/defikingdoms.locked';
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
@@ -63,6 +64,7 @@ import VenusProtocol from './protocols/venusProtocol';
 import { ViperswapPools } from './protocols/viperswap/viperswap.pools';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { ViperswapStaking } from './protocols/viperswap/viperswap.staking';
+import { ViperswapLocked } from './protocols/viperswap/viperswap.locked';
 import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
@@ -111,9 +113,19 @@ const Pancake = [
 const Curve = [CurveProtocol, CurvePools, CurveStaking];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
-const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools];
+const Viperswap = [
+  ViperswapProtocol, 
+  ViperswapStaking, 
+  ViperswapPools,
+  ViperswapLocked,
+];
 const Badger = [BadgerProtocol, BadgerStaking];
-const DefiKingdoms = [DefiKingdomsProtocol, DefiKingdomsPools, DefiKingdomsStaking];
+const DefiKingdoms = [
+  DefiKingdomsProtocol, 
+  DefiKingdomsPools, 
+  DefiKingdomsStaking,
+  DefiKingdomsLocked,
+];
 const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 

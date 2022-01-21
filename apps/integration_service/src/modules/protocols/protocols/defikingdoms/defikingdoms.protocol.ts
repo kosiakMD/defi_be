@@ -9,6 +9,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 import BasicProtocol from '../basicProtocol';
 import { DefiKingdomsStaking } from './defikingdoms.staking';
 import { DefiKingdomsPools } from './defikingdoms.pools';
+import { DefiKingdomsLocked } from './defikingdoms.locked';
 
 @Injectable()
 export default class DefiKingdomsProtocol extends BasicProtocol {
@@ -17,7 +18,11 @@ export default class DefiKingdomsProtocol extends BasicProtocol {
   readonly name = DefiKingdomsProtocolEnum.defikingdoms;
   readonly displayName = 'DefiKingdoms';
   readonly features = {
-    [ChainAbbrEnum.harm]: [FeatureEnum.staking, FeatureEnum.pools],
+    [ChainAbbrEnum.harm]: [
+      FeatureEnum.staking, 
+      FeatureEnum.pools, 
+      FeatureEnum.lockedBalances,
+    ],
   };
   
   protected readonly dataProvider;
@@ -26,6 +31,7 @@ export default class DefiKingdomsProtocol extends BasicProtocol {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly staking: DefiKingdomsStaking,
     private readonly pools: DefiKingdomsPools,
+    private readonly locked: DefiKingdomsLocked,
   ) {
     super();
   }
@@ -55,6 +61,8 @@ export default class DefiKingdomsProtocol extends BasicProtocol {
         return this.staking.getData(addresses, chain);
       case FeatureEnum.pools:
         return this.pools.getData(addresses, chain);
+      case FeatureEnum.lockedBalances:
+        return this.locked.getData(addresses, chain);
       default:
         return [];
     }

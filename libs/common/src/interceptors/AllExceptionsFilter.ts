@@ -28,6 +28,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // constructor method, thus we should resolve it here.
     const { httpAdapter } = this.httpAdapterHost;
 
+    // if host.getType() == http
     const ctx = host.switchToHttp();
 
     const httpStatus =
@@ -51,8 +52,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message: errorMessage,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(request),
+      // doesn't work but should
+      // reqId: request.header(HEADER_REQUEST_ID),
+      // reqId: request.get(HEADER_REQUEST_ID),
       reqId: request.headers[HEADER_REQUEST_ID].toString(),
-      reqId: request.headers.get(HEADER_REQUEST_ID),
     };
 
     this.logger.error(

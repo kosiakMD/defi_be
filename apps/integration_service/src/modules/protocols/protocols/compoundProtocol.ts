@@ -1,4 +1,4 @@
-import { ClassConstructor, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -407,7 +407,7 @@ export class CompoundProtocol extends BasicProtocol {
     address: Address,
     chain: ChainDto,
     feature: FeatureEnum,
-    type: ClassConstructor<T>,
+    type: any,
     items: K[],
   ): T {
     return plainToClass(type, {

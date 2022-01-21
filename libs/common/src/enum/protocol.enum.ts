@@ -23,6 +23,7 @@ export enum ProjectEnum {
   vvs = 'vvs',
   mojitoswap = 'mojitoswap',
   wepiggy = 'wepiggy',
+  saber = 'saber',
 }
 
 export enum YearnProtocolEnum {
@@ -123,6 +124,10 @@ export enum WePiggyProtocolEnum {
   wepiggy = 'WePiggy',
 }
 
+export enum SaberProtocolEnum {
+  saber = 'Saber',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
@@ -147,4 +152,5 @@ export const ProtocolNameEnum = {
   ...VVSProtocolEnum,
   ...MojitoswapProtocolEnum,
   ...WePiggyProtocolEnum,
+  ...SaberProtocolEnum,
 };

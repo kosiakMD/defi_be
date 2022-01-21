@@ -1411,6 +1411,14 @@
   dependencies:
     "@octokit/openapi-types" "^11.2.0"
 
+"@project-serum/borsh@^0.2.3":
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/@project-serum/borsh/-/borsh-0.2.3.tgz#1d705c5887484cb6a127dd5feff58e90cbfcb558"
+  integrity sha512-lH9zEYADZE3cxrgiFym8+jbUE3NM/LH+WOKYcUjs65CT10Q64Hv45bcAAa/phwYk4Tpz0uQ1x+ergFaAoGt67Q==
+  dependencies:
+    bn.js "^5.1.2"
+    buffer-layout "^1.2.0"
+
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/@protobufjs/aspromise/-/aspromise-1.1.2.tgz#9b8b0cc663d669a7d8f6f5d0893a14d348f30fbf"
@@ -1464,10 +1472,10 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@raydium-io/raydium-sdk@^1.0.1-beta.7":
-  version "1.0.1-beta.10"
-  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk/-/raydium-sdk-1.0.1-beta.10.tgz#ae2dc7769d08252d8a3cb7bd4f97747f6ac03f5d"
-  integrity sha512-2Xtw6ZkzYOYan9Ifqm3cBDnTzkEX4+eCgAct+rAB6iWIPg8Vl5/hldTtIqEVoQbMbGnH8M4w4U0YEuxX0IKXfA==
+"@raydium-io/raydium-sdk@1.0.1-beta.7":
+  version "1.0.1-beta.7"
+  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk/-/raydium-sdk-1.0.1-beta.7.tgz#af3c68b91b8a36796bddb185b6a8b57c878957f3"
+  integrity sha512-PvSuoeHE0BNVwUNy4vQx+G2+xEQ8b1MSk4sJMS7HFQcYSVvElfNNST3QdcCzVrkuTuMBi046pzS/w7+RhXKwLA==
   dependencies:
     "@solana/buffer-layout" "^3.0.0"
     "@solana/spl-token" "^0.1.8"

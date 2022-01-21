@@ -71,6 +71,8 @@ import { VVSStaking } from './protocols/vvs/vvs.staking';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import SaberProtocol from './protocols/saber/saber.protocol'
+import { SaberStaking } from './protocols/saber/saber.staking'
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -89,6 +91,7 @@ const ProtocolList = [
   RaydiumProtocol,
   VenusProtocol,
   WePiggyProtocol,
+  SaberProtocol,
 ];
 
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
@@ -113,6 +116,7 @@ const Pancake = [
 const Curve = [CurveProtocol, CurvePools, CurveStaking];
 const Autofarm = [AutofarmProtocol, AutofarmStaking];
 const Raydium = [RaydiumStaking];
+const Saber = [SaberProtocol, SaberStaking];
 const Viperswap = [
   ViperswapProtocol, 
   ViperswapStaking, 
@@ -162,6 +166,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
     ...Pangolin,
     ...Curve,
     ...Mojitoswap,
+    ...Saber,
     ProtocolService,
     Mapper,
     AlpacaApiService,

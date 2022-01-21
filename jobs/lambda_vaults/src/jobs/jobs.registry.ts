@@ -37,6 +37,8 @@ import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
+import { SaberPools } from './saber/saber.pools';
+import { SaberStaking } from './saber/saber.staking';
 
 @Injectable()
 export class JobsRegistry {
@@ -78,6 +80,8 @@ export class JobsRegistry {
     mojitoswapStaking: MojitoswapStaking,
     pangolinStakingAvax: PangolinStakingAvax,
     pangolinPoolsAvax: PangolinPoolsAvax,
+    saberPools: SaberPools,
+    saberStaking: SaberStaking,
   ) {
     this.register(autofarmStakingBSC);
     this.register(autofarmStakingPLG);
@@ -112,6 +116,8 @@ export class JobsRegistry {
     this.register(curveGauges);
     this.register(mojitoswapPools);
     this.register(mojitoswapStaking);
+    this.register(saberPools);
+    this.register(saberStaking);
     this.register(pangolinStakingAvax);
     this.register(pangolinPoolsAvax);
   }

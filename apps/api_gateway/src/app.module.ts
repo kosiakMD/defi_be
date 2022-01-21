@@ -11,7 +11,7 @@ import { Logger } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
-import { RequestIdMiddleware } from '@app/common/middlewares/req-id.middleware';
+import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -137,7 +137,7 @@ import { VaultsModule } from './vaults/vaults.module';
 })
 export class AppModule implements OnModuleInit, NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(RequestIdMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
 
   onModuleInit(): void {

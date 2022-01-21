@@ -22,34 +22,27 @@ export interface ICompoundHttpAccount {
   total_collateral_value_in_eth: ICompoundHttpValue; // eslint-disable-line camelcase
 }
 
-export interface ICompoundMarket {
-  id: Address;
-  borrowRate: string;
-  supplyRate: string;
-  reserves: string;
-  exchangeRate: string;
+export interface ICompoundHttpCToken {
+  borrow_cap: ICompoundHttpValue; // eslint-disable-line camelcase
+  borrow_rate: ICompoundHttpValue; // eslint-disable-line camelcase
+  cash: ICompoundHttpValue; // eslint-disable-line camelcase
+  collateral_factor: ICompoundHttpValue; // eslint-disable-line camelcase
+  comp_borrow_apy: ICompoundHttpValue; // eslint-disable-line camelcase
+  comp_supply_apy: ICompoundHttpValue; // eslint-disable-line camelcase
+  exchange_rate: ICompoundHttpValue; // eslint-disable-line camelcase
+  interest_rate_model_address: Address; // eslint-disable-line camelcase
+  name: string;
+  number_of_borrowers: number; // eslint-disable-line camelcase
+  number_of_suppliers: number; // eslint-disable-line camelcase
+  reserve_factor: ICompoundHttpValue; // eslint-disable-line camelcase
+  reserves: ICompoundHttpValue; // eslint-disable-line camelcase
+  supply_rate: ICompoundHttpValue; // eslint-disable-line camelcase
   symbol: string;
-  totalSupply: string;
-  underlyingName: string;
-  underlyingPrice: string;
-  underlyingSymbol: string;
-  underlyingAddress: Address;
-  underlyingDecimals: number;
-}
-export interface ICompoundToken {
-  id: string; // concatonation of ctoken-userAddress
-  symbol: string;
-  cTokenBalance: string; // TODO: Multicall!
-  market: ICompoundMarket;
-}
-
-export interface ICompoundAccount {
-  id: Address;
-  health: string; // TODO: should be multicall not subgraph
-  tokens: ICompoundToken[];
-}
-
-export interface ICompoundAccountResponse {
-  errors?: string[];
-  accounts: ICompoundAccount[];
+  token_address: string; // eslint-disable-line camelcase
+  total_borrows: ICompoundHttpValue; // eslint-disable-line camelcase
+  total_supply: ICompoundHttpValue; // eslint-disable-line camelcase
+  underlying_address: Address; // eslint-disable-line camelcase
+  underlying_name: string; // eslint-disable-line camelcase
+  underlying_price: ICompoundHttpValue; // eslint-disable-line camelcase
+  underlying_symbol: string; // eslint-disable-line camelcase
 }

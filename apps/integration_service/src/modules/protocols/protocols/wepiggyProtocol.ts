@@ -585,7 +585,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
       chain.id,
     );
 
-    return batchCall.get(this.wpcAccruedLabel(userAddress)).output.data;
+    return batchCall.get(this.wpcAccruedLabel(userAddress)).output.data.multipliedBy(1000);;
   }
 
   async callsForPToken(pTokens: string[], address: string, chain: ChainDto): Promise<Map<string, CallData>> {

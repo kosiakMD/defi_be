@@ -8,6 +8,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 import BasicProtocol from '../basicProtocol';
 import { ViperswapStaking } from './viperswap.staking';
 import { ViperswapPools } from './viperswap.pools';
+import { ViperswapLocked } from './viperswap.locked';
 
 @Injectable()
 export default class ViperswapProtocol extends BasicProtocol {
@@ -16,7 +17,7 @@ export default class ViperswapProtocol extends BasicProtocol {
   readonly name = ViperswapProtocolEnum.viperswap;
   readonly displayName = 'Viperswap';
   readonly features = {
-    [ChainAbbrEnum.harm]: [FeatureEnum.staking, FeatureEnum.pools],
+    [ChainAbbrEnum.harm]: [FeatureEnum.staking, FeatureEnum.pools, FeatureEnum.lockedBalances],
   };
   
   protected readonly dataProvider;
@@ -25,6 +26,7 @@ export default class ViperswapProtocol extends BasicProtocol {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly staking: ViperswapStaking,
     private readonly pools: ViperswapPools,
+    private readonly locked: ViperswapLocked,
   ) {
     super();
   }
@@ -54,6 +56,8 @@ export default class ViperswapProtocol extends BasicProtocol {
         return this.staking.getData(addresses, chain);
       case FeatureEnum.pools:
         return this.pools.getData(addresses, chain);
+      case FeatureEnum.lockedBalances:
+        return this.locked.getData(addresses, chain);
       default:
         return [];
     }

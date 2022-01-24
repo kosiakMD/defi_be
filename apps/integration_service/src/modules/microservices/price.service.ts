@@ -9,7 +9,6 @@ import { ChainIdEnum } from '@app/common/enum';
 
 import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto/price.response.dto';
 
-
 @Injectable()
 export class PriceService {
   private readonly getPricesUrl: string;

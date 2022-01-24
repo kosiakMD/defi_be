@@ -28,10 +28,10 @@ import {
 } from '@app/common';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { BaseDataLocked } from '@app/common/dto/base.data.locked.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
-import { BaseDataLocked } from '@app/common/dto/base.data.locked.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
@@ -58,6 +58,7 @@ import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
 import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
+import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
@@ -67,6 +68,7 @@ import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
+import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
@@ -75,10 +77,9 @@ import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
+import WePiggyProtocol from './protocols/wepiggyProtocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import WePiggyProtocol from './protocols/wepiggyProtocol';
-import SaberProtocol from './protocols/saber/saber.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -94,6 +95,7 @@ export class ProtocolService {
     private readonly badgerProtocol: BadgerProtocol,
     private readonly beefyProtocol: BeefyProtocol,
     private readonly compoundProtocol: CompoundProtocol,
+    private readonly convexProtocol: ConvexProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
@@ -123,6 +125,7 @@ export class ProtocolService {
       badgerProtocol,
       beefyProtocol,
       compoundProtocol,
+      convexProtocol,
       defiKingdomsProtocol,
       ellipsisProtocol,
       pancakeProtocolV1,
@@ -738,7 +741,6 @@ export class ProtocolService {
         errors.push(`Failed collecting assets for chain ${baseData?.chain?.id}`);
       }
     });
-
     const chainAssetPrices = new Map<number, Map<string, number>>();
     try {
       const promises = [];
@@ -812,7 +814,12 @@ export class ProtocolService {
                   );
                 } else {
                   this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
-                  baseData.total += poolToken.value;
+                  if (Number.isNaN(poolToken.value)) {
+                    this.logger.warn(
+                      `Failed to get price for token ${poolToken.address} - ${baseData.chain.id}`,
+                    );
+                  }
+                  baseData.total += poolToken.value || 0;
                 }
               });
             } else {

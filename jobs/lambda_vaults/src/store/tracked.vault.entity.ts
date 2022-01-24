@@ -2,13 +2,15 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 import { ChainIdEnum } from '@app/common';
 
+import { PoolsFeatureMapping, StakingFeatureMapping } from '../jobs/dto/mappings';
+
 @Entity({ name: 'tracked_vault' })
 export class TrackedVault {
   @PrimaryColumn({ name: 'id' })
   id: number;
 
   @Column({ name: 'mapping', type: 'json' })
-  mapping: any;
+  mapping: StakingFeatureMapping[] | PoolsFeatureMapping[];
 
   @Column({ name: 'feature' })
   feature: string;

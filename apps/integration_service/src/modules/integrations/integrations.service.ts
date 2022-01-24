@@ -207,6 +207,8 @@ export class IntegrationsService {
       }),
     );
 
+    const walletMap = new Map(response.data.wallets.map((w) => [w.address, w]));
+
     chainsToProceed.forEach((chain, index) => {
       if (allData[index].status === 'fulfilled') {
         const [data, errors] = allData[index]['value'];
@@ -214,8 +216,8 @@ export class IntegrationsService {
           response.errors = [...response.errors, errors.flat()];
         }
 
-        data.forEach((bd) => {
-          const walletData = response.data.wallets.find((w) => w.address === bd.userAddress);
+        data.forEach((baseData) => {
+          const walletData = walletMap.get(baseData.userAddress);
 
           let existedChainData = walletData.chains.find((c) => c.chain.id === chain);
 
@@ -226,23 +228,32 @@ export class IntegrationsService {
             chainData.chain = chainDto;
             chainData.features = protocolToProceed.getInfo().features[chainDto.abbr];
             existedChainData = chainData;
+
             walletData.chains.push(existedChainData);
           }
 
-          if (bd.total) {
-            if (FeatureEnum.borrowing === bd.feature) {
-              existedChainData.total -= bd.total;
-              response.data.total -= bd.total;
+          if (baseData.total) {
+            if (FeatureEnum.borrowing === baseData.feature) {
+              existedChainData.total -= baseData.total;
+              response.data.total -= baseData.total;
             } else {
-              existedChainData.total += bd.total;
-              response.data.total += bd.total;
+              existedChainData.total += baseData.total;
+              response.data.total += baseData.total;
             }
           }
+          if (Number.isNaN(baseData.total)) {
+            this.logger.warn(
+              `Failed to calculate integration - Total Value is NaN - (${protocolName}) - ${existedChainData.chain.abbr}`,
+            );
+          }
 
-          existedChainData[bd.feature] = { totalValue: bd.total, items: bd.items };
+          existedChainData[baseData.feature] = {
+            totalValue: baseData.total,
+            items: baseData.items,
+          };
 
-          if (bd.locked) {
-            existedChainData[bd.feature].lockedValue = bd.locked;
+          if (baseData.locked) {
+            existedChainData[baseData.feature].lockedValue = baseData.locked;
           }
         });
       }

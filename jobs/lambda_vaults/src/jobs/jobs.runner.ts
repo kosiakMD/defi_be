@@ -140,9 +140,9 @@ export class JobsRunner {
     jobPlaceholdersSet.add('5_BadgerDAO_staking');
     jobPlaceholdersSet.add('1_BadgerDAO_staking');
 
-    // This has to be hardcoded for convex until Curve is supported on the front end
-    // TODO: remove after Curve integration is complete
     jobPlaceholdersSet.add('1_Curve_pools');
+    jobPlaceholdersSet.add('1_Convex_staking');
+
     jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
 
@@ -154,16 +154,6 @@ export class JobsRunner {
 
     jobPlaceholdersSet.add('10_Viperswap_staking');
     jobPlaceholdersSet.add('10_Viperswap_pools');
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.arbi}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.bsc}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.celo}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.cro}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Beefy_staking`);
 
     jobPlaceholdersSet.add('14_VVS_pools');
     jobPlaceholdersSet.add('14_VVS_staking');

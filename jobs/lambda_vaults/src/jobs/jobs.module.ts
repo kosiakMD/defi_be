@@ -1,3 +1,5 @@
+import { ClassConstructor } from 'class-transformer';
+
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 
@@ -22,6 +24,7 @@ import { BeefyStakingFtm } from './beefy/beefy.staking.ftm';
 import { BeefyStakingMoonRiver } from './beefy/beefy.staking.mriver';
 import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
+import { ConvexStaking } from './convex/convex.staking';
 import { CurveGauges } from './curve/curve.gauges';
 import { CurvePools } from './curve/curve.pools';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
@@ -29,6 +32,7 @@ import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
+import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
@@ -39,6 +43,8 @@ import { PangolinPoolsAvax } from './pangolin/pangolin.pools.avax';
 import { PangolinStakingAvax } from './pangolin/pangolin.staking.avax';
 import { RaydiumPools } from './raydium/raydium.pools';
 import { RaydiumStaking } from './raydium/raydium.staking';
+import { SaberPools } from './saber/saber.pools';
+import { SaberStaking } from './saber/saber.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
@@ -48,10 +54,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
-import { SaberPools } from './saber/saber.pools';
-import { SaberStaking } from './saber/saber.staking';
 
-const Jobs = [
+export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   AutofarmStakingBSC,
   AutofarmStakingPLG,
   BadgerStakingArbi,
@@ -66,33 +70,33 @@ const Jobs = [
   BeefyStakingMoonRiver,
   BeefyStakingOne,
   BeefyStakingPlg,
-  CurvePools,
+  ConvexStaking,
   CurveGauges,
-  DbMapping,
+  CurvePools,
   DefiKingdomsPools,
   DefiKingdomsStaking,
   EllipsisLp,
   EllipsisStaking,
+  MojitoswapPools,
+  MojitoswapStaking,
   PancakePoolsV2,
   PancakeStaking,
+  PangolinPoolsAvax,
+  PangolinStakingAvax,
   RaydiumPools,
   RaydiumStaking,
+  SaberPools,
+  SaberStaking,
   SpookyswapPools,
   TraderJoeStaking,
   TraderjoePools,
+  VVSPools,
+  VVSStaking,
   ViperswapPools,
   ViperswapStaking,
-  VVSStaking,
-  VVSPools,
-  PangolinStakingAvax,
-  PangolinPoolsAvax,
-  MojitoswapPools,
-  MojitoswapStaking,
-  SaberPools,
-  SaberStaking,
 ];
 
-const Helpers = [AutofarmApiService, BeefyApiService];
+const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];
 
 @Module({
   imports: [
@@ -109,10 +113,9 @@ const Helpers = [AutofarmApiService, BeefyApiService];
     IntegrationDataConverter,
     MulticallAggregator,
     Web3ProviderService,
-    TraderJoeSubgraph,
     Web3SolanaProviderService,
     ...Helpers,
-    ...Jobs,
+    ...ActiveJobs,
   ],
   exports: [JobsRunner, IntegrationDataConverter],
 })

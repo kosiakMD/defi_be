@@ -6,6 +6,7 @@ import {
   BeefyProtocolEnum,
   CompoundProtocolEnum,
   CurveProtocolEnum,
+  ConvexProtocolEnum,
   EllipsisProtocolEnum,
   PancakeProtocolEnum,
   PangolinProtocolEnum,
@@ -39,6 +40,7 @@ export type ProtocolName =
   | BeefyProtocolEnum
   | CompoundProtocolEnum
   | CurveProtocolEnum
+  | ConvexProtocolEnum
   | EllipsisProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum

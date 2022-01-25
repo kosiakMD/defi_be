@@ -1,3 +1,5 @@
+import { IYearnVaults } from 'jobs/lambda_protocol_prices/src/thegraph/yearn/interfaces';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -12,6 +14,7 @@ import { YearnSubgraph } from '../../../thegraph/yearn/subgraph';
 import { IProtocolPriceUpdate } from '../../interfaces/protocol.price.update';
 import { ProtocolBase } from '../protocol.base';
 import { ShareTokenAbi } from './abis/ShareTokenAbi';
+import { ADDITIONAL_VAULTS } from './constants';
 
 @Injectable()
 export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate {
@@ -35,7 +38,12 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
     try {
       this.logger.time(timeKey);
 
-      const { vaults } = await this.subgraph.getVaults();
+      const [{ vaults: subgraphVaults }, onChainVaults] = await Promise.all([
+        this.subgraph.getVaults(),
+        this.getAdditionalVaults(),
+      ]);
+
+      const vaults = subgraphVaults.concat(onChainVaults);
 
       const shareTokens = Array.from(new Set(vaults.map((vault) => vault.shareToken.id)));
 
@@ -74,6 +82,39 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
       this.logger.error(e);
       return [];
     }
+  }
+
+  async getAdditionalVaults(): Promise<IYearnVaults[]> {
+    const calls = new Map();
+    ADDITIONAL_VAULTS[this.chain]?.forEach((vaultAddress) => {
+      const contract = new ShareTokenAbi(vaultAddress);
+      calls.set(`${vaultAddress}-token`, contract.token());
+      calls.set(`${vaultAddress}-decimals`, contract.decimals());
+    });
+    const vaultResults = await this.multicallService.handleInBatches(calls);
+    const underlyingAddresses = ADDITIONAL_VAULTS[this.chain]?.map((vaultAddress) => {
+      return vaultResults.get(`${vaultAddress}-token`).output.data.toString().toLowerCase();
+    });
+    const underlying = await this.fetchAssets(Array.from(new Set(underlyingAddresses)));
+    const underlyingMap = new Map(underlying.map((a) => [a.address, a]));
+
+    return ADDITIONAL_VAULTS[this.chain]?.map((vaultAddress) => {
+      const tokenAddress = vaultResults
+        .get(`${vaultAddress}-token`)
+        .output.data.toString()
+        .toLowerCase();
+
+      return {
+        shareToken: {
+          id: vaultAddress.toLowerCase(),
+          decimals: Number(vaultResults.get(`${vaultAddress}-decimals`).output.data.toString()),
+        },
+        token: {
+          id: tokenAddress,
+          decimals: underlyingMap.get(tokenAddress).decimals,
+        },
+      };
+    });
   }
 
   async getVaultsPricePerShare(vaults: Address[]): Promise<Map<Address, string>> {

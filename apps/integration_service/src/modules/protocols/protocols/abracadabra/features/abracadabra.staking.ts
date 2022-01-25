@@ -17,6 +17,7 @@ import {
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
+import { normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -42,7 +43,7 @@ export class AbracadabraStaking implements IFeature {
     const balances = await this.accountService.getBalancesPost(
       addresses.concat(sSpellAddress),
       [chain.id],
-      [sSpellAddress, spellAddress],
+      [sSpellAddress, spellAddress], // don't need spell balance, just getting token details
     );
 
     const sSpellTotalSupply = await this.getSSpellTotalSupply(sSpellAddress, chain);
@@ -50,12 +51,15 @@ export class AbracadabraStaking implements IFeature {
     return addresses.map((address) => {
       const items = [];
 
+      // User Balance
       const balance = balances[address].tokens.find((t) => t.token.address === sSpellAddress);
+
+      // Spell Token Details
       const stakedBalance = balances[sSpellAddress].tokens.find(
         (t) => t.token.address === spellAddress,
       );
 
-      if (balance.decimalsAmount) {
+      if (balance?.decimalsAmount) {
         const ratio = stakedBalance.decimalsAmount / sSpellTotalSupply;
         const sSpellPrice = stakedBalance.tokenPriceUSD * ratio;
         const spellBalance = balance.decimalsAmount * ratio;
@@ -108,6 +112,6 @@ export class AbracadabraStaking implements IFeature {
       new Map([['totalSupply', new ERC20(sSpell).totalSupply()]]),
       chain.id,
     );
-    return Number(results.get('totalSupply').output.data.toString());
+    return normalizeDecimals(results.get('totalSupply').output.data.toString(), 18);
   }
 }

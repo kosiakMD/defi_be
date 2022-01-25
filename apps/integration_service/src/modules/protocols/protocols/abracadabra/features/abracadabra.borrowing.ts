@@ -57,6 +57,7 @@ export class AbracadabraBorrowing implements IFeature {
 
     cauldrons.forEach((cauldron) => {
       const collateralAmount = userData.get(`${cauldron.address}-collateral`);
+
       if (!collateralAmount) return; // if there is no collateral, there will be no borrowAmount, or health
       collateralItems.push(
         plainToClass(LendingPositionDto, {
@@ -135,6 +136,7 @@ export class AbracadabraBorrowing implements IFeature {
     const multicallCauldronDetails = await this.getMulticallCauldronDetails(cauldrons, chain);
 
     const assets = await this.getAllCauldronAssets(cauldrons, multicallCauldronDetails, chain);
+
     const { prices } = await this.priceService.getTokenPricesFetch(
       Array.from(assets.keys()),
       chain.id,

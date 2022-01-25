@@ -13,6 +13,7 @@ export enum ProjectEnum {
   ellipsis = 'ellipsis',
   islandswap = 'islandswap',
   mojitoswap = 'mojitoswap',
+  olympus = 'olympus',
   pancake = 'pancake',
   pangolin = 'pangolin',
   quickswap = 'quickswap',
@@ -148,6 +149,10 @@ export enum IslandswapProtocolEnum {
   islandswap = 'Islandswap',
 }
 
+export enum OlympusProtocolEnum {
+  olympus = 'Olympus',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -162,6 +167,7 @@ export const ProtocolNameEnum = {
   ...EllipsisProtocolEnum,
   ...IslandswapProtocolEnum,
   ...MojitoswapProtocolEnum,
+  ...OlympusProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,

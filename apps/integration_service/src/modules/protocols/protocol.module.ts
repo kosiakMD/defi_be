@@ -47,6 +47,8 @@ import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
+import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
+import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
@@ -99,6 +101,7 @@ const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
 const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
+const Olympus = [OlympusProtocol, OlympusStaking];
 const TraderJoe = [
   TraderJoeProtocol,
   TraderJoePools,
@@ -159,6 +162,7 @@ const ProtocolList = [
   ...Ellipsis,
   ...Islandswap,
   ...Mojitoswap,
+  ...Olympus,
   ...Pancake,
   ...Pangolin,
   ...Raydium,

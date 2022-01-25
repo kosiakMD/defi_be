@@ -4,30 +4,31 @@ import {
   AbracadabraProtocolEnum,
   AlpacaProtocolEnum,
   AutofarmProtocolEnum,
+  BadgerProtocolEnum,
   BeefyProtocolEnum,
   CompoundProtocolEnum,
-  CurveProtocolEnum,
   ConvexProtocolEnum,
+  CurveProtocolEnum,
+  DefiKingdomsProtocolEnum,
   EllipsisProtocolEnum,
   IslandswapProtocolEnum,
+  MojitoswapProtocolEnum,
+  OlympusProtocolEnum,
   PancakeProtocolEnum,
   PangolinProtocolEnum,
   QuickswapProtocolEnum,
   RaydiumProtocolEnum,
+  SaberProtocolEnum,
   SpookySwapProtocolEnum,
   SushiSwapProtocolEnum,
   TraderjoeProtocolEnum,
   UniswapProtocolEnum,
-  ViperswapProtocolEnum,
-  YearnProtocolEnum,
-  BadgerProtocolEnum,
-  DefiKingdomsProtocolEnum,
-  VenusProtocolEnum,
   VVSProtocolEnum,
-  MojitoswapProtocolEnum,
+  VenusProtocolEnum,
+  ViperswapProtocolEnum,
   WePiggyProtocolEnum,
   WonderlandProtocolEnum,
-  SaberProtocolEnum,
+  YearnProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -41,30 +42,31 @@ export type ProtocolName =
   | AbracadabraProtocolEnum
   | AlpacaProtocolEnum
   | AutofarmProtocolEnum
+  | BadgerProtocolEnum
   | BeefyProtocolEnum
   | CompoundProtocolEnum
-  | CurveProtocolEnum
   | ConvexProtocolEnum
+  | CurveProtocolEnum
+  | DefiKingdomsProtocolEnum
   | EllipsisProtocolEnum
   | IslandswapProtocolEnum
+  | MojitoswapProtocolEnum
+  | OlympusProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
   | QuickswapProtocolEnum
   | RaydiumProtocolEnum
+  | SaberProtocolEnum
   | SpookySwapProtocolEnum
   | SushiSwapProtocolEnum
   | TraderjoeProtocolEnum
   | UniswapProtocolEnum
-  | ViperswapProtocolEnum
-  | YearnProtocolEnum
-  | BadgerProtocolEnum
-  | DefiKingdomsProtocolEnum
-  | VenusProtocolEnum
   | VVSProtocolEnum
-  | MojitoswapProtocolEnum
+  | VenusProtocolEnum
+  | ViperswapProtocolEnum
   | WePiggyProtocolEnum
   | WonderlandProtocolEnum
-  | SaberProtocolEnum;
+  | YearnProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

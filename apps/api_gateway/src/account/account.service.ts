@@ -1,3 +1,5 @@
+import axios from 'axios';
+import { RequestErrorHandler } from 'jobs/lambda_vaults/src/utils/decorators/error.decorator';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
@@ -13,6 +15,7 @@ import { NftAssetsByAccounts, NftServiceInfo } from '@app/common/interfaces/nft.
 
 import { ProfitAndLossResponseDTO } from '../analytic/dto';
 import { AssetResponseDto, AssetsDto } from '../assets/assets.dto';
+import { SearchParams, SearchResultsAssetEntry } from '../search/search.interface';
 import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
@@ -34,6 +37,7 @@ export class AccountService {
   private readonly nftAssetsUrl: string;
   private readonly nftCollectionsUrl: string;
   private readonly nftProjectsUrl: string;
+  private readonly searchUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -75,6 +79,9 @@ export class AccountService {
 
     const nftAssetsPath = this.configService.get<string>('NFT_ASSETS');
     this.nftAssetsUrl = `${url}/${nftAssetsPath}`;
+
+    const searchUrl = this.configService.get<string>('ACCOUNT_SEARCH_URL');
+    this.searchUrl = `${url}/${searchUrl}`;
 
     const nftCollectionsPath = this.configService.get<string>('NFT_COLLECTIONS');
     this.nftCollectionsUrl = `${url}/${nftCollectionsPath}`;
@@ -341,5 +348,14 @@ export class AccountService {
       e.response && this.logger.error(e.response.data);
       throw e;
     }
+  }
+
+  @RequestErrorHandler()
+  async searchAssets(params: SearchParams): Promise<SearchResultsAssetEntry[]> {
+    const searchUrl = this.searchUrl;
+    this.logger.time(searchUrl);
+    const { data } = await axios.get(searchUrl, { params });
+    this.logger.timeEnd(searchUrl);
+    return data;
   }
 }

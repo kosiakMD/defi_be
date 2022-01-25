@@ -40,3 +40,12 @@ export interface AssetsForLambdaResponse {
   chainId: number;
   pairs?: Pair[];
 }
+
+export interface AssetsForSearchResponse {
+  id: number;
+  address: string;
+  name?: string;
+  symbol?: string;
+  chainId: number;
+  icon?: string;
+}

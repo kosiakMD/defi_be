@@ -1,4 +1,4 @@
-import { getConnection, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,23 +16,11 @@ export class StoreService {
   ) {}
 
   async saveItem(item: TrackedVaultItem): Promise<TrackedVaultItem> {
-    // todo: temporary solution
-    const connection = await getConnection();
-    if (!connection.isConnected) {
-      await connection.connect();
-    }
-
     const itemWithId: TrackedVaultItem = await this.trackedVaultItemRepository.save(item);
     return await this.trackedVaultItemRepository.findOne(itemWithId.id);
   }
 
   async updateMapping(trackedVault: TrackedVault): Promise<TrackedVault> {
-    // todo: temporary solution
-    const connection = await getConnection();
-    if (!connection.isConnected) {
-      await connection.connect();
-    }
-
     trackedVault.updatedAt = new Date();
 
     await this.trackedVaultRepository.update(trackedVault.id, trackedVault);

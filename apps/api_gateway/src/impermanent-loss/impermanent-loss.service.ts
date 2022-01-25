@@ -10,7 +10,6 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import { ImpermanentLossResponseDto } from './dto/impermanentLoss.dto';
 import { ImpermanentLossDto } from './dto/impermanentLoss.dto';
 
-
 @Injectable()
 export class ImpermanentLossService {
   private readonly calcUrl: string;

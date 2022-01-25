@@ -1,4 +1,4 @@
-import { Controller, Get, NotAcceptableException, Param, Query } from '@nestjs/common';
+import { CacheInterceptor, Controller, Get, NotAcceptableException, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ChainsParam } from '@app/common/decorators';
@@ -8,6 +8,10 @@ import { ChainIdEnum, ProtocolNameEnum } from '@app/common/enum';
 import { IntegrationsResponseDto } from '../modules/integrations/dto/integrations.dto';
 import { IntegrationsService } from '../modules/integrations/integrations.service';
 import { ProtocolParams } from '../modules/integrations/interfaces/integrations.interface';
+import { IntegrationSearchParams } from '../common/interfaces/search.interfaces';
+import { SearchParams, SearchResultsBaseEntry } from 'apps/api_gateway/src/search/search.interface';
+import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
+import { SearchEntries } from '../common/enum/search.enum';
 
 @ApiTags('Protocols')
 @Controller('v1/protocols')
@@ -67,5 +71,34 @@ export class IntegrationsController {
     }
 
     return this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses);
+  }
+
+  @UseInterceptors(CacheInterceptor)
+  @Get('/search/:searchEntry')
+  @ApiParam({
+    name: 'searchEntry',
+    enum: SearchEntries,
+    example: SearchEntries.VAULTS,
+  })
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'address to search assets by address',
+    example: "0xcd2e72aebe2a203b84f46deec948e6465db51c75",
+    required: false,
+  })
+  @ApiQuery({
+    name: 'text',
+    type: String,
+    description: 'text to search assets by name or symbol',
+    example: "CRO",
+    required: false,
+  })
+  @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })
+  async search(
+    @Param() params: IntegrationSearchParams,
+    @Query() query: SearchParams,
+  ): Promise<SearchResultsBaseEntry[]> {
+    return this.integrationsService.search(params, query);
   }
 }

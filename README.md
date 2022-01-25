@@ -45,11 +45,16 @@ example: `luck-skywalker/bugfix/destroy-Death-star`
 
 ## Install
 
+### Node & npm
+
+- Node v14.18.1
+- npm 6.14.15
+
 ### Install dependencies
 
 To run install of all services write
 
-`npm run install_all`
+`npm install`
 
 If prepare faze (should see message `husky - Git hooks installed`) wasn't done [do postinstall](#postinstall)
 
@@ -99,6 +104,11 @@ We use TypeORM migrations in order to generate or create migrations by hand. If 
 - Create a new entity or modify existing one. Be aware that entity should always have '.entity.ts' file format;
 - Create a build for your particular service or entire project;
 - `npm run migration:generate -- -n yourMigrationName` for generating new migration;
+
+OR
+
+- `npm run migration:create -- -n yourMigrationName` for creating a new empty migration;
+
 - `npm run migration` - run migrations against your database;
 - `npm run migration:revert` - revert your last migration;
 
@@ -121,6 +131,15 @@ Run test `npm run test`
 Run Linter checking `npm run lint`
 
 ## Development
+
+### Start project
+
+We use different npm scripts to start the project locally. It's usually the same for all services: 
+- `npm run ${serviceName}:${mode}` { serviceName: integration-start | lambda_vault-start, mode: dev | debug }
+
+Examples:
+- `npm run integration-start:dev`
+- `npm run lambda_vault-start:debug`
 
 ### Coding conventions
 

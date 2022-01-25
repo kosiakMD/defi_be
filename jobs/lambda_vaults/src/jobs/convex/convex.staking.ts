@@ -1,0 +1,816 @@
+import { ClassConstructor, plainToClass } from 'class-transformer';
+
+import { Inject } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { Address, ChainIdEnum, FeatureEnum, Logger, ProtocolNameEnum } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
+import {
+  CONVEX_BOOSTER,
+  CRVCVX_REWARD_POOL_ADDRESS,
+  CRV_ADDRESS,
+  CRYPTO_SWAP_REGISTRY,
+  CURVE_REGISTRY,
+  CVX_ADDRESS,
+  CVX_CRV_ADDRESS,
+  CVX_REWARD_POOL_ADDRESS,
+  FACTORY_REGISTRY,
+} from '@app/common/constant/protocols/convex.constants';
+import { CallData } from '@app/common/dto/CallData';
+import {
+  IntegrationClaimableTokenDto,
+  IntegrationERC20TokenDto,
+  IntegrationPoolTokenDto,
+  IntegrationStakingPositionDto,
+} from '@app/common/jobs/staking';
+import { ERC20Token } from '@app/common/jobs/token';
+import { concatStrings, normalizeDecimals } from '@app/common/utils';
+import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
+import { ConvexBooster } from '@app/common/web3provider/contracts/protocols/convex/ConvexBooster';
+import { CryptoSwapRegistry } from '@app/common/web3provider/contracts/protocols/convex/CryptoSwapRegistry';
+import { CvxRewardPool } from '@app/common/web3provider/contracts/protocols/convex/CvxRewardPool';
+import { VirtualBalanceRewardPool } from '@app/common/web3provider/contracts/protocols/convex/VirtualBalanceRewardPool';
+import { CurveFactory } from '@app/common/web3provider/contracts/protocols/curve/CurveFactory';
+import { CurveRegistry } from '@app/common/web3provider/contracts/protocols/curve/CurveRegistry';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
+import { AccountService } from '../../microservices/account.service';
+import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
+import { PriceService } from '../../microservices/price.service';
+import { SettingsService } from '../../store/service/settings.service';
+import { StoreService } from '../../store/store.service';
+import { TrackedVault } from '../../store/tracked.vault.entity';
+import { TrackedVaultsMap } from '../data/tracked.vaults.map';
+import {
+  FeatureMappingDbItem,
+  FeatureMappingStakingPoolToken,
+  FeatureMappingStakingToken,
+  StakingFeatureMapping,
+} from '../dto/mappings';
+import { JobInterface } from '../job.interface';
+import { JobStakingBase } from '../job.staking.base';
+import { ConvexPoolInfo } from './convex.interfaces';
+
+export class ConvexStaking
+  extends JobStakingBase<IntegrationStakingPositionDto>
+  implements JobInterface
+{
+  chain = ChainIdEnum.eth;
+  feature = FeatureEnum.staking;
+  protocol = ProtocolNameEnum.Convex;
+  placeholder = concatStrings(this.chain, this.protocol, this.feature);
+
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly settingsService: SettingsService,
+    protected readonly storeService: StoreService,
+    protected readonly multicallService: MulticallAggregator,
+    protected readonly accountService: AccountService,
+    protected readonly priceService: PriceService,
+  ) {
+    super();
+    this.availableDtosForConversion = new Map<string, string>([
+      [IntegrationStakingPositionDto.name, IntegrationStakingPositionDto.name],
+      [IntegrationERC20TokenDto.name, ERC20Token.name],
+      [IntegrationClaimableTokenDto.name, ERC20Token.name],
+    ]);
+  }
+
+  totalSupplyLabel(underlying: ERC20Token) {
+    return `${underlying.address}-totalSupply`;
+  }
+
+  lpBalanceLabel(token: ERC20Token, underlying: ERC20Token) {
+    return `${token.address}-${underlying.address}-reserves`;
+  }
+
+  getPoolFromLpLabel(registry: Address, lpAddress: Address) {
+    return concatStrings('pool', registry, lpAddress);
+  }
+  /**
+   *  Updates the tracked vault with the latest staking features
+   *
+   * @param trackedVault Database TrackedVault
+   * @returns updated tracked vault
+   */
+  async rebuildMapping(trackedVault: TrackedVault): Promise<TrackedVault> {
+    this.logger.log('building initial mapping', this.placeholder);
+
+    const stakingFeatures = await this.buildStakingFeatures();
+
+    return this.updateTrackedVaultWithStakingFeatures(trackedVault, stakingFeatures);
+  }
+
+  async fillChainData(
+    stakingFeatures: IntegrationStakingPositionDto[],
+  ): Promise<IntegrationStakingPositionDto[]> {
+    // get all involved addresses
+    const addresses = this.getTokenAddresses(stakingFeatures);
+
+    const prices = await this.fetchPrices(addresses);
+
+    const stakingData = await this.formatTokensWithBalances(
+      stakingFeatures.filter(
+        (t) => ![CVX_REWARD_POOL_ADDRESS, CRVCVX_REWARD_POOL_ADDRESS].includes(t.address),
+      ),
+    );
+
+    stakingFeatures.forEach((stakingFeature) => {
+      // get total staked
+      stakingFeature.staked = stakingData.get(`${stakingFeature.address}-staked`);
+      stakingFeature.stakingToken.totalSupply = normalizeDecimals(
+        stakingData.get(`${stakingFeature.stakingToken.address}-totalSupply`),
+        stakingFeature.stakingToken.decimals,
+      );
+
+      stakingFeature.stakingToken.tokens.forEach((token) => {
+        const reserve = normalizeDecimals(
+          stakingData.get(`${stakingFeature.stakingToken.address}-${token.address}-reserve`),
+          token.decimals,
+        );
+
+        token.totalSupply = stakingData.get(`${token.address}-totalSupply`);
+        token.reserve = reserve;
+        token.balance = reserve;
+        token.price = prices.get(token.address);
+        token.value = token.price * token.balance;
+        stakingFeature.stakingToken.value += token.value;
+      });
+
+      stakingFeature.stakingToken.price =
+        stakingFeature.stakingToken.value /
+        normalizeDecimals(stakingFeature.staked, stakingFeature.stakingToken.decimals);
+
+      // Reward Data...
+      stakingFeature.rewards.forEach((reward) => {
+        reward.apr = 0;
+        reward.price = prices.get(reward.address);
+      });
+
+      // Feature Data
+      stakingFeature.stats.tvl = stakingFeature.stakingToken.value;
+    });
+
+    return stakingFeatures;
+  }
+
+  getStakingTokenData(
+    stakingFeature: IntegrationStakingPositionDto,
+    prices: Map<string, number>,
+    onChainData: Map<string, CallData>,
+  ) {
+    const { address, decimals } = stakingFeature.stakingToken;
+
+    const rawTotalSupply = onChainData.get(`${address}-totalSupply`).output.data.toString();
+
+    // Staking Token Data
+    const price = prices.get(address);
+    const value = price * normalizeDecimals(stakingFeature.staked, decimals);
+    const totalSupply = normalizeDecimals(rawTotalSupply, decimals);
+
+    return {
+      price,
+      value,
+      totalSupply,
+    };
+  }
+
+  getTokenAddresses(stakingFeatures: IntegrationStakingPositionDto[]): Address[] {
+    return Array.from(
+      new Set(
+        stakingFeatures.flatMap((stakingFeature) => [
+          stakingFeature.stakingToken.address,
+          ...stakingFeature.stakingToken.tokens.map((t) => t.address),
+          ...stakingFeature.rewards.map((r) => r.address),
+        ]),
+      ),
+    );
+  }
+
+  /******************************************
+   * Below Here is 'rebuildMapping' helpers *
+   ******************************************/
+
+  /**
+   * Gets the static data used for the vault mapping
+   * All staking pools & associated tokens.
+   *
+   * @returns Promise<IntegrationStakingPositionDto[]>
+   */
+  private async buildStakingFeatures(): Promise<IntegrationStakingPositionDto[]> {
+    const stakingFeatures: IntegrationStakingPositionDto[] = [];
+
+    stakingFeatures.push(await this.getCVXStaking());
+    stakingFeatures.push(await this.getCVXCRVStaking());
+    stakingFeatures.push(...(await this.getCurveLPStaking()));
+
+    return stakingFeatures;
+  }
+
+  private async getCurveLPStaking(): Promise<IntegrationStakingPositionDto[]> {
+    // get pool list
+    const rawPools = await this.getBoosterPoolInfo();
+
+    // Get reward lengths of all pools
+    const rewardPoolLengthCalls = new Map(
+      rawPools.map((poolInfo): [Address, CallData] => {
+        const rewardPool = new CvxRewardPool(poolInfo.crvRewards);
+        return [poolInfo.crvRewards, rewardPool.extraRewardsLength()];
+      }),
+    );
+
+    // Make RPC call once to get the number of extra rewards per contract
+    const rewardPoolLengths = await this.multicallService.handleInBatches(
+      rewardPoolLengthCalls,
+      this.chain,
+    );
+
+    const extraRewardAddressCalls = new Map(
+      rawPools.flatMap((poolInfo) => {
+        const rewardPool = new CvxRewardPool(poolInfo.crvRewards);
+
+        const extraRewardPoolLength = rewardPoolLengths
+          .get(poolInfo.crvRewards)
+          .output.data.toString();
+        return Array.from(Array(parseInt(extraRewardPoolLength, 10)).keys()).map((pool: number) => {
+          return [`${poolInfo.crvRewards}-${pool}`, rewardPool.extraRewards(pool)];
+        });
+      }),
+    );
+
+    // Make RPC call once to get all the reward contract calls
+    const virtualRewardAddress = await this.multicallService.handleInBatches(
+      extraRewardAddressCalls,
+      this.chain,
+    );
+
+    const rewardTokenCalls = new Map(
+      Array.from(virtualRewardAddress.values()).map((reward) => {
+        const rewardAddress = reward.output.data.toString().toLowerCase();
+        const contract = new VirtualBalanceRewardPool(rewardAddress);
+        return [rewardAddress, contract.rewardToken()];
+      }),
+    );
+
+    // Make RPC call once to get all the reward token addresses
+    const rewardTokens = await this.multicallService.handleInBatches(rewardTokenCalls, this.chain);
+
+    const allTokenAddresses = Array.from(rewardTokens.values()).reduce((acc, cur) => {
+      return acc.add(cur.output.data.toString().toLowerCase());
+    }, new Set([CVX_CRV_ADDRESS, CRV_ADDRESS]));
+
+    rawPools.forEach((poolInfo) => allTokenAddresses.add(poolInfo.lptoken.toLowerCase()));
+
+    // Save involved assets & get filled asset data
+    const rawTokens = await this.saveAssets(Array.from(allTokenAddresses));
+
+    const [stakingTokenMap, rewardTokenMap] = await this.formatTokens(
+      rawPools,
+      rawTokens,
+      rewardTokens,
+      virtualRewardAddress,
+      rewardPoolLengths,
+    );
+
+    return rawPools.map((poolInfo) => {
+      return plainToClass(IntegrationStakingPositionDto, {
+        address: poolInfo.crvRewards.toLowerCase(),
+        stakingToken: stakingTokenMap.get(poolInfo.crvRewards),
+        rewards: rewardTokenMap.get(poolInfo.crvRewards),
+        extra: {
+          lpToken: poolInfo.lptoken.toLowerCase(),
+          token: poolInfo.token.toLowerCase(),
+          gauge: poolInfo.gauge.toLowerCase(),
+          crvRewards: poolInfo.crvRewards.toLowerCase(),
+        },
+      });
+    });
+  }
+  private async formatTokensWithBalances(stakingPositions: IntegrationStakingPositionDto[]) {
+    const calls = stakingPositions.reduce((map, stakingPosition) => {
+      const lpToken = new ERC20(stakingPosition.extra.lpToken);
+
+      map.set(`${stakingPosition.stakingToken.address}-totalSupply`, lpToken.totalSupply());
+
+      map.set(
+        `${stakingPosition.extra.gauge}-${stakingPosition.extra.lpToken}-staked`,
+        lpToken.balanceOf(stakingPosition.extra.gauge),
+      );
+
+      stakingPosition.rewards.forEach((reward) => {
+        const rewardTokenContract = new ERC20(reward.address);
+        map.set(`${reward.address}-totalSupply`, rewardTokenContract.totalSupply());
+      });
+
+      return map;
+    }, new Map<string, CallData>());
+
+    const totals = await this.multicallService.handleInBatches(calls, this.chain);
+
+    const underlyingBalances = await this.getUnderlyingBalances(stakingPositions);
+
+    return new Map(
+      stakingPositions.flatMap((stakingPosition) => {
+        return [
+          [
+            // Total Staked
+            `${stakingPosition.address}-staked`,
+            totals
+              .get(`${stakingPosition.extra.gauge}-${stakingPosition.extra.lpToken}-staked`)
+              .output.data.toString(),
+          ],
+
+          [
+            // Staking Token Total Supply
+            `${stakingPosition.stakingToken.address}-totalSupply`,
+            totals
+              .get(`${stakingPosition.stakingToken.address}-totalSupply`)
+              .output.data.toString(),
+          ],
+          [
+            // virtual price
+            `${stakingPosition.stakingToken.address}-virtual-price`,
+            underlyingBalances.get(stakingPosition.extra.lpToken)?.get('virtual-price'),
+          ],
+
+          ...stakingPosition.stakingToken.tokens.flatMap((token): [string, string][] => {
+            return [
+              [
+                `${stakingPosition.stakingToken.address}-${token.address}-reserve`,
+                underlyingBalances.get(stakingPosition.extra.lpToken).get(token.address),
+              ],
+              [
+                `${token.address}-totalSupply`,
+                totals.get(`${token.address}-totalSupply`)?.output.data.toString(),
+              ],
+            ];
+          }),
+        ];
+      }),
+    );
+  }
+
+  private async formatTokens(
+    rawPools: ConvexPoolInfo[],
+    rawTokens: LiquidityPoolTokenDto[],
+    rewardTokens: Map<string, CallData>,
+    virtualRewardAddress: Map<string, CallData>,
+    rewardPoolLengths: Map<string, CallData>,
+  ): Promise<
+    [Map<Address, IntegrationERC20TokenDto>, Map<Address, IntegrationClaimableTokenDto[]>]
+  > {
+    const rawTokenMap = new Map(rawTokens.map((t) => [t.address, t]));
+    const stakingMap = new Map<Address, IntegrationERC20TokenDto>();
+    const rewardMap = new Map<Address, IntegrationClaimableTokenDto[]>();
+
+    const balances = await this.multicallService.handleInBatches(
+      new Map(
+        rawPools.map((poolInfo) => {
+          const lpToken = new ERC20(poolInfo.lptoken);
+          return [
+            `${poolInfo.gauge}-${poolInfo.lptoken}-balance`,
+            lpToken.balanceOf(poolInfo.gauge),
+          ];
+        }),
+      ),
+      this.chain,
+    );
+
+    // Format Rewards &
+    rawPools.forEach((poolInfo) => {
+      // Staking Token
+      const rawStakingToken = rawTokenMap.get(poolInfo.lptoken.toLowerCase());
+      const stakingToken = this.convertTokenClassType(IntegrationERC20TokenDto, rawStakingToken);
+      stakingToken.balance = normalizeDecimals(
+        balances.get(`${poolInfo.gauge}-${poolInfo.lptoken}-balance`).output.data.toString(),
+        stakingToken.decimals,
+      );
+
+      stakingMap.set(poolInfo.crvRewards, stakingToken);
+
+      // Reward Token
+      const extraRewardPoolLength = rewardPoolLengths
+        .get(poolInfo.crvRewards)
+        .output.data.toString();
+
+      const rewards = Array.from(Array(parseInt(extraRewardPoolLength, 10)).keys())
+        .map((pool) => {
+          const virtual = virtualRewardAddress
+            .get(`${poolInfo.crvRewards}-${pool}`)
+            .output.data.toString()
+            .toLowerCase();
+
+          const rewardAddress = rewardTokens.get(virtual).output.data.toString().toLowerCase();
+          return rawTokenMap.get(rewardAddress);
+        })
+        .concat(rawTokenMap.get(CRV_ADDRESS));
+
+      rewardMap.set(
+        poolInfo.crvRewards,
+        rewards.map((reward) => {
+          return this.convertTokenClassType(IntegrationClaimableTokenDto, reward);
+        }),
+      );
+    });
+
+    return [stakingMap, rewardMap];
+  }
+
+  private async getBoosterPoolInfo(): Promise<ConvexPoolInfo[]> {
+    const boosterContract = new ConvexBooster(CONVEX_BOOSTER);
+
+    const [poolLength] = await this.getMulticallValues([boosterContract.poolLength()]);
+    return this.getMulticallValues(
+      Array.from(Array(parseInt(poolLength, 10)).keys()).map((poolId) =>
+        boosterContract.poolInfo(poolId),
+      ),
+    );
+  }
+
+  private async getUnderlyingBalances(stakingPositions: IntegrationStakingPositionDto[]) {
+    const addresses = stakingPositions.map((t) => t.extra.lpToken.toLowerCase());
+    const balances = new Map();
+    const [cryptoSwapPools, mainPools, factoryPools] = await Promise.all([
+      this.getCryptoSwapRegistryPoolsFromLp(addresses),
+      this.getMainRegistryPools(addresses),
+      // this is just used as a fallback. if the pair is included above, then the above will be more relavent as it will hold underlying tokend balances as well
+      this.getFactoryPoolsPoolsFromLp(addresses),
+    ]);
+
+    addresses.forEach((lpToken) => {
+      balances.set(
+        lpToken,
+        // Get Balance info in order of precedence
+        mainPools.get(lpToken) ?? cryptoSwapPools.get(lpToken) ?? factoryPools.get(lpToken),
+      );
+    });
+    return balances;
+  }
+
+  private async getFactoryPoolsPoolsFromLp(addresses: Address[]) {
+    const factory = new CurveFactory(FACTORY_REGISTRY);
+
+    const poolsResponse = await this.multicallService.handleInBatches(
+      new Map(
+        addresses.flatMap((address) => {
+          return [
+            [`${address}-coins`, factory.getCoins(address)],
+            [`${address}-balances`, factory.getBalances(address)],
+          ];
+        }),
+      ),
+      this.chain,
+    );
+
+    const balanceResponses = new Map();
+    addresses.forEach((address) => {
+      if (poolsResponse.get(`${address}-coins`).output.data[0] === ZERO_ADDRESS) return;
+
+      const coins = poolsResponse.get(`${address}-coins`).output.data;
+      const balances = poolsResponse.get(`${address}-balances`).output.data;
+      const balanceMap = new Map();
+      coins.forEach((coin, idx) => {
+        if (coin === ZERO_ADDRESS) return;
+        balanceMap.set(coin.toLowerCase(), balances[idx].toString());
+      });
+      balanceResponses.set(address, balanceMap);
+    });
+    return balanceResponses;
+  }
+
+  private async getMainRegistryPools(addresses: Address[]) {
+    const registry = new CurveRegistry(CURVE_REGISTRY);
+
+    const poolsResponse = await this.multicallService.handleInBatches(
+      new Map(
+        addresses.map((address) => {
+          return [
+            this.getPoolFromLpLabel(CURVE_REGISTRY, address),
+            registry.getPoolFromLpToken(address),
+          ];
+        }),
+      ),
+      this.chain,
+    );
+    const pools = Array.from(poolsResponse.values()).filter(
+      (r) => r.output.data.toString() !== ZERO_ADDRESS,
+    );
+
+    const virtualPrices = await this.multicallService.handleInBatches(
+      new Map(
+        pools.map((rawPool) => {
+          return [
+            `${rawPool.input.data[0]}-virtual-price`,
+            registry.getVirtualPriceFromLpToken(rawPool.input.data[0]),
+          ];
+        }),
+      ),
+      this.chain,
+    );
+
+    const responses = await this.multicallService.handleInBatches(
+      new Map(
+        pools.flatMap((rawPool) => {
+          const pool = rawPool.output.data.toString().toLowerCase();
+          return [
+            [`${pool}-coins`, registry.getCoins(pool)],
+            [`${pool}-underlying-coins`, registry.getUnderlyingCoins(pool)],
+            [`${pool}-balances`, registry.getBalances(pool)],
+            [`${pool}-underlying-balances`, registry.getUnderlyingBalances(pool)],
+          ];
+        }),
+      ),
+      this.chain,
+    );
+
+    const balanceResponses = new Map();
+    pools.forEach((rawPool) => {
+      const pool = rawPool.output.data.toString().toLowerCase();
+      const lpToken = rawPool.input.data[0];
+
+      const coins = responses.get(`${pool}-coins`).output.data;
+      const balances = responses.get(`${pool}-balances`).output.data;
+      const underlyingCoins = responses.get(`${pool}-underlying-coins`).output.data;
+      const underlyingBalances = responses.get(`${pool}-underlying-balances`).output.data;
+      const balanceMap = new Map();
+      coins.forEach((coin, idx) => {
+        if (coin === ZERO_ADDRESS) return;
+        balanceMap.set(coin.toLowerCase(), balances[idx].toString());
+      });
+
+      underlyingCoins.forEach((coin, idx) => {
+        if (coin === ZERO_ADDRESS) return;
+        balanceMap.set(coin.toLowerCase(), underlyingBalances[idx].toString());
+      });
+
+      balanceMap.set(
+        'virtual-price',
+        virtualPrices.get(`${lpToken}-virtual-price`).output.data.toString(),
+      );
+
+      balanceResponses.set(lpToken, balanceMap);
+    });
+    return balanceResponses;
+  }
+
+  private async getCryptoSwapRegistryPoolsFromLp(addresses: Address[]) {
+    // get staking balance
+    // get staking price
+    // get underlying token balances
+    const cryptoSwapRegistry = new CryptoSwapRegistry(CRYPTO_SWAP_REGISTRY);
+
+    const poolsResponse = await this.multicallService.handleInBatches(
+      new Map(
+        addresses.map((address) => {
+          return [
+            this.getPoolFromLpLabel(CRYPTO_SWAP_REGISTRY, address),
+            cryptoSwapRegistry.getPoolFromLpToken(address),
+          ];
+        }),
+      ),
+      this.chain,
+    );
+    const pools = Array.from(poolsResponse.values()).filter(
+      (r) => r.output.data.toString() !== ZERO_ADDRESS,
+    );
+
+    const virtualPrices = await this.multicallService.handleInBatches(
+      new Map(
+        pools.map((rawPool) => {
+          return [
+            `${rawPool.input.data[0]}-virtual-price`,
+            cryptoSwapRegistry.getVirtualPriceFromLpToken(rawPool.input.data[0]),
+          ];
+        }),
+      ),
+      this.chain,
+    );
+
+    const responses = await this.multicallService.handleInBatches(
+      new Map(
+        pools.flatMap((rawPool) => {
+          const pool = rawPool.output.data.toString().toLowerCase();
+          return [
+            [`${pool}-n-coins`, cryptoSwapRegistry.getNCoins(pool)],
+            [`${pool}-coins`, cryptoSwapRegistry.getCoins(pool)],
+            [`${pool}-balances`, cryptoSwapRegistry.getBalances(pool)],
+          ];
+        }),
+      ),
+      this.chain,
+    );
+
+    // format as { [lpToken]: { [underlying]: balance } }
+    const balanceResponses = new Map();
+    pools.forEach((rawPool) => {
+      const pool = rawPool.output.data.toString().toLowerCase();
+      const lpToken = rawPool.input.data[0];
+
+      const coinCount = Number(responses.get(`${pool}-n-coins`).output.data.toString());
+      const underlying = responses.get(`${pool}-coins`).output.data.slice(0, coinCount);
+      const balances = responses.get(`${pool}-balances`).output.data.slice(0, coinCount);
+      const balanceMap = new Map(
+        underlying.map((address, idx) => [address.toLowerCase(), balances[idx].toString()]),
+      );
+      balanceMap.set(
+        'virtual-price',
+        virtualPrices.get(`${lpToken}-virtual-price`).output.data.toString(),
+      );
+      balanceResponses.set(lpToken, balanceMap);
+    });
+    return balanceResponses;
+  }
+
+  private async getRewardsForPool(pool: Address): Promise<Address[]> {
+    const rewardPool = new CvxRewardPool(pool);
+
+    // Get extra reward length
+    const [extraRewardLength] = await this.getMulticallValues([rewardPool.extraRewardsLength()]);
+
+    // get all extra reward pools
+    const virtualRewardPools = await this.getMulticallValues(
+      Array.from(Array(parseInt(extraRewardLength, 10)).keys()).map((pool: number) => {
+        return rewardPool.extraRewards(pool);
+      }),
+    );
+
+    // Get tokens for all extra reward pools
+    const extraRewardTokens = await this.getMulticallValues(
+      virtualRewardPools.map((virtualRewardPool) => {
+        const contract = new VirtualBalanceRewardPool(virtualRewardPool.toString());
+        return contract.rewardToken();
+      }),
+    );
+
+    return extraRewardTokens;
+  }
+
+  private async getCVXCRVStaking() {
+    // Test Address: 0xd34c226cd4d3261311d09bc520000e537b98e16e
+    const extraRewardTokens = await this.getRewardsForPool(CRVCVX_REWARD_POOL_ADDRESS);
+
+    const [stakingToken, ...rewards] = await this.saveAssets([
+      CVX_CRV_ADDRESS,
+      CRV_ADDRESS,
+      ...extraRewardTokens.map((reward) => reward.toString().toLowerCase()),
+    ]);
+
+    // For the front end
+    return plainToClass(IntegrationStakingPositionDto, {
+      address: CRVCVX_REWARD_POOL_ADDRESS,
+      stakingToken: this.convertTokenClassType(IntegrationERC20TokenDto, stakingToken),
+      rewards: rewards.map((reward) =>
+        this.convertTokenClassType(IntegrationClaimableTokenDto, reward),
+      ),
+    });
+  }
+
+  /**
+   * Gets the pool data for plain CVX staking
+   *
+   * @returns Promise<IntegrationStakingPositionDto>
+   */
+  private async getCVXStaking() {
+    const [stakingToken, rewardToken] = await this.saveAssets([CVX_ADDRESS, CVX_CRV_ADDRESS]);
+    return plainToClass(IntegrationStakingPositionDto, {
+      address: CVX_REWARD_POOL_ADDRESS,
+      stakingToken: this.convertTokenClassType(IntegrationERC20TokenDto, stakingToken),
+      rewards: [this.convertTokenClassType(IntegrationClaimableTokenDto, rewardToken)],
+    });
+  }
+
+  /**
+   * Converts a token returned from 'saveAsset' to
+   * the required class type
+   *
+   * @param type ClassConstructor DTO to convert too
+   * @param token LiquidityPoolTokenDto token to be converted
+   * @returns IntegrationERC20TokenDto
+   */
+  private convertTokenClassType<
+    T extends ERC20Token | IntegrationPoolTokenDto | IntegrationERC20TokenDto,
+  >(type: ClassConstructor<T>, token: LiquidityPoolTokenDto) {
+    const data = plainToClass(type, {
+      address: token.address.toLowerCase(),
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals,
+    });
+
+    if (
+      token.underlyingAssets?.length &&
+      (data instanceof IntegrationPoolTokenDto || data instanceof IntegrationERC20TokenDto)
+    ) {
+      data.tokens = token.underlyingAssets.map((token) =>
+        this.convertTokenClassType(IntegrationPoolTokenDto, token),
+      );
+    }
+
+    return data;
+  }
+
+  private async getMulticallValues(calls: CallData[]) {
+    const callData = await this.multicallService.handleInBatches(
+      new Map(calls.map((call, idx) => [idx.toString(), call])),
+      this.chain,
+    );
+
+    return Array.from(callData.values()).map((cd) => cd.output.data);
+  }
+
+  /**
+   * Updates the tracked vault with the latest information
+   *
+   * @param trackedVault Database entry for Tracked Vault
+   * @param stakingFeatures All currently saved staking features
+   * @returns Updated Tracked Vault
+   */
+  private async updateTrackedVaultWithStakingFeatures(
+    trackedVault: TrackedVault,
+    stakingFeatures: IntegrationStakingPositionDto[],
+  ) {
+    trackedVault.mapping = await Promise.all(
+      stakingFeatures.map((stakingFeature) => this.toDbMapping(stakingFeature)),
+    );
+    trackedVault.updatedAt = new Date();
+    const updatedVault = await this.storeService.updateMapping(trackedVault);
+    TrackedVaultsMap.add(updatedVault);
+    return updatedVault;
+  }
+
+  /**
+   * Converts the Staking Position/Feature to the raw database mapping
+   *
+   * @param stakingFeature
+   * @returns database mapping
+   */
+  private async toDbMapping(
+    stakingFeature: IntegrationStakingPositionDto,
+  ): Promise<StakingFeatureMapping> {
+    const stakingFeatureUid = concatStrings(this.chain, stakingFeature.address, 'st');
+
+    const stakingFeatureVaultItem = await this.getDbItem(stakingFeature, stakingFeatureUid);
+    const rewardTokens = await this.getRewardTokensAsVaultItems(stakingFeature);
+    const stakingToken = await this.getStakingTokenAsVaultItem(stakingFeature);
+
+    return plainToClass(StakingFeatureMapping, {
+      dbId: stakingFeatureVaultItem.id,
+      dtoName: stakingFeature.constructor.name,
+      rewards: rewardTokens,
+      stakingToken: stakingToken,
+    });
+  }
+
+  /**
+   *
+   * @param stakingFeature
+   * @returns all rewards as database mappings
+   */
+  private async getRewardTokensAsVaultItems(stakingFeature: IntegrationStakingPositionDto) {
+    return Promise.all(
+      stakingFeature.rewards.map(async (reward) => {
+        const uid = concatStrings(this.chain, reward.address);
+        const vaultItem = await this.getDbItem(reward, uid);
+
+        return plainToClass(FeatureMappingDbItem, {
+          dbId: vaultItem.id,
+          dtoName: reward.constructor.name,
+        });
+      }),
+    );
+  }
+
+  /**
+   *
+   * @param stakingFeature
+   * @returns staking token as database mapping
+   */
+  private async getStakingTokenAsVaultItem(
+    stakingFeature: IntegrationStakingPositionDto,
+  ): Promise<FeatureMappingStakingToken> {
+    const uid = concatStrings(this.chain, stakingFeature.stakingToken.address);
+    const vaultItem = await this.getDbItem(stakingFeature.stakingToken, uid);
+    const lpTokens = await this.getStakingTokenUnderlying(stakingFeature.stakingToken.tokens);
+
+    return plainToClass(FeatureMappingStakingToken, {
+      dbId: vaultItem.id,
+      dtoName: stakingFeature.stakingToken.constructor.name,
+      tokens: lpTokens,
+    });
+  }
+
+  private async getStakingTokenUnderlying(tokens: any[]) {
+    return Promise.all(
+      tokens.map(async (token) => {
+        const uid = concatStrings(this.chain, token.address);
+        const vaultItem = await this.getDbItem(token, uid);
+
+        return plainToClass(FeatureMappingStakingPoolToken, {
+          dbId: vaultItem.id,
+          dtoName: token.constructor.name,
+          positionInPool: token.positionInPool,
+        });
+      }),
+    );
+  }
+}

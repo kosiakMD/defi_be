@@ -7,6 +7,7 @@ import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
 import { CurrencyIdEnum } from '@app/common/enum/chain.enum';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { CurveLiquidityPoolFeature, CurvePoolTokenDto } from '@app/common/jobs/pools';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../microservices/account.service';
@@ -38,8 +39,17 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
   protected abstract readonly priceService: PriceService;
   protected abstract readonly storeService: StoreService;
 
+  /**
+   * Rebuilds database mapping
+   *
+   * @param jobMapping tracked vault (from database)
+   */
   protected abstract rebuildMapping(jobMapping: TrackedVault): Promise<TrackedVault>;
-  abstract fillChainData?(): Promise<T[]>;
+
+  /**
+   * Gets all the dynamic data (prices, totalSupply)
+   */
+  protected abstract fillChainData(mapping: T[]): Promise<T[]>;
 
   /**
    * Checks if the database mapping needs to be updated, & updates if required
@@ -52,8 +62,8 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       this.logger.log(`Updating Mapping`, this.placeholder);
-      jobMapping = await this.rebuildMapping(jobMapping);
     }
+    jobMapping = await this.rebuildMapping(jobMapping);
 
     try {
       jobMapping.mapping.forEach((jm) => {
@@ -78,7 +88,7 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
     }
 
     if (this.fillChainData) {
-      return await this.fillChainData();
+      return await this.fillChainData(this.mapping);
     }
   }
 
@@ -86,7 +96,7 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
    * Service Helpers
    */
   protected saveAssets(addresses: Address[]) {
-    return Promise.allSettled(addresses.map((address) => this.saveAsset(address)));
+    return Promise.all(addresses.map((a) => this.saveAsset(a)));
   }
 
   protected saveAsset(address: Address) {
@@ -117,6 +127,14 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
     return this.multicallService.handleInBatches(calls, this.chain);
   }
 
+  /**
+   * Looks up a <token, feature> in the database. If none is found, then it will save
+   * as a new one and return s a vault item
+   *
+   * @param item unknown - value to be saved if it doesn't exist in the database already
+   * @param uniqueId - unique id to lookup item in the database
+   * @returns vault item
+   */
   protected async getDbItem(item, uniqueId: string): Promise<TrackedVaultItem> {
     const temp = TrackedVaultItemsMap.get(uniqueId) as TrackedVaultItem;
     return temp ?? this.saveItemToDb(item, uniqueId);
@@ -127,26 +145,32 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
     const toUniversalDtoName = this.availableDtosForConversion.get(item.constructor.name);
     newIntegrationJobItem.type = toUniversalDtoName;
 
-    const universalDto = this.getItemAsDto(item);
-    if (universalDto.name) {
-      newIntegrationJobItem.name = universalDto.name;
+    const trackedItem = this.getItemAsDto(item);
+
+    if (trackedItem.name) {
+      newIntegrationJobItem.name = trackedItem.name;
       newIntegrationJobItem.idUnique = uniqueId;
     }
 
-    newIntegrationJobItem.data = classToPlain(universalDto);
+    newIntegrationJobItem.data = classToPlain(trackedItem);
 
-    const savedItem: TrackedVaultItem = await this.storeService.saveItem(newIntegrationJobItem);
-    // it is important to add item to database
+    const savedItem = await this.storeService.saveItem(newIntegrationJobItem);
     TrackedVaultItemsMap.add(savedItem);
     return savedItem;
   }
 
   // // TODO: this is curve specific. remove
-  getItemAsDto(item) {
+  getItemAsDto(item): any {
     const toUniversalDtoName = this.availableDtosForConversion.get(item.constructor.name);
     switch (toUniversalDtoName) {
+      case IntegrationStakingPositionDto.name:
+        return {
+          address: item.address,
+          name: item.name,
+          extra: item.extra,
+        };
       case CurvePoolTokenDto.name:
-        return plainToClass(CurvePoolTokenDto, {
+        return {
           address: item.address,
           name: item.name,
           symbol: item.symbol,
@@ -161,27 +185,27 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
           balance: null,
           price: null,
           tokens: item.tokens,
-        } as CurvePoolTokenDto);
+        };
 
       case ERC20Token.name:
-        return plainToClass(ERC20Token, {
+        return {
           address: item.address,
           name: item.name,
           symbol: item.symbol,
           decimals: item.decimals,
-        } as ERC20Token);
+        };
 
       case LiquidityPoolFeature.name:
-        return plainToClass(LiquidityPoolFeature, {
+        return {
           address: item.address,
           name: item.name,
-        } as LiquidityPoolFeature);
+        };
 
       case CurveLiquidityPoolFeature.name:
-        return plainToClass(CurveLiquidityPoolFeature, {
+        return {
           address: item.address,
           name: item.name,
-        } as CurveLiquidityPoolFeature);
+        };
     }
   }
 }

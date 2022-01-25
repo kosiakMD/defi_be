@@ -45,3 +45,16 @@ export function isSolAddress(address: string): boolean {
     return false;
   }
 }
+
+export function isSomeAddress(address: string) {
+  const addressChecks = [
+    isETHAddress,
+    isSolAddress,
+  ]
+  for (const addressChecker of addressChecks) {
+    if (addressChecker(address)) {
+      return true
+    }
+  }
+  return false
+}

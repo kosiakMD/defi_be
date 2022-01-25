@@ -31,10 +31,19 @@ import {
   ProtocolInfoDto,
 } from './dto/integrations.dto';
 import { FeaturesService } from './features.service';
+import { IntegrationSearchParams } from '../../common/interfaces/search.interfaces';
+import { SearchParams, SearchResultsBaseEntry, SearchResultsProjectEntry, SearchResultsVaultEntry } from 'apps/api_gateway/src/search/search.interface';
+import { SearchEntries } from '../../common/enum/search.enum';
+import { ProjectsContractRepository } from './repositories/projectsContract.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { SearchResultType } from 'apps/api_gateway/src/search/search.enum';
+import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 
 @Injectable()
 export class IntegrationsService {
   constructor(
+    @InjectRepository(ProjectsContractRepository) private readonly projectsRepository: ProjectsContractRepository,
+    @InjectRepository(TrackedVaultRepository) private readonly vaultsRepository: TrackedVaultRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly featuresService: FeaturesService,
@@ -207,6 +216,8 @@ export class IntegrationsService {
       }),
     );
 
+    const walletMap = new Map(response.data.wallets.map((w) => [w.address, w]));
+
     chainsToProceed.forEach((chain, index) => {
       if (allData[index].status === 'fulfilled') {
         const [data, errors] = allData[index]['value'];
@@ -214,8 +225,8 @@ export class IntegrationsService {
           response.errors = [...response.errors, errors.flat()];
         }
 
-        data.forEach((bd) => {
-          const walletData = response.data.wallets.find((w) => w.address === bd.userAddress);
+        data.forEach((baseData) => {
+          const walletData = walletMap.get(baseData.userAddress);
 
           let existedChainData = walletData.chains.find((c) => c.chain.id === chain);
 
@@ -226,23 +237,32 @@ export class IntegrationsService {
             chainData.chain = chainDto;
             chainData.features = protocolToProceed.getInfo().features[chainDto.abbr];
             existedChainData = chainData;
+
             walletData.chains.push(existedChainData);
           }
 
-          if (bd.total) {
-            if (FeatureEnum.borrowing === bd.feature) {
-              existedChainData.total -= bd.total;
-              response.data.total -= bd.total;
+          if (baseData.total) {
+            if (FeatureEnum.borrowing === baseData.feature) {
+              existedChainData.total -= baseData.total;
+              response.data.total -= baseData.total;
             } else {
-              existedChainData.total += bd.total;
-              response.data.total += bd.total;
+              existedChainData.total += baseData.total;
+              response.data.total += baseData.total;
             }
           }
+          if (Number.isNaN(baseData.total)) {
+            this.logger.warn(
+              `Failed to calculate integration - Total Value is NaN - (${protocolName}) - ${existedChainData.chain.abbr}`,
+            );
+          }
 
-          existedChainData[bd.feature] = { totalValue: bd.total, items: bd.items };
+          existedChainData[baseData.feature] = {
+            totalValue: baseData.total,
+            items: baseData.items,
+          };
 
-          if (bd.locked) {
-            existedChainData[bd.feature].lockedValue = bd.locked;
+          if (baseData.locked) {
+            existedChainData[baseData.feature].lockedValue = baseData.locked;
           }
         });
       }
@@ -250,5 +270,47 @@ export class IntegrationsService {
     response.errors = response.errors.flat();
 
     return response;
+  }
+
+  async searchProjects(query: SearchParams): Promise<SearchResultsProjectEntry[]> {
+    const projects = await this.projectsRepository.findProjectsByParams(query);
+    return projects.map(p => ({
+      type: SearchResultType.PROJECT,
+      icon: p.icon,
+      name: p.name,
+      metadata: {
+        address: p.address,
+        description: p.description,
+      },
+    }));
+  }
+
+  async searchVaults(query: SearchParams): Promise<SearchResultsVaultEntry[]> {
+    if (!query.text) {
+      this.logger.debug('Vaults search params should have "text"');
+      return [];
+    }
+    const vaults = await this.vaultsRepository.findVaultsByParams(query);
+    return vaults.map(v => ({
+      type: SearchResultType.VAULT,
+      metadata: {
+        chainId: v.chainId,
+        protocol: v.protocol,
+        feature: v.feature,
+      },
+    }));
+  }
+
+  async search(params: IntegrationSearchParams, query: SearchParams): Promise<SearchResultsBaseEntry[]> {
+    const { searchEntry } = params;
+    switch (searchEntry) {
+      case SearchEntries.PROJECTS:
+        return this.searchProjects(query);
+      case SearchEntries.VAULTS:
+        return this.searchVaults(query);
+      default:
+        this.logger.error(`Wrong search entry ${searchEntry}`);
+        return [];
+    }
   }
 }

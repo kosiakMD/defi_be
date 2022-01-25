@@ -1,4 +1,5 @@
 // import * as proxy from 'http-proxy-middleware';
+import { Request, Response } from 'express';
 import { createProxyMiddleware } from 'http-proxy-middleware';
 
 import { Inject, NestMiddleware } from '@nestjs/common';

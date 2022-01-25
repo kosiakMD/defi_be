@@ -46,7 +46,7 @@ export class DefiKingdomsLocked {
       });
 
       const lockedToken = await this.getLockedTokenBalances(a, multicallService, chain);
-      baseInfo.items.push(lockedToken);
+      lockedToken && baseInfo.items.push(lockedToken);
       baseData.push(baseInfo);
     }));
 

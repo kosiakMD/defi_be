@@ -1,0 +1,15 @@
+export enum IslandswapAddresses {
+  masterContract = '0x4500775b550a884b7fc4f78ff83712dabf72a044',
+  isl = '0x1e9fd164c40ddd18739c2769182b7eb997ab8f19',
+}
+
+export const singlePoolsAddresses = [
+  '0xaaa00946772cee02d39d29b0b6355a60f6e05308',
+  '0x4e07ba9366889f634e7dc4648dbaba93046d58c2',
+  '0x6d379eb84e96438f19e391bf291a4e51e53697d6',
+  '0x3e60c246b3bc8e50c6c259e79449e167244b10c8',
+  '0xf006310381e3349d87970081a9578fda34be685a',
+  '0x65ec2d5012eecff4c5e9d859a3f30fb1cf8db65d',
+  '0x5234dcad046a7fbae64aa10c66e6ff3fdb263ddc',
+  '0xd73049e2ee59e641eee2a9b1cf04dd3ec1313adc',
+];

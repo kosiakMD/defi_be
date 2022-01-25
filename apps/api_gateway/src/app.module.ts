@@ -1,5 +1,12 @@
 import { HttpModule } from '@nestjs/axios';
-import { Inject, MiddlewareConsumer, Module, NestModule, OnModuleInit } from '@nestjs/common';
+import {
+  CacheModule,
+  Inject,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
@@ -12,6 +19,7 @@ import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
@@ -39,6 +47,8 @@ import { ProtocolControllerV2 } from './protocol/protocol.controller.v2';
 import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
 import { SafeProxyService } from './safe-proxy/safe.proxy.service';
 import { ScansApiModule } from './scans-api/scans-api.module';
+import { SearchController } from './search/search.controller';
+import { SearchService } from './search/search.service';
 import { SpookyswapController } from './spookyswap/spookyswap.controller';
 import { SushiswapController } from './sushiswap/sushiswap.controller';
 import { SwapController } from './swap/swap.controller';
@@ -51,6 +61,13 @@ import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
   imports: [
+    CacheModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        ttl: configService.get('REDIS_GATEWAY_CACHE_TTL') || 900,
+      }),
+      inject: [ConfigService],
+    }),
     ConfigModule.forRoot(configuration(config)),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
@@ -96,6 +113,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ProtocolController,
     NftController,
     ProtocolControllerV2,
+    SearchController,
   ],
   providers: [
     {
@@ -133,6 +151,8 @@ import { VaultsModule } from './vaults/vaults.module';
     AccountService,
     AssetsService,
     SafeProxyService,
+    SearchService,
+    Web3NameService,
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

@@ -72,14 +72,13 @@ export class IntegrationDataConverter {
         return plainToClass(LiquidityPoolFeature, {});
       case ERC20Token.name:
         return plainToClass(ERC20Token, {});
-      // TODO:
-      case CurvePoolTokenDto.name: // mine
-        return plainToClass(CurvePoolTokenDto, {}); // mine
-      case UnderlyingStakingLp.name: // theirs
-        return plainToClass(UnderlyingStakingLp, {}); // theirs
-      case CurveUnderlyingLpDto.name: // theirs
-        return plainToClass(CurveUnderlyingLpDto, {}); // theirs
-      case CurveLiquidityPoolFeature.name: // theirs
+      case CurvePoolTokenDto.name:
+        return plainToClass(CurvePoolTokenDto, {});
+      case UnderlyingStakingLp.name:
+        return plainToClass(UnderlyingStakingLp, {});
+      case CurveUnderlyingLpDto.name:
+        return plainToClass(CurveUnderlyingLpDto, {});
+      case CurveLiquidityPoolFeature.name:
         return plainToClass(CurveLiquidityPoolFeature, {});
     }
 

@@ -48,7 +48,7 @@ export class ViperswapLocked {
       });
 
       const lockedToken = await this.getLockedTokenBalances(a, chain);
-      baseInfo.items.push(lockedToken);
+      lockedToken && baseInfo.items.push(lockedToken);
       baseData.push(baseInfo);
     }));
 

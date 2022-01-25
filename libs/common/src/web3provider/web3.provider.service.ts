@@ -14,6 +14,7 @@ export class Web3ProviderService {
   private readonly multicallContracts = new Map<ChainIdEnum, MulticallContract>();
 
   constructor(private readonly configService: ConfigService) {
+
     this.setProvider(ChainIdEnum.arbi, 'ARBITRUM_URL');
     this.setProvider(ChainIdEnum.avax, 'AVAX_URL');
     this.setProvider(ChainIdEnum.boba, 'BOBA_URL');

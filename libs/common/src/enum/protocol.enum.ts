@@ -1,28 +1,31 @@
 export enum ProjectEnum {
   aave = 'aave',
+  alpaca = 'alpaca',
   autofarm = 'autofarm',
+  badger = 'badger',
   balancer = 'balancer',
   beefy = 'beefy',
-  curve = 'curve',
   compound = 'compound',
+  convex = 'convex',
+  curve = 'curve',
+  defikingdoms = 'defikingdoms',
+  ellipsis = 'ellipsis',
+  islandswap = 'islandswap',
+  mojitoswap = 'mojitoswap',
   pancake = 'pancake',
   pangolin = 'pangolin',
   quickswap = 'quickswap',
+  raydium = 'raydium',
+  saber = 'saber',
   spookyswap = 'spookyswap',
   sushiswap = 'sushiswap',
-  uniswap = 'uniswap',
-  alpaca = 'alpaca',
-  yearn = 'yearn',
   traderjoe = 'traderjoe',
-  ellipsis = 'ellipsis',
-  raydium = 'raydium',
-  viperswap = 'viperswap',
-  badger = 'badger',
-  defikingdoms = 'defikingdoms',
+  uniswap = 'uniswap',
   venus = 'venus',
+  viperswap = 'viperswap',
   vvs = 'vvs',
-  mojitoswap = 'mojitoswap',
   wepiggy = 'wepiggy',
+  yearn = 'yearn',
 }
 
 export enum YearnProtocolEnum {
@@ -36,6 +39,10 @@ export enum AaveProtocolEnum {
 
 export enum BeefyProtocolEnum {
   Beefy = 'Beefy',
+}
+
+export enum ConvexProtocolEnum {
+  Convex = 'Convex',
 }
 
 export enum UniswapProtocolEnum {
@@ -123,28 +130,39 @@ export enum WePiggyProtocolEnum {
   wepiggy = 'WePiggy',
 }
 
+export enum SaberProtocolEnum {
+  saber = 'Saber',
+}
+
+export enum IslandswapProtocolEnum {
+  islandswap = 'Islandswap',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
+  ...BadgerProtocolEnum,
   ...BeefyProtocolEnum,
   ...CompoundProtocolEnum,
+  ...ConvexProtocolEnum,
   ...CurveProtocolEnum,
+  ...DefiKingdomsProtocolEnum,
+  ...EllipsisProtocolEnum,
+  ...IslandswapProtocolEnum,
+  ...MojitoswapProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,
+  ...RaydiumProtocolEnum,
+  ...SaberProtocolEnum,
   ...SpookySwapProtocolEnum,
   ...SushiSwapProtocolEnum,
-  ...UniswapProtocolEnum,
-  ...YearnProtocolEnum,
   ...TraderjoeProtocolEnum,
-  ...EllipsisProtocolEnum,
-  ...BadgerProtocolEnum,
-  ...RaydiumProtocolEnum,
-  ...ViperswapProtocolEnum,
-  ...DefiKingdomsProtocolEnum,
-  ...VenusProtocolEnum,
+  ...UniswapProtocolEnum,
   ...VVSProtocolEnum,
-  ...MojitoswapProtocolEnum,
+  ...VenusProtocolEnum,
+  ...ViperswapProtocolEnum,
   ...WePiggyProtocolEnum,
+  ...YearnProtocolEnum,
 };

@@ -8,6 +8,12 @@ import { IntegrationsControllerV2 } from '../../controllers/integrations.control
 import { ProtocolModule } from '../protocols/protocol.module';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
+import { ProjectsContractEntity } from './entities/projectsContract.entity';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
+import { TrackedVaultEntity } from './entities/trackedVault.entity';
+import { ProjectsContractRepository } from './repositories/projectsContract.repository';
+import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 
@@ -26,6 +32,13 @@ import { IntegrationsService } from './integrations.service';
       inject: [ConfigService],
     }),
     ProtocolModule,
+    TypeOrmModule.forFeature([
+      ProjectsContractRepository,
+      TrackedVaultRepository,
+      ProjectsContractEntity,
+      ProjectsInfoEntity,
+      TrackedVaultEntity,
+    ]),
   ],
   providers: [IntegrationsService, FeaturesService],
   controllers: [IntegrationsController, IntegrationsControllerV2],

@@ -57,7 +57,7 @@ export class TraderJoeFarm {
         items: [],
         feature: FeatureEnum.farming,
       });
-      
+
       if (Number(userBalance) > 0) {
         toAdd.items = [this.toPosition(userBalance, xJOEStaking)];
       }
@@ -131,7 +131,7 @@ export class TraderJoeFarm {
     const balanceRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
       balanceCall,
     );
-    
+
     return balanceRsp.get(userAddress).output.data;
   }
 }

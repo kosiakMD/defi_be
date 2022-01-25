@@ -91,7 +91,6 @@ export class DefiKingdomsPools {
         .times(poolShare)
         .toNumber();
       t.value = null;
-      t.price = null;
       t.balance = b;
     });
     poolData.stats.share = poolShare.toNumber();

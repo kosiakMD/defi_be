@@ -56,6 +56,7 @@ export const validationSchema = Joi.object({
   ACCOUNT_24H_RETURNS: Joi.string().required(),
   ACCOUNT_APPROVALS: Joi.string().required(),
   ACCOUNT_ASSETS: Joi.string().required(),
+  ACCOUNT_SEARCH_URL: Joi.string().required(),
   POOLS_PATH: Joi.string().required(),
   VAULTS_PATH: Joi.string().required(),
   NFT_PROJECTS: Joi.string().required(),
@@ -86,6 +87,7 @@ export const validationSchema = Joi.object({
   INTEGRATION_PANGOLIN: Joi.string().required(),
   INTEGRATION_PROTOCOLS: Joi.string().required(),
   INTEGRATION_PROTOCOLS_V2: Joi.string().required(),
+  INTEGRATION_SEARCH_URL: Joi.string().required(),
 
   // SAFE
   SAFE_PROXY_SERVICE_HOST: Joi.string().required(),
@@ -104,6 +106,9 @@ export const validationSchema = Joi.object({
   ETHERSCAN_API_KEY: Joi.string().required(),
   BSCSCAN_API_URL: Joi.string().required(),
   BSCSCAN_API_KEY: Joi.string().required(),
+  ETH_URL: Joi.string().required(),
+  SOL_URL: Joi.string().required(),
+  SOLANA_NAME_SERVICE_PUBLIC_KEY: Joi.string().required(),
   //  TODO: temporary
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().required(),

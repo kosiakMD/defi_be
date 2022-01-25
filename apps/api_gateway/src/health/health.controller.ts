@@ -1,4 +1,4 @@
-import { Controller, Get, ServiceUnavailableException } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
@@ -63,12 +63,12 @@ export class HealthController {
       error: {},
       details: {},
     };
-    const statuses = await Promise.all([
+    const services = await Promise.all<HealthCheckResult>([
       this.serviceHealthIndicator.isAccountHealthy(),
       this.serviceHealthIndicator.isIntegrationHealthy(),
       this.serviceHealthIndicator.isPriceHealthy(),
     ]);
-    statuses.forEach((service) => {
+    services.forEach((service) => {
       // TODO: For short variant of info: { [serviceName]: [status: 'ok' | 'error']}
       // Object.keys(service.info).forEach((key) => {
       //   Object.assign(result.info, {
@@ -81,7 +81,6 @@ export class HealthController {
     });
     if (Object.keys(result.error).length) {
       result.status = HealthStatusEnum.error;
-      throw new ServiceUnavailableException(result);
     }
     return result;
     // throw new HealthCheckError('Services check failed', result);

@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -18,6 +18,7 @@ import { Logger } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
@@ -120,10 +121,10 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: TransformHeadersInterceptor,
-    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformHeadersInterceptor,
+    },
     // TODO: for global auto caching
     // {
     // 	provide: APP_INTERCEPTOR,

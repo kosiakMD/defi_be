@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { HealthCheckResult, HealthIndicator } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -51,6 +51,7 @@ export class ServiceHealthIndicator extends HealthIndicator {
         details: {
           [toCamelCase(service.constructor.name)]: {
             status: HealthServiceStatusEnum.down,
+            message: new ServiceUnavailableException(),
           },
         },
       };

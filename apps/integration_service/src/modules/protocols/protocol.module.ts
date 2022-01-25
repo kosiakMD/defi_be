@@ -14,6 +14,10 @@ import { LiquidityPools } from './features/liquidity-pools';
 import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
+import { AbracadabraBorrowing } from './protocols/abracadabra/features/abracadabra.borrowing';
+import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadabra.claimable';
+import { AbracadabraStaking } from './protocols/abracadabra/features/abracadabra.staking';
 import { AlpacaApiService } from './protocols/alpaca/alpaca.api.service';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
@@ -83,6 +87,13 @@ import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
+const Abracadabra = [
+  AbracadabraProtocol,
+  AbracadabraBorrowing,
+  AbracadabraClaimable,
+  AbracadabraStaking,
+];
+
 const Convex = [ConvexProtocol, ConvexCvxStaking, ConvexCvxCRVStaking, ConvexCurveLpStaking];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
@@ -138,6 +149,7 @@ const ProtocolList = [
   WePiggyProtocol,
   YearnProtocolV1,
   YearnProtocolV2,
+  ...Abracadabra,
   ...Alpaca,
   ...Autofarm,
   ...Badger,

@@ -51,6 +51,7 @@ import { PriceService } from '../microservices/price.service';
 import { FeatureHandleDto, RawFeaturesDto } from './dto/protocols.dto';
 import { tokenDictionary } from './helpers/protocols.dictionaries';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
@@ -93,6 +94,7 @@ export class ProtocolService {
     private readonly priceService: PriceService,
     private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly alpacaProtocol: AlpacaProtocol,
+    private readonly abracadabraProtocol: AbracadabraProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly badgerProtocol: BadgerProtocol,
     private readonly beefyProtocol: BeefyProtocol,
@@ -125,6 +127,7 @@ export class ProtocolService {
     this.protocols = [
       aaveProtocolV2,
       alpacaProtocol,
+      abracadabraProtocol,
       autofarmProtocol,
       badgerProtocol,
       beefyProtocol,
@@ -750,9 +753,6 @@ export class ProtocolService {
     const chainAssetPrices = new Map<number, Map<string, number>>();
     try {
       const promises = [];
-      // TODO: This currently only accounts for tokens that are priced
-      // via uniswap-like pairs. For others we can set the prices in
-      // the protocol and it will use that as the fallback here
       chainAssets.forEach((assets, chainId) => {
         promises.push(this.priceService.getTokenPricesFetch(Array.from(assets), chainId));
       });

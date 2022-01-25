@@ -1,5 +1,6 @@
 export enum ProjectEnum {
   aave = 'aave',
+  abracadabra = 'abracadabra',
   alpaca = 'alpaca',
   autofarm = 'autofarm',
   badger = 'badger',
@@ -36,6 +37,10 @@ export enum YearnProtocolEnum {
 
 export enum AaveProtocolEnum {
   AaveV2 = 'AaveV2',
+}
+
+export enum AbracadabraProtocolEnum {
+  abracadabra = 'Abracadabra',
 }
 
 export enum BeefyProtocolEnum {
@@ -145,6 +150,7 @@ export enum IslandswapProtocolEnum {
 
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
+  ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,

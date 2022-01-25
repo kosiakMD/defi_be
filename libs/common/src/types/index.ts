@@ -1,6 +1,7 @@
 import {
   ChainIdEnum,
   AaveProtocolEnum,
+  AbracadabraProtocolEnum,
   AlpacaProtocolEnum,
   AutofarmProtocolEnum,
   BeefyProtocolEnum,
@@ -37,6 +38,7 @@ export type ChainId = ChainIdEnum;
 
 export type ProtocolName =
   | AaveProtocolEnum
+  | AbracadabraProtocolEnum
   | AlpacaProtocolEnum
   | AutofarmProtocolEnum
   | BeefyProtocolEnum

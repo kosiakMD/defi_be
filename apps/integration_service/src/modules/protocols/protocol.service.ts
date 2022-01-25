@@ -51,6 +51,7 @@ import { PriceService } from '../microservices/price.service';
 import { FeatureHandleDto, RawFeaturesDto } from './dto/protocols.dto';
 import { tokenDictionary } from './helpers/protocols.dictionaries';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
@@ -79,6 +80,7 @@ import VenusProtocol from './protocols/venusProtocol';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
@@ -92,64 +94,68 @@ export class ProtocolService {
     private readonly priceService: PriceService,
     private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly alpacaProtocol: AlpacaProtocol,
+    private readonly abracadabraProtocol: AbracadabraProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly badgerProtocol: BadgerProtocol,
     private readonly beefyProtocol: BeefyProtocol,
     private readonly compoundProtocol: CompoundProtocol,
     private readonly convexProtocol: ConvexProtocol,
+    private readonly curveProtocol: CurveProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
     private readonly islandswapProtocol: IslandswapProtocol,
+    private readonly mojitoswapProtocol: MojitoswapProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pancakeProtocolV2: PancakeProtocol,
     private readonly pangolinProtocolV2: PangolinV2Protocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly raydiumProtocol: RaydiumProtocol,
+    private readonly saberProtocol: SaberProtocol,
     private readonly spookySwapProtocol: SpookySwapProtocol,
     private readonly sushiswapProtocolV2: SushiswapProtocolV2,
     private readonly traderjoeProtocol: TraderJoeProtocol,
     private readonly uniswapProtocolV2: UniswapProtocolV2,
     private readonly uniswapProtocolV3: UniswapProtocolV3,
+    private readonly venusProtocol: VenusProtocol,
     private readonly viperswapProtocol: ViperswapProtocol,
+    private readonly vvsProtocol: VVSProtocol,
+    private readonly wePiggyProtocol: WePiggyProtocol,
+    private readonly wonderlandProtocol: WonderlandProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
-    private readonly venusProtocol: VenusProtocol,
-    private readonly vvsProtocol: VVSProtocol,
-    private readonly curveProtocol: CurveProtocol,
-    private readonly mojitoswapProtocol: MojitoswapProtocol,
-    private readonly wePiggyProtocol: WePiggyProtocol,
-    private readonly saberProtocol: SaberProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
       alpacaProtocol,
+      abracadabraProtocol,
       autofarmProtocol,
       badgerProtocol,
       beefyProtocol,
       compoundProtocol,
       convexProtocol,
+      curveProtocol,
       defiKingdomsProtocol,
       ellipsisProtocol,
       islandswapProtocol,
+      mojitoswapProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocolV2,
       quickswapProtocol,
       raydiumProtocol,
+      saberProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
       traderjoeProtocol,
       uniswapProtocolV2,
       uniswapProtocolV3,
+      venusProtocol,
       viperswapProtocol,
+      vvsProtocol,
+      wePiggyProtocol,
+      wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
-      venusProtocol,
-      vvsProtocol,
-      curveProtocol,
-      mojitoswapProtocol,
-      wePiggyProtocol,
-      saberProtocol,
     ];
   }
 
@@ -747,9 +753,6 @@ export class ProtocolService {
     const chainAssetPrices = new Map<number, Map<string, number>>();
     try {
       const promises = [];
-      // TODO: This currently only accounts for tokens that are priced
-      // via uniswap-like pairs. For others we can set the prices in
-      // the protocol and it will use that as the fallback here
       chainAssets.forEach((assets, chainId) => {
         promises.push(this.priceService.getTokenPricesFetch(Array.from(assets), chainId));
       });

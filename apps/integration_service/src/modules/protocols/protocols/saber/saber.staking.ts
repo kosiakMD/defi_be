@@ -78,25 +78,27 @@ export class SaberStaking {
 
     for (const b of balances) {
       const vault = cachedPoolsMap.get(b.quarryKey);
-      if (!vault) {
-        continue;
+      if (vault) {
+        const calculatedReward = calculateReward(infoQuarry, b, vault);
+        if (calculatedReward > 0 || +b.balance > 0) {
+          const stakingPosition: IntegrationStakingPositionDto = cloneDeep(vault);
+          const balance = toDecimals(+b.balance, vault.stakingToken.decimals);
+          const userShare = new BN(balance).div(new BN(vault.stakingToken.totalSupply));
+
+          stakingPosition.staked = b.balance;
+          stakingPosition.stakingToken.balance = balance;
+          stakingPosition.stakingToken.tokens.forEach((t) => {
+            t.balance = userShare.toNumber() * t.reserve;
+            t.value = t.price * t.balance;
+          });
+
+          stakingPosition.rewards[0].claimableData.balance = calculatedReward;
+          stakingPosition.rewards[0].claimableData.value =
+            +stakingPosition.rewards[0].claimableData.balance * stakingPosition.rewards[0].price;
+          stakingPosition.extra = undefined;
+          baseDataStakingMap.get(b.authority).items.push(stakingPosition);
+        }
       }
-      const stakingPosition: IntegrationStakingPositionDto = cloneDeep(vault);
-      const balance = toDecimals(+b.balance, vault.stakingToken.decimals);
-      const userShare = new BN(balance).div(new BN(vault.stakingToken.totalSupply));
-
-      stakingPosition.staked = b.balance;
-      stakingPosition.stakingToken.balance = balance;
-      stakingPosition.stakingToken.tokens.forEach((t) => {
-        t.balance = userShare.toNumber() * t.reserve;
-        t.value = t.price * t.balance;
-      });
-
-      stakingPosition.rewards[0].claimableData.balance = calculateReward(infoQuarry, b, vault);
-      stakingPosition.rewards[0].claimableData.value =
-        +stakingPosition.rewards[0].claimableData.balance * stakingPosition.rewards[0].price;
-      stakingPosition.extra = undefined;
-      baseDataStakingMap.get(b.authority).items.push(stakingPosition);
     }
 
     return Array.from(baseDataStakingMap.values());

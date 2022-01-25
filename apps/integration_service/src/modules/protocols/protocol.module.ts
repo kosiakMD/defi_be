@@ -14,6 +14,10 @@ import { LiquidityPools } from './features/liquidity-pools';
 import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
+import { AbracadabraBorrowing } from './protocols/abracadabra/features/abracadabra.borrowing';
+import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadabra.claimable';
+import { AbracadabraStaking } from './protocols/abracadabra/features/abracadabra.staking';
 import { AlpacaApiService } from './protocols/alpaca/alpaca.api.service';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
@@ -78,17 +82,23 @@ import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WonderlandStaking } from './protocols/wonderland/features/wonderland.staking';
+import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+
+const Abracadabra = [
+  AbracadabraProtocol,
+  AbracadabraBorrowing,
+  AbracadabraClaimable,
+  AbracadabraStaking,
+];
 
 const Convex = [ConvexProtocol, ConvexCvxStaking, ConvexCvxCRVStaking, ConvexCurveLpStaking];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const Islandswap = [
-  IslandswapProtocol,
-  IslandswapPools,
-  IslandswapStaking,
-];
+const Wonderland = [WonderlandProtocol, WonderlandStaking];
+const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
 const TraderJoe = [
   TraderJoeProtocol,
   TraderJoePools,
@@ -139,6 +149,7 @@ const ProtocolList = [
   WePiggyProtocol,
   YearnProtocolV1,
   YearnProtocolV2,
+  ...Abracadabra,
   ...Alpaca,
   ...Autofarm,
   ...Badger,
@@ -155,6 +166,7 @@ const ProtocolList = [
   ...TraderJoe,
   ...VVS,
   ...Viperswap,
+  ...Wonderland,
 ];
 
 @Module({

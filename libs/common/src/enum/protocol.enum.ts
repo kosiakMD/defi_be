@@ -1,5 +1,6 @@
 export enum ProjectEnum {
   aave = 'aave',
+  abracadabra = 'abracadabra',
   alpaca = 'alpaca',
   autofarm = 'autofarm',
   badger = 'badger',
@@ -25,6 +26,7 @@ export enum ProjectEnum {
   viperswap = 'viperswap',
   vvs = 'vvs',
   wepiggy = 'wepiggy',
+  wonderland = 'wonderland',
   yearn = 'yearn',
 }
 
@@ -35,6 +37,10 @@ export enum YearnProtocolEnum {
 
 export enum AaveProtocolEnum {
   AaveV2 = 'AaveV2',
+}
+
+export enum AbracadabraProtocolEnum {
+  abracadabra = 'Abracadabra',
 }
 
 export enum BeefyProtocolEnum {
@@ -130,6 +136,10 @@ export enum WePiggyProtocolEnum {
   wepiggy = 'WePiggy',
 }
 
+export enum WonderlandProtocolEnum {
+  wonderland = 'Wonderland',
+}
+
 export enum SaberProtocolEnum {
   saber = 'Saber',
 }
@@ -140,6 +150,7 @@ export enum IslandswapProtocolEnum {
 
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
+  ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,
@@ -164,5 +175,6 @@ export const ProtocolNameEnum = {
   ...VenusProtocolEnum,
   ...ViperswapProtocolEnum,
   ...WePiggyProtocolEnum,
+  ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
 };

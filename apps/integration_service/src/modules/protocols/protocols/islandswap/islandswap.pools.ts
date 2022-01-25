@@ -4,6 +4,7 @@ import { plainToClass } from 'class-transformer';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { AccountService } from '../../../microservices/account.service';
 
 import {
   AccountBalance,
@@ -16,17 +17,16 @@ import {
   ProjectEnum,
   ProtocolTypeEnum,
   TokenBalance,
-  DefiKingdomsProtocolEnum,
+  IslandswapProtocolEnum,
 } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
-import { AccountService } from '../../../microservices/account.service';
 
 @Injectable()
-export class DefiKingdomsPools {
+export class IslandswapPools {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -34,7 +34,7 @@ export class DefiKingdomsPools {
   ) {}
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
-    const cacheKey = `${chain.id}_${DefiKingdomsProtocolEnum.defikingdoms}_${FeatureEnum.pools}`;
+    const cacheKey = `${chain.id}_${IslandswapProtocolEnum.islandswap}_${FeatureEnum.pools}`;
     const cachedPools: NotifyPools = await this.cache.get(cacheKey);
     if (!cachedPools) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
@@ -42,7 +42,7 @@ export class DefiKingdomsPools {
 
     const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
       addresses,
-      [ChainIdEnum.harm],
+      [ChainIdEnum.okex],
       cachedPools.items.map((i) => i.address),
     );
 
@@ -54,7 +54,7 @@ export class DefiKingdomsPools {
           chain: chain,
           userAddress: a,
           protocolType: ProtocolTypeEnum.amm,
-          projectName: ProjectEnum.defikingdoms,
+          projectName: ProjectEnum.islandswap,
           items: existedPositions,
           feature: FeatureEnum.pools,
         });
@@ -85,12 +85,12 @@ export class DefiKingdomsPools {
       new BigNumber(poolData.lpToken.totalSupply),
     );
 
-    // simple rewriting pool data with user data, prices will be added later
     poolData.tokens.forEach((t) => {
       const b = new BigNumber(t.reserve) //
         .times(poolShare)
         .toNumber();
       t.value = null;
+      t.price = null;
       t.balance = b;
     });
     poolData.stats.share = poolShare.toNumber();

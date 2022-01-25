@@ -37,6 +37,9 @@ import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staki
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
+import { IslandswapPools } from './protocols/islandswap/islandswap.pools';
+import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
+import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
@@ -81,6 +84,11 @@ import YearnProtocolV2 from './protocols/yearnProtocolV2';
 const Convex = [ConvexProtocol, ConvexCvxStaking, ConvexCvxCRVStaking, ConvexCurveLpStaking];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
+const Islandswap = [
+  IslandswapProtocol,
+  IslandswapPools,
+  IslandswapStaking,
+];
 const TraderJoe = [
   TraderJoeProtocol,
   TraderJoePools,
@@ -138,6 +146,7 @@ const ProtocolList = [
   ...Curve,
   ...DefiKingdoms,
   ...Ellipsis,
+  ...Islandswap,
   ...Mojitoswap,
   ...Pancake,
   ...Pangolin,

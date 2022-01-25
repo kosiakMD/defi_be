@@ -62,6 +62,7 @@ import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
+import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
@@ -98,6 +99,7 @@ export class ProtocolService {
     private readonly convexProtocol: ConvexProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
+    private readonly islandswapProtocol: IslandswapProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pancakeProtocolV2: PancakeProtocol,
     private readonly pangolinProtocolV2: PangolinV2Protocol,
@@ -128,6 +130,7 @@ export class ProtocolService {
       convexProtocol,
       defiKingdomsProtocol,
       ellipsisProtocol,
+      islandswapProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocolV2,

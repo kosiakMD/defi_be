@@ -92,7 +92,6 @@ export class ViperswapPools {
         .times(poolShare)
         .toNumber();
       t.value = null;
-      t.price = null;
       t.balance = b;
     });
     userData.stats.share = poolShare.toNumber();

@@ -31,6 +31,8 @@ import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
+import { IslandswapPools } from './islandswap/islandswap.pools';
+import { IslandswapStaking } from './islandswap/islandswap.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
@@ -77,6 +79,8 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   DefiKingdomsStaking,
   EllipsisLp,
   EllipsisStaking,
+  IslandswapPools,
+  IslandswapStaking,
   MojitoswapPools,
   MojitoswapStaking,
   PancakePoolsV2,

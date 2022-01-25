@@ -8,6 +8,7 @@ import {
   CurveProtocolEnum,
   ConvexProtocolEnum,
   EllipsisProtocolEnum,
+  IslandswapProtocolEnum,
   PancakeProtocolEnum,
   PangolinProtocolEnum,
   QuickswapProtocolEnum,
@@ -42,6 +43,7 @@ export type ProtocolName =
   | CurveProtocolEnum
   | ConvexProtocolEnum
   | EllipsisProtocolEnum
+  | IslandswapProtocolEnum
   | PancakeProtocolEnum
   | PangolinProtocolEnum
   | QuickswapProtocolEnum

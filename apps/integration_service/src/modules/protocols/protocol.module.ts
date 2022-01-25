@@ -78,17 +78,16 @@ import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WonderlandStaking } from './protocols/wonderland/features/wonderland.staking';
+import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
 
 const Convex = [ConvexProtocol, ConvexCvxStaking, ConvexCvxCRVStaking, ConvexCurveLpStaking];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
-const Islandswap = [
-  IslandswapProtocol,
-  IslandswapPools,
-  IslandswapStaking,
-];
+const Wonderland = [WonderlandProtocol, WonderlandStaking];
+const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
 const TraderJoe = [
   TraderJoeProtocol,
   TraderJoePools,
@@ -155,6 +154,7 @@ const ProtocolList = [
   ...TraderJoe,
   ...VVS,
   ...Viperswap,
+  ...Wonderland,
 ];
 
 @Module({

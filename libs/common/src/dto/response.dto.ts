@@ -78,4 +78,6 @@ export class ErrorResponseDto {
     example: '5da02c35-b815-450d-9ce3-c0503b69e3ba',
   })
   reqId: string;
+
+  type?: string;
 }

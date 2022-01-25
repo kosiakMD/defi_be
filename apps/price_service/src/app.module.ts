@@ -10,7 +10,7 @@ import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
 import { LoggerMiddleware } from '@app/common/middlewares';
-import { RequestIdMiddleware } from '@app/common/middlewares/req-id.middleware';
+import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 
 import config from './config';
 import { HealthModule } from './modules/health.module';
@@ -62,7 +62,7 @@ import { PricesModule } from './modules/prices/prices.module';
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(RequestIdMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
 
   onModuleInit(): void {

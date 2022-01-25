@@ -13,7 +13,7 @@ export class TransformHeadersInterceptor implements NestInterceptor {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   intercept(context: ExecutionContext, call$: Observable<any>): Observable<any> {
-    const reqId = context.switchToHttp().getRequest().headers[HEADER_REQUEST_ID];
+    const reqId = context.switchToHttp().getRequest().header(HEADER_REQUEST_ID);
     this.logger.log('intercept reqId', reqId);
 
     return call$;

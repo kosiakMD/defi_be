@@ -9,17 +9,17 @@ import { Logger } from '@app/common/Logger';
 import { HEADER_REQUEST_ID } from '@app/common/constant';
 
 @Injectable()
-export class RequestIdMiddleware implements NestMiddleware {
+export class HeadersMiddleware implements NestMiddleware {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private httpService: HttpService,
   ) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    let reqId = req.headers[HEADER_REQUEST_ID];
+    let reqId = req.header(HEADER_REQUEST_ID);
     if (!reqId) {
       reqId = uuid();
-      req.headers[HEADER_REQUEST_ID] = reqId;
+      req.headers[HEADER_REQUEST_ID] = reqId; // hard override if no method to change/set as it's Request, not Resp
     }
 
     // simpler hardcoded variant, left for as example

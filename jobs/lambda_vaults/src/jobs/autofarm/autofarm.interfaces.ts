@@ -22,6 +22,12 @@ export interface AutofarmPool {
   entranceFeeText: string;
   poolInfo: PoolInfo;
   totalAllocPoint: string;
+  pid: string;
+  farmWantLockedTotal: any;
+  pairReserves: string[];
+  earnedAddress: string;
+  farmWantTVL: number;
+  pairTotalSupply: string;
   wantLockedTotal: string;
   lastEarnBlock: string;
   wantPrice: string;

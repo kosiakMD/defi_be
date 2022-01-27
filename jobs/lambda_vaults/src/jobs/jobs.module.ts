@@ -9,8 +9,17 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
 import { AutofarmApiService } from './autofarm/autofarm.api.service';
+import { AutofarmStakingAVAX } from './autofarm/autofarm.staking.avax';
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
+import { AutofarmStakingCELO } from './autofarm/autofarm.staking.celo';
+import { AutofarmStakingCRO } from './autofarm/autofarm.staking.cro';
+//import { AutofarmStakingFTM } from './autofarm/autofarm.staking.ftm';
+//import { AutofarmStakingHARM } from './autofarm/autofarm.staking.harm';
+import { AutofarmStakingHECO } from './autofarm/autofarm.staking.heco';
+//import { AutofarmStakingMRIVER } from './autofarm/autofarm.staking.mriver';
+//import { AutofarmStakingOKEX } from './autofarm/autofarm.staking.okex';
 import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
+//import { AutofarmStakingXDAI } from './autofarm/autofarm.staking.xdai';
 import { BadgerStakingArbi } from './badger/badger.staking.arbi';
 import { BadgerStakingEth } from './badger/badger.staking.eth';
 import { BadgerStakingPLG } from './badger/badger.staking.plg';
@@ -64,7 +73,16 @@ import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
 
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
+  AutofarmStakingAVAX,
   AutofarmStakingBSC,
+  AutofarmStakingCELO,
+  AutofarmStakingCRO,
+  //AutofarmStakingFTM,
+  //AutofarmStakingHARM,
+  AutofarmStakingHECO,
+  //AutofarmStakingMRIVER,
+  //AutofarmStakingOKEX,
+  //AutofarmStakingXDAI,
   AutofarmStakingPLG,
   BadgerStakingArbi,
   BadgerStakingEth,

@@ -52,6 +52,22 @@ export class MulticallProvider {
         rpcConfigPath: 'CRONOS_URL',
         multicallAddress: '0x8cCB17c781A886c1e9e4b7128C12A41A53d9E4E1',
       },
+      [ChainAbbrEnum.heco]: {
+        rpcConfigPath: 'HECO_URL',
+        multicallAddress: '0x2bC9D53e7734913587f791389444119B90698037',
+      },
+      [ChainAbbrEnum.mriver]: {
+        rpcConfigPath: 'MRIVER_URL',
+        multicallAddress: '0x270f2F35bED92B7A59eA5F08F6B3fd34c8D9D9b5',
+      },
+      [ChainAbbrEnum.okex]: {
+        rpcConfigPath: 'OKEX_URL',
+        multicallAddress: '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c',
+      },
+      [ChainAbbrEnum.celo]: {
+        rpcConfigPath: 'CELO_URL',
+        multicallAddress: '0xBc107e7E5e68Fc92E76A002381347846fD03F1C6',
+      },
     };
     Object.entries(providersData).forEach(([chainAbbr, config]) => {
       this.multicallsMap.set(

@@ -28,10 +28,18 @@ import { Abis } from './contracts/abis';
 
 @Injectable()
 export class AutofarmStaking {
-  private readonly masterChiefAddresses = {
-    [ChainIdEnum.bsc]: '0x0895196562c7868c5be92459fae7f877ed450452',
-    [ChainIdEnum.plg]: '0x89d065572136814230a55ddeeddec9df34eb0b76',
-  };
+  private readonly masterChiefAddresses = new Map([
+    [ChainIdEnum.avax, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
+    [ChainIdEnum.bsc, '0x0895196562c7868c5be92459fae7f877ed450452'],
+    [ChainIdEnum.cro, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
+    [ChainIdEnum.celo, '0xdd11b66b90402f294a017c4688509c364312303f'],
+    [ChainIdEnum.ftm, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
+    [ChainIdEnum.harm, '0x9c57658139afb41949cebc07d806f37d29d13eea'],
+    [ChainIdEnum.heco, '0x96a29c4bce3126266983f535b41c30dba80d5d99'],
+    [ChainIdEnum.mriver, '0xfada8cc923514f1d7b0586ad554b4a0cead4680e'],
+    [ChainIdEnum.okex, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
+    [ChainIdEnum.plg, '0x89d065572136814230a55ddeeddec9df34eb0b76'],
+  ]);
   private readonly autofarmVault = '0x763a05bdb9f8946d8c3fa72d1e0d3f5e68647e5c';
 
   constructor(
@@ -52,7 +60,7 @@ export class AutofarmStaking {
     }
 
     const multicall: MulticallService = this.multicallProvider.getForChain(chain.abbr);
-    const masterContract: string = this.masterChiefAddresses[chain.id];
+    const masterContract: string = this.masterChiefAddresses.get(chain.id);
 
     const base: BaseDataStaking[] = [];
 
@@ -92,7 +100,8 @@ export class AutofarmStaking {
     const poolsWithBalance = [];
 
     for (const userInfo of userInfos.entries()) {
-      if (Number(userInfo[1].output.data) > 0) {
+      // don't show zero and little balances
+      if (Number(userInfo[1].output.data) > 1) {
         const data = userInfo[0].split('_');
         poolsWithBalance.push({
           contract: data[0],
@@ -134,7 +143,7 @@ export class AutofarmStaking {
       bonusTokenAddress?: string;
     }[] = [];
 
-    if (contract === this.masterChiefAddresses[ChainIdEnum.bsc]) {
+    if (contract === this.masterChiefAddresses.get(ChainIdEnum.bsc)) {
       balances.forEach((b) => {
         if (b.contract !== this.autofarmVault) {
           claimableRewards.push({
@@ -230,8 +239,9 @@ export class AutofarmStaking {
         const poolShare = stakedBigNumber.div(
           new BigNumber(stakingPosition.stakingToken.totalSupply),
         );
-        stakingPosition.stakingToken.tokens.forEach((clpt) => {
-          clpt.balance = poolShare.times(new BigNumber(clpt.reserve)).toNumber();
+        stakingPosition.stakingToken.tokens.forEach((t) => {
+          t.balance = poolShare.times(new BigNumber(t.reserve)).toNumber();
+          if (!Number.isFinite(t.balance)) t.balance = 0;
         });
       }
 
@@ -248,15 +258,14 @@ export class AutofarmStaking {
         (cr) => cr.userAddress === b.user.id && cr.poolId === balancePoolId,
       );
 
+      stakingPosition.rewards[0].claimableData = plainToClass(ClaimableDto, {});
       if (claimableReward) {
-        stakingPosition.rewards[0].claimableData = plainToClass(ClaimableDto, {});
         stakingPosition.rewards[0].claimableData.balance = claimableReward.pendingAUTO
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
           .toString();
       }
 
-      if (b.contract === this.masterChiefAddresses[ChainIdEnum.plg]) {
-        stakingPosition.rewards[0].claimableData = plainToClass(ClaimableDto, {});
+      if (b.contract === this.masterChiefAddresses.get(ChainIdEnum.plg)) {
         stakingPosition.rewards[0].claimableData.balance = 0;
         stakingPosition.rewards[1].claimableData = plainToClass(ClaimableDto, {});
         stakingPosition.rewards[1].claimableData.balance = 0;

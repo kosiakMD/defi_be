@@ -234,7 +234,7 @@ export class AutofarmStakingBSC implements JobInterface {
       /* added for the case when there is no token price in bd
       and we can get want token price from this api data(temporary decision)
        */
-      this.autofarmApiService.getAutofarmPoolsData(),
+      this.autofarmApiService.getAutofarmPoolsData(ChainIdEnum.bsc),
     ]);
 
     this.mapping = await Promise.all(

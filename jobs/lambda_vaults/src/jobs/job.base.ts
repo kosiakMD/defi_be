@@ -62,8 +62,8 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       this.logger.log(`Updating Mapping`, this.placeholder);
+      jobMapping = await this.rebuildMapping(jobMapping);
     }
-    jobMapping = await this.rebuildMapping(jobMapping);
 
     try {
       jobMapping.mapping.forEach((jm) => {

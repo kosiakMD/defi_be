@@ -4,7 +4,7 @@ import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainIdEnum, FeatureEnum, Logger, ProtocolNameEnum } from '@app/common';
-import { ZERO_ADDRESS } from '@app/common/constant';
+import { WETH_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import {
   CONVEX_BOOSTER,
   CRVCVX_REWARD_POOL_ADDRESS,
@@ -22,6 +22,7 @@ import {
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
+  UnderlyingStakingLp,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings, normalizeDecimals } from '@app/common/utils';
@@ -106,52 +107,122 @@ export class ConvexStaking
   ): Promise<IntegrationStakingPositionDto[]> {
     // get all involved addresses
     const addresses = this.getTokenAddresses(stakingFeatures);
-
     const prices = await this.fetchPrices(addresses);
+    const totalSupplies = await this.fetchTotalSupplies(addresses);
 
-    const stakingData = await this.formatTokensWithBalances(
+    const balances = await this.getUnderlyingBalances(
       stakingFeatures.filter(
         (t) => ![CVX_REWARD_POOL_ADDRESS, CRVCVX_REWARD_POOL_ADDRESS].includes(t.address),
       ),
     );
 
+    // Get balances & reserves
     stakingFeatures.forEach((stakingFeature) => {
-      // get total staked
-      stakingFeature.staked = stakingData.get(`${stakingFeature.address}-staked`);
+      stakingFeature.staked = balances.get(`${stakingFeature.address}-staked`);
+
       stakingFeature.stakingToken.totalSupply = normalizeDecimals(
-        stakingData.get(`${stakingFeature.stakingToken.address}-totalSupply`),
+        totalSupplies.get(stakingFeature.stakingToken.address),
         stakingFeature.stakingToken.decimals,
       );
 
       stakingFeature.stakingToken.tokens.forEach((token) => {
-        const reserve = normalizeDecimals(
-          stakingData.get(`${stakingFeature.stakingToken.address}-${token.address}-reserve`),
+        const tokenReserve = normalizeDecimals(
+          balances.get(stakingFeature.stakingToken.address).get(token.address),
           token.decimals,
         );
+        token.reserve = tokenReserve;
+        token.totalSupply = normalizeDecimals(totalSupplies.get(token.address), token.decimals);
 
-        token.totalSupply = stakingData.get(`${token.address}-totalSupply`);
-        token.reserve = reserve;
-        token.balance = reserve;
-        token.price = prices.get(token.address);
-        token.value = token.price * token.balance;
+        token.tokens.forEach((underlying) => {
+          const underlyingReserve = normalizeDecimals(
+            // Attempt Getting the most specific first
+            balances.get(stakingFeature.stakingToken.address).get(underlying.address) ??
+              balances.get(token.address).get(underlying.address),
+            underlying.decimals,
+          );
+          underlying.reserve = underlyingReserve;
+          underlying.totalSupply = normalizeDecimals(
+            totalSupplies.get(underlying.address),
+            underlying.decimals,
+          );
+        });
+      });
+
+      stakingFeature.rewards.forEach((reward) => {
+        reward.totalSupply = normalizeDecimals(totalSupplies.get(reward.address), reward.decimals);
+      });
+    });
+
+    // get prices (sometimes based on underlying balances)
+    const calculatedPrices = new Map(); // fallback calculated prices from other pools
+    stakingFeatures.forEach((stakingFeature) => {
+      stakingFeature.stakingToken.value = 0;
+      stakingFeature.rewards.forEach((reward) => {
+        reward.price = this.calculatePriceFromUnderlying(reward, prices, calculatedPrices);
+      });
+
+      stakingFeature.stakingToken.tokens.forEach((token) => {
+        token.tokens.forEach((underlying) => {
+          underlying.price = this.calculatePriceFromUnderlying(
+            underlying,
+            prices,
+            calculatedPrices,
+          );
+          underlying.value = underlying.price * underlying.reserve;
+        });
+        token.price = this.calculatePriceFromUnderlying(token, prices, calculatedPrices);
+        token.value = token.price * token.reserve;
         stakingFeature.stakingToken.value += token.value;
       });
 
+      // Calculate the price based on the underlying reserve values
       stakingFeature.stakingToken.price =
-        stakingFeature.stakingToken.value /
-        normalizeDecimals(stakingFeature.staked, stakingFeature.stakingToken.decimals);
-
-      // Reward Data...
-      stakingFeature.rewards.forEach((reward) => {
-        reward.apr = 0;
-        reward.price = prices.get(reward.address);
-      });
-
-      // Feature Data
-      stakingFeature.stats.tvl = stakingFeature.stakingToken.value;
+        stakingFeature.stakingToken.value / stakingFeature.stakingToken.totalSupply;
     });
 
     return stakingFeatures;
+  }
+
+  calculatePriceFromUnderlying(
+    token,
+    prices: Map<Address, string | number>,
+    calculatedPrices: Map<Address, number>,
+  ) {
+    if (prices.get(token.address)) {
+      return Number(prices.get(token.address));
+    }
+
+    if (token.tokens?.length) {
+      let total = 0;
+      token.tokens.forEach((underlying) => {
+        total += underlying.value;
+      });
+
+      const price = total / token.reserve;
+      if (price) {
+        calculatedPrices.set(token.address, price);
+      }
+      return total / token.reserve || calculatedPrices.get(token.address);
+    }
+    return null;
+  }
+
+  async fetchTotalSupplies(addresses: Address[]): Promise<Map<Address, string>> {
+    const calls = new Map();
+    addresses.forEach((address) => {
+      if (address !== ZERO_ADDRESS) {
+        calls.set(address, new ERC20(address).totalSupply());
+      } else {
+        calls.set(address, new ERC20(WETH_ADDRESS).totalSupply());
+      }
+    });
+
+    const results = await this.multicallService.handleInBatches(calls, this.chain);
+    const data = new Map();
+    results.forEach((result, key) => {
+      data.set(key, result.output.data.toString());
+    });
+    return data;
   }
 
   getStakingTokenData(
@@ -179,8 +250,15 @@ export class ConvexStaking
     return Array.from(
       new Set(
         stakingFeatures.flatMap((stakingFeature) => [
+          // Staking Tokens
           stakingFeature.stakingToken.address,
-          ...stakingFeature.stakingToken.tokens.map((t) => t.address),
+          ...stakingFeature.stakingToken.tokens.flatMap((t): string[] => [
+            // Underlying tokens
+            t.address,
+            // And underlying-underlying tokens
+            ...t.tokens.map((tt): string => tt.address),
+          ]),
+          // Rewards
           ...stakingFeature.rewards.map((r) => r.address),
         ]),
       ),
@@ -285,69 +363,6 @@ export class ConvexStaking
         },
       });
     });
-  }
-  private async formatTokensWithBalances(stakingPositions: IntegrationStakingPositionDto[]) {
-    const calls = stakingPositions.reduce((map, stakingPosition) => {
-      const lpToken = new ERC20(stakingPosition.extra.lpToken);
-
-      map.set(`${stakingPosition.stakingToken.address}-totalSupply`, lpToken.totalSupply());
-
-      map.set(
-        `${stakingPosition.extra.gauge}-${stakingPosition.extra.lpToken}-staked`,
-        lpToken.balanceOf(stakingPosition.extra.gauge),
-      );
-
-      stakingPosition.rewards.forEach((reward) => {
-        const rewardTokenContract = new ERC20(reward.address);
-        map.set(`${reward.address}-totalSupply`, rewardTokenContract.totalSupply());
-      });
-
-      return map;
-    }, new Map<string, CallData>());
-
-    const totals = await this.multicallService.handleInBatches(calls, this.chain);
-
-    const underlyingBalances = await this.getUnderlyingBalances(stakingPositions);
-
-    return new Map(
-      stakingPositions.flatMap((stakingPosition) => {
-        return [
-          [
-            // Total Staked
-            `${stakingPosition.address}-staked`,
-            totals
-              .get(`${stakingPosition.extra.gauge}-${stakingPosition.extra.lpToken}-staked`)
-              .output.data.toString(),
-          ],
-
-          [
-            // Staking Token Total Supply
-            `${stakingPosition.stakingToken.address}-totalSupply`,
-            totals
-              .get(`${stakingPosition.stakingToken.address}-totalSupply`)
-              .output.data.toString(),
-          ],
-          [
-            // virtual price
-            `${stakingPosition.stakingToken.address}-virtual-price`,
-            underlyingBalances.get(stakingPosition.extra.lpToken)?.get('virtual-price'),
-          ],
-
-          ...stakingPosition.stakingToken.tokens.flatMap((token): [string, string][] => {
-            return [
-              [
-                `${stakingPosition.stakingToken.address}-${token.address}-reserve`,
-                underlyingBalances.get(stakingPosition.extra.lpToken).get(token.address),
-              ],
-              [
-                `${token.address}-totalSupply`,
-                totals.get(`${token.address}-totalSupply`)?.output.data.toString(),
-              ],
-            ];
-          }),
-        ];
-      }),
-    );
   }
 
   private async formatTokens(
@@ -464,14 +479,18 @@ export class ConvexStaking
 
     const balanceResponses = new Map();
     addresses.forEach((address) => {
-      if (poolsResponse.get(`${address}-coins`).output.data[0] === ZERO_ADDRESS) return;
+      // if (poolsResponse.get(`${address}-coins`).output.data[0] === ZERO_ADDRESS) return;
 
       const coins = poolsResponse.get(`${address}-coins`).output.data;
       const balances = poolsResponse.get(`${address}-balances`).output.data;
       const balanceMap = new Map();
       coins.forEach((coin, idx) => {
-        if (coin === ZERO_ADDRESS) return;
-        balanceMap.set(coin.toLowerCase(), balances[idx].toString());
+        if (coin === ZERO_ADDRESS && !Number(balances[idx].toString())) return;
+        if (coin === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
+          balanceMap.set(ZERO_ADDRESS, balances[idx].toString());
+        } else {
+          balanceMap.set(coin.toLowerCase(), balances[idx].toString());
+        }
       });
       balanceResponses.set(address, balanceMap);
     });
@@ -799,17 +818,24 @@ export class ConvexStaking
     });
   }
 
-  private async getStakingTokenUnderlying(tokens: any[]) {
+  private async getStakingTokenUnderlying(
+    tokens: (IntegrationPoolTokenDto | UnderlyingStakingLp)[],
+  ) {
+    if (!tokens.length) {
+      return [];
+    }
     return Promise.all(
       tokens.map(async (token) => {
         const uid = concatStrings(this.chain, token.address);
         const vaultItem = await this.getDbItem(token, uid);
 
-        return plainToClass(FeatureMappingStakingPoolToken, {
+        const final = plainToClass(FeatureMappingStakingPoolToken, {
           dbId: vaultItem.id,
           dtoName: token.constructor.name,
           positionInPool: token.positionInPool,
+          tokens: await this.getStakingTokenUnderlying(token.tokens),
         });
+        return final;
       }),
     );
   }

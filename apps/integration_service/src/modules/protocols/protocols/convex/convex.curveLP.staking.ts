@@ -162,17 +162,23 @@ export class ConvexCurveLpStaking implements IStakingFetcher {
             ),
           ),
 
-          rewards: pool.rewards.map((reward) => {
-            return this.createClaimableRewardToken(
+          rewards: pool.rewards.reduce((acc, reward) => {
+            const token = this.createClaimableRewardToken(
               reward,
               normalizeDecimals(
                 balances
                   .get(ConvexCurveLpStaking.rewardsEarned(poolAddress, address, reward.address))
                   .output.data.toString(),
+
                 reward.decimals,
               ),
             );
-          }),
+
+            if (token.claimableData.balance) {
+              acc.push(token);
+            }
+            return acc;
+          }, []),
         });
       });
 
@@ -204,12 +210,36 @@ export class ConvexCurveLpStaking implements IStakingFetcher {
       balance: balance,
       value: balance * token.price,
 
-      tokens: token.tokens.map((underlying) => {
-        const share = underlying.value / tvl; // tota pool share ratio
-        underlying.value = balance * token.price * share;
-        underlying.balance = underlying.value / underlying.price;
-        return underlying;
-      }),
+      tokens: this.modifyUnderlyingTokens(token, balance),
+    });
+  }
+
+  private modifyUnderlyingTokens(token: IntegrationERC20TokenDto, balance: number) {
+    if (!token.tokens?.length) {
+      return [];
+    }
+    const total = token.tokens.reduce((acc, underlying) => {
+      return acc + underlying.reserve * underlying.price;
+    }, 0);
+    const poolValue = token.price * balance;
+
+    return token.tokens.map((underlying) => {
+      const poolShare = (underlying.price * underlying.reserve) / total;
+      underlying.value = poolValue * poolShare;
+      underlying.balance = underlying.value / underlying.price;
+
+      if (underlying.tokens?.length) {
+        const underlyingTotal = underlying.tokens.reduce((acc, cur) => {
+          return acc + cur.value;
+        }, 0);
+
+        underlying.tokens?.forEach((t) => {
+          const underlyingPoolShare = (t.price * t.reserve) / underlyingTotal;
+          t.value = underlying.value * underlyingPoolShare;
+          t.balance = t.value / t.price;
+        });
+      }
+      return underlying;
     });
   }
 

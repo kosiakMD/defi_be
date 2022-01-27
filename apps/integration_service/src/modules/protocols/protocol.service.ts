@@ -904,14 +904,15 @@ export class ProtocolService {
     chainAssetPrices: Map<number, Map<string, number>>,
     baseData: BaseData,
   ) {
-    let lpValue = 0;
+    let derivedLpValue = 0;
     poolToken.tokens.forEach((underlying) => {
       this.setTokenPriceAndValue(baseData.chain.id, underlying, chainAssetPrices);
-      lpValue += underlying.value;
+      derivedLpValue += underlying.value;
     });
-    poolToken.value = lpValue;
-    baseData.total += lpValue;
-    delete (poolToken as UnderlyingStakingLp).tokens;
+    poolToken.value = poolToken.price ? poolToken.balance * poolToken.price : derivedLpValue;
+    baseData.total += poolToken.value;
+    delete poolToken.tokens; // delete underlying balances
+    poolToken.tokens = [];
   }
 
   private setTokenPriceAndValue(

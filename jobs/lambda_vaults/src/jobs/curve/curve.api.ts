@@ -76,4 +76,34 @@ export class CurveApi {
       throw e;
     }
   }
+
+  async getMainPoolsAprPlg(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-polygon/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprPlg');
+      throw e;
+    }
+  }
+
+  async getMainPoolsAprAvax(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-avalanche/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprAvax');
+      throw e;
+    }
+  }
+
+  async getMainPoolsAprFtm(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-ftm/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprFtm');
+      throw e;
+    }
+  }
 }

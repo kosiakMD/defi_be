@@ -51,6 +51,14 @@ export class CurveRegistryAbi extends MultiCallAbiProxy {
     type: 'function',
   };
 
+  static readonly getMetaPoolBalances: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_balances',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256[4]' }],
+  };
+
   static readonly getUnderlyingBalances: AbiItem = {
     inputs: [{ name: '_pool', type: 'address' }],
     name: 'get_underlying_balances',
@@ -65,5 +73,24 @@ export class CurveRegistryAbi extends MultiCallAbiProxy {
     outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function',
+  };
+
+  static readonly getGauge: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_gauge',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [{ name: '', type: 'address' }],
+  };
+
+  static readonly getGauges: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_gauges',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [
+      { name: '', type: 'address[10]' },
+      { name: '', type: 'int128[10]' },
+    ],
   };
 }

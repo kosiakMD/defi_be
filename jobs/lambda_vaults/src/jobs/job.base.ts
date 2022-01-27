@@ -205,6 +205,7 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
         return {
           address: item.address,
           name: item.name,
+          registry: item.registry,
         };
     }
   }

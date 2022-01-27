@@ -153,6 +153,13 @@ export class JobsRunner {
     jobPlaceholdersSet.add('16_Mojitoswap_staking');
 
     jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Pangolin_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Curve_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Curve_staking`);
+
+    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Curve_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Curve_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Curve_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Curve_staking`);
 
     jobPlaceholdersSet.add('13_Islandswap_pools');
     jobPlaceholdersSet.add('13_Islandswap_staking')

@@ -40,10 +40,24 @@ export class CurveLpAbi extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
-  static readonly virtualPrice = {
+  static readonly getVirtualPrice = {
+    stateMutability: 'view',
+    type: 'function',
     name: 'get_virtual_price',
-    outputs: [{ type: 'uint256', name: '' }],
     inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+  };
+
+  static readonly getReserves = {
+    constant: true,
+    inputs: [],
+    name: 'getReserves',
+    outputs: [
+      { internalType: 'uint112', name: '_reserve0', type: 'uint112' },
+      { internalType: 'uint112', name: '_reserve1', type: 'uint112' },
+      { internalType: 'uint32', name: '_blockTimestampLast', type: 'uint32' },
+    ],
+    payable: false,
     stateMutability: 'view',
     type: 'function',
   };

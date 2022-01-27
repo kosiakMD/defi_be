@@ -14,12 +14,15 @@ import { CurveStaking } from './curve.staking';
 
 @Injectable()
 export default class CurveProtocol extends BasicProtocol {
-  readonly chains = [ChainAbbrEnum.eth];
+  readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.plg, ChainAbbrEnum.ftm, ChainAbbrEnum.avax];
   readonly project = ProjectEnum.curve;
   readonly name = CurveProtocolEnum.curve;
   readonly displayName = 'Curve';
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.plg]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.ftm]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
   };
 
   constructor(

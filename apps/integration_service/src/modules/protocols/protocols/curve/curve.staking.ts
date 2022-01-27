@@ -9,6 +9,7 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  ChainIdEnum,
   CurveProtocolEnum,
   FeatureEnum,
   Logger,
@@ -19,13 +20,15 @@ import { CurveAddresses } from '@app/common/constant/addresses';
 import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
+import { concatStrings } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { toDecimals } from '../../../../common/utils/util';
 
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
-import { UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
+import { StakingDataInterface, UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
+import { Abis } from './abis';
 import { CurveMulticall } from './curve.multicall';
 
 @Injectable()
@@ -53,7 +56,10 @@ export class CurveStaking {
       this.logger,
     );
     const balances = await localMultiCall.getUserBalances(addresses, cachedPools.items);
-    const rewards = await localMultiCall.getUserRewardsBalances(balances);
+    const rewards =
+      chain.id === ChainIdEnum.eth
+        ? await localMultiCall.getUserRewardsBalances(balances)
+        : await this.getNonEthRewards(balances, chain);
     const baseDataStakingMap: Map<string, BaseDataStaking> = new Map<string, BaseDataStaking>(
       addresses.map((a) => [
         a,
@@ -99,11 +105,11 @@ export class CurveStaking {
           };
         }
         const gaugeRewards = userRewards.get(stakingPosition.address);
-        stakingPosition.rewards.forEach((reward, index) => {
+        stakingPosition.rewards.forEach((reward) => {
           const rewardRaw =
             reward.address === CurveAddresses.crvToken
               ? gaugeRewards.crvReward
-              : gaugeRewards.additionalRewards[index - 1];
+              : gaugeRewards.additionalRewards?.shift();
           reward.claimableData = {
             balance: toDecimals(rewardRaw, reward.decimals),
             value: null,
@@ -123,5 +129,57 @@ export class CurveStaking {
     token.balance = new BigNumber(poolShare) //
       .multipliedBy(token.reserve)
       .toNumber();
+  }
+
+  private getClaimableRewardWriteLabel(address: string, tokenAddress: string, gauge: string) {
+    return concatStrings(address, tokenAddress, gauge);
+  }
+
+  private async getNonEthRewards(
+    balanceItemsMap: Map<string, StakingDataInterface[]>,
+    chain: ChainDto,
+  ) {
+    const multicall = this.multicallProvider.getForChain(ChainAbbrEnum[ChainIdEnum[chain.id]]);
+    const calls = new Map();
+    balanceItemsMap.forEach((value, key) => {
+      value.forEach((stakingData) => {
+        const contract = new Abis(stakingData.stakingPosition.address);
+        stakingData.stakingPosition.rewards.forEach((reward) => {
+          calls.set(
+            this.getClaimableRewardWriteLabel(
+              key,
+              reward.address,
+              stakingData.stakingPosition.address,
+            ),
+            contract.claimableRewardWrite(key, reward.address),
+          );
+        });
+      });
+    });
+
+    const multicallResp = await multicall.handleInBatches(calls);
+    const resultMap = new Map();
+    balanceItemsMap.forEach((value, key) => {
+      const rewardsMap = new Map();
+      value.forEach((stakingData) => {
+        const additionalRewards = [];
+        stakingData.stakingPosition.rewards.forEach((reward) => {
+          additionalRewards.push(
+            multicallResp
+              .get(
+                this.getClaimableRewardWriteLabel(
+                  key,
+                  reward.address,
+                  stakingData.stakingPosition.address,
+                ),
+              )
+              ?.output.data.toString(),
+          );
+        });
+        rewardsMap.set(stakingData.stakingPosition.address, { additionalRewards });
+      });
+      resultMap.set(key, rewardsMap);
+    });
+    return resultMap;
   }
 }

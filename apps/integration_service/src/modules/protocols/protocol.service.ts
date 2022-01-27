@@ -716,7 +716,7 @@ export class ProtocolService {
           baseData.items.forEach((stakingPosition) => {
             if (stakingPosition.stakingToken.tokens?.length) {
               stakingPosition.stakingToken.tokens.forEach((poolToken) => {
-                if ((poolToken as UnderlyingStakingLp).tokens?.length) {
+                if (poolToken.tokens?.length) {
                   setChainAssetsArray((poolToken as UnderlyingStakingLp).tokens);
                 } else {
                   setChainAsset(poolToken);

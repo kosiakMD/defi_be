@@ -271,11 +271,11 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
         positionInPool: t.positionInPool,
         weight: t.weight,
         tokens: await Promise.all(
-          t.tokens.map(async (token, idx) => {
+          t.tokens.map(async (token) => {
             const tokenId = concatStrings(this.chain, token.address);
             const tokenItem: TrackedVaultItem = await this.getDbItem(token, tokenId);
             return {
-              positionInPool: idx,
+              positionInPool: token.positionInPool,
               dbId: tokenItem.id,
               dtoName: CurvePoolTokenDto.name,
             };

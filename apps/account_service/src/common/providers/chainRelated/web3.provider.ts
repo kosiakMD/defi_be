@@ -27,7 +27,7 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.near]: 'NEAR_URL',
   [ChainIdEnum.terra]: 'TERRA_URL',
   [ChainIdEnum.klay]: 'KLAYTN_URL',
-  [ChainIdEnum.fuse]: 'FUSE_URL'
+  [ChainIdEnum.fuse]: 'FUSE_URL',
 };
 
 @Injectable()

@@ -58,4 +58,5 @@ export class CurveLiquidityPoolFeature {
   stats: Stats = plainToClass(Stats, {});
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
   tokens: Array<CurveUnderlyingLpDto> = [];
+  registry?: string = null;
 }

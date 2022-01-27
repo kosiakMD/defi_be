@@ -7,7 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ZERO_ADDRESS } from '@app/common/constant';
-import { CurveAddresses } from '@app/common/constant/addresses';
+import { CurveRegistries } from '@app/common/constant/addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
@@ -260,12 +260,9 @@ export class AssetsService {
   }
 
   private async attemptCurveLikePool(asset: AssetsEntity) {
-    // TODO: Eth only for now
-    if (asset.chain !== ChainIdEnum.eth) return false;
-
     try {
       const registry = new CURVE_REGISTRY(
-        CurveAddresses.registry,
+        CurveRegistries[asset.chain],
         this.web3Provider.getInstanceByChainId(asset.chain),
       );
 

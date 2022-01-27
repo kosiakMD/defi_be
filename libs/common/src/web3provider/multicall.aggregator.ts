@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum } from '@app/common';
+import { decodeOutput } from '@app/common/utils';
 
 import { Web3ProviderService } from '.';
 import { CallData } from '../dto/CallData';
-import { decodeOutput } from '../utils/multicall';
 import { concatStrings } from '../utils/string';
 
 @Injectable()

@@ -117,7 +117,7 @@ export class CurveMulticall extends MultiCall {
     const gauges = Array.from(inputs.keys());
     const resultArray = await this.getPromisesResponse(promises);
     resultArray.forEach((resp, index) => {
-      resultMap.set(gauges[index], resp.toString());
+      resultMap.set(gauges[index], resp?.toString());
     });
     return resultMap;
   }

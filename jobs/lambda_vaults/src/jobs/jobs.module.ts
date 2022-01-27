@@ -26,7 +26,13 @@ import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
 import { ConvexStaking } from './convex/convex.staking';
 import { CurveGauges } from './curve/curve.gauges';
+import { CurveGaugesAvax } from './curve/curve.gauges.avax';
+import { CurveGaugesFtm } from './curve/curve.gauges.ftm';
+import { CurveGaugesPlg } from './curve/curve.gauges.plg';
 import { CurvePools } from './curve/curve.pools';
+import { CurvePoolsAvax } from './curve/curve.pools.avax';
+import { CurvePoolsFtm } from './curve/curve.pools.ftm';
+import { CurvePoolsPlg } from './curve/curve.pools.plg';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
@@ -98,6 +104,20 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   VVSStaking,
   ViperswapPools,
   ViperswapStaking,
+  VVSStaking,
+  VVSPools,
+  PangolinStakingAvax,
+  PangolinPoolsAvax,
+  MojitoswapPools,
+  MojitoswapStaking,
+  SaberPools,
+  SaberStaking,
+  CurvePoolsPlg,
+  CurveGaugesPlg,
+  CurvePoolsAvax,
+  CurveGaugesAvax,
+  CurvePoolsFtm,
+  CurveGaugesFtm,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

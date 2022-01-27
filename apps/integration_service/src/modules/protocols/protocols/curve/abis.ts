@@ -1,6 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-export class Abis {
+import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+
+export class Abis extends MultiCallAbiProxy {
   static readonly balanceOf = {
     name: 'balanceOf',
     outputs: [{ type: 'uint256', name: '' }],
@@ -41,6 +43,16 @@ export class Abis {
     inputs: [{ type: 'address', name: 'arg0' }],
     stateMutability: 'view',
     type: 'function',
+  };
+  static readonly claimableRewardWrite: AbiItem = {
+    stateMutability: 'nonpayable',
+    type: 'function',
+    name: 'claimable_reward_write',
+    inputs: [
+      { name: '_addr', type: 'address' },
+      { name: '_token', type: 'address' },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
   };
 }
 

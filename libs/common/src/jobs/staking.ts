@@ -74,4 +74,6 @@ export class CurveIntegrationStakingPositionDto {
   stats: Stats = plainToClass(Stats, {});
   stakingToken: CurveIntegrationERC20TokenDto = plainToClass(CurveIntegrationERC20TokenDto, {});
   rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  registry?: string = null;
+  pool?: string = null;
 }

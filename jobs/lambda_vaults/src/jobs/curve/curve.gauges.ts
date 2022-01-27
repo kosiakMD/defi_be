@@ -527,9 +527,13 @@ export class CurveGauges implements JobInterface {
       const balanceDec = toDecimals(balance, stakingPosition.stakingToken.decimals);
       stakingPosition.stakingToken.balance = balanceDec;
       stakingPosition.staked = balanceDec;
-      stakingPosition.stakingToken.totalSupply = multicallResponses
+      const totalSupplyWei = multicallResponses
         .get(this.getTotalSupplyLabel(stakingPosition.stakingToken.address))
         ?.output.data.toString();
+      stakingPosition.stakingToken.totalSupply = normalizeDecimals(
+        totalSupplyWei,
+        stakingPosition.stakingToken.decimals,
+      );
       const factoryItem = factoryV2Pools.find(
         (factory) => factory.address.toLowerCase() === stakingPosition.stakingToken.address,
       );
@@ -656,7 +660,7 @@ export class CurveGauges implements JobInterface {
       const nonRegisterLpsArray = Array.from(nonRegisterLps.keys());
       const lpMintersMap = await this.localMulticall.getNonRegisterMinters(nonRegisterLpsArray);
 
-      const calls = await this.getCallsMap(registerLpPools, lpMintersMap);
+      const calls = this.getCallsMap(registerLpPools, lpMintersMap);
       // Get all balance Calls
       const nonRegisterLpPrices = await this.localMulticall.getTokensVirtualPrices(
         nonRegisterLpsArray,
@@ -720,14 +724,14 @@ export class CurveGauges implements JobInterface {
     return Number(callRsp.get(CurveControllerAbi.nGauges.name).output.data.toString());
   }
 
-  private async getCallsMap(
+  private getCallsMap(
     registerLpPools: Map<string, string>,
     nonRegisterMintersMap: Map<string, string>,
   ) {
     const registry = new CurveRegistryAbi(CurveAddresses.registry);
     const calls = new Map();
 
-    this.mapping.map((staking) => {
+    this.mapping.forEach((staking) => {
       const poolAddress = registerLpPools.get(staking.stakingToken.address);
       if (!poolAddress) {
         this.setCallsForNonRegistryToken(staking, calls, nonRegisterMintersMap);

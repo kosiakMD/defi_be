@@ -175,7 +175,10 @@ export class WonderlandStaking {
     const results = new Map();
     results.set('ratio', normalizeDecimals(rawResults.get('ratio').output.data.toString(), 9));
     addresses.forEach((address) => {
-      results.set(address, normalizeDecimals(rawResults.get(address).output.data.toString(), 18));
+      const balance = normalizeDecimals(rawResults.get(address).output.data.toString(), 18);
+      if (balance) {
+        results.set(address, balance);
+      }
     });
 
     return results;

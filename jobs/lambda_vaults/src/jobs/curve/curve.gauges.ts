@@ -833,6 +833,7 @@ export class CurveGauges implements JobInterface {
     position.stats.poolApy =
       mainPoolsAprs[this.handleCurvePoolsNames(position.poolName)] ??
       mainPoolsCryptoAprs[this.handleCurvePoolsNames(position.poolName)];
+
     position.stakingToken.tokens?.forEach((coin) => {
       const coinVirtualPrice = multicallResponses.get(
         this.getVirtualPriceFromLpTokenLabel(coin.address),

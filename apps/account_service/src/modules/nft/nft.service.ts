@@ -31,9 +31,35 @@ export class NftService {
     return this.getAllProjectsInfo();
   }
 
+  public async getCollections(
+    projectName: NftProjectEnum,
+    addresses: Address[],
+    chains: number[],
+    collection: string,
+  ) {
+    const project = this.getProjectByName(projectName);
+
+    if (!project) {
+      throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
+    }
+
+    const allowedChains = Array.from(new Set(chains)).filter((chain) =>
+      project.getInfo().chains?.includes(ChainIdToAbbr[chain]),
+    );
+
+    if (!allowedChains.length) {
+      throw new NotImplementedException(
+        `Project '${projectName}' doesn't support any of these chains: ${chains.join(', ')}`,
+      );
+    }
+
+    return project.getCollectionsByAccounts(addresses, allowedChains, collection);
+  }
+
   public async getAssets(
     projectName: NftProjectEnum,
     addresses: Address[],
+    collection: string,
     chains: number[],
   ): Promise<NftAssetsByAccounts> {
     const project = this.getProjectByName(projectName);
@@ -52,6 +78,6 @@ export class NftService {
       );
     }
 
-    return project.getAssetsByAccounts(addresses, allowedChains);
+    return project.getAssetsByAccounts(addresses, collection, allowedChains);
   }
 }

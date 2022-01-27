@@ -1,3 +1,5 @@
+import { Request } from 'express';
+
 import {
   ExceptionFilter,
   Catch,
@@ -26,6 +28,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // constructor method, thus we should resolve it here.
     const { httpAdapter } = this.httpAdapterHost;
 
+    // if host.getType() == http
     const ctx = host.switchToHttp();
 
     const httpStatus =
@@ -49,7 +52,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       message: errorMessage,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(request),
-      reqId: request.headers[HEADER_REQUEST_ID],
+      // doesn't work but should
+      // reqId: request.header(HEADER_REQUEST_ID),
+      // reqId: request.get(HEADER_REQUEST_ID),
+      // hack - sensitive to register and it's a risky
+      reqId: request.headers[HEADER_REQUEST_ID].toString(),
     };
 
     this.logger.error(

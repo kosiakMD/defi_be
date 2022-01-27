@@ -12,7 +12,8 @@
       "es2017",
       "es2018",
       "es2019",
-      "es2020"
+      "es2020",
+      "DOM"
     ],
     "sourceMap": true,
     "esModuleInterop": true,

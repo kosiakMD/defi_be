@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
@@ -14,6 +15,7 @@ import { FeaturesResponseDto } from '../common/DTO/features.dto';
 import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
 
 import { BalancesResponse } from '../account/account.interfaces';
+import { SearchParams, SearchResultsBaseEntry } from '../search/search.interface';
 
 @Injectable()
 export class IntegrationService {
@@ -28,6 +30,7 @@ export class IntegrationService {
   private readonly protocolsUrl: string;
   private readonly protocolsUrlV2: string;
   private readonly protocolsActiveUrl: string;
+  private readonly searchUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -68,6 +71,9 @@ export class IntegrationService {
     this.protocolsUrlV2 = `${url}/${protocolsPathV2}`;
 
     this.protocolsActiveUrl = `${url}/v1/protocols/active`;
+
+    const searchUrl = this.configService.get<string>('INTEGRATION_SEARCH_URL');
+    this.searchUrl = `${url}/${searchUrl}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -263,6 +269,24 @@ export class IntegrationService {
       .pipe(map((r) => r.data))
       .toPromise();
     this.logger.timeEnd(url);
+    return data;
+  }
+
+  @RequestErrorHandler()
+  async searchProjects(params: SearchParams): Promise<SearchResultsBaseEntry[]> {
+    const searchUrl = `${this.searchUrl}/projects`;
+    this.logger.time(searchUrl);
+    const { data } = await axios.get(searchUrl, { params });
+    this.logger.timeEnd(searchUrl);
+    return data;
+  }
+
+  @RequestErrorHandler()
+  async searchVaults(params: SearchParams): Promise<SearchResultsBaseEntry[]> {
+    const searchUrl = `${this.searchUrl}/vaults`;
+    this.logger.time(searchUrl);
+    const { data } = await axios.get(searchUrl, { params });
+    this.logger.timeEnd(searchUrl);
     return data;
   }
 }

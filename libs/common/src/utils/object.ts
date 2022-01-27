@@ -38,7 +38,7 @@ export const sumOfProperties = <T = { [basePropertyName: string]: unknown }>(
   arrayOfObjects.reduce(
     (previousObject, currentObject) => {
       outputProperties.forEach((propertyName, index) => {
-        previousObject[propertyName] += currentObject[baseProperties[index]] || 0;
+        previousObject[propertyName] += Number(currentObject[baseProperties[index]]) || 0;
       });
 
       return previousObject;

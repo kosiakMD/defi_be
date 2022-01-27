@@ -36,6 +36,8 @@ import {
   AssetTrackDto,
 } from '../modules/assets/dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from '../modules/assets/dto/assets.pools.dto';
+import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
+import { SearchParams, SearchResultsAssetEntry } from 'apps/api_gateway/src/search/search.interface';
 
 @ApiTags('Assets')
 @UseInterceptors(CacheInterceptor)
@@ -130,5 +132,27 @@ export class AssetsController {
       response.error = e.stack;
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(response);
     }
+  }
+
+  @Get('/search')
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'address to search assets by address',
+    example: "0xcd2e72aebe2a203b84f46deec948e6465db51c75",
+    required: false,
+  })
+  @ApiQuery({
+    name: 'text',
+    type: String,
+    description: 'text to search assets by name or symbol',
+    example: "CRO",
+    required: false,
+  })
+  @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })
+  async search(
+    @Query() query: SearchParams,
+  ): Promise<SearchResultsAssetEntry[]> {
+    return this.assetsService.search(query);
   }
 }

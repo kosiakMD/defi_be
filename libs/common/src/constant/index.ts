@@ -19,4 +19,4 @@ export const CURVE_MAIN_COIN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEE
 export const COIN_ADDRESS = ZERO_ADDRESS;
 export const SOL_COIN_ADDRESS = '00000000000000000000000000000000000000000000';
 
-export const HEADER_REQUEST_ID = 'X-REQ-UUID';
+export const HEADER_REQUEST_ID = 'x-req-uuid';

@@ -541,7 +541,7 @@ export class EllipsisStaking implements JobInterface {
       );
 
       const lpUnderlyingToken = stakingPosition.stakingToken.tokens.find(
-        (token) => (token as UnderlyingStakingLp).tokens,
+        (token) => token.tokens?.length,
       );
 
       if (lpUnderlyingToken) {
@@ -557,6 +557,7 @@ export class EllipsisStaking implements JobInterface {
           EllipsisStaking.totalSupplyLabel(lpUnderlyingToken.address),
           EllipsisStaking.getTotalSupplyCallData(lpUnderlyingToken.address),
         );
+
         calls.set(
           EllipsisStaking.balanceOfLabel(lpUnderlyingToken.address),
           EllipsisStaking.getBalanceOfLpCallData(lpUnderlyingToken.address),
@@ -624,6 +625,7 @@ export class EllipsisStaking implements JobInterface {
       });
       return calls;
     }
+
     for (let i = 0; i < coins; i++) {
       calls.set(EllipsisStaking.getBalancesLabel(lpAddress, i), {
         address: minter,

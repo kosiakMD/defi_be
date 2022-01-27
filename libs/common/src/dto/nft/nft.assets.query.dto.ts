@@ -15,8 +15,15 @@ export class NftAssetsQueryDto {
   @ApiProperty({
     type: String,
     example: Object.values(ChainIdEnum)
-      .filter((_) => typeof _ === 'number')
+      .filter((chainId) => typeof chainId === 'number')
       .join(','),
   })
   chains: ChainIdEnum[];
+
+  @ApiProperty({
+    type: [String],
+    example: 'young-lives-matter',
+    required: false,
+  })
+  collection?: string;
 }

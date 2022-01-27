@@ -1,0 +1,12 @@
+FROM node:14 
+
+WORKDIR /usr/src/app
+#COPY package*.json ./
+COPY . .
+# Install development dependencies
+RUN yarn install 
+# Build application
+RUN npm run build-monorepo
+#RUN mv envosrm .env
+CMD ["/usr/src/app/node_modules/.bin/ts-node", "/usr/src/app/node_modules/typeorm/cli.js", "migration:run"]
+#CMD ["/usr/src/app/node_modules/.bin/ts-node" "/usr/src/app/node_modules/typeorm/cli.js" "migration:run"]

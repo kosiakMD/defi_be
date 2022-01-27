@@ -24,6 +24,8 @@ import { AssetDto, AssetResponseDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
+import { SearchParams, SearchResultsAssetEntry } from 'apps/api_gateway/src/search/search.interface';
+import { SearchResultType } from 'apps/api_gateway/src/search/search.enum';
 
 @Injectable()
 export class AssetsService {
@@ -339,5 +341,19 @@ export class AssetsService {
     } else {
       return await registry.getCoinsForLpToken(asset.address, pool);
     }
+  }
+
+  async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {
+    const assets = await this.assetRepository.findAssetsByParams(searchParams);
+    return assets.map(a => ({
+      type: SearchResultType.ASSET,
+      icon: a.icon,
+      name: a.name,
+      metadata: {
+        address: a.address,
+        chainId: a.chain,
+        symbol: a.symbol,
+      },
+    }))
   }
 }

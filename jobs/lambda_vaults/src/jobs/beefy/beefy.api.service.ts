@@ -14,7 +14,7 @@ import staticBeefyData from './staticBeefyData';
 export class BeefyApiService {
   vaultEndpoint = `https://api.beefy.finance/vaults?t=${new Date().getTime()}`;
 
-  vaults: IBeefyHttpVault[];
+  vaults: Promise<IBeefyHttpVault[]>;
 
   supportedChains: Partial<Record<ChainIdEnum, BeefySupportedChains>> = {
     [ChainIdEnum.arbi]: 'arbitrum',
@@ -99,11 +99,7 @@ export class BeefyApiService {
       }),
     );
 
-    const data = await firstValueFrom(response$);
-
-    if (!data.length) {
-      this.logger.error('No Beefy Vaults Found. Likely Rate Limited, Try Again Later');
-    }
+    const data = firstValueFrom(response$);
 
     // Save the vaults so that when running other chains, we don't need to re-hit the beefy server
     this.vaults = data;

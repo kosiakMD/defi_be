@@ -12,7 +12,7 @@ export class LoggerMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction): void {
     this.logger.log(
       {
-        reqId: req.headers[HEADER_REQUEST_ID] || 'unknown',
+        reqId: req.header(HEADER_REQUEST_ID) || 'unknown',
         ip: req.ip,
         ips: req.ips,
         method: req.method,

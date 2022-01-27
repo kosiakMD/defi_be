@@ -1,3 +1,5 @@
+import axios from 'axios';
+import { RequestErrorHandler } from 'jobs/lambda_vaults/src/utils/decorators/error.decorator';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
@@ -13,6 +15,7 @@ import { NftAssetsByAccounts, NftServiceInfo } from '@app/common/interfaces/nft.
 
 import { ProfitAndLossResponseDTO } from '../analytic/dto';
 import { AssetResponseDto, AssetsDto } from '../assets/assets.dto';
+import { SearchParams, SearchResultsAssetEntry } from '../search/search.interface';
 import { TransactionsNewDetailedResponseDto } from '../transactions/transactions.dto';
 import { TransactionsResponse } from '../transactions/transactions.interfaces';
 import { TransfersResponse } from '../transfers/transfers.interfaces';
@@ -32,7 +35,9 @@ export class AccountService {
   private readonly getAnalyticUrl: string;
   private readonly get24HourReturnsUrl: string;
   private readonly nftAssetsUrl: string;
+  private readonly nftCollectionsUrl: string;
   private readonly nftProjectsUrl: string;
+  private readonly searchUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -74,6 +79,12 @@ export class AccountService {
 
     const nftAssetsPath = this.configService.get<string>('NFT_ASSETS');
     this.nftAssetsUrl = `${url}/${nftAssetsPath}`;
+
+    const searchUrl = this.configService.get<string>('ACCOUNT_SEARCH_URL');
+    this.searchUrl = `${url}/${searchUrl}`;
+
+    const nftCollectionsPath = this.configService.get<string>('NFT_COLLECTIONS');
+    this.nftCollectionsUrl = `${url}/${nftCollectionsPath}`;
   }
 
   async isHealthy(): Promise<HealthCheckResult> {
@@ -142,7 +153,9 @@ export class AccountService {
   async getBalances(addresses: Address[], chains?: Chains): Promise<BalancesResponse> {
     try {
       // TODO: Remove this later
-      this.logger.debug(`Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+      this.logger.debug(
+        `Loading balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
+      );
 
       this.logger.time(this.getBalanceUrl);
       const data = await this.httpService
@@ -152,14 +165,18 @@ export class AccountService {
       this.logger.timeEnd(this.getBalanceUrl);
 
       // TODO: Remove this later
-      this.logger.debug(`Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`);
+      this.logger.debug(
+        `Loaded balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}.`,
+      );
 
       return data;
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
-        `Unhandled error while getting balances for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
-        e
+        `Unhandled error while getting balances for ${JSON.stringify(
+          addresses,
+        )} networks ${JSON.stringify(chains)}`,
+        e,
       );
 
       throw e;
@@ -173,7 +190,11 @@ export class AccountService {
   ): Promise<BalancesResponse> {
     try {
       // TODO: Remove this later
-      this.logger.debug(`Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+      this.logger.debug(
+        `Calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(
+          chains,
+        )}`,
+      );
 
       this.logger.time(this.get24HourReturnsUrl);
       const data = await this.httpService
@@ -183,14 +204,20 @@ export class AccountService {
       this.logger.timeEnd(this.get24HourReturnsUrl);
 
       // TODO: Remove this later
-      this.logger.debug(`Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`);
+      this.logger.debug(
+        `Calculated 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(
+          chains,
+        )}`,
+      );
 
       return data;
     } catch (e) {
       // TODO: This should be handled with global error handler
       this.logger.error(
-        `Unhandled error while calculating 24h returns for ${JSON.stringify(addresses)} networks ${JSON.stringify(chains)}`,
-        e
+        `Unhandled error while calculating 24h returns for ${JSON.stringify(
+          addresses,
+        )} networks ${JSON.stringify(chains)}`,
+        e,
       );
 
       throw e;
@@ -276,12 +303,28 @@ export class AccountService {
       this.logger.timeEnd(this.nftProjectsUrl);
       return data;
     } catch (e) {
-      if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
-        if (e.response) {
-          this.logger.error(e.response.data);
-        }
-      }
+      e.response && this.logger.error(e.response.data);
+      throw e;
+    }
+  }
+
+  async getNftCollections(
+    projectName: NftProjectEnum,
+    addresses: Address[],
+    chains: ChainIdEnum[],
+    collection: string,
+  ) {
+    try {
+      const nftCollectionsProjectUrl = `${this.nftCollectionsUrl}/${projectName}`;
+      this.logger.time(nftCollectionsProjectUrl);
+      const data = await this.httpService
+        .get(nftCollectionsProjectUrl, { params: { addresses, chains, collection } })
+        .pipe(map((r) => r.data))
+        .toPromise();
+      this.logger.timeEnd(nftCollectionsProjectUrl);
+      return data;
+    } catch (e) {
+      e.response && this.logger.error(e.response.data);
       throw e;
     }
   }
@@ -289,25 +332,30 @@ export class AccountService {
   async getNftAssets(
     projectName: NftProjectEnum,
     addresses: Address[],
+    collection: string,
     chains: ChainIdEnum[],
   ): Promise<NftAssetsByAccounts> {
     try {
       const nftAssetsProjectUrl = `${this.nftAssetsUrl}/${projectName}`;
       this.logger.time(nftAssetsProjectUrl);
       const data = await this.httpService
-        .get(nftAssetsProjectUrl, { params: { addresses, chains } })
+        .get(nftAssetsProjectUrl, { params: { addresses, collection, chains } })
         .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(nftAssetsProjectUrl);
       return data;
     } catch (e) {
-      if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
-        if (e.response) {
-          this.logger.error(e.response.data);
-        }
-      }
+      e.response && this.logger.error(e.response.data);
       throw e;
     }
+  }
+
+  @RequestErrorHandler()
+  async searchAssets(params: SearchParams): Promise<SearchResultsAssetEntry[]> {
+    const searchUrl = this.searchUrl;
+    this.logger.time(searchUrl);
+    const { data } = await axios.get(searchUrl, { params });
+    this.logger.timeEnd(searchUrl);
+    return data;
   }
 }

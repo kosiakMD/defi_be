@@ -11,7 +11,6 @@ import { Address, BalancesResponse } from '@app/common/types';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
 
-
 @Injectable()
 export class AccountService {
   private readonly cacheTTLInSeconds: number;

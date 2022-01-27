@@ -13,8 +13,12 @@ export function fillUnderlyingTokens(
   prices: Map<string, string> | CurrentPricesPayload, 
   poolShare?: number
 ) {
+  tokens.forEach((t) => {
+    reserves[t.positionInPool] = toDecimals(reserves[t.positionInPool], t.decimals);
+  });
+
   return tokens.reduce((tvl, t, i) => {
-    t.reserve = toDecimals(reserves[t.positionInPool], t.decimals);
+    t.reserve = reserves[t.positionInPool];
 
     // if we are not able to get price from price service, we try to calculate it by using the price of the neighbourhood token
     t.price = Number(prices[t.address]) === 0 

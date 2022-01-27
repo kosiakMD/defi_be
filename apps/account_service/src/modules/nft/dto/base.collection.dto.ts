@@ -19,4 +19,7 @@ export class BaseCollectionDto {
 
   @Expose({ name: 'image_url' })
   imageUrl: string;
+
+  @Expose()
+  slug: string;
 }

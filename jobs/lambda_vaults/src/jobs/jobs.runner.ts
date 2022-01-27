@@ -135,38 +135,27 @@ export class JobsRunner {
       });
     });
 
-    // will be removed in future
-    jobPlaceholdersSet.add('3_BadgerDAO_staking');
-    jobPlaceholdersSet.add('5_BadgerDAO_staking');
-    jobPlaceholdersSet.add('1_BadgerDAO_staking');
-
     // This has to be hardcoded for convex until Curve is supported on the front end
     // TODO: remove after Curve integration is complete
     jobPlaceholdersSet.add('1_Curve_pools');
+    jobPlaceholdersSet.add('1_Convex_staking');
+
     jobPlaceholdersSet.add('12_Raydium_staking');
     jobPlaceholdersSet.add('12_Raydium_pools');
 
-    jobPlaceholdersSet.add('10_DefiKingdoms_staking');
-    jobPlaceholdersSet.add('10_DefiKingdoms_pools');
-
-    jobPlaceholdersSet.add('10_Viperswap_staking');
-    jobPlaceholdersSet.add('10_Viperswap_pools');
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.arbi}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.bsc}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.celo}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.cro}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Beefy_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Beefy_staking`);
+    jobPlaceholdersSet.add('12_Saber_staking');
+    jobPlaceholdersSet.add('12_Saber_pools');
 
     jobPlaceholdersSet.add('14_VVS_pools');
     jobPlaceholdersSet.add('14_VVS_staking');
 
     jobPlaceholdersSet.add('16_Mojitoswap_pools');
     jobPlaceholdersSet.add('16_Mojitoswap_staking');
+
+    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Pangolin_staking`);
+
+    jobPlaceholdersSet.add('13_Islandswap_pools');
+    jobPlaceholdersSet.add('13_Islandswap_staking')
 
     return jobPlaceholdersSet;
   }

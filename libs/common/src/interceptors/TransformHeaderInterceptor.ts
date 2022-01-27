@@ -1,21 +1,39 @@
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
-import { ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
+import { ExecutionContext, Inject, Injectable, NestInterceptor, CallHandler } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 import { HEADER_REQUEST_ID } from '@app/common/constant';
 
+export interface Response<T> {
+  data: T;
+}
+
 @Injectable()
-export class TransformHeadersInterceptor implements NestInterceptor {
+export class TransformHeadersInterceptor<T> implements NestInterceptor<T, Response<T>> {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  intercept(context: ExecutionContext, call$: Observable<any>): Observable<any> {
-    const reqId = context.switchToHttp().getRequest().headers[HEADER_REQUEST_ID];
-    this.logger.log('intercept reqId', reqId);
+  // TODO handle new types as older are not supported
+  // intercept(context: ExecutionContext, call$: Observable<any>): Observable<Response<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
+    const request = context.switchToHttp().getRequest();
+    const reqId = request.header(HEADER_REQUEST_ID);
+    // TODO: TBD log or not this
+    // this.logger.log('intercept reqId', reqId);
 
-    return call$;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return next.handle().pipe(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      map((data) => {
+        data.meta = { reqId };
+        return data;
+      }),
+    );
   }
 }

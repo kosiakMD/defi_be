@@ -23,4 +23,5 @@ export interface AssetsApiDto {
   decimals?: number;
   chain: number;
   status: string;
+  extensions?: any;
 }

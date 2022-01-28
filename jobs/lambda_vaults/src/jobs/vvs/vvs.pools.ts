@@ -66,7 +66,6 @@ export class VVSPools implements JobInterface {
 
   public async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    this.logger.log(jobMapping);
     if (
       !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)

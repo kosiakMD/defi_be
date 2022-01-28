@@ -37,9 +37,9 @@ import { MojitoswapAddresses } from './addresses';
 import { DbMapping } from '../utils/dbmapping';
 
 @Injectable()
-export class MojitoswapStaking 
+export class MojitoswapStaking
   extends JobBase<IntegrationStakingPositionDto>
-  implements JobInterface 
+  implements JobInterface
 {
   chain = ChainIdEnum.kcc;
   feature = FeatureEnum.staking;
@@ -67,7 +67,7 @@ export class MojitoswapStaking
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
     if (
-      !jobMapping.mapping || 
+      !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       this.logger.log('it is time to update mapping', this.placeholder);
@@ -126,10 +126,10 @@ export class MojitoswapStaking
               stakingToken.tokens.push(poolToken);
             });
           }
-          
+
           const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-            address: address === MojitoswapAddresses.autoStakingVault 
-              ? MojitoswapAddresses.autoStakingVault 
+            address: address === MojitoswapAddresses.autoStakingVault
+              ? MojitoswapAddresses.autoStakingVault
               : MojitoswapAddresses.masterContract,
             poolId: poolsInfo.get(address).id?.toString(),
             poolName: null,
@@ -146,13 +146,13 @@ export class MojitoswapStaking
         }
       }),
     );
-    //this.logger.log(stakingFeatures)
+
     const mappings = await Promise.all(
       stakingFeatures.map(async (sf) => await this.dbMapping.toDbMapping(sf, this.chain)),
     );
-    
+
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -272,7 +272,7 @@ export class MojitoswapStaking
 
           sp.rewards[0].apy = calculateAPY(stats).toNumber();
         }
-        
+
         return [...mapping, sp];
       }
       return mapping;
@@ -283,13 +283,13 @@ export class MojitoswapStaking
 
   private setPrices(multicallRsp, prices) {
     this.mapping.forEach((stakingPos) => {
-      if (stakingPos.stakingToken.tokens.length === 2) {   
+      if (stakingPos.stakingToken.tokens.length === 2) {
         const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
           .data;
-  
+
         stakingPos.stakingToken.tokens.forEach((t, i, tokens) => {
-          t.price = Number(prices[t.address]) === 0 
-            ? calcTokenPrice([_reserve0, _reserve1], t.positionInPool, prices[tokens[(i + 1) % 2].address]?.toString()) 
+          t.price = Number(prices[t.address]) === 0
+            ? calcTokenPrice([_reserve0, _reserve1], t.positionInPool, prices[tokens[(i + 1) % 2].address]?.toString())
             : Number(prices[t.address]);
           prices[t.address.toLowerCase()] = prices[t.address.toLowerCase()] ?? t.price.toString();
         });
@@ -377,7 +377,7 @@ export class MojitoswapStaking
         masterContract.rewardPerBlock(),
       ],
       [
-        this.rewardMultiplierLabel(chiefContract), 
+        this.rewardMultiplierLabel(chiefContract),
         masterContract.bonusMultiplier(),
       ],
     ]);
@@ -413,8 +413,8 @@ export class MojitoswapStaking
 
   private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto,) {
     return concatStrings(
-      VaultAbis.balanceOf.name, 
-      stakingPosition.stakingToken.address, 
+      VaultAbis.balanceOf.name,
+      stakingPosition.stakingToken.address,
       stakingPosition.address
     );
   }

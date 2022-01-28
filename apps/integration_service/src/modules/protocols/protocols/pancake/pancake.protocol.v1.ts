@@ -9,9 +9,9 @@ import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enu
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { PancakeSubgraph } from '../../../subgraphs/subgraphs/pancake.subgraph';
+import { LiquidityPools } from '../../features/liquidity-pools';
 import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
-import { PancakeService } from './pancake.service';
 
 @Injectable()
 export default class PancakeProtocolV1 extends DataProviderProtocol {
@@ -31,7 +31,7 @@ export default class PancakeProtocolV1 extends DataProviderProtocol {
     protected readonly priceService: PriceService,
     protected readonly subgraph: PancakeSubgraph,
     protected readonly mapper: Mapper,
-    private readonly pancakeService: PancakeService,
+    private readonly pools: LiquidityPools,
   ) {
     super();
 
@@ -68,7 +68,12 @@ export default class PancakeProtocolV1 extends DataProviderProtocol {
   ): Promise<BaseData[]> {
     switch (feature) {
       case FeatureEnum.pools:
-        return this.pancakeService.getDataByAddresses(addresses, chain, this.name);
+        return this.pools.getData({
+          addresses: addresses,
+          protocolName: this.name,
+          projectName: this.project,
+          chain: chain,
+        });
       default:
         return [];
     }

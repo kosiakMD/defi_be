@@ -3,18 +3,15 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
+import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { PancakeSubgraph } from '../../../subgraphs/subgraphs/pancake.subgraph';
 import { LiquidityPools } from '../../features/liquidity-pools';
-import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
-import { PancakeV2Legacy } from './pancake-v2.legacy';
 import { PancakeV2Staking } from './pancake-v2.staking';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export default class PancakeProtocol extends DataProviderProtocol {
@@ -32,15 +29,12 @@ export default class PancakeProtocol extends DataProviderProtocol {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
-    protected readonly subgraph: PancakeSubgraph,
-    protected readonly mapper: Mapper,
     private readonly staking: PancakeV2Staking,
-    private readonly pancakeV2Legacy: PancakeV2Legacy,
     private readonly pools: LiquidityPools,
   ) {
     super();
 
-    this.dataProvider = pancakeV2Legacy;
+    this.dataProvider = this;
   }
 
   public async getAllFeaturesBaseData(

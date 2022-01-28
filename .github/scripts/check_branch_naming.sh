@@ -8,7 +8,7 @@ user_name="$(git config user.name)"
 
 echo $user_name
 
-valid_branch_regex="^(($user_name)\/(feature|bugfix|hotfix|config|common)\/[a-zA-Z0-9\-]+)$"
+valid_branch_regex="^(($user_name)\/(feature|bugfix|hotfix|config|common|(ID\-[0-9]{1,4}))\/[a-zA-Z0-9\_\-]+)$"
 
 message="There is something wrong with your branch name. Branch names in this project must adhere to this contract: $valid_branch_regex. Your commit will be rejected. You should rename your branch to a valid name and try again."
 

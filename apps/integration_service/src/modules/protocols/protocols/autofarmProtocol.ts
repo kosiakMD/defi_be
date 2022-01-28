@@ -39,12 +39,31 @@ import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
 export class AutofarmProtocol extends DataProviderProtocol implements AbstractProtocol {
-  readonly chains = [ChainAbbrEnum.bsc, ChainAbbrEnum.plg];
+  readonly chains = [
+    ChainAbbrEnum.avax, 
+    ChainAbbrEnum.bsc, 
+    ChainAbbrEnum.celo, 
+    ChainAbbrEnum.cro, 
+    //ChainAbbrEnum.ftm, 
+    //ChainAbbrEnum.harm, 
+    ChainAbbrEnum.heco, 
+    //ChainAbbrEnum.mriver,
+    //ChainAbbrEnum.okex,
+    ChainAbbrEnum.plg,
+  ];
   readonly project = ProjectEnum.autofarm;
   readonly name = AutofarmProtocolEnum.autofarm;
   readonly displayName = 'Autofarm';
   readonly features = {
+    [ChainAbbrEnum.avax]: [FeatureEnum.staking],
     [ChainAbbrEnum.bsc]: [FeatureEnum.staking],
+    [ChainAbbrEnum.celo]: [FeatureEnum.staking],
+    [ChainAbbrEnum.cro]: [FeatureEnum.staking],
+    //[ChainAbbrEnum.ftm]: [FeatureEnum.staking],
+    //[ChainAbbrEnum.harm]: [FeatureEnum.staking],
+    [ChainAbbrEnum.heco]: [FeatureEnum.staking],
+    //[ChainAbbrEnum.mriver]: [FeatureEnum.staking],
+    //[ChainAbbrEnum.okex]: [FeatureEnum.staking],
     [ChainAbbrEnum.plg]: [FeatureEnum.staking],
   };
   protected dataProvider;

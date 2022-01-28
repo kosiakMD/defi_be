@@ -164,6 +164,16 @@ export class JobsRunner {
     jobPlaceholdersSet.add('13_Islandswap_pools');
     jobPlaceholdersSet.add('13_Islandswap_staking')
 
+    jobPlaceholdersSet.add(`${ChainIdEnum.celo}_Autofarm_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.cro}_Autofarm_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.heco}_Autofarm_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Autofarm_staking`);
+    //jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Autofarm_staking`);
+    //jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Autofarm_staking`);
+    //jobPlaceholdersSet.add(`${ChainIdEnum.okex}_Autofarm_staking`);
+    //jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Autofarm_staking`);
+    //jobPlaceholdersSet.add(`${ChainIdEnum.xdai}_Autofarm_staking`);
+
     return jobPlaceholdersSet;
   }
 }

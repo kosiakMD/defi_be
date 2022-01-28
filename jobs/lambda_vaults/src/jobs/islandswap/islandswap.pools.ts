@@ -10,7 +10,7 @@ import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -24,6 +24,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { JobInterface } from '../job.interface';
 import { JobPoolsBase } from '../job.pools.base';
+import { fillUnderlyingTokens } from '../utils/token';
 import { IslandswapAddresses } from './addresses';
 import { MasterchefAbis } from './contracts/masterchef.abis';
 import { VaultAbis } from './contracts/vault.abis';
@@ -159,7 +160,7 @@ export class IslandswapPools extends JobPoolsBase<LiquidityPoolFeature> implemen
 
   async getChainPoolLength(masterchefContract: MasterchefAbis): Promise<BigNumber> {
     const call = new Map<string, CallData>([
-      [ this.poolLengthLabel(), masterchefContract.poolLength() ],
+      [this.poolLengthLabel(), masterchefContract.poolLength()],
     ]);
     const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.okex);
     return callRsp.get(this.poolLengthLabel()).output.data;

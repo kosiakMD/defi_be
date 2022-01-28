@@ -38,13 +38,14 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import DataProviderProtocol from './dataProviderProtocol';
 
 import { PTokenAbis } from './wepiggy/contracts/pToken';
+import { LensAbis } from './wepiggy/contracts/lens';
 import { ComptrollerAbis } from './wepiggy/contracts/comptroller';
 import { OracleAbis } from './wepiggy/contracts/oracle';
 import { DistributionAbis } from './wepiggy/contracts/distribution';
 import { CallData } from '@app/common/dto/CallData';
 
 import { BalanceInfo, APY } from './wepiggy/wepiggy.interfaces';
-import { wpcAddress, nativePTokens, blockTimes, contracts, zeroAddress } from './wepiggy/wepiggy.constants';
+import { wpcAddress, nativePTokens, contracts, zeroAddress } from './wepiggy/wepiggy.constants';
 
 @Injectable()
 export class WePiggyProtocol extends DataProviderProtocol {
@@ -111,6 +112,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
   };
 
   protected dataProvider;
+  protected blockTimes;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -122,6 +124,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
   ) {
     super();
     this.dataProvider = this;
+    this.blockTimes = new Map<string, number>();
   }
 
   public async getAllFeaturesBaseData(
@@ -241,6 +244,8 @@ export class WePiggyProtocol extends DataProviderProtocol {
     chain: ChainDto,
   ): Promise<FeatureResultDto<LendingPositionDto>[]> {
     const pTokens = await this.getPTokenList(chain); // get the up-to-date list of pTokens
+
+    this.blockTimes.set(chain.name, await this.getBlockTime(pTokens, chain));
     
     const pTokensData: Map<string, CallData> = await this.callsForPToken(pTokens, address, chain);
 
@@ -468,7 +473,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
   }
 
   calcAPY(ratePerBlock: number, chain: ChainDto): number {
-    const blockTime = blockTimes[chain.name];
+    const blockTime = this.blockTimes.get(chain.name);
     const mantissa = 1e18;
     const blocksPerDay = 60 * 60 * 24 / blockTime;
     const daysPerYear = 365;
@@ -510,7 +515,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
         8,
       );
       
-      const apxBlockSpeedInSeconds = blockTimes[chain.name];
+      const apxBlockSpeedInSeconds = this.blockTimes.get(chain.name);
       const blocksPerDay = (60 * 60 * 24) / apxBlockSpeedInSeconds;
       const wpcSpeed = wpcSpeeds.get(pTokenAddress).output.data / 1e18;
       const wpcPerDay = wpcSpeed * blocksPerDay;
@@ -571,6 +576,19 @@ export class WePiggyProtocol extends DataProviderProtocol {
     );
 
     return wpcSpeedsCall;
+  }
+
+  async getBlockTime(tokens: string[], chain: ChainDto) {
+    const lensContract = new LensAbis(contracts[chain.name].lens);
+
+    const call: Map<string, CallData> = new Map<string, CallData>([[tokens[0], lensContract.getInterestRateModel(tokens[0])]]);
+    
+    const interestRateModelCall: Map<string, CallData> = await this.multicallService.handleInBatches(
+      call,
+      chain.id,
+    );
+
+    return new BigNumber(3600 * 24 * 365).div(interestRateModelCall.get(tokens[0]).output.data.blocksPerYear).toNumber();
   }
 
   async getAccruedWPCBalance(userAddress: string, chain: ChainDto): Promise<BigNumber> {

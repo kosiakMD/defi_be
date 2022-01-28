@@ -50,12 +50,9 @@ import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
 import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
-import { PancakeV2Legacy } from './protocols/pancake/pancake-v2.legacy';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
-import { PancakeService } from './protocols/pancake/pancake.service';
-import { PoolsService } from './protocols/pancake/pools.service';
 import { ScanApi } from './protocols/pancake/scan.api';
 import { PangolinPools } from './protocols/pangolin/pangolin.pools';
 import { PangolinStaking } from './protocols/pangolin/pangolin.staking';
@@ -112,10 +109,7 @@ const TraderJoe = [
 const Pancake = [
   PancakeProtocol,
   PancakeV2Staking,
-  PancakeV2Legacy,
   PancakeProtocolV1,
-  PancakeService,
-  PoolsService,
   EtherscanService,
   ScanApi,
 ];

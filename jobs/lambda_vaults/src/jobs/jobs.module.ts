@@ -13,13 +13,8 @@ import { AutofarmStakingAVAX } from './autofarm/autofarm.staking.avax';
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
 import { AutofarmStakingCELO } from './autofarm/autofarm.staking.celo';
 import { AutofarmStakingCRO } from './autofarm/autofarm.staking.cro';
-//import { AutofarmStakingFTM } from './autofarm/autofarm.staking.ftm';
-//import { AutofarmStakingHARM } from './autofarm/autofarm.staking.harm';
 import { AutofarmStakingHECO } from './autofarm/autofarm.staking.heco';
-//import { AutofarmStakingMRIVER } from './autofarm/autofarm.staking.mriver';
-//import { AutofarmStakingOKEX } from './autofarm/autofarm.staking.okex';
 import { AutofarmStakingPLG } from './autofarm/autofarm.staking.plg';
-//import { AutofarmStakingXDAI } from './autofarm/autofarm.staking.xdai';
 import { BadgerStakingArbi } from './badger/badger.staking.arbi';
 import { BadgerStakingEth } from './badger/badger.staking.eth';
 import { BadgerStakingPLG } from './badger/badger.staking.plg';
@@ -54,6 +49,7 @@ import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
+import { PancakePoolsV1 } from './pancake/pancake.pools.v1';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
 import { PangolinPoolsAvax } from './pangolin/pangolin.pools.avax';
@@ -63,10 +59,12 @@ import { RaydiumStaking } from './raydium/raydium.staking';
 import { SaberPools } from './saber/saber.pools';
 import { SaberStaking } from './saber/saber.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
+import { SushiswapPools } from './sushiwap/sushiswap.pools';
 import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { TraderJoeSubgraph } from './traderjoe/traderjoe.subgraph';
+import { UniswapPoolsV2 } from './uniswap/uniswap.pools.v2';
 import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
@@ -77,12 +75,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   AutofarmStakingBSC,
   AutofarmStakingCELO,
   AutofarmStakingCRO,
-  //AutofarmStakingFTM,
-  //AutofarmStakingHARM,
   AutofarmStakingHECO,
-  //AutofarmStakingMRIVER,
-  //AutofarmStakingOKEX,
-  //AutofarmStakingXDAI,
   AutofarmStakingPLG,
   BadgerStakingArbi,
   BadgerStakingEth,
@@ -122,6 +115,9 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   VVSStaking,
   ViperswapPools,
   ViperswapStaking,
+  PancakePoolsV1,
+  UniswapPoolsV2,
+  SushiswapPools,
   VVSStaking,
   VVSPools,
   PangolinStakingAvax,

@@ -11,6 +11,8 @@ export function toUTCSeconds(ts: Date): number {
 }
 
 export function isTimeToDo(pastTs: Date, seconds: number): boolean {
+  // temporary disable pools update
+  return false;
   if (!pastTs) {
     return true;
   }

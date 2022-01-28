@@ -23,9 +23,9 @@ export class AutofarmApiService {
     this.autofarmApiUrl.set(ChainIdEnum.ftm, this.configService.get<string>('AUTOFARM_API_FTM_URL'));
     this.autofarmApiUrl.set(ChainIdEnum.harm, this.configService.get<string>('AUTOFARM_API_HARM_URL'));
     this.autofarmApiUrl.set(ChainIdEnum.heco, this.configService.get<string>('AUTOFARM_API_HECO_URL'));
+    this.autofarmApiUrl.set(ChainIdEnum.mriver, this.configService.get<string>('AUTOFARM_API_MRIVER_URL'));
     this.autofarmApiUrl.set(ChainIdEnum.okex, this.configService.get<string>('AUTOFARM_API_OKEX_URL'));
     this.autofarmApiUrl.set(ChainIdEnum.xdai, this.configService.get<string>('AUTOFARM_API_XDAI_URL'));
-    this.autofarmApiUrl.set(ChainIdEnum.mriver, this.configService.get<string>('AUTOFARM_API_MRIVER_URL'));
   }
 
   async getAutofarmPoolsData(chainId: ChainIdEnum) {

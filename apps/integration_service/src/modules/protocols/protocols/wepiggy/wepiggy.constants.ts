@@ -71,15 +71,3 @@ export const nativePTokens = {
 };
 
 export const zeroAddress = '0x0000000000000000000000000000000000000000';
-
-export const blockTimes = {
-  polygon: 2.2,
-  ethereum: 13,
-  okex: 3.8,
-  binance: 3,
-  heco: 3,
-  arbitrum: 3.5,
-  optimism: 13,
-  moonriver: 13,
-  harmony: 2,
-};

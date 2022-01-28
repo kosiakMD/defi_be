@@ -67,7 +67,7 @@ configMaps:
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     XDAI_URL: https://rpc.xdaichain.com
     POLYGON_URL: https://polygon-rpc.com/
-    SOL_URL: https://rpc.ankr.com/solana
+    SOL_URL: http://api.mainnet-beta.solana.com
     BOBA_URL: https://lightning-replica.boba.network
     CRONOS_URL: https://evm-cronos.crypto.org
     KCC_URL: https://rpc-mainnet.kcc.network

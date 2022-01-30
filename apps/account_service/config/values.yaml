@@ -21,7 +21,7 @@ configMaps:
     HARM_URL: https://a.api.s0.t.hmny.io
     HECO_URL: https://pub001.hg.network/rpc
     POLYGON_RPC_URL: https://polygon-rpc.com/
-    SOL_URL: http://api.mainnet-beta.solana.com
+    SOL_URL: https://solana-api.projectserum.com/
     OKEX_URL: https://exchainrpc.okex.org
     CRONOS_URL: https://evm-cronos.crypto.org
     BOBA_URL: https://mainnet.boba.network/

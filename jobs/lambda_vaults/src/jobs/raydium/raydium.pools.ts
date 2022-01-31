@@ -1,19 +1,17 @@
-import {
-  Liquidity,
-  LiquidityPoolKeysV4,
-  MAINNET_OFFICIAL_LIQUIDITY_POOLS,
-} from '@raydium-io/raydium-sdk';
+import { Liquidity, MAINNET_OFFICIAL_LIQUIDITY_POOLS } from '@raydium-io/raydium-sdk';
 import { Connection } from '@solana/web3.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 
+import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
-import { solanaKeysToStrings, solanaStringsToKeys } from '@app/common/utils/solana';
+import { solanaKeysToStrings } from '@app/common/utils/solana';
 import { tokensWithPrices } from '@app/common/utils/solana';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
@@ -30,6 +28,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
+import { decodeTxLogs, getInfoPools } from './raydium.poolsInfo';
 
 const HALF = 0.5;
 
@@ -44,6 +43,7 @@ export class RaydiumPools implements JobInterface {
   private mapping: LiquidityPoolFeature[] = [];
   private availableDtosForConversion: Map<string, string>;
   private web3: Connection;
+  private rpcUrl: string;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -51,7 +51,9 @@ export class RaydiumPools implements JobInterface {
     private readonly accountService: AccountService,
     private readonly storeService: StoreService,
     private readonly priceService: PriceService,
+    private readonly httpService: HttpService,
     private readonly webProvider: Web3SolanaProviderService,
+    private readonly configService: ConfigService,
   ) {
     this.web3 = webProvider.getInstanceByChainId(this.chain);
     this.availableDtosForConversion = new Map<string, string>([
@@ -59,6 +61,7 @@ export class RaydiumPools implements JobInterface {
       [ERC20Token.name, ERC20Token.name],
       [PoolTokenDto.name, ERC20Token.name],
     ]);
+    this.rpcUrl = this.configService.get('SOL_URL');
   }
 
   async manageMapping(): Promise<void> {
@@ -238,31 +241,35 @@ export class RaydiumPools implements JobInterface {
       this.chain,
     );
 
-    // RPC is trottling even with 2 promises in paralel
-    for (const lpf of this.mapping) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const pi = await Liquidity.getInfo(
-        this.web3,
-        solanaStringsToKeys(lpf.extra.pool) as LiquidityPoolKeysV4,
-      );
-      lpf.lpToken.decimals = pi.lpDecimals;
-      lpf.lpToken.totalSupply = toDecimals(pi.lpSupply, pi.lpDecimals);
+    const infoPools = await getInfoPools(
+      this.web3,
+      this.httpService,
+      this.mapping.map((m) => m.extra.pool),
+    );
+    const decodedInfoPools = infoPools.map((p) => decodeTxLogs(p.result.value.logs));
+    const decodedInfoPoolsMap = new Map(decodedInfoPools.map((dip) => [dip.ammId, dip]));
 
-      lpf.tokens.forEach((t) => {
-        t.reserve =
-          t.positionInPool === 0
-            ? toDecimals(pi.baseReserve, t.decimals)
-            : toDecimals(pi.quoteReserve, t.decimals);
-        t.balance = t.reserve;
-      });
-      lpf.tokens = tokensWithPrices(lpf.tokens, prices).map((t) => {
-        t.value = t.balance * t.price;
-        t.tokens = undefined;
-        lpf.stats.tvl += t.value;
-        return t;
-      });
-      lpf.extra = undefined;
+    for (const lpf of this.mapping) {
+      const infoPool = decodedInfoPoolsMap.get(lpf.extra.pool.id);
+      if (infoPool) {
+        lpf.lpToken.decimals = +infoPool.lpDecimals;
+        lpf.lpToken.totalSupply = toDecimals(infoPool.lpSupply, infoPool.lpDecimals);
+
+        lpf.tokens.forEach((t) => {
+          t.reserve =
+            t.positionInPool === 0
+              ? toDecimals(infoPool.baseReserve, t.decimals)
+              : toDecimals(infoPool.quoteReserve, t.decimals);
+          t.balance = t.reserve;
+        });
+        lpf.tokens = tokensWithPrices(lpf.tokens, prices).map((t) => {
+          t.value = t.balance * t.price;
+          t.tokens = undefined;
+          lpf.stats.tvl += t.value;
+          return t;
+        });
+        lpf.extra = undefined;
+      }
     }
     return this.mapping;
   }

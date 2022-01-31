@@ -12,11 +12,7 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import {
-  IntegrationERC20TokenDto,
-  IntegrationPoolTokenDto,
-  IntegrationStakingPositionDto,
-} from '@app/common/jobs/staking';
+import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -69,7 +65,6 @@ export class OlympusStaking {
       const items: IntegrationStakingPositionDto[] = [];
       const sohm = tokenMap.get(STAKED_OHM_ADDRESS);
       const wsohm = tokenMap.get(WRAPPED_STAKED_OHM_ADDRESS);
-      const ohm = tokenMap.get(OHM_ADDRESS);
       const gohm = tokenMap.get(GOVERNANCE_OHM);
 
       const sohmBalance = balances[address].tokens.find(
@@ -77,7 +72,7 @@ export class OlympusStaking {
       );
 
       if (sohmBalance) {
-        items.push(this.getStakingPosition(sohmBalance, sohm, Number(prices[OHM_ADDRESS]), ohm));
+        items.push(this.getStakingPosition(sohmBalance, sohm, Number(prices[OHM_ADDRESS])));
       }
 
       if (multicallDetails.has(this.wsOhmBalanceLabel(address))) {
@@ -87,7 +82,6 @@ export class OlympusStaking {
             wsohm,
             multicallDetails.get('ratio'),
             Number(prices[OHM_ADDRESS]),
-            ohm,
           ),
         );
       }
@@ -99,7 +93,6 @@ export class OlympusStaking {
             gohm,
             multicallDetails.get('index'),
             Number(prices[OHM_ADDRESS]),
-            ohm,
           ),
         );
       }
@@ -117,7 +110,7 @@ export class OlympusStaking {
   }
 
   // dynamic redemtion value with time
-  getIndexedPosition(balance: number, token: Asset, ratio: number, basePrice: number, ohm: Asset) {
+  getIndexedPosition(balance: number, token: Asset, ratio: number, basePrice: number) {
     const price = basePrice * ratio;
     const value = balance * price;
 
@@ -133,17 +126,7 @@ export class OlympusStaking {
         price,
         value,
         balance: balance,
-        tokens: [
-          plainToClass(IntegrationPoolTokenDto, {
-            address: ohm.address,
-            name: ohm.name,
-            symbol: ohm.symbol,
-            decimals: ohm.decimals,
-            price,
-            value,
-            balance: balance * ratio,
-          }),
-        ],
+        tokens: [],
       }),
     });
   }
@@ -153,7 +136,6 @@ export class OlympusStaking {
     balance: AccountTokenBalance,
     sohm: Asset,
     ohmPrice: number,
-    ohm: Asset,
   ): IntegrationStakingPositionDto {
     return plainToClass(IntegrationStakingPositionDto, {
       address: sohm.address,
@@ -167,17 +149,7 @@ export class OlympusStaking {
         price: ohmPrice,
         value: ohmPrice * balance.decimalsAmount,
         balance: balance.decimalsAmount,
-        tokens: [
-          plainToClass(IntegrationPoolTokenDto, {
-            address: ohm.address,
-            name: ohm.name,
-            symbol: ohm.symbol,
-            decimals: ohm.decimals,
-            price: ohmPrice,
-            value: ohmPrice * balance.decimalsAmount,
-            balance: balance.decimalsAmount,
-          }),
-        ],
+        tokens: [],
       }),
     });
   }

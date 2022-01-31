@@ -56,7 +56,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // reqId: request.header(HEADER_REQUEST_ID),
       // reqId: request.get(HEADER_REQUEST_ID),
       // hack - sensitive to register and it's a risky
-      reqId: request.headers[HEADER_REQUEST_ID].toString(),
+      reqId: request.headers[HEADER_REQUEST_ID]?.toString(),
     };
 
     this.logger.error(

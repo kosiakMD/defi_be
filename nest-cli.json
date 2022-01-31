@@ -77,6 +77,21 @@
         ]
       }
     },
+    "rpc_nodes_service": {
+      "type": "application",
+      "root": "apps/rpc_nodes_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/rpc_nodes_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/rpc_nodes_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/rpc_nodes_service"
+          }
+        ]
+      }
+    },
     "migration_chain_crawler": {
       "type": "application",
       "root": "jobs/migration_chain_crawler",

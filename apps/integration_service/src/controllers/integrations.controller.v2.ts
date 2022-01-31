@@ -12,11 +12,22 @@ import {
 
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 import { IntegrationsService } from '../modules/integrations/integrations.service';
+import { IntegrationsServiceV2 } from '../modules/integrations/integrations.service.v2';
 
 @ApiTags('Protocols')
 @Controller('v2/protocols')
 export class IntegrationsControllerV2 {
-  constructor(private readonly integrationsService: IntegrationsService) {}
+  constructor(
+    private readonly integrationsService: IntegrationsService,
+    private readonly integrationsServiceV2: IntegrationsServiceV2,
+  ) {}
+
+  @Get('/load/:chainCode/:protocolCode/')
+  async loadVaultsData(@Param() params): Promise<any> {
+    const { chainCode, protocolCode } = params;
+
+    return this.integrationsServiceV2.loadVaults(chainCode, protocolCode);
+  }
 
   @ApiParam({
     name: 'protocolName',

@@ -2,16 +2,17 @@ import * as redisStore from 'cache-manager-redis-store';
 
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { IntegrationsController } from '../../controllers/integrations.controller';
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
 import { ProtocolModule } from '../protocols/protocol.module';
-import { FeaturesService } from './features.service';
-import { IntegrationsService } from './integrations.service';
 import { ProjectsContractEntity } from './entities/projectsContract.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { TrackedVaultEntity } from './entities/trackedVault.entity';
+import { FeaturesService } from './features.service';
+import { IntegrationsService } from './integrations.service';
+import { IntegrationsServiceV2 } from './integrations.service.v2';
 import { ProjectsContractRepository } from './repositories/projectsContract.repository';
 import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 
@@ -40,7 +41,7 @@ import { TrackedVaultRepository } from './repositories/trackedVault.repository';
       TrackedVaultEntity,
     ]),
   ],
-  providers: [IntegrationsService, FeaturesService],
+  providers: [IntegrationsService, IntegrationsServiceV2, FeaturesService],
   controllers: [IntegrationsController, IntegrationsControllerV2],
 })
 export class IntegrationsModule {}

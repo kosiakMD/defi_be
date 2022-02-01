@@ -19,4 +19,10 @@ export const CURVE_MAIN_COIN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEE
 export const COIN_ADDRESS = ZERO_ADDRESS;
 export const SOL_COIN_ADDRESS = '00000000000000000000000000000000000000000000';
 
+/**
+ *  N.B! should be in lower-case because: Nest/axios transforms header from upper to lower
+ * and if we can't use native Request methods to retrieve it with transform into some
+ * 'universal'-case we will retrieve hardly and can missed if somewhere upper-case was used
+ */
 export const HEADER_REQUEST_ID = 'x-req-uuid';
+export const HEADER_SESSION_ID = 'x-session-uuid';

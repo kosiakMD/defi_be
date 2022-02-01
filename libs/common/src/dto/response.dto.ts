@@ -79,5 +79,12 @@ export class ErrorResponseDto {
   })
   reqId: string;
 
+  @ApiProperty({
+    type: String,
+    description: 'uuid generated at the Gateway entry point',
+    example: 'fab15d01-7cb6-4a14-ac4f-92785fa988c3',
+  })
+  sessionId: string;
+
   type?: string;
 }

@@ -13,7 +13,7 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
-import { HEADER_REQUEST_ID } from '@app/common/constant';
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -57,6 +57,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // reqId: request.get(HEADER_REQUEST_ID),
       // hack - sensitive to register and it's a risky
       reqId: request.headers[HEADER_REQUEST_ID]?.toString(),
+      sessionId: request.headers[HEADER_SESSION_ID]?.toString(),
     };
 
     this.logger.error(

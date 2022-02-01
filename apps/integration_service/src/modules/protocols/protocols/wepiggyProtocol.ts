@@ -39,6 +39,7 @@ import DataProviderProtocol from './dataProviderProtocol';
 import { ComptrollerAbis } from './wepiggy/contracts/comptroller';
 import { DistributionAbis } from './wepiggy/contracts/distribution';
 import { LensAbis } from './wepiggy/contracts/lens';
+import { OracleAbis } from './wepiggy/contracts/oracle';
 import { PTokenAbis } from './wepiggy/contracts/pToken';
 import { contracts, nativePTokens, wpcAddress, zeroAddress } from './wepiggy/wepiggy.constants';
 import { APY, BalanceInfo } from './wepiggy/wepiggy.interfaces';
@@ -543,23 +544,6 @@ export class WePiggyProtocol extends DataProviderProtocol {
     return wpcAPY;
   }
 
-  private apyFormula(
-    wpcPrice: number,
-    wpcPerDay: number,
-    total: number,
-    underlyingTokenPrice: number,
-  ) {
-    return new BigNumber(wpcPrice)
-      .multipliedBy(wpcPerDay) //
-      .div(total)
-      .div(underlyingTokenPrice)
-      .plus(1)
-      .pow(365)
-      .minus(1)
-      .multipliedBy(100)
-      .multipliedBy(1000);
-  }
-
   async getPricesFromOracle(tokens: string[], chain: ChainDto): Promise<Map<string, BigNumber>> {
     const oracleContract = new OracleAbis(contracts[chain.name].oracle);
     const prices = new Map<string, BigNumber>();
@@ -718,6 +702,23 @@ export class WePiggyProtocol extends DataProviderProtocol {
 
   getTotalSupplyLabel(pTokenAddress: string): string {
     return concatStrings(PTokenAbis.totalSupply.name, pTokenAddress);
+  }
+
+  private apyFormula(
+    wpcPrice: number,
+    wpcPerDay: number,
+    total: number,
+    underlyingTokenPrice: number,
+  ) {
+    return new BigNumber(wpcPrice)
+      .multipliedBy(wpcPerDay) //
+      .div(total)
+      .div(underlyingTokenPrice)
+      .plus(1)
+      .pow(365)
+      .minus(1)
+      .multipliedBy(100)
+      .multipliedBy(1000);
   }
 }
 

@@ -1,12 +1,16 @@
 import * as redisStore from 'cache-manager-redis-store';
 
+import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { SettingsEntity } from '../../../../../jobs/migration_chain_crawler/src/migrations/entities/settings.entity';
 import { IntegrationsController } from '../../controllers/integrations.controller';
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
 import { ProtocolModule } from '../protocols/protocol.module';
+import { AbisEntity } from './entities/abis.entity';
+import { ContractsEntity } from './entities/contracts.entity';
 import { ProjectsContractEntity } from './entities/projectsContract.entity';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { TrackedVaultEntity } from './entities/trackedVault.entity';
@@ -15,11 +19,16 @@ import { IntegrationsService } from './integrations.service';
 import { IntegrationsServiceV2 } from './integrations.service.v2';
 import { ProjectsContractRepository } from './repositories/projectsContract.repository';
 import { TrackedVaultRepository } from './repositories/trackedVault.repository';
-
-// TODO to add a new Protocol just add it here and at ProtocolService constructor
+import { AbisService } from './services/abis.service';
+import { ScanService } from './services/scan.service';
+import { SettingsService } from './services/settings.service';
+import { ContractsService } from './services/contracts.service';
+import { ProjectsService } from './services/projects.service';
+import { ProjectsEntity } from './entities/projects.entity';
 
 @Module({
   imports: [
+    HttpModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -29,6 +38,7 @@ import { TrackedVaultRepository } from './repositories/trackedVault.repository';
         port: configService.get('REDIS_PORT'),
         // eslint-disable-next-line camelcase
         auth_pass: configService.get('REDIS_AUTH'),
+        entities: ['dist/**/*.entity{.ts,.js}'],
       }),
       inject: [ConfigService],
     }),
@@ -39,9 +49,23 @@ import { TrackedVaultRepository } from './repositories/trackedVault.repository';
       ProjectsContractEntity,
       ProjectsInfoEntity,
       TrackedVaultEntity,
+      SettingsEntity,
+      ContractsEntity,
+      ProjectsEntity,
+      AbisEntity,
     ]),
   ],
-  providers: [IntegrationsService, IntegrationsServiceV2, FeaturesService],
+  providers: [
+    IntegrationsService,
+    IntegrationsServiceV2,
+    FeaturesService,
+    SettingsService,
+    ContractsService,
+    ProjectsService,
+    ScanService,
+    AbisService,
+  ],
   controllers: [IntegrationsController, IntegrationsControllerV2],
+  exports: [TypeOrmModule],
 })
 export class IntegrationsModule {}

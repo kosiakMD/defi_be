@@ -1,24 +1,30 @@
 export const vault = {
   id: 'ftm:0xbf513ace2abdc69d38ee847effdaa1901808c31c:0',
+  apiVaultCalls: [
+    {
+      tvl: 'apitogettvl',
+    },
+  ],
   blockchainVaultCalls: [
     {
+      // poolAllocPoints = poolInfo.outputs[1].allocPoint
       target: '0xbf513ace2abdc69d38ee847effdaa1901808c31c',
       args: ['0'],
       abi: {
         inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
-        name: 'poolInfo',
+        name: 'balanceOf',
         outputs: [
           { internalType: 'contract IERC20', name: 'stakingToken', type: 'address' },
           { internalType: 'uint256', name: 'stakingTokenTotalAmount', type: 'uint256' },
           { internalType: 'uint256', name: 'accIcePerShare', type: 'uint256' },
           { internalType: 'uint32', name: 'lastRewardTime', type: 'uint32' },
-          { internalType: 'uint16', name: 'allocPoint', type: 'uint16' },
+          { internalType: 'uint16', name: 'balanc', type: 'uint16' },
         ],
         stateMutability: 'view',
         type: 'function',
       },
       handler: {
-        name: 'chief',
+        name: 'tvl_pancake',
         //proxy: 'customConverter',
       },
     },

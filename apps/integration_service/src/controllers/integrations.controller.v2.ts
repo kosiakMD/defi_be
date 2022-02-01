@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
@@ -22,11 +22,11 @@ export class IntegrationsControllerV2 {
     private readonly integrationsServiceV2: IntegrationsServiceV2,
   ) {}
 
-  @Get('/load/:chainCode/:protocolCode/')
+  @Post('/load/:chainCode/:protocolCode/')
   async loadVaultsData(@Param() params): Promise<any> {
     const { chainCode, protocolCode } = params;
 
-    return this.integrationsServiceV2.loadVaults(chainCode, protocolCode);
+    return this.integrationsServiceV2.loadVaults(chainCode, protocolCode.toLowerCase());
   }
 
   @ApiParam({

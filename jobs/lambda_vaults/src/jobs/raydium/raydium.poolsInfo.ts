@@ -5,8 +5,8 @@ import { map } from 'rxjs';
 import type { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
-import { toChunkedArray } from '@app/common/utils';
 import { solanaStringsToKeys } from '@app/common/utils/solana';
+import { toChunkedArray } from '@app/common/utils/transform';
 
 const RPC_URL = new ConfigService().get('SOL_URL');
 const LIMIT_PER_REQUEST = 50;

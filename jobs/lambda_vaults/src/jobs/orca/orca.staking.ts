@@ -1,4 +1,4 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 import { map } from 'rxjs/operators';
 
@@ -15,9 +15,9 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
-import { concatStrings, objToString } from '@app/common/utils';
+import { concatStrings } from '@app/common/utils';
 import { toBN } from '@app/common/utils/number';
-import { solanaKeysToStrings, tokensWithPrices } from '@app/common/utils/solana';
+import { tokensWithPrices } from '@app/common/utils/solana';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
@@ -35,21 +35,22 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { tokenInfo, rpcDataPools, poolData } from './saber.interfaces';
-import { quarryMineStruct } from './saber.struct';
+import { LIMIT_DATA } from './orca.constant';
+import { poolData, tokenData } from './orca.interface';
+import { generateListPools } from './orca.utils';
 
 @Injectable()
-export class SaberStaking implements JobInterface {
+export class OrcaStaking implements JobInterface {
   chain = ChainIdEnum.sol;
   feature = FeatureEnum.staking;
-  protocol = ProtocolNameEnum.saber;
+  protocol = ProtocolNameEnum.orca;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
 
   private mapping: IntegrationStakingPositionDto[] = [];
   private availableDtosForConversion: Map<string, string>;
   private web3: Connection;
-  private poolsUrl = 'https://registry.saber.so/data/pools-info.mainnet.json';
+  private poolsUrl = 'https://api.orca.so/configs';
   private rpcUrl: string;
 
   constructor(
@@ -85,89 +86,99 @@ export class SaberStaking implements JobInterface {
   async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
     this.logger.log('building initial mapping', this.placeholder);
 
-    const farmsListData = await this.httpService
+    const stakingFeatures: IntegrationStakingPositionDto[] = [];
+    const allData = await this.httpService
       .get(this.poolsUrl)
       .pipe(map((r) => r.data))
       .toPromise();
 
-    const farms = farmsListData.pools;
-    const addressesFarms = farmsListData.addresses;
-    const stakingFeatures: IntegrationStakingPositionDto[] = [];
+    const { pools, tokens, doubleDips, aquafarms } = allData;
 
-    for (const farm of farms) {
+    const farmsInfo = await generateListPools(pools, doubleDips, aquafarms, tokens);
+
+    for (const farm of farmsInfo) {
       try {
-        const [token0, token1, lpToken] = await Promise.all([
-          this.accountService.saveAsset({
-            address: farm.tokens[0].address,
-            name: farm.tokens[0].name,
-            symbol: farm.tokens[0].symbol,
-            decimals: farm.tokens[0].decimals,
-            chain: this.chain,
-          }),
-          this.accountService.saveAsset({
-            address: farm.tokens[1].address,
-            name: farm.tokens[1].name,
-            symbol: farm.tokens[1].symbol,
-            decimals: farm.tokens[1].decimals,
-            chain: this.chain,
-          }),
-          this.accountService.saveAsset({
-            address: farm.lpToken.address,
-            name: farm.lpToken.name,
-            symbol: farm.lpToken.symbol,
-            decimals: farm.lpToken.decimals,
-            isLp: true,
-            chain: this.chain,
-          }),
-        ]);
-
-        const rewardToken: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
-          addressesFarms.sbr,
-          this.chain,
-        );
-        const stakingFeature = plainToClass(IntegrationStakingPositionDto, {
-          address: farm.quarry,
-          stakingToken: plainToClass(IntegrationERC20TokenDto, {
-            address: lpToken.address,
-            name: lpToken.name,
-            symbol: lpToken.symbol,
-            decimals: lpToken.decimals,
-            tokens: [
-              plainToClass(IntegrationPoolTokenDto, {
-                address: token0.address,
-                name: token0.name,
-                symbol: token0.symbol,
-                decimals: token0.decimals,
-                positionInPool: 0,
-                weight: 0.5,
-              }),
-              plainToClass(IntegrationPoolTokenDto, {
-                address: token1.address,
-                name: token1.name,
-                symbol: token1.symbol,
-                decimals: token1.decimals,
-                positionInPool: 1,
-                weight: 0.5,
-              }),
-            ],
-          }),
-          rewards: [
-            plainToClass(IntegrationClaimableTokenDto, {
-              address: rewardToken.address,
-              name: rewardToken.name,
-              symbol: rewardToken.symbol,
-              decimals: rewardToken.decimals,
+        if (farm) {
+          const [token0, token1, lpToken] = await Promise.all([
+            this.accountService.saveAsset({
+              address: farm.tokens?.tokenA?.mint,
+              name: farm.tokens?.tokenA?.name,
+              symbol: farm.tokens?.tokenA?.symbol,
+              decimals: farm.tokens?.tokenA?.decimals,
+              chain: this.chain,
             }),
-          ],
-          extra: {
-            addresses: solanaKeysToStrings(addressesFarms),
-            pool: farm,
-          },
-        });
-        stakingFeatures.push(stakingFeature);
+            this.accountService.saveAsset({
+              address: farm.tokens?.tokenB?.mint,
+              name: farm.tokens?.tokenB?.name,
+              symbol: farm.tokens?.tokenB?.symbol,
+              decimals: farm.tokens?.tokenB?.decimals,
+              chain: this.chain,
+            }),
+            this.accountService.saveAsset({
+              address: farm.tokens?.tokenLp?.mint,
+              name: farm.tokens?.tokenLp?.name,
+              symbol: farm.tokens?.tokenLp?.symbol,
+              decimals: farm.tokens?.tokenLp?.decimals,
+              isLp: true,
+              chain: this.chain,
+            }),
+          ]);
+
+          const rewardTokens: LiquidityPoolTokenDto[] = [];
+          if (farm.aq) {
+            rewardTokens.push(
+              await this.accountService.saveTrackingAsset(farm.aq.rewardTokenMint, this.chain),
+            );
+          }
+          if (farm.dd) {
+            rewardTokens.push(
+              await this.accountService.saveTrackingAsset(farm.dd.rewardTokenMint, this.chain),
+            );
+          }
+
+          const stakingFeature = plainToClass(IntegrationStakingPositionDto, {
+            address: farm.pool.account,
+            stakingToken: plainToClass(IntegrationERC20TokenDto, {
+              address: lpToken.address,
+              name: lpToken.name,
+              symbol: lpToken.symbol,
+              decimals: lpToken.decimals,
+              tokens: [
+                plainToClass(IntegrationPoolTokenDto, {
+                  address: token0.address,
+                  name: token0.name,
+                  symbol: token0.symbol,
+                  decimals: token0.decimals,
+                  positionInPool: 0,
+                  weight: 0.5,
+                }),
+                plainToClass(IntegrationPoolTokenDto, {
+                  address: token1.address,
+                  name: token1.name,
+                  symbol: token1.symbol,
+                  decimals: token1.decimals,
+                  positionInPool: 1,
+                  weight: 0.5,
+                }),
+              ],
+            }),
+            rewards: rewardTokens.map((rt) =>
+              plainToClass(IntegrationClaimableTokenDto, {
+                address: rt.address,
+                name: rt.name,
+                symbol: rt.symbol,
+                decimals: rt.decimals,
+              }),
+            ),
+            extra: {
+              farm,
+            },
+          });
+          stakingFeatures.push(stakingFeature);
+        }
       } catch (e) {
         this.logger.error(
-          `error to build initial mapping for farm [${farm.id} / ${farm.quarry}], chain [${this.chain}]`,
+          `error to build initial mapping for farm [${farm.id}], chain [${this.chain}]`,
           this.placeholder,
         );
       }
@@ -181,7 +192,7 @@ export class SaberStaking implements JobInterface {
     jobMapping.updatedAt = new Date();
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
-    return updatedMapping;
+    return jobMapping;
   }
 
   private async toDbMapping(stakingFeature: IntegrationStakingPositionDto) {
@@ -270,19 +281,6 @@ export class SaberStaking implements JobInterface {
   }
 
   async updateWithChainData(): Promise<any[]> {
-    const pubKey = [];
-    this.mapping.forEach((m) => {
-      pubKey.push(new PublicKey(m.extra.pool.quarry));
-    });
-    const rpcInfo = await this.web3.getMultipleAccountsInfo(pubKey);
-
-    for (const key in this.mapping) {
-      if (!rpcInfo[key]) {
-        continue;
-      }
-      this.mapping[key].extra.quarryInfo = objToString(quarryMineStruct.decode(rpcInfo[key].data));
-    }
-
     const tokenAddresses = [];
     this.mapping.forEach((m) => {
       if (m.stakingToken.tokens.length > 0) {
@@ -295,30 +293,26 @@ export class SaberStaking implements JobInterface {
     });
 
     const pricedTokenAddresses: string = tokenAddresses.join(',');
-
     const { prices } = await this.priceService.getCurrentPrices(
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
     );
 
-    const resPoolInfo = await this.getPoolsInfo(this.mapping);
+    const poolsInfo = await this.getPoolsInfo(this.mapping);
 
     for (const index in this.mapping) {
       const mapping: IntegrationStakingPositionDto = this.mapping[index];
-      if (!mapping.extra.quarryInfo) {
-        continue;
-      }
-      mapping.staked = mapping.extra.quarryInfo.totalTokensDeposited;
 
-      const poolInfo: poolData = await this.sortResponceData(resPoolInfo, mapping);
+      const poolInfo = await this.sortResponceData(poolsInfo, mapping);
+
+      mapping.staked = poolInfo.supply;
       mapping.stakingToken.totalSupply = toDecimals(poolInfo.supply, poolInfo.decimals);
-      const farmShare = toBN(mapping.extra.quarryInfo.totalTokensDeposited).div(
-        toBN(poolInfo.supply),
-      );
+
+      const farmShare = toBN(mapping.staked).div(toBN(poolInfo.supply));
 
       mapping.stakingToken.tokens.forEach((t) => {
-        const token: tokenInfo = poolInfo.tokens.find((ts) => ts.mint === t.address);
+        const token = poolInfo.tokens?.find((ts) => ts.mint === t.address);
         t.reserve = toDecimals(token.amount, t.decimals);
         t.balance = Number(farmShare.multipliedBy(toBN(t.reserve)));
       });
@@ -334,83 +328,76 @@ export class SaberStaking implements JobInterface {
 
       this.mapping[index] = mapping;
     }
+
     return this.mapping;
   }
 
-  private async getPoolsInfo(pools: IntegrationStakingPositionDto[]) {
+  async getPoolsInfo(mapping: IntegrationStakingPositionDto[]) {
     const config = {
       jsonrpc: '2.0',
       method: 'getAccountInfo',
       encoding: 'jsonParsed',
     };
 
-    const limitData = 33;
+    let index = 0;
+    const rcpDataPools = [];
+    for (const m of mapping) {
+      const lp = {
+        jsonrpc: config.jsonrpc,
+        id: index++,
+        method: config.method,
+        params: [m.extra.farm.pool.poolTokenMint, { encoding: config.encoding }],
+      };
+      const tokenA = {
+        jsonrpc: config.jsonrpc,
+        id: index++,
+        method: config.method,
+        params: [m.extra.farm.pool.tokenAccountA, { encoding: config.encoding }],
+      };
+      const tokenB = {
+        jsonrpc: config.jsonrpc,
+        id: index++,
+        method: config.method,
+        params: [m.extra.farm.pool.tokenAccountB, { encoding: config.encoding }],
+      };
 
-    const chunksLp = toChunkedArray(pools, limitData);
+      rcpDataPools.push(...[lp, tokenA, tokenB]);
+    }
 
-    let responceListData = [];
+    const responceListData = [];
+    const chunksLp = toChunkedArray(rcpDataPools, LIMIT_DATA);
     for (const chunk of chunksLp) {
-      const rcpDataPools: rpcDataPools[] = [];
-      let idNum = 0;
-      for (const value of chunk) {
-        rcpDataPools.push({
-          jsonrpc: config.jsonrpc,
-          id: idNum++,
-          method: config.method,
-          params: [value.extra.pool.swap.state.poolTokenMint, { encoding: config.encoding }],
-        });
-
-        const tokensReserve = {
-          tokenA: value.extra.pool.swap.state.tokenA.reserve,
-          tokenB: value.extra.pool.swap.state.tokenB?.reserve,
-        };
-
-        for (const key in tokensReserve) {
-          if (!tokensReserve[key]) {
-            continue;
-          }
-          rcpDataPools.push({
-            jsonrpc: config.jsonrpc,
-            id: idNum++,
-            method: config.method,
-            params: [tokensReserve[key], { encoding: config.encoding }],
-          });
-        }
-      }
-
       const rpcResponse = await this.httpService
-        .post(this.rpcUrl, rcpDataPools)
+        .post(this.rpcUrl, chunk)
         .pipe(map((r) => r.data))
         .toPromise();
-
-      responceListData = responceListData.concat(rpcResponse);
+      responceListData.push(...rpcResponse);
     }
 
     return responceListData;
   }
 
   private sortResponceData(data: any[], lpf: IntegrationStakingPositionDto): poolData {
-    const tokens = [];
+    const tokens: tokenData[] = [];
     let pool: poolData;
     for (const value of data) {
-      const parsedInfo = value.result.value.data.parsed.info;
-      if (
-        parsedInfo.mintAuthority &&
-        parsedInfo.mintAuthority === lpf.extra.pool.swap.config.authority
-      ) {
-        pool = {
-          decimals: parsedInfo.decimals,
-          mintAuthority: parsedInfo.mintAuthority,
-          supply: parsedInfo.supply,
-          tokens: [],
-        };
-      } else if (parsedInfo.owner && parsedInfo.owner === lpf.extra.pool.swap.config.authority) {
-        tokens.push({
-          mint: parsedInfo.mint,
-          owner: parsedInfo.owner,
-          decimals: parsedInfo.tokenAmount.decimals,
-          amount: parsedInfo.tokenAmount.amount,
-        });
+      if (value.result?.value?.data?.parsed?.info) {
+        const parsed = value.result.value.data.parsed.info;
+        if (lpf.extra.farm.pool.authority === parsed.owner) {
+          tokens.push({
+            mint: parsed.mint,
+            owner: parsed.owner,
+            amount: parsed.tokenAmount.amount,
+            decimals: parsed.tokenAmount.decimals,
+          });
+        } else if (lpf.extra.farm.pool.authority === parsed.mintAuthority) {
+          pool = {
+            decimals: parsed.decimals,
+            mintAuthority: parsed.mintAuthority,
+            supply: parsed.supply,
+            tokens: [],
+          };
+        }
       }
     }
     pool['tokens'] = tokens;

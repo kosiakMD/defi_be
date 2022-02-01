@@ -30,6 +30,7 @@ export enum ProjectEnum {
   wonderland = 'wonderland',
   yearn = 'yearn',
   trisolaris = 'trisolaris',
+  orca = 'orca',
 }
 
 export enum YearnProtocolEnum {
@@ -158,6 +159,10 @@ export enum TrisolarisProtocolEnum {
   trisolaris = 'Trisolaris',
 }
 
+export enum OrcaProtocolEnum {  
+  orca = 'Orca',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -189,4 +194,5 @@ export const ProtocolNameEnum = {
   ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
   ...TrisolarisProtocolEnum,
+  ...OrcaProtocolEnum,
 };

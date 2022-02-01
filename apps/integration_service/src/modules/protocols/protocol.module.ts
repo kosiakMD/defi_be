@@ -49,6 +49,8 @@ import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
 import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
+import OrcaProtocol from './protocols/orca/orca.protocol';
+import { OrcaStaking } from './protocols/orca/orca.staking';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
@@ -125,6 +127,7 @@ const Raydium = [RaydiumStaking];
 const Saber = [SaberProtocol, SaberStaking];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
+const Orca = [OrcaProtocol, OrcaStaking];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -165,6 +168,7 @@ const ProtocolList = [
   ...VVS,
   ...Viperswap,
   ...Wonderland,
+  ...Orca,
 ];
 
 @Module({

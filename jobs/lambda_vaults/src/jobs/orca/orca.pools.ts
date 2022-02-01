@@ -28,15 +28,17 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { poolInfo, tokenInfo, rpcDataPools } from './saber.interfaces';
+import { LIMIT_DATA } from './orca.constant';
+import { poolData, tokenData } from './orca.interface';
+import { generateListPools } from './orca.utils';
 
 const HALF = 0.5;
 
 @Injectable()
-export class SaberPools implements JobInterface {
+export class OrcaPools implements JobInterface {
   chain = ChainIdEnum.sol;
   feature = FeatureEnum.pools;
-  protocol = ProtocolNameEnum.saber;
+  protocol = ProtocolNameEnum.orca;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
 
@@ -44,7 +46,7 @@ export class SaberPools implements JobInterface {
   private availableDtosForConversion: Map<string, string>;
   private web3: Connection;
   private rpcUrl: string;
-  private poolsUrl = 'https://registry.saber.so/data/pools-info.mainnet.json';
+  private poolsUrl = 'https://api.orca.so/configs';
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -71,94 +73,94 @@ export class SaberPools implements JobInterface {
     if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
-    jobMapping.mapping.forEach((jm) => {
-      this.mapping.push(IntegrationDataConverter.toDTO(jm));
-    });
+    if (jobMapping.mapping) {
+      jobMapping.mapping.forEach((jm) => {
+        this.mapping.push(IntegrationDataConverter.toDTO(jm));
+      });
+    }
   }
 
   async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
     this.logger.log('building initial mapping', this.placeholder);
 
-    const allPools = await this.httpService
+    const allData = await this.httpService
       .get(this.poolsUrl)
-      .pipe(map((r) => r.data.pools))
+      .pipe(map((r) => r.data))
       .toPromise();
+
+    const { pools, aquafarms, tokens, doubleDips } = allData;
+
+    const poolsInfo = await generateListPools(pools, doubleDips, aquafarms, tokens);
 
     const liquidityPoolFeatures: LiquidityPoolFeature[] = [];
 
-    for (const p of allPools) {
+    for (const key in poolsInfo) {
+      const { pool, tokens } = poolsInfo[key];
       try {
-        const [token0, token1, lpToken] = await Promise.all([
-          this.accountService.saveAsset({
-            address: p.tokens[0].address,
-            name: p.tokens[0].name,
-            symbol: p.tokens[0].symbol,
-            decimals: p.tokens[0].decimals,
-            chain: this.chain,
-          }),
-          this.accountService.saveAsset({
-            address: p.tokens[1].address,
-            name: p.tokens[1].name,
-            symbol: p.tokens[1].symbol,
-            decimals: p.tokens[1].decimals,
-            chain: this.chain,
-          }),
-          this.accountService.saveAsset({
-            address: p.lpToken.address,
-            name: p.lpToken.name,
-            symbol: p.lpToken.symbol,
-            decimals: p.lpToken.decimals,
-            isLp: true,
-            chain: this.chain,
-          }),
-        ]);
+        if (pool && tokens) {
+          const poolTokens = tokens;
+          const [token0, token1, lpToken] = await Promise.all([
+            this.accountService.saveAsset({
+              address: poolTokens?.tokenA?.mint,
+              name: poolTokens?.tokenA?.name,
+              symbol: poolTokens?.tokenA?.symbol,
+              decimals: poolTokens?.tokenA?.decimals,
+              chain: this.chain,
+            }),
+            this.accountService.saveAsset({
+              address: poolTokens?.tokenB?.mint,
+              name: poolTokens?.tokenB?.name,
+              symbol: poolTokens?.tokenB?.symbol,
+              decimals: poolTokens?.tokenB?.decimals,
+              chain: this.chain,
+            }),
+            this.accountService.saveAsset({
+              address: poolTokens?.tokenLp?.mint,
+              name: poolTokens?.tokenLp?.name,
+              symbol: poolTokens?.tokenLp?.symbol,
+              decimals: poolTokens?.tokenLp?.decimals,
+              isLp: true,
+              chain: this.chain,
+            }),
+          ]);
 
-        const lpFeature = plainToClass(LiquidityPoolFeature, {
-          address: p.swap.state.poolTokenMint,
-          name: lpToken.name,
-          lpToken: plainToClass(ERC20Token, {
-            address: lpToken.address,
+          const lpFeature = plainToClass(LiquidityPoolFeature, {
+            address: pool.account,
             name: lpToken.name,
-            symbol: lpToken.symbol,
-            decimals: lpToken.decimals,
-          }),
-          tokens: [
-            plainToClass(PoolTokenDto, {
-              address: token0.address,
-              name: token0.name,
-              symbol: token0.symbol,
-              decimals: token0.decimals,
-              positionInPool: 0,
-              weight: HALF,
+            lpToken: plainToClass(ERC20Token, {
+              address: lpToken.address,
+              name: lpToken.name,
+              symbol: lpToken.symbol,
+              decimals: lpToken.decimals,
             }),
-            plainToClass(PoolTokenDto, {
-              address: token1.address,
-              name: token1.name,
-              symbol: token1.symbol,
-              decimals: token1.decimals,
-              positionInPool: 1,
-              weight: HALF,
-            }),
-          ],
-          extra: {
-            pool: {
-              authority: p.swap.config.authority,
+            tokens: [
+              plainToClass(PoolTokenDto, {
+                address: token0.address,
+                name: token0.name,
+                symbol: token0.symbol,
+                decimals: token0.decimals,
+                positionInPool: 0,
+                weight: HALF,
+              }),
+              plainToClass(PoolTokenDto, {
+                address: token1.address,
+                name: token1.name,
+                symbol: token1.symbol,
+                decimals: token1.decimals,
+                positionInPool: 1,
+                weight: HALF,
+              }),
+            ],
+            extra: {
+              poolInfo: poolsInfo[key],
             },
-            tokens: {
-              tokenA: {
-                reserve: p.swap.state.tokenA.reserve,
-              },
-              tokenB: {
-                reserve: p.swap.state.tokenB.reserve,
-              },
-            },
-          },
-        });
+          });
 
-        liquidityPoolFeatures.push(lpFeature);
+          liquidityPoolFeatures.push(lpFeature);
+        }
       } catch (e) {
         this.logger.error(
-          `error to build initial mapping for lp token [${p.swap.state.poolTokenMint}], chain [${this.chain}]`,
+          `error to build initial mapping for lp token [${pool.address}], chain [${this.chain}]`,
           this.placeholder,
         );
       }
@@ -172,6 +174,7 @@ export class SaberPools implements JobInterface {
     jobMapping.updatedAt = new Date();
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
+
     return jobMapping;
   }
 
@@ -258,50 +261,6 @@ export class SaberPools implements JobInterface {
     return saveItem;
   }
 
-  async getPoolsInfo(mapping: LiquidityPoolFeature[]) {
-    const config = {
-      jsonrpc: '2.0',
-      method: 'getAccountInfo',
-      encoding: 'jsonParsed',
-    };
-
-    const limitData = 33;
-    const chunksLp = toChunkedArray(mapping, limitData);
-
-    let responceListData = [];
-    for (const chunk of chunksLp) {
-      const rcpDataPools: rpcDataPools[] = [];
-      let idNum = 0;
-      for (const value of chunk) {
-        rcpDataPools.push({
-          jsonrpc: config.jsonrpc,
-          id: idNum++,
-          method: config.method,
-          params: [value.address, { encoding: config.encoding }],
-        });
-
-        const listTokenData = value.extra.tokens;
-        for (const key in listTokenData) {
-          rcpDataPools.push({
-            jsonrpc: config.jsonrpc,
-            id: idNum++,
-            method: config.method,
-            params: [listTokenData[key].reserve, { encoding: config.encoding }],
-          });
-        }
-      }
-
-      const rpcResponse = await this.httpService
-        .post(this.rpcUrl, rcpDataPools)
-        .pipe(map((r) => r.data))
-        .toPromise();
-
-      responceListData = responceListData.concat(rpcResponse);
-    }
-
-    return responceListData;
-  }
-
   async updateWithChainData(): Promise<any[]> {
     const pricedTokenAddresses: string = Array.from(
       this.mapping.map((m) => {
@@ -313,35 +272,36 @@ export class SaberPools implements JobInterface {
       CurrencyIdEnum.usd,
       this.chain,
     );
-
     const dataLp = await this.getPoolsInfo(this.mapping);
 
     for (const lpf of this.mapping) {
-      let pool: poolInfo;
-      const tokens: tokenInfo[] = [];
+      let pool: poolData;
+      const tokens: tokenData[] = [];
 
       for (const value of dataLp) {
-        const parsedInfo = value.result.value.data.parsed.info;
-        if (parsedInfo.mintAuthority && parsedInfo.mintAuthority === lpf.extra.pool.authority) {
-          pool = {
-            decimals: parsedInfo.decimals,
-            mintAuthority: parsedInfo.mintAuthority,
-            supply: parsedInfo.supply,
-          };
-        } else if (parsedInfo.owner && parsedInfo.owner === lpf.extra.pool.authority) {
-          tokens.push({
-            mint: parsedInfo.mint,
-            owner: parsedInfo.owner,
-            decimals: parsedInfo.tokenAmount.decimals,
-            amount: parsedInfo.tokenAmount.amount,
-          });
+        if (value.result?.value?.data?.parsed?.info) {
+          const parsed = value.result.value.data.parsed.info;
+          if (lpf.extra.poolInfo.pool.authority === parsed.owner) {
+            tokens.push({
+              mint: parsed.mint,
+              owner: parsed.owner,
+              amount: parsed.tokenAmount.amount,
+              decimals: parsed.tokenAmount.decimals,
+            });
+          } else if (lpf.extra.poolInfo.pool.authority === parsed.mintAuthority) {
+            pool = {
+              decimals: parsed.decimals,
+              mintAuthority: parsed.mintAuthority,
+              supply: parsed.supply,
+            };
+          }
         }
       }
 
       lpf.lpToken.totalSupply = toDecimals(pool.supply, pool.decimals);
 
       lpf.tokens.forEach((t) => {
-        const token: tokenInfo = tokens.find((ts) => ts.mint === t.address);
+        const token = tokens.find((ts) => ts.mint === t.address);
         t.reserve = toDecimals(token.amount, t.decimals);
         t.balance = t.reserve;
       });
@@ -356,5 +316,50 @@ export class SaberPools implements JobInterface {
     }
 
     return this.mapping;
+  }
+
+  async getPoolsInfo(mapping: LiquidityPoolFeature[]) {
+    const config = {
+      jsonrpc: '2.0',
+      method: 'getAccountInfo',
+      encoding: 'jsonParsed',
+    };
+
+    let index = 0;
+    const rcpDataPools = [];
+    for (const m of mapping) {
+      const lp = {
+        jsonrpc: config.jsonrpc,
+        id: index++,
+        method: config.method,
+        params: [m.extra.poolInfo.pool.poolTokenMint, { encoding: config.encoding }],
+      };
+      const tokenA = {
+        jsonrpc: config.jsonrpc,
+        id: index++,
+        method: config.method,
+        params: [m.extra.poolInfo.pool.tokenAccountA, { encoding: config.encoding }],
+      };
+      const tokenB = {
+        jsonrpc: config.jsonrpc,
+        id: index++,
+        method: config.method,
+        params: [m.extra.poolInfo.pool.tokenAccountB, { encoding: config.encoding }],
+      };
+
+      rcpDataPools.push(...[lp, tokenA, tokenB]);
+    }
+
+    const responceListData = [];
+    const chunksLp = toChunkedArray(rcpDataPools, LIMIT_DATA);
+    for (const chunk of chunksLp) {
+      const rpcResponse = await this.httpService
+        .post(this.rpcUrl, chunk)
+        .pipe(map((r) => r.data))
+        .toPromise();
+      responceListData.push(...rpcResponse);
+    }
+
+    return responceListData;
   }
 }

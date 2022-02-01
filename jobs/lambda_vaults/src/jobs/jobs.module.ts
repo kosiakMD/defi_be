@@ -49,6 +49,8 @@ import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
+import { OrcaPools } from './orca/orca.pools';
+import { OrcaStaking } from './orca/orca.staking';
 import { PancakePoolsV1 } from './pancake/pancake.pools.v1';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
@@ -136,6 +138,8 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   CurveGaugesFtm,
   TrisolarisPools,
   TrisolarisStaking,
+  OrcaPools,
+  OrcaStaking,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

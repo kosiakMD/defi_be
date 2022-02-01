@@ -177,6 +177,9 @@ export class JobsRunner {
     jobPlaceholdersSet.add('12_Saber_staking');
     jobPlaceholdersSet.add('12_Saber_pools');
 
+    jobPlaceholdersSet.add('12_Orca_staking');
+    jobPlaceholdersSet.add('12_Orca_pools');
+
     jobPlaceholdersSet.add('14_VVS_pools');
     jobPlaceholdersSet.add('14_VVS_staking');
 

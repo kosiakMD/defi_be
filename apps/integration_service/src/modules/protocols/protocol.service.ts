@@ -67,6 +67,7 @@ import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
+import OrcaProtocol from './protocols/orca/orca.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
@@ -128,6 +129,7 @@ export class ProtocolService {
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly trisolarisProtocol: TrisolarisProtocol,
+    private readonly orcaProtocol: OrcaProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -163,6 +165,7 @@ export class ProtocolService {
       yearnProtocolV1,
       yearnProtocolV2,
       trisolarisProtocol,
+      orcaProtocol,
     ];
   }
 

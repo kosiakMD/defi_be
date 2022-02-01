@@ -2,6 +2,9 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { EndpointsEntity } from '../endpoints/endpoints.entity';
+import { Endpoints1643205463195 } from './migrations/1643205463195-Endpoints';
+
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -14,8 +17,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: ['dist/apps/rpc_nodes_service/src/**/*.entity{.ts,.js}'],
-        migrations: ['dist/apps/rpc_nodes_service/src/modules/database/migrations/*{.ts,.js}'],
+        entities: [EndpointsEntity],
+        migrations: [Endpoints1643205463195],
         synchronize: false,
         logging: true,
       }),

@@ -71,6 +71,8 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
   ],
 })
 export class AppModule implements OnModuleInit {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
+
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }

@@ -5,22 +5,23 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  Logger,
-  IntegrationFeaturesDataDto,
-  FeatureResultDto,
-  LendingPositionDto,
   AaveProtocolEnum,
-  ChainAbbrEnum,
-  ProjectEnum,
   Address,
+  ChainAbbrEnum,
   ChainDto,
-  LendingErcToken,
-  IAssetResponseDto,
   ChainIdEnum,
+  ClaimableDto,
+  FeatureEnum,
+  FeatureResultDto,
+  IAssetResponseDto,
+  IntegrationClaimableTokenDto,
+  IntegrationFeaturesDataDto,
+  LendingErcToken,
+  LendingPositionDto,
+  Logger,
+  ProjectEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
-import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataHealth } from '@app/common/dto/base.data.health.dto';

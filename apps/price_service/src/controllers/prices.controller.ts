@@ -7,18 +7,18 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import {
+  CurrentPriceResponseDto,
+  CurrentPricesPayload,
   HistoricalPriceQueryDto,
+  HistoricalPricesPayload,
+  HistoricalPriceV2ResponseDto,
   PriceBatchRequestDto,
+  PriceQueryDto,
   PriceRangeRequestDto,
+  PriceRequestCurrentDto,
   PriceResponseDto,
   PricesPayload,
   PriceTimestampRequestDto,
-  CurrentPricesPayload,
-  PriceRequestCurrentDto,
-  CurrentPriceResponseDto,
-  HistoricalPriceV2ResponseDto,
-  PriceQueryDto,
-  HistoricalPricesPayload,
 } from '../modules/prices/dto';
 import { PriceUpdateResponseDto } from '../modules/prices/dto/price.update.responseDto';
 import { PriceService } from '../modules/prices/prices.service';

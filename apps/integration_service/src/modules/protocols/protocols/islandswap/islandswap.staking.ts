@@ -5,27 +5,19 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import {
-  Address,
-  ChainDto,
-  ClaimableDto,
-  ICallData,
-  Logger,
-  ProtocolNameEnum,
-} from '@app/common';
+import { Address, ChainDto, ClaimableDto, ICallData, Logger, ProtocolNameEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import {
   FeatureEnum,
+  IslandswapProtocolEnum,
   ProjectEnum,
   ProtocolTypeEnum,
-  IslandswapProtocolEnum,
 } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { concatStrings } from '@app/common/utils';
-
+import { concatStrings, decimalsDivider } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { decimalsDivider } from '@app/common/utils';
+
 import { MasterchefAbis } from './contracts/masterchef.abis';
 import { SinglePoolAbis } from './contracts/pool.abis';
 
@@ -50,7 +42,7 @@ export class IslandswapStaking {
 
     const multicallData = await this.getDataWithMulticall(addresses, pools, chain);
 
-    const base: BaseDataStaking[] = addresses.map(a => {
+    const base: BaseDataStaking[] = addresses.map((a) => {
       const baseInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
         chain,
         projectName: ProjectEnum.islandswap,
@@ -76,8 +68,8 @@ export class IslandswapStaking {
   private async getDataWithMulticall(addresses: Address[], pools: NotifyStaking, chain: ChainDto) {
     const calls = new Map<string, ICallData>();
 
-    addresses.forEach(address => {
-      pools.items.forEach(pool => {
+    addresses.forEach((address) => {
+      pools.items.forEach((pool) => {
         if (pool.poolId !== null) {
           calls.set(this.contractCallLabel(address, pool.address, pool.poolId), {
             address: pool.address,
@@ -91,7 +83,10 @@ export class IslandswapStaking {
       });
     });
 
-    const userBalances: Map<string, ICallData> = await this.multicallService.handleInBatches(calls, chain.id);
+    const userBalances: Map<string, ICallData> = await this.multicallService.handleInBatches(
+      calls,
+      chain.id,
+    );
 
     const balances: {
       id: string;
@@ -118,7 +113,7 @@ export class IslandswapStaking {
         });
       }
     });
-    
+
     const pendingTokensCalls = new Map<string, ICallData>();
     balances.forEach((b) => {
       pendingTokensCalls.set(this.contractCallLabel(b.user.address, b.contract, b.poolId), {
@@ -132,7 +127,8 @@ export class IslandswapStaking {
     });
 
     const claimableRewardsRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
-      pendingTokensCalls, chain.id
+      pendingTokensCalls,
+      chain.id,
     );
 
     balances.forEach((b) => {
@@ -148,7 +144,11 @@ export class IslandswapStaking {
     return balances;
   }
 
-  private async getSinglePoolBalance(addresses: string[], pools: NotifyStaking, chain: ChainDto): Promise<any[]> {
+  private async getSinglePoolBalance(
+    addresses: string[],
+    pools: NotifyStaking,
+    chain: ChainDto,
+  ): Promise<any[]> {
     const balances: {
       id: string;
       poolId: number | null;
@@ -162,22 +162,30 @@ export class IslandswapStaking {
 
     const calls = new Map<string, ICallData>();
 
-    const singlePools = pools.items.filter(p => p.poolId === null);
+    const singlePools = pools.items.filter((p) => p.poolId === null);
 
-    singlePools.forEach(pool => {
+    singlePools.forEach((pool) => {
       const poolContract = new SinglePoolAbis(pool.address);
-      addresses.forEach(address => {
+      addresses.forEach((address) => {
         calls.set(this.userInfoLabel(address, pool.address), poolContract.userInfo(address));
-        calls.set(this.pendingRewardLabel(address, pool.address), poolContract.pendingReward(address));
+        calls.set(
+          this.pendingRewardLabel(address, pool.address),
+          poolContract.pendingReward(address),
+        );
       });
     });
 
-    const singlePoolRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(calls, chain.id);
+    const singlePoolRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(
+      calls,
+      chain.id,
+    );
 
     addresses.forEach((userAddress) => {
-      singlePools.forEach(pool => {
-        const stakedBalance = singlePoolRsp.get(this.userInfoLabel(userAddress, pool.address)).output.data.amount;
-        const rewardBalance = singlePoolRsp.get(this.pendingRewardLabel(userAddress, pool.address)).output.data;
+      singlePools.forEach((pool) => {
+        const stakedBalance = singlePoolRsp.get(this.userInfoLabel(userAddress, pool.address))
+          .output.data.amount;
+        const rewardBalance = singlePoolRsp.get(this.pendingRewardLabel(userAddress, pool.address))
+          .output.data;
         if (stakedBalance > 0 || rewardBalance > 0) {
           balances.push({
             id: pool.address,
@@ -187,12 +195,12 @@ export class IslandswapStaking {
             pendingISL: rewardBalance,
             user: {
               address: userAddress,
-            }
+            },
           });
         }
       });
     });
-    
+
     return balances;
   }
 
@@ -206,18 +214,22 @@ export class IslandswapStaking {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
     const indexedSPByPoolIdAndAddress = new Map<string, IntegrationStakingPositionDto>(
-      pools.items.map((sp) => [sp.address + sp.poolId, sp])
+      pools.items.map((sp) => [sp.address + sp.poolId, sp]),
     );
     balances.forEach((b) => {
-      const stakingPosition: IntegrationStakingPositionDto = indexedSPByPoolIdAndAddress.get(b.contract + b.poolId);
-      
+      const stakingPosition: IntegrationStakingPositionDto = indexedSPByPoolIdAndAddress.get(
+        b.contract + b.poolId,
+      );
+
       const stakedBigNumber = new BigNumber(b.balance).div(
         decimalsDivider(stakingPosition.stakingToken.decimals),
       );
       stakingPosition.stakingToken.balance = stakedBigNumber.toNumber();
 
       if (stakingPosition.stakingToken.tokens) {
-        const poolShare = stakedBigNumber.div(new BigNumber(stakingPosition.stakingToken.totalSupply));
+        const poolShare = stakedBigNumber.div(
+          new BigNumber(stakingPosition.stakingToken.totalSupply),
+        );
         stakingPosition.stakingToken.tokens.forEach((clpt) => {
           clpt.balance = poolShare.times(new BigNumber(clpt.reserve)).toNumber();
         });

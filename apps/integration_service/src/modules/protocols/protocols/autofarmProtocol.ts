@@ -40,13 +40,13 @@ import DataProviderProtocol from './dataProviderProtocol';
 @Injectable()
 export class AutofarmProtocol extends DataProviderProtocol implements AbstractProtocol {
   readonly chains = [
-    ChainAbbrEnum.avax, 
-    ChainAbbrEnum.bsc, 
-    ChainAbbrEnum.celo, 
-    ChainAbbrEnum.cro, 
-    //ChainAbbrEnum.ftm, 
-    //ChainAbbrEnum.harm, 
-    ChainAbbrEnum.heco, 
+    ChainAbbrEnum.avax,
+    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.celo,
+    ChainAbbrEnum.cro,
+    //ChainAbbrEnum.ftm,
+    //ChainAbbrEnum.harm,
+    ChainAbbrEnum.heco,
     //ChainAbbrEnum.mriver,
     //ChainAbbrEnum.okex,
     ChainAbbrEnum.plg,

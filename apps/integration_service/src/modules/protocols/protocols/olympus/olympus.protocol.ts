@@ -5,11 +5,11 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  FeatureEnum,
   Logger,
   ProjectEnum,
   ProtocolNameEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';

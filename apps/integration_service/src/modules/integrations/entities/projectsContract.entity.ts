@@ -1,9 +1,9 @@
 import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
+
 import { ProjectsInfoEntity } from './projectsInfo.entity';
 
 @Entity({ name: 'projects_contract', orderBy: { name: 'ASC' } })
 export class ProjectsContractEntity {
-
   @PrimaryColumn({ name: 'id' })
   id: number;
 

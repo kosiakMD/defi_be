@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class DistributionAbis extends MultiCallAbiProxy {
@@ -7,19 +8,19 @@ export class DistributionAbis extends MultiCallAbiProxy {
       {
         internalType: 'address',
         name: '',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     name: 'wpcSpeeds',
     outputs: [
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 
   static readonly pendingWPCAccrued: AbiItem = {

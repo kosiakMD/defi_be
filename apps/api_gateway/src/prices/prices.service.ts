@@ -12,12 +12,12 @@ import { RequestErrorHandler } from '@app/common/decorators';
 import {
   ChainDto,
   CurrencyDto,
+  CurrencyListDto,
+  PriceBatchRequestDto,
   PriceQueryDto,
+  PriceRangeRequestDto,
   PriceResponseDto,
   PricesPayload,
-  PriceBatchRequestDto,
-  PriceRangeRequestDto,
-  CurrencyListDto,
 } from './dto';
 
 @Injectable()

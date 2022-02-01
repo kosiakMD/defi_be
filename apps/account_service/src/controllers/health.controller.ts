@@ -4,9 +4,9 @@ import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   HealthCheck,
+  HealthCheckResult,
   HealthCheckService,
   HealthIndicatorResult,
-  HealthCheckResult,
 } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
 

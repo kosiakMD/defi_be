@@ -1,4 +1,4 @@
-import { ChainIdEnum, FeatureEnum } from "@app/common/enum";
+import { ChainIdEnum, FeatureEnum } from '@app/common/enum';
 
 export interface VaultForSearchResponse {
   id: number;

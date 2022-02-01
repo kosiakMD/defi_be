@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, ChainAbbrEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
+import { ChainAbbrEnum, ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
 
 import { Currency } from '../interfaces';
 

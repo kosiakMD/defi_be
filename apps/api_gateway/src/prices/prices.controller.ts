@@ -4,14 +4,14 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import {
   ChainDto,
   CurrencyDto,
-  PriceQueryDto,
-  PriceRequestDto,
-  PriceResponseDto,
-  PricesPayload,
   CurrentPriceResponseDto,
   HistoricalPriceResponseDto,
   PriceBatchRequestDto,
+  PriceQueryDto,
   PriceRangeRequestDto,
+  PriceRequestDto,
+  PriceResponseDto,
+  PricesPayload,
 } from './dto';
 import { CurrencyListDto } from './dto/currency.list.dto';
 import { PricesService } from './prices.service';

@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, Logger } from '@app/common';
-import { FeatureEnum } from '@app/common';
+import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
 

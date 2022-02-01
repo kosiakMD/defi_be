@@ -10,6 +10,7 @@ import {
   ChainAbbrEnum,
   ChainDto,
   ChainIdEnum,
+  FeatureEnum,
   IntegrationClaimableTokenDto,
   IntegrationFeaturesDataDto,
   LendingErcToken,
@@ -19,7 +20,6 @@ import {
   ProtocolNameEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CallData } from '@app/common/dto/CallData';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';

@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class TraderjoeAbis extends MultiCallAbiProxy {
@@ -166,7 +167,7 @@ export class TraderjoeAbis extends MultiCallAbiProxy {
       },
     ],
     payable: false,
-    stateMutability:'view',
+    stateMutability: 'view',
     type: 'function',
   };
 }

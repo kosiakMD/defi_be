@@ -7,8 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 
-import { ImpermanentLossResponseDto } from './dto/impermanentLoss.dto';
-import { ImpermanentLossDto } from './dto/impermanentLoss.dto';
+import { ImpermanentLossDto, ImpermanentLossResponseDto } from './dto/impermanentLoss.dto';
 
 @Injectable()
 export class ImpermanentLossService {

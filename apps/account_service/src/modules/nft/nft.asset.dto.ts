@@ -1,6 +1,6 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { TraitDto, CollectionDto, ContractDto, OrderDto, LastSaleDto } from '../../common/dto';
+import { CollectionDto, ContractDto, LastSaleDto, OrderDto, TraitDto } from '../../common/dto';
 
 @Exclude()
 export class NftAssetDto {

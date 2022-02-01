@@ -2,12 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
-import { ChainAbbrEnum, ProjectEnum, IslandswapProtocolEnum } from '@app/common/enum';
+import { ChainAbbrEnum, IslandswapProtocolEnum, ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
+
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import BasicProtocol from '../basicProtocol';
-import { IslandswapStaking } from './islandswap.staking';
 import { IslandswapPools } from './islandswap.pools';
+import { IslandswapStaking } from './islandswap.staking';
 
 @Injectable()
 export default class IslandswapProtocol extends BasicProtocol {
@@ -18,7 +20,7 @@ export default class IslandswapProtocol extends BasicProtocol {
   readonly features = {
     [ChainAbbrEnum.okex]: [FeatureEnum.staking, FeatureEnum.pools],
   };
-  
+
   protected readonly dataProvider;
 
   constructor(

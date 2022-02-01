@@ -106,13 +106,7 @@ const TraderJoe = [
   TraderJoeFarm,
   TraderJoeLending,
 ];
-const Pancake = [
-  PancakeProtocol,
-  PancakeV2Staking,
-  PancakeProtocolV1,
-  EtherscanService,
-  ScanApi,
-];
+const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeProtocolV1, EtherscanService, ScanApi];
 const Alpaca = [AlpacaProtocol, AlpacaApiService];
 const Autofarm = [AutofarmProtocol, AutofarmStaking, AutofarmApiService];
 const Badger = [BadgerProtocol, BadgerStaking];

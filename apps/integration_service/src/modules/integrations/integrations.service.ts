@@ -1,7 +1,15 @@
+import { SearchResultType } from 'apps/api_gateway/src/search/search.enum';
+import {
+  SearchParams,
+  SearchResultsBaseEntry,
+  SearchResultsProjectEntry,
+  SearchResultsVaultEntry,
+} from 'apps/api_gateway/src/search/search.interface';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
 import { CACHE_MANAGER, Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -19,6 +27,8 @@ import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
+import { SearchEntries } from '../../common/enum/search.enum';
+import { IntegrationSearchParams } from '../../common/interfaces/search.interfaces';
 import { getChainById } from '../../common/utils/chain';
 
 import { ProtocolService } from '../protocols/protocol.service';
@@ -31,19 +41,16 @@ import {
   ProtocolInfoDto,
 } from './dto/integrations.dto';
 import { FeaturesService } from './features.service';
-import { IntegrationSearchParams } from '../../common/interfaces/search.interfaces';
-import { SearchParams, SearchResultsBaseEntry, SearchResultsProjectEntry, SearchResultsVaultEntry } from 'apps/api_gateway/src/search/search.interface';
-import { SearchEntries } from '../../common/enum/search.enum';
 import { ProjectsContractRepository } from './repositories/projectsContract.repository';
-import { InjectRepository } from '@nestjs/typeorm';
-import { SearchResultType } from 'apps/api_gateway/src/search/search.enum';
 import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 
 @Injectable()
 export class IntegrationsService {
   constructor(
-    @InjectRepository(ProjectsContractRepository) private readonly projectsRepository: ProjectsContractRepository,
-    @InjectRepository(TrackedVaultRepository) private readonly vaultsRepository: TrackedVaultRepository,
+    @InjectRepository(ProjectsContractRepository)
+    private readonly projectsRepository: ProjectsContractRepository,
+    @InjectRepository(TrackedVaultRepository)
+    private readonly vaultsRepository: TrackedVaultRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly featuresService: FeaturesService,
@@ -274,7 +281,7 @@ export class IntegrationsService {
 
   async searchProjects(query: SearchParams): Promise<SearchResultsProjectEntry[]> {
     const projects = await this.projectsRepository.findProjectsByParams(query);
-    return projects.map(p => ({
+    return projects.map((p) => ({
       type: SearchResultType.PROJECT,
       icon: p.icon,
       name: p.name,
@@ -291,7 +298,7 @@ export class IntegrationsService {
       return [];
     }
     const vaults = await this.vaultsRepository.findVaultsByParams(query);
-    return vaults.map(v => ({
+    return vaults.map((v) => ({
       type: SearchResultType.VAULT,
       metadata: {
         chainId: v.chainId,
@@ -301,7 +308,10 @@ export class IntegrationsService {
     }));
   }
 
-  async search(params: IntegrationSearchParams, query: SearchParams): Promise<SearchResultsBaseEntry[]> {
+  async search(
+    params: IntegrationSearchParams,
+    query: SearchParams,
+  ): Promise<SearchResultsBaseEntry[]> {
     const { searchEntry } = params;
     switch (searchEntry) {
       case SearchEntries.PROJECTS:

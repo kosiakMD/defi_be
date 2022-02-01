@@ -25,7 +25,7 @@ import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { objToString, toChunkedArray } from '@app/common/utils';
 
 import { Web3Provider } from '../../../chains/web3.provider';
-import { requestPerChunk, programId } from './saber.constant';
+import { programId, requestPerChunk } from './saber.constant';
 import { balance } from './saber.interface';
 import { balanceStruct, quarryMineStruct } from './saber.struct';
 import { calculateReward } from './utils/saber.reward';

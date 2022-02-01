@@ -1,5 +1,5 @@
 import { i64, publicKey, u64 } from '@project-serum/borsh';
-import { u8, u16, struct } from 'buffer-layout';
+import { struct, u16, u8 } from 'buffer-layout';
 
 export const balanceStruct = struct([
   u64('buf'),

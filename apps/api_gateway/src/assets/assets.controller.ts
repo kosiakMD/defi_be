@@ -1,5 +1,4 @@
-import { Get, Query } from '@nestjs/common';
-import { Controller, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -17,6 +16,7 @@ export class AssetsController {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly assetsService: AssetsService,
   ) {}
+
   @Get('/all')
   @ApiResponse({ status: 200, type: AssetsDto, isArray: true })
   async queryAllAssets(): Promise<AssetsDto[]> {

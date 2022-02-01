@@ -5,8 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import {
-  HireEmailRequestDto,
   EmailResponseDto,
+  HireEmailRequestDto,
   HireEmailValidationErrorResponseDto,
 } from './mail.dto';
 import { MailService } from './mail.service';

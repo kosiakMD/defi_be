@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PancakeController } from './pancake.controller';
 
+import { PancakeController } from './pancake.controller';
 
 describe('UniswapController', () => {
   let controller: PancakeController;

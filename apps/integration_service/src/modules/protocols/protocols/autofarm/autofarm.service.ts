@@ -5,8 +5,13 @@ import { AbiItem } from 'web3-utils';
 import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainAbbrEnum, ChainDto, Logger } from '@app/common';
-import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
+import {
+  ChainAbbrEnum,
+  ChainDto,
+  ClaimableDto,
+  IntegrationClaimableTokenDto,
+  Logger,
+} from '@app/common';
 import { Address } from '@app/common/types';
 import { decimalsDivider } from '@app/common/utils';
 

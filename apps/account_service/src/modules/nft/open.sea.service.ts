@@ -14,12 +14,12 @@ import { Address, ChainAbbrEnum, ChainIdEnum, CurrentPricesPayload, Logger } fro
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
 import {
-  NftAssetDto,
   ChainCollectionsDto as NftChainDto,
   ChainsDto as NftChainsDto,
-  CollectionChainsDto,
   CollectionBaseDto,
+  CollectionChainsDto,
   CollectionDto,
+  NftAssetDto,
 } from '@app/common/dto/nft';
 import { NftProjectEnum } from '@app/common/enum/nft.enum';
 import {
@@ -31,10 +31,10 @@ import { groupBy, mapToObject, objectToMap, sumOfProperties } from '@app/common/
 import { getKey } from '@app/common/utils/string';
 
 import {
+  BaseCollectionDto,
+  CollectionDto as OpenSeaCollectionDto,
   NftAssetDto as OpenSeaNftAssetDto,
   OrderDto,
-  CollectionDto as OpenSeaCollectionDto,
-  BaseCollectionDto,
 } from '../../common/dto';
 
 import { NftBasicService } from './nft.basic.service';

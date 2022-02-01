@@ -7,11 +7,11 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';
 
-import { Aavegotchis, Response, Svg, Users, User, Id } from '../../interfaces/aavegotchi.interface';
+import { Aavegotchis, Id, Response, Svg, User, Users } from '../../interfaces/aavegotchi.interface';
 import {
   svgQuery,
-  usersPortalsGotchisQuery,
   usersPortalsGotchisIdsQuery,
+  usersPortalsGotchisQuery,
 } from './aavegotchi.query';
 
 @Injectable()

@@ -5,8 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ERC20Token, RequestErrorHandler } from '@app/common';
-import { ChainIdEnum, CurrencyId, Address } from '@app/common';
+import { Address, ChainIdEnum, CurrencyId, ERC20Token, RequestErrorHandler } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ETH_BNB_ADDRESS } from '@app/common/constant';
 

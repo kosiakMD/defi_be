@@ -5,7 +5,7 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum, ChainAbbrEnum, ResultStatus } from '@app/common/enum';
+import { ChainAbbrEnum, ChainIdEnum, ResultStatus } from '@app/common/enum';
 
 import { Transaction } from '../../transactions/transactions.interfaces';
 import {

@@ -2,14 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
-import { ChainAbbrEnum, ProjectEnum, DefiKingdomsProtocolEnum } from '@app/common/enum';
+import { ChainAbbrEnum, DefiKingdomsProtocolEnum, ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import BasicProtocol from '../basicProtocol';
-import { DefiKingdomsStaking } from './defikingdoms.staking';
-import { DefiKingdomsPools } from './defikingdoms.pools';
 import { DefiKingdomsLocked } from './defikingdoms.locked';
+import { DefiKingdomsPools } from './defikingdoms.pools';
+import { DefiKingdomsStaking } from './defikingdoms.staking';
 
 @Injectable()
 export default class DefiKingdomsProtocol extends BasicProtocol {
@@ -18,13 +19,9 @@ export default class DefiKingdomsProtocol extends BasicProtocol {
   readonly name = DefiKingdomsProtocolEnum.defikingdoms;
   readonly displayName = 'DefiKingdoms';
   readonly features = {
-    [ChainAbbrEnum.harm]: [
-      FeatureEnum.staking, 
-      FeatureEnum.pools, 
-      FeatureEnum.lockedBalances,
-    ],
+    [ChainAbbrEnum.harm]: [FeatureEnum.staking, FeatureEnum.pools, FeatureEnum.lockedBalances],
   };
-  
+
   protected readonly dataProvider;
 
   constructor(

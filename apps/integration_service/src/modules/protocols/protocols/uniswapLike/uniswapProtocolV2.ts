@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
-import { FeatureEnum } from '@app/common';
+import { FeatureEnum, Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, UniswapProtocolEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../microservices/account.service';

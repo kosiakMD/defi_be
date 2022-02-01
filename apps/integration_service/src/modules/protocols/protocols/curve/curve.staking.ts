@@ -52,6 +52,7 @@ export class CurveStaking {
     }
 
     const localMultiCall = new CurveMulticall(
+      // @ts-ignore
       this.web3Provider.getInstanceByChainId(chain.id),
       this.logger,
     );

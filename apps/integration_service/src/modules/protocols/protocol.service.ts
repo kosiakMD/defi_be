@@ -35,13 +35,14 @@ import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
-import { DetailedResponseDto } from '../../common/dto';
 import {
+  CurrentPricesPayload,
+  DetailedResponseDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   PoolTokenDto,
+  PriceResponseDto,
 } from '../../common/dto';
-import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 import { Asset, BaseData, PoolToken } from '../../common/interfaces/transactions.interfaces';
 import { objectUpdate } from '../../common/utils/object';
 

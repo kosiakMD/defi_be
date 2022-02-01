@@ -4,20 +4,22 @@ import { Injectable } from '@nestjs/common';
 
 import {
   Address,
+  ChainAbbrEnum,
   ChainDto,
   FeatureEnum,
   ICallData,
   ProjectEnum,
-  ProtocolTypeEnum,
-  ChainAbbrEnum,
   ProtocolNameEnum,
+  ProtocolTypeEnum,
 } from '@app/common';
+import { BalanceData, BaseDataLocked, LockedToken } from '@app/common/dto/base.data.locked.dto';
 import { concatStrings } from '@app/common/utils';
-import { toDecimals } from '../../../../common/utils/util';
-import { BaseDataLocked, LockedToken, BalanceData } from '@app/common/dto/base.data.locked.dto';
-import { MulticallService } from '../../../chains/multicall/multicall.service';
-import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
+
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+import { toDecimals } from '../../../../common/utils/util';
+
+import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
+import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { AccountService } from '../../../microservices/account.service';
 import { ViperAbis } from './contracts/viper.abis';
 
@@ -36,27 +38,32 @@ export class ViperswapLocked {
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const baseData: BaseDataLocked[] = [];
-    await Promise.all(addresses.map(async (a) => {
-      const baseInfo: BaseDataLocked = plainToClass(BaseDataLocked, {
-        chain,
-        projectName: ProjectEnum.viperswap,
-        protocolName: ProtocolNameEnum.viperswap,
-        userAddress: a,
-        protocolType: ProtocolTypeEnum.staking,
-        feature: FeatureEnum.lockedBalances,
-        items: [],
-      });
+    await Promise.all(
+      addresses.map(async (a) => {
+        const baseInfo: BaseDataLocked = plainToClass(BaseDataLocked, {
+          chain,
+          projectName: ProjectEnum.viperswap,
+          protocolName: ProtocolNameEnum.viperswap,
+          userAddress: a,
+          protocolType: ProtocolTypeEnum.staking,
+          feature: FeatureEnum.lockedBalances,
+          items: [],
+        });
 
-      const lockedToken = await this.getLockedTokenBalances(a, chain);
-      lockedToken && baseInfo.items.push(lockedToken);
-      baseData.push(baseInfo);
-    }));
+        const lockedToken = await this.getLockedTokenBalances(a, chain);
+        lockedToken && baseInfo.items.push(lockedToken);
+        baseData.push(baseInfo);
+      }),
+    );
 
     return baseData;
   }
 
   private async getLockedTokenBalances(userAddress: string, chain: ChainDto) {
-    const viperToken = await this.accountService.getTrackedAssets(ViperswapLocked.viperAddress, chain.id);
+    const viperToken = await this.accountService.getTrackedAssets(
+      ViperswapLocked.viperAddress,
+      chain.id,
+    );
 
     const contract = new ViperAbis(ViperswapLocked.viperAddress);
     const calls = new Map<string, ICallData>([
@@ -66,8 +73,14 @@ export class ViperswapLocked {
 
     const userBalances: Map<string, ICallData> = await this.multicallService.handleInBatches(calls);
 
-    const lockedBalance = toDecimals(userBalances.get(this.lockedBalanceLabel(userAddress))?.output.data, viperToken.decimals);
-    const unlockedBalance = toDecimals(userBalances.get(this.unlockedBalanceLabel(userAddress))?.output.data, viperToken.decimals);
+    const lockedBalance = toDecimals(
+      userBalances.get(this.lockedBalanceLabel(userAddress))?.output.data,
+      viperToken.decimals,
+    );
+    const unlockedBalance = toDecimals(
+      userBalances.get(this.unlockedBalanceLabel(userAddress))?.output.data,
+      viperToken.decimals,
+    );
 
     if (lockedBalance === 0 && unlockedBalance === 0) return;
 
@@ -76,8 +89,8 @@ export class ViperswapLocked {
       name: viperToken.name,
       symbol: viperToken.symbol,
       decimals: viperToken.decimals,
-      locked: plainToClass(BalanceData, {balance: lockedBalance}),
-      unlocked: plainToClass(BalanceData, {balance: unlockedBalance}),
+      locked: plainToClass(BalanceData, { balance: lockedBalance }),
+      unlocked: plainToClass(BalanceData, { balance: unlockedBalance }),
     });
 
     lockedToken.totalBalance = lockedToken.locked.balance + lockedToken.unlocked.balance;

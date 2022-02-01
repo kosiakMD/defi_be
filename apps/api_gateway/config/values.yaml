@@ -4,7 +4,7 @@ ingress:
 
 configMaps:
   params:
-    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+    PRICE_SERVICE_MAIN_COIN_ADDRESS: '0x0000000000000000000000000000000000000000'
     HTTP_TIMEOUT: 300000
   mail:
     MAIL_HIRE_FROM: mail@defiyield.app
@@ -72,8 +72,8 @@ configMaps:
     NODE_ENV: production
 
 secrets:
-- mailer
-- redis
-- bscscan
-- etherscan
-- logs
+  - mailer
+  - redis
+  - bscscan
+  - etherscan
+  - logs

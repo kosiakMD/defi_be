@@ -13,8 +13,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { LoggerMiddleware } from '@app/common';
-import { Logger } from '@app/common';
+import { Logger, LoggerMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
@@ -157,6 +156,8 @@ import { VaultsModule } from './vaults/vaults.module';
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
+
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
@@ -172,6 +173,4 @@ export class AppModule implements OnModuleInit, NestModule {
       'App',
     );
   }
-
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 }

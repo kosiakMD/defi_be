@@ -1,4 +1,3 @@
-import { SearchParams } from 'apps/api_gateway/src/search/search.interface';
 import { EntityRepository, In, Repository } from 'typeorm';
 
 import { ChainIdEnum } from '@app/common/enum';
@@ -105,7 +104,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     return await this.query(insertSql);
   }
 
-  async findAssetsByParams(searchParams: SearchParams): Promise<AssetsEntity[]> {
+  async findAssetsByParams(searchParams): Promise<AssetsEntity[]> {
     // eslint-disable-next-line prefer-const
     let { address, text } = searchParams;
     if (text) {

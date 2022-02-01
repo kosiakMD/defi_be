@@ -1,20 +1,17 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { BaseService } from '../common/services/base.service';
 
-import { BalancesResponse } from '../account/account.interfaces';
-import { AccountService } from '../account/account.service';
-import { BalancesQueryDto, BalancesResponseDto } from './balances.dto';
+import { BalancesResponseDto } from './dto/balances.dto';
 
 @ApiTags('Balances')
 @Controller('v1/balances')
-export class BalancesController {
-  constructor(
-    private service: AccountService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-  ) {}
+export class BalancesController extends BaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('ACCOUNT_SERVICE_HOST'),
+    this.configService.get<string>('ACCOUNT_SERVICE_PORT'),
+  );
 
   @Get('/')
   @ApiQuery({
@@ -31,11 +28,9 @@ export class BalancesController {
     description: 'Array of chain ID (comma separated)',
     example: '1,2,3,4',
   })
-  @ApiResponse({ status: 200, type: BalancesResponseDto })
-  public getBalance(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
-    const { addresses, chains } = query;
-
-    return this.service.getBalances(addresses, chains);
+  @ApiResponse({ status: HttpStatus.OK, type: BalancesResponseDto })
+  public getBalance(@Query() query): Promise<any> {
+    return this.requestProxy(this.url + 'v1/balances', 'GET', { params: query });
   }
 
   @Get('/24h-return')
@@ -61,10 +56,8 @@ export class BalancesController {
     example:
       '0xdac17f958d2ee523a2206206994597c13d831ec7,0xB8c77482e45F1F44dE1745F52C74426C631bDD52',
   })
-  @ApiResponse({ status: 200, type: BalancesResponseDto })
-  public get24HourReturns(@Query() query: BalancesQueryDto): Promise<BalancesResponse> {
-    const { addresses, chains, assets } = query;
-
-    return this.service.get24HourReturns(addresses, chains, assets);
+  @ApiResponse({ status: HttpStatus.OK, type: BalancesResponseDto })
+  public get24HourReturns(@Query() query): Promise<any> {
+    return this.requestProxy(this.url + 'v1/balances/24-hour-returns', 'GET', { params: query });
   }
 }

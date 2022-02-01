@@ -1,9 +1,4 @@
 // eslint-disable-next-line max-classes-per-file
-import { SearchResultType } from 'apps/api_gateway/src/search/search.enum';
-import {
-  SearchParams,
-  SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/search.interface';
 import { plainToClass } from 'class-transformer';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
@@ -29,6 +24,8 @@ import { AssetDto, AssetResponseDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
+import { SearchParams, SearchResultsAssetEntry } from 'apps/api_gateway/src/search/interfaces/search.interface';
+import { SearchResultType } from 'apps/api_gateway/src/search/interfaces/search.enum';
 
 @Injectable()
 export class AssetsService {
@@ -115,11 +112,6 @@ export class AssetsService {
       assetChain,
     );
 
-    // TODO: Curve uses actual ETH (not ERC20) with address 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE
-    // Should we show wrapped eth instead, or...
-    // if (existedAsset && existedAsset.isLp) {
-    //   return this.withUnderlying(existedAsset);
-    // }
     if (existedAsset && (existedAsset.isTracked || existedAsset.isLp)) {
       return this.withUnderlying(existedAsset);
     }
@@ -345,7 +337,7 @@ export class AssetsService {
 
   async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {
     const assets = await this.assetRepository.findAssetsByParams(searchParams);
-    return assets.map((a) => ({
+    return assets.map(a => ({
       type: SearchResultType.ASSET,
       icon: a.icon,
       name: a.name,
@@ -354,6 +346,6 @@ export class AssetsService {
         chainId: a.chain,
         symbol: a.symbol,
       },
-    }));
+    }))
   }
 }

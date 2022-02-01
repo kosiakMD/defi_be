@@ -1,4 +1,4 @@
-import { SearchParams } from 'apps/api_gateway/src/search/search.interface';
+import { SearchParams } from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { EntityRepository, Repository } from 'typeorm';
 
 import { TrackedVaultEntity } from '../entities/trackedVault.entity';

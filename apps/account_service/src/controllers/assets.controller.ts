@@ -2,7 +2,7 @@ import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchRes
 import {
   SearchParams,
   SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/search.interface';
+} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { Response } from 'express';
 
 import {
@@ -53,7 +53,7 @@ export class AssetsController {
   ) {}
   @CacheKey('accountService_all_assets')
   @Get('/all')
-  @ApiResponse({ status: 200, type: [AssetDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [AssetDto] })
   async getAllAssets(): Promise<AssetDto[]> {
     try {
       return await this.assetsService.queryAllAssets();
@@ -82,7 +82,7 @@ export class AssetsController {
       '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
     ],
   })
-  @ApiResponse({ status: 200, type: AssetResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async getAssetByAddressesAndChains(
     @Query() query: AssetQueryDto,
   ): Promise<DetailedResponse<AssetResponseDto[]>> {
@@ -93,7 +93,7 @@ export class AssetsController {
 
   @Post('')
   @ApiBody({ type: AssetTrackDto })
-  @ApiResponse({ status: 200, type: AssetResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async addAssetToTrack(@Body() asset: AssetTrackDto): Promise<AssetResponseDto> {
     return await this.assetsService.saveTrackingAsset({
       assetAddress: asset.address,
@@ -103,7 +103,7 @@ export class AssetsController {
 
   @Post('save')
   @ApiBody({ type: AssetDto })
-  @ApiResponse({ status: 200, type: AssetResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async saveAsset(@Body() asset: AssetDto): Promise<AssetResponseDto> {
     return await this.assetsService.saveAsset(asset);
   }
@@ -116,7 +116,7 @@ export class AssetsController {
     example: 1,
     required: true,
   })
-  @ApiResponse({ status: 200, type: AssetsPoolsDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetsPoolsDto })
   async getAssetInfoForLambda(@Query('chainId') chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
     return await this.assetsService.getAssetAndPoolObjects(chainId);
   }

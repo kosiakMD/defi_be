@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { SearchResultType } from '../../search/search.enum';
+import { SearchResultType } from '../../search/interfaces/search.enum';
 import {
   AddressMetadata,
   AssetMetadata,
   ProjectMetadata,
   VaultMetadata,
-} from '../../search/search.interface';
+} from '../../search/interfaces/search.interface';
 import { SearchEntryMetadataDto } from './SearchEntryMetadata.dto';
 
 export class SearchResultsEntryDto {

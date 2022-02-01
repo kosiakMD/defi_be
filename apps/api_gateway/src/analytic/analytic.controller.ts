@@ -1,21 +1,19 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Logger } from '@app/common';
 
 import { ChainIdEnum } from '../common/enum';
+import { IBaseService } from '../common/interfaces/base-service.interface';
+import { BaseService } from '../common/services/base.service';
 
-import { AccountService } from '../account/account.service';
-import { ProfitAndLossQueryDto, ProfitAndLossResponseDTO } from './dto';
+import { ProfitAndLossResponseDTO } from './dto/profitandloss.response.dto';
 
 @ApiTags('Analytic')
 @Controller('v1/analytic')
-export class AnalyticController {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private accountService: AccountService,
-  ) {}
+export class AnalyticController extends BaseService implements IBaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('ACCOUNT_SERVICE_HOST'),
+    this.configService.get<string>('ACCOUNT_SERVICE_PORT'),
+  );
 
   @Get()
   @ApiQuery({
@@ -40,16 +38,8 @@ export class AnalyticController {
     example: '0x1af067552304c2369037125466eeec6debe30b31',
     required: true,
   })
-  @ApiResponse({ status: 200, type: ProfitAndLossResponseDTO })
-  async getProfitAndLossValues(
-    @Query() query: ProfitAndLossQueryDto,
-  ): Promise<ProfitAndLossResponseDTO> {
-    try {
-      const { asset, addresses, chain } = query;
-      return await this.accountService.getProfitAndLoss(asset, chain, addresses);
-    } catch (e) {
-      this.logger.error(e, 'AccountService.getProfitAndLoss');
-      throw e;
-    }
+  @ApiResponse({ status: HttpStatus.OK, type: ProfitAndLossResponseDTO })
+  async getProfitAndLossValues(@Query() query): Promise<ProfitAndLossResponseDTO> {
+    return this.requestProxy(this.url + 'v1/analytic', 'GET', { params: query });
   }
 }

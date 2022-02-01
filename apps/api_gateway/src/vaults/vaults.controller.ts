@@ -1,7 +1,9 @@
 import * as Promise from 'bluebird';
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Controller, Get, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -9,28 +11,32 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import VaultDto from '@app/common/dto/Vault.dto';
 import { Vault } from '@app/common/interfaces';
 
-import { IntegrationService } from '../integration/integration.service';
+import { IBaseService } from '../common/interfaces/base-service.interface';
+import { BaseService } from '../common/services/base.service';
 
-// TODO: can be null as updated each time
-const VAULTS_CACHE_TIME = 60; // 1 min
+const VAULTS_CACHE_TIME_IN_SEC = 60;
 
 @ApiTags('Vaults')
 @Controller('v1/vaults')
-export class VaultsController {
+export class VaultsController extends BaseService implements IBaseService {
   constructor(
-    private integrationService: IntegrationService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-  ) {}
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected httpService: HttpService,
+    protected configService: ConfigService,
+    @Inject(CACHE_MANAGER) protected cacheManager: Cache,
+  ) {
+    super(logger, httpService, configService);
+  }
+  url = this.buildUrl(
+    this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
+    this.configService.get<string>('INTEGRATION_SERVICE_PORT'),
+  );
 
   @Get()
-  @ApiResponse({ status: 200, type: VaultDto, isArray: true })
-  @ApiResponse({ status: 500, type: HttpException })
+  @ApiResponse({ status: HttpStatus.OK, type: VaultDto, isArray: true })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: HttpException })
   public async getVaults(): Promise<Vault[]> {
-    this.logger.time('getVaults');
-    const vaults = await Promise.any([this.readVaults(), this.fetchVaults()]);
-    this.logger.timeEnd('getVaults');
-    return vaults;
+    return await Promise.any([this.readVaults(), this.fetchVaults()]);
   }
 
   private async readVaults(): Promise<Vault[]> {
@@ -43,9 +49,8 @@ export class VaultsController {
   }
 
   private async fetchVaults(): Promise<Vault[]> {
-    const vaults = await this.integrationService.getVaults();
-    // postponed save in async queue
-    this.cacheManager.set<Vault[]>('vaults', vaults, { ttl: VAULTS_CACHE_TIME });
+    const vaults = this.requestProxy(this.url + 'v1/vaults', 'GET');
+    await this.cacheManager.set<any>('vaults', vaults, { ttl: VAULTS_CACHE_TIME_IN_SEC });
     return vaults;
   }
 }

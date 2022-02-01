@@ -1,53 +1,37 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { SafeFilterOptionsQueryDto } from '@app/common/dto/SafeFilterOptionsQuery.dto';
 
-import { SafeProxyService } from '../safe-proxy/safe.proxy.service';
+import { BaseService } from '../common/services/base.service';
+
 import { ScamsResponseDto } from './dto';
 import { ScamFunctionResponseDto } from './dto/scam.function.response.dto';
 import { ScamTypeResponseDto } from './dto/scam.type.response.dto';
 
 @ApiTags('Safe')
 @Controller('v1/scams')
-export class ScamsController {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private safeProxyService: SafeProxyService,
-  ) {}
+export class ScamsController extends BaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('SAFE_PROXY_SERVICE_HOST'),
+    this.configService.get<string>('SAFE_PROXY_SERVICE_PORT'),
+  );
 
   @Get('')
-  @ApiResponse({ status: 200, type: ScamsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: ScamsResponseDto })
   getScams(@Query() query: SafeFilterOptionsQueryDto): Promise<ScamsResponseDto> {
-    try {
-      return this.safeProxyService.getScams(query);
-    } catch (e) {
-      this.logger.error(e, 'SafeProxyService.getScams');
-      throw e;
-    }
+    return this.requestProxy(this.url + 'v1/scams', 'GET', { params: query });
   }
 
   @Get('types')
-  @ApiResponse({ status: 200, type: [ScamTypeResponseDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [ScamTypeResponseDto] })
   getScamTypes(): Promise<ScamTypeResponseDto[]> {
-    try {
-      return this.safeProxyService.getScamTypes();
-    } catch (e) {
-      this.logger.error(e, 'SafeProxyService.getScamTypes');
-      throw e;
-    }
+    return this.requestProxy(this.url + 'v1/scams/types');
   }
 
   @Get('functions')
-  @ApiResponse({ status: 200, type: [ScamFunctionResponseDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [ScamFunctionResponseDto] })
   getScamFunctions(): Promise<ScamFunctionResponseDto[]> {
-    try {
-      return this.safeProxyService.getScamFunctions();
-    } catch (e) {
-      this.logger.error(e, 'SafeProxyService.getScamFunctions');
-      throw e;
-    }
+    return this.requestProxy(this.url + 'v1/scams/functions');
   }
 }

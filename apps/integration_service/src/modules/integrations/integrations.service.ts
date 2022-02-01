@@ -1,10 +1,10 @@
-import { SearchResultType } from 'apps/api_gateway/src/search/search.enum';
+import { SearchResultType } from 'apps/api_gateway/src/search/interfaces/search.enum';
 import {
   SearchParams,
   SearchResultsBaseEntry,
   SearchResultsProjectEntry,
   SearchResultsVaultEntry,
-} from 'apps/api_gateway/src/search/search.interface';
+} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 

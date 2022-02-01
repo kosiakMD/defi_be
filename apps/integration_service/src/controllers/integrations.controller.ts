@@ -1,10 +1,14 @@
 import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
-import { SearchParams, SearchResultsBaseEntry } from 'apps/api_gateway/src/search/search.interface';
+import {
+  SearchParams,
+  SearchResultsBaseEntry,
+} from 'apps/api_gateway/src/search/interfaces/search.interface';
 
 import {
   CacheInterceptor,
   Controller,
   Get,
+  HttpStatus,
   NotAcceptableException,
   Param,
   Query,
@@ -34,7 +38,7 @@ export class IntegrationsController {
     return this.integrationsService.getAllFeatures();
   }
 
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: HttpStatus.OK })
   @Get('active')
   getActiveFeatures() {
     return this.integrationsService.getActiveFeatures();
@@ -68,7 +72,7 @@ export class IntegrationsController {
     type: String,
     example: '0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2',
   })
-  @ApiResponse({ status: 200, type: IntegrationsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseDto })
   @Get('/:protocolName/')
   async getProtocolFeature(
     @Param() params: ProtocolParams,
@@ -104,7 +108,7 @@ export class IntegrationsController {
     example: 'CRO',
     required: false,
   })
-  @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [SearchResultsEntryDto] })
   async search(
     @Param() params: IntegrationSearchParams,
     @Query() query: SearchParams,

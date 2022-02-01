@@ -1,18 +1,16 @@
-import { Cache } from 'cache-manager';
-
-import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ApprovalDTO } from '../account/account.dto';
-import { AccountService } from '../account/account.service';
+import { IBaseService } from '../common/interfaces/base-service.interface';
+import { BaseService } from '../common/services/base.service';
 
 @ApiTags('Approvals')
 @Controller('v1/approvals')
-export class ApprovalsController {
-  constructor(
-    private accountService: AccountService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+export class ApprovalsController extends BaseService implements IBaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('ACCOUNT_SERVICE_HOST'),
+    this.configService.get<string>('ACCOUNT_SERVICE_PORT'),
+  );
 
   @Get('/')
   @ApiQuery({
@@ -26,14 +24,13 @@ export class ApprovalsController {
     type: String,
     required: false,
     description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
     example: '',
   })
-  @ApiResponse({ status: 200, type: ApprovalDTO })
+  @ApiResponse({ status: HttpStatus.OK })
   async getBscApproval(
     @Query('addresses') addresses: string,
     @Query('chains') chains: string,
-  ): Promise<ApprovalDTO[]> {
-    return this.accountService.getApprovals(addresses, chains);
+  ): Promise<any> {
+    return this.requestProxy(this.url + 'v1/approvals', 'GET', { params: { addresses, chains } });
   }
 }

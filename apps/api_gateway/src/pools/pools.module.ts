@@ -4,7 +4,6 @@ import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { IntegrationService } from '../integration/integration.service';
 import { PoolsController } from './pools.controller';
 
 @Module({
@@ -24,7 +23,7 @@ import { PoolsController } from './pools.controller';
       inject: [ConfigService],
     }),
   ],
-  providers: [IntegrationService],
+  providers: [],
   controllers: [PoolsController],
 })
 export class PoolsModule {}

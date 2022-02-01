@@ -43,3 +43,7 @@ export function objToString(object) {
   });
   return stringValues;
 }
+
+export function splitToNumberArray(value: string): number[] {
+  return splitToArray(value).map((item) => Number(item));
+}

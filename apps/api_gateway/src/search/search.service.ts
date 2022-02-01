@@ -1,29 +1,43 @@
+import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { isSomeAddress } from '@app/common/utils';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
-import { AccountService } from '../account/account.service';
-import { IntegrationService } from '../integration/integration.service';
-import { SearchParams, SearchResults } from './search.interface';
-import { addressSearchResultParser } from './search.utils';
+import { BaseService } from '../common/services/base.service';
+
+import { SearchParams, SearchResults } from './interfaces/search.interface';
+import { addressSearchResultParser } from './utils/search.utils';
 
 @Injectable()
-export class SearchService {
+export class SearchService extends BaseService {
+  accountHost = this.configService.get<string>('ACCOUNT_SERVICE_HOST');
+  accountPort = this.configService.get<string>('ACCOUNT_SERVICE_PORT');
+  accountUrl = `${this.accountHost}${this.accountPort ? ':' + this.accountPort : ''}`;
+
+  integrationHost = this.configService.get<string>('INTEGRATION_SERVICE_HOST');
+  integrationPort = this.configService.get<string>('INTEGRATION_SERVICE_PORT');
+  integrationUrl = `${this.integrationHost}${
+    this.integrationPort ? ':' + this.integrationPort : ''
+  }`;
+
   constructor(
-    private readonly accountService: AccountService,
-    private readonly integrationService: IntegrationService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected httpService: HttpService,
+    protected configService: ConfigService,
     private readonly web3NameService: Web3NameService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-  ) {}
+  ) {
+    super(logger, httpService, configService);
+  }
 
   private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
     const searchResults = await Promise.all([
-      this.accountService.searchAssets(params),
-      this.integrationService.searchProjects(params),
-      this.integrationService.searchVaults(params),
+      this.requestProxy(this.accountUrl + 'v1/assets/search/projects', 'GET', { params }),
+      this.requestProxy(this.integrationUrl + 'v1/protocols/search/projects', 'GET', { params }),
+      this.requestProxy(this.integrationUrl + 'v1/protocols/search/vaults', 'GET', { params }),
     ]);
     return {
       entries: searchResults.flat(),
@@ -36,18 +50,15 @@ export class SearchService {
       return addressSearchResultParser(text, searchResult);
     }
     try {
-      // try to resolve address (Ethereum or Solana)
       const address = await this.web3NameService.resolveName(text);
       if (address) {
         this.logger.debug(`Resolved address ${address}`);
-        // try to search by address and by name
         const searchResult = await this.getSearchEntries({ address, text });
         return addressSearchResultParser(address, searchResult);
       }
     } catch (error) {
       this.logger.debug(`Error to resolve address ${error}`);
     }
-
     return this.getSearchEntries({ text });
   }
 }

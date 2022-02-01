@@ -45,6 +45,6 @@ export class BaseService {
   }
 
   public buildUrl(host, port): string {
-    return `${host}${port ? ':' + port : ''}`;
+    return `${host}${port ? ':' + port : ''}/`;
   }
 }

@@ -76,6 +76,7 @@ import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
+import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
@@ -126,6 +127,7 @@ export class ProtocolService {
     private readonly wonderlandProtocol: WonderlandProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
+    private readonly trisolarisProtocol: TrisolarisProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -160,6 +162,7 @@ export class ProtocolService {
       wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
+      trisolarisProtocol,
     ];
   }
 

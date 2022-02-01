@@ -64,6 +64,8 @@ import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
 import { TraderJoeSubgraph } from './traderjoe/traderjoe.subgraph';
+import { TrisolarisPools } from './trisolaris/trisolaris.pools';
+import { TrisolarisStaking } from './trisolaris/trisolaris.staking';
 import { UniswapPoolsV2 } from './uniswap/uniswap.pools.v2';
 import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
@@ -132,6 +134,8 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   CurveGaugesAvax,
   CurvePoolsFtm,
   CurveGaugesFtm,
+  TrisolarisPools,
+  TrisolarisStaking,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

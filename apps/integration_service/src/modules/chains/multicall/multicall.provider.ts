@@ -68,6 +68,10 @@ export class MulticallProvider {
         rpcConfigPath: 'CELO_URL',
         multicallAddress: '0xBc107e7E5e68Fc92E76A002381347846fD03F1C6',
       },
+      [ChainAbbrEnum.near]: {
+        rpcConfigPath: 'AURORA_URL',
+        multicallAddress: '0x32b50c286DEFd2932a0247b8bb940b78c063F16c',
+      },
     };
     Object.entries(providersData).forEach(([chainAbbr, config]) => {
       this.multicallsMap.set(

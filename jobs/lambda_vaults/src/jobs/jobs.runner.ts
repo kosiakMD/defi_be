@@ -205,6 +205,9 @@ export class JobsRunner {
     //jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Autofarm_staking`);
     //jobPlaceholdersSet.add(`${ChainIdEnum.xdai}_Autofarm_staking`);
 
+    jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);
+
     return jobPlaceholdersSet;
   }
 }

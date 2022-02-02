@@ -1,3 +1,5 @@
+import { AxiosResponse } from 'axios';
+import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
@@ -15,26 +17,32 @@ export class BaseService {
   ) {}
 
   @RequestErrorHandler()
-  public async requestProxy(url: string, method = 'GET', query?: any, config?: any) {
+  public async requestProxy<T = any>(
+    urlData: string | string[],
+    method = 'GET',
+    query?: any,
+    config?: any,
+  ) {
+    let url = urlData as string;
+    if (Array.isArray(urlData)) {
+      url = new URL(urlData[0], urlData[1]).toString();
+    }
     const timeMark = 'request ' + url;
     try {
       this.logger.time(timeMark);
 
-      let data;
+      let request: Observable<AxiosResponse<T>>;
       if (method === 'GET') {
-        data = await this.httpService
-          .get(url, query)
-          .pipe(map((response) => response.data))
-          .toPromise();
-      }
-      if (method === 'POST') {
-        data = await this.httpService
-          .post(url, query, config)
-          .pipe(map((response) => response.data))
-          .toPromise();
+        request = this.httpService.get<T>(url, query);
+      } else if (method === 'POST') {
+        request = this.httpService.post<T>(url, query, config);
+      } else if (method === 'PUT') {
+        request = this.httpService.put<T>(url, query, config);
+      } else if (method === 'PATCH') {
+        request = this.httpService.patch<T>(url, query, config);
       }
 
-      return data;
+      return await request.pipe(map((response) => response.data)).toPromise();
     } catch (err) {
       this.logger.error('Base service error:');
       this.logger.error(err);

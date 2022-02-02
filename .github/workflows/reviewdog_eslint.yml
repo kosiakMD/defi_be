@@ -1,4 +1,4 @@
-name: ReviewDog
+name: 'ReviewDog'
 on: [ pull_request ]
 
 jobs:

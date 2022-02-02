@@ -11,6 +11,7 @@ import {
 import { AbisEntity } from './abis.entity';
 import { ProjectsEntity } from './projects.entity';
 import { VaultsEntity } from './vaults.entity';
+import { FeaturesEntity } from './features.entity';
 
 @Entity({ name: 'int_contracts' })
 export class ContractsEntity {
@@ -31,10 +32,13 @@ export class ContractsEntity {
   @OneToMany(() => VaultsEntity, (vault) => vault.contract)
   vaults: VaultsEntity[];
 
-  @ManyToOne(() => ProjectsEntity, (project) => project.contracts)
-  @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })
-  @Column({ name: 'project_id', type: 'integer' })
-  project: ProjectsEntity;
+  @ManyToOne(() => FeaturesEntity, (feature) => feature.contracts)
+  @JoinColumn({ name: 'feature_id', referencedColumnName: 'id' })
+  @Column({ name: 'feature_id', type: 'integer' })
+  feature: FeaturesEntity;
+
+  @Column({ name: 'is_integrated', default: false, type: 'boolean' })
+  isIntegrated = false;
 
   @Column({ name: 'created_at', nullable: false, type: 'timestamp' })
   createdAt: number;

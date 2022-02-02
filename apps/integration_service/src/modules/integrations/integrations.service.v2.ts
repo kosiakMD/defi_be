@@ -9,9 +9,10 @@ import { Logger } from '@app/common';
 import { AbisEntity } from './entities/abis.entity';
 import { AbisService } from './services/abis.service';
 import { ContractsService } from './services/contracts.service';
+import { ProjectsService } from './services/projects.service';
 import { ScanService } from './services/scan.service';
 import { SettingsService } from './services/settings.service';
-import { ProjectsService } from './services/projects.service';
+import { VaultLoaderDemo } from './services/vault-loader-demo';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -21,6 +22,7 @@ export class IntegrationsServiceV2 {
     private readonly contractsService: ContractsService,
     private readonly abisService: AbisService,
     private readonly scanService: ScanService,
+    private readonly vaultLoader: VaultLoaderDemo,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
@@ -30,6 +32,7 @@ export class IntegrationsServiceV2 {
 
     const contractAddress = '0xbf513ace2abdc69d38ee847effdaa1901808c31c';
     const chainId = 4;
+
     const projectEntity = await this.projectsService.findByCode(protocolCode);
     if (!projectEntity) {
       throw new Error(`Project with code '${protocolCode}' not found.`);
@@ -37,6 +40,9 @@ export class IntegrationsServiceV2 {
 
     let contractEntity = await this.contractsService.findOrSave(contractAddress, chainId);
     if (contractEntity && contractEntity.abi) {
+      const integrationData = await this.vaultLoader.initialLoad(contractEntity);
+      console.log('integrationData');
+      console.log(integrationData);
       return contractEntity;
     }
 

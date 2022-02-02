@@ -25,6 +25,7 @@ import { SettingsService } from './services/settings.service';
 import { ContractsService } from './services/contracts.service';
 import { ProjectsService } from './services/projects.service';
 import { ProjectsEntity } from './entities/projects.entity';
+import { VaultLoaderDemo } from './services/vault-loader-demo';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { ProjectsEntity } from './entities/projects.entity';
     SettingsService,
     ContractsService,
     ProjectsService,
+    VaultLoaderDemo,
     ScanService,
     AbisService,
   ],

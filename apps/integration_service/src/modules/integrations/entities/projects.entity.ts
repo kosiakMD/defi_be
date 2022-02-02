@@ -1,6 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-
-import { ContractsEntity } from './contracts.entity';
+import { FeaturesEntity } from './features.entity';
 
 @Entity({ name: 'int_projects' })
 export class ProjectsEntity {
@@ -13,8 +12,8 @@ export class ProjectsEntity {
   @Column({ name: 'code' })
   code: string;
 
-  @OneToMany(() => ContractsEntity, (contract) => contract.project)
-  contracts: ContractsEntity[];
+  @OneToMany(() => FeaturesEntity, (feature) => feature.project)
+  features: FeaturesEntity[];
 
   @Column({ name: 'created_at', nullable: false, type: 'timestamp' })
   createdAt: number;

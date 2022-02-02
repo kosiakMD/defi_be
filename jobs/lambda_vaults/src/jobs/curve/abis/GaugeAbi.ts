@@ -26,6 +26,14 @@ export class GaugeAbi extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+
+  static readonly rewardTokens: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'reward_tokens',
+    inputs: [{ name: 'arg0', type: 'uint256' }],
+    outputs: [{ name: '', type: 'address' }],
+  };
 }
 
 export const GaugeAbis = [

@@ -54,6 +54,25 @@ export const CURVE_REGISTRY_ABI: AbiItem[] = [
     outputs: [{ name: '', type: 'uint256[2]' }],
     gas: 1521,
   },
+
+  {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_n_coins',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [{ name: '', type: 'uint256' }],
+    gas: 2699,
+  },
+
+  {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_coins',
+    inputs: [{ name: '_pool', type: 'address' }],
+    outputs: [{ name: '', type: 'address[4]' }],
+    gas: 9164,
+  },
+
   {
     stateMutability: 'view',
     type: 'function',

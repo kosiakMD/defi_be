@@ -30,13 +30,21 @@ import { BeefyStakingOne } from './beefy/beefy.staking.one';
 import { BeefyStakingPlg } from './beefy/beefy.staking.plg';
 import { ConvexStaking } from './convex/convex.staking';
 import { CurveGauges } from './curve/curve.gauges';
+import { CurveGaugesArbi } from './curve/curve.gauges.arbi';
 import { CurveGaugesAvax } from './curve/curve.gauges.avax';
 import { CurveGaugesFtm } from './curve/curve.gauges.ftm';
+import { CurveGaugesHarm } from './curve/curve.gauges.harm';
+import { CurveGaugesOpt } from './curve/curve.gauges.opt';
 import { CurveGaugesPlg } from './curve/curve.gauges.plg';
+import { CurveGaugesXdai } from './curve/curve.gauges.xdai';
 import { CurvePools } from './curve/curve.pools';
+import { CurvePoolsArbi } from './curve/curve.pools.arbi';
 import { CurvePoolsAvax } from './curve/curve.pools.avax';
 import { CurvePoolsFtm } from './curve/curve.pools.ftm';
+import { CurvePoolsHarm } from './curve/curve.pools.harm';
+import { CurvePoolsOpt } from './curve/curve.pools.opt';
 import { CurvePoolsPlg } from './curve/curve.pools.plg';
+import { CurvePoolsXdai } from './curve/curve.pools.xdai';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
@@ -136,6 +144,14 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   CurveGaugesAvax,
   CurvePoolsFtm,
   CurveGaugesFtm,
+  CurvePoolsArbi,
+  CurveGaugesArbi,
+  CurveGaugesOpt,
+  CurvePoolsOpt,
+  CurvePoolsHarm,
+  CurveGaugesHarm,
+  CurvePoolsXdai,
+  CurveGaugesXdai,
   TrisolarisPools,
   TrisolarisStaking,
   OrcaPools,

@@ -166,47 +166,8 @@ export class JobsRunner {
       });
     });
 
-    // This has to be hardcoded for convex until Curve is supported on the front end
-    // TODO: remove after Curve integration is complete
-    jobPlaceholdersSet.add('1_Curve_pools');
-    jobPlaceholdersSet.add('1_Convex_staking');
-
-    jobPlaceholdersSet.add('12_Raydium_staking');
-    jobPlaceholdersSet.add('12_Raydium_pools');
-
-    jobPlaceholdersSet.add('12_Saber_staking');
-    jobPlaceholdersSet.add('12_Saber_pools');
-
     jobPlaceholdersSet.add('12_Orca_staking');
     jobPlaceholdersSet.add('12_Orca_pools');
-
-    jobPlaceholdersSet.add('14_VVS_pools');
-    jobPlaceholdersSet.add('14_VVS_staking');
-
-    jobPlaceholdersSet.add('16_Mojitoswap_pools');
-    jobPlaceholdersSet.add('16_Mojitoswap_staking');
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Pangolin_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Curve_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.plg}_Curve_staking`);
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Curve_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Curve_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Curve_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Curve_staking`);
-
-    jobPlaceholdersSet.add('13_Islandswap_pools');
-    jobPlaceholdersSet.add('13_Islandswap_staking');
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.celo}_Autofarm_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.cro}_Autofarm_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.heco}_Autofarm_staking`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.avax}_Autofarm_staking`);
-    //jobPlaceholdersSet.add(`${ChainIdEnum.ftm}_Autofarm_staking`);
-    //jobPlaceholdersSet.add(`${ChainIdEnum.harm}_Autofarm_staking`);
-    //jobPlaceholdersSet.add(`${ChainIdEnum.okex}_Autofarm_staking`);
-    //jobPlaceholdersSet.add(`${ChainIdEnum.mriver}_Autofarm_staking`);
-    //jobPlaceholdersSet.add(`${ChainIdEnum.xdai}_Autofarm_staking`);
 
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);

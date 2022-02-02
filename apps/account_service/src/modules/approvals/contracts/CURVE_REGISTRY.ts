@@ -4,17 +4,15 @@ import { AbiItem } from 'web3-utils';
 import { Address } from '@app/common';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 
-import { CURVE_REGISTRY_ABI } from '../abis/CURVE_REGISTRY';
-
 export class CURVE_REGISTRY {
   protected contract;
 
-  constructor(address: string, web3Provider: Web3) {
-    this.contract = new web3Provider.eth.Contract(CURVE_REGISTRY_ABI as AbiItem[], address);
+  constructor(address: string, web3Provider: Web3, abi: AbiItem[]) {
+    this.contract = new web3Provider.eth.Contract(abi, address);
   }
 
   // TODO: Multicall
-  async getCoinsForLpToken(token: Address, poolAddress: string): Promise<Address[]> {
+  async getCoinsForLpToken(poolAddress: string): Promise<Address[]> {
     if (poolAddress === ZERO_ADDRESS) {
       throw new Error('Address is not a curve pool');
     }

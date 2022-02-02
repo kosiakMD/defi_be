@@ -32,6 +32,7 @@ export class CURVE_LP {
         });
     } catch (e) {
       this.logger.error(e, 'getCoinsForLpToken');
+      throw e;
     }
   }
 

@@ -12,13 +12,17 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ZERO_ADDRESS } from '@app/common/constant';
-import { CurveRegistries } from '@app/common/constant/addresses';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 
+import { CURVE_METAPOOL_ARBI_ABI } from '../approvals/abis/CURVE_METAPOOL_ARBI';
+import { CURVE_REGISTRY_ABI } from '../approvals/abis/CURVE_REGISTRY';
+import { CurveProviderAbi } from '../approvals/abis/CurveProviderAbi';
 import { CURVE_LP } from '../approvals/contracts/CURVE_LP';
 import { CURVE_REGISTRY } from '../approvals/contracts/CURVE_REGISTRY';
 import { ELLIPSIS_LP } from '../approvals/contracts/ELLIPSIS_LP';
@@ -36,6 +40,7 @@ export class AssetsService {
     @InjectRepository(AssetsRepository) private readonly assetRepository: AssetsRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly web3Provider: Web3Provider,
+    private readonly multicallService: MulticallAggregator,
   ) {}
   async queryAllAssets(): Promise<AssetDto[]> {
     const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
@@ -259,15 +264,9 @@ export class AssetsService {
 
   private async attemptCurveLikePool(asset: AssetsEntity) {
     try {
-      const registry = new CURVE_REGISTRY(
-        CurveRegistries[asset.chain],
-        this.web3Provider.getInstanceByChainId(asset.chain),
-      );
-
       // Call the curve specific functions. If its not a curve pool contract
       // this will throw an error (and return false)
-      const pool = await registry.getPoolFromLpToken(asset.address);
-      const coins = await this.findCurvePoolCoins(asset, registry, pool);
+      const coins = await this.findCurvePoolCoins(asset);
       const newAssets = await Promise.all(
         coins.map((address) => {
           return this.saveTrackingAsset({
@@ -313,29 +312,76 @@ export class AssetsService {
     return await this.assetRepository.saveAsset(assetToSave);
   }
 
-  async findCurvePoolCoins(
-    asset: AssetsEntity,
-    registry: CURVE_REGISTRY,
-    pool: string,
-  ): Promise<string[]> {
-    if (pool === ZERO_ADDRESS) {
-      let curveLpPool = new CURVE_LP(
-        asset.address,
+  async findCurvePoolCoins(asset: AssetsEntity): Promise<string[]> {
+    // arbitrum lp curve tokens info can get only from registry addresses
+    if (asset.chain === ChainIdEnum.arbi) {
+      const registries = await this.getCurveRegistries(ChainIdEnum.arbi);
+      const registriesResp = await Promise.all(
+        registries.map(async (address) => {
+          let contract = new CURVE_REGISTRY(
+            address,
+            this.web3Provider.getInstanceByChainId(asset.chain),
+            CURVE_REGISTRY_ABI,
+          );
+          // Arbi metaPoolFactory contract doesn't has getPoolFromLpToken method and it throws an error
+          let pool;
+          try {
+            pool = await contract.getPoolFromLpToken(asset.address);
+            if (pool === ZERO_ADDRESS) return;
+          } catch (e) {
+            contract = new CURVE_REGISTRY(
+              address,
+              this.web3Provider.getInstanceByChainId(asset.chain),
+              CURVE_METAPOOL_ARBI_ABI,
+            );
+          }
+          try {
+            return await contract.getCoinsForLpToken(pool ?? asset.address);
+          } catch (e) {
+            //
+          }
+        }),
+      );
+
+      const lpCoins = registriesResp?.find((resp) => resp);
+      if (lpCoins?.length) {
+        return lpCoins;
+      }
+    }
+
+    let curveLpPool = new CURVE_LP(
+      asset.address,
+      this.logger,
+      this.web3Provider.getInstanceByChainId(asset.chain),
+    );
+
+    let minter;
+    try {
+      minter = await curveLpPool.getMinter();
+    } catch (e) {
+      //
+    }
+
+    if (minter && minter !== ZERO_ADDRESS) {
+      curveLpPool = new CURVE_LP(
+        minter,
         this.logger,
         this.web3Provider.getInstanceByChainId(asset.chain),
       );
-      const minter = await curveLpPool.getMinter();
-      if (minter !== ZERO_ADDRESS) {
-        curveLpPool = new CURVE_LP(
-          minter,
-          this.logger,
-          this.web3Provider.getInstanceByChainId(asset.chain),
-        );
-      }
-      return await curveLpPool.getCoinsForLpToken();
-    } else {
-      return await registry.getCoinsForLpToken(asset.address, pool);
     }
+    return await curveLpPool.getCoinsForLpToken();
+  }
+
+  async getCurveRegistries(chain: ChainIdEnum) {
+    const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
+    const resp = await this.multicallService.handleInBatches(
+      [0, 3, 5].reduce((resp, value) => {
+        resp.set(value, curveProvider.getIdInfo(value));
+        return resp;
+      }, new Map()),
+      chain,
+    );
+    return Array.from(resp.values()).map((value) => value.output.data.addr);
   }
 
   async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {

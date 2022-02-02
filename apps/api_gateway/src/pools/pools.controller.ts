@@ -19,6 +19,11 @@ const POOLS_CACHE_TIME_IN_SEC = 60;
 @ApiTags('Pools')
 @Controller('v1/pools')
 export class PoolsController extends BaseService implements IBaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
+    this.configService.get<string>('INTEGRATION_SERVICE_PORT'),
+  );
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) protected cacheManager: Cache,
@@ -27,11 +32,6 @@ export class PoolsController extends BaseService implements IBaseService {
   ) {
     super(logger, httpService, configService);
   }
-
-  url = this.buildUrl(
-    this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
-    this.configService.get<string>('INTEGRATION_SERVICE_PORT'),
-  );
 
   @Get()
   @ApiResponse({ status: HttpStatus.OK, type: PoolDto, isArray: true })

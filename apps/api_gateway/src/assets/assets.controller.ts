@@ -1,5 +1,4 @@
-import { Get, HttpStatus, Query } from '@nestjs/common';
-import { Controller } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { DetailedResponse } from '../common/interfaces';
@@ -37,7 +36,9 @@ export class AssetsController extends BaseService {
     example: '1,2',
   })
   @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto, isArray: true })
-  async queryAssetsByAddressesAndChains(@Query() query): Promise<DetailedResponse<AssetResponseDto[]>> {
+  async queryAssetsByAddressesAndChains(
+    @Query() query,
+  ): Promise<DetailedResponse<AssetResponseDto[]>> {
     return this.requestProxy(this.url + 'v1/assets', 'GET', { params: query });
   }
 }

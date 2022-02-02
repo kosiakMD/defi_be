@@ -8,6 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
 import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { LoggerMiddleware } from '@app/common/middlewares';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
@@ -66,6 +67,10 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: TransformHeadersInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
     },
   ],
 })

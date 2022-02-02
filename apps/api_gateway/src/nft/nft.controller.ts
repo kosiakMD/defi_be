@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus, NotImplementedException, Param, Query } from '@nestjs/common';
-import { ApiResponse, ApiTags, ApiQuery, ApiParam } from '@nestjs/swagger';
+import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
   Address,

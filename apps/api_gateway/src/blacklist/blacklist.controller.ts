@@ -1,4 +1,11 @@
-import { CacheInterceptor, CacheTTL, Controller, Get, HttpStatus, UseInterceptors } from '@nestjs/common';
+import {
+  CacheInterceptor,
+  CacheTTL,
+  Controller,
+  Get,
+  HttpStatus,
+  UseInterceptors,
+} from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { BaseService } from '../common/services/base.service';

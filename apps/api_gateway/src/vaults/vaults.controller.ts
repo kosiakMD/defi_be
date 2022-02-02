@@ -27,6 +27,7 @@ export class VaultsController extends BaseService implements IBaseService {
   ) {
     super(logger, httpService, configService);
   }
+
   url = this.buildUrl(
     this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
     this.configService.get<string>('INTEGRATION_SERVICE_PORT'),

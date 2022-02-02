@@ -17,6 +17,7 @@ import { Logger, LoggerMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
 import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
@@ -26,6 +27,8 @@ import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import config from './config';
 import { GasModule } from './gas/gas.module';
+import { HealthController } from './health/health.controller';
+import { ServiceHealthIndicator } from './health/health.service';
 import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
 import { MailModule } from './mail/mail.module';
 import { NetworksController } from './networks/networks.controller.dto';
@@ -77,6 +80,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ImpermanentLossModule,
   ],
   controllers: [
+    HealthController,
     AnalyticController,
     AssetsController,
     BalancesController,
@@ -91,9 +95,23 @@ import { VaultsModule } from './vaults/vaults.module';
     ScamsController,
   ],
   providers: [
-    { provide: APP_FILTER, useClass: AllExceptionsFilter },
-    { provide: APP_INTERCEPTOR, useClass: TransformHeadersInterceptor },
-    { provide: APP_GUARD, useClass: ApiVersionGuard },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformHeadersInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ApiVersionGuard,
+    },
+    ServiceHealthIndicator,
     SearchService,
     Web3NameService,
   ],

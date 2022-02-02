@@ -339,22 +339,28 @@ export class AaveProtocolV2 extends DataProviderProtocol {
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<HealthFactorDto>> {
+    const items = [];
     const userAccountData = await this.getUserAccountData(address, chain);
 
     // Full health is too large so we set the maximum supported value here
     // 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
     const MAX_HEALTH = 100;
 
+    if (
+      Number(userAccountData.totalCollateralETH.toString()) ||
+      Number(userAccountData.totalDebtETH.toString())
+    ) {
+      items.push({
+        healthFactor: BigNumber.minimum(
+          normalizeDecimals(userAccountData.healthFactor.toString(), 18),
+          MAX_HEALTH,
+        ).toNumber(),
+      });
+    }
+
     return plainToClass(FeatureResultDto, {
       totalValue: 0,
-      items: [
-        {
-          healthFactor: BigNumber.minimum(
-            normalizeDecimals(userAccountData.healthFactor.toString(), 18),
-            MAX_HEALTH,
-          ).toNumber(),
-        },
-      ],
+      items,
     });
   }
 

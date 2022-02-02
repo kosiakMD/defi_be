@@ -73,3 +73,9 @@ export enum SortFieldEnum {
   project = 'project',
   ticker = 'ticker',
 }
+
+export enum ServiceEnum {
+  Account = 'Account',
+  Integration = 'Integration',
+  Price = 'Price',
+}

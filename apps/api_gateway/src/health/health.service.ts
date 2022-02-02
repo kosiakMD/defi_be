@@ -7,7 +7,7 @@ import { HealthCheckResult, HealthIndicator } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { HealthServiceStatusEnum, HealthStatusEnum } from '@app/common/enum';
+import { HealthServiceStatusEnum, HealthStatusEnum, ServiceEnum } from '@app/common/enum';
 import { toCamelCase } from '@app/common/utils';
 
 /** example
@@ -18,12 +18,6 @@ import { toCamelCase } from '@app/common/utils';
   details?: HealthIndicatorResult;
 }
  */
-
-enum ServiceEnum {
-  Account = 'Account',
-  Integration = 'Integration',
-  Price = 'Price',
-}
 
 @Injectable()
 export class ServiceHealthIndicator extends HealthIndicator {
@@ -38,9 +32,9 @@ export class ServiceHealthIndicator extends HealthIndicator {
   ) {
     super();
 
-    this.getAccountStatusUrl = this.getServiceUrl('ACCOUNT');
-    this.getIntegrationStatusUrl = this.getServiceUrl('INTEGRATION');
-    this.getPriceStatusUrl = this.getServiceUrl('PRICE');
+    this.getAccountStatusUrl = this.getServiceUrl(ServiceEnum.Account);
+    this.getIntegrationStatusUrl = this.getServiceUrl(ServiceEnum.Integration);
+    this.getPriceStatusUrl = this.getServiceUrl(ServiceEnum.Price);
   }
 
   public async isAccountHealthy(): Promise<HealthCheckResult> {
@@ -56,10 +50,11 @@ export class ServiceHealthIndicator extends HealthIndicator {
   }
 
   private getServiceUrl(serviceName: string): string {
-    const host = this.configService.get<string>(`${serviceName}_SERVICE_HOST`);
-    const port = this.configService.get<string>(`${serviceName}_SERVICE_PORT`);
+    const service = serviceName.toUpperCase();
+    const host = this.configService.get<string>(`${service}_SERVICE_HOST`);
+    const port = this.configService.get<string>(`${service}_SERVICE_PORT`);
     const url = `${host}${port ? ':' + port : ''}`;
-    const getStatusUrl = this.configService.get<string>(`${serviceName}_STATUS`);
+    const getStatusUrl = this.configService.get<string>(`${service}_STATUS`);
     return `${url}/${getStatusUrl}`;
   }
 

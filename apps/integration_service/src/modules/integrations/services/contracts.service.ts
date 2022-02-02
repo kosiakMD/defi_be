@@ -19,7 +19,7 @@ export class ContractsService {
         address: address,
         chainId: chainId,
       },
-      relations: ['abi', 'project'],
+      relations: ['abi', 'project', 'vaults'],
     });
   }
 

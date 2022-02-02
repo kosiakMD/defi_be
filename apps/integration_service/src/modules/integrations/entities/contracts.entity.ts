@@ -1,7 +1,16 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 import { AbisEntity } from './abis.entity';
 import { ProjectsEntity } from './projects.entity';
+import { VaultsEntity } from './vaults.entity';
 
 @Entity({ name: 'int_contracts' })
 export class ContractsEntity {
@@ -18,6 +27,9 @@ export class ContractsEntity {
   @JoinColumn({ name: 'abi_hash', referencedColumnName: 'hash' })
   @Column({ name: 'abi_hash', type: 'json' })
   abi: AbisEntity;
+
+  @OneToMany(() => VaultsEntity, (vault) => vault.contract)
+  vaults: VaultsEntity[];
 
   @ManyToOne(() => ProjectsEntity, (project) => project.contracts)
   @JoinColumn({ name: 'project_id', referencedColumnName: 'id' })

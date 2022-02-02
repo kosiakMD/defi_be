@@ -34,7 +34,7 @@ export class NftController extends BaseService {
   @ApiResponse({ status: HttpStatus.OK, type: [NftProjectResponseDto] })
   @Get(NftEndpointsEnum.projects)
   public async getProjects(): Promise<NftServiceInfo[]> {
-    return this.requestProxy(this.url + 'v1/nft/projects');
+    return this.requestProxy(new URL(this.url + '/v1/nft/projects').href);
   }
 
   @Get(NftEndpointsEnum.collectionsByProjectName)
@@ -49,7 +49,7 @@ export class NftController extends BaseService {
     if (!Object.values(NftProjectEnum).includes(projectName)) {
       throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
     }
-    return this.requestProxy(this.url + 'v1/nft/collections/' + projectName, 'GET', {
+    return this.requestProxy(new URL(this.url + '/v1/nft/collections/' + projectName).href, 'GET', {
       params: { addresses, chains, collection },
     });
   }
@@ -67,7 +67,7 @@ export class NftController extends BaseService {
     if (!Object.values(NftProjectEnum).includes(projectName)) {
       throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
     }
-    return this.requestProxy(this.url + 'v1/nft/assets/' + projectName, 'GET', {
+    return this.requestProxy(new URL(this.url + '/v1/nft/assets/' + projectName).href, 'GET', {
       params: { addresses, collection, chains },
     });
   }

@@ -47,14 +47,11 @@ export function isSolAddress(address: string): boolean {
 }
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [
-    isETHAddress,
-    isSolAddress,
-  ]
+  const addressChecks = [isETHAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
-      return true
+      return true;
     }
   }
-  return false
+  return false;
 }

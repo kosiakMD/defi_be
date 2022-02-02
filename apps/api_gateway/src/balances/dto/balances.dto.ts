@@ -12,12 +12,12 @@ import { splitToAddressesArray } from '@app/common/utils/addresses';
 
 export class BalancesQueryDto {
   @IsNotEmpty()
-  @Transform((value: any) => splitToAddressesArray(value as any))
+  @Transform(({ value }: any) => splitToAddressesArray(value as any))
   @IsString({ each: true })
   addresses: Address[];
 
   @IsOptional()
-  @Transform((value: any) => {
+  @Transform(({ value }: any) => {
     return splitToArray(value as any).map((x) => parseInt(x, 10));
   })
   chains: Chains;

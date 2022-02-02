@@ -1,10 +1,27 @@
 // eslint-disable-next-line max-classes-per-file
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+
 import { ApiProperty } from '@nestjs/swagger';
 
+import { AccountTokenBalance, Address, BalanceToken, Chains, ErrorMessage } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 import { ERC20Token } from '@app/common/interfaces';
+import { splitToArray } from '@app/common/utils';
+import { splitToAddressesArray } from '@app/common/utils/addresses';
 
-import { Balance, BalanceToken } from '../interfaces/balances.interfaces';
+export class BalancesQueryDto {
+  @IsNotEmpty()
+  @Transform((value: any) => splitToAddressesArray(value as any))
+  @IsString({ each: true })
+  addresses: Address[];
+
+  @IsOptional()
+  @Transform((value: any) => {
+    return splitToArray(value as any).map((x) => parseInt(x, 10));
+  })
+  chains: Chains;
+}
 
 export class BalanceTokenDto implements BalanceToken {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
@@ -19,7 +36,7 @@ export class BalanceTokenDto implements BalanceToken {
   address: string;
 }
 
-export class AccountTokenBalanceDto {
+export class AccountTokenBalanceDto implements AccountTokenBalance {
   @ApiProperty({ type: String, example: '95480719361477141' })
   amount: string;
   @ApiProperty({ type: String, example: '0x782629c9578889a9b8464f051f23843734f72599' })
@@ -34,7 +51,7 @@ export class AccountTokenBalanceDto {
   token: ERC20Token;
 }
 
-export class ErrorMessageDto {
+export class ErrorMessageDto implements ErrorMessage {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.bsc })
   chainId: ChainIdEnum;
 
@@ -45,19 +62,12 @@ export class ErrorMessageDto {
   message: string;
 }
 
-export class BalanceDto implements Balance {
+export class BalanceDto {
   @ApiProperty({ type: Number, example: 0 })
   totalUsd: number;
 
   @ApiProperty({ type: AccountTokenBalanceDto, isArray: true })
-  tokens: {
-    account: string;
-    amount: string;
-    decimalsAmount: number;
-    tokenPriceUSD?: number;
-    totalPriceUSD?: number;
-    token: ERC20Token;
-  };
+  tokens: AccountTokenBalance;
 
   @ApiProperty({ type: [ErrorMessageDto] })
   errors?: ErrorMessage[];
@@ -69,10 +79,4 @@ export class BalancesResponseDto {
     type: BalanceDto,
   })
   '0x782629c9578889a9b8464f051f23843734f72599': BalanceDto;
-}
-
-interface ErrorMessage {
-  chainId: number;
-  statusCode: number;
-  message: string;
 }

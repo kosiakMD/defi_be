@@ -24,7 +24,7 @@ export class ProtocolController extends BaseService {
   @ApiResponse({ status: HttpStatus.OK, type: FeaturesResponseDto })
   @Get('/active')
   getAllActiveFeatures(): Promise<FeaturesResponseDto> {
-    return this.requestProxy(this.url + '/v1/protocols/active');
+    return this.requestProxy(this.url + 'v1/protocols/active');
   }
 
   @ApiParam({

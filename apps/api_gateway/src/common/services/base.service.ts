@@ -53,6 +53,8 @@ export class BaseService {
   }
 
   public buildUrl(host, port): string {
-    return `${host}${port ? ':' + port : ''}/`;
+    let url = `${host}${port ? ':' + port : ''}`;
+    url += url.charAt(url.length - 1) === '/' ? '' : '/';
+    return url;
   }
 }

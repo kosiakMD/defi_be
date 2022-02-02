@@ -3,10 +3,14 @@ import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
 
-export function splitToAddressesArray(addresses: string): Address[] {
+export function splitToAddressesArray(addresses: string | any): Address[] {
   if (!addresses) {
     return [];
   }
+  if (Array.isArray(addresses)) {
+    return addresses.map(unifyAddress);
+  }
+
   return addresses.split(',').map(unifyAddress);
 }
 

@@ -7,9 +7,12 @@ import { ChainsDto } from '@app/common/dto/nft';
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';
 
+import { PriceRangeRequestDto } from '../../../price_service/src/modules/prices/dto';
 import { ChainDto } from './dto/chain.dto';
 import { CurrencyDto } from './dto/currency.dto';
 import { CurrencyListDto } from './dto/currency.list.dto';
+import { PriceRequestDto } from './dto/price-request.dto';
+import { PriceBatchRequestDto } from './dto/price.batch.request.dto';
 import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
 import { HistoricalPriceResponseDto } from './dto/price.response.historical.dto';
@@ -37,19 +40,21 @@ export class PricesController extends BaseService implements IBaseService {
 
   @Post('/')
   @ApiOkResponse({ type: HistoricalPriceResponseDto })
-  async getPricesWithPost(@Body() query): Promise<PriceResponseDto<PricesPayload>> {
+  async getPricesWithPost(
+    @Body() query: PriceRequestDto,
+  ): Promise<PriceResponseDto<PricesPayload>> {
     return this.requestProxy(this.url + 'v1/prices', 'POST', query);
   }
 
   @Post('/batch')
   @ApiOkResponse({ type: HistoricalPriceResponseDto })
-  getPricesInBatch(@Body() query): Promise<PriceResponseDto<PricesPayload>> {
+  getPricesInBatch(@Body() query: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     return this.requestProxy(this.url + 'v1/batch', 'POST', query);
   }
 
   @Post('/range')
   @ApiOkResponse({ type: HistoricalPriceResponseDto })
-  getPricesInRange(@Body() query): Promise<PriceResponseDto<PricesPayload>> {
+  getPricesInRange(@Body() query: PriceRangeRequestDto): Promise<PriceResponseDto<PricesPayload>> {
     return this.requestProxy(this.url + 'v1/prices/range', 'POST', query);
   }
 

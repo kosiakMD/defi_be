@@ -8,7 +8,6 @@ import {
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { SearchQueryDto } from '../common/DTO/SearchQuery.dto';
 import { SearchResultsDto } from '../common/DTO/SearchResults.dto';
 
 import { SearchResults } from './interfaces/search.interface';
@@ -27,7 +26,7 @@ export class SearchController {
   })
   @ApiResponse({ status: HttpStatus.OK, type: SearchResultsDto })
   @Get('/')
-  search(@Query() query: SearchQueryDto): Promise<SearchResults> {
+  search(@Query() query): Promise<SearchResults> {
     const { text } = query;
     return this.searchService.search(text);
   }

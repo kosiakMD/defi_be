@@ -14,6 +14,8 @@ import { ContractsService } from './services/contracts.service';
 import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { VaultLoaderDemo } from './services/vault-loader-demo';
+import { isChief } from './data/config';
+import { ChiefLoader } from './data/chief-loader';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -24,6 +26,8 @@ export class IntegrationsServiceV2 {
     private readonly abisService: AbisService,
     private readonly scanService: AbiFetcherService,
     private readonly vaultLoader: VaultLoaderDemo,
+    private readonly chiefLoader: ChiefLoader,
+
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
@@ -79,6 +83,11 @@ export class IntegrationsServiceV2 {
       }
       const abiEntity: AbisEntity = await this.abisService.findOrSave(scanAbi);
       contractEntity = await this.contractsService.addAbiRelation(contractEntity, abiEntity);
+    }
+
+    const isChiefs = isChief(contractEntity.address, contractEntity.abi.abi);
+    if (isChiefs) {
+      const features = await this.chiefLoader.grabAllPools(contractEntity.address, contractEntity.abi.abi, chain);
     }
 
     // todo: if contract is not integrated, need to go to the next steps

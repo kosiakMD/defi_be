@@ -18,6 +18,7 @@ import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { BaseDataHealth } from '@app/common/dto/base.data.health.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { normalizeDecimals } from '@app/common/utils';
+import { CauldronContract } from '@app/common/web3provider/contracts/protocols/abracadabra/AbracadabraMarket';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { BaseData } from '../../../../../common/interfaces/transactions.interfaces';
@@ -26,7 +27,6 @@ import { AccountService } from '../../../../microservices/account.service';
 import { PriceService } from '../../../../microservices/price.service';
 import { ACTIVE_CAULDRONS } from '../abracadabra.constants';
 import { Cauldron, IFeature } from '../abracadabra.interfaces';
-import { AbracadabraMarket } from '../contracts/AbracadabraMarket';
 
 @Injectable()
 export class AbracadabraBorrowing implements IFeature {
@@ -80,7 +80,6 @@ export class AbracadabraBorrowing implements IFeature {
         plainToClass(LendingPositionDto, {
           address: cauldron.address,
           balance: borrowAmount,
-          price: 1,
           // value: number; // to be filled in by price.service.ts
           apy: cauldron.apy,
           token: plainToClass(LendingErcToken, {
@@ -217,7 +216,7 @@ export class AbracadabraBorrowing implements IFeature {
     const calls = new Map();
 
     cauldrons.forEach((cauldronAddress) => {
-      const cauldronContract = new AbracadabraMarket(cauldronAddress);
+      const cauldronContract = new CauldronContract(cauldronAddress);
       calls.set(`${cauldronAddress}-collaterization-rate`, cauldronContract.collaterizationRate());
       calls.set(`${cauldronAddress}-accrue-info`, cauldronContract.accrueInfo()); // interest acrued
       calls.set(`${cauldronAddress}-collateral`, cauldronContract.collateral()); // collateral token
@@ -230,7 +229,7 @@ export class AbracadabraBorrowing implements IFeature {
   private async getMulticallUserDetails(address: Address, cauldrons: Cauldron[], chain: ChainDto) {
     const calls = new Map();
     cauldrons.forEach((cauldron) => {
-      const cauldronContract = new AbracadabraMarket(cauldron.address);
+      const cauldronContract = new CauldronContract(cauldron.address);
       calls.set(`${cauldron.address}-collateral`, cauldronContract.userCollateralShare(address));
       calls.set(`${cauldron.address}-borrow`, cauldronContract.userBorrowPart(address));
     });

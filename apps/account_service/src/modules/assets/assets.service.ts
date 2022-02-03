@@ -16,6 +16,7 @@ import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
+import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/TokenVault';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
@@ -29,6 +30,7 @@ import { ELLIPSIS_LP } from '../approvals/contracts/ELLIPSIS_LP';
 import { ERC20 } from '../approvals/contracts/ERC20';
 import { MINTER } from '../approvals/contracts/MINTER';
 import { UNIV2LP } from '../approvals/contracts/UNIV2LP';
+import { MinimalStakedTokenCheck } from './contracts/MinimalStakedTokenCheck';
 import { AssetDto, AssetResponseDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
@@ -40,7 +42,7 @@ export class AssetsService {
     @InjectRepository(AssetsRepository) private readonly assetRepository: AssetsRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly web3Provider: Web3Provider,
-    private readonly multicallService: MulticallAggregator,
+    private readonly multicall: MulticallAggregator,
   ) {}
   async queryAllAssets(): Promise<AssetDto[]> {
     const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
@@ -120,12 +122,12 @@ export class AssetsService {
       assetChain,
     );
 
-    if (existedAsset && (existedAsset.isTracked || existedAsset.isLp)) {
+    const shouldReturnExisting = existedAsset && (existedAsset.isTracked || existedAsset.isLp);
+    if (shouldReturnExisting) {
       return this.withUnderlying(existedAsset);
     }
 
     const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
-
     // bind asset to LP token contract because it extends from ERC20 by default
     const assetContract = new ERC20(assetAddress, chainProvider);
 
@@ -137,32 +139,40 @@ export class AssetsService {
     } else {
       assetToSave = new AssetsEntity();
       assetToSave.chain = assetChain;
-      assetToSave.address = assetAddress;
+      assetToSave.address = assetAddress.toLowerCase();
       assetToSave.icon = null;
       assetToSave.isLp = false;
       assetToSave.isAnalyticAvailable = false;
       assetToSave = await this.assetRepository.saveAsset(assetToSave);
     }
+
     assetToSave.name = assetData.name;
     assetToSave.symbol = assetData.symbol;
     assetToSave.decimals = assetData.decimals;
-    // define is token LP
 
-    assetToSave.isLp = await this.attemptUniswapLikePair(assetToSave);
-
-    if (!assetToSave.isLp) {
-      assetToSave.isLp = await this.attemptCurveLikePool(assetToSave);
-    }
-
-    if (!assetToSave.isLp) {
-      assetToSave.isLp = await this.attemptEllipsisLikePair(assetToSave);
-    }
+    // Needs asset to exist in the database, as
+    assetToSave.isLp = await this.assetHasUnderlying(assetToSave);
 
     // we don't track lp tokens, we track underlying tokens only
     assetToSave.isTracked = assetToSave.isLp !== true;
+
     assetToSave = await this.assetRepository.saveAsset(assetToSave);
 
-    return this.withUnderlying(assetToSave);
+    const asset = await this.withUnderlying(assetToSave);
+
+    return asset;
+  }
+
+  async assetHasUnderlying(asset: AssetsEntity) {
+    const results = await Promise.allSettled([
+      this.attemptUniswapLikePair(asset),
+      this.attemptCurveLikePool(asset),
+      this.attemptEllipsisLikePair(asset),
+      this.attemptYearnUnderlying(asset),
+      this.attempStakedToken(asset), // xSushi xBoo, ohm forks, memo, wmemo,
+    ]);
+
+    return results.some((result) => result.status === 'fulfilled' && Boolean(result.value));
   }
 
   async withUnderlying(asset: AssetsEntity): Promise<AssetResponseDto> {
@@ -190,103 +200,100 @@ export class AssetsService {
     return withUnderlying;
   }
 
-  private async attemptUniswapLikePair(asset: AssetsEntity) {
+  private async attempStakedToken(asset: AssetsEntity) {
+    const contract = new MinimalStakedTokenCheck(asset.address);
     try {
-      const assetContract = new UNIV2LP(
-        asset.address,
-        this.web3Provider.getInstanceByChainId(asset.chain),
-      );
-
-      // Call the uniswap specific functions. If its not a uniswap-pair contract
-      // this will throw an error (and return false)
-      const [token0Address, token1Address] = await Promise.all([
-        assetContract.token0(),
-        assetContract.token1(),
-        assetContract.getReserves(),
-      ]);
-
-      // save underlying assets to database and start track them
-      const [token0, token1] = await Promise.all([
-        this.saveTrackingAsset({
-          assetAddress: token0Address,
-          assetChain: asset.chain,
-        }),
-        this.saveTrackingAsset({
-          assetAddress: token1Address,
-          assetChain: asset.chain,
-        }),
-      ]);
-
-      // create relations between lp token and underlying tokens
-      await Promise.all([
-        this.assetRepository.createRelation(asset.id, token0.id, 0),
-        this.assetRepository.createRelation(asset.id, token1.id, 1),
-      ]);
-
+      const tokenAddress = await this.multicall.call(contract.sushi(), asset.chain);
+      await this.saveAndRelate(asset, tokenAddress);
       return true;
-      // eslint-disable-next-line no-empty
+    } catch (e) {
+      //
+    }
+    try {
+      const tokenAddress = await this.multicall.call(contract.sOHM(), asset.chain);
+      await this.saveAndRelate(asset, tokenAddress);
+      return true;
     } catch {
-      return false;
+      //
     }
   }
 
-  async attemptEllipsisLikePair(asset: AssetsEntity) {
-    try {
-      const chainProvider = this.web3Provider.getInstanceByChainId(asset.chain);
-      const assetContract = new ELLIPSIS_LP(asset.address, chainProvider);
-      const minterAddress = await assetContract.minter();
-      const minterContract = new MINTER(minterAddress, chainProvider, this.logger);
+  private async attemptYearnUnderlying(asset: AssetsEntity) {
+    const contract = new TokenVault(asset.address);
+    const tokenAddress = await this.multicall.call(contract.token(), asset.chain);
+    await this.saveAndRelate(asset, tokenAddress);
+    return true;
+  }
 
-      const underlyingCoins = await minterContract.getCoinsArray();
+  /**
+   * Saves a new address as an underlying asset for a given token
+   *
+   * @param asset Existing database asset
+   * @param underlyingAsset address of underlying token (pool token, etc)
+   * @param [poolId=0]  positionInPool. (token0, token1)
+   * @returns Promise<void>
+   */
+  private async saveAndRelate(asset: AssetsEntity, underlyingAsset: Address, poolId = 0) {
+    const underlying = await this.saveTrackingAsset({
+      assetAddress: underlyingAsset.toLowerCase(),
+      assetChain: asset.chain,
+    });
 
-      if (underlyingCoins.length) {
-        const dbTokens = await Promise.all(
-          underlyingCoins.map((coin) =>
-            this.saveTrackingAsset({
-              assetAddress: coin,
-              assetChain: asset.chain,
-            }),
-          ),
-        );
+    return await this.assetRepository.createRelation(asset.id, underlying.id, poolId);
+  }
 
-        await Promise.all(
-          dbTokens.map((item, index) => {
-            this.assetRepository.createRelation(asset.id, item.id, index);
-          }),
-        );
-        return true;
-      }
-      return false;
-    } catch (e) {
+  private async attemptUniswapLikePair(asset: AssetsEntity) {
+    const assetContract = new UNIV2LP(
+      asset.address,
+      this.web3Provider.getInstanceByChainId(asset.chain),
+    );
+
+    // Call the uniswap specific functions. If its not a uniswap-pair contract
+    // this will throw an error (and return false)
+    const [token0Address, token1Address] = await Promise.all([
+      assetContract.token0(),
+      assetContract.token1(),
+      assetContract.getReserves(),
+    ]);
+
+    await Promise.all(
+      [token0Address, token1Address].map((address, idx) => this.saveAndRelate(asset, address, idx)),
+    );
+
+    return true;
+  }
+
+  private async attemptEllipsisLikePair(asset: AssetsEntity) {
+    const chainProvider = this.web3Provider.getInstanceByChainId(asset.chain);
+    const assetContract = new ELLIPSIS_LP(asset.address, chainProvider);
+    const minterAddress = await assetContract.minter();
+    const minterContract = new MINTER(minterAddress, chainProvider, this.logger);
+
+    const underlyingCoins = await minterContract.getCoinsArray();
+
+    if (!underlyingCoins.length) {
       return false;
     }
+
+    await Promise.all(underlyingCoins.map((coin, idx) => this.saveAndRelate(asset, coin, idx)));
+
+    return true;
   }
 
   private async attemptCurveLikePool(asset: AssetsEntity) {
-    try {
-      // Call the curve specific functions. If its not a curve pool contract
-      // this will throw an error (and return false)
-      const coins = await this.findCurvePoolCoins(asset);
-      const newAssets = await Promise.all(
-        coins.map((address) => {
-          return this.saveTrackingAsset({
-            assetAddress: address,
-            assetChain: asset.chain,
-          });
-        }),
-      );
-
-      // create relations between lp token and underlying tokens
-      await Promise.all(
-        newAssets.map((newAsset: any, idx: number) => {
-          return this.assetRepository.createRelation(asset.id, newAsset.id, idx);
-        }),
-      );
-
-      return true;
-    } catch (e) {
+    // Call the curve specific functions. If its not a curve pool contract
+    // this will throw an error (and return false)
+    const coins = await this.findCurvePoolCoins(asset);
+    if (!coins.length) {
       return false;
     }
+
+    await Promise.all(
+      coins.map((address, idx) => {
+        return this.saveAndRelate(asset, address, idx);
+      }),
+    );
+    return true;
   }
 
   async saveAsset(asset: AssetDto): Promise<AssetResponseDto> {
@@ -374,7 +381,7 @@ export class AssetsService {
 
   async getCurveRegistries(chain: ChainIdEnum) {
     const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
-    const resp = await this.multicallService.handleInBatches(
+    const resp = await this.multicall.handleInBatches(
       [0, 3, 5].reduce((resp, value) => {
         resp.set(value, curveProvider.getIdInfo(value));
         return resp;

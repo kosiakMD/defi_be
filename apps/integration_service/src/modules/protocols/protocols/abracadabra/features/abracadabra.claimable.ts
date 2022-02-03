@@ -14,6 +14,7 @@ import {
 } from '@app/common';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { normalizeDecimals } from '@app/common/utils';
+import { CauldronContract } from '@app/common/web3provider/contracts/protocols/abracadabra/AbracadabraMarket';
 import { BentoBox } from '@app/common/web3provider/contracts/protocols/abracadabra/BentoBox';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -23,7 +24,6 @@ import { AccountService } from '../../../../microservices/account.service';
 import { PriceService } from '../../../../microservices/price.service';
 import { ACTIVE_CAULDRONS } from '../abracadabra.constants';
 import { IFeature } from '../abracadabra.interfaces';
-import { AbracadabraMarket } from '../contracts/AbracadabraMarket';
 
 @Injectable()
 export class AbracadabraClaimable implements IFeature {
@@ -124,7 +124,7 @@ export class AbracadabraClaimable implements IFeature {
   ): Promise<{ bentoBoxes: Address[]; mimAddress: Address }> {
     const calls = new Map();
     cauldrons.forEach((cauldron) => {
-      const cauldronContract = new AbracadabraMarket(cauldron);
+      const cauldronContract = new CauldronContract(cauldron);
       calls.set(cauldron, cauldronContract.bentoBox());
       calls.set('magic-internet-money', cauldronContract.magicInternetMoney());
     });

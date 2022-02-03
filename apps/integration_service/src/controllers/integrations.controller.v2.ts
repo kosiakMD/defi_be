@@ -1,4 +1,6 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { AbiItem } from 'web3-utils';
+
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
@@ -22,11 +24,18 @@ export class IntegrationsControllerV2 {
     private readonly integrationsServiceV2: IntegrationsServiceV2,
   ) {}
 
-  @Post('/load/:chainCode/:protocolCode/')
-  async loadVaultsData(@Param() params): Promise<any> {
-    const { chainCode, protocolCode } = params;
-
-    return this.integrationsServiceV2.loadVaults(chainCode, protocolCode.toLowerCase());
+  @Post('/load/contract')
+  async loadVaultsData(
+    @Body()
+    contract: {
+      chainCode: string;
+      protocolCode: string;
+      featureCode: string;
+      contractAddress: string;
+      contractAbi: AbiItem[];
+    },
+  ): Promise<any> {
+    return this.integrationsServiceV2.loadVaults(contract);
   }
 
   @ApiParam({

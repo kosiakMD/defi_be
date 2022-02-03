@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class ScanService {
+export class AbiFetcherService {
   constructor(private httpService: HttpService) {}
 
   async getAbi({ url, apiKey }, contractAddress): Promise<any> {

@@ -11,6 +11,7 @@ import { IntegrationsControllerV2 } from '../../controllers/integrations.control
 import { ProtocolModule } from '../protocols/protocol.module';
 import { AbisEntity } from './entities/abis.entity';
 import { ContractsEntity } from './entities/contracts.entity';
+import { ProjectsEntity } from './entities/projects.entity';
 import { ProjectsContractEntity } from './entities/projectsContract.entity';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { TrackedVaultEntity } from './entities/trackedVault.entity';
@@ -19,13 +20,15 @@ import { IntegrationsService } from './integrations.service';
 import { IntegrationsServiceV2 } from './integrations.service.v2';
 import { ProjectsContractRepository } from './repositories/projectsContract.repository';
 import { TrackedVaultRepository } from './repositories/trackedVault.repository';
+import { AbiFetcherService } from './services/abi-fetcher.service';
 import { AbisService } from './services/abis.service';
-import { ScanService } from './services/scan.service';
-import { SettingsService } from './services/settings.service';
 import { ContractsService } from './services/contracts.service';
+import { ChainStrategy } from './services/loaders/chain.strategy';
 import { ProjectsService } from './services/projects.service';
-import { ProjectsEntity } from './entities/projects.entity';
+import { SettingsService } from './services/settings.service';
 import { VaultLoaderDemo } from './services/vault-loader-demo';
+
+const demoServices = [VaultLoaderDemo, ChainStrategy];
 
 @Module({
   imports: [
@@ -57,6 +60,7 @@ import { VaultLoaderDemo } from './services/vault-loader-demo';
     ]),
   ],
   providers: [
+    ...demoServices,
     IntegrationsService,
     IntegrationsServiceV2,
     FeaturesService,
@@ -64,7 +68,7 @@ import { VaultLoaderDemo } from './services/vault-loader-demo';
     ContractsService,
     ProjectsService,
     VaultLoaderDemo,
-    ScanService,
+    AbiFetcherService,
     AbisService,
   ],
   controllers: [IntegrationsController, IntegrationsControllerV2],

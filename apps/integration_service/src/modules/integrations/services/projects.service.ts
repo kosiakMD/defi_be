@@ -14,6 +14,7 @@ export class ProjectsService {
   async findByCode(code: string): Promise<ProjectsEntity> {
     return this.repository.findOne({
       where: { code: code },
+      relations: ['features'],
     });
   }
 }

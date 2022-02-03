@@ -8,6 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
+import { initSentry } from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -23,6 +24,8 @@ async function bootstrap() {
     abortOnError: false,
     logger,
   });
+
+  initSentry();
 
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);

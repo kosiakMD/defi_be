@@ -13,11 +13,11 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { LoggerMiddleware } from '@app/common';
-import { Logger } from '@app/common';
+import { Logger, LoggerMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
 import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
@@ -26,7 +26,6 @@ import { AccountModule } from './account/account.module';
 import { AccountService } from './account/account.service';
 import { AnalyticController } from './analytic/analytic.controller';
 import { AppController } from './app/app.controller';
-import { ServiceHealthIndicator } from './app/app.health';
 import { AppService } from './app/app.service';
 import { AssetsController } from './assets/assets.controller';
 import { AssetsService } from './assets/assets.service';
@@ -34,6 +33,7 @@ import { BalancesController } from './balances/balances.controller';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
+import { ServiceHealthIndicator } from './health/health.service';
 import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
 import { IntegrationService } from './integration/integration.service';
 import { MailModule } from './mail/mail.module';
@@ -125,6 +125,15 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_INTERCEPTOR,
       useClass: TransformHeadersInterceptor,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ApiVersionGuard,
+    },
+    ServiceHealthIndicator,
     // TODO: for global auto caching
     // {
     // 	provide: APP_INTERCEPTOR,
@@ -157,6 +166,8 @@ import { VaultsModule } from './vaults/vaults.module';
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
+
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
@@ -172,6 +183,4 @@ export class AppModule implements OnModuleInit, NestModule {
       'App',
     );
   }
-
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 }

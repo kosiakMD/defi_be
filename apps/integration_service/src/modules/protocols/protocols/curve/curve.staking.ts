@@ -52,6 +52,8 @@ export class CurveStaking {
     }
 
     const localMultiCall = new CurveMulticall(
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       this.web3Provider.getInstanceByChainId(chain.id),
       this.logger,
     );

@@ -23,12 +23,11 @@ import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 import { AbiFetcherService } from './services/abi-fetcher.service';
 import { AbisService } from './services/abis.service';
 import { ContractsService } from './services/contracts.service';
-import { ChainStrategy } from './services/loaders/chain.strategy';
 import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { VaultLoaderDemo } from './services/vault-loader-demo';
 
-const demoServices = [VaultLoaderDemo, ChainStrategy];
+const demoServices = [VaultLoaderDemo];
 
 @Module({
   imports: [

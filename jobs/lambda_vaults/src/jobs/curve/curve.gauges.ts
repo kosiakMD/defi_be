@@ -13,6 +13,7 @@ import {
   ProtocolNameEnum,
 } from '@app/common';
 import { ETH_ADDRESS, WETH_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { CallData } from '@app/common/dto/CallData';
 import {
   CurveIntegrationERC20TokenDto,
@@ -46,7 +47,6 @@ import { CurveLpAbi } from './abis/CurveLpAbi';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 import { GaugeAbi } from './abis/GaugeAbi';
-import { CurveAddresses } from './addresses';
 import { CurveApi } from './curve.api';
 import {
   CrvAprs,

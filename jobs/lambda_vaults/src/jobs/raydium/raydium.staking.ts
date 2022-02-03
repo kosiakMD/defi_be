@@ -1,4 +1,4 @@
-import { Farm, FarmPoolKeys, Liquidity, LiquidityPoolKeysV4 } from '@raydium-io/raydium-sdk';
+import { Farm, FarmPoolKeys, Liquidity } from '@raydium-io/raydium-sdk';
 import { Connection, PublicKey } from '@solana/web3.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 import { map } from 'rxjs/operators';
@@ -39,6 +39,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
+import { decodeTxLogs, getInfoPools } from './raydium.poolsInfo';
 
 const HALF = 0.5;
 const POSITION_0 = 0;
@@ -339,40 +340,47 @@ export class RaydiumStaking implements JobInterface {
       }),
     ]);
 
+    const infoPools = await getInfoPools(
+      this.web3,
+      this.httpService,
+      this.mapping.map((m) => m.extra.pool),
+    );
+    const decodedInfoPools = infoPools.map((p) => decodeTxLogs(p.result.value.logs));
+    const decodedInfoPoolsMap = new Map(decodedInfoPools.map((dip) => [dip.ammId, dip]));
+
     for (const index in this.mapping) {
       const mapping: IntegrationStakingPositionDto = this.mapping[index];
       const farmInfo = farmsInfos[index];
-
-      mapping.staked = farmInfo.lpVault.amount.toString();
-      if (RaydiymFarm.version3SingleTokens.includes(mapping.extra.farm.id)) {
-        mapping.stakingToken.price = Number(prices[mapping.stakingToken.address]);
-        mapping.stakingToken.value =
-          mapping.stakingToken.price * toDecimals(mapping.staked, mapping.stakingToken.decimals);
-        mapping.stats.tvl = mapping.stakingToken.value;
-      } else {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        const poolInfo = await Liquidity.getInfo(
-          this.web3,
-          solanaStringsToKeys(this.mapping[index].extra.pool) as LiquidityPoolKeysV4,
-        );
-        const farmShare = toBN(farmInfo.lpVault.amount).div(toBN(poolInfo.lpSupply));
-        mapping.stakingToken.totalSupply = toDecimals(poolInfo.lpSupply, poolInfo.lpDecimals);
-        mapping.stakingToken.tokens.forEach((t) => {
-          t.reserve =
-            t.positionInPool === 0
-              ? toDecimals(poolInfo.baseReserve, t.decimals)
-              : toDecimals(poolInfo.quoteReserve, t.decimals);
-          t.balance = Number(farmShare.multipliedBy(toBN(t.reserve)));
-        });
-        mapping.stakingToken.tokens = tokensWithPrices(
-          mapping.stakingToken.tokens as { address; reserve; price; positionInPool }[],
-          prices,
-        ).map((t) => {
-          t.value = t.balance * t.price;
-          mapping.stats.tvl += t.value;
-          return t;
-        });
+      if (mapping.extra.pool) {
+        const poolInfo = decodedInfoPoolsMap.get(mapping.extra.pool.id);
+        if (poolInfo) {
+          mapping.staked = farmInfo.lpVault.amount.toString();
+          if (RaydiymFarm.version3SingleTokens.includes(mapping.extra.farm.id)) {
+            mapping.stakingToken.price = Number(prices[mapping.stakingToken.address]);
+            mapping.stakingToken.value =
+              mapping.stakingToken.price *
+              toDecimals(mapping.staked, mapping.stakingToken.decimals);
+            mapping.stats.tvl = mapping.stakingToken.value;
+          } else {
+            const farmShare = toBN(farmInfo.lpVault.amount).div(toBN(poolInfo.lpSupply));
+            mapping.stakingToken.totalSupply = toDecimals(poolInfo.lpSupply, poolInfo.lpDecimals);
+            mapping.stakingToken.tokens.forEach((t) => {
+              t.reserve =
+                t.positionInPool === 0
+                  ? toDecimals(poolInfo.baseReserve, t.decimals)
+                  : toDecimals(poolInfo.quoteReserve, t.decimals);
+              t.balance = Number(farmShare.multipliedBy(toBN(t.reserve)));
+            });
+            mapping.stakingToken.tokens = tokensWithPrices(
+              mapping.stakingToken.tokens as { address; reserve; price; positionInPool }[],
+              prices,
+            ).map((t) => {
+              t.value = t.balance * t.price;
+              mapping.stats.tvl += t.value;
+              return t;
+            });
+          }
+        }
       }
 
       this.mapping[index] = mapping;

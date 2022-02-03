@@ -5,51 +5,48 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  Logger,
-  IntegrationFeaturesDataDto,
-  FeatureResultDto,
-  LendingPositionDto,
-  ChainAbbrEnum,
-  ProjectEnum,
   Address,
+  ChainAbbrEnum,
   ChainDto,
+  ClaimableDto,
+  FeatureEnum,
+  FeatureResultDto,
+  IAssetResponseDto,
+  IntegrationClaimableTokenDto,
+  IntegrationFeaturesDataDto,
   LendingErcToken,
+  LendingPositionDto,
+  Logger,
+  ProjectEnum,
   ProtocolTypeEnum,
   WePiggyProtocolEnum,
-  FeatureEnum,
-  ClaimableDto, 
-  IntegrationClaimableTokenDto,
-  IAssetResponseDto,
 } from '@app/common';
-
+import { CallData } from '@app/common/dto/CallData';
+import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
+import { concatStrings } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
-import { concatStrings } from '@app/common/utils';
-import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { BaseData } from '../../../common/interfaces/transactions.interfaces';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { Mapper } from '../helpers/mappers/mapper';
-import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-
 import DataProviderProtocol from './dataProviderProtocol';
-
-import { PTokenAbis } from './wepiggy/contracts/pToken';
-import { LensAbis } from './wepiggy/contracts/lens';
 import { ComptrollerAbis } from './wepiggy/contracts/comptroller';
-import { OracleAbis } from './wepiggy/contracts/oracle';
 import { DistributionAbis } from './wepiggy/contracts/distribution';
-import { CallData } from '@app/common/dto/CallData';
-
-import { BalanceInfo, APY } from './wepiggy/wepiggy.interfaces';
-import { wpcAddress, nativePTokens, contracts, zeroAddress } from './wepiggy/wepiggy.constants';
+import { LensAbis } from './wepiggy/contracts/lens';
+import { OracleAbis } from './wepiggy/contracts/oracle';
+import { PTokenAbis } from './wepiggy/contracts/pToken';
+import { contracts, nativePTokens, wpcAddress, zeroAddress } from './wepiggy/wepiggy.constants';
+import { APY, BalanceInfo } from './wepiggy/wepiggy.interfaces';
 
 @Injectable()
 export class WePiggyProtocol extends DataProviderProtocol {
-  readonly chains = [ 
+  readonly chains = [
     ChainAbbrEnum.eth,
     ChainAbbrEnum.bsc,
     ChainAbbrEnum.okex,
@@ -64,51 +61,19 @@ export class WePiggyProtocol extends DataProviderProtocol {
   readonly displayName = 'WePiggy';
   readonly name = WePiggyProtocolEnum.wepiggy;
   readonly features = {
-    [ChainAbbrEnum.eth]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
-    [ChainAbbrEnum.bsc]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
-    [ChainAbbrEnum.okex]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
-    [ChainAbbrEnum.plg]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
+    [ChainAbbrEnum.eth]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.bsc]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.okex]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.plg]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
     //[ChainAbbrEnum.heco]: [
     //  FeatureEnum.lending,
     //  FeatureEnum.borrowing,
     //  FeatureEnum.claimable,
     //],
-    [ChainAbbrEnum.arbi]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
-    [ChainAbbrEnum.opt]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
-    [ChainAbbrEnum.mriver]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
-    [ChainAbbrEnum.harm]: [
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-      FeatureEnum.claimable,
-    ],
+    [ChainAbbrEnum.arbi]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.opt]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.mriver]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.harm]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
   };
 
   protected dataProvider;
@@ -197,32 +162,36 @@ export class WePiggyProtocol extends DataProviderProtocol {
       errors: [],
     });
 
-    const [lending, borrowing] = await this.getLendingAndBorrowingData(address.toLowerCase(), chain);
+    const [lending, borrowing] = await this.getLendingAndBorrowingData(
+      address.toLowerCase(),
+      chain,
+    );
     const claimable = await this.getClaimableData(address.toLowerCase(), chain);
 
     response[FeatureEnum.lending] = lending;
     response[FeatureEnum.borrowing] = borrowing;
     response[FeatureEnum.claimable] = claimable;
-    
+
     return response;
   }
 
   async getClaimableData(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> { 
+  ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> {
     const claimableTokenBalance = await this.getAccruedWPCBalance(address, chain);
 
-    if (Number(claimableTokenBalance) === 0) return ({
-      totalValue: 0,
-      items: [],
-    });
+    if (Number(claimableTokenBalance) === 0)
+      return {
+        totalValue: 0,
+        items: [],
+      };
 
     const claimableToken = await this.getToken(wpcAddress, chain); // WPC price returns only on bsc chain
 
     const prices = await this.getAssetPrices(
       [claimableToken.address],
-      plainToClass(ChainDto, {id: 2}),
+      plainToClass(ChainDto, { id: 2 }),
     );
 
     const claimablePosition = this.formatClaimableToken(
@@ -244,55 +213,66 @@ export class WePiggyProtocol extends DataProviderProtocol {
     chain: ChainDto,
   ): Promise<FeatureResultDto<LendingPositionDto>[]> {
     const pTokens = await this.getPTokenList(chain); // get the up-to-date list of pTokens
-
     this.blockTimes.set(chain.name, await this.getBlockTime(pTokens, chain));
-    
+
     const pTokensData: Map<string, CallData> = await this.callsForPToken(pTokens, address, chain);
 
     const underlyingTokens = new Map<string, string>(); // stores pToken and its underlying token addresses
-    const balances: BalanceInfo[] = pTokens.map((pTokenAddress) => {
-      const underlyingTokenAddress = pTokensData.get(this.getUnderlyingLabel(pTokenAddress, address))?.output.data.toString().toLowerCase() ?? zeroAddress;
-      underlyingTokens.set(pTokenAddress, underlyingTokenAddress);
+    const balances: BalanceInfo[] =
+      pTokens.map((pTokenAddress) => {
+        const underlyingTokenAddress =
+          pTokensData
+            .get(this.getUnderlyingLabel(pTokenAddress, address))
+            ?.output.data.toString()
+            .toLowerCase() ?? zeroAddress;
+        underlyingTokens.set(pTokenAddress, underlyingTokenAddress);
 
-      const balanceOfToken = pTokensData.get(this.getBalanceOfUnderlyingLabel(pTokenAddress, address)).output.data; // the amount of tokens which the user has
-      const borrowBalance = pTokensData.get(this.getBorrowBalanceLabel(pTokenAddress, address)).output.data; // the amount of borrowed tokens
-      const balanceOfPToken = pTokensData.get(this.getBalanceOfLabel(pTokenAddress, address)).output.data; // the amount of pToken which the user has
-      const pTokenExchangeRate = pTokensData.get(this.getExchangeRateLabel(pTokenAddress)).output.data;
-      const pTokenSupplyRate = pTokensData.get(this.getSupplyRateLabel(pTokenAddress)).output.data;
-      const pTokenBorrowRate = pTokensData.get(this.getBorrowRateLabel(pTokenAddress)).output.data;
+        const balanceOfToken = pTokensData.get(
+          this.getBalanceOfUnderlyingLabel(pTokenAddress, address),
+        ).output.data; // the amount of tokens which the user has
+        const borrowBalance = pTokensData.get(this.getBorrowBalanceLabel(pTokenAddress, address))
+          .output.data; // the amount of borrowed tokens
+        const balanceOfPToken = pTokensData.get(this.getBalanceOfLabel(pTokenAddress, address))
+          .output.data; // the amount of pToken which the user has
+        const pTokenExchangeRate = pTokensData.get(this.getExchangeRateLabel(pTokenAddress)).output
+          .data;
+        const pTokenSupplyRate = pTokensData.get(this.getSupplyRateLabel(pTokenAddress)).output
+          .data;
+        const pTokenBorrowRate = pTokensData.get(this.getBorrowRateLabel(pTokenAddress)).output
+          .data;
 
-      const pTokenStats = {
-        exchangeRate: pTokenExchangeRate,
-        supplyRate: pTokenSupplyRate,
-        borrowRate: pTokenBorrowRate,
-      };
+        const pTokenStats = {
+          exchangeRate: pTokenExchangeRate,
+          supplyRate: pTokenSupplyRate,
+          borrowRate: pTokenBorrowRate,
+        };
 
-      return {
-        userAddress: address,
-        pToken: pTokenAddress,
-        pTokenBalance: balanceOfPToken,
-        token: underlyingTokens.get(pTokenAddress),
-        tokenBalance: balanceOfToken,
-        borrowBalance,
-        pTokenStats,
-      };
-    }) || [];
+        return {
+          userAddress: address,
+          pToken: pTokenAddress,
+          pTokenBalance: balanceOfPToken,
+          token: underlyingTokens.get(pTokenAddress),
+          tokenBalance: balanceOfToken,
+          borrowBalance,
+          pTokenStats,
+        };
+      }) || [];
 
     // get prices for all used tokens (except WPC token)
-    const prices = await this.getAssetPrices(
-      [...Array.from(underlyingTokens.values())],
-      chain,
-    );
+    const prices = await this.getAssetPrices([...Array.from(underlyingTokens.values())], chain);
 
     // get WPC token price on bsc
-    const wpcPrice = await this.getAssetPrices(
-      [wpcAddress],
-      plainToClass(ChainDto, {id: 2}),
-    );
+    const wpcPrice = await this.getAssetPrices([wpcAddress], plainToClass(ChainDto, { id: 2 }));
 
     prices.set(wpcAddress.toLowerCase(), wpcPrice.get(wpcAddress.toLowerCase()));
 
-    const wpcAPY: Map<string, APY> = await this.calcWPCAPY(pTokens, underlyingTokens, prices, pTokensData, chain); // calculate mining APY for all pTokens
+    const wpcAPY: Map<string, APY> = await this.calcWPCAPY(
+      pTokens,
+      underlyingTokens,
+      prices,
+      pTokensData,
+      chain,
+    ); // calculate mining APY for all pTokens
 
     const [lending, borrowing] = await Promise.all([
       this.getLendingDataResponse(balances, prices, wpcAPY, chain),
@@ -302,16 +282,10 @@ export class WePiggyProtocol extends DataProviderProtocol {
     return [lending, borrowing];
   }
 
-  async getAssetPrices(
-    tokens: string[],
-    chain: ChainDto,
-  ): Promise<Map<string, string>> {
-    const assets = new Set<string>(tokens.map(token => token.toLowerCase()));
+  async getAssetPrices(tokens: string[], chain: ChainDto): Promise<Map<string, string>> {
+    const assets = new Set<string>(tokens.map((token) => token.toLowerCase()));
 
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      [...assets],
-      chain.id,
-    );
+    const { prices } = await this.priceService.getTokenPricesFetch([...assets], chain.id);
 
     return new Map(
       Object.entries(prices)
@@ -328,34 +302,42 @@ export class WePiggyProtocol extends DataProviderProtocol {
   ): Promise<FeatureResultDto<LendingPositionDto>> {
     let totalValue = 0;
     const items = [];
-    await Promise.all(balances.map(async (b) => {
-      if (Number(b.tokenBalance) > 0) {
-        const tokenData = await this.getToken(b.token, chain);
-        const pTokenData = await this.getToken(b.pToken, chain);
+    await Promise.all(
+      balances.map(async (b) => {
+        if (Number(b.tokenBalance) > 0) {
+          const tokenData = await this.getToken(b.token, chain);
+          const pTokenData = await this.getToken(b.pToken, chain);
 
-        const token = plainToClass(LendingErcToken, {
-          address: b.token.toLowerCase(),
-          decimals: tokenData.decimals,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          price: prices.get(b.token.toLowerCase()),
-        });
-        
-        const tokenBalance = this.calcTokenBalance(Number(b.pTokenBalance), b.pTokenStats.exchangeRate, pTokenData.decimals).toString();
-        const positionAPY = this.calcAPY(Number(b.pTokenStats.supplyRate), chain) + wpcAPY.get(b.pToken.toLowerCase()).supply;
+          const token = plainToClass(LendingErcToken, {
+            address: b.token.toLowerCase(),
+            decimals: tokenData.decimals,
+            name: tokenData.name,
+            symbol: tokenData.symbol,
+            price: prices.get(b.token.toLowerCase()),
+          });
 
-        const lendPosition = this.formatLendingToken(
-          b.pToken.toLowerCase(),
-          positionAPY,
-          tokenBalance,
-          token,
-        );
-  
-        totalValue += lendPosition.value ?? 0;
-  
-        items.push(lendPosition);
-      }
-    }));
+          const tokenBalance = this.calcTokenBalance(
+            Number(b.pTokenBalance),
+            b.pTokenStats.exchangeRate,
+            pTokenData.decimals,
+          ).toString();
+          const positionAPY =
+            this.calcAPY(Number(b.pTokenStats.supplyRate), chain) +
+            wpcAPY.get(b.pToken.toLowerCase()).supply;
+
+          const lendPosition = this.formatLendingToken(
+            b.pToken.toLowerCase(),
+            positionAPY,
+            tokenBalance,
+            token,
+          );
+
+          totalValue += lendPosition.value ?? 0;
+
+          items.push(lendPosition);
+        }
+      }),
+    );
 
     const lending: FeatureResultDto<LendingPositionDto> = {
       totalValue,
@@ -374,32 +356,36 @@ export class WePiggyProtocol extends DataProviderProtocol {
     let totalValue = 0;
     const items = [];
 
-    await Promise.all(balances.map(async (b) => {
-      if (Number(b.borrowBalance) > 0) {
-        const tokenData = await this.getToken(b.token, chain);
-        
-        const token = plainToClass(LendingErcToken, {
-          address: b.token.toLowerCase(),
-          decimals: tokenData.decimals,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          price: Number(prices.get(b.token.toLowerCase())),
-        });
+    await Promise.all(
+      balances.map(async (b) => {
+        if (Number(b.borrowBalance) > 0) {
+          const tokenData = await this.getToken(b.token, chain);
 
-        const positionAPY = this.calcAPY(Number(b.pTokenStats.borrowRate), chain) - wpcAPY.get(b.pToken.toLowerCase()).borrow;
+          const token = plainToClass(LendingErcToken, {
+            address: b.token.toLowerCase(),
+            decimals: tokenData.decimals,
+            name: tokenData.name,
+            symbol: tokenData.symbol,
+            price: Number(prices.get(b.token.toLowerCase())),
+          });
 
-        const borrowPosition = this.formatLendingToken(
-          b.pToken,
-          positionAPY,
-          b.borrowBalance.toString(),
-          token,
-        );
-  
-        totalValue += borrowPosition.value ?? 0;
+          const positionAPY =
+            this.calcAPY(Number(b.pTokenStats.borrowRate), chain) -
+            wpcAPY.get(b.pToken.toLowerCase()).borrow;
 
-        items.push(borrowPosition);
-      }
-    }));
+          const borrowPosition = this.formatLendingToken(
+            b.pToken,
+            positionAPY,
+            b.borrowBalance.toString(),
+            token,
+          );
+
+          totalValue += borrowPosition.value ?? 0;
+
+          items.push(borrowPosition);
+        }
+      }),
+    );
 
     const borrowing: FeatureResultDto<LendingPositionDto> = {
       totalValue,
@@ -423,7 +409,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
     });
   }
 
-  formatClaimableToken(token: IAssetResponseDto, prices: Map<string, string>, balance: string,) {
+  formatClaimableToken(token: IAssetResponseDto, prices: Map<string, string>, balance: string) {
     return plainToClass(IntegrationClaimableTokenDto, {
       address: token.address.toLowerCase(),
       decimals: token.decimals,
@@ -447,16 +433,16 @@ export class WePiggyProtocol extends DataProviderProtocol {
   async getPTokenList(chain: ChainDto): Promise<string[]> {
     const comptrollerAddress = this.getComptroller(chain);
     const comptrollerContract = new ComptrollerAbis(comptrollerAddress);
-    
+
     const call: Map<string, CallData> = new Map<string, CallData>([
       [this.getPTokenListLabel(comptrollerAddress), comptrollerContract.getAllMarkets()],
     ]);
-    
+
     const getPTokensCall: Map<string, CallData> = await this.multicallService.handleInBatches(
       call,
       chain.id,
     );
-    
+
     const pTokenList = getPTokensCall.get(this.getPTokenListLabel(comptrollerAddress)).output.data;
     return pTokenList;
   }
@@ -465,29 +451,34 @@ export class WePiggyProtocol extends DataProviderProtocol {
     return contracts[chain.name].comptroller;
   }
 
-  calcTokenBalance(pTokenBalance: number, exchangeRateCurrent: BigNumber, underlyingDecimals: number) {
+  calcTokenBalance(
+    pTokenBalance: number,
+    exchangeRateCurrent: BigNumber,
+    underlyingDecimals: number,
+  ) {
     const mantissa = 18 + underlyingDecimals - 8;
     const onepTokenInUnderlying = exchangeRateCurrent.div(Math.pow(10, mantissa));
-    return new BigNumber(pTokenBalance).multipliedBy(onepTokenInUnderlying) //
+    return new BigNumber(pTokenBalance)
+      .multipliedBy(onepTokenInUnderlying) //
       .toNumber();
   }
 
   calcAPY(ratePerBlock: number, chain: ChainDto): number {
     const blockTime = this.blockTimes.get(chain.name);
     const mantissa = 1e18;
-    const blocksPerDay = 60 * 60 * 24 / blockTime;
+    const blocksPerDay = (60 * 60 * 24) / blockTime;
     const daysPerYear = 365;
 
-    const apy = (Math.pow((ratePerBlock / mantissa * blocksPerDay + 1), daysPerYear) - 1) * 100;
+    const apy = (Math.pow((ratePerBlock / mantissa) * blocksPerDay + 1, daysPerYear) - 1) * 100;
     return apy;
   }
 
   async calcWPCAPY(
-    tokens: string[], 
-    underlyingTokens: Map<string, string>, 
-    prices: Map<string, string>, 
-    pTokensData: Map<string, CallData>, 
-    chain: ChainDto
+    tokens: string[],
+    underlyingTokens: Map<string, string>,
+    prices: Map<string, string>,
+    pTokensData: Map<string, CallData>,
+    chain: ChainDto,
   ): Promise<Map<string, APY>> {
     const wpcSpeeds = await this.getWPCSpeeds(tokens, chain);
     const wpcAPY = new Map<string, APY>();
@@ -496,61 +487,71 @@ export class WePiggyProtocol extends DataProviderProtocol {
 
     const wpcPrice = Number(prices.get(wpcAddress.toLowerCase()));
 
-    await Promise.all(tokens.map(async (pTokenAddress) => {
-      const underlyingToken = await this.getToken(underlyingTokens.get(pTokenAddress), chain);
-      const underlyingTokenPrice = normalizeDecimals(oraclePrices.get(pTokenAddress.toLowerCase()).toString(), underlyingToken.decimals);
-      
-      // Total supply needs to be converted from pTokens
-      const mantissa = 18 + underlyingToken.decimals - 8;
-      
-      const exchangeRate = normalizeDecimals((pTokensData.get(this.getExchangeRateLabel(pTokenAddress)).output.data).toNumber(), mantissa);
+    await Promise.all(
+      tokens.map(async (pTokenAddress) => {
+        const underlyingToken = await this.getToken(underlyingTokens.get(pTokenAddress), chain);
+        const underlyingTokenPrice = normalizeDecimals(
+          oraclePrices.get(pTokenAddress.toLowerCase()).toString(),
+          underlyingToken.decimals,
+        );
 
-      const totalBorrows = normalizeDecimals(
-        pTokensData.get(this.getTotalBorrowsLabel(pTokenAddress)).output.data.toString(), 
-        underlyingToken.decimals,
-      );
+        // Total supply needs to be converted from pTokens
+        const mantissa = 18 + underlyingToken.decimals - 8;
 
-      const totalSupply = normalizeDecimals(
-        ((pTokensData.get(this.getTotalSupplyLabel(pTokenAddress)).output.data).toNumber() * exchangeRate).toString(), 
-        8,
-      );
-      
-      const apxBlockSpeedInSeconds = this.blockTimes.get(chain.name);
-      const blocksPerDay = (60 * 60 * 24) / apxBlockSpeedInSeconds;
-      const wpcSpeed = wpcSpeeds.get(pTokenAddress).output.data / 1e18;
-      const wpcPerDay = wpcSpeed * blocksPerDay;
+        const exchangeRate = normalizeDecimals(
+          pTokensData.get(this.getExchangeRateLabel(pTokenAddress)).output.data.toNumber(),
+          mantissa,
+        );
 
-      const wpcBorrowApy = this.apyFormula(wpcPrice, wpcPerDay, totalBorrows, underlyingTokenPrice);
-      const wpcSupplyApy = this.apyFormula(wpcPrice, wpcPerDay, totalSupply, underlyingTokenPrice);
+        const totalBorrows = normalizeDecimals(
+          pTokensData.get(this.getTotalBorrowsLabel(pTokenAddress)).output.data.toString(),
+          underlyingToken.decimals,
+        );
 
-      wpcAPY.set(pTokenAddress.toLowerCase(), {
-        borrow: wpcBorrowApy.toNumber(),
-        supply: wpcSupplyApy.toNumber(),
-      })
-    }));
+        const totalSupply = normalizeDecimals(
+          (
+            pTokensData.get(this.getTotalSupplyLabel(pTokenAddress)).output.data.toNumber() *
+            exchangeRate
+          ).toString(),
+          8,
+        );
+
+        const apxBlockSpeedInSeconds = this.blockTimes.get(chain.name);
+        const blocksPerDay = (60 * 60 * 24) / apxBlockSpeedInSeconds;
+        const wpcSpeed = wpcSpeeds.get(pTokenAddress).output.data / 1e18;
+        const wpcPerDay = wpcSpeed * blocksPerDay;
+
+        const wpcBorrowApy = this.apyFormula(
+          wpcPrice,
+          wpcPerDay,
+          totalBorrows,
+          underlyingTokenPrice,
+        );
+        const wpcSupplyApy = this.apyFormula(
+          wpcPrice,
+          wpcPerDay,
+          totalSupply,
+          underlyingTokenPrice,
+        );
+
+        wpcAPY.set(pTokenAddress.toLowerCase(), {
+          borrow: wpcBorrowApy.toNumber(),
+          supply: wpcSupplyApy.toNumber(),
+        });
+      }),
+    );
 
     return wpcAPY;
-  }
-
-  private apyFormula(wpcPrice: number, wpcPerDay: number, total: number, underlyingTokenPrice: number) {
-    return ((new BigNumber(wpcPrice).multipliedBy(wpcPerDay) //
-      .div(total)
-      .div(underlyingTokenPrice)
-      .plus(1))
-      .pow(365)
-      .minus(1))
-      .multipliedBy(100)
-      .multipliedBy(1000);
   }
 
   async getPricesFromOracle(tokens: string[], chain: ChainDto): Promise<Map<string, BigNumber>> {
     const oracleContract = new OracleAbis(contracts[chain.name].oracle);
     const prices = new Map<string, BigNumber>();
 
-    const calls: Map<string, CallData> = new Map<string, CallData>(tokens.map(t => 
-      [t.toLowerCase(), oracleContract.getUnderlyingPrice(t)]
-    ));
-    
+    const calls: Map<string, CallData> = new Map<string, CallData>(
+      tokens.map((t) => [t.toLowerCase(), oracleContract.getUnderlyingPrice(t)]),
+    );
+
     const pricesCall: Map<string, CallData> = await this.multicallService.handleInBatches(
       calls,
       chain.id,
@@ -566,10 +567,10 @@ export class WePiggyProtocol extends DataProviderProtocol {
   async getWPCSpeeds(tokens: string[], chain: ChainDto): Promise<Map<string, CallData>> {
     const distributionContract = new DistributionAbis(this.getDistributionContract(chain));
 
-    const call: Map<string, CallData> = new Map<string, CallData>(tokens.map(t => 
-      [t, distributionContract.wpcSpeeds(t)]
-    ));
-    
+    const call: Map<string, CallData> = new Map<string, CallData>(
+      tokens.map((t) => [t, distributionContract.wpcSpeeds(t)]),
+    );
+
     const wpcSpeedsCall: Map<string, CallData> = await this.multicallService.handleInBatches(
       call,
       chain.id,
@@ -581,21 +582,26 @@ export class WePiggyProtocol extends DataProviderProtocol {
   async getBlockTime(tokens: string[], chain: ChainDto) {
     const lensContract = new LensAbis(contracts[chain.name].lens);
 
-    const call: Map<string, CallData> = new Map<string, CallData>([[tokens[0], lensContract.getInterestRateModel(tokens[0])]]);
-    
-    const interestRateModelCall: Map<string, CallData> = await this.multicallService.handleInBatches(
-      call,
-      chain.id,
-    );
+    const call: Map<string, CallData> = new Map<string, CallData>([
+      [tokens[0], lensContract.getInterestRateModel(tokens[0])],
+    ]);
 
-    return new BigNumber(3600 * 24 * 365).div(interestRateModelCall.get(tokens[0]).output.data.blocksPerYear).toNumber();
+    const interestRateModelCall: Map<string, CallData> =
+      await this.multicallService.handleInBatches(call, chain.id);
+
+    return new BigNumber(3600 * 24 * 365)
+      .div(interestRateModelCall.get(tokens[0]).output.data.blocksPerYear)
+      .toNumber();
   }
 
   async getAccruedWPCBalance(userAddress: string, chain: ChainDto): Promise<BigNumber> {
     const distributionContract = new DistributionAbis(this.getDistributionContract(chain));
 
     const call: Map<string, CallData> = new Map<string, CallData>([
-      [this.wpcAccruedLabel(userAddress), distributionContract.pendingWPCAccrued(userAddress, true, true)],
+      [
+        this.wpcAccruedLabel(userAddress),
+        distributionContract.pendingWPCAccrued(userAddress, true, true),
+      ],
     ]);
 
     const batchCall: Map<string, CallData> = await this.multicallService.handleInBatches(
@@ -603,26 +609,37 @@ export class WePiggyProtocol extends DataProviderProtocol {
       chain.id,
     );
 
-    return batchCall.get(this.wpcAccruedLabel(userAddress)).output.data.multipliedBy(1000);;
+    return batchCall.get(this.wpcAccruedLabel(userAddress)).output.data.multipliedBy(1000);
   }
 
-  async callsForPToken(pTokens: string[], address: string, chain: ChainDto): Promise<Map<string, CallData>> {
+  async callsForPToken(
+    pTokens: string[],
+    address: string,
+    chain: ChainDto,
+  ): Promise<Map<string, CallData>> {
     const chainNativeToken = this.getNativePToken(chain);
 
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
     pTokens.forEach((pTokenAddress) => {
       const pTokenContract = new PTokenAbis(pTokenAddress);
-      calls.set(this.getBalanceOfUnderlyingLabel(pTokenAddress, address), pTokenContract.balanceOfUnderlying(address));
+      calls.set(
+        this.getBalanceOfUnderlyingLabel(pTokenAddress, address),
+        pTokenContract.balanceOfUnderlying(address),
+      );
       calls.set(this.getBalanceOfLabel(pTokenAddress, address), pTokenContract.balanceOf(address));
-      calls.set(this.getBorrowBalanceLabel(pTokenAddress, address), pTokenContract.borrowBalanceCurrent(address));
+      calls.set(
+        this.getBorrowBalanceLabel(pTokenAddress, address),
+        pTokenContract.borrowBalanceCurrent(address),
+      );
       calls.set(this.getExchangeRateLabel(pTokenAddress), pTokenContract.exchangeRateCurrent());
       calls.set(this.getBorrowRateLabel(pTokenAddress), pTokenContract.borrowRatePerBlock());
       calls.set(this.getSupplyRateLabel(pTokenAddress), pTokenContract.supplyRatePerBlock());
       calls.set(this.getTotalSupplyLabel(pTokenAddress), pTokenContract.totalSupply());
       calls.set(this.getTotalBorrowsLabel(pTokenAddress), pTokenContract.totalBorrowsCurrent());
 
-      if (pTokenAddress.toLowerCase() !== chainNativeToken) { // pTokens of native tokens of the chain does not have underlying() method
+      if (pTokenAddress.toLowerCase() !== chainNativeToken) {
+        // pTokens of native tokens of the chain does not have underlying() method
         calls.set(this.getUnderlyingLabel(pTokenAddress, address), pTokenContract.underlying());
       }
     });
@@ -658,7 +675,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
   getUnderlyingLabel(contract: string, address: string): string {
     return concatStrings(PTokenAbis.underlying.name, contract, address);
   }
-  
+
   getBorrowBalanceLabel(contract: string, address: string): string {
     return concatStrings(PTokenAbis.borrowBalanceCurrent.name, contract, address);
   }
@@ -685,6 +702,23 @@ export class WePiggyProtocol extends DataProviderProtocol {
 
   getTotalSupplyLabel(pTokenAddress: string): string {
     return concatStrings(PTokenAbis.totalSupply.name, pTokenAddress);
+  }
+
+  private apyFormula(
+    wpcPrice: number,
+    wpcPerDay: number,
+    total: number,
+    underlyingTokenPrice: number,
+  ) {
+    return new BigNumber(wpcPrice)
+      .multipliedBy(wpcPerDay) //
+      .div(total)
+      .div(underlyingTokenPrice)
+      .plus(1)
+      .pow(365)
+      .minus(1)
+      .multipliedBy(100)
+      .multipliedBy(1000);
   }
 }
 

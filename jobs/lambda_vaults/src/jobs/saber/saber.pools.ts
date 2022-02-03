@@ -10,8 +10,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
-import { concatStrings, toChunkedArray } from '@app/common/utils';
+import { concatStrings } from '@app/common/utils';
 import { tokensWithPrices } from '@app/common/utils/solana';
+import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { Logger } from '../../logger/logger.service';

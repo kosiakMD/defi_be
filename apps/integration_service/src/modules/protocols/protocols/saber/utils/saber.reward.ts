@@ -3,7 +3,7 @@ import BN from 'bn.js';
 
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
-import { ZERO, MAX_U64 } from '../saber.constant';
+import { MAX_U64, ZERO } from '../saber.constant';
 import { balance, quarryInfo } from '../saber.interface';
 
 function calculateRewardPerTokem(quarryInfo: quarryInfo) {

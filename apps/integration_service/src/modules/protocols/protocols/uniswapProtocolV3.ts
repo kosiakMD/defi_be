@@ -26,6 +26,7 @@ import {
   UniswapProtocolEnum,
 } from '@app/common/enum';
 import { Address } from '@app/common/types';
+import { keepETHAddresses } from '@app/common/utils';
 
 import { calculatePositionAmounts } from '../../../common/utils/uniswapV3PositionMath';
 
@@ -33,7 +34,6 @@ import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { UniswapV3Subgraph } from '../../subgraphs/subgraphs/uniswap.v3.subgraph';
 import DataProviderProtocol from './dataProviderProtocol';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class UniswapProtocolV3 extends DataProviderProtocol {

@@ -9,13 +9,13 @@ import {
   Address,
   ChainDto,
   ERC20TokenDto,
+  FeatureEnum,
   IncomeLiquidityPosition,
+  IntegrationClaimableTokenDto,
   Logger,
   PoolTokenDto,
   ProtocolTypeEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
-import { IntegrationClaimableTokenDto } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
@@ -26,6 +26,7 @@ import {
   ProtocolNameEnum,
   QuickswapProtocolEnum,
 } from '@app/common/enum';
+import { keepETHAddresses } from '@app/common/utils';
 import { decimalsDivider, normalizeDecimals } from '@app/common/utils/number';
 import { mapToObject } from '@app/common/utils/object';
 import { toChunkedArray } from '@app/common/utils/transform';
@@ -57,7 +58,6 @@ import {
 } from './contracts/quickswap.constants';
 import { PairDto } from './dto/pair.dto';
 import { QuickswapMulticallService } from './quickswap.multicall.service';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class QuickswapProtocol extends DataProviderProtocol implements AbstractProtocol {

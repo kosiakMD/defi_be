@@ -8,12 +8,12 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  FeatureEnum,
   Logger,
   ProjectEnum,
   ProtocolNameEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';

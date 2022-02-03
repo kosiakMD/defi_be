@@ -1,13 +1,15 @@
 import { HttpModule } from '@nestjs/axios';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
+import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { LoggerMiddleware } from '@app/common/middlewares';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 
@@ -62,9 +64,19 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformHeadersInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
   ],
 })
 export class AppModule implements OnModuleInit {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
+
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
@@ -80,6 +92,4 @@ export class AppModule implements OnModuleInit {
       'App',
     );
   }
-
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 }

@@ -49,6 +49,8 @@ import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
 import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
+import OrcaProtocol from './protocols/orca/orca.protocol';
+import { OrcaStaking } from './protocols/orca/orca.staking';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
@@ -69,6 +71,9 @@ import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TraderJoeStaking } from './protocols/traderjoe/trader-joe.staking';
+import { TrisolarisPools } from './protocols/trisolaris/trisolaris.pools';
+import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
+import { TrisolarisStaking } from './protocols/trisolaris/trisolaris.staking';
 import PangolinProtocol from './protocols/uniswapLike/pangolinProtocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
@@ -106,13 +111,7 @@ const TraderJoe = [
   TraderJoeFarm,
   TraderJoeLending,
 ];
-const Pancake = [
-  PancakeProtocol,
-  PancakeV2Staking,
-  PancakeProtocolV1,
-  EtherscanService,
-  ScanApi,
-];
+const Pancake = [PancakeProtocol, PancakeV2Staking, PancakeProtocolV1, EtherscanService, ScanApi];
 const Alpaca = [AlpacaProtocol, AlpacaApiService];
 const Autofarm = [AutofarmProtocol, AutofarmStaking, AutofarmApiService];
 const Badger = [BadgerProtocol, BadgerStaking];
@@ -128,6 +127,7 @@ const Raydium = [RaydiumStaking];
 const Saber = [SaberProtocol, SaberStaking];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
+const Orca = [OrcaProtocol, OrcaStaking];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -146,6 +146,9 @@ const ProtocolList = [
   WePiggyProtocol,
   YearnProtocolV1,
   YearnProtocolV2,
+  TrisolarisPools,
+  TrisolarisProtocol,
+  TrisolarisStaking,
   ...Abracadabra,
   ...Alpaca,
   ...Autofarm,
@@ -165,6 +168,7 @@ const ProtocolList = [
   ...VVS,
   ...Viperswap,
   ...Wonderland,
+  ...Orca,
 ];
 
 @Module({

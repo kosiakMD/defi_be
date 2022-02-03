@@ -29,6 +29,8 @@ import {
   WePiggyProtocolEnum,
   WonderlandProtocolEnum,
   YearnProtocolEnum,
+  TrisolarisProtocolEnum,
+  OrcaProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -66,7 +68,9 @@ export type ProtocolName =
   | ViperswapProtocolEnum
   | WePiggyProtocolEnum
   | WonderlandProtocolEnum
-  | YearnProtocolEnum;
+  | YearnProtocolEnum
+  | TrisolarisProtocolEnum
+  | OrcaProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

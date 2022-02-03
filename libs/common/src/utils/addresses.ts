@@ -3,10 +3,14 @@ import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
 
-export function splitToAddressesArray(addresses: string): Address[] {
+export function splitToAddressesArray(addresses: string | any): Address[] {
   if (!addresses) {
     return [];
   }
+  if (Array.isArray(addresses)) {
+    return addresses.map(unifyAddress);
+  }
+
   return addresses.split(',').map(unifyAddress);
 }
 
@@ -47,14 +51,11 @@ export function isSolAddress(address: string): boolean {
 }
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [
-    isETHAddress,
-    isSolAddress,
-  ]
+  const addressChecks = [isETHAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
-      return true
+      return true;
     }
   }
-  return false
+  return false;
 }

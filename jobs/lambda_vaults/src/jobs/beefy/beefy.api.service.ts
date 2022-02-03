@@ -39,9 +39,9 @@ export class BeefyApiService {
     [ChainIdEnum.cro]: ['VVS', 'CronaSwap'],
     [ChainIdEnum.mriver]: ['SolarBeam'],
     [ChainIdEnum.plg]: ['SushiSwap', 'QuickSwap'],
-    [ChainIdEnum.arbi]: ['Sushi'],
-    [ChainIdEnum.harm]: ['Sushi'],
-    [ChainIdEnum.celo]: ['Sushi'],
+    [ChainIdEnum.arbi]: ['SushiSwap'],
+    [ChainIdEnum.harm]: ['SushiSwap'],
+    [ChainIdEnum.celo]: ['SushiSwap'],
     [ChainIdEnum.heco]: [], // TODO: disabled since no supported underlying platforms
   };
 
@@ -88,21 +88,24 @@ export class BeefyApiService {
       return this.vaults;
     }
 
-    const response$ = await this.httpService.get(this.vaultEndpoint).pipe(
-      switchMap((axiosResponse: AxiosResponse<IBeefyHttpVault[]>) => {
-        return firstValueFrom(
-          from(axiosResponse.data.length ? axiosResponse.data : this.getFallbackVaults()).pipe(
-            filter(({ status }) => status === 'active'),
-            toArray(),
-          ),
-        );
-      }),
-    );
+    this.vaults = new Promise((resolve) => {
+      const response$ = this.httpService.get(this.vaultEndpoint).pipe(
+        switchMap((axiosResponse: AxiosResponse<IBeefyHttpVault[]>) => {
+          return firstValueFrom(
+            from(axiosResponse.data.length ? axiosResponse.data : this.getFallbackVaults()).pipe(
+              filter(({ status }) => status === 'active'),
+              toArray(),
+            ),
+          );
+        }),
+      );
 
-    const data = firstValueFrom(response$);
+      firstValueFrom(response$).then((data) => {
+        // Save the vaults so that when running other chains, we don't need to re-hit the beefy server
+        resolve(data);
+      });
+    });
 
-    // Save the vaults so that when running other chains, we don't need to re-hit the beefy server
-    this.vaults = data;
     return this.vaults;
   }
 }

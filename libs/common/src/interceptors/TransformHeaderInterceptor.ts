@@ -5,7 +5,7 @@ import { ExecutionContext, Inject, Injectable, NestInterceptor, CallHandler } fr
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
-import { HEADER_REQUEST_ID } from '@app/common/constant';
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
 
 export interface Response<T> {
   data: T;
@@ -22,6 +22,7 @@ export class TransformHeadersInterceptor<T> implements NestInterceptor<T, Respon
   intercept(context: ExecutionContext, next: CallHandler): Observable<Response<T>> {
     const request = context.switchToHttp().getRequest();
     const reqId = request.header(HEADER_REQUEST_ID);
+    const sessionId = request.header(HEADER_SESSION_ID);
     // TODO: TBD log or not this
     // this.logger.log('intercept reqId', reqId);
 
@@ -31,7 +32,7 @@ export class TransformHeadersInterceptor<T> implements NestInterceptor<T, Respon
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       map((data) => {
-        data.meta = { reqId };
+        data.meta = { reqId, sessionId };
         return data;
       }),
     );

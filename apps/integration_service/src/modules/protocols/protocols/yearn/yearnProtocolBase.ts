@@ -143,8 +143,8 @@ export abstract class YearnProtocolBase extends BasicProtocol {
     );
 
     const webProvider = this.web3Provider.getForChain(chain.abbr);
-    const localMultiCall = new YearnLocalMultiCall(webProvider, this.logger);
 
+    const localMultiCall = new YearnLocalMultiCall(webProvider, this.logger);
     await localMultiCall.injectPositionBalances(users);
 
     const stakedTokenAddresses = users.flatMap((user) => {

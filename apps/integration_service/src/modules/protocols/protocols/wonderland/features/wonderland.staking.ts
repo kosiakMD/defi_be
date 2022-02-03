@@ -12,11 +12,7 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import {
-  IntegrationERC20TokenDto,
-  IntegrationPoolTokenDto,
-  IntegrationStakingPositionDto,
-} from '@app/common/jobs/staking';
+import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -57,14 +53,11 @@ export class WonderlandStaking {
       const items: IntegrationStakingPositionDto[] = [];
       const memo = tokenMap.get(MEMO_ADDRESS);
       const wMemo = tokenMap.get(WRAPPED_MEMO_ADDRESS);
-      const time = tokenMap.get(TIME_ADDRESS);
 
       const memoBalance = balances[address].tokens.find((t) => t.token.address === MEMO_ADDRESS);
 
       if (memoBalance) {
-        items.push(
-          this.getMemoStakingPosition(memoBalance, memo, Number(prices[TIME_ADDRESS]), time),
-        );
+        items.push(this.getMemoStakingPosition(memoBalance, memo, Number(prices[TIME_ADDRESS])));
       }
 
       if (wMemoDetails.has(address)) {
@@ -74,7 +67,6 @@ export class WonderlandStaking {
             wMemo,
             wMemoDetails.get('ratio'),
             Number(prices[TIME_ADDRESS]),
-            time,
           ),
         );
       }
@@ -92,13 +84,7 @@ export class WonderlandStaking {
   }
 
   // dynamic redemtion value with time
-  getWrappedMemoStakingPosition(
-    balance: number,
-    wmemo: Asset,
-    ratio: number,
-    timePrice: number,
-    time: Asset,
-  ) {
+  getWrappedMemoStakingPosition(balance: number, wmemo: Asset, ratio: number, timePrice: number) {
     const price = timePrice * ratio;
     const value = balance * price;
     return plainToClass(IntegrationStakingPositionDto, {
@@ -113,17 +99,7 @@ export class WonderlandStaking {
         price,
         value,
         balance: balance,
-        tokens: [
-          plainToClass(IntegrationPoolTokenDto, {
-            address: time.address,
-            name: time.name,
-            symbol: time.symbol,
-            decimals: time.decimals,
-            price,
-            value,
-            balance: balance * ratio,
-          }),
-        ],
+        tokens: [],
       }),
     });
   }
@@ -133,7 +109,6 @@ export class WonderlandStaking {
     balance: AccountTokenBalance,
     memo: Asset,
     timePrice: number,
-    time: Asset,
   ): IntegrationStakingPositionDto {
     return plainToClass(IntegrationStakingPositionDto, {
       address: memo.address,
@@ -147,17 +122,7 @@ export class WonderlandStaking {
         price: timePrice,
         value: timePrice * balance.decimalsAmount,
         balance: balance.decimalsAmount,
-        tokens: [
-          plainToClass(IntegrationPoolTokenDto, {
-            address: time.address,
-            name: time.name,
-            symbol: time.symbol,
-            decimals: time.decimals,
-            price: timePrice,
-            value: timePrice * balance.decimalsAmount,
-            balance: balance.decimalsAmount,
-          }),
-        ],
+        tokens: [],
       }),
     });
   }

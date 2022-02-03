@@ -15,6 +15,7 @@ import {
   ProtocolNameEnum,
 } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { CallData } from '@app/common/dto/CallData';
 import { ERC20Token } from '@app/common/dto/ERC20Token';
 import {
@@ -33,12 +34,11 @@ import { SettingsService } from '../../store/service/settings.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
-import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { FeatureMappingPoolToken, PoolsFeatureMapping } from '../dto/mappings';
-import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobPoolsBase } from '../job.pools.base';
 import { CurveLpAbi } from './abis/CurveLpAbi';
+import { CurveProviderAbi } from './abis/CurveProviderAbi';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
 
@@ -94,23 +94,11 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
     return concatStrings(ERC20Abi.totalSupply.name, tokenAddress);
   }
 
-  async manageMapping(): Promise<void> {
-    let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    if (
-      !jobMapping.mapping ||
-      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
-    ) {
-      this.logger.log('it is time to update mapping', this.placeholder);
-      jobMapping = await this.rebuildMapping(jobMapping);
-    }
-
-    jobMapping.mapping.forEach((jm) => {
-      this.mapping.push(IntegrationDataConverter.toDTO(jm));
-    });
-  }
-
   protected async rebuildMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
     this.logger.log('building initial mapping', this.placeholder);
+
+    [this.registryV1Contract, this.registryV2Contract, this.metaPoolFactoryContract] =
+      await this.getRegistryAddresses();
 
     const liquidityPools: CurveLiquidityPoolFeature[] = [];
     const settingId = this.settingLabel();
@@ -188,6 +176,9 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
     registryAddress: string,
     count: number,
   ): Promise<Map<string, string>> {
+    if (registryAddress === ZERO_ADDRESS || count === 0) {
+      return new Map<string, string>();
+    }
     const registry = new CurveRegistryAbi(registryAddress);
     const poolListCalls = new Map<string, CallData>();
     for (let i = 0; i < count; i++) {
@@ -272,6 +263,9 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
   }
 
   private async getPoolCount(address: string): Promise<number> {
+    if (address === ZERO_ADDRESS) {
+      return 0;
+    }
     const registry = new CurveRegistryAbi(address);
     const call = new Map<string, CallData>([[address, registry.poolCount()]]);
     const callRsp = await this.multicallService.handleInBatches(call, this.chain);
@@ -317,7 +311,6 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
 
       /** pool feature */
       const positionUniqueId = concatStrings(this.chain, liquidityPool.address, 'lp');
-      // this.temporaryArray.push(`'${positionUniqueId}'`);
       const position: TrackedVaultItem = await this.getDbItem(liquidityPool, positionUniqueId);
 
       mappedDto.dbId = position.id;
@@ -328,7 +321,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
     }
   }
 
-  private handleMainCoinAddress(token: CurveUnderlyingLpDto) {
+  handleMainCoinAddress(token: CurveUnderlyingLpDto) {
     return token.address === ZERO_ADDRESS
       ? ChainWrappedTokens[token.symbol.toUpperCase()]
       : token.address;
@@ -454,7 +447,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
     }
   }
 
-  private getCallsMap(): Map<string, CallData> {
+  getCallsMap(): Map<string, CallData> {
     const calls = new Map<string, CallData>();
     this.mapping.forEach((poolFeature) => {
       const lpTokenContract = new CurveLpAbi(poolFeature.lpToken.address);
@@ -526,6 +519,17 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
           registry: item.registry,
         } as CurveLiquidityPoolFeature);
     }
+  }
+
+  async getRegistryAddresses(): Promise<string[]> {
+    const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
+    const calls = [0, 5, 3].reduce((resp, value) => {
+      resp.set(String(value), curveProvider.getIdInfo(value));
+      return resp;
+    }, new Map());
+
+    const multResp = await this.multicallService.handleInBatches(calls, this.chain);
+    return [0, 5, 3].map((value) => multResp.get(String(value)).output.data?.addr);
   }
 
   private static getUnderlyingTokensReserves(

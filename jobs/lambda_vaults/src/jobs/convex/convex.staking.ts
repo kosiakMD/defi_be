@@ -395,7 +395,10 @@ export class ConvexStaking
     rawPools.forEach((poolInfo) => {
       // Staking Token
       const rawStakingToken = rawTokenMap.get(poolInfo.lptoken.toLowerCase());
-      const stakingToken = this.convertTokenClassType(IntegrationERC20TokenDto, rawStakingToken);
+      const stakingToken: IntegrationERC20TokenDto = this.convertTokenClassType(
+        IntegrationERC20TokenDto,
+        rawStakingToken,
+      );
       stakingToken.balance = normalizeDecimals(
         balances.get(`${poolInfo.gauge}-${poolInfo.lptoken}-balance`).output.data.toString(),
         stakingToken.decimals,
@@ -708,8 +711,8 @@ export class ConvexStaking
    */
   private convertTokenClassType<
     T extends ERC20Token | IntegrationPoolTokenDto | IntegrationERC20TokenDto,
-  >(type: ClassConstructor<T>, token: LiquidityPoolTokenDto) {
-    const data = plainToClass(type, {
+  >(type: ClassConstructor<T>, token: LiquidityPoolTokenDto): T {
+    const data: T = plainToClass(type, {
       address: token.address.toLowerCase(),
       name: token.name,
       symbol: token.symbol,

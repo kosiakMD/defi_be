@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { DEFAULT_MULTIPLIER } from '@app/common/constant';
-import { ChainIdEnum, ChainAbbrEnum, ResultStatus } from '@app/common/enum';
+import { ChainAbbrEnum, ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import {

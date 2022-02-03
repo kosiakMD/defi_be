@@ -35,13 +35,14 @@ import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
-import { DetailedResponseDto } from '../../common/dto';
 import {
+  CurrentPricesPayload,
+  DetailedResponseDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   PoolTokenDto,
+  PriceResponseDto,
 } from '../../common/dto';
-import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 import { Asset, BaseData, PoolToken } from '../../common/interfaces/transactions.interfaces';
 import { objectUpdate } from '../../common/utils/object';
 
@@ -66,6 +67,7 @@ import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
+import OrcaProtocol from './protocols/orca/orca.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
@@ -75,6 +77,7 @@ import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
+import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
@@ -125,6 +128,8 @@ export class ProtocolService {
     private readonly wonderlandProtocol: WonderlandProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
+    private readonly trisolarisProtocol: TrisolarisProtocol,
+    private readonly orcaProtocol: OrcaProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -159,6 +164,8 @@ export class ProtocolService {
       wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
+      trisolarisProtocol,
+      orcaProtocol,
     ];
   }
 

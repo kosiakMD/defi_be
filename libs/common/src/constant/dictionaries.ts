@@ -18,6 +18,7 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.plg]: ChainAbbrEnum.plg,
   [ChainIdEnum.sol]: ChainAbbrEnum.sol,
   [ChainIdEnum.xdai]: ChainAbbrEnum.xdai,
+  [ChainIdEnum.near]: ChainAbbrEnum.near,
 };
 
 export const ChainIdToName = {
@@ -38,4 +39,5 @@ export const ChainIdToName = {
   [ChainIdEnum.plg]: ChainNameEnum.plg,
   [ChainIdEnum.sol]: ChainNameEnum.sol,
   [ChainIdEnum.xdai]: ChainNameEnum.xdai,
+  [ChainIdEnum.near]: ChainAbbrEnum.near,
 };

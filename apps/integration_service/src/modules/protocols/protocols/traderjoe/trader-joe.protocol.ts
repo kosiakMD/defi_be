@@ -3,15 +3,15 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, TraderjoeProtocolEnum } from '@app/common/enum';
+import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import BasicProtocol from '../basicProtocol';
-import { TraderJoePools } from './trader-joe.pools';
-import { TraderJoeStaking } from './trader-joe.staking';
 import { TraderJoeFarm } from './trader-joe.farm';
 import { TraderJoeLending } from './trader-joe.lending';
-import { keepETHAddresses } from '@app/common/utils';
+import { TraderJoePools } from './trader-joe.pools';
+import { TraderJoeStaking } from './trader-joe.staking';
 
 @Injectable()
 export default class TraderJoeProtocol extends BasicProtocol {
@@ -21,10 +21,10 @@ export default class TraderJoeProtocol extends BasicProtocol {
   readonly displayName = 'Trader Joe';
   readonly features = {
     [ChainAbbrEnum.avax]: [
-      FeatureEnum.pools, 
-      FeatureEnum.staking, 
-      FeatureEnum.farming, 
-      FeatureEnum.lending, 
+      FeatureEnum.pools,
+      FeatureEnum.staking,
+      FeatureEnum.farming,
+      FeatureEnum.lending,
       FeatureEnum.borrowing,
       FeatureEnum.claimable,
     ],

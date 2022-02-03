@@ -1,12 +1,12 @@
-import { SearchParams } from 'apps/api_gateway/src/search/search.interface';
+import { SearchParams } from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { EntityRepository, Repository } from 'typeorm';
+
 import { ProjectsContractEntity } from '../entities/projectsContract.entity';
 import { ProjectsContractForSearchResponse } from '../interfaces/ProjectsForSearchResponse.interface';
 
 @EntityRepository(ProjectsContractEntity)
 export class ProjectsContractRepository extends Repository<ProjectsContractEntity> {
-  private readonly queryPrefix =
-    `SELECT
+  private readonly queryPrefix = `SELECT
       pc.address,
       pc.id,
       pc.description,
@@ -14,13 +14,15 @@ export class ProjectsContractRepository extends Repository<ProjectsContractEntit
       pi.icon_project as icon
     FROM projects_contract AS pc
     LEFT JOIN projects_info AS pi ON pc.project_id = pi.id 
-    WHERE `
+    WHERE `;
 
-  private readonly queryPostfix = ` ORDER BY pc.description, pi.name LIMIT 30`
+  private readonly queryPostfix = ` ORDER BY pc.description, pi.name LIMIT 30`;
 
-  async findProjectsByParams(searchParams: SearchParams): Promise<ProjectsContractForSearchResponse[]> {
+  async findProjectsByParams(
+    searchParams: SearchParams,
+  ): Promise<ProjectsContractForSearchResponse[]> {
     // eslint-disable-next-line prefer-const
-    let {address, text} = searchParams;
+    let { address, text } = searchParams;
     if (text) {
       text = `%${text}%`;
     }
@@ -38,6 +40,6 @@ export class ProjectsContractRepository extends Repository<ProjectsContractEntit
       params.push(text);
     }
     lambdaAssetsSql += this.queryPostfix;
-    return this.query(lambdaAssetsSql, params)
+    return this.query(lambdaAssetsSql, params);
   }
 }

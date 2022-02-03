@@ -20,8 +20,7 @@ import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { concatStrings } from '@app/common/utils';
-import { decimalsDivider } from '@app/common/utils';
+import { concatStrings, decimalsDivider } from '@app/common/utils';
 
 import { VVSAddresses } from '../../../../../../../jobs/lambda_vaults/src/jobs/vvs/addresses';
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';

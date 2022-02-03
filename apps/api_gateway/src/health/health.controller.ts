@@ -12,9 +12,9 @@ import {
 import { AddVersion } from '@app/common/decorators/AddVersion';
 import { HealthStatusEnum } from '@app/common/enum';
 
-import { ServiceHealthIndicator } from '../app/app.health';
 import { HealthServicesResponse200Dto } from './dto/health.services.response.200.dto';
 import { HealthServicesResponse503Dto } from './dto/health.services.response.503.dto';
+import { ServiceHealthIndicator } from './health.service';
 
 interface ServiceHealthStatus extends HealthIndicatorResult {
   [service: string]: {

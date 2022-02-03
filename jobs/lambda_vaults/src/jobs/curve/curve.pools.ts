@@ -14,6 +14,7 @@ import {
   ProtocolNameEnum,
 } from '@app/common';
 import { ETH_ADDRESS, WETH_ADDRESS } from '@app/common/constant';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { CallData } from '@app/common/dto/CallData';
 import { ERC20Token } from '@app/common/dto/ERC20Token';
 import {
@@ -38,7 +39,6 @@ import { JobInterface } from '../job.interface';
 import { JobPoolsBase } from '../job.pools.base';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
-import { CurveAddresses } from './addresses';
 
 @Injectable()
 export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implements JobInterface {

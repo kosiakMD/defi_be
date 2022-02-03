@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class AutostakingVaultAbis extends MultiCallAbiProxy {
@@ -13,7 +14,7 @@ export class AutostakingVaultAbis extends MultiCallAbiProxy {
       },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 
   static readonly userInfo: AbiItem = {
@@ -48,7 +49,7 @@ export class AutostakingVaultAbis extends MultiCallAbiProxy {
       },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 
   static readonly totalShares: AbiItem = {

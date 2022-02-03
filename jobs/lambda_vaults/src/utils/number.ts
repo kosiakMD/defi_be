@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 
 export function toDecimals(amount, decimals): number {
   if (amount instanceof BigNumber) {
-    return Number(amount.times(new BigNumber(10).pow(-Number(decimals))));
+    return Number(amount.times(`1e-${decimals}`));
   }
   return Number(new BigNumber(amount).times(new BigNumber(10).pow(-Number(decimals))));
 }

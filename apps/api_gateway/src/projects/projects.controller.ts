@@ -1,29 +1,23 @@
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { SafeFilterOptionsQueryDto } from '@app/common/dto/SafeFilterOptionsQuery.dto';
 
-import { SafeProxyService } from '../safe-proxy/safe.proxy.service';
-import { ProjectsResponseDto } from './dto';
+import { BaseService } from '../common/services/base.service';
+
+import { ProjectsResponseDto } from './dto/projects.response.dto';
 
 @ApiTags('Safe')
 @Controller('v1/projects')
-export class ProjectsController {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private safeProxyService: SafeProxyService,
-  ) {}
+export class ProjectsController extends BaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('SAFE_PROXY_SERVICE_HOST'),
+    this.configService.get<string>('SAFE_PROXY_SERVICE_PORT'),
+  );
 
   @Get('')
-  @ApiResponse({ status: 200, type: [ProjectsResponseDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [ProjectsResponseDto] })
   getProjects(@Query() query: SafeFilterOptionsQueryDto): Promise<ProjectsResponseDto[]> {
-    try {
-      return this.safeProxyService.getProjects(query);
-    } catch (e) {
-      this.logger.error(e, 'SafeProxyService.getProjects');
-      throw e;
-    }
+    return this.requestProxy(this.url + 'v1/projects', 'GET', { params: query });
   }
 }

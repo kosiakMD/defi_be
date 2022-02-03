@@ -56,4 +56,78 @@ export const additionalGaugeContractsMap = new Map([
       ],
     ]),
   ],
+  [
+    ChainIdEnum.arbi,
+    new Map([
+      [
+        '0x7f90122bf0700f9e7e1f688fe926940e8839f353',
+        {
+          pool: '0x7f90122bf0700f9e7e1f688fe926940e8839f353',
+          gauge: '0xbF7E49483881C76487b0989CD7d9A8239B20CA41',
+          lp: '0x7f90122bf0700f9e7e1f688fe926940e8839f353',
+          poolName: '2pool',
+        },
+      ],
+      [
+        '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb',
+        {
+          pool: '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb',
+          gauge: '0xC2b1DF84112619D190193E48148000e3990Bf627',
+          lp: '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb',
+          poolName: 'ren',
+        },
+      ],
+    ]),
+  ],
+  [
+    ChainIdEnum.opt,
+    new Map([
+      [
+        '0x1337BedC9D22ecbe766dF105c9623922A27963EC',
+        {
+          pool: '0x1337BedC9D22ecbe766dF105c9623922A27963EC',
+          gauge: '0x7f90122BF0700F9E7e1F688fe926940E8839F353',
+          lp: '0x1337BedC9D22ecbe766dF105c9623922A27963EC',
+          poolName: '2pool',
+        },
+      ],
+    ]),
+  ],
+  [
+    ChainIdEnum.harm,
+    new Map([
+      [
+        '0xc5cfada84e902ad92dd40194f0883ad49639b023',
+        {
+          pool: '0xc5cfada84e902ad92dd40194f0883ad49639b023',
+          gauge: '0xbf7e49483881c76487b0989cd7d9a8239b20ca41',
+          lp: '0xc5cfada84e902ad92dd40194f0883ad49639b023',
+          poolName: '3pool',
+        },
+      ],
+      [
+        '0x99e8ed28b97c7f1878776ed94ffc77cabfb9b726',
+        {
+          pool: '0x0e3dc2bcbfea84072a0c794b7653d3db364154e0',
+          gauge: '0xf98450b5602fa59cc66e1379dffb6fddc724cfc4',
+          lp: '0x99e8ed28b97c7f1878776ed94ffc77cabfb9b726',
+          poolName: 'wtricrypto',
+        },
+      ],
+    ]),
+  ],
+  [
+    ChainIdEnum.xdai,
+    new Map([
+      [
+        '0x1337bedc9d22ecbe766df105c9623922a27963ec',
+        {
+          pool: '0x7f90122bf0700f9e7e1f688fe926940e8839f353',
+          gauge: '0x78cf256256c8089d68cde634cf7cdefb39286470',
+          lp: '0x1337bedc9d22ecbe766df105c9623922a27963ec',
+          poolName: '3pool',
+        },
+      ],
+    ]),
+  ],
 ]);

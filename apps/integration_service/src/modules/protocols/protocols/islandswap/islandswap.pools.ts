@@ -4,7 +4,6 @@ import { plainToClass } from 'class-transformer';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { AccountService } from '../../../microservices/account.service';
 
 import {
   AccountBalance,
@@ -13,17 +12,19 @@ import {
   ChainDto,
   ChainIdEnum,
   FeatureEnum,
+  IslandswapProtocolEnum,
   Logger,
   ProjectEnum,
   ProtocolTypeEnum,
   TokenBalance,
-  IslandswapProtocolEnum,
 } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
+import { AccountService } from '../../../microservices/account.service';
 
 @Injectable()
 export class IslandswapPools {

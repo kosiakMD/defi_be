@@ -16,7 +16,7 @@ import {
   ProjectEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { CurveAddresses } from '@app/common/constant/addresses';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';

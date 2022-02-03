@@ -6,16 +6,18 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   ChainDto,
+  FeatureEnum,
   IncomeLiquidityPositionPair,
   IncomeToken,
   Logger,
   PoolTokenDto,
+  ProtocolTypeEnum,
 } from '@app/common';
-import { FeatureEnum, ProtocolTypeEnum } from '@app/common';
 import { ERC20Token } from '@app/common/dto/ERC20Token';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
 import { ChainAbbrEnum, PangolinProtocolEnum, ProjectEnum } from '@app/common/enum';
+import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -25,7 +27,6 @@ import { PangolinSubgraph } from '../../../subgraphs/subgraphs/pangolin.subgraph
 import { Mapper } from '../../helpers/mappers/mapper';
 import AbstractProtocol from '../abstractProtocol';
 import UniswapLikeProtocol from './uniswapLikeProtocol';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class PangolinProtocol extends UniswapLikeProtocol implements AbstractProtocol {

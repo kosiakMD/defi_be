@@ -4,7 +4,7 @@ import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
-import { HEADER_REQUEST_ID } from '@app/common/constant';
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
@@ -13,6 +13,7 @@ export class LoggerMiddleware implements NestMiddleware {
     this.logger.log(
       {
         reqId: req.header(HEADER_REQUEST_ID) || 'unknown',
+        sessionId: req.header(HEADER_SESSION_ID),
         ip: req.ip,
         ips: req.ips,
         method: req.method,

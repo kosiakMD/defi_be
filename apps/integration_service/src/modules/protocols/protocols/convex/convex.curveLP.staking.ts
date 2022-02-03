@@ -12,8 +12,8 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import {
-  CRVCVX_REWARD_POOL_ADDRESS,
   CRV_ADDRESS,
+  CRVCVX_REWARD_POOL_ADDRESS,
   CVX_REWARD_POOL_ADDRESS,
 } from '@app/common/constant/protocols/convex.constants';
 import { CallData } from '@app/common/dto/CallData';

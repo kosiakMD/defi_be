@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class RewardDistributorAbis extends MultiCallAbiProxy {
@@ -16,8 +17,8 @@ export class RewardDistributorAbis extends MultiCallAbiProxy {
         type: 'address',
       },
     ],
-    name:'rewardBorrowSpeeds',
-    outputs:[
+    name: 'rewardBorrowSpeeds',
+    outputs: [
       {
         internalType: 'uint256',
         name: '',
@@ -26,7 +27,7 @@ export class RewardDistributorAbis extends MultiCallAbiProxy {
     ],
     payable: false,
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 
   static readonly rewardSupplySpeeds: AbiItem = {
@@ -44,7 +45,7 @@ export class RewardDistributorAbis extends MultiCallAbiProxy {
       },
     ],
     name: 'rewardSupplySpeeds',
-    outputs:[
+    outputs: [
       {
         internalType: 'uint256',
         name: '',
@@ -62,7 +63,7 @@ export class RewardDistributorAbis extends MultiCallAbiProxy {
       {
         internalType: 'uint8',
         name: '',
-        type: 'uint8'
+        type: 'uint8',
       },
       {
         internalType: 'address',

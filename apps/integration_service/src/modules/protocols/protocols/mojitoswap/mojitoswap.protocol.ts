@@ -2,12 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
-import { ChainAbbrEnum, ProjectEnum, MojitoswapProtocolEnum } from '@app/common/enum';
+import { ChainAbbrEnum, MojitoswapProtocolEnum, ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
+
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import BasicProtocol from '../basicProtocol';
-import { MojitoswapStaking } from './mojitoswap.staking';
 import { MojitoswapPools } from './mojitoswap.pools';
+import { MojitoswapStaking } from './mojitoswap.staking';
 
 @Injectable()
 export default class MojitoswapProtocol extends BasicProtocol {
@@ -18,7 +20,7 @@ export default class MojitoswapProtocol extends BasicProtocol {
   readonly features = {
     [ChainAbbrEnum.kcc]: [FeatureEnum.staking, FeatureEnum.pools],
   };
-  
+
   protected readonly dataProvider;
 
   constructor(

@@ -22,10 +22,11 @@ import {
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { objToString, toChunkedArray } from '@app/common/utils';
+import { objToString } from '@app/common/utils';
+import { toChunkedArray } from '@app/common/utils/transform';
 
 import { Web3Provider } from '../../../chains/web3.provider';
-import { requestPerChunk, programId } from './saber.constant';
+import { programId, requestPerChunk } from './saber.constant';
 import { balance } from './saber.interface';
 import { balanceStruct, quarryMineStruct } from './saber.struct';
 import { calculateReward } from './utils/saber.reward';

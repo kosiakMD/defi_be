@@ -1,7 +1,7 @@
-import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
+import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
@@ -9,6 +9,8 @@ import { Logger, LoggerModule } from '@app/common/Logger';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
+import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { LoggerMiddleware } from '@app/common/middlewares';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 
@@ -58,9 +60,19 @@ import { PricesModule } from './modules/prices/prices.module';
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: TransformHeadersInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
   ],
 })
 export class AppModule {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
+
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
@@ -76,6 +88,4 @@ export class AppModule {
       'App',
     );
   }
-
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 }

@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import { Address } from '@app/common/types';
-import { ChainId } from '@app/common/types';
+import { Address, ChainId } from '@app/common/types';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Covalent {

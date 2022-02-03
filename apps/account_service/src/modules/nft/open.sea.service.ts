@@ -2,6 +2,7 @@ import { PriceService } from 'apps/account_service/src/common/providers/microser
 import { BigNumber } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
+import { isEthereumAddress } from 'class-validator';
 import { RateLimiter } from 'limiter';
 import { map } from 'rxjs/operators';
 
@@ -14,12 +15,12 @@ import { Address, ChainAbbrEnum, ChainIdEnum, CurrentPricesPayload, Logger } fro
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
 import {
-  NftAssetDto,
   ChainCollectionsDto as NftChainDto,
   ChainsDto as NftChainsDto,
-  CollectionChainsDto,
   CollectionBaseDto,
+  CollectionChainsDto,
   CollectionDto,
+  NftAssetDto,
 } from '@app/common/dto/nft';
 import { NftProjectEnum } from '@app/common/enum/nft.enum';
 import {
@@ -31,10 +32,10 @@ import { groupBy, mapToObject, objectToMap, sumOfProperties } from '@app/common/
 import { getKey } from '@app/common/utils/string';
 
 import {
+  BaseCollectionDto,
+  CollectionDto as OpenSeaCollectionDto,
   NftAssetDto as OpenSeaNftAssetDto,
   OrderDto,
-  CollectionDto as OpenSeaCollectionDto,
-  BaseCollectionDto,
 } from '../../common/dto';
 
 import { NftBasicService } from './nft.basic.service';
@@ -195,9 +196,13 @@ export class OpenSeaService extends NftBasicService {
   ): Promise<NftCollectionsByAccounts> {
     const collectionsByAccounts = new Map<Address, CollectionChainsDto>();
     const rawCollectionsByAccounts = await Promise.all(
-      accounts.map(async (account) => ({
-        [account]: await this.getRawCollectionsByAccount(account, collection),
-      })),
+      accounts.map(async (account) =>
+        isEthereumAddress(account)
+          ? {
+              [account]: await this.getRawCollectionsByAccount(account, collection),
+            }
+          : { [account]: [] },
+      ),
     );
 
     rawCollectionsByAccounts.forEach((rawCollectionsByAccount) =>
@@ -536,7 +541,9 @@ export class OpenSeaService extends NftBasicService {
           totalAccountPrice: null,
           totalAccountPriceUsd: null,
         });
-        return await this.getAssetsByAccount(account, collection, chains);
+        return isEthereumAddress(account)
+          ? await this.getAssetsByAccount(account, collection, chains)
+          : {};
       }),
     );
     rawAssetsByAccounts.forEach((assetsByAccount) => {

@@ -1,13 +1,12 @@
-import { SearchParams } from 'apps/api_gateway/src/search/search.interface';
+import { SearchParams } from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { EntityRepository, Repository } from 'typeorm';
+
 import { TrackedVaultEntity } from '../entities/trackedVault.entity';
 import { VaultForSearchResponse } from '../interfaces/VaultForSearchResponse.interface';
 
 @EntityRepository(TrackedVaultEntity)
 export class TrackedVaultRepository extends Repository<TrackedVaultEntity> {
-  async findVaultsByParams(
-    searchParams: SearchParams
-  ): Promise<VaultForSearchResponse[]> {
+  async findVaultsByParams(searchParams: SearchParams): Promise<VaultForSearchResponse[]> {
     const { text } = searchParams;
     const params = [];
     params.push(`%${text}%`);

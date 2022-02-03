@@ -1,20 +1,20 @@
 // eslint-disable-next-line max-classes-per-file
-import { Exclude } from 'class-transformer';
+import { Exclude } from "class-transformer";
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
-import { FeatureDtoType, FeatureEnum, Features, ProtocolName } from '@app/common';
-import { ChainDto } from '@app/common/dto/chain.dto';
+import { FeatureDtoType, FeatureEnum, Features, ProtocolName } from "@app/common";
+import { ChainDto } from "@app/common/dto/chain.dto";
 import {
   ChainAbbrEnum,
   PancakeProtocolEnum,
   ProjectEnum,
   ProtocolNameEnum,
   SushiSwapProtocolEnum,
-  UniswapProtocolEnum,
-} from '@app/common/enum';
+  UniswapProtocolEnum
+} from "@app/common/enum";
 
-import { FeaturesType } from '../../../common/types/protocol.types';
+import { FeaturesType } from "../../../common/types/protocol.types";
 
 export class ProtocolFeaturesExportDto {
   chain: ChainDto;

@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import { ClassConstructor, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 
 import { Injectable } from '@nestjs/common';
 
@@ -259,7 +259,7 @@ export class AbracadabraBorrowing implements IFeature {
   }
 
   private formatBaseData<T, K>(
-    type: ClassConstructor<T>,
+    type: any,
     feature: FeatureEnum,
     address: Address,
     chain: ChainDto,

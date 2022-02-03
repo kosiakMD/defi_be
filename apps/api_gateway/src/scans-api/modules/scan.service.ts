@@ -5,22 +5,14 @@ import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum, ChainAbbrEnum, ResultStatus } from '@app/common/enum';
+import { ChainAbbrEnum, ChainIdEnum, ResultStatus } from '@app/common/enum';
 
-import { Transaction } from '../../transactions/transactions.interfaces';
-import {
-  ERC20TokenTransfer,
-  ERC20Transfer,
-  EtherscanTransfer,
-  Transfer,
-  TransfersResponse,
-} from '../../transfers/transfers.interfaces';
-import { PriceServiceResponse } from '../interfaces/priceServiceResponse.interface';
-import { TransactionsDetailedResponseDto } from '../scans-api.dto';
+import { Transaction } from '../../transactions/interfaces/transactions.interfaces';
+import { TransactionsDetailedResponseDto } from '../dto/scans-api.dto';
 import { getUniqueAndToLowerCaseArrayData, totalPrice } from './utils/utils';
 
-const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
-const TRANSFERS_CACHE_TIME = 30; // 30 sec
+const TRANSACTIONS_CACHE_TIME_SEC = 30;
+const TRANSFERS_CACHE_TIME_SEC = 30;
 const MAX_RETRY = 2;
 
 export class ScanService {
@@ -44,7 +36,6 @@ export class ScanService {
     const url = `${host}${port ? ':' + port : ''}`;
 
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
-    // TODO: /batch - new Env var of path
     this.getPricesUrl = `${url}/${getPricesPath}/batch`;
   }
 
@@ -76,7 +67,7 @@ export class ScanService {
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         (async () => {
           await this.cacheManager.set<any[]>(cacheKey, transactions, {
-            ttl: TRANSACTIONS_CACHE_TIME,
+            ttl: TRANSACTIONS_CACHE_TIME_SEC,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
       } catch (e) {
@@ -92,8 +83,7 @@ export class ScanService {
     return transactions;
   }
 
-  // TODO: Transaction service
-  private async getPrices(assets): Promise<PriceServiceResponse> {
+  private async getPrices(assets): Promise<any> {
     try {
       this.logger.time(`request: chain=${this.chainId} ${this.getPricesUrl}`);
       const prices = await this.httpService
@@ -118,7 +108,7 @@ export class ScanService {
     }
   }
 
-  private async getTransactionPrices(timestamps): Promise<PriceServiceResponse> {
+  private async getTransactionPrices(timestamps): Promise<any> {
     try {
       const assets = [
         {
@@ -133,12 +123,11 @@ export class ScanService {
     }
   }
 
-  private async getTransfersPrices(transfers: EtherscanTransfer[]): Promise<PriceServiceResponse> {
+  private async getTransfersPrices(transfers: any[]): Promise<any> {
     try {
       const unpricedContracts = [];
 
       for (const transfer of transfers) {
-        // TODO: remove await
         const transferInArray = unpricedContracts.find(
           (unpricedContract) => unpricedContract.address === transfer.contractAddress,
         );
@@ -158,7 +147,6 @@ export class ScanService {
     }
   }
 
-  // TODO: Transaction service
   private normalizeTxsResp = (txsResp, chainId, isInternal = false): Transaction[] => {
     txsResp.forEach((tx) =>
       Object.assign(tx, {
@@ -187,7 +175,7 @@ export class ScanService {
     if (!transactions.length)
       return new TransactionsDetailedResponseDto(ResultStatus.ok, [], transactions);
 
-    let prices: PriceServiceResponse;
+    let prices;
     try {
       const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
       prices = await this.getTransactionPrices(txTimestamps);
@@ -219,10 +207,10 @@ export class ScanService {
   }
 
   // TODO: Transfers service
-  public async getTransfersByAddresses(addressArray): Promise<EtherscanTransfer[]> {
+  public async getTransfersByAddresses(addressArray): Promise<any[]> {
     try {
       // TransactionWithTokenAndPrices
-      const transfers = await Promise.all<EtherscanTransfer[]>(
+      const transfers = await Promise.all<any[]>(
         addressArray.map((address) => this.getTransfers(address)),
       );
       return transfers.flat();
@@ -239,7 +227,7 @@ export class ScanService {
     const cacheKey = `${this.chainPrefix}_transfers_${action}_${address}`;
     const logString = `Cache ${cacheKey} is `;
 
-    let transfers = await this.cacheManager.get<EtherscanTransfer[]>(cacheKey);
+    let transfers = await this.cacheManager.get<any[]>(cacheKey);
 
     if (!transfers || !Array.isArray(transfers)) {
       try {
@@ -267,13 +255,13 @@ export class ScanService {
         transfers = transfersResp && transfersResp.result ? transfersResp.result : [];
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
         (async () => {
-          await this.cacheManager.set<EtherscanTransfer[]>(cacheKey, transfers, {
-            ttl: TRANSFERS_CACHE_TIME,
+          await this.cacheManager.set<any[]>(cacheKey, transfers, {
+            ttl: TRANSFERS_CACHE_TIME_SEC,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
       } catch (e) {
         // if no data and request failed - m.b. data was wrote by another process
-        transfers = await this.cacheManager.get<EtherscanTransfer[]>(cacheKey);
+        transfers = await this.cacheManager.get<any[]>(cacheKey);
         if (!transfers || !Array.isArray(transfers)) {
           throw e;
         }
@@ -284,9 +272,9 @@ export class ScanService {
     return transfers;
   }
 
-  private formatTransfersDto(hashTransfers, contractTimestampPrices): ERC20Transfer[] {
+  private formatTransfersDto(hashTransfers, contractTimestampPrices): any[] {
     return hashTransfers.map((transfer) => {
-      const tokenErc20: ERC20TokenTransfer = {
+      const tokenErc20 = {
         address: transfer.contractAddress,
         name: transfer.tokenName,
         symbol: transfer.tokenSymbol,
@@ -307,16 +295,12 @@ export class ScanService {
     });
   }
 
-  // TODO: refactor!!!
-  public async toTransfersResponse(
-    transfers: EtherscanTransfer[],
-    addresses: string[],
-  ): Promise<TransfersResponse> {
+  public async toTransfersResponse(transfers: any[], addresses: string[]): Promise<any> {
     try {
       const contractTimestampPrices = await this.getTransfersPrices(transfers);
 
       // TODO too hard logic - divide in methods and analysis for performance
-      const result = addresses.reduce<TransfersResponse>((response, address) => {
+      const result = addresses.reduce((response, address) => {
         const userTransfers = transfers.filter(
           (transaction) => transaction.to === address || transaction.from === address,
         );
@@ -325,10 +309,10 @@ export class ScanService {
           userTransfers.map((transaction) => transaction.hash),
         );
 
-        const transactionWithTransfers = uniqueUserHashes.map<Transfer>((hash) => {
+        const transactionWithTransfers = uniqueUserHashes.map((hash) => {
           const hashTransfers = userTransfers.filter((transaction) => transaction.hash === hash);
 
-          const erc20Transfers: ERC20Transfer[] = this.formatTransfersDto(
+          const erc20Transfers: any[] = this.formatTransfersDto(
             hashTransfers,
             contractTimestampPrices,
           );

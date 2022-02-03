@@ -96,3 +96,21 @@ services:
     env_file:
       - "apps/api_gateway/config/.env"
       - ".env"
+
+  rpc-nodes-service:
+    image: node:14
+    ports:
+      - "${RPC_NODES_SERVICE_PORT:-3005}:${RPC_NODES_SERVICE_PORT:-3005}"
+    working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/usr/src/app
+    command: "yarn rpc-nodes-start:dev"
+    restart: always
+    environment:
+      - SERVICE_PORT=${RPC_NODES_SERVICE_PORT:-3005}
+    env_file:
+      - "apps/rpc_nodes_service/config/.env"
+      - ".env"

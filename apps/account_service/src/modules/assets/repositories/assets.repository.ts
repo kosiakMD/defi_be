@@ -6,7 +6,6 @@ import { Address, Chains } from '@app/common/types';
 import { AssetsForLambdaResponse } from '../../../common/interfaces/assets.interface';
 
 import { AssetsEntity } from '../entities/assets.entity';
-import { SearchParams } from 'apps/api_gateway/src/search/search.interface';
 
 @EntityRepository(AssetsEntity)
 export class AssetsRepository extends Repository<AssetsEntity> {
@@ -105,37 +104,30 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     return await this.query(insertSql);
   }
 
-  async findAssetsByParams(
-    searchParams: SearchParams,
-  ): Promise<AssetsEntity[]> {
+  async findAssetsByParams(searchParams): Promise<AssetsEntity[]> {
     // eslint-disable-next-line prefer-const
-    let {address, text} = searchParams;
+    let { address, text } = searchParams;
     if (text) {
-      text = `%${text}%`
+      text = `%${text}%`;
     }
-    const qb = this.createQueryBuilder('assets_new')
-      qb.where('is_tracked = :isTracked', { isTracked: true })
+    const qb = this.createQueryBuilder('assets_new');
+    qb.where('is_tracked = :isTracked', { isTracked: true });
     if (address && text) {
-      qb.andWhere(
-        '((name LIKE :name) OR (symbol LIKE :symbol)) AND address = :address',
-        { name: text, symbol: text, address }
-      );
+      qb.andWhere('((name LIKE :name) OR (symbol LIKE :symbol)) AND address = :address', {
+        name: text,
+        symbol: text,
+        address,
+      });
     } else if (address) {
-      qb.andWhere(
-        'address = :address',
-        { address }
-      );
+      qb.andWhere('address = :address', { address });
     } else {
-      qb.andWhere(
-        'name LIKE :name OR symbol LIKE :symbol',
-        { name: text, symbol: text }
-      );
+      qb.andWhere('name LIKE :name OR symbol LIKE :symbol', { name: text, symbol: text });
     }
     qb.orderBy({
-      "assets_new.name": 'ASC',
-      "assets_new.symbol": 'ASC',
-    })
-    qb.limit(30)
-    return qb.getMany()
+      'assets_new.name': 'ASC',
+      'assets_new.symbol': 'ASC',
+    });
+    qb.limit(30);
+    return qb.getMany();
   }
 }

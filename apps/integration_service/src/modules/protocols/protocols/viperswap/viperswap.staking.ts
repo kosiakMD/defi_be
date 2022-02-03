@@ -24,12 +24,11 @@ import {
 } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { concatStrings } from '@app/common/utils';
+import { concatStrings, decimalsDivider } from '@app/common/utils';
 
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { PriceService } from '../../../microservices/price.service';
-import { decimalsDivider } from '@app/common/utils';
 import { Abis } from './contracts/abis';
 
 @Injectable()
@@ -49,7 +48,7 @@ export class ViperswapStaking {
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseDataStaking[]> {
     const key = `${chain.id}_${ViperswapProtocolEnum.viperswap}_${FeatureEnum.staking}`;
-    
+
     const pools: NotifyStaking = await this.cache.get(key);
 
     if (!pools) {
@@ -59,7 +58,7 @@ export class ViperswapStaking {
     const multicallData = await this.getDataWithMulticall(addresses, pools);
     const lockPercent = await this.getLockPercent();
 
-    const base: BaseDataStaking[] = addresses.map(a => {
+    const base: BaseDataStaking[] = addresses.map((a) => {
       const baseInfo: BaseDataStaking = plainToClass(BaseDataStaking, {
         chain,
         projectName: ProjectEnum.viperswap,
@@ -84,8 +83,8 @@ export class ViperswapStaking {
 
   private async getDataWithMulticall(addresses: Address[], pools: NotifyStaking) {
     const calls = new Map<string, ICallData>();
-    addresses.forEach(address => {
-      pools.items.forEach(pool => {
+    addresses.forEach((address) => {
+      pools.items.forEach((pool) => {
         calls.set(this.contractCallLabel(address, pool.address, pool.poolId), {
           address: pool.address,
           abi: Abis.userInfo,
@@ -124,7 +123,7 @@ export class ViperswapStaking {
         });
       }
     });
-    
+
     const pendingTokensCalls = new Map<string, ICallData>();
     balances.forEach((b) => {
       pendingTokensCalls.set(this.contractCallLabel(b.user.address, b.contract, b.poolId), {
@@ -160,17 +159,23 @@ export class ViperswapStaking {
   private getStakingPositionsForAddress(balances, pools: NotifyStaking, lockPercent: number) {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
-    const indexedSPByPoolIdAndAddress = new Map<string, IntegrationStakingPositionDto>(pools.items.map((sp) => [sp.address + sp.poolId, sp]));
+    const indexedSPByPoolIdAndAddress = new Map<string, IntegrationStakingPositionDto>(
+      pools.items.map((sp) => [sp.address + sp.poolId, sp]),
+    );
     balances.forEach((b) => {
-      const stakingPosition: IntegrationStakingPositionDto = indexedSPByPoolIdAndAddress.get(b.contract + b.poolId);
-      
+      const stakingPosition: IntegrationStakingPositionDto = indexedSPByPoolIdAndAddress.get(
+        b.contract + b.poolId,
+      );
+
       const stakedBigNumber = new BigNumber(b.balance).div(
         decimalsDivider(stakingPosition.stakingToken.decimals),
       );
       stakingPosition.stakingToken.balance = stakedBigNumber.toNumber();
 
       if (stakingPosition.stakingToken.tokens) {
-        const poolShare = stakedBigNumber.div(new BigNumber(stakingPosition.stakingToken.totalSupply));
+        const poolShare = stakedBigNumber.div(
+          new BigNumber(stakingPosition.stakingToken.totalSupply),
+        );
         stakingPosition.stakingToken.tokens.forEach((clpt) => {
           clpt.balance = poolShare.times(new BigNumber(clpt.reserve)).toNumber();
         });
@@ -183,8 +188,9 @@ export class ViperswapStaking {
         stakingPosition.rewards[0].claimableData.balance = b.pendingViper
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
           .toString();
-        stakingPosition.rewards[0].claimableData.lockedBalance = 
-          (Number(stakingPosition.rewards[0].claimableData.balance) * lockPercent).toString();
+        stakingPosition.rewards[0].claimableData.lockedBalance = (
+          Number(stakingPosition.rewards[0].claimableData.balance) * lockPercent
+        ).toString();
       }
 
       stakingPositions.push(stakingPosition);

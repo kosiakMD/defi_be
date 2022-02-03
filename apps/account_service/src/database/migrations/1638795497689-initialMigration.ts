@@ -29,7 +29,9 @@ export class initialMigration1638795497689 implements MigrationInterface {
     await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS "prices"."asset_current_price" ("id" BIGSERIAL NOT NULL, "asset_id" integer NOT NULL, "currency_id" integer NOT NULL, "value" numeric NOT NULL, "updated_at" TIMESTAMP NOT NULL, CONSTRAINT "PK_7bf217720bdb9b8ed9f6827ceb5" PRIMARY KEY ("id"))`,
     );
-    await queryRunner.query(`ALTER TABLE "assets_new" DROP COLUMN IF EXISTS "is_historical_data_migrated"`);
+    await queryRunner.query(
+      `ALTER TABLE "assets_new" DROP COLUMN IF EXISTS "is_historical_data_migrated"`,
+    );
     await queryRunner.query(`ALTER TABLE "assets_new" DROP COLUMN IF EXISTS "from_block"`);
     await queryRunner.query(`ALTER TABLE "assets_new" DROP COLUMN IF EXISTS "to_block"`);
     await queryRunner.query(`ALTER TABLE "assets_new" DROP COLUMN IF EXISTS "template"`);
@@ -45,7 +47,9 @@ export class initialMigration1638795497689 implements MigrationInterface {
     // await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "block_number"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN IF EXISTS "icon"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN IF EXISTS "is_import_started"`);
-    await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN IF EXISTS "is_historical_data_migrated"`);
+    await queryRunner.query(
+      `ALTER TABLE "assets" DROP COLUMN IF EXISTS "is_historical_data_migrated"`,
+    );
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN IF EXISTS "from_block"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN IF EXISTS "migration_chunk_size"`);
     await queryRunner.query(`ALTER TABLE "assets" DROP COLUMN IF EXISTS "chain_id"`);
@@ -115,7 +119,6 @@ export class initialMigration1638795497689 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "transactions_new" DROP COLUMN IF EXISTS "hash"`);
     await queryRunner.query(`ALTER TABLE "transactions_new" ADD "hash" character varying NOT NULL`);
 
-
     await queryRunner.query(`ALTER TABLE "transactions_new" DROP COLUMN IF EXISTS "address"`);
     await queryRunner.query(
       `ALTER TABLE "transactions_new" ADD "address" character varying NOT NULL`,
@@ -141,7 +144,9 @@ export class initialMigration1638795497689 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "transactions_new" ADD "gas_used" integer NOT NULL`);
     await queryRunner.query(`ALTER TABLE "transactions_new" DROP COLUMN IF EXISTS "fee_usd"`);
     await queryRunner.query(`ALTER TABLE "transactions_new" ADD "fee_usd" integer NOT NULL`);
-    await queryRunner.query(`ALTER TABLE "transactions_new" DROP COLUMN IF EXISTS "token_operation"`);
+    await queryRunner.query(
+      `ALTER TABLE "transactions_new" DROP COLUMN IF EXISTS "token_operation"`,
+    );
     await queryRunner.query(
       `ALTER TABLE "transactions_new" ADD "token_operation" character varying NOT NULL`,
     );
@@ -155,27 +160,17 @@ export class initialMigration1638795497689 implements MigrationInterface {
     );
 
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "log_index"`);
-    await queryRunner.query(
-      `ALTER TABLE "asset_transfers_new" ADD "log_index" character varying`,
-    );
+    await queryRunner.query(`ALTER TABLE "asset_transfers_new" ADD "log_index" character varying`);
 
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "tx_hash"`);
-    await queryRunner.query(
-      `ALTER TABLE "asset_transfers_new" ADD "tx_hash" character varying`,
-    );
+    await queryRunner.query(`ALTER TABLE "asset_transfers_new" ADD "tx_hash" character varying`);
 
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "from"`);
-    await queryRunner.query(
-      `ALTER TABLE "asset_transfers_new" ADD "from" character varying`,
-    );
+    await queryRunner.query(`ALTER TABLE "asset_transfers_new" ADD "from" character varying`);
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "to"`);
-    await queryRunner.query(
-      `ALTER TABLE "asset_transfers_new" ADD "to" character varying`,
-    );
+    await queryRunner.query(`ALTER TABLE "asset_transfers_new" ADD "to" character varying`);
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "timestamp"`);
-    await queryRunner.query(
-      `ALTER TABLE "asset_transfers_new" ADD "timestamp" character varying`,
-    );
+    await queryRunner.query(`ALTER TABLE "asset_transfers_new" ADD "timestamp" character varying`);
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "value"`);
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" ADD "value" character varying`);
     await queryRunner.query(`ALTER TABLE "asset_transfers_new" DROP COLUMN IF EXISTS "log_index"`);

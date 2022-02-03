@@ -9,14 +9,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   ChainDto,
+  ChainIdEnum,
   ClaimableDto,
   ICallData,
   Logger,
   ProtocolNameEnum,
-  ChainIdEnum,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { FeatureEnum, ProjectEnum, ProtocolTypeEnum, AutofarmProtocolEnum } from '@app/common/enum';
+import { AutofarmProtocolEnum, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings, decimalsDivider } from '@app/common/utils';

@@ -58,7 +58,7 @@ export class AccountService {
     addresses: Address[],
     chainIds?: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
-    const cacheKey = `${addresses.join(',')}_${chainIds.join(',')}`;
+    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}`;
 
     const cachedResult: DetailedResponseDto<Asset[]> = await this.cache.get(cacheKey);
 
@@ -77,7 +77,7 @@ export class AccountService {
 
   // @RequestErrorHandler()
   async getTrackedAssets(address: Address, chainId?: ChainIdEnum): Promise<IAssetResponseDto> {
-    const cacheKey = `${address}_${chainId}`;
+    const cacheKey = `getTrackedAssets_${address}_${chainId}`;
 
     const cachedResult: IAssetResponseDto = await this.cache.get(cacheKey);
 

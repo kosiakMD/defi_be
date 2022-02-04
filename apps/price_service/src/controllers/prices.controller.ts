@@ -1,6 +1,4 @@
-import { Request } from 'express';
-
-import { Body, Controller, Get, HttpStatus, Inject, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -32,72 +30,36 @@ export class PricesController {
 
   @Post('/')
   @ApiOkResponse({ type: CurrentPriceResponseDto })
-  post(
-    @Body() query: HistoricalPriceQueryDto,
-    @Req() request: Request,
-  ): Promise<PriceResponseDto<PricesPayload>> {
+  post(@Body() query: HistoricalPriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
     const { timestamps } = query;
     const isHistoricalPricesRequest = timestamps?.length;
 
-    this.logger.time(request.originalUrl);
-
-    const response = isHistoricalPricesRequest
+    return isHistoricalPricesRequest
       ? this.priceService.getHistoricalPrices(query)
       : this.priceService.getCurrentPrices(query);
-
-    this.logger.timeEnd(request.originalUrl);
-
-    return response;
   }
 
   @Post('/batch')
   @ApiOkResponse({ type: HistoricalPriceV2ResponseDto })
-  postBatch(
-    @Body() query: PriceBatchRequestDto,
-    @Req() request: Request,
-  ): Promise<PriceResponseDto<PricesPayload>> {
-    this.logger.time(request.originalUrl);
-
-    const response = this.priceService.getPricesInBatches(query);
-
-    this.logger.timeEnd(request.originalUrl);
-
-    return response;
+  postBatch(@Body() query: PriceBatchRequestDto): Promise<PriceResponseDto<PricesPayload>> {
+    return this.priceService.getPricesInBatches(query);
   }
 
   @Post('/timestamp')
   @ApiOkResponse({ type: HistoricalPriceV2ResponseDto })
   async getTimestampPrices(
     @Body() query: PriceTimestampRequestDto,
-    @Req() request: Request,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
-    this.logger.time(request.originalUrl);
     const { chain, currency, assets, timestamp } = query;
-
-    const response = await this.priceService.getPricesAtTimestamp(
-      assets,
-      timestamp,
-      chain,
-      currency,
-    );
-
-    this.logger.timeEnd(request.originalUrl);
-
-    return response;
+    return await this.priceService.getPricesAtTimestamp(assets, timestamp, chain, currency);
   }
 
   @Post('/range')
   @ApiResponse({ status: 200, type: PriceResponseDto })
   getPriceRange(
     @Body() query: PriceRangeRequestDto,
-    @Req() request: Request,
   ): Promise<PriceResponseDto<HistoricalPricesPayload>> {
-    this.logger.time(request.originalUrl);
-
-    const response = this.priceService.getRangePrices(query);
-
-    this.logger.timeEnd(request.originalUrl);
-    return response;
+    return this.priceService.getRangePrices(query);
   }
 
   // TODO: change to patch\put depends on logic
@@ -129,16 +91,7 @@ export class PricesController {
 
   @Post('/fetch')
   @ApiOkResponse({ type: CurrentPriceResponseDto })
-  postFetch(
-    @Body() query: PriceQueryDto,
-    @Req() request: Request,
-  ): Promise<PriceResponseDto<PricesPayload>> {
-    this.logger.time(request.originalUrl);
-
-    const response = this.priceService.fetchPrices(query);
-
-    this.logger.timeEnd(request.originalUrl);
-
-    return response;
+  postFetch(@Body() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
+    return this.priceService.fetchPrices(query);
   }
 }

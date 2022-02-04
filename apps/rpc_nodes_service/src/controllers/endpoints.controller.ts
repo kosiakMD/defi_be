@@ -1,5 +1,3 @@
-import { Request } from 'express';
-
 import {
   Controller,
   Delete,
@@ -10,7 +8,6 @@ import {
   Post,
   Put,
   Query,
-  Req,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -36,30 +33,21 @@ export class EndpointsController {
 
   @Get('/')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointsListDto })
-  get(@Query() query: ListQueryDto, @Req() request: Request): Promise<EndpointsListDto> {
-    this.logger.time(request.originalUrl);
-    return this.endpointsService
-      .getEndpointsList(query) //
-      .finally(() => this.logger.timeEnd(request.originalUrl));
+  get(@Query() query: ListQueryDto): Promise<EndpointsListDto> {
+    return this.endpointsService.getEndpointsList(query);
   }
 
   @Get('/:id')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
-  findOne(@Param() params: FindOneParamsDto, @Req() request: Request): Promise<EndpointsEntity> {
-    this.logger.time(request.originalUrl);
+  findOne(@Param() params: FindOneParamsDto): Promise<EndpointsEntity> {
     const { id } = params;
-    return this.endpointsService
-      .getEndpointById(id) //
-      .finally(() => this.logger.timeEnd(request.originalUrl));
+    return this.endpointsService.getEndpointById(id);
   }
 
   @Post('/')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
-  post(@Query() query: EndpointCreateDto, @Req() request: Request): Promise<EndpointsEntity> {
-    this.logger.time(request.originalUrl);
-    return this.endpointsService
-      .createEndpoint(query) //
-      .finally(() => this.logger.timeEnd(request.originalUrl));
+  post(@Query() query: EndpointCreateDto): Promise<EndpointsEntity> {
+    return this.endpointsService.createEndpoint(query);
   }
 
   @Put('/:id')
@@ -67,22 +55,15 @@ export class EndpointsController {
   put(
     @Param() params: FindOneParamsDto,
     @Query() query: EndpointUpdateDto,
-    @Req() request: Request,
   ): Promise<EndpointsEntity> {
-    this.logger.time(request.originalUrl);
     const { id } = params;
-    return this.endpointsService
-      .updateEndpoint(id, query) //
-      .finally(() => this.logger.timeEnd(request.originalUrl));
+    return this.endpointsService.updateEndpoint(id, query);
   }
 
   @Delete('/:id')
   @ApiResponse({ status: HttpStatus.OK, type: Boolean })
-  delete(@Param() params: FindOneParamsDto, @Req() request: Request): Promise<void> {
-    this.logger.time(request.originalUrl);
+  delete(@Param() params: FindOneParamsDto): Promise<void> {
     const { id } = params;
-    return this.endpointsService
-      .deleteEndpoint(id) //
-      .finally(() => this.logger.timeEnd(request.originalUrl));
+    return this.endpointsService.deleteEndpoint(id);
   }
 }

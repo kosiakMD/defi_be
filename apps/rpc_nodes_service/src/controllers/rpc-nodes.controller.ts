@@ -38,10 +38,7 @@ export class RPCNodesController {
     @Res() response: Response,
     @Next() next: NextFunction,
   ): Promise<void> {
-    this.logger.time(request.originalUrl);
     const { chainId } = params;
-    return this.rpcNodesService
-      .proxyRPCCall(chainId, { request, response, next })
-      .finally(() => this.logger.timeEnd(request.originalUrl));
+    return this.rpcNodesService.proxyRPCCall(chainId, { request, response, next });
   }
 }

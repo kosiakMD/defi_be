@@ -10,6 +10,10 @@ import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
 export class LoggerMiddleware implements NestMiddleware {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
   use(req: Request, res: Response, next: NextFunction): void {
+    const { originalUrl } = req;
+    this.logger.time(originalUrl);
+    res.on('finish', () => this.logger.timeEnd(originalUrl));
+
     this.logger.log(
       {
         reqId: req.header(HEADER_REQUEST_ID) || 'unknown',

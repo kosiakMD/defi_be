@@ -66,7 +66,7 @@ export const validationSchema = Joi.object({
     .integer()
     .default(3),
   SSL: Joi.string() //
-    .default('true'),
+    .default('false'),
   SSL_KEY_PATH: Joi.string() //
     .default('.ssl/dev.local+3-key.pem'),
   SSL_CERT_PATH: Joi.string() //

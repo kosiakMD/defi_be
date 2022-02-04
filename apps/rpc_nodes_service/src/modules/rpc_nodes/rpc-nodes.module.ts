@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
@@ -7,7 +8,11 @@ import { EndpointsRepository } from '../endpoints/endpoints.repository';
 import { RPCNodesService } from './rpc-nodes.service';
 
 @Module({
-  imports: [EndpointsModule, TypeOrmModule.forFeature([EndpointsEntity, EndpointsRepository])],
+  imports: [
+    HttpModule,
+    EndpointsModule,
+    TypeOrmModule.forFeature([EndpointsEntity, EndpointsRepository]),
+  ],
   controllers: [],
   providers: [RPCNodesService],
   exports: [RPCNodesService],

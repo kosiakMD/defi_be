@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
-import { Exclude, Expose, Type } from "class-transformer";
+import { Exclude, Expose, Type } from 'class-transformer';
 
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 import {
   ChainDto,
@@ -16,8 +16,8 @@ import {
   ProtocolFeaturesInfo,
   ProtocolFeaturesInfoDto,
   StakingPositionFeatureDto
-} from "@app/common";
-import { IntegrationERC20TokenDto } from "@app/common/jobs/staking";
+} from '@app/common';
+import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
 
 export class Fee {
   // feeVolume: number;

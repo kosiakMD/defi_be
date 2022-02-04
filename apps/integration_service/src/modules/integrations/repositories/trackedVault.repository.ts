@@ -17,7 +17,7 @@ export class TrackedVaultRepository extends Repository<TrackedVaultEntity> {
         tv.protocol,
         tv.chain_id as "chainId"
       FROM tracked_vault AS tv
-      WHERE LOWER(tv.protocol) LIKE LOWER($1)
+      WHERE LOWER(tv.protocol) LIKE LOWER($1) AND tv.is_enabled IS true
       ORDER BY tv.protocol, tv.feature
       LIMIT 30
     `;

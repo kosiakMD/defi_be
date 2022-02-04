@@ -29,7 +29,7 @@ export class ProjectsContractRepository extends Repository<ProjectsContractEntit
     let lambdaAssetsSql = this.queryPrefix;
     const params = [];
     if (address && text) {
-      lambdaAssetsSql += `(LOWER(pc.description) LIKE LOWER($2) OR name LIKE $2) AND LOWER(pc.address) = LOWER($1)`;
+      lambdaAssetsSql += `(LOWER(pc.description) LIKE LOWER($2) OR name LIKE $2 OR LOWER(pc.address) = LOWER($1))`;
       params.push(address);
       params.push(text);
     } else if (address) {

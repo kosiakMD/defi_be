@@ -113,7 +113,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     const qb = this.createQueryBuilder('assets_new');
     qb.where('is_tracked = :isTracked', { isTracked: true });
     if (address && text) {
-      qb.andWhere('((name LIKE :name) OR (symbol LIKE :symbol)) AND address = :address', {
+      qb.andWhere('((name LIKE :name) OR (symbol LIKE :symbol) OR (address = :address))', {
         name: text,
         symbol: text,
         address,
@@ -121,7 +121,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     } else if (address) {
       qb.andWhere('address = :address', { address });
     } else {
-      qb.andWhere('name LIKE :name OR symbol LIKE :symbol', { name: text, symbol: text });
+      qb.andWhere('(name LIKE :name OR symbol LIKE :symbol)', { name: text, symbol: text });
     }
     qb.orderBy({
       'assets_new.name': 'ASC',

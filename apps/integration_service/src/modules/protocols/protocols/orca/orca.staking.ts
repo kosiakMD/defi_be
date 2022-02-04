@@ -24,13 +24,13 @@ import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings, objToString } from '@app/common/utils';
+import { toChunkedArray } from '@app/common/utils/transform';
 
 import { Web3Provider } from '../../../chains/web3.provider';
 import { LIMIT_DATA, ORCA_FARM_ID } from './orca.constant';
 import { globalFarmData, modifiedBalanceData, userFarmData } from './orca.interface';
 import { calculateRewards } from './orca.reward';
 import { globalFarmStruct, userFarmStruct, uint256ToDecimal } from './orca.struct';
-import { toChunkedArray } from '@app/common/utils/transform';
 
 @Injectable()
 export class OrcaStaking {

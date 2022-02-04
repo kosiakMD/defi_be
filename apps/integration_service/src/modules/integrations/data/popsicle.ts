@@ -1,4 +1,29 @@
 export const vault = {
+  instructions: {
+    chainCalls: [
+      {
+        address: '0x73feaa1ee314f8c655e354234017be2193c9e24e', //PancakeAddresses.chief
+        abi: {
+          inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+          name: 'poolInfo',
+          outputs: [
+            { internalType: 'contract IBEP20', name: 'lpToken', type: 'address' },
+            { internalType: 'uint256', name: 'allocPoint', type: 'uint256' },
+            { internalType: 'uint256', name: 'lastRewardBlock', type: 'uint256' },
+            { internalType: 'uint256', name: 'accCakePerShare', type: 'uint256' },
+          ],
+          stateMutability: 'view',
+          type: 'function',
+        },
+        inputData: ['0'], //call arguments, e.g. pid, address
+      },
+    ],
+    microservicesCalls: [], //could be added in the future as another type of the calls to be done
+    fieldsMapping: {
+      perShare: 'chainCalls.0.output.data.accCakePerShare',
+    },
+    processors: ['DummyProcessor'],
+  },
   id: 'ftm:0xbf513ace2abdc69d38ee847effdaa1901808c31c:0',
   apiVaultCalls: [
     {

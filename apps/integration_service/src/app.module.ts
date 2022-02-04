@@ -13,9 +13,12 @@ import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
 import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { LoggerMiddleware } from '@app/common/middlewares';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { Web3ProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
+import { Handler } from './modules/integrations/data/handler';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ProtocolModule } from './modules/protocols/protocol.module';
@@ -75,14 +78,20 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
+    Web3ProviderService,
+    MulticallAggregator,
+    Handler,
   ],
 })
 export class AppModule implements NestModule {
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
-
   configure(consumer: MiddlewareConsumer): void {
     consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
   }
+
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private readonly handler: Handler,
+  ) {}
 
   onModuleInit(): void {
     const { ENV, SERVICE_PORT, SERVICE_HOST } = process.env;
@@ -94,5 +103,6 @@ export class AppModule implements NestModule {
       },
       'App',
     );
+    this.handler.handle();
   }
 }

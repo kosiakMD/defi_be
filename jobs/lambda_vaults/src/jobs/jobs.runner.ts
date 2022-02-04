@@ -147,6 +147,9 @@ export class JobsRunner {
     });
 
     try {
+      // console.log('-----------------------------------------------------------')
+      // console.log(JSON.stringify(dataToNotify, null, 4))
+      // console.log('-----------------------------------------------------------')
       await this.integrationService.notifyWithLiquidityPoolsData(dataToNotify);
       this.logger.log(`features notified [${dataToNotify.length}]`, JobsRunner.name);
     } catch (e) {
@@ -155,19 +158,19 @@ export class JobsRunner {
   }
 
   private async getIntegrationServiceConfiguration() {
-    const integrationProtocols: ProtocolsResponseData =
-      await this.integrationService.getProtocols();
+    // const integrationProtocols: ProtocolsResponseData =
+    //   await this.integrationService.getProtocols();
     const jobPlaceholdersSet: Set<string> = new Set<string>();
-    integrationProtocols.data.forEach((ip) => {
-      ip.features.forEach((f) => {
-        f.list.forEach((feature) => {
-          jobPlaceholdersSet.add(concatStrings(f.chain.id, ip.name, feature));
-        });
-      });
-    });
-
-    jobPlaceholdersSet.add('12_Orca_staking');
-    jobPlaceholdersSet.add('12_Orca_pools');
+    // integrationProtocols.data.forEach((ip) => {
+    //   ip.features.forEach((f) => {
+    //     f.list.forEach((feature) => {
+    //       jobPlaceholdersSet.add(concatStrings(f.chain.id, ip.name, feature));
+    //     });
+    //   });
+    // });
+    //
+    // jobPlaceholdersSet.add('12_Orca_staking');
+    // jobPlaceholdersSet.add('12_Orca_pools');
 
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);

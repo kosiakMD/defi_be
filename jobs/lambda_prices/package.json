@@ -28,6 +28,7 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
-    "@ethersproject/providers": "^5.4.3"
+    "@ethersproject/providers": "^5.4.3",
+    "@sentry/serverless": "^6.17.2"
   }
 }

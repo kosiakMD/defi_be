@@ -18,6 +18,9 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
+import { AbiProvider } from './modules/integrations/data/AbiProvider';
+import { PoolsCollector } from './modules/integrations/data/PoolsCollector';
+import { ProtocolsIterator } from './modules/integrations/data/ProtocolsIterator';
 import { Handler } from './modules/integrations/data/handler';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { JobsModule } from './modules/jobs/jobs.module';
@@ -81,6 +84,9 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
     Web3ProviderService,
     MulticallAggregator,
     Handler,
+    AbiProvider,
+    PoolsCollector,
+    ProtocolsIterator,
   ],
 })
 export class AppModule implements NestModule {
@@ -90,6 +96,7 @@ export class AppModule implements NestModule {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private readonly protocolsIterator: ProtocolsIterator,
     private readonly handler: Handler,
   ) {}
 
@@ -103,6 +110,15 @@ export class AppModule implements NestModule {
       },
       'App',
     );
-    this.handler.handle();
+
+    this.start()
+  }
+
+  async start() {
+    const instructions = await this.protocolsIterator.run();
+    // console.log(JSON.stringify(instructions[0][0][0], null, 4));
+    for(const i of instructions[0][0][0]) {
+      await this.handler.handle(i);
+    }
   }
 }

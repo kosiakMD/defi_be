@@ -13,24 +13,29 @@ export class ProtocolsIterator {
   ) {}
 
   async run() {
-    return Object.keys(ProtocolsConfig).reduce(async (promise, pName) => {
-      await promise;
+    const res = [];
+    for (const pName of Object.keys(ProtocolsConfig)) {
       const pConfig = ProtocolsConfig[pName];
-      return this.runForProtocol(pName, pConfig);
-    }, Promise.resolve());
+      res.push(await this.runForProtocol(pName, pConfig));
+    }
+    return res;
   }
 
   async runForProtocol(pName, pConfig) {
-    return pConfig.chefs.map((chef) => {
-      return chef.features.map((feature) => {
-        switch (feature) {
-          case 'pools':
-            return this.poolsCollector.collect(chef.address);
-          default:
-            this.logger.warn('unsupported feature:' + feature);
-            return Promise.resolve();
-        }
-      });
-    });
+    return Promise.all(
+      pConfig.chefs.map((chef) => {
+        return Promise.all(
+          chef.features.map((feature) => {
+            switch (feature) {
+              case 'pools':
+                return this.poolsCollector.collect(chef.address, pConfig.chainId, chef);
+              default:
+                this.logger.warn('unsupported feature:' + feature);
+                return Promise.resolve();
+            }
+          }),
+        );
+      }),
+    );
   }
 }

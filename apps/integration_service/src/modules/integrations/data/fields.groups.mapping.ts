@@ -1,11 +1,13 @@
 export const FieldsGroupsMapping = {
-  lpToken: {
-    lpTokenGroup1: {
-      call: 'poolInfo',
-      path: 'output.data.lpToken',
+  totalSupply: {
+    totalSupplyGroupDefault: {
+      call: 'totalSupply',
+      path: 'output.data',
     },
-    lpTokenGroup2: {
-      call: 'lpToken',
+  },
+  getReserves: {
+    getReservesGroupDefault: {
+      call: 'getReserves',
       path: 'output.data',
     },
   },

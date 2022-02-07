@@ -9,7 +9,6 @@ import { CallData } from '@app/common/dto/CallData';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Logger } from '../../../../../../jobs/lambda_vaults/src/logger/logger.service';
-import { vault } from './popsicle';
 
 class ChainCallDto {
   address: string;
@@ -49,9 +48,9 @@ export class Handler {
     this.processors = new Map<string, IProcessor>([['DummyProcessor', new DummyProcessor()]]);
   }
 
-  async handle() {
+  async handle(_instructions) {
     this.logger.debug('----------------------------------------------------');
-    const instructions: InstructionsDto = plainToClass(InstructionsDto, vault.instructions);
+    const instructions: InstructionsDto = plainToClass(InstructionsDto, _instructions);
 
     console.log({ instructions });
 
@@ -61,7 +60,7 @@ export class Handler {
 
     const chainCallsResult = await this.multicall.handleInBatches(
       chainCalls.calls,
-      ChainIdEnum.bsc,
+      18,
     );
 
     console.log({ chainCallsResult });
@@ -80,7 +79,7 @@ export class Handler {
 
     console.log({ result });
 
-    for (const pName of instructions.processors) {
+    for (const pName of (instructions.processors || [])) {
       const processor = this.resolveProcessor(pName);
       if (!processor) {
         console.warn('implementation of the processor is not configured', pName);

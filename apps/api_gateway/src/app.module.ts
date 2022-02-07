@@ -43,6 +43,7 @@ import { ScamsController } from './scams/scams.controller.dto';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SearchController } from './search/search.controller';
 import { SearchService } from './search/search.service';
+import { TokensController } from './tokens/tokens.controller';
 import { TransactionsController } from './transactions/transactions.controller';
 import { VaultsModule } from './vaults/vaults.module';
 
@@ -93,6 +94,7 @@ import { VaultsModule } from './vaults/vaults.module';
     PartnersController,
     ProjectsController,
     ScamsController,
+    TokensController,
   ],
   providers: [
     {

@@ -24,28 +24,25 @@ import { Web3ProviderService } from '@app/common/web3provider';
 
 import { toDecimals } from '../../../../common/utils/util';
 
-import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
-import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { StakingDataInterface, UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
 import { Abis } from './abis';
 import { CurveMulticall } from './curve.multicall';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 @Injectable()
 export class CurveStaking {
-  protected multicall: MulticallService;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    private readonly multicallProvider: MulticallProvider,
     private readonly web3Provider: Web3ProviderService,
+    private readonly multicallAggregator: MulticallAggregator
   ) {
   }
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${CurveProtocolEnum.curve}_${FeatureEnum.staking}`;
-    this.multicall = this.multicallProvider.getForChain(chain.abbr);
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);
     if (!cachedPools) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
@@ -55,7 +52,7 @@ export class CurveStaking {
       this.web3Provider.getInstanceByChainId(chain.id),
       this.logger,
     );
-    const balances = await this.getStakingBalances(addresses, cachedPools.items);
+    const balances = await this.getStakingBalances(addresses, cachedPools.items, chain);
     const rewards =
       chain.id === ChainIdEnum.eth
         ? await localMultiCall.getUserRewardsBalances(balances)
@@ -135,81 +132,89 @@ export class CurveStaking {
     return concatStrings(address, tokenAddress, gauge);
   }
 
-  private async getStakingBalances(addresses: string[], pools: IntegrationStakingPositionDto[]) {
-    const calls = new Map();
-    const poolsMap = new Map();
-    let index = 0;
-    addresses.forEach(address => {
-      pools.forEach(pool => {
-        const contract = new Abis(pool.address);
-        calls.set(concatStrings(address, pool.address), contract.balanceOf(address));
-        if (index !== pools.length) poolsMap.set(pool.address, pool);
-        index++;
+  private async getStakingBalances(addresses: string[], pools: IntegrationStakingPositionDto[], chain: ChainDto) {
+    try {
+      const calls = new Map();
+      const poolsMap = new Map();
+      let index = 0;
+      addresses.forEach(address => {
+        pools.forEach(pool => {
+          const contract = new Abis(pool.address);
+          calls.set(concatStrings(address, pool.address), contract.balanceOf(address));
+          if (index !== pools.length) poolsMap.set(pool.address, pool);
+          index++;
+        })
+      });
+
+      const result = await this.multicallAggregator.handleInBatches(calls, chain.id);
+      const balanceMap = new Map<string, StakingDataInterface[]>();
+      result.forEach((value, key) => {
+        const balance = value.output.data;
+        if (!balance.isZero()) {
+          const [address, poolAddr] = key.split('_');
+          const pool = poolsMap.get(poolAddr);
+          const stakingData = {
+            stakingBalance: toDecimals(balance.toString(), pool.stakingToken.decimals),
+            stakingPosition: JSON.parse(JSON.stringify(pool)),
+          };
+          const mapItem = balanceMap.get(address);
+          mapItem ? mapItem.push(stakingData) : balanceMap.set(address, [stakingData]);
+        }
       })
-    });
-    const result = await this.multicall.handleInBatches(calls);
-    const balanceMap = new Map<string, StakingDataInterface[]>();
-    result.forEach((value, key) => {
-      const balance = value.output.data;
-      if (!balance.isZero()) {
-        const [address, poolAddr] = key.split('_');
-        const pool = poolsMap.get(poolAddr);
-        const stakingData = {
-          stakingBalance: toDecimals(balance.toString(), pool.stakingToken.decimals),
-          stakingPosition: JSON.parse(JSON.stringify(pool)),
-        };
-        const mapItem = balanceMap.get(address);
-        mapItem ? mapItem.push(stakingData) : balanceMap.set(address, [stakingData]);
-      }
-    })
-    return balanceMap;
+      return balanceMap;
+    } catch (e) {
+      this.logger.error(e, 'getStakingBalances');
+    }
   }
 
   private async getNonEthRewards(
     balanceItemsMap: Map<string, StakingDataInterface[]>,
     chain: ChainDto,
   ) {
-    const multicall = this.multicallProvider.getForChain(chain.abbr);
-    const calls = new Map();
-    balanceItemsMap.forEach((value, key) => {
-      value.forEach((stakingData) => {
-        const contract = new Abis(stakingData.stakingPosition.address);
-        stakingData.stakingPosition.rewards.forEach((reward) => {
-          calls.set(
-            this.getClaimableRewardWriteLabel(
-              key,
-              reward.address,
-              stakingData.stakingPosition.address,
-            ),
-            contract.claimableRewardWrite(key, reward.address),
-          );
+    try {
+      const calls = new Map();
+      balanceItemsMap.forEach((value, key) => {
+        value.forEach((stakingData) => {
+          const contract = new Abis(stakingData.stakingPosition.address);
+          stakingData.stakingPosition.rewards.forEach((reward) => {
+            calls.set(
+              this.getClaimableRewardWriteLabel(
+                key,
+                reward.address,
+                stakingData.stakingPosition.address,
+              ),
+              contract.claimableRewardWrite(key, reward.address),
+            );
+          });
         });
       });
-    });
 
-    const multicallResp = await multicall.handleInBatches(calls);
-    const resultMap = new Map();
-    balanceItemsMap.forEach((value, key) => {
-      const rewardsMap = new Map();
-      value.forEach((stakingData) => {
-        const additionalRewards = [];
-        stakingData.stakingPosition.rewards.forEach((reward) => {
-          additionalRewards.push(
-            multicallResp
-              .get(
-                this.getClaimableRewardWriteLabel(
-                  key,
-                  reward.address,
-                  stakingData.stakingPosition.address,
-                ),
-              )
-              ?.output.data.toString(),
-          );
+      const multicallResp = await this.multicallAggregator.handleInBatches(calls, chain.id);
+      const resultMap = new Map();
+      balanceItemsMap.forEach((value, key) => {
+        const rewardsMap = new Map();
+        value.forEach((stakingData) => {
+          const additionalRewards = [];
+          stakingData.stakingPosition.rewards.forEach((reward) => {
+            additionalRewards.push(
+              multicallResp
+                .get(
+                  this.getClaimableRewardWriteLabel(
+                    key,
+                    reward.address,
+                    stakingData.stakingPosition.address,
+                  ),
+                )
+                ?.output.data.toString(),
+            );
+          });
+          rewardsMap.set(stakingData.stakingPosition.address, { additionalRewards });
         });
-        rewardsMap.set(stakingData.stakingPosition.address, { additionalRewards });
+        resultMap.set(key, rewardsMap);
       });
-      resultMap.set(key, rewardsMap);
-    });
-    return resultMap;
+      return resultMap;
+    } catch (e) {
+      this.logger.error(e, 'getNonEthRewards');
+    }
   }
 }

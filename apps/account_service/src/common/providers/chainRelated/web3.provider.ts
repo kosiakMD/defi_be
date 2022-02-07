@@ -1,5 +1,7 @@
 import { Connection } from '@solana/web3.js';
 import { LCDClient } from '@terra-money/terra.js';
+import { BlockFrostAPI } from '@blockfrost/blockfrost-js';
+
 import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
@@ -38,6 +40,7 @@ export class Web3Provider {
     this.initWeb3Providers();
     this.initConnectionProviders();
     this.initLCDProviders();
+    this.initCardanoProviders();
   }
 
   private initWeb3Providers() {
@@ -57,6 +60,13 @@ export class Web3Provider {
     });
   }
 
+  public initCardanoProviders() {
+    this.providers[ChainIdEnum.cardano] = new BlockFrostAPI({
+      projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
+    })
+  }
+
+
   public getInstanceByChainId(chain: ChainIdEnum): Web3 {
     return this.providers[chain];
   }
@@ -66,6 +76,10 @@ export class Web3Provider {
   }
 
   public getLCDInstance(chain: ChainIdEnum): LCDClient {
+    return this.providers[chain];
+  }
+
+  public getCadronaInstance(chain: ChainIdEnum): BlockFrostAPI {
     return this.providers[chain];
   }
 }

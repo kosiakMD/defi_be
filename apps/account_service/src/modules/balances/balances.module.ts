@@ -19,6 +19,7 @@ import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
+import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
     NetworkBalancesStrategy,
     SolanaBalancesStrategy,
     TerraBalancesStrategy,
+    CardanoBalancesStrategy,
   ],
 })
 export class BalancesModule {}

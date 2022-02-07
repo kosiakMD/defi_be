@@ -1,4 +1,4 @@
-import { SOL_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
+import { CARDANO_COIN_ADDRESS, SOL_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import {
   AbsoluteChainIdEnum,
   ChainAbbrEnum,
@@ -28,7 +28,8 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.near]: AbsoluteChainIdEnum.near,
   [ChainIdEnum.terra]: AbsoluteChainIdEnum.terra,
   [ChainIdEnum.klay]: AbsoluteChainIdEnum.klay,
-  [ChainIdEnum.fuse]: AbsoluteChainIdEnum.fuse
+  [ChainIdEnum.fuse]: AbsoluteChainIdEnum.fuse,
+  [ChainIdEnum.cardano]: AbsoluteChainIdEnum.cardano
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -64,7 +65,8 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.near]: ChainIdEnum.near,
   [AbsoluteChainIdEnum.terra]: ChainIdEnum.terra,
   [AbsoluteChainIdEnum.klay]: ChainIdEnum.klay,
-  [AbsoluteChainIdEnum.fuse]: ChainIdEnum.fuse
+  [AbsoluteChainIdEnum.fuse]: ChainIdEnum.fuse,
+  [AbsoluteChainIdEnum.cardano]: ChainIdEnum.cardano
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -90,7 +92,8 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.near]: ChainIdEnum.near,
   [ChainAbbrEnum.terra]: ChainIdEnum.terra,
   [ChainAbbrEnum.klay]: ChainIdEnum.klay,
-  [ChainAbbrEnum.fuse]: ChainIdEnum.fuse
+  [ChainAbbrEnum.fuse]: ChainIdEnum.fuse,
+  [ChainAbbrEnum.cardano]: ChainIdEnum.cardano
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -114,7 +117,8 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.near]: CoingeckoPlatformEnum.near,
   [ChainIdEnum.terra]: CoingeckoPlatformEnum.terra,
   [ChainIdEnum.klay]: CoingeckoPlatformEnum.klay,
-  [ChainIdEnum.fuse]: CoingeckoPlatformEnum.fuse
+  [ChainIdEnum.fuse]: CoingeckoPlatformEnum.fuse,
+  [ChainIdEnum.cardano]: CoingeckoPlatformEnum.cardano
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -141,7 +145,8 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.near]: ZERO_ADDRESS,
   [ChainIdEnum.terra]: ZERO_ADDRESS,
   [ChainIdEnum.klay]: ZERO_ADDRESS,
-  [ChainIdEnum.fuse]: ZERO_ADDRESS
+  [ChainIdEnum.fuse]: ZERO_ADDRESS,
+  [ChainIdEnum.cardano]: CARDANO_COIN_ADDRESS,
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -168,7 +173,8 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.near]: '',
   [ChainIdEnum.terra]: '',
   [ChainIdEnum.klay]: 'klay-token',
-  [ChainIdEnum.fuse]: ''
+  [ChainIdEnum.fuse]: '',
+  [ChainIdEnum.cardano]: '',
 };
 
 export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

@@ -7,7 +7,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
-  ChainAbbrEnum,
   ChainDto,
   ChainIdEnum,
   CurveProtocolEnum,
@@ -30,10 +29,11 @@ import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { StakingDataInterface, UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
 import { Abis } from './abis';
 import { CurveMulticall } from './curve.multicall';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 @Injectable()
 export class CurveStaking {
-  private readonly multicall: MulticallService;
+  protected multicall: MulticallService;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -41,11 +41,11 @@ export class CurveStaking {
     private readonly multicallProvider: MulticallProvider,
     private readonly web3Provider: Web3ProviderService,
   ) {
-    this.multicall = multicallProvider.getForChain(ChainAbbrEnum.bsc);
   }
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${CurveProtocolEnum.curve}_${FeatureEnum.staking}`;
+    this.multicall = this.multicallProvider.getForChain(chain.abbr);
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);
     if (!cachedPools) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
@@ -55,7 +55,7 @@ export class CurveStaking {
       this.web3Provider.getInstanceByChainId(chain.id),
       this.logger,
     );
-    const balances = await localMultiCall.getUserBalances(addresses, cachedPools.items);
+    const balances = await this.getStakingBalances(addresses, cachedPools.items);
     const rewards =
       chain.id === ChainIdEnum.eth
         ? await localMultiCall.getUserRewardsBalances(balances)
@@ -122,7 +122,7 @@ export class CurveStaking {
     return Array.from(baseDataStakingMap.values());
   }
 
-  private modifyUnderlyingToken(token: UnderlyingTokenDto, poolShare: string) {
+  modifyUnderlyingToken(token: UnderlyingTokenDto, poolShare: string) {
     token.price = null;
     token.value = null;
     token.reserve = token.balance;
@@ -131,15 +131,45 @@ export class CurveStaking {
       .toNumber();
   }
 
-  private getClaimableRewardWriteLabel(address: string, tokenAddress: string, gauge: string) {
+  getClaimableRewardWriteLabel(address: string, tokenAddress: string, gauge: string) {
     return concatStrings(address, tokenAddress, gauge);
+  }
+
+  private async getStakingBalances(addresses: string[], pools: IntegrationStakingPositionDto[]) {
+    const calls = new Map();
+    const poolsMap = new Map();
+    let index = 0;
+    addresses.forEach(address => {
+      pools.forEach(pool => {
+        const contract = new Abis(pool.address);
+        calls.set(concatStrings(address, pool.address), contract.balanceOf(address));
+        if (index !== pools.length) poolsMap.set(pool.address, pool);
+        index++;
+      })
+    });
+    const result = await this.multicall.handleInBatches(calls);
+    const balanceMap = new Map<string, StakingDataInterface[]>();
+    result.forEach((value, key) => {
+      const balance = value.output.data;
+      if (!balance.isZero()) {
+        const [address, poolAddr] = key.split('_');
+        const pool = poolsMap.get(poolAddr);
+        const stakingData = {
+          stakingBalance: toDecimals(balance.toString(), pool.stakingToken.decimals),
+          stakingPosition: JSON.parse(JSON.stringify(pool)),
+        };
+        const mapItem = balanceMap.get(address);
+        mapItem ? mapItem.push(stakingData) : balanceMap.set(address, [stakingData]);
+      }
+    })
+    return balanceMap;
   }
 
   private async getNonEthRewards(
     balanceItemsMap: Map<string, StakingDataInterface[]>,
     chain: ChainDto,
   ) {
-    const multicall = this.multicallProvider.getForChain(ChainAbbrEnum[ChainIdEnum[chain.id]]);
+    const multicall = this.multicallProvider.getForChain(chain.abbr);
     const calls = new Map();
     balanceItemsMap.forEach((value, key) => {
       value.forEach((stakingData) => {

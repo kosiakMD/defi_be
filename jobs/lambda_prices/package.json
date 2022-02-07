@@ -5,7 +5,7 @@
   "scripts": {
     "test": "mocha tests/unit/",
     "compile": "tsc",
-    "start": "tsc && node built/index.js",
+    "start": "tsc && node built/start.js",
     "dev": "ts-node ./src/start.ts"
   },
   "devDependencies": {

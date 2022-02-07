@@ -328,6 +328,8 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
   }
 
   async fillChainData(): Promise<CurveLiquidityPoolFeature[]> {
+    [this.registryV1Contract, this.registryV2Contract, this.metaPoolFactoryContract] =
+      await this.getRegistryAddresses();
     const calls = this.getCallsMap();
 
     const tokenAddresses = this.mapping.flatMap((curveLiquidityPoolFeature) => {

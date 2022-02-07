@@ -28,8 +28,10 @@ export class CurvePoolsArbi extends CurvePoolBase {
   }
 
   async fillChainData(): Promise<CurveLiquidityPoolFeature[]> {
-    const calls = this.getCallsMap();
+    [this.registryV1Contract, this.registryV2Contract, this.metaPoolFactoryContract] =
+      await this.getRegistryAddresses();
 
+    const calls = this.getCallsMap();
     const tokenAddresses = this.mapping.flatMap((curveLiquidityPoolFeature) => {
       return curveLiquidityPoolFeature.tokens.flatMap((token) => [
         this.handleMainCoinAddress(token),

@@ -24,7 +24,7 @@ export class AbracadabraProtocol extends BasicProtocol {
     ChainAbbrEnum.arbi,
     ChainAbbrEnum.avax,
     ChainAbbrEnum.bsc,
-    // ChainAbbrEnum.eth,
+    ChainAbbrEnum.eth,
     ChainAbbrEnum.ftm,
   ];
   readonly project = ProjectEnum.abracadabra;

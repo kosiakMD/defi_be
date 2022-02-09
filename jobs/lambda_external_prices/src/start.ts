@@ -1,11 +1,17 @@
-import { config } from 'dotenv';
+/* eslint-disable prettier/prettier */
+import config from './utils/config';
+/** should be before other imports */
+config(__dirname, '../.env');
 
 import lambdaHandler from './app';
-import errorHandler from './utils/errorHandler';
 
-config();
+/**
+ * @description temporarily disable error handler
+ * :TODO: import errorHandler from './utils/errorHandler';
+ */
+
 
 // errorHandler.bind(this, lambdaHandler)();
 (async () => {
-  await errorHandler(lambdaHandler);
+  await lambdaHandler();
 })();

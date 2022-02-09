@@ -173,7 +173,13 @@
       "entryFile": "start",
       "sourceRoot": "jobs/lambda_external_prices/src",
       "compilerOptions": {
-        "tsConfigPath": "jobs/lambda_external_prices/tsconfig.app.json"
+        "tsConfigPath": "jobs/lambda_external_prices/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/jobs/lambda_external_prices"
+          }
+        ]
       }
     },
     "lambda_protocol_prices": {

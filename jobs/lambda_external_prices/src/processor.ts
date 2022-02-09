@@ -1,4 +1,5 @@
 import axios from 'axios';
+import BigNumber from 'bignumber.js';
 import { partition } from 'lodash';
 
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
@@ -21,6 +22,7 @@ import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { CoingeckoService } from './services/coingecko.service';
 import { DebankService } from './services/debank.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
+import { SundaeSwapService } from './services/sundaeswap.service';
 import { DebankChainsIdEnum } from './utils/debank.chains.id.enum';
 import { duplicateAssetsPricesMap } from './utils/duplicate.assets.prices.map';
 import { logger } from './utils/logger';
@@ -104,6 +106,28 @@ export async function process(): Promise<void> {
     });
 
     chainsPrices = chainsPrices.concat(solPrices);
+
+    /** Cardano SundaeSwapService Place */
+    const tokensPrices = await SundaeSwapService.getTokensPrices();
+    const missedTokensInCardanoChain = new Set(
+      missedChainPricesMap.get(ChainIdEnum.cardano.toString()),
+    );
+    const cardanoPrices: CurrentPriceInterface[] = [];
+
+    for (const token of tokensPrices) {
+      const address = token.assetB.assetId.replace(/\./g, '');
+      if (token.assetB.decimals !== null && missedTokensInCardanoChain.has(address)) {
+        cardanoPrices.push({
+          address: address,
+          price: new BigNumber(token.priceUSD).toNumber(),
+          chainId: ChainIdEnum.cardano,
+          currencyId: CurrencyIdEnum.usd,
+          sourceId: PriceSourcePriority.muesliswap,
+        });
+      }
+    }
+
+    chainsPrices = chainsPrices.concat(cardanoPrices);
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);

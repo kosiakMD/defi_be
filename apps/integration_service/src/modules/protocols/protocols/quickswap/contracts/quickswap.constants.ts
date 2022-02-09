@@ -1,6 +1,18 @@
 export const QUICKSWAP_REWARDS_TOKEN_ADDRESS = '0x831753dd7087cac61ab5644b308642cc1c33dc13';
 
+export const QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS = [
+  '0xf28164a485b0b2c90639e47b0f377b4a438a16b1', // token A
+  '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270' // token B
+];
+
 export const QUICKSWAP_ADDITIONAL_PAIRS = ['0x16041694941a5ae759e91a3bb7dde5b4f4312104'];
+
+export const QUICKSWAP_STAKING_DUAL_CONTRACTS = [
+  {
+    stakingContractAddress: '0x14977e7E263FF79c4c3159F497D9551fbE769625',
+    pairAddress: '0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827',
+  },
+]
 
 export const QUICKSWAP_STAKING_CONTRACTS = [
   {
@@ -62,10 +74,6 @@ export const QUICKSWAP_STAKING_CONTRACTS = [
   {
     stakingContractAddress: '0x8f2ac4ec8982bf1699a6eed696e204fa2ccd5d91',
     pairAddress: '0xf6a637525402643b0654a54bead2cb9a83c8b498',
-  },
-  {
-    stakingContractAddress: '0x6c6920ad61867b86580ff4afb517bec7a499a7bb',
-    pairAddress: '0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827',
   },
   {
     stakingContractAddress: '0x9bb7c0a778676689e86602d905c4013221acc7c6',

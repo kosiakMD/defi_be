@@ -27,7 +27,7 @@ export class ApprovalsService {
   async getApprovals(addresses: Address, chainId: ChainIdEnum): Promise<ContractApprovalResponse> {
     let approvalsTableName;
     if (chainId === ChainIdEnum.eth) {
-      approvalsTableName = 'approvals';
+      approvalsTableName = 'approvals_new';
     } else {
       approvalsTableName = 'bsc_approvals';
     }
@@ -60,17 +60,12 @@ export class ApprovalsService {
               an.name as token_name,
               an.symbol as token_symbol,
               an.decimals as token_decimal
-          from approvals a
+          from ${approvalsTableName} a
                    left join projects_contract pc on a.contract_address = pc.address
                    left join projects_info pi on pc.project_id = pi.id
                    left join assets_new an on a.asset_id = an.id and an.chain_id = 1
-          where a.id in (
-              select
-                  MAX(a.id)
-              from ${approvalsTableName} a
-              where a.user_address in (${addressesJoined})
-              group by a.user_address, a.token_address, a.contract_address
-            )`);
+          where a.user_address in (${addressesJoined})
+          `);
     return addressesArray.reduce((response, address) => {
       const singleAddressApprovals = approvals.filter(
         (approval) => approval['user_address'] === address.toLowerCase(),

@@ -2,7 +2,7 @@ import { Column, Entity } from 'typeorm';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
-@Entity({ name: 'asset_category', orderBy: { name: 'ASC' } })
+@Entity({ name: 'assets_invalid_address', orderBy: { name: 'ASC' } })
 export class AssetInvalidAddressEntity extends BaseEntity {
   @Column({ type: String, nullable: false })
   address: string;

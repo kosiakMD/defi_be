@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 module.exports = {
-  type: process.env.DB_CONNECTION,
+  type: 'postgres',
   host: process.env.DB_HOST,
   port: process.env.DB_PORT,
   database: process.env.DB_DATABASE,
@@ -10,12 +10,12 @@ module.exports = {
   synchronize: process.env.DB_SYNCHRONIZE,
   logging: process.env.DB_LOGGING,
   entities: [
-    'dist/**/*.entity.js',
+    'apps/assets_service/src/modules/database/entities/**/*.entity.ts',
   ],
   migrations: [
-    'dist/apps/account_service/src/database/migrations/**/*.js',
+    'apps/assets_service/src/modules/database/migrations/**/*.ts',
   ],
   cli: {
-    migrationsDir: 'database/migrations',
+    migrationsDir: 'apps/assets_service/src/modules/database/migrations',
   },
 };

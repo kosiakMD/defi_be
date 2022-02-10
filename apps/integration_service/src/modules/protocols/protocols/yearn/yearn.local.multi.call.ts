@@ -1,47 +1,40 @@
-import { CallInput, MultiCall } from '@indexed-finance/multicall';
+import { MultiCall } from '@indexed-finance/multicall';
 import BigNumber from 'bignumber.js';
+import { ethers } from 'ethers';
+import { Contract, Provider } from 'ethers-multicall';
 import Web3 from 'web3';
 
 import { Logger } from '@app/common';
-import { chunk } from '@app/common/utils';
 
-import { YearnVaultCommonAbi } from './contracts/YearnVaultCommonAbi';
 import { IYearnUser } from './yearn.interfaces';
 
 export class YearnLocalMultiCall extends MultiCall {
+  rpc: string = null;
   constructor(private readonly web3: Web3, private readonly logger: Logger) {
     super(web3);
+    this.rpc = (web3.currentProvider as any).host;
     this.logger = logger;
   }
 
   async injectPositionBalances(users: IYearnUser[]): Promise<void> {
-    const balanceInputsByUser = users.map((user) => {
-      return user.positions.flatMap((position) => {
-        const input: CallInput[] = [
-          {
-            target: position.vault.address,
-            function: 'balanceOf',
-            args: [user.id],
-          },
-          {
-            target: position.vault.address,
-            function: 'pricePerShare',
-          },
-        ];
-        return input;
-      });
-    });
+    // TODO: this would be in the web3Provider
+    const provider = new ethers.providers.StaticJsonRpcProvider(this.rpc);
+    const ethcallProvider = new Provider(provider);
+    await ethcallProvider.init();
+
+    const balanceInputsByUser = users.map((user) =>
+      user.positions.flatMap((position) => {
+        // TODO: I just inlined the ABI here, but we would probably fetch the abi, or save a file locally, etc
+        const vault = new Contract(position.vault.address, [
+          'function balanceOf(address) view returns (uint256)',
+          'function pricePerShare() view returns (uint256)',
+        ]);
+        return [vault.balanceOf(user.id), vault.pricePerShare()];
+      }),
+    );
 
     const balancesByUser = await Promise.all(
-      balanceInputsByUser.map(async (inputs) => {
-        const results = [];
-        for (const chunkedInputs of chunk(inputs, 6)) {
-          const data = await this.multiCall(YearnVaultCommonAbi, chunkedInputs);
-          const [, balances] = data;
-          results.push(...balances);
-        }
-        return results;
-      }),
+      balanceInputsByUser.map(async (userCalls) => ethcallProvider.all(userCalls)),
     );
 
     users.forEach((user, idx) => {

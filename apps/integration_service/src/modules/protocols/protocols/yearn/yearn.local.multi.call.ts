@@ -35,7 +35,7 @@ export class YearnLocalMultiCall extends MultiCall {
     const balancesByUser = await Promise.all(
       balanceInputsByUser.map(async (inputs) => {
         const results = [];
-        for (const chunkedInputs of chunk(inputs, 8)) {
+        for (const chunkedInputs of chunk(inputs, 6)) {
           const data = await this.multiCall(YearnVaultCommonAbi, chunkedInputs);
           const [, balances] = data;
           results.push(...balances);

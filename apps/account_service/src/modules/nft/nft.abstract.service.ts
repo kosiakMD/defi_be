@@ -8,6 +8,7 @@ import {
 export abstract class NftAbstractService {
   public abstract readonly project: NftProjectEnum;
   public abstract readonly chains: ChainAbbrEnum[];
+  public abstract readonly chainsIds: ChainIdEnum[];
 
   public abstract getInfo(): NftServiceInfo;
   public abstract getCollectionsByAccounts(

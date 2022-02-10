@@ -37,6 +37,7 @@ import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph'
 export class AavegotchiService extends NftBasicService {
   public readonly project = NftProjectEnum.aavegotchi;
   public readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.plg];
+  public readonly chainsIds = [ChainIdEnum.eth, ChainIdEnum.plg];
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,

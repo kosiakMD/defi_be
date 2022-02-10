@@ -1,5 +1,12 @@
 import { HttpModule } from '@nestjs/axios';
-import { Inject, LoggerService, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  Inject,
+  LoggerService,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
@@ -64,6 +71,10 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
   controllers: [HealthController],
   providers: [
     {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
@@ -71,13 +82,9 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
       provide: APP_INTERCEPTOR,
       useClass: TransformHeadersInterceptor,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
-    },
   ],
 })
-export class AppModule implements NestModule {
+export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
@@ -85,10 +92,11 @@ export class AppModule implements NestModule {
   }
 
   onModuleInit(): void {
-    const { ENV, SERVICE_PORT, SERVICE_HOST } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         env: ENV,
+        name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,
       },

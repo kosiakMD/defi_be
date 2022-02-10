@@ -6,10 +6,9 @@ import { WinstonLogger } from 'nest-winston';
 // TODO: TBD?
 // @Injectable({ scope: Scope.TRANSIENT })
 export class Logger extends WinstonLogger implements NestLoggerService {
+  static logger: WinstonLogger;
   // TODO: temporary need static for SingleTone
   private static times = new Map();
-  static logger: WinstonLogger;
-
   private readonly times = new Map();
 
   constructor(logger: WinstonLoggerInterface) {
@@ -49,6 +48,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     this.times.delete(message);
     const diff = finish - start;
     super.debug(diff / 100, `Time: ${message}`);
+    // console.log(this.reflector.getAll());
     return diff;
   }
 }

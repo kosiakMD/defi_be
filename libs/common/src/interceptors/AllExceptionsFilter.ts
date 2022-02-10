@@ -1,9 +1,9 @@
 import { Request } from 'express';
 
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
   Inject,
@@ -24,48 +24,57 @@ export class AllExceptionsFilter implements ExceptionFilter {
   ) {}
 
   catch(exception: Error, host: ArgumentsHost): void {
-    // In certain situations `httpAdapter` might not be available in the
-    // constructor method, thus we should resolve it here.
-    const { httpAdapter } = this.httpAdapterHost;
+    const hostType = host.getType();
+    // TODO: implement all host types we use
+    // 'http' | 'ws' | 'rpc'
+    // const context = host.switchToWs();
+    if (hostType === 'http') {
+      const contextHttp = host.switchToHttp();
 
-    // if host.getType() == http
-    const ctx = host.switchToHttp();
+      const httpStatus =
+        exception instanceof HttpException
+          ? exception.getStatus()
+          : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    const httpStatus =
-      exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+      const request = contextHttp.getRequest<Request>();
 
-    const request = ctx.getRequest<Request>();
+      let errorMessage;
+      if (
+        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production &&
+        exception.message.startsWith('connect ECONNREFUSED') &&
+        !exception.message.endsWith('Service')
+      ) {
+        errorMessage = 'connect ECONNREFUSED';
+      } else {
+        errorMessage = exception.message;
+      }
 
-    let errorMessage;
-    if (
-      this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production &&
-      exception.message.startsWith('connect ECONNREFUSED') &&
-      !exception.message.endsWith('Service')
-    ) {
-      errorMessage = 'connect ECONNREFUSED';
+      // In certain situations `httpAdapter` might not be available in the
+      // constructor method, thus we should resolve it here.
+      const { httpAdapter } = this.httpAdapterHost;
+
+      const responseBody: ErrorResponseDto = {
+        statusCode: httpStatus,
+        message: errorMessage,
+        timestampEnd: new Date().toISOString(),
+        path: httpAdapter.getRequestUrl(request),
+        // doesn't work but should
+        // reqId: request.header(HEADER_REQUEST_ID),
+        // reqId: request.get(HEADER_REQUEST_ID),
+        // hack - sensitive to register and it's a risky
+        reqId: request.headers[HEADER_REQUEST_ID]?.toString(),
+        sessionId: request.headers[HEADER_SESSION_ID]?.toString(),
+      };
+
+      this.logger.error(
+        { ...exception, responseBody: responseBody },
+        `${exception.stack || ''}\n${this.constructor.name}`,
+        this.constructor.name,
+      );
+
+      httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {
-      errorMessage = exception.message;
+      throw exception;
     }
-
-    const responseBody: ErrorResponseDto = {
-      statusCode: httpStatus,
-      message: errorMessage,
-      timestamp: new Date().toISOString(),
-      path: httpAdapter.getRequestUrl(request),
-      // doesn't work but should
-      // reqId: request.header(HEADER_REQUEST_ID),
-      // reqId: request.get(HEADER_REQUEST_ID),
-      // hack - sensitive to register and it's a risky
-      reqId: request.headers[HEADER_REQUEST_ID]?.toString(),
-      sessionId: request.headers[HEADER_SESSION_ID]?.toString(),
-    };
-
-    this.logger.error(
-      { ...exception, responseBody: responseBody },
-      `${exception.stack || ''}\n  AllExceptionsFilter`,
-      'AllExceptionsFilter',
-    );
-
-    httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
   }
 }

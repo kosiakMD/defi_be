@@ -7,6 +7,7 @@ import {
   LoggerService,
   MiddlewareConsumer,
   Module,
+  NestModule,
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -70,7 +71,7 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
     },
   ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
@@ -78,9 +79,10 @@ export class AppModule implements OnModuleInit {
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_HOST, SERVICE_PORT } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
+        env: ENV,
         name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,

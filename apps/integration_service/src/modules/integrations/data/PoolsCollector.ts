@@ -78,6 +78,9 @@ export class PoolsCollector {
 
     const result = lpAddresses.map((lpAddress) => {
       const instructions = {
+        context: {
+          lpTokenAddress: lpAddress,
+        },
         chainCalls: [],
         fieldsMapping: {},
       };

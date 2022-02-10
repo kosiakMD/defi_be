@@ -13,15 +13,11 @@ import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
 import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
 import { LoggerMiddleware } from '@app/common/middlewares';
 import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
-import { Web3ProviderService } from '@app/common/web3provider';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
-import { AbiProvider } from './modules/integrations/data/AbiProvider';
-import { PoolsCollector } from './modules/integrations/data/PoolsCollector';
-import { ProtocolsIterator } from './modules/integrations/data/ProtocolsIterator';
-import { Handler } from './modules/integrations/data/handler';
+import { FrameworkModule } from './modules/integrations/framework/framework.module';
+import { FrameworkService } from './modules/integrations/framework/framework.service';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ProtocolModule } from './modules/protocols/protocol.module';
@@ -30,6 +26,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
 
 @Module({
   imports: [
+    FrameworkModule,
     ConfigModule.forRoot(configuration(config)),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
@@ -81,12 +78,6 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    Web3ProviderService,
-    MulticallAggregator,
-    Handler,
-    AbiProvider,
-    PoolsCollector,
-    ProtocolsIterator,
   ],
 })
 export class AppModule implements NestModule {
@@ -96,8 +87,7 @@ export class AppModule implements NestModule {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private readonly protocolsIterator: ProtocolsIterator,
-    private readonly handler: Handler,
+    private readonly frameworkService: FrameworkService, //todo remove me (was added for testing purposes)
   ) {}
 
   onModuleInit(): void {
@@ -111,14 +101,11 @@ export class AppModule implements NestModule {
       'App',
     );
 
-    this.start()
+    this.start();
   }
 
   async start() {
-    const instructions = await this.protocolsIterator.run();
-    // console.log(JSON.stringify(instructions[0][0][0], null, 4));
-    for(const i of instructions[0][0][0]) {
-      await this.handler.handle(i);
-    }
+    await new Promise((resolve) => setTimeout(resolve, 2000)); //wait a bit for app to fully start
+    this.frameworkService.start();
   }
 }

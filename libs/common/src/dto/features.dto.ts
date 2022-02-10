@@ -71,6 +71,9 @@ export class ProtocolFeatureInfoDto extends ProtocolBasicInfo {
   override features: ProtocolFeaturesExportDto;
 }
 
+// TODO: Same as
+// - apps/integration_service/src/modules/integrations/dto/features.dto.ts
+// - apps/api_gateway/src/common/DTO/features.dto.ts
 export class ProtocolDataDto {
   @ApiProperty({ type: ProtocolFeatureInfoDto })
   info: ProtocolFeatureInfoDto;
@@ -87,6 +90,8 @@ export class ProtocolDataDto {
     example: UniswapProtocolEnum.uniswapV2
   })
   name: ProtocolName;
+
+  features: ProtocolFeaturesExportDto[];
 }
 
 export class FeaturesResponseDto extends ResponseDto<ProtocolDataDto[]> {

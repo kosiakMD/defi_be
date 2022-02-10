@@ -92,6 +92,21 @@
         ]
       }
     },
+    "opportunities_service": {
+      "type": "application",
+      "root": "apps/opportunities_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/opportunities_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/opportunities_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/opportunities_service"
+          }
+        ]
+      }
+    },
     "migration_chain_crawler": {
       "type": "application",
       "root": "jobs/migration_chain_crawler",

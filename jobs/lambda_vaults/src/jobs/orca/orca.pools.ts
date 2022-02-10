@@ -9,6 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
+import { IntegrationClaimableTokenDto } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { tokensWithPrices } from '@app/common/utils/solana';
@@ -17,6 +18,7 @@ import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
+import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { SettingsService } from '../../store/service/settings.service';
 import { StoreService } from '../../store/store.service';
@@ -95,7 +97,7 @@ export class OrcaPools implements JobInterface {
     const liquidityPoolFeatures: LiquidityPoolFeature[] = [];
 
     for (const key in poolsInfo) {
-      const { pool, tokens } = poolsInfo[key];
+      const { pool, tokens, aq } = poolsInfo[key];
       try {
         if (pool && tokens) {
           const poolTokens = tokens;
@@ -124,6 +126,13 @@ export class OrcaPools implements JobInterface {
             }),
           ]);
 
+          const rewardTokens: LiquidityPoolTokenDto[] = [];
+          if (aq) {
+            rewardTokens.push(
+              await this.accountService.saveTrackingAsset(aq.rewardTokenMint, this.chain),
+            );
+          }
+
           const lpFeature = plainToClass(LiquidityPoolFeature, {
             address: pool.account,
             name: lpToken.name,
@@ -151,11 +160,18 @@ export class OrcaPools implements JobInterface {
                 weight: HALF,
               }),
             ],
+            rewards: rewardTokens.map((rt) =>
+              plainToClass(IntegrationClaimableTokenDto, {
+                address: rt.address,
+                name: rt.name,
+                symbol: rt.symbol,
+                decimals: rt.decimals,
+              }),
+            ),
             extra: {
               poolInfo: poolsInfo[key],
             },
           });
-
           liquidityPoolFeatures.push(lpFeature);
         }
       } catch (e) {
@@ -198,6 +214,17 @@ export class OrcaPools implements JobInterface {
         weight: t.weight,
       });
     }
+
+    const rewardTokens = [];
+    for (const rt of liquidityPool.rewards) {
+      const uid = concatStrings(this.chain, rt.address);
+      const rtItem: TrackedVaultItem = await this.getDbItem(rt, uid);
+      rewardTokens.push({
+        dbId: rtItem.id,
+        dtoName: rt.constructor.name,
+      });
+    }
+    mappedDTO.rewards = rewardTokens;
 
     const positionUniqueId = concatStrings(this.chain, liquidityPool.address, 'lp');
     const position: TrackedVaultItem = await this.getDbItem(liquidityPool, positionUniqueId);
@@ -312,7 +339,6 @@ export class OrcaPools implements JobInterface {
         lpf.stats.tvl += t.value;
         return t;
       });
-      lpf.extra = undefined;
     }
 
     return this.mapping;

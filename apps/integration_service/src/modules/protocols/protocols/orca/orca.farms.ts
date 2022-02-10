@@ -1,5 +1,4 @@
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection } from '@solana/web3.js';
 import { toDecimals } from 'apps/account_service/src/common/utils';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
@@ -23,17 +22,21 @@ import {
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { concatStrings, objToString } from '@app/common/utils';
+import { concatStrings } from '@app/common/utils';
 import { toChunkedArray } from '@app/common/utils/transform';
 
 import { Web3Provider } from '../../../chains/web3.provider';
-import { LIMIT_DATA, ORCA_FARM_ID } from './orca.constant';
+import { LIMIT_DATA } from './orca.constant';
 import { globalFarmData, modifiedBalanceData, userFarmData } from './orca.interface';
 import { calculateRewards } from './orca.reward';
-import { globalFarmStruct, userFarmStruct, uint256ToDecimal } from './orca.struct';
+import {
+  filterResponsesGlobalFarm,
+  filterResponsesUserFarms,
+  findProgramAddress,
+} from './orca.utils';
 
 @Injectable()
-export class OrcaStaking {
+export class OrcaFarms {
   private web3: Connection;
   private rpcUrl: string;
 
@@ -52,7 +55,7 @@ export class OrcaStaking {
     if (addresses.length === 0) {
       return [];
     }
-    const cacheKey = `${chain.id}_${OrcaProtocolEnum.orca}_${FeatureEnum.staking}`;
+    const cacheKey = `${chain.id}_${OrcaProtocolEnum.orca}_${FeatureEnum.farming}`;
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);
     if (!cachedPools || cachedPools?.items?.length === 0) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
@@ -66,7 +69,7 @@ export class OrcaStaking {
           userAddress: a,
           protocolType: ProtocolTypeEnum.staking,
           projectName: OrcaProtocolEnum.orca,
-          feature: FeatureEnum.staking,
+          feature: FeatureEnum.farming,
           items: [],
         }),
       ]),
@@ -74,46 +77,98 @@ export class OrcaStaking {
 
     const balances = await this.getAccountUserFarms(addresses, pools);
     const infoFarms = await this.getAccountGlobalFarms(pools);
-
     const filteredBalances = await this.filterAndModificateBalances(pools, balances, infoFarms);
 
     for (const b of filteredBalances) {
       const { pool, balance, farm } = b;
-      const stakingPosition: IntegrationStakingPositionDto = cloneDeep(pool);
-      const decimalBalance = toDecimals(
-        +balance[0].baseTokensConverted,
-        pool.stakingToken.decimals,
-      );
-      const userShare = new BN(decimalBalance).div(new BN(pool.stakingToken.totalSupply));
-      stakingPosition.staked = balance[0].baseTokensConverted;
-      stakingPosition.stakingToken.balance = toDecimals(
-        +balance[0].baseTokensConverted,
-        pool.stakingToken.decimals,
-      );
-      stakingPosition.stakingToken.tokens.forEach((t) => {
-        t.balance = userShare.toNumber() * t.reserve;
-        t.value = t.price * t.balance;
-      });
+      if (pool.extra.farm?.dd) {
+        const stakingPosition: IntegrationStakingPositionDto = cloneDeep(pool);
+        if (+balance[1]?.baseTokensConverted > 0) {
+          for (const key in balance) {
+            const bl = balance[key];
+            const reward = await calculateRewards(bl, farm[key]);
+            stakingPosition.rewards[key].claimableData.balance = toDecimals(
+              +reward,
+              stakingPosition.rewards[key].decimals,
+            );
+            stakingPosition.rewards[key].claimableData.value =
+              +stakingPosition.rewards[key].claimableData.balance *
+              stakingPosition.rewards[key].price;
+          }
+          stakingPosition.staked = balance[1].baseTokensConverted;
 
-      balance.forEach(async (bl, index) => {
-        const reward = await calculateRewards(bl, farm[index]);
-        stakingPosition.rewards[index].claimableData.balance = toDecimals(
-          +reward,
-          stakingPosition.rewards[index].decimals,
-        );
-        stakingPosition.rewards[index].claimableData.value =
-          +stakingPosition.rewards[index].claimableData.balance *
-          stakingPosition.rewards[index].price;
-      });
+          const decimalBalance = toDecimals(
+            +balance[0].baseTokensConverted,
+            pool.stakingToken.decimals,
+          );
+          const userShare = new BN(decimalBalance).div(new BN(pool.stakingToken.totalSupply));
+          stakingPosition.stakingToken.balance = toDecimals(
+            +balance[0].baseTokensConverted,
+            pool.stakingToken.decimals,
+          );
+          stakingPosition.stakingToken.tokens.forEach((t) => {
+            t.balance = userShare.toNumber() * t.reserve;
+            t.value = t.price * t.balance;
+          });
 
-      stakingPosition.extra = undefined;
-      baseDataStakingMap.get(balance[0].owner).items.push(stakingPosition);
+          stakingPosition.extra = undefined;
+          baseDataStakingMap.get(balance[0].owner).items.push(stakingPosition);
+        }
+      }
     }
 
     return Array.from(baseDataStakingMap.values());
   }
 
-  async filterAndModificateBalances(
+  private async filterAndModificateBalances(
+    pools: IntegrationStakingPositionDto[],
+    balances: Map<string, userFarmData[]>,
+    infoFarms: globalFarmData[],
+  ): Promise<modifiedBalanceData[]> {
+    const modifiedDataBalances = new Map<string, modifiedBalanceData>();
+    const balancesMap = [];
+    Array.from(balances).map(([address, b]) => {
+      const list = b.map((a) => [address, a]);
+      balancesMap.push(...list);
+    });
+    const poolByAQ = new Map(pools.map((p) => [p.extra.farm.aq?.account, p]));
+    const poolByDD = new Map(pools.map((p) => [p.extra.farm.dd?.account, p]));
+
+    for (const [address, balance] of balancesMap) {
+      const pool: {
+        aq?: IntegrationStakingPositionDto;
+        dd?: IntegrationStakingPositionDto;
+      } = {};
+
+      pool.aq = poolByAQ.get(balance.globalFarm);
+      pool.dd = poolByDD.get(balance.globalFarm);
+
+      if (pool?.aq || pool?.dd) {
+        const filteredFarmsInfo = infoFarms.find(
+          (f) =>
+            pool?.aq?.extra?.farm?.aq?.farmTokenMint === f.farmTokenMint ||
+            pool?.dd?.extra?.farm?.dd?.farmTokenMint === f.farmTokenMint,
+        );
+        const keyName = concatStrings(address, pool.aq ? pool.aq?.address : pool.dd?.address);
+        const balanceList = modifiedDataBalances.get(keyName);
+
+        if (balanceList) {
+          balanceList.balance.push(balance);
+          balanceList.farm.push(filteredFarmsInfo);
+        } else {
+          modifiedDataBalances.set(keyName, {
+            balance: [balance],
+            pool: pool.aq ? pool.aq : pool.dd,
+            farm: [filteredFarmsInfo],
+          });
+        }
+      }
+    }
+
+    return [...modifiedDataBalances.values()];
+  }
+
+  async filterAndModificateBalancesOld(
     pools: IntegrationStakingPositionDto[],
     balances: userFarmData[],
     infoFarms: globalFarmData[],
@@ -216,53 +271,15 @@ export class OrcaStaking {
       responses.push(...rpcResponse);
     }
 
-    const filteredResponses = new Map();
-    for (const response of responses) {
-      if (response.result.value?.data) {
-        const [data, encoding] = response.result.value.data;
-        const decoded = globalFarmStruct.decode(Buffer.from(data, encoding));
-        const decodedData = objToString(decoded);
-        decodedData['cumulativeEmissionsPerFarmToken'] = uint256ToDecimal(
-          decoded.cumulativeEmissionsPerFarmToken,
-        );
+    const filteredResponses = filterResponsesGlobalFarm(responses);
 
-        const gettedData = filteredResponses.get(response.id);
-        if (!gettedData) {
-          filteredResponses.set(response.id, decodedData);
-        } else {
-          filteredResponses.set(response.id, { ...gettedData, ...decodedData });
-        }
-      } else if (response.result.value?.amount) {
-        const amountTokens = {
-          totalDeposit: response.result.value?.amount,
-        };
-        const gettedData = filteredResponses.get(response.id);
-        if (!gettedData) {
-          filteredResponses.set(response.id, amountTokens);
-        } else {
-          gettedData.totalDeposit = response.result.value?.amount;
-        }
-      }
-    }
     return [...filteredResponses.values()];
-  }
-
-  async findProgramAddress(account: string, wallet: string): Promise<PublicKey> {
-    const [address] = await PublicKey.findProgramAddress(
-      [
-        new PublicKey(account).toBuffer(),
-        new PublicKey(wallet).toBuffer(),
-        TOKEN_PROGRAM_ID.toBuffer(),
-      ],
-      ORCA_FARM_ID,
-    );
-    return address;
   }
 
   async getAccountUserFarms(
     addresses: string[],
     farms: IntegrationStakingPositionDto[],
-  ): Promise<userFarmData[]> {
+  ): Promise<Map<string, userFarmData[]>> {
     const options = {
       jsonrpc: '2.0',
       method: 'getAccountInfo',
@@ -274,7 +291,7 @@ export class OrcaStaking {
       const { aq, dd } = farm.extra.farm;
       for (const wallet of addresses) {
         if (aq) {
-          const addressAQ = await this.findProgramAddress(aq.account, wallet);
+          const addressAQ = await findProgramAddress(aq.account, wallet);
           rpcDataRequests.push({
             jsonrpc: options.jsonrpc,
             id: idRpc++,
@@ -288,7 +305,7 @@ export class OrcaStaking {
           });
         }
         if (dd) {
-          const addressDD = await this.findProgramAddress(dd.account, wallet);
+          const addressDD = await findProgramAddress(dd.account, wallet);
           rpcDataRequests.push({
             jsonrpc: options.jsonrpc,
             id: idRpc++,
@@ -316,18 +333,8 @@ export class OrcaStaking {
       responses.push(...rpcResponse);
     }
 
-    const filteredResponses: userFarmData[] = [];
-    for (const response of responses) {
-      if (response.result.value) {
-        const [data, encoding] = response.result.value.data;
-        const decoded = userFarmStruct.decode(Buffer.from(data, encoding));
-        const decodedData: any = objToString(decoded);
-        decodedData.cumulativeEmissionsCheckpoint = uint256ToDecimal(
-          decoded.cumulativeEmissionsCheckpoint,
-        );
-        filteredResponses.push(decodedData);
-      }
-    }
+    const filteredResponses = filterResponsesUserFarms(responses);
+
     return filteredResponses;
   }
 }

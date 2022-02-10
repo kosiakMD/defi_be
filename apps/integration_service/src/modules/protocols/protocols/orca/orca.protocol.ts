@@ -10,10 +10,10 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { LiquidityPools } from '../../features/liquidity-pools';
 import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
-import { OrcaStaking } from './orca.staking';
+import { OrcaFarms } from './orca.farms';
+import { OrcaPools } from './orca.pools';
 
 @Injectable()
 export default class OrcaProtocol extends DataProviderProtocol {
@@ -22,7 +22,7 @@ export default class OrcaProtocol extends DataProviderProtocol {
   readonly name = ProtocolNameEnum.orca;
   readonly displayName = ProtocolNameEnum.orca;
   readonly features = {
-    [ChainAbbrEnum.sol]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.sol]: [FeatureEnum.pools, FeatureEnum.farming],
   };
   protected readonly dataProvider;
 
@@ -31,8 +31,8 @@ export default class OrcaProtocol extends DataProviderProtocol {
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly mapper: Mapper,
-    private readonly pools: LiquidityPools,
-    private readonly staking: OrcaStaking,
+    private readonly pools: OrcaPools,
+    private readonly farming: OrcaFarms,
   ) {
     super();
   }
@@ -65,8 +65,8 @@ export default class OrcaProtocol extends DataProviderProtocol {
           projectName: this.project,
           chain: chain,
         });
-      case FeatureEnum.staking:
-        return this.staking.getData(addresses, chain);
+      case FeatureEnum.farming:
+        return this.farming.getData(addresses, chain);
       default:
         return [];
     }

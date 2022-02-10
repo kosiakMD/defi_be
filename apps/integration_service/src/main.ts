@@ -9,6 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common';
 import { createLogger } from '@app/common/Logger/winston';
+import { initSentry } from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -23,6 +24,8 @@ async function bootstrap(): Promise<void> {
     abortOnError: false,
     logger,
   });
+
+  initSentry();
 
   // app.useGlobalFilters(new AllExceptionsFilter());
 

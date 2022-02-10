@@ -98,6 +98,10 @@ import { VaultsModule } from './vaults/vaults.module';
   ],
   providers: [
     {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
@@ -106,9 +110,15 @@ import { VaultsModule } from './vaults/vaults.module';
       useClass: TransformHeadersInterceptor,
     },
     {
-      provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
+      provide: APP_GUARD,
+      useClass: ApiVersionGuard,
     },
+    ServiceHealthIndicator,
+    // TODO: for global auto caching
+    // {
+    // 	provide: APP_INTERCEPTOR,
+    // 	useClass: CacheInterceptor,
+    // },
     {
       provide: APP_GUARD,
       useClass: ApiVersionGuard,

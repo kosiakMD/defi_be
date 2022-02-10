@@ -12,6 +12,7 @@ export class YearnLocalMultiCall extends MultiCall {
   rpc: string = null;
   constructor(private readonly web3: Web3, private readonly logger: Logger) {
     super(web3);
+    // Save the URL of the current RPC in use by web3
     this.rpc = (web3.currentProvider as any).host;
     this.logger = logger;
   }
@@ -24,7 +25,7 @@ export class YearnLocalMultiCall extends MultiCall {
 
     const balanceInputsByUser = users.map((user) =>
       user.positions.flatMap((position) => {
-        // TODO: I just inlined the ABI here, but we would probably fetch the abi, or save a file locally, etc
+        // TODO: I just inlined the ABI here, but we would fetch the abi, or save a file locally, etc
         const vault = new Contract(position.vault.address, [
           'function balanceOf(address) view returns (uint256)',
           'function pricePerShare() view returns (uint256)',

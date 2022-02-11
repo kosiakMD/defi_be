@@ -37,12 +37,12 @@ import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { LIMIT_DATA } from './orca.constant';
 import { poolData, tokenData } from './orca.interface';
-import { generateListPools } from './orca.utils';
+import { generateListFarms } from './orca.utils';
 
 @Injectable()
 export class OrcaStaking implements JobInterface {
   chain = ChainIdEnum.sol;
-  feature = FeatureEnum.staking;
+  feature = FeatureEnum.farming;
   protocol = ProtocolNameEnum.orca;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
   features: any;
@@ -94,7 +94,7 @@ export class OrcaStaking implements JobInterface {
 
     const { pools, tokens, doubleDips, aquafarms } = allData;
 
-    const farmsInfo = await generateListPools(pools, doubleDips, aquafarms, tokens);
+    const farmsInfo = await generateListFarms(pools, doubleDips, aquafarms, tokens);
 
     for (const farm of farmsInfo) {
       try {

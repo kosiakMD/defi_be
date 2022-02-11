@@ -48,6 +48,7 @@ interface Prices {
 export class OpenSeaService extends NftBasicService {
   public readonly project = NftProjectEnum.openSea;
   public readonly chains = [ChainAbbrEnum.eth];
+  public readonly chainsIds = [ChainIdEnum.eth];
 
   protected readonly url: string;
   private readonly API_KEY: string;

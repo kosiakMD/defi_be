@@ -24,6 +24,7 @@ import {
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { NotifyBase } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
@@ -68,11 +69,11 @@ export class IntegrationsService {
     for (const protocol of protocols) {
       for (const feature of protocol.features) {
         for (const ft of feature.list) {
-          const cachedData = await this.cache.get(
+          const cachedData = await this.cache.get<NotifyBase>(
             feature.chain.id + '_' + protocol.name + '_' + ft,
           );
           if (cachedData) {
-            feature[ft] = (cachedData as NotifyPayloadFeaturesDto).items;
+            feature[ft] = cachedData.items;
           }
         }
       }

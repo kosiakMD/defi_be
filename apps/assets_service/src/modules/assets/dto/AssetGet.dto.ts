@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumberString, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-export class AssetCreateDto {
+export class AssetGetDto {
   @ApiProperty({ type: Number, example: 10 })
   @IsNumberString()
   @IsNotEmpty()

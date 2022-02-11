@@ -714,6 +714,10 @@ export class ProtocolService {
         if (baseData instanceof BaseDataLp) {
           baseData.items.forEach((poolFeature) => {
             setChainAssetsArray(poolFeature.tokens);
+
+            if (poolFeature.rewards?.length) {
+              setChainAssetsArray(poolFeature.rewards);
+            }
           });
         } else if (baseData instanceof BaseDataClaimable) {
           baseData.items.forEach((claimable) => {
@@ -795,6 +799,13 @@ export class ProtocolService {
             poolFeature.tokens.forEach((poolToken) => {
               this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
               baseData.total += poolToken.value;
+            });
+
+            poolFeature.rewards?.forEach((reward) => {
+              reward.price =
+                chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
+              reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;
+              baseData.total += reward.claimableData.value;
             });
           });
         } else if (baseData instanceof BaseDataClaimable) {

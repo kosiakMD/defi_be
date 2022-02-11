@@ -1,5 +1,6 @@
 import type Decimal from 'decimal.js';
 
+import type { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import type { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 export interface userFarmData {
@@ -32,5 +33,11 @@ export interface globalFarmData {
 export interface modifiedBalanceData {
   balance: userFarmData[];
   pool: IntegrationStakingPositionDto;
+  farm: globalFarmData[];
+}
+
+export interface modifiedBalanceDataPool {
+  balance: userFarmData[];
+  pool: LiquidityPoolFeature;
   farm: globalFarmData[];
 }

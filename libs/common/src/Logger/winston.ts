@@ -28,10 +28,10 @@ export type LogConfig = {
   };
 };
 
-const formatLog = (item) =>
-  item.message
-    ? `${item.level}: ${item.message} ${JSON.stringify(item.meta)}`
-    : `${item.level}: ${JSON.stringify(item.meta)}`;
+const formatLog = (item) => {
+  // return JSON.stringify({ ...item, level: 'test' }); // for tests reason
+  return JSON.stringify(item);
+};
 
 const createBaseTransports = (logErrorFile: string, logCombineLog: string): Transport[] => {
   return [

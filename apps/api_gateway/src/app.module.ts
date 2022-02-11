@@ -114,6 +114,12 @@ import { VaultsModule } from './vaults/vaults.module';
       useClass: ApiVersionGuard,
     },
     ServiceHealthIndicator,
+    // TODO: for global auto caching
+    // {
+    // 	provide: APP_INTERCEPTOR,
+    // 	useClass: CacheInterceptor,
+    // },
+    ServiceHealthIndicator,
     SearchService,
     Web3NameService,
   ],

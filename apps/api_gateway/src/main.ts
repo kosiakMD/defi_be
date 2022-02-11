@@ -26,6 +26,8 @@ async function bootstrap() {
   });
   initSentry();
 
+  initSentry();
+
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);
 

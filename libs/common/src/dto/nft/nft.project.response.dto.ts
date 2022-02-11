@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainAbbrEnum, NftProjectEnum } from '@app/common';
+import { ChainAbbrEnum, ChainIdEnum, NftProjectEnum } from '@app/common';
 
 export class NftProjectResponseDto {
   @ApiProperty({ enum: NftProjectEnum })
@@ -8,4 +8,7 @@ export class NftProjectResponseDto {
 
   @ApiProperty({ enum: ChainAbbrEnum, isArray: true })
   chains: ChainAbbrEnum[];
+
+  @ApiProperty({ enum: ChainIdEnum, isArray: true })
+  chainsIds: ChainIdEnum[];
 }

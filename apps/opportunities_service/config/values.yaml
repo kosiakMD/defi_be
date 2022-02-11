@@ -1,0 +1,12 @@
+configMaps:
+  nodes:
+
+  logs:
+    LOG_AWS_ENABLED: true
+    LOG_LEVEL: debug
+    NODE_ENV: production
+
+secrets:
+  - database
+  - redis
+  - logs

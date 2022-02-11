@@ -35,6 +35,9 @@ export class ServiceHealthIndicator extends HealthIndicator {
     this.getAccountStatusUrl = this.getServiceUrl(ServiceEnum.Account);
     this.getIntegrationStatusUrl = this.getServiceUrl(ServiceEnum.Integration);
     this.getPriceStatusUrl = this.getServiceUrl(ServiceEnum.Price);
+    this.getAccountStatusUrl = this.getServiceUrl('ACCOUNT');
+    this.getIntegrationStatusUrl = this.getServiceUrl('INTEGRATION');
+    this.getPriceStatusUrl = this.getServiceUrl('PRICE');
   }
 
   public async isAccountHealthy(): Promise<HealthCheckResult> {

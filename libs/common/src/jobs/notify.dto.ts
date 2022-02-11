@@ -5,7 +5,7 @@ import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 // todo: use this in vaults job and integration jobs controller
 
 export type NotifySupportedFeature = IntegrationStakingPositionDto | LiquidityPoolFeature;
-export interface NotifyBase<T extends NotifySupportedFeature> {
+export interface NotifyBase<T extends NotifySupportedFeature = NotifySupportedFeature> {
   chain: ChainIdEnum;
   protocolName: ProtocolName;
   featureName: FeatureName;

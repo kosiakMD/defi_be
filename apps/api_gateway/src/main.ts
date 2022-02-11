@@ -24,7 +24,6 @@ async function bootstrap() {
     abortOnError: false,
     logger,
   });
-  initSentry();
 
   initSentry();
 

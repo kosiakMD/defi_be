@@ -20,4 +20,5 @@ export const logsValidation = {
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
     .default('info'),
+  SENTRY_DSN: Joi.string(),
 };

@@ -99,15 +99,15 @@ import { VaultsModule } from './vaults/vaults.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
+      useClass: TransformHeadersInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
     },
     {
       provide: APP_GUARD,
@@ -119,10 +119,6 @@ import { VaultsModule } from './vaults/vaults.module';
     // 	provide: APP_INTERCEPTOR,
     // 	useClass: CacheInterceptor,
     // },
-    {
-      provide: APP_GUARD,
-      useClass: ApiVersionGuard,
-    },
     ServiceHealthIndicator,
     SearchService,
     Web3NameService,
@@ -136,10 +132,11 @@ export class AppModule implements OnModuleInit, NestModule {
   }
 
   onModuleInit(): void {
-    const { ENV, SERVICE_PORT, SERVICE_HOST } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         env: ENV,
+        name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,
       },

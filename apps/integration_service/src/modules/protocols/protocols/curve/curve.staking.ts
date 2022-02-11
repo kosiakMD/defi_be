@@ -19,27 +19,25 @@ import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { toDecimals } from '../../../../common/utils/util';
 
 import { StakingDataInterface, UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
 import { Abis } from './abis';
 import { CurveMulticall } from './curve.multicall';
-import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 @Injectable()
 export class CurveStaking {
-
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly web3Provider: Web3ProviderService,
-    private readonly multicallAggregator: MulticallAggregator
-  ) {
-  }
+    private readonly multicallAggregator: MulticallAggregator,
+  ) {}
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${CurveProtocolEnum.curve}_${FeatureEnum.staking}`;
@@ -134,18 +132,22 @@ export class CurveStaking {
     return concatStrings(address, tokenAddress, gauge);
   }
 
-  private async getStakingBalances(addresses: string[], pools: IntegrationStakingPositionDto[], chain: ChainDto) {
+  private async getStakingBalances(
+    addresses: string[],
+    pools: IntegrationStakingPositionDto[],
+    chain: ChainDto,
+  ) {
     try {
       const calls = new Map();
       const poolsMap = new Map();
       let index = 0;
-      addresses.forEach(address => {
-        pools.forEach(pool => {
+      addresses.forEach((address) => {
+        pools.forEach((pool) => {
           const contract = new Abis(pool.address);
           calls.set(concatStrings(address, pool.address), contract.balanceOf(address));
           if (index !== pools.length) poolsMap.set(pool.address, pool);
           index++;
-        })
+        });
       });
 
       const result = await this.multicallAggregator.handleInBatches(calls, chain.id);
@@ -162,7 +164,7 @@ export class CurveStaking {
           const mapItem = balanceMap.get(address);
           mapItem ? mapItem.push(stakingData) : balanceMap.set(address, [stakingData]);
         }
-      })
+      });
       return balanceMap;
     } catch (e) {
       this.logger.error(e, 'getStakingBalances');

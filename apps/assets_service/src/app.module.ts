@@ -1,4 +1,11 @@
-import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  LoggerService,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -21,7 +28,7 @@ import { DatabaseModule } from './modules/database/database.module';
     },
   ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
@@ -29,9 +36,10 @@ export class AppModule implements OnModuleInit {
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_HOST, SERVICE_PORT } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
+        env: ENV,
         name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,

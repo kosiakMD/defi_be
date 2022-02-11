@@ -1,7 +1,7 @@
 import * as winston from 'winston';
 
 import { DynamicModule, Global, LoggerService, Module } from '@nestjs/common';
-import { WinstonModule as WinstonModule1 } from 'nest-winston';
+import { WinstonModule } from 'nest-winston';
 import { WinstonLogger } from 'nest-winston/dist/winston.classes';
 import { WinstonModuleOptions } from 'nest-winston/dist/winston.interfaces';
 
@@ -12,9 +12,9 @@ import { Logger } from './Logger.service';
   providers: [Logger],
   exports: [Logger],
 })
-export class LoggerModule extends WinstonModule1 {
+export class LoggerModule extends WinstonModule {
   static forRoot(options: WinstonModuleOptions): DynamicModule {
-    const returnObj = WinstonModule1.forRoot(options);
+    const returnObj = WinstonModule.forRoot(options);
     returnObj.module = LoggerModule;
     return returnObj;
   }

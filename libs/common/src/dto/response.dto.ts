@@ -16,30 +16,28 @@ export class MetaDto {
 }
 
 export class DetailedResponseDto<T> implements DetailedResponse<T> {
-  constructor(status: ResultStatus, errors: Error[] | string[], data: T) {
-    this.status = status;
-    this.errors = errors;
-    this.data = data;
-  }
-
   @ApiProperty({
     enum: ResultStatus,
     enumName: 'ResultStatus',
     example: ResultStatus.ok,
   })
   status: ResultStatus = ResultStatus.ok;
-
   @ApiProperty({
     type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[] | any[] = [];
-
   @ApiProperty({
     isArray: true,
     type: Object,
   })
   data: T;
+
+  constructor(status: ResultStatus, errors: Error[] | string[], data: T) {
+    this.status = status;
+    this.errors = errors;
+    this.data = data;
+  }
 }
 
 export class ResponseDto<T = any> extends DetailedResponseDto<T> {
@@ -64,7 +62,13 @@ export class ErrorResponseDto {
     type: String,
     example: '2021-12-16T09:43:51.398Z',
   })
-  timestamp: string;
+  timestampEntry?: string;
+
+  @ApiProperty({
+    type: String,
+    example: '2021-12-16T09:43:51.398Z',
+  })
+  timestampEnd: string;
 
   @ApiProperty({
     type: String,

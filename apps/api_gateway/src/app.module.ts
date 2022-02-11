@@ -99,15 +99,15 @@ import { VaultsModule } from './vaults/vaults.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
+      useClass: TransformHeadersInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
     },
     {
       provide: APP_GUARD,

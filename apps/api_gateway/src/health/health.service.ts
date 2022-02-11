@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/minimal';
+import { Severity } from '@sentry/node';
 import { map } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -81,7 +83,11 @@ export class ServiceHealthIndicator extends HealthIndicator {
       const getStatusUrl = this[`get${serviceName}StatusUrl`];
       return await this.isServiceHealthy(getStatusUrl);
     } catch (e) {
-      this.logger.error(e);
+      this.logger.error(e, 'healthyRequest', 'ServiceHealthIndicator');
+      Sentry.captureException(e, {
+        level: Severity.Error,
+        extra: { class: 'ServiceHealthIndicator', method: 'healthyRequest' },
+      });
       return {
         status: HealthStatusEnum.shuttingDown,
         info: {

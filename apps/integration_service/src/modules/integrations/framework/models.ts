@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { CallData } from '@app/common/dto/CallData';
 
 export class ChainCall {
@@ -10,7 +11,12 @@ export class ChainCall {
 export class Instructions {
   chainCalls: ChainCall[];
   fieldsMapping: object;
-  context?: object;
+  context?: any;
+}
+
+export class FeatureInstructions {
+  instructions: Instructions[];
+  processor: string;
 }
 
 export class OrderedCalls {

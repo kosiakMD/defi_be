@@ -3,14 +3,15 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { Logger } from '../../../../../../jobs/lambda_vaults/src/logger/logger.service';
-import { AbiProvider } from './abi.provider';
-import { FieldsGroupsMapping } from './config/fields.groups.mapping';
-import { ILpAddressFetcher } from './services/lp.address.fetcher.interface';
-import { PoolInfoLpAddressFetcher } from './services/pool.info.lp.address.fetcher';
+import { Logger } from '../../../../../../../jobs/lambda_vaults/src/logger/logger.service';
+import { AbiProvider } from '../abi.provider';
+import { FieldsGroupsMapping } from '../config/fields.groups.mapping';
+import { Instructions } from '../models';
+import { ILpAddressFetcher } from './lp.address.fetcher.interface';
+import { PoolInfoLpAddressFetcher } from './pool.info.lp.address.fetcher';
 
 @Injectable()
-export class PoolsCollector {
+export class PoolsInstructionsCollector {
   private lpAddressFetchers: Map<string, ILpAddressFetcher>;
 
   constructor(
@@ -23,11 +24,11 @@ export class PoolsCollector {
     ]);
   }
 
-  async collect(chefAddress: string, chainCode, chefConfig) {
+  async collect(chainCode, chefAddress, lpAddressFetcher, fields): Promise<Instructions[]> {
     const abi = await this.abiProvider.getAbi(chefAddress);
 
     const lpAddresses = await this.lpAddressFetchers
-      .get(chefConfig.lpAddressFetcher)
+      .get(lpAddressFetcher)
       .fetchPoolsLps(chainCode, chefAddress, abi);
 
     return lpAddresses.map((lpAddress) => {
@@ -40,8 +41,8 @@ export class PoolsCollector {
         fieldsMapping: {},
       };
       let chainCallsCount = 0;
-      Object.keys(chefConfig.fields).forEach((field) => {
-        const fGroupConfig = FieldsGroupsMapping[field][chefConfig.fields[field]];
+      Object.keys(fields).forEach((field) => {
+        const fGroupConfig = FieldsGroupsMapping[field][fields[field]];
         instructions.chainCalls.push({
           address: lpAddress,
           abi: abi[fGroupConfig.call],

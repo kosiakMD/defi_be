@@ -6,10 +6,10 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { MicroservicesModule } from '../../microservices/microservices.module';
 import { AbiProvider } from './abi.provider';
 import { FrameworkService } from './framework.service';
-import { Handler } from './handler';
-import { PoolsCollector } from './pools.collector';
-import { PoolsFeatureProcessor } from './processors/pools.feature.processor';
-import { ProtocolsIterator } from './protocols.iterator';
+import { Handler } from './services/handler';
+import { PoolsFeatureProcessor } from './services/pools.feature.processor';
+import { PoolsInstructionsCollector } from './services/pools.instructions.collector';
+import { ProtocolsIterator } from './services/protocols.iterator';
 
 @Module({
   imports: [MicroservicesModule],
@@ -18,7 +18,7 @@ import { ProtocolsIterator } from './protocols.iterator';
     Web3ProviderService,
     Handler,
     ProtocolsIterator,
-    PoolsCollector,
+    PoolsInstructionsCollector,
     PoolsFeatureProcessor,
     AbiProvider,
     FrameworkService,

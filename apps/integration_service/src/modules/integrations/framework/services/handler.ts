@@ -6,8 +6,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CallData } from '@app/common/dto/CallData';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { Logger } from '../../../../../../jobs/lambda_vaults/src/logger/logger.service';
-import { Instructions, OrderedCalls } from './models';
+import { Logger } from '../../../../../../../jobs/lambda_vaults/src/logger/logger.service';
+import { Instructions, OrderedCalls } from '../models';
 
 @Injectable()
 export class Handler {

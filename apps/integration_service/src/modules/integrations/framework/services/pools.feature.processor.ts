@@ -8,7 +8,7 @@ import { PriceService } from '../../../microservices/price.service';
 import { IFeatureProcessor } from './feature.processor.interface';
 
 @Injectable()
-export class PoolsFeatureProcessor implements IFeatureProcessor{
+export class PoolsFeatureProcessor implements IFeatureProcessor {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly accountService: AccountService,
@@ -50,10 +50,13 @@ export class PoolsFeatureProcessor implements IFeatureProcessor{
     });
 
     //get prices for all tokens
-    const { prices } = await this.priceService.getTokenPricesFetch(tokenAddresses, lpTokensInfo[0].chainCode);
-    console.log('================================================================')
+    const { prices } = await this.priceService.getTokenPricesFetch(
+      tokenAddresses,
+      lpTokensInfo[0].chainCode,
+    );
+    console.log('================================================================');
     console.log({ prices });
-    console.log('================================================================')
+    console.log('================================================================');
 
     //todo add calculation logic here
   }

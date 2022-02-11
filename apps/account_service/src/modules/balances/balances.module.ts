@@ -5,6 +5,7 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CosmosService } from '../../common/providers/3rdparty/cosmos.service';
 import { CovalentService } from '../../common/providers/3rdparty/covalent.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 
@@ -20,6 +21,7 @@ import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
+import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 
 @Module({
   imports: [
@@ -45,6 +47,7 @@ import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy'
   controllers: [BalancesController],
   providers: [
     PriceService,
+    CosmosService,
     CovalentService,
     BalancesService,
     CovalentBalancesStrategy,
@@ -52,6 +55,7 @@ import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy'
     SolanaBalancesStrategy,
     TerraBalancesStrategy,
     CardanoBalancesStrategy,
+    CosmosBalancesStrategy,
   ],
 })
 export class BalancesModule {}

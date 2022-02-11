@@ -20,7 +20,8 @@ export enum ChainAbbrEnum {
   terra = 'terra',
   klay = 'klay',
   fuse = 'fuse',
-  cardano = 'cardano'
+  cardano = 'cardano',
+  cosmos = 'cosmos',
 }
 
 export enum ChainNameEnum {
@@ -45,7 +46,8 @@ export enum ChainNameEnum {
   terra = 'terra',
   klay = 'klaytn',
   fuse = 'fuse',
-  cardano = 'cardano'
+  cardano = 'cardano',
+  cosmos = 'cosmos',
 }
 
 export enum ChainIdEnum {
@@ -70,7 +72,8 @@ export enum ChainIdEnum {
   terra = 19,
   klay = 20,
   fuse = 21,
-  cardano = 22
+  cardano = 22,
+  cosmos = 23,
 }
 
 // https://api.coingecko.com/api/v3/asset_platforms
@@ -97,7 +100,8 @@ export enum CoingeckoPlatformEnum {
   vvs = 'vvs',
   klay = 'klay-token',
   fuse = '',
-  cardano = 'cardano'
+  cardano = 'cardano',
+  cosmos = 'cosmos',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -122,7 +126,8 @@ export enum AbsoluteChainIdEnum {
   terra = 'columbus-5',
   klay = 8217,
   fuse = 122,
-  cardano = 1003
+  cardano = 1003,
+  cosmos = 2004,
 }
 
 export enum CurrencyEnum {

@@ -16,9 +16,14 @@ export const ProtocolsConfig = {
           },
           staking: {
             fields: {
-              //TODO define list of required fields + group mappings
+              totalSupply: 'totalSupplyGroupDefault',
+              getReserves: 'getReservesGroupDefault',
+              balanceOf: 'balanceOfGroupDefault',
+              totalAllocPoint: 'totalAllocPointGroupDefault',
+              rewardPerBlock: 'rewardPerBlockGroupDefault',
+              allocPoint: 'allocPointGroupDefault',
             },
-            processor: 'stakingFeatureProcessor', //TODO create this processor
+            processor: 'stakingFeatureProcessor',
           },
         },
       },

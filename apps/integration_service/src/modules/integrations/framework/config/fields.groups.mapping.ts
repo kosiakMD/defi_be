@@ -11,4 +11,28 @@ export const FieldsGroupsMapping = {
       path: 'output.data',
     },
   },
+  balanceOf: {
+    balanceOfGroupDefault: {
+      call: 'balanceOf',
+      path: 'output.data',
+    },
+  },
+  totalAllocPoint: {
+    totalAllocPointGroupDefault: {
+      call: 'totalAllocPoint',
+      path: 'output.data',
+    },
+  },
+  rewardPerBlock: {
+    rewardPerBlockGroupDefault: {
+      call: 'rewardPerBlock',
+      path: 'output.data',
+    },
+  },
+  allocPoint: {
+    allocPointGroupDefault: {
+      call: 'poolInfo',
+      path: 'output.data.allocPoint',
+    },
+  },
 };

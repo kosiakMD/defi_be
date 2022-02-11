@@ -6,7 +6,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { ILpAddressFetcher } from './lp.address.fetcher.interface';
 
-export class PoolInfoLpAddressFetcher implements ILpAddressFetcher {
+export class LpTokenLpAddressFetcher implements ILpAddressFetcher {
   constructor(private readonly multicall: MulticallAggregator) {}
   async fetchPoolsLps(chainCode: any, address: string, abi: any) {
     const poolLengthCall = plainToClass(CallData, {
@@ -26,7 +26,7 @@ export class PoolInfoLpAddressFetcher implements ILpAddressFetcher {
         concatStrings(address, i),
         plainToClass(CallData, {
           address: address,
-          abi: abi.poolInfo,
+          abi: abi.lpToken,
           input: { data: [i] },
         }),
       );
@@ -36,7 +36,7 @@ export class PoolInfoLpAddressFetcher implements ILpAddressFetcher {
 
     const lpAddresses = [];
     for (let i = 0; i < poolLength; i++) {
-      lpAddresses.push(callsRsp.get(concatStrings(address, i)).output.data.lpToken);
+      lpAddresses.push(callsRsp.get(concatStrings(address, i)).output.data);
     }
     return lpAddresses;
   }

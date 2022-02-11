@@ -7,9 +7,10 @@ import { MicroservicesModule } from '../../microservices/microservices.module';
 import { AbiProvider } from './abi.provider';
 import { FrameworkService } from './framework.service';
 import { Handler } from './services/handler';
+import { InstructionsCollector } from './services/instructions.collector';
 import { PoolsFeatureProcessor } from './services/pools.feature.processor';
-import { PoolsInstructionsCollector } from './services/pools.instructions.collector';
 import { ProtocolsIterator } from './services/protocols.iterator';
+import { StakingFeatureProcessor } from './services/staking.feature.processor';
 
 @Module({
   imports: [MicroservicesModule],
@@ -18,8 +19,9 @@ import { ProtocolsIterator } from './services/protocols.iterator';
     Web3ProviderService,
     Handler,
     ProtocolsIterator,
-    PoolsInstructionsCollector,
+    InstructionsCollector,
     PoolsFeatureProcessor,
+    StakingFeatureProcessor,
     AbiProvider,
     FrameworkService,
   ],

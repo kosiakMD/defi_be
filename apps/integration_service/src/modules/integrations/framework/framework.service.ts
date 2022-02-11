@@ -7,6 +7,7 @@ import { IFeatureProcessor } from './services/feature.processor.interface';
 import { Handler } from './services/handler';
 import { PoolsFeatureProcessor } from './services/pools.feature.processor';
 import { ProtocolsIterator } from './services/protocols.iterator';
+import { StakingFeatureProcessor } from './services/staking.feature.processor';
 
 @Injectable()
 export class FrameworkService {
@@ -17,19 +18,19 @@ export class FrameworkService {
     private readonly protocolsIterator: ProtocolsIterator,
     private readonly handler: Handler,
     private readonly poolsFeatureProcessor: PoolsFeatureProcessor,
+    private readonly stakingFeatureProcessor: StakingFeatureProcessor,
   ) {
     this.featureProcessors = new Map<string, IFeatureProcessor>([
       ['poolsFeatureProcessor', poolsFeatureProcessor],
+      ['stakingFeatureProcessor', stakingFeatureProcessor],
     ]);
   }
 
   async start(): Promise<void> {
-    this.logger.debug('STARTED');
     const fInstructions = await this.protocolsIterator.run();
-    // console.log(JSON.stringify(fInstructions, null, 4));
-    const hResults = [];
     for (const protocolFeatureInstructions of fInstructions) {
       for (const fSingleInstructions of protocolFeatureInstructions) {
+        const hResults = [];
         for (const i of fSingleInstructions.instructions) {
           try {
             const handlerResult = await this.handler.handle(i);
@@ -38,13 +39,15 @@ export class FrameworkService {
             console.log('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
             hResults.push(handlerResult);
           } catch (e) {
-            console.warn('skipping instructions because of processing error:', e.message);
-            // console.warn(JSON.stringify(i, null, 4));
+            this.logger.warn('skipping instructions because of processing error:', e.message);
           }
         }
         const featureProcessor = this.resolveProcessor(fSingleInstructions.processor);
-        //todo handle unsupported processor
-        await featureProcessor.process(hResults);
+        if (!featureProcessor) {
+          this.logger.warn('unsupported processor:', fSingleInstructions.processor);
+        } else {
+          await featureProcessor.process(hResults);
+        }
       }
     }
   }

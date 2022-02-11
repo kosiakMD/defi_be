@@ -42,4 +42,34 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+  static readonly totalAllocPoint: AbiItem = {
+    inputs: [],
+    name: 'totalAllocPoint',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly balanceOf: AbiItem = {
+    constant: true,
+    inputs: [{ internalType: 'address', name: '', type: 'address' }],
+    name: 'balanceOf',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly rewardPerBlock: AbiItem = {
+    inputs: [],
+    name: 'triPerBlock',
+    outputs: [{ internalType: 'uint256', name: 'amount', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly lpToken: AbiItem = {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'lpToken',
+    outputs: [{ internalType: 'contract IERC20', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

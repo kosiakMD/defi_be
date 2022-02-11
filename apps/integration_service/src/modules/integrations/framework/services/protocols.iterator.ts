@@ -5,20 +5,22 @@ import { Logger } from '@app/common';
 
 import { ProtocolsConfig } from '../config/protocols.config';
 import { FeatureInstructions, Instructions } from '../models';
-import { PoolsInstructionsCollector } from './pools.instructions.collector';
+import { InstructionsCollector } from './instructions.collector';
 
 @Injectable()
 export class ProtocolsIterator {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly poolsCollector: PoolsInstructionsCollector,
+    private readonly instructionsCollector: InstructionsCollector,
   ) {}
 
   async run(): Promise<FeatureInstructions[][]> {
     const res = [];
     for (const pName of Object.keys(ProtocolsConfig)) {
+      this.logger.debug('processing protocol:', pName);
       const pConfig = ProtocolsConfig[pName];
       res.push(await this.runForProtocol(pName, pConfig));
+      this.logger.debug('processing finished for protocol:', pName);
     }
     return res;
   }
@@ -30,11 +32,14 @@ export class ProtocolsIterator {
     for (const chef of pConfig.chefs) {
       const { address, lpAddressFetcher } = chef;
       for (const feature of Object.keys(chef.features)) {
+        this.logger.debug('processing feature:', feature);
         const { fields, processor } = chef.features[feature];
         let instructions: Instructions[];
+        //TODO replace switch with better implementation
         switch (feature) {
           case 'pools':
-            instructions = await this.poolsCollector.collect(
+          case 'staking':
+            instructions = await this.instructionsCollector.collect(
               chainCode,
               address,
               lpAddressFetcher,

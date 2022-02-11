@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/node';
-
 // Importing @sentry/tracing patches the global hub for tracing to work.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as Tracing from '@sentry/tracing';
 
 // arg sentryDSN for test reason only
 export const initSentry = function (sentryDSN?: string): void {

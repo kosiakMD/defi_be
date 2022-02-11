@@ -16,12 +16,12 @@ import { BlacklistModule } from '../blacklists/blacklist.module';
 import { ChainsModule } from '../chains.module';
 import { MulticallModule } from '../multicall/multicall.module';
 import { BalancesService } from './balances.service';
+import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
+import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
-import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
-import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 
 @Module({
   imports: [

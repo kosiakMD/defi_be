@@ -2,16 +2,18 @@ import { firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 
 import type { Address } from '@app/common/types';
 
 import { cosmosTokenProvidersMap } from '../../constant/tokens';
 import type { Balance } from '../../interfaces/cosmos.interface';
 
+@Injectable()
 export class CosmosService {
   protected readonly url: string;
 
-  constructor(protected readonly httpService: HttpService) {}
+  constructor(private readonly httpService: HttpService) {}
 
   public async getBalances(address: Address, prefix: string): Promise<Balance> {
     const tokenHolder = cosmosTokenProvidersMap.get(prefix);

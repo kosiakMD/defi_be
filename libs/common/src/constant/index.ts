@@ -19,6 +19,7 @@ export const CURVE_MAIN_COIN_ADDRESS = '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEE
 export const COIN_ADDRESS = ZERO_ADDRESS;
 export const SOL_COIN_ADDRESS = '00000000000000000000000000000000000000000000';
 export const CARDANO_COIN_ADDRESS = 'addr100000000000000000000000000000000000000000000';
+export const COSMOS_COIN_ADDRESS = '00000000000000000000000000000000000000000000';
 
 /**
  *  N.B! should be in lower-case because: Nest/axios transforms header from upper to lower

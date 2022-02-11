@@ -71,3 +71,28 @@ export const NO_DB_BNB_TOKENS = [bnbToken, wbnbToken];
 export const NO_SCAN_ETH_TOKENS = [ethToken, wethToken];
 
 export const NO_SCAN_BNB_TOKENS = [bnbToken, wbnbToken];
+
+export const cosmosTokenProvidersMap = new Map([
+  ['cosmos1', 'cosmoshub'],
+  ['osmo1', 'osmosis'],
+  ['secret1', 'secret'],
+  ['akash1', 'akash'],
+  ['cro1', 'crypto-org'],
+  ['star1', 'iov'],
+  ['sif1', 'sifchain'],
+  ['certik1', 'certik'],
+  ['iaa1', 'iris'],
+  ['regen1', 'regen'],
+  ['persistence1', 'persistence'],
+  ['sent1', 'sentinel'],
+  ['kava1', 'kava'],
+  ['ixo1', 'impacthub'],
+  ['emoney1', 'emoney'],
+  ['agoric1', 'agoric'],
+  ['bostrom1', 'cyber'],
+  ['juno1', 'juno'],
+  ['stars1', 'stargaze'],
+  ['axelar1', 'axelar'],
+  ['somm1', 'sommelier'],
+  ['str1', 'straightedge'],
+]);

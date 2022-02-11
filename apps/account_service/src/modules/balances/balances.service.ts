@@ -15,7 +15,7 @@ import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
 import { retry } from '@app/common/utils/retry';
 
-import { BLACKLISTED_TOKENS } from '../../common/constatnt';
+import { BLACKLISTED_TOKENS } from '../../common/constant';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
@@ -31,11 +31,12 @@ import {
   TokenBalance,
 } from './balances.interfaces';
 import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto';
+import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
+import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
-import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -57,6 +58,7 @@ export class BalancesService {
     private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
     private readonly terraBalancesStrategy: TerraBalancesStrategy,
     private readonly cardanoBalancesStrategy: CardanoBalancesStrategy,
+    private readonly cosmosBalancesStrategy: CosmosBalancesStrategy,
   ) {}
 
   public async getBalance(
@@ -457,6 +459,8 @@ export class BalancesService {
         return [this.terraBalancesStrategy];
       case ChainIdEnum.cardano:
         return [this.cardanoBalancesStrategy];
+      case ChainIdEnum.cosmos:
+        return [this.cosmosBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }

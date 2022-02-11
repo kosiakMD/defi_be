@@ -14,7 +14,7 @@ import {
   NO_DB_ETH_TOKENS,
   NO_SCAN_BNB_TOKENS,
   NO_SCAN_ETH_TOKENS,
-} from '../../../constatnt/tokens';
+} from '../../../constant/tokens';
 import { PriceServiceResponse } from '../../../interfaces/prices.comon.interfaces';
 import { isEthChain } from '../../../utils/web3';
 import {

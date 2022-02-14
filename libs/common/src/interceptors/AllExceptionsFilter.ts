@@ -52,24 +52,30 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // In certain situations `httpAdapter` might not be available in the
       // constructor method, thus we should resolve it here.
       const { httpAdapter } = this.httpAdapterHost;
+      const args = host.getArgs(); // TODO: m.b. take from request
+      const protocolName = args?.[0]?.params?.protocolName;
+
+      // doesn't work but should
+      // reqId: request.header(HEADER_REQUEST_ID),
+      // reqId: request.get(HEADER_REQUEST_ID),
+      // hack - sensitive to register and it's a risky
+      const reqId = request.headers[HEADER_REQUEST_ID]?.toString();
+      const sessionId = request.headers[HEADER_SESSION_ID]?.toString();
 
       const responseBody: ErrorResponseDto = {
         statusCode: httpStatus,
         message: errorMessage,
         timestampEnd: new Date().toISOString(),
         path: httpAdapter.getRequestUrl(request),
-        // doesn't work but should
-        // reqId: request.header(HEADER_REQUEST_ID),
-        // reqId: request.get(HEADER_REQUEST_ID),
-        // hack - sensitive to register and it's a risky
-        reqId: request.headers[HEADER_REQUEST_ID]?.toString(),
-        sessionId: request.headers[HEADER_SESSION_ID]?.toString(),
+        reqId,
+        sessionId,
+        protocolName,
       };
 
       this.logger.error(
         { ...exception, responseBody: responseBody },
         `${exception.stack || ''}\n${this.constructor.name}`,
-        this.constructor.name,
+        // this.constructor.name,
       );
 
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);

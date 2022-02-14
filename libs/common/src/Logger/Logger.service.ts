@@ -33,6 +33,17 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     return diff;
   }
 
+  public error(message: any, trace?: string, context?: string): any {
+    // TODO: for all exception in the future
+    // Sentry.captureException(message, {
+    //   level: Severity.Error,
+    //   // contexts: { trace, context },
+    //   extra: { trace, context },
+    //   // tags: [],
+    // });
+    return Logger.logger.error(message, trace, context);
+  }
+
   public time(message: string): number {
     const start = new Date().getTime();
     this.times.set(message, start);

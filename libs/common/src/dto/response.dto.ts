@@ -90,5 +90,12 @@ export class ErrorResponseDto {
   })
   sessionId: string;
 
+  @ApiProperty({
+    type: String,
+    description: 'Provide Protocol name If ProtocolController',
+    example: 'UniswapV2',
+  })
+  protocolName?: string;
+
   type?: string;
 }

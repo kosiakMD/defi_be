@@ -1,8 +1,4 @@
-import { Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Logger } from '@app/common';
+import { Injectable } from '@nestjs/common';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import { Balance } from '../../../common/interfaces/cosmos.interface';
@@ -11,12 +7,9 @@ import { BalancesRequest } from '../../../common/types';
 
 import type { TokenBalance } from '../balances.interfaces';
 
+@Injectable()
 export class CosmosBalancesStrategy implements BalancesLoadingStrategy {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly config: ConfigService,
-    private readonly cosmosServise: CosmosService,
-  ) {}
+  constructor(private readonly cosmosServise: CosmosService) {}
 
   async getBalances(request: BalancesRequest): Promise<TokenBalance[]> {
     const prefix = this.cosmosServise.getCosmosHubPrefix(request.address);

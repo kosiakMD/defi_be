@@ -113,9 +113,7 @@ export class ApprovalsService {
           `);
           const promises = approvalsToProcess.map((approval) => {
             async function updateApproval(): Promise<number> {
-              console.log(approval);
               const asset = await this.assetsRepository.findOne({ address: approval.token_address, chainId: 1 });
-              console.log(asset.id);
               if (asset) {
                 const query = `
                 update approvals_new
@@ -124,7 +122,6 @@ export class ApprovalsService {
                     token_address = '${approval.token_address}' and
                     contract_address = '${approval.contract_address}'
                 `;
-                console.log('FIX APPROVALS ', query);
                 await this.approvalsRepository.query(query);
                 return 1;
               }

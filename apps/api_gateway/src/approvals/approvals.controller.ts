@@ -1,3 +1,5 @@
+import { GetAllApprovalsDto } from 'apps/account_service/src/common/dto/GetAllApprovals.dto';
+
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -14,23 +16,48 @@ export class ApprovalsController extends BaseService implements IBaseService {
 
   @Get('/')
   @ApiQuery({
-    name: 'addresses',
+    name: 'page',
+    type: Number,
+    required: false,
+    description: `page of approvals`,
+    example: 3,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: `number per one page`,
+    example: 300,
+  })
+  @ApiQuery({
+    name: 'sortField',
+    type: Number,
+    required: false,
+    description: `field to sort by`,
+    example: 300,
+  })
+  @ApiQuery({
+    name: 'sortDirection',
     type: String,
-    description: 'Array of Addresses (comma separated)',
+    required: false,
+    description: `sort direction DESC|ASC`,
+    example: 'ASC',
+  })
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'user addresses',
     example: '0x0000000000000000000000000000000000000000',
   })
   @ApiQuery({
-    name: 'chains',
+    name: 'chain',
     type: String,
     required: false,
-    description: `Array of chains' IDs (comma separated)`,
+    description: `chains' ID`,
     example: '',
   })
   @ApiResponse({ status: HttpStatus.OK })
-  async getBscApproval(
-    @Query('addresses') addresses: string,
-    @Query('chains') chains: string,
-  ): Promise<any> {
-    return this.requestProxy(this.url + 'v1/approvals', 'GET', { params: { addresses, chains } });
+  async getBscApproval(@Query() getAllApprovalsQuery: GetAllApprovalsDto): Promise<any> {
+    return this.requestProxy(this.url + 'v1/approvals', 'GET', { params: getAllApprovalsQuery });
   }
 }

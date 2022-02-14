@@ -5,7 +5,8 @@ import { Injectable } from '@nestjs/common';
 import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
 import { ContractApprovalResponse } from '@app/common/interfaces';
-import { Address } from '@app/common/types';
+
+import { GetAllApprovalsDto } from '../../common/dto/GetAllApprovals.dto';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
 import ApprovalMapper from './helpers/approvalMapper';
@@ -13,18 +14,25 @@ import ApprovalMapper from './helpers/approvalMapper';
 @Injectable()
 export class ApprovalsService {
   constructor(private readonly blacklistService: BlacklistService) {}
-  async getAllApprovals(addresses: Address): Promise<ContractApprovalResponse> {
+  async getAllApprovals(
+    getAllApprovalsQuery: GetAllApprovalsDto,
+  ): Promise<ContractApprovalResponse> {
     const allApprovals = {};
-    if (!addresses) {
+    if (!getAllApprovalsQuery.address) {
       return allApprovals;
     }
 
-    const [ethApprovals] = await Promise.all([this.getApprovals(addresses, CHAIN_ID_ETH)]);
+    const [ethApprovals] = await Promise.all([
+      this.getApprovals(getAllApprovalsQuery, CHAIN_ID_ETH),
+    ]);
 
     return ethApprovals;
   }
 
-  async getApprovals(addresses: Address, chainId: ChainIdEnum): Promise<ContractApprovalResponse> {
+  async getApprovals(
+    getAllApprovalsQuery: GetAllApprovalsDto,
+    chainId: ChainIdEnum,
+  ): Promise<ContractApprovalResponse> {
     let approvalsTableName;
     if (chainId === ChainIdEnum.eth) {
       approvalsTableName = 'approvals_new';
@@ -32,7 +40,10 @@ export class ApprovalsService {
       approvalsTableName = 'bsc_approvals';
     }
 
-    let addressesArray: string[] = addresses.split(',');
+    const { address, page, limit, sortDirection, sortField } = getAllApprovalsQuery;
+    const offset = limit * (page - 1);
+
+    let addressesArray: string[] = [address];
     const blacklistedAddresses: string[] = await this.blacklistService.filterIsBlacklisted(
       addressesArray,
     );
@@ -65,6 +76,8 @@ export class ApprovalsService {
                    left join projects_info pi on pc.project_id = pi.id
                    left join assets_new an on a.asset_id = an.id and an.chain_id = 1
           where a.user_address in (${addressesJoined})
+          order by a.${sortField} ${sortDirection}
+          offset ${offset} limit ${limit}
           `);
     return addressesArray.reduce((response, address) => {
       const singleAddressApprovals = approvals.filter(

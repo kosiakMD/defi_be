@@ -13,7 +13,7 @@ import { AssetTransfersRepository } from './repositories/assettransfers.reposito
 import { UtilsDatabase } from './utils.database';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([AssetsEntity, AssetTransfersEntity, ApprovalsEntity])],
+  imports: [TypeOrmModule.forFeature([AssetsEntity, AssetTransfersEntity, ApprovalsEntity,ApprovalsRepository, AssetsRepository])],
   providers: [
     UtilsDatabase,
     AssetsRepository,
@@ -23,6 +23,6 @@ import { UtilsDatabase } from './utils.database';
     ApprovalsStore,
     AssetsTransfersStore,
   ],
-  exports: [AssetsStore, AssetsTransfersStore, ApprovalsStore],
+  exports: [AssetsStore, AssetsTransfersStore, ApprovalsStore, ApprovalsRepository, AssetsRepository],
 })
 export class StoreModule {}

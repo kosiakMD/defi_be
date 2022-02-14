@@ -1,6 +1,6 @@
 import { getManager } from 'typeorm';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 
 import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ChainIdEnum } from '@app/common/enum';
@@ -9,10 +9,25 @@ import { Address } from '@app/common/types';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
 import ApprovalMapper from './helpers/approvalMapper';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { ApprovalsRepository } from 'jobs/migration_events_consumer/src/store/repositories/approvals.repository';
+import { ApprovalsEntity } from 'jobs/migration_events_consumer/src/store/entities/approvals.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AssetsRepository } from 'jobs/migration_events_consumer/src/store/repositories/assets.repository';
+import { AssetsEntity } from 'jobs/migration_events_consumer/src/store/entities/assets.entity';
 
 @Injectable()
 export class ApprovalsService {
-  constructor(private readonly blacklistService: BlacklistService) {}
+  constructor(
+    private readonly blacklistService: BlacklistService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectRepository(ApprovalsEntity) private readonly approvalsRepository: ApprovalsRepository,
+    @InjectRepository(AssetsEntity) private readonly assetsRepository: AssetsRepository,
+    ) {
+      setTimeout(() => {
+        this.fixNullTokenData();
+      }, 2000); // timeout to connect db driver
+    }
   async getAllApprovals(addresses: Address): Promise<ContractApprovalResponse> {
     const allApprovals = {};
     if (!addresses) {
@@ -75,5 +90,55 @@ export class ApprovalsService {
         [address]: ApprovalMapper(singleAddressApprovals, chainId),
       };
     }, {});
+  }
+
+  async fixNullTokenData(): Promise<void> {
+    const approvalsChunk = Number(process.env.APPROVALS_CHUNK);
+    if (approvalsChunk) {
+      try {
+        const approvalsNumber = await this.approvalsRepository.count();
+        let page = 1;
+        const limit = approvalsChunk;
+        this.logger.log(`Try to fix ${approvalsNumber} approvals...`);
+        while (limit * (page - 1) < approvalsNumber) {
+          this.logger.log(`Processing page: ${page}, limit: ${limit}`);
+          const offset = limit * (page - 1);
+          const approvalsToProcess: any[] = await this.approvalsRepository.query(`
+            select
+              ap.asset_id,
+              ap.token_address,
+              ap.contract_address
+            from approvals_new ap
+              offset ${offset} limit ${limit}
+          `);
+          const promises = approvalsToProcess.map((approval) => {
+            async function updateApproval(): Promise<number> {
+              console.log(approval);
+              const asset = await this.assetsRepository.findOne({ address: approval.token_address, chainId: 1 });
+              console.log(asset.id);
+              if (asset) {
+                const query = `
+                update approvals_new
+                  set asset_id = ${asset.id}
+                  where
+                    token_address = '${approval.token_address}' and
+                    contract_address = '${approval.contract_address}'
+                `;
+                console.log('FIX APPROVALS ', query);
+                await this.approvalsRepository.query(query);
+                return 1;
+              }
+              return 0;
+            }
+            return updateApproval.call(this);
+          });
+          const results = await Promise.all(promises);
+          this.logger.log(`RESULTS: ${results}`);
+          page += 1;
+        }
+      } catch (error) {
+        this.logger.error(`Error to fix approvals token null data: ${error.message}`);
+      }
+    }
   }
 }

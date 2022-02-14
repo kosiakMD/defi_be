@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryColumn } from 'typeorm';
 
-@Entity('approvals')
+@Entity('approvals_new')
 export class ApprovalsEntity {
   @PrimaryColumn()
   id?: number;

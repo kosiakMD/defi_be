@@ -10,8 +10,8 @@ import { APP_FILTER } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
-import { LoggerMiddleware } from '@app/common/middlewares';
-import { HeadersMiddleware } from '@app/common/middlewares/Headers.middleware';
+import { LogRequestMiddleware } from '@app/common/middlewares';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import { AssetsModule } from './modules/assets/assets.module';
 import { CommonModule } from './modules/common/common.module';
@@ -32,7 +32,7 @@ export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {

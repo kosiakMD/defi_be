@@ -17,8 +17,8 @@ import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
 import { ResponceInterceptor } from '@app/common/interceptors/Responce.interceptor';
 import { SentryInterceptor } from '@app/common/interceptors/Sentry.interceptor';
-import { LoggerMiddleware } from '@app/common/middlewares';
-import { HeadersMiddleware } from '@app/common/middlewares/Headers.middleware';
+import { LogRequestMiddleware } from '@app/common/middlewares';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
@@ -85,7 +85,7 @@ export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {

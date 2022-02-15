@@ -29,7 +29,7 @@ export default class CurveProtocol extends BasicProtocol {
     ChainAbbrEnum.arbi,
     ChainAbbrEnum.harm,
     ChainAbbrEnum.opt,
-    ChainAbbrEnum.xdai,
+    ChainAbbrEnum.gnosis,
   ];
   readonly project = ProjectEnum.curve;
   readonly name = CurveProtocolEnum.curve;
@@ -41,7 +41,7 @@ export default class CurveProtocol extends BasicProtocol {
     [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
     [ChainAbbrEnum.arbi]: [FeatureEnum.pools, FeatureEnum.staking],
     [ChainAbbrEnum.harm]: [FeatureEnum.pools, FeatureEnum.staking],
-    [ChainAbbrEnum.xdai]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.gnosis]: [FeatureEnum.pools, FeatureEnum.staking],
     [ChainAbbrEnum.opt]: [FeatureEnum.pools, FeatureEnum.staking],
   };
 

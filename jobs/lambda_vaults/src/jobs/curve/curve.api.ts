@@ -137,12 +137,12 @@ export class CurveApi {
     }
   }
 
-  async getMainPoolsAprXdai(): Promise<PoolsAprs> {
+  async getMainPoolsAprGnosis(): Promise<PoolsAprs> {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-xdai/apys.json`);
       return data?.apy?.day;
     } catch (e) {
-      this.logger.error(e, 'getMainPoolsAprXdai');
+      this.logger.error(e, 'getMainPoolsAprGnosis');
       throw e;
     }
   }

@@ -402,8 +402,8 @@ export class CurveGaugesBase implements JobInterface {
         return await curveApi.getMainPoolsAprOpt();
       case ChainIdEnum.harm:
         return await curveApi.getMainPoolsAprHarm();
-      case ChainIdEnum.xdai:
-        return await curveApi.getMainPoolsAprXdai();
+      case ChainIdEnum.gnosis:
+        return await curveApi.getMainPoolsAprGnosis();
     }
   }
 

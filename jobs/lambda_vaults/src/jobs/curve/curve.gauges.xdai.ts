@@ -14,8 +14,8 @@ import { CurveGaugesBase } from './curve.gauges.base';
 import { LocalMultiCall } from './local.multicall';
 
 @Injectable()
-export class CurveGaugesXdai extends CurveGaugesBase {
-  chain = ChainIdEnum.xdai;
+export class CurveGaugesGnosis extends CurveGaugesBase {
+  chain = ChainIdEnum.gnosis;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
 
   protected localMulticall;

@@ -35,7 +35,7 @@ export class SushiSwapExchangeSubgraph {
       [ChainIdEnum.harm, this.getConfigSubgraph('ONE')],
       [ChainIdEnum.heco, this.getConfigSubgraph('HECO')],
       [ChainIdEnum.plg, this.getConfigSubgraph('MATIC')],
-      [ChainIdEnum.xdai, this.getConfigSubgraph('XDAI')],
+      [ChainIdEnum.gnosis, this.getConfigSubgraph('GNOSIS')],
       [ChainIdEnum.mriver, this.getConfigSubgraph('MRIVER')],
     ]);
   }

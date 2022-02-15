@@ -26,16 +26,19 @@ export class ProtocolsIterator {
   }
 
   async runForProtocol(pName, pConfig): Promise<FeatureInstructions[]> {
-    //todo try to determine which type of protocol we are going to work with
     const { chainCode } = pConfig;
     const featureInstructions: FeatureInstructions[] = [];
-    for (const chef of pConfig.chefs) {
-      const { address, lpAddressFetcher } = chef;
-      for (const feature of Object.keys(chef.features)) {
+    for (const contract of pConfig.contracts) {
+      if (!this.contractTypeSupported(contract.type)) {
+        this.logger.warn('unsupported type of contract:', contract.type);
+        continue;
+      }
+      const { address, lpAddressFetcher } = contract;
+      for (const feature of Object.keys(contract.features)) {
         this.logger.debug('processing feature:', feature);
-        const { fields, processor } = chef.features[feature];
+        const { fields, processor } = contract.features[feature];
         let instructions: Instructions[];
-        //TODO replace switch with better implementation
+        //TODO replace switch with better implementation, probably make collector configurable
         switch (feature) {
           case 'pools':
           case 'staking':
@@ -57,5 +60,9 @@ export class ProtocolsIterator {
       }
     }
     return featureInstructions;
+  }
+
+  contractTypeSupported(contractType: string): boolean {
+    return ['MASTER_CHEF'].includes(contractType);
   }
 }

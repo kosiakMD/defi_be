@@ -6,7 +6,7 @@ import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger';
-import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID, HEADER_TIMESTAMP_ENTRY } from '@app/common/constant';
 
 @Injectable()
 export class HeadersMiddleware implements NestMiddleware {
@@ -16,6 +16,8 @@ export class HeadersMiddleware implements NestMiddleware {
   ) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
+    req.headers[HEADER_TIMESTAMP_ENTRY] = Date.now().toString();
+
     let reqId = req.header(HEADER_REQUEST_ID);
     if (!reqId) {
       reqId = uuid();

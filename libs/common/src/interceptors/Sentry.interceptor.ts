@@ -7,6 +7,8 @@ import { tap } from 'rxjs/operators';
 // import { catchError } from 'rxjs/operators';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
+
 const allowedControllers = [
   'HealthController', // test control
   'IntegrationsController',
@@ -26,7 +28,14 @@ export class SentryInterceptor implements NestInterceptor {
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
       // const args = context.getArgs();
-
+      let reqId, sessionId;
+      const hostType = context.getType();
+      if (hostType === 'http') {
+        const contextHttp = context.switchToHttp();
+        const request = contextHttp.getRequest();
+        reqId = request.headers[HEADER_REQUEST_ID]?.toString();
+        sessionId = request.headers[HEADER_SESSION_ID]?.toString();
+      }
       // console.log('LogException', className);
       // console.log('args', args);
 
@@ -52,8 +61,10 @@ export class SentryInterceptor implements NestInterceptor {
           // console.log('exception', exception);
           Sentry.captureException(exception, {
             level: Severity.Error,
-            extra: {
+            tags: {
               protocolName: args?.[0]?.params?.protocolName,
+              reqId,
+              sessionId,
             },
           });
         }),

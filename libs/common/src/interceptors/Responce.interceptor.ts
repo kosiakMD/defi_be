@@ -5,14 +5,14 @@ import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } fr
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
-import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID, HEADER_TIMESTAMP_ENTRY } from '@app/common/constant';
 
 export interface Response<T> {
   data: T;
 }
 
 @Injectable()
-export class TransformHeadersInterceptor<T> implements NestInterceptor<T, Response<T>> {
+export class ResponceInterceptor<T> implements NestInterceptor<T, Response<T>> {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -27,6 +27,7 @@ export class TransformHeadersInterceptor<T> implements NestInterceptor<T, Respon
     if (hostType === 'http') {
       const httpContext = context.switchToHttp();
       const request = httpContext.getRequest();
+      const timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY);
       const reqId = request.header(HEADER_REQUEST_ID);
       const sessionId = request.header(HEADER_SESSION_ID);
       // TODO: TBD log or not this
@@ -38,7 +39,12 @@ export class TransformHeadersInterceptor<T> implements NestInterceptor<T, Respon
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         map((data) => {
-          data.meta = { reqId, sessionId, timestampEntry: new Date().toISOString() };
+          data.meta = {
+            reqId,
+            sessionId,
+            timestampEntry,
+            timestampExit: Date.now().toString(),
+          };
           return data;
         }),
       );

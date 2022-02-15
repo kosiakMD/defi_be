@@ -15,11 +15,11 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
-import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
-import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
+import { ResponceInterceptor } from '@app/common/interceptors/Responce.interceptor';
+import { SentryInterceptor } from '@app/common/interceptors/Sentry.interceptor';
 import { LoggerMiddleware } from '@app/common/middlewares';
-import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { HeadersMiddleware } from '@app/common/middlewares/Headers.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
@@ -80,7 +80,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
+      useClass: ResponceInterceptor,
     },
   ],
 })

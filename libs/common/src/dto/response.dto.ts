@@ -68,7 +68,7 @@ export class ErrorResponseDto {
     type: String,
     example: '2021-12-16T09:43:51.398Z',
   })
-  timestampEnd: string;
+  timestampExit: string;
 
   @ApiProperty({
     type: String,

@@ -9,9 +9,9 @@ import {
 import { APP_FILTER } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
 import { LoggerMiddleware } from '@app/common/middlewares';
-import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { HeadersMiddleware } from '@app/common/middlewares/Headers.middleware';
 
 import { AssetsModule } from './modules/assets/assets.module';
 import { CommonModule } from './modules/common/common.module';

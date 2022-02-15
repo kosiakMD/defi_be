@@ -1,2 +1,3 @@
-export * from './logger.middleware';
-export * from './proxy.middleware';
+export * from './Headers.middleware';
+export * from './Logger.middleware';
+export * from './Proxy.middleware';

@@ -28,3 +28,5 @@ export const COSMOS_COIN_ADDRESS = '00000000000000000000000000000000000000000000
  */
 export const HEADER_REQUEST_ID = 'x-req-uuid';
 export const HEADER_SESSION_ID = 'x-session-uuid';
+export const HEADER_TIMESTAMP_ENTRY = 'x-timestamp-entry';
+export const HEADER_TIMESTAMP_EXIT = 'x-timestamp-exit';

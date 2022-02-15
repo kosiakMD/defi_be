@@ -16,10 +16,10 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { Logger, LoggerMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
-import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
-import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
-import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
+import { ResponceInterceptor } from '@app/common/interceptors/Responce.interceptor';
+import { SentryInterceptor } from '@app/common/interceptors/Sentry.interceptor';
+import { HeadersMiddleware } from '@app/common/middlewares/Headers.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
@@ -99,7 +99,7 @@ import { VaultsModule } from './vaults/vaults.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
+      useClass: ResponceInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,

@@ -45,6 +45,12 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
 
       const vaults = subgraphVaults.concat(onChainVaults);
 
+      // Ensure all assets are saved in the database
+      await this.saveAssets(
+        vaults.map((vault) => vault.token.id),
+        false, // set to true and run manually to force re-index all underlying assets and mark parents as not tracked
+      );
+
       const shareTokens = Array.from(new Set(vaults.map((vault) => vault.shareToken.id)));
 
       const sharePrices = await this.getVaultsPricePerShare(shareTokens);

@@ -16,6 +16,8 @@ import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
+import { AaveGenericToken } from '@app/common/web3provider/contracts/protocols/aave/AaveGenericToken';
+import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/CompoundToken';
 import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/TokenVault';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -31,7 +33,7 @@ import { ERC20 } from '../approvals/contracts/ERC20';
 import { MINTER } from '../approvals/contracts/MINTER';
 import { UNIV2LP } from '../approvals/contracts/UNIV2LP';
 import { MinimalStakedTokenCheck } from './contracts/MinimalStakedTokenCheck';
-import { AssetDto, AssetResponseDto } from './dto/asset.dto';
+import { AssetDto, AssetResponseDto, AssetTrackDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
@@ -128,14 +130,18 @@ export class AssetsService {
     }
   }
 
-  async saveTrackingAsset({ assetAddress, assetChain }): Promise<AssetResponseDto> {
+  async saveTrackingAsset({
+    address: assetAddress,
+    chain: assetChain,
+    force,
+  }: AssetTrackDto): Promise<AssetResponseDto> {
     const existedAsset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
       assetAddress,
       assetChain,
     );
 
     const shouldReturnExisting = existedAsset && (existedAsset.isTracked || existedAsset.isLp);
-    if (shouldReturnExisting) {
+    if (shouldReturnExisting && !force) {
       return this.withUnderlying(existedAsset);
     }
 
@@ -198,6 +204,8 @@ export class AssetsService {
       this.attemptUniswapLikePair(asset),
       this.attemptCurveLikePool(asset),
       this.attemptEllipsisLikePair(asset),
+      this.attemptAaveUnderlying(asset),
+      this.attemptCompoundUnderlying(asset),
       this.attemptYearnUnderlying(asset),
       this.attempStakedToken(asset), // xSushi xBoo, ohm forks, memo, wmemo,
       this.attemptTerraLp(asset),
@@ -256,6 +264,23 @@ export class AssetsService {
     return true;
   }
 
+  private async attemptAaveUnderlying(asset: AssetsEntity) {
+    const contract = new AaveGenericToken(asset.address);
+    const tokenAddress = await this.multicall.call(
+      contract.UNDERLYING_ASSET_ADDRESS(),
+      asset.chain,
+    );
+    await this.saveAndRelate(asset, tokenAddress);
+    return true;
+  }
+
+  private async attemptCompoundUnderlying(asset: AssetsEntity) {
+    const contract = new CompoundToken(asset.address);
+    const tokenAddress = await this.multicall.call(contract.underlying(), asset.chain);
+    await this.saveAndRelate(asset, tokenAddress);
+    return true;
+  }
+
   /**
    * Saves a new address as an underlying asset for a given token
    *
@@ -266,8 +291,8 @@ export class AssetsService {
    */
   private async saveAndRelate(asset: AssetsEntity, underlyingAsset: Address, poolId = 0) {
     const underlying = await this.saveTrackingAsset({
-      assetAddress: underlyingAsset.toLowerCase(),
-      assetChain: asset.chain,
+      address: underlyingAsset.toLowerCase(),
+      chain: asset.chain,
     });
 
     return await this.assetRepository.createRelation(asset.id, underlying.id, poolId);

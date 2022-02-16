@@ -54,7 +54,6 @@ import {
   ISushiSwapLiquidityPair,
   ISushiSwapPoolUser,
   ISushiSwapPoolUserV2,
-  ISushiSwapPoolV2,
   ISushiSwapSubgraphToken,
 } from './sushiswap/sushiswap.interfaces';
 
@@ -641,12 +640,12 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
-    const { users, masterChef } = await this.masterChefSubgraph.getMasterChefPositions(
-      address.toLowerCase().split(','),
-      chain,
-    );
-
     try {
+      const { users, masterChef } = await this.masterChefSubgraph.getMasterChefPositions(
+        address.toLowerCase().split(','),
+        chain,
+      );
+
       return this.getGenericMasterChef(address, chain, users, masterChef);
     } catch (e) {
       this.logger.error(e);
@@ -658,12 +657,12 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     address: Address,
     chain: ChainDto,
   ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
-    const { users, masterChef } = await this.masterChefV2Subgraph.getMasterChefPositions(
-      address.toLowerCase().split(','),
-      chain,
-    );
-
     try {
+      const { users, masterChef } = await this.masterChefV2Subgraph.getMasterChefPositions(
+        address.toLowerCase().split(','),
+        chain,
+      );
+
       return this.getGenericMasterChef(address, chain, users, masterChef);
     } catch (e) {
       this.logger.error(e);
@@ -691,18 +690,17 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
 
     const underlyingTokenAddresses = pairsData.flatMap((pair) => [pair.token0.id, pair.token1.id]);
 
-    const poolRewarders = users
-      .flatMap((user: ISushiSwapPoolUser | ISushiSwapPoolUserV2) => user.pool)
-      .filter((pool): pool is ISushiSwapPoolV2 => 'rewarder' in pool);
+    const [pendingSushi, pendingRewards] = await Promise.all([
+      this.getPendingSushi(users, masterChef, address, chain),
+      this.getPendingRewards(users, address, masterChef, chain),
+    ]);
 
-    const rewardTokens = poolRewarders
-      .map((pool) => pool.rewarder.rewardToken)
+    const rewardTokens = Array.from(pendingRewards.values())
+      .flatMap((pools) => pools.flatMap((pool) => pool.address))
       .concat(SUSHI_ADDRESS.get(chain.id));
 
-    const [pendingSushi, pendingRewards, assets, prices] = await Promise.all([
-      this.getPendingSushi(users, masterChef, address, chain),
-      this.getPendingRewards(poolRewarders, address, chain),
-      this.getAssets(rewardTokens, chain), // we only need reward tokens, the rest of the assets come from the subgraph
+    const [assets, prices] = await Promise.all([
+      this.getAssets(rewardTokens, chain),
       this.getPrices(underlyingTokenAddresses.concat(rewardTokens), chain),
     ]);
 
@@ -804,17 +802,30 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     return new Map(Object.entries(prices).map(([address, price]) => [address, Number(price)]));
   }
 
-  async getPendingRewards(pools: ISushiSwapPoolV2[], address: Address, chain: ChainDto) {
+  async getPendingRewards(
+    users: ISushiSwapPoolUser[] | ISushiSwapPoolUserV2[],
+    address: Address,
+    masterChef: ISushiSwapChef,
+    chain: ChainDto,
+  ) {
     try {
+      const pools = users.flatMap((user) => user.pool);
+      const contract = new SushiSwapMasterChefAbi(masterChef.id);
+      const rewarderCalls = new Map();
+      pools.forEach((pool) => rewarderCalls.set(`rewarder_${pool.id}`, contract.rewarder(pool.id)));
+      const rewarderResults = await this.multicallService.handleInBatches(rewarderCalls, chain.id);
+
       const calls = new Map();
       pools.map((pool) => {
-        const rewarderContract = new SushiSwapRewarder(pool.rewarder.id);
+        const rewarderAddress = rewarderResults.get(`rewarder_${pool.id}`).output.data.toString();
+        const rewarderContract = new SushiSwapRewarder(rewarderAddress);
 
         calls.set(
-          `${pool.id}-${pool.rewarder.id}-${address}`,
+          `${pool.id}-${rewarderAddress}-${address}`,
           rewarderContract.pendingTokens(pool.id, address, 0), // ? I think the last argument doesn't do anything? e.g. 0x7519C93fC5073E15d89131fD38118D73A72370F8
         );
       });
+
       const rawResults = await this.multicallService.handleInBatches(calls, chain.id);
       return Array.from(rawResults.values()).reduce((calls, result) => {
         const [poolId, user] = result.input.data;
@@ -831,7 +842,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         );
       }, new Map());
     } catch {
-      this.logger.error(`Failed to get Sushiswap pendingRewards for chain ${chain.id}`);
+      // Silently fail as many contracts don't support this feature
       return new Map();
     }
   }

@@ -6,8 +6,8 @@ import { concatStrings } from '@app/common/utils';
 import { CurveNonregisterPoolsBase } from './curve.nonregister.pools.base';
 
 @Injectable()
-export class CurvePoolsXdai extends CurveNonregisterPoolsBase {
-  chain = ChainIdEnum.xdai;
+export class CurvePoolsGnosis extends CurveNonregisterPoolsBase {
+  chain = ChainIdEnum.gnosis;
 
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
 }

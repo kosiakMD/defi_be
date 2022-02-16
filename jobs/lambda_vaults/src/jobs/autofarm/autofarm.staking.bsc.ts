@@ -23,6 +23,7 @@ import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
+import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { APRStats } from '../dto/apr';
 import { IntegrationDataConverter } from '../integration.data.converter';
@@ -58,7 +59,10 @@ export class AutofarmStakingBSC implements JobInterface {
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
-    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
+    if (
+      !jobMapping.mapping ||
+      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
+    ) {
       this.logger.log('it is time to update mapping', this.placeholder);
       jobMapping = await this.buildInitialMapping(jobMapping);
     }
@@ -87,7 +91,9 @@ export class AutofarmStakingBSC implements JobInterface {
     });
 
     const poolsInfoBSC: Map<string, any> = await this.getAllPoolInfo(AutofarmAddresses.chiefV2BSC);
-    const poolsInfoAuto: Map<string, any> = await this.getAllPoolInfo(AutofarmAddresses.autoFarmContractBSC);
+    const poolsInfoAuto: Map<string, any> = await this.getAllPoolInfo(
+      AutofarmAddresses.autoFarmContractBSC,
+    );
     const poolsInfoArray = [
       { poolsInfo: poolsInfoBSC, chiefContract: AutofarmAddresses.chiefV2BSC },
       { poolsInfo: poolsInfoAuto, chiefContract: AutofarmAddresses.autoFarmContractBSC },

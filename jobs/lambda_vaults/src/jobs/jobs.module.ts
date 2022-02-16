@@ -8,6 +8,8 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { AnchorLp } from './anchor/anchor.lp';
+import { AnchorStaking } from './anchor/anchor.staking';
 import { AutofarmApiService } from './autofarm/autofarm.api.service';
 import { AutofarmStakingAVAX } from './autofarm/autofarm.staking.avax';
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
@@ -33,18 +35,18 @@ import { CurveGauges } from './curve/curve.gauges';
 import { CurveGaugesArbi } from './curve/curve.gauges.arbi';
 import { CurveGaugesAvax } from './curve/curve.gauges.avax';
 import { CurveGaugesFtm } from './curve/curve.gauges.ftm';
+import { CurveGaugesGnosis } from './curve/curve.gauges.gnosis';
 import { CurveGaugesHarm } from './curve/curve.gauges.harm';
 import { CurveGaugesOpt } from './curve/curve.gauges.opt';
 import { CurveGaugesPlg } from './curve/curve.gauges.plg';
-import { CurveGaugesXdai } from './curve/curve.gauges.xdai';
 import { CurvePools } from './curve/curve.pools';
 import { CurvePoolsArbi } from './curve/curve.pools.arbi';
 import { CurvePoolsAvax } from './curve/curve.pools.avax';
 import { CurvePoolsFtm } from './curve/curve.pools.ftm';
+import { CurvePoolsGnosis } from './curve/curve.pools.gnosis';
 import { CurvePoolsHarm } from './curve/curve.pools.harm';
 import { CurvePoolsOpt } from './curve/curve.pools.opt';
 import { CurvePoolsPlg } from './curve/curve.pools.plg';
-import { CurvePoolsXdai } from './curve/curve.pools.xdai';
 import { DefiKingdomsPools } from './defikingdoms/defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
@@ -150,12 +152,14 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   CurvePoolsOpt,
   CurvePoolsHarm,
   CurveGaugesHarm,
-  CurvePoolsXdai,
-  CurveGaugesXdai,
+  CurvePoolsGnosis,
+  CurveGaugesGnosis,
   TrisolarisPools,
   TrisolarisStaking,
   OrcaPools,
   OrcaStaking,
+  AnchorLp,
+  AnchorStaking,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

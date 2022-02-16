@@ -8,7 +8,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 
 import { HealthController } from './controllers/health.controller';
 

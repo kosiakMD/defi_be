@@ -13,7 +13,12 @@ import { HttpAdapterHost } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
-import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
+import {
+  HEADER_REQUEST_ID,
+  HEADER_SESSION_ID,
+  HEADER_TIMESTAMP_ENTRY,
+  HEADER_TIMESTAMP_EXIT,
+} from '@app/common/constant';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -36,7 +41,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? exception.getStatus()
           : HttpStatus.INTERNAL_SERVER_ERROR;
 
-      const request = contextHttp.getRequest<Request>();
+      const request: Request = contextHttp.getRequest<Request>();
 
       let errorMessage;
       if (
@@ -55,20 +60,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const args = host.getArgs(); // TODO: m.b. take from request
       const protocolName = args?.[0]?.params?.protocolName;
 
-      // doesn't work but should
-      // reqId: request.header(HEADER_REQUEST_ID),
-      // reqId: request.get(HEADER_REQUEST_ID),
-      // hack - sensitive to register and it's a risky
-      const reqId = request.headers[HEADER_REQUEST_ID]?.toString();
-      const sessionId = request.headers[HEADER_SESSION_ID]?.toString();
-
+      // N.B! letters sensitive to register and it's a risky
+      const reqId = request.header(HEADER_REQUEST_ID);
+      const sessionId = request.header(HEADER_SESSION_ID);
+      const timestampEntry = Number(request.header(HEADER_TIMESTAMP_ENTRY));
+      const timestampExit = Number(request.header(HEADER_TIMESTAMP_EXIT)) || Date.now();
+      const timeExecute = timestampExit - timestampEntry;
+      // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = {
         statusCode: httpStatus,
         message: errorMessage,
-        timestampEnd: new Date().toISOString(),
         path: httpAdapter.getRequestUrl(request),
         reqId,
         sessionId,
+        timestampEntry: timestampEntry.toString(),
+        timestampExit: timestampExit.toString(),
+        timeExecute: timeExecute.toString(),
         protocolName,
       };
 
@@ -77,6 +84,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
         `${exception.stack || ''}\n${this.constructor.name}`,
         // this.constructor.name,
       );
+
+      // const className = contextHttp.getClass().name;
+      // if (allowedControllers.includes(className)) {
+      //   Sentry.captureException(exception, {
+      //     level: Severity.Error,
+      //     extra: {
+      //       reqId,
+      //       sessionId,
+      //       protocolName,
+      //     },
+      //   });
+      // }
 
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {

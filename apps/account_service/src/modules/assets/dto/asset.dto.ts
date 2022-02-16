@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { Expose, Transform } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
@@ -129,4 +129,10 @@ export class AssetTrackDto {
   @IsNotEmpty()
   @ApiProperty({ type: Number, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
   chain: ChainIdEnum;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({ type: Boolean, default: false, example: false })
+  force?: boolean = false;
 }

@@ -1,3 +1,4 @@
+import helmet from 'helmet';
 import { install } from 'source-map-support';
 
 import { ValidationPipe } from '@nestjs/common';
@@ -43,6 +44,8 @@ async function bootstrap() {
     const document = SwaggerModule.createDocument(app, config);
     SwaggerModule.setup('api', app, document);
   }
+
+  app.use(helmet());
 
   await app.listen(SERVICE_PORT, SERVICE_HOST);
 }

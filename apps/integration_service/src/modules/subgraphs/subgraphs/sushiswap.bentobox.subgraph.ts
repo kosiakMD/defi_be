@@ -24,7 +24,7 @@ export class SushiSwapBentoBoxSubgraph {
       [ChainIdEnum.bsc, this.getConfigSubgraph('BSC')],
       [ChainIdEnum.eth, this.getConfigSubgraph('ETH')],
       [ChainIdEnum.plg, this.getConfigSubgraph('PLG')],
-      [ChainIdEnum.xdai, this.getConfigSubgraph('XDAI')],
+      [ChainIdEnum.gnosis, this.getConfigSubgraph('GNOSIS')],
     ]);
   }
 

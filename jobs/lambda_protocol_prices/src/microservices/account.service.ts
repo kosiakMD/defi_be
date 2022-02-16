@@ -35,13 +35,18 @@ export class AccountService {
   }
 
   @RequestErrorHandler()
-  async saveTrackingAsset(address: string, chain: ChainIdEnum): Promise<IAssetResponseDto> {
+  async saveTrackingAsset(
+    address: string,
+    chain: ChainIdEnum,
+    force = false,
+  ): Promise<IAssetResponseDto> {
     const timeKey = `POST: ${this.assetsUrl} - Address: ${address} Chain: ${chain}`;
     this.logger.time(timeKey);
     const data = await this.httpService
       .post(this.assetsUrl, {
         address: address,
         chain: chain,
+        force,
       })
       .pipe(map((r) => r.data))
       .toPromise();

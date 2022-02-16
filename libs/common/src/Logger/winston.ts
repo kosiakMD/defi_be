@@ -20,7 +20,7 @@ export type LogConfig = {
   serviceName: string;
   environment: EnvEnum;
   level?: string;
-  meta?: Record<string, any>;
+  defaultMeta?: Record<string, any>;
   awsConfig: {
     accessKeyId: string;
     secretAccessKey: string;
@@ -54,7 +54,7 @@ export const winstonParams = ({
   environment,
   level = 'info',
   awsConfig,
-  meta,
+  defaultMeta,
 }: LogConfig): WinstonModuleOptions => {
   const transports: Transport[] = createBaseTransports(logErrorFile, logCombineLog);
 
@@ -77,7 +77,7 @@ export const winstonParams = ({
   return {
     level: level,
     format: winston.format.json(),
-    defaultMeta: Object.assign({ service: serviceName }, meta),
+    defaultMeta: Object.assign({ service: serviceName }, defaultMeta),
     transports,
   };
 };
@@ -94,7 +94,7 @@ export const createLogger = (workFolder: string): LoggerService => {
     serviceName: process.env.SERVICE_NAME,
     level: process.env.LOG_LEVEL,
     environment: process.env.NODE_ENV as EnvEnum,
-    meta: { env: process.env.ENV },
+    defaultMeta: { env: process.env.ENV, service: process.env.SERVICE_NAME },
     awsConfig: {
       region: process.env.AWS_REGION,
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -118,7 +118,7 @@ export const createJobLogger = (workFolder: string): LoggerService => {
     // TODO: for custom logger
     level: process.env.LOG_LEVEL || 'info',
     format: winston.format.json(),
-    defaultMeta: { service: process.env.SERVICE_NAME },
+    defaultMeta: { env: process.env.ENV, service: process.env.SERVICE_NAME },
     transports: transports,
   });
 };

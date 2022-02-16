@@ -24,7 +24,7 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.okex]: 'OKEX_URL',
   [ChainIdEnum.opt]: 'OPT_URL',
   [ChainIdEnum.plg]: 'POLYGON_URL',
-  [ChainIdEnum.xdai]: 'XDAI_URL',
+  [ChainIdEnum.gnosis]: 'GNOSIS_URL',
   [ChainIdEnum.near]: 'NEAR_URL',
   [ChainIdEnum.terra]: 'TERRA_URL',
   [ChainIdEnum.klay]: 'KLAYTN_URL',
@@ -42,6 +42,24 @@ export class Web3Provider {
     this.initCardanoProviders();
   }
 
+  public initCardanoProviders() {
+    this.providers[ChainIdEnum.cardano] = new BlockFrostAPI({
+      projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
+    });
+  }
+
+  public getInstanceByChainId(chain: ChainIdEnum): {
+    return this.providers[chain];
+  }
+
+  public getInstance(chain: ChainIdEnum): Connection {
+    return this.providers[chain];
+  }
+
+  public getCadronaInstance(chain: ChainIdEnum): BlockFrostAPI {
+    return this.providers[chain];
+  }
+
   private initWeb3Providers() {
     Object.entries(ChainsProvidersUrls).forEach(([chainId, configName]) => {
       this.providers[chainId] = new Web3(this.configService.get<string>(configName));
@@ -57,27 +75,5 @@ export class Web3Provider {
       URL: this.configService.get<string>('TERRA_URL'),
       chainID: AbsoluteChainIdEnum.terra.toString(),
     });
-  }
-
-  public initCardanoProviders() {
-    this.providers[ChainIdEnum.cardano] = new BlockFrostAPI({
-      projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
-    });
-  }
-
-  public getInstanceByChainId(chain: ChainIdEnum): Web3 {
-    return this.providers[chain];
-  }
-
-  public getInstance(chain: ChainIdEnum): Connection {
-    return this.providers[chain];
-  }
-
-  public getLCDInstance(chain: ChainIdEnum): LCDClient {
-    return this.providers[chain];
-  }
-
-  public getCadronaInstance(chain: ChainIdEnum): BlockFrostAPI {
-    return this.providers[chain];
   }
 }

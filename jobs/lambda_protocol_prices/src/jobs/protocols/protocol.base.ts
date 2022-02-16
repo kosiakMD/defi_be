@@ -26,9 +26,9 @@ export abstract class ProtocolBase implements IProtocolPriceUpdate {
     return this.accountService.getAssets(addresses, this.chain);
   }
 
-  saveAssets(addresses: Address[]) {
+  saveAssets(addresses: Address[], force = false) {
     return Promise.allSettled(
-      addresses.map((address) => this.accountService.saveTrackingAsset(address, this.chain)),
+      addresses.map((address) => this.accountService.saveTrackingAsset(address, this.chain, force)),
     );
   }
 

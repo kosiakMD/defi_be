@@ -87,6 +87,7 @@ import WePiggyProtocol from './protocols/wepiggyProtocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -130,6 +131,7 @@ export class ProtocolService {
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly trisolarisProtocol: TrisolarisProtocol,
     private readonly orcaProtocol: OrcaProtocol,
+    private readonly anchorProtocol: AnchorProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -166,6 +168,7 @@ export class ProtocolService {
       yearnProtocolV2,
       trisolarisProtocol,
       orcaProtocol,
+      anchorProtocol,
     ];
   }
 

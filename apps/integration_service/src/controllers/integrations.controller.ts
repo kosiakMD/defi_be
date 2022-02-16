@@ -60,7 +60,7 @@ export class IntegrationsController {
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,
       ChainIdEnum.avax,
-      ChainIdEnum.xdai,
+      ChainIdEnum.gnosis,
       ChainIdEnum.celo,
       ChainIdEnum.mriver,
       ChainIdEnum.harm,

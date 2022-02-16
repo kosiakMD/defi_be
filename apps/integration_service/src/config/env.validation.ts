@@ -100,13 +100,13 @@ export const validationSchema = Joi.object({
   SUSHISWAP_MRIVER_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_OKEX_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ONE_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
-  SUSHISWAP_XDAI_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_GNOSIS_EXCHANGE_SUBGRAPH_URL: Joi.string().required(),
 
   SUSHISWAP_ARBI_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_BSC_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ETH_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_PLG_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
-  SUSHISWAP_XDAI_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_GNOSIS_BENTOBOX_SUBGRAPH_URL: Joi.string().required(),
 
   SUSHISWAP_ETH_MASTERCHEF_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ETH_SUSHIBAR_SUBGRAPH_URL: Joi.string().required(),
@@ -116,7 +116,7 @@ export const validationSchema = Joi.object({
   SUSHISWAP_MRIVER_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_ONE_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
-  SUSHISWAP_XDAI_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
+  SUSHISWAP_GNOSIS_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
 
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //
@@ -147,7 +147,7 @@ export const validationSchema = Joi.object({
   OPT_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   SOL_URL: Joi.string().required(),
-  XDAI_URL: Joi.string().required(),
+  GNOSIS_URL: Joi.string().required(),
 
   ALPACA_SUBGRAPH_URL: Joi.string().required(),
   ALPACA_API_URL: Joi.string().required(),
@@ -156,6 +156,7 @@ export const validationSchema = Joi.object({
   YEARN_ETH_SUBGRAPH_URL: Joi.string().required(),
   YEARN_FTM_SUBGRAPH_URL: Joi.string().required(),
   YEARN_V1_ETH_SUBGRAPH_URL: Joi.string().required(),
+  TERRA_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

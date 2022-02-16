@@ -54,7 +54,7 @@ export const validationSchema = Joi.object({
   HECO_URL: Joi.string().required(),
   MRIVER_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
-  XDAI_URL: Joi.string().required(),
+  GNOSIS_URL: Joi.string().required(),
   SOL_URL: Joi.string().required(),
   CARDANO_BLOCKFROST_API_KEY: Joi.string().required(),
 
@@ -114,10 +114,10 @@ export const validationSchema = Joi.object({
   ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string()
     .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
-  XDAI_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
+  GNOSIS_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
     .default(3000)
     .optional(),
-  XDAI_BALANCES_CHECKER_ADDRESS: Joi.string() //
+  GNOSIS_BALANCES_CHECKER_ADDRESS: Joi.string() //
     .default(COMMON_BALANCE_CHECKER_ADDRESS)
     .optional(),
   CELO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
@@ -214,6 +214,7 @@ export const validationSchema = Joi.object({
   OPEN_SEA_INTERVAL: Joi.number().required(),
   AAVEGOTCHI_SUBGRAPH_POLYGON: Joi.string().required(),
   AAVEGOTCHI_SUBGRAPH_SVG: Joi.string().required(),
+  TERRA_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

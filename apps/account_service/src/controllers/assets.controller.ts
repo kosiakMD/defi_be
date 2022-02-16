@@ -95,10 +95,7 @@ export class AssetsController {
   @ApiBody({ type: AssetTrackDto })
   @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async addAssetToTrack(@Body() asset: AssetTrackDto): Promise<AssetResponseDto> {
-    return await this.assetsService.saveTrackingAsset({
-      assetAddress: asset.address,
-      assetChain: asset.chain,
-    });
+    return await this.assetsService.saveTrackingAsset(asset);
   }
 
   @Post('save')

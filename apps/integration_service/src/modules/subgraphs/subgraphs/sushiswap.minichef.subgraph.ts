@@ -25,7 +25,7 @@ export class SushiSwapMiniChefSubgraph {
       [ChainIdEnum.celo, this.getConfigSubgraph('CELO')],
       [ChainIdEnum.mriver, this.getConfigSubgraph('MRIVER')],
       [ChainIdEnum.plg, this.getConfigSubgraph('PLG')],
-      [ChainIdEnum.xdai, this.getConfigSubgraph('XDAI')],
+      [ChainIdEnum.gnosis, this.getConfigSubgraph('GNOSIS')],
     ]);
   }
 

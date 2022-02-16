@@ -9,17 +9,19 @@ import {
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
+
 import { Logger } from '../../logger/logger.service';
-import { fillUnderlyingTokens } from '../utils/token';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
+import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
+import { fillUnderlyingTokens } from '../utils/token';
 import { AutofarmApiService } from './autofarm.api.service';
 import { AutofarmPool } from './autofarm.interfaces';
 import { DbMapping } from './dbmapping';
@@ -60,7 +62,10 @@ export class AutofarmStaking implements JobInterface {
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
-    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
+    if (
+      !jobMapping.mapping ||
+      isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
+    ) {
       this.logger.log('it is time to update mapping', this.placeholder);
       jobMapping = await this.rebuildMapping(jobMapping);
     }
@@ -144,14 +149,15 @@ export class AutofarmStaking implements JobInterface {
     }
 
     jobMapping.mapping = mappings;
-
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
   }
 
   private async getAllPoolsInfo(): Promise<Map<string, any>> {
-    const autofarmPoolsData: AutofarmPool[] = Object.values(await this.autofarmApiService.getAutofarmPoolsData(this.chain));
+    const autofarmPoolsData: AutofarmPool[] = Object.values(
+      await this.autofarmApiService.getAutofarmPoolsData(this.chain),
+    );
 
     const poolsInfoMap: Map<string, any> = new Map<string, any>();
 
@@ -170,18 +176,26 @@ export class AutofarmStaking implements JobInterface {
   }
 
   async updateWithChainData(): Promise<IntegrationStakingPositionDto[]> {
-    const autofarmPoolsData: AutofarmPool[] = Object.values(await this.autofarmApiService.getAutofarmPoolsData(this.chain));
+    const autofarmPoolsData: AutofarmPool[] = Object.values(
+      await this.autofarmApiService.getAutofarmPoolsData(this.chain),
+    );
 
     const poolToInfoMap = new Map<IntegrationStakingPositionDto, AutofarmPool>(
-      this.mapping.map(sp => {
-        const poolData = autofarmPoolsData.find(pd => sp.stakingToken.address === pd.wantAddress.toLowerCase());
+      this.mapping.map((sp) => {
+        const poolData = autofarmPoolsData.find(
+          (pd) => sp.stakingToken.address === pd.wantAddress.toLowerCase(),
+        );
         return [sp, poolData];
-      })
+      }),
     );
 
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
-    const { prices } = await this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain);
+    const { prices } = await this.priceService.getCurrentPrices(
+      pricedTokenAddresses,
+      CurrencyIdEnum.usd,
+      this.chain,
+    );
 
     this.mapping = await Promise.all(
       this.mapping.map(async (m) => {
@@ -207,33 +221,37 @@ export class AutofarmStaking implements JobInterface {
     stakingPos: IntegrationStakingPositionDto,
     prices: any,
   ) {
-    stakingPos.staked = toDecimals(poolData.wantLockedTotal, stakingPos.stakingToken.decimals).toString();
-    stakingPos.stakingToken.balance = toDecimals(poolData.wantLockedTotal, stakingPos.stakingToken.decimals);
-
-    const totalSupply = poolData.farmWantLockedTotal?.hex 
-      ? parseInt(poolData.farmWantLockedTotal?.hex, 16) 
-      : Number(poolData.farmWantLockedTotal) === 0
-      ? poolData.pairTotalSupply 
-      : poolData.farmWantLockedTotal;
-
-    stakingPos.stakingToken.totalSupply = toDecimals(
-      totalSupply,
+    stakingPos.staked = toDecimals(
+      poolData.wantLockedTotal,
+      stakingPos.stakingToken.decimals,
+    ).toString();
+    stakingPos.stakingToken.balance = toDecimals(
+      poolData.wantLockedTotal,
       stakingPos.stakingToken.decimals,
     );
+
+    const totalSupply = poolData.farmWantLockedTotal?.hex
+      ? parseInt(poolData.farmWantLockedTotal?.hex, 16)
+      : Number(poolData.farmWantLockedTotal) === 0
+      ? poolData.pairTotalSupply
+      : poolData.farmWantLockedTotal;
+
+    stakingPos.stakingToken.totalSupply = toDecimals(totalSupply, stakingPos.stakingToken.decimals);
 
     const poolShare = stakingPos.stakingToken.balance / stakingPos.stakingToken.totalSupply;
 
     if (stakingPos.stakingToken.tokens.length === 2) {
-      const [ _reserve0, _reserve1 ] = poolData.pairReserves ?? [0, 0];
+      const [_reserve0, _reserve1] = poolData.pairReserves ?? [0, 0];
 
       stakingPos.stats.tvl = fillUnderlyingTokens(
-        stakingPos.stakingToken.tokens, 
-        [ Number(_reserve0), Number(_reserve1) ], 
-        prices, 
-        poolShare
+        stakingPos.stakingToken.tokens,
+        [Number(_reserve0), Number(_reserve1)],
+        prices,
+        poolShare,
       );
     } else {
-      stakingPos.stakingToken.price = Number(prices[stakingPos.stakingToken.address]) || Number(poolData?.wantPrice);
+      stakingPos.stakingToken.price =
+        Number(prices[stakingPos.stakingToken.address]) || Number(poolData?.wantPrice);
       stakingPos.stakingToken.value =
         stakingPos.stakingToken.balance * stakingPos.stakingToken.price;
       stakingPos.stats.tvl += stakingPos.stakingToken.value;

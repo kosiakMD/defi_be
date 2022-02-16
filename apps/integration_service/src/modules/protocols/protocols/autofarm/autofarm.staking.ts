@@ -101,7 +101,7 @@ export class AutofarmStaking {
 
     for (const userInfo of userInfos.entries()) {
       // don't show zero and little balances
-      if (Number(userInfo[1].output.data) > 1) {
+      if (Number(userInfo[1].output.data) > 0) {
         const data = userInfo[0].split('_');
         poolsWithBalance.push({
           contract: data[0],

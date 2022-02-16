@@ -1,6 +1,8 @@
+import * as Sentry from '@sentry/minimal';
+import { Severity } from '@sentry/node';
 import { Request, Response as EResponse } from 'express';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -61,11 +63,42 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         { ...meta, type: 'RESPONSE', protocolName: args?.[0]?.params?.protocolName },
         'RESPONSE',
       );
-      // Add Meta for response body
+      // return next.handle();
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      // TODO: for debug reason
-      return next.handle().pipe(map((data) => Object.assign(data, meta)));
+      return next.handle()
+                 .pipe(
+                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                   // @ts-ignore
+                   catchError((exception) => {
+                     const args = context.getArgs();
+                     Sentry.captureException(exception, {
+                       level: Severity.Error,
+                       extra: {
+                         protocolName: args?.[0]?.params?.protocolName,
+                       },
+                     });
+                     throwError(exception);
+                   }),
+                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                   // @ts-ignore
+                   tap(null, (exception) => {
+                     const args = context.getArgs();
+                     Sentry.captureException(exception, {
+                       level: Severity.Error,
+                       tags: {
+                         protocolName: args?.[0]?.params?.protocolName,
+                         reqId,
+                         sessionId,
+                       },
+                     });
+                   }),
+                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                   // @ts-ignore
+                   // Add Meta for response body
+                   // TODO: for debug reason
+                   map((data) => Object.assign(data, meta)),
+                 );
       // return next.handle();
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

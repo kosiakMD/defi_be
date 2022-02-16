@@ -8,6 +8,8 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { AnchorLp } from './anchor/anchor.lp';
+import { AnchorStaking } from './anchor/anchor.staking';
 import { AutofarmApiService } from './autofarm/autofarm.api.service';
 import { AutofarmStakingAVAX } from './autofarm/autofarm.staking.avax';
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
@@ -156,6 +158,8 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   TrisolarisStaking,
   OrcaPools,
   OrcaStaking,
+  AnchorLp,
+  AnchorStaking,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

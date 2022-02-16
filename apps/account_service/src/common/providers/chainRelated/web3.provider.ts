@@ -48,15 +48,11 @@ export class Web3Provider {
     });
   }
 
-  public getInstanceByChainId(chain: ChainIdEnum): Web3 {
+  public getInstanceByChainId(chain: ChainIdEnum) {
     return this.providers[chain];
   }
 
   public getInstance(chain: ChainIdEnum): Connection {
-    return this.providers[chain];
-  }
-
-  public getLCDInstance(chain: ChainIdEnum): LCDClient {
     return this.providers[chain];
   }
 

@@ -3,14 +3,15 @@ import Web3 from 'web3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainIdEnum } from '..';
+import { AbsoluteChainIdEnum, ChainIdEnum } from '..';
 import { MulticallContract } from './multicall.contract';
+import { LCDClient } from '@terra-money/terra.js';
 
 export type Web3Interface = Web3;
 
 @Injectable()
 export class Web3ProviderService {
-  private readonly providers = new Map<ChainIdEnum, Web3Interface>();
+  private readonly providers = new Map<ChainIdEnum, any>();
   private readonly multicallContracts = new Map<ChainIdEnum, MulticallContract>();
 
   constructor(private readonly configService: ConfigService) {
@@ -35,6 +36,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.klay, 'KLAYTN_URL');
     this.setProvider(ChainIdEnum.fuse, 'FUSE_URL');
     this.setProvider(ChainIdEnum.near, 'AURORA_URL');
+    this.setLCDClientProvider(ChainIdEnum.terra, 'TERRA_URL');
 
     // TODO: Move contracts to configs
     this.setMulticall(ChainIdEnum.arbi, '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089');
@@ -60,7 +62,7 @@ export class Web3ProviderService {
     this.setMulticall(ChainIdEnum.near, '0x32b50c286DEFd2932a0247b8bb940b78c063F16c');
   }
 
-  public getInstanceByChainId(chain: ChainIdEnum): Web3Interface {
+  public getInstanceByChainId(chain: ChainIdEnum) {
     return this.providers.get(chain);
   }
 
@@ -70,6 +72,13 @@ export class Web3ProviderService {
 
   private setProvider(chain: ChainIdEnum, env: string) {
     this.providers.set(chain, new Web3(this.configService.get(env)));
+  }
+
+  private setLCDClientProvider(chain: ChainIdEnum, env: string) {
+    this.providers.set(chain, new LCDClient({
+      URL: this.configService.get(env),
+      chainID: String(AbsoluteChainIdEnum.terra)
+    }));
   }
 
   // TODO: pass 'env' selector instead of address (same as setProvider)

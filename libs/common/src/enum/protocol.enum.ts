@@ -2,6 +2,7 @@ export enum ProjectEnum {
   aave = 'aave',
   abracadabra = 'abracadabra',
   alpaca = 'alpaca',
+  anchor = 'anchor',
   autofarm = 'autofarm',
   badger = 'badger',
   balancer = 'balancer',
@@ -143,6 +144,10 @@ export enum WonderlandProtocolEnum {
   wonderland = 'Wonderland',
 }
 
+export enum AnchorProtocolEnum {
+  anchor = 'Anchor',
+}
+
 export enum SaberProtocolEnum {
   saber = 'Saber',
 }
@@ -195,4 +200,5 @@ export const ProtocolNameEnum = {
   ...YearnProtocolEnum,
   ...TrisolarisProtocolEnum,
   ...OrcaProtocolEnum,
+  ...AnchorProtocolEnum,
 };

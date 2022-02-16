@@ -14,9 +14,9 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
-import { ResponceInterceptor } from '@app/common/interceptors/Responce.interceptor';
-import { SentryInterceptor } from '@app/common/interceptors/Sentry.interceptor';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -77,7 +77,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: ResponceInterceptor,
+      useClass: ResponseInterceptor,
     },
   ],
 })

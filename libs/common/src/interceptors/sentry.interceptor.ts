@@ -22,7 +22,6 @@ export class SentryInterceptor implements NestInterceptor {
   // @ts-ignore
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const className = context.getClass().name;
-    const handler = next.handle();
     // console.log('className', className);
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
@@ -37,7 +36,7 @@ export class SentryInterceptor implements NestInterceptor {
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      handler.pipe(
+      return next.handle().pipe(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         catchError((exception) => {

@@ -1,11 +1,9 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
-// import { Observable, throwError } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
-// import { catchError } from 'rxjs/operators';
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
 import { HEADER_REQUEST_ID, HEADER_SESSION_ID } from '@app/common/constant';
@@ -28,7 +26,6 @@ export class SentryInterceptor implements NestInterceptor {
     // console.log('className', className);
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
-      // const args = context.getArgs();
       let reqId, sessionId;
       const hostType = context.getType();
       if (hostType === 'http') {
@@ -43,21 +40,22 @@ export class SentryInterceptor implements NestInterceptor {
       handler.pipe(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        // catchError((exception) => {
-        //   console.log('exception', exception);
-        //   Sentry.captureException(exception, {
-        //     level: Severity.Error,
-        //     extra: {
-        //       protocolName: args?.[0]?.params?.protocolName,
-        //     },
-        //   });
-        //   throwError(exception);
-        // }),
+        catchError((exception) => {
+          // console.log('exception', exception);
+          const args = context.getArgs();
+          Sentry.captureException(exception, {
+            level: Severity.Error,
+            extra: {
+              protocolName: args?.[0]?.params?.protocolName,
+            },
+          });
+          throwError(exception);
+        }),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         tap(null, (exception) => {
-          const args = context.getArgs();
           // console.log('exception', exception);
+          const args = context.getArgs();
           Sentry.captureException(exception, {
             level: Severity.Error,
             tags: {

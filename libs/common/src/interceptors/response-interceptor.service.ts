@@ -55,11 +55,16 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
       response.header(HEADER_TIMESTAMP_ENTRY, meta.timestampEntry);
       response.header(HEADER_TIMESTAMP_EXIT, meta.timestampExit);
       response.header(HEADER_TIME_EXECUTE, meta.timeExecute);
+      // Log Response Meta only
+      const args = context.getArgs();
+      this.logger.log(
+        { ...meta, type: 'RESPONSE', protocolName: args?.[0]?.params?.protocolName },
+        'RESPONSE',
+      );
       // Add Meta for response body
-      // TODO: TBD log or not this
-      // this.logger.log('intercept reqId', reqId);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
+      // TODO: for debug reason
       return next.handle().pipe(map((data) => Object.assign(data, meta)));
       // return next.handle();
     } else {

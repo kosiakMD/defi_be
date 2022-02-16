@@ -27,6 +27,6 @@ export class LoggerModule extends WinstonModule {
 
   static createNestWinstonLogger(loggerOpts): WinstonLogger {
     const logger = winston.createLogger(loggerOpts);
-    return new Logger(logger, null);
+    return new Logger(logger);
   }
 }

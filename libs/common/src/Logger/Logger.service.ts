@@ -3,6 +3,8 @@ import { Logger as WinstonLoggerInterface } from 'winston';
 import { LoggerService, LoggerService as NestLoggerService } from '@nestjs/common';
 import { WinstonLogger } from 'nest-winston';
 
+import { HeadersContextMiddleware } from '@app/common/middlewares';
+
 // TODO: TBD?
 // @Injectable({ scope: Scope.TRANSIENT })
 export class Logger extends WinstonLogger implements NestLoggerService {
@@ -11,7 +13,8 @@ export class Logger extends WinstonLogger implements NestLoggerService {
   private static times = new Map();
   private readonly times = new Map();
 
-  constructor(logger: WinstonLoggerInterface) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(logger: WinstonLoggerInterface, headersContextMiddleware: HeadersContextMiddleware) {
     super(logger);
   }
 

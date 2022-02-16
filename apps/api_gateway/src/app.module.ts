@@ -23,6 +23,7 @@ import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
+import { ApprovalsController } from './approvals/approvals.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import config from './config';
@@ -84,6 +85,7 @@ import { VaultsModule } from './vaults/vaults.module';
     HealthController,
     AnalyticController,
     AssetsController,
+    ApprovalsController,
     BalancesController,
     TransactionsController,
     ProtocolController,

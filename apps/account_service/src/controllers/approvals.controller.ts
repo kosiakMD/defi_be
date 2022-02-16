@@ -6,6 +6,7 @@ import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 
 import { ContractApprovalResponseDto } from '../common/dto';
+import { GetAllApprovalsDto } from '../common/dto/GetAllApprovals.dto';
 
 import { ApprovalsService } from '../modules/approvals/approvals.service';
 
@@ -19,12 +20,50 @@ export class ApprovalsController {
 
   @Get('')
   @ApiQuery({
-    name: 'addresses',
+    name: 'page',
+    type: Number,
+    required: false,
+    description: `page of approvals`,
+    example: 3,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: `number per one page`,
+    example: 300,
+  })
+  @ApiQuery({
+    name: 'sortField',
+    type: Number,
+    required: false,
+    description: `field to sort by`,
+    example: 300,
+  })
+  @ApiQuery({
+    name: 'sortDirection',
     type: String,
-    example: '0x94dfce828c3daaf6492f1b6f66f9a1825254d24b',
+    required: false,
+    description: `sort direction DESC|ASC`,
+    example: 'ASC',
+  })
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'user addresses',
+    example: '0x0000000000000000000000000000000000000000',
+  })
+  @ApiQuery({
+    name: 'chain',
+    type: String,
+    required: false,
+    description: `chains' ID`,
+    example: '',
   })
   @ApiResponse({ status: 200, type: ContractApprovalResponseDto })
-  async getBscApproval(@Query('addresses') addresses: string): Promise<ContractApprovalResponse> {
-    return this.service.getAllApprovals(addresses);
+  async getBscApproval(
+    @Query() getAllApprovalsQuery: GetAllApprovalsDto,
+  ): Promise<ContractApprovalResponse> {
+    return this.service.getAllApprovals(getAllApprovalsQuery);
   }
 }

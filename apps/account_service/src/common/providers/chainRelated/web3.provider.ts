@@ -24,7 +24,7 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.okex]: 'OKEX_URL',
   [ChainIdEnum.opt]: 'OPT_URL',
   [ChainIdEnum.plg]: 'POLYGON_URL',
-  [ChainIdEnum.xdai]: 'XDAI_URL',
+  [ChainIdEnum.gnosis]: 'GNOSIS_URL',
   [ChainIdEnum.near]: 'NEAR_URL',
   [ChainIdEnum.terra]: 'TERRA_URL',
   [ChainIdEnum.klay]: 'KLAYTN_URL',

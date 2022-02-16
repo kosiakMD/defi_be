@@ -117,7 +117,7 @@ export const additionalGaugeContractsMap = new Map([
     ]),
   ],
   [
-    ChainIdEnum.xdai,
+    ChainIdEnum.gnosis,
     new Map([
       [
         '0x1337bedc9d22ecbe766df105c9623922a27963ec',

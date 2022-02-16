@@ -72,7 +72,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     ChainAbbrEnum.mriver, // TODO
     // ChainAbbrEnum.okex,
     ChainAbbrEnum.plg,
-    ChainAbbrEnum.xdai,
+    ChainAbbrEnum.gnosis,
   ];
   readonly project = ProjectEnum.sushiswap;
   readonly name = SushiSwapProtocolEnum.sushiswapV2;
@@ -127,7 +127,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       FeatureEnum.borrowing,
       // FeatureEnum.health,
     ],
-    [ChainAbbrEnum.xdai]: [
+    [ChainAbbrEnum.gnosis]: [
       FeatureEnum.pools,
       FeatureEnum.staking,
       FeatureEnum.lending,
@@ -547,7 +547,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
           totalValue: 0,
           items: [],
         },
-        [`Chain: ${chain.id} - Failed to get minichef data`],
+        [`Chain: ${chain.id} - Failed to get minichef data - ${e}`],
       ];
     }
   }

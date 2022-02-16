@@ -107,8 +107,8 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<string>('AVAX_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.arbi:
         return this.config.get<string>('ARBITRUM_BALANCES_CHECKER_ADDRESS');
-      case ChainIdEnum.xdai:
-        return this.config.get<string>('XDAI_BALANCES_CHECKER_ADDRESS');
+      case ChainIdEnum.gnosis:
+        return this.config.get<string>('GNOSIS_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.harm:
         return this.config.get<string>('HARMONY_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.celo:
@@ -148,8 +148,8 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
         return this.config.get<number>('AVAX_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.arbi:
         return this.config.get<number>('ARBITRUM_BALANCES_CHECKER_BATCH_SIZE');
-      case ChainIdEnum.xdai:
-        return this.config.get<number>('XDAI_BALANCES_CHECKER_BATCH_SIZE');
+      case ChainIdEnum.gnosis:
+        return this.config.get<number>('GNOSIS_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.celo:
         return this.config.get<number>('CELO_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.mriver:

@@ -17,6 +17,6 @@ export const getWinstonParams = (identifier: string, configService: ConfigServic
     logCombineLog: configService.get<string>('LOG_COMBINED_FILE'),
     serviceName: configService.get<string>('SERVICE_NAME'),
     level: configService.get<string>('LOG_LEVEL'),
-    meta: { env: configService.get<string>('ENV') },
+    defaultMeta: { env: configService.get<string>('ENV') },
     awsConfig: getAwsConfig(configService),
   });

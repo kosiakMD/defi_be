@@ -42,23 +42,6 @@ export class Web3Provider {
     this.initCardanoProviders();
   }
 
-  private initWeb3Providers() {
-    Object.entries(ChainsProvidersUrls).forEach(([chainId, configName]) => {
-      this.providers[chainId] = new Web3(this.configService.get<string>(configName));
-    });
-  }
-
-  private initConnectionProviders() {
-    this.providers[ChainIdEnum.sol] = new Connection(this.configService.get<string>('SOL_URL'));
-  }
-
-  private initLCDProviders() {
-    this.providers[ChainIdEnum.terra] = new LCDClient({
-      URL: this.configService.get<string>('TERRA_URL'),
-      chainID: AbsoluteChainIdEnum.terra.toString(),
-    });
-  }
-
   public initCardanoProviders() {
     this.providers[ChainIdEnum.cardano] = new BlockFrostAPI({
       projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
@@ -79,5 +62,22 @@ export class Web3Provider {
 
   public getCadronaInstance(chain: ChainIdEnum): BlockFrostAPI {
     return this.providers[chain];
+  }
+
+  private initWeb3Providers() {
+    Object.entries(ChainsProvidersUrls).forEach(([chainId, configName]) => {
+      this.providers[chainId] = new Web3(this.configService.get<string>(configName));
+    });
+  }
+
+  private initConnectionProviders() {
+    this.providers[ChainIdEnum.sol] = new Connection(this.configService.get<string>('SOL_URL'));
+  }
+
+  private initLCDProviders() {
+    this.providers[ChainIdEnum.terra] = new LCDClient({
+      URL: this.configService.get<string>('TERRA_URL'),
+      chainID: AbsoluteChainIdEnum.terra.toString(),
+    });
   }
 }

@@ -13,13 +13,13 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { Logger, LoggerMiddleware } from '@app/common';
+import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
-import { ResponceInterceptor } from '@app/common/interceptors/Responce.interceptor';
-import { SentryInterceptor } from '@app/common/interceptors/Sentry.interceptor';
-import { HeadersMiddleware } from '@app/common/middlewares/Headers.middleware';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
@@ -101,7 +101,7 @@ import { VaultsModule } from './vaults/vaults.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: ResponceInterceptor,
+      useClass: ResponseInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
@@ -130,7 +130,7 @@ export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {

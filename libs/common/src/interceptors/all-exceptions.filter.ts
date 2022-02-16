@@ -41,7 +41,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
           ? exception.getStatus()
           : HttpStatus.INTERNAL_SERVER_ERROR;
 
-      const request = contextHttp.getRequest<Request>();
+      const request: Request = contextHttp.getRequest<Request>();
 
       let errorMessage;
       if (
@@ -60,14 +60,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const args = host.getArgs(); // TODO: m.b. take from request
       const protocolName = args?.[0]?.params?.protocolName;
 
-      // doesn't work but should
-      // reqId: request.header(HEADER_REQUEST_ID),
-      // reqId: request.get(HEADER_REQUEST_ID),
-      // hack - sensitive to register and it's a risky
-      const reqId = request.headers[HEADER_REQUEST_ID] as string;
-      const sessionId = request.headers[HEADER_SESSION_ID] as string;
-      const timestampEntry = request.headers[HEADER_TIMESTAMP_ENTRY] as string;
-      const timestampExit = request.headers[HEADER_TIMESTAMP_EXIT] as string;
+      // N.B! letters sensitive to register and it's a risky
+      const reqId = request.header(HEADER_REQUEST_ID);
+      const sessionId = request.header(HEADER_SESSION_ID);
+      const timestampEntry = Number(request.header(HEADER_TIMESTAMP_ENTRY));
+      const timestampExit = Number(request.header(HEADER_TIMESTAMP_EXIT)) || Date.now();
+      const timeExecute = timestampExit - timestampEntry;
       // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = {
         statusCode: httpStatus,
@@ -75,8 +73,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         path: httpAdapter.getRequestUrl(request),
         reqId,
         sessionId,
-        timestampEntry,
-        timestampExit: timestampExit || Date.now().toString(),
+        timestampEntry: timestampEntry.toString(),
+        timestampExit: timestampExit.toString(),
+        timeExecute: timeExecute.toString(),
         protocolName,
       };
 

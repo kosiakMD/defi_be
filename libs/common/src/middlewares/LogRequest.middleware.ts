@@ -7,7 +7,7 @@ import { Logger } from '@app/common';
 import { HEADER_REQUEST_ID, HEADER_SESSION_ID, HEADER_TIMESTAMP_ENTRY } from '@app/common/constant';
 
 @Injectable()
-export class LoggerMiddleware implements NestMiddleware {
+export class LogRequestMiddleware implements NestMiddleware {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   use(req: Request, res: Response, next: NextFunction): void {

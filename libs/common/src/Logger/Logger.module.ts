@@ -5,11 +5,13 @@ import { WinstonModule } from 'nest-winston';
 import { WinstonLogger } from 'nest-winston/dist/winston.classes';
 import { WinstonModuleOptions } from 'nest-winston/dist/winston.interfaces';
 
+import { LogRequestMiddleware } from '@app/common/middlewares';
+
 import { Logger } from './Logger.service';
 
 @Global()
 @Module({
-  providers: [Logger],
+  providers: [Logger, LogRequestMiddleware],
   exports: [Logger],
 })
 export class LoggerModule extends WinstonModule {
@@ -25,6 +27,6 @@ export class LoggerModule extends WinstonModule {
 
   static createNestWinstonLogger(loggerOpts): WinstonLogger {
     const logger = winston.createLogger(loggerOpts);
-    return new Logger(logger);
+    return new Logger(logger, null);
   }
 }

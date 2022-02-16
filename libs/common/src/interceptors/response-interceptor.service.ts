@@ -1,4 +1,6 @@
+import { Request, Response as EResponse } from 'express';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -12,7 +14,7 @@ import {
   HEADER_TIMESTAMP_EXIT,
 } from '@app/common/constant';
 
-export interface Response<T> {
+export interface Response<T> extends EResponse<T, any> {
   data: T;
 }
 
@@ -31,7 +33,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
     // const context = host.switchToWs();
     if (hostType === 'http') {
       const httpContext = context.switchToHttp();
-      const request = httpContext.getRequest();
+      const request: Request = httpContext.getRequest<Request>();
       // init Meta Data
       const reqId = request.header(HEADER_REQUEST_ID);
       const sessionId = request.header(HEADER_SESSION_ID);
@@ -47,7 +49,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         timeExecute: timeExecute.toString(),
       };
       // Add Meta for response headers
-      const response = httpContext.getResponse();
+      const response: Response<any> = httpContext.getResponse<Response<any>>();
       response.header(HEADER_REQUEST_ID, meta.reqId);
       response.header(HEADER_SESSION_ID, meta.sessionId);
       response.header(HEADER_TIMESTAMP_ENTRY, meta.timestampEntry);
@@ -58,8 +60,8 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
       // this.logger.log('intercept reqId', reqId);
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
-      return next.handle();
-      // return next.handle().pipe(map((data) => Object.assign(data, meta)));
+      return next.handle().pipe(map((data) => Object.assign(data, meta)));
+      // return next.handle();
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

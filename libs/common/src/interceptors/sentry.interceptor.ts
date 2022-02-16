@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
+import { Request } from 'express';
 import { Observable } from 'rxjs';
 // import { Observable, throwError } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -32,12 +33,10 @@ export class SentryInterceptor implements NestInterceptor {
       const hostType = context.getType();
       if (hostType === 'http') {
         const contextHttp = context.switchToHttp();
-        const request = contextHttp.getRequest();
-        reqId = request.headers[HEADER_REQUEST_ID]?.toString();
-        sessionId = request.headers[HEADER_SESSION_ID]?.toString();
+        const request: Request = contextHttp.getRequest<Request>();
+        reqId = request.header(HEADER_REQUEST_ID)?.toString();
+        sessionId = request.header(HEADER_SESSION_ID)?.toString();
       }
-      // console.log('LogException', className);
-      // console.log('args', args);
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

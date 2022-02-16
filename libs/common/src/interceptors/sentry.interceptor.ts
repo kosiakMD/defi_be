@@ -68,6 +68,6 @@ export class SentryInterceptor implements NestInterceptor {
     }
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    return handler;
+    return next.handle();
   }
 }

@@ -4,8 +4,8 @@ import { ChainInfoDto, CollectionBaseDto } from '.';
 
 export class ChainCollectionsBaseDto {
   @ApiProperty({ type: () => ChainInfoDto })
-  chain: ChainInfoDto;
+  chain: ChainInfoDto = null;
 
   @ApiProperty({ type: () => [CollectionBaseDto] })
-  collections: CollectionBaseDto[];
+  collections: CollectionBaseDto[] = null;
 }

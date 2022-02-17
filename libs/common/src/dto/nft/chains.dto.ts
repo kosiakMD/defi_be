@@ -4,11 +4,11 @@ import { ChainCollectionsDto } from '.';
 
 export class ChainsDto {
   @ApiProperty({ type: [ChainCollectionsDto] })
-  chains: ChainCollectionsDto[];
+  chains: ChainCollectionsDto[] = null;
 
   @ApiProperty({ type: Number })
-  totalAccountPrice: number;
+  totalAccountPrice: number = null;
 
   @ApiProperty({ type: Number })
-  totalAccountPriceUsd: number;
+  totalAccountPriceUsd: number = null;
 }

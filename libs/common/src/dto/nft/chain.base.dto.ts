@@ -4,11 +4,11 @@ import { ChainInfoDto } from '.';
 
 export class ChainBaseDto {
   @ApiProperty({ type: () => ChainInfoDto })
-  chain: ChainInfoDto;
+  chain: ChainInfoDto = null;
 
   @ApiProperty({ type: Number })
-  totalChainPrice: number;
+  totalChainPrice: number = null;
 
   @ApiProperty({ type: Number })
-  totalChainPriceUsd: number;
+  totalChainPriceUsd: number = null;
 }

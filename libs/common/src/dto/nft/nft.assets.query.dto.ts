@@ -10,7 +10,7 @@ export class NftAssetsQueryDto {
       '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
     ],
   })
-  addresses: Address[];
+  addresses: Address[] = null;
 
   @ApiProperty({
     type: String,
@@ -18,12 +18,12 @@ export class NftAssetsQueryDto {
       .filter((chainId) => typeof chainId === 'number')
       .join(','),
   })
-  chains: ChainIdEnum[];
+  chains: ChainIdEnum[] = null;
 
   @ApiProperty({
     type: [String],
     example: 'young-lives-matter',
     required: false,
   })
-  collection?: string;
+  collection?: string = null;
 }

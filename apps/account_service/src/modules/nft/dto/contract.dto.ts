@@ -5,5 +5,8 @@ import { Address } from '@app/common';
 @Exclude()
 export class ContractDto {
   @Expose()
-  address: Address;
+  address: Address = null;
+
+  @Expose({ name: 'schema_name' })
+  tokenStandard: string = null;
 }

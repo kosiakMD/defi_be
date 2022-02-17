@@ -6,14 +6,14 @@ import { ApiProperty } from '@nestjs/swagger';
 export class TraitDto {
   @Expose()
   @ApiProperty({ example: 'Hand' })
-  type: string;
+  type: string = null;
 
   @Expose()
   @ApiProperty({
     example: 'Hot Pink Skateboard',
     description: 'Also can be a "number" type, like: 100',
   })
-  value: string | number;
+  value: string | number = null;
 
   @Expose()
   @ApiProperty({
@@ -21,9 +21,13 @@ export class TraitDto {
     description: 'Used only when the "value" is number',
     required: false,
   })
-  maxValue?: string;
+  maxValue?: string = null;
 
   @Expose()
   @ApiProperty({ example: 56, required: false })
-  count?: number;
+  count?: number = null;
+
+  @Expose()
+  @ApiProperty({ example: 46.3, description: 'Percentage of owners' })
+  percentageOfOwners?: number = null;
 }

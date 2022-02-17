@@ -5,9 +5,9 @@ import { PaymentTokenDto } from './payment.token.dto';
 @Exclude()
 export class LastSaleDto {
   @Expose({ name: 'total_price' })
-  price: string;
+  price: string = null;
 
   @Expose({ name: 'payment_token' })
   @Type(() => PaymentTokenDto)
-  paymentToken: PaymentTokenDto;
+  paymentToken: PaymentTokenDto = null;
 }

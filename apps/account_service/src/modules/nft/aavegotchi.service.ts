@@ -229,6 +229,7 @@ export class AavegotchiService extends NftBasicService {
     return plainToClass(CollectionDto, {
       address: aavegotchiCollectionPolygon.address,
       chain: ChainIdEnum.plg,
+      usernames: aavegotchiCollectionPolygon.usernames,
       assets,
       name: aavegotchiCollectionPolygon.name,
       symbol: aavegotchiCollectionPolygon.symbol,

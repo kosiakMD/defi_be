@@ -31,12 +31,7 @@ import { decimalsDivider } from '@app/common/utils/number';
 import { groupBy, mapToObject, objectToMap, sumOfProperties } from '@app/common/utils/object';
 import { getKey } from '@app/common/utils/string';
 
-import {
-  BaseCollectionDto,
-  CollectionDto as OpenSeaCollectionDto,
-  NftAssetDto as OpenSeaNftAssetDto,
-  OrderDto,
-} from '../../common/dto';
+import { BaseCollectionDto, NftAssetDto as OpenSeaNftAssetDto, OrderDto } from '../../common/dto';
 
 import { NftBasicService } from './nft.basic.service';
 
@@ -106,22 +101,44 @@ export class OpenSeaService extends NftBasicService {
         bannerImageUrl: bannerImage,
         slug,
         name,
+        discordUrl,
+        telegramUrl,
+        twitterUsername,
+        wikiUrl,
+        mediumUsername,
+        displayData,
+        instagramUsername,
         imageUrl: image,
         symbol,
         externalUrl: site,
         description,
+        permalink,
+        contract,
+        stats,
       }) => ({
+        stats,
         description,
         links: {
+          discordUrl,
+          telegramUrl,
+          wikiUrl,
           bannerImage,
           image,
           site,
+          permalink,
+        },
+        displayData,
+        usernames: {
+          twitter: twitterUsername,
+          instagram: instagramUsername,
+          medium: mediumUsername,
         },
         name,
         slug,
         symbol,
         chain: ChainIdEnum.eth,
         project: this.project,
+        tokenStandard: contract?.tokenStandard,
       }),
     );
   }
@@ -385,24 +402,40 @@ export class OpenSeaService extends NftBasicService {
   ): NftChainDto {
     const collections = Array.from(
       groupBy(assets, (asset: OpenSeaNftAssetDto) => asset.contract.address),
-    ).map((value) => {
+    ).map((value: [string, [OpenSeaNftAssetDto]]) => {
       const {
-        name,
-        symbol,
-        description,
-        externalUrl,
-        imageUrl,
-        bannerImageUrl,
-        slug,
-      }: OpenSeaCollectionDto = value[1][0].collection;
+        permalink,
+        contract,
+        collection: {
+          name,
+          symbol,
+          description,
+          externalUrl,
+          imageUrl,
+          bannerImageUrl,
+          discordUrl,
+          displayData,
+          instagramUsername,
+          mediumUsername,
+          telegramUrl,
+          stats,
+          twitterUsername,
+          wikiUrl,
+          slug,
+        },
+      } = value[1][0];
 
       const assets: NftAssetDto[] = value[1].map(({ name, tokenId, traits, imageUrl }) => {
         const pricesByAsset = pricesByAssets.get(OpenSeaService.getAssetSeed(value[0], tokenId));
+
         return plainToClass(NftAssetDto, {
           id: tokenId,
           name,
           imageUrl,
-          traits,
+          traits: traits.map((trait) => ({
+            ...trait,
+            percentageOfOwners: (trait.count * 100) / stats.count,
+          })),
           price: pricesByAsset?.price || null,
           priceUsd: pricesByAsset?.priceUsd || null,
         });
@@ -415,21 +448,33 @@ export class OpenSeaService extends NftBasicService {
       );
 
       return plainToClass(CollectionDto, {
-        chain: chain,
+        chain,
         assets,
         address: value[0],
         name,
         symbol,
         description,
         slug,
+        stats,
         totalCollectionPrice: totalCollectionPrice || null,
         totalCollectionPriceUsd: totalCollectionPriceUsd || null,
         balance: assets.length,
         project: this.project,
+        usernames: {
+          medium: mediumUsername,
+          twitter: twitterUsername,
+          instagram: instagramUsername,
+        },
+        displayData,
+        tokenStandard: contract?.tokenStandard,
         links: {
           site: externalUrl,
           image: imageUrl,
           bannerImage: bannerImageUrl,
+          telegramUrl,
+          wikiUrl,
+          discordUrl,
+          permalink,
         },
       });
     });

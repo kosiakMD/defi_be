@@ -6,16 +6,16 @@ import { PaymentTokenDto } from './payment.token.dto';
 @Exclude()
 export class OrderDto {
   @Expose({ name: 'closing_date' })
-  closingDate: string;
+  closingDate: string = null;
 
   @Expose({ name: 'current_price' })
-  currentPrice: string;
+  currentPrice: string = null;
 
   @Expose({ name: 'payment_token_contract' })
   @Type(() => PaymentTokenDto)
-  paymentToken: PaymentTokenDto;
+  paymentToken: PaymentTokenDto = null;
 
   @Expose()
   @Type(() => MakerDto)
-  maker: MakerDto;
+  maker: MakerDto = null;
 }

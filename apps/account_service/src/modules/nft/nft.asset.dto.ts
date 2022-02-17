@@ -22,6 +22,9 @@ export class NftAssetDto {
   collection: CollectionDto;
 
   @Expose()
+  permalink: string;
+
+  @Expose()
   @Type(() => TraitDto)
   traits: TraitDto[];
 

@@ -13,9 +13,11 @@ import { AbisService } from './services/abis.service';
 import { ContractsService } from './services/contracts.service';
 import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
-import { VaultLoaderDemo } from './services/vault-loader-demo';
-import { isChief } from './data/config';
-import { ChiefLoader } from './data/chief-loader';
+import { ChiefLoader } from './data/templates/chief/loader';
+import { VaultLoader } from './data/templates/vault-loader';
+import { collectCalls } from './data/templates/helpers';
+import { CallGroup } from './data/templates/chief/config';
+import { AbiItem } from 'web3-utils';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -25,7 +27,7 @@ export class IntegrationsServiceV2 {
     private readonly contractsService: ContractsService,
     private readonly abisService: AbisService,
     private readonly scanService: AbiFetcherService,
-    private readonly vaultLoader: VaultLoaderDemo,
+    private readonly vaultLoader: VaultLoader,
     private readonly chiefLoader: ChiefLoader,
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -85,9 +87,22 @@ export class IntegrationsServiceV2 {
       contractEntity = await this.contractsService.addAbiRelation(contractEntity, abiEntity);
     }
 
-    const isChiefs = isChief(contractEntity.address, contractEntity.abi.abi);
-    if (isChiefs) {
-      const features = await this.chiefLoader.grabAllPools(contractEntity.address, contractEntity.abi.abi, chain);
+    const blockchainCalls = collectCalls(this.chiefLoader.requiredForInitialLoad, contractEntity.abi.abi);
+
+    if (blockchainCalls) {
+      let features = await this.chiefLoader.collectFeatures(contractEntity.address, chain, blockchainCalls as Map<string, { call, abi }>);
+      features = [features[0]]
+      features = features.map((ft) => {
+        const vaultCalls = this.chiefLoader.collectCallsPerVault(ft, contractEntity.abi.abi)
+        const accountCalls = this.chiefLoader.collectCallsPerAccount(ft, contractEntity.abi.abi)
+        return {
+          ...ft,
+          vaultCalls: vaultCalls,
+          accountCalls: accountCalls,
+        }
+      });
+      // const singleFeature = await this.chiefLoader.collectCallsPerVault(features[0], contractEntity.abi.abi);
+      console.log(features)
     }
 
     // todo: if contract is not integrated, need to go to the next steps

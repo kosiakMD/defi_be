@@ -26,9 +26,10 @@ import { ContractsService } from './services/contracts.service';
 import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { VaultLoaderDemo } from './services/vault-loader-demo';
-import { ChiefLoader } from './data/chief-loader';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 import { Web3ProviderService } from '@app/common/web3provider';
+import { ChiefLoader } from './data/templates/chief/loader';
+import { VaultLoader } from './data/templates/vault-loader';
 
 const demoServices = [VaultLoaderDemo];
 
@@ -75,6 +76,7 @@ const demoServices = [VaultLoaderDemo];
     ChiefLoader,
     MulticallAggregator,
     Web3ProviderService,
+    VaultLoader,
   ],
   controllers: [IntegrationsController, IntegrationsControllerV2],
   exports: [TypeOrmModule],

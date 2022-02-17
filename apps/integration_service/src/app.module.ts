@@ -54,7 +54,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
         database: configService.get('DB_DATABASE'),
         entities: ['dist/**/*.entity{.ts,.js}'],
         synchronize: false,
-        logging: true,
+        logging: false,
       }),
     }),
     TerminusModule,
@@ -101,7 +101,7 @@ export class AppModule implements NestModule {
       'App',
     );
 
-    this.start();
+    //this.start();
   }
 
   async start() {

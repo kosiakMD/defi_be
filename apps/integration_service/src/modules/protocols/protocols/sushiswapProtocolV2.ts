@@ -570,16 +570,18 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       this.getSushiBar(address, chain),
     ]);
 
-    const accepted = stakingDataResults
-      .filter(
-        (a): a is PromiseFulfilledResult<FeatureResultDto<IntegrationStakingPositionDto>> =>
-          a.status === 'fulfilled',
-      )
-      .map((a) => a.value);
+    const accepted =
+      stakingDataResults
+        ?.filter(
+          (a): a is PromiseFulfilledResult<FeatureResultDto<IntegrationStakingPositionDto>> =>
+            a.status === 'fulfilled',
+        )
+        .map((a) => a.value) || [];
 
-    const denied = stakingDataResults
-      .filter((a): a is PromiseRejectedResult => a.status !== 'fulfilled')
-      .map((a) => a.reason);
+    const denied =
+      stakingDataResults
+        ?.filter((a): a is PromiseRejectedResult => a.status !== 'fulfilled')
+        .map((a) => a.reason) || [];
 
     accepted.forEach((result) => {
       stakingFeature.totalValue += result.totalValue;
@@ -609,29 +611,30 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     );
 
     let totalValue = 0;
-    const items = users.map((user) => {
-      const price = Number(bar.ratio) * prices[SUSHI_ADDRESS.get(chain.id)];
+    const items =
+      users?.map((user) => {
+        const price = Number(bar.ratio) * prices[SUSHI_ADDRESS.get(chain.id)];
 
-      const stakedToken = plainToClass(LPToken, {
-        address: bar.id,
-        name: bar.name,
-        symbol: bar.symbol,
-        decimals: bar.decimals,
-        totalSupply: bar.totalSupply,
-        balance: user.xSushi,
-        value: price * Number(user.xSushi),
-        price,
-      });
+        const stakedToken = plainToClass(LPToken, {
+          address: bar.id,
+          name: bar.name,
+          symbol: bar.symbol,
+          decimals: bar.decimals,
+          totalSupply: bar.totalSupply,
+          balance: user.xSushi,
+          value: price * Number(user.xSushi),
+          price,
+        });
 
-      totalValue += stakedToken.value;
+        totalValue += stakedToken.value;
 
-      return plainToClass(IntegrationStakingPositionDto, {
-        address: bar.id,
-        poolName: bar.name,
-        staked: user.xSushi,
-        stakingToken: stakedToken,
-      });
-    });
+        return plainToClass(IntegrationStakingPositionDto, {
+          address: bar.id,
+          poolName: bar.name,
+          staked: user.xSushi,
+          stakingToken: stakedToken,
+        });
+      }) || [];
 
     return { totalValue, items };
   }
@@ -685,7 +688,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     const pairAddresses = users.flatMap((user: any) => user.pool.pair);
     const pairsData = await this.exchangeSubgraph.getPairs(pairAddresses, chain);
     const pairs = new Map<string, ISushiSwapLiquidityPair>(
-      pairsData.map((pair) => [pair.id, pair]),
+      pairsData?.map((pair) => [pair.id, pair]) || [],
     );
 
     const underlyingTokenAddresses = pairsData.flatMap((pair) => [pair.token0.id, pair.token1.id]);
@@ -791,17 +794,6 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     return { items, totalValue };
   }
 
-  private async getAssets(tokens, chain): Promise<Map<Address, Asset>> {
-    const { data } = await this.accountService.getAssets(tokens, [chain.id]);
-    return new Map(data.map((cur) => [cur.address, cur]));
-  }
-
-  private async getPrices(tokens, chain): Promise<Map<Address, number>> {
-    const { prices } = await this.priceService.getTokenPricesFetch(tokens, chain.id);
-    // TODO: priceService type is typed as 'number' but actually returns a string
-    return new Map(Object.entries(prices).map(([address, price]) => [address, Number(price)]));
-  }
-
   async getPendingRewards(
     users: ISushiSwapPoolUser[] | ISushiSwapPoolUserV2[],
     address: Address,
@@ -812,11 +804,13 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       const pools = users.flatMap((user) => user.pool);
       const contract = new SushiSwapMasterChefAbi(masterChef.id);
       const rewarderCalls = new Map();
-      pools.forEach((pool) => rewarderCalls.set(`rewarder_${pool.id}`, contract.rewarder(pool.id)));
+      pools?.forEach((pool) =>
+        rewarderCalls.set(`rewarder_${pool.id}`, contract.rewarder(pool.id)),
+      );
       const rewarderResults = await this.multicallService.handleInBatches(rewarderCalls, chain.id);
 
       const calls = new Map();
-      pools.map((pool) => {
+      pools?.forEach((pool) => {
         const rewarderAddress = rewarderResults.get(`rewarder_${pool.id}`).output.data.toString();
         const rewarderContract = new SushiSwapRewarder(rewarderAddress);
 
@@ -833,12 +827,12 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
 
         return calls.set(
           `${poolId}-${user}`,
-          rewardTokens.map((token, idx) => {
+          rewardTokens?.map((token, idx) => {
             return {
               address: token.toLowerCase(),
               amount: rewardAmounts[idx].toString(),
             };
-          }),
+          }) || [],
         );
       }, new Map());
     } catch {
@@ -919,6 +913,19 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       balance: value / prices.get(token.id),
       price: prices.get(token.id),
     });
+  }
+
+  private async getAssets(tokens, chain): Promise<Map<Address, Asset>> {
+    const { data } = await this.accountService.getAssets(tokens, [chain.id]);
+    return new Map(data?.map((cur) => [cur.address, cur]) || []);
+  }
+
+  private async getPrices(tokens, chain): Promise<Map<Address, number>> {
+    const { prices } = await this.priceService.getTokenPricesFetch(tokens, chain.id);
+    // TODO: priceService type is typed as 'number' but actually returns a string
+    return new Map(
+      Object.entries(prices || {}).map(([address, price]) => [address, Number(price)]),
+    );
   }
 }
 

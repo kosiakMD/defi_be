@@ -1,4 +1,5 @@
 import { GetAllApprovalsDto } from 'apps/account_service/src/common/dto/GetAllApprovals.dto';
+import { ApprovalsSortFieldsEnum } from 'apps/account_service/src/common/enum/ApprovalsSortFields.enum';
 
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -31,10 +32,10 @@ export class ApprovalsController extends BaseService implements IBaseService {
   })
   @ApiQuery({
     name: 'sortField',
-    type: Number,
+    type: String,
     required: false,
     description: `field to sort by`,
-    example: 300,
+    example: ApprovalsSortFieldsEnum.CONTRACT_ADDRESS,
   })
   @ApiQuery({
     name: 'sortDirection',
@@ -54,7 +55,7 @@ export class ApprovalsController extends BaseService implements IBaseService {
     type: String,
     required: false,
     description: `chains' ID`,
-    example: '',
+    example: '1',
   })
   @ApiResponse({ status: HttpStatus.OK })
   async getBscApproval(@Query() getAllApprovalsQuery: GetAllApprovalsDto): Promise<any> {

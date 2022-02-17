@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger';
+import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
 
-import { OpportunityCreateDto } from '../dtos/opportunity.create.dto';
 import { FarmEntity } from '../entities/farm.entity';
 import { IOpportunityAdapter } from '../interfaces/opportunity.adapter.interface';
 import { OpportunityRepository } from '../repositories/opportunity.repository';
@@ -27,6 +27,7 @@ export class OpportunityAdapterService {
     // Run each adapter sync so that the next adapter has a chance
     // to skip all farms processed by a previous layer
     for (const adapterClass of adapters) {
+      this.logger.time(`Processing ${adapterClass.name}`);
       const adapter = await this.moduleRef.create(adapterClass);
 
       const { farms: localFarms, opportunities: localOpportunities } = await adapter.loadData({
@@ -35,17 +36,13 @@ export class OpportunityAdapterService {
 
       farms.push(...localFarms);
       opportunities.push(...localOpportunities);
+      this.logger.timeEnd(`Processing ${adapterClass.name}`);
     }
 
     return await this.refreshOpportunities(opportunities);
   }
 
   async refreshOpportunities(opportunities: OpportunityCreateDto[]): Promise<any> {
-    // this.beginTransaction
-    this.logger.time('Replacing Database');
-    const results = await this.opportunityRepository.replaceAll(opportunities);
-    this.logger.timeEnd('Replacing Database');
-    return results;
-    // this.endTransaction
+    return this.opportunityRepository.replaceAll(opportunities);
   }
 }

@@ -3,12 +3,12 @@ import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
+import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
+import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
+import { OpportunityListDto } from '@app/common/dto/opportunities/opportunity.list.dto';
 
 import { FindOneParamsDto } from '../common/dto/FindOneParams.dto';
-import { ListQueryDto } from '../common/dto/ListQuery.dto';
 
-import { OpportunityDto } from '../modules/opportunity/dtos/opportunity.dto';
-import { OpportunityListDto } from '../modules/opportunity/dtos/opportunity.list.dto';
 import { OpportunityService } from '../modules/opportunity/services/opportunity.service';
 
 @ApiTags('Opportunities')
@@ -21,7 +21,7 @@ export class OpportunitiesController {
 
   @Get('/')
   @ApiResponse({ status: HttpStatus.OK, type: OpportunityListDto })
-  get(@Query() query: ListQueryDto): Promise<OpportunityListDto> {
+  get(@Query() query: OpportunitySearchQueryDto): Promise<OpportunityListDto> {
     return this.opportunityService.search(query);
   }
 

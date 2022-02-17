@@ -3,12 +3,11 @@ import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
+import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
+import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
 import { chunk } from '@app/common/utils';
 
-import { ListQueryDto } from '../../../common/dto/ListQuery.dto';
-import { PaginationResult } from '../../../common/dto/PaginationResult.dto';
-
-import { OpportunityCreateDto } from '../dtos/opportunity.create.dto';
 import { FarmEntity } from '../entities/farm.entity';
 import { OpportunityEntity } from '../entities/opportunity.entity';
 import { FarmRepository } from './farm.repository';
@@ -32,7 +31,9 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
    * @param queryParams paginated opportunity search query
    * @returns paginated results
    */
-  async search(queryParams: ListQueryDto): Promise<PaginationResult<OpportunityEntity>> {
+  async search(
+    queryParams: OpportunitySearchQueryDto,
+  ): Promise<PaginationResult<OpportunityEntity>> {
     const { search, limit, page, sortDirection, sortField } = queryParams;
 
     // TODO:
@@ -67,7 +68,7 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
 
   private internalFuzzyFind(search: string) {
     const exactSearch = search.toLowerCase();
-    const fuzzySearch = `${search}%`.toLowerCase();
+    const fuzzySearch = `%${search}%`.toLowerCase();
 
     return function (query: SelectQueryBuilder<OpportunityEntity>) {
       query

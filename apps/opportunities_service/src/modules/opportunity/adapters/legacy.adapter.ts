@@ -6,13 +6,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger, ProtocolDataDto } from '@app/common';
+import { DepositTokenDto } from '@app/common/dto/opportunities/deposit.token.dto';
+import { FarmCreateDto } from '@app/common/dto/opportunities/farm.create.dto';
+import { InvestmentTokensDto } from '@app/common/dto/opportunities/investment.tokens.dto';
+import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
+import { RewardTokenDto } from '@app/common/dto/opportunities/reward.token.dto';
 
 import { IntegrationService } from '../../microservices/integration.service';
-import { DepositTokenDto } from '../dtos/deposit.token.dto';
-import { FarmCreateDto } from '../dtos/farm.create.dto';
-import { InvestmentTokensDto } from '../dtos/investment.tokens.dto';
-import { OpportunityCreateDto } from '../dtos/opportunity.create.dto';
-import { RewardTokenDto } from '../dtos/reward.token.dto';
 import { FarmEntity } from '../entities/farm.entity';
 import { IOpportunityAdapter } from '../interfaces/opportunity.adapter.interface';
 import { FarmRepository } from '../repositories/farm.repository';
@@ -156,10 +156,7 @@ export class LegacyAdapter implements IOpportunityAdapter {
       acc.push(
         plainToClass(RewardTokenDto, {
           address: reward.address,
-          name: reward.name,
           symbol: reward.symbol,
-          decimals: reward.decimals,
-          totalSupply: reward.totalSupply,
         }),
       );
       return acc;
@@ -170,17 +167,11 @@ export class LegacyAdapter implements IOpportunityAdapter {
     if (item.stakingToken) {
       return plainToClass(DepositTokenDto, {
         address: item.stakingToken.address,
-        name: item.stakingToken.name,
         symbol: item.stakingToken.symbol,
-        decimals: item.stakingToken.decimals,
-        totalSupply: item.stakingToken.totalSupply,
         tokens: item.stakingToken.tokens?.map((token) =>
           plainToClass(DepositTokenDto, {
             address: token.address,
-            name: token.name,
             symbol: token.symbol,
-            decimals: token.decimals,
-            totalSupply: token.totalSupply,
           }),
         ),
       });
@@ -189,17 +180,11 @@ export class LegacyAdapter implements IOpportunityAdapter {
     if (item.lpToken) {
       return plainToClass(DepositTokenDto, {
         address: item.lpToken.address,
-        name: item.lpToken.name,
         symbol: item.lpToken.symbol,
-        decimals: item.lpToken.decimals,
-        totalSupply: item.lpToken.totalSupply,
         tokens: item.tokens.map((token) =>
           plainToClass(DepositTokenDto, {
             address: token.address,
-            name: token.name,
             symbol: token.symbol,
-            decimals: token.decimals,
-            totalSupply: token.totalSupply,
           }),
         ),
       });

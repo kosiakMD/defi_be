@@ -31,6 +31,7 @@ import {
   YearnProtocolEnum,
   TrisolarisProtocolEnum,
   OrcaProtocolEnum,
+  AnchorProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -70,7 +71,8 @@ export type ProtocolName =
   | WonderlandProtocolEnum
   | YearnProtocolEnum
   | TrisolarisProtocolEnum
-  | OrcaProtocolEnum;
+  | OrcaProtocolEnum
+  | AnchorProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

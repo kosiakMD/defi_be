@@ -156,6 +156,7 @@ export const validationSchema = Joi.object({
   YEARN_ETH_SUBGRAPH_URL: Joi.string().required(),
   YEARN_FTM_SUBGRAPH_URL: Joi.string().required(),
   YEARN_V1_ETH_SUBGRAPH_URL: Joi.string().required(),
+  TERRA_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

@@ -91,6 +91,10 @@ import { WonderlandStaking } from './protocols/wonderland/features/wonderland.st
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
+import { AnchorPools } from './protocols/anchor/anchor.pools';
+import { AnchorStaking } from './protocols/anchor/anchor.staking';
+import { AnchorLending } from './protocols/anchor/anchor.lending';
 
 const Abracadabra = [
   AbracadabraProtocol,
@@ -129,6 +133,7 @@ const Saber = [SaberProtocol, SaberStaking];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
+const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -170,6 +175,7 @@ const ProtocolList = [
   ...Viperswap,
   ...Wonderland,
   ...Orca,
+  ...Anchor,
 ];
 
 @Module({

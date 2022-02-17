@@ -172,6 +172,9 @@ export class JobsRunner {
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);
 
+    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_staking`);
+
     return jobPlaceholdersSet;
   }
 }

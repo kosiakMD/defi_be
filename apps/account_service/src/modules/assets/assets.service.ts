@@ -14,8 +14,10 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
-import { DetailedResponse } from '@app/common/interfaces';
+import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
+import { AaveGenericToken } from '@app/common/web3provider/contracts/protocols/aave/AaveGenericToken';
+import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/CompoundToken';
 import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/TokenVault';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -31,7 +33,7 @@ import { ERC20 } from '../approvals/contracts/ERC20';
 import { MINTER } from '../approvals/contracts/MINTER';
 import { UNIV2LP } from '../approvals/contracts/UNIV2LP';
 import { MinimalStakedTokenCheck } from './contracts/MinimalStakedTokenCheck';
-import { AssetDto, AssetResponseDto } from './dto/asset.dto';
+import { AssetDto, AssetResponseDto, AssetTrackDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
@@ -116,22 +118,34 @@ export class AssetsService {
         );
   }
 
-  async saveTrackingAsset({ assetAddress, assetChain }): Promise<AssetResponseDto> {
+  async getAssetData(assetChain: ChainIdEnum, assetAddress: string) {
+    const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
+    if (assetChain === ChainIdEnum.terra) {
+      // eslint-disable-next-line camelcase
+      return await chainProvider.wasm.contractQuery(assetAddress, { token_info: {} });
+    } else {
+      // bind asset to LP token contract because it extends from ERC20 by default
+      const assetContract = new ERC20(assetAddress, chainProvider);
+      return await assetContract.getContractData();
+    }
+  }
+
+  async saveTrackingAsset({
+    address: assetAddress,
+    chain: assetChain,
+    force,
+  }: AssetTrackDto): Promise<AssetResponseDto> {
     const existedAsset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
       assetAddress,
       assetChain,
     );
 
     const shouldReturnExisting = existedAsset && (existedAsset.isTracked || existedAsset.isLp);
-    if (shouldReturnExisting) {
+    if (shouldReturnExisting && !force) {
       return this.withUnderlying(existedAsset);
     }
 
-    const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
-    // bind asset to LP token contract because it extends from ERC20 by default
-    const assetContract = new ERC20(assetAddress, chainProvider);
-
-    const assetData = await assetContract.getContractData();
+    const assetData = await this.getAssetData(assetChain, assetAddress);
 
     let assetToSave: AssetsEntity;
     if (existedAsset) {
@@ -163,13 +177,38 @@ export class AssetsService {
     return asset;
   }
 
+  async attemptTerraLp(asset: AssetsEntity) {
+    try {
+      const chainProvider = this.web3Provider.getInstanceByChainId(asset.chain);
+      const { minter } = await chainProvider.wasm.contractQuery(asset.address, { minter: {} });
+      const underlyingInfo: PoolAssetsQueryResp = await chainProvider.wasm.contractQuery(minter, {
+        pool: {},
+      });
+      const coins = underlyingInfo.assets.map((asset) =>
+        asset.info.token ? asset.info.token.contract_addr : asset.info.native_token.denom,
+      );
+
+      await Promise.all(
+        coins.map((address, idx) => {
+          return this.saveAndRelate(asset, address, idx);
+        }),
+      );
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   async assetHasUnderlying(asset: AssetsEntity) {
     const results = await Promise.allSettled([
       this.attemptUniswapLikePair(asset),
       this.attemptCurveLikePool(asset),
       this.attemptEllipsisLikePair(asset),
+      this.attemptAaveUnderlying(asset),
+      this.attemptCompoundUnderlying(asset),
       this.attemptYearnUnderlying(asset),
       this.attempStakedToken(asset), // xSushi xBoo, ohm forks, memo, wmemo,
+      this.attemptTerraLp(asset),
     ]);
 
     return results.some((result) => result.status === 'fulfilled' && Boolean(result.value));
@@ -225,6 +264,23 @@ export class AssetsService {
     return true;
   }
 
+  private async attemptAaveUnderlying(asset: AssetsEntity) {
+    const contract = new AaveGenericToken(asset.address);
+    const tokenAddress = await this.multicall.call(
+      contract.UNDERLYING_ASSET_ADDRESS(),
+      asset.chain,
+    );
+    await this.saveAndRelate(asset, tokenAddress);
+    return true;
+  }
+
+  private async attemptCompoundUnderlying(asset: AssetsEntity) {
+    const contract = new CompoundToken(asset.address);
+    const tokenAddress = await this.multicall.call(contract.underlying(), asset.chain);
+    await this.saveAndRelate(asset, tokenAddress);
+    return true;
+  }
+
   /**
    * Saves a new address as an underlying asset for a given token
    *
@@ -235,8 +291,8 @@ export class AssetsService {
    */
   private async saveAndRelate(asset: AssetsEntity, underlyingAsset: Address, poolId = 0) {
     const underlying = await this.saveTrackingAsset({
-      assetAddress: underlyingAsset.toLowerCase(),
-      assetChain: asset.chain,
+      address: underlyingAsset.toLowerCase(),
+      chain: asset.chain,
     });
 
     return await this.assetRepository.createRelation(asset.id, underlying.id, poolId);

@@ -13,4 +13,12 @@ export class SushiSwapMasterChefAbi extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+
+  static readonly rewarder: AbiItem = {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'rewarder',
+    outputs: [{ internalType: 'contract IRewarder', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

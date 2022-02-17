@@ -9,6 +9,7 @@ export default (): any => ({
   POLYGON_URL: process.env.POLYGON_URL,
   FTM_URL: process.env.FTM_URL,
   ARBITRUM_URL: process.env.ARBITRUM_URL,
+  TERRA_URL: process.env.TERRA_URL,
   INTEGRATION_SERVICE_URL: process.env.INTEGRATION_SERVICE_URL,
   ACCOUNT_SERVICE_URL: process.env.ACCOUNT_SERVICE_URL,
   PRICE_SERVICE_URL: process.env.PRICE_SERVICE_URL,

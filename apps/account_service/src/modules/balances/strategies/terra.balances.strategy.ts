@@ -34,7 +34,7 @@ export class TerraBalancesStrategy implements BalancesLoadingStrategy {
     const customTokens = originalTokens.filter((ot) => ot.match(/^terra.*/));
     const nativeTokensSet = new Set(nativeTokens);
 
-    const terra = this.web3Provider.getLCDInstance(chainId);
+    const terra = this.web3Provider.getInstanceByChainId(chainId);
     const nativeTokensBalancesResult = await terra.bank.balance(address);
     const nativeTokensBalances: Coins = nativeTokensBalancesResult[0];
     nativeTokensBalances.map((tb) => {

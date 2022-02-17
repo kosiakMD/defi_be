@@ -1,9 +1,9 @@
 export const ProtocolsConfig = {
   trisolaris: {
     chainCode: 18,
-    singleStakingToken: [],
-    chefs: [
+    contracts: [
       {
+        type: 'MASTER_CHEF',
         address: '0x1f1Ed214bef5E83D8f5d0eB5D7011EB965D0D79B', // MasterChef V1 Staking Contract
         lpAddressFetcher: 'poolInfo',
         features: {

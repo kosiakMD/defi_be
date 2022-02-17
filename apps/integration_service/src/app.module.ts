@@ -16,6 +16,8 @@ import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
+import { IfModule } from './modules/if_poc/if.module';
+import { ProtocolsRegistry } from './modules/if_poc/protocols.registry';
 import { FrameworkModule } from './modules/integrations/framework/framework.module';
 import { FrameworkService } from './modules/integrations/framework/framework.service';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
@@ -27,6 +29,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
 @Module({
   imports: [
     FrameworkModule,
+    IfModule,
     ConfigModule.forRoot(configuration(config)),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
@@ -88,6 +91,7 @@ export class AppModule implements NestModule {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly frameworkService: FrameworkService, //todo remove me (was added for testing purposes)
+    private readonly protocolsRegistry: ProtocolsRegistry, //todo remove me (was added for testing purposes)
   ) {}
 
   onModuleInit(): void {
@@ -106,6 +110,9 @@ export class AppModule implements NestModule {
 
   async start() {
     await new Promise((resolve) => setTimeout(resolve, 2000)); //wait a bit for app to fully start
-    this.frameworkService.start();
+    // this.frameworkService.start();
+    this.protocolsRegistry.registerProtocol(18, 'Trisolaris', {
+      address: '0x1f1Ed214bef5E83D8f5d0eB5D7011EB965D0D79B',
+    });
   }
 }

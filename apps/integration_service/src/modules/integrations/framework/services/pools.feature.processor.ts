@@ -56,6 +56,7 @@ export class PoolsFeatureProcessor implements IFeatureProcessor {
     );
     console.log('================================================================');
     console.log({ prices });
+    console.log(JSON.stringify(extendedLpTokenInfo, null, 4));
     console.log('================================================================');
 
     //todo add calculation logic here

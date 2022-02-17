@@ -78,7 +78,6 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         catchError((exception) => {
-          console.log('exception1', exception);
           const args = context.getArgs();
           const className = context.getClass().name;
 

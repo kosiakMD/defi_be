@@ -22,7 +22,6 @@ export class SentryInterceptor implements NestInterceptor {
   // @ts-ignore
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const className = context.getClass().name;
-    // console.log('className', className);
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
       let reqId, sessionId;

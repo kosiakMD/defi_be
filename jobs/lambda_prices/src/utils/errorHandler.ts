@@ -1,7 +1,7 @@
-import Sentry from '@sentry/serverless';
+import { AWSLambda } from '@sentry/serverless';
 import { Handler } from 'aws-lambda/handler';
 
-Sentry.AWSLambda.init({
+AWSLambda.init({
   // production only by default
   enabled:
     Boolean(process.env.SENTRY_ENABLED) ||
@@ -18,7 +18,7 @@ Sentry.AWSLambda.init({
 });
 
 const errorHandler = async function (lambdaHandler: Handler): Promise<Handler> {
-  return Sentry.AWSLambda.wrapHandler(
+  return AWSLambda.wrapHandler(
     async (event, context, callback) => await lambdaHandler(event, context, callback),
     {
       captureAllSettledReasons: true,

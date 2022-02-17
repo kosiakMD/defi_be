@@ -36,6 +36,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.fuse]: AbsoluteChainIdEnum.fuse,
   [ChainIdEnum.cardano]: AbsoluteChainIdEnum.cardano,
   [ChainIdEnum.cosmos]: AbsoluteChainIdEnum.cosmos,
+  [ChainIdEnum.metis]: AbsoluteChainIdEnum.metis,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -74,6 +75,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.fuse]: ChainIdEnum.fuse,
   [AbsoluteChainIdEnum.cardano]: ChainIdEnum.cardano,
   [AbsoluteChainIdEnum.cosmos]: ChainIdEnum.cosmos,
+  [AbsoluteChainIdEnum.metis]: ChainIdEnum.metis,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -102,6 +104,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.fuse]: ChainIdEnum.fuse,
   [ChainAbbrEnum.cardano]: ChainIdEnum.cardano,
   [ChainAbbrEnum.cosmos]: ChainIdEnum.cosmos,
+  [ChainAbbrEnum.metis]: ChainIdEnum.metis,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -128,6 +131,7 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.fuse]: CoingeckoPlatformEnum.fuse,
   [ChainIdEnum.cardano]: CoingeckoPlatformEnum.cardano,
   [ChainIdEnum.cosmos]: CoingeckoPlatformEnum.cosmos,
+  [ChainIdEnum.metis]: CoingeckoPlatformEnum.metis,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -157,6 +161,7 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.fuse]: ZERO_ADDRESS,
   [ChainIdEnum.cardano]: CARDANO_COIN_ADDRESS,
   [ChainIdEnum.cosmos]: COSMOS_COIN_ADDRESS,
+  [ChainIdEnum.metis]: ZERO_ADDRESS,
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -186,6 +191,7 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.fuse]: '',
   [ChainIdEnum.cardano]: '',
   [ChainIdEnum.cosmos]: '',
+  [ChainIdEnum.metis]: '',
 };
 
 export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

@@ -22,6 +22,7 @@ export enum ChainAbbrEnum {
   fuse = 'fuse',
   cardano = 'cardano',
   cosmos = 'cosmos',
+  metis = 'metis',
 }
 
 export enum ChainNameEnum {
@@ -48,6 +49,7 @@ export enum ChainNameEnum {
   fuse = 'fuse',
   cardano = 'cardano',
   cosmos = 'cosmos',
+  metis = 'metis',
 }
 
 export enum ChainIdEnum {
@@ -74,9 +76,10 @@ export enum ChainIdEnum {
   fuse = 21,
   cardano = 22,
   cosmos = 23,
+  metis = 24,
 }
 
-// https://api.coingecko.com/api/v3/asset_platforms
+// INFO: https://api.coingecko.com/api/v3/asset_platforms
 export enum CoingeckoPlatformEnum {
   eth = 'ethereum',
   bsc = 'binance-smart-chain',
@@ -102,6 +105,7 @@ export enum CoingeckoPlatformEnum {
   fuse = '',
   cardano = 'cardano',
   cosmos = 'cosmos',
+  metis = 'metis-andromeda',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -128,6 +132,7 @@ export enum AbsoluteChainIdEnum {
   fuse = 122,
   cardano = 1003,
   cosmos = 2004,
+  metis = 1088,
 }
 
 export enum CurrencyEnum {

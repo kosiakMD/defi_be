@@ -57,6 +57,7 @@ export const validationSchema = Joi.object({
   GNOSIS_URL: Joi.string().required(),
   SOL_URL: Joi.string().required(),
   CARDANO_BLOCKFROST_API_KEY: Joi.string().required(),
+  METIS_URL: Joi.string().required(),
 
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),

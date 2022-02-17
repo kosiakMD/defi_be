@@ -15,21 +15,21 @@ export class PriceRequestDto {
     enumName: 'CurrencyIdEnum',
     required: false,
     description: 'Chain or network id',
-    default: CurrencyIdEnum.usd,
+    default: ChainIdEnum.eth,
   })
-  chain: CurrencyIdEnum = CurrencyIdEnum.usd;
+  chain: ChainIdEnum = ChainIdEnum.eth;
 
   @Type(() => Number)
   @IsInt()
   @IsOptional()
   @ApiProperty({
-    enum: ChainIdEnum,
+    enum: CurrencyIdEnum,
     enumName: 'ChainIdEnum',
     required: false,
     description: 'Currency Id',
-    default: ChainIdEnum.eth,
+    default: CurrencyIdEnum.usd,
   })
-  currency: ChainIdEnum = ChainIdEnum.eth;
+  currency: CurrencyIdEnum = CurrencyIdEnum.usd;
 
   @IsNotEmpty()
   @IsString({ each: true })

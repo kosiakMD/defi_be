@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
 
-const ChainsProvidersUrls = {
+const ChainsProvidersUrls: Partial<Record<ChainIdEnum, string>> = {
   [ChainIdEnum.arbi]: 'ARBITRUM_URL',
   [ChainIdEnum.avax]: 'AVAX_URL',
   [ChainIdEnum.boba]: 'BOBA_URL',
@@ -29,6 +29,7 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.terra]: 'TERRA_URL',
   [ChainIdEnum.klay]: 'KLAYTN_URL',
   [ChainIdEnum.fuse]: 'FUSE_URL',
+  [ChainIdEnum.metis]: 'METIS_URL',
 };
 
 @Injectable()

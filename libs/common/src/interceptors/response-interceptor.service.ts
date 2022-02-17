@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { Request, Response as EResponse } from 'express';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -19,6 +19,14 @@ import {
 export interface Response<T> extends EResponse<T, any> {
   data: T;
 }
+
+const allowedControllers = [
+  'HealthController', // test control
+  'IntegrationsController',
+  'IntegrationsControllerV2',
+  'ProtocolController',
+  'ProtocolControllerV2',
+];
 
 @Injectable()
 export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
@@ -70,35 +78,22 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         catchError((exception) => {
+          console.log('exception1', exception);
           const args = context.getArgs();
-          Sentry.captureException(exception, {
-            level: Severity.Error,
-            extra: {
-              protocolName: args?.[0]?.params?.protocolName,
-            },
-          });
+          const className = context.getClass().name;
+
+          if (allowedControllers.includes(className)) {
+            Sentry.captureException(exception, {
+              level: Severity.Error,
+              extra: {
+                protocolName: args?.[0]?.params?.protocolName,
+              },
+            });
+          }
           throwError(exception);
+          // skip(1);
         }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        tap(null, (exception) => {
-          const args = context.getArgs();
-          Sentry.captureException(exception, {
-            level: Severity.Error,
-            tags: {
-              protocolName: args?.[0]?.params?.protocolName,
-              reqId,
-              sessionId,
-            },
-          });
-        }),
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        // Add Meta for response body
-        // TODO: for debug reason
-        map((data) => Object.assign(data, meta)),
       );
-      // return next.handle();
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

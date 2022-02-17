@@ -36,11 +36,13 @@ export class SentryInterceptor implements NestInterceptor {
 
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
+      return next.handle();
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
       return next.handle().pipe(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         catchError((exception) => {
-          // console.log('exception', exception);
           const args = context.getArgs();
           Sentry.captureException(exception, {
             level: Severity.Error,
@@ -53,7 +55,6 @@ export class SentryInterceptor implements NestInterceptor {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         tap(null, (exception) => {
-          // console.log('exception', exception);
           const args = context.getArgs();
           Sentry.captureException(exception, {
             level: Severity.Error,

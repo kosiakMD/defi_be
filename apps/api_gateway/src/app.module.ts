@@ -18,7 +18,6 @@ import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
@@ -103,10 +102,10 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
-    },
+    // {
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: SentryInterceptor,
+    // },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

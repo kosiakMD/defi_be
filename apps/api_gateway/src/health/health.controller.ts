@@ -57,6 +57,7 @@ export class HealthController {
   })
   @HealthCheck()
   async checkServices(): Promise<any> {
+    throw new Error('TEST');
     const result = {
       status: HealthStatusEnum.ok,
       info: {},

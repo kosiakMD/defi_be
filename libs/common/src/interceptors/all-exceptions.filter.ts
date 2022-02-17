@@ -96,7 +96,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
       //     },
       //   });
       // }
-
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {
       throw exception;

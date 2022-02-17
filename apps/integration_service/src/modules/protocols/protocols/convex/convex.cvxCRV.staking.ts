@@ -56,6 +56,7 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
         [`balanceOf(${address})`, cvxRewardPoolContract.balanceOf(address)],
         [`earned(${address})`, cvxRewardPoolContract.earned(address)],
         ['extraRewardsLength', cvxRewardPoolContract.extraRewardsLength()],
+        ['rewardToken', cvxRewardPoolContract.rewardToken()],
       ]),
     );
 
@@ -68,6 +69,7 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
       baseContractResults.get('extraRewardsLength').output.data.toString(),
       10,
     );
+
     const extraRewardAddressCalls = new Map(
       Array.from(Array(length).keys()).map((poolId) => {
         return [`extraRewards(${poolId})`, cvxRewardPoolContract.extraRewards(poolId)];
@@ -79,8 +81,8 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
       chain.id,
     );
 
-    const extraRewardCalls = new Map(
-      Array.from(extraRewardAddressResults.values()).flatMap((virtualRewardAddressCallData) => {
+    const extraRewardCalls = Array.from(extraRewardAddressResults.values()).flatMap(
+      (virtualRewardAddressCallData) => {
         const virtualRewardPool = virtualRewardAddressCallData.output.data.toString().toLowerCase();
         const contract = new VirtualBalanceRewardPool(virtualRewardPool);
         const calls: [string, any][] = addresses.map((address) => [
@@ -91,25 +93,27 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
         calls.push([`${virtualRewardPool}-rewardToken`, contract.rewardToken()]);
 
         return calls;
-      }),
+      },
     );
 
     const earnedRewardResults = await this.multicallService.handleInBatches(
-      extraRewardCalls,
+      new Map(extraRewardCalls),
       chain.id,
     );
 
     const stakingToken = cvxCrvStakingPool.stakingToken; // From Vaults Job or api
     const rewardTokens = cvxCrvStakingPool.rewards; // From Vaults Job or Api
 
-    const getRewards = (address: string) =>
+    const getExtraRewards = (address: string) =>
       Array.from(extraRewardAddressResults.values()).map((virtualPoolAddress) => {
         const rewardPool = virtualPoolAddress.output.data.toString().toLowerCase();
         const rewardAddress = earnedRewardResults
           .get(`${rewardPool}-rewardToken`)
           .output.data.toString()
           .toLowerCase();
+
         const rewardToken = rewardTokens.find((r) => r.address === rewardAddress);
+
         return this.createClaimableRewardToken(
           rewardToken,
           normalizeDecimals(
@@ -118,6 +122,22 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
           ),
         );
       });
+
+    const getBaseReward = (address: string) => {
+      const rewardAddress = baseContractResults
+        .get(`rewardToken`)
+        .output.data.toString()
+        .toLowerCase();
+
+      const rewardToken = rewardTokens.find((r) => r.address === rewardAddress);
+      return this.createClaimableRewardToken(
+        rewardToken,
+        normalizeDecimals(
+          baseContractResults.get(`earned(${address})`).output.data.toString(),
+          rewardToken.decimals,
+        ),
+      );
+    };
 
     return addresses.map((address) => {
       return plainToClass(BaseDataStaking, {
@@ -131,7 +151,7 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
           {
             address: CVX_REWARD_POOL_ADDRESS,
             poolId: null,
-            poolName: 'CVX',
+            poolName: 'cvxCRV',
             staked: baseContractResults.get(`balanceOf(${address})`).output.data.toString(),
             stats: cvxCrvStakingPool.stats, // FROM POOL
             stakingToken: this.createStakingToken(
@@ -141,7 +161,7 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
                 stakingToken.decimals,
               ),
             ),
-            rewards: getRewards(address),
+            rewards: getExtraRewards(address).concat(getBaseReward(address)),
           },
         ],
       });

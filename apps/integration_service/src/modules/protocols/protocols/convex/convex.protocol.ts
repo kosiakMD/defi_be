@@ -77,8 +77,9 @@ export class ConvexProtocol extends BasicProtocol {
   ): Promise<BaseData[]> {
     const [cvxData, cvxCRVData, curveLpData] = await Promise.all([
       this.cvxStaking.getData(addresses, chain),
-      this.cvxCRVStaking.getData(addresses, chain),
+      this.cvxCRVStaking.getData(addresses, chain), // missing crv rewards, missing cvx rewards
       this.curveLpStaking.getData(addresses, chain),
+      // TODO: Need locked CVX staking
     ]);
 
     return [].concat(cvxData, cvxCRVData, curveLpData);

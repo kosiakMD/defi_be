@@ -34,4 +34,11 @@ export class CvxRewardPool extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+  static readonly rewardToken: AbiItem = {
+    inputs: [],
+    name: 'rewardToken',
+    outputs: [{ internalType: 'contract IERC20', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

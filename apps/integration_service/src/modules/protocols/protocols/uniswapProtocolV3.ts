@@ -37,12 +37,20 @@ import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
 export class UniswapProtocolV3 extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.eth];
+  readonly chains = [
+    ChainAbbrEnum.eth,
+    // ChainAbbrEnum.opt,  // optimism is currently unsupported, however the subgraph apears to work
+    // ChainAbbrEnum.arbi, // arbitrum subgraph fails, so will likely need to re-write using web3
+    ChainAbbrEnum.plg,
+  ];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV3;
   readonly displayName = 'Uniswap V3';
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.pools],
+    [ChainAbbrEnum.opt]: [FeatureEnum.pools],
+    [ChainAbbrEnum.arbi]: [FeatureEnum.pools],
+    [ChainAbbrEnum.plg]: [FeatureEnum.pools],
   };
   protected dataProvider;
   public feeRate = 0.003;

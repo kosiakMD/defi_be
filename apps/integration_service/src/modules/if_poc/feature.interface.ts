@@ -1,3 +1,4 @@
 export interface IFeature {
-  updateMetadata();
+  updateMetadata(cfg);
+  getUserData(protocolCfg, userAddress);
 }

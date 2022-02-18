@@ -2,22 +2,23 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { FarmingFeature } from './farming.feature';
 import { IFeature } from './feature.interface';
-import { LendingFeature } from './lending.feature';
 
 @Injectable()
 export class FeatureFactory {
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly multicall: MulticallAggregator,
+  ) {}
 
-  createFeature(featureName, featureCfg): IFeature {
+  createFeature(featureName): IFeature {
     this.logger.debug(`createFeature: ${featureName}`);
     switch (featureName) {
-      case 'farming':
-        return new FarmingFeature(this.logger, featureCfg);
-      case 'lending':
-        return new LendingFeature(this.logger, featureCfg);
+      case 'MasterChefFarming':
+        return new FarmingFeature(this.logger, this.multicall);
       default:
         this.logger.warn('unsupported feature', featureName);
         throw Error('unsupported feature');

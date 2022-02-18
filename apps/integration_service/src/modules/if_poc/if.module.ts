@@ -5,6 +5,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AbiFetcher } from './abi.fetcher';
 import { ChainDataFetcher } from './chain.data.fetcher';
+import { DataHolder } from './data.holder';
 import { FeatureFactory } from './feature.factory';
 import { ProtocolsClassifier } from './protocols.classifier';
 import { ProtocolsRegistry } from './protocols.registry';
@@ -19,6 +20,7 @@ import { ProtocolsRegistry } from './protocols.registry';
     ProtocolsClassifier,
     FeatureFactory,
     ChainDataFetcher,
+    DataHolder,
   ],
   exports: [ProtocolsRegistry],
 })

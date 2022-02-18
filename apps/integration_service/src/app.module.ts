@@ -105,14 +105,27 @@ export class AppModule implements NestModule {
       'App',
     );
 
-    //this.start();
+    this.start();
   }
 
   async start() {
     await new Promise((resolve) => setTimeout(resolve, 2000)); //wait a bit for app to fully start
     // this.frameworkService.start();
-    this.protocolsRegistry.registerProtocol(18, 'Trisolaris', {
-      address: '0x1f1Ed214bef5E83D8f5d0eB5D7011EB965D0D79B',
+
+    //trisolaris
+    const chainCode = 18; //near
+    const protocol = 'Trisolaris';
+    const userAddress = '0x7bc9cef699d8428a46ec105ad3b5d6dad4df9215';
+
+    //pancake
+    // const chainCode = 2; //bsc
+    // const protocol = 'Pancake';
+    // const userAddress = '0x7bc9cef699d8428a46ec105ad3b5d6dad4df9215';
+    await this.protocolsRegistry.registerProtocol(chainCode, protocol, {
+      address: '0x1f1Ed214bef5E83D8f5d0eB5D7011EB965D0D79B', //trisolaris
+      // address: '0x73feaa1ee314f8c655e354234017be2193c9e24e', //pancake
     });
+    const userInfo = await this.protocolsRegistry.getUserData(chainCode, protocol, userAddress);
+    console.log(JSON.stringify(userInfo, null, 4));
   }
 }

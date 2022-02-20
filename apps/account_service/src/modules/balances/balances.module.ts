@@ -5,7 +5,9 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CosmosService } from '../../common/providers/3rdparty/cosmos.service';
+import { CosmosService } from '../../common/providers/3rdparty/cosmos/cosmos.service';
+import { CosmostationProvider } from '../../common/providers/3rdparty/cosmos/cosmostation.provider';
+import { KeplrProvider } from '../../common/providers/3rdparty/cosmos/keplr.provider';
 import { CovalentService } from '../../common/providers/3rdparty/covalent.service';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 
@@ -48,6 +50,8 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
   providers: [
     PriceService,
     CosmosService,
+    KeplrProvider,
+    CosmostationProvider,
     CovalentService,
     BalancesService,
     CovalentBalancesStrategy,

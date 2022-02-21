@@ -28,7 +28,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
       return [];
     }
     const tokensFilter = new Set<string>(originalTokens);
-    const cardona = this.web3Provider.getCadronaInstance(chainId);
+    const cardona = this.web3Provider.getCardanoInstance(chainId);
     try {
       const wallet = await cardona.addresses(address);
       return this.mapCardanoResponce(wallet, tokensFilter, chainId);

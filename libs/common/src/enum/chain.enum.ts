@@ -23,6 +23,7 @@ export enum ChainAbbrEnum {
   cardano = 'cardano',
   cosmos = 'cosmos',
   metis = 'metis',
+  ronin = 'ronin',
 }
 
 export enum ChainNameEnum {
@@ -50,6 +51,7 @@ export enum ChainNameEnum {
   cardano = 'cardano',
   cosmos = 'cosmos',
   metis = 'metis',
+  ronin = 'ronin',
 }
 
 export enum ChainIdEnum {
@@ -77,6 +79,7 @@ export enum ChainIdEnum {
   cardano = 22,
   cosmos = 23,
   metis = 24,
+  ronin = 27,
 }
 
 // INFO: https://api.coingecko.com/api/v3/asset_platforms
@@ -106,6 +109,7 @@ export enum CoingeckoPlatformEnum {
   cardano = 'cardano',
   cosmos = 'cosmos',
   metis = 'metis-andromeda',
+  ronin = 'ronin',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -127,12 +131,15 @@ export enum AbsoluteChainIdEnum {
   kcc = 321,
   opt = 10,
   near = 1313161554,
-  terra = 'columbus-5',
   klay = 8217,
   fuse = 122,
+  metis = 1088,
+
+  // INFO: Not EVM chains
   cardano = 1003,
   cosmos = 2004,
-  metis = 1088,
+  terra = 'columbus-5',
+  ronin = 1002,
 }
 
 export enum CurrencyEnum {

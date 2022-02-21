@@ -27,6 +27,7 @@ import { AccountService } from './account/account.service';
 import { AnalyticController } from './analytic/analytic.controller';
 import { AppController } from './app/app.controller';
 import { AppService } from './app/app.service';
+import { ApprovalsController } from './approvals/approvals.controller';
 import { AssetsController } from './assets/assets.controller';
 import { AssetsService } from './assets/assets.service';
 import { BalancesController } from './balances/balances.controller';
@@ -101,6 +102,7 @@ import { VaultsModule } from './vaults/vaults.module';
     AnalyticController,
     AppController,
     AssetsController,
+    ApprovalsController,
     BalancesController,
     TransactionsController,
     TransfersController,

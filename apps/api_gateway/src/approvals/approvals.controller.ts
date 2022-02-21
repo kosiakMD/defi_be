@@ -1,39 +1,64 @@
-import { Cache } from 'cache-manager';
+import { GetAllApprovalsDto } from 'apps/account_service/src/common/dto/GetAllApprovals.dto';
+import { ApprovalsSortFieldsEnum } from 'apps/account_service/src/common/enum/ApprovalsSortFields.enum';
 
-import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ApprovalDTO } from '../account/account.dto';
-import { AccountService } from '../account/account.service';
+import { IBaseService } from '../common/interfaces/base-service.interface';
+import { BaseService } from '../common/services/base.service';
 
 @ApiTags('Approvals')
 @Controller('v1/approvals')
-export class ApprovalsController {
-  constructor(
-    private accountService: AccountService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-  ) {}
+export class ApprovalsController extends BaseService implements IBaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('ACCOUNT_SERVICE_HOST'),
+    this.configService.get<string>('ACCOUNT_SERVICE_PORT'),
+  );
 
   @Get('/')
   @ApiQuery({
-    name: 'addresses',
+    name: 'page',
+    type: Number,
+    required: false,
+    description: `page of approvals`,
+    example: 3,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    description: `number per one page`,
+    example: 300,
+  })
+  @ApiQuery({
+    name: 'sortField',
     type: String,
-    description: 'Array of Addresses (comma separated)',
+    required: false,
+    description: `field to sort by`,
+    example: ApprovalsSortFieldsEnum.CONTRACT_ADDRESS,
+  })
+  @ApiQuery({
+    name: 'sortDirection',
+    type: String,
+    required: false,
+    description: `sort direction DESC|ASC`,
+    example: 'ASC',
+  })
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'user addresses',
     example: '0x0000000000000000000000000000000000000000',
   })
   @ApiQuery({
-    name: 'chains',
+    name: 'chain',
     type: String,
     required: false,
-    description: `Array of chains' IDs (comma separated)`,
-    // example: '1,2',
-    example: '',
+    description: `chains' ID`,
+    example: '1',
   })
-  @ApiResponse({ status: 200, type: ApprovalDTO })
-  async getBscApproval(
-    @Query('addresses') addresses: string,
-    @Query('chains') chains: string,
-  ): Promise<ApprovalDTO[]> {
-    return this.accountService.getApprovals(addresses, chains);
+  @ApiResponse({ status: HttpStatus.OK })
+  async getBscApproval(@Query() getAllApprovalsQuery: GetAllApprovalsDto): Promise<any> {
+    return this.requestProxy(this.url + 'v1/approvals', 'GET', { params: getAllApprovalsQuery });
   }
 }

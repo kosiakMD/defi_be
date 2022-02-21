@@ -2,7 +2,7 @@ import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { Request, Response as EResponse } from 'express';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -81,22 +81,22 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
         }),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        tap(null, (exception) => {
-          const args = context.getArgs();
-          Sentry.captureException(exception, {
-            level: Severity.Error,
-            tags: {
-              protocolName: args?.[0]?.params?.protocolName,
-              reqId,
-              sessionId,
-            },
-          });
-        }),
+        // tap(null, (exception) => {
+        //   const args = context.getArgs();
+        //   Sentry.captureException(exception, {
+        //     level: Severity.Error,
+        //     tags: {
+        //       protocolName: args?.[0]?.params?.protocolName,
+        //       reqId,
+        //       sessionId,
+        //     },
+        //   });
+        // }),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // Add Meta for response body
         // TODO: for debug reason
-        map((data) => Object.assign(data, meta)),
+        // map((data) => Object.assign(data, meta)),
       );
       // return next.handle();
     } else {

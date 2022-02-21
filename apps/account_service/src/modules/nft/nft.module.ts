@@ -19,6 +19,7 @@ import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph'
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         store: redisStore,
+        // ttl: configService.get('REDIS_CACHE_TTL') || 30,
         ttl: configService.get('REDIS_CACHE_TTL') || 30,
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),

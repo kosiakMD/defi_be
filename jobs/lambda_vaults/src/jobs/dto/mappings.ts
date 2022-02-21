@@ -1,6 +1,4 @@
 // eslint-disable-next-line max-classes-per-file
-import { plainToClass } from 'class-transformer';
-
 import { IntegrationClaimableTokenDto } from '@app/common/jobs/staking';
 
 export class FeatureMappingDbItem {
@@ -30,7 +28,7 @@ export class PoolsFeatureMapping {
   dtoName: string;
   lpToken: FeatureMappingDbItem;
   tokens?: FeatureMappingPoolToken[];
-  rewards?: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  rewards?: IntegrationClaimableTokenDto[];
 }
 
 export class StakingFeatureMapping {

@@ -9,12 +9,12 @@ import type { TokenBalance } from '../balances.interfaces';
 
 @Injectable()
 export class CosmosBalancesStrategy implements BalancesLoadingStrategy {
-  constructor(private readonly cosmosServise: CosmosService) {}
+  constructor(private readonly cosmosService: CosmosService) {}
 
   async getBalances(request: BalancesRequest): Promise<TokenBalance[]> {
-    if (!this.cosmosServise.isCosmosAddress(request.address)) return [];
+    if (!this.cosmosService.isCosmosAddress(request.address)) return [];
 
-    const balances: CosmosBalance[] = await this.cosmosServise.getBalances(request.address);
+    const balances: CosmosBalance[] = await this.cosmosService.getBalances(request.address);
     return this.mapCosmosResponse(balances, request);
   }
 

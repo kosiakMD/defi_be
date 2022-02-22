@@ -8,7 +8,7 @@ import { MultiCallAbiProxy } from '../../../multicall.abi.proxy';
  * something to be Variable or Stable specific,
  * extend from this, and use that instead
  */
-export class AaveGenericToken extends MultiCallAbiProxy {
+export class VariableDebtToken extends MultiCallAbiProxy {
   static readonly UNDERLYING_ASSET_ADDRESS: AbiItem = {
     inputs: [],
     name: 'UNDERLYING_ASSET_ADDRESS',

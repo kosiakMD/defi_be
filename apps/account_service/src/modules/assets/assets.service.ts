@@ -16,7 +16,8 @@ import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
-import { AaveGenericToken } from '@app/common/web3provider/contracts/protocols/aave/AaveGenericToken';
+import { AToken } from '@app/common/web3provider/contracts/protocols/aave/AToken';
+import { VariableDebtToken } from '@app/common/web3provider/contracts/protocols/aave/VariableDebtToken';
 import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/CompoundToken';
 import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/TokenVault';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -155,7 +156,7 @@ export class AssetsService {
       assetToSave.chain = assetChain;
       assetToSave.address = assetAddress.toLowerCase();
       assetToSave.icon = null;
-      assetToSave.isLp = false;
+      assetToSave.isLp = false; // false for now, then save so that later in assetHasUnderlying we can create the relationships if needed
       assetToSave.isAnalyticAvailable = false;
       assetToSave = await this.assetRepository.saveAsset(assetToSave);
     }
@@ -265,13 +266,34 @@ export class AssetsService {
   }
 
   private async attemptAaveUnderlying(asset: AssetsEntity) {
-    const contract = new AaveGenericToken(asset.address);
-    const tokenAddress = await this.multicall.call(
-      contract.UNDERLYING_ASSET_ADDRESS(),
-      asset.chain,
-    );
-    await this.saveAndRelate(asset, tokenAddress);
-    return true;
+    try {
+      const contract = new VariableDebtToken(asset.address);
+      const tokenAddress = await this.multicall.call(
+        contract.UNDERLYING_ASSET_ADDRESS(),
+        asset.chain,
+      );
+      await this.saveAndRelate(asset, tokenAddress);
+      return true;
+    } catch {
+      //
+    }
+
+    try {
+      const contract = new AToken(asset.address);
+      const tokenAddress = await this.multicall.call(
+        contract.underlyingAssetAddress(),
+        asset.chain,
+      );
+      await this.saveAndRelate(
+        asset,
+        tokenAddress
+          .toLowerCase()
+          .replace(/^0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee$/, ZERO_ADDRESS),
+      );
+      return true;
+    } catch {
+      //
+    }
   }
 
   private async attemptCompoundUnderlying(asset: AssetsEntity) {

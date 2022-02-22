@@ -20,6 +20,10 @@ import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadab
 import { AbracadabraStaking } from './protocols/abracadabra/features/abracadabra.staking';
 import { AlpacaApiService } from './protocols/alpaca/alpaca.api.service';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AnchorLending } from './protocols/anchor/anchor.lending';
+import { AnchorPools } from './protocols/anchor/anchor.pools';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
+import { AnchorStaking } from './protocols/anchor/anchor.staking';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
@@ -30,6 +34,7 @@ import { CompoundProtocol } from './protocols/compoundProtocol';
 import { ConvexCurveLpStaking } from './protocols/convex/convex.curveLP.staking';
 import { ConvexCvxStaking } from './protocols/convex/convex.cvx.staking';
 import { ConvexCvxCRVStaking } from './protocols/convex/convex.cvxCRV.staking';
+import { ConvexCvxLockedStaking } from './protocols/convex/convex.cvxLockedStaking';
 import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import { CurvePools } from './protocols/curve/curve.pools';
 import CurveProtocol from './protocols/curve/curve.protocol';
@@ -91,10 +96,6 @@ import { WonderlandStaking } from './protocols/wonderland/features/wonderland.st
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
-import { AnchorPools } from './protocols/anchor/anchor.pools';
-import { AnchorStaking } from './protocols/anchor/anchor.staking';
-import { AnchorLending } from './protocols/anchor/anchor.lending';
 
 const Abracadabra = [
   AbracadabraProtocol,
@@ -103,7 +104,13 @@ const Abracadabra = [
   AbracadabraStaking,
 ];
 
-const Convex = [ConvexProtocol, ConvexCvxStaking, ConvexCvxCRVStaking, ConvexCurveLpStaking];
+const Convex = [
+  ConvexProtocol,
+  ConvexCvxStaking,
+  ConvexCvxCRVStaking,
+  ConvexCurveLpStaking,
+  ConvexCvxLockedStaking,
+];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];

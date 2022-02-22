@@ -55,6 +55,7 @@ import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
@@ -87,7 +88,6 @@ import WePiggyProtocol from './protocols/wepiggyProtocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -917,6 +917,7 @@ export class ProtocolService {
         this.logger.error(e);
       }
     });
+
     return [data, errors];
   }
 

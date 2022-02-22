@@ -19,6 +19,7 @@ import BasicProtocol from '../basicProtocol';
 import { ConvexCurveLpStaking } from './convex.curveLP.staking';
 import { ConvexCvxStaking } from './convex.cvx.staking';
 import { ConvexCvxCRVStaking } from './convex.cvxCRV.staking';
+import { ConvexCvxLockedStaking } from './convex.cvxLockedStaking';
 
 @Injectable()
 export class ConvexProtocol extends BasicProtocol {
@@ -37,6 +38,7 @@ export class ConvexProtocol extends BasicProtocol {
     private readonly cvxCRVStaking: ConvexCvxCRVStaking,
     private readonly curveLpStaking: ConvexCurveLpStaking,
     private readonly cvxStaking: ConvexCvxStaking,
+    private readonly cvxLockedStaking: ConvexCvxLockedStaking,
   ) {
     super();
     // Test Addresses
@@ -75,13 +77,21 @@ export class ConvexProtocol extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<BaseData[]> {
-    const [cvxData, cvxCRVData, curveLpData] = await Promise.all([
+    const [cvxData, cvxCRVData, curveLpData, cvxLockedData] = await Promise.all([
       this.cvxStaking.getData(addresses, chain),
       this.cvxCRVStaking.getData(addresses, chain), // missing crv rewards, missing cvx rewards
       this.curveLpStaking.getData(addresses, chain),
-      // TODO: Need locked CVX staking
+      this.cvxLockedStaking.getData(addresses, chain),
     ]);
 
-    return [].concat(cvxData, cvxCRVData, curveLpData);
+    // Merge staking data, otherwise multiple independant BaseDataStaking will each override each other
+    // if belonging to the same user
+    cvxData.forEach((baseData) => {
+      const cvxCrv = cvxCRVData.find((bd) => bd.userAddress === baseData.userAddress);
+      const curveLp = curveLpData.find((bd) => bd.userAddress === baseData.userAddress);
+      baseData.items.push(...cvxCrv.items, ...curveLp.items);
+    });
+
+    return [].concat(cvxData, cvxLockedData);
   }
 }

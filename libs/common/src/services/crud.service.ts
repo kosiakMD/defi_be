@@ -16,11 +16,15 @@ export abstract class CrudService<T extends DeepPartial<T>> {
 
   public async get(conditions: FindConditions<T>): Promise<T> {
     try {
-      const entity = await this.entityRepository.findOne(conditions);
-      if (!entity) {
-        throw new NotFoundException();
-      }
-      return entity;
+      return await this.entityRepository.findOne(conditions);
+    } catch (e) {
+      throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  public async getOneOrFail(conditions: FindConditions<T>): Promise<T> {
+    try {
+      return await this.entityRepository.findOneOrFail(conditions);
     } catch (e) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }

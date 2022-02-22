@@ -28,7 +28,7 @@ export class ConvexProtocol extends BasicProtocol {
   readonly name = ProtocolNameEnum.Convex;
   readonly displayName = 'Convex';
   readonly features = {
-    [ChainAbbrEnum.eth]: [FeatureEnum.staking],
+    [ChainAbbrEnum.eth]: [FeatureEnum.staking, FeatureEnum.lockedBalances],
   };
 
   constructor(

@@ -12,12 +12,14 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { CVX_REWARD_POOL_ADDRESS } from '@app/common/constant/protocols/convex.constants';
+import { CallData } from '@app/common/dto/CallData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import {
   ClaimableDto,
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
+  IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { normalizeDecimals } from '@app/common/utils';
 import { CvxRewardPool } from '@app/common/web3provider/contracts/protocols/convex/CvxRewardPool';
@@ -56,6 +58,22 @@ export class ConvexCvxStaking implements IStakingFetcher {
     const rewardToken = cvxStakingPool.rewards[0];
 
     return addresses.map((address) => {
+      const items = [];
+
+      const cvxStakeItem = this.getCvxStakeItem(
+        address,
+        cvxStakingPool,
+        stakingToken,
+        rewardToken,
+        multicallResults,
+      );
+
+      if (
+        cvxStakeItem.stakingToken.balance ||
+        cvxStakeItem.rewards.some((reward) => reward.claimableData.balance)
+      ) {
+        items.push(cvxStakeItem);
+      }
       return plainToClass(BaseDataStaking, {
         chain,
         userAddress: address,
@@ -63,33 +81,41 @@ export class ConvexCvxStaking implements IStakingFetcher {
         projectName: ProjectEnum.convex,
         feature: FeatureEnum.staking,
         protocolName: ProtocolNameEnum.Convex,
-        items: [
-          {
-            address: CVX_REWARD_POOL_ADDRESS,
-            poolId: null,
-            poolName: 'CVX',
-            staked: multicallResults.get(`${address}-balance`).output.data.toString(),
-            stats: cvxStakingPool.stats, // FROM POOL
-            stakingToken: this.createStakingToken(
-              stakingToken,
-              normalizeDecimals(
-                multicallResults.get(`${address}-balance`).output.data.toString(),
-                stakingToken.decimals,
-              ),
-            ),
-            rewards: [
-              this.createClaimableRewardToken(
-                rewardToken,
-                normalizeDecimals(
-                  multicallResults.get(`${address}-pending`).output.data.toString(),
-                  rewardToken.decimals,
-                ),
-              ),
-            ],
-          },
-        ],
+        items,
       });
     });
+  }
+
+  getCvxStakeItem(
+    address: Address,
+    cvxStakingPool: IntegrationStakingPositionDto,
+    stakingToken: IntegrationERC20TokenDto,
+    rewardToken: IntegrationClaimableTokenDto,
+    multicallResults: Map<string, CallData>,
+  ) {
+    return {
+      address: CVX_REWARD_POOL_ADDRESS,
+      poolId: null,
+      poolName: 'CVX',
+      staked: multicallResults.get(`${address}-balance`).output.data.toString(),
+      stats: cvxStakingPool.stats, // FROM POOL
+      stakingToken: this.createStakingToken(
+        stakingToken,
+        normalizeDecimals(
+          multicallResults.get(`${address}-balance`).output.data.toString(),
+          stakingToken.decimals,
+        ),
+      ),
+      rewards: [
+        this.createClaimableRewardToken(
+          rewardToken,
+          normalizeDecimals(
+            multicallResults.get(`${address}-pending`).output.data.toString(),
+            rewardToken.decimals,
+          ),
+        ),
+      ],
+    };
   }
 
   private createStakingToken(

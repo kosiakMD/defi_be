@@ -28,16 +28,16 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
       return [];
     }
     const tokensFilter = new Set<string>(originalTokens);
-    const cardona = this.web3Provider.getCadronaInstance(chainId);
+    const cardano = this.web3Provider.getCardanoInstance(chainId);
     try {
-      const wallet = await cardona.addresses(address);
-      return this.mapCardanoResponce(wallet, tokensFilter, chainId);
+      const wallet = await cardano.addresses(address);
+      return this.mapCardanoResponse(wallet, tokensFilter, chainId);
     } catch (error) {
       return this.returnZeroBalanceAddressOrError(error, chainId);
     }
   }
 
-  private mapCardanoResponce(
+  private mapCardanoResponse(
     wallet: CardanoBalance,
     tokensFilter: Set<string>,
     chainId: ChainIdEnum,

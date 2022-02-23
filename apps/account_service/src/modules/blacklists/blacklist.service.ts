@@ -1,27 +1,30 @@
 import { Cache } from 'cache-manager';
+import { Repository } from 'typeorm';
+import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
 
-import { BlacklistedAddress } from './dto/blacklisted.address';
+import { CrudService } from '@app/common/services/crud.service';
+
 import { BlacklistedAddressSaveDto } from './dto/blacklisted.address.save.dto';
-import { AddressesRepository } from './repositories/addresses.repository';
+import { BlacklistedAddressesEntity } from './entities/blacklisted-addresses.entity';
 
 @Injectable()
-export class BlacklistService {
+export class BlacklistService extends CrudService<BlacklistedAddressesEntity> {
   private readonly addressesCacheKey = 'addresses_blacklisted';
   private readonly cacheTTLInSeconds: number;
 
   constructor(
-    private readonly addressesRepository: AddressesRepository,
+    @InjectRepository(BlacklistedAddressesEntity)
+    private readonly blackListedAddressesRepository: Repository<BlacklistedAddressesEntity>,
+    private manager: EntityManager,
     private readonly config: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {
+    super(blackListedAddressesRepository);
     this.cacheTTLInSeconds = config.get<number>('BLACKLISTED_CACHE_TTL_IN_SECONDS') || 300;
-  }
-
-  async getAll(): Promise<BlacklistedAddress[]> {
-    return this.addressesRepository.getAll();
   }
 
   async getAllCached(): Promise<Map<string, boolean>> {
@@ -49,12 +52,11 @@ export class BlacklistService {
     return addresses;
   }
 
-  async save(addressSaveDto: BlacklistedAddressSaveDto): Promise<BlacklistedAddress> {
-    return await this.addressesRepository.save({
-      id: null,
-      address: addressSaveDto.address,
-      comment: addressSaveDto.comment,
-      createdAt: null,
-    });
+  async upsertOne(addressSaveDto: BlacklistedAddressSaveDto): Promise<any> {
+    const address = await this.get({ address: addressSaveDto.address });
+    if (address) {
+      return await this.patch({ id: address.id }, addressSaveDto);
+    }
+    return this.create(addressSaveDto);
   }
 }

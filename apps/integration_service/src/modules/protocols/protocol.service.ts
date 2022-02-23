@@ -55,6 +55,7 @@ import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
@@ -76,6 +77,7 @@ import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
@@ -87,7 +89,6 @@ import WePiggyProtocol from './protocols/wepiggyProtocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 
 @Injectable()
 export class ProtocolService {
@@ -132,6 +133,7 @@ export class ProtocolService {
     private readonly trisolarisProtocol: TrisolarisProtocol,
     private readonly orcaProtocol: OrcaProtocol,
     private readonly anchorProtocol: AnchorProtocol,
+    private readonly terraswapProtocol: TerraswapProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -169,6 +171,7 @@ export class ProtocolService {
       trisolarisProtocol,
       orcaProtocol,
       anchorProtocol,
+      terraswapProtocol,
     ];
   }
 
@@ -917,6 +920,7 @@ export class ProtocolService {
         this.logger.error(e);
       }
     });
+
     return [data, errors];
   }
 

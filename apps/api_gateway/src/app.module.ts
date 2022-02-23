@@ -34,6 +34,7 @@ import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.modul
 import { MailModule } from './mail/mail.module';
 import { NetworksController } from './networks/networks.controller.dto';
 import { NftController } from './nft/nft.controller';
+import { OpportunitiesController } from './opportunities/opportunities.controller';
 import { PartnersController } from './partners/partners.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
@@ -97,6 +98,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ProjectsController,
     ScamsController,
     TokensController,
+    OpportunitiesController,
   ],
   providers: [
     {

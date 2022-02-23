@@ -1,6 +1,7 @@
 import {
   CARDANO_COIN_ADDRESS,
   COSMOS_COIN_ADDRESS,
+  RONIN_COIN_ADDRESS,
   SOL_COIN_ADDRESS,
   ZERO_ADDRESS,
 } from '@app/common/constant';
@@ -37,6 +38,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.cardano]: AbsoluteChainIdEnum.cardano,
   [ChainIdEnum.cosmos]: AbsoluteChainIdEnum.cosmos,
   [ChainIdEnum.metis]: AbsoluteChainIdEnum.metis,
+  [ChainIdEnum.ronin]: AbsoluteChainIdEnum.ronin,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -76,6 +78,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.cardano]: ChainIdEnum.cardano,
   [AbsoluteChainIdEnum.cosmos]: ChainIdEnum.cosmos,
   [AbsoluteChainIdEnum.metis]: ChainIdEnum.metis,
+  [AbsoluteChainIdEnum.ronin]: ChainIdEnum.ronin,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -105,6 +108,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.cardano]: ChainIdEnum.cardano,
   [ChainAbbrEnum.cosmos]: ChainIdEnum.cosmos,
   [ChainAbbrEnum.metis]: ChainIdEnum.metis,
+  [ChainAbbrEnum.ronin]: ChainIdEnum.ronin,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -132,6 +136,7 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.cardano]: CoingeckoPlatformEnum.cardano,
   [ChainIdEnum.cosmos]: CoingeckoPlatformEnum.cosmos,
   [ChainIdEnum.metis]: CoingeckoPlatformEnum.metis,
+  [ChainIdEnum.ronin]: CoingeckoPlatformEnum.ronin,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -162,6 +167,7 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.cardano]: CARDANO_COIN_ADDRESS,
   [ChainIdEnum.cosmos]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.metis]: ZERO_ADDRESS,
+  [ChainIdEnum.ronin]: RONIN_COIN_ADDRESS,
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -192,6 +198,7 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.cardano]: '',
   [ChainIdEnum.cosmos]: '',
   [ChainIdEnum.metis]: '',
+  [ChainIdEnum.ronin]: 'ronin',
 };
 
 export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

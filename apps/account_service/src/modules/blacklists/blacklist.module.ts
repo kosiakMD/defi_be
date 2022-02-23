@@ -2,13 +2,15 @@ import * as redisStore from 'cache-manager-redis-store';
 
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { BlacklistController } from '../../controllers/blacklist.controller';
 import { BlacklistService } from './blacklist.service';
-import { AddressesRepository } from './repositories/addresses.repository';
+import { BlacklistedAddressesEntity } from './entities/blacklisted-addresses.entity';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([BlacklistedAddressesEntity]),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -23,7 +25,7 @@ import { AddressesRepository } from './repositories/addresses.repository';
     }),
   ],
   controllers: [BlacklistController],
-  providers: [BlacklistService, AddressesRepository],
+  providers: [BlacklistService],
   exports: [BlacklistService],
 })
 export class BlacklistModule {}

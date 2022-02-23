@@ -45,7 +45,7 @@ export class LiquidityPoolFeature {
   stats: Stats = plainToClass(Stats, {});
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
   tokens: PoolTokenDto[] = [];
-  rewards?: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  rewards?: IntegrationClaimableTokenDto[];
   // data not included to feature but need to have to get realtime data
   extra?: any = {};
 }

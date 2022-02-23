@@ -1,6 +1,7 @@
 import { EntityRepository, In, Repository } from 'typeorm';
 
-import { FarmCreateDto } from '../dtos/farm.create.dto';
+import { FarmCreateDto } from '@app/common/dto/opportunities/farm.create.dto';
+
 import { FarmEntity } from '../entities/farm.entity';
 
 @EntityRepository(FarmEntity)

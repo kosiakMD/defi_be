@@ -35,6 +35,7 @@ import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy'
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
+import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
@@ -59,6 +60,7 @@ export class BalancesService {
     private readonly terraBalancesStrategy: TerraBalancesStrategy,
     private readonly cardanoBalancesStrategy: CardanoBalancesStrategy,
     private readonly cosmosBalancesStrategy: CosmosBalancesStrategy,
+    private readonly roninBalancesStrategy: RoninBalancesStrategy,
   ) {}
 
   public async getBalance(
@@ -461,6 +463,8 @@ export class BalancesService {
         return [this.cardanoBalancesStrategy];
       case ChainIdEnum.cosmos:
         return [this.cosmosBalancesStrategy];
+      case ChainIdEnum.ronin:
+        return [this.roninBalancesStrategy];
       default:
         return [this.networkBalancesStrategy];
     }

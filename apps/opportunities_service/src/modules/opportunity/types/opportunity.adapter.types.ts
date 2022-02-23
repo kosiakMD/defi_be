@@ -1,6 +1,6 @@
 import { ProtocolDataDto } from '@app/common';
+import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
 
-import { OpportunityCreateDto } from '../dtos/opportunity.create.dto';
 import { FarmEntity } from '../entities/farm.entity';
 
 export type LegacyFetchOpportunityOptions = {

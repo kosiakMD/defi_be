@@ -20,6 +20,10 @@ import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadab
 import { AbracadabraStaking } from './protocols/abracadabra/features/abracadabra.staking';
 import { AlpacaApiService } from './protocols/alpaca/alpaca.api.service';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AnchorLending } from './protocols/anchor/anchor.lending';
+import { AnchorPools } from './protocols/anchor/anchor.pools';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
+import { AnchorStaking } from './protocols/anchor/anchor.staking';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
@@ -30,6 +34,7 @@ import { CompoundProtocol } from './protocols/compoundProtocol';
 import { ConvexCurveLpStaking } from './protocols/convex/convex.curveLP.staking';
 import { ConvexCvxStaking } from './protocols/convex/convex.cvx.staking';
 import { ConvexCvxCRVStaking } from './protocols/convex/convex.cvxCRV.staking';
+import { ConvexCvxLockedStaking } from './protocols/convex/convex.cvxLockedStaking';
 import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import { CurvePools } from './protocols/curve/curve.pools';
 import CurveProtocol from './protocols/curve/curve.protocol';
@@ -47,6 +52,7 @@ import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
+import { OlympusBonding } from './protocols/olympus/features/olympus.bonding';
 import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import { OrcaFarms } from './protocols/orca/orca.farms';
@@ -67,6 +73,8 @@ import SaberProtocol from './protocols/saber/saber.protocol';
 import { SaberStaking } from './protocols/saber/saber.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TerraswapPools } from './protocols/terraswap/terraswap.pools';
+import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
@@ -91,10 +99,6 @@ import { WonderlandStaking } from './protocols/wonderland/features/wonderland.st
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
-import { AnchorPools } from './protocols/anchor/anchor.pools';
-import { AnchorStaking } from './protocols/anchor/anchor.staking';
-import { AnchorLending } from './protocols/anchor/anchor.lending';
 
 const Abracadabra = [
   AbracadabraProtocol,
@@ -103,12 +107,18 @@ const Abracadabra = [
   AbracadabraStaking,
 ];
 
-const Convex = [ConvexProtocol, ConvexCvxStaking, ConvexCvxCRVStaking, ConvexCurveLpStaking];
+const Convex = [
+  ConvexProtocol,
+  ConvexCvxStaking,
+  ConvexCvxCRVStaking,
+  ConvexCurveLpStaking,
+  ConvexCvxLockedStaking,
+];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
 const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
-const Olympus = [OlympusProtocol, OlympusStaking];
+const Olympus = [OlympusProtocol, OlympusStaking, OlympusBonding];
 const TraderJoe = [
   TraderJoeProtocol,
   TraderJoePools,
@@ -134,6 +144,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
+const Terraswap = [TerraswapProtocol, TerraswapPools];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -176,6 +187,7 @@ const ProtocolList = [
   ...Wonderland,
   ...Orca,
   ...Anchor,
+  ...Terraswap,
 ];
 
 @Module({

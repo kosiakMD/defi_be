@@ -5,6 +5,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainIdEnum, UniswapV3Position } from '@app/common';
+import { gql } from '@app/common/utils';
 
 interface UniswapGraphQLPositionResponse {
   positions: UniswapV3Position[];
@@ -20,6 +21,9 @@ export class UniswapV3Subgraph {
   ) {
     this.subgraphUrls = {
       [ChainIdEnum.eth]: this.configService.get<string>('AMM_UNISWAP_V3_ETH_SUBGRAPH_URL'),
+      [ChainIdEnum.arbi]: this.configService.get<string>('AMM_UNISWAP_V3_ARBI_SUBGRAPH_URL'),
+      [ChainIdEnum.opt]: this.configService.get<string>('AMM_UNISWAP_V3_OPT_SUBGRAPH_URL'),
+      [ChainIdEnum.plg]: this.configService.get<string>('AMM_UNISWAP_V3_PLG_SUBGRAPH_URL'),
     };
   }
 
@@ -34,52 +38,52 @@ export class UniswapV3Subgraph {
     return this.httpService
       .post(this.getChainSubgraphEndpoint(chainId), {
         variables: { address },
-        query: `
-        query GetUserPositions($address: Bytes!) {
-          positions(where: { owner: $address }) {
-            owner
-            tokenId:id
-            liquidity
-            feeGrowthInside0LastX128
-            feeGrowthInside1LastX128
-            tickLower {
-              tickIdx
-              feeGrowthOutside0X128
-              feeGrowthOutside1X128
-            }
-            tickUpper {
-              tickIdx
-              feeGrowthOutside0X128
-              feeGrowthOutside1X128
-            }
-            token0 {
-              address: id
-              name
-              symbol
-              decimals
-              totalSupply
-            }
-            token1 {
-              address: id
-              name
-              symbol
-              decimals
-              totalSupply
-            }
-            pool {
-              id
+        query: gql`
+          query GetUserPositions($address: Bytes!) {
+            positions(where: { liquidity_gt: 0, owner: $address }) {
+              owner
+              tokenId: id
               liquidity
-              sqrtPrice
-              tick
-              totalValueLockedToken0
-              totalValueLockedToken1
-              totalValueLockedUSD
-              feeGrowthGlobal0X128
-              feeGrowthGlobal1X128
+              feeGrowthInside0LastX128
+              feeGrowthInside1LastX128
+              tickLower {
+                tickIdx
+                feeGrowthOutside0X128
+                feeGrowthOutside1X128
+              }
+              tickUpper {
+                tickIdx
+                feeGrowthOutside0X128
+                feeGrowthOutside1X128
+              }
+              token0 {
+                address: id
+                name
+                symbol
+                decimals
+                totalSupply
+              }
+              token1 {
+                address: id
+                name
+                symbol
+                decimals
+                totalSupply
+              }
+              pool {
+                id
+                liquidity
+                sqrtPrice
+                tick
+                totalValueLockedToken0
+                totalValueLockedToken1
+                totalValueLockedUSD
+                feeGrowthGlobal0X128
+                feeGrowthGlobal1X128
+              }
             }
           }
-        }
-      `,
+        `,
       })
       .pipe(map((response) => response.data.data))
       .toPromise();

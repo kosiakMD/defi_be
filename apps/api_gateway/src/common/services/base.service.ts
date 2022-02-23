@@ -23,10 +23,8 @@ export class BaseService {
     query?: any,
     config?: any,
   ) {
-    let url = urlData as string;
-    if (Array.isArray(urlData)) {
-      url = new URL(urlData[0], urlData[1]).toString();
-    }
+    const url = this.parseUrl(urlData);
+
     const timeMark = 'request ' + url;
     try {
       this.logger.time(timeMark);
@@ -50,6 +48,14 @@ export class BaseService {
     } finally {
       this.logger.timeEnd(timeMark);
     }
+  }
+
+  private parseUrl(url: string | string[]): string {
+    if (Array.isArray(url)) {
+      return new URL(url[0], url[1]).toString();
+    }
+
+    return url;
   }
 
   public buildUrl(host, port?): string {

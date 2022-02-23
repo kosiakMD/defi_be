@@ -1,8 +1,8 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
 
+import { InvestmentTokensDto } from '@app/common/dto/opportunities/investment.tokens.dto';
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
-import { InvestmentTokensDto } from '../dtos/investment.tokens.dto';
 import { FarmEntity } from './farm.entity';
 
 @Entity({ name: 'opportunities' })

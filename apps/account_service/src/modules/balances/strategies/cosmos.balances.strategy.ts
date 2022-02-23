@@ -1,28 +1,27 @@
 import { Injectable } from '@nestjs/common';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { Balance } from '../../../common/interfaces/cosmos.interface';
-import { CosmosService } from '../../../common/providers/3rdparty/cosmos.service';
+import { CosmosBalance } from '../../../common/interfaces/cosmos.interface';
+import { CosmosService } from '../../../common/providers/3rdparty/cosmos/cosmos.service';
 import { BalancesRequest } from '../../../common/types';
 
 import type { TokenBalance } from '../balances.interfaces';
 
 @Injectable()
 export class CosmosBalancesStrategy implements BalancesLoadingStrategy {
-  constructor(private readonly cosmosServise: CosmosService) {}
+  constructor(private readonly cosmosService: CosmosService) {}
 
   async getBalances(request: BalancesRequest): Promise<TokenBalance[]> {
-    const prefix = this.cosmosServise.getCosmosHubPrefix(request.address);
-    if (prefix === '') return [];
+    if (!this.cosmosService.isCosmosAddress(request.address)) return [];
 
-    const wallet: Balance = await this.cosmosServise.getBalances(request.address, prefix);
-    return this.mapCosmosResponse(wallet, request);
+    const balances: CosmosBalance[] = await this.cosmosService.getBalances(request.address);
+    return this.mapCosmosResponse(balances, request);
   }
 
-  private mapCosmosResponse(wallet: Balance, request: BalancesRequest): TokenBalance[] {
+  private mapCosmosResponse(balances: CosmosBalance[], request: BalancesRequest): TokenBalance[] {
     const tokenBalances: TokenBalance[] = [];
     const tokenSet = new Set(request.tokens);
-    for (const balance of wallet.result) {
+    for (const balance of balances) {
       if (tokenSet.has(balance.denom)) {
         tokenBalances.push({
           amount: balance.amount.toString(),

@@ -34,7 +34,7 @@ export class SolanaBalancesStrategy implements BalancesLoadingStrategy {
     try {
       pubKey = new PublicKey(address);
     } catch (e) {
-      // don't do anything because log and erorrs will cause a lot of redundant messages
+      // don't do anything because log and errors will cause a lot of redundant messages
       return tokenBalances;
     }
 

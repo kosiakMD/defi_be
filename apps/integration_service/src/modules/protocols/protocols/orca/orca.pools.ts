@@ -121,9 +121,11 @@ export class OrcaPools {
       lpBalance.tokens.forEach((tb) => {
         if (tb.decimalsAmount > 0) {
           const pool = cachedPoolsMap.get(tb.token.address);
-          if (pool) {
+          if (pool?.extra) {
             pool.extra.lpToken = tb;
             lpPools.push(pool);
+          } else {
+            throw new Error('Wrong data from cache. No extra data!');
           }
         }
       });

@@ -3,6 +3,7 @@ export enum ProjectEnum {
   abracadabra = 'abracadabra',
   alpaca = 'alpaca',
   anchor = 'anchor',
+  terraswap = 'terraswap',
   autofarm = 'autofarm',
   badger = 'badger',
   balancer = 'balancer',
@@ -32,6 +33,7 @@ export enum ProjectEnum {
   yearn = 'yearn',
   trisolaris = 'trisolaris',
   orca = 'orca',
+  astroport = 'astroport',
 }
 
 export enum YearnProtocolEnum {
@@ -148,6 +150,10 @@ export enum AnchorProtocolEnum {
   anchor = 'Anchor',
 }
 
+export enum TerraswapProtocolEnum {
+  terraswap = 'Terraswap',
+}
+
 export enum SaberProtocolEnum {
   saber = 'Saber',
 }
@@ -164,8 +170,12 @@ export enum TrisolarisProtocolEnum {
   trisolaris = 'Trisolaris',
 }
 
-export enum OrcaProtocolEnum {  
+export enum OrcaProtocolEnum {
   orca = 'Orca',
+}
+
+export enum AstroportProtocolEnum {
+  astroport = 'Astroport',
 }
 
 export const ProtocolNameEnum = {
@@ -201,4 +211,6 @@ export const ProtocolNameEnum = {
   ...TrisolarisProtocolEnum,
   ...OrcaProtocolEnum,
   ...AnchorProtocolEnum,
+  ...TerraswapProtocolEnum,
+  ...AstroportProtocolEnum,
 };

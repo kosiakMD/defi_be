@@ -10,6 +10,8 @@ import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
 import { AnchorLp } from './anchor/anchor.lp';
 import { AnchorStaking } from './anchor/anchor.staking';
+import { AstroportLp } from './astroport/astroport.lp';
+import { AstroportStaking } from './astroport/astroport.staking';
 import { AutofarmApiService } from './autofarm/autofarm.api.service';
 import { AutofarmStakingAVAX } from './autofarm/autofarm.staking.avax';
 import { AutofarmStakingBSC } from './autofarm/autofarm.staking.bsc';
@@ -72,6 +74,7 @@ import { SaberPools } from './saber/saber.pools';
 import { SaberStaking } from './saber/saber.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { SushiswapPools } from './sushiwap/sushiswap.pools';
+import { TerraSwapLp } from './terraswap/terraswap.lp';
 import { DbMapping } from './traderjoe/dbmapping';
 import { TraderjoePools } from './traderjoe/traderjoe.pools';
 import { TraderJoeStaking } from './traderjoe/traderjoe.staking';
@@ -160,6 +163,9 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   OrcaStaking,
   AnchorLp,
   AnchorStaking,
+  TerraSwapLp,
+  AstroportLp,
+  AstroportStaking,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

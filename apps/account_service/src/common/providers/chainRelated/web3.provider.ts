@@ -30,6 +30,7 @@ const ChainsProvidersUrls: Partial<Record<ChainIdEnum, string>> = {
   [ChainIdEnum.klay]: 'KLAYTN_URL',
   [ChainIdEnum.fuse]: 'FUSE_URL',
   [ChainIdEnum.metis]: 'METIS_URL',
+  [ChainIdEnum.ronin]: 'RONIN_URL',
 };
 
 @Injectable()
@@ -57,7 +58,7 @@ export class Web3Provider {
     return this.providers[chain];
   }
 
-  public getCadronaInstance(chain: ChainIdEnum): BlockFrostAPI {
+  public getCardanoInstance(chain: ChainIdEnum): BlockFrostAPI {
     return this.providers[chain];
   }
 

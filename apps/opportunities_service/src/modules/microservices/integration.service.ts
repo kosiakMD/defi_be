@@ -13,21 +13,16 @@ export class IntegrationService {
 
   constructor(
     private http: HttpService,
-    private configService: ConfigService,
+    private config: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
-    this.protocolsUrl = new URL(
-      '/v1/protocols',
-      this.configService.get('INTEGRATION_SERVICE_URL'),
-    ).href;
+    this.protocolsUrl = new URL('/v1/protocols', config.get('services.integrations')).href;
   }
 
   @RequestErrorHandler()
   async getAllFeatures(): Promise<ProtocolDataDto[]> {
-    this.logger.time(this.protocolsUrl);
     const $data = this.http.get(this.protocolsUrl);
     const { data } = await firstValueFrom($data);
-    this.logger.timeEnd(this.protocolsUrl);
     return data.data;
   }
 }

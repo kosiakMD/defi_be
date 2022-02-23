@@ -6,10 +6,10 @@ import { ICallData } from '@app/common';
 
 import { InputOutput } from './InputOutput';
 
-export class CallData implements ICallData {
+export class CallData<T = any> implements ICallData {
   address: string;
   abi: AbiItem;
   id?: number;
   input: InputOutput = plainToClass(InputOutput, {});
-  output: InputOutput = plainToClass(InputOutput, {});
+  output: InputOutput<T> = plainToClass(InputOutput, {});
 }

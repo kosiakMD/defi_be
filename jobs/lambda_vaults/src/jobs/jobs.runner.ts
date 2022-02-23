@@ -175,6 +175,8 @@ export class JobsRunner {
     jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_staking`);
 
+    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Astroport_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Astroport_staking`);
     return jobPlaceholdersSet;
   }
 }

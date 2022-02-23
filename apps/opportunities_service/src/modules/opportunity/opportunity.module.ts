@@ -1,11 +1,13 @@
 import * as redisStore from 'cache-manager-redis-store';
 
+import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MicroservicesModule } from '../microservices/microservices.module';
+import { MultifarmGraphqlService } from './adapters/multifarm/multifarm.graphql.service';
 import { FarmEntity } from './entities/farm.entity';
 import { OpportunityEntity } from './entities/opportunity.entity';
 import { FarmRepository } from './repositories/farm.repository';
@@ -35,9 +37,15 @@ import { OpportunityService } from './services/opportunity.service';
       inject: [ConfigService],
     }),
     MicroservicesModule,
+    HttpModule,
   ],
   controllers: [],
-  providers: [OpportunityService, OpportunityAdapterService],
+  providers: [
+    OpportunityService,
+    OpportunityAdapterService,
+    // Adapter Helpers
+    MultifarmGraphqlService,
+  ],
   exports: [OpportunityService],
 })
 export class OpportunityModule {}

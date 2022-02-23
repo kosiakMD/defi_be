@@ -15,6 +15,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import BasicProtocol from './../basicProtocol';
+import { OlympusBonding } from './features/olympus.bonding';
 import { OlympusStaking } from './features/olympus.staking';
 
 export class OlympusProtocol extends BasicProtocol {
@@ -23,7 +24,7 @@ export class OlympusProtocol extends BasicProtocol {
   readonly name = ProtocolNameEnum.olympus;
   readonly displayName = 'Olympus';
   readonly features = {
-    [ChainAbbrEnum.eth]: [FeatureEnum.staking],
+    [ChainAbbrEnum.eth]: [FeatureEnum.staking, FeatureEnum.lockedBalances],
   };
 
   constructor(
@@ -31,6 +32,7 @@ export class OlympusProtocol extends BasicProtocol {
 
     // Features
     private readonly stakingFeature: OlympusStaking,
+    private readonly bondingFeature: OlympusBonding,
   ) {
     super();
   }
@@ -45,7 +47,7 @@ export class OlympusProtocol extends BasicProtocol {
       }),
     );
 
-    const [data, errors] = handlePromiseAllSettled(chainFeatures);
+    const [data, errors] = handlePromiseAllSettled<BaseData[]>(chainFeatures);
     return [data.flat(), errors];
   }
 
@@ -57,6 +59,8 @@ export class OlympusProtocol extends BasicProtocol {
     switch (feature) {
       case FeatureEnum.staking:
         return this.stakingFeature.getData(addresses, chain);
+      case FeatureEnum.lockedBalances:
+        return this.bondingFeature.getData(addresses, chain);
       default:
         return [];
     }

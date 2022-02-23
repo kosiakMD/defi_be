@@ -66,6 +66,10 @@ export function confirmCallExists(callGroup: CallGroup, abi: AbiItem[]): { call:
 }
 
 export function deepFind(obj, path) {
+  if (path === '') {
+    return obj;
+  }
+
   const paths = path.split('.');
   let current = obj;
 

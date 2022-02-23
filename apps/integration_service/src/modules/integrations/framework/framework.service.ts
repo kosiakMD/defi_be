@@ -3,11 +3,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 
+import { FarmingFeatureProcessor } from './services/farming.feature.processor';
 import { IFeatureProcessor } from './services/feature.processor.interface';
 import { Handler } from './services/handler';
 import { PoolsFeatureProcessor } from './services/pools.feature.processor';
 import { ProtocolsIterator } from './services/protocols.iterator';
-import { StakingFeatureProcessor } from './services/staking.feature.processor';
 
 @Injectable()
 export class FrameworkService {
@@ -18,11 +18,11 @@ export class FrameworkService {
     private readonly protocolsIterator: ProtocolsIterator,
     private readonly handler: Handler,
     private readonly poolsFeatureProcessor: PoolsFeatureProcessor,
-    private readonly stakingFeatureProcessor: StakingFeatureProcessor,
+    private readonly farmingFeatureProcessor: FarmingFeatureProcessor,
   ) {
     this.featureProcessors = new Map<string, IFeatureProcessor>([
       ['poolsFeatureProcessor', poolsFeatureProcessor],
-      ['stakingFeatureProcessor', stakingFeatureProcessor],
+      ['farmingFeatureProcessor', farmingFeatureProcessor],
     ]);
   }
 

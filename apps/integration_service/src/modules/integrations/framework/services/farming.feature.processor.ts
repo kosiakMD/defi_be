@@ -8,7 +8,7 @@ import { PriceService } from '../../../microservices/price.service';
 import { IFeatureProcessor } from './feature.processor.interface';
 
 @Injectable()
-export class StakingFeatureProcessor implements IFeatureProcessor {
+export class FarmingFeatureProcessor implements IFeatureProcessor {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly accountService: AccountService,

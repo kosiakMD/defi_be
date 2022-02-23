@@ -20,22 +20,24 @@ export class Handler {
     this.logger.debug('-----------------handle start----------------------');
     const instructions: Instructions = plainToClass(Instructions, _instructions);
 
-    // console.log({ instructions });
-    console.log(JSON.stringify(instructions, null, 4));
+    // console.log(JSON.stringify(instructions, null, 4));
 
     const chainCalls = this.prepareChainCalls(instructions);
 
-    console.log({ chainCalls });
+    // console.log({ chainCalls });
 
-    const chainCallsResult = await this.multicall.handleInBatches(chainCalls.calls, 18);
+    const chainCallsResult = await this.multicall.handleInBatches(
+      chainCalls.calls,
+      instructions.context.chainCode,
+    );
 
-    console.log({ chainCallsResult });
+    // console.log({ chainCallsResult });
 
     const collectedData = {
       chainCalls: chainCalls.keys.map((k) => chainCallsResult.get(k)),
     };
 
-    console.log({ collectedData });
+    // console.log({ collectedData });
 
     const result = Object.keys(instructions.fieldsMapping).reduce((acc, field) => {
       const path = instructions.fieldsMapping[field];
@@ -43,7 +45,7 @@ export class Handler {
       return acc;
     }, {});
 
-    console.log({ result });
+    // console.log({ result });
 
     this.logger.debug('--------------------handle end--------------------');
 

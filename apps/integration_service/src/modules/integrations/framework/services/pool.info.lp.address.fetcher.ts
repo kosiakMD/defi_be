@@ -35,7 +35,7 @@ export class PoolInfoLpAddressFetcher implements ILpAddressFetcher {
     const callsRsp = await this.multicall.handleInBatches(calls, chainCode);
 
     const lpAddresses = [];
-    for (let i = 0; i < poolLength; i++) {
+    for (let i = 0; i < 2; i++) {
       lpAddresses.push(callsRsp.get(concatStrings(address, i)).output.data.lpToken);
     }
     return lpAddresses;

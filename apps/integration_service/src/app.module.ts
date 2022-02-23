@@ -110,8 +110,9 @@ export class AppModule implements NestModule {
 
   async start() {
     await new Promise((resolve) => setTimeout(resolve, 2000)); //wait a bit for app to fully start
-    // this.frameworkService.start();
+    await this.frameworkService.start();
 
+/*
     //trisolaris
     const chainCode = 18; //near
     const protocol = 'Trisolaris';
@@ -127,5 +128,6 @@ export class AppModule implements NestModule {
     });
     const userInfo = await this.protocolsRegistry.getUserData(chainCode, protocol, userAddress);
     console.log(JSON.stringify(userInfo, null, 4));
+*/
   }
 }

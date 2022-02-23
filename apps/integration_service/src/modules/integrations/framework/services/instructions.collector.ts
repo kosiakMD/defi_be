@@ -4,7 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Logger } from '../../../../../../../jobs/lambda_vaults/src/logger/logger.service';
-import { AbiProvider } from '../abi.provider';
+import { AbiProvider } from '../abi/abi.provider';
 import { FieldsGroupsMapping } from '../config/fields.groups.mapping';
 import { Instructions } from '../models';
 import { ILpAddressFetcher } from './lp.address.fetcher.interface';

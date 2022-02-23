@@ -11,7 +11,10 @@ import { concatStrings } from '../utils/string';
 export class MulticallAggregator {
   constructor(private readonly provider: Web3ProviderService) {}
 
-  async handleInBatches(calls: Map<string, CallData>, chain: ChainIdEnum) {
+  async handleInBatches<T = any>(
+    calls: Map<string, CallData>,
+    chain: ChainIdEnum,
+  ): Promise<Map<string, CallData<T>>> {
     const multicall = this.provider.getMulticallByChainId(chain);
     const web3 = this.provider.getInstanceByChainId(chain);
 

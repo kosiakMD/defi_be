@@ -52,6 +52,7 @@ import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
+import { OlympusBonding } from './protocols/olympus/features/olympus.bonding';
 import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import { OrcaFarms } from './protocols/orca/orca.farms';
@@ -115,7 +116,7 @@ const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
 const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
-const Olympus = [OlympusProtocol, OlympusStaking];
+const Olympus = [OlympusProtocol, OlympusStaking, OlympusBonding];
 const TraderJoe = [
   TraderJoeProtocol,
   TraderJoePools,

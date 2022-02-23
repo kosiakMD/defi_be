@@ -73,6 +73,8 @@ import SaberProtocol from './protocols/saber/saber.protocol';
 import { SaberStaking } from './protocols/saber/saber.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TerraswapPools } from './protocols/terraswap/terraswap.pools';
+import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import { TraderJoeFarm } from './protocols/traderjoe/trader-joe.farm';
 import { TraderJoeLending } from './protocols/traderjoe/trader-joe.lending';
 import { TraderJoePools } from './protocols/traderjoe/trader-joe.pools';
@@ -142,6 +144,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
+const Terraswap = [TerraswapProtocol, TerraswapPools];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -184,6 +187,7 @@ const ProtocolList = [
   ...Wonderland,
   ...Orca,
   ...Anchor,
+  ...Terraswap,
 ];
 
 @Module({

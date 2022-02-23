@@ -77,6 +77,7 @@ import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
@@ -132,6 +133,7 @@ export class ProtocolService {
     private readonly trisolarisProtocol: TrisolarisProtocol,
     private readonly orcaProtocol: OrcaProtocol,
     private readonly anchorProtocol: AnchorProtocol,
+    private readonly terraswapProtocol: TerraswapProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -169,6 +171,7 @@ export class ProtocolService {
       trisolarisProtocol,
       orcaProtocol,
       anchorProtocol,
+      terraswapProtocol,
     ];
   }
 

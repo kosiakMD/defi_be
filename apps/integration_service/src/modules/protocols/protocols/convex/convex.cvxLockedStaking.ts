@@ -61,14 +61,10 @@ export class ConvexCvxLockedStaking implements IStakingFetcher {
 
     addresses.forEach((address) => {
       const lockInfo = this.getLockedBalances(address, chain, results, tokens, prices);
-      if (lockInfo.items.length) {
-        baseData.push(lockInfo);
-      }
+      baseData.push(lockInfo);
 
       const claimInfo = this.getClaimableBalances(address, chain, results, tokens, prices);
-      if (claimInfo.items.length) {
-        baseData.push(claimInfo);
-      }
+      baseData.push(claimInfo);
     });
 
     return baseData;
@@ -92,23 +88,25 @@ export class ConvexCvxLockedStaking implements IStakingFetcher {
     });
     const rawBalance = results.get(`claimableRewards(${address})`).output.data;
 
-    rawBalance.map(({ token, amount }) => {
+    rawBalance.forEach(({ token, amount }) => {
       const reward = tokens.get(token.toLowerCase());
       const price = prices.get(reward.address);
       const balance = normalizeDecimals(amount.toString(), reward.decimals);
-      baseInfo.items.push(
-        plainToClass(IntegrationClaimableTokenDto, {
-          address: reward.address,
-          name: reward.name,
-          symbol: reward.symbol,
-          decimals: reward.decimals,
-          price,
-          claimableData: plainToClass(ClaimableDto, {
-            balance,
-            value: balance * price,
+      if (balance) {
+        baseInfo.items.push(
+          plainToClass(IntegrationClaimableTokenDto, {
+            address: reward.address,
+            name: reward.name,
+            symbol: reward.symbol,
+            decimals: reward.decimals,
+            price,
+            claimableData: plainToClass(ClaimableDto, {
+              balance,
+              value: balance * price,
+            }),
           }),
-        }),
-      );
+        );
+      }
     });
 
     return baseInfo;
@@ -146,20 +144,22 @@ export class ConvexCvxLockedStaking implements IStakingFetcher {
       const cvx = tokens.get(CVX_ADDRESS);
       const price = prices.get(cvx.address);
       const balance = normalizeDecimals(lock.amount, cvx.decimals);
-      baseInfo.items.push(
-        plainToClass(LockedToken, {
-          address: cvx.address,
-          name: cvx.name,
-          symbol: cvx.symbol,
-          decimals: cvx.decimals,
-          //
-          price: prices.get(cvx.address),
-          locked: { balance, value: balance * price },
-          unlocked: { balance: 0, value: 0 },
-          totalBalance: balance,
-          totalValue: balance * price,
-        }),
-      );
+      if (balance) {
+        baseInfo.items.push(
+          plainToClass(LockedToken, {
+            address: cvx.address,
+            name: cvx.name,
+            symbol: cvx.symbol,
+            decimals: cvx.decimals,
+            //
+            price: prices.get(cvx.address),
+            locked: { balance, value: balance * price },
+            unlocked: { balance: 0, value: 0 },
+            totalBalance: balance,
+            totalValue: balance * price,
+          }),
+        );
+      }
     });
 
     return baseInfo;

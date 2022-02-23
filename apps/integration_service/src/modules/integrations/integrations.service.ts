@@ -33,6 +33,7 @@ import { IntegrationSearchParams } from '../../common/interfaces/search.interfac
 import { getChainById } from '../../common/utils/chain';
 
 import { ProtocolService } from '../protocols/protocol.service';
+import BasicProtocol from '../protocols/protocols/basicProtocol';
 import { ProtocolBasicInfo, ProtocolDataDto } from './dto/features.dto';
 import {
   IntChainsDataDto,
@@ -273,11 +274,46 @@ export class IntegrationsService {
             existedChainData[baseData.feature].lockedValue = baseData.locked;
           }
         });
+
+        this.validateChainFeatures(data, walletMap, chain, protocolToProceed);
       }
     });
     response.errors = response.errors.flat();
 
     return response;
+  }
+
+  private validateChainFeatures(
+    data: any,
+    walletMap: Map<string, IntegrationWalletDto>,
+    chain: any,
+    protocolToProceed: BasicProtocol,
+  ) {
+    const errorMessages = new Set();
+    data.forEach((baseData) => {
+      const walletData = walletMap.get(baseData.userAddress);
+      const info = protocolToProceed.getInfo();
+      const features = info.features[getChainById(chain).abbr];
+      const data = walletData.chains.find((ch) => ch.chain.id === chain);
+
+      if (!features.includes(baseData.feature)) {
+        errorMessages.add(
+          `Integration ${info.name} - Chain: (${chain}) included '${baseData.feature}' data, but it was not declared for the chain.`,
+        );
+      }
+
+      features.forEach((feature) => {
+        if (!data[feature]) {
+          errorMessages.add(
+            `Integration ${info.name} - Chain: (${chain}) is missing '${feature}' in the response (It was declared in enabled features)`,
+          );
+        }
+      });
+    });
+
+    if (errorMessages.size) {
+      errorMessages.forEach((error) => this.logger.warn(error));
+    }
   }
 
   async searchProjects(query: SearchParams): Promise<SearchResultsProjectEntry[]> {

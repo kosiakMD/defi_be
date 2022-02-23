@@ -15,6 +15,7 @@ import {
   CRVCVX_REWARD_POOL_ADDRESS,
   CVX_REWARD_POOL_ADDRESS,
 } from '@app/common/constant/protocols/convex.constants';
+import { CallData } from '@app/common/dto/CallData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import {
@@ -104,42 +105,24 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
     const stakingToken = cvxCrvStakingPool.stakingToken; // From Vaults Job or api
     const rewardTokens = cvxCrvStakingPool.rewards; // From Vaults Job or Api
 
-    const getExtraRewards = (address: string) =>
-      Array.from(extraRewardAddressResults.values()).map((virtualPoolAddress) => {
-        const rewardPool = virtualPoolAddress.output.data.toString().toLowerCase();
-        const rewardAddress = earnedRewardResults
-          .get(`${rewardPool}-rewardToken`)
-          .output.data.toString()
-          .toLowerCase();
-
-        const rewardToken = rewardTokens.find((r) => r.address === rewardAddress);
-
-        return this.createClaimableRewardToken(
-          rewardToken,
-          normalizeDecimals(
-            earnedRewardResults.get(`${rewardPool}-earned(${address})`).output.data.toString(),
-            rewardToken.decimals,
-          ),
-        );
-      });
-
-    const getBaseReward = (address: string) => {
-      const rewardAddress = baseContractResults
-        .get(`rewardToken`)
-        .output.data.toString()
-        .toLowerCase();
-
-      const rewardToken = rewardTokens.find((r) => r.address === rewardAddress);
-      return this.createClaimableRewardToken(
-        rewardToken,
-        normalizeDecimals(
-          baseContractResults.get(`earned(${address})`).output.data.toString(),
-          rewardToken.decimals,
-        ),
-      );
-    };
-
     return addresses.map((address) => {
+      const items = [];
+      const cvxCrvItem = this.getCvxCrvItem(
+        address,
+        stakingToken,
+        rewardTokens,
+        cvxCrvStakingPool,
+        baseContractResults,
+        extraRewardAddressResults,
+        earnedRewardResults,
+      );
+      if (
+        cvxCrvItem.stakingToken.balance ||
+        cvxCrvItem.rewards.some((reward) => reward.claimableData.balance)
+      ) {
+        items.push(cvxCrvItem);
+      }
+
       return plainToClass(BaseDataStaking, {
         chain,
         userAddress: address,
@@ -147,25 +130,81 @@ export class ConvexCvxCRVStaking implements IStakingFetcher {
         projectName: ProjectEnum.convex,
         feature: FeatureEnum.staking,
         protocolName: ProtocolNameEnum.Convex,
-        items: [
-          {
-            address: CVX_REWARD_POOL_ADDRESS,
-            poolId: null,
-            poolName: 'cvxCRV',
-            staked: baseContractResults.get(`balanceOf(${address})`).output.data.toString(),
-            stats: cvxCrvStakingPool.stats, // FROM POOL
-            stakingToken: this.createStakingToken(
-              stakingToken,
-              normalizeDecimals(
-                baseContractResults.get(`balanceOf(${address})`).output.data.toString(),
-                stakingToken.decimals,
-              ),
-            ),
-            rewards: getExtraRewards(address).concat(getBaseReward(address)),
-          },
-        ],
+        items,
       });
     });
+  }
+
+  getCvxCrvItem(
+    address: Address,
+    stakingToken,
+    rewardTokens,
+    cvxCrvStakingPool,
+    baseContractResults,
+    extraRewardAddressResults: Map<string, CallData>,
+    earnedRewardResults: Map<string, CallData>,
+  ) {
+    return {
+      address: CVX_REWARD_POOL_ADDRESS,
+      poolId: null,
+      poolName: 'cvxCRV',
+      staked: baseContractResults.get(`balanceOf(${address})`).output.data.toString(),
+      stats: cvxCrvStakingPool.stats, // FROM POOL
+      stakingToken: this.createStakingToken(
+        stakingToken,
+        normalizeDecimals(
+          baseContractResults.get(`balanceOf(${address})`).output.data.toString(),
+          stakingToken.decimals,
+        ),
+      ),
+      rewards: this.getExtraRewards(
+        address,
+        rewardTokens,
+        extraRewardAddressResults,
+        earnedRewardResults,
+      ).concat(this.getBaseReward(address, rewardTokens, baseContractResults)),
+    };
+  }
+
+  getExtraRewards(
+    address: string,
+    rewardTokens,
+    extraRewardAddressResults: Map<string, CallData>,
+    earnedRewardResults: Map<string, CallData>,
+  ) {
+    return Array.from(extraRewardAddressResults.values()).map((virtualPoolAddress) => {
+      const rewardPool = virtualPoolAddress.output.data.toString().toLowerCase();
+      const rewardAddress = earnedRewardResults
+        .get(`${rewardPool}-rewardToken`)
+        .output.data.toString()
+        .toLowerCase();
+
+      const rewardToken = rewardTokens.find((r) => r.address === rewardAddress);
+
+      return this.createClaimableRewardToken(
+        rewardToken,
+        normalizeDecimals(
+          earnedRewardResults.get(`${rewardPool}-earned(${address})`).output.data.toString(),
+          rewardToken.decimals,
+        ),
+      );
+    });
+  }
+
+  getBaseReward(address: string, rewardTokens, baseContractResults) {
+    const rewardAddress = baseContractResults
+      .get(`rewardToken`)
+      .output.data.toString()
+      .toLowerCase();
+
+    const rewardToken = rewardTokens.find((r) => r.address === rewardAddress);
+    return this.createClaimableRewardToken(
+      rewardToken,
+      normalizeDecimals(
+        baseContractResults.get(`earned(${address})`).output.data.toString(),
+        rewardToken.decimals,
+      ),
+    );
   }
 
   private createStakingToken(

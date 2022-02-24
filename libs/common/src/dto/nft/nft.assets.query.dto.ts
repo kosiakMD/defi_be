@@ -21,8 +21,8 @@ export class NftAssetsQueryDto {
   chains: ChainIdEnum[] = null;
 
   @ApiProperty({
-    type: [String],
-    example: 'young-lives-matter',
+    type: String,
+    example: 'lev-the-wizard-makes-nfts', // young-lives-matter
     required: false,
   })
   collection?: string = null;

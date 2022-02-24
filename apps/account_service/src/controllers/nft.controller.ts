@@ -17,6 +17,7 @@ import {
   Logger,
   NftEndpointsEnum,
   NftProjectEnum,
+  QueryString,
 } from '@app/common';
 import { NftAssetsQueryDto, NftProjectResponseDto } from '@app/common/dto/nft';
 import { NftCollectionsQueryDto } from '@app/common/dto/nft/nft.collections.query.dto';
@@ -78,12 +79,16 @@ export class NftController {
     @Param() { projectName }: NftAssetsParams,
     @AddressesArray('addresses') addresses: Address[],
     @ChainsArray('chains') chains: number[],
-    @Query('collection') collection: string,
+    // @Query() collection: string,
+    // @Query() query,
+    @QueryString('collection') collection: string,
   ): Promise<NftAssetsByAccounts> {
     if (!Object.values(NftProjectEnum).includes(projectName)) {
       throw new NotImplementedException(`NFT project ${projectName} is not supported yet`);
     }
 
+    // const { collection } = query;
+    console.log(projectName, addresses, collection, chains);
     try {
       return await this.nftService.getAssets(projectName, addresses, collection, chains);
     } catch (error) {

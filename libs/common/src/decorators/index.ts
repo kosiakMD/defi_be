@@ -3,11 +3,15 @@ import { createParamDecorator, HttpException, HttpStatus } from '@nestjs/common'
 
 import { ChainIdEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
-import { filterByEnum, splitToArray } from '@app/common/utils';
-import { splitToNumberArray } from '@app/common/utils';
+import { filterByEnum, splitToArray, splitToNumberArray } from '@app/common/utils';
 import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
 
 export * from './error.decorators';
+
+export const QueryString = createParamDecorator((dataField, req): string => {
+  const string = req.args[0].query[dataField];
+  return String(string);
+});
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   try {

@@ -398,9 +398,9 @@ export class AssetsService {
   }
 
   async findCurvePoolCoins(asset: AssetsEntity): Promise<string[]> {
-    // arbitrum lp curve tokens info can get only from registry addresses
-    if (asset.chain === ChainIdEnum.arbi) {
-      const registries = await this.getCurveRegistries(ChainIdEnum.arbi);
+    // TODO: move compatible chains to fetch from registries where possible
+    if ([ChainIdEnum.arbi, ChainIdEnum.eth].includes(asset.chain)) {
+      const registries = await this.getCurveRegistries(asset.chain);
       const registriesResp = await Promise.all(
         registries.map(async (address) => {
           let contract = new CURVE_REGISTRY(

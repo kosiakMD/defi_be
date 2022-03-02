@@ -137,8 +137,9 @@ export class ProtocolService {
   ) {
     this.protocols = [
       aaveProtocolV2,
-      alpacaProtocol,
       abracadabraProtocol,
+      alpacaProtocol,
+      anchorProtocol,
       autofarmProtocol,
       badgerProtocol,
       beefyProtocol,
@@ -150,6 +151,7 @@ export class ProtocolService {
       islandswapProtocol,
       mojitoswapProtocol,
       olympusProtocol,
+      orcaProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocolV2,
@@ -158,7 +160,9 @@ export class ProtocolService {
       saberProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
+      terraswapProtocol,
       traderjoeProtocol,
+      trisolarisProtocol,
       uniswapProtocolV2,
       uniswapProtocolV3,
       venusProtocol,
@@ -168,10 +172,6 @@ export class ProtocolService {
       wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
-      trisolarisProtocol,
-      orcaProtocol,
-      anchorProtocol,
-      terraswapProtocol,
     ];
   }
 

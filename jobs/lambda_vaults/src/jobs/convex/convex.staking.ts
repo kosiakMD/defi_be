@@ -74,6 +74,7 @@ export class ConvexStaking
       [IntegrationStakingPositionDto.name, IntegrationStakingPositionDto.name],
       [IntegrationERC20TokenDto.name, ERC20Token.name],
       [IntegrationClaimableTokenDto.name, ERC20Token.name],
+      [IntegrationPoolTokenDto.name, ERC20Token.name],
     ]);
   }
 
@@ -110,7 +111,7 @@ export class ConvexStaking
     const prices = await this.fetchPrices(addresses);
     const totalSupplies = await this.fetchTotalSupplies(addresses);
 
-    const balances = await this.getUnderlyingBalances(
+    const [balances, calculatePriceFromTotalSupply] = await this.getUnderlyingBalances(
       stakingFeatures.filter(
         (t) => ![CVX_REWARD_POOL_ADDRESS, CRVCVX_REWARD_POOL_ADDRESS].includes(t.address),
       ),
@@ -158,7 +159,12 @@ export class ConvexStaking
     stakingFeatures.forEach((stakingFeature) => {
       stakingFeature.stakingToken.value = 0;
       stakingFeature.rewards.forEach((reward) => {
-        reward.price = this.calculatePriceFromUnderlying(reward, prices, calculatedPrices);
+        reward.price = this.calculatePriceFromUnderlying(
+          reward,
+          prices,
+          calculatedPrices,
+          reward.totalSupply,
+        );
       });
 
       stakingFeature.stakingToken.tokens.forEach((token) => {
@@ -167,10 +173,19 @@ export class ConvexStaking
             underlying,
             prices,
             calculatedPrices,
+            underlying.reserve,
           );
           underlying.value = underlying.price * underlying.reserve;
         });
-        token.price = this.calculatePriceFromUnderlying(token, prices, calculatedPrices);
+
+        token.price = this.calculatePriceFromUnderlying(
+          token,
+          prices,
+          calculatedPrices,
+          calculatePriceFromTotalSupply.has(stakingFeature.stakingToken.address)
+            ? token.totalSupply
+            : token.reserve,
+        );
         token.value = token.price * token.reserve;
         stakingFeature.stakingToken.value += token.value;
       });
@@ -187,23 +202,27 @@ export class ConvexStaking
     token,
     prices: Map<Address, string | number>,
     calculatedPrices: Map<Address, number>,
+    countableReserves: number,
   ) {
     if (prices.get(token.address)) {
       return Number(prices.get(token.address));
     }
 
-    if (token.tokens?.length) {
-      let total = 0;
-      token.tokens.forEach((underlying) => {
-        total += underlying.value;
-      });
+    if (calculatedPrices.get(token.address)) {
+      return calculatedPrices.get(token.address);
+    }
 
-      const price = total / token.reserve;
+    if (token.tokens?.length && token.tokens.every((token) => token.value)) {
+      const totalValue = token.tokens.reduce((total, underlying) => total + underlying.value, 0);
+
+      const price = totalValue / countableReserves;
       if (price) {
         calculatedPrices.set(token.address, price);
       }
-      return total / token.reserve || calculatedPrices.get(token.address);
+
+      return price;
     }
+
     return null;
   }
 
@@ -445,7 +464,9 @@ export class ConvexStaking
     );
   }
 
-  private async getUnderlyingBalances(stakingPositions: IntegrationStakingPositionDto[]) {
+  private async getUnderlyingBalances(
+    stakingPositions: IntegrationStakingPositionDto[],
+  ): Promise<[Map<any, any>, Set<any>]> {
     const addresses = stakingPositions.map((t) => t.extra.lpToken.toLowerCase());
     const balances = new Map();
     const [cryptoSwapPools, mainPools, factoryPools] = await Promise.all([
@@ -462,7 +483,27 @@ export class ConvexStaking
         mainPools.get(lpToken) ?? cryptoSwapPools.get(lpToken) ?? factoryPools.get(lpToken),
       );
     });
-    return balances;
+
+    // 'factory' tokens need price to be calulated based on reserves
+    // of LP instead of totalSupply Of Token. this is becuase the
+    // reserves we track are reserves in the context of the token being
+    // a primitive i.e. in 0xc270b3B858c335B6BA5D5b10e2Da8a09976005ad
+    // USDP-3CRV, the underlying reserves for 3crv are relative to
+    // the USDP-3CRV pool, _not_ the stand alone 3crv pool. Other
+    // pools use 3CRV as its own token, so the underlying reserves
+    // aren't reliable and totalSupply ust be used. The one exception here
+    // is '0x3b6831c0077a1e44ed0a21841c3bc4dc11bce833' which is hardcoded below
+    const calculatePriceFromTotalSupply = new Set(
+      Array.from(factoryPools.entries()).flatMap(([lp, map]) => {
+        if (!map.size) return [];
+        if (mainPools.has(lp)) return [];
+        if (cryptoSwapPools.get(lp)) return [];
+        return [lp];
+      }),
+    );
+    calculatePriceFromTotalSupply.add('0x3b6831c0077a1e44ed0a21841c3bc4dc11bce833');
+
+    return [balances, calculatePriceFromTotalSupply];
   }
 
   private async getFactoryPoolsPoolsFromLp(addresses: Address[]) {
@@ -489,11 +530,7 @@ export class ConvexStaking
       const balanceMap = new Map();
       coins.forEach((coin, idx) => {
         if (coin === ZERO_ADDRESS && !Number(balances[idx].toString())) return;
-        if (coin === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE') {
-          balanceMap.set(ZERO_ADDRESS, balances[idx].toString());
-        } else {
-          balanceMap.set(coin.toLowerCase(), balances[idx].toString());
-        }
+        balanceMap.set(this.normalizeAddress(coin), balances[idx].toString());
       });
       balanceResponses.set(address, balanceMap);
     });
@@ -557,12 +594,12 @@ export class ConvexStaking
       const balanceMap = new Map();
       coins.forEach((coin, idx) => {
         if (coin === ZERO_ADDRESS) return;
-        balanceMap.set(coin.toLowerCase(), balances[idx].toString());
+        balanceMap.set(this.normalizeAddress(coin), balances[idx].toString());
       });
 
       underlyingCoins.forEach((coin, idx) => {
         if (coin === ZERO_ADDRESS) return;
-        balanceMap.set(coin.toLowerCase(), underlyingBalances[idx].toString());
+        balanceMap.set(this.normalizeAddress(coin), underlyingBalances[idx].toString());
       });
 
       balanceMap.set(
@@ -632,7 +669,10 @@ export class ConvexStaking
       const underlying = responses.get(`${pool}-coins`).output.data.slice(0, coinCount);
       const balances = responses.get(`${pool}-balances`).output.data.slice(0, coinCount);
       const balanceMap = new Map(
-        underlying.map((address, idx) => [address.toLowerCase(), balances[idx].toString()]),
+        underlying.map((address, idx) => [
+          this.normalizeAddress(address),
+          balances[idx].toString(),
+        ]),
       );
       balanceMap.set(
         'virtual-price',
@@ -840,6 +880,15 @@ export class ConvexStaking
         });
         return final;
       }),
+    );
+  }
+
+  private normalizeAddress(address: Address): Address {
+    return (
+      address
+        .toLowerCase()
+        // Curve usess 0xeee to signify native eth
+        .replace(/^0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee$/, ZERO_ADDRESS)
     );
   }
 }

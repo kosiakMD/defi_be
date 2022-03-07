@@ -8,7 +8,7 @@ import { ILpAddressFetcher } from './lp.address.fetcher.interface';
 
 export class PoolInfoLpAddressFetcher implements ILpAddressFetcher {
   constructor(private readonly multicall: MulticallAggregator) {}
-  async fetchPoolsLps(chainCode: any, address: string, abi: any) {
+  async fetchPoolsLps(chainCode: any, address: string, abi: any): Promise<string[]> {
     const poolLengthCall = plainToClass(CallData, {
       address: address,
       abi: abi.poolLength,

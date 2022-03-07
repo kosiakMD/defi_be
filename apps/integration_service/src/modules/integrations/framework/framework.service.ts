@@ -6,6 +6,7 @@ import { Logger } from '@app/common';
 import { FarmingFeatureProcessor } from './services/farming.feature.processor';
 import { IFeatureProcessor } from './services/feature.processor.interface';
 import { Handler } from './services/handler';
+import { HandlerSubgraph } from './services/handler.subgraph';
 import { PoolsFeatureProcessor } from './services/pools.feature.processor';
 import { ProtocolsIterator } from './services/protocols.iterator';
 
@@ -17,6 +18,7 @@ export class FrameworkService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly protocolsIterator: ProtocolsIterator,
     private readonly handler: Handler,
+    private readonly handlerSubgraph: HandlerSubgraph,
     private readonly poolsFeatureProcessor: PoolsFeatureProcessor,
     private readonly farmingFeatureProcessor: FarmingFeatureProcessor,
   ) {
@@ -48,6 +50,19 @@ export class FrameworkService {
         } else {
           await featureProcessor.process(hResults);
         }
+      }
+    }
+  }
+
+  async getAccountPosition(pName, address: string) {
+    const instructions = await this.protocolsIterator.interactive(pName, address);
+    const hResults = [];
+    for (const i of instructions) {
+      try {
+        const handlerResult = await this.handlerSubgraph.handle(i);
+        hResults.push(handlerResult);
+      } catch (e) {
+        this.logger.warn('skipping instructions because of processing error:', e.message);
       }
     }
   }

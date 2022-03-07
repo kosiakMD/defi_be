@@ -17,4 +17,9 @@ export const TemplatesConfig = {
     },
     processor: 'farmingFeatureProcessor',
   },
+  'interactive:subgraph': {
+    fields: {
+      balance: 'subgraphBalanceGroupDefault',
+    },
+  },
 };

@@ -71,6 +71,26 @@ export class ProtocolsIterator {
     return featureInstructions;
   }
 
+  async interactive(pName, address: string) {
+    const pConfig = ProtocolsConfig[pName];
+    return Promise.all(
+      pConfig.contracts.map(async (contract) => {
+        let interactiveFeature = contract.features.interactive;
+        if (interactiveFeature.template) {
+          interactiveFeature = _.merge(
+            interactiveFeature,
+            TemplatesConfig[interactiveFeature.template],
+          );
+        }
+        const { fields } = interactiveFeature;
+        return this.instructionsCollector.collectInteractive(fields, {
+          address,
+          subgraphUrl: pConfig.subgraphUrl,
+        });
+      }),
+    );
+  }
+
   contractTypeSupported(contractType: string): boolean {
     return ['MASTER_CHEF'].includes(contractType);
   }

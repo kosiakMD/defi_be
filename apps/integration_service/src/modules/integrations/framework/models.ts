@@ -9,7 +9,8 @@ export class ChainCall {
 }
 
 export class Instructions {
-  chainCalls: ChainCall[];
+  chainCalls?: ChainCall[];
+  calls?: any[]; //todo keep this field and remove chainCalls
   fieldsMapping: object;
   context?: any;
 }

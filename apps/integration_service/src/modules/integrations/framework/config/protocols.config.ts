@@ -44,4 +44,30 @@ export const ProtocolsConfig = {
       },
     ],
   },
+  sushiswap: {
+    chainCode: 1,
+    subgraphUrl: 'https://api.thegraph.com/subgraphs/name/sushiswap/exchange',
+    contracts: [
+      {
+        features: {
+          interactive: {
+            template: 'interactive:subgraph',
+          },
+        },
+      },
+    ],
+  },
+  pangolin: {
+    chainCode: 6,
+    subgraphUrl: 'https://api.thegraph.com/subgraphs/name/dasconnor/pangolin-dex',
+    contracts: [
+      {
+        features: {
+          interactive: {
+            template: 'interactive:subgraph',
+          },
+        },
+      },
+    ],
+  },
 };

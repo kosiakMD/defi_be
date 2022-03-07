@@ -7,6 +7,7 @@ import { Logger } from '../../../../../../../jobs/lambda_vaults/src/logger/logge
 import { AbiProvider } from '../abi/abi.provider';
 import { FieldsGroupsMapping } from '../config/fields.groups.mapping';
 import { Instructions } from '../models';
+import { SubgraphQueries } from '../subgraph/queries';
 import { ILpAddressFetcher } from './lp.address.fetcher.interface';
 import { LpTokenLpAddressFetcher } from './lp.token.lp.address.fetcher';
 import { PoolInfoLpAddressFetcher } from './pool.info.lp.address.fetcher';
@@ -69,5 +70,28 @@ export class InstructionsCollector {
       });
       return instructions;
     });
+  }
+
+  async collectInteractive(fields, params): Promise<Instructions> {
+    const instructions = {
+      context: {
+        ...params,
+      },
+      calls: [],
+      fieldsMapping: {},
+    };
+    let callsCount = 0;
+    Object.keys(fields).forEach((field) => {
+      const fGroupConfig = FieldsGroupsMapping[field][fields[field]];
+      //todo analyse type of the call
+      const call = {
+        query: SubgraphQueries[fGroupConfig.call],
+        variables: { address: params.address },
+      };
+      instructions.calls.push(call);
+      instructions.fieldsMapping[field] = `calls.${callsCount}.${fGroupConfig.path}`;
+      callsCount++;
+    });
+    return instructions;
   }
 }

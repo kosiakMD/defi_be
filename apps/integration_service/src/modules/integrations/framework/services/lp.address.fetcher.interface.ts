@@ -1,3 +1,3 @@
 export interface ILpAddressFetcher {
-  fetchPoolsLps(chainCode: any, address: string, abi: any);
+  fetchPoolsLps(chainCode: any, address: string, abi: any): Promise<string[]>;
 }

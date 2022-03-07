@@ -35,4 +35,11 @@ export const FieldsGroupsMapping = {
       path: 'output.data.allocPoint',
     },
   },
+  balance: {
+    subgraphBalanceGroupDefault: {
+      type: 'subgraph',
+      call: 'liquidityPositions',
+      path: 'liquidityPositions[].liquidityTokenBalance',
+    },
+  },
 };

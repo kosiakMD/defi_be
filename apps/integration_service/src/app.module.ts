@@ -110,7 +110,12 @@ export class AppModule implements NestModule {
 
   async start() {
     await new Promise((resolve) => setTimeout(resolve, 2000)); //wait a bit for app to fully start
-    await this.frameworkService.start();
+    // await this.frameworkService.start(); // run fetching info per protocol per feature etc. (aka background job)
+    await this.frameworkService.getAccountPosition(
+      // 'sushiswap',
+      'pangolin',
+      '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
+    ); // aka interactive call
 
 /*
     //trisolaris

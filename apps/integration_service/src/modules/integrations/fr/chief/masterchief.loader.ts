@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CallInfo, MasterchiefPancake } from './masterchief.pancake';
+import { CallInfo, MasterchiefBase } from './masterchief.base';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainDto, Logger } from '@app/common';
@@ -14,7 +14,7 @@ export class MasterchiefLoader {
               @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
 
-  async loadVaults(masterchief: MasterchiefPancake, chain: ChainDto) {
+  async loadVaults(masterchief: MasterchiefBase, chain: ChainDto) {
     const poolLengthCall: CallInfo = masterchief.getPoolLengthCall();
     const rewardTokenCall: CallInfo = masterchief.getRewardTokenCall();
     const blockchainCalls = buildCallsMap([
@@ -65,6 +65,12 @@ export class MasterchiefLoader {
   }
 
   async loadAccountData() {
+    // todo: check if cache data exists, if not load it
+    // todo: get cached pool data
+
+  }
+
+  async loadPeriodicalData() {
     // todo: check if cache data exists, if not load it
     // todo: get cached pool data
 

@@ -1,5 +1,6 @@
 import { AbiItem } from 'web3-utils';
-import { findInAbi } from '../helpers';
+import { findInAbi, findMatchInAbi } from '../helpers';
+import { DEFAULT_CONFIG as config } from './config';
 
 export interface CallInfo {
   id?: string
@@ -13,36 +14,20 @@ enum TemplatedArgs {
   PoolId = 'poolId',
 }
 
-export class MasterchiefPancake {
+export class MasterchiefBase {
+
   protected readonly address;
   protected readonly abi: AbiItem[];
-  private config: any;
 
   constructor(address, abi) {
     this.address = address;
     this.abi = abi;
-    // this.config = config;
   }
 
-  // static collectCalls() {
-  //
-  // }
-
-  // static confirmTemplate(abi) {
-  //   // todo: logic to confirm that abi has required data
-  //   return true;
-  // }
-
   getRewardTokenCall(): CallInfo  {
-    const minAbi: Partial<AbiItem> = {
-      name: "cake",
-    }
-    // config or default value
-    // config has rule to match method
-    // get config in constructor
-    const contractCallAbi = findInAbi(minAbi, this.abi);
+    const contractCallAbi = findMatchInAbi(config.rewardTokenCalls, this.abi);
     return {
-      id: this.address + ':' + minAbi.name,
+      id: this.address + ':' + contractCallAbi.name,
       target: this.address,
       abi: contractCallAbi,
       path: ''
@@ -87,6 +72,5 @@ export class MasterchiefPancake {
       args: [TemplatedArgs.PoolId]
     };
   }
-
 }
 

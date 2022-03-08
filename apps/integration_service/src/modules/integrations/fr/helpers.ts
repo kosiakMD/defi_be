@@ -1,10 +1,24 @@
 import { AbiInput, AbiItem, AbiOutput } from 'web3-utils';
-import { CallInfo } from './chief/masterchief.pancake';
+import { CallInfo } from './chief/masterchief.base';
 import { CallData } from '@app/common/dto/CallData';
 import { plainToClass } from 'class-transformer';
 
+export function findMatchInAbi(callMinConfigs: Partial<AbiItem>[], abi: AbiItem[]): AbiItem | undefined {
+  for (let i = 0; i < callMinConfigs.length; i++) {
+    const match = findInAbi(callMinConfigs[i], abi);
+    if (match) {
+      return match;
+    }
+  }
+
+  return undefined;
+}
+
 export function findInAbi(callMinConfig: Partial<AbiItem>, abi: AbiItem[]): AbiItem | undefined {
   const foundByName = abi.find((i) => i.name === callMinConfig.name);
+  if (!foundByName) {
+    return undefined;
+  }
 
   if (!verifyInput(callMinConfig.inputs, foundByName.inputs)) {
     return undefined;
@@ -14,9 +28,7 @@ export function findInAbi(callMinConfig: Partial<AbiItem>, abi: AbiItem[]): AbiI
     return undefined;
   }
 
-  if (foundByName) {
-    return foundByName;
-  }
+  return foundByName;
 }
 
 function verifyInput(callInputs: AbiInput[], abiInputs: AbiInput[]): boolean {

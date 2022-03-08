@@ -112,38 +112,23 @@ export class AppModule implements NestModule {
 
   async start() {
     await new Promise((resolve) => setTimeout(resolve, 2000)); //wait a bit for app to fully start
-    // this.frameworkService.start();
 
-    // await this.integrationServiceV2.loadVaults({
-    //   chainCode:"near",
-    //   featureCode:"staking",
-    //   protocolCode:"trisolaris",
-    //   contractAddress:"0x1f1ed214bef5e83d8f5d0eb5d7011eb965d0d79b",
-    //   contractAbi: []
-    // })
+    // works as well
+    await this.integrationServiceV2.loadVaults({
+      chainCode:"near",
+      featureCode:"staking",
+      protocolCode:"trisolaris",
+      contractAddress:"0x1f1ed214bef5e83d8f5d0eb5d7011eb965d0d79b",
+      contractAbi: []
+    })
 
+    // works as well
     await this.integrationServiceV2.loadVaults({
       chainCode:"bsc",
       featureCode:"staking",
       protocolCode:"pancake",
-      contractAddress:"0x73feaa1ee314f8c655e354234017be2193c9e24e",
+      contractAddress: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
       contractAbi: []
     })
-
-    // //trisolaris
-    // const chainCode = 18; //near
-    // const protocol = 'Trisolaris';
-    // const userAddress = '0x7bc9cef699d8428a46ec105ad3b5d6dad4df9215';
-    //
-    // //pancake
-    // // const chainCode = 2; //bsc
-    // // const protocol = 'Pancake';
-    // // const userAddress = '0x7bc9cef699d8428a46ec105ad3b5d6dad4df9215';
-    // await this.protocolsRegistry.registerProtocol(chainCode, protocol, {
-    //   address: '0x1f1Ed214bef5E83D8f5d0eB5D7011EB965D0D79B', //trisolaris
-    //   // address: '0x73feaa1ee314f8c655e354234017be2193c9e24e', //pancake
-    // });
-    // const userInfo = await this.protocolsRegistry.getUserData(chainCode, protocol, userAddress);
-    // console.log(JSON.stringify(userInfo, null, 4));
   }
 }

@@ -15,9 +15,8 @@ import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { ChiefLoader } from './data/templates/chief/loader';
 import { VaultLoader } from './data/templates/vault-loader';
-import { MasterchiefPancake } from './fr/chief/masterchief.pancake';
+import { MasterchiefBase } from './fr/chief/masterchief.base';
 import { MasterchiefLoader } from './fr/chief/masterchief.loader';
-import { MasterchiefTrisolaris } from './fr/chief/masterchief.trisolaris';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -88,34 +87,9 @@ export class IntegrationsServiceV2 {
       contractEntity = await this.contractsService.addAbiRelation(contractEntity, abiEntity);
     }
 
-    const supposedChief = new MasterchiefPancake(contractEntity.address, contractEntity.abi.abi);
-    // const poolLengthCall = supposedChief.getPoolLengthCall()
-    // const stakingTokenCall = supposedChief.getStakingTokenCall(0)
-    // console.log('poolLengthCall');
-    // console.log(poolLengthCall);
-    // console.log('stakingTokenCall');
-    // console.log(stakingTokenCall);
-
+    const supposedChief = new MasterchiefBase(contractEntity.address, contractEntity.abi.abi);
     const vaults = await this.masterchiefLoader.loadVaults(supposedChief, chain);
     console.log(vaults);
-
-    // const blockchainCalls = collectCalls(this.chiefLoader.requiredForInitialLoad, contractEntity.abi.abi);
-
-    // if (blockchainCalls) {
-    //   let features = await this.chiefLoader.collectFeatures(contractEntity.address, chain, blockchainCalls as Map<string, { call, abi }>);
-    //   features = [features[0]]
-    //   features = features.map((ft) => {
-    //     const vaultCalls = this.chiefLoader.collectCallsPerVault(ft, contractEntity.abi.abi)
-    //     const accountCalls = this.chiefLoader.collectCallsPerAccount(ft, contractEntity.abi.abi)
-    //     return {
-    //       ...ft,
-    //       vaultCalls: vaultCalls,
-    //       accountCalls: accountCalls,
-    //     }
-    //   });
-    //   // const singleFeature = await this.chiefLoader.collectCallsPerVault(features[0], contractEntity.abi.abi);
-    //   console.log(features)
-    // }
 
     // todo: if contract is not integrated, need to go to the next steps
     return contractEntity;

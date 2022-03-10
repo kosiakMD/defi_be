@@ -5,3 +5,4 @@ export const priceUpdateLimitInHour = process.env.PRICE_UPDATE_LIMIT_IN_HOURS;
 export const debankApiUrl = 'https://openapi.debank.com';
 export const solPublicAssetsApi = 'https://public-api.solscan.io';
 export const cardanoPublicAssetsApi = 'https://stats.sundaeswap.finance';
+export const klaytnPublicAssetsApi = 'https://s.klayswap.com/stat/tokenInfo.min.json';

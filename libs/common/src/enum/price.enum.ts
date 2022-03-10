@@ -1,11 +1,13 @@
 export enum PriceSourcePriority {
   chain = 1,
   coingecko = 2,
-  muesliswap = 3,
+  sundaeswap = 3,
+  klayswap = 4,
 }
 
 export enum PriceSource {
   chain = 'chain',
   coingecko = 'coingecko',
-  muesliswap = 'muesliswap',
+  sundaeswap = 'sundaeswap',
+  klayswap = 'klayswap',
 }

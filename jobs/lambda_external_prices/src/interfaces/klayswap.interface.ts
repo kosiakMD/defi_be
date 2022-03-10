@@ -1,0 +1,17 @@
+export type KlaySwapResponse = [
+  'id',
+  'address',
+  'symbol',
+  'name',
+  'chain',
+  'decimal',
+  'img',
+  'grade',
+  'contractGrade',
+  'isDrops',
+  'isStable',
+  'amount',
+  'volume',
+  'oraclePrice',
+  'price',
+];

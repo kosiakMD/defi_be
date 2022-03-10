@@ -21,6 +21,7 @@ import { CoingeckoRequestContracts, CoingeckoRequestIds } from './interfaces/coi
 import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { CoingeckoService } from './services/coingecko.service';
 import { DebankService } from './services/debank.service';
+import { KlaySwapService } from './services/klayswap.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
 import { SundaeSwapService } from './services/sundaeswap.service';
 import { DebankChainsIdEnum } from './utils/debank.chains.id.enum';
@@ -122,12 +123,27 @@ export async function process(): Promise<void> {
           price: new BigNumber(token.priceUSD).toNumber(),
           chainId: ChainIdEnum.cardano,
           currencyId: CurrencyIdEnum.usd,
-          sourceId: PriceSourcePriority.muesliswap,
+          sourceId: PriceSourcePriority.sundaeswap,
         });
       }
     }
 
     chainsPrices = chainsPrices.concat(cardanoPrices);
+    /** KlaySwapService Place */
+    const klaytokens = await KlaySwapService.getTokensPrices();
+    const klaytnPrices: CurrentPriceInterface[] = [];
+
+    for (const token of klaytokens) {
+      klaytnPrices.push({
+        address: token[1],
+        price: new BigNumber(token[14]).toNumber(),
+        chainId: ChainIdEnum.klay,
+        currencyId: CurrencyIdEnum.usd,
+        sourceId: PriceSourcePriority.klayswap,
+      });
+    }
+
+    chainsPrices = chainsPrices.concat(klaytnPrices);
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);

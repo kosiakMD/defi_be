@@ -59,3 +59,7 @@ export function isSomeAddress(address: string) {
   }
   return false;
 }
+
+export function keepCardanoAddresses(addresses: Address[]): Address[] {
+  return addresses.filter((address) => address.match(/^addr1.*/));
+}

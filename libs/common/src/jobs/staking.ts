@@ -9,6 +9,7 @@ export class ClaimableDto {
   value: number = null;
   lockedBalance?: string;
   lockedValue?: number;
+  nextRewardAt?: string;
 }
 
 export class IntegrationPoolTokenDto extends ERC20Token {

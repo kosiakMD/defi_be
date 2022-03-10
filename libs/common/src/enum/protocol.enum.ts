@@ -33,6 +33,7 @@ export enum ProjectEnum {
   yearn = 'yearn',
   trisolaris = 'trisolaris',
   orca = 'orca',
+  sundaeswap = 'sandaeswap',
   astroport = 'astroport',
 }
 
@@ -173,6 +174,9 @@ export enum TrisolarisProtocolEnum {
 export enum OrcaProtocolEnum {
   orca = 'Orca',
 }
+export enum SundaeProtocolEnum {
+  sundaeswap = 'SundaeSwap',
+}
 
 export enum AstroportProtocolEnum {
   astroport = 'Astroport',
@@ -210,6 +214,7 @@ export const ProtocolNameEnum = {
   ...YearnProtocolEnum,
   ...TrisolarisProtocolEnum,
   ...OrcaProtocolEnum,
+  ...SundaeProtocolEnum,
   ...AnchorProtocolEnum,
   ...TerraswapProtocolEnum,
   ...AstroportProtocolEnum,

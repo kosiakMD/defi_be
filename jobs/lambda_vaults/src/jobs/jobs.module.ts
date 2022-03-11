@@ -73,6 +73,7 @@ import { RaydiumStaking } from './raydium/raydium.staking';
 import { SaberPools } from './saber/saber.pools';
 import { SaberStaking } from './saber/saber.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
+import { SundaeswapPools } from './sundaeswap/sundaeswap.pools';
 import { SushiswapPools } from './sushiwap/sushiswap.pools';
 import { TerraSwapLp } from './terraswap/terraswap.lp';
 import { DbMapping } from './traderjoe/dbmapping';
@@ -125,6 +126,14 @@ const Curve = [
   CurvePoolsAvax,
   CurvePoolsFtm,
   CurvePoolsGnosis,
+  CurveGaugesGnosis,
+  TrisolarisPools,
+  TrisolarisStaking,
+  OrcaPools,
+  OrcaStaking,
+  AnchorLp,
+  AnchorStaking,
+  SundaeswapPools,
   CurvePoolsHarm,
   CurvePoolsOpt,
   CurvePoolsPlg,

@@ -126,6 +126,7 @@ export const validationSchema = Joi.object({
   SUSHISWAP_ONE_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
   SUSHISWAP_GNOSIS_MINICHEF_SUBGRAPH_URL: Joi.string().required(),
+  SUNDAESWAP_URL: Joi.string().required(),
 
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //

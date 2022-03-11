@@ -31,6 +31,7 @@ import {
   YearnProtocolEnum,
   TrisolarisProtocolEnum,
   OrcaProtocolEnum,
+  SundaeProtocolEnum,
   AnchorProtocolEnum,
   TerraswapProtocolEnum,
   AstroportProtocolEnum,
@@ -74,6 +75,7 @@ export type ProtocolName =
   | YearnProtocolEnum
   | TrisolarisProtocolEnum
   | OrcaProtocolEnum
+  | SundaeProtocolEnum
   | AnchorProtocolEnum
   | TerraswapProtocolEnum
   | AstroportProtocolEnum;

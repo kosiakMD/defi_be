@@ -76,6 +76,7 @@ import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
+import SundaeSwapProtocol from './protocols/sundaeswap/sundaeswap.protocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
@@ -132,6 +133,7 @@ export class ProtocolService {
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly trisolarisProtocol: TrisolarisProtocol,
     private readonly orcaProtocol: OrcaProtocol,
+    private readonly sundaeswapProtocol: SundaeSwapProtocol,
     private readonly anchorProtocol: AnchorProtocol,
     private readonly terraswapProtocol: TerraswapProtocol,
   ) {
@@ -172,6 +174,7 @@ export class ProtocolService {
       wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
+      sundaeswapProtocol,
     ];
   }
 

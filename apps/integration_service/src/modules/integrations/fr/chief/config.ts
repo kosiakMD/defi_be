@@ -6,5 +6,10 @@ export const DEFAULT_CONFIG = {
     {
       name: "cake",
     }
+  ],
+  poolLengthCalls: [
+    {
+      name: "poolLength",
+    }
   ]
 };

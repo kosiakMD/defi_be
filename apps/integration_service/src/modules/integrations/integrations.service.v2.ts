@@ -15,11 +15,14 @@ import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { ChiefLoader } from './data/templates/chief/loader';
 import { VaultLoader } from './data/templates/vault-loader';
-import { MasterchiefBase } from './fr/chief/masterchief.base';
 import { MasterchiefLoader } from './fr/chief/masterchief.loader';
+import { dirname } from "path";
+import fs from "fs";
+import { ChainConfigurable } from './fr/chain-configurable';
 
 @Injectable()
 export class IntegrationsServiceV2 {
+  private readonly registry = [];
   constructor(
     private readonly settingsService: SettingsService,
     private readonly projectsService: ProjectsService,
@@ -32,7 +35,31 @@ export class IntegrationsServiceV2 {
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-  ) {}
+  ) {
+    const farmClientsDir = `${dirname(__filename)}/fr`;
+
+    fs
+      .readdirSync(farmClientsDir, { withFileTypes: true })
+      .forEach((direct) => {
+        if (!direct.isDirectory()) return;
+        const farmClientsSubdir = `${farmClientsDir}/${direct.name}`;
+
+        fs
+          .readdirSync(farmClientsSubdir)
+          .forEach((filename) => {
+            if (['.ts', '.js'].indexOf(filename.slice(-3)) === -1) return;
+
+            const imported = require(`${farmClientsSubdir}/${filename}`);
+            Object.values(imported).forEach((obj) => {
+              if (!((<any>obj).prototype instanceof ChainConfigurable)) {
+                return;
+              }
+
+              this.registry.push(obj)
+            });
+          });
+      });
+  }
 
   async loadVaults({ chainCode, protocolCode, featureCode, contractAddress, contractAbi }) {
     contractAddress = contractAddress.toLowerCase();
@@ -87,11 +114,23 @@ export class IntegrationsServiceV2 {
       contractEntity = await this.contractsService.addAbiRelation(contractEntity, abiEntity);
     }
 
-    const supposedChief = new MasterchiefBase(contractEntity.address, contractEntity.abi.abi);
-    const vaults = await this.masterchiefLoader.loadVaults(supposedChief, chain);
-    console.log(vaults);
-
+    let implementation;
+    for (let i = 0; i < this.registry.length; i++) {
+      try {
+        implementation = new this.registry[i](contractEntity.address, contractEntity.abi.abi);
+      } catch (ignored) {}
+    }
+    if (implementation) {
+      const vaults = await this.masterchiefLoader.loadVaults(implementation, chain);
+      console.log(vaults)
+    }
     // todo: if contract is not integrated, need to go to the next steps
     return contractEntity;
   }
 }
+
+// next steps:
+// load all existing contracts in the database
+// make update of vaults
+// update on chain periodical data
+// implement account data handling

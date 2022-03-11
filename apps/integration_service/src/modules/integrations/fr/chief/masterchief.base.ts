@@ -1,6 +1,7 @@
 import { AbiItem } from 'web3-utils';
 import { findInAbi, findMatchInAbi } from '../helpers';
 import { DEFAULT_CONFIG as config } from './config';
+import { ChainConfigurable } from '../chain-configurable';
 
 export interface CallInfo {
   id?: string
@@ -14,14 +15,24 @@ enum TemplatedArgs {
   PoolId = 'poolId',
 }
 
-export class MasterchiefBase {
+export class MasterchiefBase extends ChainConfigurable {
 
   protected readonly address;
   protected readonly abi: AbiItem[];
 
   constructor(address, abi) {
+    super();
     this.address = address;
     this.abi = abi;
+    if (!this.confirmChainConfiguration()) {
+      throw new Error(`Not possible to make instance of class ${MasterchiefBase.name}`)
+    }
+  }
+
+  confirmChainConfiguration() {
+    return Boolean(this.getPoolLengthCall())
+      && Boolean(this.getRewardTokenCall())
+      && Boolean(this.getStakingTokenCall());
   }
 
   getRewardTokenCall(): CallInfo  {
@@ -35,12 +46,9 @@ export class MasterchiefBase {
   }
 
   getPoolLengthCall(): CallInfo {
-    const minAbi: Partial<AbiItem> = {
-      name: "poolLength",
-    }
-    const contractCallAbi = findInAbi(minAbi, this.abi);
+    const contractCallAbi = findMatchInAbi(config.poolLengthCalls, this.abi);
     return {
-      id: this.address + ':' + minAbi.name,
+      id: this.address + ':' + contractCallAbi.name,
       target: this.address,
       abi: contractCallAbi,
       path: ''

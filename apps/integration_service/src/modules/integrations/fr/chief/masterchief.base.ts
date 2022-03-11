@@ -17,6 +17,8 @@ enum TemplatedArgs {
 
 export class MasterchiefBase extends ChainConfigurable {
 
+  public implementationId = 'masterchiefbase';
+
   protected readonly address;
   protected readonly abi: AbiItem[];
 

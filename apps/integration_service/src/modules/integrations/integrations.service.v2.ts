@@ -2,7 +2,7 @@ import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
+import { AbiItem } from 'web3-utils';
 import { Logger } from '@app/common';
 
 import { getChainByAbbr } from '../../common/utils/chain';
@@ -19,6 +19,7 @@ import { MasterchiefLoader } from './fr/chief/masterchief.loader';
 import { dirname } from "path";
 import fs from "fs";
 import { ChainConfigurable } from './fr/chain-configurable';
+import { SingleChiefLoader } from './fr/singlechief/singlechief.loader';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -32,6 +33,7 @@ export class IntegrationsServiceV2 {
     private readonly vaultLoader: VaultLoader,
     private readonly chiefLoader: ChiefLoader,
     private readonly masterchiefLoader: MasterchiefLoader,
+    private readonly singleChiefLoader: SingleChiefLoader,
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -61,7 +63,7 @@ export class IntegrationsServiceV2 {
       });
   }
 
-  async loadVaults({ chainCode, protocolCode, featureCode, contractAddress, contractAbi }) {
+  async loadVaults({ chainCode, protocolCode, contractAddress, contractAbi }) {
     contractAddress = contractAddress.toLowerCase();
     this.logger.log(`Loading vaults data for protocol "${protocolCode}" and chain "${chainCode}"`);
 
@@ -71,23 +73,16 @@ export class IntegrationsServiceV2 {
       throw new Error(`Project with code '${protocolCode}' not found.`);
     }
 
-    const featureEntity = projectEntity.features.find((feature) => feature.name === featureCode);
-    if (!featureEntity) {
-      throw new Error(
-        `Feature with code '${featureCode}' not found for '${protocolCode}' protocol`,
-      );
-    }
-
     let contractEntity = await this.contractsService.findOrSave(contractAddress, chain.id);
-    if (!contractEntity.feature) {
-      contractEntity = await this.contractsService.addFeatureRelation(
+    if (!contractEntity.project) {
+      contractEntity = await this.contractsService.addProjectRelation(
         contractEntity,
-        featureEntity,
+        projectEntity,
       );
     }
 
-    const abiPlain = contractAbi;
-    if (!contractEntity.abi && abiPlain) {
+    const abiPlain: AbiItem[] = contractAbi;
+    if (!contractEntity.abi && abiPlain && abiPlain.length > 0) {
       const abiEntity: AbisEntity = await this.abisService.findOrSave(abiPlain);
       contractEntity = await this.contractsService.addAbiRelation(contractEntity, abiEntity);
     }
@@ -121,7 +116,10 @@ export class IntegrationsServiceV2 {
       } catch (ignored) {}
     }
     if (implementation) {
-      const vaults = await this.masterchiefLoader.loadVaults(implementation, chain);
+      const vaults = await this.singleChiefLoader.loadVaults(implementation, chain);
+      contractEntity.isIntegrated = true;
+      contractEntity.implementationId = implementation.implementationId;
+      await this.contractsService.repository.save(contractEntity);
       console.log(vaults)
     }
     // todo: if contract is not integrated, need to go to the next steps

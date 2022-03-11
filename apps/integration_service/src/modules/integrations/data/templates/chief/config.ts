@@ -8,7 +8,8 @@ export enum ContractVars {
 }
 
 export enum FeatureCode {
-  chiefVault = 'chiefvault'
+  chiefVault = 'chiefvault',
+  singleChief = 'chiefVault',
 }
 
 export interface CallGroup {

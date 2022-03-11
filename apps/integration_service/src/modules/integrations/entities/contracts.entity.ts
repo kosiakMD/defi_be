@@ -9,9 +9,8 @@ import {
 } from 'typeorm';
 
 import { AbisEntity } from './abis.entity';
-import { ProjectsEntity } from './projects.entity';
 import { VaultsEntity } from './vaults.entity';
-import { FeaturesEntity } from './features.entity';
+import { ProjectsEntity } from './projects.entity';
 
 @Entity({ name: 'int_contracts' })
 export class ContractsEntity {
@@ -24,6 +23,9 @@ export class ContractsEntity {
   @Column({ name: 'chain_id' })
   chainId: number;
 
+  @Column({ name: 'implementation_id' })
+  implementationId: string;
+
   @OneToOne(() => AbisEntity)
   @JoinColumn({ name: 'abi_hash', referencedColumnName: 'hash' })
   @Column({ name: 'abi_hash', type: 'json' })
@@ -32,10 +34,10 @@ export class ContractsEntity {
   @OneToMany(() => VaultsEntity, (vault) => vault.contract)
   vaults: VaultsEntity[];
 
-  @ManyToOne(() => FeaturesEntity, (feature) => feature.contracts)
-  @JoinColumn({ name: 'feature_id', referencedColumnName: 'id' })
-  @Column({ name: 'feature_id', type: 'integer' })
-  feature: FeaturesEntity;
+  @ManyToOne(() => ProjectsEntity, (project) => project.contracts)
+  @JoinColumn({ name: 'protocol_id', referencedColumnName: 'id' })
+  @Column({ name: 'protocol_id', type: 'integer' })
+  project: ProjectsEntity;
 
   @Column({ name: 'is_integrated', default: false, type: 'boolean' })
   isIntegrated = false;

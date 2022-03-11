@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { AbisEntity } from '../entities/abis.entity';
 import { ContractsEntity } from '../entities/contracts.entity';
-import { FeaturesEntity } from '../entities/features.entity';
+import { ProjectsEntity } from '../entities/projects.entity';
 
 @Injectable()
 export class ContractsService {
@@ -20,7 +20,7 @@ export class ContractsService {
         address: address,
         chainId: chainId,
       },
-      relations: ['abi', 'feature', 'vaults'],
+      relations: ['abi', 'project', 'vaults'],
     });
   }
 
@@ -40,8 +40,8 @@ export class ContractsService {
     return this.findByAddressAndChainId(contractEntity.address, contractEntity.chainId);
   }
 
-  async addFeatureRelation(contractEntity: ContractsEntity, featureEntity: FeaturesEntity) {
-    contractEntity.feature = featureEntity;
+  async addProjectRelation(contractEntity: ContractsEntity, projectEntity: ProjectsEntity) {
+    contractEntity.project = projectEntity;
     await this.repository.save<ContractsEntity>(contractEntity);
     return this.findByAddressAndChainId(contractEntity.address, contractEntity.chainId);
   }

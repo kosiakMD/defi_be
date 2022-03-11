@@ -165,9 +165,10 @@ export class JobsRunner {
         });
       });
     });
-
     jobPlaceholdersSet.add('12_Orca_staking');
     jobPlaceholdersSet.add('12_Orca_pools');
+
+    jobPlaceholdersSet.add(`${ChainIdEnum.cardano}_SundaeSwap_pools`);
 
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);

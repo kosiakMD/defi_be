@@ -27,7 +27,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
     if (!originalTokens.length || !address.match(/^addr1.*/)) {
       return [];
     }
-    const tokensFilter = new Set<string>(originalTokens);
+    const tokensFilter = new Set<string>(originalTokens.map((token) => token.replace(/\./, '')));
     const cardano = this.web3Provider.getCardanoInstance(chainId);
     try {
       const wallet = await cardano.addresses(address);

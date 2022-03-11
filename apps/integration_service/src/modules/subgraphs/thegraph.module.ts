@@ -14,6 +14,7 @@ import { PangolinSubgraph } from './subgraphs/pangolin.subgraph';
 import { QuickswapSubgraph } from './subgraphs/quickswap.subgraph';
 import { SpookyswapAceLabSubgraph } from './subgraphs/spookyswap.acelab.subgraph';
 import { SpookyswapFarmSubgraph } from './subgraphs/spookyswap.farm.subgraph';
+import { SundaeSwapSubgraph } from './subgraphs/sundaeswap.subgraph';
 import { SushiSwapBentoBoxSubgraph } from './subgraphs/sushiswap.bentobox.subgraph';
 import { SushiSwapExchangeSubgraph } from './subgraphs/sushiswap.exchange.subgraph';
 import { SushiSwapMasterChefSubgraph } from './subgraphs/sushiswap.masterchef.subgraph';
@@ -65,6 +66,7 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     YearnV1Subgraph,
     YearnV2Subgraph,
     Pancakev2MainStakingSubgraph,
+    SundaeSwapSubgraph,
   ],
   exports: [
     AaveSubgraph,
@@ -88,6 +90,7 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     YearnV1Subgraph,
     YearnV2Subgraph,
     Pancakev2MainStakingSubgraph,
+    SundaeSwapSubgraph,
   ],
 })
 export class ThegraphModule {}

@@ -76,6 +76,7 @@ import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
+import SundaeSwapProtocol from './protocols/sundaeswap/sundaeswap.protocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
@@ -132,13 +133,15 @@ export class ProtocolService {
     private readonly yearnProtocolV2: YearnProtocolV2,
     private readonly trisolarisProtocol: TrisolarisProtocol,
     private readonly orcaProtocol: OrcaProtocol,
+    private readonly sundaeswapProtocol: SundaeSwapProtocol,
     private readonly anchorProtocol: AnchorProtocol,
     private readonly terraswapProtocol: TerraswapProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
-      alpacaProtocol,
       abracadabraProtocol,
+      alpacaProtocol,
+      anchorProtocol,
       autofarmProtocol,
       badgerProtocol,
       beefyProtocol,
@@ -150,6 +153,7 @@ export class ProtocolService {
       islandswapProtocol,
       mojitoswapProtocol,
       olympusProtocol,
+      orcaProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocolV2,
@@ -158,7 +162,9 @@ export class ProtocolService {
       saberProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
+      terraswapProtocol,
       traderjoeProtocol,
+      trisolarisProtocol,
       uniswapProtocolV2,
       uniswapProtocolV3,
       venusProtocol,
@@ -168,10 +174,7 @@ export class ProtocolService {
       wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
-      trisolarisProtocol,
-      orcaProtocol,
-      anchorProtocol,
-      terraswapProtocol,
+      sundaeswapProtocol,
     ];
   }
 

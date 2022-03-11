@@ -73,6 +73,7 @@ import { RaydiumStaking } from './raydium/raydium.staking';
 import { SaberPools } from './saber/saber.pools';
 import { SaberStaking } from './saber/saber.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
+import { SundaeswapPools } from './sundaeswap/sundaeswap.pools';
 import { SushiswapPools } from './sushiwap/sushiswap.pools';
 import { TerraSwapLp } from './terraswap/terraswap.lp';
 import { DbMapping } from './traderjoe/dbmapping';
@@ -87,16 +88,19 @@ import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
 
-export const ActiveJobs: ClassConstructor<JobInterface>[] = [
+const Anchor = [AnchorLp, AnchorStaking];
+const Astroport = [AstroportLp, AstroportStaking];
+const AutoFarm = [
   AutofarmStakingAVAX,
   AutofarmStakingBSC,
   AutofarmStakingCELO,
   AutofarmStakingCRO,
   AutofarmStakingHECO,
   AutofarmStakingPLG,
-  BadgerStakingArbi,
-  BadgerStakingEth,
-  BadgerStakingPLG,
+];
+
+const Badger = [BadgerStakingArbi, BadgerStakingEth, BadgerStakingPLG];
+const Beefy = [
   BeefyStakingArbi,
   BeefyStakingAvax,
   BeefyStakingBsc,
@@ -106,55 +110,21 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   BeefyStakingMoonRiver,
   BeefyStakingOne,
   BeefyStakingPlg,
-  ConvexStaking,
+];
+const Convex = [ConvexStaking];
+const Curve = [
   CurveGauges,
-  CurvePools,
-  DefiKingdomsPools,
-  DefiKingdomsStaking,
-  EllipsisLp,
-  EllipsisStaking,
-  IslandswapPools,
-  IslandswapStaking,
-  MojitoswapPools,
-  MojitoswapStaking,
-  PancakePoolsV2,
-  PancakeStaking,
-  PangolinPoolsAvax,
-  PangolinStakingAvax,
-  RaydiumPools,
-  RaydiumStaking,
-  SaberPools,
-  SaberStaking,
-  SpookyswapPools,
-  TraderJoeStaking,
-  TraderjoePools,
-  VVSPools,
-  VVSStaking,
-  ViperswapPools,
-  ViperswapStaking,
-  PancakePoolsV1,
-  UniswapPoolsV2,
-  SushiswapPools,
-  VVSStaking,
-  VVSPools,
-  PangolinStakingAvax,
-  PangolinPoolsAvax,
-  MojitoswapPools,
-  MojitoswapStaking,
-  SaberPools,
-  SaberStaking,
-  CurvePoolsPlg,
-  CurveGaugesPlg,
-  CurvePoolsAvax,
-  CurveGaugesAvax,
-  CurvePoolsFtm,
-  CurveGaugesFtm,
-  CurvePoolsArbi,
   CurveGaugesArbi,
-  CurveGaugesOpt,
-  CurvePoolsOpt,
-  CurvePoolsHarm,
+  CurveGaugesAvax,
+  CurveGaugesFtm,
+  CurveGaugesGnosis,
   CurveGaugesHarm,
+  CurveGaugesOpt,
+  CurveGaugesPlg,
+  CurvePools,
+  CurvePoolsArbi,
+  CurvePoolsAvax,
+  CurvePoolsFtm,
   CurvePoolsGnosis,
   CurveGaugesGnosis,
   TrisolarisPools,
@@ -163,9 +133,53 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   OrcaStaking,
   AnchorLp,
   AnchorStaking,
-  TerraSwapLp,
-  AstroportLp,
-  AstroportStaking,
+  SundaeswapPools,
+  CurvePoolsHarm,
+  CurvePoolsOpt,
+  CurvePoolsPlg,
+];
+
+const DefiKingdoms = [DefiKingdomsPools, DefiKingdomsStaking];
+const Ellipsis = [EllipsisLp, EllipsisStaking];
+const IslandSwap = [IslandswapPools, IslandswapStaking];
+const Mojitoswap = [MojitoswapPools, MojitoswapStaking];
+const Orca = [OrcaPools, OrcaStaking];
+const Pancake = [PancakePoolsV1, PancakePoolsV2, PancakeStaking];
+const Pangolin = [PangolinPoolsAvax, PangolinStakingAvax];
+const Raydium = [RaydiumPools, RaydiumStaking];
+const Saber = [SaberPools, SaberStaking];
+const Spookyswap = [SpookyswapPools, SushiswapPools];
+const Terra = [TerraSwapLp];
+const TraderJoe = [TraderJoeStaking, TraderjoePools];
+const Trisolaris = [TrisolarisPools, TrisolarisStaking];
+const Uniswap = [UniswapPoolsV2];
+const VVS = [VVSPools, VVSStaking];
+const ViperSwap = [ViperswapPools, ViperswapStaking];
+
+export const ActiveJobs: ClassConstructor<JobInterface>[] = [
+  ...Anchor,
+  ...Astroport,
+  ...AutoFarm,
+  ...Badger,
+  ...Beefy,
+  ...Convex,
+  ...Curve,
+  ...DefiKingdoms,
+  ...Ellipsis,
+  ...IslandSwap,
+  ...Mojitoswap,
+  ...Orca,
+  ...Pancake,
+  ...Pangolin,
+  ...Raydium,
+  ...Saber,
+  ...Spookyswap,
+  ...Terra,
+  ...TraderJoe,
+  ...Trisolaris,
+  ...Uniswap,
+  ...VVS,
+  ...ViperSwap,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];

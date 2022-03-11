@@ -72,6 +72,9 @@ import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import { SaberStaking } from './protocols/saber/saber.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
+import { SundaeSwapFarms } from './protocols/sundaeswap/sundaeswap.farms';
+import { SundaeSwapPools } from './protocols/sundaeswap/sundaeswap.pools';
+import SundaeSwapProtocol from './protocols/sundaeswap/sundaeswap.protocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TerraswapPools } from './protocols/terraswap/terraswap.pools';
 import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
@@ -143,6 +146,7 @@ const Saber = [SaberProtocol, SaberStaking];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
+const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
 
@@ -186,6 +190,7 @@ const ProtocolList = [
   ...Viperswap,
   ...Wonderland,
   ...Orca,
+  ...SundaeSwap,
   ...Anchor,
   ...Terraswap,
 ];

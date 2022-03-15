@@ -58,8 +58,8 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     }
 
     const chunkSize = this.getBalancesBatchSize(chainId);
-    let promises: (Promise<string | string[]>)[] = chunkArray(tokens, chunkSize).map(
-      (chunk) => retry(() => contract.getBalances(address, chunk, block), WEB3_RETRY_CALL_IN_MS),
+    let promises: Promise<string | string[]>[] = chunkArray(tokens, chunkSize).map((chunk) =>
+      retry(() => contract.getBalances(address, chunk, block), WEB3_RETRY_CALL_IN_MS),
     );
 
     if (hasNativeCoin) {

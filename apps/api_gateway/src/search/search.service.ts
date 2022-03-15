@@ -1,3 +1,5 @@
+import { OpportunityListDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.list.dto';
+
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -16,7 +18,7 @@ import { addressSearchResultParser } from './utils/search.utils';
 @Injectable()
 export class SearchService extends BaseService {
   private readonly accountUrl: string;
-  private readonly integrationUrl: string;
+  private readonly opportunityUrl: string;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -27,7 +29,7 @@ export class SearchService extends BaseService {
     super(logger, httpService, configService);
 
     this.accountUrl = this.getServiceUrl(ServiceEnum.Account);
-    this.integrationUrl = this.getServiceUrl(ServiceEnum.Integration);
+    this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunity);
   }
 
   public async search(text: string): Promise<SearchResults> {
@@ -56,17 +58,22 @@ export class SearchService extends BaseService {
   }
 
   private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
-    const urls = [
-      new URL('v1/assets/search', this.accountUrl),
-      new URL('v1/protocols/search/projects', this.integrationUrl),
-      new URL('v1/protocols/search/vaults', this.integrationUrl),
-    ];
-    const searchResults = await Promise.all<SearchResultsBaseEntry>(
-      urls.map((url) => this.requestProxy(url.toString(), 'GET', { params })),
-    );
-
+    const assetsSearchUrl = new URL('v1/assets/search', this.accountUrl);
+    const opportunitiesSearchUrl = new URL('v1/opportunities', this.opportunityUrl);
+    const promises = [this.requestProxy(assetsSearchUrl.toString(), 'GET', { params })];
+    if (params.text) {
+      promises.push(
+        this.requestProxy(opportunitiesSearchUrl.toString(), 'GET', {
+          search: params.text,
+          limit: 30,
+        }),
+      );
+    }
+    const searchResults = await Promise.all(promises);
+    const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
+    const opportunitiesSearchResults: OpportunityListDto = searchResults.shift();
     return {
-      entries: searchResults.flat(),
+      entries: [...assetsSearchResults, ...opportunitiesSearchResults.items],
     };
   }
 }

@@ -70,32 +70,42 @@ export class QuickswapMulticallService extends MultiCall {
     const chunkedContractsAddresses: Address[][] = toChunkedArray(contractsAddresses, CHUNK_SIZE);
 
     for (const contractsAddresses of chunkedContractsAddresses) {
-      let inputEearned: CallInput[] = this.getDualContractsAddress(contractsAddresses, accountAddress);
+      let inputEearned: CallInput[] = this.getDualContractsAddress(
+        contractsAddresses,
+        accountAddress,
+      );
       const [, earned]: [number, BigNumber[]] = await this.multiCall(contractAbi, inputEearned);
 
       contractsAddresses.map((address) => {
-        result.set(address.toLocaleLowerCase(), earned.map(v => v.toString()));
+        result.set(
+          address.toLocaleLowerCase(),
+          earned.map((v) => v.toString()),
+        );
       });
     }
 
     return result;
   }
 
-  private getDualContractsAddress(contractsAddresses: Address[], accountAddress: Address): CallInput[] {
-    return contractsAddresses.map(contractAddress => [
-      {
-        target: contractAddress,
-        function: 'earnedA',
-        args: [accountAddress],
-      }, {
-        target: contractAddress,
-        function: 'earnedB',
-        args: [accountAddress],
-      }
-    ]).flat();
+  private getDualContractsAddress(
+    contractsAddresses: Address[],
+    accountAddress: Address,
+  ): CallInput[] {
+    return contractsAddresses
+      .map((contractAddress) => [
+        {
+          target: contractAddress,
+          function: 'earnedA',
+          args: [accountAddress],
+        },
+        {
+          target: contractAddress,
+          function: 'earnedB',
+          args: [accountAddress],
+        },
+      ])
+      .flat();
   }
-
-
 
   async getStakingTokens(
     contractsAddresses: Address[],

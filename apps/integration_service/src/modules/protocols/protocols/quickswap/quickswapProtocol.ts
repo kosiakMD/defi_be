@@ -282,7 +282,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
   }
 
   /**
-   * @description get information from 2 tokens rewards. 
+   * @description get information from 2 tokens rewards.
    */
   private async getDualPricedToken(addresses: Address[], chain: ChainDto) {
     const [{ data: rawTokenRewards }, { prices: rawRewardsPrice }] = await Promise.all([
@@ -299,9 +299,9 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
   public async getStakingPositionsV2(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const baseData: BaseData[] = [];
 
-    const pairAddresses = QUICKSWAP_STAKING_CONTRACTS
-      .concat(QUICKSWAP_STAKING_DUAL_CONTRACTS)
-      .map(({ pairAddress }) => pairAddress).concat(QUICKSWAP_ADDITIONAL_PAIRS);
+    const pairAddresses = QUICKSWAP_STAKING_CONTRACTS.concat(QUICKSWAP_STAKING_DUAL_CONTRACTS)
+      .map(({ pairAddress }) => pairAddress)
+      .concat(QUICKSWAP_ADDITIONAL_PAIRS);
 
     const stakingAddresses = QUICKSWAP_STAKING_CONTRACTS.map(
       ({ stakingContractAddress }) => stakingContractAddress,
@@ -317,17 +317,27 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     );
 
     const { rawTokenRewards, rawRewardsPrice } = await this.getDualPricedToken(
-      QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS, chain,
+      QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS,
+      chain,
     );
 
     const stakingTokens = await this.getSubgraphPairMap(pairAddresses);
 
     await Promise.all(
       addresses.map(async (userAddress) => {
-        const [stakingTokensBalances, stakingTokensClaimable, dualStakingTokensClaimable, allPairBalances] = await Promise.all([
+        const [
+          stakingTokensBalances,
+          stakingTokensClaimable,
+          dualStakingTokensClaimable,
+          allPairBalances,
+        ] = await Promise.all([
           this.multicall.getBalancesOf([...stakingAddresses, ...dualStakingAddresses], userAddress),
           this.multicall.getEarned(stakingAddresses, userAddress, QUICKSWAP_STAKING_REWARDS_ABI),
-          this.multicall.getEarnedDual(dualStakingAddresses, userAddress, QUICKSWAP_STAKING_DUAL_REWARDS_ABI),
+          this.multicall.getEarnedDual(
+            dualStakingAddresses,
+            userAddress,
+            QUICKSWAP_STAKING_DUAL_REWARDS_ABI,
+          ),
           this.multicall.getBalancesOf(pairAddresses, userAddress),
         ]);
 
@@ -469,7 +479,6 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
       );
     });
 
-
     return stakingPositions;
   }
 
@@ -478,7 +487,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     stakingTokensBalances: Map<string, string>,
     dualStakingTokensClaimable: Map<string, string[]>,
     rawRewardToken: Asset[],
-    rawRewardPrice: number[]
+    rawRewardPrice: number[],
   ) {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
     let [rewardTokenA, rewardTokenB] = rawRewardToken;
@@ -498,7 +507,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
       const dualRewardsPair: [Asset, number, string][] = [
         [rewardTokenA, rewardPriceA, claimableA],
-        [rewardTokenB, rewardPriceB, claimableB]
+        [rewardTokenB, rewardPriceB, claimableB],
       ];
 
       const rewardToken = [];
@@ -508,20 +517,22 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           .div(decimalsDivider(token.decimals))
           .toString();
 
-        rewardToken.push(plainToClass(IntegrationClaimableTokenDto, {
-          address: token.address,
-          name: token.name,
-          symbol: token.symbol,
-          decimals: token.decimals,
-          totalSupply: token.totalSupply,
-          price: price,
-          claimableData: {
-            balance: claimableDataBalance,
-            value: new BigNumber(claimableDataBalance) //
-              .times(price)
-              .toString(),
-          },
-        }));
+        rewardToken.push(
+          plainToClass(IntegrationClaimableTokenDto, {
+            address: token.address,
+            name: token.name,
+            symbol: token.symbol,
+            decimals: token.decimals,
+            totalSupply: token.totalSupply,
+            price: price,
+            claimableData: {
+              balance: claimableDataBalance,
+              value: new BigNumber(claimableDataBalance) //
+                .times(price)
+                .toString(),
+            },
+          }),
+        );
       }
 
       let pairData = stakingTokens.get(pairAddress);
@@ -546,7 +557,6 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           rewards: rewardToken,
         }),
       );
-
     }
 
     return stakingPositions;

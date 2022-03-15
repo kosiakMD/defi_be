@@ -1,15 +1,7 @@
-import { SearchResultType } from 'apps/api_gateway/src/search/interfaces/search.enum';
-import {
-  SearchParams,
-  SearchResultsBaseEntry,
-  SearchResultsProjectEntry,
-  SearchResultsVaultEntry,
-} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
 import { CACHE_MANAGER, Inject, Injectable, NotImplementedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -28,8 +20,6 @@ import { NotifyBase } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
-import { SearchEntries } from '../../common/enum/search.enum';
-import { IntegrationSearchParams } from '../../common/interfaces/search.interfaces';
 import { getChainById } from '../../common/utils/chain';
 
 import { ProtocolService } from '../protocols/protocol.service';
@@ -43,16 +33,10 @@ import {
   ProtocolInfoDto,
 } from './dto/integrations.dto';
 import { FeaturesService } from './features.service';
-import { ProjectsContractRepository } from './repositories/projectsContract.repository';
-import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 
 @Injectable()
 export class IntegrationsService {
   constructor(
-    @InjectRepository(ProjectsContractRepository)
-    private readonly projectsRepository: ProjectsContractRepository,
-    @InjectRepository(TrackedVaultRepository)
-    private readonly vaultsRepository: TrackedVaultRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly featuresService: FeaturesService,
@@ -313,51 +297,6 @@ export class IntegrationsService {
 
     if (errorMessages.size) {
       errorMessages.forEach((error) => this.logger.warn(error));
-    }
-  }
-
-  async searchProjects(query: SearchParams): Promise<SearchResultsProjectEntry[]> {
-    const projects = await this.projectsRepository.findProjectsByParams(query);
-    return projects.map((p) => ({
-      type: SearchResultType.PROJECT,
-      icon: p.icon,
-      name: p.name,
-      metadata: {
-        address: p.address,
-        description: p.description,
-      },
-    }));
-  }
-
-  async searchVaults(query: SearchParams): Promise<SearchResultsVaultEntry[]> {
-    if (!query.text) {
-      this.logger.debug('Vaults search params should have "text"');
-      return [];
-    }
-    const vaults = await this.vaultsRepository.findVaultsByParams(query);
-    return vaults.map((v) => ({
-      type: SearchResultType.VAULT,
-      metadata: {
-        chainId: v.chainId,
-        protocol: v.protocol,
-        feature: v.feature,
-      },
-    }));
-  }
-
-  async search(
-    params: IntegrationSearchParams,
-    query: SearchParams,
-  ): Promise<SearchResultsBaseEntry[]> {
-    const { searchEntry } = params;
-    switch (searchEntry) {
-      case SearchEntries.PROJECTS:
-        return this.searchProjects(query);
-      case SearchEntries.VAULTS:
-        return this.searchVaults(query);
-      default:
-        this.logger.error(`Wrong search entry ${searchEntry}`);
-        return [];
     }
   }
 }

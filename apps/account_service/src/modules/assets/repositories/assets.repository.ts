@@ -108,20 +108,26 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     // eslint-disable-next-line prefer-const
     let { address, text } = searchParams;
     if (text) {
-      text = `%${text}%`;
+      text = `%${text}%`.toLowerCase();
     }
     const qb = this.createQueryBuilder('assets_new');
     qb.where('is_tracked = :isTracked', { isTracked: true });
     if (address && text) {
-      qb.andWhere('((name LIKE :name) OR (symbol LIKE :symbol) OR (address = :address))', {
-        name: text,
-        symbol: text,
-        address,
-      });
+      qb.andWhere(
+        '((LOWER(name) LIKE :name) OR (LOWER(symbol) LIKE :symbol) OR (address = :address))',
+        {
+          name: text,
+          symbol: text,
+          address,
+        },
+      );
     } else if (address) {
       qb.andWhere('address = :address', { address });
     } else {
-      qb.andWhere('(name LIKE :name OR symbol LIKE :symbol)', { name: text, symbol: text });
+      qb.andWhere('(LOWER(name) LIKE :name OR LOWER(symbol) LIKE :symbol)', {
+        name: text,
+        symbol: text,
+      });
     }
     qb.orderBy({
       'assets_new.name': 'ASC',

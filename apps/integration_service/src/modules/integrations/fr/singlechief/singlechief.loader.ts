@@ -1,23 +1,70 @@
-import { Inject, Injectable } from '@nestjs/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { ChainDto, Logger } from '@app/common';
+import { ChainDto } from '@app/common';
 import { deepFind } from '../../data/templates/helpers';
 import { FeatureCode } from '../../data/templates/chief/config';
-import { buildCallsMap } from '../helpers';
-import { SingleChiefBase } from './singlechief.base';
-import { CallInfo } from '../chief/masterchief.base';
+import { buildCallsMap, findMatchInAbi } from '../helpers';
+import { CallInfo } from '../chief/masterchief.loader';
+import { AbiItem } from 'web3-utils';
+import { ModuleRef } from '@nestjs/core';
+import { DEFAULT_CONFIG as config } from './config';
+import { LoaderAbstract } from '../loader.abstract';
 
-@Injectable()
-export class SingleChiefLoader {
+export class SingleChiefLoader extends LoaderAbstract {
 
-  constructor(private readonly multicall: MulticallAggregator,
-              @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-  ) {}
+  private readonly address;
+  private readonly abi: AbiItem[];
+  private chain: ChainDto;
+  private metadata;
+  private multicall: MulticallAggregator;
 
-  async loadVaults(masterchief: SingleChiefBase, chain: ChainDto) {
-    const stakingTokenCall: CallInfo = masterchief.getStakingTokenCall();
-    const rewardTokenCall: CallInfo = masterchief.getRewardTokenCall();
+  constructor(
+    private moduleRef: ModuleRef,
+    private configuration: {
+      address,
+      abi,
+      chain,
+      metadata
+    }
+  ) {
+    super();
+    this.multicall = moduleRef.get(MulticallAggregator);
+    this.address = configuration.address;
+    this.abi = configuration.abi;
+    this.chain = configuration.chain;
+    this.metadata = configuration.metadata;
+    if (!this.confirmChainConfiguration()) {
+      throw new Error(`Not possible to make instance of class ${SingleChiefLoader.name}`)
+    }
+  }
+
+  confirmChainConfiguration() {
+    return Boolean(this.getRewardTokenCall())
+      && Boolean(this.getStakingTokenCall());
+  }
+
+  getRewardTokenCall(): CallInfo  {
+    const contractCallAbi = findMatchInAbi(config.rewardTokenCalls, this.abi);
+    return {
+      id: this.address + ':' + contractCallAbi.name,
+      target: this.address,
+      abi: contractCallAbi,
+      path: ''
+    };
+  }
+
+  getStakingTokenCall(): CallInfo {
+    const contractCallAbi = findMatchInAbi(config.stakingTokenCalls, this.abi);
+    return {
+      id: this.address + ':' + contractCallAbi.name,
+      target: this.address,
+      abi: contractCallAbi,
+      path: '',
+    };
+  }
+
+  async loadVaults() {
+    const stakingTokenCall: CallInfo = this.getStakingTokenCall();
+    const rewardTokenCall: CallInfo = this.getRewardTokenCall();
     const blockchainCalls = buildCallsMap([
       stakingTokenCall,
       rewardTokenCall,
@@ -27,7 +74,7 @@ export class SingleChiefLoader {
     // this logic must be replaced and moved to the external class which can collect calls,
     // make requests,
     //notify this class
-    const blockchainCallsResult = await this.multicall.handleInBatches(blockchainCalls, chain.id);
+    const blockchainCallsResult = await this.multicall.handleInBatches(blockchainCalls, this.chain.id);
 
     const stakingToken = deepFind(blockchainCallsResult.get(stakingTokenCall.id).output.data, stakingTokenCall.path);
     const stakingTokenAddress = stakingToken.toLowerCase();
@@ -37,7 +84,7 @@ export class SingleChiefLoader {
 
     const extractedVaults = [];
     extractedVaults.push({
-      uniqueId: chain.abbr + ':' + stakingTokenCall.target,
+      uniqueId: this.chain.abbr + ':' + stakingTokenCall.target,
       poolAddress: stakingTokenCall.target,
       featureCode: FeatureCode.singleChief,
       stakingToken: {

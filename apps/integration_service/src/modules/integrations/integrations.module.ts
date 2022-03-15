@@ -30,8 +30,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { Web3ProviderService } from '@app/common/web3provider';
 import { ChiefLoader } from './data/templates/chief/loader';
 import { VaultLoader } from './data/templates/vault-loader';
-import { MasterchiefLoader } from './fr/chief/masterchief.loader';
-import { SingleChiefLoader } from './fr/singlechief/singlechief.loader';
 
 const demoServices = [VaultLoaderDemo];
 
@@ -79,8 +77,6 @@ const demoServices = [VaultLoaderDemo];
     MulticallAggregator,
     Web3ProviderService,
     VaultLoader,
-    MasterchiefLoader,
-    SingleChiefLoader,
   ],
   controllers: [IntegrationsController, IntegrationsControllerV2],
   exports: [TypeOrmModule, IntegrationsServiceV2],

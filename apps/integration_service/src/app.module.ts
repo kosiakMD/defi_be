@@ -116,19 +116,18 @@ export class AppModule implements NestModule {
     // works as well
     // await this.integrationServiceV2.loadVaults({
     //   chainCode:"near",
-    //   featureCode:"staking",
     //   protocolCode:"trisolaris",
     //   contractAddress:"0x1f1ed214bef5e83d8f5d0eb5d7011eb965d0d79b",
     //   contractAbi: []
     // })
 
     // works as well
-    // await this.integrationServiceV2.loadVaults({
-    //   chainCode:"bsc",
-    //   protocolCode:"pancake",
-    //   contractAddress: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
-    //   contractAbi: []
-    // })
+    await this.integrationServiceV2.loadVaults({
+      chainCode:"bsc",
+      protocolCode:"pancake",
+      contractAddress: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
+      contractAbi: []
+    })
 
     // single staking contract
     // await this.integrationServiceV2.loadVaults({
@@ -146,11 +145,11 @@ export class AppModule implements NestModule {
     // })
 
     // load
-    await this.integrationServiceV2.loadVaults({
-      chainCode:"bsc",
-      protocolCode:"pancake",
-      contractAddress: "0x73feaa1eE314F8c655E354234017bE2193C9E24E",
-      contractAbi: []
-    })
+    // await this.integrationServiceV2.loadVaults({
+    //   chainCode:"bsc",
+    //   protocolCode:"pancake",
+    //   contractAddress: "0x73feaa1eE314F8c655E354234017bE2193C9E24E",
+    //   contractAbi: []
+    // })
   }
 }

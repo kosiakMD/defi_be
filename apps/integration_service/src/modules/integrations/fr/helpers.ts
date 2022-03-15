@@ -1,7 +1,10 @@
 import { AbiInput, AbiItem, AbiOutput } from 'web3-utils';
-import { CallInfo } from './chief/masterchief.base';
 import { CallData } from '@app/common/dto/CallData';
 import { plainToClass } from 'class-transformer';
+import { CallInfo } from './chief/masterchief.loader';
+import { dirname } from "path";
+import * as fs from 'fs';
+import { LoaderAbstract } from './loader.abstract';
 
 export function findMatchInAbi(callMinConfigs: Partial<AbiItem>[], abi: AbiItem[]): AbiItem | undefined {
   for (let i = 0; i < callMinConfigs.length; i++) {
@@ -78,18 +81,52 @@ export function buildCallsMap(callInfos: CallInfo[]): Map<string, CallData> {
 export function buildCallsMapFromTemplate(callInfo: CallInfo, templates: any[]) {
   const blockchainCalls = new Map<string, CallData>();
   templates.forEach((t) => {
-    const extractedArgs = callInfo.args.map((ar) => {
-      // if (!t[ar]): throw exception or continue processing?
-      // can be dynamic if continue processing but more errors can be in future
-      return t[ar];
-    });
-    blockchainCalls.set(callInfo.id + ':' + extractedArgs.join(':'), plainToClass(CallData, {
+    const [id, call] = getTemplatedCall(callInfo, t);
+    blockchainCalls.set(id, call)
+  })
+  return blockchainCalls;
+}
+
+export function getTemplatedCall(callInfo: CallInfo, template): [string, CallData] {
+  const extractedArgs = callInfo.args.map((ar) => {
+    return template[ar];
+  });
+  return [
+    callInfo.id + ':' + extractedArgs.join(':'),
+    plainToClass(CallData, {
       address: callInfo.target,
       abi: callInfo.abi,
       input: {
         data: extractedArgs
       },
-    }));
-  })
-  return blockchainCalls;
+    })
+  ]
+}
+
+export function getLoadersList(): any[] {
+  const farmClientsDir = `${dirname(__filename)}`;
+
+  const registry = []
+  fs
+    .readdirSync(farmClientsDir, { withFileTypes: true })
+    .forEach((direct) => {
+      if (!direct.isDirectory()) return;
+      const farmClientsSubdir = `${farmClientsDir}/${direct.name}`;
+
+      fs
+        .readdirSync(farmClientsSubdir)
+        .forEach((filename) => {
+          if (['.ts', '.js'].indexOf(filename.slice(-3)) === -1) return;
+
+          const imported = require(`${farmClientsSubdir}/${filename}`);
+          Object.values(imported).forEach((obj) => {
+            if (!((<any>obj).prototype instanceof LoaderAbstract)) {
+              return;
+            }
+
+            registry.push(obj)
+          });
+        });
+    });
+  return registry;
 }

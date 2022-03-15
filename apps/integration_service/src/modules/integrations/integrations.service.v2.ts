@@ -13,54 +13,24 @@ import { AbisService } from './services/abis.service';
 import { ContractsService } from './services/contracts.service';
 import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
-import { ChiefLoader } from './data/templates/chief/loader';
-import { VaultLoader } from './data/templates/vault-loader';
-import { MasterchiefLoader } from './fr/chief/masterchief.loader';
-import { dirname } from "path";
-import fs from "fs";
-import { ChainConfigurable } from './fr/chain-configurable';
-import { SingleChiefLoader } from './fr/singlechief/singlechief.loader';
+import { ModuleRef } from '@nestjs/core';
+import { getLoadersList } from './fr/helpers';
 
 @Injectable()
 export class IntegrationsServiceV2 {
-  private readonly registry = [];
+  private loaders: any[];
   constructor(
     private readonly settingsService: SettingsService,
     private readonly projectsService: ProjectsService,
     private readonly contractsService: ContractsService,
     private readonly abisService: AbisService,
     private readonly scanService: AbiFetcherService,
-    private readonly vaultLoader: VaultLoader,
-    private readonly chiefLoader: ChiefLoader,
-    private readonly masterchiefLoader: MasterchiefLoader,
-    private readonly singleChiefLoader: SingleChiefLoader,
+    private moduleRef: ModuleRef,
 
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {
-    const farmClientsDir = `${dirname(__filename)}/fr`;
-
-    fs
-      .readdirSync(farmClientsDir, { withFileTypes: true })
-      .forEach((direct) => {
-        if (!direct.isDirectory()) return;
-        const farmClientsSubdir = `${farmClientsDir}/${direct.name}`;
-
-        fs
-          .readdirSync(farmClientsSubdir)
-          .forEach((filename) => {
-            if (['.ts', '.js'].indexOf(filename.slice(-3)) === -1) return;
-
-            const imported = require(`${farmClientsSubdir}/${filename}`);
-            Object.values(imported).forEach((obj) => {
-              if (!((<any>obj).prototype instanceof ChainConfigurable)) {
-                return;
-              }
-
-              this.registry.push(obj)
-            });
-          });
-      });
+    this.loaders = getLoadersList();
   }
 
   async loadVaults({ chainCode, protocolCode, contractAddress, contractAbi }) {
@@ -109,20 +79,31 @@ export class IntegrationsServiceV2 {
       contractEntity = await this.contractsService.addAbiRelation(contractEntity, abiEntity);
     }
 
+
+
     let implementation;
-    for (let i = 0; i < this.registry.length; i++) {
+    for (let i = 0; i < this.loaders.length; i++) {
       try {
-        implementation = new this.registry[i](contractEntity.address, contractEntity.abi.abi);
+        // @ts-ignore
+        implementation = new this.loaders[i](this.moduleRef, {
+          address: contractEntity.address,
+          abi: contractEntity.abi.abi,
+          chain: chain,
+          metadata: {}
+        });
       } catch (ignored) {}
     }
+
     if (implementation) {
-      const vaults = await this.singleChiefLoader.loadVaults(implementation, chain);
+      const vaults = await implementation.loadVaults(implementation, chain);
       contractEntity.isIntegrated = true;
-      contractEntity.implementationId = implementation.implementationId;
       await this.contractsService.repository.save(contractEntity);
+
+      const accountBalances = await implementation.loadAccountData(vaults, ['0x60dE7F647dF2448eF17b9E0123411724De6e373D', '0x4e796EA3819b6d59C53554B35DBD32C0111936Ce']);
       console.log(vaults)
+      console.log(accountBalances)
     }
-    // todo: if contract is not integrated, need to go to the next steps
+
     return contractEntity;
   }
 }

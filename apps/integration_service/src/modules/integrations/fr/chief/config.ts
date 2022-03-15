@@ -11,5 +11,8 @@ export const DEFAULT_CONFIG = {
     {
       name: "poolLength",
     }
+  ],
+  accountBalanceCalls: [
+
   ]
 };

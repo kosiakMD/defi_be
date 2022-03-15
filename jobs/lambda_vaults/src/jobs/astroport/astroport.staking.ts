@@ -12,7 +12,6 @@ import {
   PoolAssetsQueryResp,
   ProtocolNameEnum,
 } from '@app/common';
-import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
@@ -83,18 +82,10 @@ export class AstroportStaking implements JobInterface {
     });
   }
 
-  async getLpRewardsMap(
-    //astroportPools: FactoryPairsInfoResp[]
-    astroportPools: string[],
-  ) {
+  async getLpRewardsMap(astroportPools: string[]) {
     const lcdClient = this.web3ProviderService.getInstanceByChainId(this.chain);
-    //{
-    //   "base_reward_token": "terra1xj49zyqrwpv5k928jwfpfy2ha668nwdgkwlrg3",
-    //   "proxy_reward_token": "terra100yeqvww74h4yaejj6h733thgcafdaukjtw397"
-    // }
 
     const lpRewardsMap = new Map();
-    const temporary = [];
     await Promise.all(
       astroportPools.map(async (pool) => {
         try {
@@ -105,47 +96,14 @@ export class AstroportStaking implements JobInterface {
               lp_token: pool,
             },
           });
-          // Object.values(rewardsObj)?.forEach((address) =>
-          //   rewardAddresses.add(String(address).toLowerCase()),
-          // );
           lpRewardsMap.set(pool, Object.values(rewardsObj));
         } catch (e) {
-          temporary.push(pool);
           //
         }
       }),
     );
     return lpRewardsMap;
   }
-
-  // async getAstroportPools(): Promise<string[]> {
-  //   const lcdClient: LCDClient = this.web3ProviderService.getInstanceByChainId(this.chain);
-  //   const { pairs } = await lcdClient.wasm.contractQuery(AstroportAddresses.factory, {
-  //     pairs: { limit: 100 },
-  //   });
-  //
-  //   const lps = new Set<string>();
-  //
-  //   pairs?.forEach((pair) => lps.add(pair.liquidity_token.toLowerCase()));
-  //
-  //   // eslint-disable-next-line camelcase
-  //   const { allowed_reward_proxies } = await lcdClient.wasm.contractQuery(
-  //     AstroportAddresses.generator,
-  //     { config: {} },
-  //   );
-  //
-  //   await Promise.all(
-  //     // eslint-disable-next-line camelcase
-  //     allowed_reward_proxies.map(async (proxy) => {
-  //       // eslint-disable-next-line camelcase
-  //       const { lp_token_addr } = await lcdClient.wasm.contractQuery(proxy, { config: {} });
-  //       // eslint-disable-next-line camelcase
-  //       lps.add(lp_token_addr.toLowerCase());
-  //     }),
-  //   );
-  //
-  //   return Array.from(lps);
-  // }
 
   /** completed for masterchief contract */
   async buildInitialMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
@@ -361,17 +319,16 @@ export class AstroportStaking implements JobInterface {
     return mintersMap;
   }
 
-  async updateWithChainData(): Promise<NotifySupportedFeature[]> {
+  async updateWithChainData(): Promise<IntegrationStakingPositionDto[]> {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
     const terra: LCDClient = this.web3ProviderService.getInstanceByChainId(this.chain);
-    const mintersMap = await this.getLpTokensMinters(terra);
     const graphData = await AstroportGraph.getPoolsInfo();
-    const graphDataMap = new Map();
-    graphData.pools.forEach((pool) => {
-      if (pool.lp_address) {
-        graphDataMap.set(pool.lp_address.toLowerCase(), pool);
+    const graphDataMap = graphData?.pools.reduce((resp, pool) => {
+      if (pool?.lp_address) {
+        resp.set(pool.lp_address, pool);
       }
-    });
+      return resp;
+    }, new Map());
 
     const [{ prices }] = await Promise.all([
       this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
@@ -379,13 +336,15 @@ export class AstroportStaking implements JobInterface {
 
     this.mapping = await Promise.all(
       this.mapping.map(async (m) => {
+        const graphPool = graphDataMap.get(m.stakingToken.address);
         const { balance } = await terra.wasm.contractQuery(m.stakingToken.address, {
           balance: { address: m.address },
         });
 
+        m.stats.poolApy = (graphPool?.total_rewards.apr || 0) * 100;
         m.stakingToken.balance = m.staked = toDecimals(balance, m.stakingToken.decimals);
         if (m.stakingToken.tokens?.length) {
-          const minter = mintersMap.get(m.stakingToken.address);
+          const minter = graphDataMap.get(m.stakingToken.address).pool_address;
           const poolInfo: PoolAssetsQueryResp = await terra.wasm.contractQuery(minter, {
             pool: {},
           });
@@ -397,31 +356,22 @@ export class AstroportStaking implements JobInterface {
                 asset.info.native_token?.denom === token.address,
             );
             token.reserve = token.balance = toDecimals(assetInfo.amount, token.decimals);
-            token.price = Number(prices[token.address]);
+            token.price =
+              (token.address === graphPool.token1_address
+                ? graphPool.token1_price_ust
+                : graphPool.token2_price_ust) || Number(prices[token.address]);
             token.value = token.balance * token.price;
-            m.stats.tvl += token.value;
             return token;
           });
+          m.stats.tvl = graphPool.pool_liquidity;
 
-          m.rewards.forEach((reward) => (reward.price = Number(prices[reward.address])));
-
-          // TODO: find how calculate astroport lp token APR
-          // const { creator } = await terra.wasm.contractInfo(addressProvider.ancUstPair());
-          // const { generator_address } = await terra.wasm.contractQuery(creator, { "config": {} });
-          // const generatorPoolInfo: PoolInfoQueryResp = await terra.wasm.contractQuery(generator_address, { "pool_info": { "lp_token": m.stakingToken.address } });
-          // const { total_alloc_point, tokens_per_block } = await terra.wasm.contractQuery(generator_address, { "config": {} });
-          //
-          // const aprStats = {
-          //   totalAllocPoints: total_alloc_point,
-          //   poolAllocPoints: generatorPoolInfo.alloc_point,
-          //   rewardTokenPerBlock: toDecimals(tokens_per_block, m.rewards[0].decimals),
-          //   rewardTokenPrice: m.rewards[0].price,
-          //   blockTime: 6,6,
-          //   farmingPoolTVL: m.stats.tvl,
-          // };
-
-          // const ancReward = m.rewards.find((reward) => reward.address === addressProvider.ANC());
-          // ancReward.apr = Number(ancApy) * 100;
+          m.rewards.forEach((reward) => {
+            reward.apr =
+              reward.address === AstroportAddresses.astro
+                ? Number(graphPool?.astro_rewards.apr || 0) * 100
+                : Number(graphPool?.protocol_rewards.apr || 0) * 100;
+            reward.price = Number(prices[reward.address]);
+          });
         } else {
           m.stakingToken.price = Number(prices[m.stakingToken.address]);
           m.stakingToken.value = m.stakingToken.balance * m.stakingToken.price;
@@ -450,14 +400,5 @@ export class AstroportStaking implements JobInterface {
       m.rewards.forEach((reward) => addressesSet.add(reward.address));
     });
     return addressesSet;
-  }
-
-  private getClaimableTokenDto(token: LiquidityPoolTokenDto) {
-    return plainToClass(IntegrationClaimableTokenDto, {
-      address: token.address,
-      name: token.name,
-      symbol: token.symbol,
-      decimals: token.decimals,
-    });
   }
 }

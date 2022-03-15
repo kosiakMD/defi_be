@@ -283,13 +283,15 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
     const userTokens = await this.getUserTokens(addresses, chain);
+    if (!userTokens.size) {
+      return [[], []];
+    }
+    const baseData: BaseDataLp[] = [];
+    const errors: string[] = [];
 
     const userPositions = await this.getTokenDetails(userTokens, chain);
     const pools = await this.getPoolDetails(userPositions, chain);
     const [assets, prices, reserves] = await this.getUnderlyingAssets(userPositions, chain);
-
-    const baseData: BaseDataLp[] = [];
-    const errors: string[] = [];
 
     userTokens.forEach((tokens, address) => {
       const items = [];
@@ -310,17 +312,15 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
         const token0Asset = assets.get(position.token0);
         const token1Asset = assets.get(position.token1);
 
-        if (!token1Asset || !token0Asset) {
+        const rawReserve0 = reserves.get(pool.address).get(token0Asset.address);
+        const rawReserve1 = reserves.get(pool.address).get(token1Asset.address);
+
+        if (!token1Asset || !token0Asset || !rawReserve0 || !rawReserve1) {
           return;
         }
 
-        const reserve0 = normalizeDecimals(
-          reserves
-            .get(pool.address) //
-            .get(token0Asset.address)
-            .toString(),
-          token0Asset.decimals,
-        );
+        const reserve0 = normalizeDecimals(rawReserve0.toString(), token0Asset.decimals);
+        const reserve1 = normalizeDecimals(rawReserve1.toString(), token1Asset.decimals);
 
         const { amount0, amount1 } = calculatePositionAmounts({
           tickCurrent: pool.tick,
@@ -348,7 +348,7 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
           name: token1Asset.name,
           symbol: token1Asset.symbol,
           decimals: token1Asset.decimals,
-          reserve: reserves.get(pool.address).get(token1Asset.address),
+          reserve: reserve1.toString(),
           value: Number(amount1) * prices.get(token1Asset.address),
           balance: Number(amount1),
           price: prices.get(token1Asset.address),

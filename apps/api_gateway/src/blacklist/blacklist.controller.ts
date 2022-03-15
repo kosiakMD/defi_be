@@ -1,9 +1,11 @@
 import {
+  Body,
   CacheInterceptor,
   CacheTTL,
   Controller,
   Get,
   HttpStatus,
+  Post,
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -25,6 +27,13 @@ export class BlacklistController extends BaseService {
   @CacheTTL(300)
   @ApiResponse({ status: HttpStatus.OK, type: [BlacklistedAddress] })
   getBlacklistedAddresses(): Promise<BlacklistedAddress[]> {
-    return this.requestProxy(this.url + 'v1/blacklist', 'GET');
+    return this.requestProxy(this.url + 'v1/blacklist');
+  }
+
+  @Post()
+  @CacheTTL(300)
+  @ApiResponse({ status: HttpStatus.OK, type: [BlacklistedAddress] })
+  postBlacklistedAddress(@Body() body: BlacklistedAddress): Promise<BlacklistedAddress[]> {
+    return this.requestProxy(this.url + 'v1/blacklist', 'POST', body);
   }
 }

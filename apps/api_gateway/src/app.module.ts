@@ -26,6 +26,7 @@ import { AnalyticController } from './analytic/analytic.controller';
 import { ApprovalsController } from './approvals/approvals.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
+import { BlacklistController } from './blacklist/blacklist.controller';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
@@ -88,6 +89,7 @@ import { VaultsModule } from './vaults/vaults.module';
     AssetsController,
     ApprovalsController,
     BalancesController,
+    BlacklistController,
     TransactionsController,
     ProtocolController,
     NftController,

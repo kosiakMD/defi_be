@@ -24,6 +24,9 @@ import { AnchorLending } from './protocols/anchor/anchor.lending';
 import { AnchorPools } from './protocols/anchor/anchor.pools';
 import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 import { AnchorStaking } from './protocols/anchor/anchor.staking';
+import { AstroportPools } from './protocols/astroport/astroport.pools';
+import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
+import { AstroportStaking } from './protocols/astroport/astroport.staking';
 import { AutofarmApiService } from './protocols/autofarm/autofarm.api.service';
 import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
@@ -149,6 +152,7 @@ const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
+const Astroport = [AstroportProtocol, AstroportPools, AstroportStaking];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -193,6 +197,7 @@ const ProtocolList = [
   ...SundaeSwap,
   ...Anchor,
   ...Terraswap,
+  ...Astroport,
 ];
 
 @Module({

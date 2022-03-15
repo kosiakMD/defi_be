@@ -1218,14 +1218,14 @@
   resolved "https://registry.yarnpkg.com/@nestjs/mapped-types/-/mapped-types-0.4.1.tgz#e7fe038f0bdda7b8f858fa79ca8516b8f9069b1a"
   integrity sha512-JXrw2LMangSU3vnaXWXVX47GRG1FbbNh4aVBbidDjxT3zlghsoNQY6qyWtT001MCl8lJGo8I6i6+DurBRRxl/Q==
 
-"@nestjs/microservices@^7.6.17":
-  version "7.6.18"
-  resolved "https://registry.yarnpkg.com/@nestjs/microservices/-/microservices-7.6.18.tgz#3661bc5ea24a77feccaec766f07995c1568f6bf9"
-  integrity sha512-vSSl9hgHgBtTye57f2PZIg36MLcv5TRdqu3QEsS50WlUmxIjISCfAeCMLk+hWQNM8zjvlLwNbKUJW+NOZ2aovA==
+"@nestjs/microservices@^8.4.1":
+  version "8.4.1"
+  resolved "https://registry.yarnpkg.com/@nestjs/microservices/-/microservices-8.4.1.tgz#cc73efb0ca434465c84b3c3b335145b4971b9ce8"
+  integrity sha512-w5T4DZJQNPhN/d/pdAO6bO1YUpAgiPfNmKwflaFtuyJzJjak+naOctx+3bc1eatrsbP+JEj6oCBVBuDIWHfcOQ==
   dependencies:
     iterare "1.2.1"
     json-socket "0.3.0"
-    tslib "2.2.0"
+    tslib "2.3.1"
 
 "@nestjs/platform-express@^7.6.18":
   version "7.6.18"

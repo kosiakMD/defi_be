@@ -1,3 +1,5 @@
+import { OpportunityListDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.list.dto';
+
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -10,13 +12,16 @@ import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { BaseService } from '../common/services/base.service';
 
+import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
 import { addressSearchResultParser } from './utils/search.utils';
+
+const SEARCH_ITEMS_LIMIT = process.env.SEARCH_ITEMS_LIMIT || 30;
 
 @Injectable()
 export class SearchService extends BaseService {
   private readonly accountUrl: string;
-  private readonly integrationUrl: string;
+  private readonly opportunityUrl: string;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -27,25 +32,26 @@ export class SearchService extends BaseService {
     super(logger, httpService, configService);
 
     this.accountUrl = this.getServiceUrl(ServiceEnum.Account);
-    this.integrationUrl = this.getServiceUrl(ServiceEnum.Integration);
+    this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunities);
   }
 
-  public async search(text: string): Promise<SearchResults> {
+  public async search(query: SearchQueryDto): Promise<SearchResults> {
+    const { text, limit } = query;
     if (isSomeAddress(text)) {
-      const searchResult = await this.getSearchEntries({ address: text });
+      const searchResult = await this.getSearchEntries({ address: text, limit });
       return addressSearchResultParser(text, searchResult);
     }
     try {
       const address = await this.web3NameService.resolveName(text);
       if (address) {
         this.logger.debug(`Resolved address ${address}`);
-        const searchResult = await this.getSearchEntries({ address, text });
+        const searchResult = await this.getSearchEntries({ address, text, limit });
         return addressSearchResultParser(address, searchResult);
       }
     } catch (error) {
       this.logger.debug(`Error to resolve address ${error}`);
     }
-    return this.getSearchEntries({ text });
+    return this.getSearchEntries({ text, limit });
   }
 
   private getServiceUrl(serviceName: ServiceEnum): string {
@@ -56,17 +62,24 @@ export class SearchService extends BaseService {
   }
 
   private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
-    const urls = [
-      new URL('v1/assets/search', this.accountUrl),
-      new URL('v1/protocols/search/projects', this.integrationUrl),
-      new URL('v1/protocols/search/vaults', this.integrationUrl),
-    ];
-    const searchResults = await Promise.all<SearchResultsBaseEntry>(
-      urls.map((url) => this.requestProxy(url.toString(), 'GET', { params })),
-    );
-
+    const assetsSearchUrl = new URL('v1/assets/search', this.accountUrl);
+    const opportunitiesSearchUrl = new URL('v1/opportunities', this.opportunityUrl);
+    const promises = [this.requestProxy(assetsSearchUrl.toString(), 'GET', { params })];
+    if (params.text) {
+      promises.push(
+        this.requestProxy(opportunitiesSearchUrl.toString(), 'GET', {
+          params: {
+            search: params.text,
+            limit: params.limit || SEARCH_ITEMS_LIMIT,
+          },
+        }),
+      );
+    }
+    const searchResults = await Promise.all(promises);
+    const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
+    const opportunitiesSearchResults: OpportunityListDto = searchResults.shift();
     return {
-      entries: searchResults.flat(),
+      entries: [...assetsSearchResults, ...(opportunitiesSearchResults?.items || [])],
     };
   }
 }

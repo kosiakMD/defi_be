@@ -1,3 +1,5 @@
+import bech32 from 'bech32';
+
 import { PublicKey } from '@solana/web3.js';
 import { isAddress as isETHAddress } from 'web3-utils';
 
@@ -50,8 +52,26 @@ export function isSolAddress(address: string): boolean {
   }
 }
 
+export function isCardanoAddress(address: string): boolean {
+  return !!address.match(/^addr1.*/);
+};
+
+export function isTerraAddress(address: string): boolean {
+  try {
+    const { prefix: decodedPrefix } = bech32.decode(address);
+    return decodedPrefix === 'terra';
+  } catch {
+    return false;
+  }
+};
+
 export function isSomeAddress(address: string) {
-  const addressChecks = [isETHAddress, isSolAddress];
+  const addressChecks = [
+    isCardanoAddress,
+    isETHAddress,
+    isSolAddress,
+    isTerraAddress,
+  ];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

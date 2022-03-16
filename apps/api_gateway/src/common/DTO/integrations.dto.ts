@@ -1,17 +1,17 @@
 // eslint-disable-next-line max-classes-per-file
-import { Exclude, Expose, Type } from "class-transformer";
+import { Exclude, Expose, Type } from 'class-transformer';
 
-import { ApiProperty } from "@nestjs/swagger";
-import { DetailedResponseDto } from "./index";
+import { ApiProperty } from '@nestjs/swagger';
+import { DetailedResponseDto } from './index';
 
-import { ProtocolFeaturesInfo } from "../types/protocol.types";
-import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from "./features.dto";
-import { FeatureResult } from "../types/features.types";
-import { ChainDto } from "./chain.dto";
-import { MetaDto } from "./response.dto";
-import { ERC20Token, StakingPosition } from "./transactions.interfaces";
-import { FeatureEnum } from "../enum/feature.enum";
-import { CurrencyDto } from "@app/common";
+import { ProtocolFeaturesInfo } from '../types/protocol.types';
+import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from './features.dto';
+import { FeatureResult } from '../types/features.types';
+import { ChainDto } from './chain.dto';
+import { MetaDto } from './response.dto';
+import { ERC20Token, StakingPosition } from './transactions.interfaces';
+import { FeatureEnum } from '../enum/feature.enum';
+import { CurrencyDto } from '@app/common';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()

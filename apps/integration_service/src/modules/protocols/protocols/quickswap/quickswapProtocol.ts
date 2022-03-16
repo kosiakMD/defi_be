@@ -1,8 +1,9 @@
 import { BaseData } from 'apps/integration_service/src/common/interfaces/transactions.interfaces';
 import BigNumber from 'bignumber.js';
+import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -29,6 +30,7 @@ import {
 import { keepETHAddresses } from '@app/common/utils';
 import { decimalsDivider, normalizeDecimals } from '@app/common/utils/number';
 import { mapToObject } from '@app/common/utils/object';
+import { getKey } from '@app/common/utils/string';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3ProviderService } from '@app/common/web3provider';
 
@@ -85,6 +87,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     protected readonly subgraph: QuickswapSubgraph,
     protected readonly mapper: Mapper,
     protected readonly web3Provider: Web3ProviderService,
+    @Inject(CACHE_MANAGER) protected readonly cache: Cache,
   ) {
     super();
     this.dataProvider = this;
@@ -93,24 +96,52 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     );
   }
 
-  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 50): Promise<PairDto[]> {
-    const chunkedPairs = await Promise.all(
-      toChunkedArray(pairsAddresses.sort(), chunkSize)
-        .map(async (chunkedPairsAddresses): Promise<PairDto[]> => {
-          const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
-            chunkedPairsAddresses,
-          );
-          if (pairsErrors?.length) {
-            // Error logged in subgraph request
-            return [];
-          } else {
-            return pairsData.pairs;
-          }
-        })
-        .flat(),
+  private async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>) {
+    const cachedData = await this.cache.get<T>(key);
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const data = await callback();
+    await this.cache.set(key, data, { ttl });
+    return data;
+  }
+
+  static LocalCachedPairData: Promise<PairDto[]> | null = null;
+  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 250): Promise<PairDto[]> {
+    // Cache Shared pool data statically so that staking+pools only need 1 request
+    if (QuickswapProtocol.LocalCachedPairData) {
+      return QuickswapProtocol.LocalCachedPairData;
+    }
+
+    QuickswapProtocol.LocalCachedPairData = this.getOrSet(
+      // enforce short ttl as balance math depends on reserves/price.
+      // Ideally we don't cache this at all, however it took 4+ seconds
+      // to resolve each request in testing
+      60,
+      getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses),
+      async () => {
+        const chunkedPairs = await Promise.all(
+          toChunkedArray(pairsAddresses.sort(), chunkSize)
+            .map(async (chunkedPairsAddresses): Promise<PairDto[]> => {
+              const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
+                chunkedPairsAddresses,
+              );
+              if (pairsErrors?.length) {
+                // Error logged in subgraph request
+                return [];
+              } else {
+                return pairsData.pairs;
+              }
+            })
+            .flat(),
+        );
+
+        return chunkedPairs.flat();
+      },
     );
 
-    return chunkedPairs.flat();
+    return QuickswapProtocol.LocalCachedPairData;
   }
 
   private async getSubgraphPairMap(addresses: Address[]) {
@@ -125,20 +156,24 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     return stakingTokens;
   }
 
-  private getLPTokens(
-    { token0, token1, reserve0, reserve1, reserveUSD }: PairDto,
-    poolShare: number,
-  ): PoolTokenDto[] {
-    return [0, 1].map((_) => {
-      const { id: address, name, symbol, decimals } = _ ? token1 : token0;
-      const reserve = _ ? reserve1 : reserve0;
+  private getLPTokens({ reserveUSD, ...data }: PairDto, poolShare: number): PoolTokenDto[] {
+    return [0, 1].map((position) => {
+      const { token, reserve } = {
+        token: data[`token${position}`],
+        reserve: data[`reserve${position}`],
+      };
+
+      const { id: address, name, symbol, decimals } = token;
+
       const price = new BigNumber(reserveUSD) //
         .div(2)
         .div(reserve)
         .toNumber();
+
       const balance = new BigNumber(poolShare) //
         .times(reserve)
         .toString();
+
       const value = new BigNumber(balance) //
         .times(price)
         .toNumber();
@@ -200,12 +235,12 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           QUICKSWAP_STAKING_CONTRACTS.map(async ({ pairAddress, stakingContractAddress }) => {
             const pairData = stakingTokens.get(pairAddress);
 
-            const balance = new BigNumber(
-              stakingTokensBalances.get(stakingContractAddress.toLowerCase()),
-            )
-              .div(decimalsDivider(rawRewardToken.decimals))
-              .toString();
-            const claimable = stakingTokensClaimable.get(stakingContractAddress.toLowerCase());
+            const balance = normalizeDecimals(
+              stakingTokensBalances.get(stakingContractAddress),
+              rawRewardToken.decimals,
+            ).toString();
+
+            const claimable = stakingTokensClaimable.get(stakingContractAddress);
 
             const claimableDataBalance = new BigNumber(claimable) //
               .div(decimalsDivider(rawRewardToken.decimals))
@@ -282,7 +317,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
   }
 
   /**
-   * @description get information from 2 tokens rewards. 
+   * @description get information from 2 tokens rewards.
    */
   private async getDualPricedToken(addresses: Address[], chain: ChainDto) {
     const [{ data: rawTokenRewards }, { prices: rawRewardsPrice }] = await Promise.all([
@@ -299,9 +334,9 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
   public async getStakingPositionsV2(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const baseData: BaseData[] = [];
 
-    const pairAddresses = QUICKSWAP_STAKING_CONTRACTS
-      .concat(QUICKSWAP_STAKING_DUAL_CONTRACTS)
-      .map(({ pairAddress }) => pairAddress).concat(QUICKSWAP_ADDITIONAL_PAIRS);
+    const pairAddresses = QUICKSWAP_STAKING_CONTRACTS.concat(QUICKSWAP_STAKING_DUAL_CONTRACTS)
+      .map(({ pairAddress }) => pairAddress)
+      .concat(QUICKSWAP_ADDITIONAL_PAIRS);
 
     const stakingAddresses = QUICKSWAP_STAKING_CONTRACTS.map(
       ({ stakingContractAddress }) => stakingContractAddress,
@@ -317,17 +352,33 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
     );
 
     const { rawTokenRewards, rawRewardsPrice } = await this.getDualPricedToken(
-      QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS, chain,
+      QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS,
+      chain,
     );
 
-    const stakingTokens = await this.getSubgraphPairMap(pairAddresses);
+    const [stakingTokens, totalStaked] = await Promise.all([
+      this.getSubgraphPairMap(pairAddresses),
+      this.multicall.getTotalStaked(
+        QUICKSWAP_STAKING_CONTRACTS.concat(QUICKSWAP_STAKING_DUAL_CONTRACTS),
+        QUICKSWAP_STAKING_REWARDS_ABI,
+      ),
+    ]);
 
     await Promise.all(
       addresses.map(async (userAddress) => {
-        const [stakingTokensBalances, stakingTokensClaimable, dualStakingTokensClaimable, allPairBalances] = await Promise.all([
+        const [
+          stakingTokensBalances,
+          stakingTokensClaimable,
+          dualStakingTokensClaimable,
+          allPairBalances,
+        ] = await Promise.all([
           this.multicall.getBalancesOf([...stakingAddresses, ...dualStakingAddresses], userAddress),
           this.multicall.getEarned(stakingAddresses, userAddress, QUICKSWAP_STAKING_REWARDS_ABI),
-          this.multicall.getEarnedDual(dualStakingAddresses, userAddress, QUICKSWAP_STAKING_DUAL_REWARDS_ABI),
+          this.multicall.getEarnedDual(
+            dualStakingAddresses,
+            userAddress,
+            QUICKSWAP_STAKING_DUAL_REWARDS_ABI,
+          ),
           this.multicall.getBalancesOf(pairAddresses, userAddress),
         ]);
 
@@ -338,6 +389,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
         const stakingPositionItems = this.getStakingPositionItems(
           stakingTokens,
+          totalStaked,
           stakingTokensBalances,
           stakingTokensClaimable,
           rawRewardToken,
@@ -346,6 +398,7 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
         const stakingDualPositionItems = this.getDualStakingPositionItems(
           stakingTokens,
+          totalStaked,
           stakingTokensBalances,
           dualStakingTokensClaimable,
           rawTokenRewards,
@@ -408,32 +461,30 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
   private getStakingPositionItems(
     stakingTokens: Map<string, PairDto>,
+    totalStaked: Map<string, string>,
     stakingTokensBalances: Map<string, string>,
     stakingTokensClaimable: Map<string, string>,
     rawRewardToken: Asset,
     rawRewardPrice: number,
   ) {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
+    const LP_TOKEN_DECIMALS = 18;
 
     QUICKSWAP_STAKING_CONTRACTS.forEach(({ pairAddress, stakingContractAddress }) => {
       const pairData = stakingTokens.get(pairAddress);
-
-      const balance = new BigNumber(stakingTokensBalances.get(stakingContractAddress.toLowerCase()))
-        .div(decimalsDivider(rawRewardToken.decimals))
-        .toString();
+      const balance = normalizeDecimals(
+        stakingTokensBalances.get(stakingContractAddress),
+        LP_TOKEN_DECIMALS,
+      ).toString();
 
       // Filter out unstaked
       if (!Number(balance)) return;
 
-      const claimable = stakingTokensClaimable.get(stakingContractAddress.toLowerCase());
+      const claimable = stakingTokensClaimable.get(stakingContractAddress);
 
-      const claimableDataBalance = new BigNumber(claimable) //
-        .div(decimalsDivider(rawRewardToken.decimals))
-        .toString();
-
-      const poolShare = new BigNumber(balance) //
-        .div(pairData.totalSupply)
-        .toNumber();
+      const claimableDataBalance = normalizeDecimals(claimable, rawRewardToken.decimals).toString();
+      const staked = normalizeDecimals(totalStaked.get(stakingContractAddress), LP_TOKEN_DECIMALS);
+      const poolShare = Number(balance) / staked;
 
       const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
         address: QUICKSWAP_REWARDS_TOKEN_ADDRESS,
@@ -462,33 +513,33 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
         plainToClass(IntegrationStakingPositionDto, {
           address: stakingContractAddress,
           staked: balance,
-          rewardToken,
           stakingToken,
           rewards: [rewardToken],
         }),
       );
     });
 
-
     return stakingPositions;
   }
 
   private getDualStakingPositionItems(
     stakingTokens: Map<string, PairDto>,
+    totalStaked: Map<string, string>,
     stakingTokensBalances: Map<string, string>,
     dualStakingTokensClaimable: Map<string, string[]>,
     rawRewardToken: Asset[],
-    rawRewardPrice: number[]
+    rawRewardPrice: number[],
   ) {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
-    let [rewardTokenA, rewardTokenB] = rawRewardToken;
-    let [rewardPriceA, rewardPriceB] = rawRewardPrice;
+    const [rewardTokenA, rewardTokenB] = rawRewardToken;
+    const [rewardPriceA, rewardPriceB] = rawRewardPrice;
+    const LP_TOKEN_DECIMALS = 18;
 
     for (const { pairAddress, stakingContractAddress } of QUICKSWAP_STAKING_DUAL_CONTRACTS) {
-      let stakingContractAddressLowerCase = stakingContractAddress.toLocaleLowerCase();
+      const stakingContractAddressLowerCase = stakingContractAddress.toLocaleLowerCase();
 
-      let balance = new BigNumber(stakingTokensBalances.get(stakingContractAddressLowerCase))
-        .div(decimalsDivider(rewardTokenA.decimals))
+      const balance = new BigNumber(stakingTokensBalances.get(stakingContractAddressLowerCase))
+        .div(decimalsDivider(LP_TOKEN_DECIMALS)) // LP tokens have 18 decimals
         .toString();
 
       if (!Number(balance)) continue;
@@ -498,42 +549,41 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
 
       const dualRewardsPair: [Asset, number, string][] = [
         [rewardTokenA, rewardPriceA, claimableA],
-        [rewardTokenB, rewardPriceB, claimableB]
+        [rewardTokenB, rewardPriceB, claimableB],
       ];
 
       const rewardToken = [];
 
       for (const [token, price, claimable] of dualRewardsPair) {
-        const claimableDataBalance = new BigNumber(claimable)
-          .div(decimalsDivider(token.decimals))
-          .toString();
+        const claimableDataBalance = normalizeDecimals(claimable, token.decimals).toString();
 
-        rewardToken.push(plainToClass(IntegrationClaimableTokenDto, {
-          address: token.address,
-          name: token.name,
-          symbol: token.symbol,
-          decimals: token.decimals,
-          totalSupply: token.totalSupply,
-          price: price,
-          claimableData: {
-            balance: claimableDataBalance,
-            value: new BigNumber(claimableDataBalance) //
-              .times(price)
-              .toString(),
-          },
-        }));
+        rewardToken.push(
+          plainToClass(IntegrationClaimableTokenDto, {
+            address: token.address,
+            name: token.name,
+            symbol: token.symbol,
+            decimals: token.decimals,
+            totalSupply: token.totalSupply,
+            price: price,
+            claimableData: {
+              balance: claimableDataBalance,
+              value: new BigNumber(claimableDataBalance) //
+                .times(price)
+                .toString(),
+            },
+          }),
+        );
       }
 
-      let pairData = stakingTokens.get(pairAddress);
-      const poolShare = new BigNumber(balance) //
-        .div(pairData.totalSupply)
-        .toNumber();
+      const pairData = stakingTokens.get(pairAddress);
+      const staked = normalizeDecimals(totalStaked.get(stakingContractAddress), LP_TOKEN_DECIMALS);
+      const poolShare = Number(balance) / staked;
 
       const stakingToken = plainToClass(IntegrationERC20TokenDto, {
         address: pairAddress,
         name: 'Uniswap V2',
         symbol: 'UNI-V2',
-        decimals: 18,
+        decimals: LP_TOKEN_DECIMALS,
         tokens: this.getLPTokens(pairData, poolShare),
       });
 
@@ -546,7 +596,6 @@ export class QuickswapProtocol extends DataProviderProtocol implements AbstractP
           rewards: rewardToken,
         }),
       );
-
     }
 
     return stakingPositions;

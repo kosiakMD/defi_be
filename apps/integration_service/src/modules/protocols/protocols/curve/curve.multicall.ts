@@ -1,15 +1,15 @@
+import { JsonFragment } from '@ethersproject/abi';
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
-import { JsonFragment } from "@ethersproject/abi";
 
 import { Logger } from '@app/common';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { toDecimals } from '../../../../common/utils/util';
 
 import { StakingDataInterface } from '../ellipsis/ellipsis.staking';
 import { Abis, CurveAbis, GaugeAbi, GaugeRewardAbi } from './abis';
-import { CurveAddresses } from '@app/common/constant/curve.addresses';
 
 export class CurveMulticall extends MultiCall {
   constructor(private readonly web3: Web3, private readonly logger: Logger) {

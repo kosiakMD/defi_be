@@ -8,9 +8,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   AccountBalance,
   Address,
+  AstroportProtocolEnum,
   BalancesResponse,
   ChainDto,
-  CurveProtocolEnum,
   FeatureEnum,
   Logger,
   ProjectEnum,
@@ -25,7 +25,7 @@ import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { AccountService } from '../../../microservices/account.service';
 
 @Injectable()
-export class CurvePools {
+export class AstroportPools {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -34,7 +34,7 @@ export class CurvePools {
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const addressesLowerCase = addresses.map((address) => address.toLowerCase());
-    const cacheKey = `${chain.id}_${CurveProtocolEnum.curve}_${FeatureEnum.pools}`;
+    const cacheKey = `${chain.id}_${AstroportProtocolEnum.astroport}_${FeatureEnum.pools}`;
     const cachedPools: NotifyPools = await this.cache.get(cacheKey);
     if (!cachedPools) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
@@ -49,15 +49,17 @@ export class CurvePools {
     const baseData: BaseDataLp[] = [];
     addressesLowerCase.forEach((a) => {
       const existedPositions = this.toLp(lpBalances[a], cachedPools.items);
-      const toAdd: BaseDataLp = plainToClass(BaseDataLp, {
-        chain: chain,
-        userAddress: a,
-        protocolType: ProtocolTypeEnum.amm,
-        projectName: ProjectEnum.curve,
-        items: existedPositions,
-        feature: FeatureEnum.pools,
-      });
-      baseData.push(toAdd);
+      if (existedPositions.length > 0) {
+        const toAdd: BaseDataLp = plainToClass(BaseDataLp, {
+          chain: chain,
+          userAddress: a,
+          protocolType: ProtocolTypeEnum.amm,
+          projectName: ProjectEnum.curve,
+          items: existedPositions,
+          feature: FeatureEnum.pools,
+        });
+        baseData.push(toAdd);
+      }
     });
 
     return baseData;
@@ -83,7 +85,6 @@ export class CurvePools {
       new BigNumber(poolData.lpToken.totalSupply),
     );
 
-    // simple rewriting pool data with user data, prices will be added later
     const userData = poolData;
     userData.tokens.forEach((t) => {
       const b = new BigNumber(t.reserve) //

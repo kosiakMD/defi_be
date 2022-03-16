@@ -1,7 +1,9 @@
+import { OpportunityDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.dto';
+
 import { SearchResultType } from './search.enum';
 
 export interface SearchResults {
-  entries: SearchResultsBaseEntry[];
+  entries: (SearchResultsBaseEntry | OpportunityDto)[];
 }
 export interface SearchResultsBaseEntry {
   type: SearchResultType;
@@ -16,16 +18,6 @@ export interface SearchResultsAssetEntry extends SearchResultsBaseEntry {
   type: SearchResultType.ASSET;
   metadata: AssetMetadata;
 }
-export interface SearchResultsProjectEntry extends SearchResultsBaseEntry {
-  name: string;
-  icon: string;
-  type: SearchResultType.PROJECT;
-  metadata: ProjectMetadata;
-}
-export interface SearchResultsVaultEntry extends SearchResultsBaseEntry {
-  type: SearchResultType.VAULT;
-  metadata: VaultMetadata;
-}
 export interface AddressMetadata {
   address: string;
 }
@@ -33,15 +25,8 @@ export interface AssetMetadata extends AddressMetadata {
   chainId: number;
   symbol: string;
 }
-export interface ProjectMetadata extends AddressMetadata {
-  description: string;
-}
-export interface VaultMetadata {
-  chainId: number;
-  protocol: string;
-  feature: string;
-}
 export interface SearchParams {
   address?: string;
   text?: string;
+  limit?: number;
 }

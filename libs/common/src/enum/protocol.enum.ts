@@ -33,7 +33,7 @@ export enum ProjectEnum {
   yearn = 'yearn',
   trisolaris = 'trisolaris',
   orca = 'orca',
-  sundaeswap = 'sandaeswap',
+  sundaeswap = 'sundaeswap',
   astroport = 'astroport',
 }
 

@@ -116,7 +116,7 @@ export class SundaeswapPools implements JobInterface {
     const pools = await this.getPoolInformation().then((pools) => this.poolsToMap(pools));
 
     for (const lp of this.mapping) {
-      if (lp instanceof LiquidityPoolFeature) {
+      if (lp instanceof LiquidityPoolFeature && pools.has(lp.address)) {
         const pool = pools.get(lp.address);
 
         lp.tokens[0].reserve = toDecimals(pool.quantityA, pool.assetA.decimals);

@@ -35,6 +35,9 @@ export abstract class MultiCallAbiProxy {
       {},
       {
         get: (target, propKey: string) => {
+          // instance.address returns current in use address
+          if (propKey === 'address') return address;
+
           // Convert each call to CallData
           return (...args: any) => {
             const abi = this.constructor[propKey];

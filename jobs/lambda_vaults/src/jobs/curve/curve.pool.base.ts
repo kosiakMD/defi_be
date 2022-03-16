@@ -130,10 +130,18 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
       this.getRegistryPoolsLpTokens(this.metaPoolFactoryContract, metapoolCount),
     ]);
 
+    const lpsAddresses = [
+      ...registryV1LpMap.keys(),
+      ...registryV2LpMap.keys(),
+      ...metaPoolLpMap.keys(),
+    ];
+    const totalSupplyResp = await this.getLpTotalSuppliesMap(lpsAddresses);
+
     await Promise.all(
-      [...registryV1LpMap.keys(), ...registryV2LpMap.keys(), ...metaPoolLpMap.keys()].map(
-        async (token) => {
-          const trackedLiquidityPoolTokenData = await this.accountService.saveTrackingAsset(
+      lpsAddresses.map(async (token) => {
+        let trackedLiquidityPoolTokenData = null;
+        if (Number(totalSupplyResp.get(token)?.output.data) > 0) {
+          trackedLiquidityPoolTokenData = await this.accountService.saveTrackingAsset(
             token,
             this.chain,
           );
@@ -156,9 +164,9 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
               ),
             );
           }
-          return trackedLiquidityPoolTokenData;
-        },
-      ),
+        }
+        return trackedLiquidityPoolTokenData;
+      }),
     );
 
     jobMapping.mapping = await Promise.all(liquidityPools.map((lp) => this.toDbMapping(lp)));
@@ -170,6 +178,16 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
     await this.settingsService.update(dbPoolLengthSetting);
 
     return updatedMapping;
+  }
+
+  private async getLpTotalSuppliesMap(lps: string[]) {
+    const totalSupplyCallsMap = lps.reduce((resp, address) => {
+      const lpTokenContract = new CurveLpAbi(address);
+      resp.set(address, lpTokenContract.totalSupply());
+      return resp;
+    }, new Map());
+
+    return await this.multicallService.handleInBatches(totalSupplyCallsMap, this.chain);
   }
 
   private async getRegistryPoolsLpTokens(

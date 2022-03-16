@@ -56,6 +56,7 @@ import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protoco
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
+import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
@@ -136,6 +137,7 @@ export class ProtocolService {
     private readonly sundaeswapProtocol: SundaeSwapProtocol,
     private readonly anchorProtocol: AnchorProtocol,
     private readonly terraswapProtocol: TerraswapProtocol,
+    private readonly astroportProtocol: AstroportProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -175,6 +177,7 @@ export class ProtocolService {
       yearnProtocolV1,
       yearnProtocolV2,
       sundaeswapProtocol,
+      astroportProtocol,
     ];
   }
 

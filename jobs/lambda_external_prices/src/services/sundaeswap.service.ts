@@ -9,7 +9,10 @@ export class SundaeSwapService {
   static async getTokensPrices(): Promise<SundaeSwapResponse[]> {
     try {
       return axios
-        .post(cardanoPublicAssetsApi + '/graphql', { query: SUNDAE_GRAPHQL_QUERY })
+        .post(cardanoPublicAssetsApi + '/graphql', {
+          query: SUNDAE_GRAPHQL_QUERY,
+          variables: { pageSize: 200 },
+        })
         .then((responce) => responce.data?.data?.poolsPopular || []);
     } catch (e) {
       logger.error('SundaeSwap token list call failed ' + e.message);

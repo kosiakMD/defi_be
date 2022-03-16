@@ -53,8 +53,9 @@ export function calculatePoolShare(
 ): number {
   const walletBalance: number = +avaliblePoolAddresses.get(poolPosition.address);
   const totalSupply: number = poolPosition.lpToken.totalSupply;
+  const balance = toDecimals(walletBalance, poolPosition.lpToken.decimals);
 
-  return new BigNumber(walletBalance / totalSupply).toNumber();
+  return new BigNumber(balance / totalSupply).toNumber();
 }
 
 export function cleanUpItem(item: IntegrationStakingPositionDto) {

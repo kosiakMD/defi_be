@@ -3,7 +3,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
-  AnchorProtocolEnum,
+  AstroportProtocolEnum,
   ChainAbbrEnum,
   ChainDto,
   FeatureEnum,
@@ -16,32 +16,25 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import BasicProtocol from '../basicProtocol';
-import { AnchorLending } from './anchor.lending';
-import { AnchorPools } from './anchor.pools';
-import { AnchorStaking } from './anchor.staking';
+import { AstroportPools } from './astroport.pools';
+import { AstroportStaking } from './astroport.staking';
 
 @Injectable()
-export class AnchorProtocol extends BasicProtocol {
+export class AstroportProtocol extends BasicProtocol {
   readonly chains = [ChainAbbrEnum.terra];
-  readonly project = ProjectEnum.anchor;
-  readonly name = AnchorProtocolEnum.anchor;
-  readonly displayName = 'Anchor';
+  readonly project = ProjectEnum.astroport;
+  readonly name = AstroportProtocolEnum.astroport;
+  readonly displayName = 'Astroport';
   readonly features = {
-    [ChainAbbrEnum.terra]: [
-      FeatureEnum.pools,
-      FeatureEnum.staking,
-      FeatureEnum.lending,
-      FeatureEnum.borrowing,
-    ],
+    [ChainAbbrEnum.terra]: [FeatureEnum.pools, FeatureEnum.staking],
   };
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
-    private readonly pools: AnchorPools,
-    private readonly staking: AnchorStaking,
-    private readonly lending: AnchorLending,
+    private readonly pools: AstroportPools,
+    private readonly staking: AstroportStaking,
   ) {
     super();
   }
@@ -71,8 +64,6 @@ export class AnchorProtocol extends BasicProtocol {
         return this.staking.getData(addresses, chain);
       case FeatureEnum.pools:
         return this.pools.getData(addresses, chain);
-      case FeatureEnum.lending:
-        return this.lending.getData(addresses, chain);
       default:
         return [];
     }

@@ -173,9 +173,7 @@ export class AssetsService {
 
     assetToSave = await this.assetRepository.saveAsset(assetToSave);
 
-    const asset = await this.withUnderlying(assetToSave);
-
-    return asset;
+    return await this.withUnderlying(assetToSave);
   }
 
   async attemptTerraLp(asset: AssetsEntity) {

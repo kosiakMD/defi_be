@@ -39,7 +39,7 @@ export class SolanaBalancesStrategy implements BalancesLoadingStrategy {
     }
 
     const originalTokensSet: Set<string> = new Set<string>(originalTokens);
-    if (!originalTokens.length || !PublicKey.isOnCurve(pubKey.toBytes())) {
+    if (!originalTokens.length) {
       return tokenBalances;
     }
 

@@ -51,6 +51,7 @@ export class AssetsController {
     private readonly assetsPoolsService: AssetsPoolsService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {}
+
   @CacheKey('accountService_all_assets')
   @Get('/all')
   @ApiResponse({ status: HttpStatus.OK, type: [AssetDto] })
@@ -130,7 +131,10 @@ export class AssetsController {
       this.logger.error(e);
       const response = AssetsService.getResponseObject();
       response.error = e.stack;
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(response);
+      this.logger.error(response);
+      // TODO: commented as AllExceptionFilter handles this
+      // res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(response);
+      throw response;
     }
   }
 

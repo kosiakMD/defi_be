@@ -3,47 +3,38 @@ import { createParamDecorator, HttpException, HttpStatus } from '@nestjs/common'
 
 import { ChainIdEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
-import { filterByEnum, splitToArray } from '@app/common/utils';
-import { splitToNumberArray } from '@app/common/utils';
+import { filterByEnum, splitToArray, splitToNumberArray } from '@app/common/utils';
 import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
 
 export * from './error.decorators';
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
-  try {
-    const input: string | Array<number | string> = req.args[0].query[dataField];
+  const input: string | Array<number | string> = req.args[0].query[dataField];
 
-    if (!input) {
-      throw 'Chains are not provided';
-    }
-
-    const output: number[] = filterByEnum(
-      Array.isArray(input) ? input.map(Number) : splitToNumberArray(input),
-      ChainIdEnum,
-    );
-
-    if (!output.length) {
-      throw 'Provided unsupported chains';
-    }
-
-    return output.map(Number);
-  } catch (e) {
-    throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+  if (!input) {
+    throw new HttpException('Chains are not provided', HttpStatus.BAD_REQUEST);
   }
+
+  const output: number[] = filterByEnum(
+    Array.isArray(input) ? input.map(Number) : splitToNumberArray(input),
+    ChainIdEnum,
+  );
+
+  if (!output.length) {
+    throw new HttpException('Provided unsupported chains', HttpStatus.BAD_REQUEST);
+  }
+
+  return output.map(Number);
 });
 
 export const AddressesArray = createParamDecorator((dataField, req): Address[] => {
-  try {
-    const input: string | Address[] = req.args[0].query[dataField];
+  const input: string | Address[] = req.args[0].query[dataField];
 
-    if (!input) {
-      throw 'User address is not provided';
-    }
-
-    return Array.isArray(input) ? unifyAddresses(input) : splitToArray(input).map(unifyAddress);
-  } catch (e) {
-    throw new HttpException(e, HttpStatus.INTERNAL_SERVER_ERROR);
+  if (!input) {
+    throw new HttpException('User address is not provided', HttpStatus.BAD_REQUEST);
   }
+
+  return Array.isArray(input) ? unifyAddresses(input) : splitToArray(input).map(unifyAddress);
 });
 
 export const ChainsParam = createParamDecorator((dataField, req) => {

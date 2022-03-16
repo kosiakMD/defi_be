@@ -78,5 +78,5 @@ export enum ServiceEnum {
   Account = 'Account',
   Integration = 'Integration',
   Price = 'Price',
-  Opportunity = 'Opportunity',
+  Opportunities = 'Opportunities',
 }

@@ -149,6 +149,13 @@ export class AssetsController {
     example: 'CRO',
     required: false,
   })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'maximal number of rearch result entries',
+    example: 30,
+    required: false,
+  })
   @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })
   async search(@Query() query: SearchParams): Promise<SearchResultsAssetEntry[]> {
     return this.assetsService.search(query);

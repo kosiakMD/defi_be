@@ -133,7 +133,7 @@ export class AssetsRepository extends Repository<AssetsEntity> {
       'assets_new.name': 'ASC',
       'assets_new.symbol': 'ASC',
     });
-    qb.limit(30);
+    qb.limit(searchParams.limit || 30);
     return qb.getMany();
   }
 }

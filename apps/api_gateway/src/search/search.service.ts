@@ -12,8 +12,11 @@ import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { BaseService } from '../common/services/base.service';
 
+import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
 import { addressSearchResultParser } from './utils/search.utils';
+
+const SEARCH_ITEMS_LIMIT = process.env.SEARCH_ITEMS_LIMIT || 30;
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -29,25 +32,26 @@ export class SearchService extends BaseService {
     super(logger, httpService, configService);
 
     this.accountUrl = this.getServiceUrl(ServiceEnum.Account);
-    this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunity);
+    this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunities);
   }
 
-  public async search(text: string): Promise<SearchResults> {
+  public async search(query: SearchQueryDto): Promise<SearchResults> {
+    const { text, limit } = query;
     if (isSomeAddress(text)) {
-      const searchResult = await this.getSearchEntries({ address: text });
+      const searchResult = await this.getSearchEntries({ address: text, limit });
       return addressSearchResultParser(text, searchResult);
     }
     try {
       const address = await this.web3NameService.resolveName(text);
       if (address) {
         this.logger.debug(`Resolved address ${address}`);
-        const searchResult = await this.getSearchEntries({ address, text });
+        const searchResult = await this.getSearchEntries({ address, text, limit });
         return addressSearchResultParser(address, searchResult);
       }
     } catch (error) {
       this.logger.debug(`Error to resolve address ${error}`);
     }
-    return this.getSearchEntries({ text });
+    return this.getSearchEntries({ text, limit });
   }
 
   private getServiceUrl(serviceName: ServiceEnum): string {
@@ -64,8 +68,10 @@ export class SearchService extends BaseService {
     if (params.text) {
       promises.push(
         this.requestProxy(opportunitiesSearchUrl.toString(), 'GET', {
-          search: params.text,
-          limit: 30,
+          params: {
+            search: params.text,
+            limit: params.limit || SEARCH_ITEMS_LIMIT,
+          },
         }),
       );
     }
@@ -73,7 +79,7 @@ export class SearchService extends BaseService {
     const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
     const opportunitiesSearchResults: OpportunityListDto = searchResults.shift();
     return {
-      entries: [...assetsSearchResults, ...opportunitiesSearchResults.items],
+      entries: [...assetsSearchResults, ...(opportunitiesSearchResults?.items || [])],
     };
   }
 }

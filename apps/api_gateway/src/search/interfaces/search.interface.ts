@@ -28,4 +28,5 @@ export interface AssetMetadata extends AddressMetadata {
 export interface SearchParams {
   address?: string;
   text?: string;
+  limit?: number;
 }

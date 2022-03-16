@@ -15,6 +15,36 @@ export class QuickswapMulticallService extends MultiCall {
     super(web3Provider);
   }
 
+  async getTotalStaked(
+    contracts: {
+      stakingContractAddress: Address;
+      pairAddress: Address;
+    }[],
+    abi: JsonFragment[],
+  ) {
+    const CHUNK_SIZE = 58;
+
+    const result = new Map<Address, Balance>();
+
+    const chunckedContracts = toChunkedArray(contracts, CHUNK_SIZE);
+
+    for (const contractChunk of chunckedContracts) {
+      const inputs: CallInput[] = contractChunk.map((contract) => ({
+        target: contract.pairAddress,
+        function: 'balanceOf',
+        args: [contract.stakingContractAddress],
+      }));
+
+      const [, balances] = await this.multiCall(abi, inputs);
+
+      contractChunk.forEach((contract, index) =>
+        result.set(contract.stakingContractAddress.toLowerCase(), balances[index].toString()),
+      );
+    }
+
+    return result;
+  }
+
   async getBalancesOf(
     contractsAddresses: Address[],
     accountAddress: Address,
@@ -70,7 +100,7 @@ export class QuickswapMulticallService extends MultiCall {
     const chunkedContractsAddresses: Address[][] = toChunkedArray(contractsAddresses, CHUNK_SIZE);
 
     for (const contractsAddresses of chunkedContractsAddresses) {
-      let inputEearned: CallInput[] = this.getDualContractsAddress(
+      const inputEearned: CallInput[] = this.getDualContractsAddress(
         contractsAddresses,
         accountAddress,
       );

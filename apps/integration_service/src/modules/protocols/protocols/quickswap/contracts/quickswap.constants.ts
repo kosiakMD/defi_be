@@ -7,12 +7,17 @@ export const QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS = [
 
 export const QUICKSWAP_ADDITIONAL_PAIRS = ['0x16041694941a5ae759e91a3bb7dde5b4f4312104'];
 
+const lowerContractAddresses = ({ stakingContractAddress, pairAddress }) => ({
+  stakingContractAddress: stakingContractAddress.toLowerCase(),
+  pairAddress: pairAddress.toLowerCase(),
+});
+
 export const QUICKSWAP_STAKING_DUAL_CONTRACTS = [
   {
     stakingContractAddress: '0x14977e7E263FF79c4c3159F497D9551fbE769625',
     pairAddress: '0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827',
   },
-];
+].map(lowerContractAddresses);
 
 export const QUICKSWAP_STAKING_CONTRACTS = [
   {
@@ -457,4 +462,4 @@ export const QUICKSWAP_STAKING_CONTRACTS = [
     stakingContractAddress: '0x4a73218ef2e820987c59f838906a82455f42d98b',
     pairAddress: '0x853ee4b2a13f8a742d64c8f088be7ba2131f670d',
   },
-];
+].map(lowerContractAddresses);

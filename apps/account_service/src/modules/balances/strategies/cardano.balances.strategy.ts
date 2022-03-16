@@ -1,8 +1,6 @@
-import { Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum, Logger } from '@app/common';
+import { ChainIdEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
@@ -12,21 +10,18 @@ import { BalancesRequest } from '../../../common/types';
 
 import type { TokenBalance } from '../balances.interfaces';
 
+@Injectable()
 export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly config: ConfigService,
-    private readonly web3Provider: Web3Provider,
-  ) {}
+  constructor(private readonly web3Provider: Web3Provider) {}
 
   async getBalances({
     address,
     chainId,
     tokens: originalTokens,
   }: BalancesRequest): Promise<TokenBalance[]> {
-    if (!originalTokens.length || !address.match(/^addr1.*/)) {
+    if (!originalTokens.length || !address.match(/^addr1.*/) || this.isAddressInBlocklist(address))
       return [];
-    }
+
     const tokensFilter = new Set<string>(originalTokens.map((token) => token.replace(/\./, '')));
     const cardano = this.web3Provider.getCardanoInstance(chainId);
     try {
@@ -73,5 +68,11 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
     }
 
     throw new Error(error);
+  }
+
+  private isAddressInBlocklist(address: string): boolean {
+    /** temporary created blocked list addresses */
+    const blockList = new Set(['addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3']);
+    return blockList.has(address);
   }
 }

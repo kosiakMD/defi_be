@@ -21,9 +21,12 @@ export enum ChainAbbrEnum {
   klay = 'klay',
   fuse = 'fuse',
   cardano = 'cardano',
-  cosmos = 'cosmos',
   metis = 'metis',
   ronin = 'ronin',
+  cosmos = 'cosmos',
+  kava = 'kava',
+  osmosis = 'osmosis',
+  secret = 'secret',
 }
 
 export enum ChainNameEnum {
@@ -49,9 +52,12 @@ export enum ChainNameEnum {
   klay = 'klaytn',
   fuse = 'fuse',
   cardano = 'cardano',
-  cosmos = 'cosmos',
   metis = 'metis',
   ronin = 'ronin',
+  cosmos = 'cosmos',
+  kava = 'kava',
+  osmosis = 'osmosis',
+  secret = 'secret',
 }
 
 export enum ChainIdEnum {
@@ -77,9 +83,12 @@ export enum ChainIdEnum {
   klay = 20,
   fuse = 21,
   cardano = 22,
-  cosmos = 23,
   metis = 24,
   ronin = 27,
+  cosmos = 23,
+  kava = 28,
+  osmosis = 29,
+  secret = 30,
 }
 
 // INFO: https://api.coingecko.com/api/v3/asset_platforms
@@ -107,9 +116,12 @@ export enum CoingeckoPlatformEnum {
   klay = 'klay-token',
   fuse = '',
   cardano = 'cardano',
-  cosmos = 'cosmos',
   metis = 'metis-andromeda',
   ronin = 'ronin',
+  cosmos = 'cosmos',
+  kava = 'kava',
+  osmosis = 'osmosis',
+  secret = 'secret',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -138,6 +150,9 @@ export enum AbsoluteChainIdEnum {
   // INFO: Not EVM chains
   cardano = 1003,
   cosmos = 2004,
+  kava = 2005,
+  osmosis = 2006,
+  secret = 2007,
   terra = 'columbus-5',
   ronin = 1002,
 }

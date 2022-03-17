@@ -36,9 +36,12 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.klay]: AbsoluteChainIdEnum.klay,
   [ChainIdEnum.fuse]: AbsoluteChainIdEnum.fuse,
   [ChainIdEnum.cardano]: AbsoluteChainIdEnum.cardano,
-  [ChainIdEnum.cosmos]: AbsoluteChainIdEnum.cosmos,
   [ChainIdEnum.metis]: AbsoluteChainIdEnum.metis,
   [ChainIdEnum.ronin]: AbsoluteChainIdEnum.ronin,
+  [ChainIdEnum.cosmos]: AbsoluteChainIdEnum.cosmos,
+  [ChainIdEnum.kava]: AbsoluteChainIdEnum.kava,
+  [ChainIdEnum.osmosis]: AbsoluteChainIdEnum.osmosis,
+  [ChainIdEnum.secret]: AbsoluteChainIdEnum.secret,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -76,9 +79,12 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.klay]: ChainIdEnum.klay,
   [AbsoluteChainIdEnum.fuse]: ChainIdEnum.fuse,
   [AbsoluteChainIdEnum.cardano]: ChainIdEnum.cardano,
-  [AbsoluteChainIdEnum.cosmos]: ChainIdEnum.cosmos,
   [AbsoluteChainIdEnum.metis]: ChainIdEnum.metis,
   [AbsoluteChainIdEnum.ronin]: ChainIdEnum.ronin,
+  [AbsoluteChainIdEnum.cosmos]: ChainIdEnum.cosmos,
+  [AbsoluteChainIdEnum.kava]: ChainIdEnum.kava,
+  [AbsoluteChainIdEnum.osmosis]: ChainIdEnum.osmosis,
+  [AbsoluteChainIdEnum.secret]: ChainIdEnum.secret,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -106,9 +112,12 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.klay]: ChainIdEnum.klay,
   [ChainAbbrEnum.fuse]: ChainIdEnum.fuse,
   [ChainAbbrEnum.cardano]: ChainIdEnum.cardano,
-  [ChainAbbrEnum.cosmos]: ChainIdEnum.cosmos,
   [ChainAbbrEnum.metis]: ChainIdEnum.metis,
   [ChainAbbrEnum.ronin]: ChainIdEnum.ronin,
+  [ChainAbbrEnum.cosmos]: ChainIdEnum.cosmos,
+  [ChainAbbrEnum.kava]: ChainIdEnum.kava,
+  [ChainAbbrEnum.osmosis]: ChainIdEnum.osmosis,
+  [ChainAbbrEnum.secret]: ChainIdEnum.secret,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -134,9 +143,12 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.klay]: CoingeckoPlatformEnum.klay,
   [ChainIdEnum.fuse]: CoingeckoPlatformEnum.fuse,
   [ChainIdEnum.cardano]: CoingeckoPlatformEnum.cardano,
-  [ChainIdEnum.cosmos]: CoingeckoPlatformEnum.cosmos,
   [ChainIdEnum.metis]: CoingeckoPlatformEnum.metis,
   [ChainIdEnum.ronin]: CoingeckoPlatformEnum.ronin,
+  [ChainIdEnum.cosmos]: CoingeckoPlatformEnum.cosmos,
+  [ChainIdEnum.kava]: CoingeckoPlatformEnum.kava,
+  [ChainIdEnum.osmosis]: CoingeckoPlatformEnum.osmosis,
+  [ChainIdEnum.secret]: CoingeckoPlatformEnum.secret,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -165,9 +177,12 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.klay]: ZERO_ADDRESS,
   [ChainIdEnum.fuse]: ZERO_ADDRESS,
   [ChainIdEnum.cardano]: CARDANO_COIN_ADDRESS,
-  [ChainIdEnum.cosmos]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.metis]: ZERO_ADDRESS,
   [ChainIdEnum.ronin]: RONIN_COIN_ADDRESS,
+  [ChainIdEnum.cosmos]: COSMOS_COIN_ADDRESS,
+  [ChainIdEnum.kava]: COSMOS_COIN_ADDRESS,
+  [ChainIdEnum.osmosis]: COSMOS_COIN_ADDRESS,
+  [ChainIdEnum.secret]: COSMOS_COIN_ADDRESS,
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -196,9 +211,12 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.klay]: 'klay-token',
   [ChainIdEnum.fuse]: '',
   [ChainIdEnum.cardano]: '',
-  [ChainIdEnum.cosmos]: '',
   [ChainIdEnum.metis]: '',
   [ChainIdEnum.ronin]: 'ronin',
+  [ChainIdEnum.cosmos]: '',
+  [ChainIdEnum.kava]: '',
+  [ChainIdEnum.osmosis]: '',
+  [ChainIdEnum.secret]: '',
 };
 
 export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

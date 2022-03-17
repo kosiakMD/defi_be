@@ -21,12 +21,14 @@ export class CosmosBalancesStrategy implements BalancesLoadingStrategy {
   private mapCosmosResponse(balances: CosmosBalance[], request: BalancesRequest): TokenBalance[] {
     const tokenBalances: TokenBalance[] = [];
     const tokenSet = new Set(request.tokens);
+    const chainId = this.cosmosService.getChainId();
+
     for (const balance of balances) {
       if (tokenSet.has(balance.denom)) {
         tokenBalances.push({
           amount: balance.amount.toString(),
           token: {
-            chainId: request.chainId,
+            chainId: chainId,
             address: balance.denom,
           },
         });

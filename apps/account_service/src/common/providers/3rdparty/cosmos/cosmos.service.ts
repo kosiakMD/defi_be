@@ -4,6 +4,7 @@ import { map } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 
+import { ChainIdEnum } from '@app/common';
 import type { Address } from '@app/common/types';
 
 import { CosmosWallet, CosmosBalance, ICosmosProvider } from '../../../interfaces/cosmos.interface';
@@ -31,6 +32,10 @@ export class CosmosService {
 
   public isCosmosAddress(address: string): boolean {
     return !!/(^[a-zA-Z]+[1]{1})/g.exec(address)?.[0];
+  }
+
+  public getChainId(): ChainIdEnum {
+    return ChainIdEnum[this.cosmostationProvider.network] || ChainIdEnum.cosmos;
   }
 
   private getProvider(address: string): ICosmosProvider {

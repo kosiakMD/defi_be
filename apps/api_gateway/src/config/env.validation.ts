@@ -62,6 +62,12 @@ export const validationSchema = Joi.object({
   NFT_PROJECTS: Joi.string().required(),
   NFT_ASSETS: Joi.string().required(),
   NFT_COLLECTIONS: Joi.string().required(),
+  // OPPORTUNITIES SERVICE
+  OPPORTUNITIES_SERVICE_HOST: Joi.string() //
+    .required(),
+  OPPORTUNITIES_SERVICE_PORT: Joi.number() //
+    .allow('')
+    .required(),
   // PRICE
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number() //

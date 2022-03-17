@@ -15,7 +15,7 @@ export function replaceIncorrectTokenAddress(address: Address, chainId: ChainId)
     case ChainIdEnum.eth:
       return handleEthereum(address);
 
-    case ChainIdEnum.bsc:
+    case ChainIdEnum.bnb:
       return handleBsc(address);
 
     default:

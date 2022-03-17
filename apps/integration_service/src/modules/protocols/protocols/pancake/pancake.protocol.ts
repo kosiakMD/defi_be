@@ -15,12 +15,12 @@ import { PancakeV2Staking } from './pancake-v2.staking';
 
 @Injectable()
 export default class PancakeProtocol extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bnb];
   readonly project = ProjectEnum.pancake;
   readonly name = PancakeProtocolEnum.pancakeV2;
   readonly displayName = 'Pancake V2';
   readonly features = {
-    [ChainAbbrEnum.bsc]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   public static feeRate = 0.0025;
   protected readonly dataProvider;

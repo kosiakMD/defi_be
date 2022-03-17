@@ -48,12 +48,12 @@ import { APY, BalanceInfo } from './venus/venus.interfaces';
 
 @Injectable()
 export class VenusProtocol extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bnb];
   readonly project = ProjectEnum.venus;
   readonly displayName = 'Venus';
   readonly name = VenusProtocolEnum.venus;
   readonly features = {
-    [ChainAbbrEnum.bsc]: [
+    [ChainAbbrEnum.bnb]: [
       FeatureEnum.lending,
       FeatureEnum.borrowing,
       FeatureEnum.staking,

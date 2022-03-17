@@ -19,7 +19,7 @@ export class AutofarmRequestDto {
   @Transform(({ value }) => ChainIdEnum[value])
   @ApiProperty({
     type: ChainIdEnum,
-    example: ChainIdEnum.bsc,
+    example: ChainIdEnum.bnb,
   })
-  chain: ChainIdEnum = ChainIdEnum.bsc;
+  chain: ChainIdEnum = ChainIdEnum.bnb;
 }

@@ -18,7 +18,7 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.arbi, 'ARBITRUM_URL');
     this.setProvider(ChainIdEnum.avax, 'AVAX_URL');
     this.setProvider(ChainIdEnum.boba, 'BOBA_URL');
-    this.setProvider(ChainIdEnum.bsc, 'BSC_URL');
+    this.setProvider(ChainIdEnum.bnb, 'BSC_URL');
     this.setProvider(ChainIdEnum.celo, 'CELO_URL');
     this.setProvider(ChainIdEnum.cro, 'CRONOS_URL');
     this.setProvider(ChainIdEnum.eth, 'ETH_URL');
@@ -42,7 +42,7 @@ export class Web3ProviderService {
     this.setMulticall(ChainIdEnum.arbi, '0xf07d1C752fAb503E47FEF309bf14fbDD3E867089');
     this.setMulticall(ChainIdEnum.avax, '0x92a09557707ab4888eacc034122120f27362da7f');
     this.setMulticall(ChainIdEnum.boba, '0x92A09557707AB4888EACC034122120F27362dA7f');
-    this.setMulticall(ChainIdEnum.bsc, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');
+    this.setMulticall(ChainIdEnum.bnb, '0x1ee38d535d541c55c9dae27b12edf090c608e6fb');
     this.setMulticall(ChainIdEnum.celo, '0xBc107e7E5e68Fc92E76A002381347846fD03F1C6');
     this.setMulticall(ChainIdEnum.cro, '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c');
     this.setMulticall(ChainIdEnum.eth, '0x255f2a7712cc06944aeef4ea78349c54c22ffe1f');

@@ -28,7 +28,7 @@ export class TransfersController {
     enumName: 'ChainIdEnum',
     isArray: true,
     description: 'Array of chain ID',
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+    example: [ChainIdEnum.eth, ChainIdEnum.bnb],
     required: false,
   })
   @ApiQuery({

@@ -28,7 +28,7 @@ export class ProtocolControllerV2 extends BaseService {
     type: String,
     example: [
       ChainIdEnum.eth,
-      ChainIdEnum.bsc,
+      ChainIdEnum.bnb,
       ChainIdEnum.plg,
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,

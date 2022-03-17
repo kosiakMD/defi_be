@@ -16,7 +16,7 @@ import { ChainId } from '@app/common/types';
 export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.arbi]: AbsoluteChainIdEnum.arbi,
   [ChainIdEnum.avax]: AbsoluteChainIdEnum.avax,
-  [ChainIdEnum.bsc]: AbsoluteChainIdEnum.bsc,
+  [ChainIdEnum.bnb]: AbsoluteChainIdEnum.bnb,
   [ChainIdEnum.eth]: AbsoluteChainIdEnum.eth,
   [ChainIdEnum.ftm]: AbsoluteChainIdEnum.ftm,
   [ChainIdEnum.plg]: AbsoluteChainIdEnum.plg,
@@ -56,7 +56,7 @@ export const getAbsoluteChainIds = (chainIds: ChainId[] | Iterable<number>): Cha
 export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.arbi]: ChainIdEnum.arbi,
   [AbsoluteChainIdEnum.avax]: ChainIdEnum.avax,
-  [AbsoluteChainIdEnum.bsc]: ChainIdEnum.bsc,
+  [AbsoluteChainIdEnum.bnb]: ChainIdEnum.bnb,
   [AbsoluteChainIdEnum.eth]: ChainIdEnum.eth,
   [AbsoluteChainIdEnum.ftm]: ChainIdEnum.ftm,
   [AbsoluteChainIdEnum.plg]: ChainIdEnum.plg,
@@ -85,7 +85,7 @@ export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainId
 
 export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.eth]: ChainIdEnum.eth,
-  [ChainAbbrEnum.bsc]: ChainIdEnum.bsc,
+  [ChainAbbrEnum.bnb]: ChainIdEnum.bnb,
   [ChainAbbrEnum.plg]: ChainIdEnum.plg,
   [ChainAbbrEnum.ftm]: ChainIdEnum.ftm,
   [ChainAbbrEnum.arbi]: ChainIdEnum.arbi,
@@ -113,7 +113,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.eth]: CoingeckoPlatformEnum.eth,
-  [ChainIdEnum.bsc]: CoingeckoPlatformEnum.bsc,
+  [ChainIdEnum.bnb]: CoingeckoPlatformEnum.bnb,
   [ChainIdEnum.plg]: CoingeckoPlatformEnum.plg,
   [ChainIdEnum.ftm]: CoingeckoPlatformEnum.ftm,
   [ChainIdEnum.arbi]: CoingeckoPlatformEnum.arbi,
@@ -144,7 +144,7 @@ export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum 
 
 export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.eth]: ZERO_ADDRESS,
-  [ChainIdEnum.bsc]: ZERO_ADDRESS,
+  [ChainIdEnum.bnb]: ZERO_ADDRESS,
   [ChainIdEnum.plg]: ZERO_ADDRESS,
   [ChainIdEnum.ftm]: ZERO_ADDRESS,
   [ChainIdEnum.arbi]: ZERO_ADDRESS,
@@ -175,7 +175,7 @@ export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
 
 export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.eth]: '',
-  [ChainIdEnum.bsc]: '',
+  [ChainIdEnum.bnb]: '',
   [ChainIdEnum.plg]: '',
   [ChainIdEnum.ftm]: '',
   [ChainIdEnum.arbi]: '',

@@ -16,7 +16,7 @@ interface BalancesQuery {
 
 const ChainList = [
   ChainIdEnum.eth,
-  ChainIdEnum.bsc,
+  ChainIdEnum.bnb,
   ChainIdEnum.plg,
   ChainIdEnum.ftm,
   ChainIdEnum.arbi,

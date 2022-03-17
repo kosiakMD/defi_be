@@ -48,7 +48,7 @@ import { APY, BalanceInfo } from './wepiggy/wepiggy.interfaces';
 export class WePiggyProtocol extends DataProviderProtocol {
   readonly chains = [
     ChainAbbrEnum.eth,
-    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.bnb,
     ChainAbbrEnum.okex,
     ChainAbbrEnum.plg,
     //ChainAbbrEnum.heco,
@@ -62,7 +62,7 @@ export class WePiggyProtocol extends DataProviderProtocol {
   readonly name = WePiggyProtocolEnum.wepiggy;
   readonly features = {
     [ChainAbbrEnum.eth]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
-    [ChainAbbrEnum.bsc]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
     [ChainAbbrEnum.okex]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
     [ChainAbbrEnum.plg]: [FeatureEnum.lending, FeatureEnum.borrowing, FeatureEnum.claimable],
     //[ChainAbbrEnum.heco]: [

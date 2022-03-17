@@ -100,7 +100,7 @@ export class BscscanTransactionsService {
           cumulativeGasUsed,
           gasUsed,
           confirmations,
-          chainId: ChainIdEnum.bsc,
+          chainId: ChainIdEnum.bnb,
           isInternal: type === 'internal' ? true : undefined,
         };
       },

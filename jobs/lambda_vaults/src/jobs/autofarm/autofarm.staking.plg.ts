@@ -308,7 +308,7 @@ export class AutofarmStakingPLG implements JobInterface {
           const { prices: priceToken0 } = await this.priceService.getCurrentPrices(
             token0Address,
             CurrencyIdEnum.usd,
-            ChainIdEnum.bsc,
+            ChainIdEnum.bnb,
           );
 
           m = this.getDataFromMulticallRsp(

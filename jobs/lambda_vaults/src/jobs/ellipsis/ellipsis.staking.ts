@@ -38,7 +38,7 @@ import { EllipsisAddresses } from './addresses';
 
 @Injectable()
 export class EllipsisStaking implements JobInterface {
-  chain = ChainIdEnum.bsc;
+  chain = ChainIdEnum.bnb;
   feature = FeatureEnum.staking;
   protocol = ProtocolNameEnum.ellipsis;
 
@@ -349,7 +349,7 @@ export class EllipsisStaking implements JobInterface {
         },
       ],
     ]);
-    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bsc);
+    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bnb);
 
     return callRsp.get(EllipsisStaking.poolLengthLabel()).output.data;
   }
@@ -428,8 +428,8 @@ export class EllipsisStaking implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
-      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bsc),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
+      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
     ]);
 
     const totalAllocPoint: BigNumber = multicallRsp.get(EllipsisStaking.totalAllocPointLabel())

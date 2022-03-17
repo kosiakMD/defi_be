@@ -37,7 +37,7 @@ export class IntegrationsController {
     type: String,
     example: [
       ChainIdEnum.eth,
-      ChainIdEnum.bsc,
+      ChainIdEnum.bnb,
       ChainIdEnum.plg,
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,

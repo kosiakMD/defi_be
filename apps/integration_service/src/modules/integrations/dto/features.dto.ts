@@ -29,7 +29,7 @@ export class ProtocolFeaturesInfoDto {
   [ChainAbbrEnum.eth]: FeatureEnum;
 
   @ApiProperty({enum: FeatureEnum, enumName: 'FeatureEnum', isArray: true})
-  [ChainAbbrEnum.bsc]: FeatureEnum;
+  [ChainAbbrEnum.bnb]: FeatureEnum;
 
 }
 

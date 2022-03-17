@@ -24,7 +24,7 @@ export class MulticallProvider {
         rpcConfigPath: 'ETH_URL',
         multicallAddress: '0x255f2a7712cc06944aeef4ea78349c54c22ffe1f',
       },
-      [ChainAbbrEnum.bsc]: {
+      [ChainAbbrEnum.bnb]: {
         rpcConfigPath: 'BSC_URL',
         multicallAddress: '0x1ee38d535d541c55c9dae27b12edf090c608e6fb',
       },

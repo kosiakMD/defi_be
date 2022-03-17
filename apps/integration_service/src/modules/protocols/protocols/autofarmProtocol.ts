@@ -20,7 +20,7 @@ import DataProviderProtocol from './dataProviderProtocol';
 export class AutofarmProtocol extends DataProviderProtocol implements AbstractProtocol {
   readonly chains = [
     ChainAbbrEnum.avax,
-    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.bnb,
     ChainAbbrEnum.celo,
     ChainAbbrEnum.cro,
     //ChainAbbrEnum.ftm,
@@ -35,7 +35,7 @@ export class AutofarmProtocol extends DataProviderProtocol implements AbstractPr
   readonly displayName = 'Autofarm';
   readonly features = {
     [ChainAbbrEnum.avax]: [FeatureEnum.staking],
-    [ChainAbbrEnum.bsc]: [FeatureEnum.staking],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.staking],
     [ChainAbbrEnum.celo]: [FeatureEnum.staking],
     [ChainAbbrEnum.cro]: [FeatureEnum.staking],
     //[ChainAbbrEnum.ftm]: [FeatureEnum.staking],

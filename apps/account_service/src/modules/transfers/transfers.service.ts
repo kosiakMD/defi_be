@@ -75,7 +75,7 @@ export class TransfersService {
   ) {
     this.chainToScan = {
       [ChainIdEnum.eth]: this.etherScanService,
-      [ChainIdEnum.bsc]: this.bscScanService,
+      [ChainIdEnum.bnb]: this.bscScanService,
       [ChainIdEnum.plg]: this.polygonScanService,
     };
   }

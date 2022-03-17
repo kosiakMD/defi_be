@@ -21,7 +21,7 @@ export class SushiSwapBentoBoxSubgraph {
   ) {
     this.subgraphUrls = new Map([
       [ChainIdEnum.arbi, this.getConfigSubgraph('ARBI')],
-      [ChainIdEnum.bsc, this.getConfigSubgraph('BSC')],
+      [ChainIdEnum.bnb, this.getConfigSubgraph('BSC')],
       [ChainIdEnum.eth, this.getConfigSubgraph('ETH')],
       [ChainIdEnum.plg, this.getConfigSubgraph('PLG')],
       [ChainIdEnum.gnosis, this.getConfigSubgraph('GNOSIS')],

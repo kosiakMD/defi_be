@@ -59,12 +59,12 @@ import DataProviderProtocol from './dataProviderProtocol';
 
 @Injectable()
 export default class AlpacaProtocol extends DataProviderProtocol implements AbstractProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bnb];
   readonly project = ProjectEnum.alpaca;
   readonly name = AlpacaProtocolEnum.alpaca;
   readonly displayName = 'Alpaca';
   readonly features = {
-    [ChainAbbrEnum.bsc]: [FeatureEnum.staking, FeatureEnum.lending, FeatureEnum.leverageFarming],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.staking, FeatureEnum.lending, FeatureEnum.leverageFarming],
   };
   protected dataProvider;
   public feeRate = 0.003;

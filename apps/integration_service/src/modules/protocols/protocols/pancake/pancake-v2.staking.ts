@@ -40,7 +40,7 @@ export class PancakeV2Staking {
     private readonly v2MainStakingSubgraph: Pancakev2MainStakingSubgraph,
     private readonly multicallProvider: MulticallProvider,
   ) {
-    this.multicall = multicallProvider.getForChain(ChainAbbrEnum.bsc);
+    this.multicall = multicallProvider.getForChain(ChainAbbrEnum.bnb);
   }
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {

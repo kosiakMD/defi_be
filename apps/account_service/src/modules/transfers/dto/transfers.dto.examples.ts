@@ -27,7 +27,7 @@ export const exampleChain1: TransferDto = {
 };
 
 export const exampleChain2WithErrorNoPrice: TransferDto = {
-  chainId: ChainIdEnum.bsc,
+  chainId: ChainIdEnum.bnb,
   hash: '0x52415f1a094ed09799879b294762b9b8484e827e14754aea177ad322b59f680a',
   blockTimeStamp: '1621776463',
   // TODO: until no gas in DB

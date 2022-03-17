@@ -52,7 +52,7 @@ export class AccountTokenBalanceDto implements AccountTokenBalance {
 }
 
 export class ErrorMessageDto implements ErrorMessage {
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.bsc })
+  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.bnb })
   chainId: ChainIdEnum;
 
   @ApiProperty({ type: Number, example: 502 })

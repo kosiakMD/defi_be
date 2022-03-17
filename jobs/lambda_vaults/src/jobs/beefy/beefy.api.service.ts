@@ -19,7 +19,7 @@ export class BeefyApiService {
   supportedChains: Partial<Record<ChainIdEnum, BeefySupportedChains>> = {
     [ChainIdEnum.arbi]: 'arbitrum',
     [ChainIdEnum.avax]: 'avax',
-    [ChainIdEnum.bsc]: 'bsc',
+    [ChainIdEnum.bnb]: 'bsc',
     [ChainIdEnum.celo]: 'celo',
     [ChainIdEnum.cro]: 'cronos',
     [ChainIdEnum.ftm]: 'fantom',
@@ -34,7 +34,7 @@ export class BeefyApiService {
   // TODO: Add more platforms! :)
   platforms = {
     [ChainIdEnum.ftm]: ['SpookySwap', 'TombFinance'],
-    [ChainIdEnum.bsc]: ['PancakeSwap'],
+    [ChainIdEnum.bnb]: ['PancakeSwap'],
     [ChainIdEnum.avax]: ['TraderJoe', 'Aave', 'Pangolin'],
     [ChainIdEnum.cro]: ['VVS', 'CronaSwap'],
     [ChainIdEnum.mriver]: ['SolarBeam'],

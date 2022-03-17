@@ -16,7 +16,7 @@ import { BeefyStakingBase } from './beefy.staking.base';
 
 @Injectable()
 export class BeefyStakingBsc extends BeefyStakingBase implements JobInterface {
-  chain = ChainIdEnum.bsc;
+  chain = ChainIdEnum.bnb;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
 
   protected mapping = [];

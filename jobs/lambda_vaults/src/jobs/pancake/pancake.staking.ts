@@ -37,7 +37,7 @@ import { PancakeAddresses } from './addresses';
 
 @Injectable()
 export class PancakeStaking implements JobInterface {
-  chain = ChainIdEnum.bsc;
+  chain = ChainIdEnum.bnb;
   feature = FeatureEnum.staking;
   protocol = ProtocolNameEnum.pancakeV2;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
@@ -333,8 +333,8 @@ export class PancakeStaking implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
-      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bsc),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
+      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
     ]);
 
     const totalAllocPoint: BigNumber = multicallRsp.get(this.totalAllocPointLabel()).output.data;

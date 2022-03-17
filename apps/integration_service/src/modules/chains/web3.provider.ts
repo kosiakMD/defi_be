@@ -20,7 +20,7 @@ export class Web3Provider {
 
   private createChainProviders() {
     const chainProviders: Record<string, ChainAbbrEnum> = {
-      ['BSC_URL']: ChainAbbrEnum.bsc,
+      ['BSC_URL']: ChainAbbrEnum.bnb,
       ['ETH_URL']: ChainAbbrEnum.eth,
       ['FTM_URL']: ChainAbbrEnum.ftm,
       ['POLYGON_URL']: ChainAbbrEnum.plg,

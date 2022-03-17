@@ -23,7 +23,7 @@ export class AbracadabraProtocol extends BasicProtocol {
   readonly chains = [
     ChainAbbrEnum.arbi,
     ChainAbbrEnum.avax,
-    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.bnb,
     ChainAbbrEnum.eth,
     ChainAbbrEnum.ftm,
   ];
@@ -45,7 +45,7 @@ export class AbracadabraProtocol extends BasicProtocol {
       FeatureEnum.claimable, // mim balance on bentobox
     ],
 
-    [ChainAbbrEnum.bsc]: [
+    [ChainAbbrEnum.bnb]: [
       FeatureEnum.collateral, // collateral deposited
       FeatureEnum.borrowing, // mim borrowed
       FeatureEnum.health, // borrow health

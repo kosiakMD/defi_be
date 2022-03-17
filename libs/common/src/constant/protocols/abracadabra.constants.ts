@@ -64,7 +64,7 @@ export const Cauldrons: Map<ChainIdEnum, Address[]> = new Map([
     ],
   ],
   [
-    ChainIdEnum.bsc,
+    ChainIdEnum.bnb,
     [
       '0xF8049467F3A9D50176f4816b20cDdd9bB8a93319', //
       '0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90',

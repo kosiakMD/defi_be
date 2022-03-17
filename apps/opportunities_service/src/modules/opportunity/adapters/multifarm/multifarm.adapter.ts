@@ -162,7 +162,7 @@ export class MultifarmAdapter implements IOpportunityAdapter {
       HECO: ChainIdEnum.heco,
       POLYGON: ChainIdEnum.plg,
       HARMONY: ChainIdEnum.harm,
-      BSC: ChainIdEnum.bsc,
+      BSC: ChainIdEnum.bnb,
       AVAX: ChainIdEnum.avax,
       OKEX: ChainIdEnum.okex,
       CELO: ChainIdEnum.celo,

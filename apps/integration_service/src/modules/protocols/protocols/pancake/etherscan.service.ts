@@ -57,7 +57,7 @@ export class EtherscanService {
               tokenPriceUSD: 0,
               totalPriceUSD: 0,
               token: {
-                chainId: ChainIdEnum.bsc,
+                chainId: ChainIdEnum.bnb,
                 name: transfer.tokenName,
                 address: transfer.contractAddress,
                 decimals: transfer.tokenDecimal,

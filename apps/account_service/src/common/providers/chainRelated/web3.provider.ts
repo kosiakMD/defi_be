@@ -12,7 +12,7 @@ const ChainsProvidersUrls: Partial<Record<ChainIdEnum, string>> = {
   [ChainIdEnum.arbi]: 'ARBITRUM_URL',
   [ChainIdEnum.avax]: 'AVAX_URL',
   [ChainIdEnum.boba]: 'BOBA_URL',
-  [ChainIdEnum.bsc]: 'BSC_URL',
+  [ChainIdEnum.bnb]: 'BSC_URL',
   [ChainIdEnum.celo]: 'CELO_URL',
   [ChainIdEnum.cro]: 'CRONOS_URL',
   [ChainIdEnum.eth]: 'ETH_URL',

@@ -20,7 +20,7 @@ export class AutofarmApiService {
       ChainIdEnum.avax,
       this.configService.get<string>('AUTOFARM_API_AVAX_URL'),
     );
-    this.autofarmApiUrl.set(ChainIdEnum.bsc, this.configService.get<string>('AUTOFARM_API_URL'));
+    this.autofarmApiUrl.set(ChainIdEnum.bnb, this.configService.get<string>('AUTOFARM_API_URL'));
     this.autofarmApiUrl.set(
       ChainIdEnum.celo,
       this.configService.get<string>('AUTOFARM_API_CELO_URL'),

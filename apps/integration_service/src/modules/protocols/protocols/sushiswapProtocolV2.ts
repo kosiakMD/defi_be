@@ -62,7 +62,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
   readonly chains = [
     ChainAbbrEnum.arbi,
     ChainAbbrEnum.avax,
-    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.bnb,
     ChainAbbrEnum.celo,
     ChainAbbrEnum.eth,
     ChainAbbrEnum.ftm,
@@ -92,7 +92,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       // FeatureEnum.borrowing, // no subgraph
       // FeatureEnum.health, // no subgraph
     ],
-    [ChainAbbrEnum.bsc]: [
+    [ChainAbbrEnum.bnb]: [
       FeatureEnum.pools,
       FeatureEnum.lending,
       FeatureEnum.collateral,

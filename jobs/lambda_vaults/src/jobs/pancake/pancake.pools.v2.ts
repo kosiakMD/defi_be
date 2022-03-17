@@ -39,7 +39,7 @@ import { PancakeAddresses } from './addresses';
 
 @Injectable()
 export class PancakePoolsV2 implements JobInterface {
-  chain = ChainIdEnum.bsc;
+  chain = ChainIdEnum.bnb;
   feature = FeatureEnum.pools;
   protocol = ProtocolNameEnum.pancakeV2;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
@@ -247,7 +247,7 @@ export class PancakePoolsV2 implements JobInterface {
         }),
       ],
     ]);
-    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bsc);
+    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bnb);
     return callRsp.get(this.poolLengthLabel()).output.data;
   }
 

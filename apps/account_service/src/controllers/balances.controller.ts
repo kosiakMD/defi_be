@@ -65,7 +65,7 @@ export class BalancesController {
     type: Number,
     isArray: true,
     description: 'Array of chain ID',
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+    example: [ChainIdEnum.eth, ChainIdEnum.bnb],
   })
   @ApiQuery({
     name: 'addresses',

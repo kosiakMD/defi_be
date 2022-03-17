@@ -53,7 +53,7 @@ export const ACTIVE_CAULDRONS: Map<ChainIdEnum, Address[]> = new Map([
     ],
   ],
   [
-    ChainIdEnum.bsc,
+    ChainIdEnum.bnb,
     [
       '0xF8049467F3A9D50176f4816b20cDdd9bB8a93319', //
       '0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90',
@@ -77,6 +77,6 @@ export const DEPRECATED_CAULDRONS: Map<ChainIdEnum, Address[]> = new Map(
     ],
     [ChainIdEnum.avax]: ['0x56984F04d2d04B2F63403f0EbeDD3487716bA49d'],
     [ChainIdEnum.arbi]: [],
-    [ChainIdEnum.bsc]: [],
+    [ChainIdEnum.bnb]: [],
   }) as unknown as [ChainIdEnum, Address[]][],
 );

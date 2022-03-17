@@ -70,7 +70,7 @@ export class AssetQueryDto {
   @IsInt({ each: true })
   @ApiProperty({
     type: [Number],
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+    example: [ChainIdEnum.eth, ChainIdEnum.bnb],
   })
   chains: ChainIdEnum[] = [ChainIdEnum.eth];
 }

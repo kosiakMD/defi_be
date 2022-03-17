@@ -38,7 +38,7 @@ export class AutofarmStaking implements JobInterface {
 
   private readonly masterChiefAddresses = new Map([
     [ChainIdEnum.avax, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
-    [ChainIdEnum.bsc, '0x0895196562c7868c5be92459fae7f877ed450452'],
+    [ChainIdEnum.bnb, '0x0895196562c7868c5be92459fae7f877ed450452'],
     [ChainIdEnum.cro, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
     [ChainIdEnum.celo, '0xdd11b66b90402f294a017c4688509c364312303f'],
     [ChainIdEnum.ftm, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],

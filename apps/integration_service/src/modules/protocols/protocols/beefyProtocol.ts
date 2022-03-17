@@ -30,7 +30,7 @@ export class BeefyProtocol extends BasicProtocol {
   readonly chains = [
     ChainAbbrEnum.arbi,
     ChainAbbrEnum.avax,
-    ChainAbbrEnum.bsc,
+    ChainAbbrEnum.bnb,
     ChainAbbrEnum.celo,
     ChainAbbrEnum.cro,
     ChainAbbrEnum.ftm,
@@ -44,7 +44,7 @@ export class BeefyProtocol extends BasicProtocol {
   readonly features = {
     [ChainAbbrEnum.arbi]: [FeatureEnum.staking],
     [ChainAbbrEnum.avax]: [FeatureEnum.staking],
-    [ChainAbbrEnum.bsc]: [FeatureEnum.staking],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.staking],
     [ChainAbbrEnum.celo]: [FeatureEnum.staking],
     [ChainAbbrEnum.cro]: [FeatureEnum.staking],
     [ChainAbbrEnum.ftm]: [FeatureEnum.staking],

@@ -46,7 +46,7 @@ export class EllipsisStaking {
     private readonly multicallProvider: MulticallProvider,
     private readonly web3ProviderService: Web3ProviderService,
   ) {
-    this.multicall = multicallProvider.getForChain(ChainAbbrEnum.bsc);
+    this.multicall = multicallProvider.getForChain(ChainAbbrEnum.bnb);
   }
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
@@ -57,7 +57,7 @@ export class EllipsisStaking {
     }
 
     const ellipsisMulticall = new EllipsisMulticall(
-      this.web3ProviderService.getInstanceByChainId(ChainIdEnum.bsc),
+      this.web3ProviderService.getInstanceByChainId(ChainIdEnum.bnb),
     );
     const poolsMinters = await ellipsisMulticall.getMinters(
       cachedPools.items.map((item) => item.stakingToken.address),

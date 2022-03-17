@@ -97,7 +97,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     switch (chain) {
       case ChainIdEnum.eth:
         return this.config.get<string>('ETH_BALANCES_CHECKER_ADDRESS');
-      case ChainIdEnum.bsc:
+      case ChainIdEnum.bnb:
         return this.config.get<string>('BSC_BALANCES_CHECKER_ADDRESS');
       case ChainIdEnum.plg:
         return this.config.get<string>('POLYGON_BALANCES_CHECKER_ADDRESS');
@@ -140,7 +140,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     switch (chain) {
       case ChainIdEnum.eth:
         return this.config.get<number>('ETH_BALANCES_CHECKER_BATCH_SIZE');
-      case ChainIdEnum.bsc:
+      case ChainIdEnum.bnb:
         return this.config.get<number>('BSC_BALANCES_CHECKER_BATCH_SIZE');
       case ChainIdEnum.plg:
         return this.config.get<number>('POLYGON_BALANCES_CHECKER_BATCH_SIZE');

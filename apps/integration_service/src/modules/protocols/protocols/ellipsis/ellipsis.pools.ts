@@ -45,7 +45,7 @@ export class EllipsisPools {
 
     const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
       addressesLowerCase,
-      [ChainIdEnum.bsc],
+      [ChainIdEnum.bnb],
       cachedPools.items.map((i) => i.lpToken.address),
     );
 

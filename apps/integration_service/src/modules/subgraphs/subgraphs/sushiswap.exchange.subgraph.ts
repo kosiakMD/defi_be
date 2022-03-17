@@ -28,7 +28,7 @@ export class SushiSwapExchangeSubgraph {
     this.subgraphUrls = new Map([
       [ChainIdEnum.arbi, this.getConfigSubgraph('ARBI')],
       [ChainIdEnum.avax, this.getConfigSubgraph('AVAX')],
-      [ChainIdEnum.bsc, this.getConfigSubgraph('BSC')],
+      [ChainIdEnum.bnb, this.getConfigSubgraph('BSC')],
       [ChainIdEnum.celo, this.getConfigSubgraph('CELO')],
       [ChainIdEnum.eth, this.getConfigSubgraph('ETH')],
       [ChainIdEnum.ftm, this.getConfigSubgraph('FTM')],

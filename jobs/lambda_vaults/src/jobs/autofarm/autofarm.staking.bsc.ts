@@ -36,7 +36,7 @@ import { DbMapping } from './dbmapping';
 
 @Injectable()
 export class AutofarmStakingBSC implements JobInterface {
-  chain = ChainIdEnum.bsc;
+  chain = ChainIdEnum.bnb;
   feature = FeatureEnum.staking;
   protocol = ProtocolNameEnum.autofarm;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
@@ -235,12 +235,12 @@ export class AutofarmStakingBSC implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp, autofarmApiData] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
-      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bsc),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
+      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
       /* added for the case when there is no token price in bd
       and we can get want token price from this api data(temporary decision)
        */
-      this.autofarmApiService.getAutofarmPoolsData(ChainIdEnum.bsc),
+      this.autofarmApiService.getAutofarmPoolsData(ChainIdEnum.bnb),
     ]);
 
     this.mapping = await Promise.all(
@@ -256,7 +256,7 @@ export class AutofarmStakingBSC implements JobInterface {
           let multicallVault;
 
           try {
-            multicallVault = await this.multicallService.handleInBatches(calls, ChainIdEnum.bsc);
+            multicallVault = await this.multicallService.handleInBatches(calls, ChainIdEnum.bnb);
           } catch (e) {
             return m;
           }

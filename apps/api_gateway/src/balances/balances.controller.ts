@@ -52,7 +52,7 @@ export class BalancesController extends BaseService {
     type: Number,
     isArray: true,
     description: 'Array of chain ID',
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+    example: [ChainIdEnum.eth, ChainIdEnum.bnb],
   })
   @ApiQuery({
     name: 'addresses',

@@ -1,6 +1,6 @@
 export enum ChainAbbrEnum {
   eth = 'eth',
-  bsc = 'bsc',
+  bnb = 'bnb',
   plg = 'plg',
   ftm = 'ftm',
   arbi = 'arbi',
@@ -28,7 +28,7 @@ export enum ChainAbbrEnum {
 
 export enum ChainNameEnum {
   eth = 'ethereum',
-  bsc = 'binance',
+  binance = 'binance',
   plg = 'polygon',
   ftm = 'fantom',
   arbi = 'arbitrum',
@@ -56,7 +56,7 @@ export enum ChainNameEnum {
 
 export enum ChainIdEnum {
   eth = 1,
-  bsc = 2,
+  bnb = 2,
   plg = 3,
   ftm = 4,
   arbi = 5,
@@ -85,7 +85,7 @@ export enum ChainIdEnum {
 // INFO: https://api.coingecko.com/api/v3/asset_platforms
 export enum CoingeckoPlatformEnum {
   eth = 'ethereum',
-  bsc = 'binance-smart-chain',
+  bnb = 'binance-smart-chain',
   plg = 'polygon-pos',
   ftm = 'fantom',
   arbi = 'arbitrum-one',
@@ -114,7 +114,7 @@ export enum CoingeckoPlatformEnum {
 
 export enum AbsoluteChainIdEnum {
   eth = 1,
-  bsc = 56,
+  bnb = 56,
   plg = 137,
   ftm = 250,
   arbi = 42161,

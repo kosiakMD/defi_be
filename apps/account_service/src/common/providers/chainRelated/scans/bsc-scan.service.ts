@@ -31,8 +31,8 @@ export class BscScanService extends ScanApiService {
 
     this.url = this.configService.get<string>('BSCSCAN_URL');
     this.apiKey = this.configService.get<string>('BSCSCAN_KEY');
-    this.chainAbbr = ChainAbbrEnum.bsc;
-    this.chainId = ChainIdEnum.bsc;
+    this.chainAbbr = ChainAbbrEnum.bnb;
+    this.chainId = ChainIdEnum.bnb;
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
   }
 }

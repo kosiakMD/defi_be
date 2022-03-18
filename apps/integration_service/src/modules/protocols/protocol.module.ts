@@ -69,6 +69,7 @@ import { ScanApi } from './protocols/pancake/scan.api';
 import { PangolinPools } from './protocols/pangolin/pangolin.pools';
 import { PangolinStaking } from './protocols/pangolin/pangolin.staking';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
+import { QuickswapHttpService } from './protocols/quickswap/quickswap.http.service';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import { RaydiumStaking } from './protocols/raydium/raydium.staking';
@@ -153,6 +154,7 @@ const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
 const Astroport = [AstroportProtocol, AstroportPools, AstroportStaking];
+const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -161,21 +163,22 @@ const ProtocolList = [
   BeefyProtocol,
   CompoundProtocol,
   PangolinProtocol,
-  QuickswapProtocol,
   RaydiumProtocol,
   SpookySwapProtocol,
   SushiswapProtocolV2,
+  TrisolarisPools,
+  TrisolarisProtocol,
+  TrisolarisStaking,
   UniswapProtocolV2,
   UniswapProtocolV3,
   VenusProtocol,
   WePiggyProtocol,
   YearnProtocolV1,
   YearnProtocolV2,
-  TrisolarisPools,
-  TrisolarisProtocol,
-  TrisolarisStaking,
   ...Abracadabra,
   ...Alpaca,
+  ...Anchor,
+  ...Astroport,
   ...Autofarm,
   ...Badger,
   ...Convex,
@@ -185,19 +188,18 @@ const ProtocolList = [
   ...Islandswap,
   ...Mojitoswap,
   ...Olympus,
+  ...Orca,
   ...Pancake,
   ...Pangolin,
+  ...QuickSwap,
   ...Raydium,
   ...Saber,
+  ...SundaeSwap,
+  ...Terraswap,
   ...TraderJoe,
   ...VVS,
   ...Viperswap,
   ...Wonderland,
-  ...Orca,
-  ...SundaeSwap,
-  ...Anchor,
-  ...Terraswap,
-  ...Astroport,
 ];
 
 @Module({

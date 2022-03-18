@@ -10,12 +10,10 @@ import {
 } from 'nest-winston';
 
 import configModuleConfiguration from './config/config.module';
-import { MigrationController } from './migration/migration.controller';
 import { MigrationModule } from './migration/migration.module';
 import { StoreModule } from './store/store.module';
 
 @Module({
-  controllers: [MigrationController],
   imports: [
     ConfigModule.forRoot(configModuleConfiguration),
     WinstonModule.forRoot({

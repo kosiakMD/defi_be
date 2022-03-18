@@ -19,7 +19,7 @@ configMaps:
     CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
     MRIVER_URL: https://rpc.api.moonriver.moonbeam.network
     HARM_URL: https://a.api.s0.t.hmny.io
-    HECO_URL: https://pub001.hg.network/rpc
+    HECO_URL: https://http-mainnet.hecochain.com
     POLYGON_RPC_URL: https://polygon-rpc.com/
     SOL_URL: https://solana-api.projectserum.com/
     OKEX_URL: https://exchainrpc.okex.org

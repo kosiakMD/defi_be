@@ -15,6 +15,7 @@ import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { ModuleRef } from '@nestjs/core';
 import { getLoadersList } from './fr/helpers';
+import { LoaderAbstract } from './fr/loader.abstract';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -80,36 +81,64 @@ export class IntegrationsServiceV2 {
     }
 
 
-
     let implementation;
     for (let i = 0; i < this.loaders.length; i++) {
       try {
         // @ts-ignore
         implementation = new this.loaders[i](this.moduleRef, {
+          confirmChainConfiguration: true,
           address: contractEntity.address,
           abi: contractEntity.abi.abi,
           chain: chain,
-          metadata: {}
+          metadata: {
+            protocol: protocolCode
+          }
         });
       } catch (ignored) {}
     }
 
     if (implementation) {
       const vaults = await implementation.loadVaults(implementation, chain);
+      const id = implementation.getImplementationId();
       contractEntity.isIntegrated = true;
+      contractEntity.implementationId = id;
+      await this.cache.set(implementation.getImplementationId(), vaults, { ttl: 0 });
       await this.contractsService.repository.save(contractEntity);
-
-      const accountBalances = await implementation.loadAccountData(vaults, ['0x60dE7F647dF2448eF17b9E0123411724De6e373D', '0x4e796EA3819b6d59C53554B35DBD32C0111936Ce']);
+      console.log(implementation.getImplementationId())
       console.log(vaults)
-      console.log(accountBalances)
     }
 
     return contractEntity;
   }
+
+  async loadAccountsData({ chainCode, protocolCode, addresses }) {
+    const projectEntity = await this.projectsService.findByCode(protocolCode);
+
+    const cacheIds = new Set<string>();
+    projectEntity.contracts.forEach((c) => {
+      if (c.isIntegrated && c.chainId == getChainByAbbr(chainCode).id && c.implementationId) {
+        cacheIds.add(c.implementationId);
+      }
+    });
+
+
+    for (const cacheId of cacheIds.values()) {
+      const loaderName = cacheId.split(':')[2];
+      const address = cacheId.split(':')[3];
+      const loader = this.loaders.find((l) => l.name === loaderName);
+      const loaderInst = new loader(this.moduleRef, {
+        chain: getChainByAbbr(chainCode),
+        address: address,
+        metadata: {
+          protocol: protocolCode
+        }
+      });
+      const accountsData = await loaderInst.loadAccountData(addresses);
+      console.log(accountsData)
+    }
+  }
 }
 
-// next steps:
-// load all existing contracts in the database
+// todo:
 // make update of vaults
 // update on chain periodical data
-// implement account data handling

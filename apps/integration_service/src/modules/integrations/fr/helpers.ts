@@ -103,6 +103,10 @@ export function getTemplatedCall(callInfo: CallInfo, template): [string, CallDat
   ]
 }
 
+export function getCallId(callInfo: CallInfo, input: string[]): string {
+  return callInfo.id + ':' + input.join(':')
+}
+
 export function getLoadersList(): any[] {
   const farmClientsDir = `${dirname(__filename)}`;
 

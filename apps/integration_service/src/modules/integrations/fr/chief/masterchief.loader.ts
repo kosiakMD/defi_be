@@ -1,14 +1,22 @@
 import { AbiItem } from 'web3-utils';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 import { ChainDto } from '@app/common';
 import { deepFind } from '../../data/templates/helpers';
-import { FeatureCode } from '../../data/templates/chief/config';
-import { buildCallsMap, buildCallsMapFromTemplate, findInAbi, findMatchInAbi, getTemplatedCall } from '../helpers';
+import {
+  buildCallsMap,
+  buildCallsMapFromTemplate,
+  findInAbi,
+  findMatchInAbi,
+  getCallId,
+  getTemplatedCall
+} from '../helpers';
 import { LoaderAbstract } from '../loader.abstract';
 import { DEFAULT_CONFIG as config } from './config';
 import { ModuleRef } from '@nestjs/core';
 import BigNumber from 'bignumber.js';
 import { CallData } from '@app/common/dto/CallData';
+import { MulticallProxy } from '../multicall.proxy';
+import { CACHE_MANAGER } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 
 export interface CallInfo {
   id?: string,
@@ -25,10 +33,12 @@ enum TemplatedArgs {
 
 export class MasterchiefLoader extends LoaderAbstract {
   private readonly address;
+  private readonly implementationId;
   private readonly abi: AbiItem[];
   private chain: ChainDto;
   private metadata;
-  private multicall: MulticallAggregator;
+  private multicall: MulticallProxy;
+  private cache: Cache;
 
   constructor(
     private moduleRef: ModuleRef,
@@ -36,18 +46,25 @@ export class MasterchiefLoader extends LoaderAbstract {
       address,
       abi,
       chain,
-      metadata
+      metadata,
+      confirmChainConfiguration,
     }
   ) {
     super();
-    this.multicall = moduleRef.get(MulticallAggregator);
+    this.multicall = moduleRef.get(MulticallProxy);
+    this.cache = this.moduleRef.get(CACHE_MANAGER, {strict: false});
     this.address = configuration.address;
     this.abi = configuration.abi;
     this.chain = configuration.chain;
     this.metadata = configuration.metadata;
-    if (!this.confirmChainConfiguration()) {
+    if (configuration.confirmChainConfiguration && !this.confirmChainConfiguration()) {
       throw new Error(`Not possible to make instance of class ${MasterchiefLoader.name}`)
     }
+    this.implementationId = this.chain.abbr + ':' + this.metadata.protocol + ':' + MasterchiefLoader.name + ':' + this.address;
+  }
+
+  getImplementationId() {
+    return this.implementationId;
   }
 
   confirmChainConfiguration() {
@@ -168,6 +185,7 @@ export class MasterchiefLoader extends LoaderAbstract {
   }
 
   async loadVaults() {
+    console.log('load vaults')
     const poolLengthCall: CallInfo = this.getPoolLengthCall();
     const rewardTokenCall: CallInfo = this.getRewardTokenCall();
     const blockchainCalls = buildCallsMap([
@@ -177,9 +195,10 @@ export class MasterchiefLoader extends LoaderAbstract {
 
     const blockchainCallsResult = await this.multicall.handleInBatches(blockchainCalls, this.chain.id);
 
-    //const poolLength: BigNumber = deepFind(blockchainCallsResult.get(poolLengthCall.id).output.data, poolLengthCall.path);
-    //cosnt poolLengthNumber = poolLength.toNumber();
-    const poolLengthNumber = 2;
+    const poolLength: BigNumber = deepFind(blockchainCallsResult.get(poolLengthCall.id).output.data, poolLengthCall.path);
+    let poolLengthNumber = poolLength.toNumber();
+    // console.log(poolLengthNumber)
+    poolLengthNumber = 2;
 
     const rewardToken = deepFind(blockchainCallsResult.get(rewardTokenCall.id).output.data, rewardTokenCall.path);
     const rewardTokenAddress = rewardToken.toLowerCase();
@@ -192,9 +211,9 @@ export class MasterchiefLoader extends LoaderAbstract {
     }
 
     const getStakingTokenTemplate = this.getStakingTokenCall()
-    // if calldata we are checking if it ha
     const blockchainTemplatedCalls = buildCallsMapFromTemplate(getStakingTokenTemplate, templates);
     const blockchainTemplatedCallsResult = await this.multicall.handleInBatches(blockchainTemplatedCalls, this.chain.id);
+
     const extractedVaults = [];
     blockchainTemplatedCallsResult.forEach((callResult) => {
       const stakingToken = deepFind(callResult.output.data, getStakingTokenTemplate.path);
@@ -203,7 +222,6 @@ export class MasterchiefLoader extends LoaderAbstract {
         uniqueId: this.chain.abbr + ':' + poolLengthCall.target + ':' + `pid(${callResult.input.data[0]})`,
         poolId: callResult.input.data[0].toString(),
         poolAddress: poolLengthCall.target,
-        featureCode: FeatureCode.chiefVault,
         stakingToken: {
           address: stakingTokenAddress.toLowerCase(),
         },
@@ -211,60 +229,66 @@ export class MasterchiefLoader extends LoaderAbstract {
           {
             address: rewardTokenAddress.toLowerCase()
           }
-        ]
+        ],
+        metadata: {
+          getAccountBalanceCall: this.getAccountBalanceCall(),
+          getPendingRewardsCall: this.getPendingRewardsCall(),
+        }
       })
     })
     return extractedVaults;
   }
 
-  // todo: receive deduplicated and filtered
-  async loadAccountData(vaults: any[], addresses: string[]) {
-    const getAccountBalanceTemplate = this.getAccountBalanceCall();
-    const accountBalancesTemplates = [];
+
+  async loadAccountData(addresses: string[]) {
+    const vaults: any = await this.cache.get(this.implementationId);
+    if (!vaults) {
+      throw new Error(`Not found cached vaults for key ${this.implementationId}`)
+    }
+
+    const blockchainTemplatedCalls = new Map<string, CallData>();
     for (let i = 0; i < vaults.length; i++) {
       for (let j = 0; j < addresses.length; j++) {
-        accountBalancesTemplates.push({
-          poolId: vaults[i].poolId,
-          accountAddress: addresses[j].toLowerCase()
-        })
+        const [vault, accountAddress] = [vaults[i], addresses[j].toLowerCase()]
+        const [id, call] = getTemplatedCall(vault.metadata.getAccountBalanceCall, {
+          poolId: vault.poolId,
+          accountAddress: accountAddress
+        });
+        const [rId, rCall] = getTemplatedCall(vault.metadata.getPendingRewardsCall, {
+          poolId: vault.poolId,
+          accountAddress: accountAddress
+        });
+        blockchainTemplatedCalls.set(id, call)
+        blockchainTemplatedCalls.set(rId, rCall)
       }
     }
 
-    let blockchainTemplatedCalls = buildCallsMapFromTemplate(getAccountBalanceTemplate, accountBalancesTemplates);
     let blockchainTemplatedCallsResult = await this.multicall.handleInBatches(blockchainTemplatedCalls, this.chain.id);
 
-    const getPendingRewardsTemplate = this.getPendingRewardsCall();
-    const pendingRewardsBlockchainCalls = new Map<string, CallData>();
-
     const accountBalances = [];
-    blockchainTemplatedCallsResult.forEach((callResult) => {
-      const accountBalance: BigNumber = deepFind(callResult.output.data, getAccountBalanceTemplate.path);
-      if (!accountBalance.isZero()) {
-        const [poolId, accountAddress] = callResult.input.data;
-        const vault = vaults.find((v) => v.poolId === poolId)
-        accountBalances.push({
-          ...vault,
-          accountData: {
-            address: accountAddress,
-            balanceRaw: accountBalance.toString()
-          }
-        })
-        // adding call to get pending rewards
-        const [id, call] = getTemplatedCall(getPendingRewardsTemplate, {
-          poolId: poolId,
-          accountAddress: accountAddress
-        })
-        pendingRewardsBlockchainCalls.set(id, call)
-      }
-    });
+    for (let i = 0; i < vaults.length; i++) {
+      for (let j = 0; j < addresses.length; j++) {
+        const [poolId, accountAddress] = [vaults[i].poolId, addresses[j].toLowerCase()];
+        const vault = vaults.find((v) => v.poolId === poolId);
 
-    blockchainTemplatedCallsResult = await this.multicall.handleInBatches(pendingRewardsBlockchainCalls, this.chain.id);
-    blockchainTemplatedCallsResult.forEach((callResult) => {
-      const pendingReward: BigNumber = deepFind(callResult.output.data, getPendingRewardsTemplate.path);
-      const [poolId, accountAddress] = callResult.input.data;
-      const accBalance = accountBalances.find((ab) => ab.poolId === poolId && ab.accountData.address === accountAddress);
-      accBalance.accountData.pendingRaw = pendingReward.toString();
-    })
+        const accountBalanceCallId = getCallId(vault.metadata.getAccountBalanceCall, [poolId, accountAddress]);
+        const accountRewardsCallId = getCallId(vault.metadata.getPendingRewardsCall, [poolId, accountAddress]);
+
+        const balance: BigNumber = deepFind(blockchainTemplatedCallsResult.get(accountBalanceCallId).output.data, vault.metadata.getAccountBalanceCall.path);
+        const rewardBalance: BigNumber = deepFind(blockchainTemplatedCallsResult.get(accountRewardsCallId).output.data, vault.metadata.getPendingRewardsCall.path);
+
+        if (!balance.isZero()) {
+          accountBalances.push({
+            ...vault,
+            accountData: {
+              address: accountAddress,
+              balanceRaw: balance.toString(),
+              pendingRaw: rewardBalance.toString(),
+            }
+          });
+        }
+      }
+    }
 
     return accountBalances;
   }
@@ -272,6 +296,8 @@ export class MasterchiefLoader extends LoaderAbstract {
   async loadPeriodicalData() {
     // todo: check if cache data exists, if not load it
     // todo: get cached pool data
+
+
 
   }
 }

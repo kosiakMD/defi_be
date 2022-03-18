@@ -10,6 +10,7 @@ export class CallData implements ICallData {
   address: string;
   abi: AbiItem;
   id?: number;
+  gas?: number;
   input: InputOutput = plainToClass(InputOutput, {});
   output: InputOutput = plainToClass(InputOutput, {});
 }

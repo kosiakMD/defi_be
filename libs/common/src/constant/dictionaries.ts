@@ -27,7 +27,7 @@ export const ChainIdToName = {
   [ChainIdEnum.arbi]: ChainNameEnum.arbi,
   [ChainIdEnum.avax]: ChainNameEnum.avax,
   [ChainIdEnum.boba]: ChainNameEnum.boba,
-  [ChainIdEnum.bnb]: ChainNameEnum.binance,
+  [ChainIdEnum.bnb]: ChainNameEnum.bnb,
   [ChainIdEnum.celo]: ChainNameEnum.celo,
   [ChainIdEnum.cro]: ChainNameEnum.cro,
   [ChainIdEnum.eth]: ChainNameEnum.eth,

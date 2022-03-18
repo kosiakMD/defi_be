@@ -31,7 +31,7 @@ export enum ChainAbbrEnum {
 
 export enum ChainNameEnum {
   eth = 'ethereum',
-  binance = 'binance',
+  bnb = 'binance',
   plg = 'polygon',
   ftm = 'fantom',
   arbi = 'arbitrum',

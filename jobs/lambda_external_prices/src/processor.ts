@@ -109,14 +109,11 @@ export async function process(): Promise<void> {
 
     /** Cardano SundaeSwapService Place */
     const tokensPrices = await SundaeSwapService.getTokensPrices();
-    const missedTokensInCardanoChain = new Set(
-      missedChainPricesMap.get(ChainIdEnum.cardano.toString()),
-    );
     const cardanoPrices: CurrentPriceInterface[] = [];
 
     for (const token of tokensPrices) {
       const address = token.assetB.assetId.replace(/\./g, '');
-      if (token.assetB.decimals !== null && missedTokensInCardanoChain.has(address)) {
+      if (token.assetB.decimals !== null) {
         cardanoPrices.push({
           address: address,
           price: new BigNumber(token.priceUSD).toNumber(),

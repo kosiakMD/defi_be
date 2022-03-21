@@ -227,7 +227,11 @@ function buildCoingeckoRequestsMap(
     );
 
     const mapItem = chunks.flatMap((c) => {
-      const [ids, contracts] = partition(c, (i) => typeof i !== 'string');
+      const splited = partition(c, (i) => typeof i !== 'string');
+
+      const ids = splited[0] as { address: string; coingeckoId: any }[];
+      const contracts = splited[1] as string[];
+
       const requestItem = [];
       if (ids.length > 0) {
         requestItem.push({

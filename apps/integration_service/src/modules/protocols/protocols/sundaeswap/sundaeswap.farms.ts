@@ -12,7 +12,6 @@ import {
   SundaeProtocolEnum,
   ProtocolTypeEnum,
   ChainIdEnum,
-  BalancesResponse,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
@@ -27,12 +26,7 @@ import { PriceService } from '../../../microservices/price.service';
 import { SundaeSwapSubgraph } from '../../../subgraphs/subgraphs/sundaeswap.subgraph';
 import { SUNDAE_REWARDS_TOKEN } from './sundaeswap.constants';
 import { Staked } from './sundaeswap.interface';
-import {
-  calculatePoolShare,
-  cleanUpItem,
-  getPoolAddresseAmount,
-  mapTokens,
-} from './sundaeswap.utils';
+import { calculatePoolShare, cleanUpItem, mapTokens } from './sundaeswap.utils';
 
 @Injectable()
 export class SundaeSwapFarms {
@@ -72,34 +66,23 @@ export class SundaeSwapFarms {
       cachedPools.items.map((item) => [item.address, item]),
     );
 
-    const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
-      addresses,
-      [chain.id],
-      Array.from(pools.keys()),
-    );
-
     const sundae = await this.getSundaeTokenInfo();
 
     for (const address of addresses) {
-      const avaliblePoolAddresses = getPoolAddresseAmount(
-        [address],
-        lpBalances,
-        Array.from(pools.keys()),
-      );
-
       const farms: Staked[] = await this.sundaeSwapSubgraph.getAccountFarms(address);
       const mapFarms = this.transformFarmArrayToMap(farms);
 
-      for (const [poolId, rewards] of mapFarms.entries()) {
+      for (const [poolId, staking] of mapFarms.entries()) {
         const poolPosition = pools.get(poolId);
-        poolPosition.stats.share = calculatePoolShare(avaliblePoolAddresses, poolPosition);
+        const stakingBalance = staking.reduce((prev, stacked) => prev + +stacked.quantity, 0);
+        poolPosition.stats.share = calculatePoolShare(stakingBalance, poolPosition);
 
         const stackingItem = plainToClass(IntegrationStakingPositionDto, poolPosition);
         stackingItem.stakingToken = poolPosition.lpToken;
-        stackingItem.stakingToken.tokens = mapTokens(poolPosition, rewards[0].pool);
+        stackingItem.stakingToken.tokens = mapTokens(poolPosition, staking[0].pool);
         stackingItem.rewards = [];
 
-        for (const reward of rewards) {
+        for (const reward of staking) {
           stackingItem.rewards.push({
             price: sundae.price,
             address: sundae.address,
@@ -116,7 +99,7 @@ export class SundaeSwapFarms {
           });
         }
 
-        stackingItem.stats.poolApy = rewards[0].pool.apr;
+        stackingItem.stats.poolApy = staking[0].pool.apr;
         stackingItem.stats.tvl = poolPosition.stats.tvl;
 
         baseDataStakingMap.get(address).items.push(cleanUpItem(stackingItem));

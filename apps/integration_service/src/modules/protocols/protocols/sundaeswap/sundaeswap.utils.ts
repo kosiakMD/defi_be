@@ -48,10 +48,9 @@ export function getPoolAddresseAmount(
 }
 
 export function calculatePoolShare(
-  avaliblePoolAddresses: Map<string, string>,
+  walletBalance: number,
   poolPosition: LiquidityPoolFeature,
 ): number {
-  const walletBalance: number = +avaliblePoolAddresses.get(poolPosition.address);
   const totalSupply: number = poolPosition.lpToken.totalSupply;
   const balance = toDecimals(walletBalance, poolPosition.lpToken.decimals);
 

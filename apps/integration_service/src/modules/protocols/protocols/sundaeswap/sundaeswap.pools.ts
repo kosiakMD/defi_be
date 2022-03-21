@@ -78,9 +78,10 @@ export class SundaeSwapPools {
 
       for (const pool of accountsPools) {
         const poolPosition = pools.get(pool.assetLP.assetId);
+        const walletBalance: number = +avaliblePoolAddresses.get(poolPosition.address);
 
         poolPosition.stats.feeRate = +pool.fee;
-        poolPosition.stats.share = calculatePoolShare(avaliblePoolAddresses, poolPosition);
+        poolPosition.stats.share = calculatePoolShare(walletBalance, poolPosition);
 
         poolPosition.tokens = mapTokens(poolPosition, pool);
 

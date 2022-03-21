@@ -9,9 +9,6 @@ RUN yarn install --loglevel verbose
 COPY . .
 RUN ls -l apps
 RUN yarn gateway-build
-RUN yarn integration-build
-RUN yarn account-build
-RUN yarn price-build
 
 # Configure application startup command
 CMD ["npm", "run", "start"]

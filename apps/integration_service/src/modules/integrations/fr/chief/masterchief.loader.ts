@@ -3,7 +3,7 @@ import { ChainDto } from '@app/common';
 import { deepFind } from '../../data/templates/helpers';
 import {
   buildCallsMap,
-  buildCallsMapFromTemplate,
+  buildCallsMapFromTemplate, callInfoToCallData,
   findInAbi,
   findMatchInAbi,
   getCallId,
@@ -17,6 +17,7 @@ import { CallData } from '@app/common/dto/CallData';
 import { MulticallProxy } from '../multicall.proxy';
 import { CACHE_MANAGER } from '@nestjs/common';
 import { Cache } from 'cache-manager';
+import { AccountService } from '../../../microservices/account.service';
 
 export interface CallInfo {
   id?: string,
@@ -39,6 +40,7 @@ export class MasterchiefLoader extends LoaderAbstract {
   private metadata;
   private multicall: MulticallProxy;
   private cache: Cache;
+  private accountService: AccountService;
 
   constructor(
     private moduleRef: ModuleRef,
@@ -52,7 +54,8 @@ export class MasterchiefLoader extends LoaderAbstract {
   ) {
     super();
     this.multicall = moduleRef.get(MulticallProxy);
-    this.cache = this.moduleRef.get(CACHE_MANAGER, {strict: false});
+    this.accountService = moduleRef.get(AccountService, { strict: false });
+    this.cache = this.moduleRef.get(CACHE_MANAGER, { strict: false });
     this.address = configuration.address;
     this.abi = configuration.abi;
     this.chain = configuration.chain;
@@ -153,6 +156,53 @@ export class MasterchiefLoader extends LoaderAbstract {
     };
   }
 
+  // move to other class probably
+  getTotalSupplyCall(tokenAddress): CallInfo {
+    const abi: AbiItem = {
+      constant: true,
+      inputs: [],
+      name: "totalSupply",
+      outputs: [{
+        internalType: "uint256",
+        name: "",
+        type: "uint256"
+      }],
+      payable: false,
+      stateMutability: "view",
+      type: "function"
+    }
+    return {
+      id: tokenAddress + ':' + abi.name,
+      target: tokenAddress,
+      abi: abi,
+      path: '',
+      args: []
+    };
+  }
+
+  getReservesCall(tokenAddress): CallInfo {
+    const abi: AbiItem = {
+      constant: true,
+      inputs: [],
+      name: "getReserves",
+      outputs: [{"internalType": "uint112", "name": "_reserve0", "type": "uint112"}, {
+        "internalType": "uint112",
+        "name": "_reserve1",
+        "type": "uint112"
+      }, {"internalType": "uint32", "name": "_blockTimestampLast", "type": "uint32"}],
+      payable: false,
+      stateMutability: "view",
+      type: "function"
+    }
+    return {
+      id: tokenAddress + ':' + abi.name,
+      target: tokenAddress,
+      abi: abi,
+      path: '',
+      args: []
+    };
+  }
+
   getPendingRewardsCall(): CallInfo {
     const minAbi: Partial<AbiItem> = {
       name: "pendingCake",
@@ -185,7 +235,6 @@ export class MasterchiefLoader extends LoaderAbstract {
   }
 
   async loadVaults() {
-    console.log('load vaults')
     const poolLengthCall: CallInfo = this.getPoolLengthCall();
     const rewardTokenCall: CallInfo = this.getRewardTokenCall();
     const blockchainCalls = buildCallsMap([
@@ -200,8 +249,9 @@ export class MasterchiefLoader extends LoaderAbstract {
     // console.log(poolLengthNumber)
     poolLengthNumber = 2;
 
-    const rewardToken = deepFind(blockchainCallsResult.get(rewardTokenCall.id).output.data, rewardTokenCall.path);
+    let rewardToken = deepFind(blockchainCallsResult.get(rewardTokenCall.id).output.data, rewardTokenCall.path);
     const rewardTokenAddress = rewardToken.toLowerCase();
+
 
     const templates = [];
     for (let i = 0; i < poolLengthNumber; i++) {
@@ -236,11 +286,82 @@ export class MasterchiefLoader extends LoaderAbstract {
         }
       })
     })
+
+    const assetsAddresses = new Set<string>();
+    extractedVaults.forEach((v) => {
+      assetsAddresses.add(v.stakingToken.address);
+      v.rewards.forEach((r) => {
+        assetsAddresses.add(r.address);
+      })
+    });
+    const assetsData = await this.accountService.getAssets(Array.from(assetsAddresses), [this.chain.id]);
+
+    extractedVaults.forEach((v) => {
+      v.stakingToken = assetsData.data.find((a) => a.address === v.stakingToken.address);
+      v.rewards.forEach((r) => {
+        r = assetsData.data.find((a) => a.address === r.address);
+      })
+    });
+
+    // set periodical calls here
+    extractedVaults.forEach((v) => {
+      if (v.stakingToken.isLp) {
+        v.metadata.periodicalCalls = {};
+        v.metadata.periodicalCalls.totalSupplyCall = this.getTotalSupplyCall(v.stakingToken.address);
+        v.metadata.periodicalCalls.getReservesCall = this.getReservesCall(v.stakingToken.address);
+      }
+    })
     return extractedVaults;
   }
 
+  async loadPeriodicalData() {
+    const vaults: any = await this.cache.get(this.implementationId);
+    if (!vaults) {
+      throw new Error(`Not found cached vaults for key ${this.implementationId}`)
+    }
+
+    const blockchainTemplatedCalls = new Map<string, CallData>();
+    vaults.forEach((v) => {
+      if (v.metadata.periodicalCalls) {
+        const [id, call] = callInfoToCallData(v.metadata.periodicalCalls.totalSupplyCall);
+        blockchainTemplatedCalls.set(id, call);
+        const [rId, rCall] = callInfoToCallData(v.metadata.periodicalCalls.getReservesCall);
+        blockchainTemplatedCalls.set(rId, rCall);
+      }
+    });
+    let blockchainTemplatedCallsResult = await this.multicall.handleInBatches(blockchainTemplatedCalls, this.chain.id);
+
+    vaults.forEach((v) => {
+      if (v.metadata.periodicalCalls) {
+        const totalSupply: BigNumber = deepFind(
+          blockchainTemplatedCallsResult.get(v.metadata.periodicalCalls.totalSupplyCall.id).output.data,
+          v.metadata.periodicalCalls.totalSupplyCall.path
+        );
+        const reserve0: BigNumber = deepFind(
+          blockchainTemplatedCallsResult.get(v.metadata.periodicalCalls.getReservesCall.id).output.data,
+          '_reserve0'
+        );
+        const reserve1: BigNumber = deepFind(
+          blockchainTemplatedCallsResult.get(v.metadata.periodicalCalls.getReservesCall.id).output.data,
+          '_reserve1'
+        );
+        v.stakingToken.totalSupplyRaw = totalSupply.toString();
+        v.stakingToken.underlyingAssets.forEach((a) => {
+          if (a.positionInPool === 0) {
+            a.reserveRaw = reserve0.toString();
+          }
+          if (a.positionInPool === 1) {
+            a.reserveRaw = reserve1.toString();
+          }
+        })
+      }
+    });
+
+    return vaults;
+  }
 
   async loadAccountData(addresses: string[]) {
+    // todo: call asset API here for lp token data
     const vaults: any = await this.cache.get(this.implementationId);
     if (!vaults) {
       throw new Error(`Not found cached vaults for key ${this.implementationId}`)
@@ -277,7 +398,7 @@ export class MasterchiefLoader extends LoaderAbstract {
         const balance: BigNumber = deepFind(blockchainTemplatedCallsResult.get(accountBalanceCallId).output.data, vault.metadata.getAccountBalanceCall.path);
         const rewardBalance: BigNumber = deepFind(blockchainTemplatedCallsResult.get(accountRewardsCallId).output.data, vault.metadata.getPendingRewardsCall.path);
 
-        if (!balance.isZero()) {
+        // if (!balance.isZero()) {
           accountBalances.push({
             ...vault,
             accountData: {
@@ -286,18 +407,10 @@ export class MasterchiefLoader extends LoaderAbstract {
               pendingRaw: rewardBalance.toString(),
             }
           });
-        }
+        // }
       }
     }
 
     return accountBalances;
-  }
-
-  async loadPeriodicalData() {
-    // todo: check if cache data exists, if not load it
-    // todo: get cached pool data
-
-
-
   }
 }

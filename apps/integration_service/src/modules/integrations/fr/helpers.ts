@@ -87,6 +87,16 @@ export function buildCallsMapFromTemplate(callInfo: CallInfo, templates: any[]) 
   return blockchainCalls;
 }
 
+export function callInfoToCallData(callInfo: CallInfo): [string, CallData] {
+  return [
+    callInfo.id,
+    plainToClass(CallData, {
+      address: callInfo.target,
+      abi: callInfo.abi,
+    })
+  ]
+}
+
 export function getTemplatedCall(callInfo: CallInfo, template): [string, CallData] {
   const extractedArgs = callInfo.args.map((ar) => {
     return template[ar];

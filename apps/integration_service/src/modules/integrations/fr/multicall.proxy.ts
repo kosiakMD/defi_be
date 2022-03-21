@@ -64,21 +64,10 @@ export class MulticallProxy {
 
     const result = new Map<string, CallData>();
     for (const callsChunk of callsChunks) {
-      // try {
-        const chunkRes: Map<string, CallData> = await this.multicallAggregator.handleInBatches(callsChunk, chain);
-        chunkRes.forEach((cd, key) => {
-          result.set(key, cd);
-        })
-
-      // } catch (e) {
-      //   let debugNumber = 0;
-      //   for (const [id, c] of callsChunks) {
-      //     console.log('debug');
-      //     const r = await this.multicallAggregator.handleInBatches(new Map<string, CallData>([id, c]), chain);
-      //     console.log(r)
-      //     console.log('finished ' + ++debugNumber)
-      //   }
-      // }
+      const chunkRes: Map<string, CallData> = await this.multicallAggregator.handleInBatches(callsChunk, chain);
+      chunkRes.forEach((cd, key) => {
+        result.set(key, cd);
+      })
     }
 
     return result;
@@ -88,7 +77,6 @@ export class MulticallProxy {
 
     const web3 = this.provider.getInstanceByChainId(chain);
     const encodedInput = web3.eth.abi.encodeFunctionCall(call.abi, call.input.data ? call.input.data : [])
-
     const estimatedGas = await web3.eth.estimateGas({
       to: call.address,
       data: encodedInput

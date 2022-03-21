@@ -221,7 +221,10 @@ export class SingleChiefLoader extends LoaderAbstract {
   }
 
   async loadPeriodicalData() {
-    // todo: check if cache data exists, if not load it
-    // todo: get cached pool data
+    const vaults: any = await this.cache.get(this.implementationId);
+    if (!vaults) {
+      throw new Error(`Not found cached vaults for key ${this.implementationId}`)
+    }
+    return vaults;
   }
 }

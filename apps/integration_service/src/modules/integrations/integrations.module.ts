@@ -31,12 +31,14 @@ import { Web3ProviderService } from '@app/common/web3provider';
 import { ChiefLoader } from './data/templates/chief/loader';
 import { VaultLoader } from './data/templates/vault-loader';
 import { MulticallProxy } from './fr/multicall.proxy';
+import { MicroservicesModule } from '../microservices/microservices.module';
 
 const demoServices = [VaultLoaderDemo];
 
 @Module({
   imports: [
     HttpModule,
+    MicroservicesModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

@@ -127,29 +127,38 @@ export class AppModule implements NestModule {
       protocolCode:"pancake",
       contractAddress: "0x73feaa1ee314f8c655e354234017be2193c9e24e",
       contractAbi: []
-    })
+    });
 
-    await this.integrationServiceV2.loadAccountsData({
+    await this.integrationServiceV2.loadPeriodicalData({
+      chainCode:"bsc",
+      protocolCode:"pancake"
+    });
+
+    const accountBalances = await this.integrationServiceV2.loadAccountsData({
       chainCode:"bsc",
       protocolCode:"pancake",
       addresses: ['0xbcb4c77d0a41aaffd850b8b522bda79ac1dd2c5a', '0x4e796EA3819b6d59C53554B35DBD32C0111936Ce', '0xff99012a107ab88b19a08b3d83a6fa2fb561e6d8']
     })
+    console.log(accountBalances);
 
-    // single staking contract
+    //
+    // // single staking contract
     // await this.integrationServiceV2.loadVaults({
     //   chainCode:"bsc",
     //   protocolCode:"pancake",
     //   contractAddress: "0x260F95f5b7FD8eda720ED9d0829164dE35B048ab",
     //   contractAbi: []
     // })
-    // //
-
+    //
     // await this.integrationServiceV2.loadVaults({
     //   chainCode:"bsc",
     //   protocolCode:"pancake",
     //   contractAddress: "0x25ca61796d786014ffe15e42ac11c7721d46e120",
     //   contractAbi: []
     // })
+
+
+    // console.log(accountBalances);
 
     // await this.integrationServiceV2.loadAccountsData({
     //   chainCode: "bsc",

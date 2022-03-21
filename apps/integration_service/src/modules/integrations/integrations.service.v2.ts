@@ -15,7 +15,6 @@ import { ProjectsService } from './services/projects.service';
 import { SettingsService } from './services/settings.service';
 import { ModuleRef } from '@nestjs/core';
 import { getLoadersList } from './fr/helpers';
-import { LoaderAbstract } from './fr/loader.abstract';
 
 @Injectable()
 export class IntegrationsServiceV2 {
@@ -104,11 +103,38 @@ export class IntegrationsServiceV2 {
       contractEntity.implementationId = id;
       await this.cache.set(implementation.getImplementationId(), vaults, { ttl: 0 });
       await this.contractsService.repository.save(contractEntity);
-      console.log(implementation.getImplementationId())
-      console.log(vaults)
     }
 
     return contractEntity;
+  }
+
+  async loadPeriodicalData({ chainCode, protocolCode }) {
+    const projectEntity = await this.projectsService.findByCode(protocolCode);
+
+    const cacheIds = new Set<string>();
+    projectEntity.contracts.forEach((c) => {
+      if (c.isIntegrated && c.chainId == getChainByAbbr(chainCode).id && c.implementationId) {
+        cacheIds.add(c.implementationId);
+      }
+    });
+
+    let periodicalDataResult = [];
+    for (const cacheId of cacheIds.values()) {
+      const loaderName = cacheId.split(':')[2];
+      const address = cacheId.split(':')[3];
+      const loader = this.loaders.find((l) => l.name === loaderName);
+      const loaderInst = new loader(this.moduleRef, {
+        chain: getChainByAbbr(chainCode),
+        address: address,
+        metadata: {
+          protocol: protocolCode
+        }
+      });
+      const updatedVaults = await loaderInst.loadPeriodicalData();
+      await this.cache.set(cacheId, updatedVaults);
+      periodicalDataResult = periodicalDataResult.concat(updatedVaults);
+    }
+    return periodicalDataResult;
   }
 
   async loadAccountsData({ chainCode, protocolCode, addresses }) {
@@ -122,6 +148,7 @@ export class IntegrationsServiceV2 {
     });
 
 
+    let accountsDataResult = [];
     for (const cacheId of cacheIds.values()) {
       const loaderName = cacheId.split(':')[2];
       const address = cacheId.split(':')[3];
@@ -133,12 +160,11 @@ export class IntegrationsServiceV2 {
           protocol: protocolCode
         }
       });
-      const accountsData = await loaderInst.loadAccountData(addresses);
-      console.log(accountsData)
+      accountsDataResult = accountsDataResult.concat(await loaderInst.loadAccountData(addresses));
     }
+    return accountsDataResult;
   }
 }
 
 // todo:
-// make update of vaults
-// update on chain periodical data
+// calculate account data based on periodical stats

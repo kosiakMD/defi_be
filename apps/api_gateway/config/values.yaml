@@ -74,10 +74,13 @@ configMaps:
     NFT_ASSETS: v1/nft/assets
     NFT_PROJECTS: v1/nft/projects
     NFT_COLLECTIONS: v1/nft/collections
+    OPPORTUNITIES_SERVICE_HOST: https://eop.dfyield.xyz
+    OPPORTUNITIES_SERVICE_PORT: 443
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: production
+    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
   temp:
     REDIS_HOST: 3.69.250.41
     REDIS_PORT: 6379

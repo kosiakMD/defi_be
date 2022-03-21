@@ -240,19 +240,15 @@ export class AssetsService {
 
   private async attempStakedToken(asset: AssetsEntity) {
     const contract = new MinimalStakedTokenCheck(asset.address);
-    try {
-      const tokenAddress = await this.multicall.call(contract.sushi(), asset.chain);
-      await this.saveAndRelate(asset, tokenAddress);
-      return true;
-    } catch (e) {
-      //
-    }
-    try {
-      const tokenAddress = await this.multicall.call(contract.sOHM(), asset.chain);
-      await this.saveAndRelate(asset, tokenAddress);
-      return true;
-    } catch {
-      //
+    const checks = Object.keys(MinimalStakedTokenCheck);
+    for (const check of checks) {
+      try {
+        const tokenAddress = await this.multicall.call(contract[check](), asset.chain);
+        await this.saveAndRelate(asset, tokenAddress);
+        return true;
+      } catch (e) {
+        //
+      }
     }
   }
 

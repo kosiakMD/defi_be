@@ -4,7 +4,9 @@ import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy'
 
 /**
  * Mixup of many different partial ABI's
- * This is used to check if a token is a staking token/has underlying tokens
+ * This is used to check if a token is a staking token/has underlying tokens.
+ * All calls get called automatically when saving a token,
+ * so no parameters/inputs can be used here
  */
 export class MinimalStakedTokenCheck extends MultiCallAbiProxy {
   // https://etherscan.io/address/0x0ab87046fBb341D058F17CBC4c1133F25a20a52f#code
@@ -12,6 +14,14 @@ export class MinimalStakedTokenCheck extends MultiCallAbiProxy {
     inputs: [],
     name: 'sOHM',
     outputs: [{ internalType: 'contract IsOHM', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static readonly MEMO: AbiItem = {
+    inputs: [],
+    name: 'MEMO',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
     stateMutability: 'view',
     type: 'function',
   };

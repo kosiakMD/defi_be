@@ -11,21 +11,21 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           directories:
-            "apps/account_service/src/",
-            "apps/api_gateway/src/",
-            "apps/integration_service/src/",
-            "apps/price_service/src/",
-            "jobs/assets/src/",
-            "jobs/lambda_external_prices/src/",
-            "jobs/lambda_prices/src/",
-            "jobs/lambda_prices_cleanup/src/",
-            "jobs/lambda_protocol_prices/src/",
-            "jobs/lambda_vaults/src/",
-            "jobs/migration_chain_crawler/src/",
-            "jobs/migration_events_consumer/src/",
-            "jobs/migration_token_consumer/src/",
-            "jobs/migration_transactions_consumer/src/",
-            "jobs/price_crawlers/src/",
+            "apps/account_service/src/,
+            apps/api_gateway/src/,
+            apps/integration_service/src/,
+            apps/price_service/src/,
+            jobs/assets/src/,
+            jobs/lambda_external_prices/src/,
+            jobs/lambda_prices/src/,
+            jobs/lambda_prices_cleanup/src/,
+            jobs/lambda_protocol_prices/src/,
+            jobs/lambda_vaults/src/,
+            jobs/migration_chain_crawler/src/,
+            jobs/migration_events_consumer/src/,
+            jobs/migration_token_consumer/src/,
+            jobs/migration_transactions_consumer/src/,
+            jobs/price_crawlers/src/"
           # Ignore the specified directories
           ignore_directories: "src/external_libraries"
           # Only examine .h and .cpp files

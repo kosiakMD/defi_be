@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out Git repository'
-      - uses: actions/checkout@v2
+        uses: actions/checkout@v2
 
       - name: 'Install root dependencies'
         #        run: yarn install --frozen-lockfile
@@ -20,7 +20,7 @@ jobs:
           eslint_flags: '**/src/**.*'
 
       - name: 'Reviewdog eslint'
-      - uses: EPMatt/reviewdog-action-tsc@v1
+        uses: EPMatt/reviewdog-action-tsc@v1
         with:
           github_token: ${{ secrets.github_token }}
           # Change reviewdog reporter if you need

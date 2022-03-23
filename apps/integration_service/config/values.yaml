@@ -68,7 +68,7 @@ configMaps:
     OPEN_SEA_URL: https://api.opensea.io/api/v1
     AVAX_URL: https://api.avax.network/ext/bc/C/rpc
     CELO_URL: https://forno.celo.org
-    HARM_URL: https://api.harmony.one
+    HARM_URL: https://a.api.s0.t.hmny.io
     HECO_URL: https://http-mainnet-node.huobichain.com
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     XDAI_URL: https://rpc.xdaichain.com

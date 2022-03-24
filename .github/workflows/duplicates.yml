@@ -28,13 +28,13 @@ jobs:
             jobs/price_crawlers/src/"
           # Ignore the specified directories
           ignore_directories: "src/external_libraries"
-          # Only examine .h and .cpp files
+          # Only examine .ts
           file_extensions: "ts"
           # Only report similarities above 5%
-          ignore_below: 5
+          ignore_below: 50
           # If a file is more than 70% similar to another, then the job fails
           fail_above: 70
           # If a file is more than 15% similar to another, show a warning symbol in the report
-          warn_above: 15
+          warn_above: 50
           # Remove `src/` from the file paths when reporting similarities
           project_root_dir: "/"

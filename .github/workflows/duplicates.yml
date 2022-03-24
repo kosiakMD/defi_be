@@ -31,10 +31,10 @@ jobs:
           # Only examine .ts
           file_extensions: "ts"
           # Only report similarities above 5%
-          ignore_below: 50
+          ignore_below: 90
           # If a file is more than 70% similar to another, then the job fails
-          fail_above: 70
+          fail_above: 95
           # If a file is more than 15% similar to another, show a warning symbol in the report
-          warn_above: 50
+          warn_above: 90
           # Remove `src/` from the file paths when reporting similarities
           project_root_dir: "/"

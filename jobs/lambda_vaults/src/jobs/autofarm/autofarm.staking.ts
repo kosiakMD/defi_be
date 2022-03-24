@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CurrencyIdEnum, FeatureEnum, ProtocolNameEnum, ChainIdEnum } from '@app/common';
 import {
+  IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
@@ -102,7 +103,7 @@ export class AutofarmStaking implements JobInterface {
           this.chain,
         );
 
-        const rewardToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
+        const rewardToken: IntegrationERC20TokenDto = plainToClass(IntegrationClaimableTokenDto, {
           address: rewardTokenData.address,
           name: rewardTokenData.name,
           symbol: rewardTokenData.symbol,

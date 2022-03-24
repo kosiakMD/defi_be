@@ -9,13 +9,24 @@
     "node": ">=14",
     "npm": "^6"
   },
-  "scripts": {},
+  "scripts": {
+    "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
+    "lint-fix": "eslint \"**/{src,apps,libs,test}/**/*.ts\" --fix",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+    "format-check": "prettier \"./**/src/**/*.ts\" \"./**/test/**/*.ts\" --check"
+  },
   "dependencies": {
     "@indexed-finance/multicall": "^2.0.0",
     "@ethersproject/providers": "5.4.5",
     "rxjs": "^6.6.6",
     "web3": "^1.6.0",
-    "winston-aws-cloudwatch": "^3.0.0"
+    "winston-aws-cloudwatch": "^3.0.0",
+    "@solana/web3.js": "^1.32.0",
+    "@nestjs/swagger": "^4.8.2",
+    "bn.js": "^4.12.0",
+    "class-validator": "^0.12.2",
+    "http-proxy-middleware": "^1.1.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {},
   "jest": {

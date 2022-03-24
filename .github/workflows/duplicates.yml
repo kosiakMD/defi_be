@@ -30,7 +30,7 @@ jobs:
           ignore_directories: "src/external_libraries"
           # Only examine .ts
           file_extensions: "ts"
-          # Only report similarities above 5%
+          # Only report similarities above 5% tt
           ignore_below: 90
           # If a file is more than 70% similar to another, then the job fails
           fail_above: 95

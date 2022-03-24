@@ -1,6 +1,6 @@
 {
   "name": "common",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Common",
   "main": "./dist/index.js",
   "author": "",
@@ -16,19 +16,18 @@
     "format-check": "prettier \"./**/src/**/*.ts\" \"./**/test/**/*.ts\" --check"
   },
   "dependencies": {
-    "@indexed-finance/multicall": "^2.0.0",
     "@ethersproject/providers": "5.4.5",
-    "rxjs": "^6.6.6",
-    "web3": "^1.6.0",
-    "winston-aws-cloudwatch": "^3.0.0",
-    "@solana/web3.js": "^1.32.0",
+    "@indexed-finance/multicall": "^2.0.0",
     "@nestjs/swagger": "^4.8.2",
+    "@solana/web3.js": "^1.32.0",
     "bn.js": "^4.12.0",
     "class-validator": "^0.12.2",
     "http-proxy-middleware": "^1.1.0",
-    "uuid": "^8.3.2"
+    "rxjs": "^6.6.6",
+    "uuid": "^8.3.2",
+    "web3": "^1.6.0",
+    "winston-aws-cloudwatch": "^3.0.0"
   },
-  "devDependencies": {},
   "jest": {
     "moduleFileExtensions": [
       "js",

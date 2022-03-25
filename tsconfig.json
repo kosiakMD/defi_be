@@ -1,5 +1,14 @@
 {
   "compilerOptions": {
+    "outDir": "./dist",
+    "skipLibCheck": true,
+    "strictNullChecks": false,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    //    "strict": true,
+    //
     "module": "commonjs",
     "declaration": true,
     "removeComments": true,

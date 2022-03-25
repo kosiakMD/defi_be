@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
 import config from './utils/config';
-import { lambdaHandler } from './app';
 /** should be before other imports */
 config(__dirname, '../.env');
+
+import lambdaHandler from './app';
 
 /**
  * @description temporarily disable error handler

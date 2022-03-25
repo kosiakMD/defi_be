@@ -1,7 +1,7 @@
 configMaps:
   db:
     DB_SCHEMA: prices
-  thegraph:
+  the_graph:
     THEGRAPH_UNISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2
     THEGRAPH_SUSHISWAP_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
     THEGRAPH_CURVE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/curve
@@ -9,38 +9,15 @@ configMaps:
     THEGRAPH_PANCAKE_ENDPOINT: https://api.thegraph.com/subgraphs/name/tretiakpk/cake
   links:
     SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
+  nodes:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
-    CURRENCYLAYER_API_KEY: 82aa76fc01397164f25dc02a7acc652b
-    CURRENCYLAYER_ENDPOINT: http://api.currencylayer.com/live
+  params:
+    BODY_LIMIT: 50mb
+    URL_LIMIT: 50mb
   logs:
     LOG_AWS_ENABLED: true
     NODE_ENV: production
-    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
-  config:
-    CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: 172800
-    BODY_LIMIT: 50mb
-    URL_LIMIT: 50mb
-  temp:
-    DB_HOST: productionm.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    DB_PORT: 5432
-    DB_DATABASE: defi
-    DB_USERNAME: prodashuser
-    DB_PASSWORD: FhRM4BHV4Rjnj6RQ
-    REDIS_HOST: 3.69.250.41
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    BSCSCAN_URL: https://api.bscscan.com/api
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    ETHERSCAN_URL: https://api.etherscan.io/api
-    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    ETHERSCAN_API_URL: https://api.etherscan.io/api
-    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    AWS_REGION: eu-central-1
-    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
-    AWS_SECRET_ACCESS_KEY: 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
 
 secrets:
   - database

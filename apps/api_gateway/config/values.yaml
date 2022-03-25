@@ -3,26 +3,25 @@ ingress:
   host: api.defiyield.app
 
 configMaps:
-  common:
-    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+  params:
+    PRICE_SERVICE_MAIN_COIN_ADDRESS: '0x0000000000000000000000000000000000000000'
+    HTTP_TIMEOUT: 300000
+  mail:
     MAIL_HIRE_FROM: mail@defiyield.app
     MAIL_HIRE_TO: hr@defiyield.app
     MAIL_QUESTION_FROM: mail@defiyield.app
     MAIL_QUESTION_TO: hr@defiyield.app
   gas:
-    GAS_API_URL: https://data-api.defipulse.com/api/v1
-    GAS_CURRENT_PATH: egs/api/ethgasAPI.json
-    GAS_API_KEY: 7a54010743b9e2692bd52232e3e06c871df2261205dcb0663a57235b2306
+    GAS_API_URL: https://www.gasnow.org/api/v3
+    GAS_CURRENT_PATH: gas/price?utm_source=defi
     GAS_HISTORY_PATH: gas-hist
-  portal:
+  old_api:
     DEFIYIELD_INFO_2_URL: https://api2.defiyield.info
     TOKENS_PATH: tokens
     DEFIYIELD_INFO_MAIN_URL: https://apimain.defiyield.info
     APPROVALS_PATH: tool/approvals/eth
-    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    SOLANA_NAME_SERVICE_PUBLIC_KEY: 58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx
-    SOL_URL: https://solana-api.projectserum.com
-  endpoints:
+    IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
+  price_endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
     PRICE_STATUS: v1/status
@@ -31,6 +30,7 @@ configMaps:
     PRICE_CURRENCIES_PATH: v1/currencies
     PRICE_BATCH_PATH: v1/prices/batch
     PRICE_RANGE_PATH: v1/priceRange
+  integration_endpoints:
     INTEGRATION_SERVICE_HOST: http://integration-service
     INTEGRATION_SERVICE_PORT: 80
     INTEGRATION_STATUS: v1/status
@@ -42,9 +42,11 @@ configMaps:
     INTEGRATION_PROTOCOLS: v1/protocols
     INTEGRATION_SPOOKYSWAP: v1/integration/spookyswap
     INTEGRATION_PANGOLIN: v1/integration/pangolin
-    INTEGRATION_NFT_ASSETS: v1/nft/assets
-    INTEGRATION_PROTOCOLS_V2: v2/protocols
-    INTEGRATION_SEARCH_URL: v1/protocols/search
+    POOLS_SERVICE_URL: https://integration-service
+    POOLS_PATH: v1/pools
+    VAULTS_SERVICE_URL: https://integration-service
+    VAULTS_PATH: v1/vaults
+  account_endpoints:
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_STATUS: v1/status
@@ -54,14 +56,7 @@ configMaps:
     ACCOUNT_TRANSFERS: v1/transfers
     ACCOUNT_ASSETS: v1/assets
     ACCOUNT_ANALYTIC: v1/analytic
-    ACCOUNT_24H_RETURNS: v1/balances/24-hour-returns
-    ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
-    ACCOUNT_SEARCH_URL: v1/assets/search
-    POOLS_SERVICE_URL: https://integration-service
-    POOLS_PATH: v1/pools
-    VAULTS_SERVICE_URL: https://integration-service
-    VAULTS_PATH: v1/vaults
-    IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
+  safe_endpoints:
     SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
     SAFE_PROXY_SERVICE_PORT: 80
     SAFE_PROXY_STATUS: v1/status
@@ -71,38 +66,14 @@ configMaps:
     SAFE_PROXY_SCAMS: v1/scams
     SAFE_PROXY_SCAM_TYPES: v1/scams/types
     SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
-    NFT_ASSETS: v1/nft/assets
-    NFT_PROJECTS: v1/nft/projects
-    NFT_COLLECTIONS: v1/nft/collections
-    OPPORTUNITIES_SERVICE_HOST: https://eop.dfyield.xyz
-    OPPORTUNITIES_SERVICE_PORT: 443
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: production
-    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
-  temp:
-    REDIS_HOST: 3.69.250.41
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    BSCSCAN_URL: https://api.bscscan.com/api
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    ETHERSCAN_URL: https://api.etherscan.io/api
-    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    ETHERSCAN_API_URL: https://api.etherscan.io/api
-    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    AWS_REGION: eu-central-1
-    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
-    AWS_SECRET_ACCESS_KEY: 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
-    MAILER_HOST: smtp.gmail.com
-    MAILER_USER: mail@defiyield.app
-    MAILER_PASS: gpBG5tqfjp7LQkAc
 
 secrets:
-- mailer
-- redis
-- bscscan
-- etherscan
-- logs
+  - mailer
+  - redis
+  - bscscan
+  - etherscan
+  - logs

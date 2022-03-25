@@ -109,11 +109,14 @@ export async function process(): Promise<void> {
 
     /** Cardano SundaeSwapService Place */
     const tokensPrices = await SundaeSwapService.getTokensPrices();
+    const missedTokensInCardanoChain = new Set(
+      missedChainPricesMap.get(ChainIdEnum.cardano.toString()),
+    );
     const cardanoPrices: CurrentPriceInterface[] = [];
 
     for (const token of tokensPrices) {
       const address = token.assetB.assetId.replace(/\./g, '');
-      if (token.assetB.decimals !== null) {
+      if (token.assetB.decimals !== null && missedTokensInCardanoChain.has(address)) {
         cardanoPrices.push({
           address: address,
           price: new BigNumber(token.priceUSD).toNumber(),
@@ -224,11 +227,7 @@ function buildCoingeckoRequestsMap(
     );
 
     const mapItem = chunks.flatMap((c) => {
-      const splited = partition(c, (i) => typeof i !== 'string');
-
-      const ids = splited[0] as { address: string; coingeckoId: any }[];
-      const contracts = splited[1] as string[];
-
+      const [ids, contracts] = partition(c, (i) => typeof i !== 'string');
       const requestItem = [];
       if (ids.length > 0) {
         requestItem.push({

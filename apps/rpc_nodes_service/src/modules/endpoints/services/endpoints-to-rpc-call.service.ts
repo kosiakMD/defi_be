@@ -18,6 +18,7 @@ import { EndpointToRPCCall, SuccessScore } from '../endpoints.types';
 @Injectable()
 export class EndpointsToRPCCallService {
   private readonly endpointsToRPCCall = new Map<number, EndpointToRPCCall[]>();
+
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,
@@ -26,43 +27,6 @@ export class EndpointsToRPCCallService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.updateFromDatabaseEndpointsToRPCCall();
-  }
-
-  private successRateCacheKey(endpointToRPCCall: EndpointToRPCCall): string {
-    return `${endpointToRPCCall.endpointsEntity.chainId}${endpointToRPCCall.endpointsEntity.endpoint}`;
-  }
-
-  private filterEndpointSuccessScores(endpointSuccessScores: SuccessScore[]): SuccessScore[] {
-    const now = Date.now();
-    const endpointsSuccessRateTTL = this.configService.get('ENDPOINTS_SUCCESS_RATE_TTL');
-    const endpointsSuccessRateMaxItemsNum = this.configService.get(
-      'ENDPOINTS_SUCCESS_RATE_MAX_ITEMS_NUM',
-    );
-    return endpointSuccessScores.filter(
-      (score: SuccessScore, index: number) =>
-        index < endpointsSuccessRateMaxItemsNum - 1 &&
-        now - score.timestamp < endpointsSuccessRateTTL,
-    );
-  }
-
-  private async getEndpointToRPCSuccessRateCache(
-    endpointToRPCCall: EndpointToRPCCall,
-  ): Promise<SuccessScore[]> {
-    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
-    const endpointSuccessScores: string = await this.cacheManager.get(cacheKey);
-    return JSON.parse(endpointSuccessScores || '[]');
-  }
-
-  private async setEndpointToRPCSuccessRateCache(
-    endpointToRPCCall: EndpointToRPCCall,
-    successScores: SuccessScore[],
-  ): Promise<void> {
-    const endpointsSuccessRateHistoryTTL =
-      (this.configService.get('ENDPOINTS_SUCCESS_RATE_HISTORY_TTL') || 24 * 60) * 1000;
-    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
-    await this.cacheManager.set(cacheKey, JSON.stringify(successScores), {
-      ttl: endpointsSuccessRateHistoryTTL,
-    });
   }
 
   getEndpointsToRPCCall(chainId: number): EndpointToRPCCall[] {
@@ -142,7 +106,7 @@ export class EndpointsToRPCCallService {
             endpointsToRPCCall[endpoint.chainId].push(newEndpoint);
           }
         });
-      } catch (error) {
+      } catch (error: any) {
         this.logger.error(`Error to update Endpoints from Database ${error.message}`);
         return;
       }
@@ -167,5 +131,42 @@ export class EndpointsToRPCCallService {
   async handleUpdateFromDatabaseCron() {
     this.logger.log('Called every 30 seconds, updateFromDatabaseEndpointsToRPCCall');
     await this.updateFromDatabaseEndpointsToRPCCall();
+  }
+
+  private successRateCacheKey(endpointToRPCCall: EndpointToRPCCall): string {
+    return `${endpointToRPCCall.endpointsEntity.chainId}${endpointToRPCCall.endpointsEntity.endpoint}`;
+  }
+
+  private filterEndpointSuccessScores(endpointSuccessScores: SuccessScore[]): SuccessScore[] {
+    const now = Date.now();
+    const endpointsSuccessRateTTL = this.configService.get('ENDPOINTS_SUCCESS_RATE_TTL');
+    const endpointsSuccessRateMaxItemsNum = this.configService.get(
+      'ENDPOINTS_SUCCESS_RATE_MAX_ITEMS_NUM',
+    );
+    return endpointSuccessScores.filter(
+      (score: SuccessScore, index: number) =>
+        index < endpointsSuccessRateMaxItemsNum - 1 &&
+        now - score.timestamp < endpointsSuccessRateTTL,
+    );
+  }
+
+  private async getEndpointToRPCSuccessRateCache(
+    endpointToRPCCall: EndpointToRPCCall,
+  ): Promise<SuccessScore[]> {
+    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
+    const endpointSuccessScores: string = await this.cacheManager.get(cacheKey);
+    return JSON.parse(endpointSuccessScores || '[]');
+  }
+
+  private async setEndpointToRPCSuccessRateCache(
+    endpointToRPCCall: EndpointToRPCCall,
+    successScores: SuccessScore[],
+  ): Promise<void> {
+    const endpointsSuccessRateHistoryTTL =
+      (this.configService.get('ENDPOINTS_SUCCESS_RATE_HISTORY_TTL') || 24 * 60) * 1000;
+    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
+    await this.cacheManager.set(cacheKey, JSON.stringify(successScores), {
+      ttl: endpointsSuccessRateHistoryTTL,
+    });
   }
 }

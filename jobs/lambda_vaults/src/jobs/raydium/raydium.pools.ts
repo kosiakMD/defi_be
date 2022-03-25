@@ -132,7 +132,7 @@ export class RaydiumPools implements JobInterface {
           },
         });
         liquidityPoolFeatures.push(lpFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to build initial mapping for lp token [${p.lpMint.toBase58()}], chain [${
             this.chain

@@ -143,7 +143,7 @@ export class AutofarmStakingBSC implements JobInterface {
 
             stakingFeatures.push(stakingPoolFeature);
           }
-        } catch (e) {
+        } catch (e: any) {
           this.logger.error(
             `error to get token data from account service, chain [${this.chain}], address [${value.want}]`,
             this.placeholder,
@@ -238,7 +238,7 @@ export class AutofarmStakingBSC implements JobInterface {
       this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
       /* added for the case when there is no token price in bd
-      and we can get want token price from this api data(temporary decision)
+       and we can get want token price from this api data(temporary decision)
        */
       this.autofarmApiService.getAutofarmPoolsData(ChainIdEnum.bnb),
     ]);
@@ -257,7 +257,7 @@ export class AutofarmStakingBSC implements JobInterface {
 
           try {
             multicallVault = await this.multicallService.handleInBatches(calls, ChainIdEnum.bnb);
-          } catch (e) {
+          } catch (e: any) {
             return m;
           }
 

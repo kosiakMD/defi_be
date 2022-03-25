@@ -21,7 +21,7 @@ export class UniSwapV2PairMulticall {
         Object.assign(reserves, sliceReserves);
       }
       return reserves;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get reserves batch multicall failed', e);
       throw e;
     }
@@ -49,7 +49,7 @@ export class UniSwapV2PairMulticall {
         };
       });
       return [blockNumber, allReserves];
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get reserves multicall failed', e);
       throw e;
     }
@@ -73,7 +73,7 @@ export class UniSwapV2PairMulticall {
         }
       }
       return assetPairsResult;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get pairs batch multicall failed', e);
       throw e;
     }
@@ -91,7 +91,7 @@ export class UniSwapV2PairMulticall {
       return multicallResponse?.returnData.map((data) => {
         return add0xSuffix(String(data).slice(26));
       });
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get pairs multicall failed', e);
       throw e;
     }

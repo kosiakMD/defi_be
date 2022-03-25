@@ -130,7 +130,7 @@ export class CurvePoolsArbi extends CurvePoolBase {
         });
         curveLiquidityPoolFeature.tokens = tokens;
         resultMapping.push(curveLiquidityPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(e, 'fillChainData');
       }
     });

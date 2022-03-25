@@ -46,7 +46,7 @@ export class TransfersDbService {
       this.logger.debug(`transfers: ${transfers.length} chainId: ${chainId}`);
 
       return transfers;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.timeEnd(timeMark);
       this.logger.error(e, timeMark);
       throw e;

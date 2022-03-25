@@ -202,7 +202,7 @@ export class AnchorLending {
         });
       }
       return [lending, borrowing, claimable];
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getLendingAndBorrowingData');
     }
   }

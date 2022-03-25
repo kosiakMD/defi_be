@@ -73,7 +73,7 @@ export class PricesController {
         statusCode: HttpStatus.CREATED,
         message: 'Asset price has been successfully updated',
       };
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error);
       throw error;
     }
@@ -83,7 +83,7 @@ export class PricesController {
   async getAllCurrentPrices() {
     try {
       return await this.priceService.getAllAssetsCurrentPrices();
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(error);
       throw error;
     }

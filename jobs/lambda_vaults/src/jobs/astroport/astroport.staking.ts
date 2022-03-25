@@ -97,7 +97,7 @@ export class AstroportStaking implements JobInterface {
             },
           });
           lpRewardsMap.set(pool, Object.values(rewardsObj));
-        } catch (e) {
+        } catch (e: any) {
           //
         }
       }),
@@ -185,7 +185,7 @@ export class AstroportStaking implements JobInterface {
         );
 
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data from account service, chain [${this.chain}], address [${address}]`,
           this.placeholder,

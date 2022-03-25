@@ -391,7 +391,7 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
         });
         curveLiquidityPoolFeature.tokens = tokens;
         return curveLiquidityPoolFeature;
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(e, 'fillChainData');
       }
     });

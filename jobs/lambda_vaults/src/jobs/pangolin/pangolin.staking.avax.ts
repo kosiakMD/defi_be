@@ -139,7 +139,7 @@ export class PangolinStakingAvax implements JobInterface {
         );
 
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data from account service, chain [${this.chain}], address [${address}]`,
           this.placeholder,
@@ -451,7 +451,7 @@ export class PangolinStakingAvax implements JobInterface {
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
           return m;
         }
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(e, 'Error during map staking positions');
       }
     });
@@ -551,7 +551,7 @@ export class PangolinStakingAvax implements JobInterface {
         addressesSet.add(m.rewards[0].address);
       });
       return addressesSet;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getPricedTokensSet');
     }
   }

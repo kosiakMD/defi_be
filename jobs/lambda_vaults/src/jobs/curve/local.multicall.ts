@@ -78,7 +78,7 @@ export class LocalMultiCall extends MultiCall {
         });
       });
       return resultMap;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getGaugeRewardTokens');
     }
   }

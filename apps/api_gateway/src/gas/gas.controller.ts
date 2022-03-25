@@ -42,7 +42,7 @@ export class GasController {
             ttl: GAS_CURRENT_CACHE_TIME_IN_SEC,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
+      } catch (e: any) {
         gas = await this.cacheManager.get<any>(cacheKey);
         if (!gas) {
           throw e;
@@ -74,7 +74,7 @@ export class GasController {
             ttl: GAS_HISTORY_CACHE_TIME_IN_SEC,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
+      } catch (e: any) {
         gas = await this.cacheManager.get<any>(cacheKey);
         if (!gas) {
           throw e;

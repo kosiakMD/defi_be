@@ -27,7 +27,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
     try {
       const wallet = await cardano.addresses(address);
       return this.mapCardanoResponse(wallet, tokensFilter, chainId);
-    } catch (error) {
+    } catch (error: any) {
       return this.returnZeroBalanceAddressOrError(error, chainId);
     }
   }

@@ -58,7 +58,7 @@ export class AssetsController {
   async getAllAssets(): Promise<AssetDto[]> {
     try {
       return await this.assetsService.queryAllAssets();
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'AssetsController.getAllAssets');
       throw e;
     }
@@ -127,7 +127,7 @@ export class AssetsController {
     try {
       await this.assetsPoolsService.saveAssetsPoolsToDb(body);
       res.status(HttpStatus.CREATED).send(AssetsService.getResponseObject(true));
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       const response = AssetsService.getResponseObject();
       response.error = e.stack;

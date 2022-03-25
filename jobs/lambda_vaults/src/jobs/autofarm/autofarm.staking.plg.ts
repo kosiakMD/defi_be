@@ -185,7 +185,7 @@ export class AutofarmStakingPLG implements JobInterface {
         );
 
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error, chain [${this.chain}], address [${address}] - ${e.message}`,
           this.placeholder,

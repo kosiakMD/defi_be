@@ -13,6 +13,7 @@ export const curveApiUrl = 'https://api.curve.fi/api';
 
 export class CurveApi {
   protected logger: Logger;
+
   constructor(logger: Logger) {
     this.logger = logger;
   }
@@ -21,7 +22,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprs');
       throw e;
     }
@@ -31,7 +32,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get('https://stats.curve.fi/raw-stats-crypto/apys.json');
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsCryptoAprs');
       throw e;
     }
@@ -41,7 +42,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`${curveApiUrl}/getApys`);
       return data?.data;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getCrvAprForMainPools');
       throw e;
     }
@@ -51,7 +52,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`${curveApiUrl}/getMainPoolsGaugeRewards`);
       return data?.data?.mainPoolsGaugeRewards;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getAdditionalRewardTokensInfo');
       throw e;
     }
@@ -61,7 +62,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`${curveApiUrl}/getFactoryAPYs?version=2`);
       return data?.data?.poolDetails;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getFactoryApysV2');
       throw e;
     }
@@ -71,7 +72,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`${curveApiUrl}/getFactoryV2Pools`);
       return data?.data?.poolData;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getFactoryV2Pools');
       throw e;
     }
@@ -81,7 +82,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-polygon/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprPlg');
       throw e;
     }
@@ -91,7 +92,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-avalanche/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprAvax');
       throw e;
     }
@@ -101,7 +102,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-ftm/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprFtm');
       throw e;
     }
@@ -111,7 +112,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-arbitrum/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprArbi');
       throw e;
     }
@@ -121,7 +122,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-optimism/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprOpt');
       throw e;
     }
@@ -131,7 +132,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-harmony/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprHarm');
       throw e;
     }
@@ -141,7 +142,7 @@ export class CurveApi {
     try {
       const { data } = await axios.get(`https://stats.curve.fi/raw-stats-xdai/apys.json`);
       return data?.apy?.day;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getMainPoolsAprGnosis');
       throw e;
     }

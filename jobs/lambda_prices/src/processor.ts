@@ -58,7 +58,7 @@ export async function process(): Promise<void> {
     await PriceService.saveAssetsPrices(assetsPrices);
 
     logger.info(`Done. ${assetsPrices.length} prices stored`);
-  } catch (e) {
+  } catch (e: any) {
     logger.error('Processing prices failed', e);
     throw e;
   }
@@ -82,8 +82,8 @@ function buildAssetsMap(assets: AssetsApiDto[]) {
 }
 
 /* function to check if the assetsPools data is actual for the current time and is it needs to do updated.
-    We need to do this because new asset pools may appear over time and we need to track them
-    to be able to calculate token prices
+ We need to do this because new asset pools may appear over time and we need to track them
+ to be able to calculate token prices
  */
 function checkAssetPairsUpdateDate(asset: AssetsApiDto) {
   const randomHour = Math.floor(Math.random() * (poolUpdateHours / 2 - 1) + 1);
@@ -219,7 +219,7 @@ async function updateAssetWithPairData(
     } else {
       asset.pairs.push(pair);
     }
-  } catch (e) {
+  } catch (e: any) {
     logger.error(e.message);
     return;
   }
@@ -243,9 +243,9 @@ function getTokensPricesFromReserves(
   const wrappedAsset = assets.find(({ address }) => address === wrappedCoin);
 
   /*
-  First we need to calculate the price of the wrappedToken, and then having its price find the
-  prices for other tokens. TokensCategories define the strategy for finding tokens reserves values
-  and tokens prices.
+   First we need to calculate the price of the wrappedToken, and then having its price find the
+   prices for other tokens. TokensCategories define the strategy for finding tokens reserves values
+   and tokens prices.
    */
   const wrappedCoinPrice = getTokenPrice(wrappedAsset, pairsReserves, TokensCategories.base);
   const baseTokensPrices = new Map<string, PriceDto>();

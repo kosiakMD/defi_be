@@ -7,7 +7,7 @@ export class PriceService {
   static async saveAssetsPrices(data: PriceDto[]): Promise<void> {
     try {
       await axios.post(`${priceServiceUrl}/v1/prices/current`, data);
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Saving assets prices failed', e);
       throw e;
     }

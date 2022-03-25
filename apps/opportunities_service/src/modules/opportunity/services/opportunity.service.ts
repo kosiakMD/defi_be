@@ -44,7 +44,7 @@ export class OpportunityService {
       ]);
 
       return { success: true, count };
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'OpportunityService.sync');
       return { success: false, count: 0, error: e.message };
     }

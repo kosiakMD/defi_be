@@ -52,7 +52,7 @@ export abstract class DataProviderProtocol extends BasicProtocol {
       )?.leverageFarmingPositions;
 
       return { rawPools, rawStaking, rawLending, rawBorrowing, rawLeverageFarming };
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw e;
     }

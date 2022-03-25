@@ -95,7 +95,7 @@ export class PangolinProtocol extends UniswapLikeProtocol implements AbstractPro
         });
 
         baseData.push(toAdd);
-      } catch (e) {
+      } catch (e: any) {
         errors.push(e.message);
       }
     });

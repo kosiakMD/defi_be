@@ -27,6 +27,7 @@ export class CoingeckoService {
     private httpService: HttpService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
+
   async get250MarketTop(): Promise<CoinsMarketsTop[]> {
     try {
       this.logger.time(`request: ${COIN_GECKO_250_MARKET_TOP_URL}`);
@@ -36,7 +37,7 @@ export class CoingeckoService {
         .toPromise();
       this.logger.timeEnd(`request: ${COIN_GECKO_250_MARKET_TOP_URL}`);
       return marketTop250;
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}, get250MarketTop`));
         if (e.response) {
@@ -58,7 +59,7 @@ export class CoingeckoService {
         .toPromise();
       this.logger.timeEnd(`request: ${COIN_GECKO_COINS_LIST_URL}`);
       return coinsList;
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}, getCoinsList`));
         if (e.response) {
@@ -84,7 +85,7 @@ export class CoingeckoService {
         .toPromise();
       this.logger.timeEnd(`request: ${COIN_MARKET_CAP_LIST_URL}`);
       return marketCapCoinsList;
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}, getCoinsListFromCoinMarketCap`));
         if (e.response) {
@@ -110,7 +111,7 @@ export class CoingeckoService {
         `request: ${COIN_GECKO_COIN_PRICE_URL}, count of ids: ${ids.length}, currency: ${USD}`,
       );
       return coinsPrices;
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`URL ${e.code || ' '}${e.config.url}`), 'getCoinsPricesUsd');
         if (e.response) {

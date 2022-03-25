@@ -31,7 +31,7 @@ export class MINTER {
           const value = (resp as PromiseFulfilledResult<string>).value;
           return value === CURVE_MAIN_COIN_ADDRESS ? ZERO_ADDRESS : value.toLowerCase();
         });
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getCoinsArray');
       throw e;
     }

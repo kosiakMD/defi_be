@@ -22,6 +22,7 @@ export type TokenPricesExtended = { [key: string]: { value: number; ['db_id']: a
 @Injectable()
 export class DatabaseService {
   private CURRENT_PRICE_SECONDS_INTERVAL;
+
   constructor(@Inject(NEST_PGPROMISE_CONNECTION) public pg: IDatabase<any>) {
     this.CURRENT_PRICE_SECONDS_INTERVAL = process.env.CURRENT_PRICE_SECONDS_INTERVAL
       ? parseInt(process.env.CURRENT_PRICE_SECONDS_INTERVAL)
@@ -237,14 +238,14 @@ export class DatabaseService {
               values +
               '',
           );
-        } catch (e) {
+        } catch (e: any) {
           //console.log(dbErr);
         }
         await this.pg.any('UPDATE prices.asset SET is_new = false WHERE id = $1', coin_id + '');
       }
 
       return true;
-    } catch (e) {
+    } catch (e: any) {
       return false;
     }
   };
@@ -287,7 +288,7 @@ export class DatabaseService {
           //console.log('some error with ', prices[address]);
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       //console.log(e);
     }
     return;

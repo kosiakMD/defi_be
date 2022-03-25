@@ -168,7 +168,7 @@ export class AstroportStaking {
       );
 
       return balanceMap;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getStakingBalances');
     }
   }

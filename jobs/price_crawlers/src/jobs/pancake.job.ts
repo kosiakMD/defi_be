@@ -94,7 +94,7 @@ export class PancakeJob {
 
       this.logger.timeEnd('PANCAKE: Current Prices');
       done();
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       this.logger.timeEnd('PANCAKE: Current Prices');
       done();

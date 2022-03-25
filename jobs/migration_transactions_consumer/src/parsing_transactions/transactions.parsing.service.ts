@@ -35,6 +35,7 @@ import {
 @Injectable()
 export class TransactionsParsingService {
   private readonly ethProvider: Web3;
+
   constructor(
     private assetPublisherService: AssetPublisherService,
     @InjectRepository(AssetsNewEntity)
@@ -168,7 +169,7 @@ export class TransactionsParsingService {
       const result = await this.ethProvider.eth.getTransactionReceipt(hash);
       this.logger.timeEnd(timeMark);
       return result?.gasUsed;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getGasUsedFromWeb3');
       throw e;
     }

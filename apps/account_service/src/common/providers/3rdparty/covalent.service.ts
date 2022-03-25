@@ -55,7 +55,7 @@ export class CovalentService {
       } else {
         return result.data;
       }
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`URL ${e.code || ' '}${e.config.url}`), 'getBalances');
         if (e.response?.data) {
@@ -92,7 +92,7 @@ export class CovalentService {
       } else {
         return result.data;
       }
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(
           new Error(

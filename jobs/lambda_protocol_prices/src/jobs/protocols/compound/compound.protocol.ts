@@ -60,7 +60,7 @@ export class CompoundProtocol extends ProtocolBase implements IProtocolPriceUpda
       const formatted = this.formatExchangeRatePrices(cTokenData, underlyingAssetMap);
       this.logger.timeEnd(timeKey);
       return formatted;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error('Failed to update Compound.finance cToken prices', e);
       return [];
     }

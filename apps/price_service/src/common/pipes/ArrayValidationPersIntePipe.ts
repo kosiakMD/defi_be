@@ -21,7 +21,7 @@ export class ArrayValidationParseIntPipe implements PipeTransform<string[], numb
         }
         return result;
       });
-    } catch (e) {
+    } catch (e: any) {
       throw new BadRequestException(this.errMsg(this.field));
     }
     return value;

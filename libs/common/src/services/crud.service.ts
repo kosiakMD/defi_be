@@ -9,7 +9,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
   public async getAll(conditions?: FindManyOptions<T>): Promise<T[]> {
     try {
       return await this.entityRepository.find(conditions);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -17,7 +17,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
   public async get(conditions: FindConditions<T>): Promise<T> {
     try {
       return await this.entityRepository.findOne(conditions);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -25,7 +25,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
   public async getOneOrFail(conditions: FindConditions<T>): Promise<T> {
     try {
       return await this.entityRepository.findOneOrFail(conditions);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -34,7 +34,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
     try {
       const entity = this.entityRepository.create(projection);
       return await this.entityRepository.save(entity);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -47,7 +47,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
       }
 
       return await this.entityRepository.update(conditions, projection);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -55,7 +55,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
   public async deleteOne(conditions): Promise<void> {
     try {
       await this.entityRepository.delete(conditions);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -70,7 +70,7 @@ export abstract class CrudService<T extends DeepPartial<T>> {
       await this.entityRepository.update(conditions, {
         isActive: false,
       } as any);
-    } catch (e) {
+    } catch (e: any) {
       throw new HttpException(e.message, e.status || HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

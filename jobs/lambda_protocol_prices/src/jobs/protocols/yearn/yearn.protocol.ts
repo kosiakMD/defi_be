@@ -83,7 +83,7 @@ export class YearnProtocol extends ProtocolBase implements IProtocolPriceUpdate 
       this.logger.timeEnd(timeKey);
 
       return response;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error('Failed to update yearn.finance prices');
       this.logger.error(e);
       return [];

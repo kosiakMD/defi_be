@@ -83,7 +83,7 @@ export class MigrationService {
       this.logger.log('BSC -----> Data successfully saved to DB!!!');
 
       await this.sendAssetEventsToQueue(bscResponse.migrationEvents);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
     }
   }
@@ -101,7 +101,7 @@ export class MigrationService {
       this.logger.log('ETH ----> Start saving data to DB!!!');
       await this.saveDataToDb(ethResponse.eventsResponse, ethResponse.blocksResponse);
       this.logger.log('ETH -----> Data successfully saved to DB!!!');
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
     }
   }
@@ -118,7 +118,7 @@ export class MigrationService {
       this.logger.log('ETH ----> Start saving data to DB!!!');
       await this.saveDataToDb(ethResponse.eventsResponse, ethResponse.blocksResponse);
       this.logger.log('ETH -----> Data successfully saved to DB!!!');
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
     }
   }
@@ -135,7 +135,7 @@ export class MigrationService {
       this.logger.log('ETH ----> Start saving data to DB!!!');
       await this.saveDataToDb(ethResponse.eventsResponse, ethResponse.blocksResponse);
       this.logger.log('ETH -----> Data successfully saved to DB!!!');
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
     }
   }

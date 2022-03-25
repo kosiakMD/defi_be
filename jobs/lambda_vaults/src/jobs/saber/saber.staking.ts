@@ -165,7 +165,7 @@ export class SaberStaking implements JobInterface {
           },
         });
         stakingFeatures.push(stakingFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to build initial mapping for farm [${farm.id} / ${farm.quarry}], chain [${this.chain}]`,
           this.placeholder,

@@ -166,7 +166,7 @@ export class CurveStaking {
         }
       });
       return balanceMap;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getStakingBalances');
     }
   }
@@ -217,7 +217,7 @@ export class CurveStaking {
         resultMap.set(key, rewardsMap);
       });
       return resultMap;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getNonEthRewards');
     }
   }

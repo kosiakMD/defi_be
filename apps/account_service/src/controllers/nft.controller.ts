@@ -43,7 +43,7 @@ export class NftController {
   public getProjects(): NftServiceInfo[] {
     try {
       return this.nftService.getProjects();
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw e;
     }
@@ -64,7 +64,7 @@ export class NftController {
 
     try {
       return await this.nftService.getCollections(projectName, addresses, chains, collection);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Nft.getCollections: ${error}`);
       throw error;
     }
@@ -86,7 +86,7 @@ export class NftController {
 
     try {
       return await this.nftService.getAssets(projectName, addresses, collection, chains);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Nft.getAssets: ${error}`);
       throw error;
     }

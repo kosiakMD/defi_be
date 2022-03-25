@@ -48,7 +48,7 @@ export class SearchService extends BaseService {
         const searchResult = await this.getSearchEntries({ address, text, limit });
         return addressSearchResultParser(address, searchResult);
       }
-    } catch (error) {
+    } catch (error: any) {
       this.logger.debug(`Error to resolve address ${error}`);
     }
     return this.getSearchEntries({ text, limit });

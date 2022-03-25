@@ -55,7 +55,7 @@ export class LocalMultiCall extends MultiCall {
         });
       }
       return lpBalances;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getLpTokensBalances');
       throw e;
     }
@@ -119,7 +119,7 @@ export class LocalMultiCall extends MultiCall {
       });
 
       return stakingPositions;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getStakingPositions');
       throw e;
     }
@@ -256,7 +256,7 @@ export class LocalMultiCall extends MultiCall {
         }
       }
       return lpTokensData;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getLpTokenData');
       throw e;
     }
@@ -283,7 +283,7 @@ export class LocalMultiCall extends MultiCall {
         });
       }
       return tokensBorrowing;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getBorrowBalances');
       throw e;
     }

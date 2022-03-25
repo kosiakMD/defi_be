@@ -11,7 +11,7 @@ export class AssetsService {
         params: { chainId },
       });
       return data;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get assets failed', e);
       throw e;
     }
@@ -20,7 +20,7 @@ export class AssetsService {
   static async saveAssets(request: AddAssetsRequest): Promise<void> {
     try {
       await axios.post(`${tokenServiceUrl}/v1/assets`, request);
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Save assets pairs failed', e);
       throw e;
     }

@@ -13,7 +13,7 @@ export class AssetsService {
         params: { chainId },
       });
       return data;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get assets failed', e);
       throw e;
     }
@@ -29,7 +29,7 @@ export class AssetsService {
 
     try {
       await Promise.all(promises);
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Save assets pairs failed', e);
       throw e;
     }

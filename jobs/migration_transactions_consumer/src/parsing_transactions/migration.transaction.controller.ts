@@ -27,7 +27,7 @@ export class MigrationTransactionController {
       );
       await this.transactionsParsingService.parseTransactions(data);
       context.getChannelRef().ack(context.getMessage());
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       this.logger.error('error during transaction data migration ' + JSON.stringify(data));
       // make delay in order to avoid next consumer overloading

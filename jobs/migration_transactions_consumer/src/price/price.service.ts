@@ -38,7 +38,7 @@ export class PriceService {
         .toPromise();
       this.logger.timeEnd(`request: chain=${chainId} ${this.getBatchPriceUrl}`);
       return prices;
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}`));
         if (e.response) {

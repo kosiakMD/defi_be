@@ -14,7 +14,7 @@ export class SundaeSwapService {
           variables: { pageSize: 200 },
         })
         .then((responce) => responce.data?.data?.poolsPopular || []);
-    } catch (e) {
+    } catch (e: any) {
       logger.error('SundaeSwap token list call failed ' + e.message);
       throw e;
     }

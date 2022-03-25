@@ -111,7 +111,7 @@ export class IntegrationsService {
     let info: ProtocolBasicInfo;
     try {
       info = protocol.getInfo();
-    } catch (e) {
+    } catch (e: any) {
       response.errors.push(e);
     }
     // Protocol Info

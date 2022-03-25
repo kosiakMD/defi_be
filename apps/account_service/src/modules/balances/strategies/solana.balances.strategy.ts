@@ -33,7 +33,7 @@ export class SolanaBalancesStrategy implements BalancesLoadingStrategy {
     let pubKey;
     try {
       pubKey = new PublicKey(address);
-    } catch (e) {
+    } catch (e: any) {
       // don't do anything because log and errors will cause a lot of redundant messages
       return tokenBalances;
     }

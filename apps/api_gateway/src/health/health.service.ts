@@ -72,7 +72,7 @@ export class ServiceHealthIndicator extends HealthIndicator {
         .toPromise();
       this.logger.timeEnd('request: ' + getStatusUrl);
       return data;
-    } catch (e) {
+    } catch (e: any) {
       e.response && this.logger.error(e.response.data);
       throw e;
     }
@@ -82,7 +82,7 @@ export class ServiceHealthIndicator extends HealthIndicator {
     try {
       const getStatusUrl = this[`get${serviceName}StatusUrl`];
       return await this.isServiceHealthy(getStatusUrl);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'healthyRequest', 'ServiceHealthIndicator');
       Sentry.captureException(e, {
         level: Severity.Error,

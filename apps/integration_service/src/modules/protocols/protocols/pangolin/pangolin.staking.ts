@@ -34,6 +34,7 @@ import { PangolinAddresses } from './pangolin.addresses';
 @Injectable()
 export class PangolinStaking {
   private readonly multicall: MulticallService;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -42,6 +43,7 @@ export class PangolinStaking {
   ) {
     this.multicall = multicallProvider.getForChain(ChainAbbrEnum.avax);
   }
+
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${PangolinProtocolEnum.pangolin}_${FeatureEnum.staking}`;
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);
@@ -168,7 +170,7 @@ export class PangolinStaking {
             const userBalances = balanceMap.get(address);
             userBalances ? userBalances.push(result) : balanceMap.set(address, [result]);
           }
-        } catch (e) {
+        } catch (e: any) {
           this.logger.error(e, 'getStakingBalanceAndClaimableRewards');
         }
       });

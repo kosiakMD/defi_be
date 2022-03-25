@@ -241,7 +241,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
           errors.push(...addressData.errors);
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       errors.push(e.message);
     }
 
@@ -539,7 +539,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
 
       const staking = await this.getGenericMasterChef(address, chain, users, masterChef);
       return [staking, []];
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       return [
         {
@@ -650,7 +650,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       );
 
       return this.getGenericMasterChef(address, chain, users, masterChef);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw new Error(`Chain: ${chain.id} - Failed to get masterchef data`);
     }
@@ -667,7 +667,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
       );
 
       return this.getGenericMasterChef(address, chain, users, masterChef);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw new Error(`Chain: ${chain.id} - Failed to get masterchef data`);
     }

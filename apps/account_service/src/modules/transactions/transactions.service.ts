@@ -175,7 +175,7 @@ export class TransactionsService {
       });
       response.data = plainToClass(TransactionNewDto, dbTsxNew);
       return response;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getTransactionsNew');
       throw e;
     }

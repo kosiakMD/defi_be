@@ -26,7 +26,7 @@ async function handler(): Promise<void> {
     `);
 
     log(`Done. ${rowCount} rows removed`);
-  } catch (e) {
+  } catch (e: any) {
     logError('Unhandled error occurred', e);
     throw e;
   } finally {

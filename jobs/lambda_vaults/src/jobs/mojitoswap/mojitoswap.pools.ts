@@ -8,10 +8,10 @@ import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum, Logger } fr
 import { CallData } from '@app/common/dto/CallData';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
-import { calcTokenPrice } from '@app/common/utils/price';
 import { concatStrings } from '@app/common/utils';
+import { calcTokenPrice } from '@app/common/utils/price';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -26,6 +26,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { JobInterface } from '../job.interface';
 import { JobPoolsBase } from '../job.pools.base';
+import { fillUnderlyingTokens } from '../utils/token';
 import { MojitoswapAddresses } from './addresses';
 import { MasterchefAbis } from './contracts/masterchef.abis';
 import { VaultAbis } from './contracts/vault.abis';
@@ -104,7 +105,7 @@ export class MojitoswapPools extends JobPoolsBase<LiquidityPoolFeature> implemen
           );
           liquidityPools.push(toLiquidityPoolFeature(trackedLiquidityPoolTokenData));
         }
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data to account service, chain [${this.chain}], address [${tokenAddress}]`,
           this.placeholder,
@@ -167,7 +168,7 @@ export class MojitoswapPools extends JobPoolsBase<LiquidityPoolFeature> implemen
 
   async getChainPoolLength(masterchefContract: MasterchefAbis): Promise<BigNumber> {
     const call = new Map<string, CallData>([
-      [ this.poolLengthLabel(), masterchefContract.poolLength() ],
+      [this.poolLengthLabel(), masterchefContract.poolLength()],
     ]);
     const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.kcc);
     return callRsp.get(this.poolLengthLabel()).output.data;
@@ -185,11 +186,7 @@ export class MojitoswapPools extends JobPoolsBase<LiquidityPoolFeature> implemen
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(
-        pricedTokenAddresses,
-        CurrencyIdEnum.usd,
-        ChainIdEnum.kcc,
-      ),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.kcc),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.kcc),
     ]);
 
@@ -214,13 +211,17 @@ export class MojitoswapPools extends JobPoolsBase<LiquidityPoolFeature> implemen
   private setPrices(multicallRsp, prices) {
     this.mapping.forEach((lp) => {
       if (lp.tokens.length === 2) {
-        const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(lp)).output
-          .data;
+        const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(lp)).output.data;
 
         lp.tokens.forEach((t, i, tokens) => {
-          t.price = Number(prices[t.address]) === 0 
-            ? calcTokenPrice([_reserve0, _reserve1], t.positionInPool, prices[tokens[(i + 1) % 2].address]?.toString()) 
-            : Number(prices[t.address]);
+          t.price =
+            Number(prices[t.address]) === 0
+              ? calcTokenPrice(
+                  [_reserve0, _reserve1],
+                  t.positionInPool,
+                  prices[tokens[(i + 1) % 2].address]?.toString(),
+                )
+              : Number(prices[t.address]);
           prices[t.address.toLowerCase()] = prices[t.address.toLowerCase()] ?? t.price.toString();
         });
       }

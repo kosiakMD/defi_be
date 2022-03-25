@@ -384,7 +384,7 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     try {
       const [bd, errors] = await this.getUserPositions(addresses, chain);
       return [bd, errors];
-    } catch (e) {
+    } catch (e: any) {
       return [[], [e.message]];
     }
   }

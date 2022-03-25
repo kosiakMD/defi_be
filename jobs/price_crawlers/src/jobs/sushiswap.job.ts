@@ -10,12 +10,12 @@ import { DatabaseService } from '../services/database.service';
 import { Api } from '../thegraph/api';
 import { toTimestamp } from '../utils/common';
 import {
-  SECONDS_IN_WEEK,
-  SECONDS_IN_TEN_MINUTES,
-  PlatformEnum,
   CHAIN,
   CURRENCY,
+  PlatformEnum,
   SECONDS_IN_DAY,
+  SECONDS_IN_TEN_MINUTES,
+  SECONDS_IN_WEEK,
 } from '../utils/constants';
 import { getRequiredHistoryStartDate } from '../utils/crawlCoin';
 import { getNextDayStart } from '../utils/time';
@@ -160,7 +160,7 @@ export class SushiswapJob {
   //               false,
   //             );
   //           }
-  //         } catch (e) {
+  //         } catch (e: any) {
   //           logger.log(e);
   //           if (e?.response?.status === 404) {
   //             logger.log(`removing token ${coin.symbol}`);
@@ -305,7 +305,7 @@ export class SushiswapJob {
                     resolve(index);
                   }
                 });
-            } catch (e) {
+            } catch (e: any) {
               logger.log(e);
               resolve(index);
             }
@@ -333,7 +333,7 @@ export class SushiswapJob {
         this.logger.timeEnd('SUSHI: Current Prices');
         done();
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
     }
     this.logger.log(`SUSHI: Current Prices Job Done`);
@@ -427,7 +427,7 @@ export class SushiswapJob {
 
               if (prices.length === 0)
                 await databaseService.updateAssetHistoryTimestamp(coin.id, fromTs);
-            } catch (err) {
+            } catch (err: any) {
               logger.error(err, `Token ${coin.id} price checking error`);
               return resolve(null);
             }

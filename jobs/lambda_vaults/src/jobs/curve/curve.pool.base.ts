@@ -54,6 +54,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
   protected registryV2Contract: string;
   protected metaPoolFactoryContract: string;
   protected registryPoolsMap: Map<string, string>;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly settingsService: SettingsService,
@@ -334,7 +335,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
       mappedDto.dbId = position.id;
       mappedDto.dtoName = liquidityPool.constructor.name;
       return mappedDto;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'toDbMapping');
     }
   }
@@ -399,8 +400,8 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
               if (coin.tokens?.length) {
                 let lpValue = 0;
                 /* To obtain reserves in some cases need instead the balances method to call
-                the getReserve method on the contract
-                */
+                 the getReserve method on the contract
+                 */
                 const coinReserves =
                   multicallResponses.get(this.getBalancesLabel(coin.address))?.output.data ??
                   (await this.getLpReserves(coin.address));
@@ -442,7 +443,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
           );
           curveLiquidityPoolFeature.tokens = tokens;
           return curveLiquidityPoolFeature;
-        } catch (e) {
+        } catch (e: any) {
           this.logger.error(e, 'fillChainData');
         }
       }),
@@ -459,7 +460,7 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
       );
       const resp = await contract.methods.getReserves().call();
       return Object.values(resp);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.warn(
         `Error during call getReserves method on the lp token ${lpAddress}, chain: ${this.chain}`,
       );

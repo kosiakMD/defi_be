@@ -5,26 +5,22 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
-import {
-  IntegrationPoolTokenDto,
-  IntegrationStakingPositionDto,
-} from '@app/common/jobs/staking';
-
 import { CallData } from '@app/common/dto/CallData';
+import { IntegrationPoolTokenDto, IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
-import { concatStrings } from '@app/common/utils';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { JobInterface } from '../job.interface';
-import { Abis } from './abis/abis.common';
-import { AbisArbi } from './abis/abis.arbi';
-import BadgerAddresses from './addresses/addresses.arbitrum';
 import { DbMapping } from '../utils/dbmapping';
-
+import { AbisArbi } from './abis/abis.arbi';
+import { Abis } from './abis/abis.common';
+import BadgerAddresses from './addresses/addresses.arbitrum';
 import { BadgerStaking } from './badger.staking';
 
 @Injectable()
@@ -64,15 +60,19 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
     for (const [address, poolInfo] of poolsInfo.entries()) {
       try {
         const rewardAddress = poolInfo.reward;
-        
-        const [stakingToken, rewardToken, poolTokenData] = await this.saveTokens(address, rewardAddress);
+
+        const [stakingToken, rewardToken, poolTokenData] = await this.saveTokens(
+          address,
+          rewardAddress,
+        );
 
         const vault = poolInfo.vault.toLowerCase();
 
         const crvPool = this.vaultsToCRVPools.get(vault).pool;
         if (crvPool) {
-          const tokenCount = vault === this.addresses.settVaults.bcrvTricrypto.toLowerCase() ? 3 : 2;
-          
+          const tokenCount =
+            vault === this.addresses.settVaults.bcrvTricrypto.toLowerCase() ? 3 : 2;
+
           const calls = new Map<string, CallData>();
 
           for (let i = 0; i < tokenCount; i++) {
@@ -94,7 +94,9 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
           const tokens = [];
 
           for (let i = 0; i < tokenCount; i++) {
-            const tokenAddress = multicallRsp.get(this.getCoinLabel(address, i)).output.data.toString();
+            const tokenAddress = multicallRsp
+              .get(this.getCoinLabel(address, i))
+              .output.data.toString();
 
             const tokenData = await this.getTokenData(tokenAddress);
 
@@ -122,31 +124,34 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
             stakingToken.tokens.push(poolToken);
           });
         }
-        
-        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-          address: vault,
-          poolId: null,
-          poolName: null,
-          rewards: [rewardToken],
-          stakingToken: stakingToken,
-        });
-        
+
+        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+          IntegrationStakingPositionDto,
+          {
+            address: vault,
+            poolId: null,
+            poolName: null,
+            rewards: [rewardToken],
+            stakingToken: stakingToken,
+          },
+        );
+
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data from account service, chain [${this.chain}], address [${address}]`,
           this.placeholder,
         );
       }
     }
-    
+
     const mappings = [];
     for (let i = 0; i < stakingFeatures.length; i++) {
       mappings.push(await this.dbMapping.toDbMapping(stakingFeatures[i], this.chain));
     }
-    
+
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -168,7 +173,7 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
         },
         output: {},
       });
-      
+
       calls.set(this.getRewardAddressLabel(settStrategy), {
         address: settStrategy,
         abi: Abis.getRewardAddress,
@@ -183,8 +188,12 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
         this.chain,
       );
 
-      const wantAddress = multicallRsp.get(this.getWantLabel(settStrategy)).output.data.toLowerCase();
-      const rewardAddress = multicallRsp.get(this.getRewardAddressLabel(settStrategy)).output.data.toLowerCase();
+      const wantAddress = multicallRsp
+        .get(this.getWantLabel(settStrategy))
+        .output.data.toLowerCase();
+      const rewardAddress = multicallRsp
+        .get(this.getRewardAddressLabel(settStrategy))
+        .output.data.toLowerCase();
 
       poolsInfoMap.set(wantAddress, {
         // covert to lower case once received!
@@ -200,9 +209,7 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
     return poolsInfoMap;
   }
 
-  getCallsForWant(
-    stakingPosition: IntegrationStakingPositionDto
-  ) {
+  getCallsForWant(stakingPosition: IntegrationStakingPositionDto) {
     const calls: Map<string, CallData> = new Map<string, CallData>();
     const wantAddress = stakingPosition.stakingToken.address.toLowerCase();
     const vaultAddress = stakingPosition.address.toLowerCase();
@@ -212,7 +219,7 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
       const crvPool = this.vaultsToCRVPools.get(vaultAddress)?.pool;
       if (crvPool) {
         const tokenCount = stakingPosition.stakingToken.tokens.length;
-        
+
         for (let i = 0; i < tokenCount; i++) {
           calls.set(this.getCoinBalanceLabel(vaultAddress, i), {
             address: crvPool,
@@ -244,7 +251,7 @@ export class BadgerStakingArbi extends BadgerStaking implements JobInterface {
         output: {},
       });
     }
-    
+
     return calls;
   }
 

@@ -161,7 +161,7 @@ export class TerraPoolsCommon extends JobPoolsBase<LiquidityPoolFeature> {
         });
         pairsResp.push(...pairs);
         if (!pairs.length) flag = false;
-      } catch (e) {
+      } catch (e: any) {
         flag = false;
       }
     }
@@ -179,7 +179,7 @@ export class TerraPoolsCommon extends JobPoolsBase<LiquidityPoolFeature> {
               // eslint-disable-next-line camelcase
               token_info: {},
             });
-          } catch (e) {
+          } catch (e: any) {
             this.logger.error('Unable to get token information');
           }
 

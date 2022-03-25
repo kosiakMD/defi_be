@@ -94,16 +94,6 @@ export class CompoundProtocol extends BasicProtocol {
     return [baseData, errors];
   }
 
-  private suppliedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
-    return `supplied_${account.address}_${token.address}`;
-  }
-  private borrowedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
-    return `borrowed_${account.address}_${token.address}`;
-  }
-  private claimableLabel(account): string {
-    return `claimable_${account.id}`;
-  }
-
   async fillBaseData(
     addresses: Address[],
     chain: ChainDto,
@@ -153,7 +143,7 @@ export class CompoundProtocol extends BasicProtocol {
     try {
       await Promise.all(promises);
       return { errors, baseData };
-    } catch (err) {
+    } catch (err: any) {
       errors.push(err.message);
       return { errors, baseData };
     }
@@ -419,6 +409,18 @@ export class CompoundProtocol extends BasicProtocol {
       feature,
       items,
     });
+  }
+
+  private suppliedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
+    return `supplied_${account.address}_${token.address}`;
+  }
+
+  private borrowedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
+    return `borrowed_${account.address}_${token.address}`;
+  }
+
+  private claimableLabel(account): string {
+    return `claimable_${account.id}`;
   }
 }
 

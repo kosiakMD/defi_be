@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 import { coingeckoApiUrl } from '../config';
+import { CoingeckoRequestItemIds } from '../interfaces/coingecko.interface';
 import { logger } from '../utils/logger';
-import { CoingeckoRequestItemIds } from '../interfaces/coingecko.interface'
 import { preparePricesCoingeckoId } from '../utils/modifyData';
 
 export class CoingeckoService {
@@ -24,16 +24,16 @@ export class CoingeckoService {
         },
       );
       return data;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Coingecko simpleTokenPrice call failed ' + e.message);
       throw e;
     }
   }
 
-  static async simplePrice(input: { 
-    ids: string; 
-    vsCurrencies: string; 
-    extras: CoingeckoRequestItemIds; 
+  static async simplePrice(input: {
+    ids: string;
+    vsCurrencies: string;
+    extras: CoingeckoRequestItemIds;
   }) {
     try {
       const { data } = await axios.get(`${coingeckoApiUrl}/api/v3/simple/price`, {
@@ -44,10 +44,8 @@ export class CoingeckoService {
           vs_currencies: input.vsCurrencies,
         },
       });
-      return input.extras 
-        ? preparePricesCoingeckoId(data, input.extras)
-        : data
-    } catch (e) {
+      return input.extras ? preparePricesCoingeckoId(data, input.extras) : data;
+    } catch (e: any) {
       logger.error('Coingecko simplePrice call failed ' + e.message);
       throw e;
     }

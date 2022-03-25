@@ -55,7 +55,7 @@ export class GasService {
         .toPromise();
       this.logger.timeEnd(this.gasCurrentUrl);
       return data;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw e;
     }
@@ -70,7 +70,7 @@ export class GasService {
         .toPromise();
       this.logger.timeEnd(this.gasHistoryUrl);
       return data;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw e;
     }

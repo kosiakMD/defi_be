@@ -233,7 +233,7 @@ export class CurveGaugesBase implements JobInterface {
         );
 
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data from account service, chain [${this.chain}], address [${value.lp}]`,
           this.placeholder,
@@ -542,7 +542,7 @@ export class CurveGaugesBase implements JobInterface {
       });
 
       return this.mapping;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'updateWithChainData');
     }
   }

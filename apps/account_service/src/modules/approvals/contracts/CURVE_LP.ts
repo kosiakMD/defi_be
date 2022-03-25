@@ -30,7 +30,7 @@ export class CURVE_LP {
         .map((address) => {
           return address === CURVE_MAIN_COIN_ADDRESS ? ZERO_ADDRESS : address.toLowerCase();
         });
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getCoinsForLpToken');
       throw e;
     }
@@ -39,7 +39,7 @@ export class CURVE_LP {
   async getMinter() {
     try {
       return (await this.contract.methods.minter().call())?.toLowerCase();
-    } catch (e) {
+    } catch (e: any) {
       return ZERO_ADDRESS;
     }
   }

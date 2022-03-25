@@ -62,7 +62,7 @@ export class MultifarmAdapter implements IOpportunityAdapter {
           async () => {
             try {
               await this.attemptNextMultifarmPage(options);
-            } catch (e) {
+            } catch (e: any) {
               this.logger.debug(`Retrying Page ${options.offset / options.limit + 1}`);
               throw e;
             }

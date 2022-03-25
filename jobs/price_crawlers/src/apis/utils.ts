@@ -31,7 +31,7 @@ export function createHttpClient(): {
         }
         refreshingIp = true;
         tor.torNewSession();
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error('Refresh IP address failed', e);
       } finally {
         refreshingIp = false;

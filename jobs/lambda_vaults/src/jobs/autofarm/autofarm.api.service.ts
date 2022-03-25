@@ -11,6 +11,7 @@ import { Logger } from '@app/common';
 @Injectable()
 export class AutofarmApiService {
   private autofarmApiUrl = new Map<ChainIdEnum, string>();
+
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
@@ -64,7 +65,7 @@ export class AutofarmApiService {
         .toPromise();
 
       return response?.pools;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e.message, 'getAutofarmPoolsData');
       throw e;
     }

@@ -8,7 +8,7 @@ export class AssetsService {
     try {
       const { data } = await axios.get(`${tokenServiceUrl}/v1/assets/all`);
       return data;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Get assets failed', e.message);
       throw e;
     }

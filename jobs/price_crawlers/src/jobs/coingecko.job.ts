@@ -7,27 +7,26 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '../Logger/Logger.service';
 import {
-  getCurrentCoinPrices,
-  getCurrentEthPrice,
-  getCurrentBnbPrice,
   getCoinRangePrices,
   getCoins,
+  getCurrentBnbPrice,
+  getCurrentCoinPrices,
+  getCurrentEthPrice,
 } from '../apis/coingecko.api';
 import { DatabaseService } from '../services/database.service';
-import { isBSC, isChainCurrency, isETH } from '../utils/common';
-import { toTimestamp } from '../utils/common';
+import { isBSC, isChainCurrency, isETH, toTimestamp } from '../utils/common';
 import {
-  CURRENCY,
-  CHAIN_CURRENCY_ADDRESS,
   CHAIN,
-  SECONDS_IN_TEN_MINUTES,
-  SECONDS_IN_HUNDRED_DAYS,
-  TEST_TOKENS,
+  CHAIN_CURRENCY_ADDRESS,
+  CURRENCY,
   PlatformEnum,
   SECONDS_IN_DAY,
+  SECONDS_IN_HUNDRED_DAYS,
+  SECONDS_IN_TEN_MINUTES,
   SECONDS_IN_WEEK,
+  TEST_TOKENS,
 } from '../utils/constants';
-import { getRequiredHistoryStartDate, crawlCoinHistory } from '../utils/crawlCoin';
+import { crawlCoinHistory, getRequiredHistoryStartDate } from '../utils/crawlCoin';
 
 export type TokenPrices = { [key: string]: { value: number; ['db_id']: any } };
 export type TokenPricesShort = { [key: string]: number };
@@ -202,7 +201,7 @@ export class CoingeckoJob {
   //               false,
   //             );
   //           }
-  //         } catch (e) {
+  //         } catch (e: any) {
   //           if (e?.response?.status === 404) {
   //             this.logger.log(`removing token ${coin.symbol}`);
   //             await this.databaseService.removeToken(coin.id);
@@ -366,7 +365,7 @@ export class CoingeckoJob {
       } else {
         done();
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
     }
   }
@@ -475,7 +474,7 @@ export class CoingeckoJob {
                   );
                   return resolve(index);
                 } else return resolve(index);
-              } catch (err) {
+              } catch (err: any) {
                 logger.error(
                   err,
                   `Token ${coin.id} price checking error. Setting is dead(just log)`,

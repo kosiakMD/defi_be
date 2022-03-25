@@ -96,7 +96,7 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
 
         return lpPosition;
       });
-    } catch (e) {
+    } catch (e: any) {
       errors.push(e.message);
     }
 
@@ -119,7 +119,7 @@ export abstract class UniswapLikeProtocol extends BasicProtocol {
       )?.leverageFarmingPositions;
 
       return { rawPools, rawStaking, rawLending, rawBorrowing, rawLeverageFarming };
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       throw e;
     }

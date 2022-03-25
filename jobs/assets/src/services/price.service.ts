@@ -12,7 +12,7 @@ export class PriceService {
         addresses: request.addresses.join(','),
       });
       return data;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Saving assets prices failed', e);
       throw e;
     }
@@ -26,5 +26,5 @@ export interface PriceFetchRequest {
 }
 
 export interface PriceFetchResponse {
-  prices: { [token: string]: string }
+  prices: { [token: string]: string };
 }

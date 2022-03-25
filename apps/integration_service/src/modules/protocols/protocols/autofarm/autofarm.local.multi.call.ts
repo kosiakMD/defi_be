@@ -51,7 +51,7 @@ export class AutofarmLocalMultiCall extends MultiCall {
           poolsTokens.push(autofarmRewardToken);
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'checkAutoTokenStake');
     }
   }
@@ -92,7 +92,7 @@ export class AutofarmLocalMultiCall extends MultiCall {
       const [, vaultUserInfo] = await this.multiCall(AutofarmVaultAbi, inputs);
       vaultUserInfo?.forEach((info, index) => (data[index].claimable = info.toString()));
       return vaultUserInfo;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getVaultUsersRewards');
       throw e;
     }
@@ -180,7 +180,7 @@ export class AutofarmLocalMultiCall extends MultiCall {
           staking.totalSupply = multicallSupplies[k]?.toString();
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getTotalSupplies');
       throw e;
     }

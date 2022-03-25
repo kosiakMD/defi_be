@@ -39,7 +39,7 @@ export class PriceService {
         })
         .pipe(map((r) => r.data))
         .toPromise();
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}`));
         if (e.response) {

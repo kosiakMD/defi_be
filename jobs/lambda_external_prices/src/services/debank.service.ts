@@ -8,7 +8,7 @@ export class DebankService {
     try {
       const { data } = await axios.get(`${debankApiUrl}/v1/token/list_by_ids?${requestStr}`);
       return data;
-    } catch (e) {
+    } catch (e: any) {
       logger.error('Debank token list call failed ' + e.message);
       throw e;
     }

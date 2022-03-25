@@ -392,6 +392,7 @@ export abstract class BeefyStakingBase
       want: responses.get('want').output.data.toString().toLowerCase(),
     };
   }
+
   async createStakingFeaturesFromVaults(
     vaults: IBeefyHttpVault[],
   ): Promise<IntegrationStakingPositionDto[]> {
@@ -406,7 +407,7 @@ export abstract class BeefyStakingBase
         );
 
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data from account service, chain [${this.chain}], address [${vault.earnContractAddress}]`,
           this.placeholder,

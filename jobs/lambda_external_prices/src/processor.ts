@@ -131,7 +131,7 @@ export async function process(): Promise<void> {
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);
-  } catch (e) {
+  } catch (e: any) {
     logger.error('Processing prices failed', e.message);
     throw e;
   }

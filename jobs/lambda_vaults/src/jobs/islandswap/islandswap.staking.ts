@@ -15,7 +15,7 @@ import {
 } from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
@@ -23,21 +23,22 @@ import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
 import { isTimeToDo } from '../../utils/time';
-import { JobBase } from '../job.base';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { IntegrationDataConverter } from '../integration.data.converter';
+import { JobBase } from '../job.base';
 import { JobInterface } from '../job.interface';
 import { calculateAPR, calculateAPRBonus } from '../utils/apr';
-import { MasterchefAbis } from './contracts/masterchef.abis';
-import { VaultAbis } from './contracts/vault.abis';
-import { SinglePoolAbis } from './contracts/pool.abis';
-import { IslandswapAddresses, singlePoolsAddresses } from './addresses';
 import { DbMapping } from '../utils/dbmapping';
+import { fillUnderlyingTokens } from '../utils/token';
+import { IslandswapAddresses, singlePoolsAddresses } from './addresses';
+import { MasterchefAbis } from './contracts/masterchef.abis';
+import { SinglePoolAbis } from './contracts/pool.abis';
+import { VaultAbis } from './contracts/vault.abis';
 
 @Injectable()
-export class IslandswapStaking 
+export class IslandswapStaking
   extends JobBase<IntegrationStakingPositionDto>
-  implements JobInterface 
+  implements JobInterface
 {
   chain = ChainIdEnum.okex;
   feature = FeatureEnum.staking;
@@ -64,7 +65,7 @@ export class IslandswapStaking
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
 
     if (
-      !jobMapping.mapping || 
+      !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       this.logger.log('it is time to update mapping', this.placeholder);
@@ -93,7 +94,9 @@ export class IslandswapStaking
       decimals: rewardTokenData.decimals,
     });
 
-    const pairPoolsInfo: Map<string, any> = await this.getAllPairPoolsInfo(IslandswapAddresses.masterContract);
+    const pairPoolsInfo: Map<string, any> = await this.getAllPairPoolsInfo(
+      IslandswapAddresses.masterContract,
+    );
     const singlePoolsInfo: Map<string, any> = await this.getAllSinglePoolsInfo();
     const poolsInfo = new Map<string, any>([...pairPoolsInfo, ...singlePoolsInfo]);
 
@@ -125,17 +128,20 @@ export class IslandswapStaking
               stakingToken.tokens.push(poolToken);
             });
           }
-          
-          const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-            address: poolsInfo.get(address).masterContract,
-            poolId: poolsInfo.get(address).id?.toString(),
-            poolName: null,
-            rewards: [rewardToken],
-            stakingToken: stakingToken,
-          });
+
+          const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+            IntegrationStakingPositionDto,
+            {
+              address: poolsInfo.get(address).masterContract,
+              poolId: poolsInfo.get(address).id?.toString(),
+              poolName: null,
+              rewards: [rewardToken],
+              stakingToken: stakingToken,
+            },
+          );
 
           stakingFeatures.push(stakingPoolFeature);
-        } catch (e) {
+        } catch (e: any) {
           this.logger.error(
             `error to get token data from account service, chain [${this.chain}], address [${address}]`,
             this.placeholder,
@@ -147,9 +153,9 @@ export class IslandswapStaking
     const mappings = await Promise.all(
       stakingFeatures.map(async (sf) => await this.dbMapping.toDbMapping(sf, this.chain)),
     );
-    
+
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -207,9 +213,9 @@ export class IslandswapStaking
 
     singlePoolsAddresses.forEach((poolAddress) => {
       const lpToken = poolInfos.get(this.stakedTokenLabel(poolAddress)).output.data.toLowerCase();
-      poolsInfoMap.set(lpToken, { 
+      poolsInfoMap.set(lpToken, {
         lpToken,
-        masterContract: poolAddress.toLowerCase(), 
+        masterContract: poolAddress.toLowerCase(),
       });
     });
 
@@ -258,31 +264,28 @@ export class IslandswapStaking
         sp.rewards[0].price = Number(prices[sp.rewards[0].address]);
 
         if (sp.stakingToken.tokens.length) {
-          const { allocPoint } = multicallRsp.get(
-            this.poolInfoLabel(sp),
-          ).output.data;
-  
+          const { allocPoint } = multicallRsp.get(this.poolInfoLabel(sp)).output.data;
+
           const stats = {
             totalAllocPoints: totalAllocPoint,
             poolAllocPoints: allocPoint,
-            rewardTokenPerBlock: rewardMultiplier * toDecimals(rewardPerBlock, sp.rewards[0].decimals),
+            rewardTokenPerBlock:
+              rewardMultiplier * toDecimals(rewardPerBlock, sp.rewards[0].decimals),
             rewardTokenPrice: sp.rewards[0].price,
             blockTime: IslandswapStaking.blockTime,
             farmingPoolTVL: sp.stats.tvl,
           };
-  
+
           sp.rewards[0].apr = calculateAPR(stats);
         } else {
-          const rewardMultiplier: number = multicallRsp.get(
-            this.rewardMultiplierLabel(sp.address),
-          ).output.data;
+          const rewardMultiplier: number = multicallRsp.get(this.rewardMultiplierLabel(sp.address))
+            .output.data;
 
-          const rewardPerBlock = multicallRsp.get(
-            this.rewardPerBlockLabel(sp.address),
-          ).output.data;
+          const rewardPerBlock = multicallRsp.get(this.rewardPerBlockLabel(sp.address)).output.data;
 
           const stats = {
-            rewardTokenPerBlock: rewardMultiplier * toDecimals(rewardPerBlock, sp.rewards[0].decimals),
+            rewardTokenPerBlock:
+              rewardMultiplier * toDecimals(rewardPerBlock, sp.rewards[0].decimals),
             rewardTokenPrice: sp.rewards[0].price,
             blockTime: IslandswapStaking.blockTime,
             farmingPoolTVL: sp.stats.tvl,
@@ -290,7 +293,7 @@ export class IslandswapStaking
 
           sp.rewards[0].apr = calculateAPRBonus(stats);
         }
-        
+
         return [...mapping, sp];
       }
       return mapping;
@@ -299,14 +302,9 @@ export class IslandswapStaking
     return this.mapping;
   }
 
-  private getDataFromMulticallRsp(
-    multicallRsp,
-    stakingPos: IntegrationStakingPositionDto,
-    prices,
-  ) {
+  private getDataFromMulticallRsp(multicallRsp, stakingPos: IntegrationStakingPositionDto, prices) {
     if (stakingPos.stakingToken.tokens.length === 2) {
-      const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(stakingPos))
-        .output.data;
+      const balance: BigNumber = multicallRsp.get(this.balanceOfLabel(stakingPos)).output.data;
       stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals).toString();
       stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
       const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(stakingPos)).output
@@ -319,10 +317,15 @@ export class IslandswapStaking
       const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
         .data;
 
-      stakingPos.stats.tvl = fillUnderlyingTokens(stakingPos.stakingToken.tokens, [_reserve0, _reserve1], prices, poolShare);
+      stakingPos.stats.tvl = fillUnderlyingTokens(
+        stakingPos.stakingToken.tokens,
+        [_reserve0, _reserve1],
+        prices,
+        poolShare,
+      );
     } else {
-      const balance: BigNumber = multicallRsp.get(this.totalDepositLabel(stakingPos.address))
-        .output.data;
+      const balance: BigNumber = multicallRsp.get(this.totalDepositLabel(stakingPos.address)).output
+        .data;
       stakingPos.staked = toDecimals(balance, stakingPos.stakingToken.decimals).toString();
       stakingPos.stakingToken.balance = toDecimals(balance, stakingPos.stakingToken.decimals);
       stakingPos.stakingToken.price = Number(prices[stakingPos.stakingToken.address]);
@@ -372,18 +375,9 @@ export class IslandswapStaking
   private getCallsForChief(chiefContract: IslandswapAddresses) {
     const masterContract = new MasterchefAbis(chiefContract);
     return new Map<string, CallData>([
-      [
-        this.totalAllocPointLabel(chiefContract),
-        masterContract.totalAllocPoint(),
-      ],
-      [
-        this.rewardPerBlockLabel(chiefContract),
-        masterContract.rewardPerBlock(),
-      ],
-      [
-        this.rewardMultiplierLabel(chiefContract), 
-        masterContract.bonusMultiplier(),
-      ],
+      [this.totalAllocPointLabel(chiefContract), masterContract.totalAllocPoint()],
+      [this.rewardPerBlockLabel(chiefContract), masterContract.rewardPerBlock()],
+      [this.rewardMultiplierLabel(chiefContract), masterContract.bonusMultiplier()],
     ]);
   }
 
@@ -405,7 +399,7 @@ export class IslandswapStaking
       });
     });
 
-    singlePoolsAddresses.forEach(a => addressesSet.add(a));
+    singlePoolsAddresses.forEach((a) => addressesSet.add(a));
 
     return addressesSet;
   }
@@ -418,11 +412,11 @@ export class IslandswapStaking
     return concatStrings(VaultAbis.totalSupply.name, stakingPosition.stakingToken.address);
   }
 
-  private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto,) {
+  private balanceOfLabel(stakingPosition: IntegrationStakingPositionDto) {
     return concatStrings(
-      VaultAbis.balanceOf.name, 
-      stakingPosition.stakingToken.address, 
-      stakingPosition.address
+      VaultAbis.balanceOf.name,
+      stakingPosition.stakingToken.address,
+      stakingPosition.address,
     );
   }
 

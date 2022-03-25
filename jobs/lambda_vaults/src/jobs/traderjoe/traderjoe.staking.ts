@@ -149,7 +149,7 @@ export class TraderJoeStaking implements JobInterface {
           }
 
           stakingFeatures.push(stakingPoolFeature);
-        } catch (e) {
+        } catch (e: any) {
           this.logger.error(
             `error to get token data from account service, chain [${this.chain}], address [${address}]`,
             this.placeholder,
@@ -324,7 +324,7 @@ export class TraderJoeStaking implements JobInterface {
 
               try {
                 rewardInfo = await this.multicallService.handleInBatches(calls, ChainIdEnum.avax);
-              } catch (e) {
+              } catch (e: any) {
                 return m;
               }
 

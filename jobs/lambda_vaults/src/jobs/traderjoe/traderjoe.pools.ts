@@ -112,7 +112,7 @@ export class TraderjoePools implements JobInterface {
       if (trackedLiquidityPoolTokenData.isLp) {
         liquidityPools.push(toLiquidityPoolFeature(trackedLiquidityPoolTokenData));
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(
         `error to get token data to account service, chain [${this.chain}], address [${tokenAddress}]`,
         this.placeholder,

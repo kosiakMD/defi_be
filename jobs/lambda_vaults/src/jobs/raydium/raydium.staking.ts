@@ -178,7 +178,7 @@ export class RaydiumStaking implements JobInterface {
           },
         });
         stakingFeatures.push(stakingFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to build initial mapping for farm [${farm.id.toBase58()}], chain [${this.chain}]`,
           this.placeholder,

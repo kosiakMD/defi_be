@@ -62,7 +62,7 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
       this.logger.timeEnd(timeKey);
 
       return results;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error('Failed to update aave.com specific token prices');
       this.logger.error(e);
       return [];

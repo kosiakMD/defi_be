@@ -26,7 +26,7 @@ describe('Test Sentry', () => {
     setTimeout(() => {
       try {
         exception();
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
         console.log(Sentry.captureException(e));
       } finally {

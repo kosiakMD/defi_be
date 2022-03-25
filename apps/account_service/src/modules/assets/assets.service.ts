@@ -47,6 +47,7 @@ export class AssetsService {
     private readonly web3Provider: Web3Provider,
     private readonly multicall: MulticallAggregator,
   ) {}
+
   async queryAllAssets(): Promise<AssetDto[]> {
     const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
     return storedAssets.map((asset) =>
@@ -92,7 +93,7 @@ export class AssetsService {
           }),
         )),
       );
-    } catch (e) {
+    } catch (e: any) {
       if (e.response) {
         response.errors.push(e.response.data.message);
         this.logger.error(e.response.data, 'getAllAssetsByAddressesAndChains');
@@ -193,7 +194,7 @@ export class AssetsService {
         }),
       );
       return true;
-    } catch (e) {
+    } catch (e: any) {
       return false;
     }
   }
@@ -246,7 +247,7 @@ export class AssetsService {
         const tokenAddress = await this.multicall.call(contract[check](), asset.chain);
         await this.saveAndRelate(asset, tokenAddress);
         return true;
-      } catch (e) {
+      } catch (e: any) {
         //
       }
     }
@@ -407,7 +408,7 @@ export class AssetsService {
           try {
             pool = await contract.getPoolFromLpToken(asset.address);
             if (pool === ZERO_ADDRESS) return;
-          } catch (e) {
+          } catch (e: any) {
             contract = new CURVE_REGISTRY(
               address,
               this.web3Provider.getInstanceByChainId(asset.chain),
@@ -416,7 +417,7 @@ export class AssetsService {
           }
           try {
             return await contract.getCoinsForLpToken(pool ?? asset.address);
-          } catch (e) {
+          } catch (e: any) {
             //
           }
         }),
@@ -437,7 +438,7 @@ export class AssetsService {
     let minter;
     try {
       minter = await curveLpPool.getMinter();
-    } catch (e) {
+    } catch (e: any) {
       //
     }
 

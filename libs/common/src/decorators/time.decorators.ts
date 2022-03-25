@@ -25,7 +25,7 @@ export function SyncTimer(
       const result = originalMethod.apply(this, args);
       logger.log(logTimeMsg(timerName, t0));
       return result;
-    } catch (err) {
+    } catch (err: any) {
       logger.log(logTimeMsg(timerName, t0));
       throw err;
     }
@@ -51,7 +51,7 @@ export function AsyncTimer(
       const result = await originalMethod.apply(this, args);
       logger.log(logger.log(logTimeMsg(timerName, t0)));
       return result;
-    } catch (err) {
+    } catch (err: any) {
       logger.log(logger.log(logTimeMsg(timerName, t0)));
       throw err;
     }
@@ -82,7 +82,7 @@ export function SyncHrTimer(
       const result = originalMethod.apply(this, args);
       logger.log(logHrTimeMsg(timerName, t0));
       return result;
-    } catch (err) {
+    } catch (err: any) {
       logger.log(logHrTimeMsg(timerName, t0));
       throw err;
     }
@@ -108,7 +108,7 @@ export function AsyncHrTimer(
       const result = await originalMethod.apply(this, args);
       logger.log(logHrTimeMsg(timerName, t0));
       return result;
-    } catch (err) {
+    } catch (err: any) {
       logger.log(logHrTimeMsg(timerName, t0));
       throw err;
     }

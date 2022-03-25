@@ -45,7 +45,7 @@ export class TemporaryTokensService {
 
       const tokensSqlStr = TemporaryTokensService.getSqlTokensValues(pricesMap, ethCoinMarketCap);
       await this.saveTemporaryTokensToDb(tokensSqlStr);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getTemporaryTokens');
       throw Error(e);
     }

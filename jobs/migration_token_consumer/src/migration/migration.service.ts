@@ -69,7 +69,7 @@ export class MigrationService {
     try {
       // i deleted check of token info here because inside of getCovalentToken method there is the same check
       return await this.getCovalentToken(userAddress, contractAddress, chainId);
-    } catch (e) {
+    } catch (e: any) {
       //
     }
 
@@ -81,7 +81,7 @@ export class MigrationService {
       if (token?.decimals !== undefined && token?.decimals !== null) {
         return token;
       }
-    } catch (e) {
+    } catch (e: any) {
       //
     } finally {
       this.logger.timeEnd(web3TimeMark);
@@ -131,7 +131,7 @@ export class MigrationService {
         symbol: transfer?.contract_ticker_symbol,
         icon: transfer?.logo_url,
       };
-    } catch (e) {
+    } catch (e: any) {
       this.logger.timeEnd(timeMark);
       this.logger.error(e, 'getTokenInfo - from covalent');
       throw e;
@@ -165,7 +165,7 @@ export class MigrationService {
         symbol: json?.symbol,
         icon: `https://ethplorer.io${json?.image}`,
       };
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getTokenInfo - from ethplorer');
       throw e;
     }

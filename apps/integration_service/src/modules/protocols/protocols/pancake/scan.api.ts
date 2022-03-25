@@ -54,7 +54,7 @@ export class ScanApi {
             ttl: TRANSFERS_CACHE_TIME,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
+      } catch (e: any) {
         // if no data and request failed - m.b. data was wrote by another process
         transfers = await this.cacheManager.get<any[]>(cacheKey);
         if (!transfers) {

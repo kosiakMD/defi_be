@@ -230,7 +230,7 @@ export class OpenSeaService extends NftBasicService {
         })
         .pipe(map((response) => response.data.map(plainToClass.bind(this, BaseCollectionDto))))
         .toPromise();
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Nft.fetchRawCollections OpenSea API error: ${error}`);
       throw error;
     }
@@ -301,7 +301,7 @@ export class OpenSeaService extends NftBasicService {
           ),
         )
         .toPromise();
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Nft.fetchRawAssets OpenSea API error: ${error}`);
       throw error;
     }
@@ -361,7 +361,7 @@ export class OpenSeaService extends NftBasicService {
       await this.cache.set(OpenSeaService.getAssetKey(contract, id), rawAsset);
 
       return rawAsset;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(`Nft.getRawAsset OpenSea API error: ${error}`);
       throw error;
     }

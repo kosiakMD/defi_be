@@ -96,7 +96,7 @@ export class AutofarmService {
             staking.reserve1 = reserves._reserve1;
             staking.isLp = true;
             lpStaked.push(staking);
-          } catch (e) {
+          } catch (e: any) {
             staking.isLp = false;
             tokensAddresses.add(staking.contractAddress);
           }
@@ -129,7 +129,7 @@ export class AutofarmService {
       );
 
       return this.getResponse(autofarmUsers, stakingPositionsMap);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e.message);
       throw e;
     }

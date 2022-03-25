@@ -26,7 +26,7 @@ export class MailController {
     try {
       const { email, name, letter } = request;
       return this.hireService.sendHireMail(email, name, letter);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'MailController sendHireMail');
       throw e;
     }
@@ -39,7 +39,7 @@ export class MailController {
     try {
       const { email, name, letter } = request;
       return this.hireService.sendQuestionMail(email, name, letter);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'MailController sendHireMail');
       throw e;
     }

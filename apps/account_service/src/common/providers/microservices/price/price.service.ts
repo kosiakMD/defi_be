@@ -117,7 +117,7 @@ export class PriceService {
         .toPromise();
       this.logger.timeEnd(this.getPricesUrl);
       return result;
-    } catch (e) {
+    } catch (e: any) {
       e.response && this.logger.error(e.response.data);
       this.logger.error(e);
       // TODO: do we need 0 if error? it's tricky
@@ -150,7 +150,7 @@ export class PriceService {
       this.logger.timeEnd(timerKey);
 
       return response;
-    } catch (e) {
+    } catch (e: any) {
       e.response && this.logger.error(e.response.data);
       this.logger.error(e);
       // TODO: do we need 0 if error? it's tricky
@@ -201,7 +201,7 @@ export class PriceService {
       const priceData = PriceService.filterHistoricalNonLpTokensAndFormat(prices);
       this.logger.timeEnd(`request: chain=${chainId} ${this.getBatchPriceUrl}`);
       return priceData;
-    } catch (e) {
+    } catch (e: any) {
       if (e.isAxiosError) {
         this.logger.error(new Error(`${e.code} at ${e.config.url}`));
         if (e.response) {

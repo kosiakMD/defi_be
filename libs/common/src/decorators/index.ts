@@ -42,7 +42,7 @@ export const ChainsParam = createParamDecorator((dataField, req) => {
   let output: ChainIdEnum[];
   try {
     output = input.split(',').map(Number);
-  } catch (e) {
+  } catch (e: any) {
     throw new HttpException(e, 500);
   }
   return output;
@@ -53,7 +53,7 @@ export const Addresses = createParamDecorator((dataField, req) => {
   let output: Address[];
   try {
     output = Array.from(new Set(input.split(',').map((a) => a.toLowerCase())));
-  } catch (e) {
+  } catch (e: any) {
     throw new HttpException(e, 500);
   }
   return output;

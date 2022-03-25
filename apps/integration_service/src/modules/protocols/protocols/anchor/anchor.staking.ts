@@ -183,7 +183,7 @@ export class AnchorStaking {
       );
 
       return balanceMap;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'getStakingBalances');
     }
   }

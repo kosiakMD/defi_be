@@ -50,7 +50,7 @@ export class PoolsController extends BaseService implements IBaseService {
             ttl: POOLS_CACHE_TIME_IN_SEC,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
+      } catch (e: any) {
         pools = await this.cacheManager.get<any[]>(cacheKey);
         if (!pools) {
           throw e;

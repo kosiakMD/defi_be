@@ -224,7 +224,7 @@ export class CurveNonregisterPoolsBase extends JobPoolsBase<CurveLiquidityPoolFe
       mappedDto.dbId = position.id;
       mappedDto.dtoName = liquidityPool.constructor.name;
       return mappedDto;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'toDbMapping');
     }
   }
@@ -305,7 +305,7 @@ export class CurveNonregisterPoolsBase extends JobPoolsBase<CurveLiquidityPoolFe
         });
         curveLiquidityPoolFeature.tokens = tokens;
         resultMapping.push(curveLiquidityPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(e, 'fillChainData');
       }
     });

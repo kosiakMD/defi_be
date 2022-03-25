@@ -44,6 +44,7 @@ type PartialBalancesResponse = {
   errors: ErrorMessage[];
   balances: TokenBalance[];
 };
+
 export class BalancesService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -84,7 +85,7 @@ export class BalancesService {
       const results = this.mapResults(balances);
 
       return results;
-    } catch (e) {
+    } catch (e: any) {
       // TODO: This should be handled with global error handler
       this.logger.error(
         `Unhandled error while getting balances for ${JSON.stringify(
@@ -221,6 +222,7 @@ export class BalancesService {
 
     return Object.fromEntries(responseEntries);
   }
+
   private async getChainBlocksAtDate(
     chains: ChainIdEnum[],
     date: Date,
@@ -246,7 +248,7 @@ export class BalancesService {
       try {
         return await this.getBlockFromDate(date, this.web3Provider.getInstanceByChainId(chain));
         // TODO: Catch real error here and log
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
         );

@@ -1,6 +1,6 @@
 import retry from 'async-retry';
 
-import { isETH, isBSC } from '../utils/common';
+import { isBSC, isETH } from '../utils/common';
 import { CURRENCY } from '../utils/constants';
 import { createHttpClient } from '../utils/tor';
 
@@ -35,7 +35,7 @@ export const axiosRetry = <T>(action: () => T): Promise<T> => {
     async (bail) => {
       try {
         return await action();
-      } catch (error) {
+      } catch (error: any) {
         await handleHttpError(error, bail);
       }
     },

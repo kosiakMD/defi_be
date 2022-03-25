@@ -7,7 +7,7 @@ export async function retry<T = any>(
 ): Promise<T> {
   try {
     return await action();
-  } catch (e) {
+  } catch (e: any) {
     if (maxRetries <= 0) {
       throw e;
     }

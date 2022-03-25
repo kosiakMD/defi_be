@@ -198,7 +198,7 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
           base.push(staking);
         }
       });
-    } catch (e) {
+    } catch (e: any) {
       errors.push(e.message);
     }
     return [base, errors];

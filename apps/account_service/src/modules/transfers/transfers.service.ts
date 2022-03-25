@@ -91,7 +91,7 @@ export class TransfersService {
       );
 
       return dbTransfers;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'queryTransfers');
       throw e;
     }
@@ -103,7 +103,7 @@ export class TransfersService {
   ): Promise<TransferEntityNew[]> {
     try {
       return this.dbService.getAssetTransfers(asset, addresses);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'queryAssetTransfers');
       throw e;
     }
@@ -151,7 +151,7 @@ export class TransfersService {
         ts.totalPriceUSD = tokenPrice ? Number(ts.amount) * decimals * tokenPrice : tokenPrice;
       });
       return transferRows;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'addPrices');
       throw e;
     }
@@ -207,7 +207,7 @@ export class TransfersService {
         if (priceData.size) {
           this.addPrices(transferRows, priceData); // add prices to transfers (side effect)
         }
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(e);
         result.error(e.message);
       }
@@ -349,7 +349,7 @@ export class TransfersService {
           }
         });
       });
-    } catch (e) {
+    } catch (e: any) {
       this.logger.warn('error fetching block timestamps for transfers');
     }
     return transfersResponse;
@@ -382,7 +382,7 @@ export class TransfersService {
         });
       });
       return await this.priceService.getHistoricalPrices(unpricedContracts, chainId);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.warn('error fetching token prices for transfers');
       throw e;
     }

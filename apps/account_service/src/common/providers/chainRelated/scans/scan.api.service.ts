@@ -119,7 +119,7 @@ export class ScanApiService {
             ttl: TRANSFERS_CACHE_TIME,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
+      } catch (e: any) {
         // if no data and request failed - m.b. data was wrote by another process
         transfers = await this.cacheManager.get<EtherscanTransfer[]>(cacheKey);
         if (!transfers || !Array.isArray(transfers)) {
@@ -176,7 +176,7 @@ export class ScanApiService {
 
       this.retries = 0;
       return result;
-    } catch (e) {
+    } catch (e: any) {
       if (e.response) {
         this.logger.error(e.response.data, 'toTransfersResponse');
       }
@@ -223,7 +223,7 @@ export class ScanApiService {
             ttl: TRANSACTIONS_CACHE_TIME,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
-      } catch (e) {
+      } catch (e: any) {
         // if no data and request failed - m.b. data was wrote by another process
         transactions = await this.cacheManager.get<any[]>(cacheKey);
         if (!transactions || !Array.isArray(transactions)) {
@@ -247,7 +247,7 @@ export class ScanApiService {
         },
       ];
       return await this.priceService.getHistoricalPrices(assets, this.chainId);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e.message, 'getTransactionPrices');
       throw e;
     }
@@ -271,7 +271,7 @@ export class ScanApiService {
     try {
       const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
       prices = await this.getTransactionPrices(txTimestamps);
-    } catch (e) {
+    } catch (e: any) {
       let error = `Price Service Error: ${e.message}`;
       if (e.response) {
         this.logger.error(e.response.data);

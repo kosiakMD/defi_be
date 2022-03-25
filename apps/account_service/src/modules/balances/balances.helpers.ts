@@ -19,7 +19,7 @@ export async function getBalancesSafe(
       success: true,
       balances: await strategy.getBalances(request),
     };
-  } catch (error) {
+  } catch (error: any) {
     logger?.error(
       `Error loading balances for chain ${request.chainId}, address ${request.address}. Error: ${error}`,
     );

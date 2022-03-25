@@ -135,7 +135,7 @@ export class AutofarmStaking implements JobInterface {
         );
 
         stakingFeatures.push(stakingPoolFeature);
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(
           `error to get token data from account service, chain [${this.chain}], address [${address}]`,
           this.placeholder,

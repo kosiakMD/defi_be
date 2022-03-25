@@ -41,7 +41,7 @@ export class BaseService {
       }
 
       return await request.pipe(map((response) => response.data)).toPromise();
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error(err, err.stack, 'Base service error');
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {

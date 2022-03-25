@@ -12,7 +12,7 @@ export async function process() {
       await axios.request({ url, method, data });
 
       logger.info(`Schedule Success in ${getTime()}ms`);
-    } catch (e) {
+    } catch (e: any) {
       logger.info(`Schedule Failed after ${getTime()}ms`);
       logger.error(e);
     }

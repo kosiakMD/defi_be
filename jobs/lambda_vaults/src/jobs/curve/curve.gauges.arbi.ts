@@ -171,7 +171,7 @@ export class CurveGaugesArbi extends CurveGaugesBase {
       });
 
       return this.mapping;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'updateWithChainData');
     }
   }

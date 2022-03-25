@@ -111,7 +111,7 @@ export class JobsRunner {
           check.push(jobData);
           results.push(resultJob);
           this.logger.log(`job mapping updated [${job.placeholder}]`, JobsRunner.name);
-        } catch (e) {
+        } catch (e: any) {
           this.logger.error(
             `error during job mapping update [${job.placeholder}], [${e}]`,
             '',
@@ -149,7 +149,7 @@ export class JobsRunner {
     try {
       await this.integrationService.notifyWithLiquidityPoolsData(dataToNotify);
       this.logger.log(`features notified [${dataToNotify.length}]`, JobsRunner.name);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(`error during integration service notification`, '', JobsRunner.name);
     }
   }

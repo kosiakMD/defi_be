@@ -242,7 +242,7 @@ export class ProtocolService {
       result.errors = result.errors.flat(5); // TODO add staking errors
 
       return result;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'formatFeaturesData');
       throw e;
     }
@@ -259,7 +259,7 @@ export class ProtocolService {
       const { errors, data } = await this.transformPools(rawPools, chainId, protocol);
       result.errors.push(errors);
       result[FeatureEnum.pools] = data;
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'handleResultPools');
       result.errors.push(e.message);
       result[FeatureEnum.pools] = null;
@@ -275,7 +275,7 @@ export class ProtocolService {
   ): Promise<void> {
     try {
       result[FeatureEnum.staking] = await this.transformStaking(rawStaking, chainId, protocol);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'handleResultStaking');
       result.errors.push(e.message);
       result[FeatureEnum.staking] = null;
@@ -289,7 +289,7 @@ export class ProtocolService {
   ): Promise<void> {
     try {
       result[FeatureEnum.lending] = this.transformLending(rawLending);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'handleResultLending');
       result.errors.push(e.message);
       result[FeatureEnum.lending] = null;
@@ -302,7 +302,7 @@ export class ProtocolService {
   ): Promise<void> {
     try {
       result[FeatureEnum.leverageFarming] = this.transformLeverageFarming(rawLeverageFarming);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'handleResultLending');
       result.errors.push(e.message);
       result[FeatureEnum.lending] = null;
@@ -316,7 +316,7 @@ export class ProtocolService {
   ): Promise<void> {
     try {
       result[FeatureEnum.borrowing] = this.transformBorrowing(rawBorrowing);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e, 'handleResultBorrowing');
       result.errors.push(e.message);
       result[FeatureEnum.borrowing] = null;
@@ -362,7 +362,7 @@ export class ProtocolService {
       ) {
         await this.handleStakingMissedData(stakingPositions, chainId);
       }
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       result.errors.push(e.message);
       throw e;
@@ -393,7 +393,7 @@ export class ProtocolService {
     // TODO first filter out value = 0, then handle filtered only!
     try {
       await this.handleMissedData(rawPools, chainId, result.errors);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       result.errors.push(e.message);
       throw e;
@@ -612,7 +612,7 @@ export class ProtocolService {
   ): Promise<DetailedResponseDto<Asset[]>> {
     try {
       return await this.accountService.getAssets(addresses, chainIds);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       if (e.message.startsWith('connect ECONNREFUSED')) {
         throw new Error('connect ECONNREFUSED Asset Service');
@@ -628,7 +628,7 @@ export class ProtocolService {
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     try {
       return await this.priceService.getTokenPricesFetch(addresses, chainId);
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       if (e.message.startsWith('connect ECONNREFUSED')) {
         throw new Error('connect ECONNREFUSED Price Service');
@@ -771,7 +771,7 @@ export class ProtocolService {
             setChainAsset(token);
           });
         }
-      } catch (e) {
+      } catch (e: any) {
         this.logger.error(e);
         errors.push(`Failed collecting assets for chain ${baseData?.chain?.id}`);
       }
@@ -798,7 +798,7 @@ export class ProtocolService {
         }
       });
       // eslint-disable-next-line no-empty
-    } catch (e) {
+    } catch (e: any) {
       this.logger.error(e);
       errors.push(`Failed getting token prices in protocol.service`);
     }
@@ -921,7 +921,7 @@ export class ProtocolService {
             baseData.total += token.totalValue;
           });
         }
-      } catch (e) {
+      } catch (e: any) {
         errors.push('Failed calculating price');
         this.logger.error(e);
       }

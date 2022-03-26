@@ -102,11 +102,13 @@ export class AnchorLending {
         protocolType,
         projectName,
         protocolName,
-        total: featureData[feature].totalValue,
+        total: featureData[feature]?.totalValue,
         feature,
-        items: featureData[feature].items?.length
-          ? featureData[feature].items
-          : [featureData[feature]],
+        items: featureData[feature]
+          ? featureData[feature].items?.length
+            ? featureData[feature].items
+            : [featureData[feature]]
+          : [],
       };
     };
   }
@@ -215,25 +217,25 @@ export class AnchorLending {
     addressProvider: AddressProviderFromJson,
   ): Promise<FeatureResult<LendingPositionDto>> {
     const anchor = new Anchor(terra, addressProvider);
-    const { balance } = await terra.wasm.contractQuery(addressProvider.aTerra(), {
-      balance: { address: address },
-    });
-    // eslint-disable-next-line camelcase
-    const { exchange_rate } = await terra.wasm.contractQuery(addressProvider.market(), {
-      // eslint-disable-next-line camelcase
-      epoch_state: {},
-    });
-    const lendingApy = await anchor.earn.getAPY({ market: MARKET_DENOMS.UUSD });
-
+    const [balanceObj, lendingApy] = await Promise.all([
+      terra.wasm.contractQuery(addressProvider.aTerra(), {
+        balance: { address: address },
+      }),
+      anchor.earn.getAPY({ market: MARKET_DENOMS.UUSD }),
+    ]);
     const aTerraToken = dbTokensMap.get(addressProvider.aTerra());
 
-    const lendingBalanceDec = toDecimals(balance, aTerraToken.decimals);
+    const lendingBalanceDec = toDecimals(balanceObj['balance'], aTerraToken.decimals);
     const lending = [];
     if (lendingBalanceDec > 0) {
-      const totalDeposit = lendingBalanceDec * Number(exchange_rate);
-
       lending.push(
-        this.getLendingObj(addressProvider, aTerraToken, totalDeposit, tokensPrices, lendingApy),
+        this.getLendingObj(
+          addressProvider,
+          aTerraToken,
+          lendingBalanceDec,
+          tokensPrices,
+          lendingApy,
+        ),
       );
     }
 

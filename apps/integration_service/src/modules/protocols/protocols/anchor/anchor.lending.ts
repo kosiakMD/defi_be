@@ -18,6 +18,7 @@ import {
   ClaimableDto,
   CurrentPricesPayload,
   FeatureEnum,
+  FeatureResult,
   IAssetResponseDto,
   IntegrationClaimableTokenDto,
   IntegrationFeaturesDataDto,
@@ -52,7 +53,7 @@ export class AnchorLending {
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const userData = await Promise.allSettled(
       addresses.flatMap((address) => {
-        return this.getAsBaseData(address, chain);
+        return this.getAsBaseData(address.toLowerCase(), chain);
       }),
     );
 
@@ -101,9 +102,13 @@ export class AnchorLending {
         protocolType,
         projectName,
         protocolName,
-        total: featureData[feature].totalValue,
+        total: featureData[feature]?.totalValue,
         feature,
-        items: [featureData[feature]],
+        items: featureData[feature]
+          ? featureData[feature].items?.length
+            ? featureData[feature].items
+            : [featureData[feature]]
+          : [],
       };
     };
   }
@@ -113,10 +118,35 @@ export class AnchorLending {
       errors: [],
     });
 
-    const [lending, borrowing, claimable] = await this.getLendingAndBorrowingData(
-      address.toLowerCase(),
-      chain,
+    const terra: LCDClient = this.web3Provider.getInstanceByChainId(chain.id);
+    const addressProvider = new AddressProviderFromJson(columbus5);
+
+    const dbTokens = await this.accountService.getAssets(
+      [addressProvider.aTerra(), addressProvider.ANC(), addressProvider.bLunaToken(), 'uusd'],
+      [chain.id],
     );
+
+    const dbTokensMap = dbTokens.data?.reduce((resp, token) => {
+      resp.set(token.address, token);
+      return resp;
+    }, new Map());
+
+    const tokensPrices = await this.priceService.getTokenPricesFetch(
+      Array.from(dbTokensMap.keys()),
+      chain.id,
+    );
+
+    const [lending, [borrowing, claimable]] = await Promise.all([
+      await this.getLendingData(
+        address,
+        chain,
+        dbTokensMap,
+        terra,
+        tokensPrices.prices,
+        addressProvider,
+      ),
+      this.getBorrowingData(address, terra, dbTokensMap, tokensPrices.prices, addressProvider),
+    ]);
 
     response[FeatureEnum.lending] = lending;
     response[FeatureEnum.borrowing] = borrowing;
@@ -125,86 +155,104 @@ export class AnchorLending {
     return response;
   }
 
-  async getLendingAndBorrowingData(address: Address, chain: ChainDto) {
-    try {
-      const terra: LCDClient = this.web3Provider.getInstanceByChainId(chain.id);
-      const addressProvider = new AddressProviderFromJson(columbus5);
-      const anchor = new Anchor(terra, addressProvider);
-      const tokenPrices = await this.priceService.getTokenPricesFetch(
-        [addressProvider.aTerra(), addressProvider.ANC()],
-        chain.id,
-      );
-      const [aTerraToken, ancToken] = await Promise.all([
-        this.accountService.getTrackedAssets(addressProvider.aTerra(), chain.id),
-        this.accountService.getTrackedAssets(addressProvider.ANC(), chain.id),
-      ]);
-
-      const { balance } = await terra.wasm.contractQuery(addressProvider.aTerra(), {
-        balance: { address: address },
-      });
-      // eslint-disable-next-line camelcase
-      const { exchange_rate } = await terra.wasm.contractQuery(addressProvider.market(), {
+  async getBorrowingData(
+    address: Address,
+    terra: LCDClient,
+    dbTokensMap: Map<string, IAssetResponseDto>,
+    tokensPrices: CurrentPricesPayload,
+    addressProvider: AddressProviderFromJson,
+  ) {
+    const aTerraToken = dbTokensMap.get(addressProvider.aTerra());
+    // eslint-disable-next-line camelcase
+    const { loan_amount, pending_rewards } = await terra.wasm.contractQuery(
+      addressProvider.market(),
+      {
         // eslint-disable-next-line camelcase
-        epoch_state: {},
-      });
-      const lendingApy = await anchor.earn.getAPY({ market: MARKET_DENOMS.UUSD });
-      // eslint-disable-next-line camelcase
-      const { loan_amount, pending_rewards } = await terra.wasm.contractQuery(
-        addressProvider.market(),
-        {
-          // eslint-disable-next-line camelcase
-          borrower_info: {
-            borrower: address,
-          },
+        borrower_info: {
+          borrower: address,
         },
+      },
+    );
+    const borrowAmountDec = toDecimals(loan_amount, aTerraToken.decimals);
+    let borrowing = null;
+    // eslint-disable-next-line camelcase
+    if (loan_amount > 0) {
+      borrowing = this.getLendingObj(
+        addressProvider,
+        dbTokensMap.get('uusd'),
+        borrowAmountDec,
+        tokensPrices,
       );
-
-      const lendingBalanceDec = toDecimals(balance, aTerraToken.decimals);
-      let lending = null;
-      if (lendingBalanceDec > 0) {
-        const totalDeposit = lendingBalanceDec * Number(exchange_rate);
-
-        lending = this.getLendingObj(
-          addressProvider,
-          aTerraToken,
-          totalDeposit,
-          tokenPrices.prices,
-          lendingApy,
-        );
-      }
-      const borrowAmountDec = toDecimals(loan_amount, aTerraToken.decimals);
-      let borrowing = null;
-      // eslint-disable-next-line camelcase
-      if (loan_amount > 0) {
-        borrowing = this.getLendingObj(
-          addressProvider,
-          aTerraToken,
-          borrowAmountDec,
-          tokenPrices.prices,
-        );
-      }
-      const pendingRewardsDec = toDecimals(pending_rewards, ancToken.decimals);
-      let claimable = null;
-      // eslint-disable-next-line camelcase
-      if (pending_rewards > 0) {
-        claimable = plainToClass(IntegrationClaimableTokenDto, {
-          address: ancToken.address.toLowerCase(),
-          decimals: ancToken.decimals,
-          name: ancToken.name,
-          symbol: ancToken.symbol,
-          price: tokenPrices.prices[ancToken.address.toLowerCase()],
-          claimableData: plainToClass(ClaimableDto, {
-            balance: pendingRewardsDec,
-            value: new BigNumber(pendingRewardsDec) //
-              .multipliedBy(tokenPrices.prices[ancToken.address.toLowerCase()])
-              .toNumber(),
-          }),
-        });
-      }
-      return [lending, borrowing, claimable];
-    } catch (e: any) {
-      this.logger.error(e, 'getLendingAndBorrowingData');
     }
+
+    const ancToken = dbTokensMap.get(addressProvider.ANC());
+    const pendingRewardsDec = toDecimals(pending_rewards, ancToken.decimals);
+    let claimable = null;
+    // eslint-disable-next-line camelcase
+    if (pending_rewards > 0) {
+      claimable = plainToClass(IntegrationClaimableTokenDto, {
+        address: ancToken.address.toLowerCase(),
+        decimals: ancToken.decimals,
+        name: ancToken.name,
+        symbol: ancToken.symbol,
+        price: tokensPrices[ancToken.address.toLowerCase()],
+        claimableData: plainToClass(ClaimableDto, {
+          balance: pendingRewardsDec,
+          value: new BigNumber(pendingRewardsDec) //
+            .multipliedBy(tokensPrices[ancToken.address.toLowerCase()])
+            .toNumber(),
+        }),
+      });
+    }
+
+    return [borrowing, claimable];
+  }
+
+  async getLendingData(
+    address: Address,
+    chain: ChainDto,
+    dbTokensMap: Map<string, IAssetResponseDto>,
+    terra: LCDClient,
+    tokensPrices: CurrentPricesPayload,
+    addressProvider: AddressProviderFromJson,
+  ): Promise<FeatureResult<LendingPositionDto>> {
+    const anchor = new Anchor(terra, addressProvider);
+    const [balanceObj, lendingApy] = await Promise.all([
+      terra.wasm.contractQuery(addressProvider.aTerra(), {
+        balance: { address: address },
+      }),
+      anchor.earn.getAPY({ market: MARKET_DENOMS.UUSD }),
+    ]);
+    const aTerraToken = dbTokensMap.get(addressProvider.aTerra());
+
+    const lendingBalanceDec = toDecimals(balanceObj['balance'], aTerraToken.decimals);
+    const lending = [];
+    if (lendingBalanceDec > 0) {
+      lending.push(
+        this.getLendingObj(
+          addressProvider,
+          aTerraToken,
+          lendingBalanceDec,
+          tokensPrices,
+          lendingApy,
+        ),
+      );
+    }
+
+    const { collaterals } = await terra.wasm.contractQuery(addressProvider.overseer(), {
+      collaterals: { borrower: address },
+    });
+
+    if (collaterals.length) {
+      const bLunaToken = dbTokensMap.get(addressProvider.bLunaToken());
+      lending.push(
+        ...collaterals.map((collateral) => {
+          const collateralValueDec = toDecimals(collateral[1], bLunaToken.decimals);
+          return this.getLendingObj(addressProvider, bLunaToken, collateralValueDec, tokensPrices);
+        }),
+      );
+    }
+    return { totalValue: 0, items: lending };
   }
 
   getLendingObj(
@@ -218,7 +266,7 @@ export class AnchorLending {
       address: addressProvider.overseer(),
       balance: amount,
       value: prices[token.address] * amount,
-      apy: apy || null,
+      apy: apy * 100 || null,
       token: plainToClass(LendingTokenDto, {
         address: token.address,
         name: token.name,

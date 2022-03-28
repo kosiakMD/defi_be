@@ -233,12 +233,14 @@ export class AutofarmStaking {
       const stakedBigNumber = new BigNumber(b.balance).div(
         decimalsDivider(stakingPosition.stakingToken.decimals),
       );
+
+      if (Number(stakedBigNumber) <= 0.00001) return;
+
       stakingPosition.stakingToken.balance = stakedBigNumber.toNumber();
 
-      if (stakingPosition.stakingToken.tokens) {
-        const poolShare = stakedBigNumber.div(
-          new BigNumber(stakingPosition.stakingToken.totalSupply),
-        );
+      if (stakingPosition.stakingToken.tokens?.length) {
+        const poolShare = stakedBigNumber.div(stakingPosition.stakingToken.totalSupply);
+
         stakingPosition.stakingToken.tokens.forEach((t) => {
           t.balance = poolShare.times(new BigNumber(t.reserve)).toNumber();
           if (!Number.isFinite(t.balance)) t.balance = 0;
@@ -263,6 +265,10 @@ export class AutofarmStaking {
         stakingPosition.rewards[0].claimableData.balance = claimableReward.pendingAUTO
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
           .toString();
+      } else {
+        stakingPosition.rewards?.forEach((reward) => {
+          reward.claimableData.balance = 0;
+        });
       }
 
       if (b.contract === this.masterChiefAddresses.get(ChainIdEnum.plg)) {

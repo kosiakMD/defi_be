@@ -17,7 +17,6 @@ import {
   IntegrationFeaturesDataDto,
   LendingErcToken,
   LendingPositionDto,
-  LiquidityPoolFeatureDto,
   Logger,
   PoolTokenDto,
   ProjectEnum,
@@ -29,6 +28,7 @@ import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { keepETHAddresses } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -340,7 +340,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
 
           response[FeatureEnum.pools].totalValue += userData.value;
 
-          const staking = plainToClass(LiquidityPoolFeatureDto, {
+          const poolFeature = plainToClass(LiquidityPoolFeature, {
             address: position.pair.id,
             name: `${position.pair.token0.symbol}/${position.pair.token1.symbol}`,
             lpToken: plainToClass(ERC20TokenDto, {
@@ -351,8 +351,11 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
               isLp: true,
               totalSupply: position.pair.totalSupply,
             }),
-            TVL: Number(TVL),
-            user: userData,
+            stats: {
+              feeRate: null,
+              tvl: Number(TVL),
+              share: Number(userPoolShare),
+            },
             tokens: [
               this.formatPoolToken(
                 position.pair.token0,
@@ -371,7 +374,7 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
             ],
           });
 
-          response[FeatureEnum.pools].items.push(staking);
+          response[FeatureEnum.pools].items.push(poolFeature);
         }),
       ),
     );

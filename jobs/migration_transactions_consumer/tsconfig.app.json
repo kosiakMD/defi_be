@@ -3,7 +3,7 @@
   "compilerOptions": {
     "declaration": false,
     "esModuleInterop": true,
-    "lib": ["es5", "es6", "es2019", "es2020"],
+    "lib": ["es5", "es6", "es2019", "es2020", "dom"],
     "outDir": "../../dist/apps/migration_transactions_consumer"
   },
   "include": ["src/**/*"],

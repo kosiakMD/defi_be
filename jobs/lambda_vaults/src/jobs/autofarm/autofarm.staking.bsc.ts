@@ -289,7 +289,7 @@ export class AutofarmStakingBSC implements JobInterface {
     stakingPos.stakingToken.balance = toDecimals(lockedTotal, stakingPos.stakingToken.decimals);
 
     // m.p
-    if (stakingPos.stakingToken.tokens.length === 2) {
+    if (stakingPos.stakingToken.tokens?.length) {
       const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(stakingPos)).output
         .data;
       stakingPos.stakingToken.totalSupply = toDecimals(
@@ -333,7 +333,7 @@ export class AutofarmStakingBSC implements JobInterface {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
     // reserves of lp token
-    if (stakingPosition.stakingToken.tokens.length === 2) {
+    if (stakingPosition.stakingToken.tokens?.length) {
       calls.set(this.getReservesLabel(stakingPosition), {
         address: stakingPosition.stakingToken.address,
         abi: Abis.getReserves,
@@ -342,17 +342,17 @@ export class AutofarmStakingBSC implements JobInterface {
         },
         output: {},
       });
-
-      // total supply supply of staking lp token
-      calls.set(this.totalSupplyLabel(stakingPosition), {
-        address: stakingPosition.stakingToken.address,
-        abi: Abis.totalSupply,
-        input: {
-          data: [],
-        },
-        output: {},
-      });
     }
+
+    // total supply supply of staking lp token
+    calls.set(this.totalSupplyLabel(stakingPosition), {
+      address: stakingPosition.stakingToken.address,
+      abi: Abis.totalSupply,
+      input: {
+        data: [],
+      },
+      output: {},
+    });
 
     // balance of lp token on masterchief contract
     calls.set(this.balanceOfLabel(stakingPosition, chiefContract), {

@@ -177,7 +177,7 @@ export class CurveStaking {
   ) {
     try {
       const calls = new Map();
-      balanceItemsMap.forEach((value, key) => {
+      balanceItemsMap?.forEach((value, key) => {
         value.forEach((stakingData) => {
           const contract = new Abis(stakingData.stakingPosition.address);
           stakingData.stakingPosition.rewards.forEach((reward) => {

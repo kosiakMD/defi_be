@@ -4,9 +4,6 @@ import { EnvEnum } from '@app/common';
 
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
-const COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240';
-const COMMON_BALANCE_CHECKER_BATCH_SIZE = 3000;
-
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .equal(...Object.values(EnvEnum))

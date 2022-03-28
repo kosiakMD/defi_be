@@ -7,17 +7,11 @@ import { RateLimiter } from 'limiter';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import {
-  Address,
-  ChainAbbrEnum,
-  ChainNameEnum,
-  CurrentPricesPayload,
-  Logger,
-} from '@app/common';
+import { Address, ChainAbbrEnum, ChainNameEnum, CurrentPricesPayload, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
 import {
@@ -47,10 +41,10 @@ interface Prices {
   price: number;
 }
 
-export class OpenSeaService extends NftBasicService {
+export class OpenSeaService extends NftBasicService implements OnModuleInit {
   public readonly project = NftProjectEnum.openSea;
   public readonly chains = [ChainAbbrEnum.eth];
-  public readonly chainsIds = [1];
+  public readonly chainsIds = [];
 
   protected readonly url: string;
   private readonly API_KEY: string;
@@ -77,6 +71,10 @@ export class OpenSeaService extends NftBasicService {
       tokensPerInterval: this.configService.get<number>('OPEN_SEA_INTERVAL'),
       interval: 'second',
     });
+  }
+
+  async onModuleInit() {
+    this.chainsIds.push(await this.chainsService.getChainIdByName(ChainNameEnum.eth));
   }
 
   private static getAssetKey(...seed: Array<string | number>): string {
@@ -210,7 +208,7 @@ export class OpenSeaService extends NftBasicService {
         name,
         slug,
         symbol,
-        chain: this.chainsIds[0],
+        chain: 1,
         project: this.project,
         tokenStandard: contract?.tokenStandard,
       }),
@@ -584,7 +582,7 @@ export class OpenSeaService extends NftBasicService {
   ): Promise<NftAssetsByAccounts> {
     const { prices } = await this.priceService.fetchTokenPrices(
       [ZERO_ADDRESS],
-      await this.chainsService.getChainIdByName(ChainNameEnum['eth']),
+      await this.chainsService.getChainIdByName(ChainNameEnum.eth),
     );
 
     const rawAssets = await this.getRawAssetsByAccount(account, collection);

@@ -2,9 +2,11 @@ import { DeepPartial, FindConditions, FindManyOptions, Repository, UpdateResult 
 
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 
+type DP<T> = DeepPartial<T>;
+
 @Injectable()
-export abstract class CrudService<T extends DeepPartial<T>> {
-  protected constructor(private readonly entityRepository: Repository<T> | any) {}
+export abstract class CrudService<T> {
+  protected constructor(private readonly entityRepository: Repository<DP<T>> | any) {}
 
   public async getAll(conditions?: FindManyOptions<T>): Promise<T[]> {
     try {

@@ -1,10 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { OpportunityInterface } from '@app/common/interfaces/Opportunity.interface';
+
 import { BaseEntityDto } from './base.entity.dto';
 import { FarmDto } from './farm.dto';
 import { InvestmentTokensDto } from './investment.tokens.dto';
 
-export class OpportunityDto extends BaseEntityDto {
+export class OpportunityDto extends BaseEntityDto implements OpportunityInterface {
   @ApiProperty({ type: FarmDto })
   farm: FarmDto;
 

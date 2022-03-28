@@ -1,3 +1,4 @@
+import { LCDClient } from '@terra-money/terra.js';
 import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
@@ -5,7 +6,6 @@ import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '..';
 import { MulticallContract } from './multicall.contract';
-import { LCDClient } from '@terra-money/terra.js';
 
 export type Web3Interface = Web3;
 
@@ -75,10 +75,13 @@ export class Web3ProviderService {
   }
 
   private setLCDClientProvider(chain: ChainIdEnum, env: string) {
-    this.providers.set(chain, new LCDClient({
-      URL: this.configService.get(env),
-      chainID: String(AbsoluteChainIdEnum.terra)
-    }));
+    this.providers.set(
+      chain,
+      new LCDClient({
+        URL: this.configService.get(env),
+        chainID: String(AbsoluteChainIdEnum.terra),
+      }),
+    );
   }
 
   // TODO: pass 'env' selector instead of address (same as setProvider)

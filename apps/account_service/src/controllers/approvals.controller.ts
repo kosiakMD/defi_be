@@ -3,11 +3,11 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Controller, Get, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { GetAllApprovalsDto } from '@app/common/dto/GetAllApprovals.dto';
+import { ApprovalsSortFieldsEnum } from '@app/common/enum/ApprovalsSortFields.enum';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 
 import { ContractApprovalResponseDto } from '../common/dto';
-import { GetAllApprovalsDto } from '../common/dto/GetAllApprovals.dto';
-import { ApprovalsSortFieldsEnum } from '../common/enum/ApprovalsSortFields.enum';
 
 import { ApprovalsService } from '../modules/approvals/approvals.service';
 

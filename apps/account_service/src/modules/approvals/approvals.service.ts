@@ -3,10 +3,9 @@ import { getManager } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 
 import { CHAIN_ID_ETH } from '@app/common/constant';
+import { GetAllApprovalsDto } from '@app/common/dto/GetAllApprovals.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { ContractApprovalResponse } from '@app/common/interfaces';
-
-import { GetAllApprovalsDto } from '../../common/dto/GetAllApprovals.dto';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
 import ApprovalMapper from './helpers/approvalMapper';
@@ -14,6 +13,7 @@ import ApprovalMapper from './helpers/approvalMapper';
 @Injectable()
 export class ApprovalsService {
   constructor(private readonly blacklistService: BlacklistService) {}
+
   async getAllApprovals(
     getAllApprovalsQuery: GetAllApprovalsDto,
   ): Promise<ContractApprovalResponse> {

@@ -1,8 +1,8 @@
-import { GetAllApprovalsDto } from 'apps/account_service/src/common/dto/GetAllApprovals.dto';
-import { ApprovalsSortFieldsEnum } from 'apps/account_service/src/common/enum/ApprovalsSortFields.enum';
-
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+import { GetAllApprovalsDto } from '@app/common/dto/GetAllApprovals.dto';
+import { ApprovalsSortFieldsEnum } from '@app/common/enum/ApprovalsSortFields.enum';
 
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';

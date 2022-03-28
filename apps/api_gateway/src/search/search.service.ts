@@ -1,5 +1,3 @@
-import { OpportunityListDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.list.dto';
-
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ServiceEnum } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
+import { OpportunityListInterface } from '@app/common/interfaces/OpportunityList.interface';
 import { isSomeAddress } from '@app/common/utils';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
@@ -77,7 +76,7 @@ export class SearchService extends BaseService {
     }
     const searchResults = await Promise.all(promises);
     const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
-    const opportunitiesSearchResults: OpportunityListDto = searchResults.shift();
+    const opportunitiesSearchResults: OpportunityListInterface = searchResults.shift();
     return {
       entries: [...assetsSearchResults, ...(opportunitiesSearchResults?.items || [])],
     };

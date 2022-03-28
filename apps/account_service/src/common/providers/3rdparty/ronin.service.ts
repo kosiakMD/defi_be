@@ -1,3 +1,5 @@
+import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
+
 import { Injectable } from '@nestjs/common';
 
 import { Address, ChainNameEnum } from '@app/common';
@@ -6,7 +8,6 @@ import { Web3Provider } from '../../../common/providers/chainRelated/web3.provid
 
 import { ERC20_ABI } from '../../../modules/approvals/abis/ERC20';
 import { Balance } from '../../interfaces/ronin.interface';
-import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
 
 @Injectable()
 export class RoninService {
@@ -19,15 +20,17 @@ export class RoninService {
 
   private web3: any;
 
-  constructor(private readonly web3Provider: Web3Provider, private readonly chainsService: ChainsService) {
+  constructor(
+    private readonly web3Provider: Web3Provider,
+    private readonly chainsService: ChainsService,
+  ) {
     this.onModuleInit();
   }
 
   async onModuleInit() {
-    
     this.web3 = this.web3Provider.getInstance(
-      await this.chainsService.getChainIdByName(ChainNameEnum.ronin)
-    )
+      await this.chainsService.getChainIdByName(ChainNameEnum.ronin),
+    );
   }
 
   public async getBalances(address: Address, tokensAddresses: Address[]): Promise<Balance> {

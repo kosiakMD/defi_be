@@ -32,7 +32,7 @@ export class ApprovalsService {
     chainId: number,
   ): Promise<ContractApprovalResponse> {
     let approvalsTableName;
-    if (chainId === (await this.chainsService.getChainIdByName('eth'))) {
+    if (chainId === (await this.chainsService.getChainIdByName(ChainNameEnum.eth))) {
       approvalsTableName = 'approvals_new';
     } else {
       approvalsTableName = 'bsc_approvals';

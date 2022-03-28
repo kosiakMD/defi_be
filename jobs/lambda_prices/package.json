@@ -30,5 +30,6 @@
   "dependencies": {
     "@ethersproject/providers": "^5.4.3",
     "@sentry/serverless": "^6.17.2"
-  }
+  },
+  "gitHead": "b3197560b65251c1f02d7e22fba26e81b800ff18"
 }

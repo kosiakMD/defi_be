@@ -4,3 +4,4 @@ node_modules
 .husky
 dist
 .eslintrc.js
+*.d.ts

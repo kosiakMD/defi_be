@@ -1,7 +1,7 @@
 {
-  "name": "defiyield-backend",
+  "name": "defiyield-gateway",
   "version": "1.0.2",
-  "description": "DeFiYield GateWay Microservice",
+  "description": "DeFiYield Gateway Microservice",
   "engines": {
     "node": ">=14",
     "npm": "^6.11.0 || ^7.5.6",
@@ -43,5 +43,6 @@
     "source-map-support": "^0.5.20",
     "typeorm": "^0.2.41",
     "web3": "^1.6.1"
-  }
+  },
+  "gitHead": "b3197560b65251c1f02d7e22fba26e81b800ff18"
 }

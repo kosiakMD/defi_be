@@ -171,6 +171,7 @@ export class AssetsService {
     assetToSave.isTracked = assetToSave.isLp !== true;
 
     assetToSave = await this.assetRepository.saveAsset(assetToSave);
+    this.logger.log(`Asset updated, address ${assetToSave.address}, chain ${assetToSave.chain}, is tracked ${assetToSave.isTracked}`);
 
     return await this.withUnderlying(assetToSave);
   }

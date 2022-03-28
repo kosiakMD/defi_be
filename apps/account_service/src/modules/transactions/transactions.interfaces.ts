@@ -1,4 +1,4 @@
-import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { ResultStatus } from '@app/common/enum';
 
 import { TransactionsDto } from './dto/transactions.dto';
 
@@ -14,7 +14,7 @@ interface IGasSimple {
 }
 
 export interface Transaction {
-  chainId: ChainIdEnum;
+  chainId: number;
   hash: string;
   blockNumber: string;
   from: string;
@@ -47,7 +47,7 @@ export interface SubTransaction {
 }
 
 export interface TransactionCovalent {
-  chainId: ChainIdEnum;
+  chainId: number;
   blockNumber: number;
   blockHash: string;
   hash: string;

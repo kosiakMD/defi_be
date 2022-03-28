@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainAbbrEnum, ChainIdEnum } from '@app/common/enum';
+import { ChainAbbrEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { PriceService } from '../../microservices/price/price.service';
@@ -17,7 +17,7 @@ export class PolygonScanService extends ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
   protected readonly chainAbbr: ChainAbbrEnum;
-  protected readonly chainId: ChainIdEnum;
+  protected readonly chainId: number;
   protected readonly mainCoinAddress: Address;
 
   constructor(
@@ -32,7 +32,7 @@ export class PolygonScanService extends ScanApiService {
     this.url = this.configService.get<string>('POLYGONSCAN_URL');
     this.apiKey = this.configService.get<string>('POLYGONSCAN_KEY');
     this.chainAbbr = ChainAbbrEnum.plg;
-    this.chainId = ChainIdEnum.plg;
+    this.chainId = 3;
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
   }
 }

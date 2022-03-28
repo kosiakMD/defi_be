@@ -1,5 +1,3 @@
-import { ChainIdEnum } from '@app/common/enum';
-
 export interface ERC20Token {
   address: string;
   chainId?: number;
@@ -40,42 +38,14 @@ export interface ScanTransfer {
 }
 
 export interface Transfer {
-  chainId: ChainIdEnum;
+  chainId: number;
   hash: string;
   blockTimeStamp: string;
-  // TODO: until no gas in DB
-  // gas?: number;
-  // gasPrice?: number;
-  // gasUsed: string;
   erc20Transfers: ERC20Transfer[];
 }
 
 export interface TransfersResponse<T = Transfer | ScanTransfer> {
   [userAddress: string]: T[];
-}
-
-export interface FinallyResponse {
-  transfers: TransfersResponse;
-  bscTransaction: TransfersResponse;
-}
-
-export interface TransactionWithToken {
-  hash: string;
-  // blockNumber?: number;
-  fromAddress: string;
-  toAddress: string;
-  blockTimeStamp: string;
-  // gas?: number;
-  // gasUsed?: number;
-  // gasPrice?: number;
-  amount?: string;
-  tokenAddress?: string;
-  // tokenPrice?: number; //
-  // ethPrice?: number;
-  tokenName: string;
-  tokenSymbol: string;
-  tokenDecimals: number;
-  // tokenTotalSupply?: number;
 }
 
 export interface TransferWithTokenAndPrices {
@@ -98,20 +68,6 @@ export interface TransferWithTokenAndPrices {
   tokenPriceUSD: number;
   totalPriceUSD: number;
   isIncludedToGraph?: boolean;
-}
-
-export interface TransferRawFromDb {
-  id: number;
-  // eslint-disable-next-line camelcase
-  tx_hash: string;
-  from: string;
-  to: string;
-  timestamp: string;
-  value: string;
-  address: string;
-  name: string;
-  symbol: string;
-  decimals: number;
 }
 
 export interface TransferFromDb {

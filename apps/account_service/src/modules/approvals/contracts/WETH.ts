@@ -3,7 +3,6 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common';
 import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ERC20Token } from '@app/common/interfaces';
 
@@ -189,7 +188,7 @@ export class WETH {
   ];
 
   constructor(private readonly chainProvider: Web3Provider) {
-    this.ETHProvider = this.chainProvider.getInstanceByChainId(ChainIdEnum.eth);
+    this.ETHProvider = this.chainProvider.getInstanceByChainId(1);
     this.contract = new this.ETHProvider.eth.Contract(this.abi as AbiItem[], this.address);
   }
 

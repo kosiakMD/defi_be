@@ -1,8 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '@app/common/enum';
-
 import {
   TransfersDetailedResponseDto,
   TransfersQueryDto,
@@ -24,11 +22,9 @@ export class TransfersController {
   })
   @ApiQuery({
     name: 'chains',
-    enum: ChainIdEnum,
-    enumName: 'ChainIdEnum',
     isArray: true,
     description: 'Array of chain ID',
-    example: [ChainIdEnum.eth, ChainIdEnum.bnb],
+    example: [1, 2],
     required: false,
   })
   @ApiQuery({

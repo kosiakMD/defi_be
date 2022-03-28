@@ -5,15 +5,18 @@ import { CacheModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Web3Provider } from '../common/providers/chainRelated/web3.provider';
-import { PriceService } from '../common/providers/microservices/price/price.service';
+import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
+import { PriceService } from '../../common/providers/microservices/price/price.service';
 
-import { AssetsModule } from './assets/assets.module';
+import { ChainsController } from '../../controllers/chains.controller';
+import { AssetsModule } from '../assets/assets.module';
+import { ChainsService } from './chains.service';
+import { ChainsEntity } from './entities/chain.entity';
 
 @Module({
   imports: [
     HttpModule,
-    TypeOrmModule.forFeature(),
+    TypeOrmModule.forFeature([ChainsEntity]),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -28,7 +31,8 @@ import { AssetsModule } from './assets/assets.module';
     }),
     forwardRef(() => AssetsModule),
   ],
-  providers: [PriceService, Web3Provider],
-  exports: [Web3Provider],
+  controllers: [ChainsController],
+  providers: [PriceService, Web3Provider, ChainsService],
+  exports: [Web3Provider, ChainsService],
 })
 export class ChainsModule {}

@@ -6,38 +6,39 @@ import Web3 from 'web3';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
+import { AbsoluteChainIdEnum, ChainNameEnum } from '@app/common/enum';
+import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
 
-const ChainsProvidersUrls: Partial<Record<ChainIdEnum, string>> = {
-  [ChainIdEnum.arbi]: 'ARBITRUM_URL',
-  [ChainIdEnum.avax]: 'AVAX_URL',
-  [ChainIdEnum.boba]: 'BOBA_URL',
-  [ChainIdEnum.bnb]: 'BSC_URL',
-  [ChainIdEnum.celo]: 'CELO_URL',
-  [ChainIdEnum.cro]: 'CRONOS_URL',
-  [ChainIdEnum.eth]: 'ETH_URL',
-  [ChainIdEnum.ftm]: 'FTM_URL',
-  [ChainIdEnum.harm]: 'HARM_URL',
-  [ChainIdEnum.heco]: 'HECO_URL',
-  [ChainIdEnum.kcc]: 'KCC_URL',
-  [ChainIdEnum.mriver]: 'MRIVER_URL',
-  [ChainIdEnum.okex]: 'OKEX_URL',
-  [ChainIdEnum.opt]: 'OPT_URL',
-  [ChainIdEnum.plg]: 'POLYGON_URL',
-  [ChainIdEnum.gnosis]: 'GNOSIS_URL',
-  [ChainIdEnum.near]: 'NEAR_URL',
-  [ChainIdEnum.terra]: 'TERRA_URL',
-  [ChainIdEnum.klay]: 'KLAYTN_URL',
-  [ChainIdEnum.fuse]: 'FUSE_URL',
-  [ChainIdEnum.metis]: 'METIS_URL',
-  [ChainIdEnum.ronin]: 'RONIN_URL',
+const ChainsProvidersUrls: Partial<Record<number, string>> = {
+  5: 'ARBITRUM_URL',
+  6: 'AVAX_URL',
+  15: 'BOBA_URL',
+  2: 'BSC_URL',
+  8: 'CELO_URL',
+  14: 'CRONOS_URL',
+  1: 'ETH_URL',
+  4: 'FTM_URL',
+  10: 'HARM_URL',
+  11: 'HECO_URL',
+  16: 'KCC_URL',
+  9: 'MRIVER_URL',
+  13: 'OKEX_URL',
+  17: 'OPT_URL',
+  3: 'POLYGON_URL',
+  7: 'GNOSIS_URL',
+  18: 'NEAR_URL',
+  19: 'TERRA_URL',
+  20: 'KLAYTN_URL',
+  21: 'FUSE_URL',
+  23: 'METIS_URL',
+  24: 'RONIN_URL',
 };
 
 @Injectable()
 export class Web3Provider {
   private readonly providers = {};
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService, private readonly chainsService: ChainsService) {
     this.initWeb3Providers();
     this.initConnectionProviders();
     this.initLCDProviders();
@@ -45,20 +46,20 @@ export class Web3Provider {
   }
 
   public initCardanoProviders() {
-    this.providers[ChainIdEnum.cardano] = new BlockFrostAPI({
+    this.providers[22] = new BlockFrostAPI({
       projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
     });
   }
 
-  public getInstanceByChainId(chain: ChainIdEnum) {
+  public getInstanceByChainId(chain: number) {
     return this.providers[chain];
   }
 
-  public getInstance(chain: ChainIdEnum): Connection {
+  public getInstance(chain: number): Connection {
     return this.providers[chain];
   }
 
-  public getCardanoInstance(chain: ChainIdEnum): BlockFrostAPI {
+  public getCardanoInstance(chain: number): BlockFrostAPI {
     return this.providers[chain];
   }
 
@@ -68,12 +69,14 @@ export class Web3Provider {
     });
   }
 
-  private initConnectionProviders() {
-    this.providers[ChainIdEnum.sol] = new Connection(this.configService.get<string>('SOL_URL'));
+  private async initConnectionProviders() {
+    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.sol)
+    this.providers[chainId] = new Connection(this.configService.get<string>('SOL_URL'));
   }
 
-  private initLCDProviders() {
-    this.providers[ChainIdEnum.terra] = new LCDClient({
+  private async initLCDProviders() {
+    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.cardano)
+    this.providers[chainId] = new LCDClient({
       URL: this.configService.get<string>('TERRA_URL'),
       chainID: AbsoluteChainIdEnum.terra.toString(),
     });

@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
+import { CurrencyIdEnum } from '@app/common/enum';
 import { Address, CurrencyId, Timestamp } from '@app/common/types';
 
 import { ChainDto } from '../../../../dto/chain.dto';
@@ -10,7 +10,7 @@ import { PriceServiceResponse } from '../../../../interfaces/prices.comon.interf
 import { CurrentTokensPrices } from '../prices.interfaces';
 
 export class PriceCurrentRequestDto {
-  constructor(addresses: Address[], chain: ChainIdEnum, currency: CurrencyId) {
+  constructor(addresses: Address[], chain: number, currency: CurrencyId) {
     this.addresses = addresses;
     this.chain = chain;
     this.currency = currency;
@@ -25,15 +25,15 @@ export class PriceCurrentRequestDto {
   })
   addresses: Address[];
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chain: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chain: number;
 
   @ApiProperty({ type: Number, example: 1 })
   currency?: CurrencyId;
 }
 
 export class FetchPricesRequestDto {
-  constructor(addresses: Address[], chain: ChainIdEnum, currency?: CurrencyId) {
+  constructor(addresses: Address[], chain: number, currency?: CurrencyId) {
     this.addresses = addresses.join(',');
     this.chain = chain;
     this.currency = currency;
@@ -46,15 +46,15 @@ export class FetchPricesRequestDto {
   })
   addresses: string;
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chain: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chain: number;
 
   @ApiProperty({ type: Number, example: 1 })
   currency?: CurrencyId;
 }
 
 export class FetchTimestampPricesRequestDto {
-  constructor(assets: Address[], chain: ChainIdEnum, timestamp: number, currency: CurrencyId = 1) {
+  constructor(assets: Address[], chain: number, timestamp: number, currency: CurrencyId = 1) {
     this.assets = assets;
     this.timestamp = timestamp;
     this.chain = chain;
@@ -69,8 +69,8 @@ export class FetchTimestampPricesRequestDto {
   })
   assets: string[];
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.ftm })
-  chain: ChainIdEnum;
+  @ApiProperty({ example: 4 })
+  chain: number;
 
   @ApiProperty({ type: Number, example: 1, required: false })
   currency?: CurrencyId;
@@ -83,7 +83,7 @@ export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
   constructor(
     addresses: Address[],
     timestamps: Timestamp[],
-    chain: ChainIdEnum,
+    chain: number,
     currency: CurrencyId,
   ) {
     super(addresses, chain, currency);
@@ -99,8 +99,8 @@ export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
   })
   addresses: Address[];
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chain: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chain: number;
 
   @ApiProperty({ enum: CurrencyIdEnum, enumName: 'CurrencyIdEnum', example: CurrencyIdEnum.usd })
   currency?: CurrencyIdEnum;

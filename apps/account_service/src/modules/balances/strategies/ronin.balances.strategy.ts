@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common';
-
 import { Balance } from '../../../common/interfaces/ronin.interface';
 import { RoninService } from '../../../common/providers/3rdparty/ronin.service';
 import { BalancesRequest } from '../../../common/types';
@@ -20,7 +18,7 @@ export class RoninBalancesStrategy {
     return this.mapResponse(balances, chainId);
   }
 
-  private mapResponse(balances: Balance, chainId: ChainIdEnum): TokenBalance[] {
+  private mapResponse(balances: Balance, chainId: number): TokenBalance[] {
     const tokenBalances: TokenBalance[] = [];
 
     balances.forEach((amount, address) => {

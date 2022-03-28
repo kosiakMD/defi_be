@@ -1,6 +1,5 @@
 import { EntityRepository, In, Repository } from 'typeorm';
 
-import { ChainIdEnum } from '@app/common/enum';
 import { Address, Chains } from '@app/common/types';
 
 import { AssetsForLambdaResponse } from '../../../common/interfaces/assets.interface';
@@ -62,15 +61,13 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     });
   }
 
-  async findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetsEntity> {
+  async findOneByAddressAndChain(address: string, chainId: number): Promise<AssetsEntity> {
     return this.findOne({
       where: { address: address, chain: chainId },
     });
   }
 
-  async findAllTrackedAssetsWithPoolsByChain(
-    chainId: ChainIdEnum,
-  ): Promise<AssetsForLambdaResponse[]> {
+  async findAllTrackedAssetsWithPoolsByChain(chainId: number): Promise<AssetsForLambdaResponse[]> {
     const lambdaAssetsSql = `
       select
         an.address,

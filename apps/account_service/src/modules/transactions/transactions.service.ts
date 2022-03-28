@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CHAIN_ID_BSC, CHAIN_ID_ETH, DEFAULT_MULTIPLIER } from '@app/common/constant';
-import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { ChainNameEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 import { Address, ChainId } from '@app/common/types';
 import { getUniqList } from '@app/common/utils';
@@ -23,6 +23,7 @@ import { Web3Provider } from '../../common/providers/chainRelated/web3.provider'
 import { excludeSecondArray, getUniqueAndToLowerCaseArrayData } from '../../common/utils';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
+import { ChainsService } from '../chains/chains.service';
 import { TransactionNewDto, TransactionsDto } from './dto/transactions.dto';
 import { TransactionsNewEntity } from './entities/transactions.new.entity';
 import { Transaction, TransactionsResponse, TransactionsResult } from './transactions.interfaces';
@@ -41,6 +42,7 @@ export class TransactionsService {
     @InjectRepository(TransactionsNewEntity)
     private readonly transactionRepository: Repository<TransactionsNewEntity>,
     private readonly blacklistService: BlacklistService,
+    private readonly chainsService: ChainsService,
   ) {}
 
   private static convertAddresses(addresses: string[]): string {
@@ -48,7 +50,7 @@ export class TransactionsService {
   }
 
   public async getTransactions(addresses: string[]): Promise<TransactionsResponse | []> {
-    if (this.isAddressesNotCorrect(addresses)) return [];
+    if (await this.isAddressesNotCorrect(addresses)) return [];
 
     this.prepareAddresses(addresses);
     this.manager = getManager();
@@ -63,12 +65,14 @@ export class TransactionsService {
     return this.toTransactionsResponse(allTransactions);
   }
 
-  private isAddressesNotCorrect(addresses: string[]): boolean {
+  private async isAddressesNotCorrect(addresses: string[]): Promise<boolean> {
     if (!addresses.length) {
       return true;
     }
     return !addresses.every(
-      this.web3Provider.getInstanceByChainId(ChainIdEnum.eth).utils.isAddress,
+      this.web3Provider.getInstanceByChainId(
+        await this.chainsService.getChainIdByName(ChainNameEnum.eth),
+      ).utils.isAddress,
     );
   }
 
@@ -153,7 +157,7 @@ export class TransactionsService {
 
   public async getTransactionsNew(
     addresses: Address[],
-    chains: ChainIdEnum[],
+    chains: number[],
   ): Promise<DetailedResponse<TransactionNewDto[]>> {
     const response = {
       status: ResultStatus.ok,
@@ -183,7 +187,7 @@ export class TransactionsService {
 
   async getTransactionsFromScan(
     addresses: Address[],
-    chains: ChainIdEnum[],
+    chains: number[],
   ): Promise<DetailedResponse<TransactionsResult[]>> {
     const response = {
       status: ResultStatus.ok,
@@ -248,7 +252,7 @@ export class TransactionsService {
 
   private transformCovalentToInternal(
     data: Covalent.Transaction,
-    chainId: ChainIdEnum,
+    chainId: number,
   ): TransactionsDto[] {
     const { quote_currency: currency, items } = data;
     return items.map(

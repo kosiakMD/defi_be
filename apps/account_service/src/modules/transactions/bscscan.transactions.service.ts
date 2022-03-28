@@ -1,4 +1,4 @@
-import { ChainIdEnum, TransactionType } from '@app/common/enum';
+import { ChainNameEnum, TransactionType } from '@app/common/enum';
 
 import {
   Transaction,
@@ -7,8 +7,14 @@ import {
 import { BscscanApi } from '../../common/providers/chainRelated/scans/bscscan.api';
 import { Web3Service } from '../../common/providers/chainRelated/web3.service';
 
+import { ChainsService } from '../chains/chains.service';
+
 export class BscscanTransactionsService {
-  constructor(private readonly bscscan: BscscanApi, private readonly web3Service: Web3Service) {}
+  constructor(
+    private readonly bscscan: BscscanApi,
+    private readonly web3Service: Web3Service,
+    private readonly chainsService: ChainsService,
+  ) {}
 
   public async getTransactions(
     addresses: string[],
@@ -100,7 +106,7 @@ export class BscscanTransactionsService {
           cumulativeGasUsed,
           gasUsed,
           confirmations,
-          chainId: ChainIdEnum.bnb,
+          chainId: this.chainsService.getChainIdByName(ChainNameEnum.bnb),
           isInternal: type === 'internal' ? true : undefined,
         };
       },

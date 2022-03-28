@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { ApprovalsController } from '../../controllers/approvals.controller';
 import { BlacklistModule } from '../blacklists/blacklist.module';
+import { ChainsModule } from '../chains/chains.module';
 import { ApprovalsService } from './approvals.service';
 
 @Module({
@@ -14,6 +15,7 @@ import { ApprovalsService } from './approvals.service';
     BlacklistModule,
     TypeOrmModule.forFeature(),
     CacheModule.register(),
+    ChainsModule,
   ],
   providers: [ApprovalsService],
   controllers: [ApprovalsController],

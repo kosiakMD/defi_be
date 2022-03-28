@@ -1,11 +1,11 @@
-import { Address, ChainIdEnum } from '@app/common';
+import { Address } from '@app/common';
 
 export interface ERC20Token {
   address: string;
   decimals?: number;
   symbol?: string;
   name?: string;
-  chainId?: ChainIdEnum;
+  chainId?: number;
 }
 
 export interface TokenBalance {

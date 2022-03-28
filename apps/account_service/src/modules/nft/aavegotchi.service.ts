@@ -4,10 +4,10 @@ import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import web3 from 'web3';
 
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { Address, ChainAbbrEnum, ChainIdEnum, ChainNameEnum, NftProjectEnum } from '@app/common';
+import { Address, ChainAbbrEnum, ChainNameEnum, NftProjectEnum } from '@app/common';
 import { GHST_ADDRESS_POLYGON, ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
 import {
@@ -29,15 +29,18 @@ import {
 import { mapToObject, sumOfProperties } from '@app/common/utils/object';
 import { getKey } from '@app/common/utils/string';
 
+import { ChainsService } from '../chains/chains.service';
 import { GotchiOwned, Id, Svg, User } from './interfaces/aavegotchi.interface';
 import { NftBasicService } from './nft.basic.service';
 import { OpenSeaService } from './open.sea.service';
 import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph';
 
-export class AavegotchiService extends NftBasicService {
+export class AavegotchiService extends NftBasicService implements OnModuleInit {
   public readonly project = NftProjectEnum.aavegotchi;
   public readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.plg];
-  public readonly chainsIds = [ChainIdEnum.eth, ChainIdEnum.plg];
+  public chainsIds: number[] = [];
+  private polygonChain;
+  private ethChain;
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -45,9 +48,16 @@ export class AavegotchiService extends NftBasicService {
     protected readonly priceService: PriceService,
     protected readonly subgraph: AavegotchiSubgraph,
     protected readonly openSeaService: OpenSeaService,
+    private readonly chainsService: ChainsService,
   ) {
     super();
     BigNumber.config({ EXPONENTIAL_AT: 30 });
+  }
+
+  async onModuleInit() {
+    this.ethChain = await this.chainsService.get({ name: ChainNameEnum.eth });
+    this.polygonChain = await this.chainsService.get({ name: ChainNameEnum.plg });
+    this.chainsIds.push(this.ethChain.id, this.polygonChain.id);
   }
 
   private static getSvgKey(...ids: string[]): string {
@@ -63,15 +73,15 @@ export class AavegotchiService extends NftBasicService {
       chains: [
         {
           chain: {
-            id: ChainIdEnum.plg,
-            abbr: ChainAbbrEnum.plg,
-            name: ChainNameEnum.plg,
+            id: this.polygonChain.id,
+            abbr: this.polygonChain.abbr,
+            name: this.polygonChain.name,
           },
           collections: fillCollections
             ? [
                 {
                   ...aavegotchiCollectionPolygon,
-                  chain: ChainIdEnum.plg,
+                  chain: this.polygonChain.id,
                   project: this.project,
                 },
               ]
@@ -122,7 +132,7 @@ export class AavegotchiService extends NftBasicService {
 
   private async handleEthereumCollections(
     accounts: Address[],
-    chain: ChainIdEnum,
+    chain: number,
   ): Promise<NftCollectionsByAccounts> {
     return await this.openSeaService.getCollectionsByAccounts(
       accounts,
@@ -133,17 +143,17 @@ export class AavegotchiService extends NftBasicService {
 
   public async getCollectionsByAccounts(
     accounts: string[],
-    chains: ChainIdEnum[],
+    chains: number[],
   ): Promise<NftCollectionsByAccounts> {
     const collectionsByAccounts = new Map<Address, CollectionChainsDto>();
 
     const rawCollectionsByAccounts = await Promise.all(
       chains.map(async (chain) => {
         switch (chain) {
-          case ChainIdEnum.eth:
+          case this.ethChain.id:
             return await this.handleEthereumCollections(accounts, chain);
 
-          case ChainIdEnum.plg:
+          case this.polygonChain.id:
             return this.getPolygonCollection(accounts);
         }
       }),
@@ -228,7 +238,7 @@ export class AavegotchiService extends NftBasicService {
 
     return plainToClass(CollectionDto, {
       address: aavegotchiCollectionPolygon.address,
-      chain: ChainIdEnum.plg,
+      chain: this.polygonChain.id,
       usernames: aavegotchiCollectionPolygon.usernames,
       assets,
       name: aavegotchiCollectionPolygon.name,
@@ -321,12 +331,10 @@ export class AavegotchiService extends NftBasicService {
     const rawAssetsByAccounts = await Promise.all(
       chains.map(async (chain) => {
         switch (chain) {
-          case ChainIdEnum.eth:
+          case this.ethChain.id:
             return await this.handleEthereum(accounts, chain);
-
-          case ChainIdEnum.plg:
+          case this.polygonChain.id:
             return await this.handlePolygon(accounts, chain);
-
           default:
             return [];
         }

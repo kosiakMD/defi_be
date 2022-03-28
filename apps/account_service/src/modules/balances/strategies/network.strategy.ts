@@ -29,6 +29,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
 
   private readonly DEFAULT_BATCH_SIZE = 3000;
   private readonly WEB3_RETRY_CALL_IN_MS = 2000;
+  private readonly COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240';
 
   async getBalances({
     address,
@@ -97,6 +98,9 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
 
   private async getBalancesContractAddress(chain: number): Promise<string> {
     const chainEntity = await this.chainsService.get({ id: chain });
-    return chainEntity.metadata.balancesCheckerAddress;
+    if (chainEntity?.metadata?.balancesCheckerAddress) {
+      return chainEntity.metadata.balancesCheckerAddress;
+    }
+    return this.COMMON_BALANCE_CHECKER_ADDRESS;
   }
 }

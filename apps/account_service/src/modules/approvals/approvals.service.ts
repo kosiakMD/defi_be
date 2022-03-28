@@ -2,6 +2,7 @@ import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
+import { ChainNameEnum } from '@app/common';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 
 import { GetAllApprovalsDto } from '../../common/dto/GetAllApprovals.dto';
@@ -21,8 +22,7 @@ export class ApprovalsService {
   ): Promise<ContractApprovalResponse> {
     const allApprovals = {};
     if (!getAllApprovalsQuery.address) return allApprovals;
-
-    const chainIdEth = await this.chainsService.getChainIdByName('eth');
+    const chainIdEth = await this.chainsService.getChainIdByName(ChainNameEnum.eth);
     const [ethApprovals] = await Promise.all([this.getApprovals(getAllApprovalsQuery, chainIdEth)]);
     return ethApprovals;
   }

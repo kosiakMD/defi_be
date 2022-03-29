@@ -144,8 +144,7 @@ export class AssetsService {
       assetChain,
     );
 
-    const shouldReturnExisting = existedAsset && (existedAsset.isTracked || existedAsset.isLp);
-    if (shouldReturnExisting && !force) {
+    if (existedAsset && !force) {
       return this.withUnderlying(existedAsset);
     }
 

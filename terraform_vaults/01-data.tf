@@ -166,3 +166,6 @@ data "aws_ssm_parameter" "DEV_DB_USERNAME" {
   name = "/DEV/DB_USERNAME"
 }
 
+data "aws_ssm_parameter" "DEV_DB_PASSWORD" {
+  name = "/DEV/DB_PASSWORD"
+}

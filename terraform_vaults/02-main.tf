@@ -50,6 +50,7 @@ module "lambda" {
     "DB_LOGGING"              = data.aws_ssm_parameter.DEV_DB_LOGGING.value,
     "DB_CONNECTION"           = data.aws_ssm_parameter.DEV_DB_CONNECTION.value,
     "DB_USERNAME"             = data.aws_ssm_parameter.DEV_DB_USERNAME.value,
+    "DB_PASSWORD"             = data.aws_ssm_parameter.DEV_DB_PASSWORD.value,
   }
 }
 

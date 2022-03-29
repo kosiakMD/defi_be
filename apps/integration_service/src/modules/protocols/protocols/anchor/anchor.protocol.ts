@@ -32,6 +32,7 @@ export class AnchorProtocol extends BasicProtocol {
       FeatureEnum.staking,
       FeatureEnum.lending,
       FeatureEnum.borrowing,
+      FeatureEnum.claimable,
     ],
   };
 

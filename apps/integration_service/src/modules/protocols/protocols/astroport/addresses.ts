@@ -3,3 +3,7 @@ export enum AstroportAddresses {
   factory = 'terra1fnywlw4edny3vw44x04xd67uzkdqluymgreu7g',
   astro = 'terra1xj49zyqrwpv5k928jwfpfy2ha668nwdgkwlrg3',
 }
+
+export const astroportExcludeAddressesMap = new Map([
+  ['terra1wmaty65yt7mjw6fjfymkd9zsm6atsq82d9arcd', 'terra1wmaty65yt7mjw6fjfymkd9zsm6atsq82d9arcd'],
+]);

@@ -23,6 +23,7 @@ import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { AccountService } from '../../../microservices/account.service';
+import { astroportExcludeAddressesMap } from './addresses';
 
 @Injectable()
 export class AstroportPools {
@@ -43,7 +44,9 @@ export class AstroportPools {
     const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
       addressesLowerCase,
       [chain.id],
-      cachedPools.items.map((i) => i.lpToken.address),
+      cachedPools.items
+        .filter((i) => !astroportExcludeAddressesMap.get(i.lpToken.address))
+        .map((i) => i.lpToken.address),
     );
 
     const baseData: BaseDataLp[] = [];

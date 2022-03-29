@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, MarinadeProtocolEnum } from '@app/common';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { concatStrings } from '@app/common/utils';
 
@@ -167,8 +167,9 @@ export class JobsRunner {
     });
     jobPlaceholdersSet.add('12_Orca_staking');
     jobPlaceholdersSet.add('12_Orca_pools');
-
     jobPlaceholdersSet.add(`${ChainIdEnum.cardano}_SundaeSwap_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${MarinadeProtocolEnum.marinade}_pools`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${MarinadeProtocolEnum.marinade}_farming`);
 
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);

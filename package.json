@@ -301,6 +301,7 @@
     "uuid": "^8.3.2",
     "web3": "^1.6.0",
     "winston": "^3.3.3",
-    "winston-aws-cloudwatch": "^3.0.0"
+    "winston-aws-cloudwatch": "^3.0.0",
+    "buffer-layout": "1.2.2"
   }
 }

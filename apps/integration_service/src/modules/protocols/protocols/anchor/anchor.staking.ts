@@ -24,6 +24,7 @@ import { Web3ProviderService } from '@app/common/web3provider';
 import { toDecimals } from '../../../../common/utils/util';
 
 import { StakingDataInterface, UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
+import { AnchorAddresses } from './anchor.addresses';
 
 @Injectable()
 export class AnchorStaking {
@@ -66,6 +67,7 @@ export class AnchorStaking {
         } = stakingData;
         stakingPosition.staked = String(stakingBalance);
         if (stakingToken.tokens.length) {
+          stakingToken.balance = stakingBalance;
           const poolShare = new BigNumber(stakingBalance) //
             .div(stakingToken.totalSupply)
             .toString();
@@ -118,9 +120,6 @@ export class AnchorStaking {
     try {
       const addressProvider = new AddressProviderFromJson(columbus5);
       const terra = this.web3Provider.getInstanceByChainId(chain.id);
-      const { creator } = await terra.wasm.contractInfo(addressProvider.ancUstPair());
-      // eslint-disable-next-line camelcase
-      const { generator_address } = await terra.wasm.contractQuery(creator, { config: {} });
       const balanceMap = new Map<string, StakingDataInterface[]>();
       await Promise.all(
         addresses.map(async (address) => {
@@ -130,14 +129,14 @@ export class AnchorStaking {
               if (pool.stakingToken.tokens?.length) {
                 // eslint-disable-next-line camelcase
                 const [lpStakingBalance, { pending, pending_on_proxy }] = await Promise.all([
-                  await terra.wasm.contractQuery(generator_address, {
+                  await terra.wasm.contractQuery(AnchorAddresses.generatorAddress, {
                     deposit: {
                       // eslint-disable-next-line camelcase
                       lp_token: pool.stakingToken.address,
                       user: address,
                     },
                   }),
-                  await terra.wasm.contractQuery(generator_address, {
+                  await terra.wasm.contractQuery(AnchorAddresses.generatorAddress, {
                     // eslint-disable-next-line camelcase
                     pending_token: {
                       // eslint-disable-next-line camelcase

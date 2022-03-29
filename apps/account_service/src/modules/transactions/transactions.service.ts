@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { getManager, In, Repository } from 'typeorm';
 import { EntityManager } from 'typeorm/entity-manager/EntityManager';
 
-import { Inject, LoggerService } from '@nestjs/common';
+import { Inject, LoggerService, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -28,10 +28,11 @@ import { TransactionNewDto, TransactionsDto } from './dto/transactions.dto';
 import { TransactionsNewEntity } from './entities/transactions.new.entity';
 import { Transaction, TransactionsResponse, TransactionsResult } from './transactions.interfaces';
 
-export class TransactionsService {
+export class TransactionsService implements OnModuleInit {
   addresses: string;
   addressesArray: Address[];
   manager: EntityManager;
+  private ethChainId: number;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
@@ -45,8 +46,8 @@ export class TransactionsService {
     private readonly chainsService: ChainsService,
   ) {}
 
-  private static convertAddresses(addresses: string[]): string {
-    return addresses.map((address) => `'${address}'`).join(',');
+  async onModuleInit() {
+    this.ethChainId = await this.chainsService.getChainIdByName(ChainNameEnum.eth);
   }
 
   public async getTransactions(addresses: string[]): Promise<TransactionsResponse | []> {
@@ -63,96 +64,6 @@ export class TransactionsService {
     const allTransactions = calculatedEthTransactions.concat(calculatedBscTransactions);
 
     return this.toTransactionsResponse(allTransactions);
-  }
-
-  private async isAddressesNotCorrect(addresses: string[]): Promise<boolean> {
-    if (!addresses.length) {
-      return true;
-    }
-    return !addresses.every(
-      this.web3Provider.getInstanceByChainId(
-        await this.chainsService.getChainIdByName(ChainNameEnum.eth),
-      ).utils.isAddress,
-    );
-  }
-
-  private prepareAddresses(addresses: string[]): void {
-    const uniqAddresses = getUniqueAndToLowerCaseArrayData(addresses);
-    this.addresses = TransactionsService.convertAddresses(uniqAddresses);
-    this.addressesArray = uniqAddresses;
-  }
-
-  private toTransactionsResponse(transactions): TransactionsResponse {
-    return this.addressesArray.reduce((response, address) => {
-      const userTransactions: Transaction[] = transactions.filter(
-        (transaction) => transaction.to === address || transaction.from === address,
-      );
-
-      return {
-        ...response,
-        [address]: userTransactions,
-      };
-    }, {});
-  }
-
-  private calculateFields(transactions, chainId): Transaction[] {
-    return transactions.map((transaction) => {
-      return {
-        chainId,
-        hash: transaction.hash,
-        blockNumber: transaction.blocknumber,
-        from: transaction.fromaddress,
-        to: transaction.toaddress,
-        blockTimestamp: transaction.blocktimestamp,
-        amount: {
-          eth: transaction.amount * DEFAULT_MULTIPLIER,
-          usd: transaction.amount * DEFAULT_MULTIPLIER * transaction.price,
-        },
-        gas: {
-          price: transaction.gasprice * DEFAULT_MULTIPLIER,
-          eth: transaction.gasused * DEFAULT_MULTIPLIER * transaction.gasprice,
-          usd: transaction.gasused * DEFAULT_MULTIPLIER * transaction.price * transaction.gasprice,
-        },
-      };
-    });
-  }
-
-  private loadETHTransactions(): Promise<any> {
-    return this.manager.query(`
-    SELECT
-      hash,
-      t."blockNumber" as blockNumber,
-      t."fromAddress" as fromAddress,
-      t."toAddress" as toAddress,
-      t."blockTimestamp" as blockTimestamp,
-      gas,
-      t."gasPrice" as gasPrice,
-      t."gasUsed" as gasUsed,
-      amount,
-      ethprice as price
-    FROM transactionseth AS t
-    WHERE t."fromAddress" IN (${this.addresses})
-    OR t."toAddress" IN (${this.addresses})
-    `);
-  }
-
-  private loadBSCTransactions(): Promise<any> {
-    return this.manager.query(`
-    SELECT
-      hash,
-      t."blockNumber" as blockNumber,
-      t."fromAddress" as fromAddress,
-      t."toAddress" as toAddress,
-      t."blockTimestamp" as blockTimestamp,
-      gas,
-      t."gasPrice" as gasPrice,
-      t."gasUsed" as gasUsed,
-      amount,
-      bnbprice as price
-    FROM bsc_transactions AS t
-    WHERE t."fromAddress" IN (${this.addresses})
-    OR t."toAddress" IN (${this.addresses})
-    `);
   }
 
   public async getTransactionsNew(
@@ -250,39 +161,6 @@ export class TransactionsService {
     return response;
   }
 
-  private transformCovalentToInternal(
-    data: Covalent.Transaction,
-    chainId: number,
-  ): TransactionsDto[] {
-    const { quote_currency: currency, items } = data;
-    return items.map(
-      (tsx) =>
-        new TransactionsDto({
-          chainId: chainId,
-          // @ts-ignore
-          blockNumber: tsx.block_height,
-          blockHash: tsx.tx_hash,
-          hash: tsx.tx_hash,
-          timeStamp: tsx.block_signed_at,
-          // @ts-ignore
-          from: tsx.from_adress,
-          // @ts-ignore
-          to: tsx.to_adress,
-          // @ts-ignore
-          value: tsx.value,
-          // @ts-ignore
-          valueInCurrency: tsx.value_quote,
-          // @ts-ignore
-          currency: currency,
-          // @ts-ignore
-          gasPrice: tsx.gas_price,
-          // @ts-ignore
-          gasUsed: tsx.gas_spent,
-          isError: tsx.successful ? '0' : '1',
-        }),
-    );
-  }
-
   async getTransactionsFromCovalent(
     addresses: Address[],
     chains: ChainId[],
@@ -319,5 +197,130 @@ export class TransactionsService {
     }
 
     return response;
+  }
+
+  private static convertAddresses(addresses: string[]): string {
+    return addresses.map((address) => `'${address}'`).join(',');
+  }
+
+  private async isAddressesNotCorrect(addresses: string[]): Promise<boolean> {
+    if (!addresses.length) {
+      return true;
+    }
+    return !addresses.every(
+      this.web3Provider.getInstanceByChainId(this.ethChainId).utils.isAddress,
+    );
+  }
+
+  private prepareAddresses(addresses: string[]): void {
+    const uniqAddresses = getUniqueAndToLowerCaseArrayData(addresses);
+    this.addresses = TransactionsService.convertAddresses(uniqAddresses);
+    this.addressesArray = uniqAddresses;
+  }
+
+  private toTransactionsResponse(transactions): TransactionsResponse {
+    return this.addressesArray.reduce((response, address) => {
+      const userTransactions: Transaction[] = transactions.filter(
+        (transaction) => transaction.to === address || transaction.from === address,
+      );
+
+      return {
+        ...response,
+        [address]: userTransactions,
+      };
+    }, {});
+  }
+
+  private calculateFields(transactions, chainId): Transaction[] {
+    return transactions.map((transaction) => {
+      return {
+        chainId,
+        hash: transaction.hash,
+        blockNumber: transaction.blocknumber,
+        from: transaction.fromaddress,
+        to: transaction.toaddress,
+        blockTimestamp: transaction.blocktimestamp,
+        amount: {
+          eth: transaction.amount * DEFAULT_MULTIPLIER,
+          usd: transaction.amount * DEFAULT_MULTIPLIER * transaction.price,
+        },
+        gas: {
+          price: transaction.gasprice * DEFAULT_MULTIPLIER,
+          eth: transaction.gasused * DEFAULT_MULTIPLIER * transaction.gasprice,
+          usd: transaction.gasused * DEFAULT_MULTIPLIER * transaction.price * transaction.gasprice,
+        },
+      };
+    });
+  }
+
+  private loadETHTransactions(): Promise<any> {
+    return this.manager.query(`
+    SELECT
+      hash,
+      t."blockNumber" as blockNumber,
+      t."fromAddress" as fromAddress,
+      t."toAddress" as toAddress,
+      t."blockTimestamp" as blockTimestamp,
+      gas,
+      t."gasPrice" as gasPrice,
+      t."gasUsed" as gasUsed,
+      amount,
+      ethprice as price
+    FROM transactionseth AS t
+    WHERE t."fromAddress" IN (${this.addresses})
+    OR t."toAddress" IN (${this.addresses})
+    `);
+  }
+
+  private loadBSCTransactions(): Promise<any> {
+    return this.manager.query(`
+    SELECT
+      hash,
+      t."blockNumber" as blockNumber,
+      t."fromAddress" as fromAddress,
+      t."toAddress" as toAddress,
+      t."blockTimestamp" as blockTimestamp,
+      gas,
+      t."gasPrice" as gasPrice,
+      t."gasUsed" as gasUsed,
+      amount,
+      bnbprice as price
+    FROM bsc_transactions AS t
+    WHERE t."fromAddress" IN (${this.addresses})
+    OR t."toAddress" IN (${this.addresses})
+    `);
+  }
+
+  private transformCovalentToInternal(
+    data: Covalent.Transaction,
+    chainId: number,
+  ): TransactionsDto[] {
+    const { quote_currency: currency, items } = data;
+    return items.map(
+      (tsx) =>
+        new TransactionsDto({
+          chainId: chainId,
+          // @ts-ignore
+          blockNumber: tsx.block_height,
+          blockHash: tsx.tx_hash,
+          hash: tsx.tx_hash,
+          timeStamp: tsx.block_signed_at,
+          // @ts-ignore
+          from: tsx.from_adress,
+          // @ts-ignore
+          to: tsx.to_adress,
+          // @ts-ignore
+          value: tsx.value,
+          // @ts-ignore
+          valueInCurrency: tsx.value_quote,
+          // @ts-ignore
+          currency: currency,
+          // @ts-ignore
+          gasPrice: tsx.gas_price,
+          // @ts-ignore
+          gasUsed: tsx.gas_spent,
+          isError: tsx.successful ? '0' : '1',
+        }),
+    );
   }
 }

@@ -2,7 +2,7 @@ module "lambda" {
   source                     = "./.data/modules/lambda"
   aws_region                 = "eu-central-1"
   ecr_repository_name        = "${var.environment}_${var.lambda_name}"
-  docker_image_tag           = "latest"
+  docker_image_tag           = var.image_tag
   lambda_name                = "${var.environment}_${var.lambda_name}"
   lambda_options_memory_size = "750"
   lambda_options_timeout     = "300"

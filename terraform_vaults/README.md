@@ -7,7 +7,7 @@ export TF_VAR_tf_state_bucket="defiyield-terraform-states"
 export TF_VAR_tf_region="eu-central-1"
 export TF_VAR_environment="dev"
 export TF_VAR_lambda_name="vaults"
-export TF_DIR="terraform_pools"
+export TF_DIR="terraform_vaults"
 ```
 NB!:
 - TF_VAR_environment and TF_VAR_lambda_name must be lowercase.

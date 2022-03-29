@@ -4,4 +4,4 @@ yarn-error.log
 dist
 .env
 .gitignore
-terraform_pools
+terraform_vaults

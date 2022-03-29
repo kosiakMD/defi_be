@@ -205,6 +205,21 @@
       "compilerOptions": {
         "tsConfigPath": "jobs/lambda_protocol_prices/tsconfig.app.json"
       }
+    },
+    "categorization_tool": {
+      "type": "application",
+      "root": "apps/categorization_tool",
+      "entryFile": "main",
+      "sourceRoot": "apps/categorization_tool/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/categorization_tool/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/categorization_tool"
+          }
+        ]
+      }
     }
   }
 }

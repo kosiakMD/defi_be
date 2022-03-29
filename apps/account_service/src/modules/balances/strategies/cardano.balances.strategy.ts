@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
@@ -35,7 +34,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
   private mapCardanoResponse(
     wallet: CardanoBalance,
     tokensFilter: Set<string>,
-    chainId: ChainIdEnum,
+    chainId: number,
   ): TokenBalance[] {
     const tokenBalances: TokenBalance[] = [];
     for (const asset of wallet.amount) {
@@ -53,7 +52,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
     return tokenBalances;
   }
 
-  private returnZeroBalanceAddressOrError(error: any, chainId: ChainIdEnum) {
+  private returnZeroBalanceAddressOrError(error: any, chainId: number) {
     /** blockfrost couldn't load information about the wallet if it has 0 coins. status 404 */
     if (error.status_code === 404) {
       return [

@@ -1,6 +1,5 @@
 import { ETH_ADDRESS, ETH_BNB_ADDRESS } from '@app/common/constant';
-import { ChainIdEnum } from '@app/common/enum';
-import { Address, ChainId } from '@app/common/types';
+import { Address } from '@app/common/types';
 
 function handleEthereum(address: Address): Address {
   return address.match(/e{40}$/g) ? ETH_ADDRESS : address;
@@ -10,12 +9,12 @@ function handleBsc(address: Address): Address {
   return address === ETH_BNB_ADDRESS ? ETH_ADDRESS : address;
 }
 
-export function replaceIncorrectTokenAddress(address: Address, chainId: ChainId): Address {
+export function replaceIncorrectTokenAddress(address: Address, chainId: number): Address {
   switch (chainId) {
-    case ChainIdEnum.eth:
+    case 1:
       return handleEthereum(address);
 
-    case ChainIdEnum.bnb:
+    case 2:
       return handleBsc(address);
 
     default:

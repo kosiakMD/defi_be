@@ -13,7 +13,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
-import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { ChainNameEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
 import { AToken } from '@app/common/web3provider/contracts/protocols/aave/AToken';
@@ -33,6 +33,7 @@ import { ELLIPSIS_LP } from '../approvals/contracts/ELLIPSIS_LP';
 import { ERC20 } from '../approvals/contracts/ERC20';
 import { MINTER } from '../approvals/contracts/MINTER';
 import { UNIV2LP } from '../approvals/contracts/UNIV2LP';
+import { ChainsService } from '../chains/chains.service';
 import { MinimalStakedTokenCheck } from './contracts/MinimalStakedTokenCheck';
 import { AssetDto, AssetResponseDto, AssetTrackDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
@@ -46,6 +47,7 @@ export class AssetsService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly web3Provider: Web3Provider,
     private readonly multicall: MulticallAggregator,
+    private readonly chainsService: ChainsService,
   ) {}
   async queryAllAssets(): Promise<AssetDto[]> {
     const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
@@ -54,12 +56,12 @@ export class AssetsService {
     );
   }
 
-  async findByAddressAndChain(address: Address, chainId: ChainIdEnum): Promise<AssetsEntity> {
+  async findByAddressAndChain(address: Address, chainId: number): Promise<AssetsEntity> {
     return await this.assetRepository.findOneByAddressAndChain(address, chainId);
   }
 
   // TODO: Review this method
-  async getAssetAndPoolObjects(chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
+  async getAssetAndPoolObjects(chainId: number): Promise<AssetsPoolsDto[]> {
     const assetsPools = await this.assetRepository.findAllTrackedAssetsWithPoolsByChain(chainId);
     return assetsPools.map((pool) => plainToClass(AssetsPoolsDto, pool));
   }
@@ -119,9 +121,10 @@ export class AssetsService {
         );
   }
 
-  async getAssetData(assetChain: ChainIdEnum, assetAddress: string) {
+  async getAssetData(assetChain: number, assetAddress: string) {
     const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
-    if (assetChain === ChainIdEnum.terra) {
+    const terraChainId = await this.chainsService.getChainIdByName(ChainNameEnum.terra);
+    if (assetChain === terraChainId) {
       // eslint-disable-next-line camelcase
       return await chainProvider.wasm.contractQuery(assetAddress, { token_info: {} });
     } else {
@@ -391,8 +394,12 @@ export class AssetsService {
   }
 
   async findCurvePoolCoins(asset: AssetsEntity): Promise<string[]> {
-    // TODO: move compatible chains to fetch from registries where possible
-    if ([ChainIdEnum.arbi, ChainIdEnum.eth].includes(asset.chain)) {
+    const chainIds = await this.chainsService.getManyChainIdsByNames([
+      ChainNameEnum.arbi,
+      ChainNameEnum.eth,
+    ]);
+
+    if (chainIds.includes(asset.chain)) {
       const registries = await this.getCurveRegistries(asset.chain);
       const registriesResp = await Promise.all(
         registries.map(async (address) => {
@@ -401,7 +408,7 @@ export class AssetsService {
             this.web3Provider.getInstanceByChainId(asset.chain),
             CURVE_REGISTRY_ABI,
           );
-          // Arbi metaPoolFactory contract doesn't has getPoolFromLpToken method and it throws an error
+
           let pool;
           try {
             pool = await contract.getPoolFromLpToken(asset.address);
@@ -450,7 +457,7 @@ export class AssetsService {
     return await curveLpPool.getCoinsForLpToken();
   }
 
-  async getCurveRegistries(chain: ChainIdEnum) {
+  async getCurveRegistries(chain: number) {
     const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
     const resp = await this.multicall.handleInBatches(
       [0, 3, 5].reduce((resp, value) => {

@@ -29,7 +29,6 @@ import {
 } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 
 import { AssetsPoolsService } from '../modules/assets/assets.pools.service';
@@ -115,7 +114,7 @@ export class AssetsController {
     required: true,
   })
   @ApiResponse({ status: HttpStatus.OK, type: AssetsPoolsDto })
-  async getAssetInfoForLambda(@Query('chainId') chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
+  async getAssetInfoForLambda(@Query('chainId') chainId: number): Promise<AssetsPoolsDto[]> {
     return await this.assetsService.getAssetAndPoolObjects(chainId);
   }
 

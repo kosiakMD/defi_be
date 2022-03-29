@@ -4,9 +4,6 @@ import { EnvEnum } from '@app/common';
 
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
-const COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240';
-const COMMON_BALANCE_CHECKER_BATCH_SIZE = 3000;
-
 export const validationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .equal(...Object.values(EnvEnum))
@@ -81,126 +78,6 @@ export const validationSchema = Joi.object({
     .required(),
   REDIS_CACHE_TTL: Joi.number(),
   REDIS_ASSETS_CACHE_TTL: Joi.number(),
-  ETH_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  ETH_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  BSC_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(1500)
-    .optional(),
-  BSC_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  POLYGON_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  POLYGON_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default('0x1502c3c8e63873b1b162ed27a218069dc1486f51')
-    .optional(),
-  FTM_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  FTM_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  AVAX_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  AVAX_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  ARBITRUM_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  ARBITRUM_BALANCES_CHECKER_ADDRESS: Joi.string()
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  GNOSIS_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  GNOSIS_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  CELO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  CELO_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  MOONRIVER_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  MOONRIVER_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  HARMONY_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  HARMONY_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  HECO_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  HECO_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  OKEX_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  OKEX_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  CRONOS_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  CRONOS_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  BOBA_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  BOBA_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  KCC_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  KCC_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  OPTIMISM_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  OPTIMISM_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  NEAR_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  NEAR_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  KLAYTN_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  KLAYTN_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  FUSE_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  FUSE_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
-  METIS_BALANCES_CHECKER_BATCH_SIZE: Joi.number() //
-    .default(COMMON_BALANCE_CHECKER_BATCH_SIZE)
-    .optional(),
-  METIS_BALANCES_CHECKER_ADDRESS: Joi.string() //
-    .default(COMMON_BALANCE_CHECKER_ADDRESS)
-    .optional(),
 
   // TODO: Hardcoded values should be removed and made required
   AWS_REGION: Joi.string() //

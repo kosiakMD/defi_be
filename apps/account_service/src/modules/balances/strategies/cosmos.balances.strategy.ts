@@ -18,17 +18,17 @@ export class CosmosBalancesStrategy implements BalancesLoadingStrategy {
     return this.mapCosmosResponse(balances, request);
   }
 
-  private mapCosmosResponse(balances: CosmosBalance[], request: BalancesRequest): TokenBalance[] {
+  private async mapCosmosResponse(balances: CosmosBalance[], request: BalancesRequest): Promise<TokenBalance[]> {
     const tokenBalances: TokenBalance[] = [];
     const tokenSet = new Set(request.tokens);
-    const chainId = this.cosmosService.getChainId();
+    const chainId = await this.cosmosService.getChainId();
 
     for (const balance of balances) {
       if (tokenSet.has(balance.denom)) {
         tokenBalances.push({
           amount: balance.amount.toString(),
           token: {
-            chainId: chainId,
+            chainId,
             address: balance.denom,
           },
         });

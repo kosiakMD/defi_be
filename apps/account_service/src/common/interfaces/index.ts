@@ -1,7 +1,4 @@
 import {
-  ChainAbbrEnum,
-  ChainIdEnum,
-  ChainNameEnum,
   CurrencyEnum,
   CurrencyIdEnum,
 } from '@app/common';
@@ -12,7 +9,7 @@ import { BalancesRequest } from '../types';
 
 export type Address = string;
 
-export type Chains = ChainIdEnum[];
+export type Chains = number[];
 
 export type TokenSymbol = string;
 
@@ -34,7 +31,7 @@ export interface ERC20Token {
 }
 
 export interface ContractApproval {
-  chainId: ChainIdEnum;
+  chainId: number;
   contractAddress: Address;
   amount: string;
   blockTimestamp: number;
@@ -150,9 +147,9 @@ export interface BalancesLoadingStrategy {
 }
 
 export interface Chain {
-  id: ChainIdEnum;
-  name: ChainNameEnum;
-  symbol: ChainAbbrEnum;
+  id: number;
+  name: string;
+  symbol: string;
 }
 
 export interface Currency {

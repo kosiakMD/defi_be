@@ -1,5 +1,3 @@
-import { ChainIdEnum } from '@app/common/enum';
-
 export enum AssetState {
   pending = 'pending',
   processing = 'processing',
@@ -11,7 +9,7 @@ export interface Asset {
   address: string;
   name: string;
   symbol: string;
-  chain: ChainIdEnum;
+  chain: number;
   decimals: number;
   status: AssetState;
 }

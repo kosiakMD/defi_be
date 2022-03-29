@@ -27,7 +27,7 @@ import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { BalancesModule } from './modules/balances/balances.module';
 import { BlacklistModule } from './modules/blacklists/blacklist.module';
-import { ChainsModule } from './modules/chains.module';
+import { ChainsModule } from './modules/chains/chains.module';
 import { DatabaseModule } from './modules/database.module';
 import { NftModule } from './modules/nft/nft.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';

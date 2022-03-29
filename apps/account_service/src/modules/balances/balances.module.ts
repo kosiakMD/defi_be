@@ -16,7 +16,7 @@ import { BalancesController } from '../../controllers/balances.controller';
 import { AssetsModule } from '../assets/assets.module';
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistModule } from '../blacklists/blacklist.module';
-import { ChainsModule } from '../chains.module';
+import { ChainsModule } from '../chains/chains.module';
 import { MulticallModule } from '../multicall/multicall.module';
 import { BalancesService } from './balances.service';
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';

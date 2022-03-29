@@ -1,4 +1,4 @@
-import { Address, ChainAbbrEnum, ChainIdEnum, NftProjectEnum } from '@app/common';
+import { Address, ChainAbbrEnum, NftProjectEnum } from '@app/common';
 import {
   NftAssetsByAccounts,
   NftCollectionsByAccounts,
@@ -8,17 +8,17 @@ import {
 export abstract class NftAbstractService {
   public abstract readonly project: NftProjectEnum;
   public abstract readonly chains: ChainAbbrEnum[];
-  public abstract readonly chainsIds: ChainIdEnum[];
+  public abstract readonly chainsIds: number[];
 
   public abstract getInfo(): NftServiceInfo;
   public abstract getCollectionsByAccounts(
     accounts: Address[],
-    chains: ChainIdEnum[],
+    chains: number[],
     collection?: string,
   ): Promise<NftCollectionsByAccounts>;
   public abstract getAssetsByAccounts(
     accounts: Address[],
     collection: string,
-    chains: ChainIdEnum[],
+    chains: number[],
   ): Promise<NftAssetsByAccounts>;
 }

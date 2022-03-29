@@ -1,15 +1,16 @@
 import { BlockFrostAPI } from '@blockfrost/blockfrost-js';
 import { Connection } from '@solana/web3.js';
 import { LCDClient } from '@terra-money/terra.js';
+import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
 import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainNameEnum } from '@app/common/enum';
-import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
 
-const ChainsProvidersUrls: Partial<Record<number, string>> = {
+// TODO: move config to DB
+const ChainsProvidersUrls: Record<number, string> = {
   5: 'ARBITRUM_URL',
   6: 'AVAX_URL',
   15: 'BOBA_URL',
@@ -38,17 +39,14 @@ const ChainsProvidersUrls: Partial<Record<number, string>> = {
 export class Web3Provider {
   private readonly providers = {};
 
-  constructor(private readonly configService: ConfigService, private readonly chainsService: ChainsService) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly chainsService: ChainsService,
+  ) {
     this.initWeb3Providers();
     this.initConnectionProviders();
     this.initLCDProviders();
     this.initCardanoProviders();
-  }
-
-  public initCardanoProviders() {
-    this.providers[22] = new BlockFrostAPI({
-      projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
-    });
   }
 
   public getInstanceByChainId(chain: number) {
@@ -63,6 +61,13 @@ export class Web3Provider {
     return this.providers[chain];
   }
 
+  private async initCardanoProviders() {
+    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.cardano);
+    this.providers[chainId] = new BlockFrostAPI({
+      projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
+    });
+  }
+
   private initWeb3Providers() {
     Object.entries(ChainsProvidersUrls).forEach(([chainId, configName]) => {
       this.providers[chainId] = new Web3(this.configService.get<string>(configName));
@@ -70,12 +75,12 @@ export class Web3Provider {
   }
 
   private async initConnectionProviders() {
-    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.sol)
+    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.sol);
     this.providers[chainId] = new Connection(this.configService.get<string>('SOL_URL'));
   }
 
   private async initLCDProviders() {
-    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.cardano)
+    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.terra);
     this.providers[chainId] = new LCDClient({
       URL: this.configService.get<string>('TERRA_URL'),
       chainID: AbsoluteChainIdEnum.terra.toString(),

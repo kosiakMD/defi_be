@@ -64,6 +64,8 @@ export class BscscanTransactionsService {
       transactions = [];
     }
 
+    const chainId = await this.chainsService.getChainIdByName(ChainNameEnum.bnb);
+
     return transactions.map(
       ({
         blockNumber,
@@ -106,7 +108,7 @@ export class BscscanTransactionsService {
           cumulativeGasUsed,
           gasUsed,
           confirmations,
-          chainId: this.chainsService.getChainIdByName(ChainNameEnum.bnb),
+          chainId,
           isInternal: type === 'internal' ? true : undefined,
         };
       },

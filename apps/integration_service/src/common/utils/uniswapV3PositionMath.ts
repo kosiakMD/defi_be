@@ -9,7 +9,7 @@ import { UniswapV3Tick } from '@app/common';
 import { MaxUint256, ONE, Q128, Q32, Q96, ZERO } from '@app/common/constant/numbers';
 
 function getTicksFeeGrowthInside(
-  tickCurrent: string,
+  tickCurrent: number,
   tickLower: UniswapV3Tick,
   tickUpper: UniswapV3Tick,
   feeGrowthGlobal0X128: string,
@@ -17,7 +17,7 @@ function getTicksFeeGrowthInside(
 ): { feeGrowthInside0X128: BN; feeGrowthInside1X128: BN } {
   let feeGrowthBelow0X128: BN;
   let feeGrowthBelow1X128: BN;
-  if (tickCurrent >= tickLower.tickIdx) {
+  if (tickCurrent >= tickLower.tick) {
     feeGrowthBelow0X128 = new BN(tickLower.feeGrowthOutside0X128);
     feeGrowthBelow1X128 = new BN(tickLower.feeGrowthOutside1X128);
   } else {
@@ -28,7 +28,7 @@ function getTicksFeeGrowthInside(
   // calculate fee growth above
   let feeGrowthAbove0X128: BN;
   let feeGrowthAbove1X128: BN;
-  if (tickCurrent < tickUpper.tickIdx) {
+  if (tickCurrent < tickUpper.tick) {
     feeGrowthAbove0X128 = new BN(tickUpper.feeGrowthOutside0X128);
     feeGrowthAbove1X128 = new BN(tickUpper.feeGrowthOutside1X128);
   } else {
@@ -171,7 +171,7 @@ export function calculateTokensOwed({
   feeGrowthGlobal1X128,
   liquidity,
 }: {
-  tickCurrent: string;
+  tickCurrent: number;
   tickLower: UniswapV3Tick;
   tickUpper: UniswapV3Tick;
   feeGrowthInside0LastX128: string;

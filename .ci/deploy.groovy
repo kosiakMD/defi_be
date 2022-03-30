@@ -78,18 +78,6 @@ pipeline {
                 }
             }
         }
-            steps {
-                wrap([$class: "BuildUser"]) {
-                    timeout(time: 30, unit: "MINUTES") {
-                        input(
-                            message: "Bake stack for ${params.ENVIRONMENT} from\nFrontend: ${FRONTEND_BRANCH}(${FRONTEND_REVISION})\nBackend: ${BACKEND_BRANCH}(${BACKEND_REVISION})\n?\n\nWaiting for approval from ${env.BUILD_USER_ID}",
-                            ok: "Bake",
-                            submitter: env.BUILD_USER_ID
-                        )
-                    }
-                }
-            }
-        }
         stage("Bake") {
             steps {
                 script {

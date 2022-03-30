@@ -78,12 +78,6 @@ pipeline {
                 }
             }
         }
-        stage("Approval") {
-            when {
-                not {
-                    triggeredBy "UpstreamCause"
-                }
-            }
             steps {
                 wrap([$class: "BuildUser"]) {
                     timeout(time: 30, unit: "MINUTES") {

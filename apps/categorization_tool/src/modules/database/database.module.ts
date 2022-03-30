@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { init1647287372738 } from './migrations/1647287372738-init';
+import { addGithubFilesTable1648469052708 } from './migrations/1648469052708-add_github_files_table';
 
 @Module({
   imports: [
@@ -23,7 +24,7 @@ import { init1647287372738 } from './migrations/1647287372738-init';
         extra: {
           connectionLimit: 50,
         },
-        migrations: [init1647287372738],
+        migrations: [init1647287372738, addGithubFilesTable1648469052708],
       }),
     }),
   ],

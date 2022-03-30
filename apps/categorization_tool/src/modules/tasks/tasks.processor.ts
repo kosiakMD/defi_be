@@ -32,6 +32,8 @@ export class TasksProcessor {
         return this.protocolService.crawlHtml();
       case Command.fetch_abi:
         return this.protocolService.fetchAbi();
+      case Command.parse_github:
+        return this.protocolService.parseGithubLinks();
       case Command.run_parsing_protocols:
         return this.protocolService.run();
       case Command.run_parsing_custom_protocol:

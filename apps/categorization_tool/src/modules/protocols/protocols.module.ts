@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Puppeteer } from '../../utils';
 import { ChainsRepository } from '../database/repositories/chains.repo';
 import { ContractsRepository } from '../database/repositories/contracts.repo';
+import { GithubFilesRepository } from '../database/repositories/github.files.repo';
 import { LinksRepository } from '../database/repositories/links.repo';
 import { ProtocolChainRepository } from '../database/repositories/protocol.chain.repo';
 import { ProtocolsPropertiesRepository } from '../database/repositories/protocols.properties.repo';
@@ -15,6 +16,7 @@ import { AbiFetcherBscscan } from './services/abi.fetcher.bscscan';
 import { AbiFetcherDummy } from './services/abi.fetcher.dummy';
 import { AbiFetcherEtherscan } from './services/abi.fetcher.etherscan';
 import { ContractsService } from './services/contracts.service';
+import { GithubService } from './services/github.service';
 import { CheckTypeDoc } from './services/utils/check_type_docs';
 import { MainPageStrategy } from './strategies';
 import { GeneralPageParsing } from './strategies/contract';
@@ -28,6 +30,7 @@ import { GeneralPageParsing } from './strategies/contract';
       ChainsRepository,
       ContractsRepository,
       LinksRepository,
+      GithubFilesRepository,
       ProtocolChainRepository,
       ProtocolsPropertiesRepository,
     ]),
@@ -42,6 +45,7 @@ import { GeneralPageParsing } from './strategies/contract';
     AbiFetcherDummy,
     AbiFetcherEtherscan,
     AbiFetcherBscscan,
+    GithubService,
   ],
   exports: [ProtocolService],
 })

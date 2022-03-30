@@ -104,7 +104,7 @@ pipeline {
 
                     withAWS(region: AWS_REGION, credentials: AWS_CREDENTIALS) {
                         SERVICES = sh(
-                            script: "find . -maxdepth 1 -type d ! -name '.*' ! -name 'agenda' ! -name 'common' ! -name 'swap_service' ! -name 'frontend_service' -printf '%f\n' | sort",
+                            script: "find apps/. -maxdepth 1 -type d ! -name '.*' ! -name 'agenda' ! -name 'common' ! -name 'swap_service' ! -name 'frontend_service' -printf '%f\n' | sort",
                             returnStdout: true
                         ).trim().split("\n").collectEntries{ folder ->
                             def SERVICE = folder.replace("_", "-")

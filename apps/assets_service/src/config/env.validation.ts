@@ -2,6 +2,10 @@ import * as Joi from 'joi';
 
 import { EnvEnum } from '@app/common';
 
+import { awsValidationSchema } from './aws/validation.schema';
+import { cacheValidationSchema } from './cache/validation.schema';
+import { databaseValidationSchema } from './database/validation.schema';
+
 const logFileRE = /[a-zA-Z1-9_.]\.log/;
 
 export const validationSchema = Joi.object({
@@ -16,45 +20,37 @@ export const validationSchema = Joi.object({
       '.env.development',
       '.env.development.local',
     )
+    .default('.env')
     .required(),
 
-  SERVICE_NAME: Joi.string().required(),
+  SERVICE_NAME: Joi.string().default('Assets Service'),
   SERVICE_HOST: Joi.string() //
     .allow('')
-    .required(),
+    .default(''),
   SERVICE_PORT: Joi.number() //
-    .default(3000)
-    .required(),
+    .default(6066),
 
   LOG_ERROR_FILE: Joi.string() //
     .pattern(logFileRE)
-    .required(),
+    .default('error.log'),
   LOG_COMBINED_FILE: Joi.string() //
     .pattern(logFileRE)
-    .required(),
+    .default('combined.log'),
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
     .default('info'),
   SENTRY_DSN: Joi.string(),
-  DB_HOST: Joi.string().required(),
-  DB_PORT: Joi.number() //
-    .default(5432)
-    .required(),
-  DB_USERNAME: Joi.string().required(),
-  DB_PASSWORD: Joi.string().required(),
-  DB_DATABASE: Joi.string().required(),
-
-  REDIS_HOST: Joi.string().required(),
-  REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string() //
-    .allow('')
-    .required(),
-  REDIS_CACHE_TTL: Joi.number().default(30),
-  REDIS_ASSETS_CACHE_TTL: Joi.number().default(300),
+  DEBANK_CHAINS_LIST_URL: Joi.string() //
+    .default(''),
+  DEBANK_API_ACCESS_KEY: Joi.string() //
+    .default(''),
+  USE_REDIS_TO_GET_ASSETS: Joi.boolean() //
+    .default(true),
+  ...databaseValidationSchema,
+  ...cacheValidationSchema,
+  ...awsValidationSchema,
 });
 
 export const validationOptions = {
   abortEarly: false,
 };
-
-export default validationSchema;

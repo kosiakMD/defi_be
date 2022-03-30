@@ -294,6 +294,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.3.0",
+    "sharp": "^0.30.3",
     "source-map-support": "^0.5.20",
     "swagger-ui-express": "^4.1.6",
     "tor-axios": "^1.0.9",
@@ -301,6 +302,7 @@
     "uuid": "^8.3.2",
     "web3": "^1.6.0",
     "winston": "^3.3.3",
-    "winston-aws-cloudwatch": "^3.0.0"
+    "winston-aws-cloudwatch": "^3.0.0",
+    "buffer-layout": "1.2.2"
   }
 }

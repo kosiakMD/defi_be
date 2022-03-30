@@ -52,6 +52,9 @@ import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { IslandswapPools } from './protocols/islandswap/islandswap.pools';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
+import { MarinadeFarms } from './protocols/marinade/marinade.farms';
+import { MarinadePools } from './protocols/marinade/marinade.pools';
+import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
@@ -151,6 +154,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
+const Marinade = [MarinadeProtocol, MarinadePools, MarinadeFarms];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
 const Astroport = [AstroportProtocol, AstroportPools, AstroportStaking];
@@ -200,6 +204,7 @@ const ProtocolList = [
   ...VVS,
   ...Viperswap,
   ...Wonderland,
+  ...Marinade,
 ];
 
 @Module({

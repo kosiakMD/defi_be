@@ -59,6 +59,7 @@ import { IslandswapStaking } from './islandswap/islandswap.staking';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
+import { MarinadePools } from './marinade/marinade.pools';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { OrcaStaking } from './orca/orca.farms';
@@ -87,6 +88,8 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
+import { MarinadeFarms } from './marinade/marinade.farms';
+import { MarinadeUtils } from './marinade/marinade.utils';
 
 const Anchor = [AnchorLp, AnchorStaking];
 const Astroport = [AstroportLp, AstroportStaking];
@@ -133,7 +136,6 @@ const Curve = [
   OrcaStaking,
   AnchorLp,
   AnchorStaking,
-  SundaeswapPools,
   CurvePoolsHarm,
   CurvePoolsOpt,
   CurvePoolsPlg,
@@ -155,6 +157,8 @@ const Trisolaris = [TrisolarisPools, TrisolarisStaking];
 const Uniswap = [UniswapPoolsV2];
 const VVS = [VVSPools, VVSStaking];
 const ViperSwap = [ViperswapPools, ViperswapStaking];
+const Marinade = [MarinadePools, MarinadeFarms];
+const SundaeSwap = [SundaeswapPools];
 
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
@@ -180,9 +184,11 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Uniswap,
   ...VVS,
   ...ViperSwap,
+  ...SundaeSwap,
+  ...Marinade,
 ];
 
-const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];
+const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];
 
 @Module({
   imports: [

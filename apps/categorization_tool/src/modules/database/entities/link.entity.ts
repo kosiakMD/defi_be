@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { LinkTypeEnum } from '../enum/link.type.enum';
+import { GithubFile } from './github.file.entity';
 import { Protocol } from './protocol.entity';
 
 @Entity({ name: 'links' })
@@ -20,4 +21,7 @@ export class Link {
   @ManyToOne(() => Protocol, (p) => p.links)
   @JoinColumn({ name: 'protocol_id' })
   protocol: Protocol;
+
+  @OneToMany(() => GithubFile, (e) => e.link, { eager: false })
+  githubFiles: GithubFile[];
 }

@@ -9,11 +9,14 @@ import { Link } from '../database/entities/link.entity';
 import { Protocol } from '../database/entities/protocol.entity';
 import { LinkTypeEnum } from '../database/enum/link.type.enum';
 import { ChainsRepository } from '../database/repositories/chains.repo';
+import { GithubFilesRepository } from '../database/repositories/github.files.repo';
 import { LinksRepository } from '../database/repositories/links.repo';
 import { ProtocolChainRepository } from '../database/repositories/protocol.chain.repo';
 import { ProtocolsRepository } from '../database/repositories/protocols.repo';
 import { FilteredLinks, IListProtocol } from './interfaces/protocol.interface';
+import { PARSE_GITHUB_LINKS_PARALLEL_LIMIT } from './protocols.constant';
 import { ContractsService } from './services/contracts.service';
+import { GithubService } from './services/github.service';
 import { MainPageStrategy } from './strategies';
 
 //number of websites of protocols to be parsed in parallel
@@ -26,12 +29,33 @@ export class ProtocolService {
     @Inject(Puppeteer) protected readonly puppeteer: Puppeteer,
     @InjectRepository(ProtocolsRepository) private readonly protocolsRepo: ProtocolsRepository,
     @InjectRepository(LinksRepository) private readonly linksRepo: LinksRepository,
+    @InjectRepository(GithubFilesRepository)
+    private readonly githubFilesRepo: GithubFilesRepository,
     @InjectRepository(ProtocolChainRepository)
     private readonly protocolChainRepo: ProtocolChainRepository,
     @InjectRepository(ChainsRepository) private readonly chainsRepo: ChainsRepository,
     private readonly mainPageParsingStrategy: MainPageStrategy,
     private readonly contractService: ContractsService,
+    private readonly githubService: GithubService,
   ) {}
+
+  async parseGithubLinks() {
+    const links = await this.linksRepo.findGithubLinksWithoutFiles();
+    await parallelLimit(
+      links.map(({ id, url }) => async () => {
+        const files = await this.githubService.getFilesByExtensions(url, ['.vy', '.sol']);
+        await this.githubFilesRepo.save(
+          files.map(({ path, downloadUrl, content }) => ({
+            path,
+            downloadUrl,
+            content,
+            link: { id },
+          })),
+        );
+      }),
+      PARSE_GITHUB_LINKS_PARALLEL_LIMIT,
+    );
+  }
 
   async fetchAbi() {
     await this.contractService.fetchAbiAndAbiCode();

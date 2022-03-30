@@ -10,6 +10,7 @@ import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
 import { BalancesRequest } from '../../../common/types';
 
+import { blackListTerraTokens } from '../../blacklists/blackListTerraTokens';
 import { TokenBalance } from '../balances.interfaces';
 
 export class TerraBalancesStrategy implements BalancesLoadingStrategy {
@@ -31,7 +32,9 @@ export class TerraBalancesStrategy implements BalancesLoadingStrategy {
     }
 
     const nativeTokens = originalTokens.filter((ot) => ot.match(/^u([a-z])+/));
-    const customTokens = originalTokens.filter((ot) => ot.match(/^terra.*/));
+    const customTokens = originalTokens.filter(
+      (ot) => ot.match(/^terra.*/) && !blackListTerraTokens.get(ot),
+    );
     const nativeTokensSet = new Set(nativeTokens);
 
     const terra = this.web3Provider.getInstanceByChainId(chainId);

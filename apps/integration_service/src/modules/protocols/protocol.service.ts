@@ -67,6 +67,7 @@ import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
+import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
@@ -138,6 +139,7 @@ export class ProtocolService {
     private readonly anchorProtocol: AnchorProtocol,
     private readonly terraswapProtocol: TerraswapProtocol,
     private readonly astroportProtocol: AstroportProtocol,
+    private readonly marinadeProtocol: MarinadeProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -178,6 +180,7 @@ export class ProtocolService {
       yearnProtocolV2,
       sundaeswapProtocol,
       astroportProtocol,
+      marinadeProtocol,
     ];
   }
 

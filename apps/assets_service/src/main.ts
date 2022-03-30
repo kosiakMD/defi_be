@@ -1,3 +1,5 @@
+import { config } from 'aws-sdk';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -10,10 +12,10 @@ import { initSentry } from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
+import { AwsConfigService } from './config/aws/aws.config.service';
 
 const logger = createLogger(logFileDir);
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
@@ -28,7 +30,7 @@ async function bootstrap() {
   app.useLogger(enhancedLogger);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('v1'); // temporary global as only 1 version
+  app.setGlobalPrefix('api');
 
   const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
@@ -39,8 +41,16 @@ async function bootstrap() {
       .setVersion('1.0') // temporary global as only 1 version
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
+    SwaggerModule.setup('docs', app, document);
   }
+
+  const awsConfigService = app.get(AwsConfigService);
+
+  config.update({
+    accessKeyId: awsConfigService.awsKeyId,
+    secretAccessKey: awsConfigService.awsSecretAccessKey,
+    region: awsConfigService.region,
+  });
 
   await app.listen(SERVICE_PORT, SERVICE_HOST);
 }

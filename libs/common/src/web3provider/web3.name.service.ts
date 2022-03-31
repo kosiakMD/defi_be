@@ -54,7 +54,11 @@ export class Web3NameService {
   }
 
   private async resolveTnsName(name: string, tns: TNS): Promise<string> {
-    return tns.name(name).getTerraAddress().catch(() => null);
+    try {
+      return await tns.name(name).getTerraAddress();
+    } catch {
+      return null
+    }
   }
 
   private setEvmProvider(chain: ChainIdEnum, env: string) {

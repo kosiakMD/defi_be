@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: api.defiyield.app
+  host: gateway.defiyield.app
 
 configMaps:
   common:
@@ -81,24 +81,6 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: production
     SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
-  temp:
-    REDIS_HOST: 3.69.250.41
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    BSCSCAN_URL: https://api.bscscan.com/api
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    ETHERSCAN_URL: https://api.etherscan.io/api
-    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    ETHERSCAN_API_URL: https://api.etherscan.io/api
-    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    AWS_REGION: eu-central-1
-    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
-    AWS_SECRET_ACCESS_KEY: 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
-    MAILER_HOST: smtp.gmail.com
-    MAILER_USER: mail@defiyield.app
-    MAILER_PASS: gpBG5tqfjp7LQkAc
 
 secrets:
 - mailer

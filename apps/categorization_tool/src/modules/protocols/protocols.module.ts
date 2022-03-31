@@ -12,9 +12,10 @@ import { ProtocolChainRepository } from '../database/repositories/protocol.chain
 import { ProtocolsPropertiesRepository } from '../database/repositories/protocols.properties.repo';
 import { ProtocolsRepository } from '../database/repositories/protocols.repo';
 import { ProtocolService } from './protocols.service';
-import { AbiFetcherBscscan } from './services/abi.fetcher.bscscan';
-import { AbiFetcherDummy } from './services/abi.fetcher.dummy';
-import { AbiFetcherEtherscan } from './services/abi.fetcher.etherscan';
+import { AbiFetcherBscscan } from './services/abi/fetcher/abi.fetcher.bscscan';
+import { AbiFetcherEtherscan } from './services/abi/fetcher/abi.fetcher.etherscan';
+import { AbiFetcherService } from './services/abi/fetcher/abi.fetcher.service';
+import { AbiFetcherTenderly } from './services/abi/fetcher/abi.fetcher.tenderly';
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
 import { CheckTypeDoc } from './services/utils/check_type_docs';
@@ -43,10 +44,11 @@ import { GeneralPageParsing } from './strategies/contract';
     AppPageStrategy,
     GeneralPageParsing,
     CheckTypeDoc,
-    AbiFetcherDummy,
+    AbiFetcherTenderly,
     AbiFetcherEtherscan,
     AbiFetcherBscscan,
     GithubService,
+    AbiFetcherService,
   ],
   exports: [ProtocolService],
 })

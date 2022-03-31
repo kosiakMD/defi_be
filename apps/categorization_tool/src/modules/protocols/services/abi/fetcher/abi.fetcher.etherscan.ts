@@ -5,6 +5,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainAbi } from '../../../interfaces/abi.interfaces';
 import { IAbiFetcher } from './abi.fetcher.interface';
 
 @Injectable()
@@ -20,19 +21,21 @@ export class AbiFetcherEtherscan implements IAbiFetcher {
     this.etherscanApiKey = this.configService.get('ETHERSCAN_API_KEY');
   }
 
-  async fetchAbiAndAbiCode(address: string): Promise<{ abi: string; abiCode: string }> {
+  async fetchAbiAndAbiCode(address: string): Promise<ChainAbi> {
     try {
-      const abiCodeRequest$ = await this.httpService.get(
-        `${this.etherscanApiUrl}?module=contract&action=getsourcecode&address=${address}&apikey=${this.etherscanApiKey}`,
+      this.logger.debug(`AbiFetcherEtherscan: fetchAbiAndAbiCode for address: [${address}]`);
+      const abiCodeResponse = await firstValueFrom(
+        this.httpService.get(
+          `${this.etherscanApiUrl}?module=contract&action=getsourcecode&address=${address}&apikey=${this.etherscanApiKey}`,
+        ),
       );
-      const abiCodeResponse = await firstValueFrom(abiCodeRequest$);
       return {
         abi: abiCodeResponse.data.result[0].ABI,
         abiCode: abiCodeResponse.data.result[0].SourceCode,
       };
     } catch (e) {
-      this.logger.error(`AbiFetcherEtherscan: fetchAbiAndAbiCode error - ${e.message}`);
-      return { abi: null, abiCode: null };
+      this.logger.error(`AbiFetcherEtherscan: fetchAbiAndAbiCode error - ${e}`);
+      throw e;
     }
   }
 }

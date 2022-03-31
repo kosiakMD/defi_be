@@ -14,10 +14,7 @@ import { ProtocolsRepository } from '../../database/repositories/protocols.repo'
 import { IParsingReturned } from '../interfaces/protocol.interface';
 import { FETCH_ABI_PARALLEL_LIMIT, NUMBER_ITEMS_CHUNK } from '../protocols.constant';
 import { GeneralPageParsing } from '../strategies/contract';
-import { AbiFetcherBscscan } from './abi.fetcher.bscscan';
-import { AbiFetcherDummy } from './abi.fetcher.dummy';
-import { AbiFetcherEtherscan } from './abi.fetcher.etherscan';
-import { IAbiFetcher } from './abi.fetcher.interface';
+import { AbiFetcherService } from './abi/fetcher/abi.fetcher.service';
 
 @Injectable()
 export class ContractsService {
@@ -27,9 +24,7 @@ export class ContractsService {
     @InjectRepository(ContractsRepository)
     private readonly contractsRepository: ContractsRepository,
     private readonly generalParsingPage: GeneralPageParsing,
-    private readonly abiFetcherEtherscan: AbiFetcherEtherscan,
-    private readonly abiFetcherBscscan: AbiFetcherBscscan,
-    private readonly abiFetcherDummy: AbiFetcherDummy,
+    private readonly abiFetcherService: AbiFetcherService,
   ) {}
 
   async run(list: Link[], chainProtocolList: Map<string, ProtocolChain>) {
@@ -79,14 +74,11 @@ export class ContractsService {
   ): Promise<Contract[]> {
     const listSaveData = [];
     for (const value of listAddresses) {
-      const t = await this.fetchAbiAndAbiCodeOne(
-        value.contract,
-        chainProtocolList.get(value.extras.protocol.url).chain.name,
-      );
-      if (t.abi && t.abiCode) {
+      const { abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(value.contract);
+      if (abi && abiCode) {
         listSaveData.push({
-          abi: t.abi,
-          abiCode: t.abi,
+          abi: abi,
+          abiCode: abiCode,
           address: value.contract,
           protocolsChainsId: chainProtocolList.get(value.extras.protocol.url).id,
         });
@@ -100,42 +92,17 @@ export class ContractsService {
     return listSaveData;
   }
 
-  async fetchAbiAndAbiCodeOne(contract: string, chainName: string) {
-    //resolve fetcher by chain
-    const abiFetcher = this.resolveAbiFetcherByChain(chainName);
-    //fetch ABI and ABI Code
-    return abiFetcher.fetchAbiAndAbiCode(contract);
-  }
-
   async fetchAbiAndAbiCode() {
     const contracts = await this.contractsRepository.findWithoutAbiOrAbiCode();
     await parallelLimit(
-      contracts.map(({ id, address, protocolChain }) => async () => {
+      contracts.map(({ id, address }) => async () => {
         //fetch ABI and ABI Code
-        const { abi, abiCode } = await this.fetchAbiAndAbiCodeOne(
-          address,
-          protocolChain.chain.name,
-        );
+        const { abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(address);
 
         //update DB info
         await this.contractsRepository.update({ id }, { abi, abiCode });
       }),
       FETCH_ABI_PARALLEL_LIMIT,
     );
-  }
-
-  //TODO: think how to avoid using name of the chain here
-  // perhaps add abi_provider to Chain entity and DB
-  // also all the code and logic related to ABI should be extracted into separate service, e.g. AbiService
-  resolveAbiFetcherByChain(chain: string): IAbiFetcher {
-    switch (chain.toLowerCase()) {
-      case 'ethereum':
-        return this.abiFetcherEtherscan;
-      case 'bsc':
-        return this.abiFetcherBscscan;
-      default:
-        //unimplemented fetcher for the provided chain
-        return this.abiFetcherDummy;
-    }
   }
 }

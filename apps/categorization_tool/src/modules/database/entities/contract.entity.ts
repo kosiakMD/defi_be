@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-import { ProtocolChain } from './protocol.chain.entity';
+import { Protocol } from './protocol.entity';
 
 @Entity({ name: 'contracts' })
 export class Contract {
@@ -17,9 +17,9 @@ export class Contract {
   abiCode: string;
 
   @Column({ name: 'protocols_chains_id', type: 'int' })
-  protocolsChainsId: number;
+  protocolsChainsId: number; //todo remove me!
 
-  @ManyToOne(() => ProtocolChain, (pc) => pc.id, { eager: true })
-  @JoinColumn({ name: 'protocols_chains_id' })
-  protocolChain: ProtocolChain;
+  @ManyToOne(() => Protocol, (p) => p.id, { eager: true })
+  @JoinColumn({ name: 'protocol_id' })
+  protocol: Protocol;
 }

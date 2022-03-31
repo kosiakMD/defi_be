@@ -67,11 +67,6 @@ configMaps:
     SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
     CARDANO_BLOCKFROST_API_KEY: mainnetDGLOdhwzeWRwDgIrlO22kRh3BJwPA2t0
   temp:
-    DB_HOST: productionm.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    DB_PORT: 5432
-    DB_DATABASE: defi
-    DB_USERNAME: prodashuser
-    DB_PASSWORD: FhRM4BHV4Rjnj6RQ
     REDIS_HOST: 3.69.250.41
     REDIS_PORT: 6379
     REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe

@@ -1,3 +1,7 @@
+ingress:
+  enabled: true
+  host: account.defiyield.app
+
 configMaps:
   db:
     DB_SCHEMA: prices

@@ -21,13 +21,17 @@ export class TasksProcessor {
   ) {}
 
   @Process(TASKS_PROCESSOR) // the name of the executed process
-  public async process(job: Job<{ command: string; listProtocols?: IListProtocol[] }>) {
+  public async process(
+    job: Job<{ command: string; listProtocols?: IListProtocol[]; urls?: string }>,
+  ) {
     this.logger.debug(`job: '${job.data.command}'`);
     switch (job.data.command) {
       case Command.start_fetching:
         return this.aggregatorsService.run();
-      case Command.parse_protocols:
-        return this.protocolService.parseProtocols();
+      case Command.parse_protocols_app_page:
+        return this.protocolService.scanAppPageProtocolsForLinks();
+      case Command.parse_protocols_main_page:
+        return this.protocolService.scanMainPageProtocolsForLinks();
       case Command.crawl_html:
         return this.protocolService.crawlHtml();
       case Command.fetch_abi:

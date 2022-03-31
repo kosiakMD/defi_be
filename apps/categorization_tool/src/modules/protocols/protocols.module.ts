@@ -18,7 +18,7 @@ import { AbiFetcherEtherscan } from './services/abi.fetcher.etherscan';
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
 import { CheckTypeDoc } from './services/utils/check_type_docs';
-import { MainPageStrategy } from './strategies';
+import { MainPageStrategy, AppPageStrategy } from './strategies';
 import { GeneralPageParsing } from './strategies/contract';
 
 @Module({
@@ -40,6 +40,7 @@ import { GeneralPageParsing } from './strategies/contract';
     ContractsService,
     Puppeteer,
     MainPageStrategy,
+    AppPageStrategy,
     GeneralPageParsing,
     CheckTypeDoc,
     AbiFetcherDummy,

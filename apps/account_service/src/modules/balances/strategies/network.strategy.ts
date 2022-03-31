@@ -3,7 +3,6 @@ import BigNumber from 'bignumber.js';
 import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
@@ -22,12 +21,11 @@ import { BalancesContract } from '../contracts/balances.contract';
 export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly config: ConfigService,
     private readonly web3Provider: Web3Provider,
     private readonly chainsService: ChainsService,
-  ) {}
+  ) { }
 
-  private readonly DEFAULT_BATCH_SIZE = 3000;
+  private readonly DEFAULT_BATCH_SIZE = 1500;
   private readonly WEB3_RETRY_CALL_IN_MS = 2000;
   private readonly COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240';
 
@@ -42,9 +40,8 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
       return [];
     }
 
-    const message = `Network balances loading for address ${address} and chain ${chainId}  at block ${
-      block?.block ?? "'latest'"
-    }`;
+    const message = `Network balances loading for address ${address} and chain ${chainId}  at block ${block?.block ?? "'latest'"
+      }`;
     this.logger.time(message);
 
     const contractAddress = await this.getBalancesContractAddress(chainId);

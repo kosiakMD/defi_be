@@ -32,6 +32,8 @@ export class TasksProcessor {
         return this.protocolService.scanAppPageProtocolsForLinks();
       case Command.parse_protocols_main_page:
         return this.protocolService.scanMainPageProtocolsForLinks();
+      case Command.parse_protocols_docs_page:
+        return this.protocolService.scanDocsPageProtocolsForContractAdresses();
       case Command.crawl_html:
         return this.protocolService.crawlHtml();
       case Command.fetch_abi:

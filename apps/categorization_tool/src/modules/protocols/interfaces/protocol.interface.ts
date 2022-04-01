@@ -1,4 +1,5 @@
 import { Link } from '../../database/entities/link.entity';
+import { Protocol } from '../../database/entities/protocol.entity';
 import { LinkTypeEnum } from '../../database/enum/link.type.enum';
 
 export type mappedData = Map<
@@ -31,8 +32,7 @@ export interface IListProtocol {
   chain?: string;
 }
 
-export interface IParsingReturned {
-  contract: string;
-  protocol: number;
-  extras: Link;
+export interface IListContract {
+  address: string;
+  protocol: Protocol;
 }

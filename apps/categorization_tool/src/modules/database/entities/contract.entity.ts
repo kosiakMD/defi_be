@@ -16,9 +16,6 @@ export class Contract {
   @Column({ name: 'abi_code', type: 'text' })
   abiCode: string;
 
-  @Column({ name: 'protocols_chains_id', type: 'int' })
-  protocolsChainsId: number; //todo remove me!
-
   @ManyToOne(() => Protocol, (p) => p.id, { eager: true })
   @JoinColumn({ name: 'protocol_id' })
   protocol: Protocol;

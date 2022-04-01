@@ -76,25 +76,13 @@ export class ProtocolService {
 
     //save links
     await this.saveLinks(links);
+  }
 
-    const listChains = await this.chainsRepo.upsertChainsSync(listProtocols.map((lp) => lp.chain));
-    const protocolChain = [];
-    for (const protocol of protocolsToProcess) {
-      protocolChain.push(
-        ...(await this.protocolChainRepo.upsertProtocolChainsSync(protocol, listChains)),
-      );
-    }
+  async scanDocsPageProtocolsForContractAdresses() {
+    const listProtocols = await this.protocolsRepo.findAllWithLinks();
 
-    const mappedChainProtocolList = new Map(
-      listProtocols.map((lp) => [
-        lp.protocol,
-        protocolChain.find(
-          (lc) => lc?.chain?.name === lp?.chain && lc?.protocol?.url === lp?.protocol,
-        ),
-      ]),
-    );
-
-    await this.contractService.run(links, mappedChainProtocolList);
+    const listProtocolsWithLink = listProtocols.filter((p) => p.links.length > 0);
+    await this.contractService.run(listProtocolsWithLink);
   }
 
   async crawlHtml() {

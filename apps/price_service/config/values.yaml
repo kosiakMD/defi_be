@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: price.defiyield.app
+  host: price.staging.defyield.xyz
 
 configMaps:
   db:

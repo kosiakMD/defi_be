@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: gateway.defiyield.app
+  host: gateway.staging.defyield.xyz
 
 configMaps:
   common:

@@ -207,9 +207,8 @@ export class TransactionsService implements OnModuleInit {
     if (!addresses.length) {
       return true;
     }
-    return !addresses.every(
-      this.web3Provider.getInstanceByChainId(this.ethChainId).utils.isAddress,
-    );
+    const ethChainId = await this.web3Provider.getInstanceByChainId(this.ethChainId);
+    return !addresses.every(ethChainId.utils.isAddress);
   }
 
   private prepareAddresses(addresses: string[]): void {

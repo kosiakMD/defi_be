@@ -23,6 +23,7 @@ import { excludeSecondArray } from '../../common/utils';
 
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';
+import { ChainsService } from '../chains/chains.service';
 import { getBalancesSafe } from './balances.helpers';
 import {
   BalancesResponse,
@@ -38,7 +39,6 @@ import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
-import { ChainsService } from '../chains/chains.service';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -64,6 +64,14 @@ export class BalancesService {
     private readonly roninBalancesStrategy: RoninBalancesStrategy,
     private readonly chainsService: ChainsService,
   ) {}
+
+  strategies = [
+    this.solanaBalancesStrategy,
+    this.terraBalancesStrategy,
+    this.cardanoBalancesStrategy,
+    this.cosmosBalancesStrategy,
+    this.roninBalancesStrategy,
+  ];
 
   public async getBalance(
     addresses: Address[],
@@ -240,14 +248,15 @@ export class BalancesService {
   }
 
   async getBlockAtDate(chain: number, date: Date) {
-    // TODO: TTL should be in config
     const cacheTTL = 65 * 60; // 1 hour 5 minutes to ensure a little overlap (block is rounded to the nearest hour)
     const cacheKey = `24hour_ago_block_${chain}_${date.getTime()}`;
 
     return this.getOrSetCache(cacheKey, cacheTTL, async () => {
       try {
-        return await this.getBlockFromDate(date, this.web3Provider.getInstanceByChainId(chain));
-        // TODO: Catch real error here and log
+        return await this.getBlockFromDate(
+          date,
+          await this.web3Provider.getInstanceByChainId(chain),
+        );
       } catch (e) {
         this.logger.error(
           `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
@@ -412,7 +421,6 @@ export class BalancesService {
 
     const results = await Promise.all(
       strategies.map(async (strategy) => {
-        //
         return getBalancesSafe(strategy, { chainId, address, tokens: assets, block }, this.logger);
       }),
     );
@@ -456,22 +464,15 @@ export class BalancesService {
   }
 
   private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
-    const chainEntity = await this.chainsService.get({ id: chain});
-    
-    switch (chainEntity.name) {
-      case ChainNameEnum.sol:
-        return [this.solanaBalancesStrategy];
-      case ChainNameEnum.terra:
-        return [this.terraBalancesStrategy];
-      case ChainNameEnum.cardano:
-        return [this.cardanoBalancesStrategy];
-      case ChainNameEnum.cosmos:
-        return [this.cosmosBalancesStrategy];
-      case ChainNameEnum.ronin:
-        return [this.roninBalancesStrategy];
-      default:
-        return [this.networkBalancesStrategy];
-    }
+    const chainEntity = await this.chainsService.get({ id: chain });
+
+    this.strategies.map((strategy) => {
+      if (strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase())) {
+        return [strategy];
+      }
+    });
+
+    return [this.networkBalancesStrategy];
   }
 
   private async getAssetsToHandle(chain: number, requested?: Address[], block?: BlockTimestamp) {

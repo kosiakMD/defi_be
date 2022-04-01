@@ -17,13 +17,16 @@ import { chunkArray, insertAtPosition } from '../../../common/utils';
 import { ChainsService } from '../../chains/chains.service';
 import { TokenBalance } from '../balances.interfaces';
 import { BalancesContract } from '../contracts/balances.contract';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 
-export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
+export class NetworkBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly web3Provider: Web3Provider,
     private readonly chainsService: ChainsService,
-  ) { }
+  ) {
+    super();
+  }
 
   private readonly DEFAULT_BATCH_SIZE = 1500;
   private readonly WEB3_RETRY_CALL_IN_MS = 2000;
@@ -35,7 +38,7 @@ export class NetworkBalancesStrategy implements BalancesLoadingStrategy {
     tokens: originalTokens,
     block,
   }: BalancesRequest): Promise<TokenBalance[]> {
-    const web3 = this.web3Provider.getInstanceByChainId(chainId);
+    const web3 = await this.web3Provider.getInstanceByChainId(chainId);
     if (!originalTokens.length || !isETHAddress(address)) {
       return [];
     }

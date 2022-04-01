@@ -70,6 +70,7 @@ import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
+import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
@@ -143,6 +144,7 @@ export class ProtocolService {
     private readonly terraswapProtocol: TerraswapProtocol,
     private readonly astroportProtocol: AstroportProtocol,
     private readonly marinadeProtocol: MarinadeProtocol,
+    private readonly minswapProtocol: MinswapProtocol,
     private readonly mirrorProtocol: MirrorProtocol,
   ) {
     this.protocols = [
@@ -185,6 +187,7 @@ export class ProtocolService {
       sundaeswapProtocol,
       astroportProtocol,
       marinadeProtocol,
+      minswapProtocol,
       mirrorProtocol,
     ];
   }

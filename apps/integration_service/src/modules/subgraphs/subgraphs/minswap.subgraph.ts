@@ -5,31 +5,31 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
-  Staked,
-  SundaeSwapStakingResponse,
+  MinswapStaked,
+  MinswapStakingResponse,
 } from '../../protocols/helpers/cardano/cardano.interface';
-import { FARMS_BY_ADDRESS_QUERY } from '../../protocols/protocols/sundaeswap/sundaeswap.queries';
+import { FARMS_BY_ADDRESS_QUERY } from '../../protocols/protocols/minswap/minswap.queries';
 
 @Injectable()
-export class SundaeSwapSubgraph {
+export class MinswapSubgraph {
   private readonly subgraphUrl: string;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.subgraphUrl = this.configService.get<string>('SUNDAESWAP_URL');
+    this.subgraphUrl = this.configService.get<string>('MINSWAP_URL');
   }
 
-  public async getAccountFarms(address: string): Promise<Staked[]> {
+  public async getAccountFarms(address: string): Promise<MinswapStaked[]> {
     const data = await firstValueFrom(
       this.httpService
-        .post<SundaeSwapStakingResponse>(this.subgraphUrl, {
+        .post<MinswapStakingResponse>(this.subgraphUrl, {
           query: FARMS_BY_ADDRESS_QUERY,
           variables: { address },
         })
         .pipe(map((response) => response.data)),
     );
-    return data?.data?.freezerOpen?.items || [];
+    return data?.data?.farmPoolInfo || [];
   }
 }

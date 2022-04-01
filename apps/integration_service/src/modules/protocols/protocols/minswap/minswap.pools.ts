@@ -7,9 +7,9 @@ import {
   ChainDto,
   Address,
   FeatureEnum,
-  BalancesResponse,
   ProjectEnum,
   ProtocolTypeEnum,
+  BalancesResponse,
 } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
@@ -21,37 +21,19 @@ import { AccountService } from '../../../microservices/account.service';
 import { CardanoService } from '../../helpers/cardano/cardano.service';
 
 @Injectable()
-export class SundaeSwapPools {
+export class MinswapPools {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly accountService: AccountService,
     private readonly cardanoUtils: CardanoService,
   ) {}
 
-  public async getData(
-    addresses: Address[],
-    chain: ChainDto,
-    protocol: string,
-  ): Promise<BaseData[]> {
+  async getData(addresses: Address[], chain: ChainDto, protocol: string): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${protocol}_${FeatureEnum.pools}`;
     const cachedPools: NotifyPools = await this.cache.get(cacheKey);
     if (!cachedPools) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
     }
-
-    const baseDataPoolsMap: Map<string, BaseDataLp> = new Map<string, BaseDataLp>(
-      addresses.map((a) => [
-        a,
-        plainToClass(BaseDataLp, {
-          chain: chain,
-          userAddress: a,
-          protocolType: ProtocolTypeEnum.amm,
-          projectName: ProjectEnum.sundaeswap,
-          items: [],
-          feature: FeatureEnum.pools,
-        }),
-      ]),
-    );
 
     const pools = new Map<string, LiquidityPoolFeature>(
       cachedPools.items.map((item) => [item.address, item]),
@@ -63,6 +45,19 @@ export class SundaeSwapPools {
       Array.from(pools.keys()),
     );
 
+    const baseDataPoolsMap: Map<string, BaseDataLp> = new Map<string, BaseDataLp>(
+      addresses.map((a) => [
+        a,
+        plainToClass(BaseDataLp, {
+          chain: chain,
+          userAddress: a,
+          protocolType: ProtocolTypeEnum.amm,
+          projectName: ProjectEnum.minswap,
+          items: [],
+          feature: FeatureEnum.pools,
+        }),
+      ]),
+    );
     const avaliblePoolAddresses = this.cardanoUtils.getPoolAddressesAmount(
       addresses,
       lpBalances,

@@ -28,6 +28,16 @@ export interface Staked {
   pool: Pick<Pool, 'quantityA' | 'quantityB' | 'apr'>;
 }
 
+export interface MinswapStaked {
+  lpAsset: {
+    currencySymbol: string;
+    tokenName: string;
+  };
+  baseAPR: number;
+  liquidityStaking: number;
+  pendingReward: number;
+}
+
 export type SundaeSwapPoolsResponse = {
   data: {
     pools: Pool[];
@@ -46,4 +56,10 @@ export interface SundaeSwapStakingResponse {
   errors: {
     message: string;
   }[];
+}
+
+export interface MinswapStakingResponse {
+  data: {
+    farmPoolInfo: MinswapStaked[];
+  };
 }

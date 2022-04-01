@@ -11,6 +11,7 @@ import { ChainsModule } from '../chains/chains.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ThegraphModule } from '../subgraphs/thegraph.module';
 import { LiquidityPools } from './features/liquidity-pools';
+import { CardanoService } from './helpers/cardano/cardano.service';
 import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
@@ -57,6 +58,9 @@ import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MarinadeFarms } from './protocols/marinade/marinade.farms';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
+import { MinswapFarms } from './protocols/minswap/minswap.farms';
+import { MinswapPools } from './protocols/minswap/minswap.pools';
+import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorMintService } from './protocols/mirror/mirror.mint.service';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import { MirrorStaking } from './protocols/mirror/mirror.staking';
@@ -170,6 +174,7 @@ const Astroport = [
   AstroportBootstrap,
 ];
 const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
+const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
 const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
@@ -218,6 +223,7 @@ const ProtocolList = [
   ...Viperswap,
   ...Wonderland,
   ...Marinade,
+  ...Minswap,
 ];
 
 @Module({
@@ -246,6 +252,7 @@ const ProtocolList = [
     Web3ProviderService,
     MulticallAggregator,
     LiquidityPools,
+    CardanoService,
   ],
   exports: [ProtocolService],
 })

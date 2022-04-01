@@ -940,23 +940,25 @@ export class ProtocolService {
           });
         } else if (baseData instanceof BaseDataLocked) {
           baseData.total = 0;
-          baseData.items.forEach((token) => {
-            if (token.tokens.length) {
-              this.setTokenPriceAndValue(baseData.chain.id, token.rewards, chainAssetPrices);
-              token.tokens.forEach((underlying) => {
+          baseData.items.forEach((item) => {
+            if (item.tokens.length) {
+              this.setTokenPriceAndValue(baseData.chain.id, item.rewards, chainAssetPrices);
+              if (item.locked) {
+                item.locked.value += item.rewards.value;
+              }
+              item.tokens.forEach((underlying) => {
                 this.setTokenPriceAndValue(baseData.chain.id, underlying, chainAssetPrices);
-                token.locked
-                  ? (token.locked.value += underlying.value)
-                  : (token.unlocked.value += underlying.value);
+                item.locked
+                  ? (item.locked.value += underlying.value)
+                  : (item.unlocked.value += underlying.value);
               });
-              baseData.total += token.locked ? token.locked.value : token.unlocked.value;
+              baseData.total += item.locked ? item.locked.value : item.unlocked.value;
             } else {
-              token.price =
-                chainAssetPrices.get(baseData.chain.id).get(token.address) ?? token.price;
-              token.locked.value = token.price * Number(token.locked.balance);
-              token.unlocked.value = token.price * Number(token.unlocked.balance);
-              token.totalValue = token.locked.value + token.unlocked.value;
-              baseData.total += token.totalValue;
+              item.price = chainAssetPrices.get(baseData.chain.id).get(item.address) ?? item.price;
+              item.locked.value = item.price * Number(item.locked.balance);
+              item.unlocked.value = item.price * Number(item.unlocked.balance);
+              item.totalValue = item.locked.value + item.unlocked.value;
+              baseData.total += item.totalValue;
             }
           });
         } else if (baseData instanceof BaseDataMint) {

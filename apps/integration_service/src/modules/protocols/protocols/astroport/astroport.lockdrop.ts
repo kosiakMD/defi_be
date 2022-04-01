@@ -20,6 +20,7 @@ import { BaseDataLocked, LockedToken } from '@app/common/dto/base.data.locked.dt
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
+import { dateToTimestamp } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { toDecimals } from '../../../../common/utils/util';
@@ -58,41 +59,45 @@ export class AstroportLockdrop {
           },
         });
 
-        const lockupInfoTokens = userInfo['lockup_infos']?.map((info) => {
-          const terraswapCacheItem = cachedTerraswapPools.items.find(
-            (item) => item.lpToken.address === info.terraswap_lp_token,
-          );
-          const pool: LiquidityPoolFeature = JSON.parse(JSON.stringify(terraswapCacheItem));
-          const lockedBalanceDec = toDecimals(
-            info.lp_units_locked,
-            terraswapCacheItem.lpToken.decimals,
-          );
+        const lockupInfoTokens = userInfo['lockup_infos']
+          ?.map((info) => {
+            if (info.unlock_timestamp < dateToTimestamp(new Date())) return;
+            const terraswapCacheItem = cachedTerraswapPools.items.find(
+              (item) => item.lpToken.address === info.terraswap_lp_token,
+            );
+            const pool: LiquidityPoolFeature = JSON.parse(JSON.stringify(terraswapCacheItem));
+            pool.lpToken.symbol = pool.name;
+            const lockedBalanceDec = toDecimals(
+              info.lp_units_locked,
+              terraswapCacheItem.lpToken.decimals,
+            );
 
-          const poolShare = new BigNumber(lockedBalanceDec).div(pool.lpToken.totalSupply);
-          pool.tokens.forEach((token) => {
-            token.balance = poolShare.times(token.reserve).toNumber();
-            token.value = null;
-            token.price = null;
-          });
+            const poolShare = new BigNumber(lockedBalanceDec).div(pool.lpToken.totalSupply);
+            pool.tokens.forEach((token) => {
+              token.balance = poolShare.times(token.reserve).toNumber();
+              token.value = null;
+              token.price = null;
+            });
 
-          return plainToClass(LockedToken, {
-            locked: {
-              balance: lockedBalanceDec,
-              value: null,
-            },
-            rewards: plainToClass(IntegrationERC20TokenDto, {
-              address: astroToken.address,
-              name: astroToken.name,
-              symbol: astroToken.symbol,
-              decimals: astroToken.decimals,
-              price: null,
-              balance: toDecimals(info.claimable_generator_astro_debt, 6),
-              value: null,
-            }),
-            tokens: pool.tokens,
-            ...pool.lpToken,
-          });
-        });
+            return plainToClass(LockedToken, {
+              locked: {
+                balance: lockedBalanceDec,
+                value: null,
+              },
+              rewards: plainToClass(IntegrationERC20TokenDto, {
+                address: astroToken.address,
+                name: astroToken.name,
+                symbol: astroToken.symbol,
+                decimals: astroToken.decimals,
+                price: null,
+                balance: toDecimals(info.claimable_generator_astro_debt, 6),
+                value: null,
+              }),
+              tokens: pool.tokens,
+              ...pool.lpToken,
+            });
+          })
+          .filter((lockdropInfo) => lockdropInfo);
         const toAdd: BaseDataLocked = plainToClass(BaseDataLocked, {
           chain: chain,
           userAddress: address,

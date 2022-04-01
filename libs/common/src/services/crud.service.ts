@@ -3,6 +3,8 @@ import { DeepPartial, FindConditions, FindManyOptions, Repository, UpdateResult 
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 
 @Injectable()
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export abstract class CrudService<T extends DeepPartial<T>> {
   protected constructor(private readonly entityRepository: Repository<T> | any) {}
 

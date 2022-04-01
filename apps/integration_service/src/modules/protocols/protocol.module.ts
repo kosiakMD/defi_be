@@ -24,6 +24,8 @@ import { AnchorLending } from './protocols/anchor/anchor.lending';
 import { AnchorPools } from './protocols/anchor/anchor.pools';
 import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 import { AnchorStaking } from './protocols/anchor/anchor.staking';
+import { AstroportBootstrap } from './protocols/astroport/astroport.bootstrap';
+import { AstroportLockdrop } from './protocols/astroport/astroport.lockdrop';
 import { AstroportPools } from './protocols/astroport/astroport.pools';
 import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import { AstroportStaking } from './protocols/astroport/astroport.staking';
@@ -55,6 +57,9 @@ import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MarinadeFarms } from './protocols/marinade/marinade.farms';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
+import { MirrorMintService } from './protocols/mirror/mirror.mint.service';
+import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
+import { MirrorStaking } from './protocols/mirror/mirror.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
@@ -157,8 +162,15 @@ const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
 const Marinade = [MarinadeProtocol, MarinadePools, MarinadeFarms];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
-const Astroport = [AstroportProtocol, AstroportPools, AstroportStaking];
+const Astroport = [
+  AstroportProtocol,
+  AstroportPools,
+  AstroportStaking,
+  AstroportLockdrop,
+  AstroportBootstrap,
+];
 const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
+const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -190,6 +202,7 @@ const ProtocolList = [
   ...DefiKingdoms,
   ...Ellipsis,
   ...Islandswap,
+  ...Mirror,
   ...Mojitoswap,
   ...Olympus,
   ...Orca,

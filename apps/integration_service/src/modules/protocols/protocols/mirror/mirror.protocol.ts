@@ -3,11 +3,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
   Address,
-  AstroportProtocolEnum,
   ChainAbbrEnum,
   ChainDto,
   FeatureEnum,
   Logger,
+  MirrorProtocolEnum,
   ProjectEnum,
 } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
@@ -16,34 +16,25 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import BasicProtocol from '../basicProtocol';
-import { AstroportBootstrap } from './astroport.bootstrap';
-import { AstroportLockdrop } from './astroport.lockdrop';
-import { AstroportPools } from './astroport.pools';
-import { AstroportStaking } from './astroport.staking';
+import { MirrorMintService } from './mirror.mint.service';
+import { MirrorStaking } from './mirror.staking';
 
 @Injectable()
-export class AstroportProtocol extends BasicProtocol {
+export class MirrorProtocol extends BasicProtocol {
   readonly chains = [ChainAbbrEnum.terra];
-  readonly project = ProjectEnum.astroport;
-  readonly name = AstroportProtocolEnum.astroport;
-  readonly displayName = 'Astroport';
+  readonly project = ProjectEnum.mirror;
+  readonly name = MirrorProtocolEnum.mirror;
+  readonly displayName = 'Mirror';
   readonly features = {
-    [ChainAbbrEnum.terra]: [
-      FeatureEnum.pools,
-      FeatureEnum.staking,
-      FeatureEnum.lockedBalances,
-      FeatureEnum.bootstrap,
-    ],
+    [ChainAbbrEnum.terra]: [FeatureEnum.staking, FeatureEnum.mint, FeatureEnum.shortFarm],
   };
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
-    private readonly pools: AstroportPools,
-    private readonly staking: AstroportStaking,
-    private readonly lockedBalances: AstroportLockdrop,
-    private readonly bootstrap: AstroportBootstrap,
+    private readonly staking: MirrorStaking,
+    private readonly mint: MirrorMintService,
   ) {
     super();
   }
@@ -71,12 +62,8 @@ export class AstroportProtocol extends BasicProtocol {
     switch (feature) {
       case FeatureEnum.staking:
         return this.staking.getData(addresses, chain);
-      case FeatureEnum.pools:
-        return this.pools.getData(addresses, chain);
-      case FeatureEnum.lockedBalances:
-        return this.lockedBalances.getData(addresses, chain);
-      case FeatureEnum.bootstrap:
-        return this.bootstrap.getData(addresses, chain);
+      case FeatureEnum.mint:
+        return this.mint.getData(addresses, chain);
       default:
         return [];
     }

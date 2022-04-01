@@ -173,16 +173,7 @@ export class TerraPoolsCommon extends JobPoolsBase<LiquidityPoolFeature> {
     for (const pairs of chunkedPairs) {
       await Promise.all(
         pairs.map(async (pair) => {
-          let tokenInfo = null;
-          try {
-            tokenInfo = await terra.wasm.contractQuery(pair.liquidity_token, {
-              // eslint-disable-next-line camelcase
-              token_info: {},
-            });
-          } catch (e) {
-            this.logger.error('Unable to get token information');
-          }
-
+          const tokenInfo = await this.getTokenInfo(pair.liquidity_token, terra);
           if (
             new BigNumber(tokenInfo?.total_supply) //
               .div(10 ** tokenInfo?.decimals)
@@ -193,6 +184,18 @@ export class TerraPoolsCommon extends JobPoolsBase<LiquidityPoolFeature> {
       );
     }
     return resultPairs;
+  }
+
+  async getTokenInfo(token: string, terra: LCDClient) {
+    try {
+      return await terra.wasm.contractQuery(token, {
+        // eslint-disable-next-line camelcase
+        token_info: {},
+      });
+    } catch (e) {
+      this.logger.error('Unable to get token information');
+      return await this.getTokenInfo(token, terra);
+    }
   }
 
   async toDbMapping(liquidityPool: LiquidityPoolFeature) {

@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainNameEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';

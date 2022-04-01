@@ -8,4 +8,5 @@ export enum Command {
   parse_protocols_docs_page = 'parse_protocols_docs_page',
   run_parsing_protocols = 'run_parsing_protocols',
   run_parsing_custom_protocol = 'run_parsing_custom_protocol',
+  analyse_contracts = 'analyse_contracts',
 }

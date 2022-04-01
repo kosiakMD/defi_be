@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
+import { ContractsAnalysis } from './contracts.analysis.entity';
 import { Protocol } from './protocol.entity';
 
 @Entity({ name: 'contracts' })
@@ -19,4 +20,7 @@ export class Contract {
   @ManyToOne(() => Protocol, (p) => p.id, { eager: true })
   @JoinColumn({ name: 'protocol_id' })
   protocol: Protocol;
+
+  @OneToMany(() => ContractsAnalysis, (ca) => ca.contract, { eager: true })
+  analysis: ContractsAnalysis[];
 }

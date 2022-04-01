@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { init1647287372738 } from './migrations/1647287372738-init';
 import { addGithubFilesTable1648469052708 } from './migrations/1648469052708-add_github_files_table';
+import { addContractAnalysisTable1648707974543 } from './migrations/1648707974543-add_contract_analysis_table';
 
 @Module({
   imports: [
@@ -24,7 +25,11 @@ import { addGithubFilesTable1648469052708 } from './migrations/1648469052708-add
         extra: {
           connectionLimit: 50,
         },
-        migrations: [init1647287372738, addGithubFilesTable1648469052708],
+        migrations: [
+          init1647287372738,
+          addGithubFilesTable1648469052708,
+          addContractAnalysisTable1648707974543,
+        ],
       }),
     }),
   ],

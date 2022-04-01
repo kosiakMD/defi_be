@@ -10,6 +10,7 @@ import { Command } from '../../common/enum/service.enum';
 import { AggregatorsService } from '../aggregators/aggregator.service';
 import { IListProtocol } from '../protocols/interfaces/protocol.interface';
 import { ProtocolService } from '../protocols/protocols.service';
+import { ContractsAnalysisService } from '../protocols/services/contracts.analysis.service';
 
 @Injectable()
 @Processor(REDIS_TASK_QUEUE)
@@ -18,6 +19,7 @@ export class TasksProcessor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly aggregatorsService: AggregatorsService,
     private readonly protocolService: ProtocolService,
+    private readonly contractAnalysisService: ContractsAnalysisService,
   ) {}
 
   @Process(TASKS_PROCESSOR) // the name of the executed process
@@ -44,6 +46,8 @@ export class TasksProcessor {
         return this.protocolService.run();
       case Command.run_parsing_custom_protocol:
         return this.protocolService.run(job.data.listProtocols);
+      case Command.analyse_contracts:
+        return this.contractAnalysisService.analyseContracts();
       default:
         this.logger.warn(`unsupported command: '${job.data.command}', skipping...`);
     }

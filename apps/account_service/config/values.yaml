@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: account.defiyield.app
+  host: account.staging.defyield.xyz
 
 configMaps:
   amm:

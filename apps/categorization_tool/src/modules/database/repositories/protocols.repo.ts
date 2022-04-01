@@ -4,10 +4,8 @@ import { Protocol } from '../entities/protocol.entity';
 
 @EntityRepository(Protocol)
 export class ProtocolsRepository extends Repository<Protocol> {
-  async findWithLinks(): Promise<Protocol[]> {
-    return this.find({
-      relations: ['links'],
-    });
+  async findAll(): Promise<Protocol[]> {
+    return this.find();
   }
 
   async findWithoutLinks() {

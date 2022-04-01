@@ -1,63 +1,83 @@
-## Installation
+# Categorization Tool Service
+
+## Table Of Contents
+1. [Installation](#Installation)
+2. [Backing Services](#Backing-Services)
+3. [Backing Services](#Backing-Services)
+4. [DB migrations](#DB-migrations)
+5. [Running The Service](#Running-The-Service)
+6. [Swagger API](#Swagger-API)
+7. [Docs](#Docs)
+
+### Installation
 
 ```bash
 $ npm install
 ```
 
-## Backing Services
+### Backing Services
 
-### Start Services
+#### Start Services
 ```bash
 $ docker-compose -f apps/categorization_tool/docker-compose.yml up -d
 ```
 
-### Stop Services
+#### Stop Services
 Add ```--volume``` option if you want to clean up the data.
 ```bash
 $ docker-compose -f apps/categorization_tool/docker-compose.yml down
 ```
 
-## DB migrations
+### DB migrations
 
-### Migrations Up
+#### Migrations Up
 ```bash
 $ npm run categorization_tool-migration:run
 ```
 
-### Migration Down
+#### Migration Down
 ```bash
 $ npm run categorization_tool-migration:revert
 ```
 
-### Create New Migration
+#### Create New Migration
 ```bash
 $ npm run categorization_tool-migration:generate -- -n ${YOUR_MIGRATION_NAME}
 ```
 
-## Running the app
+### Running The Service
 
 ```bash
 # watch mode
 $ npm run categorization_tool-start:dev
 ```
 
-## API Usage
-
 ### Swagger API
 http://localhost:3000/api
 
-### CLI
-#### Run fetching of data from all aggregators
+### Docs
+
+#### Responsibilities
+* fetch data from aggregators
+* parse websites of protocols
+* fetch ABI and source code of contracts from explorers
+* compare contracts based on ABI and source code
+
+#### Technical Details
+Categorization Tool Service uses Bull Queue based on Redis to process tasks. These are types of tasks which are currently supported:
+
+* **fetch_protocols** - fetch protocols data from aggregators (defilama, vfat.tools, multifarm.fi)
+* **parse_protocols_main_page** - parse protocols websites for app, docs, github links
+* **parse_protocols_app_page** - parse app links for docs and github links
+* **parse_protocols_docs_page** - parse docs links for contract addresses
+* **parse_protocols_github_page** - fetch .vy and .sol files from github
+* **crawl_html** - crawl html for app and docs links
+* **fetch_abi** - fetch ABI and ABI Code for the contracts
+* **analyse_contracts** - match contract ABI
+
+All the tasks are processed sequentially (it might be changed in the future). It is possible to trigger each individual task via API:
 ```bash
-curl -X POST http://localhost:3000/command --data '{"command":"start_fetching"}' -H "content-type:application/json"
+curl -X POST http://localhost:3000/command --data '{"command":"$TASK_NAME"}' -H "content-type:application/json"
 ```
 
-#### Run crawling of html
-```bash
-curl -X POST http://localhost:3000/command --data '{"command":"crawl_html"}' -H "content-type:application/json"
-```
-
-#### Run fetching of ABI
-```bash
-curl -X POST http://localhost:3000/command --data '{"command":"fetch_abi"}' -H "content-type:application/json"
-```
+To trigger executing all tasks in the described order use **start_fetching** as a name of the task (according to the diagram here: https://defiyield.atlassian.net/wiki/spaces/PD/pages/572260357/Categorization+Tool)

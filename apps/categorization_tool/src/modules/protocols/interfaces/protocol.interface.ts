@@ -28,7 +28,8 @@ export interface IParsingAbstract {
 }
 
 export interface IListProtocol {
-  protocol: string;
+  url: string;
+  name?: string;
   chain?: string;
 }
 

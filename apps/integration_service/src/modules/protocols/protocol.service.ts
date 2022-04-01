@@ -944,7 +944,7 @@ export class ProtocolService {
             if (token.tokens.length) {
               this.setTokenPriceAndValue(baseData.chain.id, token.rewards, chainAssetPrices);
               token.tokens.forEach((underlying) => {
-                this.setTokenPriceAndValue(baseData.chain.id, token.rewards, chainAssetPrices);
+                this.setTokenPriceAndValue(baseData.chain.id, underlying, chainAssetPrices);
                 token.locked
                   ? (token.locked.value += underlying.value)
                   : (token.unlocked.value += underlying.value);

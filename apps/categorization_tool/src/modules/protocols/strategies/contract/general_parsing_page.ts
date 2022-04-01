@@ -1,13 +1,12 @@
+import parallelLimit from 'async/parallelLimit';
 import type { Page } from 'puppeteer';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { toChunkedArray } from '@app/common/utils/transform';
-
 import { Puppeteer } from '../../../../utils';
-import { IParsingAbstract, IParsingReturned } from '../../interfaces/protocol.interface';
-import { NUMBER_ITEMS_CHUNK } from '../../protocols.constant';
+import { IParsingAbstract } from '../../interfaces/protocol.interface';
+import { PROTOCOL_PROCESS_PARALLEL_LIMIT } from '../../protocols.constant';
 import { AbstractStrategy } from '../abstract.strategy';
 
 @Injectable()
@@ -17,7 +16,7 @@ export class GeneralPageParsing implements AbstractStrategy {
     @Inject(Puppeteer) protected readonly browser: Puppeteer,
   ) {}
 
-  public async parsing({ link }: IParsingAbstract): Promise<IParsingReturned[]> {
+  public async parsing({ link }: IParsingAbstract): Promise<string[]> {
     const page = await this.browser.openTab();
     await page.goto(link.url);
     await page.waitForTimeout(1000);
@@ -26,28 +25,17 @@ export class GeneralPageParsing implements AbstractStrategy {
     const filteredList = listLinks.filter((l) => (l?.name?.search(/contract/gi) >= 0 ? l : ''));
     await page.close();
 
-    const execute = [];
-    const executedList = [];
-    const chunks = toChunkedArray(filteredList, NUMBER_ITEMS_CHUNK);
-    for (const chunk of chunks) {
-      for (const { url } of chunk) {
-        execute.push(this.openAndParseUrl(page, url));
-      }
+    const arrayOfParsing: string[] = (
+      await parallelLimit(
+        filteredList.map(({ url }) => async () => {
+          const resultParsing = await this.openAndParseUrl(page, url);
+          return resultParsing;
+        }),
+        PROTOCOL_PROCESS_PARALLEL_LIMIT,
+      )
+    ).flat();
 
-      const executed = await Promise.allSettled(execute);
-      executedList.push(...executed);
-    }
-
-    const mappedList = executedList
-      .map(({ status, value }) => (status === 'fulfilled' ? value : []))
-      .flat();
-
-    const removedDublicate = [...new Set(mappedList)];
-    return removedDublicate.map((v) => ({
-      contract: v,
-      protocol: link.protocol.id,
-      extras: link,
-    }));
+    return Array.from(new Set(arrayOfParsing));
   }
 
   async openAndParseUrl(page: Page, url: string): Promise<string[]> {

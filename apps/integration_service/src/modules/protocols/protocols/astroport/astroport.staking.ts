@@ -53,7 +53,7 @@ export class AstroportStaking {
           chain: chain,
           userAddress: a,
           protocolType: ProtocolTypeEnum.staking,
-          projectName: ProjectEnum.anchor,
+          projectName: ProjectEnum.astroport,
           feature: FeatureEnum.staking,
           items: [],
         }),
@@ -170,7 +170,6 @@ export class AstroportStaking {
           );
         }),
       );
-
       return balanceMap;
     } catch (e) {
       this.logger.error(e, 'getStakingBalances');

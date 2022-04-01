@@ -5,36 +5,25 @@ import { plainToClass } from 'class-transformer';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 
-import {
-  ChainDto,
-  Address,
-  FeatureEnum,
-  SundaeProtocolEnum,
-  ProtocolTypeEnum,
-  ChainIdEnum,
-} from '@app/common';
+import { ChainDto, Address, FeatureEnum, SundaeProtocolEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
-import { Asset } from '../../../../common/interfaces/transactions.interfaces';
 
-import { AccountService } from '../../../microservices/account.service';
-import { PriceService } from '../../../microservices/price.service';
 import { SundaeSwapSubgraph } from '../../../subgraphs/subgraphs/sundaeswap.subgraph';
-import { SUNDAE_REWARDS_TOKEN } from './sundaeswap.constants';
-import { Staked } from './sundaeswap.interface';
-import { calculatePoolShare, cleanUpItem, mapTokens } from './sundaeswap.utils';
+import { SUNDAE_REWARDS_TOKEN } from '../../helpers/cardano/cardano.constants';
+import { Staked } from '../../helpers/cardano/cardano.interface';
+import { CardanoService } from '../../helpers/cardano/cardano.service';
 
 @Injectable()
 export class SundaeSwapFarms {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    private readonly accountService: AccountService,
-    private readonly priceService: PriceService,
     private readonly sundaeSwapSubgraph: SundaeSwapSubgraph,
+    private readonly cardanoUtils: CardanoService,
   ) {}
 
   public async getData(
@@ -66,7 +55,7 @@ export class SundaeSwapFarms {
       cachedPools.items.map((item) => [item.address, item]),
     );
 
-    const sundae = await this.getSundaeTokenInfo();
+    const sundae = await this.cardanoUtils.getTokenInfo(SUNDAE_REWARDS_TOKEN);
 
     for (const address of addresses) {
       const farms: Staked[] = await this.sundaeSwapSubgraph.getAccountFarms(address);
@@ -75,11 +64,14 @@ export class SundaeSwapFarms {
       for (const [poolId, staking] of mapFarms.entries()) {
         const poolPosition = pools.get(poolId);
         const stakingBalance = staking.reduce((prev, stacked) => prev + +stacked.quantity, 0);
-        poolPosition.stats.share = calculatePoolShare(stakingBalance, poolPosition);
+        poolPosition.stats.share = this.cardanoUtils.calculatePoolShare(
+          stakingBalance,
+          poolPosition,
+        );
 
         const stackingItem = plainToClass(IntegrationStakingPositionDto, poolPosition);
         stackingItem.stakingToken = poolPosition.lpToken;
-        stackingItem.stakingToken.tokens = mapTokens(poolPosition, staking[0].pool);
+        stackingItem.stakingToken.tokens = this.cardanoUtils.mapTokens(poolPosition);
         stackingItem.rewards = [];
 
         for (const reward of staking) {
@@ -102,7 +94,7 @@ export class SundaeSwapFarms {
         stackingItem.stats.poolApy = staking[0].pool.apr;
         stackingItem.stats.tvl = poolPosition.stats.tvl;
 
-        baseDataStakingMap.get(address).items.push(cleanUpItem(stackingItem));
+        baseDataStakingMap.get(address).items.push(this.cardanoUtils.cleanUpItem(stackingItem));
       }
     }
 
@@ -121,17 +113,5 @@ export class SundaeSwapFarms {
     }
 
     return mapFarms;
-  }
-
-  private async getSundaeTokenInfo(): Promise<Asset & { price: number }> {
-    const result = await Promise.all([
-      this.priceService.getTokenPrices([SUNDAE_REWARDS_TOKEN], ChainIdEnum.cardano),
-      this.accountService.getAssets([SUNDAE_REWARDS_TOKEN], [ChainIdEnum.cardano]),
-    ]);
-
-    const sundaePrice = result[0].prices[SUNDAE_REWARDS_TOKEN];
-    const sundaeInfo = result[1].data[0];
-
-    return { ...sundaeInfo, price: sundaePrice };
   }
 }

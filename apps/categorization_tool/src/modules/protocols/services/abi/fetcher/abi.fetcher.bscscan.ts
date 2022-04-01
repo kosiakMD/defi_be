@@ -5,6 +5,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainAbi } from '../../../interfaces/abi.interfaces';
 import { IAbiFetcher } from './abi.fetcher.interface';
 
 @Injectable()
@@ -20,8 +21,9 @@ export class AbiFetcherBscscan implements IAbiFetcher {
     this.bscscanApiKey = this.configService.get('BSCSCAN_API_KEY');
   }
 
-  async fetchAbiAndAbiCode(address: string): Promise<{ abi: string; abiCode: string }> {
+  async fetchAbiAndAbiCode(address: string): Promise<ChainAbi> {
     try {
+      this.logger.debug(`AbiFetcherBscscan: fetchAbiAndAbiCode for address: [${address}]`);
       const abiCodeResponse = await firstValueFrom(
         this.httpService.get(
           `${this.bscscanApiUrl}?module=contract&action=getsourcecode&address=${address}&apikey=${this.bscscanApiKey}`,
@@ -32,8 +34,8 @@ export class AbiFetcherBscscan implements IAbiFetcher {
         abiCode: abiCodeResponse.data.result[0].SourceCode,
       };
     } catch (e) {
-      this.logger.error(`AbiFetcherEtherscan: fetchAbiAndAbiCode error - ${e.message}`);
-      return { abi: null, abiCode: null };
+      this.logger.error(`AbiFetcherBscscan: fetchAbiAndAbiCode error - ${e}`);
+      throw e;
     }
   }
 }

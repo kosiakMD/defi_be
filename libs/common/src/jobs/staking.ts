@@ -67,6 +67,14 @@ export class IntegrationStakingPositionDto {
   extra?: any = {};
 }
 
+export class IntegrationShortFarmPositionDto {
+  staked: string = null;
+  stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
+  rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  locked: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
+  until: Date;
+}
+
 export class CurveIntegrationStakingPositionDto {
   address: string = null;
   poolId: number = null;

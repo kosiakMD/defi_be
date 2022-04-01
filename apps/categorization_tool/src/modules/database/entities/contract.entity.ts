@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
-import { ProtocolChain } from './protocol.chain.entity';
+import { ContractsAnalysis } from './contracts.analysis.entity';
+import { Protocol } from './protocol.entity';
 
 @Entity({ name: 'contracts' })
 export class Contract {
@@ -16,10 +17,10 @@ export class Contract {
   @Column({ name: 'abi_code', type: 'text' })
   abiCode: string;
 
-  @Column({ name: 'protocols_chains_id', type: 'int' })
-  protocolsChainsId: number;
+  @ManyToOne(() => Protocol, (p) => p.id, { eager: true })
+  @JoinColumn({ name: 'protocol_id' })
+  protocol: Protocol;
 
-  @ManyToOne(() => ProtocolChain, (pc) => pc.id, { eager: true })
-  @JoinColumn({ name: 'protocols_chains_id' })
-  protocolChain: ProtocolChain;
+  @OneToMany(() => ContractsAnalysis, (ca) => ca.contract, { eager: true })
+  analysis: ContractsAnalysis[];
 }

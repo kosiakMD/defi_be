@@ -21,7 +21,10 @@ export class MainPageStrategy implements AbstractStrategy {
 
   async parsing({ url, name }: IParsingAbstract): Promise<[string, FilteredLinks, string, string]> {
     const page = await this.browser.loadPage(url);
-    const listLinks = await this.getEvaluatedPageData(page);
+    const listLinks = await page.$$eval('a', (a: HTMLLinkElement[]) =>
+      a.map((b) => ({ name: b.textContent, url: b.href })),
+    );
+
     const filtered = this.filterLinks(listLinks);
     const screenshotPath = this.getScreenshotPath(url, name);
     const dirScreen = await getScreenshot(page, url, screenshotPath);
@@ -36,20 +39,6 @@ export class MainPageStrategy implements AbstractStrategy {
       mkdirSync(dir, { recursive: true });
     }
     return `${dir}${genName}`;
-  }
-
-  private async getEvaluatedPageData(page) {
-    return page.evaluate(() => {
-      const listLinks = [];
-      const links = document.querySelectorAll('a');
-      for (const key in links) {
-        listLinks.push({
-          url: links[key].href,
-          name: links[key].text,
-        });
-      }
-      return listLinks;
-    });
   }
 
   private filterLinks(list: { url: string; name: string }[]): FilteredLinks {

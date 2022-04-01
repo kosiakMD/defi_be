@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Puppeteer } from '../../utils';
 import { ChainsRepository } from '../database/repositories/chains.repo';
+import { ContractsAnalysisRepository } from '../database/repositories/contracts.analysis.repo';
 import { ContractsRepository } from '../database/repositories/contracts.repo';
 import { GithubFilesRepository } from '../database/repositories/github.files.repo';
 import { LinksRepository } from '../database/repositories/links.repo';
@@ -12,13 +13,15 @@ import { ProtocolChainRepository } from '../database/repositories/protocol.chain
 import { ProtocolsPropertiesRepository } from '../database/repositories/protocols.properties.repo';
 import { ProtocolsRepository } from '../database/repositories/protocols.repo';
 import { ProtocolService } from './protocols.service';
-import { AbiFetcherBscscan } from './services/abi.fetcher.bscscan';
-import { AbiFetcherDummy } from './services/abi.fetcher.dummy';
-import { AbiFetcherEtherscan } from './services/abi.fetcher.etherscan';
+import { AbiFetcherBscscan } from './services/abi/fetcher/abi.fetcher.bscscan';
+import { AbiFetcherEtherscan } from './services/abi/fetcher/abi.fetcher.etherscan';
+import { AbiFetcherService } from './services/abi/fetcher/abi.fetcher.service';
+import { AbiFetcherTenderly } from './services/abi/fetcher/abi.fetcher.tenderly';
+import { ContractsAnalysisService } from './services/contracts.analysis.service';
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
 import { CheckTypeDoc } from './services/utils/check_type_docs';
-import { MainPageStrategy } from './strategies';
+import { MainPageStrategy, AppPageStrategy } from './strategies';
 import { GeneralPageParsing } from './strategies/contract';
 
 @Module({
@@ -33,6 +36,7 @@ import { GeneralPageParsing } from './strategies/contract';
       GithubFilesRepository,
       ProtocolChainRepository,
       ProtocolsPropertiesRepository,
+      ContractsAnalysisRepository,
     ]),
   ],
   providers: [
@@ -40,13 +44,16 @@ import { GeneralPageParsing } from './strategies/contract';
     ContractsService,
     Puppeteer,
     MainPageStrategy,
+    AppPageStrategy,
     GeneralPageParsing,
     CheckTypeDoc,
-    AbiFetcherDummy,
+    AbiFetcherTenderly,
     AbiFetcherEtherscan,
     AbiFetcherBscscan,
     GithubService,
+    AbiFetcherService,
+    ContractsAnalysisService,
   ],
-  exports: [ProtocolService],
+  exports: [ProtocolService, ContractsAnalysisService],
 })
 export class ProtocolModule {}

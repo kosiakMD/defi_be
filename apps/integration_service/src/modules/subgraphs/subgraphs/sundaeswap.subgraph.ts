@@ -5,15 +5,10 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {
-  Pool,
   Staked,
-  SundaeSwapPoolsResponse,
   SundaeSwapStakingResponse,
-} from '../../protocols/protocols/sundaeswap/sundaeswap.interface';
-import {
-  POOLS_BY_ADDRESS_QUERY,
-  FARMS_BY_ADDRESS_QUERY,
-} from '../../protocols/protocols/sundaeswap/sundaeswap.queries';
+} from '../../protocols/helpers/cardano/cardano.interface';
+import { FARMS_BY_ADDRESS_QUERY } from '../../protocols/protocols/sundaeswap/sundaeswap.queries';
 
 @Injectable()
 export class SundaeSwapSubgraph {
@@ -24,18 +19,6 @@ export class SundaeSwapSubgraph {
     private readonly httpService: HttpService,
   ) {
     this.subgraphUrl = this.configService.get<string>('SUNDAESWAP_URL');
-  }
-
-  public async getAccountPools(addresses: string[]): Promise<Pool[]> {
-    const data = await firstValueFrom(
-      this.httpService
-        .post<SundaeSwapPoolsResponse>(this.subgraphUrl, {
-          query: POOLS_BY_ADDRESS_QUERY,
-          variables: { assetIds: addresses, pageSize: 200 },
-        })
-        .pipe(map((response) => response.data)),
-    );
-    return data?.data?.pools || [];
   }
 
   public async getAccountFarms(address: string): Promise<Staked[]> {

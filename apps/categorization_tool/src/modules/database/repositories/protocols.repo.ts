@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, Repository } from 'typeorm';
 
 import { Protocol } from '../entities/protocol.entity';
 
@@ -25,6 +25,21 @@ export class ProtocolsRepository extends Repository<Protocol> {
   async findOneByUrlWithLinks(url: string): Promise<Protocol> {
     return this.findOne({
       where: { url },
+      relations: ['links'],
+    });
+  }
+
+  async findManyByUrlWithLinks(urls: string[]): Promise<Protocol[]> {
+    return this.find({
+      where: {
+        url: In(urls),
+      },
+      relations: ['links'],
+    });
+  }
+
+  async findAllWithLinks(): Promise<Protocol[]> {
+    return this.find({
       relations: ['links'],
     });
   }

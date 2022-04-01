@@ -7,13 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import {
-  ChainIdEnum,
-  CurrencyIdEnum,
-  FeatureEnum,
-  PoolTokenDto,
-  ProtocolNameEnum,
-} from '@app/common';
+import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
@@ -22,23 +16,24 @@ import { concatStrings } from '@app/common/utils';
 
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
-import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../../store/tracked.vault.item.entity';
 import { toDecimals } from '../../utils/number';
 import { isTimeToDo } from '../../utils/time';
+import { Pool } from '../cardano/cardano.interfaces';
+import { CardanoPools } from '../cardano/cardano.pools';
 import { TrackedVaultItemsMap } from '../data/tracked.vault.items.map';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
-import { Pool, PoolsResponse } from './interface';
+import { SundaeSwapPoolsResponse } from './interface';
 import { AVAILABLE_POOLS_QUERY } from './queries';
 
 @Injectable()
-export class SundaeswapPools implements JobInterface {
+export class SundaeswapPools extends CardanoPools implements JobInterface {
   chain = ChainIdEnum.cardano;
   feature = FeatureEnum.pools;
   protocol = ProtocolNameEnum.sundaeswap;
@@ -46,22 +41,18 @@ export class SundaeswapPools implements JobInterface {
   features: any;
   subgraphUrl: string;
 
-  private mapping = [];
-  private availableDtosForConversion: Map<string, string>;
+  protected mapping = [];
+  protected availableDtosForConversion: Map<string, string>;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly accountService: AccountService,
-    private readonly storeService: StoreService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly storeService: StoreService,
+    protected readonly accountService: AccountService,
     private readonly priceService: PriceService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
   ) {
-    this.availableDtosForConversion = new Map<string, string>([
-      [LiquidityPoolFeature.name, LiquidityPoolFeature.name],
-      [ERC20Token.name, ERC20Token.name],
-      [PoolTokenDto.name, ERC20Token.name],
-    ]);
+    super(logger, storeService, accountService);
     this.subgraphUrl = this.configService.get<string>('SUNDAESWAP_URL');
   }
 
@@ -208,9 +199,9 @@ export class SundaeswapPools implements JobInterface {
     return saveItem;
   }
 
-  private async getPoolInformation(): Promise<Pool[]> {
+  protected async getPoolInformation(): Promise<Pool[]> {
     const request = this.httpService
-      .post<PoolsResponse>(this.subgraphUrl, {
+      .post<SundaeSwapPoolsResponse>(this.subgraphUrl, {
         query: AVAILABLE_POOLS_QUERY,
         variables: { pageSize: 200 },
       })
@@ -219,71 +210,7 @@ export class SundaeswapPools implements JobInterface {
     return response?.data?.poolsPopular || [];
   }
 
-  private poolsToMap(pools: Pool[]): Map<string, Pool> {
-    return new Map(pools.map((pool) => [pool.assetLP.assetId, pool]));
-  }
-
   private removeDotInAssetID(asset: string): string {
     return asset.replace(/\./, '');
-  }
-
-  private async saveAssets(pool: Pool): Promise<LiquidityPoolTokenDto[]> {
-    const assetA = this.accountService.saveAsset({
-      address: pool.assetA.assetId || CARDANO_COIN_ADDRESS,
-      name: pool.assetA.assetName || 'ADA',
-      symbol: pool.assetA.ticker,
-      decimals: pool.assetA.decimals,
-      chain: this.chain,
-    });
-
-    const assetB = this.accountService.saveAsset({
-      address: this.removeDotInAssetID(pool.assetB.assetId),
-      name: pool.assetB.assetName,
-      symbol: pool.assetB.ticker,
-      decimals: pool.assetB.decimals,
-      chain: this.chain,
-    });
-
-    const assetLP = this.accountService.saveAsset({
-      address: pool.assetLP.assetId,
-      name: pool.name,
-      symbol: pool.name,
-      decimals: pool.assetB.decimals,
-      isLp: true,
-      chain: this.chain,
-    });
-
-    return Promise.all([assetA, assetB, assetLP]);
-  }
-
-  private buildLiquidityPoolFeature(
-    assetA: LiquidityPoolTokenDto,
-    assetB: LiquidityPoolTokenDto,
-    assetLP: LiquidityPoolTokenDto,
-  ): LiquidityPoolFeature {
-    return plainToClass(LiquidityPoolFeature, {
-      address: assetLP.address,
-      name: assetLP.name,
-      lpToken: plainToClass(ERC20Token, {
-        address: assetLP.address,
-        name: assetLP.name,
-        symbol: assetLP.symbol,
-        decimals: assetLP.decimals,
-      }),
-      tokens: [
-        plainToClass(PoolTokenDto, {
-          address: assetA.address,
-          name: assetA.name,
-          symbol: assetA.symbol,
-          decimals: assetA.decimals,
-        }),
-        plainToClass(PoolTokenDto, {
-          address: assetB.address,
-          name: assetB.name,
-          symbol: assetB.symbol,
-          decimals: assetB.decimals,
-        }),
-      ],
-    });
   }
 }

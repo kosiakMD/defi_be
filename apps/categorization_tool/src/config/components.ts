@@ -9,6 +9,7 @@ export const service = {
     screenshotsDir: process.env.DIR_SAVE_SCREENSHOTS,
     bscscanApiUrl: process.env.BSCSCAN_API_URL,
     bscscanApiKey: process.env.BSCSCAN_API_KEY,
+    tenderlyApiURL: process.env.TENDERLY_API_URL,
     githubOAuthToken: process.env.GITHUB_OAUTH_TOKEN,
   })),
   validation: {
@@ -17,6 +18,7 @@ export const service = {
     DIR_SAVE_SCREENSHOTS: Joi.string().required(),
     BSCSCAN_API_URL: Joi.string().required(),
     BSCSCAN_API_KEY: Joi.string().optional(),
+    TENDERLY_API_URL: Joi.string().required(),
     GITHUB_OAUTH_TOKEN: Joi.string().optional(),
   },
 };

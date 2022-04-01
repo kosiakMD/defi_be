@@ -57,7 +57,7 @@ export class AstroportPools {
           chain: chain,
           userAddress: a,
           protocolType: ProtocolTypeEnum.amm,
-          projectName: ProjectEnum.curve,
+          projectName: ProjectEnum.astroport,
           items: existedPositions,
           feature: FeatureEnum.pools,
         });

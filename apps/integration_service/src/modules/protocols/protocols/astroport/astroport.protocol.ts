@@ -16,6 +16,8 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import BasicProtocol from '../basicProtocol';
+import { AstroportBootstrap } from './astroport.bootstrap';
+import { AstroportLockdrop } from './astroport.lockdrop';
 import { AstroportPools } from './astroport.pools';
 import { AstroportStaking } from './astroport.staking';
 
@@ -26,7 +28,12 @@ export class AstroportProtocol extends BasicProtocol {
   readonly name = AstroportProtocolEnum.astroport;
   readonly displayName = 'Astroport';
   readonly features = {
-    [ChainAbbrEnum.terra]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.terra]: [
+      FeatureEnum.pools,
+      FeatureEnum.staking,
+      FeatureEnum.lockedBalances,
+      FeatureEnum.bootstrap,
+    ],
   };
 
   constructor(
@@ -35,6 +42,8 @@ export class AstroportProtocol extends BasicProtocol {
     protected readonly priceService: PriceService,
     private readonly pools: AstroportPools,
     private readonly staking: AstroportStaking,
+    private readonly lockedBalances: AstroportLockdrop,
+    private readonly bootstrap: AstroportBootstrap,
   ) {
     super();
   }
@@ -64,6 +73,10 @@ export class AstroportProtocol extends BasicProtocol {
         return this.staking.getData(addresses, chain);
       case FeatureEnum.pools:
         return this.pools.getData(addresses, chain);
+      case FeatureEnum.lockedBalances:
+        return this.lockedBalances.getData(addresses, chain);
+      case FeatureEnum.bootstrap:
+        return this.bootstrap.getData(addresses, chain);
       default:
         return [];
     }

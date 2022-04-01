@@ -10,6 +10,7 @@ import { Command } from '../../common/enum/service.enum';
 import { AggregatorsService } from '../aggregators/aggregator.service';
 import { IListProtocol } from '../protocols/interfaces/protocol.interface';
 import { ProtocolService } from '../protocols/protocols.service';
+import { ContractsAnalysisService } from '../protocols/services/contracts.analysis.service';
 
 @Injectable()
 @Processor(REDIS_TASK_QUEUE)
@@ -18,16 +19,23 @@ export class TasksProcessor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly aggregatorsService: AggregatorsService,
     private readonly protocolService: ProtocolService,
+    private readonly contractAnalysisService: ContractsAnalysisService,
   ) {}
 
   @Process(TASKS_PROCESSOR) // the name of the executed process
-  public async process(job: Job<{ command: string; listProtocols?: IListProtocol[] }>) {
+  public async process(
+    job: Job<{ command: string; listProtocols?: IListProtocol[]; urls?: string }>,
+  ) {
     this.logger.debug(`job: '${job.data.command}'`);
     switch (job.data.command) {
       case Command.start_fetching:
         return this.aggregatorsService.run();
-      case Command.parse_protocols:
-        return this.protocolService.parseProtocols();
+      case Command.parse_protocols_app_page:
+        return this.protocolService.scanAppPageProtocolsForLinks();
+      case Command.parse_protocols_main_page:
+        return this.protocolService.scanMainPageProtocolsForLinks();
+      case Command.parse_protocols_docs_page:
+        return this.protocolService.scanDocsPageProtocolsForContractAdresses();
       case Command.crawl_html:
         return this.protocolService.crawlHtml();
       case Command.fetch_abi:
@@ -38,6 +46,8 @@ export class TasksProcessor {
         return this.protocolService.run();
       case Command.run_parsing_custom_protocol:
         return this.protocolService.run(job.data.listProtocols);
+      case Command.analyse_contracts:
+        return this.contractAnalysisService.analyseContracts();
       default:
         this.logger.warn(`unsupported command: '${job.data.command}', skipping...`);
     }

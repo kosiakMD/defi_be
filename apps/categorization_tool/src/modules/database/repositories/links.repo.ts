@@ -11,6 +11,12 @@ export class LinksRepository extends Repository<Link> {
     });
   }
 
+  async findByTypesAndProtocol(linkType: LinkTypeEnum, protocol: number): Promise<Link[]> {
+    return this.find({
+      where: { type: linkType, protocol },
+    });
+  }
+
   async findGithubLinksWithoutFiles(): Promise<Link[]> {
     const query = `
         SELECT l.id,

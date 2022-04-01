@@ -35,15 +35,15 @@ export class init1647287372738 implements MigrationInterface {
 
         CREATE TABLE IF NOT EXISTS "contracts"
         (
-            "id"                  SERIAL,
-            "address"             VARCHAR(256) NOT NULL,
-            "abi"                 TEXT         NULL     DEFAULT NULL,
-            "abi_code"            TEXT         NULL     DEFAULT NULL,
-            "protocols_chains_id" INTEGER      NOT NULL,
-            "created_at"          TIMESTAMP    NOT NULL DEFAULT now(),
-            "updated_at"          TIMESTAMP    NOT NULL DEFAULT now(),
+            "id"          SERIAL,
+            "address"     VARCHAR(256) NOT NULL,
+            "abi"         TEXT         NULL     DEFAULT NULL,
+            "abi_code"    TEXT         NULL     DEFAULT NULL,
+            "protocol_id" INTEGER,
+            "created_at"  TIMESTAMP    NOT NULL DEFAULT now(),
+            "updated_at"  TIMESTAMP    NOT NULL DEFAULT now(),
             PRIMARY KEY ("id"),
-            CONSTRAINT "FK_contracts_protocols_chains" FOREIGN KEY ("protocols_chains_id") REFERENCES "protocols_chains" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
+            CONSTRAINT "FK_contracts_protocols" FOREIGN KEY ("protocol_id") REFERENCES "protocols" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION
         );
 
         DROP TYPE IF EXISTS LINK_TYPE;

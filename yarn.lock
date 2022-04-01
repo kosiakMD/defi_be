@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@anchor-protocol/anchor.js@^5.0.0":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@anchor-protocol/anchor.js/-/anchor.js-5.0.2.tgz#de96b3dc3098e4316043f231044e536ee3a2723e"
+  integrity sha512-tziR2Rm0Ug/iqFdGFjASO86b4fISGfDBWnH3L05yrWcvVzjkLRNGWyNOiztEcwR0N11VYqyamMb8rsSQ802xtg==
+
 "@angular-devkit/core@11.2.4":
   version "11.2.4"
   resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-11.2.4.tgz#4404b86d8dbdb41a0e3f94cb08ff8604e0c49a2e"

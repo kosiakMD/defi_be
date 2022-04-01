@@ -1,0 +1,29 @@
+{
+  "name": "defiyield-integration",
+  "version": "1.0.2",
+  "description": "DeFiYield Integration Microservice",
+  "engines": {
+    "node": ">=14",
+    "npm": "^6.11.0 || ^7.5.6",
+    "yarn": ">=1.13.0"
+  },
+  "scripts": {
+    "build": "node --max-old-space-size=1500 node_modules/.bin/tsc -p tsconfig.build.json",
+    "pre-commit": "yarn run lint && yarn run format-check",
+    "build-monorepo": "yarn common-build && yarn gateway-build && yarn account-build && yarn integration-build && yarn price-build",
+    "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
+    "lint-fix": "eslint \"**/{src,apps,libs,test}/**/*.ts\" --fix",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+    "format-check": "prettier \"./**/src/**/*.ts\" \"./**/test/**/*.ts\" --check",
+    "gateway-prebuild": "yarn --cwd ./apps/api_gateway run prebuild",
+    "gateway-format": "yarn --cwd ./apps/api_gateway run format",
+    "gateway-lint": "eslint \"./apps/api_gateway/{src,config,test}/**/*.ts\"",
+    "gateway-build": "nest build api_gateway",
+    "gateway-start:dev": "nest start api_gateway --watch",
+    "gateway-start:debug": "nest start api_gateway --debug --watch",
+    "gateway-start:prod": "nest start api_gateway"
+  },
+  "dependencies": {
+    "@anchor-protocol/anchor.js": "^5.0.0"
+  }
+}

@@ -24,15 +24,4 @@ export class ChainsRepository extends Repository<Chain> {
       ),
     );
   }
-
-  async upsertChainsSync(chainNames: string[]): Promise<Chain[]> {
-    const list: Chain[] = [];
-    for (const chain of chainNames) {
-      list.push(
-        (await this.findOneByNameCaseInsensitive(chain)) || (await this.save({ name: chain })),
-      );
-    }
-
-    return list;
-  }
 }

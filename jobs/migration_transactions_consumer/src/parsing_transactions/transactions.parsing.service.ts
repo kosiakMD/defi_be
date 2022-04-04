@@ -72,7 +72,7 @@ export class TransactionsParsingService {
       transaction,
       gasUsed,
     );
-    const parsedTransfers: string = await this.getInsertSqlString(
+    const parsedTransfers: string = this.getInsertSqlString(
       transaction,
       uniqueAddresses,
       subTransactions,

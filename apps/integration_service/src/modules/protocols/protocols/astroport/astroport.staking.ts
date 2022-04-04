@@ -23,7 +23,7 @@ import { Web3ProviderService } from '@app/common/web3provider';
 import { toDecimals } from '../../../../common/utils/util';
 
 import { StakingDataInterface, UnderlyingTokenDto } from '../ellipsis/ellipsis.staking';
-import { AstroportAddresses } from './addresses';
+import { AstroportAddresses, astroportExcludeAddressesMap } from './addresses';
 
 @Injectable()
 export class AstroportStaking {
@@ -40,7 +40,11 @@ export class AstroportStaking {
       throw new Error(`not found cached data for key '${cacheKey}'`);
     }
 
-    const balances = await this.getStakingBalances(addresses, cachedPools.items, chain);
+    const balances = await this.getStakingBalances(
+      addresses,
+      cachedPools.items.filter((i) => !astroportExcludeAddressesMap.get(i.stakingToken.address)),
+      chain,
+    );
 
     const baseDataStakingMap: Map<string, BaseDataStaking> = new Map<string, BaseDataStaking>(
       addresses.map((a) => [
@@ -49,7 +53,7 @@ export class AstroportStaking {
           chain: chain,
           userAddress: a,
           protocolType: ProtocolTypeEnum.staking,
-          projectName: ProjectEnum.anchor,
+          projectName: ProjectEnum.astroport,
           feature: FeatureEnum.staking,
           items: [],
         }),
@@ -166,7 +170,6 @@ export class AstroportStaking {
           );
         }),
       );
-
       return balanceMap;
     } catch (e) {
       this.logger.error(e, 'getStakingBalances');

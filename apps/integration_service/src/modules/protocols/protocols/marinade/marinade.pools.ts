@@ -38,12 +38,15 @@ export class MarinadePools {
       throw new Error(`not found cached data for key '${cacheKey}'`);
     }
 
-    const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(addresses, [
-      chain.id,
-    ]);
-
     const pools = new Map<string, LiquidityPoolFeature>(
       cachedPools.items.map((item) => [item.address, item]),
+    );
+
+    const lpAddresses = Array.from(pools.values()).map((pool) => pool.lpToken.address);
+    const lpBalances: BalancesResponse = await this.accountService.getBalancesPost(
+      addresses,
+      [chain.id],
+      lpAddresses,
     );
 
     const baseDataPoolsMap: Map<string, BaseDataLp> = new Map<string, BaseDataLp>(
@@ -61,7 +64,7 @@ export class MarinadePools {
     );
 
     for (const address of addresses) {
-      const lpToken = lpBalances[address].tokens.find(({ token }) => pools.has(token.address));
+      const lpToken = lpBalances[address]?.tokens?.find(({ token }) => pools.has(token.address));
 
       if (!lpToken) continue;
 

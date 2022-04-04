@@ -28,25 +28,3 @@ export const FARMS_BY_ADDRESS_QUERY = gql`
     quantityB
   }
 `;
-
-export const POOLS_BY_ADDRESS_QUERY = gql`
-  query getPoolsByAssetIds($assetIds: [String!]!) {
-    pools(assetIds: $assetIds) {
-      ...PoolFragment
-    }
-  }
-
-  fragment PoolFragment on Pool {
-    assetLP {
-      ...AssetFragment
-    }
-    apr
-    fee
-    quantityA
-    quantityB
-  }
-
-  fragment AssetFragment on Asset {
-    assetId
-  }
-`;

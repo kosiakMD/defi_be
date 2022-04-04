@@ -9,14 +9,18 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainIdEnum } from '..';
 
+import { TNS } from '@tns-money/tns.js';
+
+// const tns = new TNS();
+
 @Injectable()
 export class Web3NameService {
   private readonly providers = new Map<
     {
       chain: ChainIdEnum;
-      resolver: (s: string, p: Web3Provider | Connection) => Promise<string>;
+      resolver: (s: string, p: Web3Provider | Connection | TNS) => Promise<string>;
     },
-    Web3Provider | Connection
+    Web3Provider | Connection | TNS
   >();
   private readonly SOL_TLD_AUTHORITY: PublicKey;
 
@@ -26,6 +30,7 @@ export class Web3NameService {
     this.SOL_TLD_AUTHORITY = new PublicKey(
       this.configService.get('SOLANA_NAME_SERVICE_PUBLIC_KEY'),
     );
+    this.setTnsProvider(ChainIdEnum.terra);
   }
 
   private async resolveEnsName(name: string, provider: Web3Provider): Promise<Address> {
@@ -48,6 +53,14 @@ export class Web3NameService {
     }
   }
 
+  private async resolveTnsName(name: string, tns: TNS): Promise<string> {
+    try {
+      return await tns.name(name).getTerraAddress();
+    } catch {
+      return null
+    }
+  }
+
   private setEvmProvider(chain: ChainIdEnum, env: string) {
     const mainnetHTTPProvider = new Web3.providers.HttpProvider(this.configService.get(env));
     this.providers.set(
@@ -60,6 +73,13 @@ export class Web3NameService {
     this.providers.set(
       { chain, resolver: this.resolveSnsName.bind(this) },
       new Connection(this.configService.get(env)),
+    );
+  }
+
+  private setTnsProvider(chain: ChainIdEnum) {
+    this.providers.set(
+      { chain, resolver: this.resolveTnsName.bind(this) },
+      new TNS(),
     );
   }
 

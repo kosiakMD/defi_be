@@ -1,4 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
+import { aws_s3 as s3 } from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
@@ -22,6 +23,11 @@ export class DefiYieldStack extends cdk.Stack {
     new PriceJobsStack(this, 'PriceJobsStack', {
       vpc,
       securityGroups,
+    });
+
+    new s3.Bucket(this, 'defiyield-static-1', {
+      versioned: false,
+      publicReadAccess: true,
     });
   }
 }

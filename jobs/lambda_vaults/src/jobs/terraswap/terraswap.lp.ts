@@ -9,7 +9,7 @@ import { TerraPoolsCommon } from './terra.pools.common.service';
 @Injectable()
 export class TerraswapLp extends TerraPoolsCommon {
   factory = TerraSwapAddresses.tokenFactory;
-  totalSupplyLimit = 25000;
+  totalSupplyLimit = 10000;
   protocol = ProtocolNameEnum.terraswap;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
 

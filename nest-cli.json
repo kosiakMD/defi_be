@@ -77,6 +77,21 @@
         ]
       }
     },
+    "assets_service": {
+      "type": "application",
+      "root": "apps/assets_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/assets_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/assets_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/assets_service"
+          }
+        ]
+      }
+    },
     "rpc_nodes_service": {
       "type": "application",
       "root": "apps/rpc_nodes_service",

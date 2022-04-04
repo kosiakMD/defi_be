@@ -1,7 +1,4 @@
-import {
-  CurrencyEnum,
-  CurrencyIdEnum,
-} from '@app/common';
+import { CurrencyEnum, CurrencyIdEnum } from '@app/common';
 import { ProtocolTypeEnum, ResultStatus } from '@app/common/enum';
 
 import { TokenBalance } from '../../modules/balances/balances.interfaces';
@@ -28,6 +25,15 @@ export interface ERC20Token {
   symbol?: string;
   decimals?: number;
   totalSupply?: string;
+}
+
+export interface Deposit {
+  dst: string;
+  wad: string;
+}
+
+export interface DepositEvent extends Event {
+  returnValues: Deposit;
 }
 
 export interface ContractApproval {
@@ -122,15 +128,6 @@ export interface Event {
   returnValues: any;
   event: string;
   signature: string;
-}
-
-export interface Deposit {
-  dst: string;
-  wad: string;
-}
-
-export interface DepositEvent extends Event {
-  returnValues: Deposit;
 }
 
 export interface Withdrawal {

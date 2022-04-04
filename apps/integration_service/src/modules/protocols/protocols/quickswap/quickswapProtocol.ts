@@ -20,10 +20,9 @@ import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
 import { ChainAbbrEnum, ChainIdEnum, ProjectEnum, QuickswapProtocolEnum } from '@app/common/enum';
-import { keepETHAddresses } from '@app/common/utils';
+import { chunk, keepETHAddresses } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { getKey } from '@app/common/utils/string';
-import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3ProviderService } from '@app/common/web3provider';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -97,7 +96,7 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
   }
 
   static LocalCachedPairData: Promise<PairDto[]> | null = null;
-  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 250): Promise<PairDto[]> {
+  private async getSubgraphPairs(pairsAddresses: Address[], chunkSize = 100): Promise<PairDto[]> {
     // Cache Shared pool data statically so that staking+pools only need 1 request
     if (QuickswapProtocol.LocalCachedPairData) {
       return QuickswapProtocol.LocalCachedPairData;
@@ -108,18 +107,25 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
       // Ideally we don't cache this at all, however it took 4+ seconds
       // to resolve each request in testing
       60,
-      getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses),
+      getKey('QuickSwap', 'subgraph', 'pairs', ...pairsAddresses.sort()),
       async () => {
         const chunkedPairs = await Promise.all(
-          toChunkedArray(pairsAddresses.sort(), chunkSize)
+          chunk(pairsAddresses, chunkSize)
             .map(async (chunkedPairsAddresses): Promise<PairDto[]> => {
               const { data: pairsData, errors: pairsErrors } = await this.subgraph.getPairs(
                 chunkedPairsAddresses,
               );
               if (pairsErrors?.length) {
                 // Error logged in subgraph request
+                this.logger.error('QuickSwap Subgraph Failed', this.constructor.name);
                 return [];
               } else {
+                if (pairsData.pairs.length !== chunkedPairsAddresses.length) {
+                  this.logger.warn(
+                    `Subgraph failed to return some pairs. ${pairsData.pairs.length}/${chunkedPairsAddresses.length} Found`,
+                    this.constructor.name,
+                  );
+                }
                 return pairsData.pairs;
               }
             })
@@ -389,6 +395,11 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
 
     contracts.forEach(({ pairAddress, stakingContractAddress }) => {
       const pairData = stakingTokens.get(pairAddress);
+      if (!pairData) {
+        this.logger.warn(`Failed to find pair data ${pairAddress}`, this.constructor.name);
+        return;
+      }
+
       const rawBalance = multicallData
         .get(this.balanceLabel(stakingContractAddress, userAddress))
         .output.data.toString();

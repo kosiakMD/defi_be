@@ -6,10 +6,22 @@
 import BN from 'bn.js';
 
 import { UniswapV3Tick } from '@app/common';
-import { MaxUint256, ONE, Q128, Q32, Q96, ZERO } from '@app/common/constant/numbers';
+import { MaxUint256, ONE, Q128, Q256, Q32, Q96, ZERO } from '@app/common/constant/numbers';
+
+function subIn256(...numbers: BN[]): BN {
+  if (numbers.length <= 1) return numbers[0];
+
+  const [num0, num1] = numbers.splice(0, 2);
+
+  const difference = num0.sub(num1);
+
+  const total = difference.lt(new BN(0)) ? Q256.add(difference) : difference;
+
+  return subIn256(total, ...numbers);
+}
 
 function getTicksFeeGrowthInside(
-  tickCurrent: string,
+  tickCurrent: number,
   tickLower: UniswapV3Tick,
   tickUpper: UniswapV3Tick,
   feeGrowthGlobal0X128: string,
@@ -17,31 +29,47 @@ function getTicksFeeGrowthInside(
 ): { feeGrowthInside0X128: BN; feeGrowthInside1X128: BN } {
   let feeGrowthBelow0X128: BN;
   let feeGrowthBelow1X128: BN;
-  if (tickCurrent >= tickLower.tickIdx) {
+  if (tickCurrent >= tickLower.tick) {
     feeGrowthBelow0X128 = new BN(tickLower.feeGrowthOutside0X128);
     feeGrowthBelow1X128 = new BN(tickLower.feeGrowthOutside1X128);
   } else {
-    feeGrowthBelow0X128 = new BN(feeGrowthGlobal0X128).sub(new BN(tickLower.feeGrowthOutside0X128));
-    feeGrowthBelow1X128 = new BN(feeGrowthGlobal1X128).sub(new BN(tickLower.feeGrowthOutside1X128));
+    feeGrowthBelow0X128 = subIn256(
+      new BN(feeGrowthGlobal0X128),
+      new BN(tickLower.feeGrowthOutside0X128),
+    );
+    feeGrowthBelow1X128 = subIn256(
+      new BN(feeGrowthGlobal1X128),
+      new BN(tickLower.feeGrowthOutside1X128),
+    );
   }
 
   // calculate fee growth above
   let feeGrowthAbove0X128: BN;
   let feeGrowthAbove1X128: BN;
-  if (tickCurrent < tickUpper.tickIdx) {
+  if (tickCurrent < tickUpper.tick) {
     feeGrowthAbove0X128 = new BN(tickUpper.feeGrowthOutside0X128);
     feeGrowthAbove1X128 = new BN(tickUpper.feeGrowthOutside1X128);
   } else {
-    feeGrowthAbove0X128 = new BN(feeGrowthGlobal0X128).sub(new BN(tickUpper.feeGrowthOutside0X128));
-    feeGrowthAbove1X128 = new BN(feeGrowthGlobal1X128).sub(new BN(tickUpper.feeGrowthOutside1X128));
+    feeGrowthAbove0X128 = subIn256(
+      new BN(feeGrowthGlobal0X128),
+      new BN(tickUpper.feeGrowthOutside0X128),
+    );
+    feeGrowthAbove1X128 = subIn256(
+      new BN(feeGrowthGlobal1X128),
+      new BN(tickUpper.feeGrowthOutside1X128),
+    );
   }
 
-  const feeGrowthInside0X128 = new BN(feeGrowthGlobal0X128)
-    .sub(feeGrowthBelow0X128)
-    .sub(feeGrowthAbove0X128);
-  const feeGrowthInside1X128 = new BN(feeGrowthGlobal1X128)
-    .sub(feeGrowthBelow1X128)
-    .sub(feeGrowthAbove1X128);
+  const feeGrowthInside0X128 = subIn256(
+    new BN(feeGrowthGlobal0X128),
+    feeGrowthBelow0X128,
+    feeGrowthAbove0X128,
+  );
+  const feeGrowthInside1X128 = subIn256(
+    new BN(feeGrowthGlobal1X128),
+    feeGrowthBelow1X128,
+    feeGrowthAbove1X128,
+  );
 
   return { feeGrowthInside0X128, feeGrowthInside1X128 };
 }
@@ -171,7 +199,7 @@ export function calculateTokensOwed({
   feeGrowthGlobal1X128,
   liquidity,
 }: {
-  tickCurrent: string;
+  tickCurrent: number;
   tickLower: UniswapV3Tick;
   tickUpper: UniswapV3Tick;
   feeGrowthInside0LastX128: string;
@@ -200,7 +228,10 @@ export function calculateTokensOwed({
     Q128,
   );
 
-  return { amount0: amount0.abs().toString(), amount1: amount1.abs().toString() };
+  return {
+    amount0: amount0.abs().toString(),
+    amount1: amount1.abs().toString(),
+  };
 }
 
 export function calculatePositionAmounts({

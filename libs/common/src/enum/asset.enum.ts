@@ -5,7 +5,8 @@ export enum AssetState {
 }
 
 export enum AssetCategoryEnum {
-  SIMPLE_TOKEN = 'simple token',
+  COIN = 'chain coin',
+  TOKEN = 'ERC20 type token',
   LP_TOKEN = 'liquidity pool token',
   NOT_SUPPORTED = 'not supported',
 }

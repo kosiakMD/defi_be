@@ -35,6 +35,10 @@ export enum ProtocolTypeEnum {
   lending = 'lending',
   borrowing = 'borrowing',
   leverageFarming = 'leverageFarming',
+  shortFarm = 'shortFarm',
+  mint = 'mint',
+  bootstrap = 'bootstrap',
+  lockdrop = 'lockdrop',
 }
 
 export enum TransactionTypeEnum {

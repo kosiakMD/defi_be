@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -16,6 +17,7 @@ import { IAggregator } from '../aggregator.interface';
 export class DefilamaAggregator implements IAggregator {
   readonly api = 'https://api.llama.fi/protocols';
   readonly name = 'DefiLama';
+  readonly testRun: boolean;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -26,11 +28,14 @@ export class DefilamaAggregator implements IAggregator {
     @InjectRepository(ProtocolsPropertiesRepository)
     private readonly protocolsPropertiesRepo: ProtocolsPropertiesRepository,
     private readonly httpService: HttpService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.testRun = configService.get('TEST_RUN');
+  }
 
   async run() {
     const list = await firstValueFrom(this.httpService.get(this.api));
-    const protocols = list.data;
+    const protocols = this.testRun ? list.data.slice(0, 5) : list.data;
     await series(
       protocols.map((pData) => async () => {
         this.logger.debug(`chains for protocol: ${pData.name} - ${pData.chains}`);

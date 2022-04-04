@@ -11,6 +11,7 @@ export const service = {
     bscscanApiKey: process.env.BSCSCAN_API_KEY,
     tenderlyApiURL: process.env.TENDERLY_API_URL,
     githubOAuthToken: process.env.GITHUB_OAUTH_TOKEN,
+    testRun: process.env.TEST_RUN,
   })),
   validation: {
     ETHERSCAN_API_URL: Joi.string().required(),
@@ -20,5 +21,6 @@ export const service = {
     BSCSCAN_API_KEY: Joi.string().optional(),
     TENDERLY_API_URL: Joi.string().required(),
     GITHUB_OAUTH_TOKEN: Joi.string().optional(),
+    TEST_RUN: Joi.boolean().optional(),
   },
 };

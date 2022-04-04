@@ -1,6 +1,7 @@
 import parallelLimit from 'async/parallelLimit';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -19,6 +20,7 @@ import { AbiFetcherService } from './abi/fetcher/abi.fetcher.service';
 
 @Injectable()
 export class ContractsService {
+  readonly testRun: boolean;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @InjectRepository(ProtocolsRepository) private readonly protocolsRepo: ProtocolsRepository,
@@ -26,7 +28,10 @@ export class ContractsService {
     private readonly contractsRepository: ContractsRepository,
     private readonly generalParsingPage: GeneralPageParsing,
     private readonly abiFetcherService: AbiFetcherService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.testRun = configService.get('TEST_RUN');
+  }
 
   async run(listProtocols: Protocol[]) {
     this.logger.debug('Run contract service !');
@@ -74,7 +79,8 @@ export class ContractsService {
   }
 
   async fetchAbiAndAbiCode() {
-    const contracts = await this.contractsRepository.findWithoutAbiOrAbiCode();
+    const allContracts = await this.contractsRepository.findWithoutAbiOrAbiCode();
+    const contracts = this.testRun ? allContracts.slice(0, 50) : allContracts;
     await parallelLimit(
       contracts.map(({ id, address }) => async () => {
         //fetch ABI and ABI Code

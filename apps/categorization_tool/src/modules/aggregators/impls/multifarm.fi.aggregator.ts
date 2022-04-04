@@ -3,6 +3,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -24,6 +25,7 @@ export class MultifarmFiAggregator implements IAggregator {
   readonly siteUrl = 'https://app.multifarm.fi';
   readonly name = 'multifarm.fi';
   readonly tvlMin = 1000000000;
+  readonly testRun: boolean;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -33,7 +35,10 @@ export class MultifarmFiAggregator implements IAggregator {
     @InjectRepository(ProtocolChainRepository)
     private readonly protocolChainRepo: ProtocolChainRepository,
     private readonly httpService: HttpService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.testRun = configService.get('TEST_RUN');
+  }
 
   async run() {
     let page = 1;
@@ -42,7 +47,7 @@ export class MultifarmFiAggregator implements IAggregator {
       async (farms: FarmInfo[]) => {
         const toProceed = await this.processFarms(farms);
         page++;
-        return toProceed;
+        return !this.testRun && toProceed;
       },
     );
   }

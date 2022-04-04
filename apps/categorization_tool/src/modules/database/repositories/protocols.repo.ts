@@ -14,7 +14,7 @@ export class ProtocolsRepository extends Repository<Protocol> {
                p.name,
                p.url
         FROM protocols p
-        LEFT JOIN links l ON p.id = l.protocol_id
+                 LEFT JOIN links l ON p.id = l.protocol_id
         WHERE l.id IS NULL
     `;
     return this.query(query);
@@ -42,23 +42,25 @@ export class ProtocolsRepository extends Repository<Protocol> {
     });
   }
 
-  async findOneByNameCaseInsensitive(name: string): Promise<Protocol> {
+  async findOneByNameCaseInsensitive(name: string, url: string): Promise<Protocol> {
     const query = `
         SELECT p.id,
                p.name,
                p.url
         FROM protocols p
         WHERE p.name ILIKE $1
+           OR (SELECT token FROM ts_debug(p.url) WHERE alias = 'host') =
+              (SELECT token FROM ts_debug($2) WHERE alias = 'host')
         LIMIT 1
     `;
-    return (await this.query(query, [name]))[0];
+    return (await this.query(query, [name, url]))[0];
   }
 
   async upsertProtocols(protocolsData: { name: string; url: string }[]): Promise<Protocol[]> {
     return Promise.all(
       protocolsData.map(
         async ({ name, url }) =>
-          (await this.findOneByNameCaseInsensitive(name)) || (await this.save({ name, url })),
+          (await this.findOneByNameCaseInsensitive(name, url)) || (await this.save({ name, url })),
       ),
     );
   }

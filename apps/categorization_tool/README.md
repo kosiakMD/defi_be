@@ -81,3 +81,23 @@ curl -X POST http://localhost:3000/command --data '{"command":"$TASK_NAME"}' -H 
 ```
 
 To trigger executing all tasks in the described order use **start_fetching** as a name of the task (according to the diagram here: https://defiyield.atlassian.net/wiki/spaces/PD/pages/572260357/Categorization+Tool)
+
+### Additional Notes
+
+#### Select contracts analysis result
+```sql
+select c1.abi,
+       p1.name,
+       c1.address,
+       ca.similarity,
+       c2.address,
+       p2.name,
+       c2.abi
+from contracts_analysis ca
+         left join contracts c1 on ca.contract_id = c1.id
+         left join protocols p1 on p1.id = c1.protocol_id
+         left join contracts c2 on ca.counterpart_contract_id = c2.id
+         left join protocols p2 on p2.id = c2.protocol_id
+order by ca.similarity desc
+limit 50;
+```

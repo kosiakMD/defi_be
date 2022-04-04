@@ -1,6 +1,7 @@
 import { parallelLimit, series } from 'async';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -25,6 +26,7 @@ import { AbstractStrategy } from './strategies/abstract.strategy';
 
 @Injectable()
 export class ProtocolService {
+  readonly testRun: boolean;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(Puppeteer) protected readonly puppeteer: Puppeteer,
@@ -39,11 +41,15 @@ export class ProtocolService {
     private readonly appPageParsingStrategy: AppPageStrategy,
     private readonly contractService: ContractsService,
     private readonly githubService: GithubService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.testRun = configService.get('TEST_RUN');
+  }
 
   async parseProtocolsMainPage() {
-    const listProtocols = await this.protocolsRepo.findAll();
-    const websites = listProtocols.map((protocol) => ({ url: protocol.url, protocol }));
+    const allProtocols = await this.protocolsRepo.findAll();
+    const protocols = this.testRun ? allProtocols.slice(0, 10) : allProtocols;
+    const websites = protocols.map((protocol) => ({ url: protocol.url, protocol }));
     const links = await this.scanWebsitesForLinks(websites, this.mainPageParsingStrategy);
     await this.saveLinks(links);
   }
@@ -66,7 +72,8 @@ export class ProtocolService {
   }
 
   async parseProtocolsGithubPage() {
-    const links = await this.linksRepo.findGithubLinksWithoutFiles();
+    const allLinks = await this.linksRepo.findGithubLinksWithoutFiles();
+    const links = this.testRun ? allLinks.slice(0, 5) : allLinks;
     await parallelLimit(
       links.map(({ id, url }) => async () => {
         const files = await this.githubService.getFilesByExtensions(url, ['.vy', '.sol']);

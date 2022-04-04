@@ -20,14 +20,14 @@ export class ContractsAnalysisService {
   ) {}
 
   async analyseContracts(): Promise<void> {
-    const contracts = await this.contractsRepository.findAllWithAbi();
+    const contracts = await this.contractsRepository.findAllWithAbiAndAbiCode();
     await parallelLimit(
       contracts.map((contract) => async () => {
         for (const counterpartContract of contracts) {
           if (contract.id === counterpartContract.id) continue;
           const similarity = stringSimilarity.compareTwoStrings(
-            contract.address,
-            counterpartContract.address,
+            contract.abi,
+            counterpartContract.abi,
           );
           await this.contractAnalysisRepository.upsertContractAnalysis(
             contract,

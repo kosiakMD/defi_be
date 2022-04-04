@@ -58,7 +58,7 @@ export class ProtocolService {
     const listProtocols = await this.protocolsRepo.findAllWithLinks();
     const websites = listProtocols.flatMap((protocol) =>
       protocol.links
-        .filter((l) => l.type === LinkTypeEnum.APP)
+        .filter(({ type }) => type === LinkTypeEnum.APP)
         .map(({ url }) => ({ url, protocol })),
     );
     const links = await this.scanWebsitesForLinks(websites, this.appPageParsingStrategy);
@@ -67,11 +67,16 @@ export class ProtocolService {
 
   async parseProtocolsDocsPage() {
     const listProtocols = await this.protocolsRepo.findAllWithLinks();
-    const listProtocolsWithLink = listProtocols.filter((p) => p.links.length > 0);
-    await this.contractService.run(listProtocolsWithLink);
+    const websites = listProtocols.flatMap((protocol) =>
+      protocol.links
+        .filter(({ type }) => type === LinkTypeEnum.DOCS)
+        .map(({ url }) => ({ url, protocol })),
+    );
+    await this.contractService.scanWebsitesForContracts(websites);
   }
 
   async parseProtocolsGithubPage() {
+    this.logger.log('parseProtocolsGithubPage started');
     const allLinks = await this.linksRepo.findGithubLinksWithoutFiles();
     const links = this.testRun ? allLinks.slice(0, 5) : allLinks;
     await parallelLimit(
@@ -88,13 +93,17 @@ export class ProtocolService {
       }),
       PARSE_GITHUB_LINKS_PARALLEL_LIMIT,
     );
+    this.logger.log('parseProtocolsGithubPage finished');
   }
 
   async fetchAbi() {
+    this.logger.log('fetchAbi started');
     await this.contractService.fetchAbiAndAbiCode();
+    this.logger.log('fetchAbi finished');
   }
 
   async crawlHtml() {
+    this.logger.log('crawlHtml started');
     const links = await this.linksRepo.findByTypesWithoutHtml([
       LinkTypeEnum.DOCS,
       LinkTypeEnum.APP,
@@ -108,6 +117,7 @@ export class ProtocolService {
         this.logger.debug(`updated html for link - [${url}]`);
       }),
     );
+    this.logger.log('crawlHtml finished');
   }
 
   async parseCustomProtocol(listProtocols: IListProtocol) {
@@ -156,10 +166,11 @@ export class ProtocolService {
     websites: { url: string; protocol: Protocol }[],
     strategy: AbstractStrategy,
   ): Promise<Link[]> {
-    this.logger.debug('scanWebsitesForLinks started');
+    this.logger.log('scanWebsitesForLinks started');
     const arraysOfLinks = await parallelLimit(
       websites.map(({ url, protocol }) => async () => {
         try {
+          this.logger.debug(`scan url: [${url}]`);
           const [, linksMap] = await strategy.parsing({
             url,
             name: protocol.name,
@@ -175,7 +186,7 @@ export class ProtocolService {
       }),
       PROTOCOL_PROCESS_PARALLEL_LIMIT,
     );
-    this.logger.debug('scanWebsitesForLinks finished');
+    this.logger.log('scanWebsitesForLinks finished');
     return arraysOfLinks.flat();
   }
 

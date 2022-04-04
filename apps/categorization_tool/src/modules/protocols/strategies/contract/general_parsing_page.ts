@@ -16,10 +16,8 @@ export class GeneralPageParsing implements AbstractStrategy {
     @Inject(Puppeteer) protected readonly browser: Puppeteer,
   ) {}
 
-  public async parsing({ link }: IParsingAbstract): Promise<string[]> {
-    const page = await this.browser.openTab();
-    await page.goto(link.url);
-    await page.waitForTimeout(1000);
+  public async parsing({ url }: IParsingAbstract): Promise<string[]> {
+    const page = await this.browser.loadPage(url);
     const listLinks = await this.getEvaluatedPageData(page);
 
     const filteredList = listLinks.filter((l) => (l?.name?.search(/contract/gi) >= 0 ? l : ''));
@@ -27,10 +25,11 @@ export class GeneralPageParsing implements AbstractStrategy {
 
     const arrayOfParsing: string[] = (
       await parallelLimit(
-        filteredList.map(({ url }) => async () => {
-          const resultParsing = await this.openAndParseUrl(page, url);
-          return resultParsing;
-        }),
+        filteredList.map(
+          ({ url }) =>
+            async () =>
+              this.openAndParseUrl(page, url),
+        ),
         PROTOCOL_PROCESS_PARALLEL_LIMIT,
       )
     ).flat();

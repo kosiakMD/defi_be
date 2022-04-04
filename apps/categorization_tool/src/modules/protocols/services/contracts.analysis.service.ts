@@ -20,6 +20,7 @@ export class ContractsAnalysisService {
   ) {}
 
   async analyseContracts(): Promise<void> {
+    this.logger.log('analyseContracts started');
     const contracts = await this.contractsRepository.findAllWithAbiAndAbiCode();
     await parallelLimit(
       contracts.map((contract) => async () => {
@@ -38,5 +39,6 @@ export class ContractsAnalysisService {
       }),
       ANALYSE_CONTRACTS_PARALLEL_LIMIT,
     );
+    this.logger.log('analyseContracts finished');
   }
 }

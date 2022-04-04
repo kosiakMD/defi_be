@@ -1,4 +1,3 @@
-import { Link } from '../../database/entities/link.entity';
 import { Protocol } from '../../database/entities/protocol.entity';
 import { LinkTypeEnum } from '../../database/enum/link.type.enum';
 
@@ -22,7 +21,6 @@ export type TypeDocs = 'gitbook' | 'other';
 export type FilteredLinks = Map<LinkTypeEnum, string[]>;
 
 export interface IParsingAbstract {
-  link?: Link;
   name?: string;
   url?: string;
 }

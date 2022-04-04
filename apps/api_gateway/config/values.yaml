@@ -9,18 +9,10 @@ configMaps:
     MAIL_HIRE_TO: hr@defiyield.app
     MAIL_QUESTION_FROM: mail@defiyield.app
     MAIL_QUESTION_TO: hr@defiyield.app
-  gas:
-    GAS_API_URL: https://data-api.defipulse.com/api/v1
-    GAS_CURRENT_PATH: egs/api/ethgasAPI.json
-    GAS_API_KEY: 7a54010743b9e2692bd52232e3e06c871df2261205dcb0663a57235b2306
-    GAS_HISTORY_PATH: gas-hist
   portal:
     DEFIYIELD_INFO_2_URL: https://api2.defiyield.info
-    TOKENS_PATH: tokens
     DEFIYIELD_INFO_MAIN_URL: https://apimain.defiyield.info
-    APPROVALS_PATH: tool/approvals/eth
     ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    SOLANA_NAME_SERVICE_PUBLIC_KEY: 58PwtjSDuFHuUkYjH9BYnnQKHfwo9reZhC2zMJv9JPkx
     SOL_URL: https://solana-api.projectserum.com
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
@@ -57,6 +49,8 @@ configMaps:
     ACCOUNT_24H_RETURNS: v1/balances/24-hour-returns
     ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
     ACCOUNT_SEARCH_URL: v1/assets/search
+    TOKENS_PATH: tokens
+    APPROVALS_PATH: tool/approvals/eth
     POOLS_SERVICE_URL: https://integration-service
     POOLS_PATH: v1/pools
     VAULTS_SERVICE_URL: https://integration-service
@@ -79,8 +73,7 @@ configMaps:
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: production
-    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
+    NODE_ENV: development
 
 secrets:
 - mailer
@@ -88,3 +81,6 @@ secrets:
 - bscscan
 - etherscan
 - logs
+- sentry
+- solana
+- gas

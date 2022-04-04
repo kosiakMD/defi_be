@@ -74,6 +74,8 @@ configMaps:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: development
+  config:
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 
 secrets:
 - mailer

@@ -90,13 +90,18 @@ export class MarinadePools implements JobInterface {
   }
 
   async updateWithChainData(): Promise<NotifySupportedFeature[]> {
+    const prices = await this.marinadeUtils.getSonalaPrices(this.mapping, this.chain);
+
     for (const lp of this.mapping) {
       if (lp instanceof LiquidityPoolFeature && this.marinadeUtils.pools.has(lp.address)) {
         const pool = this.marinadeUtils.pools.get(lp.address);
+        const token0Price = +prices[pool.lp.assets[0].mint] || pool.lp.assets[0].price;
+        const token1Price = +prices[pool.lp.assets[1].mint] || pool.lp.assets[1].price;
+
         lp.tokens[0].reserve = pool.lp.assets[0].amount;
-        lp.tokens[0].price = pool.lp.assets[0].price;
+        lp.tokens[0].price = token0Price;
         lp.tokens[1].reserve = pool.lp.assets[1].amount;
-        lp.tokens[1].price = pool.lp.assets[1].price;
+        lp.tokens[1].price = token1Price;
 
         lp.lpToken.price = pool.lp.price;
         lp.lpToken.totalSupply = pool.lp.supply;

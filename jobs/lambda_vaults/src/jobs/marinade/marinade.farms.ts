@@ -203,6 +203,8 @@ export class MarinadeFarms implements JobInterface {
   }
 
   async updateWithChainData(): Promise<any[]> {
+    const prices = await this.marinadeUtils.getSonalaPrices(this.mapping, this.chain);
+
     for (const farming of this.mapping) {
       const farm = this.marinadeUtils.farms.get(farming.address);
       if (!farm) continue;
@@ -223,7 +225,7 @@ export class MarinadeFarms implements JobInterface {
         });
 
         stakingToken.reserve = token.amount;
-        stakingToken.price = token.price;
+        stakingToken.price = prices[token.mint] || token.price;
         stakingToken.value = token.value;
       });
 

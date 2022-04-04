@@ -269,10 +269,10 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
 
     const { stakingContracts, dualStakingContracts } = await this.getAvailablePools();
 
-    const pairAddresses = []
+    const pairAddresses = Array.from(new Set([]
       .concat(stakingContracts, dualStakingContracts)
       .map(({ pairAddress }) => pairAddress)
-      .concat(QUICKSWAP_ADDITIONAL_PAIRS);
+      .concat(QUICKSWAP_ADDITIONAL_PAIRS)));
 
     const { token: rawRewardToken, price: rawRewardPrice } = await this.getSinglePricedToken(
       QUICKSWAP_REWARDS_TOKEN_ADDRESS,

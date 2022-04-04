@@ -64,6 +64,7 @@ configMaps:
     NODE_ENV: development
   params:
     ETH_BALANCES_CHECKER_BATCH_SIZE: 2000
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 
 secrets:
 - database

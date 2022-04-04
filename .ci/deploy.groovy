@@ -78,24 +78,6 @@ pipeline {
                 }
             }
         }
-        stage("Approval") {
-            when {
-                not {
-                    triggeredBy "UpstreamCause"
-                }
-            }
-            steps {
-                wrap([$class: "BuildUser"]) {
-                    timeout(time: 30, unit: "MINUTES") {
-                        input(
-                            message: "Bake stack for ${params.ENVIRONMENT} from\nFrontend: ${FRONTEND_BRANCH}(${FRONTEND_REVISION})\nBackend: ${BACKEND_BRANCH}(${BACKEND_REVISION})\n?\n\nWaiting for approval from ${env.BUILD_USER_ID}",
-                            ok: "Bake",
-                            submitter: env.BUILD_USER_ID
-                        )
-                    }
-                }
-            }
-        }
         stage("Bake") {
             steps {
                 script {
@@ -104,7 +86,7 @@ pipeline {
 
                     withAWS(region: AWS_REGION, credentials: AWS_CREDENTIALS) {
                         SERVICES = sh(
-                            script: "find . -maxdepth 1 -type d ! -name '.*' ! -name 'agenda' ! -name 'common' ! -name 'swap_service' ! -name 'frontend_service' -printf '%f\n' | sort",
+                            script: "find apps/. -maxdepth 1 -type d ! -name '.*' ! -name 'agenda' ! -name 'common' ! -name 'swap_service' ! -name 'frontend_service' -printf '%f\n' | sort",
                             returnStdout: true
                         ).trim().split("\n").collectEntries{ folder ->
                             def SERVICE = folder.replace("_", "-")

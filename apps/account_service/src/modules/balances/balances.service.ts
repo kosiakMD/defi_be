@@ -23,6 +23,7 @@ import { excludeSecondArray } from '../../common/utils';
 
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';
+import { ChainsService } from '../chains/chains.service';
 import { getBalancesSafe } from './balances.helpers';
 import {
   BalancesResponse,
@@ -38,7 +39,6 @@ import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
-import { ChainsService } from '../chains/chains.service';
 
 type PartialBalancesResponse = {
   address: Address;
@@ -456,8 +456,8 @@ export class BalancesService {
   }
 
   private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
-    const chainEntity = await this.chainsService.get({ id: chain});
-    
+    const chainEntity = await this.chainsService.get({ id: chain });
+
     switch (chainEntity.name) {
       case ChainNameEnum.sol:
         return [this.solanaBalancesStrategy];
@@ -466,6 +466,9 @@ export class BalancesService {
       case ChainNameEnum.cardano:
         return [this.cardanoBalancesStrategy];
       case ChainNameEnum.cosmos:
+      case ChainNameEnum.kava:
+      case ChainNameEnum.osmosis:
+      case ChainNameEnum.secret:
         return [this.cosmosBalancesStrategy];
       case ChainNameEnum.ronin:
         return [this.roninBalancesStrategy];

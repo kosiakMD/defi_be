@@ -43,7 +43,7 @@ export class TheGraphStrategy extends PriceStrategy {
         url: `${baseURL}${path}`,
         data: {
           query,
-          variables: { skip: skipItems, take: takeItems },
+          variables: { first: takeItems, skip: skipItems },
         },
       });
       skipItems += take;

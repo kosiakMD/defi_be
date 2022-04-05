@@ -13,8 +13,10 @@ export class CosmosBalancesStrategy implements BalancesLoadingStrategy {
 
   async getBalances(request: BalancesRequest): Promise<TokenBalance[]> {
     if (!this.cosmosService.isCosmosAddress(request.address)) return [];
-
-    const balances: CosmosBalance[] = await this.cosmosService.getBalances(request.address);
+    const balances: CosmosBalance[] = await this.cosmosService.getBalances(
+      request.address,
+      request.chainId,
+    );
     return this.mapCosmosResponse(balances, request);
   }
 

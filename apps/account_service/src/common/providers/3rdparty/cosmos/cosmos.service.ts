@@ -1,3 +1,4 @@
+import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
 import { firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -16,11 +17,15 @@ export class CosmosService {
     private readonly httpService: HttpService,
     private readonly cosmostationProvider: CosmostationProvider,
     private readonly keplrProvider: KeplrProvider,
+    private readonly chainsService: ChainsService,
   ) {}
 
-  public async getBalances(address: Address): Promise<CosmosBalance[]> {
+  public async getBalances(address: Address, chainId: number): Promise<CosmosBalance[]> {
     const provider: ICosmosProvider = this.getProvider(address);
     if (provider === null) return [];
+
+    const networkId = await this.getChainId();
+    if (networkId !== chainId) return [];
 
     const balanceURL = provider.getUrl(address);
     const wallet = await firstValueFrom(
@@ -31,6 +36,12 @@ export class CosmosService {
 
   public isCosmosAddress(address: string): boolean {
     return !!/(^[a-zA-Z]+[1]{1})/g.exec(address)?.[0];
+  }
+
+  private async getChainId(): Promise<number> {
+    return this.chainsService.getChainIdByName(
+      this.cosmostationProvider.network || this.keplrProvider.network,
+    );
   }
 
   private getProvider(address: string): ICosmosProvider {

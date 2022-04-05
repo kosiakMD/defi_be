@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 
 import { CommandDTO } from '../common/dto/command.dto';
@@ -18,14 +18,9 @@ export class AppController {
     return this.service.queueTask(command);
   }
 
-  @Get('/parsing_protocols')
-  public async parsingProtocols() {
-    return this.service.queueTask({ command: Command.run_parsing_protocols });
-  }
-
-  @Post('/parsing_custom_protocol')
+  @Post('/requests/link')
   @ApiBody({ type: [ListProtocolsDTO] })
-  public async parsingProtocolPost(@Body() listProtocols: IListProtocol[]) {
-    return this.service.queueTask({ command: Command.run_parsing_custom_protocol, listProtocols });
+  public async parsingProtocolPost(@Body() listProtocol: IListProtocol) {
+    return this.service.queueTask({ command: Command.run_parsing_custom_protocol, listProtocol });
   }
 }

@@ -86,20 +86,28 @@ export async function process(): Promise<void> {
       }),
     );
     const solPrices: CurrentPriceInterface[] = [];
+    const wSOL = 'So11111111111111111111111111111111111111112';
     executedSolPriceRequests.forEach((result) => {
       if (result.status !== 'rejected') {
         result.value.data.data.forEach((asset) => {
           if (asset.priceUst && (!asset.tag || (asset.tag && !asset.tag.includes('lp-token')))) {
             solPrices.push({
-              address:
-                asset.mintAddress === 'So11111111111111111111111111111111111111112'
-                  ? ChainCoinAddresses[ChainIdEnum.sol]
-                  : asset.mintAddress,
+              address: asset.mintAddress,
               price: asset.priceUst,
               chainId: ChainIdEnum.sol,
               currencyId: CurrencyIdEnum.usd,
               sourceId: PriceSourcePriority.coingecko,
             });
+
+            if (asset.mintAddress === wSOL) {
+              solPrices.push({
+                address: ChainCoinAddresses[ChainIdEnum.sol],
+                price: asset.priceUst,
+                chainId: ChainIdEnum.sol,
+                currencyId: CurrencyIdEnum.usd,
+                sourceId: PriceSourcePriority.coingecko,
+              });
+            }
           }
         });
       }

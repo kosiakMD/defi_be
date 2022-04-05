@@ -10,9 +10,9 @@ export class ContractsRepository extends Repository<Contract> {
     });
   }
 
-  async findAllWithAbi() {
+  async findAllWithAbiAndAbiCode() {
     return this.find({
-      where: { abi: Not(IsNull()) },
+      where: { abi: Not(IsNull()), abiCode: Not(IsNull()) },
     });
   }
 }

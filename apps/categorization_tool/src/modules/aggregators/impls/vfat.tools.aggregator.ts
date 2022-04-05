@@ -1,6 +1,7 @@
 import series from 'async/series';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -14,6 +15,7 @@ import { IAggregator } from '../aggregator.interface';
 export class VfatToolsAggregator implements IAggregator {
   readonly url = 'https://vfat.tools';
   readonly name = 'VfatTools';
+  readonly testRun: boolean;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -22,11 +24,15 @@ export class VfatToolsAggregator implements IAggregator {
     @InjectRepository(ChainsRepository) private readonly chainsRepo: ChainsRepository,
     @InjectRepository(ProtocolChainRepository)
     private readonly protocolChainRepo: ProtocolChainRepository,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.testRun = configService.get('TEST_RUN');
+  }
 
   async run() {
     const page = await this.browser.loadPage(this.url);
-    const chainLinks = await this.extractChainLinks(page);
+    const allChainLinks = await this.extractChainLinks(page);
+    const chainLinks = this.testRun ? allChainLinks.slice(0, 1) : allChainLinks;
     await page.close();
 
     await series(
@@ -88,6 +94,6 @@ export class VfatToolsAggregator implements IAggregator {
       lineNumber++;
     }
     await page.close();
-    return protocolsInfo;
+    return this.testRun ? protocolsInfo.slice(0, 5) : protocolsInfo;
   }
 }

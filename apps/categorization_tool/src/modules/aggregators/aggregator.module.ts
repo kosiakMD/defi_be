@@ -1,5 +1,6 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { Puppeteer } from '../../utils';
@@ -17,6 +18,7 @@ import { VfatToolsAggregator } from './impls/vfat.tools.aggregator';
   imports: [
     HttpModule,
     DatabaseModule,
+    ConfigModule,
     TypeOrmModule.forFeature([
       ChainsRepository,
       ProtocolChainRepository,

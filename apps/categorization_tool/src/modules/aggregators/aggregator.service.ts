@@ -34,8 +34,9 @@ export class AggregatorsService {
     if (this.serviceStatus === AggregatorServiceStatus.NOT_RUNNING) {
       this.serviceStatus = AggregatorServiceStatus.RUNNING;
       for (const [name, aggregator] of this.aggregators.entries()) {
-        this.logger.debug(`running aggregator: ${name}`);
+        this.logger.log(`running aggregator: [${name}]`);
         await aggregator.run();
+        this.logger.log(`aggregator finished: [${name}]`);
       }
       this.serviceStatus = AggregatorServiceStatus.NOT_RUNNING;
     }

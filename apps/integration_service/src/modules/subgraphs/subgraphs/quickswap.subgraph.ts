@@ -11,6 +11,8 @@ import { gql } from '@app/common/utils/graphql';
 import { PairsDto } from '../dto/quickswap.subgraph.pairs.dto';
 import { SubgraphResponseDto } from '../dto/subgraph.response.dto';
 
+const MAX_PAIRS_PER_QUERY = 100;
+
 @Injectable()
 export class QuickswapSubgraph {
   protected readonly subgraphUrl: string;
@@ -24,6 +26,12 @@ export class QuickswapSubgraph {
   }
 
   async getPairs(addresses: Address[]): Promise<SubgraphResponseDto<PairsDto>> {
+    if (addresses.length > MAX_PAIRS_PER_QUERY) {
+      throw new Error(
+        `This endpoint returns ${MAX_PAIRS_PER_QUERY} responses maximum. Reduce your request size`,
+      );
+    }
+
     const pairs: SubgraphResponseDto<PairsDto> = await this.httpService
       .post(this.subgraphUrl, {
         variables: { addresses },

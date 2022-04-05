@@ -31,29 +31,30 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
+    // TODO: It's required to use config here, it's never boolean
     if (!process.env.USE_REDIS_TO_GET_ASSETS) {
       return this.getAssetsFromDatabaseAndInitiateProcessing(assetsBulkQuery);
     } else {
+      // TODO: I think we should always use cache
       const cachedAssets = await this.getAssetsFromCache(assetsBulkQuery);
-      if (cachedAssets.length < assetsBulkQuery.length) {
-        const notCachedAssets = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
-          return !cachedAssets?.find((assetsEntity: AssetsEntity) => {
-            return (
-              // TODO: We need to be sure we store addresses in correct case (web3.utils.toChecksumAddress)
-              assetsEntity.address === assetQueryDto.address &&
-              assetsEntity.chainId === assetQueryDto.chainId
-            );
-          });
-        });
-        const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(
-          notCachedAssets,
-        );
-        this.setAssetsToCache(databaseAssets);
-
-        return cachedAssets.concat(databaseAssets);
-      } else {
+      if (cachedAssets.length >= assetsBulkQuery.length) {
         return cachedAssets;
       }
+      const notCachedAssets = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
+        return !cachedAssets?.find((assetsEntity: AssetsEntity) => {
+          return (
+            // TODO: We need to be sure we store addresses in correct case (web3.utils.toChecksumAddress)
+            assetsEntity.address === assetQueryDto.address &&
+            assetsEntity.chainId === assetQueryDto.chainId
+          );
+        });
+      });
+      const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(
+        notCachedAssets
+      );
+      this.setAssetsToCache(databaseAssets);
+
+      return cachedAssets.concat(databaseAssets);
     }
   }
 
@@ -86,6 +87,8 @@ export class AssetsService extends CrudService<AssetsRepository> {
     await Promise.all(promises);
   }
 
+  // TODO: This methods should accept list of { chainId, address }
+  //  filtering should be moved out
   private async processAssets(
     assetsBulkQuery: AssetsGetDto[],
     assetsFromDatabase: AssetsEntity[],
@@ -100,6 +103,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     });
 
     assetsNotInDatabase.map(async (asset) => {
+      // TODO: Queue name should be configurable
       return await this.assetsQueue.add('metadata', {
         address: asset.address,
         chainId: asset.chainId,

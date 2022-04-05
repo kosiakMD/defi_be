@@ -1,10 +1,11 @@
 import { parallelLimit, series } from 'async';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Puppeteer } from '../../utils';
+import { nameFromUrl, Puppeteer } from '../../utils';
 import { Link } from '../database/entities/link.entity';
 import { Protocol } from '../database/entities/protocol.entity';
 import { LinkTypeEnum } from '../database/enum/link.type.enum';
@@ -21,9 +22,11 @@ import {
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
 import { MainPageStrategy, AppPageStrategy } from './strategies';
+import { AbstractStrategy } from './strategies/abstract.strategy';
 
 @Injectable()
 export class ProtocolService {
+  readonly testRun: boolean;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(Puppeteer) protected readonly puppeteer: Puppeteer,
@@ -38,10 +41,44 @@ export class ProtocolService {
     private readonly appPageParsingStrategy: AppPageStrategy,
     private readonly contractService: ContractsService,
     private readonly githubService: GithubService,
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    this.testRun = configService.get('TEST_RUN');
+  }
 
-  async parseGithubLinks() {
-    const links = await this.linksRepo.findGithubLinksWithoutFiles();
+  async parseProtocolsMainPage() {
+    const allProtocols = await this.protocolsRepo.findAll();
+    const protocols = this.testRun ? allProtocols.slice(0, 10) : allProtocols;
+    const websites = protocols.map((protocol) => ({ url: protocol.url, protocol }));
+    const links = await this.scanWebsitesForLinks(websites, this.mainPageParsingStrategy);
+    await this.saveLinks(links);
+  }
+
+  async parseProtocolsAppPage() {
+    const listProtocols = await this.protocolsRepo.findAllWithLinks();
+    const websites = listProtocols.flatMap((protocol) =>
+      protocol.links
+        .filter(({ type }) => type === LinkTypeEnum.APP)
+        .map(({ url }) => ({ url, protocol })),
+    );
+    const links = await this.scanWebsitesForLinks(websites, this.appPageParsingStrategy);
+    await this.saveLinks(links);
+  }
+
+  async parseProtocolsDocsPage() {
+    const listProtocols = await this.protocolsRepo.findAllWithLinks();
+    const websites = listProtocols.flatMap((protocol) =>
+      protocol.links
+        .filter(({ type }) => type === LinkTypeEnum.DOCS)
+        .map(({ url }) => ({ url, protocol })),
+    );
+    await this.contractService.scanWebsitesForContracts(websites);
+  }
+
+  async parseProtocolsGithubPage() {
+    this.logger.log('parseProtocolsGithubPage started');
+    const allLinks = await this.linksRepo.findGithubLinksWithoutFiles();
+    const links = this.testRun ? allLinks.slice(0, 5) : allLinks;
     await parallelLimit(
       links.map(({ id, url }) => async () => {
         const files = await this.githubService.getFilesByExtensions(url, ['.vy', '.sol']);
@@ -56,36 +93,17 @@ export class ProtocolService {
       }),
       PARSE_GITHUB_LINKS_PARALLEL_LIMIT,
     );
+    this.logger.log('parseProtocolsGithubPage finished');
   }
 
   async fetchAbi() {
+    this.logger.log('fetchAbi started');
     await this.contractService.fetchAbiAndAbiCode();
-  }
-
-  async run(listProtocols?: IListProtocol[]) {
-    this.logger.debug('Runnig protocols parsing');
-    //fetch protocols to process
-    const protocolsToProcess: Protocol[] = await this.getProtocolsToProcess(listProtocols);
-
-    //scan sites for the links
-    // const links: Link[] = await this.scanProtocolsForLinks(protocolsToProcess);
-    const links: Link[] = await this.scanProtocolsForLinks({
-      protocols: protocolsToProcess,
-      strategy: this.mainPageParsingStrategy,
-    });
-
-    //save links
-    await this.saveLinks(links);
-  }
-
-  async scanDocsPageProtocolsForContractAdresses() {
-    const listProtocols = await this.protocolsRepo.findAllWithLinks();
-
-    const listProtocolsWithLink = listProtocols.filter((p) => p.links.length > 0);
-    await this.contractService.run(listProtocolsWithLink);
+    this.logger.log('fetchAbi finished');
   }
 
   async crawlHtml() {
+    this.logger.log('crawlHtml started');
     const links = await this.linksRepo.findByTypesWithoutHtml([
       LinkTypeEnum.DOCS,
       LinkTypeEnum.APP,
@@ -99,6 +117,14 @@ export class ProtocolService {
         this.logger.debug(`updated html for link - [${url}]`);
       }),
     );
+    this.logger.log('crawlHtml finished');
+  }
+
+  async parseCustomProtocol(listProtocols: IListProtocol) {
+    const protocol = await this.ensureProtocolExists(listProtocols);
+    const websites = [{ url: protocol.url, protocol }];
+    const links = await this.scanWebsitesForLinks(websites, this.mainPageParsingStrategy);
+    await this.saveLinks(links);
   }
 
   private async saveLinks(links: Link[]) {
@@ -118,99 +144,50 @@ export class ProtocolService {
     }
   }
 
-  private async getProtocolsToProcess(protocolsUrls?: IListProtocol[]): Promise<Protocol[]> {
-    const listProtocols = protocolsUrls?.map((lp) => lp.protocol);
-    return !listProtocols
-      ? //if no urls are provided, try to fetch protocols from DB which don't have any links
-        await this.protocolsRepo.findWithLinks()
-      : //if any urls are provided - try to find protocols by urls without any links
-        await series(
-          listProtocols.map((url: string) => async () => {
-            return (
-              (await this.protocolsRepo.findOneByUrlWithLinks(url)) ||
-              (await this.protocolsRepo.save({ url, name: new URL(url).hostname, links: [] }))
-            );
-          }),
-        );
+  private async ensureProtocolExists(listProtocol: IListProtocol): Promise<Protocol> {
+    const existingProtocol = await this.protocolsRepo.findOneByUrlWithLinks(listProtocol.url);
+    if (existingProtocol) {
+      return existingProtocol;
+    }
+    if (listProtocol.chain) {
+      const [chain] = await this.chainsRepo.upsertChains([listProtocol.chain]);
+      const [protocol] = await this.protocolsRepo.upsertProtocols([
+        {
+          url: listProtocol.url,
+          name: listProtocol.name || nameFromUrl(listProtocol.url),
+        },
+      ]);
+      await this.protocolChainRepo.upsertProtocolChains(protocol, [chain]);
+      return protocol;
+    }
   }
 
-  async scanAppPageProtocolsForLinks() {
-    const listProtocols = await this.protocolsRepo.findAllWithLinks();
-
-    const listApp = listProtocols
-      .filter((p) => (p.links.length > 0 ? p : ''))
-      .flatMap((p) => {
-        return p.links.filter((l, i, a) => {
-          if (l.type === LinkTypeEnum.APP) {
-            l.protocol = p;
-            a[i] = l;
-            return a;
-          }
-        });
-      });
-
-    const arraysOfLinks = await this.scanProtocolsForLinks({
-      appLinks: listApp,
-      strategy: this.appPageParsingStrategy,
-    });
-    this.saveLinks(arraysOfLinks);
-  }
-
-  async scanMainPageProtocolsForLinks() {
-    const listProtocols = await this.protocolsRepo.findAllWithLinks();
-    const arraysOfLinks = await this.scanProtocolsForLinks({
-      protocols: listProtocols,
-      strategy: this.mainPageParsingStrategy,
-    });
-    this.saveLinks(arraysOfLinks);
-  }
-
-  private async scanProtocolsForLinks({
-    protocols,
-    appLinks,
-    strategy,
-  }: {
-    protocols?: Protocol[];
-    appLinks?: Link[];
-    strategy: any;
-  }) {
-    const usedList = protocols || appLinks;
-    this.logger.debug('scanProtocolsForLinks started');
+  private async scanWebsitesForLinks(
+    websites: { url: string; protocol: Protocol }[],
+    strategy: AbstractStrategy,
+  ): Promise<Link[]> {
+    this.logger.log('scanWebsitesForLinks started');
     const arraysOfLinks = await parallelLimit(
-      usedList.map((p) => async () => {
+      websites.map(({ url, protocol }) => async () => {
         try {
-          this.logger.debug(`mainPageParsingStrategy.parsing: ${p.url}`);
+          this.logger.debug(`scan url: [${url}]`);
           const [, linksMap] = await strategy.parsing({
-            url: p.url,
-            name: p.name,
+            url,
+            name: protocol.name,
           });
-
-          if (linksMap.has(LinkTypeEnum.APP)) {
-            linksMap.set(LinkTypeEnum.APP, this.filterLinks(linksMap.get(LinkTypeEnum.APP), p.url));
-          }
-
           return [
-            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.APP, p.protocol || p),
-            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.GITHUB, p.protocol || p),
-            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.DOCS, p.protocol || p),
+            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.APP, protocol),
+            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.GITHUB, protocol),
+            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.DOCS, protocol),
           ];
         } catch (e) {
-          this.logger.error(`.mainPageParsingStrategy.parsing ${p.url} error: ${e.message}`);
+          this.logger.error(`website scanning error ${url} error: ${e.message}`);
         }
       }),
       PROTOCOL_PROCESS_PARALLEL_LIMIT,
     );
-    this.logger.debug('scanProtocolsForLinks finished');
+    this.logger.log('scanWebsitesForLinks finished');
     return arraysOfLinks.flat();
-  }
-
-  private filterLinks(listLinks: string[], condition: string) {
-    const filteredList = listLinks.filter(
-      (l) =>
-        l.indexOf(`${condition.match(/^(?:https?:\/\/)?(?:www\.)?([^/]+)?(?:\.[a-z]){1,7}/)[1]}`) >=
-        0,
-    );
-    return filteredList;
   }
 
   private linksFromParsedResult(

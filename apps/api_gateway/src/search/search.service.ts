@@ -71,7 +71,7 @@ export class SearchService extends BaseService {
     const addresses = await Promise.all([
       this.web3NameService.resolveName(`${substitution}.eth`),
       this.web3NameService.resolveName(`${substitution}.tns`),
-      this.web3NameService.resolveName(`${substitution}.sol`),
+      this.web3NameService.resolveName(`${substitution}.ust`),
       this.web3NameService.resolveName(text),
     ]);
     return addresses //

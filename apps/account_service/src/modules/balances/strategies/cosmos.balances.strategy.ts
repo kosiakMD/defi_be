@@ -27,14 +27,13 @@ export class CosmosBalancesStrategy extends BaseBalanceStrategy implements Balan
   ): Promise<TokenBalance[]> {
     const tokenBalances: TokenBalance[] = [];
     const tokenSet = new Set(request.tokens);
-    const chainId = await this.cosmosService.getChainId();
 
     for (const balance of balances) {
       if (tokenSet.has(balance.denom)) {
         tokenBalances.push({
           amount: balance.amount.toString(),
           token: {
-            chainId,
+            chainId: request.chainId,
             address: balance.denom,
           },
         });

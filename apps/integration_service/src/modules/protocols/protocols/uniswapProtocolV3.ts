@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
 import { soliditySha3 } from 'web3-utils';
 
@@ -403,18 +402,8 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
           weight: 0.5,
         });
 
-        const share = new BigNumber(position.liquidity) //
-          .dividedBy(pool.liquidity)
-          .toNumber();
-
-        const rewards0 = normalizeDecimals(position.tokensOwed0, token0.decimals)
-          ? normalizeDecimals(position.tokensOwed0, token0.decimals)
-          : normalizeDecimals(rewardsAmount0, token0.decimals) +
-            normalizeDecimals(pool.tokensOwed0, token0.decimals) * share;
-        const rewards1 = normalizeDecimals(position.tokensOwed1, token1.decimals)
-          ? normalizeDecimals(position.tokensOwed1, token1.decimals)
-          : normalizeDecimals(rewardsAmount1, token1.decimals) +
-            normalizeDecimals(pool.tokensOwed1, token1.decimals) * share;
+        const rewards0 = normalizeDecimals(rewardsAmount0, token0.decimals);
+        const rewards1 = normalizeDecimals(rewardsAmount1, token1.decimals);
 
         const reward0Token = plainToClass(IntegrationClaimableTokenDto, {
           address: token0.address,

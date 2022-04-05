@@ -390,6 +390,7 @@ export class AssetsService {
     assetToSave.symbol = asset.symbol;
     assetToSave.decimals = asset.decimals;
     assetToSave.isTracked = !asset.isLp;
+    assetToSave.extensions = asset.extensions;
     return await this.assetRepository.saveAsset(assetToSave);
   }
 

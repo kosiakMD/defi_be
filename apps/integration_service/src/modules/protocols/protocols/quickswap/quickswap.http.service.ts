@@ -22,8 +22,8 @@ export class QuickswapHttpService {
 
   private formatRawData(result: IMinimalQuickswapHttpResult): IContractInfo {
     return {
-      stakingContractAddress: result.stakingRewardAddress,
-      pairAddress: result.pair,
+      stakingContractAddress: result.stakingRewardAddress.toLowerCase(),
+      pairAddress: result.pair.toLowerCase(),
     };
   }
 

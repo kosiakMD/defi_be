@@ -15,12 +15,14 @@ export class AssetsController {
   // TODO: Create DTO instead of database objects
   // TODO: Return prices for assets
   get(@Query() query: AssetsGetDto): Promise<AssetsEntity> {
+    // TODO: Return something from API
     return this.assetsService.getAsset(query);
   }
 
   @Post('/get-bulk')
   @ApiResponse({ status: HttpStatus.OK })
   getBulk(@Body() body: AssetsGetDto[]): Promise<AssetsEntity[]> {
+    // TODO: Return something from API
     return this.assetsService.getBulkAssets(body);
   }
 }

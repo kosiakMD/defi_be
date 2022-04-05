@@ -42,6 +42,7 @@ export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.kava]: AbsoluteChainIdEnum.kava,
   [ChainIdEnum.osmosis]: AbsoluteChainIdEnum.osmosis,
   [ChainIdEnum.secret]: AbsoluteChainIdEnum.secret,
+  [ChainIdEnum.iotex]: AbsoluteChainIdEnum.iotex,
 };
 
 export const getAbsoluteChainId = (chainId: ChainId): AbsoluteChainIdEnum =>
@@ -85,6 +86,7 @@ export const InternalChainIds: Record<AbsoluteChainIdEnum, ChainIdEnum> = {
   [AbsoluteChainIdEnum.kava]: ChainIdEnum.kava,
   [AbsoluteChainIdEnum.osmosis]: ChainIdEnum.osmosis,
   [AbsoluteChainIdEnum.secret]: ChainIdEnum.secret,
+  [AbsoluteChainIdEnum.iotex]: ChainIdEnum.iotex,
 };
 
 export const getInternalChainId = (chainId: ChainId): ChainId => InternalChainIds[chainId];
@@ -118,6 +120,7 @@ export const InternalChainIdByAbbr: Record<ChainAbbrEnum, ChainIdEnum> = {
   [ChainAbbrEnum.kava]: ChainIdEnum.kava,
   [ChainAbbrEnum.osmosis]: ChainIdEnum.osmosis,
   [ChainAbbrEnum.secret]: ChainIdEnum.secret,
+  [ChainAbbrEnum.iotex]: ChainIdEnum.iotex,
 };
 
 export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
@@ -149,6 +152,7 @@ export const CoingeckoChainIds: Record<ChainIdEnum, CoingeckoPlatformEnum> = {
   [ChainIdEnum.kava]: CoingeckoPlatformEnum.kava,
   [ChainIdEnum.osmosis]: CoingeckoPlatformEnum.osmosis,
   [ChainIdEnum.secret]: CoingeckoPlatformEnum.secret,
+  [ChainIdEnum.iotex]: CoingeckoPlatformEnum.iotex,
 };
 
 export const getCoingeckoPlatformId = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -183,6 +187,7 @@ export const ChainCoinAddresses: Record<ChainIdEnum, string> = {
   [ChainIdEnum.kava]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.osmosis]: COSMOS_COIN_ADDRESS,
   [ChainIdEnum.secret]: COSMOS_COIN_ADDRESS,
+  [ChainIdEnum.iotex]: ZERO_ADDRESS,
 };
 
 export const getCoinAddress = (chainId: ChainId): CoingeckoPlatformEnum =>
@@ -217,6 +222,7 @@ export const CoingeckoCoinIds: Record<ChainIdEnum, string> = {
   [ChainIdEnum.kava]: '',
   [ChainIdEnum.osmosis]: '',
   [ChainIdEnum.secret]: '',
+  [ChainIdEnum.iotex]: '',
 };
 
 export const getCoingeckoCoinId = (chainId: ChainId): string => CoingeckoCoinIds[chainId];

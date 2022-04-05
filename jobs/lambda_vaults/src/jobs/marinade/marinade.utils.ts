@@ -4,6 +4,11 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
+import { CurrencyIdEnum, CurrentPricesPayload } from '@app/common';
+import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
+import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+
+import { PriceService } from '../../microservices/price.service';
 import {
   Farm,
   MarinadeFarmsResponse,
@@ -26,6 +31,7 @@ export class MarinadeUtils {
   constructor(
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly priceService: PriceService,
   ) {
     this.sonarPoolsURI = this.configService.get<string>('SONAR_POOLS_PUBLIC_API');
     this.sonarFarmsURI = this.configService.get<string>('SONAR_FARMS_PUBLIC_API');
@@ -49,6 +55,28 @@ export class MarinadeUtils {
     const response = await firstValueFrom(request);
 
     return new Map(response.tokens.map((token) => [token.address, token]));
+  }
+
+  public async getSonalaPrices(
+    tokens: IntegrationStakingPositionDto[] | LiquidityPoolFeature[],
+    chain: number,
+  ): Promise<CurrentPricesPayload> {
+    const pricedTokenAddresses: string = tokens
+      .map((m: IntegrationStakingPositionDto | LiquidityPoolFeature) => {
+        if (m instanceof IntegrationStakingPositionDto) {
+          return m.stakingToken.tokens.map((t) => t.address);
+        } else {
+          return m.tokens.map((t) => t.address);
+        }
+      })
+      .join(',');
+
+    const { prices } = await this.priceService.getCurrentPrices(
+      pricedTokenAddresses,
+      CurrencyIdEnum.usd,
+      chain,
+    );
+    return prices;
   }
 
   private async getPoolInformation(): Promise<Map<string, Pool>> {

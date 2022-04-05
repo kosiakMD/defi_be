@@ -79,8 +79,11 @@ export class AssetsService {
     try {
       const timeMark = `Query to asset_new table with addresses: ${addresses} and chains: ${chains}`;
       this.logger.time(timeMark);
+
       const assets = await this.assetRepository.findAllByAddressesAndChains(
-        addresses.map((a) => a.toLowerCase()),
+        // Only lowercase all EVM addresses
+        // TODO: Checksum/Validation
+        addresses.map((a) => (a.toLowerCase().startsWith('0x') ? a.toLowerCase() : a)),
         chains,
       );
 
@@ -156,7 +159,7 @@ export class AssetsService {
     } else {
       assetToSave = new AssetsEntity();
       assetToSave.chain = assetChain;
-      assetToSave.address = assetAddress.toLowerCase();
+      assetToSave.address = assetAddress.toLowerCase(); // TODO: This creates invalid Solana addresses
       assetToSave.icon = null;
       assetToSave.isLp = false; // false for now, then save so that later in assetHasUnderlying we can create the relationships if needed
       assetToSave.isAnalyticAvailable = false;

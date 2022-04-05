@@ -7,6 +7,7 @@ import {
   redisValidation,
   logsValidation,
   httpValidation,
+  sentryValidation,
 } from '@app/common/config/components';
 
 import { services, multifarm } from './components';
@@ -14,11 +15,12 @@ import { services, multifarm } from './components';
 export const validationSchema = Joi.object({
   // Common Components
   ...appValidation,
-  ...logsValidation,
   ...awsValidation,
   ...databaseValidation,
-  ...redisValidation,
   ...httpValidation,
+  ...logsValidation,
+  ...redisValidation,
+  ...sentryValidation,
 
   // Opportunities Service Specific
   ...services.validation,

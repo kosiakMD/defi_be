@@ -50,3 +50,18 @@ export function objToString(object) {
 export function splitToNumberArray(value: string): number[] {
   return splitToArray(value).map((item) => Number(item));
 }
+
+export const startsWith = (name: string, beginning: string): boolean => {
+  return name.toLowerCase().startsWith(beginning.toLowerCase());
+};
+export const endsWith = (name: string, end: string): boolean => {
+  return name.toLowerCase().endsWith(end.toLowerCase());
+};
+
+export const regex = (name: string, regex: RegExp): RegExpMatchArray => {
+  return name.toLowerCase().match(regex);
+};
+
+export const equals = (nameOne: string, nameTwo: string): boolean => {
+  return nameOne.toLowerCase() === nameTwo.toLowerCase();
+};

@@ -35,8 +35,11 @@ import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto'
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
+import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
+import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
 import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
+import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
@@ -61,6 +64,9 @@ export class BalancesService {
     private readonly terraBalancesStrategy: TerraBalancesStrategy,
     private readonly cardanoBalancesStrategy: CardanoBalancesStrategy,
     private readonly cosmosBalancesStrategy: CosmosBalancesStrategy,
+    private readonly kavaBalancesStrategy: KavaBalancesStrategy,
+    private readonly osmosisBalancesStrategy: OsmosisBalancesStrategy,
+    private readonly secretBalancesStrategy: SecretBalancesStrategy,
     private readonly roninBalancesStrategy: RoninBalancesStrategy,
     private readonly chainsService: ChainsService,
   ) {}
@@ -70,6 +76,9 @@ export class BalancesService {
     this.terraBalancesStrategy,
     this.cardanoBalancesStrategy,
     this.cosmosBalancesStrategy,
+    this.kavaBalancesStrategy,
+    this.osmosisBalancesStrategy,
+    this.secretBalancesStrategy,
     this.roninBalancesStrategy,
   ];
 

@@ -22,8 +22,11 @@ import { BalancesService } from './balances.service';
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
+import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
+import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
 import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
+import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
@@ -63,6 +66,9 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
     TerraBalancesStrategy,
     CardanoBalancesStrategy,
     CosmosBalancesStrategy,
+    KavaBalancesStrategy,
+    SecretBalancesStrategy,
+    OsmosisBalancesStrategy,
     RoninBalancesStrategy,
   ],
 })

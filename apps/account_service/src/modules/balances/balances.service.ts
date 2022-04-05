@@ -465,14 +465,10 @@ export class BalancesService {
 
   private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
     const chainEntity = await this.chainsService.get({ id: chain });
-
-    this.strategies.map((strategy) => {
-      if (strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase())) {
-        return [strategy];
-      }
-    });
-
-    return [this.networkBalancesStrategy];
+    const strategy = this.strategies.find((strategy) =>
+      strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase()),
+    );
+    return [strategy ?? this.networkBalancesStrategy];
   }
 
   private async getAssetsToHandle(chain: number, requested?: Address[], block?: BlockTimestamp) {

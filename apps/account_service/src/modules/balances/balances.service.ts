@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainNameEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
@@ -64,6 +64,14 @@ export class BalancesService {
     private readonly roninBalancesStrategy: RoninBalancesStrategy,
     private readonly chainsService: ChainsService,
   ) {}
+
+  strategies = [
+    this.solanaBalancesStrategy,
+    this.terraBalancesStrategy,
+    this.cardanoBalancesStrategy,
+    this.cosmosBalancesStrategy,
+    this.roninBalancesStrategy,
+  ];
 
   public async getBalance(
     addresses: Address[],
@@ -240,14 +248,15 @@ export class BalancesService {
   }
 
   async getBlockAtDate(chain: number, date: Date) {
-    // TODO: TTL should be in config
     const cacheTTL = 65 * 60; // 1 hour 5 minutes to ensure a little overlap (block is rounded to the nearest hour)
     const cacheKey = `24hour_ago_block_${chain}_${date.getTime()}`;
 
     return this.getOrSetCache(cacheKey, cacheTTL, async () => {
       try {
-        return await this.getBlockFromDate(date, this.web3Provider.getInstanceByChainId(chain));
-        // TODO: Catch real error here and log
+        return await this.getBlockFromDate(
+          date,
+          await this.web3Provider.getInstanceByChainId(chain),
+        );
       } catch (e) {
         this.logger.error(
           `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
@@ -412,7 +421,6 @@ export class BalancesService {
 
     const results = await Promise.all(
       strategies.map(async (strategy) => {
-        //
         return getBalancesSafe(strategy, { chainId, address, tokens: assets, block }, this.logger);
       }),
     );
@@ -457,24 +465,10 @@ export class BalancesService {
 
   private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
     const chainEntity = await this.chainsService.get({ id: chain });
-
-    switch (chainEntity.name) {
-      case ChainNameEnum.sol:
-        return [this.solanaBalancesStrategy];
-      case ChainNameEnum.terra:
-        return [this.terraBalancesStrategy];
-      case ChainNameEnum.cardano:
-        return [this.cardanoBalancesStrategy];
-      case ChainNameEnum.cosmos:
-      case ChainNameEnum.kava:
-      case ChainNameEnum.osmosis:
-      case ChainNameEnum.secret:
-        return [this.cosmosBalancesStrategy];
-      case ChainNameEnum.ronin:
-        return [this.roninBalancesStrategy];
-      default:
-        return [this.networkBalancesStrategy];
-    }
+    const strategy = this.strategies.find((strategy) =>
+      strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase()),
+    );
+    return [strategy ?? this.networkBalancesStrategy];
   }
 
   private async getAssetsToHandle(chain: number, requested?: Address[], block?: BlockTimestamp) {

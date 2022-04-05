@@ -122,7 +122,7 @@ export class AssetsService {
   }
 
   async getAssetData(assetChain: number, assetAddress: string) {
-    const chainProvider = this.web3Provider.getInstanceByChainId(assetChain);
+    const chainProvider = await this.web3Provider.getInstanceByChainId(assetChain);
     const terraChainId = await this.chainsService.getChainIdByName(ChainNameEnum.terra);
     if (assetChain === terraChainId) {
       // eslint-disable-next-line camelcase
@@ -180,7 +180,7 @@ export class AssetsService {
 
   async attemptTerraLp(asset: AssetsEntity) {
     try {
-      const chainProvider = this.web3Provider.getInstanceByChainId(asset.chain);
+      const chainProvider = await this.web3Provider.getInstanceByChainId(asset.chain);
       const { minter } = await chainProvider.wasm.contractQuery(asset.address, { minter: {} });
       const underlyingInfo: PoolAssetsQueryResp = await chainProvider.wasm.contractQuery(minter, {
         pool: {},
@@ -319,7 +319,7 @@ export class AssetsService {
   private async attemptUniswapLikePair(asset: AssetsEntity) {
     const assetContract = new UNIV2LP(
       asset.address,
-      this.web3Provider.getInstanceByChainId(asset.chain),
+      await this.web3Provider.getInstanceByChainId(asset.chain),
     );
 
     // Call the uniswap specific functions. If its not a uniswap-pair contract
@@ -338,7 +338,7 @@ export class AssetsService {
   }
 
   private async attemptEllipsisLikePair(asset: AssetsEntity) {
-    const chainProvider = this.web3Provider.getInstanceByChainId(asset.chain);
+    const chainProvider = await this.web3Provider.getInstanceByChainId(asset.chain);
     const assetContract = new ELLIPSIS_LP(asset.address, chainProvider);
     const minterAddress = await assetContract.minter();
     const minterContract = new MINTER(minterAddress, chainProvider, this.logger);
@@ -406,7 +406,7 @@ export class AssetsService {
         registries.map(async (address) => {
           let contract = new CURVE_REGISTRY(
             address,
-            this.web3Provider.getInstanceByChainId(asset.chain),
+            await this.web3Provider.getInstanceByChainId(asset.chain),
             CURVE_REGISTRY_ABI,
           );
 
@@ -417,7 +417,7 @@ export class AssetsService {
           } catch (e) {
             contract = new CURVE_REGISTRY(
               address,
-              this.web3Provider.getInstanceByChainId(asset.chain),
+              await this.web3Provider.getInstanceByChainId(asset.chain),
               CURVE_METAPOOL_ARBI_ABI,
             );
           }
@@ -438,7 +438,7 @@ export class AssetsService {
     let curveLpPool = new CURVE_LP(
       asset.address,
       this.logger,
-      this.web3Provider.getInstanceByChainId(asset.chain),
+      await this.web3Provider.getInstanceByChainId(asset.chain),
     );
 
     let minter;
@@ -452,7 +452,7 @@ export class AssetsService {
       curveLpPool = new CURVE_LP(
         minter,
         this.logger,
-        this.web3Provider.getInstanceByChainId(asset.chain),
+        await this.web3Provider.getInstanceByChainId(asset.chain),
       );
     }
     return await curveLpPool.getCoinsForLpToken();

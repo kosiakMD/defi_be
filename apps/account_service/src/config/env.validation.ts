@@ -42,21 +42,22 @@ export const validationSchema = Joi.object({
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
 
-  AVAX_URL: Joi.string().required(),
+  AVALANCHE_URL: Joi.string().required(),
   ARBITRUM_URL: Joi.string().required(),
-  BSC_URL: Joi.string().required(),
+  BINANCE_URL: Joi.string().required(),
   CELO_URL: Joi.string().required(),
-  ETH_URL: Joi.string().required(),
-  FTM_URL: Joi.string().required(),
-  HARM_URL: Joi.string().required(),
+  ETHEREUM_URL: Joi.string().required(),
+  FANTOM_URL: Joi.string().required(),
+  HARMONY_URL: Joi.string().required(),
   HECO_URL: Joi.string().required(),
-  MRIVER_URL: Joi.string().required(),
+  MOONRIVER_URL: Joi.string().required(),
   POLYGON_URL: Joi.string().required(),
   GNOSIS_URL: Joi.string().required(),
-  SOL_URL: Joi.string().required(),
+  SOLANA_URL: Joi.string().required(),
   CARDANO_BLOCKFROST_API_KEY: Joi.string().required(),
   METIS_URL: Joi.string().required(),
   RONIN_URL: Joi.string().required(),
+  TERRA_URL: Joi.string().required(),
 
   PRICE_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_PORT: Joi.number().required(),
@@ -100,7 +101,6 @@ export const validationSchema = Joi.object({
   OPEN_SEA_INTERVAL: Joi.number().required(),
   AAVEGOTCHI_SUBGRAPH_POLYGON: Joi.string().required(),
   AAVEGOTCHI_SUBGRAPH_SVG: Joi.string().required(),
-  TERRA_URL: Joi.string().required(),
 });
 
 export const validationOptions = {

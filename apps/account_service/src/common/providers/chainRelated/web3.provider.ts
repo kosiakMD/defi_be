@@ -38,7 +38,7 @@ export class Web3Provider implements OnModuleInit {
     const chains = await this.chainsService.getAll();
 
     const solId = await this.chainsService.getChainIdByName(ChainNameEnum.sol);
-    this.providers[solId] = new Connection(this.configService.get<string>('SOL_URL'));
+    this.providers[solId] = new Connection(this.configService.get<string>('SOLANA_URL'));
 
     const terraId = await this.chainsService.getChainIdByName(ChainNameEnum.terra);
     this.providers[terraId] = new LCDClient({

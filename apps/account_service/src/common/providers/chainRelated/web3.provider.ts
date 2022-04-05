@@ -53,7 +53,7 @@ export class Web3Provider implements OnModuleInit {
 
     for (const chain of chains) {
       if (!this.providers[chain.id]) {
-        const configName = `${chain.abbr.toUpperCase()}_URL`;
+        const configName = `${chain.name.toUpperCase()}_URL`;
         this.providers[chain.id] = new Web3(this.configService.get(configName));
       }
     }

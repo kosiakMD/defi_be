@@ -8,6 +8,6 @@ export class Web3Service {
   public readonly web3;
 
   constructor(private configService: ConfigService) {
-    this.web3 = new Web3(this.configService.get<string>('ETH_URL'));
+    this.web3 = new Web3(this.configService.get<string>('ETHEREUM_URL'));
   }
 }

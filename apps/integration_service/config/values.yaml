@@ -55,6 +55,7 @@ configMaps:
     SUSHISWAP_GNOSIS_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/matthewlilley/xdai-minichef
     SUSHISWAP_GNOSIS_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-bentobox
     SUSHISWAP_GNOSIS_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-exchange
+    MINSWAP_URL: https://monorepo-mainnet-prod.minswap.org/graphql
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
@@ -97,6 +98,17 @@ configMaps:
     ACCOUNT_BALANCE: v1/balances
     ACCOUNT_ASSETS: v1/assets
     ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
+  blockscan:
+    BLOCKSCAN_BNB_KEY: VEZ25IGVDIC7RHYR6S4PFNZQBSMITSX8PP
+    BLOCKSCAN_ETH_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
+    BLOCKSCAN_BNB_URL: https://api.bscscan.com/api
+    BLOCKSCAN_ETH_URL: https://api.etherscan.io/api
+    BLOCKSCAN_FTM_KEY: QSA6NJ6SGZG2MK13Q86MS3JYUB5PQQ1UGZ
+    BLOCKSCAN_FTM_URL: https://api.ftmscan.com/api
+    BLOCKSCAN_MOVR_KEY: EY5CDJTTRI349GAY4A382AC7G9WNH3Y1Y3
+    BLOCKSCAN_MOVR_URL: https://api-moonriver.moonscan.io/api
+    BLOCKSCAN_PLG_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
+    BLOCKSCAN_PLG_URL: https://api.polygonscan.com/api
   params:
     JOBS_CACHE_TTL_IN_SECONDS: 86400
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default
@@ -104,7 +116,7 @@ configMaps:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: development
-  
+
 secrets:
 - database
 - redis

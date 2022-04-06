@@ -3,6 +3,7 @@ import axios from 'axios';
 import { plainToClass } from 'class-transformer';
 
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -29,6 +30,7 @@ export class StaderDelegationStaking {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private web3ProviderService: Web3ProviderService,
     private readonly accountService: AccountService,
+    private readonly configService: ConfigService,
   ) {}
   public async getData(addresses: Address[], chain: ChainDto) {
     const [delegationStakings, terraValidators] = await Promise.all([
@@ -114,20 +116,18 @@ export class StaderDelegationStaking {
 
   async getDelegationStakingData(chain: ChainDto): Promise<StakePlusContracts[]> {
     const provider = this.web3ProviderService.getInstanceByChainId(chain.id);
-    const { contracts } = await provider.wasm.contractQuery(
-      'terra1ku85smu4ews088g64sk8wjx5edv8m42205ympl',
-      {
-        // eslint-disable-next-line camelcase
-        get_stake_plus_contracts: {},
-      },
-    );
+    const { contracts } = await provider.wasm.contractQuery(StaderAddresses.contractPlusStaker, {
+      // eslint-disable-next-line camelcase
+      get_stake_plus_contracts: {},
+    });
     return contracts;
   }
 
   async getTerraValidatorsData() {
     try {
+      const terraUrl = this.configService.get<string>('TERRA_URL');
       const { data } = await axios.get(
-        'https://lcd.terra.dev/cosmos/staking/v1beta1/validators?pagination.limit=999',
+        `${terraUrl}/cosmos/staking/v1beta1/validators?pagination.limit=999`,
       );
 
       return data.validators;

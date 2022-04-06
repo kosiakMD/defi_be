@@ -5,4 +5,5 @@ export enum StaderAddresses {
   whSdStaker = 'terra1tcgehea9034fne4g237rh45hcema89z3k58syt',
   whSd = 'terra1ustvnmngueq0p4jd7gfnutgvdc6ujpsjhsjd02',
   staderAirdropWithdraw = 'terra127vwnwgwdvq94ce4ws76ddh0c699jt40dznrn2',
+  contractPlusStaker = 'terra1ku85smu4ews088g64sk8wjx5edv8m42205ympl',
 }

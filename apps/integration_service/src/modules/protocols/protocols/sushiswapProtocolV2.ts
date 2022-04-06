@@ -307,8 +307,10 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     address: Address,
     chain: ChainDto,
   ): Promise<void> {
-    const API = `https://api.covalenthq.com/v1/56/address/${address}/stacks/sushiswap/balances/?quote-currency=USD&format=JSON&key=${this.configService.get(
-      'COVALENTHQ_API_KEY',
+    const API = `${this.configService.get(
+      'COVALENT_URL',
+    )}/56/address/${address}/stacks/sushiswap/balances/?quote-currency=USD&format=JSON&key=${this.configService.get(
+      'COVALENT_KEY',
     )}`;
 
     const responseList = await firstValueFrom(this.httpService.get(API));

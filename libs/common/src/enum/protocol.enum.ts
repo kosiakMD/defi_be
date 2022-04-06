@@ -38,6 +38,7 @@ export enum ProjectEnum {
   mirror = 'mirror',
   marinade = 'marinade',
   minswap = 'minswap',
+  stader = 'stader',
 }
 
 export enum YearnProtocolEnum {
@@ -196,6 +197,10 @@ export enum MarinadeProtocolEnum {
   marinade = 'Marinade',
 }
 
+export enum StaderProtocolEnum {
+  stader = 'Stader',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -235,4 +240,5 @@ export const ProtocolNameEnum = {
   ...MarinadeProtocolEnum,
   ...MinswapProtocolEnum,
   ...MirrorProtocolEnum,
+  ...StaderProtocolEnum,
 };

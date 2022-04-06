@@ -8,17 +8,20 @@ import { Logger } from '@app/common';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 import { BalancesRequest } from '../../../common/types';
 
 import { blackListTerraTokens } from '../../blacklists/blackListTerraTokens';
 import { TokenBalance } from '../balances.interfaces';
 
-export class TerraBalancesStrategy implements BalancesLoadingStrategy {
+export class TerraBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly config: ConfigService,
     private readonly web3Provider: Web3Provider,
-  ) {}
+  ) {
+    super();
+  }
 
   async getBalances({
     address,
@@ -37,7 +40,7 @@ export class TerraBalancesStrategy implements BalancesLoadingStrategy {
     );
     const nativeTokensSet = new Set(nativeTokens);
 
-    const terra = this.web3Provider.getInstanceByChainId(chainId);
+    const terra = await this.web3Provider.getInstanceByChainId(chainId);
     const nativeTokensBalancesResult = await terra.bank.balance(address);
     const nativeTokensBalances: Coins = nativeTokensBalancesResult[0];
     nativeTokensBalances.map((tb) => {

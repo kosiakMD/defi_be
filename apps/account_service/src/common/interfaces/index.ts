@@ -141,6 +141,7 @@ export interface WithdrawalEvent extends Event {
 
 export interface BalancesLoadingStrategy {
   getBalances(request: BalancesRequest): Promise<TokenBalance[]>;
+  readonly strategyName: string;
 }
 
 export interface Chain {

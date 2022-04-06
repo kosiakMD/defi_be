@@ -1,3 +1,4 @@
+import { LCDClient } from '@terra-money/terra.js';
 import Web3 from 'web3';
 
 import { Injectable } from '@nestjs/common';
@@ -5,7 +6,6 @@ import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '..';
 import { MulticallContract } from './multicall.contract';
-import { LCDClient } from '@terra-money/terra.js';
 
 export type Web3Interface = Web3;
 
@@ -31,7 +31,6 @@ export class Web3ProviderService {
     this.setProvider(ChainIdEnum.opt, 'OPT_URL');
     this.setProvider(ChainIdEnum.plg, 'POLYGON_URL');
     this.setProvider(ChainIdEnum.gnosis, 'GNOSIS_URL');
-    this.setProvider(ChainIdEnum.near, 'NEAR_URL');
     this.setProvider(ChainIdEnum.arbi, 'ARBITRUM_URL');
     this.setProvider(ChainIdEnum.klay, 'KLAYTN_URL');
     this.setProvider(ChainIdEnum.fuse, 'FUSE_URL');
@@ -55,7 +54,6 @@ export class Web3ProviderService {
     this.setMulticall(ChainIdEnum.opt, '0xaFE0A0302134df664f0EE212609CA8Fb89255BE4');
     this.setMulticall(ChainIdEnum.plg, '0xa1b2b503959aedd81512c37e9dce48164ec6a94d');
     this.setMulticall(ChainIdEnum.gnosis, '0xe849A78ed40691d1e1512DbCBB3bcd78491ddba9');
-    this.setMulticall(ChainIdEnum.near, '0x92A09557707AB4888EACC034122120F27362dA7f');
     this.setMulticall(ChainIdEnum.arbi, '0xAb16069D3E9E352343B2040ce7d7715C585994f9');
     this.setMulticall(ChainIdEnum.klay, '0x92a09557707ab4888eacc034122120f27362da7f');
     this.setMulticall(ChainIdEnum.fuse, '0x92a09557707ab4888eacc034122120f27362da7f');
@@ -75,10 +73,13 @@ export class Web3ProviderService {
   }
 
   private setLCDClientProvider(chain: ChainIdEnum, env: string) {
-    this.providers.set(chain, new LCDClient({
-      URL: this.configService.get(env),
-      chainID: String(AbsoluteChainIdEnum.terra)
-    }));
+    this.providers.set(
+      chain,
+      new LCDClient({
+        URL: this.configService.get(env),
+        chainID: String(AbsoluteChainIdEnum.terra),
+      }),
+    );
   }
 
   // TODO: pass 'env' selector instead of address (same as setProvider)

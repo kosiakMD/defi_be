@@ -131,17 +131,11 @@ const Curve = [
   CurvePoolsFtm,
   CurvePoolsGnosis,
   CurveGaugesGnosis,
-  TrisolarisPools,
-  TrisolarisStaking,
-  OrcaPools,
-  OrcaStaking,
-  AnchorLp,
-  AnchorStaking,
   CurvePoolsHarm,
   CurvePoolsOpt,
   CurvePoolsPlg,
 ];
-
+const Sundaeswap = [SundaeswapPools];
 const DefiKingdoms = [DefiKingdomsPools, DefiKingdomsStaking];
 const Ellipsis = [EllipsisLp, EllipsisStaking];
 const IslandSwap = [IslandswapPools, IslandswapStaking];
@@ -179,6 +173,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Raydium,
   ...Saber,
   ...Spookyswap,
+  ...Sundaeswap,
   ...Terra,
   ...TraderJoe,
   ...Trisolaris,

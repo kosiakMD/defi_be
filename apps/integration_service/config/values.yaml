@@ -57,9 +57,7 @@ configMaps:
     SUSHISWAP_GNOSIS_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-exchange
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
-    BLOCKS_BSC_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/pancakeswap/blocks
   links:
-    VAULT_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/
     THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     ETH_URL: https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7

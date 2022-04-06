@@ -39,7 +39,7 @@ import { PricesModule } from './modules/prices/prices.module';
         database: configService.get<string>('DB_DATABASE'),
         schema: configService.get<string>('DB_SCHEMA'),
         autoLoadEntities: true,
-        logging: true,
+        logging: false,
       }),
     }),
     HttpModule.registerAsync({

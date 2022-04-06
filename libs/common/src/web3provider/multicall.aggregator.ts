@@ -68,4 +68,25 @@ export class MulticallAggregator {
     const results = await this.handleInBatches(new Map([['single-call', call]]), chain);
     return results.get('single-call').output.data;
   }
+
+  private key(call: CallData): string {
+    return `${call.address}_${call.abi.name}_${JSON.stringify(call.input.data)}`;
+  }
+
+  async callArray(calls: CallData[], chain: ChainIdEnum): Promise<any[]> {
+    const callMap = new Map<string, CallData>();
+    calls.forEach((call) => {
+      callMap.set(this.key(call), call);
+    });
+    const resultsMap = await this.handleInBatches(callMap, chain);
+    const results = [];
+    calls.forEach((call) => {
+      results.push(resultsMap.get(this.key(call)).output.data);
+    });
+    return results;
+  }
+
+  web3(chain) {
+    return this.provider.getInstanceByChainId(chain);
+  }
 }

@@ -5,13 +5,19 @@ import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import type { CardanoBalance } from '../../../common/interfaces/cardano.interface';
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 import { BalancesRequest } from '../../../common/types';
 
 import type { TokenBalance } from '../balances.interfaces';
 
 @Injectable()
-export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
-  constructor(private readonly web3Provider: Web3Provider) {}
+export class CardanoBalancesStrategy
+  extends BaseBalanceStrategy
+  implements BalancesLoadingStrategy
+{
+  constructor(private readonly web3Provider: Web3Provider) {
+    super();
+  }
 
   async getBalances({
     address,

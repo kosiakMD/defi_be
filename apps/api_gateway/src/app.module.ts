@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -16,7 +16,6 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
 import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
@@ -111,10 +110,11 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
+    // TODO
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
     {
       provide: APP_GUARD,
       useClass: ApiVersionGuard,

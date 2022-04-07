@@ -5,15 +5,7 @@ import { plainToClass } from 'class-transformer';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import {
-  Address,
-  ChainDto,
-  FeatureEnum,
-  IAssetResponseDto,
-  Logger,
-  ProjectEnum,
-  ProtocolTypeEnum,
-} from '@app/common';
+import { Address, ChainDto, FeatureEnum, Logger, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import {
@@ -23,6 +15,7 @@ import {
 } from '@app/common/jobs/staking';
 import { Web3ProviderService } from '@app/common/web3provider';
 
+import { Asset } from '../../../../common/interfaces/transactions.interfaces';
 import { toDecimals } from '../../../../common/utils/util';
 
 import { AccountService } from '../../../microservices/account.service';
@@ -68,7 +61,7 @@ export class StaderStaking {
       [chain.id],
     );
 
-    const dbTokensMap = data.reduce((resp, token) => {
+    const dbTokensMap: Map<string, Asset> = data.reduce((resp, token) => {
       resp.set(token.address, token);
       return resp;
     }, new Map());
@@ -101,16 +94,11 @@ export class StaderStaking {
           };
           reward.price = null;
         });
-        // stakingPosition.rewards[0].claimableData = {
-        //   balance: toDecimals(stakingData.reward, lunaToken.decimals),
-        //   value: null,
-        // };
-        // stakingPosition.rewards[0].price = null;
 
         staking.items.push(stakingPosition);
       });
     }
-    return [...baseDataStakingMap.values()];
+    return Array.from(baseDataStakingMap.values());
   }
 
   async getPoolsInformation(poolsId: Set<number>, provider: LCDClient) {
@@ -133,7 +121,7 @@ export class StaderStaking {
 
   getStakingPosition(
     poolsInfo: { name; active; staked; id },
-    dbToken: IAssetResponseDto,
+    dbToken: Asset,
   ): IntegrationStakingPositionDto {
     const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
       address: dbToken.address,

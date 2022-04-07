@@ -61,7 +61,7 @@ export class StaderAirdrop {
         potitions.items = resultItems;
       }),
     );
-    return [...baseDataRewardsMap.values()];
+    return Array.from(baseDataRewardsMap.values());
   }
 
   getAirdropBaseData(address: string, chain: ChainDto) {

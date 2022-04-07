@@ -38,7 +38,7 @@ export class StaderDelegationStaking {
       this.getTerraValidatorsData(),
     ]);
 
-    const validatorsMap = terraValidators.reduce((resp, validator) => {
+    const validatorsMap: Map<string, Validator> = terraValidators.reduce((resp, validator) => {
       resp.set(validator.operator_address, validator);
       return resp;
     }, new Map());
@@ -61,7 +61,7 @@ export class StaderDelegationStaking {
         );
       }),
     );
-    return [...baseDataStakingMap.values()];
+    return Array.from(baseDataStakingMap.values());
   }
 
   async getUserStakingPositions(
@@ -158,4 +158,15 @@ export interface StakePlusContracts {
   contract_type: string;
   create_time: string;
   update_time: string;
+}
+
+export interface Validator {
+  operator_address: string;
+  status: string;
+  tokens: string;
+  delegator_shares: string;
+  description: {
+    moniker: string;
+    website: string;
+  };
 }

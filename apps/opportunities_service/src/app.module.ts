@@ -1,13 +1,11 @@
 import { HttpModule } from '@nestjs/axios';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -39,10 +37,10 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
   ],
   controllers: [OpportunitiesController],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
   ],
 })
 export class AppModule implements OnModuleInit {

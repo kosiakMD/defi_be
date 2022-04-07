@@ -8,14 +8,13 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
 import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
@@ -74,10 +73,11 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
+    // TODO: test with Sentry middleware only
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
     // TODO: causes the controller to get called twice
     {
       provide: APP_INTERCEPTOR,

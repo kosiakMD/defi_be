@@ -13,6 +13,8 @@ export enum FeatureEnum {
   bootstrap = 'bootstrap',
   shortFarm = 'shortFarm',
   mint = 'mint',
+  airdrop = 'airdrop',
+  delegation = 'delegation',
   // derivatives = 'derivatives',
   // exchange = 'exchange',
   // seigniorage = 'seigniorage',

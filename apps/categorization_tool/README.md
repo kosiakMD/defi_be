@@ -86,18 +86,26 @@ To trigger executing all tasks in the described order use **start_fetching** as 
 
 #### Select contracts analysis result
 ```sql
-select c1.abi,
-       p1.name,
-       c1.address,
-       ca.similarity,
-       c2.address,
-       p2.name,
-       c2.abi
-from contracts_analysis ca
-         left join contracts c1 on ca.contract_id = c1.id
-         left join protocols p1 on p1.id = c1.protocol_id
-         left join contracts c2 on ca.counterpart_contract_id = c2.id
-         left join protocols p2 on p2.id = c2.protocol_id
-order by ca.similarity desc
-limit 50;
+with filtered_contracts_analysis AS (
+    select c1.abi,
+           p1.name,
+           c1.address,
+           ca.abi_code_similarity,
+           ca.abi_json_similarity,
+           c2.address,
+           p2.name,
+           c2.abi,
+           row_number()
+           over (partition by right(c1.address::text, -1)::varbit # right(c2.address::text, -1)::varbit) as rn
+    from contracts_analysis ca
+             left join contracts c1 on ca.contract_id = c1.id
+             left join protocols p1 on p1.id = c1.protocol_id
+             left join contracts c2 on ca.counterpart_contract_id = c2.id
+             left join protocols p2 on p2.id = c2.protocol_id
+    order by ca.abi_code_similarity desc, ca.abi_json_similarity desc -- most similar ones come first
+    -- limit 100 -- uncomment/update it if needed
+)
+select fca.*
+from filtered_contracts_analysis fca
+where fca.rn = 1;
 ```

@@ -37,7 +37,7 @@ export class AbiFetcherTenderly implements IAbiFetcher {
       this.httpService.get(`${this.apiUrl}/v1/public-contracts/${chain}/${address}`),
     );
     return {
-      abi: details.data.data.abi,
+      abi: JSON.stringify(details.data.data.abi),
       abiCode: details.data.data.contract_info[0].source,
     };
   }

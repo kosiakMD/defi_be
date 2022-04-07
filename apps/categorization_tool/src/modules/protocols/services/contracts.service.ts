@@ -28,7 +28,7 @@ export class ContractsService {
     private readonly abiFetcherService: AbiFetcherService,
     private readonly configService: ConfigService,
   ) {
-    this.testRun = configService.get('TEST_RUN');
+    this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
 
   async scanWebsitesForContracts(websites: { url: string; protocol: Protocol }[]): Promise<void> {

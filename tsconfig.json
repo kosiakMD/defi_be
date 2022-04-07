@@ -29,6 +29,29 @@
     "target": "es2017",
     "baseUrl": "./",
     "incremental": true,
+    "references": [
+      {
+        "path": "./apps/api_gateway"
+      },
+      {
+        "path": "./apps/assets_service"
+      },
+      {
+        "path": "./apps/categorization_tool"
+      },
+      {
+        "path": "./apps/integration_service"
+      },
+      {
+        "path": "./apps/opportunities_service"
+      },
+      {
+        "path": "./apps/price_service"
+      },
+      {
+        "path": "./libs/common"
+      }
+    ],
     "paths": {
       "@app/common": [
         "libs/common/src"

@@ -8,7 +8,9 @@ export class addContractAnalysisTable1648707974543 implements MigrationInterface
             "id"                      SERIAL,
             "contract_id"             INTEGER NOT NULL,
             "counterpart_contract_id" INTEGER NOT NULL,
-            "similarity"              DECIMAL(9, 8) DEFAULT 0,
+            "abi_code_similarity"     DECIMAL(9, 8) DEFAULT 0,
+            "abi_json_similarity"     DECIMAL(9, 8) DEFAULT 0,
+            "abi_json_diff"           JSONB,
             PRIMARY KEY ("id"),
             CONSTRAINT "FK_contract_analysis_contracts" FOREIGN KEY ("contract_id") REFERENCES "contracts" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION,
             CONSTRAINT "FK_contract_analysis_contracts_counterpart" FOREIGN KEY ("counterpart_contract_id") REFERENCES "contracts" ("id") ON UPDATE NO ACTION ON DELETE NO ACTION

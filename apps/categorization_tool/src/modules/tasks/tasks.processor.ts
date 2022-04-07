@@ -31,7 +31,7 @@ export class TasksProcessor {
         await this.protocolService.parseProtocolsMainPage();
         await this.protocolService.parseProtocolsAppPage();
         await this.protocolService.parseProtocolsDocsPage();
-        await this.protocolService.parseProtocolsGithubPage();
+        // await this.protocolService.parseProtocolsGithubPage(); //enable it when needed
         await this.protocolService.crawlHtml();
         await this.protocolService.fetchAbi();
         await this.contractAnalysisService.analyseContracts();

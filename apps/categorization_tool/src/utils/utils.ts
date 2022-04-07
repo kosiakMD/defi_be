@@ -5,3 +5,11 @@ export function findSubText(string: string, find: string[]) {
 export function nameFromUrl(url: string): string {
   return url.match(/^(?:https?:\/\/)?(?:www\.)?([^/]+)?(?:\.[a-z]){1,7}/)[1];
 }
+
+export function safeJsonParse(text: string): object | null {
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return null;
+  }
+}

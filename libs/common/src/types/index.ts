@@ -38,6 +38,7 @@ import {
   MirrorProtocolEnum,
   MarinadeProtocolEnum,
   MinswapProtocolEnum,
+  StaderProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -84,7 +85,8 @@ export type ProtocolName =
   | AstroportProtocolEnum
   | MarinadeProtocolEnum
   | MinswapProtocolEnum
-  | MirrorProtocolEnum;
+  | MirrorProtocolEnum
+  | StaderProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

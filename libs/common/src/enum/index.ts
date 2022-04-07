@@ -39,6 +39,9 @@ export enum ProtocolTypeEnum {
   mint = 'mint',
   bootstrap = 'bootstrap',
   lockdrop = 'lockdrop',
+  claimable = 'claimable',
+  airdrop = 'airdrop',
+  delegation = 'delegation',
 }
 
 export enum TransactionTypeEnum {

@@ -1,8 +1,9 @@
+import { toDecimals } from 'apps/account_service/src/common/utils';
 import axios from 'axios';
-import BigNumber from 'bignumber.js';
 import { partition } from 'lodash';
 
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
+import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
 import { concatStrings } from '@app/common/utils';
 import { ChainCoinAddresses, getCoingeckoPlatformId } from '@app/common/utils/chains';
@@ -118,13 +119,15 @@ export async function process(): Promise<void> {
     /** Cardano SundaeSwapService Place */
     const tokensPrices = await SundaeSwapService.getTokensPrices();
     const cardanoPrices: CurrentPriceInterface[] = [];
-
+    const ADAToken = chainsPrices.find((x) => x.address === CARDANO_COIN_ADDRESS);
     for (const token of tokensPrices) {
       const address = token.assetB.assetId.replace(/\./g, '');
+      const lp =
+        toDecimals(+token.quantityA, 6) / toDecimals(+token.quantityB, token.assetB.decimals);
       if (token.assetB.decimals !== null) {
         cardanoPrices.push({
           address: address,
-          price: new BigNumber(token.priceUSD).toNumber(),
+          price: lp * ADAToken.price,
           chainId: ChainIdEnum.cardano,
           currencyId: CurrencyIdEnum.usd,
           sourceId: PriceSourcePriority.muesliswap,

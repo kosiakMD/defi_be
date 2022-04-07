@@ -8,16 +8,20 @@ import { ChainIdEnum, ProtocolNameEnum } from '@app/common/enum';
 import { IntegrationsResponseDto } from '../modules/integrations/dto/integrations.dto';
 import { IntegrationsService } from '../modules/integrations/integrations.service';
 import { ProtocolParams } from '../modules/integrations/interfaces/integrations.interface';
+import { IntegrationsServiceV3Decorator } from '../modules/integrations/integrations.service.v3.decorator';
 
 @ApiTags('Protocols')
 @Controller('v1/protocols')
 export class IntegrationsController {
-  constructor(private readonly integrationsService: IntegrationsService) {}
+  constructor(
+    private readonly integrationsService: IntegrationsService,
+    private readonly integrationsServiceDecorator: IntegrationsServiceV3Decorator,
+              ) {}
 
   @ApiResponse({ status: 200, type: FeaturesResponseDto })
   @Get('/')
-  getAllFeatures(): FeaturesResponseDto {
-    return this.integrationsService.getAllFeatures();
+  getAllFeatures(): Promise<FeaturesResponseDto> {
+    return this.integrationsServiceDecorator.getProtocolsList();
   }
 
   @ApiResponse({ status: HttpStatus.OK })

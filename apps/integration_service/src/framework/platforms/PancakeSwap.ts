@@ -48,7 +48,7 @@ export class PancakeSwap extends RootPlatform {
       feature: FeatureEnum.staking,
       address: '0x73feaa1eE314F8c655E354234017bE2193C9E24E',
       context: {
-        badPools: [105, 444],
+        badPools: [105, 444, 514, 515, 516, 517, 518, 519, 520, 521],
       },
     });
 

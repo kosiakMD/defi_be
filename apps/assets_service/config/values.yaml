@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: assets.defiyield.app
+  host: assets.dev.defiyield.app
 
 configMaps:
   common:

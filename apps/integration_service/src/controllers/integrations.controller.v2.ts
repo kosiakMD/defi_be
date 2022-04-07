@@ -12,11 +12,15 @@ import {
 
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 import { IntegrationsService } from '../modules/integrations/integrations.service';
+import { IntegrationsServiceV3Decorator } from '../modules/integrations/integrations.service.v3.decorator';
 
 @ApiTags('Protocols')
 @Controller('v2/protocols')
 export class IntegrationsControllerV2 {
-  constructor(private readonly integrationsService: IntegrationsService) {}
+  constructor(
+    private readonly integrationsService: IntegrationsService,
+    private readonly integrationsServiceDecorator: IntegrationsServiceV3Decorator,
+  ) {}
 
   @ApiParam({
     name: 'protocolName',
@@ -54,7 +58,6 @@ export class IntegrationsControllerV2 {
     @ChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IntegrationsResponseV2Dto> {
     const { protocolName } = params;
-
-    return this.integrationsService.getProtocolFeaturesDataV2(protocolName, chains, addresses);
+    return this.integrationsServiceDecorator.getProtocolFeaturesDataV2(protocolName, chains, addresses);
   }
 }

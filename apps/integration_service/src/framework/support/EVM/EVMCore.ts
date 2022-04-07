@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
-import { aprToApy, chunk } from '@app/common/utils';
+import { aprToApy, chunk, normalizeDecimals } from '@app/common/utils';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/UniswapV2Pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -106,6 +106,9 @@ export abstract class EVMCore<
             prices[token.address] = new BigNumber(tvl0.plus(tvl1).toString()) //
               .div(totalSupply)
               .toNumber();
+            token.underlyingAssets.forEach((u) => {
+              normalizeDecimals((u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(), u.decimals)
+            })
           });
         } catch (err) {
           // TODO: delete this block, Prices should come from asset service, not calculated here
@@ -136,6 +139,8 @@ export abstract class EVMCore<
                   chainId: u.chainId,
                   decimals: u.decimals,
                   price: Number(prices[u.address]),
+                  position: u.positionInPool,
+                  reserve: u.reserve,
                 };
               }),
             },

@@ -343,30 +343,24 @@ export class AutofarmStakingPLG implements JobInterface {
     const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(stakingPos)).output.data;
     stakingPos.stakingToken.totalSupply = toDecimals(totalSupply, stakingPos.stakingToken.decimals);
     const poolShare = stakingPos.stakingToken.balance / stakingPos.stakingToken.totalSupply;
-
     if (AutofarmStakingPLG.curvePools.includes(stakingPos.stakingToken.address.toLowerCase())) {
-      const tokenCount = stakingPos.stakingToken.tokens.length;
-      const reserves = new Map<string, number>();
-
-      for (let i = 0; i < tokenCount; i++) {
+      stakingPos.stakingToken.tokens.map((underlying) => {
         const reserveRaw = multicallRsp
-          .get(this.getCoinBalanceLabel(stakingPos.address, i))
+          .get(
+            this.getCoinBalanceLabel(
+              stakingPos.address,
+              underlying.positionInPool,
+              stakingPos.poolId,
+            ),
+          )
           .output.data.toNumber();
-        const coin = multicallRsp
-          .get(this.getCoinLabel(stakingPos.address, i))
-          .output.data.toLowerCase();
-        reserves.set(coin, toDecimals(reserveRaw, stakingPos.stakingToken.tokens[i].decimals));
-      }
+        underlying.reserve = toDecimals(reserveRaw, underlying.decimals);
+        underlying.price = Number(prices[underlying.address.toLowerCase()]);
+        underlying.balance = underlying.reserve * poolShare;
+        underlying.value = underlying.balance * underlying.price;
 
-      stakingPos.stakingToken.tokens.map((t) => {
-        t.reserve = reserves.get(t.address.toLowerCase());
-        t.price = Number(prices[t.address.toLowerCase()]);
-        t.balance = t.reserve * poolShare;
-        t.value = t.balance * t.price;
-
-        stakingPos.stats.tvl += t.value;
-
-        return t;
+        stakingPos.stats.tvl += underlying.value;
+        return underlying;
       });
     } else if (stakingPos.stakingToken.tokens.length === 2) {
       const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
@@ -405,12 +399,20 @@ export class AutofarmStakingPLG implements JobInterface {
       const minter = curveLpToMinter.get(stAddress);
       const minterContract = new CurveAbis(minter);
 
-      const tokenCount = stakingPosition.stakingToken.tokens.length;
-
-      for (let i = 0; i < tokenCount; i++) {
-        calls.set(this.getCoinBalanceLabel(stakingPosition.address, i), minterContract.balances(i));
-        calls.set(this.getCoinLabel(stakingPosition.address, i), minterContract.coins(i));
-      }
+      stakingPosition.stakingToken.tokens.forEach((underlying) => {
+        calls.set(
+          this.getCoinBalanceLabel(
+            stakingPosition.address,
+            underlying.positionInPool,
+            stakingPosition.poolId,
+          ),
+          minterContract.balances(underlying.positionInPool),
+        );
+        calls.set(
+          this.getCoinLabel(stakingPosition.address, underlying.positionInPool),
+          minterContract.coins(underlying.positionInPool),
+        );
+      });
     } else if (stakingPosition.stakingToken.tokens.length === 2) {
       calls.set(this.getReservesLabel(stakingPosition), {
         address: stAddress,
@@ -534,7 +536,11 @@ export class AutofarmStakingPLG implements JobInterface {
   }
 
   private totalSupplyLabel(stakingPosition: IntegrationStakingPositionDto) {
-    return concatStrings(Abis.totalSupply.name, stakingPosition.stakingToken.address);
+    return concatStrings(
+      Abis.totalSupply.name,
+      stakingPosition.stakingToken.address,
+      stakingPosition.poolId,
+    );
   }
 
   private balanceOfLabel(
@@ -567,7 +573,7 @@ export class AutofarmStakingPLG implements JobInterface {
     return concatStrings('coin', contract, i);
   }
 
-  private getCoinBalanceLabel(contract: string, i: number) {
-    return concatStrings('coinBalance', contract, i);
+  private getCoinBalanceLabel(contract: string, i: number, poolId: number) {
+    return concatStrings('coinBalance', contract, i, poolId);
   }
 }

@@ -21,6 +21,6 @@ export class Contract {
   @JoinColumn({ name: 'protocol_id' })
   protocol: Protocol;
 
-  @OneToMany(() => ContractsAnalysis, (ca) => ca.contract, { eager: true })
+  @OneToMany(() => ContractsAnalysis, (ca) => ca.contract)
   analysis: ContractsAnalysis[];
 }

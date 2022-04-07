@@ -30,7 +30,7 @@ export class DefilamaAggregator implements IAggregator {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
-    this.testRun = configService.get('TEST_RUN');
+    this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
 
   async run() {

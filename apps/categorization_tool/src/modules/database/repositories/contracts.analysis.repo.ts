@@ -22,13 +22,21 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
   async upsertContractAnalysis(
     contract: Contract,
     counterpartContract: Contract,
-    similarity: number,
+    abiCodeSimilarity: number,
+    abiJsonSimilarity: number,
+    abiJsonDiff: object,
   ) {
     const cId = contract.id;
     const ccId = counterpartContract.id;
     const analysis = await this.findOneByContractIdAndCounterpartContractId(cId, ccId);
     return analysis
-      ? this.update({ id: analysis.id }, { similarity })
-      : this.save({ contract, counterpartContractId: ccId, similarity });
+      ? this.update({ id: analysis.id }, { abiCodeSimilarity, abiJsonSimilarity, abiJsonDiff })
+      : this.save({
+          contract,
+          counterpartContractId: ccId,
+          abiCodeSimilarity,
+          abiJsonSimilarity,
+          abiJsonDiff,
+        });
   }
 }

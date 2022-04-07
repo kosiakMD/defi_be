@@ -43,7 +43,7 @@ export class ProtocolService {
     private readonly githubService: GithubService,
     private readonly configService: ConfigService,
   ) {
-    this.testRun = configService.get('TEST_RUN');
+    this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
 
   async parseProtocolsMainPage() {

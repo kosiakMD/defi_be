@@ -8,6 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { concatStrings } from '@app/common/utils';
@@ -76,9 +77,10 @@ export class MinswapPools extends CardanoPools implements JobInterface {
       liquidityPools.push(lpFeature);
     }
 
-    const mapping = await Promise.all(liquidityPools.map((lp) => this.toDbMapping(lp)));
+    const mappings = await Promise.allSettled(liquidityPools.map((lp) => this.toDbMapping(lp)));
+    const [settledMappings] = handlePromiseAllSettled(mappings);
 
-    jobMapping.mapping = mapping;
+    jobMapping.mapping = settledMappings;
     jobMapping.updatedAt = new Date();
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
@@ -88,7 +90,7 @@ export class MinswapPools extends CardanoPools implements JobInterface {
 
   async updateWithChainData(): Promise<NotifySupportedFeature[]> {
     const pricedTokenAddresses = this.mapping
-      .flatMap((m) => m.tokens.map((t) => t.address))
+      .flatMap((m) => m.tokens.map((t) => this.removeDotInAssetID(t.address)))
       .join(',');
 
     const { prices } = await this.priceService.getCurrentPrices(
@@ -107,9 +109,14 @@ export class MinswapPools extends CardanoPools implements JobInterface {
         lp.tokens[0].price = Number(prices[CARDANO_COIN_ADDRESS]);
 
         lp.tokens[1].reserve = toDecimals(pool.quantityB, pool.assetB.decimals);
-        lp.tokens[1].price = Number(prices[pool.assetB.assetId]);
+        lp.tokens[1].price = Number(prices[this.removeDotInAssetID(pool.assetB.assetId)]);
 
-        lp.stats.tvl = new BigNumber(pool.tvl).toNumber();
+        lp.stats.tvl =
+          new BigNumber(pool.tvl).toNumber() ||
+          lp.tokens.reduce((tvl, token) => {
+            return tvl + token.price * token.reserve;
+          }, 0);
+
         lp.lpToken.totalSupply = toDecimals(pool.quantityLP, lp.lpToken.decimals);
         lp.stats.feeRate = Number(pool.fee);
       }
@@ -163,5 +170,9 @@ export class MinswapPools extends CardanoPools implements JobInterface {
     }
 
     return pool;
+  }
+
+  private removeDotInAssetID(asset: string): string {
+    return asset.replace(/\./, '');
   }
 }

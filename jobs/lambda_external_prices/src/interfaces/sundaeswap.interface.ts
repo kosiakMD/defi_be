@@ -7,5 +7,7 @@ export type SundaeSwapResponse = {
     ticker: string;
   };
   assetID: string;
-  priceUSD: string;
+  quantityA: string;
+  quantityB: string;
+  quantityLP: string;
 };

@@ -14,6 +14,12 @@ export class ContractsAnalysis {
   @Column({ name: 'counterpart_contract_id', type: 'integer', nullable: false })
   counterpartContractId: number;
 
-  @Column({ name: 'similarity', type: 'decimal' })
-  similarity: number;
+  @Column({ name: 'abi_code_similarity', type: 'decimal' })
+  abiCodeSimilarity: number;
+
+  @Column({ name: 'abi_json_similarity', type: 'decimal' })
+  abiJsonSimilarity: number;
+
+  @Column({ name: 'abi_json_diff', type: 'jsonb' })
+  abiJsonDiff: object;
 }

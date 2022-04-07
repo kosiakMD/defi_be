@@ -128,6 +128,7 @@ export class MarinadePools implements JobInterface {
         dbId: tokenItem.id,
         dtoName: t.constructor.name,
         positionInPool: t.positionInPool,
+        weight: t.weight,
       });
     }
 
@@ -239,12 +240,16 @@ export class MarinadePools implements JobInterface {
           name: assetA.name,
           symbol: assetA.symbol,
           decimals: assetA.decimals,
+          positionInPool: 0,
+          weight: 0.5,
         }),
         plainToClass(PoolTokenDto, {
           address: assetB.address,
           name: assetB.name,
           symbol: assetB.symbol,
           decimals: assetB.decimals,
+          positionInPool: 1,
+          weight: 0.5,
         }),
       ],
     });

@@ -28,6 +28,8 @@ export const SUNDAE_GRAPHQL_QUERY = gql`
   }
 
   fragment PoolInfoFragment on Pool {
-    priceUSD
+    quantityA
+    quantityB
+    quantityLP
   }
 `;

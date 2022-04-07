@@ -34,6 +34,7 @@ import { BaseDataMint } from '@app/common/dto/base.data.mint';
 import { BaseDataShortFarm } from '@app/common/dto/base.data.short.farm';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
+import { BaseDataAirdrop } from '@app/common/dto/baseDataAirdrop';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
@@ -82,6 +83,7 @@ import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
+import { StaderProtocol } from './protocols/stader/stader.protocol';
 import SundaeSwapProtocol from './protocols/sundaeswap/sundaeswap.protocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
 import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
@@ -146,6 +148,7 @@ export class ProtocolService {
     private readonly marinadeProtocol: MarinadeProtocol,
     private readonly minswapProtocol: MinswapProtocol,
     private readonly mirrorProtocol: MirrorProtocol,
+    private readonly staderProtocol: StaderProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -189,6 +192,7 @@ export class ProtocolService {
       marinadeProtocol,
       minswapProtocol,
       mirrorProtocol,
+      staderProtocol,
     ];
   }
 
@@ -797,6 +801,8 @@ export class ProtocolService {
             setChainAsset(item.stakingToken);
             setChainAsset(item.rewards[0]);
           });
+        } else if (baseData instanceof BaseDataAirdrop) {
+          baseData.items.forEach((item) => setChainAsset(item.token));
         }
       } catch (e) {
         this.logger.error(e);
@@ -980,6 +986,12 @@ export class ProtocolService {
             rewards[0].claimableData.value =
               Number(rewards[0].claimableData.balance) * rewards[0].price;
             baseData.total += (rewards[0].claimableData.value || 0) + locked.value;
+          });
+        } else if (baseData instanceof BaseDataAirdrop) {
+          baseData.total = 0;
+          baseData.items.forEach((item) => {
+            this.setTokenPriceAndValue(baseData.chain.id, item.token, chainAssetPrices);
+            baseData.total += item.token.value;
           });
         }
       } catch (e) {

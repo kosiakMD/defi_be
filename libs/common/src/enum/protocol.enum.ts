@@ -35,6 +35,9 @@ export enum ProjectEnum {
   orca = 'orca',
   sundaeswap = 'sundaeswap',
   astroport = 'astroport',
+  mirror = 'mirror',
+  marinade = 'marinade',
+  minswap = 'minswap',
 }
 
 export enum YearnProtocolEnum {
@@ -151,6 +154,10 @@ export enum AnchorProtocolEnum {
   anchor = 'Anchor',
 }
 
+export enum MirrorProtocolEnum {
+  mirror = 'Mirror',
+}
+
 export enum TerraswapProtocolEnum {
   terraswap = 'Terraswap',
 }
@@ -177,9 +184,16 @@ export enum OrcaProtocolEnum {
 export enum SundaeProtocolEnum {
   sundaeswap = 'SundaeSwap',
 }
+export enum MinswapProtocolEnum {
+  minswap = 'Minswap',
+}
 
 export enum AstroportProtocolEnum {
   astroport = 'Astroport',
+}
+
+export enum MarinadeProtocolEnum {
+  marinade = 'Marinade',
 }
 
 export const ProtocolNameEnum = {
@@ -218,4 +232,7 @@ export const ProtocolNameEnum = {
   ...AnchorProtocolEnum,
   ...TerraswapProtocolEnum,
   ...AstroportProtocolEnum,
+  ...MarinadeProtocolEnum,
+  ...MinswapProtocolEnum,
+  ...MirrorProtocolEnum,
 };

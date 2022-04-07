@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { TransferFromDb } from '../../common/interfaces/transfers.common.interfaces';
@@ -25,7 +24,7 @@ export class TransfersDbService {
 
   async getTransfersDataFromDb(
     addresses: Address[],
-    chainId: ChainIdEnum,
+    chainId: number,
     limit = DEFAULT_LIMIT,
   ): Promise<TransferEntity[]> {
     const timeMark = `getTransfersDataFromDb chain:${chainId}`;
@@ -69,7 +68,7 @@ export class TransfersDbService {
 
   private static queryRaw(
     addressesString: string,
-    chainId: ChainIdEnum,
+    chainId: number,
     limit = DEFAULT_LIMIT,
   ): Promise<TransferFromDb[]> {
     const manager = getManager();

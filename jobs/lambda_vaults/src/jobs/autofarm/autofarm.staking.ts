@@ -4,12 +4,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CurrencyIdEnum, FeatureEnum, ProtocolNameEnum, ChainIdEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
@@ -20,6 +22,7 @@ import { TrackedVault } from '../../store/tracked.vault.entity';
 import { toDecimals } from '../../utils/number';
 import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
+import { Abis } from '../ellipsis/abis';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { fillUnderlyingTokens } from '../utils/token';
@@ -56,6 +59,7 @@ export class AutofarmStaking implements JobInterface {
     protected readonly storeService: StoreService,
     protected readonly priceService: PriceService,
     protected readonly autofarmApiService: AutofarmApiService,
+    private readonly multicallService: MulticallAggregator,
   ) {
     this.dbMapping = new DbMapping(storeService);
   }
@@ -176,9 +180,28 @@ export class AutofarmStaking implements JobInterface {
     return poolsInfoMap;
   }
 
+  getTotalSupplyMulticallCallsMap() {
+    return this.mapping.reduce((resp, item) => {
+      resp.set(item.stakingToken.address, {
+        address: item.stakingToken.address,
+        abi: Abis.totalSupply,
+        input: {
+          data: [],
+        },
+        output: {},
+      });
+      return resp;
+    }, new Map());
+  }
+
   async updateWithChainData(): Promise<IntegrationStakingPositionDto[]> {
     const autofarmPoolsData: AutofarmPool[] = Object.values(
       await this.autofarmApiService.getAutofarmPoolsData(this.chain),
+    );
+
+    const multicallTotalSuppliesResp = await this.multicallService.handleInBatches(
+      this.getTotalSupplyMulticallCallsMap(),
+      this.chain,
     );
 
     const poolToInfoMap = new Map<IntegrationStakingPositionDto, AutofarmPool>(
@@ -203,7 +226,7 @@ export class AutofarmStaking implements JobInterface {
         if (m instanceof IntegrationStakingPositionDto) {
           const poolData: AutofarmPool = poolToInfoMap.get(m);
 
-          m = this.getDataFromMulticallRsp(poolData, m, prices);
+          m = this.getDataFromMulticallRsp(poolData, m, prices, multicallTotalSuppliesResp);
 
           m.rewards[0].price = Number(prices[m.rewards[0].address]);
 
@@ -221,6 +244,7 @@ export class AutofarmStaking implements JobInterface {
     poolData: AutofarmPool,
     stakingPos: IntegrationStakingPositionDto,
     prices: any,
+    multicallTotalSupplies: Map<string, CallData>,
   ) {
     stakingPos.staked = toDecimals(
       poolData.wantLockedTotal,
@@ -231,11 +255,7 @@ export class AutofarmStaking implements JobInterface {
       stakingPos.stakingToken.decimals,
     );
 
-    const totalSupply = poolData.farmWantLockedTotal?.hex
-      ? parseInt(poolData.farmWantLockedTotal?.hex, 16)
-      : Number(poolData.farmWantLockedTotal) === 0
-      ? poolData.pairTotalSupply
-      : poolData.farmWantLockedTotal;
+    const totalSupply = multicallTotalSupplies.get(stakingPos.stakingToken.address).output.data;
 
     stakingPos.stakingToken.totalSupply = toDecimals(totalSupply, stakingPos.stakingToken.decimals);
 

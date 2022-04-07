@@ -18,16 +18,14 @@ import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../../microservices/account.service';
-import { SundaeSwapSubgraph } from '../../../subgraphs/subgraphs/sundaeswap.subgraph';
-import { Pool } from './sundaeswap.interface';
-import { calculatePoolShare, getPoolAddresseAmount, mapTokens } from './sundaeswap.utils';
+import { CardanoService } from '../../helpers/cardano/cardano.service';
 
 @Injectable()
 export class SundaeSwapPools {
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
     private readonly accountService: AccountService,
-    private readonly sundaeSwapSubgraph: SundaeSwapSubgraph,
+    private readonly cardanoUtils: CardanoService,
   ) {}
 
   public async getData(
@@ -65,27 +63,21 @@ export class SundaeSwapPools {
       Array.from(pools.keys()),
     );
 
+    const avaliblePoolAddresses = this.cardanoUtils.getPoolAddressesAmount(
+      addresses,
+      lpBalances,
+      Array.from(pools.keys()),
+    );
+
     for (const address of addresses) {
-      const avaliblePoolAddresses = getPoolAddresseAmount(
-        [address],
-        lpBalances,
-        Array.from(pools.keys()),
-      );
+      if (!avaliblePoolAddresses.has(address)) continue;
+      for (const [lpAddress, balance] of avaliblePoolAddresses.get(address)) {
+        const pool = pools.get(lpAddress);
 
-      const accountsPools: Pool[] = await this.sundaeSwapSubgraph.getAccountPools(
-        Array.from(avaliblePoolAddresses.keys()),
-      );
+        pool.stats.share = this.cardanoUtils.calculatePoolShare(+balance, pool);
+        pool.tokens = this.cardanoUtils.mapTokens(pool);
 
-      for (const pool of accountsPools) {
-        const poolPosition = pools.get(pool.assetLP.assetId);
-        const walletBalance: number = +avaliblePoolAddresses.get(poolPosition.address);
-
-        poolPosition.stats.feeRate = +pool.fee;
-        poolPosition.stats.share = calculatePoolShare(walletBalance, poolPosition);
-
-        poolPosition.tokens = mapTokens(poolPosition, pool);
-
-        baseDataPoolsMap.get(address).items.push(poolPosition);
+        baseDataPoolsMap.get(address).items.push(pool);
       }
     }
 

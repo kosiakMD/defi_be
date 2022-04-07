@@ -1,7 +1,11 @@
+import { toDecimals } from 'apps/integration_service/src/common/utils/util';
 import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
+import { firstValueFrom } from 'rxjs';
 
+import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -153,6 +157,8 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     protected readonly sushiBarSubgraph: SushiSwapSushiBarSubgraph,
     protected readonly bentoBoxSubgraph: SushiSwapBentoBoxSubgraph,
     private readonly multicallService: MulticallAggregator,
+    private readonly configService: ConfigService,
+    private readonly httpService: HttpService,
   ) {
     super();
   }
@@ -296,7 +302,93 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     return response;
   }
 
-  async [FeatureEnum.pools](
+  async PoolsBscChain(
+    response: IntegrationFeaturesDataDto,
+    address: Address,
+    chain: ChainDto,
+  ): Promise<void> {
+    const API = `${this.configService.get(
+      'COVALENT_URL',
+    )}/56/address/${address}/stacks/sushiswap/balances/?quote-currency=USD&format=JSON&key=${this.configService.get(
+      'COVALENT_KEY',
+    )}`;
+
+    const responseList = await firstValueFrom(this.httpService.get(API));
+    const list = responseList.data.data.sushiswap.balances;
+    const underlyingTokenAddresses = list.flatMap((p) => [
+      p.token_0.contract_address,
+      p.token_1.contract_address,
+    ]);
+
+    const mappedListPoolInfo = list.map((l) => {
+      return {
+        poolToken: {
+          balance: `${toDecimals(l.pool_token.balance, l.pool_token.contract_decimals)}`,
+          totalSupply: `${toDecimals(l.pool_token.total_supply, l.pool_token.contract_decimals)}`,
+        },
+        pair: {
+          token0: {
+            id: l.token_0.contract_address,
+            symbol: l.token_0.contract_ticker_symbol,
+            decimals: l.token_0.contract_decimals,
+            balance: `${toDecimals(l.token_0.balance, l.token_0.contract_decimals)}`,
+          },
+          token1: {
+            id: l.token_1.contract_address,
+            symbol: l.token_1.contract_ticker_symbol,
+            decimals: l.token_1.contract_decimals,
+            balance: `${toDecimals(l.token_1.balance, l.token_1.contract_decimals)}`,
+          },
+        },
+      };
+    });
+
+    const prices = await this.getPrices(underlyingTokenAddresses, chain);
+
+    await Promise.all(
+      mappedListPoolInfo.flatMap(async (position) => {
+        for (const token of [position.pair.token0, position.pair.token1]) {
+          if (!prices.has(token.id)) {
+            this.logger.warn(
+              `Failed to fetch price for token ${token.name} (${token.symbol}) - ${token.id} on chain ${chain.id}. Perhaps consider tracking it.`,
+            );
+            return;
+          }
+        }
+
+        const userPoolShare = this.getPoolShare(
+          position.poolToken.balance,
+          position.poolToken.totalSupply,
+        );
+
+        const poolFeature = plainToClass(LiquidityPoolFeature, {
+          address: position.poolToken.contract_address,
+          name: `${position.pair.token0.symbol}/${position.pair.token1.symbol}`,
+          lpToken: plainToClass(ERC20TokenDto, {
+            address: position.poolToken.contract_address,
+            name: 'SushiSwap LP Token',
+            symbol: 'SLP',
+            decimals: 18,
+            isLp: true,
+            totalSupply: position.poolToken.totalSupply,
+          }),
+          stats: {
+            feeRate: null,
+            tvl: null,
+            share: Number(userPoolShare),
+          },
+          tokens: [
+            this.formatPoolTokenBSCTmp(position.pair.token0, prices),
+            this.formatPoolTokenBSCTmp(position.pair.token1, prices),
+          ],
+        });
+
+        response[FeatureEnum.pools].items.push(poolFeature);
+      }),
+    );
+  }
+
+  async PoolsOtherChains(
     response: IntegrationFeaturesDataDto,
     address: Address,
     chain: ChainDto,
@@ -378,6 +470,18 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
         }),
       ),
     );
+  }
+
+  async [FeatureEnum.pools](
+    response: IntegrationFeaturesDataDto,
+    address: Address,
+    chain: ChainDto,
+  ): Promise<void> {
+    if (chain.id === 2) {
+      await this.PoolsBscChain(response, address, chain);
+    } else {
+      await this.PoolsOtherChains(response, address, chain);
+    }
   }
 
   async [FeatureEnum.staking](
@@ -895,6 +999,20 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     return new BigNumber(reserve) //
       .multipliedBy(price)
       .toString();
+  }
+
+  //Need to temporary output info for BSC chain
+  formatPoolTokenBSCTmp(token, prices: Map<Address, number>): PoolTokenDto {
+    return plainToClass(PoolTokenDto, {
+      address: token.id,
+      name: token.name,
+      symbol: token.symbol,
+      reserve: null,
+      decimals: Number(token.decimals),
+      value: token.balance * prices.get(token.id),
+      balance: Number(token.balance),
+      price: prices.get(token.id),
+    });
   }
 
   formatPoolToken(

@@ -1,3 +1,7 @@
+ingress:
+  enabled: true
+  host: account.staging.defyield.xyz
+
 configMaps:
   amm:
     AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
@@ -9,28 +13,36 @@ configMaps:
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
-    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
+    ETHEREUM_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+    BINANCE_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
     POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
-    FTM_URL: https://rpc.ftm.tools/
-    AVAX_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
+    FANTOM_URL: https://rpc.ftm.tools/
+    AVALANCHE_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
     ARBITRUM_URL: https://rpc.ankr.com/arbitrum
     XDAI_URL: https://xdai-archive.blockscout.com
     CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
-    MRIVER_URL: https://rpc.api.moonriver.moonbeam.network
-    HARM_URL: https://a.api.s0.t.hmny.io
+    MOONRIVER_URL: https://rpc.api.moonriver.moonbeam.network
+    HARMONY_URL: https://a.api.s0.t.hmny.io
     HECO_URL: https://http-mainnet.hecochain.com
     POLYGON_RPC_URL: https://polygon-rpc.com/
-    SOL_URL: https://solana-api.projectserum.com/
+    SOLANA_URL: https://solana-api.projectserum.com/
     OKEX_URL: https://exchainrpc.okex.org
     CRONOS_URL: https://evm-cronos.crypto.org
     BOBA_URL: https://mainnet.boba.network/
-    KCC_URL: https://rpc-mainnet.kcc.network
-    OPT_URL: https://mainnet.optimism.io/
-    NEAR_URL: https://mainnet.aurora.dev
+    KUCOIN_URL: https://rpc-mainnet.kcc.network
+    OPTIMISM_URL: https://mainnet.optimism.io/
+    AURORA_URL: https://mainnet.aurora.dev
     TERRA_URL: https://lcd.terra.dev
     METIS_URL: https://andromeda-rpc.metis.io/
     RONIN_URL: https://api.roninchain.com/rpc
+    GNOSIS_URL: https://poa-xdai-archival.gateway.pokt.network/v1/lb/61f959410d66d80038fc1da0
+    KLAYTN_URL: https://public-node-api.klaytnapi.com/v1/cypress
+    FUSE_URL: https://rpc.fuse.io
+    KAVA_URL: https://rpc.kava.io
+    CARDANO_URL: https://google.com
+    COSMOS_URL: https://google.com
+    OSMOSIS_URL: https://google.com
+    SECRET_URL: https://google.com
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
@@ -53,43 +65,13 @@ configMaps:
     KCC_BALANCES_CHECKER_ADDRESS: '0x11e14AEABbCD1774B37C4EE5E1aD3c831ACc2A2c'
     NEAR_BALANCES_CHECKER_ADDRESS: '0x1861eb1Cc764032509e4d2FF545138Be0ad3B240'
     METIS_BALANCES_CHECKER_ADDRESS: '0x1861eb1cc764032509e4d2ff545138be0ad3b240'
-  nft:
-    OPEN_SEA_URL: https://api.opensea.io/api/v1
-    OPEN_SEA_API_KEY: df9bceb365ed42a99ea5bac8cda8dc32
-    OPEN_SEA_INTERVAL: 2
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: production
+    NODE_ENV: development
   params:
     ETH_BALANCES_CHECKER_BATCH_SIZE: 2000
-    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
-    CARDANO_BLOCKFROST_API_KEY: mainnetDGLOdhwzeWRwDgIrlO22kRh3BJwPA2t0
-  temp:
-    DB_HOST: productionm.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    DB_PORT: 5432
-    DB_DATABASE: defi
-    DB_USERNAME: prodashuser
-    DB_PASSWORD: FhRM4BHV4Rjnj6RQ
-    REDIS_HOST: 3.69.250.41
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    REDIS_ASSETS_CACHE_TTL: 900
-    BSCSCAN_URL: https://api.bscscan.com/api
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    ETHERSCAN_URL: https://api.etherscan.io/api
-    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    ETHERSCAN_API_URL: https://api.etherscan.io/api
-    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    AWS_REGION: eu-central-1
-    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
-    AWS_SECRET_ACCESS_KEY: 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
-    COVALENT_URL: https://api.covalenthq.com/v1
-    COVALENT_KEY: ckey_8a12ec5b8243410b9960bb90ad0
-    POLYGONSCAN_URL: https://api.polygonscan.com/api
-    POLYGONSCAN_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 
 secrets:
 - database
@@ -99,3 +81,6 @@ secrets:
 - logs
 - covalent
 - polygonscan
+- sentry
+- cardano
+- opensea

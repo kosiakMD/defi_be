@@ -35,6 +35,9 @@ import {
   AnchorProtocolEnum,
   TerraswapProtocolEnum,
   AstroportProtocolEnum,
+  MirrorProtocolEnum,
+  MarinadeProtocolEnum,
+  MinswapProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -78,7 +81,10 @@ export type ProtocolName =
   | SundaeProtocolEnum
   | AnchorProtocolEnum
   | TerraswapProtocolEnum
-  | AstroportProtocolEnum;
+  | AstroportProtocolEnum
+  | MarinadeProtocolEnum
+  | MinswapProtocolEnum
+  | MirrorProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

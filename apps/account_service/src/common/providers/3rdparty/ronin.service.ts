@@ -1,6 +1,8 @@
+import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
+
 import { Injectable } from '@nestjs/common';
 
-import { Address, ChainIdEnum } from '@app/common';
+import { Address, ChainNameEnum } from '@app/common';
 
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
 
@@ -16,10 +18,19 @@ export class RoninService {
   private readonly roninPrefixRegExp = new RegExp(`^${this.roninPrefix}`);
   private readonly roninAddressRegExp = new RegExp(`^${this.roninPrefix}${this.hashStringRegExp}$`);
 
-  private readonly web3: any;
+  private web3: any;
 
-  constructor(private readonly web3Provider: Web3Provider) {
-    this.web3 = this.web3Provider.getInstance(ChainIdEnum.ronin);
+  constructor(
+    private readonly web3Provider: Web3Provider,
+    private readonly chainsService: ChainsService,
+  ) {
+    this.onModuleInit();
+  }
+
+  async onModuleInit() {
+    this.web3 = this.web3Provider.getInstance(
+      await this.chainsService.getChainIdByName(ChainNameEnum.ronin),
+    );
   }
 
   public async getBalances(address: Address, tokensAddresses: Address[]): Promise<Balance> {

@@ -11,6 +11,7 @@ import { ChainsModule } from '../chains/chains.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ThegraphModule } from '../subgraphs/thegraph.module';
 import { LiquidityPools } from './features/liquidity-pools';
+import { CardanoService } from './helpers/cardano/cardano.service';
 import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
 import AaveProtocolV2 from './protocols/aaveProtocolV2';
@@ -24,6 +25,8 @@ import { AnchorLending } from './protocols/anchor/anchor.lending';
 import { AnchorPools } from './protocols/anchor/anchor.pools';
 import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 import { AnchorStaking } from './protocols/anchor/anchor.staking';
+import { AstroportBootstrap } from './protocols/astroport/astroport.bootstrap';
+import { AstroportLockdrop } from './protocols/astroport/astroport.lockdrop';
 import { AstroportPools } from './protocols/astroport/astroport.pools';
 import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import { AstroportStaking } from './protocols/astroport/astroport.staking';
@@ -52,6 +55,15 @@ import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { IslandswapPools } from './protocols/islandswap/islandswap.pools';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
+import { MarinadeFarms } from './protocols/marinade/marinade.farms';
+import { MarinadePools } from './protocols/marinade/marinade.pools';
+import MarinadeProtocol from './protocols/marinade/marinade.protocol';
+import { MinswapFarms } from './protocols/minswap/minswap.farms';
+import { MinswapPools } from './protocols/minswap/minswap.pools';
+import MinswapProtocol from './protocols/minswap/minswap.protocol';
+import { MirrorMintService } from './protocols/mirror/mirror.mint.service';
+import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
+import { MirrorStaking } from './protocols/mirror/mirror.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
@@ -151,10 +163,19 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
+const Marinade = [MarinadeProtocol, MarinadePools, MarinadeFarms];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
-const Astroport = [AstroportProtocol, AstroportPools, AstroportStaking];
+const Astroport = [
+  AstroportProtocol,
+  AstroportPools,
+  AstroportStaking,
+  AstroportLockdrop,
+  AstroportBootstrap,
+];
 const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
+const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
+const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -186,6 +207,7 @@ const ProtocolList = [
   ...DefiKingdoms,
   ...Ellipsis,
   ...Islandswap,
+  ...Mirror,
   ...Mojitoswap,
   ...Olympus,
   ...Orca,
@@ -200,6 +222,8 @@ const ProtocolList = [
   ...VVS,
   ...Viperswap,
   ...Wonderland,
+  ...Marinade,
+  ...Minswap,
 ];
 
 @Module({
@@ -228,6 +252,7 @@ const ProtocolList = [
     Web3ProviderService,
     MulticallAggregator,
     LiquidityPools,
+    CardanoService,
   ],
   exports: [ProtocolService],
 })

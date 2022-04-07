@@ -5,6 +5,8 @@ import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestj
 type DP<T> = DeepPartial<T>;
 
 @Injectable()
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export abstract class CrudService<T> {
   protected constructor(private readonly entityRepository: Repository<DP<T>> | any) {}
 

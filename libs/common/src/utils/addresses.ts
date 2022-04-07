@@ -55,6 +55,22 @@ export function isCardanoAddress(address: string): boolean {
   return !!address.match(/^addr1.*/);
 }
 
+export function isKavaAddress(address: string): boolean {
+  return !!address.match(/^kava1.*/);
+};
+
+export function isCosmosAddress(address: string): boolean {
+  return !!address.match(/^cosmos1.*/);
+};
+
+export function isOsmosisAddress(address: string): boolean {
+  return !!address.match(/^osmo1.*/);
+};
+
+export function isSecretAddress(address: string): boolean {
+  return !!address.match(/^secret1.*/);
+};
+
 export function isTerraAddress(address: string): boolean {
   try {
     const { prefix: decodedPrefix } = bech32.decode(address);
@@ -65,7 +81,16 @@ export function isTerraAddress(address: string): boolean {
 }
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [isCardanoAddress, isETHAddress, isSolAddress, isTerraAddress];
+  const addressChecks = [
+    isCardanoAddress,
+    isETHAddress,
+    isSolAddress,
+    isTerraAddress,
+    isCosmosAddress,
+    isKavaAddress,
+    isOsmosisAddress,
+    isSecretAddress,
+  ];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

@@ -77,7 +77,7 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
               protocolName: args?.[0]?.params?.protocolName,
             },
           });
-          throwError(exception);
+          return throwError(() => (exception instanceof Error ? exception : new Error(exception)));
         }),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore

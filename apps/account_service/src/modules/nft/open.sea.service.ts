@@ -7,11 +7,11 @@ import { RateLimiter } from 'limiter';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainAbbrEnum, ChainIdEnum, CurrentPricesPayload, Logger } from '@app/common';
+import { Address, ChainAbbrEnum, ChainNameEnum, CurrentPricesPayload, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { ChainIdToAbbr, ChainIdToName } from '@app/common/constant/dictionaries';
 import {
@@ -33,6 +33,7 @@ import { getKey } from '@app/common/utils/string';
 
 import { BaseCollectionDto, NftAssetDto as OpenSeaNftAssetDto, OrderDto } from '../../common/dto';
 
+import { ChainsService } from '../chains/chains.service';
 import { NftBasicService } from './nft.basic.service';
 
 interface Prices {
@@ -40,10 +41,10 @@ interface Prices {
   price: number;
 }
 
-export class OpenSeaService extends NftBasicService {
+export class OpenSeaService extends NftBasicService implements OnModuleInit {
   public readonly project = NftProjectEnum.openSea;
   public readonly chains = [ChainAbbrEnum.eth];
-  public readonly chainsIds = [ChainIdEnum.eth];
+  public readonly chainsIds = [];
 
   protected readonly url: string;
   private readonly API_KEY: string;
@@ -58,6 +59,7 @@ export class OpenSeaService extends NftBasicService {
     protected readonly priceService: PriceService,
     protected readonly configService: ConfigService,
     protected readonly httpService: HttpService,
+    private readonly chainsService: ChainsService,
   ) {
     super();
     this.url = this.configService.get<string>('OPEN_SEA_URL');
@@ -69,6 +71,10 @@ export class OpenSeaService extends NftBasicService {
       tokensPerInterval: this.configService.get<number>('OPEN_SEA_INTERVAL'),
       interval: 'second',
     });
+  }
+
+  async onModuleInit() {
+    this.chainsIds.push(await this.chainsService.getChainIdByName(ChainNameEnum.eth));
   }
 
   private static getAssetKey(...seed: Array<string | number>): string {
@@ -85,7 +91,7 @@ export class OpenSeaService extends NftBasicService {
 
   public async getCollectionsByAccounts(
     accounts: Address[],
-    chains: ChainIdEnum[],
+    chains: number[],
     collection?: string,
   ): Promise<NftCollectionsByAccounts> {
     const collectionsByAccounts = new Map<Address, CollectionChainsDto>();
@@ -202,7 +208,7 @@ export class OpenSeaService extends NftBasicService {
         name,
         slug,
         symbol,
-        chain: ChainIdEnum.eth,
+        chain: 1,
         project: this.project,
         tokenStandard: contract?.tokenStandard,
       }),
@@ -574,7 +580,10 @@ export class OpenSeaService extends NftBasicService {
     collection: string,
     chainsIds: number[],
   ): Promise<NftAssetsByAccounts> {
-    const { prices } = await this.priceService.fetchTokenPrices([ZERO_ADDRESS], ChainIdEnum.eth);
+    const { prices } = await this.priceService.fetchTokenPrices(
+      [ZERO_ADDRESS],
+      await this.chainsService.getChainIdByName(ChainNameEnum.eth),
+    );
 
     const rawAssets = await this.getRawAssetsByAccount(account, collection);
 

@@ -9,7 +9,7 @@ import { Web3Service } from '../../common/providers/chainRelated/web3.service';
 
 import { TransactionsController } from '../../controllers/transactions.controller';
 import { BlacklistModule } from '../blacklists/blacklist.module';
-import { ChainsModule } from '../chains.module';
+import { ChainsModule } from '../chains/chains.module';
 import { ScansApiModule } from '../scans.api.module';
 import { BscscanTransactionsService } from './bscscan.transactions.service';
 import { TransactionsNewEntity } from './entities/transactions.new.entity';

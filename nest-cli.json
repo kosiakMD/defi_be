@@ -77,6 +77,21 @@
         ]
       }
     },
+    "assets_service": {
+      "type": "application",
+      "root": "apps/assets_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/assets_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/assets_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/assets_service"
+          }
+        ]
+      }
+    },
     "rpc_nodes_service": {
       "type": "application",
       "root": "apps/rpc_nodes_service",
@@ -204,6 +219,21 @@
       "sourceRoot": "jobs/lambda_protocol_prices/src",
       "compilerOptions": {
         "tsConfigPath": "jobs/lambda_protocol_prices/tsconfig.app.json"
+      }
+    },
+    "categorization_tool": {
+      "type": "application",
+      "root": "apps/categorization_tool",
+      "entryFile": "main",
+      "sourceRoot": "apps/categorization_tool/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/categorization_tool/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/categorization_tool"
+          }
+        ]
       }
     }
   }

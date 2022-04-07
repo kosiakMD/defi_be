@@ -1,16 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '@app/common/enum';
-
 import { TransactionCovalent } from '../transactions.interfaces';
 
 export class TransactionsCovalentDto implements TransactionCovalent {
-  @ApiProperty({
-    enum: ChainIdEnum,
-    enumName: 'ChainIdEnum',
-    example: ChainIdEnum.eth,
-  })
-  chainId: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chainId: number;
 
   @ApiProperty({ type: Number, example: 11782395 })
   blockNumber: number;

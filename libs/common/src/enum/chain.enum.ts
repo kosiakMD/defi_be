@@ -27,6 +27,7 @@ export enum ChainAbbrEnum {
   kava = 'kava',
   osmosis = 'osmosis',
   secret = 'secret',
+  iotex = 'iotex',
 }
 
 export enum ChainNameEnum {
@@ -58,6 +59,7 @@ export enum ChainNameEnum {
   kava = 'kava',
   osmosis = 'osmosis',
   secret = 'secret',
+  iotex = 'iotex',
 }
 
 export enum ChainIdEnum {
@@ -83,12 +85,13 @@ export enum ChainIdEnum {
   klay = 20,
   fuse = 21,
   cardano = 22,
-  metis = 24,
-  ronin = 27,
-  cosmos = 23,
-  kava = 28,
-  osmosis = 29,
-  secret = 30,
+  metis = 23,
+  ronin = 24,
+  cosmos = 25,
+  kava = 26,
+  osmosis = 27,
+  secret = 28,
+  iotex = 29,
 }
 
 // INFO: https://api.coingecko.com/api/v3/asset_platforms
@@ -122,6 +125,7 @@ export enum CoingeckoPlatformEnum {
   kava = 'kava',
   osmosis = 'osmosis',
   secret = 'secret',
+  iotex = 'iotex',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -146,7 +150,7 @@ export enum AbsoluteChainIdEnum {
   klay = 8217,
   fuse = 122,
   metis = 1088,
-
+  iotex = 1099,
   // INFO: Not EVM chains
   cardano = 1003,
   cosmos = 2004,

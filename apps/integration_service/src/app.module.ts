@@ -78,6 +78,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
     },
+    // TODO: causes the controller to get called twice
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

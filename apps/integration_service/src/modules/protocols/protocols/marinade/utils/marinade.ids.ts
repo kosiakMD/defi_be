@@ -1,0 +1,13 @@
+import { PublicKey } from '@solana/web3.js';
+
+const QUARRY_MINE_PROGRAM_ID = new PublicKey('QMNeHCGYnLVDn1icRAfQZpjPLBNkfGbSKRB83G5d8KB');
+const QUARRY_MERGE_MINE_PROGRAM_ID = new PublicKey('QMMD16kjauP5knBwxNUJRZ1Z5o3deBuFrqVjBVmmqto');
+const QUARRY_MINT_WRAPPER_PROGRAM_ID = new PublicKey('QMWoBmAyJLAsA1Lh9ugMTw2gciTihncciphzdNzdZYV');
+const QUARRY_REEDEMER_PROGRAM_ID = new PublicKey('QRDxhMw1P2NEfiw5mYXG79bwfgHTdasY2xNP76XSea9');
+
+export {
+  QUARRY_MINE_PROGRAM_ID,
+  QUARRY_MERGE_MINE_PROGRAM_ID,
+  QUARRY_MINT_WRAPPER_PROGRAM_ID,
+  QUARRY_REEDEMER_PROGRAM_ID,
+};

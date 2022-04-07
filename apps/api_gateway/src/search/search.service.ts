@@ -11,6 +11,7 @@ import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { BaseService } from '../common/services/base.service';
 
+import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
 import { addressSearchResultParser } from './utils/search.utils';
@@ -34,6 +35,15 @@ export class SearchService extends BaseService {
     this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunities);
   }
 
+  public async getAddressSuggestions(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
+    const { text } = query;
+    // TODO extend this implementation to get all ENS,TNS and etc resolves + check which networks has the query address
+    if (isSomeAddress(text)) {
+      return [new AddressSuggestionDto(text)];
+    }
+    return this.tryToResolveAddress(query);
+  }
+
   public async search(query: SearchQueryDto): Promise<SearchResults> {
     const { text, limit } = query;
     if (isSomeAddress(text)) {
@@ -51,6 +61,21 @@ export class SearchService extends BaseService {
       this.logger.debug(`Error to resolve address ${error}`);
     }
     return this.getSearchEntries({ text, limit });
+  }
+
+  private async tryToResolveAddress(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
+    const { text } = query;
+    // need it to check ENS name on all networks
+    const substitution = text.endsWith('.') ? text.slice(0, -1) : text;
+    const addresses = await Promise.all([
+      this.web3NameService.resolveName(`${substitution}.eth`),
+      this.web3NameService.resolveName(`${substitution}.tns`),
+      this.web3NameService.resolveName(`${substitution}.ust`),
+      this.web3NameService.resolveName(text),
+    ]);
+    return addresses //
+      .filter((address) => !!address)
+      .map((address) => new AddressSuggestionDto(address));
   }
 
   private getServiceUrl(serviceName: ServiceEnum): string {

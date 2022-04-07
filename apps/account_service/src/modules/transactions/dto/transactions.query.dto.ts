@@ -3,11 +3,9 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validato
 
 import { BadRequestException } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common/enum';
-
 interface TransactionQuery {
   addresses: string[];
-  chains: ChainIdEnum[];
+  chains: number[];
 }
 
 export class TransactionsQueryDto implements TransactionQuery {
@@ -20,7 +18,7 @@ export class TransactionsQueryDto implements TransactionQuery {
   })
   @IsArray()
   @IsInt({ each: true })
-  chains: ChainIdEnum[] = [ChainIdEnum.eth];
+  chains: number[] = [1];
 
   @IsNotEmpty()
   @IsString({ each: true })

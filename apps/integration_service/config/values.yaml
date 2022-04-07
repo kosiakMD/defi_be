@@ -1,3 +1,7 @@
+ingress:
+  enabled: true
+  host: integration.staging.defyield.xyz
+
 configMaps:
   amm:
     AMM_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/tretiakpk/sushiswap-fork-of-uniswap-v2
@@ -51,11 +55,10 @@ configMaps:
     SUSHISWAP_GNOSIS_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/matthewlilley/xdai-minichef
     SUSHISWAP_GNOSIS_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-bentobox
     SUSHISWAP_GNOSIS_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-exchange
+    MINSWAP_URL: https://monorepo-mainnet-prod.minswap.org/graphql
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
-    BLOCKS_BSC_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/pancakeswap/blocks
   links:
-    VAULT_SUSHISWAP_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/
     THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     ETH_URL: https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7
@@ -68,7 +71,7 @@ configMaps:
     OPEN_SEA_URL: https://api.opensea.io/api/v1
     AVAX_URL: https://api.avax.network/ext/bc/C/rpc
     CELO_URL: https://forno.celo.org
-    HARM_URL: https://api.harmony.one
+    HARM_URL: https://a.api.s0.t.hmny.io
     HECO_URL: https://http-mainnet-node.huobichain.com
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     XDAI_URL: https://rpc.xdaichain.com
@@ -83,6 +86,7 @@ configMaps:
     SUNDAESWAP_URL: https://stats.sundaeswap.finance/graphql
     TERRA_URL: https://lcd.terra.dev
     GNOSIS_URL: https://rpc.xdaichain.com
+    AURORA_URL: https://mainnet.aurora.dev
   endpoints:
     ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service
@@ -94,34 +98,24 @@ configMaps:
     ACCOUNT_BALANCE: v1/balances
     ACCOUNT_ASSETS: v1/assets
     ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
+  blockscan:
+    BLOCKSCAN_BNB_KEY: VEZ25IGVDIC7RHYR6S4PFNZQBSMITSX8PP
+    BLOCKSCAN_ETH_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
+    BLOCKSCAN_BNB_URL: https://api.bscscan.com/api
+    BLOCKSCAN_ETH_URL: https://api.etherscan.io/api
+    BLOCKSCAN_FTM_KEY: QSA6NJ6SGZG2MK13Q86MS3JYUB5PQQ1UGZ
+    BLOCKSCAN_FTM_URL: https://api.ftmscan.com/api
+    BLOCKSCAN_MOVR_KEY: EY5CDJTTRI349GAY4A382AC7G9WNH3Y1Y3
+    BLOCKSCAN_MOVR_URL: https://api-moonriver.moonscan.io/api
+    BLOCKSCAN_PLG_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
+    BLOCKSCAN_PLG_URL: https://api.polygonscan.com/api
   params:
     JOBS_CACHE_TTL_IN_SECONDS: 86400
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: production
-    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
-  temp:
-    DB_HOST: productionm.c2ibi3sjxz3a.eu-central-1.rds.amazonaws.com
-    DB_PORT: 5432
-    DB_DATABASE: defi
-    DB_USERNAME: prodashuser
-    DB_PASSWORD: FhRM4BHV4Rjnj6RQ
-    REDIS_HOST: 3.69.250.41
-    REDIS_PORT: 6379
-    REDIS_AUTH: 8GnWB838EUyPpbnoVXnSB4YsYdZHMpNe
-    BSCSCAN_URL: https://api.bscscan.com/api
-    BSCSCAN_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    BSCSCAN_API_URL: https://api.bscscan.com/api
-    BSCSCAN_API_KEY: T9UZFN4Q3DENM183V9DQFT5DBBKZ9TFX3W
-    ETHERSCAN_URL: https://api.etherscan.io/api
-    ETHERSCAN_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    ETHERSCAN_API_URL: https://api.etherscan.io/api
-    ETHERSCAN_API_KEY: UVBZ773WZQ8B6R53APKFFFN4MZ9EZR4F8G
-    AWS_REGION: eu-central-1
-    AWS_ACCESS_KEY_ID: AKIAZDKQQQWB2PUMCMK5
-    AWS_SECRET_ACCESS_KEY: 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
-
+    NODE_ENV: development
 
 secrets:
 - database
@@ -129,3 +123,4 @@ secrets:
 - bscscan
 - etherscan
 - logs
+- sentry

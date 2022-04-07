@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, CurrencyId, ERC20Token, RequestErrorHandler } from '@app/common';
+import { Address, CurrencyId, ERC20Token, RequestErrorHandler } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ETH_BNB_ADDRESS } from '@app/common/constant';
 
@@ -44,7 +44,7 @@ export class PriceService {
   private readonly fetchPricesUrl: string;
   private readonly fetchTimestampPricesUrl: string;
 
-  private static addressArrayToStringInternal(addresses: string[], chain: ChainIdEnum): void {
+  private static addressArrayToStringInternal(addresses: string[], chain: number): void {
     if (isEthChain(chain)) {
       changeTokenArray(NO_DB_ETH_TOKENS, addresses);
     } else {
@@ -52,7 +52,7 @@ export class PriceService {
     }
   }
 
-  private static addressArrayToStringExternal(addresses: string[], chain: ChainIdEnum): void {
+  private static addressArrayToStringExternal(addresses: string[], chain: number): void {
     if (isEthChain(chain)) {
       changeTokenArray(NO_SCAN_ETH_TOKENS, addresses);
     } else {
@@ -76,7 +76,7 @@ export class PriceService {
     );
   }
 
-  private static mapAddressArray(addresses: string[], chain: ChainIdEnum, internal?: number): void {
+  private static mapAddressArray(addresses: string[], chain: number, internal?: number): void {
     internal
       ? PriceService.addressArrayToStringInternal(addresses, chain)
       : PriceService.addressArrayToStringExternal(addresses, chain);
@@ -101,7 +101,7 @@ export class PriceService {
 
   async getTokenPricesWithLp(
     addressesArray: Address[],
-    chain: ChainIdEnum,
+    chain: number,
     internal?: number,
   ): Promise<PriceResponseDto<CurrentPricesPayloadNew>> {
     // TODO: do we need this?
@@ -132,7 +132,7 @@ export class PriceService {
 
   async fetchTokenPrices(
     addressesArray: Address[],
-    chain: ChainIdEnum,
+    chain: number,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     PriceService.mapAddressArray(addressesArray, chain);
 
@@ -166,7 +166,7 @@ export class PriceService {
   @RequestErrorHandler()
   async getBulkPriceAtTimestamp(
     tokens: Address[],
-    chain: ChainIdEnum,
+    chain: number,
     timestamp: number,
     currency?: CurrencyId,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
@@ -186,7 +186,7 @@ export class PriceService {
 
   async getHistoricalPrices(
     assets,
-    chainId: ChainIdEnum,
+    chainId: number,
   ): Promise<PriceServiceResponse<HistoricalPricesMap>> {
     try {
       this.logger.time(`request: chain=${chainId} ${this.getBatchPriceUrl}`);

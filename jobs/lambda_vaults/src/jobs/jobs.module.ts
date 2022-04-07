@@ -59,6 +59,10 @@ import { IslandswapStaking } from './islandswap/islandswap.staking';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
+import { MarinadeFarms } from './marinade/marinade.farms';
+import { MarinadePools } from './marinade/marinade.pools';
+import { MarinadeUtils } from './marinade/marinade.utils';
+import { MinswapPools } from './minswap/minswap.pools';
 import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { OrcaStaking } from './orca/orca.farms';
@@ -127,18 +131,11 @@ const Curve = [
   CurvePoolsFtm,
   CurvePoolsGnosis,
   CurveGaugesGnosis,
-  TrisolarisPools,
-  TrisolarisStaking,
-  OrcaPools,
-  OrcaStaking,
-  AnchorLp,
-  AnchorStaking,
-  SundaeswapPools,
   CurvePoolsHarm,
   CurvePoolsOpt,
   CurvePoolsPlg,
 ];
-
+const Sundaeswap = [SundaeswapPools];
 const DefiKingdoms = [DefiKingdomsPools, DefiKingdomsStaking];
 const Ellipsis = [EllipsisLp, EllipsisStaking];
 const IslandSwap = [IslandswapPools, IslandswapStaking];
@@ -155,7 +152,9 @@ const Trisolaris = [TrisolarisPools, TrisolarisStaking];
 const Uniswap = [UniswapPoolsV2];
 const VVS = [VVSPools, VVSStaking];
 const ViperSwap = [ViperswapPools, ViperswapStaking];
-
+const Marinade = [MarinadePools, MarinadeFarms];
+const SundaeSwap = [SundaeswapPools];
+const Minswap = [MinswapPools];
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
   ...Astroport,
@@ -174,15 +173,19 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Raydium,
   ...Saber,
   ...Spookyswap,
+  ...Sundaeswap,
   ...Terra,
   ...TraderJoe,
   ...Trisolaris,
   ...Uniswap,
   ...VVS,
   ...ViperSwap,
+  ...SundaeSwap,
+  ...Marinade,
+  ...Minswap,
 ];
 
-const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping];
+const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];
 
 @Module({
   imports: [

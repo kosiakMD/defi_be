@@ -5,10 +5,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainDto } from '@app/common/dto';
+import { ChainDto, IntegrationClaimableTokenDto, ClaimableDto } from '@app/common/dto';
 import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
-import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/dto/liquidity.pool.dto';
 import {
   ChainAbbrEnum,
   FeatureEnum,
@@ -16,13 +15,17 @@ import {
   ProtocolNameEnum,
   UniswapProtocolEnum,
 } from '@app/common/enum';
+import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { Address } from '@app/common/types';
 import { keepETHAddresses, normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Asset } from '../../../common/interfaces/transactions.interfaces';
-import { calculatePositionAmounts } from '../../../common/utils/uniswapV3PositionMath';
+import {
+  calculatePositionAmounts,
+  calculateTokensOwed,
+} from '../../../common/utils/uniswapV3PositionMath';
 
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
@@ -35,12 +38,7 @@ import { IPool, ITokenPosition } from './uniswapV3/uniswap.interfaces';
 
 @Injectable()
 export class UniswapProtocolV3 extends DataProviderProtocol {
-  readonly chains = [
-    ChainAbbrEnum.eth,
-    ChainAbbrEnum.opt, // optimism is currently unsupported, however the subgraph apears to work
-    ChainAbbrEnum.arbi, // arbitrum subgraph fails, so will likely need to re-write using web3
-    ChainAbbrEnum.plg,
-  ];
+  readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.opt, ChainAbbrEnum.arbi, ChainAbbrEnum.plg];
   readonly project = ProjectEnum.uniswap;
   readonly name = UniswapProtocolEnum.uniswapV3;
   readonly displayName = 'Uniswap V3';
@@ -165,6 +163,8 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
         feeGrowthInside1LastX128: position.feeGrowthInside1LastX128.toFixed(),
         liquidity: position.liquidity.toFixed(),
         key: this.computeKey(nft.address, position.tickLower, position.tickUpper),
+        tokensOwed0: position.tokensOwed0.toFixed(),
+        tokensOwed1: position.tokensOwed1.toFixed(),
       };
 
       results.set(id, data);
@@ -198,23 +198,54 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
 
     positions.forEach((position) => {
       const pool = new UniswapV3Pool(position.pool);
+      positionCalls.set(`${position.key}.feeGrowthGlobal0X128`, pool.feeGrowthGlobal0X128());
+      positionCalls.set(`${position.key}.feeGrowthGlobal1X128`, pool.feeGrowthGlobal1X128());
+      positionCalls.set(
+        `${position.key}.ticks(${position.tickLower})`,
+        pool.ticks(position.tickLower),
+      );
+      positionCalls.set(
+        `${position.key}.ticks(${position.tickUpper})`,
+        pool.ticks(position.tickUpper),
+      );
       positionCalls.set(`${position.key}.slot0`, pool.slot0());
       positionCalls.set(`positions(${position.key})`, pool.positions(position.key));
     });
 
     const positionResults = await this.multicall.handleInBatches(positionCalls, chain.id);
-    const results = new Map();
+    const results = new Map<string, IPool>();
 
     positions.forEach((position) => {
       const response = positionResults.get(`positions(${position.key})`).output.data;
       const slot0 = positionResults.get(`${position.key}.slot0`).output.data;
+      const tickLower = positionResults.get(`${position.key}.ticks(${position.tickLower})`).output
+        .data;
+      const tickUpper = positionResults.get(`${position.key}.ticks(${position.tickUpper})`).output
+        .data;
+
+      const feeGrowthGlobal0X128 = positionResults.get(`${position.key}.feeGrowthGlobal0X128`)
+        .output.data;
+      const feeGrowthGlobal1X128 = positionResults.get(`${position.key}.feeGrowthGlobal1X128`)
+        .output.data;
 
       results.set(position.key, {
         address: position.pool,
         token0: position.token0,
         token1: position.token1,
+        feeGrowthGlobal0X128: feeGrowthGlobal0X128.toFixed(),
+        feeGrowthGlobal1X128: feeGrowthGlobal1X128.toFixed(),
         sqrtPrice: slot0.sqrtPriceX96.toFixed(),
-        tick: Number(slot0.tick.toFixed()),
+        tickCurrent: Number(slot0.tick.toFixed()),
+        tickLower: {
+          tick: position.tickLower,
+          feeGrowthOutside0X128: tickLower.feeGrowthOutside0X128.toFixed(),
+          feeGrowthOutside1X128: tickLower.feeGrowthOutside1X128.toFixed(),
+        },
+        tickUpper: {
+          tick: position.tickUpper,
+          feeGrowthOutside0X128: tickUpper.feeGrowthOutside0X128.toFixed(),
+          feeGrowthOutside1X128: tickUpper.feeGrowthOutside1X128.toFixed(),
+        },
         liquidity: response.liquidity.toFixed(),
         feeGrowthInside0LastX128: response.feeGrowthInside0LastX128.toFixed(),
         feeGrowthInside1LastX128: response.feeGrowthInside1LastX128.toFixed(),
@@ -240,6 +271,7 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
       reserves.set(
         position.pool,
         new Map([
+          // 0 for starting balance
           [position.token0, 0],
           [position.token1, 0],
         ]),
@@ -247,9 +279,15 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     });
     const addresses = Array.from(addressSet);
 
-    const tokens = await this.accountService.getAssets(addresses, [chain.id]);
-    const { prices } = await this.priceService.getTokenPricesFetch(addresses, chain.id);
-    await this.fillReserves(reserves, chain);
+    if (!addresses.length) {
+      return [new Map(), new Map(), reserves];
+    }
+
+    const [tokens, { prices }] = await Promise.all([
+      this.accountService.getAssets(addresses, [chain.id]),
+      this.priceService.getTokenPricesFetch(addresses, chain.id),
+      this.fillReserves(reserves, chain), // mutate reserves values (no return value)
+    ]);
 
     return [
       new Map(tokens.data.map((token) => [token.address, token])),
@@ -283,15 +321,13 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
     const userTokens = await this.getUserTokens(addresses, chain);
-    if (!userTokens.size) {
-      return [[], []];
-    }
-    const baseData: BaseDataLp[] = [];
-    const errors: string[] = [];
 
     const userPositions = await this.getTokenDetails(userTokens, chain);
     const pools = await this.getPoolDetails(userPositions, chain);
     const [assets, prices, reserves] = await this.getUnderlyingAssets(userPositions, chain);
+
+    const baseData: BaseDataLp[] = [];
+    const errors: string[] = [];
 
     userTokens.forEach((tokens, address) => {
       const items = [];
@@ -300,30 +336,15 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
         const position = userPositions.get(tokenId);
         const pool = pools.get(position.key);
 
-        const poolFeature: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
-          address: pool.address,
-          lpToken: {
-            address: pool.address,
-            decimals: 0,
-            totalSupply: 1,
-          },
-          tokens: [],
-        });
         const token0Asset = assets.get(position.token0);
         const token1Asset = assets.get(position.token1);
 
-        const rawReserve0 = reserves.get(pool.address).get(token0Asset.address);
-        const rawReserve1 = reserves.get(pool.address).get(token1Asset.address);
-
-        if (!token1Asset || !token0Asset || !rawReserve0 || !rawReserve1) {
+        if (!token1Asset || !token0Asset || pool.liquidity === '0') {
           return;
         }
 
-        const reserve0 = normalizeDecimals(rawReserve0.toString(), token0Asset.decimals);
-        const reserve1 = normalizeDecimals(rawReserve1.toString(), token1Asset.decimals);
-
         const { amount0, amount1 } = calculatePositionAmounts({
-          tickCurrent: pool.tick,
+          tickCurrent: pool.tickCurrent,
           tickLower: position.tickLower,
           tickUpper: position.tickUpper,
           token0Decimal: token0Asset.decimals,
@@ -332,15 +353,34 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
           sqrtPrice: pool.sqrtPrice,
         });
 
+        const { amount0: rewardsAmount0, amount1: rewardsAmount1 } = calculateTokensOwed({
+          tickCurrent: pool.tickCurrent,
+          tickLower: pool.tickLower,
+          tickUpper: pool.tickUpper,
+          feeGrowthInside0LastX128: position.feeGrowthInside0LastX128,
+          feeGrowthInside1LastX128: position.feeGrowthInside1LastX128,
+          feeGrowthGlobal0X128: pool.feeGrowthGlobal0X128,
+          feeGrowthGlobal1X128: pool.feeGrowthGlobal1X128,
+          liquidity: position.liquidity,
+        });
+
         const token0: PoolTokenDto = plainToClass(PoolTokenDto, {
           address: token0Asset.address,
           name: token0Asset.name,
           symbol: token0Asset.symbol,
           decimals: token0Asset.decimals,
-          reserve: reserve0.toString(),
+          reserve: normalizeDecimals(
+            reserves
+              .get(pool.address) //
+              .get(token0Asset.address)
+              .toString(),
+            token0Asset.decimals,
+          ),
           value: Number(amount0) * prices.get(token0Asset.address),
           balance: Number(amount0),
           price: prices.get(token0Asset.address),
+          positionInPool: 0,
+          weight: 0.5,
         });
 
         const token1: PoolTokenDto = plainToClass(PoolTokenDto, {
@@ -348,14 +388,61 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
           name: token1Asset.name,
           symbol: token1Asset.symbol,
           decimals: token1Asset.decimals,
-          reserve: reserve1.toString(),
+          reserve: normalizeDecimals(
+            reserves
+              .get(pool.address) //
+              .get(token1Asset.address)
+              .toString(),
+            token1Asset.decimals,
+          ),
           value: Number(amount1) * prices.get(token1Asset.address),
           balance: Number(amount1),
           price: prices.get(token1Asset.address),
+          positionInPool: 1,
+          weight: 0.5,
         });
 
-        poolFeature.tokens.push(token0, token1);
+        const rewards0 = normalizeDecimals(rewardsAmount0, token0.decimals);
+        const rewards1 = normalizeDecimals(rewardsAmount1, token1.decimals);
 
+        const reward0Token = plainToClass(IntegrationClaimableTokenDto, {
+          address: token0.address,
+          name: token0.name,
+          symbol: token0.symbol,
+          decimals: token0.decimals,
+          price: prices.get(token0Asset.address),
+          claimableData: plainToClass(ClaimableDto, {
+            balance: rewards0,
+            value: prices.get(token0Asset.address) * rewards0,
+          }),
+        });
+
+        const reward1Token = plainToClass(IntegrationClaimableTokenDto, {
+          address: token1.address,
+          name: token1.name,
+          symbol: token1.symbol,
+          decimals: token1.decimals,
+          price: prices.get(token1Asset.address),
+          claimableData: plainToClass(ClaimableDto, {
+            balance: rewards1,
+            value: prices.get(token1Asset.address) * rewards1,
+          }),
+        });
+
+        const poolFeature: LiquidityPoolFeature = plainToClass(LiquidityPoolFeature, {
+          address: pool.address,
+          lpToken: {
+            // Its an NFT. fake data here
+            address: pool.address,
+            decimals: 0,
+            totalSupply: 1,
+          },
+          tokens: [token0, token1],
+          rewards: [reward0Token, reward1Token],
+        });
+
+        // If the total value combined is greater than 0
+        // Add to user positions
         if (token0.value + token1.value) {
           items.push(poolFeature);
         }

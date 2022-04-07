@@ -1,18 +1,23 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import type { CardanoBalance } from '../../../common/interfaces/cardano.interface';
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 import { BalancesRequest } from '../../../common/types';
 
 import type { TokenBalance } from '../balances.interfaces';
 
 @Injectable()
-export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
-  constructor(private readonly web3Provider: Web3Provider) {}
+export class CardanoBalancesStrategy
+  extends BaseBalanceStrategy
+  implements BalancesLoadingStrategy
+{
+  constructor(private readonly web3Provider: Web3Provider) {
+    super();
+  }
 
   async getBalances({
     address,
@@ -35,7 +40,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
   private mapCardanoResponse(
     wallet: CardanoBalance,
     tokensFilter: Set<string>,
-    chainId: ChainIdEnum,
+    chainId: number,
   ): TokenBalance[] {
     const tokenBalances: TokenBalance[] = [];
     for (const asset of wallet.amount) {
@@ -53,7 +58,7 @@ export class CardanoBalancesStrategy implements BalancesLoadingStrategy {
     return tokenBalances;
   }
 
-  private returnZeroBalanceAddressOrError(error: any, chainId: ChainIdEnum) {
+  private returnZeroBalanceAddressOrError(error: any, chainId: number) {
     /** blockfrost couldn't load information about the wallet if it has 0 coins. status 404 */
     if (error.status_code === 404) {
       return [

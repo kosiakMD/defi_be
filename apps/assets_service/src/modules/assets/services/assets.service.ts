@@ -49,9 +49,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
           );
         });
       });
-      const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(
-        notCachedAssets
-      );
+      const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(notCachedAssets);
       this.setAssetsToCache(databaseAssets);
 
       return cachedAssets.concat(databaseAssets);

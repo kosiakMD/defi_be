@@ -106,7 +106,7 @@ export class CakeVault
     ];
   }
 
-  formatOpportunity(
+  protected formatOpportunity(
     pool: IStakingFeatureMinimal,
     tokens: TokenMap,
   ): void | IStakingFeatureOpportunity {

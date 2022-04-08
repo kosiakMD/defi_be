@@ -18,8 +18,7 @@ import { HealthController } from '../controllers/health.controller';
         redis: {
           host: configService.get<string>('REDIS_HOST'),
           port: configService.get<number>('REDIS_PORT'),
-          password: configService.get<string>('REDIS_PASSWORD'),
-          maxRetriesPerRequest: configService.get<number>('REDIS_MAX_RETRIES'),
+          password: configService.get<string>('REDIS_AUTH'),
         },
       }),
       inject: [ConfigService],

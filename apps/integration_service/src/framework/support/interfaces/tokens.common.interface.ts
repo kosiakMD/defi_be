@@ -8,10 +8,6 @@ export interface ERC20Token {
   name: string;
   decimals: number;
   price: number;
-  value?: number;
-  balance?: number;
-  reserve?: number;
-  position?: number;
   underlying: ERC20Token[];
 }
 

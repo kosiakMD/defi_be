@@ -1,4 +1,5 @@
 import { ClassConstructor } from 'class-transformer';
+import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -27,6 +28,7 @@ import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { RootPlatform } from '../support/RootPlatform';
+import { IPlatformMeta } from '../support/interfaces';
 import {
   IOpportunityResponse,
   IUserEntryResponse,
@@ -68,7 +70,7 @@ export class PlatformService {
     Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
   }
 
-  private async getPlatform(name) {
+  private async getPlatform(name: string) {
     if (!this.platforms.has(name)) {
       throw new Error('Platform Not Supported');
     }
@@ -79,12 +81,21 @@ export class PlatformService {
   }
 
   public getProtocolList() {
-    return Promise.all(
-      Array.from(this.platforms.entries()).map(async ([name]) => {
-        const instance = await this.getPlatform(name);
-        return instance.getMeta();
+    const data$ = from(this.platforms.keys()).pipe(
+      mergeMap(async (name) => {
+        try {
+          const instance = await this.getPlatform(name);
+          return instance.getMeta();
+        } catch (err) {
+          this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);
+          return null;
+        }
       }),
+      filter((result: IPlatformMeta | null) => !!result),
+      toArray(),
     );
+
+    return lastValueFrom(data$);
   }
 
   public async getUserPositionsForProtocol(

@@ -119,7 +119,7 @@ configMaps:
 
 secrets:
 - database
-- redis
+- redis_stage
 - bscscan
 - etherscan
 - logs

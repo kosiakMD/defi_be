@@ -25,7 +25,7 @@ configMaps:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 
 secrets:
-  - database
+  - database_dev
   - redis
   - bscscan
   - etherscan

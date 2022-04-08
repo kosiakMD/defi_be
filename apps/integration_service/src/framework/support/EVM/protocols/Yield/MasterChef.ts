@@ -5,6 +5,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
+import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
 import { equals, normalizeDecimals, regex, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -96,7 +97,20 @@ export class MasterChef
     context.poolLength = parseInt(context.poolLength, 10);
     context.rewardToken = context.rewardToken.toLowerCase();
     context.totalAllocPoint = parseInt(context.totalAllocPoint, 10);
-    context.rewardPerSecond = context.rewardPerSecond.toString();
+
+    // convert rewards per block to rewards per second to
+    // standardize across chains
+    const avgBlockTime = averageBlockTimeByChain[this.meta.chain] || 1;
+    if (!averageBlockTimeByChain[this.meta.chain]) {
+      this.logger.warn(
+        `Missing Average BlockTIme for chain ${this.meta.chain}`,
+        this.constructor.name,
+      );
+    }
+    context.rewardPerSecond = new BigNumber(context.rewardPerSecond)
+      .dividedBy(avgBlockTime)
+      .toString();
+
     return context;
   }
 

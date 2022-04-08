@@ -4,7 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 
-import { findSubText, Puppeteer } from '../../../utils';
+import { checkingGithubUrl, findSubText, Puppeteer } from '../../../utils';
 import { LinkTypeEnum } from '../../database/enum/link.type.enum';
 import { FilteredLinks, IParsingAbstract } from '../interfaces/protocol.interface';
 import { AbstractStrategy } from './abstract.strategy';
@@ -33,7 +33,7 @@ export class AppPageStrategy implements AbstractStrategy {
       [LinkTypeEnum.DOCS, []],
     ]);
     list.forEach(({ url }) => {
-      if (url?.includes('github')) {
+      if (url?.includes('github') && checkingGithubUrl(url)) {
         return filtered.get(LinkTypeEnum.GITHUB).push(url);
       }
       if (findSubText(url, ['gitbook', 'docs'])) {

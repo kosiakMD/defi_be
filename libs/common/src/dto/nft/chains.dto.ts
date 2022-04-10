@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainCollectionsDto } from '.';
+import { ChainCollectionsDto } from './chain.collections.dto';
 
 export class ChainsDto {
   @ApiProperty({ type: [ChainCollectionsDto] })

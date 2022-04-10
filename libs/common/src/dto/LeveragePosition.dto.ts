@@ -1,8 +1,8 @@
 import { ApiProperty, getSchemaPath } from '@nestjs/swagger';
 
-import { LeverageBorrowingTokenDto } from '@app/common/dto/LeverageBorrowingToken.dto';
-import { LeverageErcToken } from '@app/common/dto/LeverageErcToken.dto';
-import { LPTokenDto } from '@app/common/dto/LpToken.dto';
+import { LeverageBorrowingTokenDto } from './LeverageBorrowingToken.dto';
+import { LeverageErcToken } from './LeverageErcToken.dto';
+import { LPTokenDto } from './LpToken.dto';
 
 export class LeverageFarmingPositionDto {
   @ApiProperty({ type: String, example: '0x60dE7F647dF2448eF17b9E0123411724De6e373D' })

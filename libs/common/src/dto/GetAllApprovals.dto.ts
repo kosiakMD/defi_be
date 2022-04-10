@@ -2,8 +2,8 @@ import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { BaseListQueryDto } from '@app/common/dto/BaseListQuery.dto';
-import { GetAllApprovalsInterface } from '@app/common/interfaces/GetAllApprovals.interface';
+import { BaseListQueryDto } from './BaseListQuery.dto';
+import { GetAllApprovalsInterface } from '../interfaces/GetAllApprovals.interface';
 
 import { ApprovalsSortFieldsEnum } from '../enum/ApprovalsSortFields.enum';
 

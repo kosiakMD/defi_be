@@ -1,15 +1,17 @@
 {
-  "name": "common",
+  "name": "@app/common",
   "version": "1.0.2",
   "description": "Common",
   "main": "./dist/index.js",
   "author": "",
+  "private": true,
   "license": "ISC",
   "engines": {
     "node": ">=14",
     "npm": "^6"
   },
   "scripts": {
+    "build": "tsc -b",
     "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
     "lint-fix": "eslint \"**/{src,apps,libs,test}/**/*.ts\" --fix",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",

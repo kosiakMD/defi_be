@@ -1,3 +1,3 @@
-import { LendingErcToken } from '@app/common/dto/LendingErcToken.dto';
+import { LendingErcToken } from './LendingErcToken.dto';
 
 export class BorrowingToken extends LendingErcToken {}

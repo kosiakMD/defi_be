@@ -1,8 +1,7 @@
 import * as Joi from 'joi';
-
 import { registerAs } from '@nestjs/config';
 
-import { EnvEnum } from '@app/common';
+import { EnvEnum } from '../../enum';
 
 export const appConfig = registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV,

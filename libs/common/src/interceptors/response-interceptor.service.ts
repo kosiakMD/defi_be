@@ -7,14 +7,15 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger, ResponseMetaDto } from '@app/common';
+import { ResponseMetaDto } from '../dto';
 import {
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
   HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
-} from '@app/common/constant';
+} from '../constant';
+import { Logger } from '../Logger';
 
 export interface Response<T> extends EResponse<T, any> {
   data: T;

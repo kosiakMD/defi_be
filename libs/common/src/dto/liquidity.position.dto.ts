@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { Type } from 'class-transformer';
 
-import { IncomeToken } from '@app/common/interfaces';
+import { IncomeToken } from '../interfaces';
 
 export class IncomeLiquidityPositionPair {
   id: string = null;

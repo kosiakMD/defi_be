@@ -1,4 +1,5 @@
-import { Address, ERC20Token } from '@app/common';
+import { Address } from '../types';
+import { ERC20Token } from './index';
 
 export interface BalanceToken {
   chainId?: number;

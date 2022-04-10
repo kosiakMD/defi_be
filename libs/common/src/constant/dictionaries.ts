@@ -1,4 +1,4 @@
-import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '@app/common';
+import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '../enum';
 
 export const ChainIdToAbbr = {
   [ChainIdEnum.arbi]: ChainAbbrEnum.arbi,

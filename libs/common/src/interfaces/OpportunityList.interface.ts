@@ -1,4 +1,4 @@
-import { OpportunityInterface } from '@app/common/interfaces/Opportunity.interface';
+import { OpportunityInterface } from './Opportunity.interface';
 
 export interface OpportunityListInterface {
   items: OpportunityInterface[];

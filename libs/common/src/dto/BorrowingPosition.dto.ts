@@ -1,4 +1,4 @@
-import { LendingErcToken } from '@app/common/dto/LendingErcToken.dto';
+import { LendingErcToken } from './LendingErcToken.dto';
 
 export interface BorrowingPosition {
   address: string;

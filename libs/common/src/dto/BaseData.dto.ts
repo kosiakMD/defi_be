@@ -2,12 +2,11 @@ import { IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ProtocolName } from '@app/common';
-
 import { ChainIdEnum, ProjectEnum, ProtocolTypeEnum, UniswapProtocolEnum } from '../enum';
 import { BaseData } from '../interfaces';
 import { LiquidityPositionDto } from './LiquidityPositions.dto';
 import { StakingPositionFeatureDto } from './StakingPositionFeatureDto';
+import { ProtocolName } from '../types';
 
 export default class BaseDataDto<T = ProtocolTypeEnum> implements BaseData<T> {
   @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })

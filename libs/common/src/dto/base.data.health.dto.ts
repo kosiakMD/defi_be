@@ -1,5 +1,5 @@
-import { ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { ProtocolTypeEnum } from '../enum';
+import { BaseData } from './BaseData';
 
 import { HealthFactorDto } from './HealthFactor.dto';
 

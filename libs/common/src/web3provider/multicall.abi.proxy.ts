@@ -1,8 +1,7 @@
 import { plainToClass } from 'class-transformer';
 
-import { Address } from '@app/common';
-
 import { CallData } from '../dto/CallData';
+import { Address } from '../types';
 
 /**
  * This Helper/Extension adds functionality to static abi classes.

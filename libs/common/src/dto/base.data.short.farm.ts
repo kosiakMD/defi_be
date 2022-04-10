@@ -1,6 +1,6 @@
-import { ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
-import { IntegrationShortFarmPositionDto } from '@app/common/jobs/staking';
+import { ProtocolTypeEnum } from '../enum';
+import { BaseData } from './BaseData';
+import { IntegrationShortFarmPositionDto } from '../jobs/staking';
 
 export class BaseDataShortFarm extends BaseData<ProtocolTypeEnum.shortFarm> {
   items: IntegrationShortFarmPositionDto[];

@@ -1,13 +1,13 @@
 // eslint-disable-next-line max-classes-per-file
-import { IncomeLiquidityPosition } from '@app/common/dto';
-import { ERC20Token } from '@app/common/dto/ERC20Token';
+import { IncomeLiquidityPosition } from '../dto';
+import { ERC20Token } from '../dto/ERC20Token';
 import {
   BurnsInterface,
   MintsInterface,
   SnapshotsInterface,
   SwapsInterface,
-} from '@app/common/interfaces/index';
-import { TokenSymbol } from '@app/common/types';
+} from './index';
+import { TokenSymbol } from '../types';
 
 export interface AmountAble {
   amount?: string;

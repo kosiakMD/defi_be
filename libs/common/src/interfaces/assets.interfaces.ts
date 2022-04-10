@@ -1,5 +1,4 @@
-import { ChainIdEnum } from '@app/common';
-import { AssetState } from '@app/common/enum';
+import { ChainIdEnum, AssetState } from '../enum';
 
 export interface IAssetDto {
   id: number;

@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-
-import { CollectionChainsDto } from '.';
+import { CollectionChainsDto } from './collection.chains.dto';
 
 export class NftCollectionsResponseDto {
   @ApiProperty({

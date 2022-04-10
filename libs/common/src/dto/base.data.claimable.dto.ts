@@ -1,5 +1,6 @@
-import { IntegrationClaimableTokenDto, ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { ProtocolTypeEnum } from '../enum';
+import { BaseData } from './BaseData';
+import { IntegrationClaimableTokenDto } from './IntegrationClaimableToken.dto';
 
 export class BaseDataClaimable extends BaseData<ProtocolTypeEnum.lending> {
   items: IntegrationClaimableTokenDto[];

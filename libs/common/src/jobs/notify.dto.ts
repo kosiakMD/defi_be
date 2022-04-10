@@ -1,6 +1,7 @@
-import { ChainIdEnum, FeatureName, ProtocolName } from '@app/common';
-import { LiquidityPoolFeature } from '@app/common/jobs/pools';
-import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { ChainIdEnum } from '../enum';
+import { LiquidityPoolFeature } from './pools';
+import { IntegrationStakingPositionDto } from './staking';
+import { FeatureName, ProtocolName } from '../types';
 
 // todo: use this in vaults job and integration jobs controller
 

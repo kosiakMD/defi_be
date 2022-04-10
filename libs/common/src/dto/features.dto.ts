@@ -11,8 +11,8 @@ import {
   ProtocolNameEnum,
   SushiSwapProtocolEnum,
   UniswapProtocolEnum,
-} from '@app/common/enum';
-import { FeatureDtoType, Features, FeaturesType, ProtocolName } from '@app/common/types';
+} from '../enum';
+import { FeatureDtoType, Features, FeaturesType, ProtocolName } from '../types';
 
 import { StakingPositionFeatureDto } from './StakingPositionFeatureDto';
 import { ChainDto } from './chain.dto';

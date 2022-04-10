@@ -3,10 +3,10 @@ import {
   LendingPositionDto,
   LiquidityPoolFeatureDto,
   StakingPositionFeatureDto,
-} from '@app/common/dto';
-import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
-import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
-import { StakingProjectDto } from '@app/common/dto/transactions.dto';
+} from '../dto';
+import { HealthFactorDto } from '../dto/HealthFactor.dto';
+import { LiquidityPoolFeature } from '../dto/liquidity.pool.dto';
+import { StakingProjectDto } from '../dto/transactions.dto';
 
 import { LeverageFarmingPosition } from '../interfaces';
 

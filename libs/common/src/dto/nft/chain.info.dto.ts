@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '@app/common';
+import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '../../enum';
 
 export class ChainInfoDto {
   @ApiProperty({ enum: Object.values(ChainIdEnum).filter(Number) })

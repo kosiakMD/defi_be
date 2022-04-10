@@ -2,7 +2,8 @@ import { IsEthereumAddress, IsNumber, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, PoolTokenBase, TokenSymbol } from '@app/common';
+import { Address, TokenSymbol } from '../types';
+import { PoolTokenBase } from '../interfaces';
 
 export default class LiquidityPoolTokenDto implements PoolTokenBase {
   @ApiProperty({ type: String, example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' })

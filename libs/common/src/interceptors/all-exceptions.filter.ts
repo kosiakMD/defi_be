@@ -12,13 +12,15 @@ import { ConfigService } from '@nestjs/config';
 import { HttpAdapterHost } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
+import { EnvEnum } from '../enum';
 import {
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
-} from '@app/common/constant';
+} from '../constant';
+import { ErrorResponseDto } from '../dto';
+import { Logger } from '../Logger';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

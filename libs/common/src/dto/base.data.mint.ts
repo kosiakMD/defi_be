@@ -1,9 +1,9 @@
 // eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 
-import { ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
-import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
+import { ProtocolTypeEnum } from '../enum';
+import { BaseData } from './BaseData';
+import { IntegrationERC20TokenDto } from '../jobs/staking';
 
 export class BaseDataMint extends BaseData<ProtocolTypeEnum.mint> {
   items: IntegrationMintPositionDto[];

@@ -2,7 +2,7 @@ import { IsDateString, IsEthereumAddress, IsNumber, IsString } from 'class-valid
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address } from '@app/common/types';
+import { Address } from '../types';
 
 import { Token } from '../interfaces';
 import EthereumAddressDto from './EthereumAddress.dto';

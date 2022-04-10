@@ -1,6 +1,6 @@
-import { ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
-import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { ProtocolTypeEnum } from '../enum';
+import { BaseData } from './BaseData';
+import { IntegrationStakingPositionDto } from '../jobs/staking';
 
 export class BaseDataStaking extends BaseData<ProtocolTypeEnum.staking> {
   items: IntegrationStakingPositionDto[];

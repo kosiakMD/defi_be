@@ -1,9 +1,8 @@
 import {
-  BaseData,
-  LeverageBorrowingTokenDto,
-  LeverageErcToken,
   ProtocolTypeEnum,
-} from '@app/common';
+} from '../enum';
+import { LeverageBorrowingTokenDto, LeverageErcToken } from '../dto';
+import { BaseData } from './index';
 
 export interface LeverageFarmingPosition {
   address: string;

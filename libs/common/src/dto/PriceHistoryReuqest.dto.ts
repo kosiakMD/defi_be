@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DateString } from '@app/common/types';
+import { DateString } from '../types';
 
 import { TokenHistorical } from '../interfaces';
 

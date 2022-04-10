@@ -1,4 +1,5 @@
-import { Address, ChainIdEnum } from '@app/common';
+import { ChainIdEnum } from '../../enum';
+import { Address } from '../../types';
 
 // https://docs.abracadabra.money/our-ecosystem/our-contracts
 export const Cauldrons: Map<ChainIdEnum, Address[]> = new Map([

@@ -2,7 +2,7 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DetailedResponse } from '@app/common/interfaces';
+import { DetailedResponse } from '../interfaces';
 
 import { ResultStatus } from '../enum';
 

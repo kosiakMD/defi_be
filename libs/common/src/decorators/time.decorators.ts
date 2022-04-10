@@ -1,4 +1,4 @@
-import { Logger } from '@app/common';
+import { Logger } from '../Logger';
 
 const logTimeMsg = (timerName, t0) =>
   `[timer] [${timerName}]: timer ${((new Date().valueOf() - t0) * 0.001).toFixed(3)}s`;

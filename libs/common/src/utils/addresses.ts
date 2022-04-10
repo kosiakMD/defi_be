@@ -1,8 +1,7 @@
 import { PublicKey } from '@solana/web3.js';
 import bech32 from 'bech32';
 import { isAddress as isETHAddress } from 'web3-utils';
-
-import { Address } from '@app/common';
+import { Address } from '../types';
 
 export function splitToAddressesArray(addresses: string | any): Address[] {
   if (!addresses) {

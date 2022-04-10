@@ -1,12 +1,13 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, LPToken, PoolTokenBase, RewardToken, Vault } from '@app/common';
-import { ChainIdEnum, ProjectEnum } from '@app/common/enum';
+import { ChainIdEnum, ProjectEnum } from '../enum';
 
 import { VaultAPYDTO } from './APY.dto';
 import LiquidityPoolTokenDto from './LiquidityPoolToken.dto';
 import { TokenCommonDTO } from './TokenCommon.dto';
+import { LPToken, PoolTokenBase, RewardToken, Vault } from '../interfaces';
+import { Address } from '../types';
 
 class RewardTokenDTO extends TokenCommonDTO implements RewardToken {
   @ApiProperty({ type: String, example: '0x6b3595068778dd592e39a122f4f5a5cf09c90fe2' })

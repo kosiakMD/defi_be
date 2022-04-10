@@ -12,7 +12,7 @@ import {
   HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
-} from '@app/common/constant';
+} from '../constant';
 
 const allowedControllers = [
   'HealthController', // test control

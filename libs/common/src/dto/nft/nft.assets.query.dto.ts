@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, ChainIdEnum } from '@app/common';
+import { ChainIdEnum } from '../../enum';
+import { Address } from '../../types';
 
 export class NftAssetsQueryDto {
   @ApiProperty({

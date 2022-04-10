@@ -1,4 +1,4 @@
-import { splitToArray } from '@app/common/utils/string';
+import { splitToArray } from './string';
 
 export function splitToNumberArray(value: string): number[] {
   return splitToArray(value).map(Number);

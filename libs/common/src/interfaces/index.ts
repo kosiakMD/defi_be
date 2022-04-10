@@ -4,9 +4,9 @@ import {
   ProjectEnum,
   ProtocolTypeEnum,
   ResultStatus,
-} from '@app/common/enum';
-import { PlatformPoolToken, PoolToken } from '@app/common/interfaces/transactions.interfaces';
-import { Address, DateString, ProtocolName, TokenSymbol } from '@app/common/types';
+} from '../enum';
+import { PlatformPoolToken, PoolToken } from './transactions.interfaces';
+import { Address, DateString, ProtocolName, TokenSymbol } from '../types';
 
 export * from './call.data.interfaces';
 export * from './assets.interfaces';

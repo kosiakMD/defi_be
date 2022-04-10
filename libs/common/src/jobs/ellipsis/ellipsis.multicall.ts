@@ -2,7 +2,7 @@ import { JsonFragment } from '@ethersproject/abi';
 import { MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
 
-import { Abis } from '@app/common/jobs/ellipsis/ellipsis.abi';
+import { Abis } from "./ellipsis.abi";
 
 export class EllipsisMulticall extends MultiCall {
   constructor(private readonly web3: Web3) {

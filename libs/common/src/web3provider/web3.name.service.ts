@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainIdEnum } from '..';
 
+// TODO: Review this Import
 import { TNS } from '@tns-money/tns.js';
 
 // const tns = new TNS();

@@ -39,8 +39,8 @@ import {
   MarinadeProtocolEnum,
   MinswapProtocolEnum,
   StaderProtocolEnum,
-} from '@app/common/enum';
-import { AccountBalance } from '@app/common/interfaces';
+} from '../enum';
+import { AccountBalance } from '../interfaces';
 
 export * from './features.types';
 export * from './protocol.types';

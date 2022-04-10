@@ -1,11 +1,9 @@
 import { Injectable } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common';
-import { decodeOutput } from '@app/common/utils';
-
-import { Web3ProviderService } from '.';
 import { CallData } from '../dto/CallData';
-import { concatStrings } from '../utils/string';
+import { concatStrings, decodeOutput } from '../utils';
+import { ChainIdEnum } from '../enum';
+import { Web3ProviderService } from './web3.provider.service';
 
 @Injectable()
 export class MulticallAggregator {

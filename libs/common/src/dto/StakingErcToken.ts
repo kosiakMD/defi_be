@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ERC20Token } from '@app/common/jobs/token';
+// TODO: Why it's imported from here
+import { ERC20Token } from '../jobs/token';
 
 export class StakingErcToken extends ERC20Token {
   @ApiProperty({ type: Number, example: 3759.23 })

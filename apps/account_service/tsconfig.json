@@ -1,3 +1,15 @@
 {
-  "extends": "../../tsconfig.json"
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@app/common/*": [
+        "../../libs/common/src/*"
+      ]
+    }
+  },
+  "references": [
+    {
+      "path": "../../libs/common/tsconfig.json"
+    }
+  ]
 }

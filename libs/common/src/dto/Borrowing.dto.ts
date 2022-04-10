@@ -1,4 +1,4 @@
-import { ProtocolTypeEnum } from '..';
+import { ProtocolTypeEnum } from '../enum';
 import { BaseData } from './BaseData';
 import { BorrowingPosition } from './BorrowingPosition.dto';
 

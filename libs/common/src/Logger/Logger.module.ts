@@ -5,7 +5,7 @@ import { WinstonModule } from 'nest-winston';
 import { WinstonLogger } from 'nest-winston/dist/winston.classes';
 import { WinstonModuleOptions } from 'nest-winston/dist/winston.interfaces';
 
-import { LogRequestMiddleware } from '@app/common/middlewares';
+import { LogRequestMiddleware } from '../middlewares';
 
 import { Logger } from './Logger.service';
 

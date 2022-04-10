@@ -1,10 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, Pool, PoolAPY, PoolToken, PoolTokenDto, PoolTokenId } from '@app/common';
+import { PoolToken, PoolTokenDto } from '../dto';
 
 import { ChainIdEnum, ProjectEnum } from '../enum';
 import { PoolAPYDTO } from './APY.dto';
+import { Pool, PoolAPY, PoolTokenId } from '../interfaces';
+import { Address } from '../types';
 
 class IL implements IL {
   @ApiProperty({ type: Number, example: 1.0611280730220551 })

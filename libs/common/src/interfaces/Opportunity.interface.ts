@@ -1,5 +1,5 @@
-import { FarmInterface } from '@app/common/interfaces/Farm.Interface';
-import { InvestmentTokenInterface } from '@app/common/interfaces/investment.token.interface';
+import { FarmInterface } from './Farm.Interface';
+import { InvestmentTokenInterface } from './investment.token.interface';
 
 export interface OpportunityInterface {
   farm: FarmInterface;

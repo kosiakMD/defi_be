@@ -1,4 +1,4 @@
-import { ChainDto } from '.';
+import { ChainDto } from '../dto';
 
 export class ProtocolDto {}
 

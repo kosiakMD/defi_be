@@ -1,10 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { Exclude, Expose, Type } from 'class-transformer';
-import { ERC20TokenDto } from './index';
+import { ERC20TokenDto, LendingPositionDto } from "./index";
 
-import { FeatureEnum } from '@app/common/enum';
-import { FeatureResult, Features, IntegrationClaimableTokenDto, LendingPositionDto, LeverageFarmingPosition, } from '@app/common';
+import { FeatureEnum } from '../enum';
 import { HealthFactorDto } from './HealthFactor.dto';
+import { FeatureResult, Features } from '../types';
+import { LeverageFarmingPosition } from '../interfaces';
+import { IntegrationClaimableTokenDto } from '../jobs/staking';
 
 export class PoolTokenDto {
   address: string = null;

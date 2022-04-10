@@ -4,14 +4,15 @@ import {
   RONIN_COIN_ADDRESS,
   SOL_COIN_ADDRESS,
   ZERO_ADDRESS,
-} from '@app/common/constant';
+} from '../constant';
 import {
   AbsoluteChainIdEnum,
   ChainAbbrEnum,
   ChainIdEnum,
   CoingeckoPlatformEnum,
-} from '@app/common/enum';
-import { ChainId } from '@app/common/types';
+} from '../enum';
+
+import { ChainId } from '../types';
 
 export const AbsoluteChainIds: Record<ChainIdEnum, AbsoluteChainIdEnum> = {
   [ChainIdEnum.arbi]: AbsoluteChainIdEnum.arbi,

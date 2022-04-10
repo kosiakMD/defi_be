@@ -1,8 +1,7 @@
 import { plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
-
-import { Address } from '@app/common';
-import { CallData } from '@app/common/dto/CallData';
+import { Address } from '../../types';
+import { CallData } from '../../dto/CallData';
 
 export class DynamicContract {
   constructor(public address: Address) {}

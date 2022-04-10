@@ -1,4 +1,4 @@
-import { ProtocolName } from '@app/common/types';
+import { ProtocolName } from '../types';
 
 export interface ProtocolParams {
   protocolName: ProtocolName;

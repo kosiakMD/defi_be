@@ -7,7 +7,7 @@ import * as Transport from 'winston-transport';
 import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
-import { EnvEnum } from '@app/common';
+import { EnvEnum } from '../enum';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 

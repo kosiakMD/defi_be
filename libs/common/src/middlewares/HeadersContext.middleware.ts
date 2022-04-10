@@ -5,8 +5,8 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger';
-import { HEADER_REQUEST_ID, HEADER_SESSION_ID, HEADER_TIMESTAMP_ENTRY } from '@app/common/constant';
+import { Logger } from '../Logger';
+import { HEADER_REQUEST_ID, HEADER_SESSION_ID, HEADER_TIMESTAMP_ENTRY } from '../constant';
 
 @Injectable()
 export class HeadersContextMiddleware implements NestMiddleware {

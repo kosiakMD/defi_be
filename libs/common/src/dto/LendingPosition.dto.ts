@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-import { LendingErcToken } from '@app/common/dto/LendingErcToken.dto';
+import { LendingErcToken } from './LendingErcToken.dto';
 
 export class LendingPositionDto {
   @Expose()

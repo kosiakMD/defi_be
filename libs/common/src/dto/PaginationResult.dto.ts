@@ -1,4 +1,4 @@
-import { BaseEntity } from '@app/common/entities/Base.entity';
+import { BaseEntity } from '../entities/Base.entity';
 
 export class PaginationResult<T extends BaseEntity> {
   // All results

@@ -2,9 +2,8 @@
 import { plainToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
 
-import { ICallData } from '@app/common';
-
 import { InputOutput } from './InputOutput';
+import { ICallData } from '../interfaces';
 
 export class CallData<T = any> implements ICallData {
   address: string;

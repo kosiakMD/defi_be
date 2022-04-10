@@ -2,7 +2,8 @@ import { Exclude, Expose, Type } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, ChainIdEnum, NftProjectEnum } from '@app/common';
+import { ChainIdEnum, NftProjectEnum } from '../../enum';
+import { Address } from '../../types';
 
 import { LinksDto } from '.';
 import { CollectionDisplayDataDto } from './collection.display.data.dto';

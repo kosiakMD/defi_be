@@ -3,7 +3,7 @@ import { Connection } from '@solana/web3.js';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainIdEnum } from '..';
+import { ChainIdEnum } from '../enum';
 
 @Injectable()
 export class Web3SolanaProviderService {

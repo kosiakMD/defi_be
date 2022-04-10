@@ -1,10 +1,8 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createParamDecorator, HttpException, HttpStatus } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common/enum';
-import { Address } from '@app/common/types';
-import { filterByEnum, splitToArray, splitToNumberArray } from '@app/common/utils';
-import { unifyAddress, unifyAddresses } from '@app/common/utils/addresses';
+import { Address } from '../types';
+import { ChainIdEnum } from '../enum';
+import { filterByEnum, splitToArray, splitToNumberArray, unifyAddress, unifyAddresses } from '../utils';
 
 export * from './error.decorators';
 

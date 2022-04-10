@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { plainToClass } from 'class-transformer';
 
-import { ERC20Token } from '@app/common/jobs/token';
+import { ERC20Token } from './token';
 
 import { IntegrationClaimableTokenDto } from './staking';
 

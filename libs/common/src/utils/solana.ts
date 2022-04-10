@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 
-import { PoolTokenDto } from '@app/common/jobs/pools';
+import { PoolTokenDto } from '../jobs/pools';
 
 export function tokensWithPrices(
   tokens: { address; reserve; price; positionInPool }[],

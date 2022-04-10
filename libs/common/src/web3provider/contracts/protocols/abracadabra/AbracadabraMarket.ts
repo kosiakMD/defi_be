@@ -1,6 +1,6 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MultiCallAbiProxy } from '../../../multicall.abi.proxy';
 
 export class CauldronContract extends MultiCallAbiProxy {
   static readonly collaterizationRate: AbiItem = {

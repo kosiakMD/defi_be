@@ -1,9 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { AxiosError } from 'axios';
-
 import { HttpException } from '@nestjs/common';
-
-import { Logger } from '@app/common';
+import { Logger } from '../Logger';
 
 export const RequestErrorHandler = function () {
   return function (

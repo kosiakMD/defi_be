@@ -2,8 +2,8 @@
 import { IsDateString, IsNumber } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
+import { GasHistory, GasPrice } from '../interfaces';
 
-import { GasHistory, GasPrice } from '@app/common';
 
 export class GasPriceDto implements GasPrice {
   @ApiProperty({ type: Number, example: 146000000000 })

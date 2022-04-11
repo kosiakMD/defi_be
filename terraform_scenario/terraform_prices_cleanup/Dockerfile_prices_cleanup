@@ -1,0 +1,10 @@
+FROM amazon/aws-lambda-nodejs:14
+ADD ./jobs/lambda_prices_cleanup ./
+#RUN yum install -q -y git openssh zip
+RUN npm install --global yarn
+#ARG function_name
+#ENV env_function_name=$function_name
+RUN yarn install
+RUN yarn run compile --outDir ./
+#RUN yarn run build
+CMD [ "lambda.default" ]

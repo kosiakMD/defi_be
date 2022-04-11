@@ -19,6 +19,7 @@ import {
   IWalletUserEntry,
 } from './interfaces';
 
+// TODO Make Meta generic & extend
 export abstract class RootPlatform implements IRootPlatform {
   protected abstract logger: Logger;
   protected abstract moduleRef: ModuleRef;

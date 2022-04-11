@@ -16,8 +16,9 @@ import { HealthController } from '../controllers/health.controller';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         redis: {
-          host: configService.get('cache.host'),
-          port: configService.get('cache.port'),
+          host: configService.get<string>('REDIS_HOST'),
+          port: configService.get<number>('REDIS_PORT'),
+          password: configService.get<string>('REDIS_AUTH'),
         },
       }),
       inject: [ConfigService],
@@ -25,7 +26,10 @@ import { HealthController } from '../controllers/health.controller';
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        ttl: configService.get('REDIS_GATEWAY_CACHE_TTL') || 900,
+        host: configService.get<string>('cache.host'),
+        port: configService.get<number>('cache.port'),
+        password: configService.get<string>('cache.password'),
+        ttl: configService.get<number>('cache.ttl'),
       }),
       inject: [ConfigService],
       isGlobal: true,

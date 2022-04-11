@@ -12,6 +12,7 @@ export class CacheConfigService implements CacheOptionsFactory {
       store: redisStore,
       host: this.configService.get<string>('cache.host'),
       port: this.configService.get<number>('cache.port'),
+      password: this.configService.get<string>('cache.password'),
       ttl: this.configService.get('cache.ttl'),
     };
   }

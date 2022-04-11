@@ -69,10 +69,10 @@ export class SearchService extends BaseService {
     // need it to check ENS name on all networks
     const substitution = text.endsWith('.') ? text.slice(0, -1) : text;
     const addresses = await Promise.all([
-      this.web3NameService.resolveName(`${substitution}.eth`, true),
-      this.web3NameService.resolveName(`${substitution}.tns`, true),
-      this.web3NameService.resolveName(`${substitution}.ust`, true),
-      this.web3NameService.resolveName(text, true),
+      this.web3NameService.resolveNameResponseWithName(`${substitution}.eth`),
+      this.web3NameService.resolveNameResponseWithName(`${substitution}.tns`),
+      this.web3NameService.resolveNameResponseWithName(`${substitution}.ust`),
+      this.web3NameService.resolveNameResponseWithName(text),
     ]);
     return addresses //
       .filter((result) => !!result)

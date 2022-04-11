@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -59,13 +59,14 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
     }),
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'api-gateway-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('gateway', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 300e3,

@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -42,13 +42,14 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
       isGlobal: true,
     }),
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'rpc-nodes-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('account', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,

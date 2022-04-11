@@ -1,5 +1,6 @@
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -16,9 +17,18 @@ import { PricesModule } from './modules/prices/prices.module';
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'assets-service' }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useClass: DatabaseConfigService,
+    }),
+    HttpTracingModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
+        maxRedirects: configService.get<number>('HTTP_MAX_REDIRECTS') || 2,
+      }),
+      inject: [ConfigService],
     }),
     AssetsModule,
     AwsModule,

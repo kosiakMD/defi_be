@@ -7,7 +7,9 @@ pipeline {
         string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_pools", trim: true)
         string(name: "FUNCTION_NAME", description: "Function name use for naming. Must be lowercase", defaultValue: "vaults", trim: true)
         string(name: "ENVIRONMENT", description: "Environment name use for naming. Must be lowercase", defaultValue: "dev", trim: true)
-        string(name: "PROJECT_DIR", description: "Directory name with project files.", defaultValue: "terraform_vaults", trim: true)
+        string(name: "PROJECT_DIR", description: "Directory name with project files.", defaultValue: "terraform_scenario/terraform_vaults", trim: true)
+        string(name: "ENV_REGION", description: "AWS region for environment. Must be lowercase", defaultValue: "eu-central-1", trim: true)
+        string(name: "SCHEDULE_MINUTES", description: "Amazon EventBridge Rules. Run Lambda function every x minutes", defaultValue: "5", trim: true)
     }
     options {
         buildDiscarder(
@@ -23,8 +25,8 @@ pipeline {
         DOCKER_REGISTRY     = ""
         DOCKER_IMAGE        = ""
         DOCKER_REGISTRY_NAME = "${ENVIRONMENT}_${FUNCTION_NAME}"
-        DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.eu-central-1.amazonaws.com"
-        DOCKER_CREDENTIALS  = "ecr:eu-central-1:defiyield-aws"
+        DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.${ENV_REGION}.amazonaws.com"
+        DOCKER_CREDENTIALS  = "ecr:${ENV_REGION}:defiyield-aws"
         DOCKER_TAG = sh(script: "git log --pretty=tformat:'%h' -n1", returnStdout: true).trim().take(7)
     }
     stages {
@@ -43,7 +45,7 @@ pipeline {
             steps {
                     script {
                     sh """#!/bin/bash
-                    aws ecr create-repository --repository-name ${DOCKER_REGISTRY_NAME} || true
+                    aws ecr create-repository --region ${ENV_REGION} --repository-name ${DOCKER_REGISTRY_NAME} || true
                     """
                 }
             }
@@ -82,13 +84,15 @@ pipeline {
                     wget -q -O terraform_1.0.0_linux_amd64.zip https://releases.hashicorp.com/terraform/1.0.0/terraform_1.0.0_linux_amd64.zip
                     unzip terraform_1.0.0_linux_amd64.zip
                     ./terraform --version
-                    ./terraform -chdir=${PROJECT_DIR} init -backend-config "bucket=${TF_VAR_tf_state_bucket}" -backend-config "region=${TF_VAR_tf_region}" -backend-config "key=lambda/${FUNCTION_NAME}/terraform.tfstate"
+                    ./terraform -chdir=${PROJECT_DIR} init -backend-config "bucket=${TF_VAR_tf_state_bucket}" -backend-config "region=${TF_VAR_tf_region}" -backend-config "key=${ENVIRONMENT}/lambda/${FUNCTION_NAME}/terraform.tfstate"
                     ./terraform -chdir=${PROJECT_DIR} apply \
                     -var "tf_state_bucket=${TF_VAR_tf_state_bucket}" \
                     -var "tf_region=${TF_VAR_tf_region}" \
                     -var "environment=${ENVIRONMENT}" \
+                    -var "env_region=${ENV_REGION}" \
                     -var "lambda_name=${FUNCTION_NAME}" \
                     -var "image_tag=${DOCKER_TAG}" \
+                    -var "schedule_minutes=${SCHEDULE_MINUTES}" \
                     --auto-approve -compact-warnings
                     rm -rf ./terraform
                     rm -rf ./${PROJECT_DIR}/.terraform

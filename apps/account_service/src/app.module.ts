@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import {
   Inject,
   LoggerService,
@@ -35,6 +35,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'account-service' }),
     // TODO implement more universal logic
     // createServiceWinstonAsyncModule('account', ConfigModule, new ConfigService()),
     WinstonModule.forRootAsync({
@@ -43,7 +44,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('account', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,

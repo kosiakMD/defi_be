@@ -22,6 +22,9 @@ export interface Farm {
     rewardsPerTokenStored: string;
     totalTokensDeposited: string;
     replicaFarms: Farm[];
+    rewarderInfo?: {
+      id: string;
+    };
   };
 }
 

@@ -69,14 +69,14 @@ export class SearchService extends BaseService {
     // need it to check ENS name on all networks
     const substitution = text.endsWith('.') ? text.slice(0, -1) : text;
     const addresses = await Promise.all([
-      this.web3NameService.resolveName(`${substitution}.eth`),
-      this.web3NameService.resolveName(`${substitution}.tns`),
-      this.web3NameService.resolveName(`${substitution}.ust`),
-      this.web3NameService.resolveName(text),
+      this.web3NameService.resolveNameResponseWithName(`${substitution}.eth`),
+      this.web3NameService.resolveNameResponseWithName(`${substitution}.tns`),
+      this.web3NameService.resolveNameResponseWithName(`${substitution}.ust`),
+      this.web3NameService.resolveNameResponseWithName(text),
     ]);
     return addresses //
-      .filter((address) => !!address)
-      .map((address) => new AddressSuggestionDto(address));
+      .filter((result) => !!result)
+      .map(({ address, name }) => new AddressSuggestionDto(address, name));
   }
 
   private getServiceUrl(serviceName: ServiceEnum): string {

@@ -947,7 +947,7 @@ export class ProtocolService {
         } else if (baseData instanceof BaseDataLocked) {
           baseData.total = 0;
           baseData.items.forEach((item) => {
-            if (item.tokens.length) {
+            if (item?.tokens?.length) {
               this.setTokenPriceAndValue(baseData.chain.id, item.rewards, chainAssetPrices);
               if (item.locked) {
                 item.locked.value += item.rewards.value;

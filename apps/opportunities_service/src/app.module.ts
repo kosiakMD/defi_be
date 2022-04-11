@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
@@ -17,13 +17,14 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'opportunities-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('account', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get('http.timeout'),

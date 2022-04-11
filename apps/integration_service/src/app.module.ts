@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import {
   Inject,
   LoggerService,
@@ -31,13 +31,14 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'integration-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('integration', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,

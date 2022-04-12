@@ -12,6 +12,6 @@ configMaps:
     NODE_ENV: production
 
 secrets:
-  - database
+  - databaserpc
   - redis
   - logs

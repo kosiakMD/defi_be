@@ -74,13 +74,13 @@ configMaps:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 
 secrets:
-- database
-- redis
-- bscscan
-- etherscan
-- logs
-- covalent
-- polygonscan
-- sentry
-- cardano
-- opensea
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - covalent
+  - polygonscan
+  - sentry
+  - cardano
+  - opensea

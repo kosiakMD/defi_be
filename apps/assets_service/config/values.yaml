@@ -13,6 +13,7 @@ configMaps:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
     NODE_ENV: development
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
   - database-assets

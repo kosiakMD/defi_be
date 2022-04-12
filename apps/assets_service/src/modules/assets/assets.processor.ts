@@ -63,7 +63,7 @@ export class AssetsProcessor {
     return savedAsset;
   }
 
-  private async processAsset(address: string, chainId: number): Promise<AssetsEntity> {
+  public async processAsset(address: string, chainId: number): Promise<AssetsEntity> {
     const existentAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
 
     if (existentAsset) return existentAsset;

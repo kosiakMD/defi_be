@@ -1,6 +1,6 @@
 import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

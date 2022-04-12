@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,6 +19,7 @@ import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
 import { TokenService } from './services/token.service';
+import { TrackedTokenPopulationProcessor } from './services/tracked-token-population.processor';
 
 @Module({
   imports: [
@@ -33,6 +35,7 @@ import { TokenService } from './services/token.service';
       AssetUnderlyingEntity,
     ]),
     IconsModule,
+    HttpModule,
   ],
   controllers: [AssetsController],
   providers: [
@@ -42,6 +45,7 @@ import { TokenService } from './services/token.service';
     AssetsRepository,
     MulticallAggregator,
     TokenService,
+    TrackedTokenPopulationProcessor,
     Web3ProviderService,
   ],
   exports: [AssetsService],

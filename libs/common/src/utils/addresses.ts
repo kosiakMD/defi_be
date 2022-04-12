@@ -1,5 +1,4 @@
 import bech32 from 'bech32';
-
 import { PublicKey } from '@solana/web3.js';
 import { isAddress as isETHAddress } from 'web3-utils';
 
@@ -54,32 +53,34 @@ export function isSolAddress(address: string): boolean {
 
 export function isCardanoAddress(address: string): boolean {
   return !!address.match(/^addr1.*/);
-};
+}
 
 export function isKavaAddress(address: string): boolean {
   return !!address.match(/^kava1.*/);
-};
+}
 
 export function isCosmosAddress(address: string): boolean {
   return !!address.match(/^cosmos1.*/);
-};
+}
 
 export function isOsmosisAddress(address: string): boolean {
   return !!address.match(/^osmo1.*/);
-};
+}
 
 export function isSecretAddress(address: string): boolean {
   return !!address.match(/^secret1.*/);
-};
+}
 
 export function isTerraAddress(address: string): boolean {
   try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const { prefix: decodedPrefix } = bech32.decode(address);
     return decodedPrefix === 'terra';
   } catch {
     return false;
   }
-};
+}
 
 export function isSomeAddress(address: string) {
   const addressChecks = [

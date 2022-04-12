@@ -67,6 +67,7 @@ import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { OrcaStaking } from './orca/orca.farms';
 import { OrcaPools } from './orca/orca.pools';
+import { OsmosisPools } from './osmosis/osmosis.pools';
 import { PancakePoolsV1 } from './pancake/pancake.pools.v1';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
@@ -155,6 +156,8 @@ const ViperSwap = [ViperswapPools, ViperswapStaking];
 const Marinade = [MarinadePools, MarinadeFarms];
 const SundaeSwap = [SundaeswapPools];
 const Minswap = [MinswapPools];
+const Osmosis = [OsmosisPools];
+
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
   ...Astroport,
@@ -183,6 +186,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...SundaeSwap,
   ...Marinade,
   ...Minswap,
+  ...Osmosis,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];

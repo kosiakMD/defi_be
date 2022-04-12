@@ -8,6 +8,6 @@ export enum Command {
   crawl_html = 'crawl_html',
   fetch_abi = 'fetch_abi',
   analyse_contracts = 'analyse_contracts',
-  run_parsing_protocols = 'run_parsing_protocols',
+  analyse_contracts_against_templates = 'analyse_contracts_against_templates',
   run_parsing_custom_protocol = 'run_parsing_custom_protocol',
 }

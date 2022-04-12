@@ -76,6 +76,7 @@ import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
+import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
@@ -149,6 +150,7 @@ export class ProtocolService {
     private readonly minswapProtocol: MinswapProtocol,
     private readonly mirrorProtocol: MirrorProtocol,
     private readonly staderProtocol: StaderProtocol,
+    private readonly osmosisProtocol: OsmosisProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -193,6 +195,7 @@ export class ProtocolService {
       minswapProtocol,
       mirrorProtocol,
       staderProtocol,
+      osmosisProtocol,
     ];
   }
 
@@ -947,7 +950,7 @@ export class ProtocolService {
         } else if (baseData instanceof BaseDataLocked) {
           baseData.total = 0;
           baseData.items.forEach((item) => {
-            if (item.tokens.length) {
+            if (item?.tokens?.length) {
               this.setTokenPriceAndValue(baseData.chain.id, item.rewards, chainAssetPrices);
               if (item.locked) {
                 item.locked.value += item.rewards.value;

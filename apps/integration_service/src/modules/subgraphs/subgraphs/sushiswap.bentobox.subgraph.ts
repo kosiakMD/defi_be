@@ -55,7 +55,7 @@ export class SushiSwapBentoBoxSubgraph {
 
     if (response.data.errors) {
       this.logger.error(response.data.errors);
-      return;
+      return [];
     }
 
     return response.data.data.users;

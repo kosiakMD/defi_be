@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync } from 'fs';
+import { Page } from 'puppeteer';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -19,11 +20,14 @@ import { AbstractStrategy } from './abstract.strategy';
 
 @Injectable()
 export class MainPageStrategy implements AbstractStrategy {
+  readonly screenshotEnabled: boolean;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(Puppeteer) protected readonly browser: Puppeteer,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    this.screenshotEnabled = JSON.parse(this.configService.get('SCREENSHOTS_ENABLED'));
+  }
 
   async parsing({ url, name }: IParsingAbstract): Promise<[string, FilteredLinks, string, string]> {
     const page = await this.browser.loadPage(url);
@@ -32,10 +36,15 @@ export class MainPageStrategy implements AbstractStrategy {
     );
 
     const filtered = this.filterLinks(listLinks, url);
-    const screenshotPath = this.getScreenshotPath(url, name);
-    const dirScreen = await getScreenshot(page, url, screenshotPath);
+    const dirScreen = await this.takeScreenshot(page, url, name);
     await page.close();
     return [url, filtered, dirScreen, name];
+  }
+
+  private async takeScreenshot(page: Page, url: string, protocolName: string): Promise<string> {
+    if (!this.screenshotEnabled) return;
+    const screenshotPath = this.getScreenshotPath(url, protocolName);
+    return getScreenshot(page, url, screenshotPath);
   }
 
   private getScreenshotPath(url: string, protocolName: string): string {

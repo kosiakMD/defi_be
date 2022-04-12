@@ -111,12 +111,16 @@ export class MarinadeUtils {
         if (replicaFarms.length > 0) {
           replicaFarms.map((replicaFarm) => {
             replicaFarm.additional.replicaMint = farm.additional.replicaMint;
-            farmMap.set(replicaFarm.address, replicaFarm);
+            if (replicaFarm.additional?.rewarderInfo?.id === 'marinade') {
+              farmMap.set(replicaFarm.address, replicaFarm);
+            }
           });
           farm.additional.replicaFarms = [];
         }
 
-        farmMap.set(farm.address, farm);
+        if (farm.additional?.rewarderInfo?.id === 'marinade') {
+          farmMap.set(farm.address, farm);
+        }
       }
     }
 

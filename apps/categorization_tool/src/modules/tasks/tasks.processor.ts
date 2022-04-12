@@ -53,6 +53,8 @@ export class TasksProcessor {
         return this.protocolService.parseProtocolsGithubPage();
       case Command.analyse_contracts:
         return this.contractAnalysisService.analyseContracts();
+      case Command.analyse_contracts_against_templates:
+        return this.contractAnalysisService.analyzeContractsAgainstTemplates();
       case Command.run_parsing_custom_protocol:
         return this.protocolService.parseCustomProtocol(job.data.listProtocol);
       default:

@@ -1,8 +1,8 @@
-import { u64 } from '@solana/spl-token';
 import BN from 'bn.js';
 import Decimal from 'decimal.js';
 
 import { globalFarmData, userFarmData } from './orca.interface';
+import { u64 } from './utils/u64.util';
 
 export async function calculateRewards(balance: userFarmData, infoFarmPool: globalFarmData) {
   const cumulativeEmissionsDelta = infoFarmPool.cumulativeEmissionsPerFarmToken.sub(

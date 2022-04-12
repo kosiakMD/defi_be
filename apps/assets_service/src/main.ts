@@ -30,7 +30,7 @@ async function bootstrap() {
   app.useLogger(enhancedLogger);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('v1');
 
   const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 

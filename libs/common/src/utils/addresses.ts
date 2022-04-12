@@ -1,5 +1,5 @@
-import { PublicKey } from '@solana/web3.js';
 import bech32 from 'bech32';
+import { PublicKey } from '@solana/web3.js';
 import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
@@ -73,6 +73,8 @@ export function isSecretAddress(address: string): boolean {
 
 export function isTerraAddress(address: string): boolean {
   try {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     const { prefix: decodedPrefix } = bech32.decode(address);
     return decodedPrefix === 'terra';
   } catch {

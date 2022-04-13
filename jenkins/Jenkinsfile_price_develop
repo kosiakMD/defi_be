@@ -49,7 +49,7 @@ pipeline {
                         json: [
                             "image": DOCKER_IMAGE.imageName(),
                             "registry": DOCKER_REGISTRY,
-                            "repository": env.JOB_BASE_NAME,
+                            "repository": env.JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4),
                             "tag": DOCKER_TAG
                         ]
                     )
@@ -61,7 +61,7 @@ pipeline {
                 }
             }
         }
-        stage('build') {
+        stage('Webhook') {
             steps {
                 sh 'python jenkins/hook.py price development ${env.BUILD_NUMBER} master'
             }

@@ -12,6 +12,7 @@ import { ContractsAnalysisRepository } from '../../database/repositories/contrac
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
 import { ANALYSE_CONTRACTS_PARALLEL_LIMIT } from '../protocols.constant';
+import { AbiCompoundTemplate } from './abi/abi.compound.template';
 import { AbiMasterchefTemplate } from './abi/abi.masterchef.template';
 import { AbiFetcherService } from './abi/fetcher/abi.fetcher.service';
 
@@ -38,7 +39,10 @@ export class ContractsAnalysisService {
     private readonly protocolsRepository: ProtocolsRepository,
     private readonly abiFetcherService: AbiFetcherService,
   ) {
-    this.abiTemplates = new Map<number, any>([[AbiMasterchefTemplate.id, AbiMasterchefTemplate]]);
+    this.abiTemplates = new Map<number, any>([
+      [AbiMasterchefTemplate.id, AbiMasterchefTemplate],
+      [AbiCompoundTemplate.id, AbiCompoundTemplate],
+    ]);
   }
 
   async analyzeContractsAgainstTemplates(): Promise<void> {

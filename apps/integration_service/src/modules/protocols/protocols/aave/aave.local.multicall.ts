@@ -1,6 +1,6 @@
 import { CallInput, MultiCall } from '@indexed-finance/multicall';
 
-import { Address, Logger, ChainDto } from '@app/common';
+import { Address, ChainDto, Logger } from '@app/common';
 import { Web3Interface } from '@app/common/web3provider';
 
 import { AaveIncentivesControllerAbi } from '../../../../controllers/aave.incentives.controller.abi';

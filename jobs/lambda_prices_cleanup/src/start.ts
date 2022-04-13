@@ -1,8 +1,11 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config();
+import { config } from 'dotenv';
 
-import { handler } from './lambda';
+import handler from './lambda';
+import errorHandler from './utils/errorHandler';
 
+config();
+
+// errorHandler.bind(this, handler)();
 (async () => {
-  await handler();
+  await errorHandler(handler);
 })();

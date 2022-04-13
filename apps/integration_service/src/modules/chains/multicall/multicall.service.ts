@@ -2,7 +2,7 @@ import Web3 from 'web3';
 
 import { concatStrings } from '@app/common/utils';
 
-import { CallData } from '../../../common/dto/call.dto';
+import { CallData } from '../../../common/dto';
 
 import { MulticallAbi } from './contracts/multicall.abi';
 import { decodeOutput } from './helpers/decoder';

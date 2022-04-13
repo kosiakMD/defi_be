@@ -2,39 +2,37 @@ import { getManager } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import { CHAIN_ID_ETH } from '@app/common/constant';
-import { ChainIdEnum } from '@app/common/enum';
+import { ChainNameEnum } from '@app/common';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 
 import { GetAllApprovalsDto } from '../../common/dto/GetAllApprovals.dto';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
+import { ChainsService } from '../chains/chains.service';
 import ApprovalMapper from './helpers/approvalMapper';
 
 @Injectable()
 export class ApprovalsService {
-  constructor(private readonly blacklistService: BlacklistService) {}
+  constructor(
+    private readonly blacklistService: BlacklistService,
+    private readonly chainsService: ChainsService,
+  ) {}
   async getAllApprovals(
     getAllApprovalsQuery: GetAllApprovalsDto,
   ): Promise<ContractApprovalResponse> {
     const allApprovals = {};
-    if (!getAllApprovalsQuery.address) {
-      return allApprovals;
-    }
-
-    const [ethApprovals] = await Promise.all([
-      this.getApprovals(getAllApprovalsQuery, CHAIN_ID_ETH),
-    ]);
-
+    if (!getAllApprovalsQuery.address) return allApprovals;
+    const chainIdEth = await this.chainsService.getChainIdByName(ChainNameEnum.eth);
+    const [ethApprovals] = await Promise.all([this.getApprovals(getAllApprovalsQuery, chainIdEth)]);
     return ethApprovals;
   }
 
   async getApprovals(
     getAllApprovalsQuery: GetAllApprovalsDto,
-    chainId: ChainIdEnum,
+    chainId: number,
   ): Promise<ContractApprovalResponse> {
     let approvalsTableName;
-    if (chainId === ChainIdEnum.eth) {
+    if (chainId === (await this.chainsService.getChainIdByName(ChainNameEnum.eth))) {
       approvalsTableName = 'approvals_new';
     } else {
       approvalsTableName = 'bsc_approvals';

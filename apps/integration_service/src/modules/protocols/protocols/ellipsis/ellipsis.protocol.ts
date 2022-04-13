@@ -16,12 +16,12 @@ import { EllipsisStaking } from './ellipsis.staking';
 
 @Injectable()
 export default class EllipsisProtocol extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bnb];
   readonly project = ProjectEnum.ellipsis;
   readonly name = EllipsisProtocolEnum.ellipsis;
   readonly displayName = 'Ellipsis';
   readonly features = {
-    [ChainAbbrEnum.bsc]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.pools, FeatureEnum.staking],
   };
   public static feeRate = 0.0025;
   protected readonly dataProvider;

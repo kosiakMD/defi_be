@@ -8,10 +8,10 @@ export const filterObjectKeys = (
     }),
   );
 
-export function groupBy(list: any, keyGetter: any): Map<any, any> {
+export function groupBy<T, K = string>(list: T[], keyExtractor: (t: T) => K): Map<K, T[]> {
   const map = new Map();
-  list.forEach((item: any) => {
-    const key = keyGetter(item);
+  list.forEach((item) => {
+    const key = keyExtractor(item);
     const collection = map.get(key);
     if (!collection) {
       map.set(key, [item]);

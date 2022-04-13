@@ -97,9 +97,10 @@ export class AppModule implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
+        env: ENV,
         name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,

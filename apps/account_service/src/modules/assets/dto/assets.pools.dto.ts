@@ -2,14 +2,13 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '@app/common/enum';
 
 import { AssetsForLambdaResponse } from '../../../common/interfaces/assets.interface';
 
 import { PairDto } from './pair.dto';
 
 export class AssetsPoolsDto implements AssetsForLambdaResponse {
-  @ApiProperty({ type: Number, example: ChainIdEnum.eth })
+  @ApiProperty({ type: Number, example: 1 })
   chainId: number;
 
   @ApiProperty({ type: String, example: '0x3d56fa439a97632922d2b265fbc1426aa2f8e443' })

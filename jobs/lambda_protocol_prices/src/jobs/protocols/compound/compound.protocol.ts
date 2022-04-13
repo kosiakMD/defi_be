@@ -48,6 +48,9 @@ export class CompoundProtocol extends ProtocolBase implements IProtocolPriceUpda
       // Get the array of tokens
       const addresses: Address[] = Object.values(tokens);
 
+      // set to true and run manually to force re-index all underlying assets and mark parents as not tracked
+      await this.saveAssets(addresses, false);
+
       // Get the exchange rate & underlying tokens via multicall
       const cTokenData = await this.getExchangeRateInfo(addresses);
       // Get the price & decimals of the underlying tokens

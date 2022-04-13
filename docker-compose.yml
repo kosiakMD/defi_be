@@ -3,6 +3,9 @@ services:
 
   redis:
     image: "bitnami/redis:latest"
+    container_name: redis
+    volumes:
+      - ./docker/data/redis:/bitnami/redis/data
     ports:
       - "6379:6379"
     environment:
@@ -10,8 +13,11 @@ services:
 
   postgres:
     image: postgres
+    container_name: postgres
     ports:
       - "5432:5432"
+    volumes:
+    - ./docker/data/pgsql:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -19,6 +25,7 @@ services:
 
   price-service:
     image: node:14
+    container_name: price-service
     ports:
       - "${PRICE_SERVICE_PORT:-3002}:${PRICE_SERVICE_PORT:-3002}"
     working_dir: /usr/src/app
@@ -37,6 +44,7 @@ services:
 
   account-service:
     image: node:14
+    container_name: account-service
     ports:
       - "${ACCOUNT_SERVICE_PORT:-3003}:${ACCOUNT_SERVICE_PORT:-3003}"
     working_dir: /usr/src/app
@@ -55,7 +63,10 @@ services:
       - ".env"
 
   integration-service:
-    image: node:14
+    build:
+      context: .
+      dockerfile: docker/integration-service.dev.Dockerfile
+    container_name: integration-service
     ports:
       - "${INTEGRATION_SERVICE_PORT:-3004}:${INTEGRATION_SERVICE_PORT:-3004}"
     working_dir: /usr/src/app
@@ -78,6 +89,7 @@ services:
 
   gateway-service:
     image: node:14
+    container_name: gateway-service
     ports:
       - "${GATEWAY_SERVICE_PORT:-3001}:${GATEWAY_SERVICE_PORT:-3001}"
     working_dir: /usr/src/app
@@ -95,4 +107,62 @@ services:
       - SERVICE_PORT=${GATEWAY_SERVICE_PORT:-3001}
     env_file:
       - "apps/api_gateway/config/.env"
+      - ".env"
+
+  # rpc-nodes-service:
+  #   image: node:14
+  #   container_name: rpc-nodes-service
+  #   ports:
+  #     - "${RPC_NODES_SERVICE_PORT:-3005}:${RPC_NODES_SERVICE_PORT:-3005}"
+  #   working_dir: /usr/src/app
+  #   depends_on:
+  #     - redis
+  #     - postgres
+  #   volumes:
+  #     - .:/usr/src/app
+  #   command: "yarn rpc-nodes-start:dev"
+  #   restart: always
+  #   environment:
+  #     - SERVICE_PORT=${RPC_NODES_SERVICE_PORT:-3005}
+  #   env_file:
+  #     - "apps/rpc_nodes_service/config/.env"
+  #     - ".env"
+
+
+  assets-service:
+    image: node:14
+    container_name: assets-service
+    ports:
+      - "${ASSETS_SERVICE_PORT:-6066}:${ASSETS_SERVICE_PORT:-6066}"
+    working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/usr/src/app
+    command: "yarn assets-start:dev"
+    restart: always
+    environment:
+      - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
+    env_file:
+      - "apps/assets_service/config/.env"
+      - ".env"
+
+  opportunities-service:
+    image: node:14
+    container_name: opportunities-service
+    ports:
+      - "${OPPORTUNITIES_SERVICE_PORT:-3006}:${OPPORTUNITIES_SERVICE_PORT:-3006}"
+    working_dir: /usr/src/app
+    depends_on:
+      - redis
+      - postgres
+    volumes:
+      - .:/usr/src/app
+    command: "yarn opportunities-start:dev"
+    restart: always
+    environment:
+      - SERVICE_PORT=${OPPORTUNITIES_SERVICE_PORT:-3006}
+    env_file:
+      - "apps/opportunities_service/config/.env"
       - ".env"

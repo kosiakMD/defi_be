@@ -16,7 +16,7 @@ export enum ChainIdEnum {
   ftm = 4,
   arbi = 5,
   avax = 6,
-  xdai = 7,
+  gnosis = 7,
   celo = 8,
   mriver = 9,
   harm = 10,

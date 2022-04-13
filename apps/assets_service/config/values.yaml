@@ -1,0 +1,20 @@
+ingress:
+  enabled: true
+  host: assets.dev.defiyield.app
+
+configMaps:
+  common:
+    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+    SOL_URL: http://api.mainnet-beta.solana.com
+    TERRA_URL: https://lcd.terra.dev
+  logs:
+    LOG_AWS_ENABLED: true
+    LOG_LEVEL: debug
+    NODE_ENV: development
+
+secrets:
+- database-assets
+- redis
+- logs
+- cardano
+- debank

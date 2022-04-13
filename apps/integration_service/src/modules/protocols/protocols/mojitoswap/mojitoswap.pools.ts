@@ -13,16 +13,17 @@ import {
   ChainIdEnum,
   FeatureEnum,
   Logger,
+  MojitoswapProtocolEnum,
   ProjectEnum,
   ProtocolTypeEnum,
   TokenBalance,
-  MojitoswapProtocolEnum,
 } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import { AccountService } from '../../../microservices/account.service';
 
 @Injectable()

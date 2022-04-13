@@ -1,8 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ChainIdEnum } from '@app/common/enum';
-
 import { ProfitAndLossQueryDto } from '../modules/analytics/dto/profitandloss.query.dto';
 import { ProfitAndLossResponseDTO } from '../modules/analytics/dto/profitandloss.response.dto';
 import { ProfitAndLossService } from '../modules/analytics/profitandloss.service';
@@ -22,10 +20,8 @@ export class AnalyticsController {
   })
   @ApiQuery({
     name: 'chain',
-    enum: ChainIdEnum,
-    enumName: 'ChainIdEnum',
     description: 'chain 1 - Ethereum',
-    example: ChainIdEnum.eth,
+    example: 1,
     required: true,
   })
   @ApiQuery({

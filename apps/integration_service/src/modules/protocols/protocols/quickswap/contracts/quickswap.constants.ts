@@ -1,11 +1,40 @@
 export const QUICKSWAP_REWARDS_TOKEN_ADDRESS = '0x831753dd7087cac61ab5644b308642cc1c33dc13';
 
+export const QUICKSWAP_REWARDS_DUAL_TOKEN_ADDRESS = [
+  '0xf28164a485b0b2c90639e47b0f377b4a438a16b1', // token A
+  '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270', // token B
+];
+
 export const QUICKSWAP_ADDITIONAL_PAIRS = ['0x16041694941a5ae759e91a3bb7dde5b4f4312104'];
+
+const lowerContractAddresses = ({ stakingContractAddress, pairAddress }) => ({
+  stakingContractAddress: stakingContractAddress.toLowerCase(),
+  pairAddress: pairAddress.toLowerCase(),
+});
+
+export const QUICKSWAP_STAKING_DUAL_CONTRACTS = [
+  {
+    stakingContractAddress: '0x14977e7E263FF79c4c3159F497D9551fbE769625',
+    pairAddress: '0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827',
+  },
+].map(lowerContractAddresses);
 
 export const QUICKSWAP_STAKING_CONTRACTS = [
   {
-    stakingContractAddress: '0x4a73218ef2e820987c59f838906a82455f42d98b',
+    stakingContractAddress: '0x8d6b2dBa9e85b897Dc97eD262C1aa3e4D76477dF',
+    pairAddress: '0x4a35582a710e1f4b2030a3f826da20bfb6703c09',
+  },
+  {
+    stakingContractAddress: '0x45a5CB25F3E3bFEe615F6da0731740093F59b768',
+    pairAddress: '0xf6422b997c7f54d1c6a6e103bcb1499eea0a7046',
+  },
+  {
+    stakingContractAddress: '0xbB703E95348424FF9e94fbE4FB524f6d280331B8',
     pairAddress: '0x853ee4b2a13f8a742d64c8f088be7ba2131f670d',
+  },
+  {
+    stakingContractAddress: '0xAFB76771C98351Aa7fCA13B130c9972181612b54',
+    pairAddress: '0x2cf7252e74036d1da831d11089d326296e64a728',
   },
   {
     stakingContractAddress: '0x8ff56b5325446aae6efbf006a4c1d88e4935a914',
@@ -16,20 +45,12 @@ export const QUICKSWAP_STAKING_CONTRACTS = [
     pairAddress: '0x019ba0325f1988213d448b3472fa1cf8d07618d7',
   },
   {
-    stakingContractAddress: '0xb26bfcd52d997211c13ae4c35e82ced65af32a02',
-    pairAddress: '0xf6422b997c7f54d1c6a6e103bcb1499eea0a7046',
-  },
-  {
     stakingContractAddress: '0x070d182eb7e9c3972664c959ce58c5fc6219a7ad',
     pairAddress: '0xdc9232e2df177d7a12fdff6ecbab114e2231198d',
   },
   {
     stakingContractAddress: '0x573bb5ccc26222d8108edacfcc7f7cb9e388af10',
     pairAddress: '0x90bc3e68ba8393a3bf2d79309365089975341a43',
-  },
-  {
-    stakingContractAddress: '0x785aacd49c1aa3ca573f2a32bb90030a205b8147',
-    pairAddress: '0x4a35582a710e1f4b2030a3f826da20bfb6703c09',
   },
   {
     stakingContractAddress: '0xd1c762861aae85df2e586a668a793aaff820932b',
@@ -64,20 +85,12 @@ export const QUICKSWAP_STAKING_CONTRACTS = [
     pairAddress: '0xf6a637525402643b0654a54bead2cb9a83c8b498',
   },
   {
-    stakingContractAddress: '0x6c6920ad61867b86580ff4afb517bec7a499a7bb',
-    pairAddress: '0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827',
-  },
-  {
     stakingContractAddress: '0x9bb7c0a778676689e86602d905c4013221acc7c6',
     pairAddress: '0xf7135272a5584eb116f5a77425118a8b4a2ddfdb',
   },
   {
     stakingContractAddress: '0x5c1186f784a4fefd53dc40c492b02deed97e7944',
     pairAddress: '0x5ef8747d1dc4839e92283794a10d448357973ac0',
-  },
-  {
-    stakingContractAddress: '0x251d9837a13f38f3fe629ce2304fa00710176222',
-    pairAddress: '0x2cf7252e74036d1da831d11089d326296e64a728',
   },
   {
     stakingContractAddress: '0xdeb69421fc2fba0c3b4f8b1ae291029f7cca344e',
@@ -428,4 +441,25 @@ export const QUICKSWAP_STAKING_CONTRACTS = [
     stakingContractAddress: '0x214249a7bd9a6c10adff8fad70749ebf8108494a',
     pairAddress: '0x0712323f8451cf7acc1141083baa60cc70dc32a8',
   },
-];
+  /** old pairs */
+  {
+    stakingContractAddress: '0x251d9837a13f38f3fe629ce2304fa00710176222',
+    pairAddress: '0x2cf7252e74036d1da831d11089d326296e64a728',
+  },
+  {
+    stakingContractAddress: '0x785aacd49c1aa3ca573f2a32bb90030a205b8147',
+    pairAddress: '0x4a35582a710e1f4b2030a3f826da20bfb6703c09',
+  },
+  {
+    stakingContractAddress: '0xb26bfcd52d997211c13ae4c35e82ced65af32a02',
+    pairAddress: '0xf6422b997c7f54d1c6a6e103bcb1499eea0a7046',
+  },
+  {
+    stakingContractAddress: '0x6c6920ad61867b86580ff4afb517bec7a499a7bb',
+    pairAddress: '0x6e7a5fafcec6bb1e78bae2a1f0b612012bf14827',
+  },
+  {
+    stakingContractAddress: '0x4a73218ef2e820987c59f838906a82455f42d98b',
+    pairAddress: '0x853ee4b2a13f8a742d64c8f088be7ba2131f670d',
+  },
+].map(lowerContractAddresses);

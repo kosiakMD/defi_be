@@ -1,12 +1,13 @@
 name: ESLintPlus.yml
-on: [pull_request]
+on: [ pull_request ]
 
 jobs:
   eslintplus:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: bradennapier/eslint-plus-action@v3.4.2
+      #      - uses: bradennapier/eslint-plus-action@v3.4.2
+      - uses: Maggi64/eslint-plus-action@master
         with:
           useEslintrc: true
           useEslintIgnore: true

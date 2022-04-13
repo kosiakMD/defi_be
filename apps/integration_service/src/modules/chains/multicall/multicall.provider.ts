@@ -24,7 +24,7 @@ export class MulticallProvider {
         rpcConfigPath: 'ETH_URL',
         multicallAddress: '0x255f2a7712cc06944aeef4ea78349c54c22ffe1f',
       },
-      [ChainAbbrEnum.bsc]: {
+      [ChainAbbrEnum.bnb]: {
         rpcConfigPath: 'BSC_URL',
         multicallAddress: '0x1ee38d535d541c55c9dae27b12edf090c608e6fb',
       },
@@ -67,6 +67,10 @@ export class MulticallProvider {
       [ChainAbbrEnum.celo]: {
         rpcConfigPath: 'CELO_URL',
         multicallAddress: '0xBc107e7E5e68Fc92E76A002381347846fD03F1C6',
+      },
+      [ChainAbbrEnum.near]: {
+        rpcConfigPath: 'AURORA_URL',
+        multicallAddress: '0x32b50c286DEFd2932a0247b8bb940b78c063F16c',
       },
     };
     Object.entries(providersData).forEach(([chainAbbr, config]) => {

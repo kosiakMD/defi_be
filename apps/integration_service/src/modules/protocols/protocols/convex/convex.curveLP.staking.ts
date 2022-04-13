@@ -12,8 +12,8 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import {
-  CRVCVX_REWARD_POOL_ADDRESS,
   CRV_ADDRESS,
+  CRVCVX_REWARD_POOL_ADDRESS,
   CVX_REWARD_POOL_ADDRESS,
 } from '@app/common/constant/protocols/convex.constants';
 import { CallData } from '@app/common/dto/CallData';
@@ -143,9 +143,12 @@ export class ConvexCurveLpStaking implements IStakingFetcher {
         const pool = allPools.get(poolAddress);
         const balanceKey = ConvexCurveLpStaking.poolBalanceLabel(poolAddress, address);
 
-        const balanceRaw = balances.get(balanceKey)?.output.data.toString();
+        const balance = normalizeDecimals(
+          balances.get(balanceKey).output.data.toString(),
+          pool.stakingToken.decimals,
+        );
 
-        if (!pool || !balanceRaw) return;
+        if (!pool || !balance) return;
 
         items.push({
           address: poolAddress,
@@ -153,14 +156,7 @@ export class ConvexCurveLpStaking implements IStakingFetcher {
           poolName: null,
           staked: balances.get(balanceKey).output.data.toString(),
           stats: pool.stats, // FROM POOL
-          stakingToken: this.createStakingToken(
-            pool.stakingToken,
-            pool.stats.tvl,
-            normalizeDecimals(
-              balances.get(balanceKey).output.data.toString(),
-              pool.stakingToken.decimals,
-            ),
-          ),
+          stakingToken: this.createStakingToken(pool.stakingToken, balance),
 
           rewards: pool.rewards.reduce((acc, reward) => {
             const token = this.createClaimableRewardToken(
@@ -196,7 +192,6 @@ export class ConvexCurveLpStaking implements IStakingFetcher {
 
   private createStakingToken(
     token: IntegrationERC20TokenDto,
-    tvl: number,
     balance: number,
   ): IntegrationERC20TokenDto {
     return plainToClass(IntegrationERC20TokenDto, {

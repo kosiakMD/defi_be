@@ -22,14 +22,17 @@ export const RequestErrorHandler = function () {
         if (e.isAxiosError) {
           const stack = e.toJSON().stack;
           logger.error(
-            `Error ${e.request.method} ${e.request.res.responseUrl}${
+            `Error ${e.request.method} ${e.request.path}${
               e.request.data ? `\n${e.request.data}` : ''
             }`,
             stack,
             context,
           );
           if (e.request?.res) {
-            const error = new HttpException(e.request.res.statusMessage, e.request.res.statusCode);
+            const error = new HttpException(
+              e.request.res?.statusMessage,
+              e.request.res?.statusCode,
+            );
             logger.error(error, stack, context);
             throw error;
           }

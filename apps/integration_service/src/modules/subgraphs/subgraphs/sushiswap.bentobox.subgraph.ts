@@ -21,10 +21,10 @@ export class SushiSwapBentoBoxSubgraph {
   ) {
     this.subgraphUrls = new Map([
       [ChainIdEnum.arbi, this.getConfigSubgraph('ARBI')],
-      [ChainIdEnum.bsc, this.getConfigSubgraph('BSC')],
+      [ChainIdEnum.bnb, this.getConfigSubgraph('BSC')],
       [ChainIdEnum.eth, this.getConfigSubgraph('ETH')],
       [ChainIdEnum.plg, this.getConfigSubgraph('PLG')],
-      [ChainIdEnum.xdai, this.getConfigSubgraph('XDAI')],
+      [ChainIdEnum.gnosis, this.getConfigSubgraph('GNOSIS')],
     ]);
   }
 
@@ -55,7 +55,7 @@ export class SushiSwapBentoBoxSubgraph {
 
     if (response.data.errors) {
       this.logger.error(response.data.errors);
-      return;
+      return [];
     }
 
     return response.data.data.users;

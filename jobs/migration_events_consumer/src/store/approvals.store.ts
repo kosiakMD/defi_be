@@ -56,7 +56,7 @@ export class ApprovalsStore {
                                         '${approval.hash}',
                                         ${approval.assetId}
                                        )
-                              on conflict (user_address, asset_id, contract_address)
+                              on conflict (user_address, token_address, contract_address)
                               do update
                               set block_number    = case
                                                         when excluded.block_timestamp > approvals_new.block_timestamp

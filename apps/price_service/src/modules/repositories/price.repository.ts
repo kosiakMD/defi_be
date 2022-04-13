@@ -52,15 +52,15 @@ export class PriceRepository {
     currencyId: CurrencyIdEnum,
   ) {
     return await getManager().query(`
-        SELECT a.address, ap.timestamp, ap.value
+        SELECT a.address, acp.value
         FROM prices.asset a
-        JOIN prices.asset_price ap
-          ON a.id = ap.asset_id
+        JOIN prices.asset_current_price acp
+          ON a.id = acp.asset_id
         WHERE
           a.address IN ('${addresses.join("','")}') AND
           a.chain_id = ${chain} AND
-          ap.currency_id = ${currencyId}
-        ORDER BY ap.asset_id, ap.timestamp
+          acp.currency_id = ${currencyId}
+        ORDER BY acp.asset_id
     `);
   }
 

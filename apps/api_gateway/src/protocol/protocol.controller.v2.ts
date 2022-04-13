@@ -6,13 +6,15 @@ import { Address, ProtocolNameEnum } from '@app/common';
 import { ProtocolParams } from '../common/DTO/features.dto';
 import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
 import { ChainIdEnum, UniswapProtocolEnum } from '../common/enum';
-
-import { IntegrationService } from '../integration/integration.service';
+import { BaseService } from '../common/services/base.service';
 
 @ApiTags('Protocols')
 @Controller('v2/protocol')
-export class ProtocolControllerV2 {
-  constructor(private readonly integrationsService: IntegrationService) {}
+export class ProtocolControllerV2 extends BaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
+    this.configService.get<string>('INTEGRATION_SERVICE_PORT'),
+  );
 
   @ApiParam({
     name: 'protocolName',
@@ -26,7 +28,7 @@ export class ProtocolControllerV2 {
     type: String,
     example: [
       ChainIdEnum.eth,
-      ChainIdEnum.bsc,
+      ChainIdEnum.bnb,
       ChainIdEnum.plg,
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,
@@ -46,11 +48,11 @@ export class ProtocolControllerV2 {
     @Param() params: ProtocolParams,
   ): Promise<IntegrationsResponseDto> {
     const { protocolName } = params;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignorex
     if (!Object.values(ProtocolNameEnum).includes(protocolName)) {
       throw new NotAcceptableException(`Wrong protocol name '${protocolName}'`);
     }
-    return this.integrationsService.getProtocolFeaturesDataV2(protocolName, chains, addresses);
+    return this.requestProxy(this.url + `v2/protocols/${protocolName}`, 'GET', {
+      params: { chains, addresses },
+    });
   }
 }

@@ -1,0 +1,83 @@
+import { Injectable } from '@nestjs/common';
+
+import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
+
+import { BalancesLoadingStrategy } from '../../../common/interfaces';
+import type { CardanoBalance } from '../../../common/interfaces/cardano.interface';
+import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../common/types';
+
+import type { TokenBalance } from '../balances.interfaces';
+
+@Injectable()
+export class CardanoBalancesStrategy
+  extends BaseBalanceStrategy
+  implements BalancesLoadingStrategy
+{
+  constructor(private readonly web3Provider: Web3Provider) {
+    super();
+  }
+
+  async getBalances({
+    address,
+    chainId,
+    tokens: originalTokens,
+  }: BalancesRequest): Promise<TokenBalance[]> {
+    if (!originalTokens.length || !address.match(/^addr1.*/) || this.isAddressInBlocklist(address))
+      return [];
+
+    const tokensFilter = new Set<string>(originalTokens.map((token) => token.replace(/\./, '')));
+    const cardano = this.web3Provider.getCardanoInstance(chainId);
+    try {
+      const wallet = await cardano.addresses(address);
+      return this.mapCardanoResponse(wallet, tokensFilter, chainId);
+    } catch (error) {
+      return this.returnZeroBalanceAddressOrError(error, chainId);
+    }
+  }
+
+  private mapCardanoResponse(
+    wallet: CardanoBalance,
+    tokensFilter: Set<string>,
+    chainId: number,
+  ): TokenBalance[] {
+    const tokenBalances: TokenBalance[] = [];
+    for (const asset of wallet.amount) {
+      if (tokensFilter.has(asset.unit) || asset.unit === 'lovelace') {
+        tokenBalances.push({
+          token: {
+            chainId: chainId,
+            address: asset.unit !== 'lovelace' ? asset.unit : CARDANO_COIN_ADDRESS,
+          },
+          amount: asset.quantity,
+        });
+      }
+    }
+
+    return tokenBalances;
+  }
+
+  private returnZeroBalanceAddressOrError(error: any, chainId: number) {
+    /** blockfrost couldn't load information about the wallet if it has 0 coins. status 404 */
+    if (error.status_code === 404) {
+      return [
+        {
+          token: {
+            chainId: chainId,
+            address: CARDANO_COIN_ADDRESS,
+          },
+          amount: '0',
+        },
+      ];
+    }
+
+    throw new Error(error);
+  }
+
+  private isAddressInBlocklist(address: string): boolean {
+    /** temporary created blocked list addresses */
+    const blockList = new Set(['addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3']);
+    return blockList.has(address);
+  }
+}

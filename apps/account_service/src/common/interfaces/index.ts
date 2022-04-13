@@ -1,10 +1,4 @@
-import {
-  ChainAbbrEnum,
-  ChainIdEnum,
-  ChainNameEnum,
-  CurrencyEnum,
-  CurrencyIdEnum,
-} from '@app/common';
+import { CurrencyEnum, CurrencyIdEnum } from '@app/common';
 import { ProtocolTypeEnum, ResultStatus } from '@app/common/enum';
 
 import { TokenBalance } from '../../modules/balances/balances.interfaces';
@@ -12,7 +6,7 @@ import { BalancesRequest } from '../types';
 
 export type Address = string;
 
-export type Chains = ChainIdEnum[];
+export type Chains = number[];
 
 export type TokenSymbol = string;
 
@@ -33,8 +27,17 @@ export interface ERC20Token {
   totalSupply?: string;
 }
 
+export interface Deposit {
+  dst: string;
+  wad: string;
+}
+
+export interface DepositEvent extends Event {
+  returnValues: Deposit;
+}
+
 export interface ContractApproval {
-  chainId: ChainIdEnum;
+  chainId: number;
   contractAddress: Address;
   amount: string;
   blockTimestamp: number;
@@ -127,15 +130,6 @@ export interface Event {
   signature: string;
 }
 
-export interface Deposit {
-  dst: string;
-  wad: string;
-}
-
-export interface DepositEvent extends Event {
-  returnValues: Deposit;
-}
-
 export interface Withdrawal {
   src: string;
   wad: string;
@@ -147,12 +141,13 @@ export interface WithdrawalEvent extends Event {
 
 export interface BalancesLoadingStrategy {
   getBalances(request: BalancesRequest): Promise<TokenBalance[]>;
+  readonly strategyName: string;
 }
 
 export interface Chain {
-  id: ChainIdEnum;
-  name: ChainNameEnum;
-  symbol: ChainAbbrEnum;
+  id: number;
+  name: string;
+  symbol: string;
 }
 
 export interface Currency {

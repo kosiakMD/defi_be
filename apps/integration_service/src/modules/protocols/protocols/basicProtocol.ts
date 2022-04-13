@@ -2,12 +2,12 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  FeatureEnum,
   IntegrationFeaturesDataDto,
   Logger,
   ProjectEnum,
   ProtocolName,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
 
 import { BaseData } from '../../../common/interfaces/transactions.interfaces';
 import { FeaturesType, ProtocolFeaturesInfo } from '../../../common/types/protocol.types';

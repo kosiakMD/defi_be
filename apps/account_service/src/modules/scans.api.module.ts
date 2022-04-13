@@ -9,6 +9,8 @@ import { EtherScanService } from '../common/providers/chainRelated/scans/ether-s
 import { PolygonScanService } from '../common/providers/chainRelated/scans/polygon-scan.service';
 import { PriceService } from '../common/providers/microservices/price/price.service';
 
+import { ChainsModule } from './chains/chains.module';
+
 @Module({
   imports: [
     HttpModule,
@@ -25,6 +27,7 @@ import { PriceService } from '../common/providers/microservices/price/price.serv
       }),
       inject: [ConfigService],
     }),
+    ChainsModule,
   ],
   providers: [PriceService, BscScanService, EtherScanService, PolygonScanService],
   exports: [BscScanService, EtherScanService, PolygonScanService],

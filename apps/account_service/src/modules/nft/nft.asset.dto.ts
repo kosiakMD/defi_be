@@ -1,35 +1,38 @@
 import { Exclude, Expose, Type } from 'class-transformer';
 
-import { TraitDto, CollectionDto, ContractDto, OrderDto, LastSaleDto } from '../../common/dto';
+import { CollectionDto, ContractDto, LastSaleDto, OrderDto, TraitDto } from '../../common/dto';
 
 @Exclude()
 export class NftAssetDto {
   @Expose({ name: 'token_id' })
-  tokenId: string;
+  tokenId: string = null;
 
   @Expose()
-  name: string;
+  name: string = null;
 
   @Expose({ name: 'image_url' })
-  imageUrl: string;
+  imageUrl: string = null;
 
   @Expose({ name: 'asset_contract' })
   @Type(() => ContractDto)
-  contract: ContractDto;
+  contract: ContractDto = null;
 
   @Expose()
   @Type(() => CollectionDto)
-  collection: CollectionDto;
+  collection: CollectionDto = null;
+
+  @Expose()
+  permalink: string = null;
 
   @Expose()
   @Type(() => TraitDto)
-  traits: TraitDto[];
+  traits: TraitDto[] = [];
 
   @Expose()
   @Type(() => OrderDto)
-  orders: OrderDto[];
+  orders: OrderDto[] = [];
 
   @Expose({ name: 'last_sale' })
   @Type(() => LastSaleDto)
-  lastSale: LastSaleDto;
+  lastSale: LastSaleDto = null;
 }

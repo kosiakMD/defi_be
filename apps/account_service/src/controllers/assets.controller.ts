@@ -2,7 +2,7 @@ import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchRes
 import {
   SearchParams,
   SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/search.interface';
+} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { Response } from 'express';
 
 import {
@@ -29,7 +29,6 @@ import {
 } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 
 import { AssetsPoolsService } from '../modules/assets/assets.pools.service';
@@ -51,9 +50,10 @@ export class AssetsController {
     private readonly assetsPoolsService: AssetsPoolsService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {}
+
   @CacheKey('accountService_all_assets')
   @Get('/all')
-  @ApiResponse({ status: 200, type: [AssetDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [AssetDto] })
   async getAllAssets(): Promise<AssetDto[]> {
     try {
       return await this.assetsService.queryAllAssets();
@@ -82,7 +82,7 @@ export class AssetsController {
       '0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7',
     ],
   })
-  @ApiResponse({ status: 200, type: AssetResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async getAssetByAddressesAndChains(
     @Query() query: AssetQueryDto,
   ): Promise<DetailedResponse<AssetResponseDto[]>> {
@@ -93,17 +93,14 @@ export class AssetsController {
 
   @Post('')
   @ApiBody({ type: AssetTrackDto })
-  @ApiResponse({ status: 200, type: AssetResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async addAssetToTrack(@Body() asset: AssetTrackDto): Promise<AssetResponseDto> {
-    return await this.assetsService.saveTrackingAsset({
-      assetAddress: asset.address,
-      assetChain: asset.chain,
-    });
+    return await this.assetsService.saveTrackingAsset(asset);
   }
 
   @Post('save')
   @ApiBody({ type: AssetDto })
-  @ApiResponse({ status: 200, type: AssetResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async saveAsset(@Body() asset: AssetDto): Promise<AssetResponseDto> {
     return await this.assetsService.saveAsset(asset);
   }
@@ -116,8 +113,8 @@ export class AssetsController {
     example: 1,
     required: true,
   })
-  @ApiResponse({ status: 200, type: AssetsPoolsDto })
-  async getAssetInfoForLambda(@Query('chainId') chainId: ChainIdEnum): Promise<AssetsPoolsDto[]> {
+  @ApiResponse({ status: HttpStatus.OK, type: AssetsPoolsDto })
+  async getAssetInfoForLambda(@Query('chainId') chainId: number): Promise<AssetsPoolsDto[]> {
     return await this.assetsService.getAssetAndPoolObjects(chainId);
   }
 
@@ -133,7 +130,10 @@ export class AssetsController {
       this.logger.error(e);
       const response = AssetsService.getResponseObject();
       response.error = e.stack;
-      res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(response);
+      this.logger.error(response);
+      // TODO: commented as AllExceptionFilter handles this
+      // res.status(HttpStatus.INTERNAL_SERVER_ERROR).send(response);
+      throw response;
     }
   }
 
@@ -150,6 +150,13 @@ export class AssetsController {
     type: String,
     description: 'text to search assets by name or symbol',
     example: 'CRO',
+    required: false,
+  })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    description: 'maximal number of rearch result entries',
+    example: 30,
     required: false,
   })
   @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })

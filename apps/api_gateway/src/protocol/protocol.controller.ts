@@ -1,28 +1,30 @@
-import { Controller, Get, NotAcceptableException, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, NotAcceptableException, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { FeaturesResponseDto, ProtocolParams } from '../common/DTO/features.dto';
 import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
 import { ChainIdEnum, UniswapProtocolEnum } from '../common/enum';
 import { ProtocolNameEnum } from '../common/enum/projectEnum';
-
-import { IntegrationService } from '../integration/integration.service';
+import { BaseService } from '../common/services/base.service';
 
 @ApiTags('Protocols')
 @Controller('v1/protocol')
-export class ProtocolController {
-  constructor(private readonly integrationsService: IntegrationService) {}
+export class ProtocolController extends BaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
+    this.configService.get<string>('INTEGRATION_SERVICE_PORT'),
+  );
 
-  @ApiResponse({ status: 200, type: FeaturesResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: FeaturesResponseDto })
   @Get('/')
   getAllFeatures(): Promise<FeaturesResponseDto> {
-    return this.integrationsService.getAllFeatures();
+    return this.requestProxy(this.url + 'v1/protocols');
   }
 
-  @ApiResponse({ status: 200, type: FeaturesResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: FeaturesResponseDto })
   @Get('/active')
   getAllActiveFeatures(): Promise<FeaturesResponseDto> {
-    return this.integrationsService.getAllFeaturesActive();
+    return this.requestProxy(this.url + 'v1/protocols/active');
   }
 
   @ApiParam({
@@ -37,7 +39,7 @@ export class ProtocolController {
     type: String,
     example: [
       ChainIdEnum.eth,
-      ChainIdEnum.bsc,
+      ChainIdEnum.bnb,
       ChainIdEnum.plg,
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,
@@ -47,10 +49,9 @@ export class ProtocolController {
   @ApiQuery({
     name: 'addresses',
     type: String,
-    // example: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', 0xa2107fa5b38d9bbd2c461d6edf11b11a50f6b974
     example: '0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2',
   })
-  @ApiResponse({ status: 200, type: IntegrationsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseDto })
   @Get('/:protocolName/')
   async getProtocolFeature(
     @Query('chains') chains: string,
@@ -58,11 +59,10 @@ export class ProtocolController {
     @Param() params: ProtocolParams,
   ): Promise<IntegrationsResponseDto> {
     const { protocolName } = params;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     if (!Object.values(ProtocolNameEnum).includes(protocolName)) {
       throw new NotAcceptableException(`Wrong protocol name '${protocolName}'`);
     }
-    return this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses);
+    const url = this.url + 'v1/protocols' + `/${protocolName}/`;
+    return this.requestProxy(url, 'GET', { params: { chains, addresses } });
   }
 }

@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 
 import { TransactionCovalent } from '../transactions.interfaces';
@@ -17,7 +17,7 @@ export class TransactionCovalentResponseDto implements DetailedResponse<Transact
     type: [TransactionsCovalentDto],
     example: [
       {
-        chainId: ChainIdEnum.eth,
+        chainId: 1,
         blockNumber: 11782395,
         blockHash: '0xfef3343fbba1520072171170ef0aa28ff999eff3cbd924fa3d038587651f1eef',
         hash: '0xfef3343fbba1520072171170ef0aa28ff999eff3cbd924fa3d038587651f1eef',

@@ -2,7 +2,7 @@ import pg from 'pg';
 
 import { log, logError } from './utils/log';
 
-export async function handler(): Promise<void> {
+async function handler(): Promise<void> {
   let client: pg.Client;
 
   try {
@@ -33,3 +33,5 @@ export async function handler(): Promise<void> {
     await client?.end();
   }
 }
+
+export default handler;

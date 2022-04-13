@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, Logger } from '@app/common';
-import { FeatureEnum } from '@app/common';
+import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
 
@@ -15,12 +14,12 @@ import DataProviderProtocol from '../dataProviderProtocol';
 
 @Injectable()
 export default class PancakeProtocolV1 extends DataProviderProtocol {
-  readonly chains = [ChainAbbrEnum.bsc];
+  readonly chains = [ChainAbbrEnum.bnb];
   readonly project = ProjectEnum.pancake;
   readonly name = PancakeProtocolEnum.pancakeV1;
   readonly displayName = 'Pancake V1';
   readonly features = {
-    [ChainAbbrEnum.bsc]: [FeatureEnum.pools],
+    [ChainAbbrEnum.bnb]: [FeatureEnum.pools],
   };
   public feeRate = 0.003;
   protected readonly dataProvider;

@@ -1,53 +1,110 @@
+import { OpportunityListDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.list.dto';
+
+import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ServiceEnum } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { isSomeAddress } from '@app/common/utils';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
-import { AccountService } from '../account/account.service';
-import { IntegrationService } from '../integration/integration.service';
-import { SearchParams, SearchResults } from './search.interface';
-import { addressSearchResultParser } from './search.utils';
+import { BaseService } from '../common/services/base.service';
+
+import { AddressSuggestionDto } from './dto/address-suggestion.dto';
+import { SearchQueryDto } from './dto/search-query.dto';
+import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
+import { addressSearchResultParser } from './utils/search.utils';
+
+const SEARCH_ITEMS_LIMIT = process.env.SEARCH_ITEMS_LIMIT || 30;
 
 @Injectable()
-export class SearchService {
-  constructor(
-    private readonly accountService: AccountService,
-    private readonly integrationService: IntegrationService,
-    private readonly web3NameService: Web3NameService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-  ) {}
+export class SearchService extends BaseService {
+  private readonly accountUrl: string;
+  private readonly opportunityUrl: string;
 
-  private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
-    const searchResults = await Promise.all([
-      this.accountService.searchAssets(params),
-      this.integrationService.searchProjects(params),
-      this.integrationService.searchVaults(params),
-    ]);
-    return {
-      entries: searchResults.flat(),
-    };
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected httpService: HttpService,
+    protected configService: ConfigService,
+    private readonly web3NameService: Web3NameService,
+  ) {
+    super(logger, httpService, configService);
+
+    this.accountUrl = this.getServiceUrl(ServiceEnum.Account);
+    this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunities);
   }
 
-  public async search(text: string): Promise<SearchResults> {
+  public async getAddressSuggestions(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
+    const { text } = query;
+    // TODO extend this implementation to get all ENS,TNS and etc resolves + check which networks has the query address
     if (isSomeAddress(text)) {
-      const searchResult = await this.getSearchEntries({ address: text });
+      return [new AddressSuggestionDto(text)];
+    }
+    return this.tryToResolveAddress(query);
+  }
+
+  public async search(query: SearchQueryDto): Promise<SearchResults> {
+    const { text, limit } = query;
+    if (isSomeAddress(text)) {
+      const searchResult = await this.getSearchEntries({ address: text, limit });
       return addressSearchResultParser(text, searchResult);
     }
     try {
-      // try to resolve address (Ethereum or Solana)
       const address = await this.web3NameService.resolveName(text);
       if (address) {
         this.logger.debug(`Resolved address ${address}`);
-        // try to search by address and by name
-        const searchResult = await this.getSearchEntries({ address, text });
+        const searchResult = await this.getSearchEntries({ address, text, limit });
         return addressSearchResultParser(address, searchResult);
       }
     } catch (error) {
       this.logger.debug(`Error to resolve address ${error}`);
     }
+    return this.getSearchEntries({ text, limit });
+  }
 
-    return this.getSearchEntries({ text });
+  private async tryToResolveAddress(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
+    const { text } = query;
+    // need it to check ENS name on all networks
+    const substitution = text.endsWith('.') ? text.slice(0, -1) : text;
+    const addresses = await Promise.all([
+      this.web3NameService.resolveName(`${substitution}.eth`),
+      this.web3NameService.resolveName(`${substitution}.tns`),
+      this.web3NameService.resolveName(`${substitution}.ust`),
+      this.web3NameService.resolveName(text),
+    ]);
+    return addresses //
+      .filter((address) => !!address)
+      .map((address) => new AddressSuggestionDto(address));
+  }
+
+  private getServiceUrl(serviceName: ServiceEnum): string {
+    const service = serviceName.toUpperCase();
+    const host = this.configService.get<string>(`${service}_SERVICE_HOST`);
+    const port = this.configService.get<string>(`${service}_SERVICE_PORT`);
+    return `${host}${port ? ':' + port : ''}`;
+  }
+
+  private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
+    const assetsSearchUrl = new URL('v1/assets/search', this.accountUrl);
+    const opportunitiesSearchUrl = new URL('v1/opportunities', this.opportunityUrl);
+    const promises = [this.requestProxy(assetsSearchUrl.toString(), 'GET', { params })];
+    if (params.text) {
+      promises.push(
+        this.requestProxy(opportunitiesSearchUrl.toString(), 'GET', {
+          params: {
+            search: params.text,
+            limit: params.limit || SEARCH_ITEMS_LIMIT,
+          },
+        }),
+      );
+    }
+    const searchResults = await Promise.all(promises);
+    const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
+    const opportunitiesSearchResults: OpportunityListDto = searchResults.shift();
+    return {
+      entries: [...assetsSearchResults, ...(opportunitiesSearchResults?.items || [])],
+    };
   }
 }

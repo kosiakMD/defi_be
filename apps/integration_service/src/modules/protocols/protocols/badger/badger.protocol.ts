@@ -2,10 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
-import { ChainAbbrEnum, ProjectEnum, BadgerProtocolEnum } from '@app/common/enum';
+import { BadgerProtocolEnum, ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import BasicProtocol from '../basicProtocol';
 import { BadgerStaking } from './badger.staking';
 

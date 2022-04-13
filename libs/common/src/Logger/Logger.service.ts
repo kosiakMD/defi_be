@@ -6,10 +6,9 @@ import { WinstonLogger } from 'nest-winston';
 // TODO: TBD?
 // @Injectable({ scope: Scope.TRANSIENT })
 export class Logger extends WinstonLogger implements NestLoggerService {
+  static logger: WinstonLogger;
   // TODO: temporary need static for SingleTone
   private static times = new Map();
-  static logger: WinstonLogger;
-
   private readonly times = new Map();
 
   constructor(logger: WinstonLoggerInterface) {
@@ -34,6 +33,17 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     return diff;
   }
 
+  public error(message: any, trace?: string, context?: string): any {
+    // TODO: for all exception in the future
+    // Sentry.captureException(message, {
+    //   level: Severity.Error,
+    //   // contexts: { trace, context },
+    //   extra: { trace, context },
+    //   // tags: [],
+    // });
+    return Logger.logger.error(message, trace, context);
+  }
+
   public time(message: string): number {
     const start = new Date().getTime();
     this.times.set(message, start);
@@ -49,6 +59,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     this.times.delete(message);
     const diff = finish - start;
     super.debug(diff / 100, `Time: ${message}`);
+    // console.log(this.reflector.getAll());
     return diff;
   }
 }

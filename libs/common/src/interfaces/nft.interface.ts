@@ -1,6 +1,5 @@
-import { ChainAbbrEnum, NftProjectEnum } from '@app/common';
+import { ChainAbbrEnum, NftProjectEnum, ChainIdEnum, Address } from '@app/common';
 
-import { Address } from '..';
 import { ChainsDto, CollectionChainsDto } from '../dto/nft';
 
 export type NftAssetsByAccounts = Record<Address, ChainsDto>;
@@ -13,4 +12,5 @@ export interface NftAssetsParams {
 export interface NftServiceInfo {
   project: NftProjectEnum;
   chains: ChainAbbrEnum[];
+  chainsIds: ChainIdEnum[];
 }

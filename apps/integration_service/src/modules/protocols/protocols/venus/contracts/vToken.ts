@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class VTokenAbis extends MultiCallAbiProxy {
@@ -45,7 +46,7 @@ export class VTokenAbis extends MultiCallAbiProxy {
     stateMutability: 'nonpayable',
     type: 'function',
   };
-  
+
   static readonly exchangeRateCurrent: AbiItem = {
     constant: false,
     inputs: [],
@@ -54,7 +55,7 @@ export class VTokenAbis extends MultiCallAbiProxy {
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
+        type: 'uint256',
       },
     ],
     payable: false,
@@ -108,8 +109,8 @@ export class VTokenAbis extends MultiCallAbiProxy {
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     payable: false,
     stateMutability: 'view',

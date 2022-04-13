@@ -40,6 +40,7 @@ export class CurveLpAbi extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+
   static readonly getVirtualPrice = {
     stateMutability: 'view',
     type: 'function',
@@ -58,6 +59,14 @@ export class CurveLpAbi extends MultiCallAbiProxy {
       { internalType: 'uint32', name: '_blockTimestampLast', type: 'uint32' },
     ],
     payable: false,
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static readonly minter: AbiItem = {
+    name: 'minter',
+    outputs: [{ type: 'address', name: '' }],
+    inputs: [],
     stateMutability: 'view',
     type: 'function',
   };

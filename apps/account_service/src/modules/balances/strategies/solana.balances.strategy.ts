@@ -12,16 +12,19 @@ import { AccountInfo } from '@app/common/dto/solana';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 import { BalancesRequest } from '../../../common/types';
 
 import { TokenBalance } from '../balances.interfaces';
 
-export class SolanaBalancesStrategy implements BalancesLoadingStrategy {
+export class SolanaBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly config: ConfigService,
     private readonly web3Provider: Web3Provider,
-  ) {}
+  ) {
+    super();
+  }
 
   async getBalances({
     address,
@@ -34,7 +37,7 @@ export class SolanaBalancesStrategy implements BalancesLoadingStrategy {
     try {
       pubKey = new PublicKey(address);
     } catch (e) {
-      // don't do anything because log and erorrs will cause a lot of redundant messages
+      // don't do anything because log and errors will cause a lot of redundant messages
       return tokenBalances;
     }
 

@@ -1,7 +1,7 @@
-export const handlePromiseAllSettled = (promises) => {
-  const data = [];
-  const errors = [];
-  promises.forEach((r) => {
+export const handlePromiseAllSettled = <T = any>(promiseResults): [T[], string[]] => {
+  const data: T[] = [];
+  const errors: string[] = [];
+  promiseResults.forEach((r) => {
     if (r.status === 'fulfilled') {
       data.push(r.value);
     } else {

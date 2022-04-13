@@ -6,8 +6,9 @@ import { NftAbstractService } from './nft.abstract.service';
 export abstract class NftBasicService extends NftAbstractService {
   public abstract readonly project: NftProjectEnum;
   public abstract readonly chains: ChainAbbrEnum[];
+  public abstract readonly chainsIds: number[];
 
-  constructor() {
+  protected constructor() {
     super();
   }
 
@@ -15,6 +16,7 @@ export abstract class NftBasicService extends NftAbstractService {
     return {
       project: this.project,
       chains: this.chains,
+      chainsIds: this.chainsIds,
     };
   }
 }

@@ -9,13 +9,13 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
 import { retry } from '@app/common/utils/retry';
 
-import { BLACKLISTED_TOKENS } from '../../common/constatnt';
+import { BLACKLISTED_TOKENS } from '../../common/constant';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
 import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
@@ -23,6 +23,7 @@ import { excludeSecondArray } from '../../common/utils';
 
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';
+import { ChainsService } from '../chains/chains.service';
 import { getBalancesSafe } from './balances.helpers';
 import {
   BalancesResponse,
@@ -31,8 +32,14 @@ import {
   TokenBalance,
 } from './balances.interfaces';
 import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto';
+import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
+import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
+import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
+import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
+import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
+import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
 import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
 import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
@@ -55,13 +62,31 @@ export class BalancesService {
     private readonly covalentBalancesStrategy: CovalentBalancesStrategy,
     private readonly solanaBalancesStrategy: SolanaBalancesStrategy,
     private readonly terraBalancesStrategy: TerraBalancesStrategy,
+    private readonly cardanoBalancesStrategy: CardanoBalancesStrategy,
+    private readonly cosmosBalancesStrategy: CosmosBalancesStrategy,
+    private readonly kavaBalancesStrategy: KavaBalancesStrategy,
+    private readonly osmosisBalancesStrategy: OsmosisBalancesStrategy,
+    private readonly secretBalancesStrategy: SecretBalancesStrategy,
+    private readonly roninBalancesStrategy: RoninBalancesStrategy,
+    private readonly chainsService: ChainsService,
   ) {}
+
+  strategies = [
+    this.solanaBalancesStrategy,
+    this.terraBalancesStrategy,
+    this.cardanoBalancesStrategy,
+    this.cosmosBalancesStrategy,
+    this.kavaBalancesStrategy,
+    this.osmosisBalancesStrategy,
+    this.secretBalancesStrategy,
+    this.roninBalancesStrategy,
+  ];
 
   public async getBalance(
     addresses: Address[],
-    chains?: ChainIdEnum[],
+    chains?: number[],
     assets?: Address[],
-    blocks?: Map<ChainIdEnum, BlockTimestamp>,
+    blocks?: Map<number, BlockTimestamp>,
   ): Promise<BalancesResponse> {
     try {
       const chainsToHandle = getUniqList(chains);
@@ -93,7 +118,7 @@ export class BalancesService {
 
   async get24HourReturns(
     addresses: Address[],
-    chains: ChainIdEnum[],
+    chains: number[],
     assets?: Address[],
   ): Promise<ReturnsResponse> {
     const offset = 86400; // seconds ago from now 86400 = 1 day
@@ -216,10 +241,10 @@ export class BalancesService {
     return Object.fromEntries(responseEntries);
   }
   private async getChainBlocksAtDate(
-    chains: ChainIdEnum[],
+    chains: number[],
     date: Date,
-  ): Promise<Map<ChainIdEnum, BlockTimestamp>> {
-    const blockMap = new Map<ChainIdEnum, BlockTimestamp>();
+  ): Promise<Map<number, BlockTimestamp>> {
+    const blockMap = new Map<number, BlockTimestamp>();
 
     await Promise.all(
       chains.map(async (chain) => {
@@ -231,15 +256,16 @@ export class BalancesService {
     return blockMap;
   }
 
-  async getBlockAtDate(chain: ChainIdEnum, date: Date) {
-    // TODO: TTL should be in config
+  async getBlockAtDate(chain: number, date: Date) {
     const cacheTTL = 65 * 60; // 1 hour 5 minutes to ensure a little overlap (block is rounded to the nearest hour)
     const cacheKey = `24hour_ago_block_${chain}_${date.getTime()}`;
 
     return this.getOrSetCache(cacheKey, cacheTTL, async () => {
       try {
-        return await this.getBlockFromDate(date, this.web3Provider.getInstanceByChainId(chain));
-        // TODO: Catch real error here and log
+        return await this.getBlockFromDate(
+          date,
+          await this.web3Provider.getInstanceByChainId(chain),
+        );
       } catch (e) {
         this.logger.error(
           `Failed to find historic block for chain ${chain}. Is the RPC an archive node?`,
@@ -274,10 +300,10 @@ export class BalancesService {
   }
 
   private async getRawBalances(
-    chains: ChainIdEnum[],
+    chains: number[],
     addresses: Address[],
     assets: Address[],
-    blocks?: Map<ChainIdEnum, BlockTimestamp>,
+    blocks?: Map<number, BlockTimestamp>,
   ) {
     const results = await Promise.all(
       chains.map((chainId) =>
@@ -288,12 +314,12 @@ export class BalancesService {
   }
 
   private async getBalancesPerChain(
-    chainId: ChainIdEnum,
+    chainId: number,
     addresses: Address[],
     assets?: Address[],
     block: BlockTimestamp = null,
   ) {
-    const strategies = this.getBalancesStrategiesPerChain(chainId);
+    const strategies = await this.getBalancesStrategiesPerChain(chainId);
     const assetsToHandle = await this.getAssetsToHandle(chainId, assets, block);
     const assetAddresses = assetsToHandle.map(({ address }) => address);
 
@@ -338,7 +364,7 @@ export class BalancesService {
   }
 
   private async applyPrices(
-    chain: ChainIdEnum,
+    chain: number,
     results: PartialBalancesResponse[],
     block?: BlockTimestamp,
   ): Promise<PartialBalancesResponse[]> {
@@ -364,7 +390,7 @@ export class BalancesService {
     return results;
   }
 
-  private async getTokenPrices(tokens: Address[], chain: ChainIdEnum, block?: BlockTimestamp) {
+  private async getTokenPrices(tokens: Address[], chain: number, block?: BlockTimestamp) {
     // latest/pending/earliest/null
     if (!block?.block || Number.isNaN(Number(block?.block))) {
       const { prices: pricesMap } = await this.priceService.fetchTokenPrices(
@@ -384,7 +410,7 @@ export class BalancesService {
   }
 
   private async getBalancesForChainForAddress(
-    chainId: ChainIdEnum,
+    chainId: number,
     address: string,
     assets: string[],
     strategies: BalancesLoadingStrategy[],
@@ -404,7 +430,6 @@ export class BalancesService {
 
     const results = await Promise.all(
       strategies.map(async (strategy) => {
-        //
         return getBalancesSafe(strategy, { chainId, address, tokens: assets, block }, this.logger);
       }),
     );
@@ -447,22 +472,15 @@ export class BalancesService {
     return base;
   }
 
-  private getBalancesStrategiesPerChain(chain: ChainIdEnum): BalancesLoadingStrategy[] {
-    switch (chain) {
-      case ChainIdEnum.sol:
-        return [this.solanaBalancesStrategy];
-      case ChainIdEnum.terra:
-        return [this.terraBalancesStrategy];
-      default:
-        return [this.networkBalancesStrategy];
-    }
+  private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
+    const chainEntity = await this.chainsService.get({ id: chain });
+    const strategy = this.strategies.find((strategy) =>
+      strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase()),
+    );
+    return [strategy ?? this.networkBalancesStrategy];
   }
 
-  private async getAssetsToHandle(
-    chain: ChainIdEnum,
-    requested?: Address[],
-    block?: BlockTimestamp,
-  ) {
+  private async getAssetsToHandle(chain: number, requested?: Address[], block?: BlockTimestamp) {
     // If its a historic block, only return results that where inserted at least 24 hours ago
     // This fixes the issue with checking 24 hours returns and multicall failing when checking
     // tokens less than 24 hours old.

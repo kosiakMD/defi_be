@@ -1,5 +1,5 @@
 export interface UniswapV3Tick {
-  tickIdx: string;
+  tick: number;
   feeGrowthOutside0X128: string;
   feeGrowthOutside1X128: string;
 }

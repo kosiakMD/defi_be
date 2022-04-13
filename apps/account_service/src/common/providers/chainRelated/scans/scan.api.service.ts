@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { DEFAULT_MULTIPLIER } from '@app/common/constant';
-import { ChainIdEnum, ChainAbbrEnum, ResultStatus } from '@app/common/enum';
+import { ChainAbbrEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import {
@@ -44,7 +44,7 @@ export class ScanApiService {
   protected readonly url: string;
   protected readonly apiKey: string;
   protected readonly chainAbbr: ChainAbbrEnum;
-  protected readonly chainId: ChainIdEnum;
+  protected readonly chainId: number;
   protected readonly mainCoinAddress: Address;
 
   constructor(

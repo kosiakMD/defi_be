@@ -16,37 +16,69 @@ export class MetaDto {
 }
 
 export class DetailedResponseDto<T> implements DetailedResponse<T> {
-  constructor(status: ResultStatus, errors: Error[] | string[], data: T) {
-    this.status = status;
-    this.errors = errors;
-    this.data = data;
-  }
-
   @ApiProperty({
     enum: ResultStatus,
     enumName: 'ResultStatus',
     example: ResultStatus.ok,
   })
   status: ResultStatus = ResultStatus.ok;
-
   @ApiProperty({
     type: [String],
     example: ['connect ECONNREFUSED ...'],
   })
   errors: Error[] | string[] | any[] = [];
-
   @ApiProperty({
     isArray: true,
     type: Object,
   })
   data: T;
+
+  constructor(status: ResultStatus, errors: Error[] | string[], data: T) {
+    this.status = status;
+    this.errors = errors;
+    this.data = data;
+  }
 }
 
 export class ResponseDto<T = any> extends DetailedResponseDto<T> {
   data: T;
 }
 
-export class ErrorResponseDto {
+export class ResponseMetaDto {
+  @ApiProperty({
+    type: String,
+    description: 'uuid generated at the Gateway entry point',
+    example: '5da02c35-b815-450d-9ce3-c0503b69e3ba',
+  })
+  reqId: string;
+
+  @ApiProperty({
+    type: String,
+    description: 'uuid generated at the Gateway entry point',
+    example: 'fab15d01-7cb6-4a14-ac4f-92785fa988c3',
+  })
+  sessionId: string;
+
+  @ApiProperty({
+    type: String,
+    example: '2021-12-16T09:43:51.398Z',
+  })
+  timestampEntry: string;
+
+  @ApiProperty({
+    type: String,
+    example: '2021-12-16T09:43:51.398Z',
+  })
+  timestampExit: string;
+
+  @ApiProperty({
+    type: String,
+    example: '2021-12-16T09:43:51.398Z',
+  })
+  timeExecute: string;
+}
+
+export class ErrorResponseDto extends ResponseMetaDto {
   @ApiProperty({
     enumName: 'HttpStatus',
     enum: HttpStatus,
@@ -62,22 +94,16 @@ export class ErrorResponseDto {
 
   @ApiProperty({
     type: String,
-    example: '2021-12-16T09:43:51.398Z',
-  })
-  timestamp: string;
-
-  @ApiProperty({
-    type: String,
     example: '/v1/protocol',
   })
   path: string;
 
   @ApiProperty({
     type: String,
-    description: 'uuid generated at the Gateway entry point',
-    example: '5da02c35-b815-450d-9ce3-c0503b69e3ba',
+    description: 'Provide Protocol name If ProtocolController',
+    example: 'UniswapV2',
   })
-  reqId: string;
+  protocolName?: string;
 
   type?: string;
 }

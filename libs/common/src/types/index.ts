@@ -29,6 +29,16 @@ import {
   WePiggyProtocolEnum,
   WonderlandProtocolEnum,
   YearnProtocolEnum,
+  TrisolarisProtocolEnum,
+  OrcaProtocolEnum,
+  SundaeProtocolEnum,
+  AnchorProtocolEnum,
+  TerraswapProtocolEnum,
+  AstroportProtocolEnum,
+  MirrorProtocolEnum,
+  MarinadeProtocolEnum,
+  MinswapProtocolEnum,
+  StaderProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -66,7 +76,17 @@ export type ProtocolName =
   | ViperswapProtocolEnum
   | WePiggyProtocolEnum
   | WonderlandProtocolEnum
-  | YearnProtocolEnum;
+  | YearnProtocolEnum
+  | TrisolarisProtocolEnum
+  | OrcaProtocolEnum
+  | SundaeProtocolEnum
+  | AnchorProtocolEnum
+  | TerraswapProtocolEnum
+  | AstroportProtocolEnum
+  | MarinadeProtocolEnum
+  | MinswapProtocolEnum
+  | MirrorProtocolEnum
+  | StaderProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

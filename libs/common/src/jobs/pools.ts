@@ -3,6 +3,8 @@ import { plainToClass } from 'class-transformer';
 
 import { ERC20Token } from '@app/common/jobs/token';
 
+import { IntegrationClaimableTokenDto } from './staking';
+
 export class Stats {
   feeRate: number = null;
   tvl: number = null;
@@ -43,6 +45,7 @@ export class LiquidityPoolFeature {
   stats: Stats = plainToClass(Stats, {});
   statistic: PoolStatistic = plainToClass(PoolStatistic, {});
   tokens: PoolTokenDto[] = [];
+  rewards?: IntegrationClaimableTokenDto[];
   // data not included to feature but need to have to get realtime data
   extra?: any = {};
 }

@@ -42,12 +42,17 @@ export class BaseService {
 
       return await request.pipe(map((response) => response.data)).toPromise();
     } catch (err) {
-      this.logger.error('Base service error:');
-      this.logger.error(err);
+      this.logger.error(err, err.stack, 'Base service error');
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);
     } finally {
       this.logger.timeEnd(timeMark);
     }
+  }
+
+  public buildUrl(host, port?): string {
+    let url = `${host}${port ? ':' + port : ''}`;
+    url += url.charAt(url.length - 1) === '/' ? '' : '/';
+    return url;
   }
 
   private parseUrl(url: string | string[]): string {
@@ -55,12 +60,6 @@ export class BaseService {
       return new URL(url[0], url[1]).toString();
     }
 
-    return url;
-  }
-
-  public buildUrl(host, port?): string {
-    let url = `${host}${port ? ':' + port : ''}`;
-    url += url.charAt(url.length - 1) === '/' ? '' : '/';
     return url;
   }
 }

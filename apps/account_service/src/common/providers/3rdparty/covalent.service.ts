@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum, CurrencyEnum } from '@app/common/enum';
+import { CurrencyEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
 import { Covalent } from '../../interfaces/covalent.interface';
@@ -17,11 +17,11 @@ export class CovalentService {
   protected readonly url: string;
   protected readonly apiKey: string;
 
-  private getBalanceUrl(address: Address, chainId: ChainIdEnum): string {
+  private getBalanceUrl(address: Address, chainId: number): string {
     return `${this.url}/${chainId}/address/${address}/balances_v2/`;
   }
 
-  private getTransactionUrl(address: Address, chainId: ChainIdEnum): string {
+  private getTransactionUrl(address: Address, chainId: number): string {
     return `${this.url}/${chainId}/address/${address}/transactions_v2/`;
   }
 

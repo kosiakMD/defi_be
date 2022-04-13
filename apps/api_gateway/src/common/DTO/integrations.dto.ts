@@ -8,27 +8,15 @@ import { ProtocolFeaturesInfo } from '../types/protocol.types';
 import { ProtocolBasicInfo, ProtocolFeaturesInfoDto } from './features.dto';
 import { FeatureResult } from '../types/features.types';
 import { ChainDto } from './chain.dto';
-import { CurrencyDto } from '../../prices/dto';
 import { MetaDto } from './response.dto';
 import { ERC20Token, StakingPosition } from './transactions.interfaces';
 import { FeatureEnum } from '../enum/feature.enum';
+import { CurrencyDto } from '@app/common';
 
 export class ProtocolInfoDto extends ProtocolBasicInfo {
   @Exclude()
-  features: ProtocolFeaturesInfo; // ProtocolFeaturesDataDto;
+  features: ProtocolFeaturesInfo;
 }
-
-// type data = {
-//   protocol: { name: string; project: string };
-//   currency: CurrencyDto;
-//   chains: {
-//     features?: string[];
-//     chain: ChainDto;
-//     //
-//     pools: any[];
-//     staking: any[];
-//   }[];
-// };
 
 export type IntegrationFeaturesData = {
   [key in keyof typeof FeatureEnum]?: FeatureResult<LiquidityPoolFeature | StakingPositionDto | StakingPosition>;
@@ -43,15 +31,15 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
     // eslint-disable-next-line prettier/prettier
   [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
   @Expose()
-  [FeatureEnum.staking]?: FeatureResult<StakingPosition/*StakingPositionFeatureDto*/>;
+  [FeatureEnum.staking]?: FeatureResult<StakingPosition>;
 }
 
 export class IntChainsDataDto extends IntegrationFeaturesDataDto {
   @ApiProperty({ type: ChainDto })
-  chain: ChainDto = null; // chains of chain + features data & info
+  chain: ChainDto = null;
 
   @ApiProperty({ type: ProtocolFeaturesInfoDto })
-  features: FeatureEnum[] = []; // ProtocolFeaturesDataDto;
+  features: FeatureEnum[] = [];
 }
 
 export class IntegrationDataDto {
@@ -62,13 +50,10 @@ export class IntegrationDataDto {
   protocol: ProtocolInfoDto = null;
 
   @ApiProperty({ type: CurrencyDto})
-  currency: CurrencyDto = null;
+  currency = null;
 
   @ApiProperty({ type: [IntChainsDataDto] })
   chains: IntChainsDataDto[] = [];
-
-  // @ApiProperty({ type: IntegrationFeaturesDataDto, name: 'IntegrationFeaturesDataDto' })
-  // result: IntegrationFeaturesDataDto = null;
 }
 
 export class IntegrationsResponseDto extends DetailedResponseDto<IntegrationDataDto> {
@@ -82,30 +67,27 @@ export class PoolTokenDto {
   address: string = null;
 
   @ApiProperty({type: String, example: 'Wrapped Ethereum'})
-  name: string = null; // WETH
+  name: string = null;
 
   @ApiProperty({type: String, example: 'WETH'})
   symbol: string = null;
-  // balance total & user
 
   @ApiProperty({type: String, example: '4362346'})
   reserve: string = null;
   //
   @ApiProperty({type: Number, example: 1.2512})
-  value: number = null; // Balance value // balance * price
+  value: number = null;
 
   @ApiProperty({type: String, example: '123.6534'})
-  balance: string = null; // string | Balance
-  // price: Price = null; // value in currency [usd]
+  balance: string = null;
   @ApiProperty({type: Number, example: 345.12})
-  price: number = null; // value in currency [usd]
+  price: number = null;
 
   @ApiProperty({type: Number, example: 18})
   decimals: number = null;
 }
 
 export class Fee {
-  // feeVolume: number;
   rate: number = null; // 0.003
 }
 
@@ -118,9 +100,9 @@ export class ERC20TokenDto {
 }
 
 export class PoolPeriodStats {
-  volume: number = null; // subgraph raw
-  fee: number = null; // volume * fee percentage / rate
-  ROI: number = null; // fee / TVL
+  volume: number = null;
+  fee: number = null;
+  ROI: number = null;
 }
 
 export class PoolStatistic {
@@ -133,18 +115,16 @@ export class PoolStatistic {
 }
 
 export class PoolUserData {
-  value: number = null; // sum of values
-  share: number = null; // value / TVL
+  value: number = null;
+  share: number = null;
 }
 
 export class LiquidityPoolFeature {
   address: string = null;
-  name: string = null; // 'WETH / USDC'
-  // TODO: lp balance?
+  name: string = null;
   @Type(() => ERC20TokenDto)
   lpToken?: ERC20TokenDto = null;
-  TVL?: number = null; // sum(reserve * price)
-  // volumeChangePercentage?: number;
+  TVL?: number = null;
   @Type(() => Fee)
   fee: Fee = new Fee();
   @Type(() => PoolUserData)

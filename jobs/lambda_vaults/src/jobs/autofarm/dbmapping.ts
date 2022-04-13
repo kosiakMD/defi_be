@@ -39,12 +39,12 @@ export class DbMapping {
       const rewardTokenUniqueIdAUTO = concatStrings(chain, AutofarmAddressesPLG.autoPLG);
 
       const rewardTokenItemMATIC: TrackedVaultItem = await this.getDbItem(
-        stakingPosition.rewards[0],
-        rewardTokenUniqueIdAUTO, 
+        stakingPosition.rewards.find((reward) => reward.address === AutofarmAddressesPLG.maticPLG),
+        rewardTokenUniqueIdMATIC,
       );
       const rewardTokenItemAUTO: TrackedVaultItem = await this.getDbItem(
-        stakingPosition.rewards[1],
-        rewardTokenUniqueIdMATIC,
+        stakingPosition.rewards.find((reward) => reward.address === AutofarmAddressesPLG.autoPLG),
+        rewardTokenUniqueIdAUTO,
       );
 
       mappedDto.rewards = [

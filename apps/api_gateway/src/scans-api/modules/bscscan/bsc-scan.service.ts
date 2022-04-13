@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainIdEnum, ChainAbbrEnum } from '@app/common/enum';
+import { ChainAbbrEnum, ChainIdEnum } from '@app/common/enum';
 
 import { ScanService } from '../scan.service';
 import { CHAIN_ID_BSC } from '../utils/utils';
@@ -31,6 +31,6 @@ export class BscScanService extends ScanService {
     this.scanServiceKey = this.configService.get<string>('BSCSCAN_API_KEY');
     this.mainCoinAddress = this.configService.get<string>('PRICE_SERVICE_MAIN_COIN_ADDRESS');
     this.chainId = CHAIN_ID_BSC;
-    this.chainPrefix = ChainAbbrEnum.bsc;
+    this.chainPrefix = ChainAbbrEnum.bnb;
   }
 }

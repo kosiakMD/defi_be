@@ -1,12 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { SearchResultType } from '../../search/search.enum';
-import {
-  AddressMetadata,
-  AssetMetadata,
-  ProjectMetadata,
-  VaultMetadata,
-} from '../../search/search.interface';
+import { SearchResultType } from '../../search/interfaces/search.enum';
+import { AddressMetadata, AssetMetadata } from '../../search/interfaces/search.interface';
 import { SearchEntryMetadataDto } from './SearchEntryMetadata.dto';
 
 export class SearchResultsEntryDto {
@@ -21,5 +16,5 @@ export class SearchResultsEntryDto {
   @ApiProperty({ enum: SearchResultType, example: SearchResultType.ADDRESS })
   type: SearchResultType;
   @ApiProperty({ type: SearchEntryMetadataDto })
-  metadata: AddressMetadata | AssetMetadata | ProjectMetadata | VaultMetadata;
+  metadata: AddressMetadata | AssetMetadata;
 }

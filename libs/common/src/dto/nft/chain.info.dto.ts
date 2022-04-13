@@ -4,11 +4,11 @@ import { ChainAbbrEnum, ChainIdEnum, ChainNameEnum } from '@app/common';
 
 export class ChainInfoDto {
   @ApiProperty({ enum: Object.values(ChainIdEnum).filter(Number) })
-  id: ChainIdEnum;
+  id: ChainIdEnum = null;
 
   @ApiProperty({ enum: ChainAbbrEnum })
-  abbr: ChainAbbrEnum;
+  abbr: ChainAbbrEnum = null;
 
   @ApiProperty({ enum: ChainNameEnum })
-  name: ChainNameEnum;
+  name: ChainNameEnum = null;
 }

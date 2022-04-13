@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class ViperAbis extends MultiCallAbiProxy {
@@ -10,15 +11,15 @@ export class ViperAbis extends MultiCallAbiProxy {
       {
         name: '_holder',
         type: 'address',
-        internalType: 'address'
-      }
+        internalType: 'address',
+      },
     ],
     outputs: [
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     constant: true,
   };
@@ -31,15 +32,15 @@ export class ViperAbis extends MultiCallAbiProxy {
       {
         name: '',
         internalType: 'uint256',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     inputs: [
       {
         internalType: 'address',
         name: 'account',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     constant: true,
   };

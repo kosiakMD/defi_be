@@ -5,11 +5,11 @@ import {
   Address,
   ChainAbbrEnum,
   ChainDto,
+  FeatureEnum,
   Logger,
   ProjectEnum,
   ProtocolNameEnum,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
@@ -23,8 +23,8 @@ export class AbracadabraProtocol extends BasicProtocol {
   readonly chains = [
     ChainAbbrEnum.arbi,
     ChainAbbrEnum.avax,
-    ChainAbbrEnum.bsc,
-    // ChainAbbrEnum.eth,
+    ChainAbbrEnum.bnb,
+    ChainAbbrEnum.eth,
     ChainAbbrEnum.ftm,
   ];
   readonly project = ProjectEnum.abracadabra;
@@ -45,7 +45,7 @@ export class AbracadabraProtocol extends BasicProtocol {
       FeatureEnum.claimable, // mim balance on bentobox
     ],
 
-    [ChainAbbrEnum.bsc]: [
+    [ChainAbbrEnum.bnb]: [
       FeatureEnum.collateral, // collateral deposited
       FeatureEnum.borrowing, // mim borrowed
       FeatureEnum.health, // borrow health

@@ -9,14 +9,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   ChainDto,
+  ChainIdEnum,
   ClaimableDto,
   ICallData,
   Logger,
   ProtocolNameEnum,
-  ChainIdEnum,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { FeatureEnum, ProjectEnum, ProtocolTypeEnum, AutofarmProtocolEnum } from '@app/common/enum';
+import { AutofarmProtocolEnum, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common/enum';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings, decimalsDivider } from '@app/common/utils';
@@ -30,7 +30,7 @@ import { Abis } from './contracts/abis';
 export class AutofarmStaking {
   private readonly masterChiefAddresses = new Map([
     [ChainIdEnum.avax, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
-    [ChainIdEnum.bsc, '0x0895196562c7868c5be92459fae7f877ed450452'],
+    [ChainIdEnum.bnb, '0x0895196562c7868c5be92459fae7f877ed450452'],
     [ChainIdEnum.cro, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
     [ChainIdEnum.celo, '0xdd11b66b90402f294a017c4688509c364312303f'],
     [ChainIdEnum.ftm, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
@@ -101,7 +101,7 @@ export class AutofarmStaking {
 
     for (const userInfo of userInfos.entries()) {
       // don't show zero and little balances
-      if (Number(userInfo[1].output.data) > 1) {
+      if (Number(userInfo[1].output.data) > 0) {
         const data = userInfo[0].split('_');
         poolsWithBalance.push({
           contract: data[0],
@@ -143,7 +143,7 @@ export class AutofarmStaking {
       bonusTokenAddress?: string;
     }[] = [];
 
-    if (contract === this.masterChiefAddresses.get(ChainIdEnum.bsc)) {
+    if (contract === this.masterChiefAddresses.get(ChainIdEnum.bnb)) {
       balances.forEach((b) => {
         if (b.contract !== this.autofarmVault) {
           claimableRewards.push({
@@ -233,12 +233,14 @@ export class AutofarmStaking {
       const stakedBigNumber = new BigNumber(b.balance).div(
         decimalsDivider(stakingPosition.stakingToken.decimals),
       );
+
+      if (Number(stakedBigNumber) <= 0.00001) return;
+
       stakingPosition.stakingToken.balance = stakedBigNumber.toNumber();
 
-      if (stakingPosition.stakingToken.tokens) {
-        const poolShare = stakedBigNumber.div(
-          new BigNumber(stakingPosition.stakingToken.totalSupply),
-        );
+      if (stakingPosition.stakingToken.tokens?.length) {
+        const poolShare = stakedBigNumber.div(stakingPosition.stakingToken.totalSupply);
+
         stakingPosition.stakingToken.tokens.forEach((t) => {
           t.balance = poolShare.times(new BigNumber(t.reserve)).toNumber();
           if (!Number.isFinite(t.balance)) t.balance = 0;
@@ -263,6 +265,10 @@ export class AutofarmStaking {
         stakingPosition.rewards[0].claimableData.balance = claimableReward.pendingAUTO
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
           .toString();
+      } else {
+        stakingPosition.rewards?.forEach((reward) => {
+          reward.claimableData.balance = 0;
+        });
       }
 
       if (b.contract === this.masterChiefAddresses.get(ChainIdEnum.plg)) {

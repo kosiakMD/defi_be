@@ -4,11 +4,13 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, ViperswapProtocolEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
+
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import BasicProtocol from '../basicProtocol';
-import { ViperswapStaking } from './viperswap.staking';
-import { ViperswapPools } from './viperswap.pools';
 import { ViperswapLocked } from './viperswap.locked';
+import { ViperswapPools } from './viperswap.pools';
+import { ViperswapStaking } from './viperswap.staking';
 
 @Injectable()
 export default class ViperswapProtocol extends BasicProtocol {
@@ -19,7 +21,7 @@ export default class ViperswapProtocol extends BasicProtocol {
   readonly features = {
     [ChainAbbrEnum.harm]: [FeatureEnum.staking, FeatureEnum.pools, FeatureEnum.lockedBalances],
   };
-  
+
   protected readonly dataProvider;
 
   constructor(

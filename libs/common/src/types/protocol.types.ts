@@ -1,5 +1,4 @@
-import { FeatureEnum } from '@app/common/enum';
-
+import { FeatureEnum } from '../enum';
 import { ChainAbbrEnum } from '../enum';
 import { FeatureDtoType, Features } from './features.types';
 

@@ -1,16 +1,23 @@
 import { HttpModule } from '@nestjs/axios';
-import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
+import {
+  Inject,
+  LoggerService,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
-import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
-import { LoggerMiddleware } from '@app/common/middlewares';
-import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { LogRequestMiddleware } from '@app/common/middlewares';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
@@ -19,7 +26,7 @@ import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { AssetsModule } from './modules/assets/assets.module';
 import { BalancesModule } from './modules/balances/balances.module';
 import { BlacklistModule } from './modules/blacklists/blacklist.module';
-import { ChainsModule } from './modules/chains.module';
+import { ChainsModule } from './modules/chains/chains.module';
 import { DatabaseModule } from './modules/database.module';
 import { NftModule } from './modules/nft/nft.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
@@ -60,26 +67,31 @@ import { TransfersModule } from './modules/transfers/transfers.module';
   controllers: [HealthController],
   providers: [
     {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
     },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
     {
       provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
+      useClass: ResponseInterceptor,
     },
   ],
 })
-export class AppModule implements OnModuleInit {
+export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_HOST, SERVICE_PORT } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
+        env: ENV,
         name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,

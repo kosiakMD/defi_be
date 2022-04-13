@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 
 import { NftController } from '../../controllers/nft.controller';
+import { ChainsModule } from '../chains/chains.module';
 import { AavegotchiService } from './aavegotchi.service';
 import { NftService } from './nft.service';
 import { OpenSeaService } from './open.sea.service';
@@ -27,6 +28,7 @@ import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph'
       }),
       inject: [ConfigService],
     }),
+    ChainsModule,
   ],
   providers: [PriceService, NftService, OpenSeaService, AavegotchiService, AavegotchiSubgraph],
   controllers: [NftController],

@@ -2,6 +2,8 @@ export enum ProjectEnum {
   aave = 'aave',
   abracadabra = 'abracadabra',
   alpaca = 'alpaca',
+  anchor = 'anchor',
+  terraswap = 'terraswap',
   autofarm = 'autofarm',
   badger = 'badger',
   balancer = 'balancer',
@@ -29,6 +31,14 @@ export enum ProjectEnum {
   wepiggy = 'wepiggy',
   wonderland = 'wonderland',
   yearn = 'yearn',
+  trisolaris = 'trisolaris',
+  orca = 'orca',
+  sundaeswap = 'sundaeswap',
+  astroport = 'astroport',
+  mirror = 'mirror',
+  marinade = 'marinade',
+  minswap = 'minswap',
+  stader = 'stader',
 }
 
 export enum YearnProtocolEnum {
@@ -141,6 +151,18 @@ export enum WonderlandProtocolEnum {
   wonderland = 'Wonderland',
 }
 
+export enum AnchorProtocolEnum {
+  anchor = 'Anchor',
+}
+
+export enum MirrorProtocolEnum {
+  mirror = 'Mirror',
+}
+
+export enum TerraswapProtocolEnum {
+  terraswap = 'Terraswap',
+}
+
 export enum SaberProtocolEnum {
   saber = 'Saber',
 }
@@ -151,6 +173,32 @@ export enum IslandswapProtocolEnum {
 
 export enum OlympusProtocolEnum {
   olympus = 'Olympus',
+}
+
+export enum TrisolarisProtocolEnum {
+  trisolaris = 'Trisolaris',
+}
+
+export enum OrcaProtocolEnum {
+  orca = 'Orca',
+}
+export enum SundaeProtocolEnum {
+  sundaeswap = 'SundaeSwap',
+}
+export enum MinswapProtocolEnum {
+  minswap = 'Minswap',
+}
+
+export enum AstroportProtocolEnum {
+  astroport = 'Astroport',
+}
+
+export enum MarinadeProtocolEnum {
+  marinade = 'Marinade',
+}
+
+export enum StaderProtocolEnum {
+  stader = 'Stader',
 }
 
 export const ProtocolNameEnum = {
@@ -183,4 +231,14 @@ export const ProtocolNameEnum = {
   ...WePiggyProtocolEnum,
   ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
+  ...TrisolarisProtocolEnum,
+  ...OrcaProtocolEnum,
+  ...SundaeProtocolEnum,
+  ...AnchorProtocolEnum,
+  ...TerraswapProtocolEnum,
+  ...AstroportProtocolEnum,
+  ...MarinadeProtocolEnum,
+  ...MinswapProtocolEnum,
+  ...MirrorProtocolEnum,
+  ...StaderProtocolEnum,
 };

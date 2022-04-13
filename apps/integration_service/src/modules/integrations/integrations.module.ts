@@ -1,24 +1,30 @@
 import * as redisStore from 'cache-manager-redis-store';
 
+import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { IntegrationsController } from '../../controllers/integrations.controller';
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
+import { IntegrationsControllerV3 } from '../../controllers/integrations.controller.v3';
+import { PlatformService } from '../../framework/services/platform.service';
+import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
+import { MicroservicesModule } from '../microservices/microservices.module';
 import { ProtocolModule } from '../protocols/protocol.module';
+import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
-import { ProjectsContractEntity } from './entities/projectsContract.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
-import { TrackedVaultEntity } from './entities/trackedVault.entity';
-import { ProjectsContractRepository } from './repositories/projectsContract.repository';
-import { TrackedVaultRepository } from './repositories/trackedVault.repository';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 
 @Module({
   imports: [
+    MicroservicesModule,
+    HttpModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -32,15 +38,17 @@ import { TrackedVaultRepository } from './repositories/trackedVault.repository';
       inject: [ConfigService],
     }),
     ProtocolModule,
-    TypeOrmModule.forFeature([
-      ProjectsContractRepository,
-      TrackedVaultRepository,
-      ProjectsContractEntity,
-      ProjectsInfoEntity,
-      TrackedVaultEntity,
-    ]),
+    AbiModule,
+    TypeOrmModule.forFeature([ProjectsInfoEntity]),
   ],
-  providers: [IntegrationsService, FeaturesService],
-  controllers: [IntegrationsController, IntegrationsControllerV2],
+  providers: [
+    IntegrationsService,
+    FeaturesService,
+    PlatformService,
+    MulticallAggregator,
+    Web3ProviderService,
+    Web3SolanaProviderService,
+  ],
+  controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })
 export class IntegrationsModule {}

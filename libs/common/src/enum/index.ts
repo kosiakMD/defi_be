@@ -35,6 +35,14 @@ export enum ProtocolTypeEnum {
   lending = 'lending',
   borrowing = 'borrowing',
   leverageFarming = 'leverageFarming',
+  shortFarm = 'shortFarm',
+  mint = 'mint',
+  bootstrap = 'bootstrap',
+  lockdrop = 'lockdrop',
+  claimable = 'claimable',
+  airdrop = 'airdrop',
+  delegation = 'delegation',
+  nativeStaking = 'nativeStaking',
 }
 
 export enum TransactionTypeEnum {
@@ -72,4 +80,11 @@ export enum SortDirectionEnum {
 export enum SortFieldEnum {
   project = 'project',
   ticker = 'ticker',
+}
+
+export enum ServiceEnum {
+  Account = 'Account',
+  Integration = 'Integration',
+  Price = 'Price',
+  Opportunities = 'Opportunities',
 }

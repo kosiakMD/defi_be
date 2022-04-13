@@ -4,7 +4,7 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.arbi]: ChainAbbrEnum.arbi,
   [ChainIdEnum.avax]: ChainAbbrEnum.avax,
   [ChainIdEnum.boba]: ChainAbbrEnum.boba,
-  [ChainIdEnum.bsc]: ChainAbbrEnum.bsc,
+  [ChainIdEnum.bnb]: ChainAbbrEnum.bnb,
   [ChainIdEnum.celo]: ChainAbbrEnum.celo,
   [ChainIdEnum.cro]: ChainAbbrEnum.cro,
   [ChainIdEnum.eth]: ChainAbbrEnum.eth,
@@ -17,14 +17,17 @@ export const ChainIdToAbbr = {
   [ChainIdEnum.opt]: ChainAbbrEnum.opt,
   [ChainIdEnum.plg]: ChainAbbrEnum.plg,
   [ChainIdEnum.sol]: ChainAbbrEnum.sol,
-  [ChainIdEnum.xdai]: ChainAbbrEnum.xdai,
+  [ChainIdEnum.gnosis]: ChainAbbrEnum.gnosis,
+  [ChainIdEnum.near]: ChainAbbrEnum.near,
+  [ChainIdEnum.cardano]: ChainAbbrEnum.cardano,
+  [ChainIdEnum.terra]: ChainAbbrEnum.terra,
 };
 
 export const ChainIdToName = {
   [ChainIdEnum.arbi]: ChainNameEnum.arbi,
   [ChainIdEnum.avax]: ChainNameEnum.avax,
   [ChainIdEnum.boba]: ChainNameEnum.boba,
-  [ChainIdEnum.bsc]: ChainNameEnum.bsc,
+  [ChainIdEnum.bnb]: ChainNameEnum.bnb,
   [ChainIdEnum.celo]: ChainNameEnum.celo,
   [ChainIdEnum.cro]: ChainNameEnum.cro,
   [ChainIdEnum.eth]: ChainNameEnum.eth,
@@ -37,5 +40,8 @@ export const ChainIdToName = {
   [ChainIdEnum.opt]: ChainNameEnum.opt,
   [ChainIdEnum.plg]: ChainNameEnum.plg,
   [ChainIdEnum.sol]: ChainNameEnum.sol,
-  [ChainIdEnum.xdai]: ChainNameEnum.xdai,
+  [ChainIdEnum.gnosis]: ChainNameEnum.gnosis,
+  [ChainIdEnum.near]: ChainAbbrEnum.near,
+  [ChainIdEnum.cardano]: ChainAbbrEnum.cardano,
+  [ChainIdEnum.terra]: ChainAbbrEnum.terra,
 };

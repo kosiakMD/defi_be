@@ -15,9 +15,10 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
-import { concatStrings, objToString, toChunkedArray } from '@app/common/utils';
+import { concatStrings, objToString } from '@app/common/utils';
 import { toBN } from '@app/common/utils/number';
 import { solanaKeysToStrings, tokensWithPrices } from '@app/common/utils/solana';
+import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { Logger } from '../../logger/logger.service';
@@ -361,8 +362,8 @@ export class SaberStaking implements JobInterface {
 
         const tokensReserve = {
           tokenA: value.extra.pool.swap.state.tokenA.reserve,
-          tokenB: value.extra.pool.swap.state.tokenB?.reserve
-        }
+          tokenB: value.extra.pool.swap.state.tokenB?.reserve,
+        };
 
         for (const key in tokensReserve) {
           if (!tokensReserve[key]) {

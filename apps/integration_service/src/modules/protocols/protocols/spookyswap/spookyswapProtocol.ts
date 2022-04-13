@@ -12,21 +12,23 @@ import {
   BalancesResponse,
   ChainDto,
   ChainIdEnum,
+  ClaimableDto,
+  FeatureEnum,
   IncomeLiquidityPosition,
   IncomeLiquidityPositionPair,
   IncomeToken,
+  IntegrationClaimableTokenDto,
   Logger,
   ProtocolNameEnum,
   ProtocolTypeEnum,
   UniswapSubgraphLikeData,
 } from '@app/common';
-import { FeatureEnum } from '@app/common';
-import { ClaimableDto, IntegrationClaimableTokenDto } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { ChainAbbrEnum, ProjectEnum, SpookySwapProtocolEnum } from '@app/common/enum';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { PoolTokenDto } from '@app/common/jobs/pools';
+import { keepETHAddresses } from '@app/common/utils';
 
 import {
   IntegrationStakingPositionDto,
@@ -44,7 +46,6 @@ import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
 import { acelabMap, booMap, farmsMap, xBooMap } from './helpers/multicall.helpers';
 import { SpookyswapLocalMultiCall } from './spookyswap.local.multi.call';
-import { keepETHAddresses } from '@app/common/utils';
 
 @Injectable()
 export class SpookySwapProtocol extends DataProviderProtocol {

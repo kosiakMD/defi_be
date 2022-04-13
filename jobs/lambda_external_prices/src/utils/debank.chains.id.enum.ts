@@ -6,7 +6,7 @@ export enum DebankChainsIdEnum {
   eth = 1,
   bsc = 2,
   ftm = 4,
-  xdai = 7,
+  gnosis = 7,
   heco = 11,
   avax = 6,
   celo = 8,

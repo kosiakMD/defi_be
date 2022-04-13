@@ -1,9 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainDto, CurveProtocolEnum, FeatureEnum, Logger } from '@app/common';
+import {
+  Address,
+  ChainAbbrEnum,
+  ChainDto,
+  CurveProtocolEnum,
+  FeatureEnum,
+  Logger,
+} from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
-import { ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
+import { ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
@@ -14,7 +21,16 @@ import { CurveStaking } from './curve.staking';
 
 @Injectable()
 export default class CurveProtocol extends BasicProtocol {
-  readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.plg, ChainAbbrEnum.ftm, ChainAbbrEnum.avax];
+  readonly chains = [
+    ChainAbbrEnum.eth,
+    ChainAbbrEnum.plg,
+    ChainAbbrEnum.ftm,
+    ChainAbbrEnum.avax,
+    ChainAbbrEnum.arbi,
+    ChainAbbrEnum.harm,
+    ChainAbbrEnum.opt,
+    ChainAbbrEnum.gnosis,
+  ];
   readonly project = ProjectEnum.curve;
   readonly name = CurveProtocolEnum.curve;
   readonly displayName = 'Curve';
@@ -23,6 +39,10 @@ export default class CurveProtocol extends BasicProtocol {
     [ChainAbbrEnum.plg]: [FeatureEnum.pools, FeatureEnum.staking],
     [ChainAbbrEnum.ftm]: [FeatureEnum.pools, FeatureEnum.staking],
     [ChainAbbrEnum.avax]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.arbi]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.harm]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.gnosis]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.opt]: [FeatureEnum.pools, FeatureEnum.staking],
   };
 
   constructor(

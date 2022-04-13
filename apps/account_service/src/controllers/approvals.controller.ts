@@ -7,6 +7,7 @@ import { ContractApprovalResponse } from '@app/common/interfaces';
 
 import { ContractApprovalResponseDto } from '../common/dto';
 import { GetAllApprovalsDto } from '../common/dto/GetAllApprovals.dto';
+import { ApprovalsSortFieldsEnum } from '../common/enum/ApprovalsSortFields.enum';
 
 import { ApprovalsService } from '../modules/approvals/approvals.service';
 
@@ -35,10 +36,10 @@ export class ApprovalsController {
   })
   @ApiQuery({
     name: 'sortField',
-    type: Number,
+    type: String,
     required: false,
     description: `field to sort by`,
-    example: 300,
+    example: ApprovalsSortFieldsEnum.CONTRACT_ADDRESS,
   })
   @ApiQuery({
     name: 'sortDirection',
@@ -58,7 +59,7 @@ export class ApprovalsController {
     type: String,
     required: false,
     description: `chains' ID`,
-    example: '',
+    example: '1',
   })
   @ApiResponse({ status: 200, type: ContractApprovalResponseDto })
   async getBscApproval(

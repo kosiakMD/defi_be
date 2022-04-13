@@ -1,17 +1,17 @@
 import * as Promise from 'bluebird';
 
-import { Controller, Get, Inject, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ResultStatus } from '@app/common/enum';
 
+import { TransactionsDetailedResponseDto } from './dto/scans-api.dto';
 import { BscScanService } from './modules/bscscan/bsc-scan.service';
 import { EtherScanService } from './modules/etherscan/ether-scan.service';
 import { ScanService } from './modules/scan.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from './modules/utils/utils';
-import { TransactionQueryDto, TransactionsDetailedResponseDto } from './scans-api.dto';
 
 @ApiTags('Transactions')
 @Controller('v1/transactions')
@@ -43,8 +43,8 @@ export class ScansApiController {
     description: `Array of chains' IDs (comma separated)`,
     example: '1,2',
   })
-  @ApiResponse({ status: 200, type: TransactionsDetailedResponseDto, isArray: true })
-  public async getTransactions(@Query() query: TransactionQueryDto): Promise<any> {
+  @ApiResponse({ status: HttpStatus.OK, type: TransactionsDetailedResponseDto, isArray: true })
+  public async getTransactions(@Query() query): Promise<any> {
     const { chains, addresses } = query;
 
     const result = {
@@ -52,7 +52,7 @@ export class ScansApiController {
       errors: [],
       transactions: [],
     };
-    //
+
     const concatTxs = (newTxs): TransactionsDetailedResponseDto[] =>
       (result.transactions = result.transactions.concat(newTxs));
 

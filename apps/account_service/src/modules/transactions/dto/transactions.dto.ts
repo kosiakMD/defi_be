@@ -6,7 +6,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Address, ChainNameEnum } from '@app/common';
 import { ChainIdToAbbr } from '@app/common/constant/dictionaries';
 import { DetailedResponseDto } from '@app/common/dto';
-import { ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '@app/common/interfaces';
 
 import { ChainDto } from '../../../common/dto/chain.dto';
@@ -113,8 +113,8 @@ class AmountDto {
 }
 
 class TransactionDto implements Transaction {
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chainId: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chainId: number;
   @ApiProperty({
     type: String,
     example: '0xc343e8f4f3109390d62c4004b814df4d68747c8b6b6d60d1b4c33436aa8d93e0',
@@ -169,8 +169,8 @@ class TransactionScanDto {
   @ApiProperty({ type: Number, example: 0.236 })
   usd: number;
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chainId: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chainId: number;
   @ApiProperty({
     type: String,
     example: 'c2e10c20bf46daf0ba03f725218b012544a3d0d3b37334eeb1d4d81e5406e478',
@@ -273,7 +273,7 @@ export class TransactionNewDto {
   // for Chain
   @Expose({ toClassOnly: true })
   @ApiProperty({ type: Number, example: 1 })
-  chainId: ChainIdEnum = null;
+  chainId: number = null;
 
   @Expose()
   @Type(() => ChainDto)

@@ -2,7 +2,6 @@ import { Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity({ name: 'projects_info', orderBy: { name: 'ASC' } })
 export class ProjectsInfoEntity {
-
   @PrimaryColumn({ name: 'id' })
   id: number;
 

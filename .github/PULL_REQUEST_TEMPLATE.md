@@ -19,20 +19,6 @@ What will change as a result of your pull request? Note that sometimes this sect
 
 ### Sanity Check Steps
 
-Work Scope:
-
-- [ ] Common
-- [ ] API Gateway
-- [ ] Account Service
-- [ ] Integration Service
-- [ ] Price Service
-- [ ] Swap Service
-- [ ] Workers (Jobs, Crawlers)
-  - [ ] Account
-  - [ ] Integration
-  - [ ] Price
-  - [ ] Swap
-
 ### Work Checks:
 
 #### Optional
@@ -57,4 +43,3 @@ Work Scope:
 #### Final
 - [ ] All linked <b>JIRA</b> tasks requirements are satisfied
 - [ ] Following <b>all project-related conventions</b>
-

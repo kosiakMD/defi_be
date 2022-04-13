@@ -30,18 +30,22 @@ import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLocked } from '@app/common/dto/base.data.locked.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
+import { BaseDataMint } from '@app/common/dto/base.data.mint';
+import { BaseDataShortFarm } from '@app/common/dto/base.data.short.farm';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
+import { BaseDataAirdrop } from '@app/common/dto/baseDataAirdrop';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
-import { DetailedResponseDto } from '../../common/dto';
 import {
+  CurrentPricesPayload,
+  DetailedResponseDto,
   IntegrationERC20TokenDto,
   IntegrationStakingPositionDto,
   PoolTokenDto,
+  PriceResponseDto,
 } from '../../common/dto';
-import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 import { Asset, BaseData, PoolToken } from '../../common/interfaces/transactions.interfaces';
 import { objectUpdate } from '../../common/utils/object';
 
@@ -54,6 +58,8 @@ import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
+import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
+import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
@@ -64,8 +70,12 @@ import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
+import MarinadeProtocol from './protocols/marinade/marinade.protocol';
+import MinswapProtocol from './protocols/minswap/minswap.protocol';
+import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
+import OrcaProtocol from './protocols/orca/orca.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
@@ -73,8 +83,12 @@ import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
+import { StaderProtocol } from './protocols/stader/stader.protocol';
+import SundaeSwapProtocol from './protocols/sundaeswap/sundaeswap.protocol';
 import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
+import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
 import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
 import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
 import VenusProtocol from './protocols/venusProtocol';
@@ -125,11 +139,22 @@ export class ProtocolService {
     private readonly wonderlandProtocol: WonderlandProtocol,
     private readonly yearnProtocolV1: YearnProtocolV1,
     private readonly yearnProtocolV2: YearnProtocolV2,
+    private readonly trisolarisProtocol: TrisolarisProtocol,
+    private readonly orcaProtocol: OrcaProtocol,
+    private readonly sundaeswapProtocol: SundaeSwapProtocol,
+    private readonly anchorProtocol: AnchorProtocol,
+    private readonly terraswapProtocol: TerraswapProtocol,
+    private readonly astroportProtocol: AstroportProtocol,
+    private readonly marinadeProtocol: MarinadeProtocol,
+    private readonly minswapProtocol: MinswapProtocol,
+    private readonly mirrorProtocol: MirrorProtocol,
+    private readonly staderProtocol: StaderProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
-      alpacaProtocol,
       abracadabraProtocol,
+      alpacaProtocol,
+      anchorProtocol,
       autofarmProtocol,
       badgerProtocol,
       beefyProtocol,
@@ -141,6 +166,7 @@ export class ProtocolService {
       islandswapProtocol,
       mojitoswapProtocol,
       olympusProtocol,
+      orcaProtocol,
       pancakeProtocolV1,
       pancakeProtocolV2,
       pangolinProtocolV2,
@@ -149,7 +175,9 @@ export class ProtocolService {
       saberProtocol,
       spookySwapProtocol,
       sushiswapProtocolV2,
+      terraswapProtocol,
       traderjoeProtocol,
+      trisolarisProtocol,
       uniswapProtocolV2,
       uniswapProtocolV3,
       venusProtocol,
@@ -159,6 +187,12 @@ export class ProtocolService {
       wonderlandProtocol,
       yearnProtocolV1,
       yearnProtocolV2,
+      sundaeswapProtocol,
+      astroportProtocol,
+      marinadeProtocol,
+      minswapProtocol,
+      mirrorProtocol,
+      staderProtocol,
     ];
   }
 
@@ -707,6 +741,10 @@ export class ProtocolService {
         if (baseData instanceof BaseDataLp) {
           baseData.items.forEach((poolFeature) => {
             setChainAssetsArray(poolFeature.tokens);
+
+            if (poolFeature.rewards?.length) {
+              setChainAssetsArray(poolFeature.rewards);
+            }
           });
         } else if (baseData instanceof BaseDataClaimable) {
           baseData.items.forEach((claimable) => {
@@ -745,8 +783,26 @@ export class ProtocolService {
           });
         } else if (baseData instanceof BaseDataLocked) {
           baseData.items.forEach((token) => {
-            setChainAsset(token);
+            if (token.tokens?.length) {
+              setChainAssetsArray(token.tokens);
+              setChainAsset(token.rewards);
+            } else {
+              setChainAsset(token);
+            }
           });
+        } else if (baseData instanceof BaseDataMint) {
+          baseData.items.forEach((item) => {
+            setChainAsset(item.mintedToken);
+            setChainAsset(item.collateral);
+          });
+        } else if (baseData instanceof BaseDataShortFarm) {
+          baseData.items.forEach((item) => {
+            setChainAsset(item.locked);
+            setChainAsset(item.stakingToken);
+            setChainAsset(item.rewards[0]);
+          });
+        } else if (baseData instanceof BaseDataAirdrop) {
+          baseData.items.forEach((item) => setChainAsset(item.token));
         }
       } catch (e) {
         this.logger.error(e);
@@ -788,6 +844,13 @@ export class ProtocolService {
             poolFeature.tokens.forEach((poolToken) => {
               this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
               baseData.total += poolToken.value;
+            });
+
+            poolFeature.rewards?.forEach((reward) => {
+              reward.price =
+                chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
+              reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;
+              baseData.total += reward.claimableData.value;
             });
           });
         } else if (baseData instanceof BaseDataClaimable) {
@@ -883,12 +946,52 @@ export class ProtocolService {
           });
         } else if (baseData instanceof BaseDataLocked) {
           baseData.total = 0;
-          baseData.items.forEach((token) => {
-            token.price = chainAssetPrices.get(baseData.chain.id).get(token.address) ?? token.price;
-            token.locked.value = token.price * Number(token.locked.balance);
-            token.unlocked.value = token.price * Number(token.unlocked.balance);
-            token.totalValue = token.locked.value + token.unlocked.value;
-            baseData.total += token.totalValue;
+          baseData.items.forEach((item) => {
+            if (item?.tokens?.length) {
+              this.setTokenPriceAndValue(baseData.chain.id, item.rewards, chainAssetPrices);
+              if (item.locked) {
+                item.locked.value += item.rewards.value;
+              }
+              item.tokens.forEach((underlying) => {
+                this.setTokenPriceAndValue(baseData.chain.id, underlying, chainAssetPrices);
+                item.locked
+                  ? (item.locked.value += underlying.value)
+                  : (item.unlocked.value += underlying.value);
+              });
+              baseData.total += item.locked ? item.locked.value : item.unlocked.value;
+            } else {
+              item.price = chainAssetPrices.get(baseData.chain.id).get(item.address) ?? item.price;
+              item.locked.value = item.price * Number(item.locked.balance);
+              item.unlocked.value = item.price * Number(item.unlocked.balance);
+              item.totalValue = item.locked.value + item.unlocked.value;
+              baseData.total += item.totalValue;
+            }
+          });
+        } else if (baseData instanceof BaseDataMint) {
+          baseData.total = 0;
+          baseData.items.forEach((item) => {
+            const { mintedToken, collateral } = item;
+            this.setTokenPriceAndValue(baseData.chain.id, mintedToken, chainAssetPrices);
+            this.setTokenPriceAndValue(baseData.chain.id, collateral, chainAssetPrices);
+            baseData.total += collateral.value - mintedToken.value;
+          });
+        } else if (baseData instanceof BaseDataShortFarm) {
+          baseData.total = 0;
+          baseData.items.forEach((item) => {
+            const { stakingToken, rewards, locked } = item;
+            this.setTokenPriceAndValue(baseData.chain.id, stakingToken, chainAssetPrices);
+            this.setTokenPriceAndValue(baseData.chain.id, locked, chainAssetPrices);
+            rewards[0].price =
+              chainAssetPrices.get(baseData.chain.id).get(rewards[0].address) ?? rewards[0].price;
+            rewards[0].claimableData.value =
+              Number(rewards[0].claimableData.balance) * rewards[0].price;
+            baseData.total += (rewards[0].claimableData.value || 0) + locked.value;
+          });
+        } else if (baseData instanceof BaseDataAirdrop) {
+          baseData.total = 0;
+          baseData.items.forEach((item) => {
+            this.setTokenPriceAndValue(baseData.chain.id, item.token, chainAssetPrices);
+            baseData.total += item.token.value;
           });
         }
       } catch (e) {

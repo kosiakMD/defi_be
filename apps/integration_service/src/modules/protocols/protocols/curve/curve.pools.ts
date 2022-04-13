@@ -49,17 +49,15 @@ export class CurvePools {
     const baseData: BaseDataLp[] = [];
     addressesLowerCase.forEach((a) => {
       const existedPositions = this.toLp(lpBalances[a], cachedPools.items);
-      if (existedPositions.length > 0) {
-        const toAdd: BaseDataLp = plainToClass(BaseDataLp, {
-          chain: chain,
-          userAddress: a,
-          protocolType: ProtocolTypeEnum.amm,
-          projectName: ProjectEnum.curve,
-          items: existedPositions,
-          feature: FeatureEnum.pools,
-        });
-        baseData.push(toAdd);
-      }
+      const toAdd: BaseDataLp = plainToClass(BaseDataLp, {
+        chain: chain,
+        userAddress: a,
+        protocolType: ProtocolTypeEnum.amm,
+        projectName: ProjectEnum.curve,
+        items: existedPositions,
+        feature: FeatureEnum.pools,
+      });
+      baseData.push(toAdd);
     });
 
     return baseData;

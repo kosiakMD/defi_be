@@ -1,3 +1,5 @@
+import { plainToClass } from 'class-transformer';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -9,8 +11,10 @@ import {
   Logger,
   ProjectEnum,
   ProtocolNameEnum,
+  ProtocolTypeEnum,
 } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
@@ -19,6 +23,7 @@ import BasicProtocol from '../basicProtocol';
 import { ConvexCurveLpStaking } from './convex.curveLP.staking';
 import { ConvexCvxStaking } from './convex.cvx.staking';
 import { ConvexCvxCRVStaking } from './convex.cvxCRV.staking';
+import { ConvexCvxLockedStaking } from './convex.cvxLockedStaking';
 
 @Injectable()
 export class ConvexProtocol extends BasicProtocol {
@@ -27,7 +32,7 @@ export class ConvexProtocol extends BasicProtocol {
   readonly name = ProtocolNameEnum.Convex;
   readonly displayName = 'Convex';
   readonly features = {
-    [ChainAbbrEnum.eth]: [FeatureEnum.staking],
+    [ChainAbbrEnum.eth]: [FeatureEnum.staking, FeatureEnum.lockedBalances, FeatureEnum.claimable],
   };
 
   constructor(
@@ -37,6 +42,7 @@ export class ConvexProtocol extends BasicProtocol {
     private readonly cvxCRVStaking: ConvexCvxCRVStaking,
     private readonly curveLpStaking: ConvexCurveLpStaking,
     private readonly cvxStaking: ConvexCvxStaking,
+    private readonly cvxLockedStaking: ConvexCvxLockedStaking,
   ) {
     super();
     // Test Addresses
@@ -65,22 +71,44 @@ export class ConvexProtocol extends BasicProtocol {
   ): Promise<BaseData[]> {
     switch (feature) {
       case FeatureEnum.staking:
-        return this.fetchAndMergeStakingData(addresses, chain);
+        return this.fetchAndMergeBaseData(addresses, chain);
       default:
         return [];
     }
   }
 
-  private async fetchAndMergeStakingData(
-    addresses: Address[],
-    chain: ChainDto,
-  ): Promise<BaseData[]> {
-    const [cvxData, cvxCRVData, curveLpData] = await Promise.all([
+  private async fetchAndMergeBaseData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
+    const [cvxData, cvxCRVData, curveLpData, cvxLockedData] = await Promise.all([
       this.cvxStaking.getData(addresses, chain),
-      this.cvxCRVStaking.getData(addresses, chain),
+      this.cvxCRVStaking.getData(addresses, chain), // missing crv rewards, missing cvx rewards
       this.curveLpStaking.getData(addresses, chain),
+      this.cvxLockedStaking.getData(addresses, chain),
     ]);
 
-    return [].concat(cvxData, cvxCRVData, curveLpData);
+    // Merge staking data, otherwise multiple independant BaseDataStaking will each override each other
+    // if belonging to the same user
+    const baseData = [];
+    addresses.forEach((address) => {
+      // These are all BaseDataStaking
+      const cvx = cvxData.find((bd) => bd.userAddress === address);
+      const cvxCrv = cvxCRVData.find((bd) => bd.userAddress === address);
+      const curveLp = curveLpData.find((bd) => bd.userAddress === address);
+      baseData.push(
+        plainToClass(BaseDataStaking, {
+          chain: chain,
+          userAddress: address,
+          protocolType: ProtocolTypeEnum.staking,
+          projectName: ProjectEnum.convex,
+          feature: FeatureEnum.staking,
+          protocolName: ProtocolNameEnum.Convex,
+          items: [].concat(...cvxCrv.items, ...curveLp.items, ...cvx.items),
+        }),
+      );
+
+      // lockedBalances & claimable no staking
+      baseData.push(...cvxLockedData);
+    });
+
+    return baseData;
   }
 }

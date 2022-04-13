@@ -5,58 +5,55 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  Logger,
-  IntegrationFeaturesDataDto,
-  FeatureResultDto,
-  LendingPositionDto,
-  ChainAbbrEnum,
-  ProjectEnum,
   Address,
+  ChainAbbrEnum,
   ChainDto,
+  ClaimableDto,
+  FeatureEnum,
+  FeatureResultDto,
+  IAssetResponseDto,
+  IntegrationClaimableTokenDto,
+  IntegrationFeaturesDataDto,
   LendingErcToken,
+  LendingPositionDto,
+  Logger,
+  ProjectEnum,
   ProtocolTypeEnum,
   VenusProtocolEnum,
-  FeatureEnum,
-  ClaimableDto, 
-  IntegrationClaimableTokenDto,
-  IAssetResponseDto,
 } from '@app/common';
-
+import { CallData } from '@app/common/dto/CallData';
+import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
+import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { concatStrings } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { Web3ProviderService } from '@app/common/web3provider';
-import { concatStrings } from '@app/common/utils';
-import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
-import { IntegrationERC20TokenDto,  IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { BaseData } from '../../../common/interfaces/transactions.interfaces';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { Mapper } from '../helpers/mappers/mapper';
-import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-
 import DataProviderProtocol from './dataProviderProtocol';
-
-import { VTokenAbis } from './venus/contracts/vToken';
-import { PoolAbis } from './venus/contracts/pool';
-import { UnitrollerAbis } from './venus/contracts/unitroller';
 import { OracleAbis } from './venus/contracts/oracle';
+import { PoolAbis } from './venus/contracts/pool';
 import { TokenAbis } from './venus/contracts/token';
-import { CallData } from '@app/common/dto/CallData';
-
-import { BalanceInfo, APY } from './venus/venus.interfaces';
+import { UnitrollerAbis } from './venus/contracts/unitroller';
+import { VTokenAbis } from './venus/contracts/vToken';
 import { venusAddresses } from './venus/venus.constants';
+import { APY, BalanceInfo } from './venus/venus.interfaces';
 
 @Injectable()
 export class VenusProtocol extends DataProviderProtocol {
-  readonly chains = [ ChainAbbrEnum.bsc ];
+  readonly chains = [ChainAbbrEnum.bnb];
   readonly project = ProjectEnum.venus;
   readonly displayName = 'Venus';
   readonly name = VenusProtocolEnum.venus;
   readonly features = {
-    [ChainAbbrEnum.bsc]: [
+    [ChainAbbrEnum.bnb]: [
       FeatureEnum.lending,
       FeatureEnum.borrowing,
       FeatureEnum.staking,
@@ -149,7 +146,10 @@ export class VenusProtocol extends DataProviderProtocol {
       errors: [],
     });
 
-    const [lending, borrowing] = await this.getLendingAndBorrowingData(address.toLowerCase(), chain);
+    const [lending, borrowing] = await this.getLendingAndBorrowingData(
+      address.toLowerCase(),
+      chain,
+    );
     const staking = await this.getStakingData(address.toLowerCase(), chain);
     const claimable = await this.getClaimableData(address.toLowerCase(), chain);
 
@@ -157,26 +157,26 @@ export class VenusProtocol extends DataProviderProtocol {
     response[FeatureEnum.borrowing] = borrowing;
     response[FeatureEnum.staking] = staking;
     response[FeatureEnum.claimable] = claimable;
-    
+
     return response;
   }
 
   async getStakingData(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> { 
+  ): Promise<FeatureResultDto<IntegrationStakingPositionDto>> {
     const stakingToken = await this.getToken(venusAddresses.VAI, chain);
     const rewardToken = await this.getToken(venusAddresses.XVS, chain);
 
-    const prices = await this.getAssetPrices(
-      [stakingToken.address, rewardToken.address],
-      chain,
-    );
+    const prices = await this.getAssetPrices([stakingToken.address, rewardToken.address], chain);
 
     const dataFromPool = await this.callsForPool(address, chain);
     const amount = dataFromPool.get(this.userInfoLabel(address)).output.data.amount; // amount of VAI tokens
     const rewardsAmount = dataFromPool.get(this.pendingXVSLabel(address)).output.data; // amount of XVS tokens
-    const tvl = normalizeDecimals(dataFromPool.get(this.balanceOfLabel(venusAddresses.VAIPool)).output.data.toString(), stakingToken.decimals);
+    const tvl = normalizeDecimals(
+      dataFromPool.get(this.balanceOfLabel(venusAddresses.VAIPool)).output.data.toString(),
+      stakingToken.decimals,
+    );
 
     const items = [];
     let totalValue = 0;
@@ -189,7 +189,10 @@ export class VenusProtocol extends DataProviderProtocol {
         claimableData: plainToClass(ClaimableDto, {}),
       });
 
-      rewardPosition.claimableData.balance = normalizeDecimals(rewardsAmount, rewardToken.decimals).toString();
+      rewardPosition.claimableData.balance = normalizeDecimals(
+        rewardsAmount,
+        rewardToken.decimals,
+      ).toString();
 
       const stakingTokenPosition = plainToClass(IntegrationERC20TokenDto, {
         address: stakingToken.address,
@@ -224,14 +227,11 @@ export class VenusProtocol extends DataProviderProtocol {
   async getClaimableData(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> { 
+  ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> {
     const claimableToken = await this.getToken(venusAddresses.XVS.toLowerCase(), chain);
     const claimableTokenBalance = await this.getAccruedVenusBalance(address, chain);
 
-    const prices = await this.getAssetPrices(
-      [claimableToken.address],
-      chain,
-    );
+    const prices = await this.getAssetPrices([claimableToken.address], chain);
 
     const claimablePosition = this.formatClaimableToken(
       claimableToken,
@@ -253,37 +253,47 @@ export class VenusProtocol extends DataProviderProtocol {
   ): Promise<FeatureResultDto<LendingPositionDto>[]> {
     const vTokens = await this.getVTokenList(chain); // get the up-to-date list of vTokens
     const rewardToken = await this.getToken(venusAddresses.XVS.toLowerCase(), chain);
-    
+
     const batchCall: Map<string, CallData> = await this.callsForVToken(vTokens, address, chain);
 
     const underlyingTokens = new Map<string, string>(); // stores vToken and its underlying token addresses
-    const balances: BalanceInfo[] = vTokens.map((vTokenAddress) => {
-      const underlyingTokenAddress = batchCall.get(this.getUnderlyingLabel(vTokenAddress, address))?.output.data.toString().toLowerCase() ?? venusAddresses.BNB;
-      underlyingTokens.set(vTokenAddress, underlyingTokenAddress);
+    const balances: BalanceInfo[] =
+      vTokens.map((vTokenAddress) => {
+        const underlyingTokenAddress =
+          batchCall
+            .get(this.getUnderlyingLabel(vTokenAddress, address))
+            ?.output.data.toString()
+            .toLowerCase() ?? venusAddresses.BNB;
+        underlyingTokens.set(vTokenAddress, underlyingTokenAddress);
 
-      const balanceOfToken = batchCall.get(this.getBalanceOfUnderlyingLabel(vTokenAddress, address)).output.data; // the amount of tokens which the user has
-      const borrowBalance = batchCall.get(this.getBorrowBalanceLabel(vTokenAddress, address)).output.data; // the amount of borrowed tokens
-      const balanceOfVToken = batchCall.get(this.getBalanceOfLabel(vTokenAddress, address)).output.data; // the amount of vToken which the user has
-      const vTokenExchangeRate = batchCall.get(this.getExchangeRateLabel(vTokenAddress)).output.data;
-      const vTokenSupplyRate = batchCall.get(this.getSupplyRateLabel(vTokenAddress)).output.data;
-      const vTokenBorrowRate = batchCall.get(this.getBorrowRateLabel(vTokenAddress)).output.data;
+        const balanceOfToken = batchCall.get(
+          this.getBalanceOfUnderlyingLabel(vTokenAddress, address),
+        ).output.data; // the amount of tokens which the user has
+        const borrowBalance = batchCall.get(this.getBorrowBalanceLabel(vTokenAddress, address))
+          .output.data; // the amount of borrowed tokens
+        const balanceOfVToken = batchCall.get(this.getBalanceOfLabel(vTokenAddress, address)).output
+          .data; // the amount of vToken which the user has
+        const vTokenExchangeRate = batchCall.get(this.getExchangeRateLabel(vTokenAddress)).output
+          .data;
+        const vTokenSupplyRate = batchCall.get(this.getSupplyRateLabel(vTokenAddress)).output.data;
+        const vTokenBorrowRate = batchCall.get(this.getBorrowRateLabel(vTokenAddress)).output.data;
 
-      const vTokenStats = {
-        exchangeRate: vTokenExchangeRate,
-        supplyRate: vTokenSupplyRate,
-        borrowRate: vTokenBorrowRate,
-      };
+        const vTokenStats = {
+          exchangeRate: vTokenExchangeRate,
+          supplyRate: vTokenSupplyRate,
+          borrowRate: vTokenBorrowRate,
+        };
 
-      return {
-        userAddress: address,
-        vToken: vTokenAddress,
-        vTokenBalance: balanceOfVToken,
-        token: underlyingTokens.get(vTokenAddress),
-        tokenBalance: balanceOfToken,
-        borrowBalance,
-        vTokenStats,
-      };
-    }) || [];
+        return {
+          userAddress: address,
+          vToken: vTokenAddress,
+          vTokenBalance: balanceOfVToken,
+          token: underlyingTokens.get(vTokenAddress),
+          tokenBalance: balanceOfToken,
+          borrowBalance,
+          vTokenStats,
+        };
+      }) || [];
 
     const venusAPY: Map<string, APY> = await this.calcVenusAPY(vTokens, underlyingTokens, chain); // calculate Venus (XVS) APY for all vTokens
 
@@ -292,7 +302,7 @@ export class VenusProtocol extends DataProviderProtocol {
       [...Array.from(underlyingTokens.values()), rewardToken.address, venusAddresses.VAI],
       chain,
     );
-    
+
     const mintedVAIs = await this.getVAIBalance(address, chain); // user amount of minted VAI
 
     const [lending, borrowing] = await Promise.all([
@@ -303,16 +313,10 @@ export class VenusProtocol extends DataProviderProtocol {
     return [lending, borrowing];
   }
 
-  async getAssetPrices(
-    tokens: string[],
-    chain: ChainDto,
-  ): Promise<Map<string, string>> {
-    const assets = new Set<string>(tokens.map(token => token.toLowerCase()));
+  async getAssetPrices(tokens: string[], chain: ChainDto): Promise<Map<string, string>> {
+    const assets = new Set<string>(tokens.map((token) => token.toLowerCase()));
 
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      [...assets],
-      chain.id,
-    );
+    const { prices } = await this.priceService.getTokenPricesFetch([...assets], chain.id);
 
     return new Map(
       Object.entries(prices)
@@ -329,34 +333,41 @@ export class VenusProtocol extends DataProviderProtocol {
   ): Promise<FeatureResultDto<LendingPositionDto>> {
     let totalValue = 0;
     const items = [];
-    await Promise.all(balances.map(async (b) => {
-      if (b.tokenBalance > 0) {
-        const tokenData = await this.getToken(b.token, chain);
-        const vTokenData = await this.getToken(b.vToken, chain);
+    await Promise.all(
+      balances.map(async (b) => {
+        if (b.tokenBalance > 0) {
+          const tokenData = await this.getToken(b.token, chain);
+          const vTokenData = await this.getToken(b.vToken, chain);
 
-        const token = plainToClass(LendingErcToken, {
-          address: b.token.toLowerCase(),
-          decimals: tokenData.decimals,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          price: prices.get(b.token.toLowerCase()),
-        });
-        
-        const tokenBalance = this.calcTokenBalance(b.vTokenBalance, b.vTokenStats.exchangeRate, vTokenData.decimals).toString();
-        const positionAPY = this.calcAPY(b.vTokenStats.supplyRate) + venusAPY.get(b.vToken.toLowerCase()).supply;  
+          const token = plainToClass(LendingErcToken, {
+            address: b.token.toLowerCase(),
+            decimals: tokenData.decimals,
+            name: tokenData.name,
+            symbol: tokenData.symbol,
+            price: prices.get(b.token.toLowerCase()),
+          });
 
-        const lendPosition = this.formatLendingToken(
-          b.vToken.toLowerCase(),
-          positionAPY,
-          tokenBalance,
-          token,
-        );
-  
-        totalValue += lendPosition.value ?? 0;
-  
-        items.push(lendPosition);
-      }
-    }));
+          const tokenBalance = this.calcTokenBalance(
+            b.vTokenBalance,
+            b.vTokenStats.exchangeRate,
+            vTokenData.decimals,
+          ).toString();
+          const positionAPY =
+            this.calcAPY(b.vTokenStats.supplyRate) + venusAPY.get(b.vToken.toLowerCase()).supply;
+
+          const lendPosition = this.formatLendingToken(
+            b.vToken.toLowerCase(),
+            positionAPY,
+            tokenBalance,
+            token,
+          );
+
+          totalValue += lendPosition.value ?? 0;
+
+          items.push(lendPosition);
+        }
+      }),
+    );
 
     const lending: FeatureResultDto<LendingPositionDto> = {
       totalValue,
@@ -376,32 +387,36 @@ export class VenusProtocol extends DataProviderProtocol {
     let totalValue = 0;
     const items = [];
 
-    await Promise.all(balances.map(async (b) => {
-      if (b.borrowBalance > 0) {
-        const tokenData = await this.getToken(b.token, chain);
-        
-        const token = plainToClass(LendingErcToken, {
-          address: b.token.toLowerCase(),
-          decimals: tokenData.decimals,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          price: Number(prices.get(b.token.toLowerCase())),
-        });
+    await Promise.all(
+      balances.map(async (b) => {
+        if (b.borrowBalance > 0) {
+          const tokenData = await this.getToken(b.token, chain);
 
-        const positionAPY = (-1) * this.calcAPY(b.vTokenStats.borrowRate) + venusAPY.get(b.vToken.toLowerCase()).borrow; // token APY plus XVS APY
+          const token = plainToClass(LendingErcToken, {
+            address: b.token.toLowerCase(),
+            decimals: tokenData.decimals,
+            name: tokenData.name,
+            symbol: tokenData.symbol,
+            price: Number(prices.get(b.token.toLowerCase())),
+          });
 
-        const borrowPosition = this.formatLendingToken(
-          b.vToken,
-          positionAPY,
-          b.borrowBalance,
-          token,
-        );
-  
-        totalValue += borrowPosition.value ?? 0;
+          const positionAPY =
+            -1 * this.calcAPY(b.vTokenStats.borrowRate) +
+            venusAPY.get(b.vToken.toLowerCase()).borrow; // token APY plus XVS APY
 
-        items.push(borrowPosition);
-      }
-    }));
+          const borrowPosition = this.formatLendingToken(
+            b.vToken,
+            positionAPY,
+            b.borrowBalance,
+            token,
+          );
+
+          totalValue += borrowPosition.value ?? 0;
+
+          items.push(borrowPosition);
+        }
+      }),
+    );
 
     // add VAI position
     if (mintedVAIs.toNumber() > 0) {
@@ -445,7 +460,7 @@ export class VenusProtocol extends DataProviderProtocol {
     });
   }
 
-  formatClaimableToken(token: IAssetResponseDto, prices: Map<string, string>, balance: string,) {
+  formatClaimableToken(token: IAssetResponseDto, prices: Map<string, string>, balance: string) {
     return plainToClass(IntegrationClaimableTokenDto, {
       address: token.address.toLowerCase(),
       decimals: token.decimals,
@@ -468,24 +483,30 @@ export class VenusProtocol extends DataProviderProtocol {
 
   async getVTokenList(chain: ChainDto): Promise<string[]> {
     const unitrollerContract = new UnitrollerAbis(venusAddresses.unitroller);
-    
+
     const call: Map<string, CallData> = new Map<string, CallData>([
-      [this.getVTokenListLabel(venusAddresses.unitroller), unitrollerContract.getAllMarkets()]
+      [this.getVTokenListLabel(venusAddresses.unitroller), unitrollerContract.getAllMarkets()],
     ]);
-    
+
     const getVTokensCall: Map<string, CallData> = await this.multicallService.handleInBatches(
       call,
       chain.id,
     );
-    
-    const vTokenList = getVTokensCall.get(this.getVTokenListLabel(venusAddresses.unitroller)).output.data;
+
+    const vTokenList = getVTokensCall.get(this.getVTokenListLabel(venusAddresses.unitroller)).output
+      .data;
     return vTokenList;
   }
 
-  calcTokenBalance(vTokenBalance: number, exchangeRateCurrent: BigNumber, underlyingDecimals: number) {
+  calcTokenBalance(
+    vTokenBalance: number,
+    exchangeRateCurrent: BigNumber,
+    underlyingDecimals: number,
+  ) {
     const mantissa = 18 + underlyingDecimals - 8;
     const onevTokenInUnderlying = exchangeRateCurrent.div(Math.pow(10, mantissa));
-    return new BigNumber(vTokenBalance).multipliedBy(onevTokenInUnderlying) //
+    return new BigNumber(vTokenBalance)
+      .multipliedBy(onevTokenInUnderlying) //
       .toNumber();
   }
 
@@ -494,61 +515,100 @@ export class VenusProtocol extends DataProviderProtocol {
     const blocksPerDay = 20 * 60 * 24;
     const daysPerYear = 365;
 
-    const apy = (Math.pow((ratePerBlock / bnbMantissa * blocksPerDay + 1), daysPerYear) - 1) * 100;
+    const apy = (Math.pow((ratePerBlock / bnbMantissa) * blocksPerDay + 1, daysPerYear) - 1) * 100;
     return apy;
   }
 
-  async calcVenusAPY(tokens: string[], underlyingTokens: Map<string, string>, chain: ChainDto): Promise<Map<string, APY>> {
+  async calcVenusAPY(
+    tokens: string[],
+    underlyingTokens: Map<string, string>,
+    chain: ChainDto,
+  ): Promise<Map<string, APY>> {
     const totalSupplyAndBorrows = await this.getTotalSupplyAndBorrows(tokens, chain);
     const venusSpeeds = await this.getVenusSpeeds(tokens, chain);
     const venusAPY = new Map<string, APY>();
 
     const prices = await this.getPricesFromOracle(tokens, chain);
-    
-    const venusPrice = normalizeDecimals(prices.get(venusAddresses.vXVS.toLowerCase()).toString(), 18);
 
-    await Promise.all(tokens.map(async (vTokenAddress) => {
-      const underlyingToken = await this.getToken(underlyingTokens.get(vTokenAddress), chain);
-      const underlyingTokenPrice = normalizeDecimals(prices.get(vTokenAddress.toLowerCase()).toString(), underlyingToken.decimals);
-      
-      // Total supply needs to be converted from vTokens
-      const mantissa = 18 + underlyingToken.decimals - 8;
-      
-      const exchangeRate = normalizeDecimals((totalSupplyAndBorrows.get(this.getExchangeRateLabel(vTokenAddress)).output.data).toNumber(), mantissa);
+    const venusPrice = normalizeDecimals(
+      prices.get(venusAddresses.vXVS.toLowerCase()).toString(),
+      18,
+    );
 
-      const totalBorrows = normalizeDecimals(
-        totalSupplyAndBorrows.get(this.getTotalBorrowsLabel(vTokenAddress)).output.data.toString(), 
-        underlyingToken.decimals,
-      );
-      const totalSupply = normalizeDecimals(
-        ((totalSupplyAndBorrows.get(this.getTotalSupplyLabel(vTokenAddress)).output.data).toNumber() * exchangeRate).toString(), 
-        8,
-      );
-      
-      const apxBlockSpeedInSeconds = 3;
-      const blocksPerDay = (60 * 60 * 24) / apxBlockSpeedInSeconds;
-      const venusSpeed = venusSpeeds.get(vTokenAddress).output.data / 1e18;
-      const venusPerDay = venusSpeed * blocksPerDay;
+    await Promise.all(
+      tokens.map(async (vTokenAddress) => {
+        const underlyingToken = await this.getToken(underlyingTokens.get(vTokenAddress), chain);
+        const underlyingTokenPrice = normalizeDecimals(
+          prices.get(vTokenAddress.toLowerCase()).toString(),
+          underlyingToken.decimals,
+        );
 
-      const venusBorrowApy = this.apyFormula(venusPrice, venusPerDay, totalBorrows, underlyingTokenPrice);
-      const venusSupplyApy = this.apyFormula(venusPrice, venusPerDay, totalSupply, underlyingTokenPrice);
+        // Total supply needs to be converted from vTokens
+        const mantissa = 18 + underlyingToken.decimals - 8;
 
-      venusAPY.set(vTokenAddress.toLowerCase(), {
-        borrow: venusBorrowApy.toNumber(),
-        supply: venusSupplyApy.toNumber(),
-      })
-    }));
+        const exchangeRate = normalizeDecimals(
+          totalSupplyAndBorrows
+            .get(this.getExchangeRateLabel(vTokenAddress))
+            .output.data.toNumber(),
+          mantissa,
+        );
+
+        const totalBorrows = normalizeDecimals(
+          totalSupplyAndBorrows
+            .get(this.getTotalBorrowsLabel(vTokenAddress))
+            .output.data.toString(),
+          underlyingToken.decimals,
+        );
+        const totalSupply = normalizeDecimals(
+          (
+            totalSupplyAndBorrows
+              .get(this.getTotalSupplyLabel(vTokenAddress))
+              .output.data.toNumber() * exchangeRate
+          ).toString(),
+          8,
+        );
+
+        const apxBlockSpeedInSeconds = 3;
+        const blocksPerDay = (60 * 60 * 24) / apxBlockSpeedInSeconds;
+        const venusSpeed = venusSpeeds.get(vTokenAddress).output.data / 1e18;
+        const venusPerDay = venusSpeed * blocksPerDay;
+
+        const venusBorrowApy = this.apyFormula(
+          venusPrice,
+          venusPerDay,
+          totalBorrows,
+          underlyingTokenPrice,
+        );
+        const venusSupplyApy = this.apyFormula(
+          venusPrice,
+          venusPerDay,
+          totalSupply,
+          underlyingTokenPrice,
+        );
+
+        venusAPY.set(vTokenAddress.toLowerCase(), {
+          borrow: venusBorrowApy.toNumber(),
+          supply: venusSupplyApy.toNumber(),
+        });
+      }),
+    );
 
     return venusAPY;
   }
 
-  private apyFormula(venusPrice: number, venusPerDay: number, total: number, underlyingTokenPrice: number) {
-    return ((new BigNumber(venusPrice).multipliedBy(venusPerDay) //
+  private apyFormula(
+    venusPrice: number,
+    venusPerDay: number,
+    total: number,
+    underlyingTokenPrice: number,
+  ) {
+    return new BigNumber(venusPrice)
+      .multipliedBy(venusPerDay) //
       .div(total)
       .div(underlyingTokenPrice)
-      .plus(1))
+      .plus(1)
       .pow(365)
-      .minus(1))
+      .minus(1)
       .multipliedBy(100);
   }
 
@@ -556,10 +616,10 @@ export class VenusProtocol extends DataProviderProtocol {
     const oracleContract = new OracleAbis(venusAddresses.oracle);
     const prices = new Map<string, BigNumber>();
 
-    const calls: Map<string, CallData> = new Map<string, CallData>(tokens.map(t => 
-      [t.toLowerCase(), oracleContract.getUnderlyingPrice(t)]
-    ));
-    
+    const calls: Map<string, CallData> = new Map<string, CallData>(
+      tokens.map((t) => [t.toLowerCase(), oracleContract.getUnderlyingPrice(t)]),
+    );
+
     const pricesCall: Map<string, CallData> = await this.multicallService.handleInBatches(
       calls,
       chain.id,
@@ -575,10 +635,10 @@ export class VenusProtocol extends DataProviderProtocol {
   async getVenusSpeeds(tokens: string[], chain: ChainDto): Promise<Map<string, CallData>> {
     const unitrollerContract = new UnitrollerAbis(venusAddresses.unitroller);
 
-    const call: Map<string, CallData> = new Map<string, CallData>(tokens.map(t => 
-      [t, unitrollerContract.venusSpeeds(t)]
-    ));
-    
+    const call: Map<string, CallData> = new Map<string, CallData>(
+      tokens.map((t) => [t, unitrollerContract.venusSpeeds(t)]),
+    );
+
     const venusSpeedsCall: Map<string, CallData> = await this.multicallService.handleInBatches(
       call,
       chain.id,
@@ -591,7 +651,7 @@ export class VenusProtocol extends DataProviderProtocol {
     const calls = new Map<string, CallData>();
     vTokens.forEach((vTokenAddress) => {
       const vTokenContract = new VTokenAbis(vTokenAddress);
-      
+
       calls.set(this.getTotalBorrowsLabel(vTokenAddress), vTokenContract.totalBorrowsCurrent());
       calls.set(this.getTotalSupplyLabel(vTokenAddress), vTokenContract.totalSupply());
       calls.set(this.getExchangeRateLabel(vTokenAddress), vTokenContract.exchangeRateCurrent());
@@ -653,14 +713,24 @@ export class VenusProtocol extends DataProviderProtocol {
     return batchCall;
   }
 
-  async callsForVToken(vTokens: string[], address: string, chain: ChainDto): Promise<Map<string, CallData>> {
+  async callsForVToken(
+    vTokens: string[],
+    address: string,
+    chain: ChainDto,
+  ): Promise<Map<string, CallData>> {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
     vTokens.forEach((vTokenAddress) => {
       const vTokenContract = new VTokenAbis(vTokenAddress);
-      calls.set(this.getBalanceOfUnderlyingLabel(vTokenAddress, address), vTokenContract.balanceOfUnderlying(address));
+      calls.set(
+        this.getBalanceOfUnderlyingLabel(vTokenAddress, address),
+        vTokenContract.balanceOfUnderlying(address),
+      );
       calls.set(this.getBalanceOfLabel(vTokenAddress, address), vTokenContract.balanceOf(address));
-      calls.set(this.getBorrowBalanceLabel(vTokenAddress, address), vTokenContract.borrowBalanceCurrent(address));
+      calls.set(
+        this.getBorrowBalanceLabel(vTokenAddress, address),
+        vTokenContract.borrowBalanceCurrent(address),
+      );
       calls.set(this.getExchangeRateLabel(vTokenAddress), vTokenContract.exchangeRateCurrent());
       calls.set(this.getBorrowRateLabel(vTokenAddress), vTokenContract.borrowRatePerBlock());
       calls.set(this.getSupplyRateLabel(vTokenAddress), vTokenContract.supplyRatePerBlock());
@@ -689,7 +759,7 @@ export class VenusProtocol extends DataProviderProtocol {
   getUnderlyingLabel(contract: string, address: string): string {
     return concatStrings(VTokenAbis.underlying.name, contract, address);
   }
-  
+
   getBorrowBalanceLabel(contract: string, address: string): string {
     return concatStrings(VTokenAbis.borrowBalanceCurrent.name, contract, address);
   }

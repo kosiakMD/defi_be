@@ -16,10 +16,7 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
-import {
-  IntegrationERC20TokenDto,
-  IntegrationStakingPositionDto,
-} from '@app/common/jobs/staking';
+import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 import { toDecimals } from '../../../../common/utils/util';
@@ -46,24 +43,26 @@ export class TraderJoeFarm {
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const xJOEStaking = await this.getStakingPosition();
 
-    const baseData: BaseDataStaking[] = await Promise.all(addresses.map(async (a) => {
-      const userBalance = await this.getBalanceOf(a);
+    const baseData: BaseDataStaking[] = await Promise.all(
+      addresses.map(async (a) => {
+        const userBalance = await this.getBalanceOf(a);
 
-      const toAdd: BaseDataStaking = plainToClass(BaseDataStaking, {
-        chain: chain,
-        userAddress: a,
-        protocolType: ProtocolTypeEnum.staking,
-        projectName: ProjectEnum.traderjoe,
-        items: [],
-        feature: FeatureEnum.farming,
-      });
+        const toAdd: BaseDataStaking = plainToClass(BaseDataStaking, {
+          chain: chain,
+          userAddress: a,
+          protocolType: ProtocolTypeEnum.staking,
+          projectName: ProjectEnum.traderjoe,
+          items: [],
+          feature: FeatureEnum.farming,
+        });
 
-      if (Number(userBalance) > 0) {
-        toAdd.items = [this.toPosition(userBalance, xJOEStaking)];
-      }
+        if (Number(userBalance) > 0) {
+          toAdd.items = [this.toPosition(userBalance, xJOEStaking)];
+        }
 
-      return toAdd;
-    }));
+        return toAdd;
+      }),
+    );
 
     return baseData;
   }
@@ -125,7 +124,7 @@ export class TraderJoeFarm {
     const xJOEContract = new TraderjoeAbis(this.xJOEAddress);
 
     const balanceCall = new Map<string, ICallData>([
-      [userAddress, xJOEContract.balanceOf(userAddress)]
+      [userAddress, xJOEContract.balanceOf(userAddress)],
     ]);
 
     const balanceRsp: Map<string, ICallData> = await this.multicallService.handleInBatches(

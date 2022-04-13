@@ -3,6 +3,7 @@ import BigNumber from 'bignumber.js';
 import Web3 from 'web3';
 
 import { Logger } from '@app/common';
+import { chunk } from '@app/common/utils';
 
 import { YearnVaultCommonAbi } from './contracts/YearnVaultCommonAbi';
 import { IYearnUser } from './yearn.interfaces';
@@ -32,11 +33,19 @@ export class YearnLocalMultiCall extends MultiCall {
     });
 
     const balancesByUser = await Promise.all(
-      balanceInputsByUser.map((inputs) => this.multiCall(YearnVaultCommonAbi, inputs)),
+      balanceInputsByUser.map(async (inputs) => {
+        const results = [];
+        for (const chunkedInputs of chunk(inputs, 6)) {
+          const data = await this.multiCall(YearnVaultCommonAbi, chunkedInputs);
+          const [, balances] = data;
+          results.push(...balances);
+        }
+        return results;
+      }),
     );
 
     users.forEach((user, idx) => {
-      const [, vaultUserInfo] = balancesByUser[idx];
+      const vaultUserInfo = balancesByUser[idx];
 
       const normalizedBalances = this.normalizeTokenToSharePrice(vaultUserInfo, user);
 

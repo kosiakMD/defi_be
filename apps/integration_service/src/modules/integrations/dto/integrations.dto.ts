@@ -5,16 +5,19 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import {
   ChainDto,
-  CurrencyDto, DetailedResponseDto,
+  CurrencyDto,
+  DetailedResponseDto,
   FeatureEnum,
   FeatureResult,
   IntegrationFeaturesData,
-  MetaDto, PoolTokenDto,
+  MetaDto,
+  PoolTokenDto,
   ProtocolBasicInfo,
-  ProtocolFeaturesInfo, ProtocolFeaturesInfoDto, StakingPositionFeatureDto
+  ProtocolFeaturesInfo,
+  ProtocolFeaturesInfoDto,
+  StakingPositionFeatureDto
 } from '@app/common';
 import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
-
 
 export class Fee {
   // feeVolume: number;

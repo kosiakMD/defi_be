@@ -1,7 +1,5 @@
 import { AfterLoad, Column, Entity, PrimaryColumn } from 'typeorm';
 
-import { ChainIdEnum } from '@app/common/enum';
-
 import { ColumnNumericTransformer } from '../../../common/dto';
 import { AssetState } from '../../../common/interfaces/assets.interface';
 
@@ -28,7 +26,7 @@ export class AssetsEntity {
   icon: string;
 
   @Column({ name: 'chain_id' })
-  chain: ChainIdEnum;
+  chain: number;
 
   @Column({ name: 'decimals', transformer: new ColumnNumericTransformer() })
   decimals: number;

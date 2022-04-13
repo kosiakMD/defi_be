@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { plainToClass } from 'class-transformer';
+
 import { Injectable } from '@nestjs/common';
 
 import {
@@ -8,15 +9,15 @@ import {
   ChainDto,
   ClaimableDto,
   FeatureResultDto,
-  LendingPositionDto,
-  LendingErcToken,
-  IntegrationFeaturesDataDto,
-  IntegrationClaimableTokenDto,
   IAssetResponseDto,
+  IntegrationClaimableTokenDto,
+  IntegrationFeaturesDataDto,
+  LendingErcToken,
+  LendingPositionDto,
 } from '@app/common';
-import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { CallData } from '@app/common/dto/CallData';
-import { normalizeDecimals } from '@app/common/utils/number';
+import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
+import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import {
   FeatureEnum,
   ProjectEnum,
@@ -25,16 +26,18 @@ import {
 } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { concatStrings } from '@app/common/utils';
+import { normalizeDecimals } from '@app/common/utils/number';
+
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
-import { OracleAbis } from './contracts/priceOracle.abis';
-import { JoetrollerAbis } from './contracts/joetroller.abis';
-import { RewardDistributorAbis } from './contracts/rewardDistributor.abis';
 import { JTokenAbis } from './contracts/jToken.abis';
+import { JoetrollerAbis } from './contracts/joetroller.abis';
+import { OracleAbis } from './contracts/priceOracle.abis';
+import { RewardDistributorAbis } from './contracts/rewardDistributor.abis';
 import { TraderJoeAddresses } from './trader-joe.constants';
 import { APY, BalanceInfo } from './trader-joe.interfaces';
 
@@ -54,10 +57,7 @@ export class TraderJoeLending {
     this.multicallService = multicallProvider.getForChain(ChainAbbrEnum.avax);
   }
 
-  public async getData(
-    addresses: Address[],
-    chain: ChainDto,
-  ): Promise<BaseData[]> {
+  public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const userData = await Promise.allSettled(
       addresses.flatMap((address) => {
         return this.getAsBaseData(address, chain);
@@ -121,28 +121,28 @@ export class TraderJoeLending {
       errors: [],
     });
 
-    const [lending, borrowing] = await this.getLendingAndBorrowingData(address.toLowerCase(), chain);
+    const [lending, borrowing] = await this.getLendingAndBorrowingData(
+      address.toLowerCase(),
+      chain,
+    );
     const claimable = await this.getClaimableData(address.toLowerCase(), chain);
 
     response[FeatureEnum.lending] = lending;
     response[FeatureEnum.borrowing] = borrowing;
     response[FeatureEnum.claimable] = claimable;
-    
+
     return response;
   }
 
   async getClaimableData(
     address: Address,
     chain: ChainDto,
-  ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> { 
+  ): Promise<FeatureResultDto<IntegrationClaimableTokenDto>> {
     const claimableJOE = await this.getToken(TraderJoeAddresses.joeToken.toLowerCase(), chain);
     const claimableAVAX = await this.getToken(TraderJoeAddresses.avax.toLowerCase(), chain);
     const [claimableJOEBalance, claimableAVAXBalance] = await this.getAccruedBalance(address);
 
-    const prices = await this.getAssetPrices(
-      [claimableJOE.address, claimableAVAX.address],
-      chain,
-    );
+    const prices = await this.getAssetPrices([claimableJOE.address, claimableAVAX.address], chain);
 
     const claimable: FeatureResultDto<IntegrationClaimableTokenDto> = {
       totalValue: 0,
@@ -180,41 +180,50 @@ export class TraderJoeLending {
   ): Promise<FeatureResultDto<LendingPositionDto>[]> {
     const jTokens = await this.getJTokenList(); // get the up-to-date list of jTokens
     const rewardToken = await this.getToken(TraderJoeAddresses.joeToken.toLowerCase(), chain);
-    
+
     const batchCall: Map<string, CallData> = await this.callsForJToken(jTokens, address);
 
     const underlyingTokens = new Map<string, string>(); // stores jToken and its underlying token addresses
-    const balances: BalanceInfo[] = jTokens.map((jTokenAddress) => {
-      const underlyingTokenAddress = batchCall.get(this.getUnderlyingLabel(jTokenAddress, address))?.output.data.toString().toLowerCase();
-      underlyingTokens.set(jTokenAddress, underlyingTokenAddress);
+    const balances: BalanceInfo[] =
+      jTokens.map((jTokenAddress) => {
+        const underlyingTokenAddress = batchCall
+          .get(this.getUnderlyingLabel(jTokenAddress, address))
+          ?.output.data.toString()
+          .toLowerCase();
+        underlyingTokens.set(jTokenAddress, underlyingTokenAddress);
 
-      const balanceOfToken = batchCall.get(this.getBalanceOfUnderlyingLabel(jTokenAddress, address)).output.data; // the amount of tokens which the user has
-      const borrowBalance = batchCall.get(this.getBorrowBalanceLabel(jTokenAddress, address)).output.data; // the amount of borrowed tokens
-      const balanceOfJToken = batchCall.get(this.getBalanceOfLabel(jTokenAddress, address)).output.data; // the amount of jToken which the user has
-      const jTokenExchangeRate = batchCall.get(this.getExchangeRateLabel(jTokenAddress)).output.data;
-      const jTokenSupplyRate = batchCall.get(this.getSupplyRateLabel(jTokenAddress)).output.data;
-      const jTokenBorrowRate = batchCall.get(this.getBorrowRateLabel(jTokenAddress)).output.data;
+        const balanceOfToken = batchCall.get(
+          this.getBalanceOfUnderlyingLabel(jTokenAddress, address),
+        ).output.data; // the amount of tokens which the user has
+        const borrowBalance = batchCall.get(this.getBorrowBalanceLabel(jTokenAddress, address))
+          .output.data; // the amount of borrowed tokens
+        const balanceOfJToken = batchCall.get(this.getBalanceOfLabel(jTokenAddress, address)).output
+          .data; // the amount of jToken which the user has
+        const jTokenExchangeRate = batchCall.get(this.getExchangeRateLabel(jTokenAddress)).output
+          .data;
+        const jTokenSupplyRate = batchCall.get(this.getSupplyRateLabel(jTokenAddress)).output.data;
+        const jTokenBorrowRate = batchCall.get(this.getBorrowRateLabel(jTokenAddress)).output.data;
 
-      const jTokenStats = {
-        exchangeRate: jTokenExchangeRate,
-        supplyRate: jTokenSupplyRate,
-        borrowRate: jTokenBorrowRate,
-      };
+        const jTokenStats = {
+          exchangeRate: jTokenExchangeRate,
+          supplyRate: jTokenSupplyRate,
+          borrowRate: jTokenBorrowRate,
+        };
 
-      return {
-        userAddress: address,
-        jToken: jTokenAddress,
-        jTokenBalance: balanceOfJToken,
-        token: underlyingTokens.get(jTokenAddress),
-        tokenBalance: balanceOfToken,
-        borrowBalance,
-        jTokenStats,
-      };
-    }) || [];
+        return {
+          userAddress: address,
+          jToken: jTokenAddress,
+          jTokenBalance: balanceOfJToken,
+          token: underlyingTokens.get(jTokenAddress),
+          tokenBalance: balanceOfToken,
+          borrowBalance,
+          jTokenStats,
+        };
+      }) || [];
 
     const jTokenPrices = await this.getPricesFromOracle(jTokens);
 
-    const rewardAPY: Map<string, APY> = await this.calcRewardAPY(jTokens, jTokenPrices, chain); 
+    const rewardAPY: Map<string, APY> = await this.calcRewardAPY(jTokens, jTokenPrices, chain);
 
     // Get prices for all used tokens
     const prices = await this.getAssetPrices(
@@ -230,16 +239,10 @@ export class TraderJoeLending {
     return [lending, borrowing];
   }
 
-  async getAssetPrices(
-    tokens: string[],
-    chain: ChainDto,
-  ): Promise<Map<string, string>> {
-    const assets = new Set<string>(tokens.map(token => token.toLowerCase()));
+  async getAssetPrices(tokens: string[], chain: ChainDto): Promise<Map<string, string>> {
+    const assets = new Set<string>(tokens.map((token) => token.toLowerCase()));
 
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      [...assets],
-      chain.id,
-    );
+    const { prices } = await this.priceService.getTokenPricesFetch([...assets], chain.id);
 
     return new Map(
       Object.entries(prices)
@@ -257,35 +260,47 @@ export class TraderJoeLending {
   ): Promise<FeatureResultDto<LendingPositionDto>> {
     let totalValue = 0;
     const items = [];
-    await Promise.all(balances.map(async (b) => {
-      if (Number(b.tokenBalance) > 0) {
-        const tokenData = await this.getToken(b.token, chain);
-        const jTokenData = await this.getToken(b.jToken, chain);
+    await Promise.all(
+      balances.map(async (b) => {
+        if (Number(b.tokenBalance) > 0) {
+          const tokenData = await this.getToken(b.token, chain);
+          const jTokenData = await this.getToken(b.jToken, chain);
 
-        const token = plainToClass(LendingErcToken, {
-          address: b.token.toLowerCase(),
-          decimals: tokenData.decimals,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          price: prices.get(b.token.toLowerCase()) ?? 
-            normalizeDecimals(jTokenPrices.get(TraderJoeAddresses.jXJOE.toLowerCase()).toString(), 18),
-        });
-        
-        const tokenBalance = this.calcTokenBalance(Number(b.jTokenBalance), b.jTokenStats.exchangeRate, jTokenData.decimals).toString();
-        const positionAPY = this.calcAPY(Number(b.jTokenStats.supplyRate)) + rewardAPY.get(b.jToken.toLowerCase()).supply;
+          const token = plainToClass(LendingErcToken, {
+            address: b.token.toLowerCase(),
+            decimals: tokenData.decimals,
+            name: tokenData.name,
+            symbol: tokenData.symbol,
+            price:
+              prices.get(b.token.toLowerCase()) ??
+              normalizeDecimals(
+                jTokenPrices.get(TraderJoeAddresses.jXJOE.toLowerCase()).toString(),
+                18,
+              ),
+          });
 
-        const lendPosition = this.formatLendingToken(
-          b.jToken.toLowerCase(),
-          positionAPY,
-          tokenBalance,
-          token,
-        );
-  
-        totalValue += lendPosition.value ?? 0;
-  
-        items.push(lendPosition);
-      }
-    }));
+          const tokenBalance = this.calcTokenBalance(
+            Number(b.jTokenBalance),
+            b.jTokenStats.exchangeRate,
+            jTokenData.decimals,
+          ).toString();
+          const positionAPY =
+            this.calcAPY(Number(b.jTokenStats.supplyRate)) +
+            rewardAPY.get(b.jToken.toLowerCase()).supply;
+
+          const lendPosition = this.formatLendingToken(
+            b.jToken.toLowerCase(),
+            positionAPY,
+            tokenBalance,
+            token,
+          );
+
+          totalValue += lendPosition.value ?? 0;
+
+          items.push(lendPosition);
+        }
+      }),
+    );
 
     const lending: FeatureResultDto<LendingPositionDto> = {
       totalValue,
@@ -304,32 +319,36 @@ export class TraderJoeLending {
     let totalValue = 0;
     const items = [];
 
-    await Promise.all(balances.map(async (b) => {
-      if (Number(b.borrowBalance) > 0) {
-        const tokenData = await this.getToken(b.token, chain);
-        
-        const token = plainToClass(LendingErcToken, {
-          address: b.token.toLowerCase(),
-          decimals: tokenData.decimals,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          price: Number(prices.get(b.token.toLowerCase())),
-        });
+    await Promise.all(
+      balances.map(async (b) => {
+        if (Number(b.borrowBalance) > 0) {
+          const tokenData = await this.getToken(b.token, chain);
 
-        const positionAPY = (-1) * this.calcAPY(Number(b.jTokenStats.borrowRate)) + rewardAPY.get(b.jToken.toLowerCase()).borrow;
+          const token = plainToClass(LendingErcToken, {
+            address: b.token.toLowerCase(),
+            decimals: tokenData.decimals,
+            name: tokenData.name,
+            symbol: tokenData.symbol,
+            price: Number(prices.get(b.token.toLowerCase())),
+          });
 
-        const borrowPosition = this.formatLendingToken(
-          b.jToken,
-          positionAPY,
-          b.borrowBalance.toString(),
-          token,
-        );
-  
-        totalValue += borrowPosition.value ?? 0;
+          const positionAPY =
+            -1 * this.calcAPY(Number(b.jTokenStats.borrowRate)) +
+            rewardAPY.get(b.jToken.toLowerCase()).borrow;
 
-        items.push(borrowPosition);
-      }
-    }));
+          const borrowPosition = this.formatLendingToken(
+            b.jToken,
+            positionAPY,
+            b.borrowBalance.toString(),
+            token,
+          );
+
+          totalValue += borrowPosition.value ?? 0;
+
+          items.push(borrowPosition);
+        }
+      }),
+    );
 
     const borrowing: FeatureResultDto<LendingPositionDto> = {
       totalValue,
@@ -353,7 +372,7 @@ export class TraderJoeLending {
     });
   }
 
-  formatClaimableToken(token: IAssetResponseDto, prices: Map<string, string>, balance: string,) {
+  formatClaimableToken(token: IAssetResponseDto, prices: Map<string, string>, balance: string) {
     return plainToClass(IntegrationClaimableTokenDto, {
       address: token.address.toLowerCase(),
       decimals: token.decimals,
@@ -375,13 +394,19 @@ export class TraderJoeLending {
 
     jTokens.forEach((jTokenAddress) => {
       const jTokenContract = new JTokenAbis(jTokenAddress);
-      calls.set(this.getBalanceOfUnderlyingLabel(jTokenAddress, address), jTokenContract.balanceOfUnderlying(address));
+      calls.set(
+        this.getBalanceOfUnderlyingLabel(jTokenAddress, address),
+        jTokenContract.balanceOfUnderlying(address),
+      );
       calls.set(this.getBalanceOfLabel(jTokenAddress, address), jTokenContract.balanceOf(address));
-      calls.set(this.getBorrowBalanceLabel(jTokenAddress, address), jTokenContract.borrowBalanceCurrent(address));
+      calls.set(
+        this.getBorrowBalanceLabel(jTokenAddress, address),
+        jTokenContract.borrowBalanceCurrent(address),
+      );
       calls.set(this.getExchangeRateLabel(jTokenAddress), jTokenContract.exchangeRateCurrent());
       calls.set(this.getBorrowRateLabel(jTokenAddress), jTokenContract.borrowRatePerSec());
       calls.set(this.getSupplyRateLabel(jTokenAddress), jTokenContract.supplyRatePerSec());
- 
+
       calls.set(this.getUnderlyingLabel(jTokenAddress, address), jTokenContract.underlying());
     });
 
@@ -396,34 +421,51 @@ export class TraderJoeLending {
 
   async getJTokenList(): Promise<string[]> {
     const joetrollerContract = new JoetrollerAbis(TraderJoeAddresses.joetroller);
-    
+
     const call: Map<string, CallData> = new Map<string, CallData>([
       [this.getJTokenListLabel(TraderJoeAddresses.joetroller), joetrollerContract.getAllMarkets()],
     ]);
-    
+
     const getJTokensCall: Map<string, CallData> = await this.multicallService.handleInBatches(call);
-    
-    const jTokenList = getJTokensCall.get(this.getJTokenListLabel(TraderJoeAddresses.joetroller)).output.data;
+
+    const jTokenList = getJTokensCall.get(this.getJTokenListLabel(TraderJoeAddresses.joetroller))
+      .output.data;
     return jTokenList;
   }
 
-  calcTokenBalance(jTokenBalance: number, exchangeRateCurrent: BigNumber, underlyingDecimals: number) {
+  calcTokenBalance(
+    jTokenBalance: number,
+    exchangeRateCurrent: BigNumber,
+    underlyingDecimals: number,
+  ) {
     const mantissa = 18 + underlyingDecimals - 8;
     const onejTokenInUnderlying = exchangeRateCurrent.div(Math.pow(10, mantissa));
-    return new BigNumber(jTokenBalance).multipliedBy(onejTokenInUnderlying) //
+    return new BigNumber(jTokenBalance)
+      .multipliedBy(onejTokenInUnderlying) //
       .toNumber();
   }
 
   calcAPY(ratePerSec: number): number {
-    const apy = (Math.pow((ratePerSec * TraderJoeLending.blockTime / TraderJoeLending.avaxMantissa * TraderJoeLending.blocksPerDay + 1),
-      TraderJoeLending.daysPerYear) - 1) * 100;
+    const apy =
+      (Math.pow(
+        ((ratePerSec * TraderJoeLending.blockTime) / TraderJoeLending.avaxMantissa) *
+          TraderJoeLending.blocksPerDay +
+          1,
+        TraderJoeLending.daysPerYear,
+      ) -
+        1) *
+      100;
     return apy;
   }
 
-  async calcRewardAPY(tokens: string[], jTokenPrices: Map<string, BigNumber>, chain: ChainDto): Promise<Map<string, APY>> {
+  async calcRewardAPY(
+    tokens: string[],
+    jTokenPrices: Map<string, BigNumber>,
+    chain: ChainDto,
+  ): Promise<Map<string, APY>> {
     const totalSupplyAndBorrows = await this.getTotalSupplyAndBorrows(tokens);
     const rewardSpeeds = await this.getSpeeds(tokens);
-    
+
     const rewardAPY = new Map<string, APY>();
 
     const { prices } = await this.priceService.getTokenPricesFetch(
@@ -433,55 +475,105 @@ export class TraderJoeLending {
     const joePrice = prices[TraderJoeAddresses.joeToken.toLowerCase()];
     const avaxPrice = prices[TraderJoeAddresses.avax.toLowerCase()];
 
-    await Promise.all(tokens.map(async (jTokenAddress) => {
-      const underlyingTokenPrice = normalizeDecimals(jTokenPrices.get(jTokenAddress.toLowerCase()).toString(), 18);
-      
-      // Total supply needs to be converted from jTokens
-      const mantissa = 18 + 18 - 8;
-      
-      const exchangeRate = normalizeDecimals((totalSupplyAndBorrows.get(this.getExchangeRateLabel(jTokenAddress)).output.data).toNumber(), mantissa);
+    await Promise.all(
+      tokens.map(async (jTokenAddress) => {
+        const underlyingTokenPrice = normalizeDecimals(
+          jTokenPrices.get(jTokenAddress.toLowerCase()).toString(),
+          18,
+        );
 
-      const totalBorrows = normalizeDecimals(
-        totalSupplyAndBorrows.get(this.getTotalBorrowsLabel(jTokenAddress)).output.data.toString(), 
-        18,
-      );
-      const totalSupply = normalizeDecimals(
-        ((totalSupplyAndBorrows.get(this.getTotalSupplyLabel(jTokenAddress)).output.data).toNumber() * exchangeRate).toString(), 
-        8,
-      );
-      
-      const joeSpeedSupply = rewardSpeeds.get(this.getSupplySpeedLabel(jTokenAddress, 0)).output.data / 1e18;
-      const joeSpeedBorrow = rewardSpeeds.get(this.getBorrowSpeedLabel(jTokenAddress, 0)).output.data / 1e18;
-      const joePerDaySupply = TraderJoeLending.blockTime * joeSpeedSupply * TraderJoeLending.blocksPerDay;
-      const joePerDayBorrow = TraderJoeLending.blockTime * joeSpeedBorrow * TraderJoeLending.blocksPerDay;
+        // Total supply needs to be converted from jTokens
+        const mantissa = 18 + 18 - 8;
 
-      const joeBorrowApy = this.apyFormula(joePrice, joePerDayBorrow, totalBorrows, underlyingTokenPrice);
-      const joeSupplyApy = this.apyFormula(joePrice, joePerDaySupply, totalSupply, underlyingTokenPrice);
+        const exchangeRate = normalizeDecimals(
+          totalSupplyAndBorrows
+            .get(this.getExchangeRateLabel(jTokenAddress))
+            .output.data.toNumber(),
+          mantissa,
+        );
 
-      const avaxSpeedSupply = rewardSpeeds.get(this.getSupplySpeedLabel(jTokenAddress, 1)).output.data / 1e18;
-      const avaxSpeedBorrow = rewardSpeeds.get(this.getBorrowSpeedLabel(jTokenAddress, 1)).output.data / 1e18;
-      const avaxPerDaySupply = TraderJoeLending.blockTime * avaxSpeedSupply * TraderJoeLending.blocksPerDay;
-      const avaxPerDayBorrow = TraderJoeLending.blockTime * avaxSpeedBorrow * TraderJoeLending.blocksPerDay;
+        const totalBorrows = normalizeDecimals(
+          totalSupplyAndBorrows
+            .get(this.getTotalBorrowsLabel(jTokenAddress))
+            .output.data.toString(),
+          18,
+        );
+        const totalSupply = normalizeDecimals(
+          (
+            totalSupplyAndBorrows
+              .get(this.getTotalSupplyLabel(jTokenAddress))
+              .output.data.toNumber() * exchangeRate
+          ).toString(),
+          8,
+        );
 
-      const avaxBorrowApy = this.apyFormula(avaxPrice, avaxPerDayBorrow, totalBorrows, underlyingTokenPrice);
-      const avaxSupplyApy = this.apyFormula(avaxPrice, avaxPerDaySupply, totalSupply, underlyingTokenPrice);
-      
-      rewardAPY.set(jTokenAddress.toLowerCase(), {
-        borrow: joeBorrowApy.toNumber() + avaxBorrowApy.toNumber(),
-        supply: joeSupplyApy.toNumber() + avaxSupplyApy.toNumber(),
-      });
-    }));
+        const joeSpeedSupply =
+          rewardSpeeds.get(this.getSupplySpeedLabel(jTokenAddress, 0)).output.data / 1e18;
+        const joeSpeedBorrow =
+          rewardSpeeds.get(this.getBorrowSpeedLabel(jTokenAddress, 0)).output.data / 1e18;
+        const joePerDaySupply =
+          TraderJoeLending.blockTime * joeSpeedSupply * TraderJoeLending.blocksPerDay;
+        const joePerDayBorrow =
+          TraderJoeLending.blockTime * joeSpeedBorrow * TraderJoeLending.blocksPerDay;
+
+        const joeBorrowApy = this.apyFormula(
+          joePrice,
+          joePerDayBorrow,
+          totalBorrows,
+          underlyingTokenPrice,
+        );
+        const joeSupplyApy = this.apyFormula(
+          joePrice,
+          joePerDaySupply,
+          totalSupply,
+          underlyingTokenPrice,
+        );
+
+        const avaxSpeedSupply =
+          rewardSpeeds.get(this.getSupplySpeedLabel(jTokenAddress, 1)).output.data / 1e18;
+        const avaxSpeedBorrow =
+          rewardSpeeds.get(this.getBorrowSpeedLabel(jTokenAddress, 1)).output.data / 1e18;
+        const avaxPerDaySupply =
+          TraderJoeLending.blockTime * avaxSpeedSupply * TraderJoeLending.blocksPerDay;
+        const avaxPerDayBorrow =
+          TraderJoeLending.blockTime * avaxSpeedBorrow * TraderJoeLending.blocksPerDay;
+
+        const avaxBorrowApy = this.apyFormula(
+          avaxPrice,
+          avaxPerDayBorrow,
+          totalBorrows,
+          underlyingTokenPrice,
+        );
+        const avaxSupplyApy = this.apyFormula(
+          avaxPrice,
+          avaxPerDaySupply,
+          totalSupply,
+          underlyingTokenPrice,
+        );
+
+        rewardAPY.set(jTokenAddress.toLowerCase(), {
+          borrow: joeBorrowApy.toNumber() + avaxBorrowApy.toNumber(),
+          supply: joeSupplyApy.toNumber() + avaxSupplyApy.toNumber(),
+        });
+      }),
+    );
 
     return rewardAPY;
   }
 
-  private apyFormula(tokenPrice: number, tokenPerDay: number, total: number, underlyingTokenPrice: number) {
-    return ((new BigNumber(tokenPrice).multipliedBy(tokenPerDay) //
+  private apyFormula(
+    tokenPrice: number,
+    tokenPerDay: number,
+    total: number,
+    underlyingTokenPrice: number,
+  ) {
+    return new BigNumber(tokenPrice)
+      .multipliedBy(tokenPerDay) //
       .div(total)
       .div(underlyingTokenPrice)
-      .plus(1))
+      .plus(1)
       .pow(365)
-      .minus(1))
+      .minus(1)
       .multipliedBy(100);
   }
 
@@ -489,7 +581,7 @@ export class TraderJoeLending {
     const calls = new Map<string, CallData>();
     jTokens.forEach((jTokenAddress) => {
       const jTokenContract = new JTokenAbis(jTokenAddress);
-      
+
       calls.set(this.getTotalBorrowsLabel(jTokenAddress), jTokenContract.totalBorrowsCurrent());
       calls.set(this.getTotalSupplyLabel(jTokenAddress), jTokenContract.totalSupply());
       calls.set(this.getExchangeRateLabel(jTokenAddress), jTokenContract.exchangeRateCurrent());
@@ -504,10 +596,10 @@ export class TraderJoeLending {
     const oracleContract = new OracleAbis(TraderJoeAddresses.priceOracle);
     const prices = new Map<string, BigNumber>();
 
-    const calls: Map<string, CallData> = new Map<string, CallData>(tokens.map(t => 
-      [t.toLowerCase(), oracleContract.getUnderlyingPrice(t)]
-    ));
-    
+    const calls: Map<string, CallData> = new Map<string, CallData>(
+      tokens.map((t) => [t.toLowerCase(), oracleContract.getUnderlyingPrice(t)]),
+    );
+
     const pricesCall: Map<string, CallData> = await this.multicallService.handleInBatches(calls);
 
     pricesCall.forEach((callData, address) => {
@@ -520,27 +612,37 @@ export class TraderJoeLending {
   async getSpeeds(tokens: string[]): Promise<Map<string, CallData>> {
     const unitrollerContract = new RewardDistributorAbis(TraderJoeAddresses.rewardDistributor);
 
-    const calls: Map<string, CallData> = new Map<string, CallData>(tokens.flatMap(t => {
-      const obj = [
-        [this.getSupplySpeedLabel(t, 0), unitrollerContract.rewardSupplySpeeds(0, t)], // supply speed for JOE token
-        [this.getSupplySpeedLabel(t, 1), unitrollerContract.rewardSupplySpeeds(1, t)], // supply speed for AVAX token
-        [this.getBorrowSpeedLabel(t, 0), unitrollerContract.rewardBorrowSpeeds(0, t)],
-        [this.getBorrowSpeedLabel(t, 1), unitrollerContract.rewardBorrowSpeeds(1, t)],
-      ];
-      return obj as [];
-    }));
-    
+    const calls: Map<string, CallData> = new Map<string, CallData>(
+      tokens.flatMap((t) => {
+        const obj = [
+          [this.getSupplySpeedLabel(t, 0), unitrollerContract.rewardSupplySpeeds(0, t)], // supply speed for JOE token
+          [this.getSupplySpeedLabel(t, 1), unitrollerContract.rewardSupplySpeeds(1, t)], // supply speed for AVAX token
+          [this.getBorrowSpeedLabel(t, 0), unitrollerContract.rewardBorrowSpeeds(0, t)],
+          [this.getBorrowSpeedLabel(t, 1), unitrollerContract.rewardBorrowSpeeds(1, t)],
+        ];
+        return obj as [];
+      }),
+    );
+
     const speedsCall: Map<string, CallData> = await this.multicallService.handleInBatches(calls);
 
     return speedsCall;
   }
 
   async getAccruedBalance(userAddress: string): Promise<BigNumber[]> {
-    const rewardDistributorContract = new RewardDistributorAbis(TraderJoeAddresses.rewardDistributor);
+    const rewardDistributorContract = new RewardDistributorAbis(
+      TraderJoeAddresses.rewardDistributor,
+    );
 
     const call: Map<string, CallData> = new Map<string, CallData>([
-      [this.accruedBalanceLabel(userAddress, 0), rewardDistributorContract.rewardAccrued(0, userAddress)],
-      [this.accruedBalanceLabel(userAddress, 1), rewardDistributorContract.rewardAccrued(1, userAddress)],
+      [
+        this.accruedBalanceLabel(userAddress, 0),
+        rewardDistributorContract.rewardAccrued(0, userAddress),
+      ],
+      [
+        this.accruedBalanceLabel(userAddress, 1),
+        rewardDistributorContract.rewardAccrued(1, userAddress),
+      ],
     ]);
 
     const batchCall: Map<string, CallData> = await this.multicallService.handleInBatches(call);
@@ -548,7 +650,7 @@ export class TraderJoeLending {
     return [
       batchCall.get(this.accruedBalanceLabel(userAddress, 0)).output.data,
       batchCall.get(this.accruedBalanceLabel(userAddress, 1)).output.data,
-    ]
+    ];
   }
 
   getJTokenListLabel(contract: string): string {
@@ -566,7 +668,7 @@ export class TraderJoeLending {
   getUnderlyingLabel(contract: string, address: string): string {
     return concatStrings(JTokenAbis.underlying.name, contract, address);
   }
-  
+
   getBorrowBalanceLabel(contract: string, address: string): string {
     return concatStrings(JTokenAbis.borrowBalanceCurrent.name, contract, address);
   }

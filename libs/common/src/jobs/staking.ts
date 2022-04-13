@@ -9,6 +9,7 @@ export class ClaimableDto {
   value: number = null;
   lockedBalance?: string;
   lockedValue?: number;
+  nextRewardAt?: string;
 }
 
 export class IntegrationPoolTokenDto extends ERC20Token {
@@ -64,6 +65,14 @@ export class IntegrationStakingPositionDto {
   rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
   // data not included to feature but need to have to get realtime data
   extra?: any = {};
+}
+
+export class IntegrationShortFarmPositionDto {
+  staked: string = null;
+  stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
+  rewards: IntegrationClaimableTokenDto[] = [plainToClass(IntegrationClaimableTokenDto, {})];
+  locked: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {});
+  until: Date;
 }
 
 export class CurveIntegrationStakingPositionDto {

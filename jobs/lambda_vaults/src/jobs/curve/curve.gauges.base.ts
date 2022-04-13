@@ -13,6 +13,7 @@ import {
   ProtocolNameEnum,
 } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { CallData } from '@app/common/dto/CallData';
 import {
   CurveIntegrationERC20TokenDto,
@@ -41,8 +42,10 @@ import { StakingFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { CurveLpAbi } from './abis/CurveLpAbi';
+import { CurveProviderAbi } from './abis/CurveProviderAbi';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
+import { GaugeAbi } from './abis/GaugeAbi';
 import { additionalGaugeContractsMap } from './additional.gauge.contracts.map';
 import { CurveApi } from './curve.api';
 
@@ -114,6 +117,7 @@ export class CurveGaugesBase implements JobInterface {
 
   async buildInitialMapping(jobMapping: TrackedVault): Promise<TrackedVault> {
     this.logger.log('building initial mapping', this.placeholder);
+    [this.registryV1Contract, this.registryV2Contract] = await this.getRegistryAddresses();
 
     const stakingFeatures: CurveIntegrationStakingPositionDto[] = [];
     const [registryV1PoolCount, registryV2PoolCount] = await Promise.all([
@@ -134,7 +138,7 @@ export class CurveGaugesBase implements JobInterface {
 
     const gaugePoolsValues = Array.from(gaugesMap.values());
 
-    const gaugeRewardsMap = await this.localMulticall.getGaugeRewardTokens(
+    const gaugeRewardsMap = await this.getNonEthRewards(
       gaugePoolsValues.map(({ gauge, lp }) => ({ gauge, lp })),
     );
 
@@ -383,7 +387,7 @@ export class CurveGaugesBase implements JobInterface {
     return savedItem;
   }
 
-  private async getChainMainPoolsAprs() {
+  async getChainMainPoolsAprs() {
     const curveApi = new CurveApi(this.logger);
     switch (this.chain) {
       case ChainIdEnum.plg:
@@ -392,6 +396,14 @@ export class CurveGaugesBase implements JobInterface {
         return await curveApi.getMainPoolsAprAvax();
       case ChainIdEnum.ftm:
         return await curveApi.getMainPoolsAprFtm();
+      case ChainIdEnum.arbi:
+        return await curveApi.getMainPoolsAprArbi();
+      case ChainIdEnum.opt:
+        return await curveApi.getMainPoolsAprOpt();
+      case ChainIdEnum.harm:
+        return await curveApi.getMainPoolsAprHarm();
+      case ChainIdEnum.gnosis:
+        return await curveApi.getMainPoolsAprGnosis();
     }
   }
 
@@ -438,15 +450,13 @@ export class CurveGaugesBase implements JobInterface {
 
         const lpVirtualPrice = multicallResponses.get(
           this.getVirtualPrice(position.stakingToken.address),
-        ).output.data;
+        )?.output.data;
 
         position.poolName =
           multicallResponses.get(this.getPoolName(position.pool))?.output.data ?? position.poolName;
 
-        position.stakingToken.price = normalizeDecimals(
-          lpVirtualPrice,
-          position.stakingToken.decimals,
-        );
+        position.stakingToken.price =
+          normalizeDecimals(lpVirtualPrice, position.stakingToken.decimals) || null;
 
         const staked = multicallResponses
           .get(this.getGaugeLpPoolBalanceOf(position.stakingToken.address))
@@ -505,12 +515,11 @@ export class CurveGaugesBase implements JobInterface {
             coin.tokens?.forEach((underlyingToken) => {
               const coinReserve = getTokenReserve(coin.address, underlyingToken.positionInPool);
               const coinReserveDec = toDecimals(coinReserve, underlyingToken.decimals);
-              underlyingToken.reserve = underlyingToken.balance =
-                CurveGaugesBase.getUnderlyingTokensBalances(
-                  coin.balance,
-                  coin.totalSupply,
-                  coinReserveDec,
-                );
+              underlyingToken.reserve = underlyingToken.balance = this.getUnderlyingTokensBalances(
+                coin.balance,
+                coin.totalSupply,
+                coinReserveDec,
+              );
               underlyingToken.price = Number(prices[underlyingToken.address.toLowerCase()]);
               underlyingToken.value = underlyingToken.reserve * underlyingToken.price;
               lpValue += underlyingToken.value;
@@ -538,7 +547,7 @@ export class CurveGaugesBase implements JobInterface {
     }
   }
 
-  private getCallsMap(lpTokensMinters: Map<string, string>) {
+  getCallsMap(lpTokensMinters: Map<string, string>) {
     const calls = new Map();
 
     this.mapping.forEach(async (staking) => {
@@ -598,7 +607,7 @@ export class CurveGaugesBase implements JobInterface {
     return calls;
   }
 
-  private static getUnderlyingTokensBalances(
+  getUnderlyingTokensBalances(
     lpTokenReserve: number,
     lpTokenTotalSupply: number,
     underlyingReserve: number,
@@ -610,6 +619,9 @@ export class CurveGaugesBase implements JobInterface {
   }
 
   private async getPoolCount(address: string): Promise<number> {
+    if (address === ZERO_ADDRESS) {
+      return 0;
+    }
     const registry = new CurveRegistryAbi(address);
     const call = new Map<string, CallData>([[address, registry.poolCount()]]);
     const callRsp = await this.multicallService.handleInBatches(call, this.chain);
@@ -620,6 +632,9 @@ export class CurveGaugesBase implements JobInterface {
     registryAddress: string,
     count: number,
   ): Promise<Map<string, CurveGaugeInterface>> {
+    if (registryAddress === ZERO_ADDRESS || count === 0) {
+      return new Map<string, CurveGaugeInterface>();
+    }
     const registry = new CurveRegistryAbi(registryAddress);
     const poolListCalls = new Map<string, CallData>();
     for (let i = 0; i < count; i++) {
@@ -654,6 +669,28 @@ export class CurveGaugesBase implements JobInterface {
     return resultMap;
   }
 
+  async getNonEthRewards(gaugeData: { gauge: string; lp: string }[]) {
+    const calls = new Map();
+    gaugeData.forEach(({ gauge }) => {
+      const gaugeContract = new GaugeAbi(gauge);
+      [0, 1, 2].forEach((idx) => {
+        calls.set(this.getRewardTokensLabel(gauge, idx), gaugeContract.rewardTokens(idx));
+      });
+    });
+
+    const mulicallResp = await this.multicallService.handleInBatches(calls, this.chain);
+    const resultMap = new Map();
+    mulicallResp.forEach((value, key) => {
+      const [gauge] = key.split('_');
+      const address = value.output.data.toLowerCase();
+      if (address !== ZERO_ADDRESS) {
+        const mapItem = resultMap.get(gauge);
+        mapItem ? mapItem.push(address) : resultMap.set(gauge, [address]);
+      }
+    });
+    return resultMap;
+  }
+
   poolListLabel(poolId: number) {
     return concatStrings(CurveRegistryAbi.poolList.name, poolId);
   }
@@ -664,6 +701,21 @@ export class CurveGaugesBase implements JobInterface {
 
   getLpTokenLabel(poolAddress: Address) {
     return concatStrings(CurveRegistryAbi.getLpToken.name, poolAddress);
+  }
+
+  getRewardTokensLabel(gauge: string, index: number) {
+    return concatStrings(gauge, index);
+  }
+
+  async getRegistryAddresses(): Promise<string[]> {
+    const curveProvider = new CurveProviderAbi(CurveAddresses.addressProvider);
+    const calls = [0, 5].reduce((resp, value) => {
+      resp.set(String(value), curveProvider.getIdInfo(value));
+      return resp;
+    }, new Map());
+
+    const multResp = await this.multicallService.handleInBatches(calls, this.chain);
+    return [0, 5].map((value) => multResp.get(String(value)).output.data?.addr);
   }
 }
 

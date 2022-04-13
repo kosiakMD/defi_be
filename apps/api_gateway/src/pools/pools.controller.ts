@@ -1,7 +1,9 @@
 import * as Promise from 'bluebird';
 import { Cache } from 'cache-manager';
 
-import { CACHE_MANAGER, Controller, Get, HttpException, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Controller, Get, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -9,23 +11,31 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import PoolDto from '@app/common/dto/Pool.dto';
 import { Pool } from '@app/common/interfaces';
 
-import { IntegrationService } from '../integration/integration.service';
+import { IBaseService } from '../common/interfaces/base-service.interface';
+import { BaseService } from '../common/services/base.service';
 
-// TODO: can be null as updated each time
-const POOLS_CACHE_TIME = 60; // 1 min
+const POOLS_CACHE_TIME_IN_SEC = 60;
 
 @ApiTags('Pools')
 @Controller('v1/pools')
-export class PoolsController {
+export class PoolsController extends BaseService implements IBaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('INTEGRATION_SERVICE_HOST'),
+    this.configService.get<string>('INTEGRATION_SERVICE_PORT'),
+  );
+
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private integrationService: IntegrationService,
-  ) {}
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    @Inject(CACHE_MANAGER) protected cacheManager: Cache,
+    protected httpService: HttpService,
+    protected configService: ConfigService,
+  ) {
+    super(logger, httpService, configService);
+  }
 
   @Get()
-  @ApiResponse({ status: 200, type: PoolDto, isArray: true })
-  @ApiResponse({ status: 500, type: HttpException })
+  @ApiResponse({ status: HttpStatus.OK, type: PoolDto, isArray: true })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: HttpException })
   public async getPools(): Promise<Pool[]> {
     const cacheKey = 'pools';
     const logString = `Cache ${cacheKey} is `;
@@ -33,20 +43,14 @@ export class PoolsController {
 
     if (!pools) {
       try {
-        this.logger.debug(logString + 'fetching');
-
-        this.logger.time('getPools');
-        // const pools = await Promise.any([this.readPools(), this.fetchPools()]);
-        pools = await this.integrationService.getPools();
-        this.logger.timeEnd('getPools');
-        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+        const poolsResponse = await this.httpService.get(this.url + 'v1/pools').toPromise();
+        pools = poolsResponse.data;
         (async () => {
           await this.cacheManager.set<any[]>(cacheKey, pools, {
-            ttl: POOLS_CACHE_TIME,
+            ttl: POOLS_CACHE_TIME_IN_SEC,
           });
         })().then(() => this.logger.debug(logString + 'saved'));
       } catch (e) {
-        // if no data and request failed - m.b. data was wrote by another process
         pools = await this.cacheManager.get<any[]>(cacheKey);
         if (!pools) {
           throw e;
@@ -55,24 +59,6 @@ export class PoolsController {
     } else {
       this.logger.debug(logString + 'ok');
     }
-    return pools;
-  }
-
-  // TODO: delete
-  private async readPools(): Promise<Pool[]> {
-    const pools = await this.cacheManager.get<Pool[]>('pools');
-    if (pools) {
-      return pools;
-    } else {
-      throw new Error('empty');
-    }
-  }
-
-  // TODO: delete
-  private async fetchPools(): Promise<Pool[]> {
-    const pools = await this.integrationService.getPools();
-    // postponed save in async queue
-    this.cacheManager.set<Pool[]>('pools', pools, { ttl: POOLS_CACHE_TIME });
     return pools;
   }
 }

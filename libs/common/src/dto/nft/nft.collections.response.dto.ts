@@ -6,5 +6,5 @@ export class NftCollectionsResponseDto {
   @ApiProperty({
     type: CollectionChainsDto,
   })
-  '0x64850F38e800E04eF773efca8FCaFdceFe977f9D': CollectionChainsDto;
+  '0x64850F38e800E04eF773efca8FCaFdceFe977f9D': CollectionChainsDto = null;
 }

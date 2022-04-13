@@ -1,9 +1,9 @@
-import { MultiCall } from '@indexed-finance/multicall';
-import { CallInput } from '@indexed-finance/multicall/dist/types';
+import { JsonFragment } from '@ethersproject/abi';
+import { CallInput, MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
 
 import { Logger } from '@app/common';
-import { CurveAddresses } from '@app/common/constant/addresses';
+import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { toDecimals } from '../../../../common/utils/util';
@@ -140,7 +140,7 @@ export class CurveMulticall extends MultiCall {
     return resultMap;
   }
 
-  private getPromisesArray(inputs: CallInput[], abi: any) {
+  private getPromisesArray(inputs: CallInput[], abi: JsonFragment[]) {
     const chunk = 50;
     const promises = [];
     for (let i = 0; i < inputs.length; i += chunk) {

@@ -1,0 +1,16 @@
+FROM amazon/aws-lambda-nodejs:14
+ADD ./apps ./apps
+ADD ./frontend_service ./frontend_service
+ADD ./jobs ./jobs
+ADD ./libs ./libs
+ADD ./nest-cli.json ./
+ADD ./package.json ./
+ADD ./tsconfig.json ./
+ADD ./tsconfig.build.json ./
+RUN npm install --global yarn
+RUN yarn install
+ARG function_name
+ENV env_function_name=$function_name
+RUN yarn run ${function_name}-build
+#ENTRYPOINT [ "node" ]
+CMD [ "dist/jobs/${env_function_name}/src/main.bootstrap" ]

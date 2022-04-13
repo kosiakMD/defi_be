@@ -10,7 +10,6 @@ import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
-import { CurveAddressesPlg } from './addresses';
 import { CurveGaugesBase } from './curve.gauges.base';
 import { LocalMultiCall } from './local.multicall';
 
@@ -18,9 +17,6 @@ import { LocalMultiCall } from './local.multicall';
 export class CurveGaugesPlg extends CurveGaugesBase {
   chain = ChainIdEnum.plg;
   placeholder = concatStrings(this.chain, this.protocol, this.feature);
-
-  protected registryV1Contract = CurveAddressesPlg.registryV1;
-  protected registryV2Contract = CurveAddressesPlg.registryV2;
 
   protected localMulticall;
   protected mapping = [];

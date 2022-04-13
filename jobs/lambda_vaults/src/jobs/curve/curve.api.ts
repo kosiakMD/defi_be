@@ -106,4 +106,44 @@ export class CurveApi {
       throw e;
     }
   }
+
+  async getMainPoolsAprArbi(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-arbitrum/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprArbi');
+      throw e;
+    }
+  }
+
+  async getMainPoolsAprOpt(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-optimism/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprOpt');
+      throw e;
+    }
+  }
+
+  async getMainPoolsAprHarm(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-harmony/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprHarm');
+      throw e;
+    }
+  }
+
+  async getMainPoolsAprGnosis(): Promise<PoolsAprs> {
+    try {
+      const { data } = await axios.get(`https://stats.curve.fi/raw-stats-xdai/apys.json`);
+      return data?.apy?.day;
+    } catch (e) {
+      this.logger.error(e, 'getMainPoolsAprGnosis');
+      throw e;
+    }
+  }
 }

@@ -87,7 +87,6 @@ export class LiquidityPools {
       t.value = t.balance * t.price;
     });
     userData.stats.share = poolShare.toNumber();
-
     return userData;
   }
 }

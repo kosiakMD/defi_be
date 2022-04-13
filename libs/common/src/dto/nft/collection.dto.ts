@@ -10,5 +10,5 @@ export class CollectionDto extends CollectionBaseDto {
   @Expose()
   @Type(() => NftAssetDto)
   @ApiProperty({ type: () => [NftAssetDto] })
-  assets: NftAssetDto[];
+  assets: NftAssetDto[] = null;
 }

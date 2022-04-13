@@ -1,4 +1,4 @@
-import { CacheInterceptor, Controller, Get, NotAcceptableException, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpStatus, NotAcceptableException, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ChainsParam } from '@app/common/decorators';
@@ -8,10 +8,6 @@ import { ChainIdEnum, ProtocolNameEnum } from '@app/common/enum';
 import { IntegrationsResponseDto } from '../modules/integrations/dto/integrations.dto';
 import { IntegrationsService } from '../modules/integrations/integrations.service';
 import { ProtocolParams } from '../modules/integrations/interfaces/integrations.interface';
-import { IntegrationSearchParams } from '../common/interfaces/search.interfaces';
-import { SearchParams, SearchResultsBaseEntry } from 'apps/api_gateway/src/search/search.interface';
-import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
-import { SearchEntries } from '../common/enum/search.enum';
 
 @ApiTags('Protocols')
 @Controller('v1/protocols')
@@ -24,7 +20,7 @@ export class IntegrationsController {
     return this.integrationsService.getAllFeatures();
   }
 
-  @ApiResponse({ status: 200 })
+  @ApiResponse({ status: HttpStatus.OK })
   @Get('active')
   getActiveFeatures() {
     return this.integrationsService.getActiveFeatures();
@@ -41,12 +37,12 @@ export class IntegrationsController {
     type: String,
     example: [
       ChainIdEnum.eth,
-      ChainIdEnum.bsc,
+      ChainIdEnum.bnb,
       ChainIdEnum.plg,
       ChainIdEnum.ftm,
       ChainIdEnum.arbi,
       ChainIdEnum.avax,
-      ChainIdEnum.xdai,
+      ChainIdEnum.gnosis,
       ChainIdEnum.celo,
       ChainIdEnum.mriver,
       ChainIdEnum.harm,
@@ -58,7 +54,7 @@ export class IntegrationsController {
     type: String,
     example: '0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2',
   })
-  @ApiResponse({ status: 200, type: IntegrationsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseDto })
   @Get('/:protocolName/')
   async getProtocolFeature(
     @Param() params: ProtocolParams,
@@ -71,34 +67,5 @@ export class IntegrationsController {
     }
 
     return this.integrationsService.getProtocolFeaturesData(protocolName, chains, addresses);
-  }
-
-  @UseInterceptors(CacheInterceptor)
-  @Get('/search/:searchEntry')
-  @ApiParam({
-    name: 'searchEntry',
-    enum: SearchEntries,
-    example: SearchEntries.VAULTS,
-  })
-  @ApiQuery({
-    name: 'address',
-    type: String,
-    description: 'address to search assets by address',
-    example: "0xcd2e72aebe2a203b84f46deec948e6465db51c75",
-    required: false,
-  })
-  @ApiQuery({
-    name: 'text',
-    type: String,
-    description: 'text to search assets by name or symbol',
-    example: "CRO",
-    required: false,
-  })
-  @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })
-  async search(
-    @Param() params: IntegrationSearchParams,
-    @Query() query: SearchParams,
-  ): Promise<SearchResultsBaseEntry[]> {
-    return this.integrationsService.search(params, query);
   }
 }

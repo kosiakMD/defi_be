@@ -36,22 +36,26 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
       const additional = ADDITIONAL_TOKENS[this.chain] ?? [];
       const { atokens } = await this.subgraph.getTokens();
 
-      // Aave subgraph has a bug where it returns variable debt bearing tokens in the atokens result
-      // with the underlying asset being set to '0x00'. We do not want to price these tokens currently
-      const tokens = atokens
-        .concat(additional)
-        .filter((token) => token.underlyingAssetAddress !== '0x00');
+      const savedTokenResults = await this.saveAssets(
+        atokens.map((a) => a.id),
+        false, // set to true and run manually to force re-index all underlying assets and mark parents as not tracked
+      );
+
+      const tokens = savedTokenResults
+        .flatMap((tokenResult) => {
+          if (tokenResult.status !== 'fulfilled' || !tokenResult.value.underlyingAssets) return [];
+          return {
+            id: tokenResult.value.address,
+            underlyingAssetAddress: tokenResult.value.underlyingAssets.find(
+              (underlying) => underlying.address,
+            ).address,
+          };
+        })
+        .concat(additional);
 
       const underlying = this.getUniqueUnderlyingTokenArray(tokens);
 
       const { prices } = await this.fetchPrices(underlying);
-
-      // Check for tokens that don't have a price currently, track & track them for next time
-      const newUnderlying = tokens.filter((token) => !prices[token.underlyingAssetAddress]);
-
-      if (newUnderlying.length) {
-        await this.saveAssets(newUnderlying.map((a) => a.underlyingAssetAddress));
-      }
 
       const results = tokens.reduce(this.reduceTokensToResults(prices), []);
 
@@ -68,9 +72,7 @@ export class AaveProtocol extends ProtocolBase implements IProtocolPriceUpdate {
   reduceTokensToResults(prices: CurrentPricesPayload) {
     return (accumulator, token) => {
       if (!prices[token.underlyingAssetAddress]) {
-        this.logger.warn(
-          `[Aave Pricing] Failed to fetch prices for token ${token.id} - (underlying: ${token.underlyingAssetAddress})`,
-        );
+        // Unsupported Token
         return accumulator;
       }
 

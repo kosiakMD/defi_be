@@ -5,10 +5,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common/Logger/Logger.service';
 
 import {
-  HireEmailRequestDto,
   EmailResponseDto,
+  HireEmailRequestDto,
   HireEmailValidationErrorResponseDto,
-} from './mail.dto';
+} from './dto/mail.dto';
 import { MailService } from './mail.service';
 
 @ApiTags('Hire')
@@ -20,8 +20,8 @@ export class MailController {
   ) {}
 
   @Post('/hire')
-  @ApiCreatedResponse({ type: EmailResponseDto }) // 201
-  @ApiBadRequestResponse({ type: HireEmailValidationErrorResponseDto }) // 400
+  @ApiCreatedResponse({ type: EmailResponseDto })
+  @ApiBadRequestResponse({ type: HireEmailValidationErrorResponseDto })
   sendHireMail(@Body() request: HireEmailRequestDto): Promise<any> {
     try {
       const { email, name, letter } = request;
@@ -33,8 +33,8 @@ export class MailController {
   }
 
   @Post('/question')
-  @ApiCreatedResponse({ type: EmailResponseDto }) // 201
-  @ApiBadRequestResponse({ type: HireEmailValidationErrorResponseDto }) // 400
+  @ApiCreatedResponse({ type: EmailResponseDto })
+  @ApiBadRequestResponse({ type: HireEmailValidationErrorResponseDto })
   sendQuestionMail(@Body() request: HireEmailRequestDto): Promise<any> {
     try {
       const { email, name, letter } = request;

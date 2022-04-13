@@ -23,6 +23,7 @@ import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
+
 import { AccountService } from '../../../microservices/account.service';
 
 @Injectable()

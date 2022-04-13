@@ -5,7 +5,7 @@
   "scripts": {
     "test": "mocha tests/unit/",
     "compile": "tsc",
-    "start": "tsc && node built/index.js",
+    "start": "tsc && node built/start.js",
     "dev": "ts-node ./src/start.ts"
   },
   "devDependencies": {
@@ -28,6 +28,7 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
-    "@ethersproject/providers": "^5.4.3"
+    "@ethersproject/providers": "^5.4.3",
+    "@sentry/serverless": "^6.17.2"
   }
 }

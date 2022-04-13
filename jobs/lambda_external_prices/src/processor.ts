@@ -1,7 +1,9 @@
+import { toDecimals } from 'apps/account_service/src/common/utils';
 import axios from 'axios';
 import { partition } from 'lodash';
 
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
+import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
 import { concatStrings } from '@app/common/utils';
 import { ChainCoinAddresses, getCoingeckoPlatformId } from '@app/common/utils/chains';
@@ -21,6 +23,7 @@ import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { CoingeckoService } from './services/coingecko.service';
 import { DebankService } from './services/debank.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
+import { SundaeSwapService } from './services/sundaeswap.service';
 import { DebankChainsIdEnum } from './utils/debank.chains.id.enum';
 import { duplicateAssetsPricesMap } from './utils/duplicate.assets.prices.map';
 import { logger } from './utils/logger';
@@ -84,26 +87,55 @@ export async function process(): Promise<void> {
       }),
     );
     const solPrices: CurrentPriceInterface[] = [];
+    const wSOL = 'So11111111111111111111111111111111111111112';
     executedSolPriceRequests.forEach((result) => {
       if (result.status !== 'rejected') {
         result.value.data.data.forEach((asset) => {
           if (asset.priceUst && (!asset.tag || (asset.tag && !asset.tag.includes('lp-token')))) {
             solPrices.push({
-              address:
-                asset.mintAddress === 'So11111111111111111111111111111111111111112'
-                  ? ChainCoinAddresses[ChainIdEnum.sol]
-                  : asset.mintAddress,
+              address: asset.mintAddress,
               price: asset.priceUst,
               chainId: ChainIdEnum.sol,
               currencyId: CurrencyIdEnum.usd,
               sourceId: PriceSourcePriority.coingecko,
             });
+
+            if (asset.mintAddress === wSOL) {
+              solPrices.push({
+                address: ChainCoinAddresses[ChainIdEnum.sol],
+                price: asset.priceUst,
+                chainId: ChainIdEnum.sol,
+                currencyId: CurrencyIdEnum.usd,
+                sourceId: PriceSourcePriority.coingecko,
+              });
+            }
           }
         });
       }
     });
 
     chainsPrices = chainsPrices.concat(solPrices);
+
+    /** Cardano SundaeSwapService Place */
+    const tokensPrices = await SundaeSwapService.getTokensPrices();
+    const cardanoPrices: CurrentPriceInterface[] = [];
+    const ADAToken = chainsPrices.find((x) => x.address === CARDANO_COIN_ADDRESS);
+    for (const token of tokensPrices) {
+      const address = token.assetB.assetId.replace(/\./g, '');
+      const lp =
+        toDecimals(+token.quantityA, 6) / toDecimals(+token.quantityB, token.assetB.decimals);
+      if (token.assetB.decimals !== null) {
+        cardanoPrices.push({
+          address: address,
+          price: lp * ADAToken.price,
+          chainId: ChainIdEnum.cardano,
+          currencyId: CurrencyIdEnum.usd,
+          sourceId: PriceSourcePriority.muesliswap,
+        });
+      }
+    }
+
+    chainsPrices = chainsPrices.concat(cardanoPrices);
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);
@@ -203,7 +235,11 @@ function buildCoingeckoRequestsMap(
     );
 
     const mapItem = chunks.flatMap((c) => {
-      const [ids, contracts] = partition(c, (i) => typeof i !== 'string');
+      const splited = partition(c, (i) => typeof i !== 'string');
+
+      const ids = splited[0] as { address: string; coingeckoId: any }[];
+      const contracts = splited[1] as string[];
+
       const requestItem = [];
       if (ids.length > 0) {
         requestItem.push({
@@ -251,10 +287,12 @@ function getAssetsPerChainMap(assets: AssetsApiDto[]): Map<string, AssetsApiDto[
   const assetsMap: Map<string, AssetsApiDto[]> = new Map<string, AssetsApiDto[]>();
   assets.forEach((a) => {
     const chainId = a.chain?.toString();
-    if (chainId && !assetsMap.get(chainId)) {
-      assetsMap.set(chainId, []);
+    if (chainId) {
+      if (!assetsMap.get(chainId)) {
+        assetsMap.set(chainId, []);
+      }
+      assetsMap.get(chainId).push(a);
     }
-    assetsMap.get(chainId).push(a);
   });
   return assetsMap;
 }

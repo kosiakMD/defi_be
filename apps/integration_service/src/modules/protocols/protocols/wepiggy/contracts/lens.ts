@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class LensAbis extends MultiCallAbiProxy {
@@ -7,8 +8,8 @@ export class LensAbis extends MultiCallAbiProxy {
       {
         internalType: 'contract PTokenLensInterface',
         name: 'pToken',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     name: 'getInterestRateModel',
     outputs: [
@@ -17,40 +18,40 @@ export class LensAbis extends MultiCallAbiProxy {
           {
             internalType: 'contract PTokenLensInterface',
             name: 'market',
-            type: 'address'
+            type: 'address',
           },
           {
             internalType: 'uint256',
             name: 'blocksPerYear',
-            type: 'uint256'
+            type: 'uint256',
           },
           {
             internalType: 'uint256',
             name: 'multiplierPerBlock',
-            type: 'uint256'
+            type: 'uint256',
           },
           {
             internalType: 'uint256',
             name: 'baseRatePerBlock',
-            type: 'uint256'
+            type: 'uint256',
           },
           {
             internalType: 'uint256',
             name: 'jumpMultiplierPerBlock',
-            type: 'uint256'
+            type: 'uint256',
           },
           {
             internalType: 'uint256',
             name: 'kink',
-            type: 'uint256'
-          }
+            type: 'uint256',
+          },
         ],
         internalType: 'struct WePiggyLensV2.InterestRateModel',
         name: '',
-        type: 'tuple'
-      }
+        type: 'tuple',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 }

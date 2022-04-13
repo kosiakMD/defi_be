@@ -15,20 +15,21 @@ export const ACTIVE_CAULDRONS: Map<ChainIdEnum, Address[]> = new Map([
     [
       '0x7b7473a76d6ae86ce19f7352a1e89f6c9dc39020',
       '0x05500e2ee779329698df35760bedcaac046e7c27',
-      '0x003d5a75d284824af736df51933be522de9eed0f',
-      '0x98a84eff6e008c5ed0289655ccdca899bcb6b99f',
-      '0xebfde87310dc22404d918058faa4d56dc4e93f0a',
-      '0x0bca8ebcb26502b013493bf8fe53aa2b1ed401c1',
-      '0x920d9bd936da4eafb5e25c6bdc9f6cb528953f9f',
-      '0x4eaed76c3a388f4a841e9c765560bbe7b3e4b3a0',
+      // TODO: Enable when supported
+      // '0x003d5a75d284824af736df51933be522de9eed0f',
+      // '0x98a84eff6e008c5ed0289655ccdca899bcb6b99f',
+      // '0xebfde87310dc22404d918058faa4d56dc4e93f0a',
+      // '0x0bca8ebcb26502b013493bf8fe53aa2b1ed401c1',
+      // '0x920d9bd936da4eafb5e25c6bdc9f6cb528953f9f',
+      // '0x4eaed76c3a388f4a841e9c765560bbe7b3e4b3a0',
       '0x252dcf1b621cc53bc22c256255d2be5c8c32eae4',
-      '0x35a0dd182e4bca59d5931eae13d0a2332fa30321',
+      // '0x35a0dd182e4bca59d5931eae13d0a2332fa30321',
       '0xc1879bf24917ebe531fbaa20b0d05da027b592ce',
       '0x9617b633ef905860d919b88e1d9d9a6191795341',
       '0xcfc571f3203756319c231d3bc643cee807e74636',
       '0x3410297d89dcdaf4072b805efc1ef701bb3dd9bf',
       '0x59e9082e068ddb27fc5ef1690f9a9f22b32e573f',
-      '0x257101f20cb7243e2c7129773ed5dbbcef8b34e0',
+      // '0x257101f20cb7243e2c7129773ed5dbbcef8b34e0',
       '0x390db10e65b5ab920c19149c919d970ad9d18a41',
       '0x5ec47ee69bede0b6c2a2fc0d9d094df16c192498',
     ],
@@ -38,11 +39,11 @@ export const ACTIVE_CAULDRONS: Map<ChainIdEnum, Address[]> = new Map([
     [
       '0x3CFEd0439aB822530b1fFBd19536d897EF30D2a2',
       '0x3b63f81Ad1fc724E44330b4cf5b5B6e355AD964B',
-      '0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210',
+      // '0x95cCe62C3eCD9A33090bBf8a9eAC50b699B54210',
       '0x35fA7A723B3B39f15623Ff1Eb26D8701E7D6bB21',
-      '0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D',
-      '0x2450Bf8e625e98e14884355205af6F97E3E68d07',
-      '0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3',
+      // '0x0a1e6a80E93e62Bd0D3D3BFcF4c362C40FB1cF3D',
+      // '0x2450Bf8e625e98e14884355205af6F97E3E68d07',
+      // '0xAcc6821d0F368b02d223158F8aDA4824dA9f28E3',
     ],
   ],
   [
@@ -52,7 +53,7 @@ export const ACTIVE_CAULDRONS: Map<ChainIdEnum, Address[]> = new Map([
     ],
   ],
   [
-    ChainIdEnum.bsc,
+    ChainIdEnum.bnb,
     [
       '0xF8049467F3A9D50176f4816b20cDdd9bB8a93319', //
       '0x692CF15F80415D83E8c0e139cAbcDA67fcc12C90',
@@ -76,6 +77,6 @@ export const DEPRECATED_CAULDRONS: Map<ChainIdEnum, Address[]> = new Map(
     ],
     [ChainIdEnum.avax]: ['0x56984F04d2d04B2F63403f0EbeDD3487716bA49d'],
     [ChainIdEnum.arbi]: [],
-    [ChainIdEnum.bsc]: [],
+    [ChainIdEnum.bnb]: [],
   }) as unknown as [ChainIdEnum, Address[]][],
 );

@@ -1,9 +1,8 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 
-import { ChainIdEnum } from '@app/common';
 import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ERC20Token } from '@app/common/interfaces';
 
@@ -21,7 +20,7 @@ interface ERC20TokenLocal extends ERC20Token {
 
 // events: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
 @Injectable()
-export class WETH {
+export class WETH implements OnModuleInit {
   public static token: ERC20TokenLocal = {
     address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     chainId: CHAIN_ID_ETH,
@@ -188,12 +187,13 @@ export class WETH {
     },
   ];
 
-  constructor(private readonly chainProvider: Web3Provider) {
-    this.ETHProvider = this.chainProvider.getInstanceByChainId(ChainIdEnum.eth);
+  constructor(private readonly chainProvider: Web3Provider) {}
+
+  async onModuleInit(): Promise<void> {
+    this.ETHProvider = await this.chainProvider.getInstanceByChainId(1);
     this.contract = new this.ETHProvider.eth.Contract(this.abi as AbiItem[], this.address);
   }
 
-  // not tested and must be handled with source and destination, 2 calls
   async transferEvents(addresses: string[]): Promise<any> {
     // filter addresses to avoid future errors
     addresses = addresses.filter((a) => Web3.utils.isAddress(a));

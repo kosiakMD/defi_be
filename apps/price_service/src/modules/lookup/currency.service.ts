@@ -117,7 +117,7 @@ export class CurrencyService {
 
     const [ethPrices, bscPrices, plgPrices, ftmPrices, avaxPrices] = await Promise.allSettled([
       this.fetchPrices(ChainIdEnum.eth, [BTC, ETH]),
-      this.fetchPrices(ChainIdEnum.bsc, [BNB]),
+      this.fetchPrices(ChainIdEnum.bnb, [BNB]),
       this.fetchPrices(ChainIdEnum.plg, [MATIC]),
       this.fetchPrices(ChainIdEnum.ftm, [FTM]),
       this.fetchPrices(ChainIdEnum.avax, [AVAX]),

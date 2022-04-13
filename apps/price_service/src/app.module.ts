@@ -1,18 +1,17 @@
 import { HttpModule } from '@nestjs/axios';
-import { Inject, MiddlewareConsumer, Module } from '@nestjs/common';
+import { Inject, MiddlewareConsumer, Module, NestModule, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { Logger, LoggerModule } from '@app/common/Logger';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
-import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
-import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
-import { LoggerMiddleware } from '@app/common/middlewares';
-import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { LogRequestMiddleware } from '@app/common/middlewares';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { HealthModule } from './modules/health.module';
@@ -39,7 +38,7 @@ import { PricesModule } from './modules/prices/prices.module';
         database: configService.get<string>('DB_DATABASE'),
         schema: configService.get<string>('DB_SCHEMA'),
         autoLoadEntities: true,
-        logging: true,
+        logging: false,
       }),
     }),
     HttpModule.registerAsync({
@@ -57,30 +56,32 @@ import { PricesModule } from './modules/prices/prices.module';
   ],
   providers: [
     {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
-    },
-    {
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
+    // TODO: test with Sentry middleware only
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
+    },
   ],
 })
-export class AppModule {
+export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {
-    const { SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
+        env: ENV,
         name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,

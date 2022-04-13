@@ -21,11 +21,11 @@ export class MailService {
     `;
 
     const data = {
-      from: this.configService.get<string>('MAIL_HIRE_FROM'), // sender email
-      to: this.configService.get<string>('MAIL_HIRE_TO'), // list of receivers
+      from: this.configService.get<string>('MAIL_HIRE_FROM'),
+      to: this.configService.get<string>('MAIL_HIRE_TO'),
       subject: 'Job request from website',
-      text: msg, // plaintext body
-      html: msg, // HTML body content
+      text: msg,
+      html: msg,
     };
     return this.mailerService.sendMail(data);
   }
@@ -42,11 +42,11 @@ export class MailService {
     `;
 
     const data = {
-      from: this.configService.get<string>('MAIL_QUESTION_FROM'), // sender email
-      to: this.configService.get<string>('MAIL_QUESTION_TO'), // list of receivers
+      from: this.configService.get<string>('MAIL_QUESTION_FROM'),
+      to: this.configService.get<string>('MAIL_QUESTION_TO'),
       subject: 'Question about Safe',
-      text: msg, // plaintext body
-      html: msg, // HTML body content
+      text: msg,
+      html: msg,
     };
     return this.mailerService.sendMail(data);
   }

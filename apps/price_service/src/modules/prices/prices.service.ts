@@ -1,5 +1,6 @@
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
+import isNil from 'lodash/isNil';
 import _last from 'lodash/last';
 import _minBy from 'lodash/minBy';
 import _orderBy from 'lodash/orderBy';
@@ -618,7 +619,8 @@ export class PriceService {
     }
 
     const { timestamp, price } = lastPrice;
-    const isPriceOutdated = timestampNow() - timestamp > this.allowedCurrentPriceThresholdInSeconds;
+    const isPriceOutdated =
+      timestampNow() - timestamp > this.allowedCurrentPriceThresholdInSeconds && !isNil(timestamp);
     if (isPriceOutdated) {
       return null;
     }

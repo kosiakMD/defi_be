@@ -1,0 +1,60 @@
+import { config } from 'aws-sdk';
+
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
+import { createLogger } from '@app/common/Logger/winston';
+import { initSentry } from '@app/common/bootstrap';
+
+import { AppModule } from './app.module';
+import { logFileDir } from './config';
+import { AwsConfigService } from './config/aws/aws.config.service';
+
+const logger = createLogger(logFileDir);
+
+async function bootstrap() {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+    bodyParser: true,
+    abortOnError: false,
+    logger,
+  });
+
+  initSentry();
+
+  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  app.useLogger(enhancedLogger);
+
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  app.setGlobalPrefix('api');
+
+  const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+
+  if (NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle(SERVICE_NAME)
+      .setDescription(`${SERVICE_NAME} description`)
+      .setVersion('1.0') // temporary global as only 1 version
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('docs', app, document);
+  }
+
+  const awsConfigService = app.get(AwsConfigService);
+
+  config.update({
+    accessKeyId: awsConfigService.awsKeyId,
+    secretAccessKey: awsConfigService.awsSecretAccessKey,
+    region: awsConfigService.region,
+  });
+
+  await app.listen(SERVICE_PORT, SERVICE_HOST);
+}
+
+bootstrap().catch((e) => {
+  logger.error(e, undefined, 'Bootstrap');
+});

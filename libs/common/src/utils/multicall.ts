@@ -8,8 +8,9 @@ export function decodeOutput(abi: AbiItem, outputResult) {
   }
 
   const decoded = {};
-  abi.outputs.forEach((o) => {
+  abi.outputs.forEach((o, idx) => {
     decoded[o.name] = toInternalDataType(o.type, outputResult[o.name]);
+    decoded[idx] = toInternalDataType(o.type, outputResult[o.name]);
   });
   return decoded;
 }

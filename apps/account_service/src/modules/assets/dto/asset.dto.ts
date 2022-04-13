@@ -1,12 +1,12 @@
 // eslint-disable-next-line max-classes-per-file
 import { Expose, Transform } from 'class-transformer';
-import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { IAssetDto, IAssetResponseDto } from '@app/common';
-import { AssetState, ChainIdEnum } from '@app/common/enum';
+import { AssetState } from '@app/common/enum';
 import { unifyAddress } from '@app/common/utils/addresses';
 
 import { Address } from '../../../common/interfaces';
@@ -28,9 +28,9 @@ export class AssetDto implements IAssetDto {
   @Expose()
   symbol: string = null;
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  @ApiProperty({ example: 1 })
   @Expose()
-  chain: ChainIdEnum;
+  chain: number;
 
   @ApiProperty({ type: Number, example: 18 })
   @Expose()
@@ -70,9 +70,9 @@ export class AssetQueryDto {
   @IsInt({ each: true })
   @ApiProperty({
     type: [Number],
-    example: [ChainIdEnum.eth, ChainIdEnum.bsc],
+    example: [1, 2],
   })
-  chains: ChainIdEnum[] = [ChainIdEnum.eth];
+  chains: number[] = [1];
 }
 
 export class AssetResponseDto implements IAssetResponseDto {
@@ -92,9 +92,9 @@ export class AssetResponseDto implements IAssetResponseDto {
   @Expose()
   symbol: string;
 
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
+  @ApiProperty({ example: 1 })
   @Expose({ name: 'chain' })
-  chain: ChainIdEnum;
+  chain: number;
 
   @ApiProperty({ type: Number, example: 18 })
   @Expose()
@@ -127,6 +127,12 @@ export class AssetTrackDto {
 
   @Expose()
   @IsNotEmpty()
-  @ApiProperty({ type: Number, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chain: ChainIdEnum;
+  @ApiProperty({ type: Number, example: 1 })
+  chain: number;
+
+  @Expose()
+  @IsOptional()
+  @IsBoolean()
+  @ApiProperty({ type: Boolean, default: false, example: false })
+  force?: boolean = false;
 }

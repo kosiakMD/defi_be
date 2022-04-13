@@ -1,28 +1,22 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { IBaseService } from '../common/interfaces/base-service.interface';
+import { BaseService } from '../common/services/base.service';
 
-import { SafeProxyService } from '../safe-proxy/safe.proxy.service';
-import { PartnerResponseDto } from './dto';
+import { PartnerResponseDto } from './dto/partner.response.dto';
 
 @ApiTags('Safe')
 @Controller('v1/partners')
-export class PartnersController {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private safeProxyService: SafeProxyService,
-  ) {}
+export class PartnersController extends BaseService implements IBaseService {
+  url = this.buildUrl(
+    this.configService.get<string>('SAFE_PROXY_SERVICE_HOST'),
+    this.configService.get<string>('SAFE_PROXY_SERVICE_PORT'),
+  );
 
   @Get('')
-  @ApiResponse({ status: 200, type: [PartnerResponseDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: [PartnerResponseDto] })
   getPartners(): Promise<PartnerResponseDto[]> {
-    try {
-      return this.safeProxyService.getPartners();
-    } catch (e) {
-      this.logger.error(e, 'SafeProxyService.getPartners');
-      throw e;
-    }
+    return this.requestProxy(this.url + 'v1/partners');
   }
 }

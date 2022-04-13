@@ -11,10 +11,10 @@ import {
   ProjectEnum,
   ProtocolNameEnum,
   SushiSwapProtocolEnum,
-  UniswapProtocolEnum,
+  UniswapProtocolEnum
 } from '@app/common/enum';
 
-import { FeaturesType } from '../../../common/types/protocol.types';
+import { FeaturesType } from '@app/common/types/protocol.types';
 
 export class ProtocolFeaturesExportDto {
   chain: ChainDto;
@@ -29,7 +29,7 @@ export class ProtocolFeaturesInfoDto {
   [ChainAbbrEnum.eth]: FeatureEnum;
 
   @ApiProperty({enum: FeatureEnum, enumName: 'FeatureEnum', isArray: true})
-  [ChainAbbrEnum.bsc]: FeatureEnum;
+  [ChainAbbrEnum.bnb]: FeatureEnum;
 
 }
 

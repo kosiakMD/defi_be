@@ -8,57 +8,45 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { Logger, LoggerMiddleware } from '@app/common';
+import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptionsFilter';
-import { SentryInterceptor } from '@app/common/interceptors/SentryInterceptor';
-import { TransformHeadersInterceptor } from '@app/common/interceptors/TransformHeaderInterceptor';
-import { HeadersMiddleware } from '@app/common/middlewares/headers.middleware';
+import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
-import { AccountModule } from './account/account.module';
-import { AccountService } from './account/account.service';
 import { AnalyticController } from './analytic/analytic.controller';
-import { AppController } from './app/app.controller';
-import { AppService } from './app/app.service';
 import { ApprovalsController } from './approvals/approvals.controller';
 import { AssetsController } from './assets/assets.controller';
-import { AssetsService } from './assets/assets.service';
 import { BalancesController } from './balances/balances.controller';
+import { BlacklistController } from './blacklist/blacklist.controller';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
 import { ServiceHealthIndicator } from './health/health.service';
 import { ImpermanentLossModule } from './impermanent-loss/impermanent-loss.module';
-import { IntegrationService } from './integration/integration.service';
 import { MailModule } from './mail/mail.module';
+import { NetworksController } from './networks/networks.controller.dto';
 import { NftController } from './nft/nft.controller';
-import { PancakeController } from './pancake/pancake.controller';
-import { PangolinController } from './pangolin/pangolin.controller';
+import { OpportunitiesController } from './opportunities/opportunities.controller';
+import { PartnersController } from './partners/partners.controller';
 import { PoolsModule } from './pools/pools.module';
 import { PricesModule } from './prices/prices.module';
-import { PricesService } from './prices/prices.service';
+import { ProjectsController } from './projects/projects.controller';
 import { ProtocolController } from './protocol/protocol.controller';
 import { ProtocolControllerV2 } from './protocol/protocol.controller.v2';
-import { SafeProxyModule } from './safe-proxy/safe.proxy.module';
-import { SafeProxyService } from './safe-proxy/safe.proxy.service';
+import { ScamsController } from './scams/scams.controller.dto';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SearchController } from './search/search.controller';
 import { SearchService } from './search/search.service';
-import { SpookyswapController } from './spookyswap/spookyswap.controller';
-import { SushiswapController } from './sushiswap/sushiswap.controller';
-import { SwapController } from './swap/swap.controller';
-import { TokensModule } from './tokens/tokens.module';
+import { TokensController } from './tokens/tokens.controller';
 import { TransactionsController } from './transactions/transactions.controller';
-import { TransfersController } from './transfers/transfers.controller';
-import { TransfersService } from './transfers/transfers.service';
-import { UniswapController } from './uniswap/uniswap.controller';
 import { VaultsModule } from './vaults/vaults.module';
 
 @Module({
@@ -86,51 +74,47 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
     }),
     TerminusModule,
-    AccountModule,
     PoolsModule,
     VaultsModule,
-    TokensModule,
     GasModule,
     PricesModule,
     ScansApiModule,
     MailModule,
     ImpermanentLossModule,
-    SafeProxyModule,
   ],
   controllers: [
     HealthController,
     AnalyticController,
-    AppController,
     AssetsController,
     ApprovalsController,
     BalancesController,
+    BlacklistController,
     TransactionsController,
-    TransfersController,
-    // Platforms
-    PancakeController,
-    PangolinController,
-    SushiswapController,
-    SpookyswapController,
-    UniswapController,
-    SwapController,
     ProtocolController,
     NftController,
     ProtocolControllerV2,
     SearchController,
+    NetworksController,
+    PartnersController,
+    ProjectsController,
+    ScamsController,
+    TokensController,
+    OpportunitiesController,
   ],
   providers: [
     {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
-    {
       provide: APP_INTERCEPTOR,
-      useClass: TransformHeadersInterceptor,
+      useClass: ResponseInterceptor,
     },
     {
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
+    // TODO
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: AllExceptionsFilter,
+    // },
     {
       provide: APP_GUARD,
       useClass: ApiVersionGuard,
@@ -141,28 +125,7 @@ import { VaultsModule } from './vaults/vaults.module';
     // 	provide: APP_INTERCEPTOR,
     // 	useClass: CacheInterceptor,
     // },
-    {
-      provide: APP_GUARD,
-      useClass: ApiVersionGuard,
-    },
-    // TODO: left for custom logger
-    // {
-    // 	provide: WINSTON_MODULE_NEST_PROVIDER,
-    // 	useClass: Logger,
-    // },
-    // {
-    // 	provide: 'Logger',
-    // 	useClass: Logger,
-    // },
     ServiceHealthIndicator,
-    AppService,
-    AccountService,
-    IntegrationService,
-    PricesService,
-    TransfersService,
-    AccountService,
-    AssetsService,
-    SafeProxyService,
     SearchService,
     Web3NameService,
   ],
@@ -171,14 +134,15 @@ export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersMiddleware, LoggerMiddleware).forRoutes('/');
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {
-    const { ENV, SERVICE_PORT, SERVICE_HOST } = process.env;
+    const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
     this.logger.log(
       {
         env: ENV,
+        name: SERVICE_NAME,
         host: SERVICE_HOST,
         port: SERVICE_PORT,
       },

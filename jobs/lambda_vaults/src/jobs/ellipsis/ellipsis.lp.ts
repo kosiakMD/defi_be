@@ -40,7 +40,7 @@ import { EllipsisAddresses } from './addresses';
 
 @Injectable()
 export class EllipsisLp implements JobInterface {
-  chain = ChainIdEnum.bsc;
+  chain = ChainIdEnum.bnb;
   feature = FeatureEnum.pools;
   protocol = ProtocolNameEnum.ellipsis;
 
@@ -123,7 +123,7 @@ export class EllipsisLp implements JobInterface {
       });
     }
 
-    const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.bsc);
+    const callsRsp = await this.multicallService.handleInBatches(calls, ChainIdEnum.bnb);
     const promises = [];
 
     for (let i = poolIdFrom; i <= poolIdTo; i++) {
@@ -290,7 +290,7 @@ export class EllipsisLp implements JobInterface {
         },
       ],
     ]);
-    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bsc);
+    const callRsp = await this.multicallService.handleInBatches(call, ChainIdEnum.bnb);
 
     return callRsp.get(this.poolLengthLabel()).output.data;
   }
@@ -316,8 +316,8 @@ export class EllipsisLp implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bsc),
-      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bsc),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
+      this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
     ]);
 
     this.mapping = this.mapping.map((lp) => {

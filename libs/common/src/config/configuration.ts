@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import { join } from 'path';
 
-import { ConfigModuleOptions } from '@nestjs/config';
+import { ConfigFactory, ConfigModuleOptions } from '@nestjs/config';
 
 import { createLogger } from '../Logger/winston';
 
@@ -36,18 +36,19 @@ export interface Config {
   envFileDir: string;
   validationSchema?: any;
   validationOptions: Record<string, any>;
+  load?: ConfigFactory[];
 }
 
 export const configuration = ({
   envFileDir,
   validationSchema,
   validationOptions,
+  load,
 }: Config): ConfigModuleOptions => ({
   cache: false,
   isGlobal: true,
-  envFilePath: envFiles.map((file) => {
-    return envFilePath(envFileDir, file);
-  }),
+  load,
+  envFilePath: envFiles.map((file) => envFilePath(envFileDir, file)),
   validationSchema: validationSchema,
   validationOptions: validationOptions,
   validate: (record): ConfigModuleOptions['validate'] => {

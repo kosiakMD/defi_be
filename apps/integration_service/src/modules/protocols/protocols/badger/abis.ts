@@ -7,19 +7,19 @@ export class Abis {
       {
         internalType: 'address',
         name: 'account',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     name: 'balanceOf',
     outputs: [
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 
   // calls for crv pools
@@ -30,30 +30,30 @@ export class Abis {
       {
         internalType: 'contract IBaseRewardsPool',
         name: '',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 
   static readonly earned: AbiItem = {
-    inputs:[
+    inputs: [
       {
         internalType: 'address',
         name: 'account',
-        type: 'address'
-      }
+        type: 'address',
+      },
     ],
     name: 'earned',
     outputs: [
       {
         internalType: 'uint256',
         name: '',
-        type: 'uint256'
-      }
+        type: 'uint256',
+      },
     ],
     stateMutability: 'view',
-    type: 'function'
+    type: 'function',
   };
 }

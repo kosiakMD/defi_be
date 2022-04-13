@@ -1,6 +1,6 @@
 export enum ChainIdEnum {
   eth = 1,
-  bsc = 2,
+  bnb = 2,
   plg = 3,
   ftm = 4,
   arbi = 5,
@@ -9,7 +9,7 @@ export enum ChainIdEnum {
 
 export enum ChainPrefixEnum {
   eth = 'eth',
-  bsc = 'bsc',
+  bnb = 'bnb',
   plg = 'plg',
   ftm = 'ftm',
   arbi = 'arbi',
@@ -18,7 +18,7 @@ export enum ChainPrefixEnum {
 
 export enum AbsoluteChainIdEnum {
   eth = 1,
-  bsc = 56,
+  bnb = 56,
   plg = 137,
   ftm = 250,
   arbi = 42161,
@@ -28,8 +28,8 @@ export enum AbsoluteChainIdEnum {
 export enum ChainNameEnum {
   ETH = 'ethereum', // remove from enum
   eth = 'ethereum',
-  BSC = 'binance', // remove from enum
-  bsc = 'binance',
+  BNB = 'binance', // remove from enum
+  bnb = 'binance',
   plg = 'polygon',
   ftm = 'fantom',
   arbi = 'arbitrum',
@@ -38,7 +38,7 @@ export enum ChainNameEnum {
 
 export enum ChainAbbrEnum {
   eth = 'eth',
-  bsc = 'bsc',
+  bnb = 'bnb',
   plg = 'plg',
   ftm = 'ftm',
   arbi = 'arbi',
@@ -116,15 +116,15 @@ export enum TransactionTypeEnum {
 export enum ChainSymbolNames {
   ETH = 'ethereum',
   eth = 'ethereum',
-  BSC = 'binance',
-  bsc = 'binance',
+  BNB = 'binance',
+  bnb = 'binance',
 }
 
 export enum ChainSymbols {
   eth = 'eth',
   ETH = 'ETH',
-  bsc = 'bsc',
-  BSC = 'BSC',
+  bnb = 'bsc',
+  BNB = 'BSC',
 }
 
 export enum TokenOperations {

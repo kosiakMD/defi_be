@@ -5,28 +5,16 @@ import { IsArray, IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validato
 import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { Address, ChainAbbrEnum, ChainIdEnum } from '@app/common';
+import { Address, ChainAbbrEnum } from '@app/common';
 
 import { AccountBalance, ERC20Token, ErrorMessage, TokenBalance } from '../balances.interfaces';
 
 interface BalancesQuery {
   addresses: Address[];
-  chains: ChainIdEnum[];
+  chains: number[];
 }
 
-const ChainList = [
-  ChainIdEnum.eth,
-  ChainIdEnum.bsc,
-  ChainIdEnum.plg,
-  ChainIdEnum.ftm,
-  ChainIdEnum.arbi,
-  ChainIdEnum.avax,
-  ChainIdEnum.xdai,
-  ChainIdEnum.celo,
-  ChainIdEnum.mriver,
-  ChainIdEnum.harm,
-  ChainIdEnum.heco,
-];
+const ChainList = [1, 2, 3, 4, 5];
 
 export class BalancesQueryDto implements BalancesQuery {
   @IsNotEmpty()
@@ -49,11 +37,11 @@ export class BalancesQueryDto implements BalancesQuery {
   @IsArray()
   @IsInt({ each: true })
   @ApiProperty({
-    type: [ChainIdEnum],
+    type: Array,
     example: ChainList,
     default: ChainList,
   })
-  chains: ChainIdEnum[] = ChainList;
+  chains: number[] = ChainList;
 
   @IsOptional()
   @Transform(({ value, key }) => {
@@ -90,7 +78,7 @@ export class BalancesPostQueryDto implements BalancesQuery {
   })
   @IsArray()
   @IsInt({ each: true })
-  chains: ChainIdEnum[];
+  chains: number[];
 
   @IsOptional()
   @Transform(({ value, key }) => {
@@ -104,8 +92,8 @@ export class BalancesPostQueryDto implements BalancesQuery {
 }
 
 export class BalanceTokenDto implements ERC20Token {
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chainId: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chainId: number;
   @ApiProperty({ type: Number, example: 18 })
   decimals: number;
   @ApiProperty({ enum: ChainAbbrEnum })
@@ -133,8 +121,8 @@ export class AccountTokenBalanceDto implements TokenBalance {
 }
 
 export class ErrorDto implements ErrorMessage {
-  @ApiProperty({ enum: ChainIdEnum, enumName: 'ChainIdEnum', example: ChainIdEnum.eth })
-  chainId: ChainIdEnum;
+  @ApiProperty({ example: 1 })
+  chainId: number;
 
   @ApiProperty({ type: Number, example: 502 })
   statusCode: number;
@@ -166,7 +154,7 @@ export class BalanceDto implements AccountBalance {
 export class AllBalancesDto {
   address: Address;
   balances: {
-    chain: ChainIdEnum;
+    chain: number;
     items: any[];
     status: string;
     error: string | null | Error;
@@ -189,7 +177,7 @@ export class TokenChange {
 }
 
 export class ChainChange {
-  chainId: ChainIdEnum;
+  chainId: number;
   totalUSD: number; // total Change in USD for this change
 }
 

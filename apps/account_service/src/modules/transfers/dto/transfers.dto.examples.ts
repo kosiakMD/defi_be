@@ -1,13 +1,9 @@
-import { ChainIdEnum } from '@app/common/enum';
-
 import { TransferDto } from './transfers.dto';
 
 export const exampleChain1: TransferDto = {
-  chainId: ChainIdEnum.eth,
+  chainId: 1,
   hash: '0x6277ad9a3302420a63d01f8c26a3e4c810ba5c6a44138253abf03c5b7cccd29b',
   blockTimeStamp: '1554803381',
-  // TODO: until no gas in DB
-  // gasUsed: '21000',
   erc20Transfers: [
     {
       fromAddress: '0xbd3a43c39f4a3b06bed77c2345597ea8467368c4',
@@ -27,11 +23,9 @@ export const exampleChain1: TransferDto = {
 };
 
 export const exampleChain2WithErrorNoPrice: TransferDto = {
-  chainId: ChainIdEnum.bsc,
+  chainId: 2,
   hash: '0x52415f1a094ed09799879b294762b9b8484e827e14754aea177ad322b59f680a',
   blockTimeStamp: '1621776463',
-  // TODO: until no gas in DB
-  // gasUsed: null,
   erc20Transfers: [
     {
       fromAddress: '0x0d0707963952f2fba59dd06f2b425ace40b492fe',

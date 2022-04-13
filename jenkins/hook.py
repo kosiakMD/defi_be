@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #How to use script:
 #python hook.py price development 2bd9439 master
 #Where:

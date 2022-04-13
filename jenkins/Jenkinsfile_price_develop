@@ -49,7 +49,7 @@ pipeline {
                         json: [
                             "image": DOCKER_IMAGE.imageName(),
                             "registry": DOCKER_REGISTRY,
-                            "repository": env.JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4),
+                            "repository": env.JOB_BASE_NAME,
                             "tag": DOCKER_TAG
                         ]
                     )

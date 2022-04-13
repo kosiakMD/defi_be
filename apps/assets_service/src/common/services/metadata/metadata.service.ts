@@ -13,6 +13,7 @@ import { EVMMetaDataStrategy } from './strategies/EVM.strategy';
 import { CardanoMetadataStrategy } from './strategies/cardano.strategy';
 import { SolanaMetadataStrategy } from './strategies/solana.strategy';
 import { TerraMetadataStrategy } from './strategies/terra.strategy';
+import { HttpService } from '@nestjs/axios';
 
 const ChainsProvidersUrls = {
   [ChainIdEnum.arbi]: 'ARBITRUM_URL',
@@ -31,7 +32,6 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.opt]: 'OPT_URL',
   [ChainIdEnum.plg]: 'POLYGON_URL',
   [ChainIdEnum.near]: 'NEAR_URL',
-  [ChainIdEnum.terra]: 'TERRA_URL',
   [ChainIdEnum.klay]: 'KLAYTN_URL',
   [ChainIdEnum.fuse]: 'FUSE_URL',
 };
@@ -40,20 +40,20 @@ const ChainsProvidersUrls = {
 export class MetadataService {
   private readonly providers = {};
 
-  constructor(private readonly configService: ConfigService) {
+  constructor(private readonly configService: ConfigService, private http: HttpService) {
     this.initWeb3Providers();
   }
 
   public async getMetadata(address: string, chainId: number | string): Promise<AssetMetadata> {
     let metadataStrategy;
     switch (chainId) {
-      case AbsoluteChainIdEnum.sol:
-        metadataStrategy = new SolanaMetadataStrategy();
+      case ChainIdEnum.sol:
+        metadataStrategy = new SolanaMetadataStrategy(this.http);
         break;
-      case AbsoluteChainIdEnum.terra:
+      case ChainIdEnum.terra:
         metadataStrategy = new TerraMetadataStrategy();
         break;
-      case AbsoluteChainIdEnum.cardano:
+      case ChainIdEnum.cardano:
         metadataStrategy = new CardanoMetadataStrategy();
         break;
       default:
@@ -82,6 +82,7 @@ export class MetadataService {
       URL: this.configService.get<string>('TERRA_URL'),
       chainID: AbsoluteChainIdEnum.terra.toString(),
     });
+
     this.providers[ChainIdEnum.cardano] = new BlockFrostAPI({
       projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
     });

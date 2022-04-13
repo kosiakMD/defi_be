@@ -47,8 +47,14 @@ export class StaderStaking {
       provider,
     );
 
-    const baseDataStakingMap: Map<string, BaseDataStaking> = new Map<string, BaseDataStaking>(
-      addresses.map((a) => [a, this.getStakingBaseData(a, chain)]),
+    const baseDataStakingMap: Map<string, BaseDataStaking[]> = new Map(
+      addresses.map((a) => [
+        a,
+        [
+          this.getStakingBaseData(a, chain, FeatureEnum.nativeStaking),
+          this.getStakingBaseData(a, chain, FeatureEnum.staking),
+        ],
+      ]),
     );
 
     shBalances?.forEach((value, key) => {
@@ -67,7 +73,7 @@ export class StaderStaking {
     }, new Map());
 
     for (const [key, value] of balances) {
-      const staking = baseDataStakingMap.get(key);
+      const [nativeStaking, staking] = baseDataStakingMap.get(key);
       value.map((stakingData) => {
         const poolInfo = poolsInfoMap.get(stakingData.poolId);
         const stakingPosition = this.getStakingPosition(
@@ -95,10 +101,12 @@ export class StaderStaking {
           reward.price = null;
         });
 
-        staking.items.push(stakingPosition);
+        stakingPosition.stakingToken.address === StaderAddresses.luna
+          ? nativeStaking.items.push(stakingPosition)
+          : staking.items.push(stakingPosition);
       });
     }
-    return Array.from(baseDataStakingMap.values());
+    return Array.from(baseDataStakingMap.values()).flat();
   }
 
   async getPoolsInformation(poolsId: Set<number>, provider: LCDClient) {
@@ -214,13 +222,13 @@ export class StaderStaking {
     }
   }
 
-  getStakingBaseData(address: string, chain: ChainDto) {
+  getStakingBaseData(address: string, chain: ChainDto, feature: string) {
     return plainToClass(BaseDataStaking, {
       chain: chain,
       userAddress: address,
-      protocolType: ProtocolTypeEnum.staking,
+      protocolType: ProtocolTypeEnum[feature],
       projectName: ProjectEnum.stader,
-      feature: FeatureEnum.staking,
+      feature: FeatureEnum[feature],
       items: [],
     });
   }

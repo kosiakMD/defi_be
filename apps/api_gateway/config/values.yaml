@@ -83,8 +83,8 @@ configMaps:
     SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
 
 secrets:
-- mailer
-- redis
-- bscscan
-- etherscan
-- logs
+  - mailer
+  - redis
+  - bscscan
+  - etherscan
+  - logs

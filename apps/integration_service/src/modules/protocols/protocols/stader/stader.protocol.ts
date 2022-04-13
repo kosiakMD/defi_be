@@ -17,7 +17,6 @@ import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import BasicProtocol from '../basicProtocol';
 import { StaderAirdrop } from './stader.airdrop';
-import { StaderDelegationStaking } from './stader.delegation.staking';
 import { StaderStaking } from './stader.staking';
 
 @Injectable()
@@ -27,7 +26,7 @@ export class StaderProtocol extends BasicProtocol {
   readonly name = StaderProtocolEnum.stader;
   readonly displayName = 'Stader';
   readonly features = {
-    [ChainAbbrEnum.terra]: [FeatureEnum.staking, FeatureEnum.airdrop, FeatureEnum.delegation],
+    [ChainAbbrEnum.terra]: [FeatureEnum.staking, FeatureEnum.airdrop, FeatureEnum.nativeStaking],
   };
 
   constructor(
@@ -36,7 +35,6 @@ export class StaderProtocol extends BasicProtocol {
     protected readonly priceService: PriceService,
     private readonly staking: StaderStaking,
     private readonly airdrop: StaderAirdrop,
-    private readonly delegation: StaderDelegationStaking,
   ) {
     super();
   }
@@ -66,8 +64,6 @@ export class StaderProtocol extends BasicProtocol {
         return this.staking.getData(addresses, chain);
       case FeatureEnum.airdrop:
         return this.airdrop.getData(addresses, chain);
-      case FeatureEnum.delegation:
-        return this.delegation.getData(addresses, chain);
       default:
         return [];
     }

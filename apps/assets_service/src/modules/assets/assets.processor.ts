@@ -95,9 +95,7 @@ export class AssetsProcessor {
     processingAsset.rank = rank < 0 ? -1 : rank;
 
     const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
-
-    processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens.length));
-
+    processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens?.length));
     const icons = await this.iconsService.getIconUrls({
       symbol: processingAsset.symbol,
       chainId: processingAsset.chainId,
@@ -108,7 +106,7 @@ export class AssetsProcessor {
 
     processingAsset = await this.saveAsset(processingAsset);
 
-    if (Array.isArray(underlyingTokens) && underlyingTokens.length !== 0) {
+    if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
       underlyingTokens.map(async (underlyingToken: AssetsEntity, index: number) => {
         const newAsset = await this.processAsset(underlyingToken.address, underlyingToken.chainId);
 

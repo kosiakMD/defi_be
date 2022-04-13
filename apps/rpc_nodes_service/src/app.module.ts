@@ -21,6 +21,7 @@ import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext
 
 import config from './config';
 import { EndpointsController } from './controllers/endpoints.controller';
+import { HealthController } from './controllers/health.controller';
 import { RPCNodesController } from './controllers/rpc-nodes.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { EndpointsModule } from './modules/endpoints/endpoints.module';
@@ -62,7 +63,7 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
     EndpointsModule,
     RPCNodesModule,
   ],
-  controllers: [EndpointsController, RPCNodesController],
+  controllers: [EndpointsController, RPCNodesController, HealthController],
   providers: [
     // TODO: test with Sentry middleware only
     // {

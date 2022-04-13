@@ -38,22 +38,26 @@ export class TokenService {
   public async getUnderlyingAssetsIfExists(processingAsset: AssetsEntity): Promise<AssetsEntity[]> {
     const resultsPromises = [];
 
-    for (const TokenStrategy of this.tokenStrategies) {
-      const tknStrategy = new TokenStrategy(this.logger, this.metadataService, this.multicall);
-      // TODO: it would be good to know which strategy found underlying tokens
-      resultsPromises.push(tknStrategy.attemptToLoadUnderlyingTokens(processingAsset));
+    try {
+      for (const TokenStrategy of this.tokenStrategies) {
+        const tknStrategy = new TokenStrategy(this.logger, this.metadataService, this.multicall);
+        // TODO: it would be good to know which strategy found underlying tokens
+        resultsPromises.push(tknStrategy.attemptToLoadUnderlyingTokens(processingAsset));
+      }
+
+      // TODO: Log error
+      const results = await Promise.allSettled(resultsPromises);
+
+      return (results.find(this.isFulfilled)?.value || []).map((token) => {
+        const asset = new AssetsEntity();
+        asset.address = token;
+        asset.chainId = processingAsset.chainId;
+        asset.disabled = true;
+        return asset;
+      });
+    } catch (e) {
+      this.logger.error(e);
     }
-
-    // TODO: Log error
-    const results = await Promise.allSettled(resultsPromises);
-
-    return (results.find(this.isFulfilled)?.value || []).map((token) => {
-      const asset = new AssetsEntity();
-      asset.address = token;
-      asset.chainId = processingAsset.chainId;
-      asset.disabled = true;
-      return asset;
-    });
   }
 
   private isFulfilled = <T>(input: PromiseSettledResult<T>): input is PromiseFulfilledResult<T> =>

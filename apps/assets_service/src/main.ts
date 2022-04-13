@@ -41,7 +41,7 @@ async function bootstrap() {
       .setVersion('1.0') // temporary global as only 1 version
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, document);
+    SwaggerModule.setup('api', app, document);
   }
 
   const awsConfigService = app.get(AwsConfigService);

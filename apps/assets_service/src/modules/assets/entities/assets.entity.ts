@@ -46,4 +46,7 @@ export class AssetsEntity extends BaseEntity {
   public underlyingTokens: AssetUnderlyingEntity[];
 
   public averagePrice?: number;
+
+  @Column({ type: Number, default: -1 })
+  public rank: number;
 }

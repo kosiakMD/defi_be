@@ -31,7 +31,7 @@ export class CoingeckoStrategy extends PriceStrategy {
      */
     const assetsChainIds = await assetsRepository.getAllTrackedAssetChains();
     const priceRequests = [];
-    const { baseURL, take } = config; // maximum 100 https://docs.open.debank.com/en/reference/api-pro-reference/token#get-the-list-of-the-token-information
+    const { baseURL, take } = config;
     for await (const chainId of assetsChainIds) {
       const coingeckoChainId = CoingeckoPlatformEnum[ChainIdEnum[chainId]];
       const trackedAssetsFindConditions = {

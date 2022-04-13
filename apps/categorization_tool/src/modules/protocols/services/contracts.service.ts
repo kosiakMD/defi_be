@@ -68,10 +68,10 @@ export class ContractsService {
       contracts.map(({ id, address }) => async () => {
         //fetch ABI and ABI Code
         this.logger.debug(`fetchAbiAndAbiCode for address: ${address}`);
-        const { abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(address);
+        const { chain, abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(address);
 
         //update DB info
-        await this.contractsRepository.update({ id }, { abi, abiCode });
+        await this.contractsRepository.update({ id }, { abi, abiCode, chain });
       }),
       FETCH_ABI_PARALLEL_LIMIT,
     );

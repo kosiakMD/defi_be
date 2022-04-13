@@ -17,6 +17,9 @@ export class Contract {
   @Column({ name: 'abi_code', type: 'text' })
   abiCode: string;
 
+  @Column({ name: 'chain', type: 'varchar' })
+  chain: string;
+
   @ManyToOne(() => Protocol, (p) => p.id, { eager: true })
   @JoinColumn({ name: 'protocol_id' })
   protocol: Protocol;

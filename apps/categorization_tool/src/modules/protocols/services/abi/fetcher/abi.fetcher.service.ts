@@ -32,6 +32,6 @@ export class AbiFetcherService {
         this.logger.warn(`abiFetcher.fetchAbiAndAbiCode error - ${e.message}`);
       }
     }
-    return { abi: null, abiCode: null };
+    return { chain: null, abi: null, abiCode: null };
   }
 }

@@ -30,6 +30,7 @@ export class AbiFetcherEtherscan implements IAbiFetcher {
         ),
       );
       return {
+        chain: 'Ethereum',
         abi: abiCodeResponse.data.result[0].ABI,
         abiCode: abiCodeResponse.data.result[0].SourceCode,
       };

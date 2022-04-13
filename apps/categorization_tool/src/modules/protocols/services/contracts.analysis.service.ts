@@ -10,8 +10,21 @@ import { safeJsonParse } from '../../../utils';
 import { Contract } from '../../database/entities/contract.entity';
 import { ContractsAnalysisRepository } from '../../database/repositories/contracts.analysis.repo';
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
+import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
 import { ANALYSE_CONTRACTS_PARALLEL_LIMIT } from '../protocols.constant';
+import { AbiCompoundTemplate } from './abi/abi.compound.template';
 import { AbiMasterchefTemplate } from './abi/abi.masterchef.template';
+import { AbiFetcherService } from './abi/fetcher/abi.fetcher.service';
+
+type ListSimilarData = {
+  address: string;
+  chain: string;
+  protocolId?: number;
+  protocol?: { name: string; url: string };
+  abiCodeSimilarity: number;
+  abiJsonDiff: any;
+  abiJsonSimilarity: number;
+};
 
 @Injectable()
 export class ContractsAnalysisService {
@@ -22,8 +35,14 @@ export class ContractsAnalysisService {
     private readonly contractsRepository: ContractsRepository,
     @InjectRepository(ContractsAnalysisRepository)
     private readonly contractAnalysisRepository: ContractsAnalysisRepository,
+    @InjectRepository(ProtocolsRepository)
+    private readonly protocolsRepository: ProtocolsRepository,
+    private readonly abiFetcherService: AbiFetcherService,
   ) {
-    this.abiTemplates = new Map<number, any>([[AbiMasterchefTemplate.id, AbiMasterchefTemplate]]);
+    this.abiTemplates = new Map<number, any>([
+      [AbiMasterchefTemplate.id, AbiMasterchefTemplate],
+      [AbiCompoundTemplate.id, AbiCompoundTemplate],
+    ]);
   }
 
   async analyzeContractsAgainstTemplates(): Promise<void> {
@@ -80,15 +99,13 @@ export class ContractsAnalysisService {
             `analyse contracts: [${contract.address}]-[${counterpartContract.address}]`,
           );
           try {
-            const abiCodeSimilarity = stringSimilarity.compareTwoStrings(
-              contract.abiCode,
-              counterpartContract.abiCode,
-            );
-            const parsedCounterpartContractAbi = JSON.parse(counterpartContract.abi);
-            const [abiJsonSimilarity, abiJsonDiff] = this.analyseAbi(
-              parsedContractAbi,
-              parsedCounterpartContractAbi,
-            );
+            const { abiCodeSimilarity, abiJsonDiff, abiJsonSimilarity } =
+              await this.analysAbiAndAbiCode(
+                contract.abiCode,
+                counterpartContract,
+                parsedContractAbi,
+              );
+
             await this.contractAnalysisRepository.upsertContractAnalysis(
               contract,
               counterpartContract,
@@ -106,6 +123,28 @@ export class ContractsAnalysisService {
       ANALYSE_CONTRACTS_PARALLEL_LIMIT,
     );
     this.logger.log('analyseContracts finished');
+  }
+
+  private async analysAbiAndAbiCode(
+    abiCode: string,
+    counterpartContract: Contract,
+    parsedContractAbi: any,
+  ): Promise<{ abiCodeSimilarity: number; abiJsonSimilarity: number; abiJsonDiff: any }> {
+    const abiCodeSimilarity = this.analyseAbiCode(abiCode, counterpartContract);
+    const parsedCounterpartContractAbi = JSON.parse(counterpartContract.abi);
+    const [abiJsonSimilarity, abiJsonDiff] = this.analyseAbi(
+      parsedContractAbi,
+      parsedCounterpartContractAbi,
+    );
+    return {
+      abiCodeSimilarity,
+      abiJsonSimilarity,
+      abiJsonDiff,
+    };
+  }
+
+  private analyseAbiCode(abiCode: string, counterpartContract: Contract): number {
+    return stringSimilarity.compareTwoStrings(abiCode, counterpartContract.abiCode);
   }
 
   private async getContractsWithValidAbi() {
@@ -159,5 +198,68 @@ export class ContractsAnalysisService {
       (r, k) => (o[k] && typeof o[k] === 'object' ? r + this.count(o[k]) : r + 1),
       0,
     );
+  }
+
+  async findSimilarAbiAndAbiCode(data: {
+    contract: string;
+    minSimilarityRate: number;
+  }): Promise<{ error: string } | ListSimilarData[]> {
+    const { abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(data.contract);
+    try {
+      const parsedContractAbi = JSON.parse(abi);
+
+      const allContracts = await this.contractsRepository.findAllWithAbiAndAbiCode();
+      const ListSimilarData: ListSimilarData[] = await parallelLimit(
+        allContracts
+          .filter(({ abi }) => safeJsonParse(abi))
+          .map((counterpartContract) => async () => {
+            const { abiCodeSimilarity, abiJsonDiff, abiJsonSimilarity } =
+              await this.analysAbiAndAbiCode(abiCode, counterpartContract, parsedContractAbi);
+
+            return {
+              address: counterpartContract.address,
+              chain: counterpartContract.chain,
+              protocolId: counterpartContract.protocol.id,
+              abiCodeSimilarity,
+              abiJsonDiff,
+              abiJsonSimilarity,
+            };
+          }),
+        ANALYSE_CONTRACTS_PARALLEL_LIMIT,
+      );
+
+      const filtredList = ListSimilarData.filter(
+        ({ abiCodeSimilarity, abiJsonSimilarity }) =>
+          abiCodeSimilarity >= data.minSimilarityRate ||
+          abiJsonSimilarity >= data.minSimilarityRate,
+      );
+
+      const protocolInfo = await this.protocolsRepository.findByIds(
+        Array.from(new Set(filtredList.map(({ protocolId }) => protocolId))).map((id) => id),
+      );
+      const sortById = new Map(protocolInfo.map((protocol) => [protocol.id, protocol]));
+
+      return (
+        filtredList
+          .map((f) => {
+            const find = sortById?.get(f.protocolId);
+            f.protocol = {
+              name: find?.name,
+              url: find?.url,
+            };
+            delete f.protocolId;
+            return f;
+          })
+          //sort by field "abiCodeSimilarity"
+          .sort((a, b) => {
+            if (a.abiCodeSimilarity > b.abiCodeSimilarity) return -1;
+            else if (a.abiCodeSimilarity < b.abiCodeSimilarity) return 1;
+            return 0;
+          })
+      );
+    } catch (e) {
+      this.logger.error(`Error for similarity contracts ${e}`);
+      return { error: `Error for similarity contracts: ${abi}` };
+    }
   }
 }

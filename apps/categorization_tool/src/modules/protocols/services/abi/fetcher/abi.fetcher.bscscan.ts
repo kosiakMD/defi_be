@@ -30,6 +30,7 @@ export class AbiFetcherBscscan implements IAbiFetcher {
         ),
       );
       return {
+        chain: 'BSC',
         abi: abiCodeResponse.data.result[0].ABI,
         abiCode: abiCodeResponse.data.result[0].SourceCode,
       };

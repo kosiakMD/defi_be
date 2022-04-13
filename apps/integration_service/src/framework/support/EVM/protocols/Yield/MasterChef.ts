@@ -195,7 +195,9 @@ export class MasterChef
       !pool.rewarded.every((t) => tokens.has(t.token.address))
     ) {
       // throw error or just return; to silently skip pools
-      throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
+      // throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
+      // todo: consider how to handle such cases, because exceptions generates many error logs
+      return;
     }
 
     const tvl = pool.supplied.reduce((tvl, poolToken) => {

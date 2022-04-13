@@ -35,6 +35,10 @@ import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto'
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
+import { DelegationsStrategy } from './strategies/delegations';
+import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
+import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
+import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
 import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
@@ -69,9 +73,12 @@ export class BalancesService {
     private readonly secretBalancesStrategy: SecretBalancesStrategy,
     private readonly roninBalancesStrategy: RoninBalancesStrategy,
     private readonly chainsService: ChainsService,
+    private readonly solanaDelegationsStrategy: SolanaDelegationsStrategy,
+    private readonly cardanoDelegationsStrategy: CardanoDelegationsStrategy,
+    private readonly terraDelegationsStrategy: TerraDelegationsStrategy,
   ) {}
 
-  strategies = [
+  balanceStrategies = [
     this.solanaBalancesStrategy,
     this.terraBalancesStrategy,
     this.cardanoBalancesStrategy,
@@ -80,6 +87,12 @@ export class BalancesService {
     this.osmosisBalancesStrategy,
     this.secretBalancesStrategy,
     this.roninBalancesStrategy,
+  ];
+
+  delegationStrategies: DelegationsStrategy[] = [
+    this.solanaDelegationsStrategy,
+    this.cardanoDelegationsStrategy,
+    this.terraDelegationsStrategy,
   ];
 
   public async getBalance(
@@ -116,7 +129,7 @@ export class BalancesService {
     }
   }
 
-  async get24HourReturns(
+  public async get24HourReturns(
     addresses: Address[],
     chains: number[],
     assets?: Address[],
@@ -132,6 +145,10 @@ export class BalancesService {
     ]);
 
     return this.calculate24HourReturns(now, then);
+  }
+
+  public async getUserDelegations(addresses: Address[]) {
+    return Promise.all(addresses.map(this.getDelegationsForAddress));
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {
@@ -474,7 +491,7 @@ export class BalancesService {
 
   private async getBalancesStrategiesPerChain(chain: number): Promise<BalancesLoadingStrategy[]> {
     const chainEntity = await this.chainsService.get({ id: chain });
-    const strategy = this.strategies.find((strategy) =>
+    const strategy = this.balanceStrategies.find((strategy) =>
       strategy.strategyName.toLowerCase().includes(chainEntity.name.toLowerCase()),
     );
     return [strategy ?? this.networkBalancesStrategy];
@@ -541,5 +558,15 @@ export class BalancesService {
         },
       };
     }, {});
+  }
+
+  private async getDelegationsForAddress(address: string) {
+    const result = [];
+
+    for (const strategy of this.delegationStrategies) {
+      const delegation = await strategy.getDelegatedAssets(address);
+      result.push(delegation);
+    }
+    return { [address]: result.flat() };
   }
 }

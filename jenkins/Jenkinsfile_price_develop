@@ -22,6 +22,8 @@ pipeline {
         DOCKER_TAG          = ""
         DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.eu-central-1.amazonaws.com"
         DOCKER_CREDENTIALS  = "ecr:eu-central-1:defiyield-aws"
+        JOB_NAME = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
+        JOB_NAME_SERVICE = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 12)
     }
     stages {
         stage("Build") {
@@ -49,7 +51,7 @@ pipeline {
                         json: [
                             "image": DOCKER_IMAGE.imageName(),
                             "registry": DOCKER_REGISTRY,
-                            "repository": env.JOB_BASE_NAME,
+                            "repository": env.JOB_NAME,
                             "tag": DOCKER_TAG
                         ]
                     )
@@ -63,7 +65,7 @@ pipeline {
         }
         stage('Webhook') {
             steps {
-                sh "python jenkins/hook.py price development ${env.BUILD_NUMBER} master"
+                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME}"
             }
   }
     }

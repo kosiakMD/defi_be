@@ -64,19 +64,20 @@ export class MarinadePools {
     );
 
     for (const address of addresses) {
-      const lpToken = lpBalances[address]?.tokens?.find(({ token }) => pools.has(token.address));
+      if (!Array.isArray(lpBalances[address].tokens)) continue;
+      for (const lpToken of lpBalances[address].tokens) {
+        if (!pools.has(lpToken.token.address)) continue;
 
-      if (!lpToken) continue;
+        const poolPosition = pools.get(lpToken.token.address);
 
-      const poolPosition = pools.get(lpToken.token.address);
+        poolPosition.stats.share = lpToken.decimalsAmount / poolPosition.lpToken.totalSupply;
 
-      poolPosition.stats.share = lpToken.decimalsAmount / poolPosition.lpToken.totalSupply;
-
-      for (const token of poolPosition.tokens) {
-        token.balance = token.reserve * poolPosition.stats.share;
-        token.value = token.balance * token.price;
+        for (const token of poolPosition.tokens) {
+          token.balance = token.reserve * poolPosition.stats.share;
+          token.value = token.balance * token.price;
+        }
+        baseDataPoolsMap.get(address).items.push(poolPosition);
       }
-      baseDataPoolsMap.get(address).items.push(poolPosition);
     }
 
     return Array.from(baseDataPoolsMap.values());

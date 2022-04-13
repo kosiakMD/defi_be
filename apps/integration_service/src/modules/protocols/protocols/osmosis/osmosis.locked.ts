@@ -10,6 +10,7 @@ import { ChainDto, Address, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@
 import { BalanceData, BaseDataLocked, LockedToken } from '@app/common/dto/base.data.locked.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
+import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -52,6 +53,7 @@ export class OsmosisLocked {
         const lockedPrice =
           lockedPool.tokens.reduce((prev, token) => token.reserve * token.price + prev, 0) /
           lockedPool.lpToken.totalSupply;
+        const share = decimalsAmount / lockedPool.lpToken.totalSupply;
 
         const lockedToken = plainToClass(LockedToken, {
           price: lockedPrice,
@@ -59,8 +61,14 @@ export class OsmosisLocked {
           name: lockedPool.name,
           symbol: lockedPool.lpToken.symbol,
           decimals: lockedPool.lpToken.decimals,
+          tokens: lockedPool.tokens.map((token) =>
+            plainToClass(IntegrationERC20TokenDto, {
+              ...token,
+              balance: token.reserve * share,
+              value: token.balance * token.price,
+            }),
+          ),
           locked: plainToClass(BalanceData, { balance: decimalsAmount }),
-          unlocked: plainToClass(BalanceData, { balance: 0 }),
         });
 
         baseInfo.items.push(lockedToken);

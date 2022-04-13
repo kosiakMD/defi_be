@@ -8,6 +8,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { OsmosisPools } from './Osmosis/Osmosis.pools';
 import { AnchorLp } from './anchor/anchor.lp';
 import { AnchorStaking } from './anchor/anchor.staking';
 import { AstroportLp } from './astroport/astroport.lp';
@@ -130,7 +131,6 @@ const Curve = [
   CurvePoolsAvax,
   CurvePoolsFtm,
   CurvePoolsGnosis,
-  CurveGaugesGnosis,
   CurvePoolsHarm,
   CurvePoolsOpt,
   CurvePoolsPlg,

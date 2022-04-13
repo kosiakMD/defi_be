@@ -68,6 +68,7 @@ export class PlatformService {
   }
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
+  platformsInitialized: Map<string, RootPlatform> = new Map();
   protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
     Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
   }
@@ -77,8 +78,14 @@ export class PlatformService {
       throw new Error('Platform Not Supported');
     }
 
+    if (this.platformsInitialized.has(name)) {
+      return this.platformsInitialized.get(name);
+    }
+
     const instance = await this.moduleRef.create(this.platforms.get(name));
     await instance.initialize();
+    this.platformsInitialized.set(name, instance);
+
     return instance;
   }
 

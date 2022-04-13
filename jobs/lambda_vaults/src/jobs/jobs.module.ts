@@ -8,6 +8,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { OsmosisPools } from './Osmosis/Osmosis.pools';
 import { AnchorLp } from './anchor/anchor.lp';
 import { AnchorStaking } from './anchor/anchor.staking';
 import { AstroportLp } from './astroport/astroport.lp';
@@ -67,7 +68,6 @@ import { MojitoswapPools } from './mojitoswap/mojitoswap.pools';
 import { MojitoswapStaking } from './mojitoswap/mojitoswap.staking';
 import { OrcaStaking } from './orca/orca.farms';
 import { OrcaPools } from './orca/orca.pools';
-import { OsmosisPools } from './osmosis/osmosis.pools';
 import { PancakePoolsV1 } from './pancake/pancake.pools.v1';
 import { PancakePoolsV2 } from './pancake/pancake.pools.v2';
 import { PancakeStaking } from './pancake/pancake.staking';
@@ -131,7 +131,6 @@ const Curve = [
   CurvePoolsAvax,
   CurvePoolsFtm,
   CurvePoolsGnosis,
-  CurveGaugesGnosis,
   CurvePoolsHarm,
   CurvePoolsOpt,
   CurvePoolsPlg,

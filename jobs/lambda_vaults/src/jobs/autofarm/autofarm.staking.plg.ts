@@ -499,7 +499,7 @@ export class AutofarmStakingPLG implements JobInterface {
     const addressesSet: Set<string> = new Set<string>();
     this.mapping.forEach((m) => {
       if (m instanceof IntegrationStakingPositionDto) {
-        if (m.stakingToken.tokens.length === 2) {
+        if (m.stakingToken.tokens?.length) {
           m.stakingToken.tokens.forEach((t) => {
             addressesSet.add(t.address);
           });

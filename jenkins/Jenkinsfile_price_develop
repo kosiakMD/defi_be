@@ -63,7 +63,7 @@ pipeline {
         }
         stage('Webhook') {
             steps {
-                sh 'python jenkins/hook.py price development ${env.BUILD_NUMBER} master'
+                sh "python jenkins/hook.py price development ${env.BUILD_NUMBER} master"
             }
   }
     }

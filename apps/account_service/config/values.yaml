@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: account.staging.defyield.xyz
+  host: devaccount.defiyield.app
 
 configMaps:
   amm:
@@ -71,7 +71,7 @@ configMaps:
     NODE_ENV: development
   params:
     ETH_BALANCES_CHECKER_BATCH_SIZE: 2000
-    AWS_XRAY_DAEMON_ADDRESS: xray-service.default
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
   - database

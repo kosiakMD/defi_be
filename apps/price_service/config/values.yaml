@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: price.staging.defyield.xyz
+  host: devprice.defiyield.app
 
 configMaps:
   db:
@@ -15,16 +15,15 @@ configMaps:
     SWAP_0X_ENDPOINT: https://api.0x.org/swap/v1/
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
     BSC_URL: https://bsc-dataseed.binance.org
-    CURRENCYLAYER_API_KEY: 82aa76fc01397164f25dc02a7acc652b
-    CURRENCYLAYER_ENDPOINT: http://api.currencylayer.com/live
   logs:
     LOG_AWS_ENABLED: true
-    NODE_ENV: production
-    SENTRY_DSN: https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835
+    LOG_LEVEL: debug
+    NODE_ENV: development
   config:
     CACHE_HISTORIC_PRICES_TTL_IN_SECONDS: 172800
     BODY_LIMIT: 50mb
     URL_LIMIT: 50mb
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
   - database
@@ -32,3 +31,5 @@ secrets:
   - bscscan
   - etherscan
   - logs
+  - sentry
+  - currencylayer

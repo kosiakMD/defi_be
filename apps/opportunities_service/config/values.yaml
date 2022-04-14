@@ -1,10 +1,11 @@
 configMaps:
-  nodes:
-
+  common:
+    INTEGRATION_SERVICE_URL: http://integration-service
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: production
+    NODE_ENV: development
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
   - database

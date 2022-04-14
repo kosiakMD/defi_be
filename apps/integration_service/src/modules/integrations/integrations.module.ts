@@ -41,7 +41,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     ProtocolModule,
     AbiModule,
     TypeOrmModule.forFeature([ProjectsInfoEntity]),
-  ],
+  ].sort(),
   providers: [
     IntegrationsService,
     FeaturesService,
@@ -50,7 +50,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3ProviderService,
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
-  ],
+  ].sort(),
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })
 export class IntegrationsModule {}

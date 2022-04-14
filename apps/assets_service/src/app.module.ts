@@ -1,4 +1,4 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -38,7 +38,7 @@ import { PricesModule } from './modules/prices/prices.module';
   ],
   controllers: [],
   providers: [
-    // TODO: test with Sentry middleware only
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

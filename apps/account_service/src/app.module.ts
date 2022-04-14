@@ -1,4 +1,4 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   Inject,
   LoggerService,
@@ -32,6 +32,19 @@ import { NftModule } from './modules/nft/nft.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 
+// controllers A-Z sort for Swagger API page
+const controllers = [
+  AnalyticsModule,
+  ApprovalsModule,
+  AssetsModule,
+  BalancesModule,
+  BlacklistModule,
+  ChainsModule,
+  NftModule,
+  TransactionsModule,
+  TransfersModule,
+];
+
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
@@ -54,16 +67,8 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     }),
     TerminusModule,
     DatabaseModule,
-    ChainsModule,
     // with controllers A-Z sort for Swagger API page
-    ApprovalsModule,
-    AssetsModule,
-    BalancesModule,
-    TransactionsModule,
-    TransfersModule,
-    AnalyticsModule,
-    BlacklistModule,
-    NftModule,
+    ...controllers,
   ],
   controllers: [HealthController],
   providers: [
@@ -71,6 +76,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

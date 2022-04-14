@@ -3,6 +3,7 @@ import { Connection } from '@solana/web3.js';
 import { LCDClient } from '@terra-money/terra.js';
 import Web3 from 'web3';
 
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
@@ -13,7 +14,6 @@ import { EVMMetaDataStrategy } from './strategies/EVM.strategy';
 import { CardanoMetadataStrategy } from './strategies/cardano.strategy';
 import { SolanaMetadataStrategy } from './strategies/solana.strategy';
 import { TerraMetadataStrategy } from './strategies/terra.strategy';
-import { HttpService } from '@nestjs/axios';
 
 const ChainsProvidersUrls = {
   [ChainIdEnum.arbi]: 'ARBITRUM_URL',
@@ -34,6 +34,7 @@ const ChainsProvidersUrls = {
   [ChainIdEnum.near]: 'NEAR_URL',
   [ChainIdEnum.klay]: 'KLAYTN_URL',
   [ChainIdEnum.fuse]: 'FUSE_URL',
+  [ChainIdEnum.gnosis]: 'GNOSIS_URL',
 };
 
 @Injectable()

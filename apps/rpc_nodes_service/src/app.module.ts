@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -65,7 +65,7 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
   ],
   controllers: [EndpointsController, RPCNodesController, HealthController],
   providers: [
-    // TODO: test with Sentry middleware only
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

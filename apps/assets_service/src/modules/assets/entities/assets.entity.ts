@@ -8,7 +8,7 @@ import { AssetUnderlyingEntity } from './assets-underlying.entity';
 
 @Entity({ name: 'assets', orderBy: { name: 'ASC' } })
 export class AssetsEntity extends BaseEntity {
-  @Column({ type: String, nullable: false, unique: true })
+  @Column({ type: String, nullable: false })
   public address: string;
 
   @Column({ type: String, nullable: true })

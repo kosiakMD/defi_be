@@ -51,7 +51,7 @@ pipeline {
                         json: [
                             "image": DOCKER_IMAGE.imageName(),
                             "registry": DOCKER_REGISTRY,
-                            "repository": env.JOB_NAME,
+                            "repository": env.JOB_NAME_SERVICE,
                             "tag": DOCKER_TAG
                         ]
                     )
@@ -73,13 +73,13 @@ pipeline {
         always {
             cleanWs()
             script {
-                currentBuild.displayName = "${env.JOB_NAME} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
+                currentBuild.displayName = "${env.JOB_NAME_SERVICE} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
                 currentBuild.description = DOCKER_IMAGE.imageName()
             }
             sh """
                 docker rmi --force \
                   ${DOCKER_IMAGE.imageName()} \
-                  ${DOCKER_REGISTRY}/${env.JOB_NAME}:latest
+                  ${DOCKER_REGISTRY}/${env.JOB_NAME_SERVICE}:latest
             """
         }
     }

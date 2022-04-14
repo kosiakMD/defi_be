@@ -1,4 +1,4 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   Inject,
   LoggerService,
@@ -67,14 +67,14 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
     TemporaryTokensModule,
     IntegrationsModule,
     JobsModule,
-  ],
+  ].sort(),
   controllers: [HealthController],
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    // TODO: test with Sentry middleware only
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

@@ -1,4 +1,4 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -82,7 +82,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScansApiModule,
     MailModule,
     ImpermanentLossModule,
-  ],
+  ].sort(),
   controllers: [
     HealthController,
     AnalyticController,
@@ -101,7 +101,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScamsController,
     TokensController,
     OpportunitiesController,
-  ],
+  ].sort(),
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -111,7 +111,7 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    // TODO
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,
@@ -129,7 +129,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ServiceHealthIndicator,
     SearchService,
     Web3NameService,
-  ],
+  ].sort(),
 })
 export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}

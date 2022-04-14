@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { AssetsCandidateRepository } from '../assets/repositories/assets-candidate.repository';
 import { AssetsRepository } from '../assets/repositories/assets.repository';
 import { AssetsService } from '../assets/services/assets.service';
 import { AssetsPriceEntity } from './entities/assets-price.entity';
@@ -22,6 +23,7 @@ import { PriceSourceRepository } from './repositories/price-source.repository';
       AssetsPriceRepository,
       PriceSourceEntity,
       AssetsRepository,
+      AssetsCandidateRepository,
       PriceSourceRepository,
     ]),
     ScheduleModule.forRoot(),

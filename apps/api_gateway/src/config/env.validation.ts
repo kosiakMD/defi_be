@@ -57,6 +57,10 @@ export const validationSchema = Joi.object({
   ACCOUNT_APPROVALS: Joi.string().required(),
   ACCOUNT_ASSETS: Joi.string().required(),
   ACCOUNT_SEARCH_URL: Joi.string().required(),
+  ASSETS_SERVICE_HOST: Joi.string().required(),
+  ASSETS_SERVICE_PORT: Joi.number() //
+    .allow('')
+    .required(),
   POOLS_PATH: Joi.string().required(),
   VAULTS_PATH: Joi.string().required(),
   NFT_PROJECTS: Joi.string().required(),

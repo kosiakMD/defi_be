@@ -2,6 +2,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 
 import { InvestmentTokensDto } from '@app/common/dto/opportunities/investment.tokens.dto';
 import { BaseEntity } from '@app/common/entities/Base.entity';
+import { VaultTypeEnum } from '@app/common/enum/opportunities/opportunity.enums';
 
 import { FarmEntity } from './farm.entity';
 
@@ -19,16 +20,13 @@ export class OpportunityEntity extends BaseEntity {
   @Column({ type: 'float8', nullable: true })
   apy: number;
 
-  @Column({ name: 'investment_url', type: 'float8', nullable: true })
+  @Column({ name: 'investment_url', nullable: true })
   investmentUrl: string;
 
-  @Column({ name: 'total_value_locked', nullable: true })
+  @Column({ name: 'total_value_locked', type: 'float8', nullable: true })
   totalValueLocked: number;
 
-  @Column({
-    type: 'jsonb',
-    array: false,
-  })
+  @Column({ type: 'jsonb', array: false })
   tokens!: InvestmentTokensDto;
 
   @Column()
@@ -36,4 +34,7 @@ export class OpportunityEntity extends BaseEntity {
 
   @Column({ name: 'source_id' })
   sourceId: string;
+
+  @Column({ name: 'categories', type: 'varchar', array: true, default: '{}' })
+  categories: VaultTypeEnum[];
 }

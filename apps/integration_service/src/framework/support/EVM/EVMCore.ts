@@ -107,8 +107,11 @@ export abstract class EVMCore<
               .div(totalSupply)
               .toNumber();
             token.underlyingAssets.forEach((u) => {
-              normalizeDecimals((u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(), u.decimals)
-            })
+              normalizeDecimals(
+                (u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(),
+                u.decimals,
+              );
+            });
           });
         } catch (err) {
           // TODO: delete this block, Prices should come from asset service, not calculated here

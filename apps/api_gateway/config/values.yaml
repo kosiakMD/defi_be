@@ -79,7 +79,7 @@ configMaps:
 
 secrets:
 - mailer
-- redis_stage
+- redis
 - bscscan
 - etherscan
 - logs

@@ -8,6 +8,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
 
+import { SearchResultType } from '../../../common/enum/SearchResultType.enum';
+import { SearchParams, SearchResultsAssetEntry } from '../../../common/interfaces/search.interface';
+
 import { AssetsCandidateDto } from '../dto/assets-candidate.dto';
 import { AssetsGetDto } from '../dto/assets-get.dto';
 import { AssetsListQueryDto } from '../dto/assets-list-query.dto';
@@ -27,6 +30,20 @@ export class AssetsService extends CrudService<AssetsRepository> {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(AssetsRepository);
+  }
+
+  public async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {
+    const assets = await this.assetsRepository.findAssetsByParams(searchParams);
+    return assets.map((a) => ({
+      type: SearchResultType.ASSET,
+      icon: a.icon,
+      name: a.name,
+      metadata: {
+        address: a.address,
+        chainId: a.chainId,
+        symbol: a.symbol,
+      },
+    }));
   }
 
   public async getAsset(assetQuery: AssetsGetDto): Promise<AssetsEntity> {

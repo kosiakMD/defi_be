@@ -36,16 +36,30 @@ export const validationSchema = Joi.object({
   LOG_COMBINED_FILE: Joi.string() //
     .pattern(logFileRE)
     .default('combined.log'),
+
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
     .default('info'),
+  LOG_IN_JSON: Joi.string() //
+    .allow('')
+    .equal('true', 'false'),
   SENTRY_DSN: Joi.string(),
   DEBANK_CHAINS_LIST_URL: Joi.string() //
     .default(''),
   DEBANK_API_ACCESS_KEY: Joi.string() //
     .default(''),
+  COINGECKO_TOKEN_LIST_URL: Joi.string() //
+    .required(),
+  COINMARKETCAP_TOKEN_LIST_URL: Joi.string() //
+    .required(),
+  COINMARKETCAP_TOKEN_LIST_LIMIT: Joi.number() //
+    .default(10000),
+  COINMARKETCAP_API_KEY: Joi.string() //
+    .required(),
   USE_REDIS_TO_GET_ASSETS: Joi.boolean() //
     .default(true),
+  ACCOUNT_SERVICE_CHAINS_LIST_URL: Joi.string() //
+    .required(),
   ...databaseValidationSchema,
   ...cacheValidationSchema,
   ...awsValidationSchema,

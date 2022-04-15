@@ -1,4 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
+import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -27,6 +30,7 @@ import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { RootPlatform } from '../support/RootPlatform';
+import { IPlatformMeta } from '../support/interfaces';
 import {
   IOpportunityResponse,
   IUserEntryResponse,
@@ -64,27 +68,43 @@ export class PlatformService {
   }
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
+  platformsInitialized: Map<string, RootPlatform> = new Map();
   protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
     Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
   }
 
-  private async getPlatform(name) {
+  private async getPlatform(name: string) {
     if (!this.platforms.has(name)) {
       throw new Error('Platform Not Supported');
     }
 
+    if (this.platformsInitialized.has(name)) {
+      return this.platformsInitialized.get(name);
+    }
+
     const instance = await this.moduleRef.create(this.platforms.get(name));
     await instance.initialize();
+    this.platformsInitialized.set(name, instance);
+
     return instance;
   }
 
   public getProtocolList() {
-    return Promise.all(
-      Array.from(this.platforms.entries()).map(async ([name]) => {
-        const instance = await this.getPlatform(name);
-        return instance.getMeta();
+    const data$ = from(this.platforms.keys()).pipe(
+      mergeMap(async (name) => {
+        try {
+          const instance = await this.getPlatform(name);
+          return instance.getMeta();
+        } catch (err) {
+          this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);
+          return null;
+        }
       }),
+      filter((result: IPlatformMeta | null) => !!result),
+      toArray(),
     );
+
+    return lastValueFrom(data$);
   }
 
   public async getUserPositionsForProtocol(

@@ -16,6 +16,18 @@ interface BalancesQuery {
 
 const ChainList = [1, 2, 3, 4, 5];
 
+export class DelegationsQueryDto {
+  @IsNotEmpty()
+  @Transform(({ value, key }) => {
+    if (!Array.isArray(value)) {
+      throw new BadRequestException(`Wrong format of ${key} - is not an Array`);
+    }
+    return value;
+  })
+  @IsString({ each: true })
+  addresses: Address[];
+}
+
 export class BalancesQueryDto implements BalancesQuery {
   @IsNotEmpty()
   @Transform(({ value, key }) => {

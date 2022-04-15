@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -23,6 +23,7 @@ import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
 import { ApprovalsController } from './approvals/approvals.controller';
+import { AssetsV2Controller } from './assets-v2/assets-v2.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import { BlacklistController } from './blacklist/blacklist.controller';
@@ -59,13 +60,14 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
     }),
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'api-gateway-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('gateway', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 300e3,
@@ -81,11 +83,12 @@ import { VaultsModule } from './vaults/vaults.module';
     ScansApiModule,
     MailModule,
     ImpermanentLossModule,
-  ],
+  ].sort(),
   controllers: [
     HealthController,
     AnalyticController,
     AssetsController,
+    AssetsV2Controller,
     ApprovalsController,
     BalancesController,
     BlacklistController,
@@ -100,7 +103,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScamsController,
     TokensController,
     OpportunitiesController,
-  ],
+  ].sort(),
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -110,7 +113,7 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    // TODO
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,
@@ -128,7 +131,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ServiceHealthIndicator,
     SearchService,
     Web3NameService,
-  ],
+  ].sort(),
 })
 export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}

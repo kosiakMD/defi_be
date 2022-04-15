@@ -8,9 +8,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
 
+import { SearchResultType } from '../../../common/enum/SearchResultType.enum';
+import { SearchParams, SearchResultsAssetEntry } from '../../../common/interfaces/search.interface';
+
+import { AssetsCandidateDto } from '../dto/assets-candidate.dto';
 import { AssetsGetDto } from '../dto/assets-get.dto';
 import { AssetsListQueryDto } from '../dto/assets-list-query.dto';
 import { AssetsEntity } from '../entities/assets.entity';
+import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
 import { AssetsRepository } from '../repositories/assets.repository';
 
 @Injectable()
@@ -18,11 +23,27 @@ export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
     @InjectRepository(AssetsRepository)
     private assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsCandidateRepository)
+    private assetsCandidateRepository: AssetsCandidateRepository,
     @InjectQueue('assets') private readonly assetsQueue: Queue,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(AssetsRepository);
+  }
+
+  public async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {
+    const assets = await this.assetsRepository.findAssetsByParams(searchParams);
+    return assets.map((a) => ({
+      type: SearchResultType.ASSET,
+      icon: a.icon,
+      name: a.name,
+      metadata: {
+        address: a.address,
+        chainId: a.chainId,
+        symbol: a.symbol,
+      },
+    }));
   }
 
   public async getAsset(assetQuery: AssetsGetDto): Promise<AssetsEntity> {
@@ -49,21 +70,19 @@ export class AssetsService extends CrudService<AssetsRepository> {
           );
         });
       });
-      const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(
-        notCachedAssets
-      );
+      const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(notCachedAssets);
       this.setAssetsToCache(databaseAssets);
 
       return cachedAssets.concat(databaseAssets);
     }
   }
 
-  private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
-    const { address, chainId } = assetQuery;
-    const keyPrefix = `${(process.env.SERVICE_NAME || 'assets-service')
-      .replace(' ', '-')
-      .toLowerCase()}`;
-    return `${keyPrefix}${chainId}${address}`;
+  public saveAssetCandidate(assetCandidateDto: AssetsCandidateDto) {
+    const assetsCandidateEntity = this.assetsCandidateRepository.create({
+      address: assetCandidateDto.address,
+      chainId: assetCandidateDto.chainId,
+    });
+    return this.assetsCandidateRepository.save(assetsCandidateEntity);
   }
 
   public async getAssetsFromCache(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
@@ -85,6 +104,14 @@ export class AssetsService extends CrudService<AssetsRepository> {
       return this.cacheManager.set(this.getAssetCacheKey(assetsEntity), assetsEntity);
     });
     await Promise.all(promises);
+  }
+
+  private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
+    const { address, chainId } = assetQuery;
+    const keyPrefix = `${(process.env.SERVICE_NAME || 'assets-service')
+      .replace(' ', '-')
+      .toLowerCase()}`;
+    return `${keyPrefix}${chainId}${address}`;
   }
 
   // TODO: This methods should accept list of { chainId, address }

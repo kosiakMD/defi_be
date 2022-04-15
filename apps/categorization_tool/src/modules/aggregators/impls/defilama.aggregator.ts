@@ -55,6 +55,10 @@ export class DefilamaAggregator implements IAggregator {
               name: 'category',
               value: pData.category,
             },
+            {
+              name: 'TVL',
+              value: pData.tvl,
+            },
           ],
           this.name,
           protocol,

@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, MiddlewareConsumer, Module, NestModule, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
@@ -21,6 +21,7 @@ import { PricesModule } from './modules/prices/prices.module';
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'price-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -41,7 +42,7 @@ import { PricesModule } from './modules/prices/prices.module';
         logging: false,
       }),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
@@ -53,13 +54,13 @@ import { PricesModule } from './modules/prices/prices.module';
     HealthModule,
     LookupModule,
     LoggerModule,
-  ],
+  ].sort(),
   providers: [
     {
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    // TODO: test with Sentry middleware only
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

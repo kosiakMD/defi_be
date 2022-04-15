@@ -89,7 +89,7 @@ export class LidoStaking
     return opportunities;
   }
 
-  formatOpportunity(
+  protected formatOpportunity(
     opportunity: IStakingFeatureMinimal,
     tokens: TokenMap,
   ): void | IStakingFeatureOpportunity {

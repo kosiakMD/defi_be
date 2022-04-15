@@ -36,6 +36,9 @@ export const validationSchema = Joi.object({
     .equal('debug', 'info')
     .default('info')
     .required(),
+  LOG_IN_JSON: Joi.string() //
+    .allow('')
+    .equal('true', 'false'),
   DEFIYIELD_INFO_2_URL: Joi.string().required(),
   TOKENS_PATH: Joi.string().required(),
   GAS_HISTORY_PATH: Joi.string().required(),
@@ -57,6 +60,10 @@ export const validationSchema = Joi.object({
   ACCOUNT_APPROVALS: Joi.string().required(),
   ACCOUNT_ASSETS: Joi.string().required(),
   ACCOUNT_SEARCH_URL: Joi.string().required(),
+  ASSETS_SERVICE_HOST: Joi.string().required(),
+  ASSETS_SERVICE_PORT: Joi.number() //
+    .allow('')
+    .required(),
   POOLS_PATH: Joi.string().required(),
   VAULTS_PATH: Joi.string().required(),
   NFT_PROJECTS: Joi.string().required(),

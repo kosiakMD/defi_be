@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -21,6 +21,7 @@ import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext
 
 import config from './config';
 import { EndpointsController } from './controllers/endpoints.controller';
+import { HealthController } from './controllers/health.controller';
 import { RPCNodesController } from './controllers/rpc-nodes.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { EndpointsModule } from './modules/endpoints/endpoints.module';
@@ -42,13 +43,14 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
       isGlobal: true,
     }),
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'rpc-nodes-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('account', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
@@ -61,9 +63,9 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
     EndpointsModule,
     RPCNodesModule,
   ],
-  controllers: [EndpointsController, RPCNodesController],
+  controllers: [EndpointsController, RPCNodesController, HealthController],
   providers: [
-    // TODO: test with Sentry middleware only
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

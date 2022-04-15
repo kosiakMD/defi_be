@@ -83,11 +83,21 @@ export class Web3NameService {
     );
   }
 
-  public async resolveName(name: string): Promise<string> {
+  public async resolveName(name: string, returnName = false): Promise<any> {
     for await (const [{ resolver }, provider] of this.providers) {
       const address = await resolver(name, provider);
       if (address) {
-        return address;
+        return returnName ? { address, name } : address;
+      }
+    }
+    return null;
+  }
+
+  public async resolveNameResponseWithName(name: string): Promise<{ address: string, name: string }> {
+    for await (const [{ resolver }, provider] of this.providers) {
+      const address = await resolver(name, provider);
+      if (address) {
+        return { address, name };
       }
     }
     return null;

@@ -63,10 +63,26 @@ export class AssetsProcessor {
     return savedAsset;
   }
 
-  private async processAsset(address: string, chainId: number): Promise<AssetsEntity> {
+  public async processAsset(
+    address: string,
+    chainId: number,
+    rank?: number,
+  ): Promise<AssetsEntity> {
     const existentAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
 
-    if (existentAsset) return existentAsset;
+    if (existentAsset) {
+      if (rank) {
+        existentAsset.rank = rank;
+        this.assetRepository
+          .update(existentAsset, { rank })
+          .catch(({ message }) =>
+            this.logger.warn(
+              `Asset ${address} chainId ${chainId} rank was not updated! Error: ${message}`,
+            ),
+          );
+      }
+      return existentAsset;
+    }
 
     const assetMetadata = await this.metadataService.getMetadata(address, chainId);
     let processingAsset = new AssetsEntity();
@@ -76,11 +92,10 @@ export class AssetsProcessor {
     processingAsset.symbol = assetMetadata.symbol;
     processingAsset.name = assetMetadata.name;
     processingAsset.decimals = assetMetadata.decimals;
+    processingAsset.rank = rank < 0 ? -1 : rank;
 
     const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
-
-    processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens.length));
-
+    processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens?.length));
     const icons = await this.iconsService.getIconUrls({
       symbol: processingAsset.symbol,
       chainId: processingAsset.chainId,
@@ -91,7 +106,7 @@ export class AssetsProcessor {
 
     processingAsset = await this.saveAsset(processingAsset);
 
-    if (Array.isArray(underlyingTokens) && underlyingTokens.length !== 0) {
+    if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
       underlyingTokens.map(async (underlyingToken: AssetsEntity, index: number) => {
         const newAsset = await this.processAsset(underlyingToken.address, underlyingToken.chainId);
 

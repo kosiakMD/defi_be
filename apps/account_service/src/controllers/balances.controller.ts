@@ -53,7 +53,6 @@ export class BalancesController {
   @ApiResponse({ status: 200, type: BalancesResponseDto })
   getUserBalanceByAddressesPost(@Body() body: BalancesPostQueryDto): Promise<BalancesResponse> {
     const { addresses, chains, assets } = body;
-
     return this.balancesService.getBalance(addresses, chains, assets);
   }
 
@@ -78,5 +77,28 @@ export class BalancesController {
   getUser24HourReturns(@Query() query: BalancesQueryDto): Promise<ReturnsResponse> {
     const { addresses, chains, assets } = query;
     return this.balancesService.get24HourReturns(addresses, chains, assets);
+  }
+
+  @Get('delegations')
+  @ApiQuery({
+    name: 'addresses',
+    type: String,
+    isArray: true,
+    description: 'Array of user address',
+    example: [
+      '5CikRvE8yfLw6zv5Uo6CWwBVXBGWhR1swiex6oxwVoPs',
+      'addr1q8lk947egs266g6q495px930g7xezjg9vn80dq3k20qcekz2m94cccva4539vt6wv725jh4utctf7yeyrraqnak0wndsv0pdsw',
+      'terra1qqu376azltyc5wnsje5qgwru5mtj2yqdhj0cwl',
+    ],
+  })
+  @ApiQuery({
+    name: 'chains',
+    type: Number,
+    isArray: true,
+    description: 'Array of chain ID',
+    example: [1, 2, 3, 4, 5],
+  })
+  getUserDelegations(@Query() query) {
+    return this.balancesService.getUserDelegations(query.addresses);
   }
 }

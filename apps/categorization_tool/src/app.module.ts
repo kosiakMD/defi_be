@@ -7,6 +7,7 @@ import { HeadersContextMiddleware, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 
 import { AppController } from './controllers/app.controller';
+import { ProtocolModule } from './modules/protocols/protocols.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
@@ -27,6 +28,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
       inject: [ConfigService],
     }),
     TasksModule,
+    ProtocolModule,
   ],
   providers: [],
   controllers: [AppController],

@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer';
-import { EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
+import { Brackets, EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -24,6 +24,13 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
    * Searchable Fields:
    * - farm name
    * - deposit token address/name/symbol
+   * - deposit underlying token address/name/symbol
+   * - reward token address/name/symbol
+   *
+   * Filterable Fields
+   * - categories
+   * - min tvl
+   * - min apr
    *
    * Sortable Fields
    * - Apr/apy/farm name/tvl
@@ -34,17 +41,15 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
   async search(
     queryParams: OpportunitySearchQueryDto,
   ): Promise<PaginationResult<OpportunityEntity>> {
-    const { search, limit, page, sortDirection, sortField } = queryParams;
-
-    // TODO:
-    // Filter by min/max tvl, chain, farm
-    // Search reward token names
-    // Search underlying tokens if deposit token is an LP
-    // search for single-tokens, lp deposits containing that token, search by reward token
+    const { search, limit, page, sortDirection, sortField, categories, minTVL, minAPR } =
+      queryParams;
 
     const baseQuery = this.createQueryBuilder('opportunities')
       .leftJoinAndSelect('opportunities.farm', 'farm')
-      .where(this.internalFuzzyFind(search));
+      .where(this.internalFuzzyFind(search))
+      .andWhere('categories @> :categories', { categories })
+      .andWhere(`apr >= :apr`, { apr: minAPR })
+      .andWhere(`total_value_locked >= :tvl`, { tvl: minTVL });
 
     const [items, total] = await Promise.all([
       baseQuery
@@ -68,22 +73,42 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
 
   private internalFuzzyFind(search: string) {
     const exactSearch = search.toLowerCase();
-    const fuzzySearch = `%${search}%`.toLowerCase();
+    const fuzzySearch = `%${exactSearch}%`;
 
-    return function (query: SelectQueryBuilder<OpportunityEntity>) {
-      query
-        .where('farm.name ILIKE :farm', { farm: fuzzySearch })
-        .orWhere("opportunities.tokens ::jsonb -> 'deposit' ->> 'symbol' ILIKE :depositSymbol", {
-          depositSymbol: exactSearch,
-        })
-        .orWhere("opportunities.tokens ::jsonb -> 'deposit' ->> 'name' ILIKE :depositName", {
-          depositName: fuzzySearch,
-        })
-        .orWhere("opportunities.tokens ::jsonb -> 'deposit' ->> 'address' ILIKE :depositAddr", {
-          depositAddr: exactSearch,
-        });
-      // TODO: Underlying deposit tokens & reward tokens
+    const parameters = {
+      farm: fuzzySearch,
+      symbol: exactSearch,
+      name: fuzzySearch,
+      address: exactSearch,
+      symbolJson: `[{"symbol": "${exactSearch}" }]`,
+      nameJson: `[{"name": "${exactSearch}" }]`,
+      addrJson: `[{"address": "${exactSearch}" }]`,
     };
+
+    return new Brackets(function (query: SelectQueryBuilder<OpportunityEntity>) {
+      query
+        .where(`farm.name ILIKE :farm`)
+        // Deposit Token
+        .orWhere("opportunities.tokens::jsonb -> 'deposit' ->> 'symbol' ILIKE :symbol")
+        .orWhere("opportunities.tokens::jsonb -> 'deposit' ->> 'name' ILIKE :name")
+        .orWhere("opportunities.tokens::jsonb -> 'deposit' ->> 'address' ILIKE :address")
+
+        // Underlying deposit tokens
+        .orWhere(
+          `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:symbolJson)::jsonb`,
+        )
+        .orWhere(
+          `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:nameJson)::jsonb`,
+        )
+        .orWhere(
+          `LOWER(opportunities.tokens::text)::jsonb->'deposit'->'tokens' @> LOWER(:addrJson)::jsonb`,
+        )
+        // reward token
+        .orWhere(`LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:symbolJson)::jsonb`)
+        .orWhere(`LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:nameJson)::jsonb`)
+        .orWhere(`LOWER(opportunities.tokens::text)::jsonb->'rewards' @> LOWER(:addrJson)::jsonb`)
+        .setParameters(parameters);
+    });
   }
 
   async findItem(endpointId: number): Promise<OpportunityEntity> {

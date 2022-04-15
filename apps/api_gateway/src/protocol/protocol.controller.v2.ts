@@ -1,4 +1,4 @@
-import { Controller, Get, NotAcceptableException, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { Address, ProtocolNameEnum } from '@app/common';
@@ -48,9 +48,6 @@ export class ProtocolControllerV2 extends BaseService {
     @Param() params: ProtocolParams,
   ): Promise<IntegrationsResponseDto> {
     const { protocolName } = params;
-    if (!Object.values(ProtocolNameEnum).includes(protocolName)) {
-      throw new NotAcceptableException(`Wrong protocol name '${protocolName}'`);
-    }
     return this.requestProxy(this.url + `v2/protocols/${protocolName}`, 'GET', {
       params: { chains, addresses },
     });

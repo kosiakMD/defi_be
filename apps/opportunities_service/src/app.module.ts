@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
@@ -10,6 +10,7 @@ import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
+import { HealthController } from './controllers/health.controller';
 import { OpportunitiesController } from './controllers/opportunities.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { OpportunityModule } from './modules/opportunity/opportunity.module';
@@ -17,13 +18,14 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'opportunities-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('account', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get('http.timeout'),
@@ -35,8 +37,9 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
     DatabaseModule,
     OpportunityModule,
   ],
-  controllers: [OpportunitiesController],
+  controllers: [OpportunitiesController, HealthController],
   providers: [
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

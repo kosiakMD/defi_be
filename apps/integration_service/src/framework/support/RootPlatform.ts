@@ -1,3 +1,5 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
 
 import { ModuleRef } from '@nestjs/core';
@@ -19,6 +21,7 @@ import {
   IWalletUserEntry,
 } from './interfaces';
 
+// TODO Make Meta generic & extend
 export abstract class RootPlatform implements IRootPlatform {
   protected abstract logger: Logger;
   protected abstract moduleRef: ModuleRef;

@@ -30,7 +30,7 @@ async function bootstrap() {
   app.useLogger(enhancedLogger);
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('v1');
 
   const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
 
@@ -41,7 +41,7 @@ async function bootstrap() {
       .setVersion('1.0') // temporary global as only 1 version
       .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('docs', app, document);
+    SwaggerModule.setup('api', app, document);
   }
 
   const awsConfigService = app.get(AwsConfigService);

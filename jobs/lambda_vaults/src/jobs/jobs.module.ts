@@ -8,6 +8,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { StoreModule } from '../store/store.module';
+import { OsmosisPools } from './Osmosis/Osmosis.pools';
 import { AnchorLp } from './anchor/anchor.lp';
 import { AnchorStaking } from './anchor/anchor.staking';
 import { AstroportLp } from './astroport/astroport.lp';
@@ -154,6 +155,8 @@ const ViperSwap = [ViperswapPools, ViperswapStaking];
 const Marinade = [MarinadePools, MarinadeFarms];
 const SundaeSwap = [SundaeswapPools];
 const Minswap = [MinswapPools];
+const Osmosis = [OsmosisPools];
+
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
   ...Astroport,
@@ -182,6 +185,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...SundaeSwap,
   ...Marinade,
   ...Minswap,
+  ...Osmosis,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];

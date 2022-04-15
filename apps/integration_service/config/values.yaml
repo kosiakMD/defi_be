@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: devintegration.defiyield.app
+  host: integration.staging.defyield.xyz
 
 configMaps:
   amm:
@@ -82,7 +82,7 @@ configMaps:
     KCC_URL: https://rpc-mainnet.kcc.network
     OKEX_URL: https://exchainrpc.okex.org/
     OPT_URL: https://mainnet.optimism.io/
-    ARBITRUM_URL: https://arb1.arbitrum.io/rpc
+    ARBITRUM_URL: https://rpc.ankr.com/arbitrum
     SUNDAESWAP_URL: https://stats.sundaeswap.finance/graphql
     TERRA_URL: https://lcd.terra.dev
     GNOSIS_URL: https://rpc.xdaichain.com
@@ -115,13 +115,13 @@ configMaps:
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: development
+    NODE_ENV: staging
 
 secrets:
-- database
-- redis_stage
-- bscscan
-- etherscan
-- logs
-- sentry
-- covalent
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - sentry
+  - covalent

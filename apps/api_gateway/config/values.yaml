@@ -70,10 +70,12 @@ configMaps:
     NFT_COLLECTIONS: v1/nft/collections
     OPPORTUNITIES_SERVICE_HOST: https://eop.dfyield.xyz
     OPPORTUNITIES_SERVICE_PORT: 443
+    ASSETS_SERVICE_HOST: http://devassets.defiyield.app
+    ASSETS_SERVICE_PORT: 443
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: development
+    NODE_ENV: stage
   config:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 

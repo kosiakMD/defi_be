@@ -11,8 +11,8 @@
   },
   "scripts": {},
   "dependencies": {
-    "@indexed-finance/multicall": "^2.0.0",
     "@ethersproject/providers": "5.4.5",
+    "@indexed-finance/multicall": "^2.0.0",
     "rxjs": "^6.6.6",
     "web3": "^1.6.0",
     "winston-aws-cloudwatch": "^3.0.0"

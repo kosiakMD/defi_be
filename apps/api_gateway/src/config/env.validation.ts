@@ -36,6 +36,9 @@ export const validationSchema = Joi.object({
     .equal('debug', 'info')
     .default('info')
     .required(),
+  LOG_IN_JSON: Joi.string() //
+    .allow('')
+    .equal('true', 'false'),
   DEFIYIELD_INFO_2_URL: Joi.string().required(),
   TOKENS_PATH: Joi.string().required(),
   GAS_HISTORY_PATH: Joi.string().required(),

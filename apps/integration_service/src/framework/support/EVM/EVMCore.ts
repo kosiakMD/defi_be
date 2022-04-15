@@ -191,18 +191,13 @@ export abstract class EVMCore<
    */
   protected getUniqueTokensFromRawPools(pools: TMinimalType[]) {
     const tokens = new Set<string>();
-    pools.forEach((pool) => {
-      if ('supplied' in pool && pool.supplied?.length) {
-        pool.supplied.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
-
-      if ('borrowed' in pool && pool.borrowed?.length) {
-        pool.borrowed.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
-
-      if ('rewarded' in pool && pool.rewarded?.length) {
-        pool.rewarded.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
+    const features = ['supplied', 'borrowed', 'rewarded'];
+    features.forEach((featureName) => {
+      pools.forEach((pool) => {
+        if (pool?.[featureName]?.length) {
+          pool[featureName].forEach((item) => tokens.add(item.token.address.toLowerCase()));
+        }
+      });
     });
 
     return Array.from(tokens);

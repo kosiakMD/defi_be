@@ -75,7 +75,7 @@ configMaps:
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: stage
+    NODE_ENV: staging
   config:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default
 

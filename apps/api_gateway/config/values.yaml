@@ -70,8 +70,8 @@ configMaps:
     NFT_ASSETS: v1/nft/assets
     NFT_PROJECTS: v1/nft/projects
     NFT_COLLECTIONS: v1/nft/collections
-    OPPORTUNITIES_SERVICE_HOST: https://eop.dfyield.xyz
-    OPPORTUNITIES_SERVICE_PORT: 443
+    OPPORTUNITIES_SERVICE_HOST: http://opportunities-service
+    OPPORTUNITIES_SERVICE_PORT: 80
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug

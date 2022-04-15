@@ -41,7 +41,7 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
   async search(
     queryParams: OpportunitySearchQueryDto,
   ): Promise<PaginationResult<OpportunityEntity>> {
-    const { search, limit, page, sortDirection, sortField, categories, minTVL, minAPR } =
+    const { search, limit, page, sortDirection, sortField, categories, minTVL, minAPR, chains } =
       queryParams;
 
     const baseQuery = this.createQueryBuilder('opportunities')
@@ -50,6 +50,10 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       .andWhere('categories @> :categories', { categories })
       .andWhere(`apr >= :apr`, { apr: minAPR })
       .andWhere(`total_value_locked >= :tvl`, { tvl: minTVL });
+
+    if (chains && chains.length) {
+      baseQuery.andWhere(`chain_id in (:...chains)`, { chains });
+    }
 
     const [items, total] = await Promise.all([
       baseQuery

@@ -196,7 +196,6 @@ export class InternalV2Adapter implements IOpportunityAdapter {
           symbol: token.symbol,
           name: token.name,
           weight: Math.round((total / tvl) * 1000) / 1000,
-          price: token.price,
         });
       }),
     });

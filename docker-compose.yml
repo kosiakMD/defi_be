@@ -163,6 +163,7 @@ services:
     restart: always
     environment:
       - SERVICE_PORT=${OPPORTUNITIES_SERVICE_PORT:-3006}
+      - INTEGRATION_SERVICE_URL=${INTEGRATION_SERVICE_HOST}:${INTEGRATION_SERVICE_PORT:-3004}
     env_file:
       - "apps/opportunities_service/config/.env"
       - ".env"

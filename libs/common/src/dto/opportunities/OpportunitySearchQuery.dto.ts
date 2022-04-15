@@ -88,4 +88,10 @@ export class OpportunitySearchQueryDto {
   @IsOptional()
   @Transform(({ value }) => Math.max(0, Number(value)))
   minAPR = 0;
+
+  @ApiProperty({ type: [Number], example: [1, 4, 12, 19], default: [], required: false })
+  @IsArray()
+  @IsOptional()
+  @Transform(({ value }) => (Array.isArray(value) ? value.map((n) => Number(n)) : [Number(value)]))
+  chains = [];
 }

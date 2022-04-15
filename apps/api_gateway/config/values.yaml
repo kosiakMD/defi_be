@@ -77,7 +77,7 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: staging
   config:
-    AWS_XRAY_DAEMON_ADDRESS: xray-service.default
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
 - mailer

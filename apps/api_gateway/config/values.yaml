@@ -49,6 +49,8 @@ configMaps:
     ACCOUNT_24H_RETURNS: v1/balances/24-hour-returns
     ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
     ACCOUNT_SEARCH_URL: v1/assets/search
+    ASSETS_SERVICE_HOST: http://assets-service
+    ASSETS_SERVICE_PORT: 80
     TOKENS_PATH: tokens
     APPROVALS_PATH: tool/approvals/eth
     POOLS_SERVICE_URL: https://integration-service

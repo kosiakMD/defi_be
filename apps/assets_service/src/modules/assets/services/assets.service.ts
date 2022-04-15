@@ -8,9 +8,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
 
+import { AssetsCandidateDto } from '../dto/assets-candidate.dto';
 import { AssetsGetDto } from '../dto/assets-get.dto';
 import { AssetsListQueryDto } from '../dto/assets-list-query.dto';
 import { AssetsEntity } from '../entities/assets.entity';
+import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
 import { AssetsRepository } from '../repositories/assets.repository';
 
 @Injectable()
@@ -18,6 +20,8 @@ export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
     @InjectRepository(AssetsRepository)
     private assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsCandidateRepository)
+    private assetsCandidateRepository: AssetsCandidateRepository,
     @InjectQueue('assets') private readonly assetsQueue: Queue,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -56,12 +60,12 @@ export class AssetsService extends CrudService<AssetsRepository> {
     }
   }
 
-  private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
-    const { address, chainId } = assetQuery;
-    const keyPrefix = `${(process.env.SERVICE_NAME || 'assets-service')
-      .replace(' ', '-')
-      .toLowerCase()}`;
-    return `${keyPrefix}${chainId}${address}`;
+  public saveAssetCandidate(assetCandidateDto: AssetsCandidateDto) {
+    const assetsCandidateEntity = this.assetsCandidateRepository.create({
+      address: assetCandidateDto.address,
+      chainId: assetCandidateDto.chainId,
+    });
+    return this.assetsCandidateRepository.save(assetsCandidateEntity);
   }
 
   public async getAssetsFromCache(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
@@ -83,6 +87,14 @@ export class AssetsService extends CrudService<AssetsRepository> {
       return this.cacheManager.set(this.getAssetCacheKey(assetsEntity), assetsEntity);
     });
     await Promise.all(promises);
+  }
+
+  private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
+    const { address, chainId } = assetQuery;
+    const keyPrefix = `${(process.env.SERVICE_NAME || 'assets-service')
+      .replace(' ', '-')
+      .toLowerCase()}`;
+    return `${keyPrefix}${chainId}${address}`;
   }
 
   // TODO: This methods should accept list of { chainId, address }

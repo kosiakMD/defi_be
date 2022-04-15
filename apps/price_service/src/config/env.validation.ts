@@ -42,6 +42,9 @@ export const validationSchema = Joi.object({
     .equal('debug', 'info')
     .default('info')
     .required(),
+  LOG_IN_JSON: Joi.string() //
+    .allow('')
+    .equal('true', 'false', 'TRUE', 'FALSE'),
   REDIS_HOST: Joi.string() //
     .required(),
   REDIS_PORT: Joi.string() //

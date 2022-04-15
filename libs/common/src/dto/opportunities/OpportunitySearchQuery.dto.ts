@@ -1,9 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { OpportunitySortFieldEnum } from '../../enum/opportunities/opportunity.enums';
+import {
+  OpportunitySortFieldEnum,
+  VaultTypeEnum,
+} from '../../enum/opportunities/opportunity.enums';
 import { SortDirectionEnum } from '../../enum/sort.direction.enum';
 
 export class OpportunitySearchQueryDto {
@@ -36,6 +39,11 @@ export class OpportunitySearchQueryDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @Transform(({ value }) => {
+    return value.toUpperCase() === SortDirectionEnum.DESC
+      ? SortDirectionEnum.DESC
+      : SortDirectionEnum.ASC;
+  })
   sortDirection = SortDirectionEnum.DESC;
 
   @ApiProperty({
@@ -49,4 +57,35 @@ export class OpportunitySearchQueryDto {
   @IsNotEmpty()
   @IsOptional()
   sortField = OpportunitySortFieldEnum.TVL;
+
+  @ApiProperty({
+    type: [VaultTypeEnum],
+    example: [
+      VaultTypeEnum.POOL,
+      VaultTypeEnum.NO_IL,
+      VaultTypeEnum.SINGLE_STAKE,
+      VaultTypeEnum.STABLE_POOL,
+      VaultTypeEnum.LENDING,
+    ],
+    default: [],
+    required: false,
+  })
+  @IsArray()
+  @IsNotEmpty()
+  @IsOptional()
+  categories = [];
+
+  @ApiProperty({ type: Number, default: 1000, required: false })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  @Transform(({ value }) => Math.max(0, Number(value)))
+  minTVL = 1000;
+
+  @ApiProperty({ type: Number, default: 0, required: false })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  @Transform(({ value }) => Math.max(0, Number(value)))
+  minAPR = 0;
 }

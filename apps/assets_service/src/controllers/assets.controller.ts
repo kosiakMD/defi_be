@@ -1,6 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { AssetsCandidateDto } from '../modules/assets/dto/assets-candidate.dto';
 import { AssetsGetDto } from '../modules/assets/dto/assets-get.dto';
 import { AssetsEntity } from '../modules/assets/entities/assets.entity';
 import { AssetsService } from '../modules/assets/services/assets.service';
@@ -24,5 +25,11 @@ export class AssetsController {
   getBulk(@Body() body: AssetsGetDto[]): Promise<AssetsEntity[]> {
     // TODO: Return something from API
     return this.assetsService.getBulkAssets(body);
+  }
+
+  @Post('/candidate')
+  @ApiResponse({ status: HttpStatus.OK })
+  saveAssetsCandidate(@Body() body: AssetsCandidateDto) {
+    return this.assetsService.saveAssetCandidate(body);
   }
 }

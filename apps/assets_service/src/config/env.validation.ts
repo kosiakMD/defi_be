@@ -36,9 +36,13 @@ export const validationSchema = Joi.object({
   LOG_COMBINED_FILE: Joi.string() //
     .pattern(logFileRE)
     .default('combined.log'),
+
   LOG_LEVEL: Joi.string() //
     .equal('debug', 'info')
     .default('info'),
+  LOG_IN_JSON: Joi.string() //
+    .allow('')
+    .equal('true', 'false'),
   SENTRY_DSN: Joi.string(),
   DEBANK_CHAINS_LIST_URL: Joi.string() //
     .default(''),

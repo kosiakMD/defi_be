@@ -23,6 +23,7 @@ import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
 import { ApprovalsController } from './approvals/approvals.controller';
+import { AssetsV2Controller } from './assets-v2/assets-v2.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import { BlacklistController } from './blacklist/blacklist.controller';
@@ -87,6 +88,7 @@ import { VaultsModule } from './vaults/vaults.module';
     HealthController,
     AnalyticController,
     AssetsController,
+    AssetsV2Controller,
     ApprovalsController,
     BalancesController,
     BlacklistController,

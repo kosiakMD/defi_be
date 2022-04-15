@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 
 import { CommandDTO } from '../common/dto/command.dto';
@@ -35,5 +35,12 @@ export class AppController {
     @Body() similarData: { contract: string; minSimilarityRate: number },
   ) {
     return await this.contractsAnalysisService.findSimilarAbiAndAbiCode(similarData);
+  }
+
+  @Get('/v1/status')
+  public async status() {
+    return {
+      status: 'OK',
+    };
   }
 }

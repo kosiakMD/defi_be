@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,8 +11,11 @@ import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
-    HttpModule.register({
-      timeout: 5000,
+    TracingModule.forRoot({ serviceName: 'protocols-v2-job' }),
+    HttpTracingModule.registerAsync({
+      useFactory: async () => ({
+        timeout: 5000,
+      }),
     }),
     ConfigModule.forRoot({
       load: [environment],

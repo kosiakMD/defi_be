@@ -205,57 +205,105 @@ export class BalancesService {
   }
 
   private calculate24HourReturns(now: BalancesResponse, then: BalancesResponse): ReturnsResponse {
-    const responseEntries = Object.entries(now).map(
-      ([account, balances]): [Address, AccountReturns] => {
-        const accountReturnsEmpty = plainToClass(AccountReturns, {
-          account,
-          errors: [].concat(now[account].errors, then[account].errors),
-          totalUSD: 0,
-          chains: Array.from(new Set(now[account].tokens.map((t) => t.token.chainId))).map(
-            (chainId) => ({ chainId, totalUSD: 0 }),
-          ),
-          tokens: [],
-        });
+    const accounts = Array.from(new Set([].concat(Object.keys(now), Object.keys(then))));
 
-        // Map historic tokens for easy access
-        const thenTokenMap = new Map(
-          then[account].tokens.map((token) => [this.getTokenKey(token), token]),
-        );
+    const tokenKeys = Array.from(
+      new Set(
+        [].concat(
+          Object.values(then).flatMap((a) => a.tokens.map((t) => this.getTokenKey(t))),
+          Object.values(now).flatMap((a) => a.tokens.map((t) => this.getTokenKey(t))),
+        ),
+      ),
+    );
+    const responseEntries = accounts.map((account) => {
+      const nowTokenMap = now[account].tokens.reduce(
+        (map, token) => map.set(this.getTokenKey(token), token),
+        new Map<string, TokenBalance>(),
+      );
+      const thenTokenMap = then[account].tokens.reduce(
+        (map, token) => map.set(this.getTokenKey(token), token),
+        new Map<string, TokenBalance>(),
+      );
+      const accountReturnsEmpty = plainToClass(AccountReturns, {
+        account,
+        errors: [].concat(now[account].errors, then[account].errors),
+        totalUSD: 0,
+        chains: Array.from(new Set(now[account].tokens.map((t) => t.token.chainId))).map(
+          (chainId) => ({ chainId, totalUSD: 0 }),
+        ),
+        tokens: [],
+      });
 
-        const accountReturns = balances.tokens.reduce((accountReturns, nowToken) => {
-          const thenToken = thenTokenMap.get(this.getTokenKey(nowToken));
+      const accountReturns = tokenKeys.reduce((acc, tokenKey) => {
+        const nowToken = nowTokenMap.get(tokenKey);
+        const thenToken = thenTokenMap.get(tokenKey);
 
-          if (!thenToken) return accountReturns; // no change, no historic data
+        // this account does not and did not have this token
+        if (!thenToken && !nowToken) {
+          return acc;
+        }
 
-          const tokenChange = plainToClass(TokenChange, {
-            token: nowToken.token,
-            balance: nowToken.decimalsAmount - thenToken.decimalsAmount, // number of tokens change
-            price: nowToken.tokenPriceUSD - thenToken.tokenPriceUSD, // token price change
-            totalUSD: nowToken.totalPriceUSD - thenToken.totalPriceUSD, // total change in USD for this token
-          });
+        // Calculate Token Change
+        const tokenChange = this.getTokenChange(thenToken, nowToken);
 
-          // Filtering out any tokens that we don't track a monetary change for
-          // often LP tokens and the like
-          if (!tokenChange.totalUSD) {
-            return accountReturns;
+        // Filtering out any tokens that we don't track a monetary change for
+        // often LP tokens and the like
+        if (!tokenChange.totalUSD) {
+          return acc;
+        }
+
+        acc.tokens.push(tokenChange);
+        acc.totalUSD += tokenChange.totalUSD;
+
+        acc.chains.forEach((chain) => {
+          if (chain.chainId !== tokenChange.token.chainId) {
+            return;
           }
 
-          accountReturns.tokens.push(tokenChange);
-          accountReturns.totalUSD += tokenChange.totalUSD;
+          chain.totalUSD += tokenChange.totalUSD;
+        });
 
-          accountReturns.chains.forEach((chain) => {
-            if (chain.chainId !== nowToken.token.chainId) return;
-            chain.totalUSD += tokenChange.totalUSD;
-          });
+        return acc;
+      }, accountReturnsEmpty);
 
-          return accountReturns;
-        }, accountReturnsEmpty);
-
-        return [account, accountReturns];
-      },
-    );
+      return [account, accountReturns];
+    });
 
     return Object.fromEntries(responseEntries);
+  }
+
+  private getTokenChange(
+    thenToken: null | TokenBalance,
+    nowToken: null | TokenBalance,
+  ): TokenChange {
+    // this account had the token, but does not now
+    if (thenToken && !nowToken) {
+      return plainToClass(TokenChange, {
+        token: thenToken.token,
+        balance: 0 - thenToken.decimalsAmount, // -100% tokens
+        price: 0, // unknown price change
+        totalUSD: 0 - thenToken.totalPriceUSD, // -100% USD
+      });
+    }
+
+    // this account has the token, but did not before
+    if (!thenToken && nowToken) {
+      return plainToClass(TokenChange, {
+        token: nowToken.token,
+        balance: nowToken.decimalsAmount, // +100% tokens
+        price: 0, // unknown price change
+        totalUSD: nowToken.totalPriceUSD, // +100% USD
+      });
+    }
+
+    if (thenToken && nowToken) {
+      return plainToClass(TokenChange, {
+        token: nowToken.token,
+        balance: nowToken.decimalsAmount - thenToken.decimalsAmount, // number of tokens change
+        price: nowToken.tokenPriceUSD - thenToken.tokenPriceUSD, // token price change
+        totalUSD: nowToken.totalPriceUSD - thenToken.totalPriceUSD, // total change in USD for this token
+      });
+    }
   }
   private async getChainBlocksAtDate(
     chains: number[],

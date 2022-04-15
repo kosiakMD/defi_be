@@ -10,6 +10,7 @@ import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
+import { HealthController } from './controllers/health.controller';
 import { OpportunitiesController } from './controllers/opportunities.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { OpportunityModule } from './modules/opportunity/opportunity.module';
@@ -36,7 +37,7 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
     DatabaseModule,
     OpportunityModule,
   ],
-  controllers: [OpportunitiesController],
+  controllers: [OpportunitiesController, HealthController],
   providers: [
     // TODO: testing 1 Sentry middleware only, without interceptors
     // {

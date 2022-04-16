@@ -1,8 +1,3 @@
-import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
-import {
-  SearchParams,
-  SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { Response } from 'express';
 
 import {
@@ -40,6 +35,8 @@ import {
   AssetTrackDto,
 } from '../modules/assets/dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from '../modules/assets/dto/assets.pools.dto';
+import { SearchResultsEntryDto } from '../modules/assets/dto/search-results-entry.dto';
+import { SearchParams, SearchResultsAssetEntry } from '../modules/assets/dto/interfaces';
 
 @ApiTags('Assets')
 @UseInterceptors(CacheInterceptor)

@@ -4,7 +4,7 @@ import { Controller, Get, HttpStatus, Inject, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { ResultStatus } from '@app/common/enum';
 
 import { TransactionsDetailedResponseDto } from './dto/scans-api.dto';

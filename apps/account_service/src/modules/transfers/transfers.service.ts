@@ -1,10 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
-import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '@app/common/constant';
-import { ResultStatus } from '@app/common/enum';
-import { Address } from '@app/common/types';
+import { Logger } from '@app/common';
+import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '@app/common';
+import { ResultStatus } from '@app/common';
+import { Address } from '@app/common';
 
 import { EtherscanTransfer } from '../../common/interfaces/ether.scan.interfaces';
 import { PriceServiceResponse } from '../../common/interfaces/prices.comon.interfaces';

@@ -14,12 +14,12 @@ import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { Logger, LogRequestMiddleware } from '@app/common';
-import { getWinstonParams } from '@app/common/Logger/logger.config';
+import { getWinstonParams } from '@app/common';
 import configuration from '@app/common/config/configuration';
-import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
-import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
-import { Web3NameService } from '@app/common/web3provider/web3.name.service';
+import { ResponseInterceptor } from '@app/common';
+import { SentryInterceptor } from '@app/common';
+import { HeadersContextMiddleware } from '@app/common';
+import { Web3NameService } from '@app/common';
 
 import { AnalyticController } from './analytic/analytic.controller';
 import { ApprovalsController } from './approvals/approvals.controller';

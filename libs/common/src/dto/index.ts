@@ -51,3 +51,6 @@ export * from './LeverageBorrowingToken.dto';
 export * from './LeverageErcToken.dto';
 export * from './LpToken.dto';
 // export * from './liquidity.pool.dto';
+
+export * from './GetAllApprovals.dto';
+export * from './Pool.dto';

@@ -7,12 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
-import PoolDto from '@app/common/dto/Pool.dto';
-import { Pool } from '@app/common/interfaces';
-
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';
+import { Logger, Pool } from "@app/common";
+import { PoolDto } from '@app/common/dto';
 
 const POOLS_CACHE_TIME_IN_SEC = 60;
 

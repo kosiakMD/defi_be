@@ -5,6 +5,7 @@ import { ChainIdEnum } from '../enum';
 import { filterByEnum, splitToArray, splitToNumberArray, unifyAddress, unifyAddresses } from '../utils';
 
 export * from './error.decorators';
+export * from './AddVersion';
 
 export const ChainsArray = createParamDecorator((dataField, req): number[] => {
   const input: string | Array<number | string> = req.args[0].query[dataField];

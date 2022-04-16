@@ -37,7 +37,7 @@ class LPTokenDTO implements LPToken {
   id: Address;
 }
 
-export default class VaultDto implements Vault {
+export class VaultDto implements Vault {
   @ApiProperty({ type: String, example: '25' })
   id: string;
 

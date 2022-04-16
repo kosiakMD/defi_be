@@ -1,13 +1,15 @@
 import { BlockFrostAPI } from '@blockfrost/blockfrost-js';
 import { Connection } from '@solana/web3.js';
 import { LCDClient } from '@terra-money/terra.js';
-import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
 import Web3 from 'web3';
 
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { AbsoluteChainIdEnum, ChainNameEnum } from '@app/common/enum';
+
+// TODO: Review this dependency
+import { ChainsService } from '../../../modules/chains/chains.service';
 
 @Injectable()
 export class Web3Provider implements OnModuleInit {

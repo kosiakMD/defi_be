@@ -7,7 +7,6 @@ import { ChainsDto } from '@app/common/dto/nft';
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';
 
-import { PriceRangeRequestDto } from '../../../price_service/src/modules/prices/dto';
 import { ChainDto } from './dto/chain.dto';
 import { CurrencyDto } from './dto/currency.dto';
 import { CurrencyListDto } from './dto/currency.list.dto';
@@ -16,6 +15,7 @@ import { PriceBatchRequestDto } from './dto/price.batch.request.dto';
 import { CurrentPriceResponseDto } from './dto/price.response.current.dto';
 import { PriceResponseDto, PricesPayload } from './dto/price.response.dto';
 import { HistoricalPriceResponseDto } from './dto/price.response.historical.dto';
+import { PriceRangeRequestDto } from './dto/price.range.request.dto';
 
 @ApiTags('Prices')
 @Injectable()

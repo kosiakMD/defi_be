@@ -9,7 +9,7 @@ import {
   HttpHealthIndicator,
 } from '@nestjs/terminus';
 
-import { AddVersion } from '@app/common/decorators/AddVersion';
+import { AddVersion } from '@app/common/decorators';
 import { HealthStatusEnum } from '@app/common/enum';
 
 import { HealthServicesResponse200Dto } from './dto/health.services.response.200.dto';

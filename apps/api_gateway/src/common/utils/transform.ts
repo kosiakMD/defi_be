@@ -1,4 +1,4 @@
-import { unifyAddress } from '@app/common/utils/addresses';
+import { unifyAddress } from '@app/common/utils';
 
 export function splitToArrayAndUnify(value: string): string[] {
   if (!value) {

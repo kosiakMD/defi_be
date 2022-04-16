@@ -13,13 +13,13 @@ import {
   NftCollectionsQueryDto,
   NftProjectResponseDto,
 } from '@app/common/dto/nft';
-import { NftCollectionsResponseDto } from '@app/common/dto/nft/nft.collections.response.dto';
-import { NftResponseDto } from '@app/common/dto/nft/nft.response.dto';
+import { NftCollectionsResponseDto } from '@app/common/dto/nft';
+import { NftResponseDto } from '@app/common/dto/nft';
 import {
   NftAssetsByAccounts,
   NftAssetsParams,
   NftServiceInfo,
-} from '@app/common/interfaces/nft.interface';
+} from '@app/common/interfaces';
 
 import { BaseService } from '../common/services/base.service';
 

@@ -85,7 +85,12 @@ export const winstonParams = ({
 export const createLogger = (workFolder: string): LoggerService => {
   // NOTE: We should use .env initialization for logger as config service is not yet available
   // We should have logger before config validation as otherwise we cannot log it to CW
+  console.log('ensureDotEnvInitiated(workFolder)', workFolder);
   ensureDotEnvInitiated(workFolder);
+
+  // TODO: Remove one!
+  console.log('process.env.LOG_ERROR_FILE', process.env.LOG_ERROR_FILE);
+  console.log('process.env.LOG_COMBINED_FILE', process.env.LOG_COMBINED_FILE);
 
   const config: LogConfig = {
     identifier: process.env.IDENTIFIER,

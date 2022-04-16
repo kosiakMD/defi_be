@@ -1,4 +1,4 @@
-import { ChainIdEnum } from '@app/common/enum';
+import { ChainIdEnum } from '@app/common';
 
 interface amount {
   eth: number;

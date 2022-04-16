@@ -13,3 +13,4 @@ export * from './nft.collections.query.dto';
 export * from './nft.project.response.dto';
 export * from './nft.response.dto';
 export * from './trait.dto';
+export * from './nft.collections.response.dto';

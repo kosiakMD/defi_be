@@ -5,3 +5,6 @@ export * from './types';
 export * from './interfaces';
 export * from './Logger';
 export * from './middlewares';
+export * from './bootstrap';
+export * from './interceptors';
+export * from './web3provider';

@@ -6,6 +6,7 @@ export * from './nft.enum';
 export * from './env.enum';
 export * from './endpoints.enum';
 export * from './chain.wrapped.tokens.enum';
+export * from './ApprovalsSortFields.enum';
 
 export enum ResultStatus {
   ok = 'ok',

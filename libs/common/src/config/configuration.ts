@@ -21,6 +21,7 @@ let dotEnvInitiated = false;
 const dotEnvInit = (folder: string): void => {
   for (const fileName of envFiles) {
     const path = envFilePath(folder, fileName);
+    console.warn('AAAAAAAAAAAAAA', fileName, path);
     config({ path });
   }
 };

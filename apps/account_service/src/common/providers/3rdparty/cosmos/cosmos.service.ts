@@ -1,11 +1,11 @@
-import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
+import { ChainsService } from '../../../../modules/chains/chains.service';
 import { firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 
-import type { Address } from '@app/common/types';
+import type { Address } from '@app/common';
 
 import { CosmosWallet, CosmosBalance, ICosmosProvider } from '../../../interfaces/cosmos.interface';
 import { CosmostationProvider } from './cosmostation.provider';

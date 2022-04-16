@@ -1,4 +1,4 @@
-import { ethToken } from 'apps/account_service/src/common/constant/tokens';
+import { ethToken } from '../../../common/constant/tokens';
 import { Exclude, Expose } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';

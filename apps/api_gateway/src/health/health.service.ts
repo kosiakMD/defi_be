@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
-import { map } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
@@ -8,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { HealthCheckResult, HealthIndicator } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { HealthServiceStatusEnum, HealthStatusEnum, ServiceEnum } from '@app/common/enum';
 import { toCamelCase } from '@app/common/utils';
 
@@ -66,9 +65,8 @@ export class ServiceHealthIndicator extends HealthIndicator {
   private async isServiceHealthy(getStatusUrl: string): Promise<HealthCheckResult> {
     try {
       this.logger.time('request: ' + getStatusUrl);
-      const data = await this.httpService
+      const { data } = await this.httpService
         .get(getStatusUrl)
-        .pipe(map((response) => response.data))
         .toPromise();
       this.logger.timeEnd('request: ' + getStatusUrl);
       return data;

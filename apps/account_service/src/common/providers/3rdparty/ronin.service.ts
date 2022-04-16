@@ -1,4 +1,4 @@
-import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
+import { ChainsService } from '../../../modules/chains/chains.service';
 
 import { Injectable } from '@nestjs/common';
 

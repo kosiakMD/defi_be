@@ -4,9 +4,8 @@ import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { splitToArrayAndUnify } from '../../../common/utils/transform';
-
 import { PriceRangePeriod } from '../prices.enum';
+import { splitToArrayAndUnify } from '../../common/utils/transform';
 
 export class PriceRangeRequestDto {
   @Type(() => Number)

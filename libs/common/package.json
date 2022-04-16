@@ -1,15 +1,15 @@
 {
   "name": "@app/common",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Common",
-  "main": "./dist/index.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "author": "",
   "private": true,
   "license": "ISC",
-  "engines": {
-    "node": ">=14",
-    "npm": "^6"
-  },
   "scripts": {
     "build": "tsc -b",
     "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
@@ -25,6 +25,7 @@
     "@raydium-io/raydium-sdk": "1.0.1-beta.7",
     "@solana/spl-name-service": "^0.1.3",
     "@solana/web3.js": "^1.32.0",
+    "@tns-money/tns.js": "^1.2.0",
     "bn.js": "^4.12.0",
     "class-validator": "^0.12.2",
     "helmet": "^5.0.2",
@@ -52,5 +53,43 @@
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
   },
-  "gitHead": "b3197560b65251c1f02d7e22fba26e81b800ff18"
+  "exports": {
+    ".": "./dist/index.js",
+    "./enum": "./dist/enum/index.js",
+    "./dto": "./dist/dto/index.js",
+    "./dto/nft": "./dist/dto/nft/index.js",
+    "./dto/opportunities": "./dist/dto/opportunities/index.js",
+    "./interfaces": "./dist/interfaces/index.js",
+    "./utils": "./dist/utils/index.js",
+    "./decorators": "./dist/decorators/index.js",
+    "./config/configuration": "./dist/config/configuration.js"
+  },
+  "typesVersions": {
+    "*": {
+      "enum": [
+        "dist/enum/index.d.ts"
+      ],
+      "dto": [
+        "dist/dto/index.d.ts"
+      ],
+      "dto/nft": [
+        "dist/dto/nft/index.d.ts"
+      ],
+      "dto/opportunities": [
+        "dist/dto/opportunities/index.d.ts"
+      ],
+      "interfaces": [
+        "dist/interfaces/index.d.ts"
+      ],
+      "utils": [
+        "dist/utils/index.d.ts"
+      ],
+      "decorators": [
+        "dist/decorators/index.d.ts"
+      ],
+      "config/configuration": [
+        "dist/config/configuration.d.ts"
+      ]
+    }
+  }
 }

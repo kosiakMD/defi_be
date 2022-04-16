@@ -1,10 +1,9 @@
 import { Cache } from 'cache-manager';
-import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { ChainAbbrEnum, ChainIdEnum, ResultStatus } from '@app/common/enum';
 
 import { Transaction } from '../../transactions/interfaces/transactions.interfaces';
@@ -167,7 +166,7 @@ export class ScanService {
     if (!transactions || !Array.isArray(transactions)) {
       try {
         this.logger.debug(logString + 'fetching');
-        const txsResp = await this.httpService
+        const { data: txsResp } = await this.httpService
           .get(this.scanServiceUrl, {
             params: {
               module: 'account',
@@ -179,7 +178,6 @@ export class ScanService {
               apikey: this.scanServiceKey,
             },
           })
-          .pipe(map((response) => response.data))
           .toPromise();
         transactions = txsResp && txsResp.result ? txsResp.result : [];
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -213,7 +211,7 @@ export class ScanService {
     if (!transfers || !Array.isArray(transfers)) {
       try {
         this.logger.debug(logString + 'fetching');
-        const transfersResp = await this.httpService
+        const { data: transfersResp } = await this.httpService
           .get(this.scanServiceUrl, {
             params: {
               module: 'account',
@@ -225,12 +223,6 @@ export class ScanService {
               apikey: this.scanServiceKey,
             },
           })
-          .pipe(
-            map((response) => {
-              this.logger.debug(response.request.res.responseUrl);
-              return response.data;
-            }),
-          )
           .toPromise();
 
         transfers = transfersResp && transfersResp.result ? transfersResp.result : [];
@@ -256,13 +248,12 @@ export class ScanService {
   private async getPrices(assets): Promise<any> {
     try {
       this.logger.time(`request: chain=${this.chainId} ${this.getPricesUrl}`);
-      const prices = await this.httpService
+      const { data: prices } = await this.httpService
         .post(this.getPricesUrl, {
           currency: 1,
           chain: this.chainId,
           assets: assets,
         })
-        .pipe(map((response) => response.data))
         .toPromise();
       this.logger.timeEnd(`request: chain=${this.chainId} ${this.getPricesUrl}`);
       return prices;

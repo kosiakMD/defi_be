@@ -1,4 +1,3 @@
-import { PriceService } from 'apps/account_service/src/common/providers/microservices/price/price.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
@@ -34,6 +33,7 @@ import { GotchiOwned, Id, Svg, User } from './interfaces/aavegotchi.interface';
 import { NftBasicService } from './nft.basic.service';
 import { OpenSeaService } from './open.sea.service';
 import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph';
+import { PriceService } from '../../common/providers/microservices/price/price.service';
 
 export class AavegotchiService extends NftBasicService implements OnModuleInit {
   public readonly project = NftProjectEnum.aavegotchi;

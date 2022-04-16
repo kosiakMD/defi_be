@@ -1,5 +1,3 @@
-import { AxiosResponse } from 'axios';
-import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
@@ -29,7 +27,7 @@ export class BaseService {
     try {
       this.logger.time(timeMark);
 
-      let request: Observable<AxiosResponse<T>>;
+      let request;
       if (method === 'GET') {
         request = this.httpService.get<T>(url, query);
       } else if (method === 'POST') {
@@ -40,7 +38,7 @@ export class BaseService {
         request = this.httpService.patch<T>(url, query, config);
       }
 
-      return await request.pipe(map((response) => response.data)).toPromise();
+      return await request.pipe(map((response) => (<any>response).data)).toPromise();
     } catch (err: any) {
       this.logger.error(err, err.stack, 'Base service error');
       throw new HttpException(err, HttpStatus.INTERNAL_SERVER_ERROR);

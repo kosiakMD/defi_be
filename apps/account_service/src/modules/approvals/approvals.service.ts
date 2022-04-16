@@ -8,6 +8,7 @@ import { ContractApprovalResponse } from '@app/common/interfaces';
 import { BlacklistService } from '../blacklists/blacklist.service';
 import { ChainsService } from '../chains/chains.service';
 import ApprovalMapper from './helpers/approvalMapper';
+import { GetAllApprovalsDto } from "@app/common/dto/GetAllApprovals.dto";
 
 @Injectable()
 export class ApprovalsService {

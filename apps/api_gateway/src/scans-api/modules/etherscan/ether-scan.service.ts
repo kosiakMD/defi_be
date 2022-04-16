@@ -5,7 +5,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { ChainAbbrEnum, ChainIdEnum } from '@app/common/enum';
 
 import { ScanService } from '../scan.service';

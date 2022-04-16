@@ -28,7 +28,7 @@
     "gateway-start:prod": "nest start api_gateway"
   },
   "dependencies": {
-    "@app/common": "1.0.2",
+    "@app/common": "^1.0.3",
     "@blockfrost/blockfrost-js": "4.0.1",
     "@nestjs/axios": "^0.0.2",
     "@nestjs/terminus": "^7.2.0",

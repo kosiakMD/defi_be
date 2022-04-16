@@ -8,7 +8,7 @@ import { AccountTokenBalance, Address, BalanceToken, Chains, ErrorMessage } from
 import { ChainIdEnum } from '@app/common/enum';
 import { ERC20Token } from '@app/common/interfaces';
 import { splitToArray } from '@app/common/utils';
-import { splitToAddressesArray } from '@app/common/utils/addresses';
+import { splitToAddressesArray } from '@app/common/utils';
 
 export class BalancesQueryDto {
   @IsNotEmpty()

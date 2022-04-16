@@ -1,4 +1,4 @@
-import { PriceService } from 'apps/account_service/src/common/providers/microservices/price/price.service';
+import { PriceService } from '../../common/providers/microservices/price/price.service';
 import { BigNumber } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';

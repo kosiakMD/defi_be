@@ -1,13 +1,12 @@
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
-import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common';
 import { GasHistory } from '@app/common/interfaces';
 
 import { GasPriceDto } from './dto/gas.price.dto';
@@ -38,23 +37,18 @@ export class GasService {
   async getGasCurrent(): Promise<GasPriceDto> {
     try {
       this.logger.time(this.gasCurrentUrl);
-      const data = this.httpService
+      const { data } = await this.httpService
         .get(this.gasCurrentUrl, {
           params: {
             'api-key': this.gasCurrentApiKey,
           },
         })
-        .pipe(
-          map(({ data }) =>
-            plainToClass(GasPriceDto, {
-              ...data,
-              timestamp: Date.now(),
-            }),
-          ),
-        )
         .toPromise();
       this.logger.timeEnd(this.gasCurrentUrl);
-      return data;
+      return plainToClass(GasPriceDto, {
+        ...data,
+        timestamp: Date.now(),
+      });
     } catch (e: any) {
       this.logger.error(e);
       throw e;
@@ -64,9 +58,8 @@ export class GasService {
   async getGasHistory(): Promise<GasHistory[]> {
     try {
       this.logger.time(this.gasHistoryUrl);
-      const data = this.httpService
+      const { data } = await this.httpService
         .get(this.gasHistoryUrl)
-        .pipe(map((r) => r.data))
         .toPromise();
       this.logger.timeEnd(this.gasHistoryUrl);
       return data;

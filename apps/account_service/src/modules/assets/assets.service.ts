@@ -1,9 +1,4 @@
 // eslint-disable-next-line max-classes-per-file
-import { SearchResultType } from 'apps/api_gateway/src/search/interfaces/search.enum';
-import {
-  SearchParams,
-  SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { plainToClass } from 'class-transformer';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
@@ -39,6 +34,8 @@ import { AssetDto, AssetResponseDto, AssetTrackDto } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
+import { SearchResultType } from './dto/search-result.type';
+import { SearchParams, SearchResultsAssetEntry } from './dto/interfaces';
 
 @Injectable()
 export class AssetsService {

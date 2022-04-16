@@ -1,8 +1,8 @@
 // eslint-disable-next-line max-classes-per-file
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DetailedResponseDto } from '@app/common/dto';
-import { ResultStatus } from '@app/common/enum';
+import { DetailedResponseDto } from '@app/common';
+import { ResultStatus } from '@app/common';
 
 export class TransactionScanDto {
   @ApiProperty({ example: '10266704', type: String })

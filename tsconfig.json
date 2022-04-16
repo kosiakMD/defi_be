@@ -9,6 +9,7 @@
     "noFallthroughCasesInSwitch": false,
     "module": "commonjs",
     "declaration": true,
+    "declarationMap": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -19,8 +20,9 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "target": "es2020",
+    "moduleResolution": "node",
     "baseUrl": "./",
     "incremental": true,
-    "composite": true,
+    "composite": true
   }
 }

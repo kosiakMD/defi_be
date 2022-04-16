@@ -36,7 +36,7 @@ class PoolTokenIdDTO implements PoolTokenId {
   totalSupply: number;
 }
 
-export default class PoolDto implements Pool {
+export class PoolDto implements Pool {
   @ApiProperty({ type: Number, example: 2830808 })
   id: number;
 

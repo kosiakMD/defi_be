@@ -1,8 +1,8 @@
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { GetAllApprovalsDto } from '@app/common/dto/GetAllApprovals.dto';
-import { ApprovalsSortFieldsEnum } from '@app/common/enum/ApprovalsSortFields.enum';
+import { GetAllApprovalsDto } from '@app/common';
+import { ApprovalsSortFieldsEnum } from '@app/common';
 
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';

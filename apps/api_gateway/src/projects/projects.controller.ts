@@ -1,7 +1,7 @@
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { SafeFilterOptionsQueryDto } from '@app/common/dto/SafeFilterOptionsQuery.dto';
+import { SafeFilterOptionsQueryDto } from '@app/common';
 
 import { BaseService } from '../common/services/base.service';
 

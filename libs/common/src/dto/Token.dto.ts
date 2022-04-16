@@ -7,7 +7,7 @@ import { Address } from '../types';
 import { Token } from '../interfaces';
 import EthereumAddressDto from './EthereumAddress.dto';
 
-export default class TokenDto implements Token {
+export class TokenDto implements Token {
   @ApiProperty({ type: Number, example: 1 })
   @IsNumber()
   id: number;

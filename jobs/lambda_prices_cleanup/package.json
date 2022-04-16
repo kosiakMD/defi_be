@@ -11,14 +11,14 @@
     "dev": "ts-node ./src/start.ts"
   },
   "dependencies": {
+    "@sentry/serverless": "^6.17.2",
     "dotenv": "^10.0.0",
     "pg": "^8.7.1",
-    "typescript": "^4.2.3",
-    "@sentry/serverless": "^6.17.2"
+    "typescript": "^4.2.3"
   },
   "devDependencies": {
-    "@types/pg": "^8.6.1",
-    "@types/aws-lambda": "^8.10.51"
+    "@types/aws-lambda": "^8.10.51",
+    "@types/pg": "^8.6.1"
   },
   "gitHead": "b3197560b65251c1f02d7e22fba26e81b800ff18"
 }

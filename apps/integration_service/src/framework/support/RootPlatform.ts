@@ -94,7 +94,7 @@ export abstract class RootPlatform implements IRootPlatform {
       if (!chains.includes(chain.id)) {
         return;
       }
-
+ 
       promises.push(
         protocol.getUsersData(addresses).then(([wallets, userErrors]) => {
           errors.push(...userErrors);

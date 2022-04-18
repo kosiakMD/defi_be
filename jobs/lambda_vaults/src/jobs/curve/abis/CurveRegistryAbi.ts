@@ -93,4 +93,12 @@ export class CurveRegistryAbi extends MultiCallAbiProxy {
       { name: '', type: 'int128[10]' },
     ],
   };
+
+  static readonly getGaugeFromLp: AbiItem = {
+    stateMutability: 'view',
+    type: 'function',
+    name: 'get_gauge_from_lp_token',
+    inputs: [{ name: 'arg0', type: 'address' }],
+    outputs: [{ name: '', type: 'address' }],
+  };
 }

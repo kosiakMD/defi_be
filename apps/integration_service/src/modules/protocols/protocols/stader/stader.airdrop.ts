@@ -59,7 +59,6 @@ export class StaderAirdrop {
                 decimals: lunaToken.decimals,
                 balance: toDecimals(strategy.total_rewards, lunaToken.decimals),
               }),
-              rewards: [],
             }),
           );
         });

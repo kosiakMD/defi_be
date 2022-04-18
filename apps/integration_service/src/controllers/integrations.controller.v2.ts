@@ -58,6 +58,10 @@ export class IntegrationsControllerV2 {
     @ChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IntegrationsResponseV2Dto> {
     const { protocolName } = params;
-    return this.integrationsServiceDecorator.getProtocolFeaturesDataV2(protocolName, chains, addresses);
+    return this.integrationsServiceDecorator.getProtocolFeaturesDataV2(
+      protocolName,
+      chains,
+      addresses,
+    );
   }
 }

@@ -9,7 +9,11 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, Logger } from '@app/common';
 
+import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
+
+import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { BalancerV2 } from '../platforms/BalancerV2';
 import { BrickChain } from '../platforms/BrickChain';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
@@ -64,6 +68,8 @@ export class PlatformService {
       BrickChain,
       Evodefi,
       LimeSwap,
+      BalancerV2,
+      AaveV3,
     });
   }
 
@@ -162,6 +168,7 @@ export class PlatformService {
 
     if (debug) {
       const [pools, poolErrors] = await platform.getPoolData(chains);
+
       const poolErrorMessages = this.processErrors(poolErrors, platformName);
       return {
         errors: Array.from(new Set(errorMessages.concat(poolErrorMessages))),
@@ -183,10 +190,17 @@ export class PlatformService {
     };
   }
 
-  private processErrors(errors: Error[], context: string) {
-    return errors.map((error) => {
+  private processErrors(errors: (ErrorWithHttpInfo | string)[], context: string): string[] {
+    return errors.map((error: ErrorWithHttpInfo | string) => {
+      if (typeof error === 'string') {
+        return error;
+      }
       this.logger.error(error.message, error.stack, context);
-      return error.message;
+      let message = error.message;
+      if (error.response) {
+        message += ' for ' + error.request.host + error.request.path;
+      }
+      return message;
     });
   }
 }

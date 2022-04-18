@@ -68,7 +68,7 @@ export abstract class RootProtocol<
   async getPoolData(): Promise<[TOpportunity[], Error[]]> {
     const list = await this.cache.get<string[]>(`pool_list_${this.getProtocolId()}`);
 
-    if (!list) {
+    if (!list?.length) {
       // If protocol pool list is not available, then
       // refetch all the pools and cache for the next person
       // (Only would likely be used for new deploys, or failed background job)
@@ -162,9 +162,24 @@ export abstract class RootProtocol<
   protected async hydrateOpportunityData(
     opportunities: TMinimal[],
   ): Promise<[TOpportunity[], Error[]]> {
-    const tokens = await this.getTokensForOpportunities(opportunities); // returns all required tokens for these pools
-    const updatedOpportunities = await this.updateRealTimeData(opportunities); // update if needed
-    return updatedOpportunities.reduce(
+    let tokens;
+    try {
+      tokens = await this.getTokensForOpportunities(opportunities); // returns all required tokens for these pools
+    } catch (e) {
+      if (e) {
+        return [[], [e]];
+      }
+    }
+    let updatedOpportunities;
+    let updatedOpportunitiesError;
+
+    try {
+      updatedOpportunities = await this.updateRealTimeData(opportunities);
+    } catch (e) {
+      updatedOpportunitiesError = e;
+    }
+
+    return (updatedOpportunities ? updatedOpportunities : opportunities).reduce(
       ([finalOpportunityList, errors], opportunity) => {
         try {
           const pool = this.formatOpportunity(opportunity, tokens);
@@ -181,7 +196,7 @@ export abstract class RootProtocol<
         }
         return [finalOpportunityList, errors];
       },
-      [[], []],
+      [[], updatedOpportunitiesError ? [updatedOpportunitiesError] : []],
     ); // hydrates each pool with full token details & live prices
   }
 

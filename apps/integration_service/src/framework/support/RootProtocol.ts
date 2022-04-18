@@ -84,6 +84,9 @@ export abstract class RootProtocol<
       {},
     );
 
+    // case when pools saved as null in the cache
+    pools = pools.filter((p) => p !== null);
+
     if (list.length !== pools.length) {
       // Should only occur if pools list is cached, however the pools themselves are not cached
       // this could be an error due to ttl configuration between the pools. Falls back

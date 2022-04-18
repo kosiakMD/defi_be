@@ -11,11 +11,13 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -65,6 +67,10 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
   ],
   controllers: [EndpointsController, RPCNodesController, HealthController],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
     // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,

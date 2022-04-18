@@ -24,6 +24,8 @@ const allowedControllers = [
 
 @Injectable()
 export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   intercept(
     context: ExecutionContext,
     next: CallHandler<R>,

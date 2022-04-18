@@ -1,10 +1,12 @@
 import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import configuration from '@app/common/config/configuration';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 
 import { CommonModule } from './common/common.module';
 import { DatabaseConfigService } from './config/database/db.config.service';
@@ -38,6 +40,10 @@ import { PricesModule } from './modules/prices/prices.module';
   ],
   controllers: [],
   providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
     // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,

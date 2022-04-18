@@ -79,7 +79,7 @@ export abstract class RootProtocol<
       return this.hydrateOpportunityData(await this.cachePoolData());
     }
 
-    const pools = await this.cache.store.mget(
+    let pools = await this.cache.store.mget(
       ...list.map((poolId) => `${this.meta.chain}_${poolId}`),
       {},
     );

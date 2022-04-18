@@ -9,6 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, Logger } from '@app/common';
 
+import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BrickChain } from '../platforms/BrickChain';
 import { CafeSwap } from '../platforms/CafeSwap';
@@ -64,6 +65,7 @@ export class PlatformService {
       BrickChain,
       Evodefi,
       LimeSwap,
+      AaveV3,
     });
   }
 

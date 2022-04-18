@@ -6,4 +6,5 @@ export enum CurveAddresses {
   crvToken = '0xd533a949740bb3306d119cc777fa900ba034cd52',
   arbiWeth = '0x82af49447d8a07e3bd95bd0d56f35241523fbab1',
   addressProvider = '0x0000000022d53366457f9d5e68ec105046fc4383',
+  avaxGaugeController = '0xabC000d88f23Bb45525E447528DBF656A9D55bf5',
 }

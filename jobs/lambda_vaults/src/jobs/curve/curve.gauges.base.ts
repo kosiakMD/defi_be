@@ -254,7 +254,7 @@ export class CurveGaugesBase implements JobInterface {
     return updatedMapping;
   }
 
-  private async toDbMapping(stakingPosition: CurveIntegrationStakingPositionDto) {
+  async toDbMapping(stakingPosition: CurveIntegrationStakingPositionDto) {
     const mappedDto = plainToClass(StakingFeatureMapping, {});
     mappedDto.rewards = [];
 
@@ -452,9 +452,6 @@ export class CurveGaugesBase implements JobInterface {
           this.getVirtualPrice(position.stakingToken.address),
         )?.output.data;
 
-        position.poolName =
-          multicallResponses.get(this.getPoolName(position.pool))?.output.data ?? position.poolName;
-
         position.stakingToken.price =
           normalizeDecimals(lpVirtualPrice, position.stakingToken.decimals) || null;
 
@@ -550,8 +547,7 @@ export class CurveGaugesBase implements JobInterface {
   getCallsMap(lpTokensMinters: Map<string, string>) {
     const calls = new Map();
 
-    this.mapping.forEach(async (staking) => {
-      const registry = new CurveRegistryAbi(staking.registry);
+    this.mapping.forEach((staking) => {
       // Registry uses pool address for most calls
       const stakingTokenContract = new CurveLpAbi(staking.stakingToken.address);
       const stakingPool =
@@ -564,10 +560,6 @@ export class CurveGaugesBase implements JobInterface {
           curvePool.balances(token.positionInPool),
         );
       });
-
-      if (!staking.poolName) {
-        calls.set(this.getPoolName(staking.pool), registry.getPoolName(staking.pool));
-      }
 
       calls.set(
         this.getTotalSupplyLabel(staking.stakingToken.address),
@@ -618,7 +610,7 @@ export class CurveGaugesBase implements JobInterface {
       .toNumber();
   }
 
-  private async getPoolCount(address: string): Promise<number> {
+  async getPoolCount(address: string): Promise<number> {
     if (address === ZERO_ADDRESS) {
       return 0;
     }
@@ -628,7 +620,7 @@ export class CurveGaugesBase implements JobInterface {
     return Number(callRsp.get(address).output.data.toString());
   }
 
-  private async getRegistryPoolsLpTokens(
+  async getRegistryPoolsLpTokens(
     registryAddress: string,
     count: number,
   ): Promise<Map<string, CurveGaugeInterface>> {

@@ -24,7 +24,6 @@ const allowedControllers = [
 
 @Injectable()
 export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
-  // @ts-ignore
   intercept(
     context: ExecutionContext,
     next: CallHandler<R>,
@@ -64,7 +63,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
       return next.handle().pipe(
         catchError<T, any>((exception) => {
           Sentry.captureException(exception, sentryParams);
-          throwError(exception);
+          return throwError(() => exception);
         }) as any,
         tap<T>(null, (exception) => {
           Sentry.captureException(exception, sentryParams);

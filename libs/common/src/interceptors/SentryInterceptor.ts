@@ -24,7 +24,6 @@ const allowedControllers = [
 
 @Injectable()
 export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
-  // @ts-ignore
   intercept(
     context: ExecutionContext,
     next: CallHandler<R>,

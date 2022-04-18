@@ -189,9 +189,17 @@ export class LidoStaking
       [this.meta.context.stLuna, this.meta.context.bLuna],
     );
 
-    const bLunaRewardsResult = await this.getBLunaRewards(addresses);
+    let rewardError;
 
-    const rewards = new Map(bLunaRewardsResult.map((a: any) => [a.address, a]));
+    let bLunaRewardsResult;
+
+    try {
+      bLunaRewardsResult = await this.getBLunaRewards(addresses);
+    } catch (e) {
+      rewardError = new Error('Could not update bluna rewards');
+    }
+
+    const rewards = new Map(!rewardError ? bLunaRewardsResult.map((a: any) => [a.address, a]) : []);
 
     const results = new Map<Address, IStakingFeatureUserEntry[]>(
       addresses.map((address) => [address, [] as IStakingFeatureUserEntry[]]),
@@ -211,7 +219,7 @@ export class LidoStaking
       });
     });
 
-    return [results, errors];
+    return [results, rewardError ? [...errors, rewardError] : errors];
   }
 
   protected formatUserData(

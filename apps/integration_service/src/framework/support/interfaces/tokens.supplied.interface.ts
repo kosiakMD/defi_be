@@ -6,11 +6,13 @@ import { ITokenMinimal, ITokenOpportunity, ITokenUserEntry } from './tokens.comm
 // The matching interface (without 'Raw') will be the filled
 // values (decimal value, full token details, etc)
 export interface ISupplyTokenMinimal extends ITokenMinimal {
+  weight?: string;
   totalSupplied: string; // number of tokens staked (we won't have prices here)
   rate?: { [key: string]: string };
 }
 
 export interface ISupplyTokenOpportunity extends ITokenOpportunity {
+  weight?: number;
   totalSupplied: number; // number of tokens staked
   tvl: number;
   apy?: { [key: string]: number };

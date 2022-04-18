@@ -11,6 +11,7 @@ import { Address, ChainId, Logger } from '@app/common';
 
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { BalancerV2 } from '../platforms/BalancerV2';
 import { BrickChain } from '../platforms/BrickChain';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
@@ -65,6 +66,7 @@ export class PlatformService {
       BrickChain,
       Evodefi,
       LimeSwap,
+      BalancerV2,
       AaveV3,
     });
   }

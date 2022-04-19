@@ -66,6 +66,8 @@ export abstract class RootProtocol<
   }
 
   async getPoolData(): Promise<[TOpportunity[], Error[]]> {
+    // console.log('deleting ' + `pool_list_${this.getProtocolId()}`);
+    // await this.cache.del(`pool_list_${this.getProtocolId()}`);
     const list = await this.cache.get<string[]>(`pool_list_${this.getProtocolId()}`);
 
     if (!list?.length) {
@@ -79,10 +81,13 @@ export abstract class RootProtocol<
       return this.hydrateOpportunityData(await this.cachePoolData());
     }
 
-    const pools = await this.cache.store.mget(
+    let pools = await this.cache.store.mget(
       ...list.map((poolId) => `${this.meta.chain}_${poolId}`),
       {},
     );
+
+    // case when pools saved as null in the cache
+    pools = pools.filter((p) => p !== null);
 
     if (list.length !== pools.length) {
       // Should only occur if pools list is cached, however the pools themselves are not cached

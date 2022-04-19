@@ -18,6 +18,7 @@ import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { NotifyBase } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { keepAddressesByChainId } from '@app/common/utils';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
 import { getChainById } from '../../common/utils/chain';
@@ -201,9 +202,11 @@ export class IntegrationsService {
     // make a async calls to get data for all chains:
     const allData = await Promise.allSettled<any>(
       chainsToProceed.map((chainId) => {
+        const validAddressesForChain = keepAddressesByChainId(addresses, chainId);
+
         return this.protocolService.getProtocolFeaturesV2(
           protocolName,
-          addresses,
+          validAddressesForChain,
           getChainById(chainId),
         );
       }),

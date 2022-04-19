@@ -54,26 +54,28 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
     poolsMap: Map<string, TOpportunity>,
     balances: { balance: string; address: string }[],
   ) {
-    return balances.map((addressPool) => {
-      if (!poolsMap.has(addressPool.address)) return [];
-      const pool = poolsMap.get(addressPool.address);
-      const decimalsAmount = +addressPool.balance;
+    return balances
+      .map((addressPool) => {
+        if (!poolsMap.has(addressPool.address)) return null;
+        const pool = poolsMap.get(addressPool.address);
+        const decimalsAmount = +addressPool.balance;
 
-      const poolShare = decimalsAmount / pool.totalSupplied;
+        const poolShare = decimalsAmount / pool.totalSupplied;
 
-      const supplied = pool.supplied.map((token: ISupplyTokenOpportunity) => {
-        const balance = token.totalSupplied * poolShare;
-        const result = {
-          ...token,
-          amount: balance,
-          value: balance * token.token.price,
-        };
+        const supplied = pool.supplied.map((token: ISupplyTokenOpportunity) => {
+          const balance = token.totalSupplied * poolShare;
+          const result = {
+            ...token,
+            amount: balance,
+            value: balance * token.token.price,
+          };
 
-        return result;
-      });
+          return result;
+        });
 
-      return { ...pool, supplied };
-    });
+        return { ...pool, supplied };
+      })
+      .filter((pool) => pool !== null);
   }
 
   protected formatOpportunity(opportunity: TMinimal, tokens: Map<string, any>): TOpportunity {

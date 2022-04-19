@@ -85,18 +85,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         // this.constructor.name,
       );
 
-      // const className = contextHttp.getClass().name;
-      // if (allowedControllers.includes(className)) {
-      //   Sentry.captureException(exception, {
-      //     level: Severity.Error,
-      //     extra: {
-      //       reqId,
-      //       sessionId,
-      //       protocolName,
-      //     },
-      //   });
-      // }
-
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {
       throw exception;

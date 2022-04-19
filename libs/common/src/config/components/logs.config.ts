@@ -23,5 +23,5 @@ export const logsValidation = {
   LOG_IN_JSON: Joi.string() //
     .allow('')
     .equal('true', 'false'),
-  SENTRY_DSN: Joi.string(),
+  SENTRY_DSN: Joi.string().allow(''),
 };

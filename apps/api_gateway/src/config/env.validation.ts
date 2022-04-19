@@ -1,44 +1,18 @@
 import * as Joi from 'joi';
 
-import { EnvEnum } from '@app/common';
-
-const logFileRE = /[a-zA-Z1-9_.]\.log/;
+import {
+  appValidation,
+  awsValidation,
+  logsValidation,
+  redisValidation,
+} from '@app/common/config/components';
 
 export const validationSchema = Joi.object({
-  NODE_ENV: Joi.string()
-    .equal(...Object.values(EnvEnum))
-    .default('local'),
-  ENV: Joi.string()
-    .equal(
-      '.env',
-      '.env.production',
-      '.env.production.local',
-      '.env.development',
-      '.env.development.local',
-    )
-    .required(),
-  // SERVICE
-  SERVICE_NAME: Joi.string().required(),
-  SERVICE_HOST: Joi.string() //
-    .allow('')
-    .required(),
-  SERVICE_PORT: Joi.number() //
-    .default(3000)
-    .required(),
-  // LOG
-  LOG_ERROR_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .required(),
-  LOG_COMBINED_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .required(),
-  LOG_LEVEL: Joi.string() //
-    .equal('debug', 'info')
-    .default('info')
-    .required(),
-  LOG_IN_JSON: Joi.string() //
-    .allow('')
-    .equal('true', 'false'),
+  ...appValidation,
+  ...logsValidation,
+  ...redisValidation,
+  ...awsValidation,
+
   DEFIYIELD_INFO_2_URL: Joi.string().required(),
   TOKENS_PATH: Joi.string().required(),
   GAS_HISTORY_PATH: Joi.string().required(),
@@ -122,13 +96,7 @@ export const validationSchema = Joi.object({
   ETH_URL: Joi.string().required(),
   SOL_URL: Joi.string().required(),
   SOLANA_NAME_SERVICE_PUBLIC_KEY: Joi.string().required(),
-  //  TODO: temporary
-  REDIS_HOST: Joi.string().required(),
-  REDIS_PORT: Joi.number().required(),
-  REDIS_AUTH: Joi.string() //
-    .allow('')
-    .required(),
-  REDIS_CACHE_TTL: Joi.number(),
+
   // e-mails
   MAILER_HOST: Joi.string() //
     .allow('')
@@ -151,18 +119,6 @@ export const validationSchema = Joi.object({
   MAIL_QUESTION_TO: Joi.string() //
     .allow('')
     .required(),
-  // TODO: Hardcoded values should be removed and made required
-  AWS_REGION: Joi.string() //
-    .default('eu-central-1')
-    .optional(),
-  // TODO: Hardcoded values should be removed and made required
-  AWS_ACCESS_KEY_ID: Joi.string() //
-    .default('AKIAZDKQQQWB2PUMCMK5')
-    .optional(),
-  // TODO: Hardcoded values should be removed and made required
-  AWS_SECRET_ACCESS_KEY: Joi.string() //
-    .default('ayCrJs0I5obCntfodJcT6xqqccSFEoDHw29Xt91K')
-    .optional(),
 });
 
 export const validationOptions = {

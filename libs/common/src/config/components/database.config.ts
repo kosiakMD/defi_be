@@ -14,12 +14,18 @@ export const databaseConfig = registerAs('database', () => ({
 }));
 
 export const databaseValidation = {
-  DB_HOST: Joi.string().required(),
+  DB_HOST: Joi.string() //
+    .required()
+    .default('localhost'),
   DB_PORT: Joi.number() //
-    .default(5432)
-    .required(),
-  DB_USERNAME: Joi.string().required(),
-  DB_PASSWORD: Joi.string().required(),
+    .required()
+    .default(5432),
+  DB_USERNAME: Joi.string() //
+    .required()
+    .default('postgres'),
+  DB_PASSWORD: Joi.string() //
+    .required()
+    .default('postgres'),
   DB_DATABASE: Joi.string().required(),
 
   DB_SYNCHRONIZE: Joi.boolean().default(false),

@@ -66,6 +66,8 @@ export abstract class RootProtocol<
   }
 
   async getPoolData(): Promise<[TOpportunity[], Error[]]> {
+    // console.log('deleting ' + `pool_list_${this.getProtocolId()}`);
+    // await this.cache.del(`pool_list_${this.getProtocolId()}`);
     const list = await this.cache.get<string[]>(`pool_list_${this.getProtocolId()}`);
 
     if (!list) {

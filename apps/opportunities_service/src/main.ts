@@ -5,6 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
+import { initSentry } from '@app/common/bootstrap';
 import { initSwagger } from '@app/common/bootstrap/initSwagger';
 import { startApp } from '@app/common/bootstrap/startApp';
 
@@ -21,6 +22,8 @@ async function bootstrap() {
     abortOnError: false,
     logger,
   });
+
+  initSentry();
 
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);

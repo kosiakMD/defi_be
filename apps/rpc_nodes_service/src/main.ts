@@ -7,6 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
+import { initSentry } from '@app/common/bootstrap';
 import { initSwagger } from '@app/common/bootstrap/initSwagger';
 import { startApp } from '@app/common/bootstrap/startApp';
 
@@ -15,7 +16,8 @@ import { logFileDir } from './config';
 
 const logger = createLogger(logFileDir);
 
-const ssl = process.env.SSL === 'true' ? true : false;
+const ssl = process.env.SSL === 'true';
+
 let httpsOptions = null;
 if (ssl) {
   const keyPath = process.env.SSL_KEY_PATH;
@@ -35,6 +37,8 @@ async function bootstrap() {
     logger,
     httpsOptions,
   });
+
+  initSentry();
 
   const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
   app.useLogger(enhancedLogger);

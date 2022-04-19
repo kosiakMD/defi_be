@@ -3,7 +3,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum, TraderjoeProtocolEnum } from '@app/common/enum';
-import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -46,7 +45,6 @@ export default class TraderJoeProtocol extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

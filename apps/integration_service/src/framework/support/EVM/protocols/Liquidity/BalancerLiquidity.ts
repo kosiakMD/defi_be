@@ -46,6 +46,7 @@ export class BalancerLiquidity extends Balancer implements IRootProtocol {
       const balances = new Map(addressesBalances.map((b) => [b.address, b.liquidity]));
 
       for (const address of addresses) {
+        if (!balances.has(address)) continue;
         const data = this.calculateBalances(poolsMap, balances.get(address));
         wallets.set(address, data);
       }

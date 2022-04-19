@@ -94,7 +94,7 @@ export abstract class RootPlatform implements IRootPlatform {
       if (!chains.includes(chain.id)) {
         return;
       }
- 
+
       promises.push(
         protocol.getUsersData(addresses).then(([wallets, userErrors]) => {
           errors.push(...userErrors);
@@ -260,7 +260,9 @@ export abstract class RootPlatform implements IRootPlatform {
     resolvedProtocols.forEach((protocol) => {
       if (protocol.chain.id !== chain) return;
       protocol.features.forEach((feature) => features.add(feature));
-      positions.push(...protocol.wallets.get(user));
+      if (protocol.wallets.has(user)) {
+        positions.push(...protocol.wallets.get(user));
+      }
     });
     const total = this.getPositionsTotal(positions);
     const positionsByFeature = Object.fromEntries(groupBy(positions, (i) => i.feature).entries());

@@ -13,7 +13,6 @@ import {
   ChainDto,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { isOsmosisAddress } from '@app/common/utils/addresses';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
@@ -60,9 +59,8 @@ export default class OsmosisProtocol extends DataProviderProtocol implements Abs
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    const osmosisAddresses = addresses.filter(isOsmosisAddress);
     const features = this.features[chain.abbr].map((feature: FeatureEnum) =>
-      this.getFeatureData(osmosisAddresses, chain, feature),
+      this.getFeatureData(addresses, chain, feature),
     );
 
     const chainFeatures = await Promise.allSettled(features);

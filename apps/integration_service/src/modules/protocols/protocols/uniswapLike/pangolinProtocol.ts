@@ -17,7 +17,6 @@ import { ERC20Token } from '@app/common/dto/ERC20Token';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
 import { ChainAbbrEnum, PangolinProtocolEnum, ProjectEnum } from '@app/common/enum';
-import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -53,7 +52,6 @@ export class PangolinProtocol extends UniswapLikeProtocol implements AbstractPro
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     const baseData: BaseData[] = [];
     const errors: string[] = [];
 

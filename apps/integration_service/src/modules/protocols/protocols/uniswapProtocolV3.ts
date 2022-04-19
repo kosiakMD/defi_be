@@ -17,7 +17,7 @@ import {
 } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { Address } from '@app/common/types';
-import { keepETHAddresses, normalizeDecimals } from '@app/common/utils';
+import { normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -467,7 +467,6 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     try {
       const [bd, errors] = await this.getUserPositions(addresses, chain);
       return [bd, errors];

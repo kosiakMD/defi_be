@@ -13,7 +13,6 @@ import {
   ChainDto,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { keepCardanoAddresses } from '@app/common/utils/addresses';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
@@ -60,7 +59,6 @@ export default class MinswapProtocol extends DataProviderProtocol implements Abs
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepCardanoAddresses(addresses);
     const features = this.features[chain.abbr].map((feature: FeatureEnum) =>
       this.getFeatureData(addresses, chain, feature),
     );

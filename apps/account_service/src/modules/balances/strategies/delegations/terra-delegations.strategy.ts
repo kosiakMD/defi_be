@@ -1,3 +1,4 @@
+import { lastValueFrom } from 'rxjs';
 import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
@@ -5,18 +6,21 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { isTerraAddress, normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
+import { StaderAddresses } from '../../../../../../integration_service/src/modules/protocols/protocols/stader/stader.addresses';
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
 import { DelegationsStrategy } from './index';
 
 @Injectable()
 export class TerraDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
+
+  protected url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators';
 
   constructor(
     private readonly http: HttpService,
@@ -30,70 +34,69 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
 
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
-      address: 'uluna',
-      chain: 19,
+      address: StaderAddresses.luna,
+      chain: ChainIdEnum.terra,
     });
   }
 
-  url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators';
+  private async getData(address: string): Promise<any[]> {
+    const promises = [];
+
+    const validators = await this.getValidators();
+
+    for (const validator of validators) {
+      promises.push(
+        lastValueFrom(
+          this.http.get(`${this.url}/${validator.operator_address}/delegations/${address}`),
+        ),
+      );
+    }
+
+    const data = handlePromiseAllSettled(await Promise.allSettled(promises))[0];
+
+    return [validators, data];
+  }
 
   public async getDelegatedAssets(address) {
     if (!isTerraAddress(address)) return [];
     const result = [];
-    const promises = [];
 
-    try {
-      const validators = await this.getValidators();
-      const { prices } = await this.priceService.fetchTokenPrices(
-        [this.asset.address],
-        this.asset.chain,
+    const [{ prices }, [validators, data]] = await Promise.all([
+      this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
+      this.getData(address),
+    ]);
+
+    data.forEach((r) => {
+      const validator = validators.find(
+        (v) => v.operator_address === r.data.delegation_response.delegation.validator_address,
+      );
+      const balanceAmount = normalizeDecimals(
+        r.data.delegation_response.balance.amount,
+        this.asset.decimals,
       );
 
-      for (const validator of validators) {
-        promises.push(
-          this.http
-            .get(`${this.url}/${validator.operator_address}/delegations/${address}`)
-            .toPromise(),
-        );
-      }
-
-      const results = await Promise.allSettled(promises);
-      const [data] = handlePromiseAllSettled(results);
-
-      data.forEach((r) => {
-        const validator = validators.find(
-          (v) => v.operator_address === r.data.delegation_response.delegation.validator_address,
-        );
-        result.push({
-          address,
-          asset: this.asset,
-          validator: {
-            address: validator.operator_address,
-            name: validator.description.moniker,
-            website: validator.description.website,
-          },
-          balance: {
-            amount: normalizeDecimals(
-              r.data.delegation_response.balance.amount,
-              this.asset.decimals,
-            ),
-            amountUsd:
-              normalizeDecimals(r.data.delegation_response.balance.amount, this.asset.decimals) *
-              prices[this.asset.address],
-          },
-        });
+      result.push({
+        address,
+        asset: this.asset,
+        validator: {
+          address: validator.operator_address,
+          name: validator.description.moniker,
+          website: validator.description.website,
+        },
+        balance: {
+          amount: balanceAmount,
+          amountUsd: balanceAmount * prices[this.asset.address],
+        },
       });
+    });
 
-      return result;
-    } catch (err) {
-      this.logger.error(err);
-    }
+    return result;
   }
 
   private async getValidators() {
-    const { data: validatorsData } = await this.http
-      .get(`${this.url}?pagination.limit=999`)
-      .toPromise();
+    const { data: validatorsData } = await lastValueFrom(
+      this.http.get(`${this.url}?pagination.limit=999`),
+    );
 
     return validatorsData.validators.filter((v) => !v.jailed);
   }

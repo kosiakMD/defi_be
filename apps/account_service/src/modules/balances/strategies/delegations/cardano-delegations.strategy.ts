@@ -45,7 +45,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     });
   }
 
-  private async getFeatures(address): Promise<any[]> {
+  private async getFeatures(address: string): Promise<any[]> {
     const getConfig = { headers: this.headers };
 
     const { data: addressResponse } = await lastValueFrom(

@@ -312,7 +312,7 @@ export class MasterChef
     if (pool.supplied[0].token.underlying?.length === 2) {
       const poolShare = balance / pool.supplied[0].totalSupplied;
       pool.supplied[0].token.underlying.forEach((u) => {
-        u.balance = u.reserve * poolShare;
+        u.balance = normalizeDecimals(u.reserve.toString(), u.decimals) * poolShare;
         u.value = u.balance * u.price;
       });
     }

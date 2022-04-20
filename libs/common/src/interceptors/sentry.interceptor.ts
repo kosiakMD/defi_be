@@ -74,7 +74,13 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
           sessionId,
           reqId,
         },
-        user: sessionId || reqId,
+        user: {
+          sessionId,
+          reqId,
+          timestampEntry,
+          timestampExit,
+          timeExecute,
+        },
       };
 
       return next.handle().pipe(

@@ -3,7 +3,7 @@ import { Severity } from '@sentry/node';
 import { CaptureContext } from '@sentry/types';
 import { Request } from 'express';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
@@ -60,7 +60,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
         timestampEntry,
         timestampExit,
         timeExecute,
-        protocolName: args?.[0]?.params?.protocolName,
+        protocolName: args?.[0]?.params?.protocolName || null,
       };
       const sentryParams: CaptureContext = {
         level: Severity.Error,
@@ -88,9 +88,9 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
           Sentry.captureException(exception, sentryParams);
           return throwError(() => exception);
         }) as any,
-        // tap<T>(null, (exception) => {
-        //   Sentry.captureException(exception, sentryParams);
-        // }) as any,
+        tap<T>(null, (exception) => {
+          Sentry.captureException(exception, sentryParams);
+        }) as any,
       ) as unknown as Observable<T>;
     }
 

@@ -14,8 +14,18 @@ declare global {
 // eslint-disable-next-line no-underscore-dangle
 global.__rootdir__ = __dirname || process.cwd();
 
-// Importing @sentry/tracing patches the global hub for tracing to work.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// This allows TypeScript to detect our global value
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace NodeJS {
+    interface Global {
+      __rootdir__: string;
+    }
+  }
+}
+
+// eslint-disable-next-line no-underscore-dangle
+global.__rootdir__ = __dirname || process.cwd();
 
 const TEST_SENTRY = false;
 // arg sentryDSN for test reason only

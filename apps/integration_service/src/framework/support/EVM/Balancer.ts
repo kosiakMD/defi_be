@@ -65,7 +65,7 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
     return balances
       .map((addressPool) => {
         if (!poolsMap.has(addressPool.address)) return null;
-        const pool = poolsMap.get(addressPool.address);
+        const pool = { ...poolsMap.get(addressPool.address) };
         const decimalsAmount = +addressPool.balance;
 
         const poolShare = decimalsAmount / pool.token.reserve;
@@ -85,7 +85,7 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
                 const balance = token.totalSupplied * poolShare;
                 const result = {
                   ...token.token,
-                  amount: balance,
+                  balance: balance,
                   value: balance * token.token.price,
                 };
                 return result;

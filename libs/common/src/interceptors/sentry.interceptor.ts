@@ -34,11 +34,14 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
-      let reqId, sessionId, timestampEntry, timestampExit, timeExecute;
+      let reqId, sessionId, timestampEntry, timestampExit, timeExecute, path;
       const hostType = context.getType();
       if (hostType === 'http') {
         const contextHttp = context.switchToHttp();
         const request: Request = contextHttp.getRequest<Request>();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        path = request._parsedUrl.path;
         reqId = request.header(HEADER_REQUEST_ID)?.toString();
         sessionId = request.header(HEADER_SESSION_ID)?.toString();
         timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY)?.toString();
@@ -48,6 +51,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
       const args = context.getArgs();
       const sentryMeta = {
+        path,
         className,
         reqId,
         sessionId,

@@ -32,7 +32,7 @@ export class BalancerV2 extends RootPlatform {
     });
     await this.registerProtocol(BalancerStaking, {
       chain: ChainIdEnum.eth,
-      name: 'Stacking - Balancer',
+      name: 'Staking - Balancer',
       feature: FeatureEnum.staking,
       context: {
         key: 'balancer-v2',

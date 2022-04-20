@@ -13,8 +13,16 @@ import {
 import { EVMCore } from './EVMCore';
 import { IBalancerPoolsResponce, Pool, POOL_QUERY } from './Subgraphs/BalancerSubgraph';
 
-type TMinimal = IWalletMinimal & { totalSupplied: string };
-type TOpportunity = IWalletOpportunity & { totalSupplied: number };
+type ERC20TokenMinimal = {
+  reserve: number;
+  name: string;
+  symbol: string;
+  tvl?: number;
+  totalSupplied?: number;
+};
+
+type TMinimal = IWalletMinimal & { token: ERC20TokenMinimal };
+type TOpportunity = IWalletOpportunity & { token: ERC20TokenMinimal };
 type IBalancerVaultMeta = IProtocolMeta & { feature: FeatureEnum.pools | FeatureEnum.staking };
 
 export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUserEntry> {
@@ -60,18 +68,37 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
         const pool = poolsMap.get(addressPool.address);
         const decimalsAmount = +addressPool.balance;
 
-        const poolShare = decimalsAmount / pool.totalSupplied;
+        const poolShare = decimalsAmount / pool.token.reserve;
 
-        const supplied = pool.supplied.map((token: ISupplyTokenOpportunity) => {
-          const balance = token.totalSupplied * poolShare;
-          const result = {
-            ...token,
-            amount: balance,
-            value: balance * token.token.price,
-          };
+        const underlyingTokens = pool.supplied;
+        const lpPrice = underlyingTokens.reduce((prev, t) => t.tvl + prev, 0) / pool.token.reserve;
+        // const lpPrice = lpTVL ;
+        const supplied = [
+          {
+            token: {
+              decimals: 18,
+              address: addressPool.address,
+              price: lpPrice,
+              name: pool.token.name,
+              symbol: pool.token.symbol,
+              underlying: underlyingTokens.map((token: ISupplyTokenOpportunity) => {
+                const balance = token.totalSupplied * poolShare;
+                const result = {
+                  ...token.token,
+                  amount: balance,
+                  value: balance * token.token.price,
+                };
+                return result;
+              }),
+            },
+            totalSupplied: pool.token.reserve,
+            tvl: pool.token.reserve * lpPrice,
+            amount: decimalsAmount,
+            value: decimalsAmount * lpPrice,
+          },
+        ];
 
-          return result;
-        });
+        delete pool.token;
 
         return { ...pool, supplied };
       })
@@ -87,11 +114,11 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
       id: opportunity.id,
       chain: opportunity.chain,
       feature: this.meta.feature,
+      token: opportunity.token,
       supplied: opportunity.supplied.map((poolToken) =>
         this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
       ),
       rewarded: [],
-      totalSupplied: +opportunity.totalSupplied,
     };
   }
 
@@ -101,7 +128,11 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
       chain: this.meta.chain,
       feature: this.meta.feature,
       rewarded: [],
-      totalSupplied: pool.totalShares,
+      token: {
+        reserve: +pool.totalShares,
+        name: pool.name,
+        symbol: pool.symbol,
+      },
       supplied: pool.tokens.map((token) => {
         return {
           token: { address: token.address },

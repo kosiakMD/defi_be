@@ -47,10 +47,11 @@ export class BalancerStaking extends Balancer implements IRootProtocol {
       const accountBalances = await this.accountBalances(addresses);
       const balances = new Map(accountBalances.map((b) => [b.address, b.yields]));
 
-      addresses.forEach((address) => {
+      for (const address of addresses) {
+        if (!balances.has(address)) continue;
         const data = this.calculateBalances(poolsMap, balances.get(address));
         wallets.set(address, data);
-      });
+      }
     } catch (err) {
       errors.push(err);
     }

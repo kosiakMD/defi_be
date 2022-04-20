@@ -7,6 +7,7 @@ export const POOL_QUERY = gql`
       address
       swapFee
       name
+      symbol
       totalShares
       tokens {
         address
@@ -65,6 +66,7 @@ export interface Pool {
   strategyType: number;
   swapFee: string;
   name: string;
+  symbol: string;
   totalShares: string;
   tokens: Token[];
 }

@@ -44,6 +44,19 @@ export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string
         root: global.__rootdir__,
       }),
     ],
+    beforeSend: function (event, hint) {
+      const exception: any = hint.originalException;
+
+      if (exception.isAxiosError) {
+        event.fingerprint = [
+          '{{ default }}',
+          String(exception.functionName),
+          String(exception.errorCode),
+        ];
+      }
+
+      return event;
+    },
     // We recommend adjusting this value in production, or using tracesSampler
     // for finer control
     tracesSampleRate: 1.0,

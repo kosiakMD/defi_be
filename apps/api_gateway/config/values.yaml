@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: gateway.staging.defyield.xyz
+  host: devgateway.defiyield.app
 
 configMaps:
   common:
@@ -20,23 +20,10 @@ configMaps:
     PRICES_PATH: v1/prices
     INTEGRATION_SERVICE_HOST: http://integration-service
     INTEGRATION_SERVICE_PORT: 80
-    INTEGRATION_SEARCH_URL: v1/protocols/search
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
-    ACCOUNT_STATUS: v1/status
-    ACCOUNT_TRANSACTIONS: v1/transactions
-    ACCOUNT_BALANCE: v1/balances
-    ACCOUNT_APPROVALS: v1/approvals
-    ACCOUNT_TRANSFERS: v1/transfers
-    ACCOUNT_ASSETS: v1/assets
-    ACCOUNT_ANALYTIC: v1/analytic
-    ACCOUNT_24H_RETURNS: v1/balances/24-hour-returns
-    ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
-    ACCOUNT_SEARCH_URL: v1/assets/search
     ASSETS_SERVICE_HOST: http://assets-service
     ASSETS_SERVICE_PORT: 80
-    TOKENS_PATH: tokens
-    APPROVALS_PATH: tool/approvals/eth
     POOLS_SERVICE_URL: https://integration-service
     VAULTS_SERVICE_URL: https://integration-service
     IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc

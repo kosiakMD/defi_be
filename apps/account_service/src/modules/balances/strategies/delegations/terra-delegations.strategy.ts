@@ -1,4 +1,5 @@
 import { lastValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
@@ -65,11 +66,10 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
       this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
       this.getData(address),
     ]);
+    const validatorsMap: Map<string, any> = new Map(validators.map((v) => [v.operator_address, v]));
 
     data.forEach((r) => {
-      const validator = validators.find(
-        (v) => v.operator_address === r.data.delegation_response.delegation.validator_address,
-      );
+      const validator = validatorsMap.get(r.data.delegation_response.delegation.validator_address);
       const balanceAmount = normalizeDecimals(
         r.data.delegation_response.balance.amount,
         this.asset.decimals,
@@ -89,13 +89,13 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
         },
       });
     });
-
+    console.log('__result', result);
     return result;
   }
 
   private async getValidators() {
-    const { data: validatorsData } = await lastValueFrom(
-      this.http.get(`${this.url}?pagination.limit=999`),
+    const validatorsData = await lastValueFrom(
+      this.http.get(`${this.url}?pagination.limit=999`).pipe(map(({ data }) => data)),
     );
 
     return validatorsData.validators.filter((v) => !v.jailed);

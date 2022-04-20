@@ -1,8 +1,9 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
+import { CaptureContext } from '@sentry/types';
 import { Request } from 'express';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
@@ -61,7 +62,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
         timeExecute,
         protocolName: args?.[0]?.params?.protocolName,
       };
-      const sentryParams = {
+      const sentryParams: CaptureContext = {
         level: Severity.Error,
         tags: {
           sessionId,
@@ -69,6 +70,11 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
           protocolName: args?.[0]?.params?.protocolName || null,
         },
         extra: sentryMeta,
+        contexts: {
+          sessionId,
+          reqId,
+        },
+        user: sessionId || reqId,
       };
 
       return next.handle().pipe(
@@ -76,9 +82,9 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
           Sentry.captureException(exception, sentryParams);
           return throwError(() => exception);
         }) as any,
-        tap<T>(null, (exception) => {
-          Sentry.captureException(exception, sentryParams);
-        }) as any,
+        // tap<T>(null, (exception) => {
+        //   Sentry.captureException(exception, sentryParams);
+        // }) as any,
       ) as unknown as Observable<T>;
     }
 

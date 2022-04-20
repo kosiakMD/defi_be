@@ -23,8 +23,6 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_PORT: Joi.number() //
     .allow('')
     .required(),
-
-  VAULTS_PATH: Joi.string().required(),
   // OPPORTUNITIES SERVICE
   OPPORTUNITIES_SERVICE_HOST: Joi.string() //
     .required(),

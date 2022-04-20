@@ -10,7 +10,7 @@ export class Puppeteer {
   private launch() {
     const defaultOptions = {
       headless: true,
-      args: ['--disable-setuid-sandbox'],
+      args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu'],
       ignoreHTTPSErrors: true,
       defaultViewport: {
         width: 1200,

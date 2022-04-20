@@ -511,7 +511,8 @@ export class CurveGauges implements JobInterface {
 
   private nonRegisterLpPoolsHandling(
     stakingPosition: CurveIntegrationStakingPositionDto,
-    nonRegisterLpVirtualPrices: Map<string, string>,
+    // TODO: need to test
+    //nonRegisterLpVirtualPrices: Map<string, string>,
     multicallResponses: Map<string, CallData>,
     prices: CurrentPricesPayload,
     factoryV2Pools: FactoryV2PoolItem[],
@@ -553,7 +554,8 @@ export class CurveGauges implements JobInterface {
           ?.output.data.toString();
         const reserveDec = toDecimals(reserve, coin.decimals);
         const price =
-          toDecimals(nonRegisterLpVirtualPrices.get(coin.address), coin.decimals) ||
+          // TODO: need to test
+          // toDecimals(nonRegisterLpVirtualPrices.get(coin.address), coin.decimals) ||
           prices[coin.address];
         coin.price = Number(price);
         const coinTotalSupply = multicallResponses
@@ -562,7 +564,7 @@ export class CurveGauges implements JobInterface {
         coin.totalSupply = normalizeDecimals(coinTotalSupply, coin.decimals);
         coin.reserve = reserve;
         coin.balance = reserveDec;
-        if (coin.tokens?.length) {
+        if (coin.tokens?.length > 1) {
           let lpValue = 0;
           const underlyingReserves = multicallResponses.get(this.getBalancesLabel(coin.address))
             ?.output.data;
@@ -662,10 +664,11 @@ export class CurveGauges implements JobInterface {
 
       const calls = this.getCallsMap(registerLpPools, lpMintersMap);
       // Get all balance Calls
-      const nonRegisterLpPrices = await this.localMulticall.getTokensVirtualPrices(
-        nonRegisterLpsArray,
-        lpMintersMap,
-      );
+      // TODO: need to test
+      // const nonRegisterLpPrices = await this.localMulticall.getTokensVirtualPrices(
+      //   nonRegisterLpsArray,
+      //   lpMintersMap,
+      // );
 
       const tokenAddresses = [];
       this.mapping.forEach((stakingPosition) => {
@@ -689,7 +692,8 @@ export class CurveGauges implements JobInterface {
         if (nonRegisterLps.get(position.stakingToken.address)) {
           return this.nonRegisterLpPoolsHandling(
             position,
-            nonRegisterLpPrices,
+            // TODO: need to test
+            // nonRegisterLpPrices,
             multicallResponses,
             prices,
             factoryV2Pools,
@@ -767,7 +771,7 @@ export class CurveGauges implements JobInterface {
 
         staking.stakingToken.tokens?.forEach((coin) => {
           // If its an underlying LP, get the virtual prices for it too
-          if (coin?.tokens?.length) {
+          if (coin?.tokens?.length > 1) {
             calls.set(
               this.getVirtualPriceFromLpTokenLabel(coin.address),
               registry.getVirtualPriceFromLpToken(coin.address),
@@ -867,7 +871,7 @@ export class CurveGauges implements JobInterface {
         );
       }
 
-      if (coin.tokens?.length) {
+      if (coin.tokens?.length > 1) {
         let lpValue = 0;
         coin.tokens?.forEach((underlyingToken) => {
           const balancesUnderlying = multicallResponses.get(this.getBalancesLabel(coin.address))
@@ -926,4 +930,36 @@ export const excludeGaugePools = [
   '0x56eda719d82ae45cbb87b7030d3fb485685bea45',
   '0xaf78381216a8ecc7ad5957f3cd12a431500e0b0d',
   '0x18478f737d40ed7defe5a9d6f1560d84e283b74e',
+  '0x279f11f8e2825dbe0b00f6776376601ac948d868',
+  '0x95069889df0bcdf15bc3182c1a4d6b20631f3b46',
+  '0xc1c5b8aafe653592627b54b9527c7e98326e83ff',
+  '0x9562c4d2e06aaf85efc5367fb4544eceb788465e',
+  '0x9336da074c4f585a8b59a8c2b77a32b630cde5a1',
+  '0xf2ddf89c04d702369ab9ef8399edb99a76e951ce',
+  '0xfbb5b8f2f9b7a4d21ff44dc724c1fb7b531a6612',
+  '0xc5ae4b5f86332e70f3205a8151ee9ed9f71e0797',
+  '0x1c77fb5486545810679d53e325d5bcf6c6a45081',
+  '0xd0698b2e41c42bce42b51f977f962fd127cf82ea',
+  '0xbaf05d7aa4129ca14ec45cc9d4103a9ab9a9ff60',
+  '0xa6ff75281eaca4cd5feeb333e8e15558208295e5',
+  '0x18006c6a7955bf6db72de34089b975f733601660',
+  '0x34ed182d0812d119c92907852d2b429f095a9b07',
+  '0x1aeaa1b998307217d62e9eefb6407b10598ef3b8',
+  '0xda690c2ea49a058a9966c69f46a05bfc225939f4',
+  '0xdb3fd1bfc67b5d4325cb31c04e0cae52f1787fd6',
+  '0x20759f567bb3ecdb55c817c9a1d13076ab215edc',
+  '0x8d9649e50a0d1da8e939f800fb926cde8f18b47d',
+  '0x6339ef8df0c2d3d3e7ee697e241666a916b81587',
+  '0xce5f24b7a95e9cba7df4b54e911b4a3dc8cdaf6f',
+  '0x15bb164f9827de760174d3d3dad6816ef50de13c',
+  '0x00f7d467ef51e44f11f52a0c0bef2e56c271b264',
+  '0x555766f3da968ecbefa690ffd49a2ac02f47aa5f',
+  '0x1879075f1c055564cb968905ac404a5a01a1699a',
+  '0xbb1b19495b8fe7c402427479b9ac14886cbbaaee',
+  '0x8b397084699cc64e429f610f81fac13bf061ef55',
+  '0x4620d46b4db7fb04a01a75ffed228bc027c9a899',
+  '0xf7b9c402c4d6c2edba04a7a515b53d11b1e9b2cc',
+  '0x319e268f0a4c85d404734ee7958857f5891506d7',
+  '0xbc38bd19227f91424ed4132f630f51c9a42fa338',
+  '0x82049b520cac8b05e703bb35d1691b5005a92848',
 ];

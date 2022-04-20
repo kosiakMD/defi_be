@@ -1,8 +1,6 @@
-import * as Sentry from '@sentry/minimal';
-import { Severity } from '@sentry/node';
 import { Request, Response as EResponse } from 'express';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Inject, Injectable, NestInterceptor } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -42,13 +40,14 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
       const timestampEntry = Number(request.header(HEADER_TIMESTAMP_ENTRY));
       const timestampExit = Date.now();
       const timeExecute = timestampExit - timestampExit;
+      const args = context.getArgs();
       // create Meta Object
       const meta: ResponseMetaDto = {
-        reqId,
-        sessionId,
         timestampEntry: timestampEntry.toString(),
         timestampExit: timestampExit.toString(),
         timeExecute: timeExecute.toString(),
+        reqId,
+        sessionId,
       };
       // Add Meta for response headers
       const response: Response<any> = httpContext.getResponse<Response<any>>();
@@ -58,47 +57,46 @@ export class ResponseInterceptor<T> implements NestInterceptor<T, Response<T>> {
       response.header(HEADER_TIMESTAMP_EXIT, meta.timestampExit);
       response.header(HEADER_TIME_EXECUTE, meta.timeExecute);
       // Log Response Meta only
-      const args = context.getArgs();
       this.logger.log(
         { ...meta, type: 'RESPONSE', protocolName: args?.[0]?.params?.protocolName },
         'RESPONSE',
       );
+      // TODO: temporary disabled
       // return next.handle();
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       return next.handle().pipe(
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        catchError((exception) => {
-          const args = context.getArgs();
-          Sentry.captureException(exception, {
-            level: Severity.Error,
-            extra: {
-              protocolName: args?.[0]?.params?.protocolName,
-            },
-          });
-          return throwError(() => (exception instanceof Error ? exception : new Error(exception)));
-        }),
+        // catchError((exception) => {
+        //   const args = context.getArgs();
+        //   Sentry.captureException(exception, {
+        //     level: Severity.Error,
+        //     extra: {
+        //       protocolName: args?.[0]?.params?.protocolName,
+        //     },
+        //   });
+        //   return throwError(() => (exception instanceof Error ? exception : new Error(exception)));
+        // }),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        tap(null, (exception) => {
-          const args = context.getArgs();
-          Sentry.captureException(exception, {
-            level: Severity.Error,
-            tags: {
-              protocolName: args?.[0]?.params?.protocolName,
-              reqId,
-              sessionId,
-            },
-          });
-        }),
+        // tap(null, (exception) => {
+        //   const args = context.getArgs();
+        //   Sentry.captureException(exception, {
+        //     level: Severity.Error,
+        //     tags: {
+        //       protocolName: args?.[0]?.params?.protocolName,
+        //       reqId,
+        //       sessionId,
+        //     },
+        //   });
+        // }),
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // Add Meta for response body
         // TODO: for debug reason
         map((data) => Object.assign(data, meta)),
       );
-      // return next.handle();
     } else {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore

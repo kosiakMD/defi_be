@@ -22,6 +22,14 @@ export class insertCompoundTemplateContract1649760170586 implements MigrationInt
     await queryRunner.query(
       `
           DELETE
+          FROM "contracts_analysis"
+          WHERE contract_id = $1;
+      `,
+      [AbiCompoundTemplate.id],
+    );
+    await queryRunner.query(
+      `
+          DELETE
           FROM "contracts"
           WHERE id = $1;
       `,

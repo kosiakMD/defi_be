@@ -14,19 +14,14 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
-import { BrickChain } from '../platforms/BrickChain';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { Evodefi } from '../platforms/Evodefi';
-import { IronFinance } from '../platforms/IronFinance';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
-import { Nerve } from '../platforms/Nerve';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
-import { PastaFinance } from '../platforms/PastaFinance';
-import { Polywhale } from '../platforms/Polywhale';
 import { QuickSwap } from '../platforms/QuickSwap';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { SpookySwap } from '../platforms/SpookySwap';
@@ -55,17 +50,12 @@ export class PlatformService {
       SpookySwap,
       TombFinance,
       ApeSwap,
-      Polywhale,
       CafeSwap,
       WaultFinance,
-      IronFinance,
-      Nerve,
       CubFinance,
       TreeDefi,
       CheesecakeSwap,
       RuneFarm,
-      PastaFinance,
-      BrickChain,
       Evodefi,
       LimeSwap,
       BalancerV2,
@@ -100,6 +90,11 @@ export class PlatformService {
       mergeMap(async (name) => {
         try {
           const instance = await this.getPlatform(name);
+          // const chains: ChainId[] = [];
+          // instance.getMeta().features.forEach(async (f) => {
+          //   chains.push(f.chain.id);
+          // });
+          // await instance.getPoolData(chains);
           return instance.getMeta();
         } catch (err) {
           this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);

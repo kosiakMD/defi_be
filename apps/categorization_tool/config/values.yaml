@@ -1,0 +1,33 @@
+ingress:
+  enabled: true
+  host: devcategorization.defiyield.app
+  annotations: { }
+  certificate_arn: arn:aws:acm:eu-central-1:625623467395:certificate/0451fee0-71c4-4989-b584-189e73945b0b
+  wafv2_acl_arn: arn:aws:wafv2:eu-central-1:625623467395:regional/webacl/defiyield-backend-production/9eadcd76-96cb-4761-aaf4-5b4320f4d249
+
+configMaps:
+  logs:
+    LOG_AWS_ENABLED: true
+    LOG_LEVEL: debug
+    NODE_ENV: development
+  config:
+    SCREENSHOTS_ENABLED: false
+    DIR_SAVE_SCREENSHOTS: none
+    TENDERLY_API_URL: https://api.tenderly.co/api
+    TEST_RUN: true
+
+secrets:
+- redis
+- databasecategorization
+- logs
+- etherscan
+- bscscan
+
+initContainer:
+  enabled: true
+  name: ctmigration
+  image: ""
+  spec:
+    command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/categorization_tool/src/ormconfig.js" ]
+
+

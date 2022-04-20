@@ -1,41 +1,18 @@
 import * as Joi from 'joi';
 
-import { EnvEnum } from '@app/common';
-
-const logFileRE = /[a-zA-Z1-9_.]\.log/;
+import {
+  appValidation,
+  awsValidation,
+  logsValidation,
+  redisValidation,
+} from '@app/common/config/components';
 
 export const validationSchema = Joi.object({
-  NODE_ENV: Joi.string()
-    .equal(...Object.values(EnvEnum))
-    .default('local'),
-  ENV: Joi.string()
-    .equal(
-      '.env',
-      '.env.production',
-      '.env.production.local',
-      '.env.development',
-      '.env.development.local',
-    )
-    .required(),
-  // SERVICE
-  SERVICE_NAME: Joi.string().required(),
-  SERVICE_HOST: Joi.string() //
-    .allow('')
-    .required(),
-  SERVICE_PORT: Joi.number() //
-    .default(3000)
-    .required(),
-  // LOG
-  LOG_ERROR_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .required(),
-  LOG_COMBINED_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .required(),
-  LOG_LEVEL: Joi.string() //
-    .equal('debug', 'info')
-    .default('info')
-    .required(),
+  ...appValidation,
+  ...logsValidation,
+  ...redisValidation,
+  ...awsValidation,
+
   DEFIYIELD_INFO_2_URL: Joi.string().required(),
   GAS_HISTORY_PATH: Joi.string().required(),
   GAS_API_URL: Joi.string().required(),

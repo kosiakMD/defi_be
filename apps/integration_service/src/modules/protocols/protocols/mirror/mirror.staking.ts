@@ -28,6 +28,7 @@ import {
   IntegrationShortFarmPositionDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
+import { ERC20Token } from '@app/common/jobs/token';
 
 import { toDecimals } from '../../../../common/utils/util';
 
@@ -96,7 +97,10 @@ export class MirrorStaking {
       const shortFarm = baseDataShortFarmMap.get(key);
       await Promise.all(
         value.map(async (stakingData) => {
-          const poolFeature = mirrorAssetsInfo.get(stakingData.stakingToken);
+          const poolFeature =
+            stakingData.isShort || stakingData.isGov
+              ? null
+              : mirrorAssetsInfo.get(stakingData.stakingToken);
           if (stakingData.isShort) {
             const { positions } = await mirror.mint.getPositions(key);
             const position = positions.find(
@@ -127,7 +131,7 @@ export class MirrorStaking {
             shortFarm.items.push(shortFarmPosition);
           } else {
             const stakingPosition = this.getStakingPosition(
-              poolFeature.poolFeature,
+              poolFeature?.poolFeature,
               mirrorDb,
               stakingData.stakingToken,
             );
@@ -180,20 +184,26 @@ export class MirrorStaking {
       .toNumber();
   }
 
+  private getIntegrationErc20TokenDto(token: ERC20Token) {
+    return plainToClass(IntegrationERC20TokenDto, {
+      address: token.address,
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      totalSupply: token?.totalSupply,
+    });
+  }
+
   private getStakingPosition(
     poolFeature: LiquidityPoolFeature,
     mirrorToken: IAssetResponseDto,
     assetAddress: string,
   ): IntegrationStakingPositionDto {
-    const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
-      address: poolFeature.lpToken.address,
-      name: poolFeature.lpToken.name,
-      symbol: poolFeature.lpToken.symbol,
-      decimals: poolFeature.lpToken.decimals,
-      totalSupply: poolFeature.lpToken.totalSupply,
-    });
+    const stakingToken: IntegrationERC20TokenDto = this.getIntegrationErc20TokenDto(
+      poolFeature?.lpToken ?? mirrorToken,
+    );
 
-    poolFeature.tokens.forEach((pt) => {
+    poolFeature?.tokens.forEach((pt) => {
       const poolToken: IntegrationPoolTokenDto = plainToClass(IntegrationPoolTokenDto, {
         address: pt.address,
         name: pt.name,
@@ -209,7 +219,12 @@ export class MirrorStaking {
     return plainToClass(IntegrationStakingPositionDto, {
       address: assetAddress,
       poolId: null,
-      poolName: null,
+      poolName: stakingToken.tokens?.length
+        ? stakingToken.tokens
+            .sort((a, b) => a.positionInPool - b.positionInPool)
+            .map((pt) => pt.symbol)
+            .join('/')
+        : stakingToken.symbol,
       rewards: [
         plainToClass(IntegrationClaimableTokenDto, {
           address: mirrorToken.address,
@@ -232,20 +247,36 @@ export class MirrorStaking {
       await Promise.all(
         addresses.map(async (address) => {
           // eslint-disable-next-line camelcase
-          const { reward_infos } = await mirror.staking.getRewardInfo(address);
+          const [govStaking, { reward_infos }] = await Promise.all([
+            mirror.gov.getStaker(address),
+            mirror.staking.getRewardInfo(address),
+          ]);
 
+          const stakingBalances: MirrorStakingDataInterface[] = [];
           // eslint-disable-next-line camelcase
           reward_infos?.map(({ asset_token, bond_amount, pending_reward, is_short }) => {
-            const mapItem = balanceMap.get(address);
-            const balanceObj: MirrorStakingDataInterface = {
+            stakingBalances.push({
               stakingBalance: String(bond_amount),
               stakingToken: String(asset_token),
               reward: String(pending_reward),
+              isGov: false,
               // eslint-disable-next-line camelcase
               isShort: is_short,
-            };
-            mapItem ? mapItem.push(balanceObj) : balanceMap.set(address, [balanceObj]);
+            });
           });
+
+          if (Number(govStaking.balance) > 0) {
+            stakingBalances.push({
+              stakingBalance: String(govStaking.balance),
+              stakingToken: MirrorAddresses.mirror,
+              reward: String(govStaking.pending_voting_rewards),
+              isShort: false,
+              isGov: true,
+            });
+          }
+          if (stakingBalances.length) {
+            balanceMap.set(address, stakingBalances);
+          }
         }),
       );
       return balanceMap;
@@ -315,4 +346,5 @@ export interface MirrorStakingDataInterface {
   stakingToken: string;
   reward?: string;
   isShort: boolean;
+  isGov: boolean;
 }

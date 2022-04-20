@@ -1,4 +1,4 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -16,6 +16,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
 import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
@@ -23,6 +24,7 @@ import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
 import { ApprovalsController } from './approvals/approvals.controller';
+import { AssetsV2Controller } from './assets-v2/assets-v2.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import { BlacklistController } from './blacklist/blacklist.controller';
@@ -82,11 +84,12 @@ import { VaultsModule } from './vaults/vaults.module';
     ScansApiModule,
     MailModule,
     ImpermanentLossModule,
-  ],
+  ].sort(),
   controllers: [
     HealthController,
     AnalyticController,
     AssetsController,
+    AssetsV2Controller,
     ApprovalsController,
     BalancesController,
     BlacklistController,
@@ -101,7 +104,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScamsController,
     TokensController,
     OpportunitiesController,
-  ],
+  ].sort(),
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -111,11 +114,10 @@ import { VaultsModule } from './vaults/vaults.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    // TODO
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
     {
       provide: APP_GUARD,
       useClass: ApiVersionGuard,
@@ -129,7 +131,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ServiceHealthIndicator,
     SearchService,
     Web3NameService,
-  ],
+  ].sort(),
 })
 export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}

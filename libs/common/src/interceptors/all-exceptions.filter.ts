@@ -1,3 +1,4 @@
+import { plainToClass } from 'class-transformer';
 import { Request } from 'express';
 
 import {
@@ -58,7 +59,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // constructor method, thus we should resolve it here.
       const { httpAdapter } = this.httpAdapterHost;
       const args = host.getArgs(); // TODO: m.b. take from request
-      const protocolName = args?.[0]?.params?.protocolName;
+      const protocolName = args?.[0]?.params?.protocolName || null;
 
       // N.B! letters sensitive to register and it's a risky
       const reqId = request.header(HEADER_REQUEST_ID);
@@ -67,35 +68,23 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const timestampExit = Number(request.header(HEADER_TIMESTAMP_EXIT)) || Date.now();
       const timeExecute = timestampExit - timestampEntry;
       // TODO: m.b. use plainToClass but seems no benefits
-      const responseBody: ErrorResponseDto = {
+      const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
-        message: errorMessage,
-        path: httpAdapter.getRequestUrl(request),
-        reqId,
-        sessionId,
+        message: errorMessage || exception,
         timestampEntry: timestampEntry.toString(),
         timestampExit: timestampExit.toString(),
         timeExecute: timeExecute.toString(),
+        path: httpAdapter.getRequestUrl(request),
+        reqId,
+        sessionId,
         protocolName,
-      };
+      });
 
       this.logger.error(
         { ...exception, responseBody: responseBody },
         `${exception.stack || ''}\n${this.constructor.name}`,
         // this.constructor.name,
       );
-
-      // const className = contextHttp.getClass().name;
-      // if (allowedControllers.includes(className)) {
-      //   Sentry.captureException(exception, {
-      //     level: Severity.Error,
-      //     extra: {
-      //       reqId,
-      //       sessionId,
-      //       protocolName,
-      //     },
-      //   });
-      // }
 
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {

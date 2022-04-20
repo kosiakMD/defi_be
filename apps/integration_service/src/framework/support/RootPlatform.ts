@@ -1,9 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
 
 import { ModuleRef } from '@nestjs/core';
 
 import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
-import { groupBy } from '@app/common/utils';
+import { groupBy, keepAddressesByChainId } from '@app/common/utils';
 
 import { getChainById } from '../../common/utils/chain';
 
@@ -87,18 +89,20 @@ export abstract class RootPlatform implements IRootPlatform {
     this.protocols.forEach((protocol) => {
       const { chain, list: features } = protocol.getMeta();
       supportedChains.add(chain.id);
-      // TODO: Validate user address per protocol i.e. protocol.isValidAddress(address)
-      // (EVM vs non-evm likely)
+
       if (!chains.includes(chain.id)) {
         return;
       }
+      const validAddressesForChain = keepAddressesByChainId(addresses, chain.id);
 
-      promises.push(
-        protocol.getUsersData(addresses).then(([wallets, userErrors]) => {
-          errors.push(...userErrors);
-          return { chain, features, wallets, errors };
-        }),
-      );
+      if (validAddressesForChain?.length) {
+        promises.push(
+          protocol.getUsersData(validAddressesForChain).then(([wallets, userErrors]) => {
+            errors.push(...userErrors);
+            return { chain, features, wallets, errors };
+          }),
+        );
+      }
     });
 
     // Add error messages for unsupported chains
@@ -258,7 +262,9 @@ export abstract class RootPlatform implements IRootPlatform {
     resolvedProtocols.forEach((protocol) => {
       if (protocol.chain.id !== chain) return;
       protocol.features.forEach((feature) => features.add(feature));
-      positions.push(...protocol.wallets.get(user));
+      if (protocol.wallets.has(user)) {
+        positions.push(...protocol.wallets.get(user));
+      }
     });
     const total = this.getPositionsTotal(positions);
     const positionsByFeature = Object.fromEntries(groupBy(positions, (i) => i.feature).entries());

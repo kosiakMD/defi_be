@@ -15,6 +15,7 @@ export enum FeatureEnum {
   mint = 'mint',
   airdrop = 'airdrop',
   delegation = 'delegation',
+  nativeStaking = 'nativeStaking',
   // derivatives = 'derivatives',
   // exchange = 'exchange',
   // seigniorage = 'seigniorage',

@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { init1647287372738 } from './migrations/1647287372738-init';
 import { addGithubFilesTable1648469052708 } from './migrations/1648469052708-add_github_files_table';
 import { addContractAnalysisTable1648707974543 } from './migrations/1648707974543-add_contract_analysis_table';
+import { insertMasterchefTemplateContract1649335021487 } from './migrations/1649335021487-insert-masterchef-template-contract';
+import { insertCompoundTemplateContract1649760170586 } from './migrations/1649760170586-insert-compound-template-contract';
 
 @Module({
   imports: [
@@ -29,6 +31,8 @@ import { addContractAnalysisTable1648707974543 } from './migrations/164870797454
           init1647287372738,
           addGithubFilesTable1648469052708,
           addContractAnalysisTable1648707974543,
+          insertMasterchefTemplateContract1649335021487,
+          insertCompoundTemplateContract1649760170586,
         ],
       }),
     }),

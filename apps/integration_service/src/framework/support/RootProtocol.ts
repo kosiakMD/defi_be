@@ -26,20 +26,18 @@ export abstract class RootProtocol<
   TUserEntry extends IWalletUserEntry,
 > implements IRootProtocol
 {
+  meta: IProtocolMeta;
   protected abstract logger: Logger;
   protected abstract cache: Cache;
-
   // TODO: use new asset service :)
   protected abstract accountService: AccountService;
   protected abstract priceService: PriceService;
 
   abstract initialize(): Promise<void>;
+
   abstract getCacheableOpportunityData(): Promise<TMinimal[]>; // get all raw data that can be cached (pools with token address, but not token details/price)
+
   abstract getUsersData(addresses: Address[]): Promise<[Map<Address, TUserEntry[]>, Error[]]>; // fetch user balances for each pool, and filter to only owned pools
-  protected abstract formatOpportunity(
-    opportunity: TMinimal,
-    tokens: Map<Address, any>,
-  ): TOpportunity | void;
 
   async cachePoolData(): Promise<TMinimal[]> {
     let pools: TMinimal[] = [];
@@ -68,9 +66,11 @@ export abstract class RootProtocol<
   }
 
   async getPoolData(): Promise<[TOpportunity[], Error[]]> {
+    // console.log('deleting ' + `pool_list_${this.getProtocolId()}`);
+    // await this.cache.del(`pool_list_${this.getProtocolId()}`);
     const list = await this.cache.get<string[]>(`pool_list_${this.getProtocolId()}`);
 
-    if (!list) {
+    if (!list?.length) {
       // If protocol pool list is not available, then
       // refetch all the pools and cache for the next person
       // (Only would likely be used for new deploys, or failed background job)
@@ -81,10 +81,13 @@ export abstract class RootProtocol<
       return this.hydrateOpportunityData(await this.cachePoolData());
     }
 
-    const pools = await this.cache.store.mget(
+    let pools = await this.cache.store.mget(
       ...list.map((poolId) => `${this.meta.chain}_${poolId}`),
       {},
     );
+
+    // case when pools saved as null in the cache
+    pools = pools.filter((p) => p !== null);
 
     if (list.length !== pools.length) {
       // Should only occur if pools list is cached, however the pools themselves are not cached
@@ -100,6 +103,53 @@ export abstract class RootProtocol<
 
     return this.hydrateOpportunityData(pools);
   }
+
+  getMeta(): IFeatureMeta {
+    return {
+      chain: getChainById(this.meta.chain),
+      list: [this.meta.feature],
+    };
+  }
+
+  public registerMeta(meta: IProtocolMeta) {
+    this.meta = Object.assign(this.meta ?? {}, meta);
+  }
+
+  // generates a unique ID per protocol (useful for caching)
+  getProtocolId() {
+    const hash = crypto
+      .createHash('sha256') //
+      .update(JSON.stringify(this.meta))
+      .digest('hex'); // digest('base64')
+
+    return `${this.constructor.name}_${this.meta.chain}_${hash}`;
+  }
+
+  /**
+   * retrieves from cache if available. If not available, executes the callback
+   * & saves to cache for next time
+   *
+   * @param ttl time to live
+   * @param key cache key
+   * @param callback data to cache
+   * @returns data
+   */
+  async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
+    const cached = await this.cache.get<T>(key);
+    if (cached) return cached;
+
+    // in the event of an error, nothing will be cached
+    const data = await callback();
+    if (data) {
+      await this.cache.set(key, data, { ttl });
+    }
+    return data;
+  }
+
+  protected abstract formatOpportunity(
+    opportunity: TMinimal,
+    tokens: Map<Address, any>,
+  ): TOpportunity | void;
 
   /**
    * Update real time info thats not available from the tokens themselves.
@@ -117,9 +167,24 @@ export abstract class RootProtocol<
   protected async hydrateOpportunityData(
     opportunities: TMinimal[],
   ): Promise<[TOpportunity[], Error[]]> {
-    const tokens = await this.getTokensForOpportunities(opportunities); // returns all required tokens for these pools
-    const updatedOpportunities = await this.updateRealTimeData(opportunities); // update if needed
-    return updatedOpportunities.reduce(
+    let tokens;
+    try {
+      tokens = await this.getTokensForOpportunities(opportunities); // returns all required tokens for these pools
+    } catch (e) {
+      if (e) {
+        return [[], [e]];
+      }
+    }
+    let updatedOpportunities;
+    let updatedOpportunitiesError;
+
+    try {
+      updatedOpportunities = await this.updateRealTimeData(opportunities);
+    } catch (e) {
+      updatedOpportunitiesError = e;
+    }
+
+    return (updatedOpportunities ? updatedOpportunities : opportunities).reduce(
       ([finalOpportunityList, errors], opportunity) => {
         try {
           const pool = this.formatOpportunity(opportunity, tokens);
@@ -136,7 +201,7 @@ export abstract class RootProtocol<
         }
         return [finalOpportunityList, errors];
       },
-      [[], []],
+      [[], updatedOpportunitiesError ? [updatedOpportunitiesError] : []],
     ); // hydrates each pool with full token details & live prices
   }
 
@@ -158,18 +223,13 @@ export abstract class RootProtocol<
 
   protected getUniqueTokensFromRawPools(pools: TMinimal[]) {
     const tokens = new Set<string>();
-    pools.forEach((pool) => {
-      if ('supplied' in pool && pool.supplied?.length) {
-        pool.supplied.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
-
-      if ('borrowed' in pool && pool.borrowed?.length) {
-        pool.borrowed.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
-
-      if ('rewarded' in pool && pool.rewarded?.length) {
-        pool.rewarded.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
+    const features = ['supplied', 'borrowed', 'rewarded'];
+    features.forEach((featureName) => {
+      pools.forEach((pool) => {
+        if (pool?.[featureName]?.length) {
+          pool[featureName].forEach((item) => tokens.add(item.token.address.toLowerCase()));
+        }
+      });
     });
 
     return Array.from(tokens);
@@ -204,47 +264,5 @@ export abstract class RootProtocol<
         }),
       },
     ]);
-  }
-
-  meta: IProtocolMeta;
-  getMeta(): IFeatureMeta {
-    return {
-      chain: getChainById(this.meta.chain),
-      list: [this.meta.feature],
-    };
-  }
-  public registerMeta(meta: IProtocolMeta) {
-    this.meta = Object.assign(this.meta ?? {}, meta);
-  }
-
-  // generates a unique ID per protocol (useful for caching)
-  getProtocolId() {
-    const hash = crypto
-      .createHash('sha256') //
-      .update(JSON.stringify(this.meta))
-      .digest('hex'); // digest('base64')
-
-    return `${this.constructor.name}_${this.meta.chain}_${hash}`;
-  }
-
-  /**
-   * retrieves from cache if available. If not available, executes the callback
-   * & saves to cache for next time
-   *
-   * @param ttl time to live
-   * @param key cache key
-   * @param callback data to cache
-   * @returns data
-   */
-  async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
-    const cached = await this.cache.get<T>(key);
-    if (cached) return cached;
-
-    // in the event of an error, nothing will be cached
-    const data = await callback();
-    if (data) {
-      await this.cache.set(key, data, { ttl });
-    }
-    return data;
   }
 }

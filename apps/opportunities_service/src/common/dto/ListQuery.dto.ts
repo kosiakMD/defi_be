@@ -3,8 +3,8 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { OpportunitySortFieldEnum } from '../../modules/opportunity/enums/opportunity.enums';
-import { SortDirectionEnum } from '../enum/SortDirection.enum';
+import { SortDirectionEnum } from '@app/common';
+import { OpportunitySortFieldEnum } from '@app/common/enum/opportunities/opportunity.enums';
 
 export class ListQueryDto {
   @ApiProperty({ type: String, default: '', required: false })
@@ -29,14 +29,14 @@ export class ListQueryDto {
   @ApiProperty({
     enum: SortDirectionEnum,
     enumName: 'SortDirectionEnum',
-    example: SortDirectionEnum.DESC,
-    default: SortDirectionEnum.DESC,
+    example: SortDirectionEnum.desc,
+    default: SortDirectionEnum.desc,
     required: false,
   })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  sortDirection = SortDirectionEnum.DESC;
+  sortDirection = SortDirectionEnum.desc;
 
   @ApiProperty({
     enum: OpportunitySortFieldEnum,

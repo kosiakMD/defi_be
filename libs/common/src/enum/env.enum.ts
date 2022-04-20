@@ -1,6 +1,7 @@
 export enum EnvEnum {
-  development = 'development',
   production = 'production',
+  staging = 'staging',
+  development = 'development',
   test = 'test',
   provision = 'provision',
   local = 'local',

@@ -6,7 +6,8 @@ const errorHandler = async function (lambdaHandler: Handler): Promise<Handler> {
     // production only by default
     enabled:
       Boolean(process.env.SENTRY_ENABLED) ||
-      process.env.NODE_ENV.toLocaleLowerCase() === 'production',
+      process.env.NODE_ENV.toLocaleLowerCase() === 'production' ||
+      process.env.NODE_ENV.toLocaleLowerCase() === 'staging',
     environment: process.env.NODE_ENV,
     debug:
       Boolean(process.env.SENTRY_DEBUG) ||

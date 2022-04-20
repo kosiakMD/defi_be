@@ -11,6 +11,8 @@ import { FarmCreateDto } from '@app/common/dto/opportunities/farm.create.dto';
 import { InvestmentTokensDto } from '@app/common/dto/opportunities/investment.tokens.dto';
 import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
 import { RewardTokenDto } from '@app/common/dto/opportunities/reward.token.dto';
+import { VaultTypeEnum } from '@app/common/enum/opportunities/opportunity.enums';
+import { aprToApy, apyToApr } from '@app/common/utils';
 
 import { IntegrationService } from '../../microservices/integration.service';
 import { FarmEntity } from '../entities/farm.entity';
@@ -19,7 +21,7 @@ import { FarmRepository } from '../repositories/farm.repository';
 import { AdapterResults, LegacyFetchOpportunityOptions } from '../types/opportunity.adapter.types';
 
 @Injectable()
-export class LegacyAdapter implements IOpportunityAdapter {
+export class InternalV2Adapter implements IOpportunityAdapter {
   constructor(
     private readonly integrationService: IntegrationService,
     @InjectRepository(FarmRepository)
@@ -28,7 +30,9 @@ export class LegacyAdapter implements IOpportunityAdapter {
     private readonly cache: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: Logger,
-  ) {}
+  ) {
+    //
+  }
 
   async loadData(): Promise<AdapterResults> {
     // fetches supported farms, saves each to database if required, returns db entities
@@ -108,26 +112,31 @@ export class LegacyAdapter implements IOpportunityAdapter {
 
               await Promise.all(
                 cachedItems.map(async (item) => {
-                  const apr =
-                    item.rewards?.reduce((total, reward) => total + (reward?.apr ?? 0), 0) || null;
-                  const apy = item.stats.poolApy ?? item.stats.apy ?? null;
+                  const storedAPR =
+                    item.rewards?.reduce((total, reward) => total + (reward?.apr ?? 0), 0) / 100 ||
+                    null;
+                  const storedAPY = (item.stats.poolApy ?? item.stats.apy) / 100 || null;
 
-                  opportunities.push(
-                    plainToClass(OpportunityCreateDto, {
-                      farm: farm,
-                      source: 'legacy',
-                      sourceId: cacheKey,
-                      chainId: features.chain.id,
-                      apr,
-                      apy,
-                      investmentUrl: null,
-                      totalValueLocked: item.stats.tvl,
-                      tokens: plainToClass(InvestmentTokensDto, {
-                        rewards: this.getRewardTokens(item),
-                        deposit: this.getDepositToken(item),
-                      }),
+                  const apr = storedAPR || (storedAPY ? apyToApr(storedAPY) : null);
+                  const apy = storedAPY || (storedAPR ? aprToApy(storedAPR) : null);
+
+                  const opportunity = plainToClass(OpportunityCreateDto, {
+                    farm: farm,
+                    source: 'internal_v2',
+                    sourceId: cacheKey,
+                    chainId: features.chain.id,
+                    apr,
+                    apy,
+                    investmentUrl: null,
+                    totalValueLocked: item.stats.tvl,
+                    categories: this.getVaultCategories(item),
+                    tokens: plainToClass(InvestmentTokensDto, {
+                      rewards: this.getRewardTokens(item),
+                      deposit: this.getDepositToken(item),
                     }),
-                  );
+                  });
+
+                  opportunities.push(opportunity);
                 }),
               );
             }),
@@ -147,6 +156,10 @@ export class LegacyAdapter implements IOpportunityAdapter {
     return data?.items || [];
   }
 
+  /*****
+   * Formatting Tokens
+   */
+
   private getRewardTokens(item: any) {
     if (!item?.rewards?.length) return [];
 
@@ -157,6 +170,7 @@ export class LegacyAdapter implements IOpportunityAdapter {
         plainToClass(RewardTokenDto, {
           address: reward.address,
           symbol: reward.symbol,
+          name: reward.name,
         }),
       );
       return acc;
@@ -164,30 +178,86 @@ export class LegacyAdapter implements IOpportunityAdapter {
   }
 
   private getDepositToken(item: any) {
-    if (item.stakingToken) {
-      return plainToClass(DepositTokenDto, {
-        address: item.stakingToken.address,
-        symbol: item.stakingToken.symbol,
-        tokens: item.stakingToken.tokens?.map((token) =>
-          plainToClass(DepositTokenDto, {
-            address: token.address,
-            symbol: token.symbol,
-          }),
-        ),
-      });
+    const baseToken = item.lpToken || item.stakingToken;
+    const underlyingTokens = item.tokens || item.stakingToken?.tokens;
+
+    const tvl = underlyingTokens?.length
+      ? underlyingTokens.reduce((acc, cur) => acc + cur.reserve * cur.price, 0)
+      : item.stats.tvl || baseToken.price * baseToken.totalSupply;
+
+    return plainToClass(DepositTokenDto, {
+      address: baseToken.address,
+      symbol: baseToken.symbol,
+      name: baseToken.name,
+      tokens: underlyingTokens?.map((token) => {
+        const total = token.reserve * token.price;
+        return plainToClass(DepositTokenDto, {
+          address: token.address,
+          symbol: token.symbol,
+          name: token.name,
+          weight: Math.round((total / tvl) * 1000) / 1000,
+        });
+      }),
+    });
+  }
+
+  /*****
+   * Categorization
+   */
+
+  private tokenIsStablecoin(token: { price: number }): boolean {
+    return Math.round(token.price) === 1;
+  }
+  private isTruthy(value: any) {
+    return Boolean(value);
+  }
+  private vaultIsPool(vault: any) {
+    const tokens = vault.stakingToken?.tokens ?? vault.tokens;
+    if (Array.isArray(tokens)) {
+      return tokens.length >= 2;
+    }
+    return false;
+  }
+  private vaultIsSingleStake(vault: any) {
+    const tokens = vault.stakingToken?.tokens ?? vault.tokens;
+    if (Array.isArray(tokens)) {
+      return tokens.length < 2;
+    }
+    return true;
+  }
+  private vaultIsNoIL(vault: any) {
+    const tokens = vault.stakingToken?.tokens ?? vault.tokens;
+    if (Array.isArray(tokens)) {
+      return tokens.map(this.tokenIsStablecoin).some(this.isTruthy);
+    }
+    return false;
+  }
+  private vaultIsStablePool(vault: any) {
+    const tokens = vault.stakingToken?.tokens ?? vault.tokens;
+    if (Array.isArray(tokens)) {
+      return tokens.map(this.tokenIsStablecoin).every(this.isTruthy);
+    }
+    return false;
+  }
+
+  private getVaultCategories(vault: unknown) {
+    const categories = new Set<VaultTypeEnum>();
+    if (this.vaultIsPool(vault)) {
+      categories.add(VaultTypeEnum.POOL);
     }
 
-    if (item.lpToken) {
-      return plainToClass(DepositTokenDto, {
-        address: item.lpToken.address,
-        symbol: item.lpToken.symbol,
-        tokens: item.tokens.map((token) =>
-          plainToClass(DepositTokenDto, {
-            address: token.address,
-            symbol: token.symbol,
-          }),
-        ),
-      });
+    if (this.vaultIsSingleStake(vault)) {
+      categories.add(VaultTypeEnum.SINGLE_STAKE);
     }
+
+    if (this.vaultIsNoIL(vault)) {
+      categories.add(VaultTypeEnum.NO_IL);
+    }
+
+    if (this.vaultIsStablePool(vault)) {
+      categories.add(VaultTypeEnum.STABLE_POOL);
+    }
+
+    return Array.from(categories);
   }
 }

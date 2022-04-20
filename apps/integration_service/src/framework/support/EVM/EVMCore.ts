@@ -107,8 +107,11 @@ export abstract class EVMCore<
               .div(totalSupply)
               .toNumber();
             token.underlyingAssets.forEach((u) => {
-              normalizeDecimals((u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(), u.decimals)
-            })
+              normalizeDecimals(
+                (u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(),
+                u.decimals,
+              );
+            });
           });
         } catch (err) {
           // TODO: delete this block, Prices should come from asset service, not calculated here
@@ -188,18 +191,13 @@ export abstract class EVMCore<
    */
   protected getUniqueTokensFromRawPools(pools: TMinimalType[]) {
     const tokens = new Set<string>();
-    pools.forEach((pool) => {
-      if ('supplied' in pool && pool.supplied?.length) {
-        pool.supplied.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
-
-      if ('borrowed' in pool && pool.borrowed?.length) {
-        pool.borrowed.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
-
-      if ('rewarded' in pool && pool.rewarded?.length) {
-        pool.rewarded.forEach((item) => tokens.add(item.token.address.toLowerCase()));
-      }
+    const features = ['supplied', 'borrowed', 'rewarded'];
+    features.forEach((featureName) => {
+      pools.forEach((pool) => {
+        if (pool?.[featureName]?.length) {
+          pool[featureName].forEach((item) => tokens.add(item.token.address.toLowerCase()));
+        }
+      });
     });
 
     return Array.from(tokens);

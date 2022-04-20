@@ -43,9 +43,14 @@ export class StaderAirdrop {
 
         // eslint-disable-next-line camelcase
         user_strategy_info?.forEach((strategy) => {
+          const strategyName = (
+            strategy.strategy_name.charAt(0).toUpperCase() + strategy.strategy_name.slice(1)
+          )
+            .split('_')
+            .join(' ');
           resultItems.push(
             plainToClass(AirdropPositionDto, {
-              name: strategy.strategy_name,
+              name: strategyName,
               id: strategy.strategy_id,
               token: plainToClass(IntegrationERC20TokenDto, {
                 address: lunaToken.address,
@@ -54,7 +59,6 @@ export class StaderAirdrop {
                 decimals: lunaToken.decimals,
                 balance: toDecimals(strategy.total_rewards, lunaToken.decimals),
               }),
-              rewards: [],
             }),
           );
         });

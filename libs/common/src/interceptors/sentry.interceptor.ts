@@ -1,8 +1,9 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
+import { CaptureContext } from '@sentry/types';
 import { Request } from 'express';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
@@ -24,6 +25,7 @@ const allowedControllers = [
 
 @Injectable()
 export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   intercept(
     context: ExecutionContext,
@@ -33,11 +35,15 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
-      let reqId, sessionId, timestampEntry, timestampExit, timeExecute;
+      let reqId, sessionId, timestampEntry, timestampExit, timeExecute, path;
       const hostType = context.getType();
       if (hostType === 'http') {
         const contextHttp = context.switchToHttp();
         const request: Request = contextHttp.getRequest<Request>();
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line no-underscore-dangle
+        path = request._parsedUrl.path;
         reqId = request.header(HEADER_REQUEST_ID)?.toString();
         sessionId = request.header(HEADER_SESSION_ID)?.toString();
         timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY)?.toString();
@@ -47,6 +53,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
       const args = context.getArgs();
       const sentryMeta = {
+        path,
         className,
         reqId,
         sessionId,
@@ -55,20 +62,35 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
         timeExecute,
         protocolName: args?.[0]?.params?.protocolName,
       };
-      const sentryParams = {
+      const sentryParams: CaptureContext = {
         level: Severity.Error,
-        tags: sentryMeta,
+        tags: {
+          sessionId,
+          className,
+          protocolName: args?.[0]?.params?.protocolName || null,
+        },
         extra: sentryMeta,
+        contexts: {
+          sessionId,
+          reqId,
+        },
+        user: {
+          sessionId,
+          reqId,
+          timestampEntry,
+          timestampExit,
+          timeExecute,
+        },
       };
 
       return next.handle().pipe(
         catchError<T, any>((exception) => {
           Sentry.captureException(exception, sentryParams);
-          throwError(exception);
+          return throwError(() => exception);
         }) as any,
-        tap<T>(null, (exception) => {
-          Sentry.captureException(exception, sentryParams);
-        }) as any,
+        // tap<T>(null, (exception) => {
+        //   Sentry.captureException(exception, sentryParams);
+        // }) as any,
       ) as unknown as Observable<T>;
     }
 

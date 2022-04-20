@@ -7,8 +7,8 @@ import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
 import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
 
-import { LegacyAdapter } from '../adapters/legacy.adapter';
-import { MultifarmAdapter } from '../adapters/multifarm/multifarm.adapter';
+import { InternalV2Adapter } from '../adapters/internal.v2.adapter';
+// import { MultifarmAdapter } from '../adapters/multifarm/multifarm.adapter';
 import { OpportunityEntity } from '../entities/opportunity.entity';
 import { SyncResult } from '../interfaces/sync.result.interface';
 import { OpportunityRepository } from '../repositories/opportunity.repository';
@@ -22,7 +22,9 @@ export class OpportunityService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     private readonly logger: Logger,
     private readonly opportunityAdapterService: OpportunityAdapterService,
-  ) {}
+  ) {
+    //
+  }
 
   async find(opportunityId: number): Promise<OpportunityDto> {
     return this.opportunityRepository.findItem(opportunityId);
@@ -34,11 +36,9 @@ export class OpportunityService {
 
   async sync(): Promise<SyncResult> {
     try {
-      // TODO: Adapters Coming Soon
       const { count } = await this.opportunityAdapterService.runInOrder([
-        // InternalAdapter,
-        LegacyAdapter,
-        MultifarmAdapter,
+        InternalV2Adapter,
+        // MultifarmAdapter,
         // CoinDixAdapter,
         // VFatAdapter
       ]);

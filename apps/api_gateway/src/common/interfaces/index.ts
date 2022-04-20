@@ -1,5 +1,6 @@
 import {
   AaveProtocolEnum,
+  AaveV3ProtocolEnum,
   AlpacaProtocolEnum,
   AnchorProtocolEnum,
   AutofarmProtocolEnum,
@@ -37,7 +38,8 @@ export type ProtocolName =
   | AaveProtocolEnum
   | EllipsisProtocolEnum
   | CurveProtocolEnum
-  | AnchorProtocolEnum;
+  | AnchorProtocolEnum
+  | AaveV3ProtocolEnum;
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;

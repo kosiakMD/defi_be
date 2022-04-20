@@ -92,7 +92,6 @@ import SaberProtocol from './protocols/saber/saber.protocol';
 import { SaberStaking } from './protocols/saber/saber.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import { StaderAirdrop } from './protocols/stader/stader.airdrop';
-import { StaderDelegationStaking } from './protocols/stader/stader.delegation.staking';
 import { StaderProtocol } from './protocols/stader/stader.protocol';
 import { StaderStaking } from './protocols/stader/stader.staking';
 import { SundaeSwapFarms } from './protocols/sundaeswap/sundaeswap.farms';
@@ -183,7 +182,7 @@ const Astroport = [
 const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
 const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
 const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
-const Stader = [StaderProtocol, StaderStaking, StaderAirdrop, StaderDelegationStaking];
+const Stader = [StaderProtocol, StaderStaking, StaderAirdrop];
 const Osmosis = [OsmosisProtocol, OsmosisPools, OsmosisLocked];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor

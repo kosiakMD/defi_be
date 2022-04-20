@@ -116,13 +116,13 @@ export class TrackedTokenPopulationProcessor {
         // we need to run request to get next chunk
         this.runCoinmarketcapTokensRequest(start);
       }
-      for (const { platform } of coinmarketcapTokens) {
+      for (const { platform, rank } of coinmarketcapTokens) {
         const { name: chain, token_address: address } = platform || {};
         const chainId = this.coinmarketcapPlatformChainIdEnum[chain];
         if (!chainId) {
           this.logger.warn(`Unknown Coinmarketcap chain! No chain name: ${chain} in Database`);
         } else if (address) {
-          this.assetsProcessor.processAsset(address, chainId);
+          this.assetsProcessor.processAsset(address, chainId, rank);
         }
       }
     }

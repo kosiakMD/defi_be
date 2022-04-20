@@ -20,7 +20,7 @@ import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
 import { ChainAbbrEnum, ChainIdEnum, ProjectEnum, QuickswapProtocolEnum } from '@app/common/enum';
-import { chunk, keepETHAddresses } from '@app/common/utils';
+import { chunk } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { getKey } from '@app/common/utils/string';
 import { Web3ProviderService } from '@app/common/web3provider';
@@ -269,10 +269,14 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
 
     const { stakingContracts, dualStakingContracts } = await this.getAvailablePools();
 
-    const pairAddresses = Array.from(new Set([]
-      .concat(stakingContracts, dualStakingContracts)
-      .map(({ pairAddress }) => pairAddress)
-      .concat(QUICKSWAP_ADDITIONAL_PAIRS)));
+    const pairAddresses = Array.from(
+      new Set(
+        []
+          .concat(stakingContracts, dualStakingContracts)
+          .map(({ pairAddress }) => pairAddress)
+          .concat(QUICKSWAP_ADDITIONAL_PAIRS),
+      ),
+    );
 
     const { token: rawRewardToken, price: rawRewardPrice } = await this.getSinglePricedToken(
       QUICKSWAP_REWARDS_TOKEN_ADDRESS,
@@ -551,7 +555,6 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

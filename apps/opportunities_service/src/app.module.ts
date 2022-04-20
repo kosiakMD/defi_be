@@ -1,15 +1,18 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TerminusModule } from '@nestjs/terminus';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
+import { HealthController } from './controllers/health.controller';
 import { OpportunitiesController } from './controllers/opportunities.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { OpportunityModule } from './modules/opportunity/opportunity.module';
@@ -36,12 +39,16 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
     DatabaseModule,
     OpportunityModule,
   ],
-  controllers: [OpportunitiesController],
+  controllers: [OpportunitiesController, HealthController],
   providers: [
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
   ],
 })
 export class AppModule implements OnModuleInit {

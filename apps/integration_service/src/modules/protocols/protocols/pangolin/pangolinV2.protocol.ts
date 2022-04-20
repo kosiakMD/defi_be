@@ -11,7 +11,6 @@ import {
   ProjectEnum,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { keepETHAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -47,7 +46,6 @@ export class PangolinV2Protocol extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

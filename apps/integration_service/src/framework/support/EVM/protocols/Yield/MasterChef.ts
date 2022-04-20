@@ -195,7 +195,9 @@ export class MasterChef
       !pool.rewarded.every((t) => tokens.has(t.token.address))
     ) {
       // throw error or just return; to silently skip pools
-      throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
+      // throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
+      // todo: consider how to handle such cases, because exceptions generates many error logs
+      return;
     }
 
     const tvl = pool.supplied.reduce((tvl, poolToken) => {
@@ -310,7 +312,7 @@ export class MasterChef
     if (pool.supplied[0].token.underlying?.length === 2) {
       const poolShare = balance / pool.supplied[0].totalSupplied;
       pool.supplied[0].token.underlying.forEach((u) => {
-        u.balance = u.reserve * poolShare;
+        u.balance = normalizeDecimals(u.reserve.toString(), u.decimals) * poolShare;
         u.value = u.balance * u.price;
       });
     }

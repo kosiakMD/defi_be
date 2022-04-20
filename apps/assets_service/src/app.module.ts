@@ -1,10 +1,13 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 
 import { CommonModule } from './common/common.module';
 import { DatabaseConfigService } from './config/database/db.config.service';
@@ -38,11 +41,14 @@ import { PricesModule } from './modules/prices/prices.module';
   ],
   controllers: [],
   providers: [
-    // TODO: test with Sentry middleware only
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
   ],
 })
 export class AppModule implements OnModuleInit {

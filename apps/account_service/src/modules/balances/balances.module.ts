@@ -22,6 +22,9 @@ import { BalancesService } from './balances.service';
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
+import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
+import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
+import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
 import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
 import { NetworkBalancesStrategy } from './strategies/network.strategy';
 import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
@@ -70,6 +73,9 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
     SecretBalancesStrategy,
     OsmosisBalancesStrategy,
     RoninBalancesStrategy,
+    TerraDelegationsStrategy,
+    CardanoDelegationsStrategy,
+    SolanaDelegationsStrategy,
   ],
 })
 export class BalancesModule {}

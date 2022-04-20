@@ -32,7 +32,7 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
-import { concatStrings, decimalsDivider, keepETHAddresses } from '@app/common/utils';
+import { concatStrings, decimalsDivider } from '@app/common/utils';
 
 import { Asset, BaseData } from '../../../common/interfaces/transactions.interfaces';
 
@@ -86,7 +86,6 @@ export default class AlpacaProtocol extends DataProviderProtocol implements Abst
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     const errors: string[] = [];
     const base: BaseData[] = [];
     try {

@@ -1,6 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   CacheModule,
   Inject,
@@ -13,14 +13,17 @@ import {
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { EndpointsController } from './controllers/endpoints.controller';
+import { HealthController } from './controllers/health.controller';
 import { RPCNodesController } from './controllers/rpc-nodes.controller';
 import { DatabaseModule } from './modules/database/database.module';
 import { EndpointsModule } from './modules/endpoints/endpoints.module';
@@ -62,13 +65,16 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
     EndpointsModule,
     RPCNodesModule,
   ],
-  controllers: [EndpointsController, RPCNodesController],
+  controllers: [EndpointsController, RPCNodesController, HealthController],
   providers: [
-    // TODO: test with Sentry middleware only
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
   ],
 })
 export class AppModule implements OnModuleInit, NestModule {

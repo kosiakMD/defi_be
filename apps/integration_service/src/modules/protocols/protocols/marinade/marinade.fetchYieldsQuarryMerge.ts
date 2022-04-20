@@ -113,7 +113,7 @@ export async function fetchYieldsQuarryMerge(
     const replicaMint = mergePool.replicaMint.toString();
 
     const farms = farmsByReplicaMint[replicaMint];
-    if (farms.length === 0) continue;
+    if (!farms || farms?.length === 0) continue;
     const farm = farms[0];
     const stackingItem = plainToClass(IntegrationStakingPositionDto, farm);
 

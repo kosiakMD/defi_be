@@ -9,15 +9,21 @@
     "node": ">=14",
     "npm": "^6"
   },
-  "scripts": {},
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
-    "@indexed-finance/multicall": "^2.0.0",
     "@ethersproject/providers": "5.4.5",
+    "@indexed-finance/multicall": "^2.0.0",
     "rxjs": "^6.6.6",
     "web3": "^1.6.0",
     "winston-aws-cloudwatch": "^3.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/jest": "^26.0.21",
+    "jest": "27.1.0",
+    "ts-jest": "27.0.5"
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",

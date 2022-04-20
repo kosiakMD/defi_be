@@ -1,4 +1,4 @@
-import { TracingModule, HttpTracingModule } from '@narando/nest-xray';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   Inject,
   LoggerService,
@@ -8,12 +8,13 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
 import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
@@ -31,6 +32,19 @@ import { DatabaseModule } from './modules/database.module';
 import { NftModule } from './modules/nft/nft.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
+
+// controllers A-Z sort for Swagger API page
+const controllers = [
+  AnalyticsModule,
+  ApprovalsModule,
+  AssetsModule,
+  BalancesModule,
+  BlacklistModule,
+  ChainsModule,
+  NftModule,
+  TransactionsModule,
+  TransfersModule,
+];
 
 @Module({
   imports: [
@@ -54,16 +68,8 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     }),
     TerminusModule,
     DatabaseModule,
-    ChainsModule,
     // with controllers A-Z sort for Swagger API page
-    ApprovalsModule,
-    AssetsModule,
-    BalancesModule,
-    TransactionsModule,
-    TransfersModule,
-    AnalyticsModule,
-    BlacklistModule,
-    NftModule,
+    ...controllers,
   ],
   controllers: [HealthController],
   providers: [
@@ -71,10 +77,10 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,

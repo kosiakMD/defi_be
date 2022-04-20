@@ -5,3 +5,16 @@ export enum OpportunitySortFieldEnum {
   FARM_NAME = 'farm.name',
   IS_ENABLED = 'is_enabled',
 }
+
+export enum VaultTypeEnum {
+  POOL = 'liquidity-pool',
+  STABLE_POOL = 'stable-pool',
+  SINGLE_STAKE = 'single-stake',
+  NO_IL = 'no-il',
+  LENDING = 'lending',
+}
+
+export enum SortDirectionEnum {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}

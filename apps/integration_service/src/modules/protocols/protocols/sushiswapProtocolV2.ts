@@ -33,7 +33,6 @@ import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
-import { keepETHAddresses } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -168,7 +167,6 @@ export class SushiSwapProtocolV2 extends BasicProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepETHAddresses(addresses);
     const baseData: BaseData[] = [];
     const errors: string[] = [];
     try {

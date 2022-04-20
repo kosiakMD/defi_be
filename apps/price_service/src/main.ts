@@ -4,12 +4,11 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
-import { initSentry } from '@app/common/bootstrap';
+import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -37,22 +36,9 @@ async function bootstrap(): Promise<void> {
   app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
   app.use(urlencoded({ extended: true, limit: configService.get<string>('URL_LIMIT') }));
 
-  const SERVICE_NAME = configService.get<string>('SERVICE_NAME');
-  const NODE_ENV = configService.get<string>('NODE_ENV');
+  initSwagger(app);
 
-  if (NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle(SERVICE_NAME)
-      .setDescription(`${SERVICE_NAME} service description`)
-      .setVersion('1.0') // temporary global as only 1 version
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
-  }
-
-  const port = configService.get<string>('SERVICE_PORT') || 3000;
-  const host = configService.get<string>('SERVICE_HOST');
-  await app.listen(port, host);
+  await startApp(app);
 }
 
 bootstrap().catch((e) => {

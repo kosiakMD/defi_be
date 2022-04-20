@@ -4,7 +4,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, ChainDto, FeatureEnum, Logger, ProtocolNameEnum } from '@app/common';
 import { ChainAbbrEnum, ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { keepSolAddresses } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -41,10 +40,9 @@ export default class OrcaProtocol extends DataProviderProtocol {
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    const keepAddresses = keepSolAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
-        return this.getFeatureData(keepAddresses, chain, f);
+        return this.getFeatureData(addresses, chain, f);
       }),
     );
 

@@ -42,6 +42,7 @@ export enum ProtocolTypeEnum {
   claimable = 'claimable',
   airdrop = 'airdrop',
   delegation = 'delegation',
+  nativeStaking = 'nativeStaking',
 }
 
 export enum TransactionTypeEnum {

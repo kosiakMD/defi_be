@@ -2,13 +2,13 @@ import { Controller, Get, HttpStatus, NotAcceptableException, Param, Query } fro
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ChainsParam } from '@app/common/decorators';
-import { FeaturesResponseDto } from '@app/common/dto';
+import { ErrorResponseDto, FeaturesResponseDto } from '@app/common/dto';
 import { ChainIdEnum, ProtocolNameEnum } from '@app/common/enum';
 
 import { IntegrationsResponseDto } from '../modules/integrations/dto/integrations.dto';
 import { IntegrationsService } from '../modules/integrations/integrations.service';
-import { ProtocolParams } from '../modules/integrations/interfaces/integrations.interface';
 import { IntegrationsServiceV3Decorator } from '../modules/integrations/integrations.service.v3.decorator';
+import { ProtocolParams } from '../modules/integrations/interfaces/integrations.interface';
 
 @ApiTags('Protocols')
 @Controller('v1/protocols')
@@ -16,7 +16,7 @@ export class IntegrationsController {
   constructor(
     private readonly integrationsService: IntegrationsService,
     private readonly integrationsServiceDecorator: IntegrationsServiceV3Decorator,
-              ) {}
+  ) {}
 
   @ApiResponse({ status: 200, type: FeaturesResponseDto })
   @Get('/')
@@ -59,6 +59,7 @@ export class IntegrationsController {
     example: '0x0baf7b79f9174c0840aa93a93a2c2a81044a09a2',
   })
   @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseDto })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ErrorResponseDto })
   @Get('/:protocolName/')
   async getProtocolFeature(
     @Param() params: ProtocolParams,

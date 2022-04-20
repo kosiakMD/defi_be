@@ -1,3 +1,7 @@
+ingress:
+  enabled: true
+  host: devrpc.defiyield.app
+
 configMaps:
   nodes:
     ETH_URL: https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb
@@ -9,9 +13,11 @@ configMaps:
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: production
+    NODE_ENV: development
+    AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
-  - database
+  - databaserpc
   - redis
   - logs
+  - sentry

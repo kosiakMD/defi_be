@@ -89,7 +89,7 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
         },
       });
     });
-    console.log('__result', result);
+
     return result;
   }
 

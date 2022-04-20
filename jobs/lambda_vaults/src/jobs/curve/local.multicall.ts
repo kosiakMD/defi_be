@@ -15,26 +15,30 @@ export class LocalMultiCall extends MultiCall {
   }
 
   async getTokensVirtualPrices(nonRegisterLps: string[], lpMintersMap: Map<string, string>) {
-    const inputs = [];
-    const getCallData = (target) => {
-      return {
-        target: target,
-        function: MulticallMethodsEnum.getVirtualPrice,
-        args: [],
+    try {
+      const inputs = [];
+      const getCallData = (target) => {
+        return {
+          target: target,
+          function: MulticallMethodsEnum.getVirtualPrice,
+          args: [],
+        };
       };
-    };
-    nonRegisterLps.forEach((address) => {
-      const minter = lpMintersMap.get(address);
-      inputs.push(getCallData(minter ?? address));
-    });
+      nonRegisterLps.forEach((address) => {
+        const minter = lpMintersMap.get(address);
+        inputs.push(getCallData(minter ?? address));
+      });
 
-    const [, resp] = await this.multiCall(CurveLpAbis, inputs);
-    return new Map<string, string>(
-      resp.map((r, index) => {
-        const virtualPrice = r ? r.toString() : '0';
-        return [nonRegisterLps[index], virtualPrice];
-      }),
-    );
+      const [, resp] = await this.multiCall(CurveLpAbis, inputs);
+      return new Map<string, string>(
+        resp.map((r, index) => {
+          const virtualPrice = r ? r.toString() : '0';
+          return [nonRegisterLps[index], virtualPrice];
+        }),
+      );
+    } catch (e) {
+      this.logger.error(e, 'getTokensVirtualPrices');
+    }
   }
 
   async getGaugeRewardTokens(gaugeData: { gauge: string; lp: string }[]) {

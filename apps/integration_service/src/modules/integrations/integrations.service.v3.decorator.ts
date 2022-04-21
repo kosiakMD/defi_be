@@ -141,8 +141,10 @@ export class IntegrationsServiceV3Decorator {
             v2Response.data.total += v2Staking.stakingToken.value;
             v2WalletChain[FeatureEnum.staking].totalValue += v2Staking.stakingToken.value;
             v2Staking.rewards.forEach((r) => {
-              v2Response.data.total += r.claimableData.value;
-              v2WalletChain[FeatureEnum.staking].totalValue += r.claimableData.value;
+              if (r.claimableData.value) {
+                v2Response.data.total += r.claimableData.value;
+                v2WalletChain[FeatureEnum.staking].totalValue += r.claimableData.value;
+              }
             })
             return v2Staking;
           })

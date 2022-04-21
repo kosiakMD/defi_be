@@ -78,6 +78,8 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
 
       result.push({
         address,
+        // TODO: add correct AssetDTO extended from AssetEntity
+        //  with omitting redundant methods and properties
         asset: { ...this.asset, price },
         validator: {
           address: validator.operator_address,

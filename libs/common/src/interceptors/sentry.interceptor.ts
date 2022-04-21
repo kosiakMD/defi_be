@@ -2,10 +2,11 @@ import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { CaptureContext } from '@sentry/types';
 import { Request } from 'express';
-import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { HttpArgumentsHost } from '@nestjs/common/interfaces/features/arguments-host.interface';
 
 import {
   HEADER_REQUEST_ID,
@@ -23,6 +24,30 @@ const allowedControllers = [
   'ProtocolControllerV2',
 ];
 
+interface SentryEntry {
+  body: any;
+  origin: any;
+  action: any;
+}
+
+function sentryLog(
+  err: Error | string,
+  sentryParams: CaptureContext,
+  severity: Severity,
+  entry: SentryEntry,
+) {
+  Sentry.withScope((scope) => {
+    scope.setExtra('body', entry.body);
+    scope.setExtra('origin', entry.origin);
+    scope.setExtra('action', entry.action);
+    scope.setLevel(severity);
+
+    typeof err === 'string'
+      ? Sentry.captureMessage(err, sentryParams)
+      : Sentry.captureException(err, sentryParams);
+  });
+}
+
 @Injectable()
 export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -35,11 +60,20 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
     // TODO: temporary enabled only for protocols and health checks
     if (allowedControllers.includes(className)) {
-      let reqId, sessionId, timestampEntry, timestampExit, timeExecute, path;
+      let contextHttp: HttpArgumentsHost,
+        request: Request,
+        reqId: string,
+        sessionId: string,
+        path: string,
+        timestampEntry: string,
+        timestampExit: string,
+        timeExecute: string;
+
       const hostType = context.getType();
+
       if (hostType === 'http') {
-        const contextHttp = context.switchToHttp();
-        const request: Request = contextHttp.getRequest<Request>();
+        contextHttp = context.switchToHttp();
+        request = contextHttp.getRequest<Request>();
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // eslint-disable-next-line no-underscore-dangle
@@ -69,10 +103,14 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
           className,
           protocolName: args?.[0]?.params?.protocolName || null,
         },
-        extra: sentryMeta,
+        extra: {
+          sentryMeta,
+        },
         contexts: {
-          sessionId,
-          reqId,
+          ids: {
+            sessionId,
+            reqId,
+          },
         },
         user: {
           sessionId,
@@ -83,14 +121,26 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
         },
       };
 
+      const { method, body, url } = request;
+
+      const entry: SentryEntry = {
+        action: method,
+        origin: url,
+        body: body,
+      };
+
       return next.handle().pipe(
-        catchError<T, any>((exception) => {
-          Sentry.captureException(exception, sentryParams);
-          return throwError(() => exception);
+        catchError<T, any>((err) => {
+          const severity = err.status && err.status < 500 ? Severity.Warning : Severity.Error;
+          sentryLog(err, sentryParams, severity, entry);
+          // TODO: test simpler way
+          // return throwError(() => err);
+          throw err;
         }) as any,
-        tap<T>(null, (exception) => {
-          Sentry.captureException(exception, sentryParams);
-        }) as any,
+        // TODO: temporary disabled
+        //   tap<T>(null, (exception) => {
+        //     Sentry.captureException(exception, sentryParams);
+        //   }) as any,
       ) as unknown as Observable<T>;
     }
 

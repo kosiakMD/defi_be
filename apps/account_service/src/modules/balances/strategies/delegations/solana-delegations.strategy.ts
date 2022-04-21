@@ -69,7 +69,8 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     ]);
 
     stakesData.forEach((staking) => {
-      stakingRewardsData.forEach((stakingReward) => {
+      const stakingReward = stakingRewardsData[0];
+      if (stakingReward) {
         const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
         const claimableRewardsAmount = normalizeDecimals(stakingReward.amount, this.asset.decimals);
         const price = prices[this.asset.address];
@@ -77,7 +78,9 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
 
         result.push({
           address,
-          asset: this.asset,
+          // TODO: add correct AssetDTO extended from AssetEntity
+          //  with omitting redundant methods and properties
+          asset: { ...this.asset, price: prices[this.asset.address] },
           validator: {
             address: validator.identityPubkey,
             name: validator.name,
@@ -93,7 +96,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
             amountUsd: claimableRewardsAmount * price,
           },
         });
-      });
+      }
     });
 
     return result;

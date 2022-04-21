@@ -18,7 +18,7 @@ configMaps:
     POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
     FANTOM_URL: https://rpc.ftm.tools/
     AVALANCHE_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
-    ARBITRUM_URL: https://arbitrum-mainnet-rpc-archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441
+    ARBITRUM_URL: https://rpc.ankr.com/arbitrum
     XDAI_URL: https://xdai-archive.blockscout.com
     CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
     MOONRIVER_URL: https://rpc.api.moonriver.moonbeam.network

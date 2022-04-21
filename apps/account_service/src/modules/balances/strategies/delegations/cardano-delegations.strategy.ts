@@ -75,7 +75,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     return [
       {
         address,
-        asset: { ...this.asset, price: prices[this.asset.address] },
+        asset: { ...this.asset, price },
         validator: {
           address: poolData.pool_id,
           name: poolData.name,

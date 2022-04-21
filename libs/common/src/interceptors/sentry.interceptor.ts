@@ -2,7 +2,6 @@ import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { CaptureContext } from '@sentry/types';
 import { Request } from 'express';
-import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
@@ -32,7 +31,8 @@ interface SentryEntry {
 }
 
 @Injectable()
-export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
+// export class SentryInterceptor<T = any, R = any> implements NestInterceptor<T, R> {
+export class SentryInterceptor implements NestInterceptor {
   private sentryLog(
     err: Error | string,
     sentryParams: CaptureContext,
@@ -57,10 +57,13 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
   // @ts-ignore
   intercept(
     context: ExecutionContext,
-    next: CallHandler<R>,
+    // next: CallHandler<R>,
+    next: CallHandler,
     // TODO: test as promise instead of Stream
     // ): Promise<T> {
-  ): Observable<T> | Promise<Observable<T>> {
+    // | Promise<Observable<T>>
+    // Observable<T>
+  ) {
     const className = context.getClass().name;
 
     // TODO: temporary enabled only for protocols and health checks
@@ -144,13 +147,14 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
       //   // TODO: for Promise
       //   // throw err;
       // }) as any,
-      tap<T>(null, (err) => {
+      tap(null, (err) => {
         const severity = err.status && err.status < 500 ? Severity.Warning : Severity.Error;
         this.sentryLog(err, sentryParams, severity, entry);
       }) as any,
-    ) as unknown as Observable<T>;
+    );
     // TODO: test as promise instead of Stream
     // );
+    // as unknown as Observable<R>
     // }
   }
 }

@@ -74,10 +74,11 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
         r.data.delegation_response.balance.amount,
         this.asset.decimals,
       );
+      const price = prices[this.asset.address];
 
       result.push({
         address,
-        asset: { ...this.asset, price: prices[this.asset.address] },
+        asset: { ...this.asset, price },
         validator: {
           address: validator.operator_address,
           name: validator.description.moniker,
@@ -85,7 +86,7 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
         },
         balance: {
           amount: balanceAmount,
-          amountUsd: balanceAmount * prices[this.asset.address],
+          amountUsd: balanceAmount * price,
         },
       });
     });

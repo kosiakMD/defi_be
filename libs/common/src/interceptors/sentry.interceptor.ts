@@ -122,10 +122,6 @@ export class SentryInterceptor implements NestInterceptor {
       },
       user: {
         sessionId,
-        reqId,
-        timestampEntry,
-        timestampExit,
-        timeExecute,
       },
     };
 

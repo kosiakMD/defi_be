@@ -1,4 +1,5 @@
 export abstract class DelegationsStrategy {
-  url: string;
+  protected abstract url: string;
+
   public abstract getDelegatedAssets(address: string): any;
 }

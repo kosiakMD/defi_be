@@ -21,7 +21,6 @@ import { LimeSwap } from '../platforms/LimeSwap';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { QuickSwap } from '../platforms/QuickSwap';
-import { RuneFarm } from '../platforms/RuneFarm';
 import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
@@ -53,7 +52,6 @@ export class PlatformService {
       CubFinance,
       TreeDefi,
       CheesecakeSwap,
-      RuneFarm,
       Evodefi,
       LimeSwap,
     });
@@ -86,6 +84,11 @@ export class PlatformService {
       mergeMap(async (name) => {
         try {
           const instance = await this.getPlatform(name);
+          // const chains: ChainId[] = [];
+          // instance.getMeta().features.forEach(async (f) => {
+          //   chains.push(f.chain.id);
+          // });
+          // await instance.getPoolData(chains);
           return instance.getMeta();
         } catch (err) {
           this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);

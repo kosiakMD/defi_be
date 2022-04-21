@@ -107,7 +107,7 @@ export abstract class EVMCore<
               .div(totalSupply)
               .toNumber();
             token.underlyingAssets.forEach((u) => {
-              normalizeDecimals(
+              u.reserve = normalizeDecimals(
                 (u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(),
                 u.decimals,
               );

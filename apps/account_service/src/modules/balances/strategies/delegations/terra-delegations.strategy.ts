@@ -77,7 +77,7 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
 
       result.push({
         address,
-        asset: this.asset,
+        asset: { ...this.asset, price: prices[this.asset.address] },
         validator: {
           address: validator.operator_address,
           name: validator.description.moniker,

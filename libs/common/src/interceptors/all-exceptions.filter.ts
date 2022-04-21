@@ -46,13 +46,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       let errorMessage;
       if (
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production &&
-        exception.message.startsWith('connect ECONNREFUSED') &&
-        !exception.message.endsWith('Service')
+        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production ||
+        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging
       ) {
-        errorMessage = 'connect ECONNREFUSED';
-      } else {
-        errorMessage = exception.message;
+        exception.stack = undefined;
+        if (
+          exception.message &&
+          exception.message.startsWith('connect ECONNREFUSED') &&
+          !exception.message.endsWith('Service')
+        ) {
+          errorMessage = 'connect ECONNREFUSED';
+        } else {
+          errorMessage = exception.message;
+        }
       }
 
       // In certain situations `httpAdapter` might not be available in the
@@ -80,8 +86,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         protocolName,
       });
 
+      const newException = { ...exception, responseBody: responseBody };
+
       this.logger.error(
-        { ...exception, responseBody: responseBody },
+        newException,
         `${exception.stack || ''}\n${this.constructor.name}`,
         // this.constructor.name,
       );

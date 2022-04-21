@@ -54,10 +54,11 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
           .get(`${this.url}/${staking.pubkey.address}/stake-rewards`)
           .toPromise();
 
-        for (const stakingReward of stakingRewardsData) {
+        const stakingReward = stakingRewardsData[0];
+        if (stakingReward) {
           result.push({
             address,
-            asset: this.asset,
+            asset: { ...this.asset, price: prices[this.asset.address] },
             validator: {
               address: staking.data.stake.delegation.validatorInfo.identityPubkey,
               name: staking.data.stake.delegation.validatorInfo.name,

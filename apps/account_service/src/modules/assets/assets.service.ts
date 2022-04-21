@@ -80,12 +80,19 @@ export class AssetsService {
       const timeMark = `Query to asset_new table with addresses: ${addresses} and chains: ${chains}`;
       this.logger.time(timeMark);
 
-      const assets = await this.assetRepository.findAllByAddressesAndChains(
+      let assets = await this.assetRepository.findAllByAddressesAndChains(
         // Only lowercase all EVM addresses
         // TODO: Checksum/Validation
         addresses.map((a) => (a.toLowerCase().startsWith('0x') ? a.toLowerCase() : a)),
         chains,
       );
+      const isMissedAssetsExists = await this.addMissedAssets(assets, addresses, chains);
+      if (isMissedAssetsExists) {
+        assets = await this.assetRepository.findAllByAddressesAndChains(
+          addresses.map((a) => (a.toLowerCase().startsWith('0x') ? a.toLowerCase() : a)),
+          chains,
+        );
+      }
 
       this.logger.timeEnd(timeMark);
       response.data.push(
@@ -135,6 +142,35 @@ export class AssetsService {
       const assetContract = new ERC20(assetAddress, chainProvider);
       return await assetContract.getContractData();
     }
+  }
+
+  private async addMissedAssets(assets: AssetsEntity[], addresses: Address[], chains: Chains) {
+    const missedAssets = [];
+    addresses.forEach((a) => {
+      chains.forEach((c) => {
+        const isExists = assets.find(
+          (ae) =>
+            ae.chain === c &&
+            ae.address === (a.toLowerCase().startsWith('0x') ? a.toLowerCase() : a),
+        );
+        if (!isExists) {
+          missedAssets.push([a.toLowerCase().startsWith('0x') ? a.toLowerCase() : a, c]);
+        }
+      });
+    });
+
+    let isFoundMissedAsset = false;
+    for (let i = 0; i < missedAssets.length; i++) {
+      try {
+        await this.saveTrackingAsset({
+          address: missedAssets[i][0],
+          chain: missedAssets[i][1],
+        });
+        isFoundMissedAsset = true;
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+    return isFoundMissedAsset;
   }
 
   async saveTrackingAsset({

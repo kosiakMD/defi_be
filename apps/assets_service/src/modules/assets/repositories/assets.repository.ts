@@ -49,4 +49,37 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     `)
     ).flatMap((item) => Object.values(item));
   }
+
+  async findAssetsByParams(searchParams): Promise<AssetsEntity[]> {
+    // eslint-disable-next-line prefer-const
+    let { address, text } = searchParams;
+    if (text) {
+      text = `%${text}%`.toLowerCase();
+    }
+    const qb = this.createQueryBuilder('assets');
+    qb.where('is_tracked = :isTracked', { isTracked: true });
+    if (address && text) {
+      qb.andWhere(
+        '((LOWER(name) LIKE :name) OR (LOWER(symbol) LIKE :symbol) OR (address = :address))',
+        {
+          name: text,
+          symbol: text,
+          address,
+        },
+      );
+    } else if (address) {
+      qb.andWhere('address = :address', { address });
+    } else {
+      qb.andWhere('(LOWER(name) LIKE :name OR LOWER(symbol) LIKE :symbol)', {
+        name: text,
+        symbol: text,
+      });
+    }
+    qb.orderBy({
+      'assets.name': 'ASC',
+      'assets.symbol': 'ASC',
+    });
+    qb.limit(searchParams.limit || 30);
+    return qb.getMany();
+  }
 }

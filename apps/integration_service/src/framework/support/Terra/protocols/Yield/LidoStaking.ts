@@ -46,14 +46,9 @@ export class LidoStaking
   }
 
   async getCacheableOpportunityData(): Promise<IStakingFeatureMinimal[]> {
-    // get stLuna Balance
-    // get bLuna Balance
-    // get stLuna exchange rate
-    // get bLuna exchange rate
-
     return [
       {
-        id: `${this.meta.address}_${this.meta.context.stLuna}`,
+        id: this.meta.context.stLuna,
         chain: this.meta.chain,
         feature: this.meta.feature,
         supplied: [
@@ -70,7 +65,7 @@ export class LidoStaking
         ],
       },
       {
-        id: `${this.meta.address}_${this.meta.context.bLuna}`,
+        id: this.meta.context.bLuna,
         chain: this.meta.chain,
         feature: this.meta.feature,
         supplied: [
@@ -111,14 +106,12 @@ export class LidoStaking
     });
 
     opportunities[0].meta = {
-      receipt: this.meta.context.stLuna,
       apr: Number(data.bluna) / 100,
       apy: Number(data.stluna) / 100,
       totalSupplied: normalizeDecimals(state.total_bond_stluna_amount, stLunaTokenInfo.decimals),
       exchangeRate: state.stluna_exchange_rate,
     };
     opportunities[1].meta = {
-      receipt: this.meta.context.bLuna,
       apr: Number(data.bluna) / 100,
       totalSupplied: normalizeDecimals(state.total_bond_bluna_amount, bLunaTokenInfo.decimals),
       exchangeRate: state.bluna_exchange_rate,
@@ -196,9 +189,17 @@ export class LidoStaking
       [this.meta.context.stLuna, this.meta.context.bLuna],
     );
 
-    const bLunaRewardsResult = await this.getBLunaRewards(addresses);
+    let rewardError;
 
-    const rewards = new Map(bLunaRewardsResult.map((a: any) => [a.address, a]));
+    let bLunaRewardsResult;
+
+    try {
+      bLunaRewardsResult = await this.getBLunaRewards(addresses);
+    } catch (e) {
+      rewardError = new Error('Could not update bluna rewards');
+    }
+
+    const rewards = new Map(!rewardError ? bLunaRewardsResult.map((a: any) => [a.address, a]) : []);
 
     const results = new Map<Address, IStakingFeatureUserEntry[]>(
       addresses.map((address) => [address, [] as IStakingFeatureUserEntry[]]),
@@ -218,7 +219,7 @@ export class LidoStaking
       });
     });
 
-    return [results, errors];
+    return [results, rewardError ? [...errors, rewardError] : errors];
   }
 
   protected formatUserData(
@@ -227,7 +228,7 @@ export class LidoStaking
     balance: AccountBalance,
     rewards: any,
   ) {
-    const stakedBalance = balance.tokens.find((t) => t.token.address === pool.meta.receipt);
+    const stakedBalance = balance.tokens.find((t) => t.token.address === pool.id);
     if (!stakedBalance.decimalsAmount) {
       return;
     }
@@ -242,7 +243,7 @@ export class LidoStaking
 
     // only bluna gets rewards (stluna auto compounds)
     const rewardAmount =
-      this.meta.context.bLuna === pool.meta.receipt
+      this.meta.context.bLuna === pool.id
         ? normalizeDecimals(rewards.balance, clone.rewarded[0].token.decimals)
         : 0;
 

@@ -89,7 +89,7 @@ export class LidoStaking
     return opportunities;
   }
 
-  formatOpportunity(
+  protected formatOpportunity(
     opportunity: IStakingFeatureMinimal,
     tokens: TokenMap,
   ): void | IStakingFeatureOpportunity {
@@ -182,6 +182,9 @@ export class LidoStaking
       amount: balance,
       value: balance * pool.supplied[0].token.price,
     });
+
+    // TODO: no rewards at this moment
+    Object.assign(pool.rewarded[0], { amount: 0, value: 0 });
 
     // TODO: what is the best way to extend the opportunity type to become a userEntry type
     // without forcing a cast like this (only a few fields are added amount, value)

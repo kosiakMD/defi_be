@@ -5,6 +5,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
+import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
 import { equals, normalizeDecimals, regex, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -96,7 +97,20 @@ export class MasterChef
     context.poolLength = parseInt(context.poolLength, 10);
     context.rewardToken = context.rewardToken.toLowerCase();
     context.totalAllocPoint = parseInt(context.totalAllocPoint, 10);
-    context.rewardPerSecond = context.rewardPerSecond.toString();
+
+    // convert rewards per block to rewards per second to
+    // standardize across chains
+    const avgBlockTime = averageBlockTimeByChain[this.meta.chain] || 1;
+    if (!averageBlockTimeByChain[this.meta.chain]) {
+      this.logger.warn(
+        `Missing Average BlockTIme for chain ${this.meta.chain}`,
+        this.constructor.name,
+      );
+    }
+    context.rewardPerSecond = new BigNumber(context.rewardPerSecond)
+      .dividedBy(avgBlockTime)
+      .toString();
+
     return context;
   }
 
@@ -124,12 +138,20 @@ export class MasterChef
       return lpContract.balanceOf(this.meta.address);
     });
 
-    const totalStakedPerPool = await this.multicall.callArray(totalStakedCalls, this.meta.chain);
+    const totalSupplyCalls = poolInfos.map((poolInfo) => {
+      const lpContract = new ERC20(poolInfo.stakedToken);
+      return lpContract.totalSupply();
+    });
+    const [totalStakedPerPool, totalSupplyPerPool] = await Promise.all([
+      this.multicall.callArray(totalStakedCalls, this.meta.chain),
+      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
+    ]);
 
     return poolInfos.map((poolInfo, poolIdx) => {
       return this.formatStakingOpportunityMinimal(
         poolInfo,
-        totalStakedPerPool[poolIdx].toString(), //poolInfo[idx] not poolId as some pools can be skipped
+        totalStakedPerPool[poolIdx].toString(), // totalStaked
+        totalSupplyPerPool[poolIdx].toString(), // totalSupply
         context,
       );
     });
@@ -138,6 +160,7 @@ export class MasterChef
   protected formatStakingOpportunityMinimal(
     poolInfo: IPoolInfo,
     totalStaked: string,
+    totalSupply: string,
     context: { [key: string]: any },
   ): IStakingFeatureMinimal {
     const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
@@ -152,7 +175,10 @@ export class MasterChef
       feature: this.meta.feature,
       supplied: [
         {
-          token: { address: poolInfo.stakedToken },
+          token: {
+            address: poolInfo.stakedToken,
+          },
+          totalSupply: totalSupply,
           totalSupplied: totalStaked,
         },
       ],
@@ -181,7 +207,9 @@ export class MasterChef
       !pool.rewarded.every((t) => tokens.has(t.token.address))
     ) {
       // throw error or just return; to silently skip pools
-      throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
+      // throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
+      // todo: consider how to handle such cases, because exceptions generates many error logs
+      return;
     }
 
     const tvl = pool.supplied.reduce((tvl, poolToken) => {
@@ -208,8 +236,10 @@ export class MasterChef
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
     const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals);
+    const totalSupply = normalizeDecimals(poolToken.totalSupply, token.decimals);
     return {
       token,
+      totalSupply,
       totalSupplied,
       tvl: totalSupplied * token.price,
     };
@@ -292,6 +322,14 @@ export class MasterChef
       amount: balance,
       value: balance * pool.supplied[0].token.price,
     });
+    // Update underlying assets
+    if (pool.supplied[0].token.underlying?.length === 2) {
+      const poolShare = balance / pool.supplied[0].totalSupply;
+      pool.supplied[0].token.underlying.forEach((u) => {
+        u.balance = u.reserve * poolShare;
+        u.value = u.balance * u.price;
+      });
+    }
 
     const {
       output: { data: pendingRewards },

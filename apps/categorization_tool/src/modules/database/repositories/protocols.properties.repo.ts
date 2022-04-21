@@ -22,10 +22,16 @@ export class ProtocolsPropertiesRepository extends Repository<ProtocolProperty> 
   ): Promise<ProtocolProperty[]> {
     return Promise.all(
       props.map(async ({ name, value }): Promise<ProtocolProperty> => {
-        return (
-          (await this.findOneByNameAndSourceProtocol(name, source, protocol)) ||
-          (await this.save({ name, value, source, protocol }))
-        );
+        const existing = await this.findOneByNameAndSourceProtocol(name, source, protocol);
+        if (!existing) {
+          return this.save({ name, value, source, protocol });
+        }
+
+        if (existing?.value !== value.toString()) {
+          await this.update({ id: existing.id }, { value });
+        }
+
+        return existing;
       }),
     );
   }

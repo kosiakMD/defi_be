@@ -18,6 +18,7 @@ import { ProtocolModule } from '../protocols/protocol.module';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
+import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decorator';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 
@@ -40,7 +41,7 @@ import { IntegrationsService } from './integrations.service';
     ProtocolModule,
     AbiModule,
     TypeOrmModule.forFeature([ProjectsInfoEntity]),
-  ],
+  ].sort(),
   providers: [
     IntegrationsService,
     FeaturesService,
@@ -48,7 +49,8 @@ import { IntegrationsService } from './integrations.service';
     MulticallAggregator,
     Web3ProviderService,
     Web3SolanaProviderService,
-  ],
+    IntegrationsServiceV3Decorator,
+  ].sort(),
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })
 export class IntegrationsModule {}

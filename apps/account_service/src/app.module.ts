@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import {
   Inject,
   LoggerService,
@@ -32,9 +32,23 @@ import { NftModule } from './modules/nft/nft.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
 
+// controllers A-Z sort for Swagger API page
+const controllers = [
+  AnalyticsModule,
+  ApprovalsModule,
+  AssetsModule,
+  BalancesModule,
+  BlacklistModule,
+  ChainsModule,
+  NftModule,
+  TransactionsModule,
+  TransfersModule,
+];
+
 @Module({
   imports: [
     ConfigModule.forRoot(configuration(config)),
+    TracingModule.forRoot({ serviceName: 'account-service' }),
     // TODO implement more universal logic
     // createServiceWinstonAsyncModule('account', ConfigModule, new ConfigService()),
     WinstonModule.forRootAsync({
@@ -43,7 +57,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('account', configService),
     }),
-    HttpModule.registerAsync({
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get<number>('HTTP_TIMEOUT') || 60e3,
@@ -53,16 +67,8 @@ import { TransfersModule } from './modules/transfers/transfers.module';
     }),
     TerminusModule,
     DatabaseModule,
-    ChainsModule,
     // with controllers A-Z sort for Swagger API page
-    ApprovalsModule,
-    AssetsModule,
-    BalancesModule,
-    TransactionsModule,
-    TransfersModule,
-    AnalyticsModule,
-    BlacklistModule,
-    NftModule,
+    ...controllers,
   ],
   controllers: [HealthController],
   providers: [
@@ -70,6 +76,7 @@ import { TransfersModule } from './modules/transfers/transfers.module';
       provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
+    // TODO: testing 1 Sentry middleware only, without interceptors
     // {
     //   provide: APP_FILTER,
     //   useClass: AllExceptionsFilter,

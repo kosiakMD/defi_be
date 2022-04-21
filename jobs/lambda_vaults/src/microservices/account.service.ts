@@ -5,16 +5,17 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, DetailedResponseDto } from '@app/common';
 
 import { Logger } from '../logger/logger.service';
 import { RequestErrorHandler } from '../utils/decorators/error.decorator';
-import { LiquidityPoolTokenDto } from './dto/account/account.dto';
+import { ERC20TokenDto, LiquidityPoolTokenDto } from './dto/account/account.dto';
 
 @Injectable()
 export class AccountService {
   private readonly saveTrackedTokenUrl: string;
   private readonly saveAssetUrl: string;
+  private readonly getAssetsUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -27,6 +28,7 @@ export class AccountService {
 
     this.saveTrackedTokenUrl = `${url}/${saveTrackedTokenPath}`;
     this.saveAssetUrl = `${url}/${saveAssetPath}`;
+    this.getAssetsUrl = `${url}/v1/assets`;
   }
 
   @RequestErrorHandler()
@@ -46,5 +48,16 @@ export class AccountService {
       .post(this.saveAssetUrl, asset)
       .pipe(map((r) => r.data))
       .toPromise();
+  }
+
+  @RequestErrorHandler()
+  async getAssets(addresses: string[], chainIds?: ChainIdEnum[]): Promise<ERC20TokenDto[]> {
+    const data = await this.httpService
+      .get<DetailedResponseDto<ERC20TokenDto[]>>(this.getAssetsUrl, {
+        params: { addresses, chains: chainIds },
+      })
+      .toPromise();
+
+    return data.data.data;
   }
 }

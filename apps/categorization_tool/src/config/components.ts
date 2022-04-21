@@ -7,6 +7,7 @@ export const service = {
     etherscanApiUrl: process.env.ETHERSCAN_API_URL,
     etherscanApiKey: process.env.ETHERSCAN_API_KEY,
     screenshotsDir: process.env.DIR_SAVE_SCREENSHOTS,
+    screenshotsEnabled: process.env.SCREENSHOTS_ENABLED,
     bscscanApiUrl: process.env.BSCSCAN_API_URL,
     bscscanApiKey: process.env.BSCSCAN_API_KEY,
     tenderlyApiURL: process.env.TENDERLY_API_URL,
@@ -16,7 +17,8 @@ export const service = {
   validation: {
     ETHERSCAN_API_URL: Joi.string().required(),
     ETHERSCAN_API_KEY: Joi.string().optional(),
-    DIR_SAVE_SCREENSHOTS: Joi.string().required(),
+    DIR_SAVE_SCREENSHOTS: Joi.string().optional(),
+    SCREENSHOTS_ENABLED: Joi.string().required(),
     BSCSCAN_API_URL: Joi.string().required(),
     BSCSCAN_API_KEY: Joi.string().optional(),
     TENDERLY_API_URL: Joi.string().required(),

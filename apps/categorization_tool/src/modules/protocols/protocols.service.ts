@@ -55,8 +55,10 @@ export class ProtocolService {
   }
 
   async parseProtocolsAppPage() {
-    const listProtocols = await this.protocolsRepo.findAllWithLinks();
-    const websites = listProtocols.flatMap((protocol) =>
+    const allProtocolsWithLinks = await this.protocolsRepo.findAllWithLinks();
+    const websites = (
+      this.testRun ? allProtocolsWithLinks.slice(0, 10) : allProtocolsWithLinks
+    ).flatMap((protocol) =>
       protocol.links
         .filter(({ type }) => type === LinkTypeEnum.APP)
         .map(({ url }) => ({ url, protocol })),

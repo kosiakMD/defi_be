@@ -13,7 +13,6 @@ import {
   ChainDto,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { keepCardanoAddresses } from '@app/common/utils';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
@@ -60,7 +59,6 @@ export class SundaeSwapProtocol extends DataProviderProtocol implements Abstract
     addresses: Address[],
     chain: ChainDto,
   ): Promise<[BaseData[], string[]]> {
-    addresses = keepCardanoAddresses(addresses);
     const chainFeatures = await Promise.allSettled(
       this.features[chain.abbr].map((f) => {
         return this.getFeatureData(addresses, chain, f);

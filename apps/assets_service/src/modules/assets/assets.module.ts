@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -12,12 +13,15 @@ import { AssetsCategoryEntity } from '../assets-category/entities/assets-categor
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { IconsModule } from '../icons/icons.module';
 import { AssetsProcessor } from './assets.processor';
+import { AssetsCandidateEntity } from './entities/assets-candidate.entity';
 import { AssetsInvalidAddressEntity } from './entities/assets-invalid-address.entity';
 import { AssetUnderlyingEntity } from './entities/assets-underlying.entity';
 import { AssetsEntity } from './entities/assets.entity';
+import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
 import { TokenService } from './services/token.service';
+import { TrackedTokenPopulationProcessor } from './services/tracked-token-population.processor';
 
 @Module({
   imports: [
@@ -25,6 +29,8 @@ import { TokenService } from './services/token.service';
       name: 'assets',
     }),
     TypeOrmModule.forFeature([
+      AssetsCandidateEntity,
+      AssetsCandidateRepository,
       AssetsCategoryEntity,
       AssetsCategoryRepository,
       AssetsEntity,
@@ -33,6 +39,7 @@ import { TokenService } from './services/token.service';
       AssetUnderlyingEntity,
     ]),
     IconsModule,
+    HttpModule,
   ],
   controllers: [AssetsController],
   providers: [
@@ -40,8 +47,10 @@ import { TokenService } from './services/token.service';
     AssetsService,
     MetadataService,
     AssetsRepository,
+    AssetsCandidateRepository,
     MulticallAggregator,
     TokenService,
+    TrackedTokenPopulationProcessor,
     Web3ProviderService,
   ],
   exports: [AssetsService],

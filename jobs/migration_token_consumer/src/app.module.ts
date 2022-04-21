@@ -26,10 +26,14 @@ import { MigrationModule } from './migration/migration.module';
       transports: [
         // NestJS console like logs
         new winston.transports.Console({
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike(),
-          ),
+          format:
+            Boolean(process.env.LOG_IN_JSON) && process.env.LOG_IN_JSON.toLowerCase() === 'true'
+              ? winston.format.json()
+              : // NestJS console like logs
+                winston.format.combine(
+                  winston.format.timestamp(),
+                  nestWinstonModuleUtilities.format.nestLike(),
+                ),
         }),
         // - Write all logs with level `error` and below to `error.log`
         new winston.transports.File({ filename: process.env.LOG_ERROR_FILE, level: 'error' }),

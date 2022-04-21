@@ -9,7 +9,10 @@ export const logger = winston.createLogger({
     }),
     new winston.transports.Console({
       level: 'info',
-      format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
+      format:
+        Boolean(process.env.LOG_IN_JSON) && process.env.LOG_IN_JSON.toLowerCase() === 'true'
+          ? winston.format.json()
+          : winston.format.combine(winston.format.colorize(), winston.format.simple()),
     }),
   ],
 });

@@ -73,6 +73,9 @@ import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import { OrcaFarms } from './protocols/orca/orca.farms';
 import { OrcaPools } from './protocols/orca/orca.pools';
 import OrcaProtocol from './protocols/orca/orca.protocol';
+import { OsmosisLocked } from './protocols/osmosis/osmosis.locked';
+import { OsmosisPools } from './protocols/osmosis/osmosis.pools';
+import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
 import { EtherscanService } from './protocols/pancake/etherscan.service';
 import { PancakeV2Staking } from './protocols/pancake/pancake-v2.staking';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
@@ -180,6 +183,7 @@ const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
 const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
 const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 const Stader = [StaderProtocol, StaderStaking, StaderAirdrop];
+const Osmosis = [OsmosisProtocol, OsmosisPools, OsmosisLocked];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -229,6 +233,7 @@ const ProtocolList = [
   ...Marinade,
   ...Minswap,
   ...Stader,
+  ...Osmosis,
 ];
 
 @Module({

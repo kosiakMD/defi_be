@@ -13,3 +13,9 @@ export function safeJsonParse(text: string): object | null {
     return null;
   }
 }
+
+export function checkingGithubUrl(url: string): boolean {
+  return url.match(/^http?(s)?([:])?([//]+)(?:www\.)?github\.\w{2,5}([/])([A-z\-_]+[/]?){1,2}?$/)
+    ? true
+    : false;
+}

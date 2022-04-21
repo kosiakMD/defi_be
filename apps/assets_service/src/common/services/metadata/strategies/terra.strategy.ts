@@ -1,7 +1,8 @@
 import { MetadataStrategy } from './index';
 
 export class TerraMetadataStrategy extends MetadataStrategy {
-  getMetadata(): Promise<any> {
-    return Promise.resolve(undefined);
+  async getMetadata(address, chainId, instance?): Promise<any> {
+    // eslint-disable-next-line camelcase
+    return await instance.wasm.contractQuery(address, { token_info: {} });
   }
 }

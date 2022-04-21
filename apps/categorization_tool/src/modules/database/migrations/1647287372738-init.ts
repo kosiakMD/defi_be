@@ -39,6 +39,7 @@ export class init1647287372738 implements MigrationInterface {
             "address"     VARCHAR(256) NOT NULL,
             "abi"         TEXT         NULL     DEFAULT NULL,
             "abi_code"    TEXT         NULL     DEFAULT NULL,
+            "chain"       VARCHAR(256) NULL     DEFAULT NULL,
             "protocol_id" INTEGER,
             "created_at"  TIMESTAMP    NOT NULL DEFAULT now(),
             "updated_at"  TIMESTAMP    NOT NULL DEFAULT now(),

@@ -17,9 +17,12 @@ export const winstonParams = (
   format: winston.format.json(),
   defaultMeta: Object.assign({ service: serviceName }, meta),
   transports: [
-    // NestJS console like logs
     new winston.transports.Console({
-      format: winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
+      format:
+        Boolean(process.env.LOG_IN_JSON) && process.env.LOG_IN_JSON.toLowerCase() === 'true'
+          ? winston.format.json()
+          : // NestJS console like logs
+            winston.format.combine(winston.format.timestamp(), utilities.format.nestLike()),
     }),
     // - Write all logs with level `error` and below to `error.log`
     new winston.transports.File({ filename: logErrorFile, level: 'error' }),

@@ -1,4 +1,7 @@
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
+import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
@@ -6,27 +9,24 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, Logger } from '@app/common';
 
+import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
+
 import { ApeSwap } from '../platforms/ApeSwap';
-import { BrickChain } from '../platforms/BrickChain';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { Evodefi } from '../platforms/Evodefi';
-import { IronFinance } from '../platforms/IronFinance';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
-import { Nerve } from '../platforms/Nerve';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
-import { PastaFinance } from '../platforms/PastaFinance';
-import { Polywhale } from '../platforms/Polywhale';
 import { QuickSwap } from '../platforms/QuickSwap';
-import { RuneFarm } from '../platforms/RuneFarm';
 import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { RootPlatform } from '../support/RootPlatform';
+import { IPlatformMeta } from '../support/interfaces';
 import {
   IOpportunityResponse,
   IUserEntryResponse,
@@ -47,44 +47,59 @@ export class PlatformService {
       SpookySwap,
       TombFinance,
       ApeSwap,
-      Polywhale,
       CafeSwap,
       WaultFinance,
-      IronFinance,
-      Nerve,
       CubFinance,
       TreeDefi,
       CheesecakeSwap,
-      RuneFarm,
-      PastaFinance,
-      BrickChain,
       Evodefi,
       LimeSwap,
     });
   }
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
+  platformsInitialized: Map<string, RootPlatform> = new Map();
   protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
     Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
   }
 
-  private async getPlatform(name) {
+  private async getPlatform(name: string) {
     if (!this.platforms.has(name)) {
       throw new Error('Platform Not Supported');
     }
 
+    if (this.platformsInitialized.has(name)) {
+      return this.platformsInitialized.get(name);
+    }
+
     const instance = await this.moduleRef.create(this.platforms.get(name));
     await instance.initialize();
+    this.platformsInitialized.set(name, instance);
+
     return instance;
   }
 
   public getProtocolList() {
-    return Promise.all(
-      Array.from(this.platforms.entries()).map(async ([name]) => {
-        const instance = await this.getPlatform(name);
-        return instance.getMeta();
+    const data$ = from(this.platforms.keys()).pipe(
+      mergeMap(async (name) => {
+        try {
+          const instance = await this.getPlatform(name);
+          // const chains: ChainId[] = [];
+          // instance.getMeta().features.forEach(async (f) => {
+          //   chains.push(f.chain.id);
+          // });
+          // await instance.getPoolData(chains);
+          return instance.getMeta();
+        } catch (err) {
+          this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);
+          return null;
+        }
       }),
+      filter((result: IPlatformMeta | null) => !!result),
+      toArray(),
     );
+
+    return lastValueFrom(data$);
   }
 
   public async getUserPositionsForProtocol(
@@ -163,10 +178,17 @@ export class PlatformService {
     };
   }
 
-  private processErrors(errors: Error[], context: string) {
-    return errors.map((error) => {
+  private processErrors(errors: (ErrorWithHttpInfo | string)[], context: string): string[] {
+    return errors.map((error: ErrorWithHttpInfo | string) => {
+      if (typeof error === 'string') {
+        return error;
+      }
       this.logger.error(error.message, error.stack, context);
-      return error.message;
+      let message = error.message;
+      if (error.response) {
+        message += ' for ' + error.request.host + error.request.path;
+      }
+      return message;
     });
   }
 }

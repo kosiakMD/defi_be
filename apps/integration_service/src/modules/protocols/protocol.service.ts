@@ -785,7 +785,9 @@ export class ProtocolService {
           baseData.items.forEach((token) => {
             if (token.tokens?.length) {
               setChainAssetsArray(token.tokens);
-              setChainAsset(token.rewards);
+              if (token.rewards) {
+                setChainAsset(token.rewards);
+              }
             } else {
               setChainAsset(token);
             }
@@ -948,9 +950,11 @@ export class ProtocolService {
           baseData.total = 0;
           baseData.items.forEach((item) => {
             if (item?.tokens?.length) {
-              this.setTokenPriceAndValue(baseData.chain.id, item.rewards, chainAssetPrices);
+              if (item.rewards) {
+                this.setTokenPriceAndValue(baseData.chain.id, item.rewards, chainAssetPrices);
+              }
               if (item.locked) {
-                item.locked.value += item.rewards.value;
+                item.locked.value = item.rewards?.value || 0;
               }
               item.tokens.forEach((underlying) => {
                 this.setTokenPriceAndValue(baseData.chain.id, underlying, chainAssetPrices);

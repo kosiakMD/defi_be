@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
+import { VaultTypeEnum } from '@app/common/enum/opportunities/opportunity.enums';
+
 import { BaseEntityDto } from './base.entity.dto';
 import { FarmDto } from './farm.dto';
 import { InvestmentTokensDto } from './investment.tokens.dto';
@@ -28,4 +30,7 @@ export class OpportunityDto extends BaseEntityDto {
 
   @ApiProperty({ type: InvestmentTokensDto })
   tokens: InvestmentTokensDto;
+
+  @ApiProperty({ type: [String] })
+  categories: VaultTypeEnum[];
 }

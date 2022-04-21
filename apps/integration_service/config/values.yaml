@@ -40,6 +40,7 @@ configMaps:
     SUSHISWAP_CELO_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/celo-minichef
     SUSHISWAP_MRIVER_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/moonriver-minichef
     SUSHISWAP_ONE_MINICHEF_SUBGRAPH_URL: https://sushi.graph.t.hmny.io/subgraphs/name/sushiswap/harmony-minichef
+    SUSHISWAP_PLG_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/matic-minichef
     SUSHISWAP_XDAI_MINICHEF_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/matthewlilley/xdai-minichef
     SUSHISWAP_MRIVER_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/moonriver-exchange
     SUSHISWAP_ETH_MASTERCHEF_V2_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/master-chefv2

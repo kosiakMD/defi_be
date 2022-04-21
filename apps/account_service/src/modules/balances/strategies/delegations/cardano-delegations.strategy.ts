@@ -75,6 +75,8 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     return [
       {
         address,
+        // TODO: add correct AssetDTO extended from AssetEntity
+        //  with omitting redundant methods and properties
         asset: { ...this.asset, price },
         validator: {
           address: poolData.pool_id,

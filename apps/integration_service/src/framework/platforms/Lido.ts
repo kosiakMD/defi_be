@@ -8,7 +8,6 @@ import { ZERO_ADDRESS } from '@app/common/constant';
 import { LidoStaking as EVMLidoStaking } from '../support/EVM/protocols/Yield/LidoStaking';
 import { RootPlatform } from '../support/RootPlatform';
 import { LidoStaking as SolanaLidoStaking } from '../support/Solana/protocols/Yield/LidoStaking';
-import { LidoStaking as TerraLidoStaking } from '../support/Terra/protocols/Yield/LidoStaking';
 
 export class Lido extends RootPlatform {
   constructor(
@@ -90,20 +89,20 @@ export class Lido extends RootPlatform {
      *
      * @todo Coming Soon
      */
-    await this.registerProtocol(TerraLidoStaking, {
-      chain: ChainIdEnum.terra,
-      name: 'Lido',
-      feature: FeatureEnum.staking,
-      address: 'terra1mtwph2juhj0rvjz7dy92gvl6xvukaxu8rfv8ts', // hub
-      context: {
-        // https://docs.terra.lido.fi/introduction/deployed-contracts
-        stakedToken: 'uluna', // Luna
-        rewardToken: 'uusd', // UST
-        reward: 'terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0',
-        stLuna: 'terra1yg3j2s986nyp5z7r2lvt0hx3r0lnd7kwvwwtsc',
-        bLuna: 'terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp',
-      },
-    });
+    // await this.registerProtocol(TerraLidoStaking, {
+    //   chain: ChainIdEnum.terra,
+    //   name: 'Lido',
+    //   feature: FeatureEnum.staking,
+    //   address: 'terra1mtwph2juhj0rvjz7dy92gvl6xvukaxu8rfv8ts', // hub
+    //   context: {
+    //     // https://docs.terra.lido.fi/introduction/deployed-contracts
+    //     stakedToken: 'uluna', // Luna
+    //     rewardToken: 'uusd', // UST
+    //     reward: 'terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0',
+    //     stLuna: 'terra1yg3j2s986nyp5z7r2lvt0hx3r0lnd7kwvwwtsc',
+    //     bLuna: 'terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp',
+    //   },
+    // });
 
     /**
      * Website: https://lido.fi/solana

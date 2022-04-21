@@ -76,7 +76,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
-        message: errorMessage || exception,
+        message: errorMessage || exception.message || exception,
         timestampEntry: timestampEntry.toString(),
         timestampExit: timestampExit.toString(),
         timeExecute: timeExecute.toString(),

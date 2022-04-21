@@ -74,18 +74,19 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
         const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
         const claimableRewardsAmount = normalizeDecimals(stakingReward.amount, this.asset.decimals);
         const price = prices[this.asset.address];
-        const validator = staking.data.stake.delegation.validatorInfo;
+        const { identityPubkey, name, image, website } =
+          staking.data.stake.delegation.validatorInfo;
 
         result.push({
           address,
           // TODO: add correct AssetDTO extended from AssetEntity
           //  with omitting redundant methods and properties
-          asset: { ...this.asset, price: prices[this.asset.address] },
+          asset: { ...this.asset, price },
           validator: {
-            address: validator.identityPubkey,
-            name: validator.name,
-            logo: validator.image,
-            website: validator.website,
+            address: identityPubkey,
+            name: name,
+            logo: image,
+            website: website,
           },
           balance: {
             amount: balanceAmount,

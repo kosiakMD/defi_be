@@ -19,7 +19,7 @@ payload = json.dumps({
     "replicas": "1",
     "revision": sys.argv[3],
     "template_branch": sys.argv[4],
-    "template_version": "1.0.3"
+    "template_version": "1.0.5"
   }
 })
 headers = {

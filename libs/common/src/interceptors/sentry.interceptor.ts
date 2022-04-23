@@ -1,19 +1,38 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { CaptureContext } from '@sentry/types';
-import { Request } from 'express';
+import { Request as NodeRequest, Response } from 'express';
 import { tap } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { HttpArgumentsHost } from '@nestjs/common/interfaces/features/arguments-host.interface';
 
 import {
+  HEADER_PROTOCOL,
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
   HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
 } from '@app/common/constant';
+
+interface Request extends NodeRequest {
+  _parsedUrl: {
+    protocol: string;
+    slashes: string;
+    auth: string;
+    host: string;
+    port: string;
+    hostname: string;
+    hash: string;
+    search: string;
+    query: string;
+    pathname: string;
+    path: string;
+    href: string;
+    _raw: string;
+  };
+}
 
 // TODO test for all
 // const allowedControllers = [
@@ -51,106 +70,87 @@ export class SentryInterceptor implements NestInterceptor {
     });
   }
 
-  // TODO: for Promise
-  // async intercept(
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
   intercept(
     context: ExecutionContext,
-    // next: CallHandler<R>,
+    // next: CallHandler<T | R>,
     next: CallHandler,
-    // TODO: test as promise instead of Stream
-    // ): Promise<T> {
-    // | Promise<Observable<T>>
-    // Observable<T>
   ) {
-    const className = context.getClass().name;
-
-    // TODO: temporary enabled only for protocols and health checks
-    // if (allowedControllers.includes(className)) {
-    let contextHttp: HttpArgumentsHost,
-      request: Request,
-      reqId: string,
-      sessionId: string,
-      path: string,
-      timestampEntry: string,
-      timestampExit: string,
-      timeExecute: string;
-
-    const hostType = context.getType();
-
-    if (hostType === 'http') {
-      contextHttp = context.switchToHttp();
-      request = contextHttp.getRequest<Request>();
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      // eslint-disable-next-line no-underscore-dangle
-      path = request._parsedUrl.path;
-      reqId = request.header(HEADER_REQUEST_ID)?.toString();
-      sessionId = request.header(HEADER_SESSION_ID)?.toString();
-      timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY)?.toString();
-      timestampExit = request.header(HEADER_TIMESTAMP_EXIT)?.toString();
-      timeExecute = request.header(HEADER_TIME_EXECUTE)?.toString();
-    }
-
-    const args = context.getArgs();
-    const sentryMeta = {
-      path,
-      className,
-      reqId,
-      sessionId,
-      timestampEntry,
-      timestampExit,
-      timeExecute,
-      protocolName: args?.[0]?.params?.protocolName || null,
-    };
-    const sentryParams: CaptureContext = {
-      level: Severity.Error,
-      tags: {
-        sessionId,
-        className,
-        protocolName: args?.[0]?.params?.protocolName || null,
-      },
-      extra: {
-        sentryMeta,
-      },
-      contexts: {
-        ids: {
-          sessionId,
-          reqId,
-        },
-      },
-      user: {
-        sessionId,
-      },
-    };
-
-    const { method, body, url } = request;
-
-    const entry: SentryEntry = {
-      action: method,
-      origin: url,
-      body: body,
-    };
-
     return next.handle().pipe(
-      // TODO: temporary disabled - better for Promise instead of a stream
-      // catchError<T, any>((err) => {
-      //   const severity = err.status && err.status < 500 ? Severity.Warning : Severity.Error;
-      //   this.sentryLog(err, sentryParams, severity, entry);
-      //   // TODO: for Stream
-      //   return throwError(() => err);
-      //   // TODO: for Promise
-      //   // throw err;
-      // }) as any,
       tap(null, (err) => {
+        const controllerName = context.getClass().name;
+
+        // TODO: temporary enabled only for protocols and health checks
+        // if (allowedControllers.includes(controllerName)) {
+        let contextHttp: HttpArgumentsHost,
+          request: Request,
+          response: Response,
+          reqId: string,
+          sessionId: string,
+          path: string,
+          timestampEntry: string,
+          timestampExit: string,
+          timeExecute: string,
+          protocolName: string;
+
+        const hostType = context.getType();
+
+        // TODO: provide same logic for other protocols if will be needed
+        if (hostType === 'http') {
+          contextHttp = context.switchToHttp();
+          request = contextHttp.getRequest<Request>();
+          response = contextHttp.getResponse<Response>();
+          path = request.originalUrl;
+          reqId = response.get(HEADER_REQUEST_ID);
+          sessionId = response.get(HEADER_SESSION_ID);
+          timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
+          timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
+          timeExecute = response.get(HEADER_TIME_EXECUTE);
+          protocolName = response.get(HEADER_PROTOCOL);
+        }
+
+        const sentryMeta = {
+          path,
+          controllerName,
+          reqId,
+          sessionId,
+          timestampEntry,
+          timestampExit,
+          timeExecute,
+          protocolName,
+        };
+        const sentryParams: CaptureContext = {
+          level: Severity.Error,
+          tags: {
+            sessionId,
+            controllerName,
+            protocolName,
+          },
+          extra: {
+            sentryMeta,
+          },
+          contexts: {
+            ids: {
+              sessionId,
+              reqId,
+            },
+          },
+          user: {
+            sessionId,
+          },
+        };
+
+        const { method, body, url } = request;
+
+        const entry: SentryEntry = {
+          action: method,
+          origin: url,
+          body: body,
+        };
+
         const severity = err.status && err.status < 500 ? Severity.Warning : Severity.Error;
         this.sentryLog(err, sentryParams, severity, entry);
-      }) as any,
+        return err;
+      }),
     );
-    // TODO: test as promise instead of Stream
-    // );
-    // as unknown as Observable<R>
-    // }
   }
 }

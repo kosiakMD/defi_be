@@ -53,7 +53,7 @@ module.exports = {
     "prettier/prettier": "error",
     "max-classes-per-file": ["error", 1],
     "camelcase": ["error", { "properties": "always" }],
-    "no-underscore-dangle": 0,
+    "no-underscore-dangle": "warn",
     "no-console": ["error"],
     "newline-per-chained-call": "error",
     "no-multi-spaces": ["error"],

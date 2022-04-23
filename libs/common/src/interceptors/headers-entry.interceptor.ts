@@ -25,12 +25,9 @@ export class HeadersEntryInterceptor<T = any, R = any> implements NestIntercepto
     const hostType = context.getType();
     // TODO: implement all host types we use
     if (hostType === 'http') {
-      // handle Execute time
-      // get time-end ASAP
-      // const timestampExit = Date.now();
+      // get request headers meta
       const httpContext = context.switchToHttp();
       const request: Request = httpContext.getRequest<Request>();
-      // get request headers meta
       const reqId = request.header(HEADER_REQUEST_ID);
       const sessionId = request.header(HEADER_SESSION_ID);
       const timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY);

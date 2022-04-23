@@ -40,16 +40,14 @@ export class HeadersExitInterceptor<T = any, R = any> implements NestInterceptor
   // mistake of TS rxjs 0: CallHandler wants T but should be R only
   intercept(context: ExecutionContext, next: CallHandler<T | R>): Observable<R> {
     return next.handle().pipe(
-      tap(
-        () => {
-          console.log('__tap exit success');
+      tap<T | R>({
+        next: (): void => {
           HeadersExitInterceptor.handleHeadersBeforeExit(context);
         },
-        () => {
-          console.log('__tap exit error');
+        error: (): void => {
           HeadersExitInterceptor.handleHeadersBeforeExit(context);
         },
-      ),
+      }),
     ) as Observable<R>;
   }
 }

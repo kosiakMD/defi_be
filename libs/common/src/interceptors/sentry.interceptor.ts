@@ -76,80 +76,83 @@ export class SentryInterceptor implements NestInterceptor {
     next: CallHandler,
   ) {
     return next.handle().pipe(
-      tap(null, (err) => {
-        const controllerName = context.getClass().name;
+      tap({
+        next: null,
+        error: (err) => {
+          const controllerName = context.getClass().name;
 
-        // TODO: temporary enabled only for protocols and health checks
-        // if (allowedControllers.includes(controllerName)) {
-        let contextHttp: HttpArgumentsHost,
-          request: Request,
-          response: Response,
-          reqId: string,
-          sessionId: string,
-          path: string,
-          timestampEntry: string,
-          timestampExit: string,
-          timeExecute: string,
-          protocolName: string;
+          // TODO: temporary enabled only for protocols and health checks
+          // if (allowedControllers.includes(controllerName)) {
+          let contextHttp: HttpArgumentsHost,
+            request: Request,
+            response: Response,
+            reqId: string,
+            sessionId: string,
+            path: string,
+            timestampEntry: string,
+            timestampExit: string,
+            timeExecute: string,
+            protocolName: string;
 
-        const hostType = context.getType();
+          const hostType = context.getType();
 
-        // TODO: provide same logic for other protocols if will be needed
-        if (hostType === 'http') {
-          contextHttp = context.switchToHttp();
-          request = contextHttp.getRequest<Request>();
-          response = contextHttp.getResponse<Response>();
-          path = request.originalUrl;
-          reqId = response.get(HEADER_REQUEST_ID);
-          sessionId = response.get(HEADER_SESSION_ID);
-          timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
-          timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
-          timeExecute = response.get(HEADER_TIME_EXECUTE);
-          protocolName = response.get(HEADER_PROTOCOL);
-        }
+          // TODO: provide same logic for other protocols if will be needed
+          if (hostType === 'http') {
+            contextHttp = context.switchToHttp();
+            request = contextHttp.getRequest<Request>();
+            response = contextHttp.getResponse<Response>();
+            path = request.originalUrl;
+            reqId = response.get(HEADER_REQUEST_ID);
+            sessionId = response.get(HEADER_SESSION_ID);
+            timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
+            timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
+            timeExecute = response.get(HEADER_TIME_EXECUTE);
+            protocolName = response.get(HEADER_PROTOCOL);
+          }
 
-        const sentryMeta = {
-          path,
-          controllerName,
-          reqId,
-          sessionId,
-          timestampEntry,
-          timestampExit,
-          timeExecute,
-          protocolName,
-        };
-        const sentryParams: CaptureContext = {
-          level: Severity.Error,
-          tags: {
-            sessionId,
+          const sentryMeta = {
+            path,
             controllerName,
-            protocolName,
-          },
-          extra: {
-            sentryMeta,
-          },
-          contexts: {
-            ids: {
-              sessionId,
-              reqId,
-            },
-          },
-          user: {
+            reqId,
             sessionId,
-          },
-        };
+            timestampEntry,
+            timestampExit,
+            timeExecute,
+            protocolName,
+          };
+          const sentryParams: CaptureContext = {
+            level: Severity.Error,
+            tags: {
+              sessionId,
+              controllerName,
+              protocolName,
+            },
+            extra: {
+              sentryMeta,
+            },
+            contexts: {
+              ids: {
+                sessionId,
+                reqId,
+              },
+            },
+            user: {
+              sessionId,
+            },
+          };
 
-        const { method, body, url } = request;
+          const { method, body, url } = request;
 
-        const entry: SentryEntry = {
-          action: method,
-          origin: url,
-          body: body,
-        };
+          const entry: SentryEntry = {
+            action: method,
+            origin: url,
+            body: body,
+          };
 
-        const severity = err.status && err.status < 500 ? Severity.Warning : Severity.Error;
-        this.sentryLog(err, sentryParams, severity, entry);
-        return err;
+          const severity = err.status && err.status < 500 ? Severity.Warning : Severity.Error;
+          this.sentryLog(err, sentryParams, severity, entry);
+          return err;
+        },
       }),
     );
   }

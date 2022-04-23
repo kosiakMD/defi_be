@@ -8,18 +8,15 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
-import { HeadersEntryInterceptor } from '@app/common/interceptors/headers-entry.interceptor';
-import { HeadersExitInterceptor } from '@app/common/interceptors/headers-exit.interceptor';
-import { ResponseInterceptor } from '@app/common/interceptors/response.interceptor';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -73,25 +70,10 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
   ].sort(),
   controllers: [HealthController],
   providers: [
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: HeadersEntryInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
-    },
+    ...interceptorsOrder,
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: HeadersExitInterceptor,
     },
   ],
 })

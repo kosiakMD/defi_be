@@ -7,7 +7,6 @@ import { PriceStrategy } from './strategy';
 import { SundaeswapStrategy } from './sundaeswap.strategy';
 import { TheGraphStrategy } from './thegraph.strategy';
 
-// TODO: Ideally we should be able to add
 const priceStrategies = new Map<string, PriceStrategy>([
   [PriceSourceStrategies.COINGECKO, new CoingeckoStrategy()],
   [PriceSourceStrategies.DEBANK, new DebankStrategy()],

@@ -36,10 +36,8 @@ export class CoingeckoStrategy extends PriceStrategy {
       const coingeckoChainId = CoingeckoPlatformEnum[ChainIdEnum[chainId]];
       const trackedAssetsFindConditions = {
         chainId,
-        isTracked: true,
         disabled: false,
       };
-      // TODO implement pagination for trackedAssets
       const trackedAssetsNumber = await assetsRepository.count({
         where: trackedAssetsFindConditions,
       });
@@ -47,12 +45,11 @@ export class CoingeckoStrategy extends PriceStrategy {
       while (skip < trackedAssetsNumber) {
         priceRequests.push({
           url: `${baseURL}/${coingeckoChainId}`,
-          method: 'GET', // TO_CHECK if we can move it to source config
+          method: 'GET',
           params: {
             // eslint-disable-next-line camelcase
             contract_addresses: (
               await assetsRepository.find({
-                // select: ['address'],
                 where: trackedAssetsFindConditions,
                 take: Math.min(take, trackedAssetsNumber - skip),
                 skip,

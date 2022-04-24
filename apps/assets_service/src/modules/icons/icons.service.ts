@@ -33,11 +33,10 @@ export class IconsService extends CrudService<IconSourceEntity> {
 
   public async getIconUrls(iconConfig: IconConfig): Promise<any[]> {
     this.logger.debug('Loading icons for ' + iconConfig.address);
-    try {
-      const iconSources = await this.getAll();
-      const iconsUrl = [];
-      for await (const iconSource of iconSources) {
-        // TODO: Try catch  here so on does not fail others
+    const iconSources = await this.getAll();
+    const iconsUrl = [];
+    for await (const iconSource of iconSources) {
+      try {
         const icons = await IconsFactory.getInstance(iconSource, iconConfig, this.httpService);
         if (Array.isArray(icons)) {
           const uploadResult = icons.map((i: string) =>
@@ -48,13 +47,13 @@ export class IconsService extends CrudService<IconSourceEntity> {
         } else {
           iconsUrl.push(await this.processAndUploadImage(icons, iconConfig, iconSource.name));
         }
+      } catch (err) {
+        this.logger.error(
+          `Error to get icons on icon source ${iconSource.name}! Error: ${err.message}`,
+        );
       }
-
-      return iconsUrl.flat();
-    } catch (err) {
-      this.logger.error(err);
-      return [];
     }
+    return iconsUrl.flat();
   }
 
   private async processAndUploadImage(logoUrl, iconConfig, iconSourceName) {

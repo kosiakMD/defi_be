@@ -29,10 +29,12 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: '00000000000000000000000000000000000000000000',
+      // TODO: This chain id cannot be hardcoded
       chain: 12,
     });
   }
 
+  // TODO: Move to .env?
   url = 'https://api.solanabeach.io/v1/account';
 
   public async getDelegatedAssets(address) {
@@ -82,6 +84,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
       }
       return result;
     } catch (err) {
+      // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
     }
   }

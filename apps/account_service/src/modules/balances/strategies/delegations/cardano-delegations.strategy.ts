@@ -29,14 +29,17 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: 'addr100000000000000000000000000000000000000000000',
+      // TODO: This chain id cannot be hardcoded
       chain: 22,
     });
   }
 
+  // TODO: Move to .env?
   url = 'https://cardano-mainnet.blockfrost.io/api/v0';
 
   private headers = {
     // eslint-disable-next-line camelcase
+    // TODO: Move to .env
     project_id: 'mainnetDGLOdhwzeWRwDgIrlO22kRh3BJwPA2t0',
   };
 
@@ -50,6 +53,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     try {
       const { data: addressResponse } = await this.http
         .get(`${this.url}/addresses/${address}`, { headers: this.headers })
+        // TODO: Not use this method as it will be deprecated
         .toPromise();
 
       const { data: stakeData } = await this.http
@@ -84,6 +88,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
         },
       ];
     } catch (err) {
+      // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
     }
   }

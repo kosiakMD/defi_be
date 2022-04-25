@@ -31,10 +31,12 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: 'uluna',
+      // TODO: This chain id cannot be hardcoded
       chain: 19,
     });
   }
 
+  // TODO: Move to .env file?
   url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators';
 
   public async getDelegatedAssets(address) {
@@ -86,6 +88,7 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
 
       return result;
     } catch (err) {
+      // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
     }
   }

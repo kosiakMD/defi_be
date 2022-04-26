@@ -6,10 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AssetsCandidateRepository } from '../assets/repositories/assets-candidate.repository';
 import { AssetsRepository } from '../assets/repositories/assets.repository';
 import { AssetsService } from '../assets/services/assets.service';
+import { AssetsHistoricalPriceEntity } from './entities/assets-historical-price.entity';
 import { AssetsPriceEntity } from './entities/assets-price.entity';
 import { PriceSourceEntity } from './entities/price-sources.entity';
 import { PriceJobEmitter } from './prices-job.emitter';
-import { AssetsProcessor } from './prices.processor';
+import { AssetsCurrentPricesProcessor } from './processors/assets-current-prices.processor';
+import { AssetsHistoricalPricesProcessor } from './processors/assets-historical-prices.processor';
+import { AssetsHistoricalPriceRepository } from './repositories/asset-historical-price.repository';
 import { AssetsPriceRepository } from './repositories/asset-price.repository';
 import { PriceSourceRepository } from './repositories/price-source.repository';
 
@@ -20,6 +23,8 @@ import { PriceSourceRepository } from './repositories/price-source.repository';
     }),
     TypeOrmModule.forFeature([
       AssetsPriceEntity,
+      AssetsHistoricalPriceEntity,
+      AssetsHistoricalPriceRepository,
       AssetsPriceRepository,
       PriceSourceEntity,
       AssetsRepository,
@@ -28,6 +33,11 @@ import { PriceSourceRepository } from './repositories/price-source.repository';
     ]),
     ScheduleModule.forRoot(),
   ],
-  providers: [PriceJobEmitter, AssetsProcessor, AssetsService],
+  providers: [
+    PriceJobEmitter,
+    AssetsCurrentPricesProcessor,
+    AssetsHistoricalPricesProcessor,
+    AssetsService,
+  ],
 })
 export class PricesModule {}

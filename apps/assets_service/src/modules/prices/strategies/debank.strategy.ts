@@ -143,7 +143,7 @@ export class DebankStrategy extends PriceStrategy {
             address: token.id,
             chainId,
             sourceId,
-            priceInUsd: token.price,
+            price: token.price,
           })),
         );
       } catch (error) {

@@ -55,7 +55,7 @@ export class SolanaStrategy extends PriceStrategy {
                 : token.mintAddress,
             chainId,
             sourceId,
-            priceInUsd: token.priceUst,
+            price: token.priceUst,
           })),
         );
       } catch (error) {

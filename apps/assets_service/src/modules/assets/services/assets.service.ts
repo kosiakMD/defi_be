@@ -1,3 +1,5 @@
+import { HistoricalPricesQuery } from 'apps/assets_service/src/common/dto/HistoricalPricesQuery.dto';
+import { TimeRange } from 'apps/assets_service/src/common/enum/TimeRange.enum';
 import { Queue } from 'bull';
 import { Cache } from 'cache-manager';
 
@@ -12,6 +14,10 @@ import { CrudService } from '@app/common/services/crud.service';
 import { SearchResultType } from '../../../common/enum/SearchResultType.enum';
 import { SearchParams, SearchResultsAssetEntry } from '../../../common/interfaces/search.interface';
 
+import { AssetsHistoricalPriceEntity } from '../../prices/entities/assets-historical-price.entity';
+import { TimeGranularity } from '../../prices/enums/time-granularity.enum';
+import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
+import { AssetsPriceRepository } from '../../prices/repositories/asset-price.repository';
 import { AssetsCandidateDto } from '../dto/assets-candidate.dto';
 import { AssetsGetDto } from '../dto/assets-get.dto';
 import { AssetsListQueryDto } from '../dto/assets-list-query.dto';
@@ -21,9 +27,14 @@ import { AssetsRepository } from '../repositories/assets.repository';
 
 @Injectable()
 export class AssetsService extends CrudService<AssetsRepository> {
+  private cacheKeyPrefix: string;
   constructor(
     @InjectRepository(AssetsRepository)
     private assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsPriceRepository)
+    private assetsPriceRepository: AssetsPriceRepository,
+    @InjectRepository(AssetsHistoricalPriceRepository)
+    private assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
     @InjectRepository(AssetsCandidateRepository)
     private assetsCandidateRepository: AssetsCandidateRepository,
     private configService: ConfigService,
@@ -32,6 +43,10 @@ export class AssetsService extends CrudService<AssetsRepository> {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(AssetsRepository);
+    this.cacheKeyPrefix = `${this.configService //
+      .get('SERVICE_NAME')
+      .replace(' ', '-')
+      .toLowerCase()}`;
   }
 
   public async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {
@@ -48,27 +63,45 @@ export class AssetsService extends CrudService<AssetsRepository> {
     }));
   }
 
-  public async getAsset(assetQuery: AssetsGetDto): Promise<AssetsEntity> {
+  public async getAsset(assetCommonQuery: AssetsGetDto): Promise<AssetsEntity> {
+    const { historicalPrices, pricesStart, pricesEnd, ...assetQuery } = assetCommonQuery;
+    const historicalPricesQuery = { historicalPrices, pricesStart, pricesEnd };
     const assetsBulkQuery = [assetQuery];
-    return (await this.getBulkAssets(assetsBulkQuery)).shift();
+    return (await this.getBulkAssets(assetsBulkQuery, historicalPricesQuery)).shift();
   }
 
-  public async getBulkAssets(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
+  public async getBulkAssets(
+    assetsBulkQuery: AssetsGetDto[],
+    historicalPricesQuery: HistoricalPricesQuery,
+  ): Promise<AssetsEntity[]> {
+    // TODO figure out how to operate with historical prices in cache
+    if (historicalPricesQuery.historicalPrices) {
+      const assets = await this.getAssets(assetsBulkQuery);
+      for await (const asset of assets) {
+        asset.historicalPrices = await this.getAssetHistoricalPrices(
+          asset.id,
+          historicalPricesQuery,
+        );
+      }
+      return assets;
+    } else {
+      return this.getAssets(assetsBulkQuery);
+    }
+  }
+
+  private async getAssets(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
     if (!this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
-      return this.getAssetsFromDatabaseAndInitiateProcessing(assetsBulkQuery);
+      const res = await this.getAssetsFromDatabaseAndInitiateProcessing(assetsBulkQuery);
+      return res;
     } else {
       const cachedAssets = await this.getAssetsFromCache(assetsBulkQuery);
       if (cachedAssets.length >= assetsBulkQuery.length) {
         return cachedAssets;
       }
-      const notCachedAssets = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
-        return !cachedAssets?.find((assetsEntity: AssetsEntity) => {
-          return (
-            assetsEntity.address === assetQueryDto.address &&
-            assetsEntity.chainId === assetQueryDto.chainId
-          );
-        });
-      });
+      const notCachedAssets = assetsBulkQuery //
+        .filter((assetQueryDto: AssetsGetDto) =>
+          this.checkIfAssetNotInArray(assetQueryDto, cachedAssets),
+        );
       const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(notCachedAssets);
       this.setAssetsToCache(databaseAssets);
 
@@ -97,7 +130,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
       // TO_CHECK if it's a good place to calculate averagePrice
       if (assetsEntity.prices && assetsEntity.prices.length) {
         assetsEntity.averagePrice =
-          assetsEntity.prices.reduce((prev, curr) => prev + curr.price, 0) /
+          assetsEntity.prices.reduce((prev, curr) => prev + Number(curr.price), 0) /
           assetsEntity.prices.length;
       }
       return this.cacheManager.set(this.getAssetCacheKey(assetsEntity), assetsEntity);
@@ -107,17 +140,10 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
     const { address, chainId } = assetQuery;
-    const keyPrefix = `${this.configService //
-      .get('SERVICE_NAME')
-      .replace(' ', '-')
-      .toLowerCase()}`;
-    return `${keyPrefix}${chainId}${address}`;
+    return `${this.cacheKeyPrefix}${chainId}${address}`;
   }
 
-  private checkIfAssetNotInDatabase(
-    assetQueryDto: AssetsGetDto,
-    assetsFromDatabase: AssetsEntity[],
-  ) {
+  private checkIfAssetNotInArray(assetQueryDto: AssetsGetDto, assetsFromDatabase: AssetsEntity[]) {
     return !assetsFromDatabase.find((assetEntity: AssetsEntity) => {
       return (
         assetEntity.address === assetQueryDto.address &&
@@ -131,7 +157,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     assetsFromDatabase: AssetsEntity[],
   ): Promise<void> {
     const assetsNotInDatabase = assetsBulkQuery //
-      .filter((assetQueryDto) => this.checkIfAssetNotInDatabase(assetQueryDto, assetsFromDatabase));
+      .filter((assetQueryDto) => this.checkIfAssetNotInArray(assetQueryDto, assetsFromDatabase));
 
     assetsNotInDatabase.map(async (asset) => {
       return await this.assetsQueue.add(this.configService.get('ASSETS_METADATA_JOB_TYPE'), {
@@ -141,14 +167,38 @@ export class AssetsService extends CrudService<AssetsRepository> {
     });
   }
 
+  private async getAssetHistoricalPrices(
+    assetId: number,
+    historicalPricesQuery: HistoricalPricesQuery,
+  ): Promise<AssetsHistoricalPriceEntity[]> {
+    if (historicalPricesQuery.historicalPrices) {
+      const timeRange = Date.now() - historicalPricesQuery.pricesStart.getTime() - 1000;
+      const timeGranularity =
+        timeRange <= TimeRange['2_DAYS']
+          ? TimeGranularity.M15
+          : timeRange <= TimeRange['7_DAYS']
+          ? TimeGranularity.H1
+          : TimeGranularity.H4;
+      return await this.assetsHistoricalPriceRepository //
+        .findAssetHistoricalPrices(assetId, historicalPricesQuery, timeGranularity);
+    }
+    return [];
+  }
+
   private async getAssetsFromDatabaseAndInitiateProcessing(
     assetsBulkQuery: AssetsGetDto[],
   ): Promise<AssetsEntity[]> {
     const assetsListQueryDto = new AssetsListQueryDto();
+    const queryOptions = { where: assetsBulkQuery };
     const assetsFromDatabase = await this.assetsRepository.findAllAssetsWithPrices(
       assetsListQueryDto,
-      { where: assetsBulkQuery },
+      queryOptions,
     );
+    for (const asset of assetsFromDatabase) {
+      const prices = await this.assetsPriceRepository //
+        .findAssetCurrentPrices(asset.id);
+      asset.prices = prices;
+    }
     this.processAssets(assetsBulkQuery, assetsFromDatabase);
     return assetsFromDatabase;
   }

@@ -32,7 +32,7 @@ export class SundaeswapStrategy extends PriceStrategy {
       ? {
           address,
           chainId,
-          priceInUsd: new BigNumber(priceUSD).toNumber(),
+          price: new BigNumber(priceUSD).toNumber(),
           sourceId,
         }
       : false;

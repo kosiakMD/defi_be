@@ -7,7 +7,7 @@ import { Address } from '@app/common';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import { MulticallMethodsEnum } from '@app/common/jobs/multicall.methods.enum';
 
-export class CURVE_CONTRACT {
+export class CURVE_REGISTRY_CONTRACT {
   protected abi: JsonFragment[];
   protected address: string;
   protected multicall: MultiCall;
@@ -18,7 +18,6 @@ export class CURVE_CONTRACT {
     this.multicall = new MultiCall(web3Provider);
   }
 
-  // TODO: Multicall
   async getCoinsForLpToken(poolAddress: string): Promise<Address[]> {
     if (poolAddress === ZERO_ADDRESS) {
       throw new Error('Address is not a curve pool');

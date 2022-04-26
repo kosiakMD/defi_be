@@ -12,16 +12,20 @@ import { AssetsController } from '../../controllers/assets.controller';
 import { AssetsCategoryEntity } from '../assets-category/entities/assets-category.entity';
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { IconsModule } from '../icons/icons.module';
-import { AssetsProcessor } from './assets.processor';
+import { AssetsHistoricalPriceEntity } from '../prices/entities/assets-historical-price.entity';
+import { AssetsPriceEntity } from '../prices/entities/assets-price.entity';
+import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
+import { AssetsPriceRepository } from '../prices/repositories/asset-price.repository';
 import { AssetsCandidateEntity } from './entities/assets-candidate.entity';
 import { AssetsInvalidAddressEntity } from './entities/assets-invalid-address.entity';
 import { AssetUnderlyingEntity } from './entities/assets-underlying.entity';
 import { AssetsEntity } from './entities/assets.entity';
+import { AssetsProcessor } from './processors/assets.processor';
+import { TrackedTokenPopulationProcessor } from './processors/tracked-token-population.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
 import { TokenService } from './services/token.service';
-import { TrackedTokenPopulationProcessor } from './services/tracked-token-population.processor';
 
 @Module({
   imports: [
@@ -35,6 +39,10 @@ import { TrackedTokenPopulationProcessor } from './services/tracked-token-popula
       AssetsCategoryRepository,
       AssetsEntity,
       AssetsRepository,
+      AssetsPriceEntity,
+      AssetsPriceRepository,
+      AssetsHistoricalPriceEntity,
+      AssetsHistoricalPriceRepository,
       AssetsInvalidAddressEntity,
       AssetUnderlyingEntity,
     ]),

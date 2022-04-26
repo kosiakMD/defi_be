@@ -13,21 +13,25 @@ type TheGraphToken = {
 };
 
 export class TheGraphStrategy extends PriceStrategy {
-  private parseToken(priceJobData: PriceJobData, token: TheGraphToken, price: string): AssetPrice {
+  private parseToken(
+    priceJobData: PriceJobData,
+    token: TheGraphToken,
+    tokenPrice: string,
+  ): AssetPrice {
     const {
       config: { chainId },
       sourceId,
     } = priceJobData;
     const { derived, id: address } = token;
-    const priceInUsd = parseFloat(
-      new BigNumber(price) //
+    const price = parseFloat(
+      new BigNumber(tokenPrice) //
         .multipliedBy(new BigNumber(derived))
         .toString(),
     );
     return {
       address,
       chainId,
-      priceInUsd,
+      price,
       sourceId,
     };
   }

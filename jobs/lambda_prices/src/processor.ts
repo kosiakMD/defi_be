@@ -294,6 +294,7 @@ function getPairBaseTokensReservesValue(
   coinPriceMap?: Map<string, PriceDto>,
 ): AssetPairReserveValue {
   const reserves: string[] = Object.values(assetPairsReserves);
+  // eslint-disable-next-line no-unsafe-optional-chaining
   const [token0, token1] = pair?.tokens;
 
   const args =

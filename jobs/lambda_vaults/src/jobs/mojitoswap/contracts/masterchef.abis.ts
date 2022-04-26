@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class MasterchefAbis extends MultiCallAbiProxy {
@@ -29,22 +30,22 @@ export class MasterchefAbis extends MultiCallAbiProxy {
       {
         internalType: 'contract IERC20',
         name: 'lpToken',
-        type: 'address'
+        type: 'address',
       },
       {
         internalType: 'uint256',
         name: 'allocPoint',
-        type: 'uint256'
+        type: 'uint256',
       },
       {
         internalType: 'uint256',
         name: 'lastRewardBlock',
-        type: 'uint256'
+        type: 'uint256',
       },
       {
         internalType: 'uint256',
         name: 'accMojitoPerShare',
-        type: 'uint256'
+        type: 'uint256',
       },
     ],
     stateMutability: 'view',

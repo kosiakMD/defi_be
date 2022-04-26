@@ -30,5 +30,5 @@ export enum ChainIdEnum {
   near = 18,
   terra = 19,
   klay = 20,
-  fuse = 21
+  fuse = 21,
 }

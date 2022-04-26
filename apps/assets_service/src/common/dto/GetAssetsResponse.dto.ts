@@ -8,9 +8,10 @@ import { AssetDto } from './Asset.dto';
 
 export class GetAssetsResponseDto {
   constructor(assets: AssetsEntity[]) {
+    const success = Boolean(assets[0]);
     Object.assign(this, {
-      status: GetAssetResponseStatus.SUCCESS,
-      assets: plainToClass(AssetDto, assets),
+      status: success ? GetAssetResponseStatus.SUCCESS : GetAssetResponseStatus.NOT_FOUND,
+      ...(success ? { assets: plainToClass(AssetDto, assets) } : {}),
     });
   }
   @ApiProperty({ enum: GetAssetResponseStatus, example: GetAssetResponseStatus.SUCCESS })

@@ -48,6 +48,7 @@ export class AssetsCurrentPricesProcessor {
       return JobCompleteStates.SUCCESS;
     } catch (error) {
       this.logger.error(`Error to process price job.id: ${job.id}`);
+      this.logger.debug(error);
       return JobCompleteStates.FAILURE;
     }
   }

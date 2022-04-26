@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { GetAssetsResponseDto } from '../common/dto/GetAssetsResponse.dto';
 import { HistoricalPricesQuery } from '../common/dto/HistoricalPricesQuery.dto';
@@ -50,6 +50,7 @@ export class AssetsController {
     example: 22,
     required: true,
   })
+  @ApiBody({ type: [AssetsGetDto] })
   @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
   async getBulk(
     @Body() body: AssetsGetDto[],

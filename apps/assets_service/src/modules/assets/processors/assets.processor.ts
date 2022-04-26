@@ -48,7 +48,7 @@ export class AssetsProcessor {
       return JobCompleteStates.SUCCESS;
     } catch (error) {
       this.logger.error(`Error to progress job: ${job.id}`);
-      this.logger.debug(error);
+      this.logger.error(error);
       return JobCompleteStates.FAILURE;
     }
   }

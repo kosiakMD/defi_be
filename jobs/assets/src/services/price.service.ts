@@ -26,5 +26,5 @@ export interface PriceFetchRequest {
 }
 
 export interface PriceFetchResponse {
-  prices: { [token: string]: string }
+  prices: { [token: string]: string };
 }

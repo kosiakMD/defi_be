@@ -28,7 +28,7 @@ export class NetworkBalancesStrategy extends BaseBalanceStrategy implements Bala
     super();
   }
 
-  private readonly DEFAULT_BATCH_SIZE = 1500;
+  private readonly DEFAULT_BATCH_SIZE = 1000;
   private readonly WEB3_RETRY_CALL_IN_MS = 2000;
   private readonly COMMON_BALANCE_CHECKER_ADDRESS = '0x1861eb1cc764032509e4d2ff545138be0ad3b240';
 

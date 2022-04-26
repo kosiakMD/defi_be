@@ -91,7 +91,6 @@ export class AssetsProcessor {
   }
 
   private async processingJob(jobData: PriceJobData): Promise<void> {
-    // TODO: Store price per source in redis + average price ()
     const { strategy } = jobData;
     const priceStrategy = priceStrategies.get(strategy);
     const assetsPrices = await priceStrategy.fetchPrices(jobData, this.assetRepository);

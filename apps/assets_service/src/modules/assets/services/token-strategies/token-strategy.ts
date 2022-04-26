@@ -18,10 +18,4 @@ export abstract class UnderlyingTokenStrategy {
   ) {}
   // TODO: Rename method and not return any
   public abstract attemptToLoadUnderlyingTokens(asset: AssetsEntity): Promise<string[]>;
-
-  // public abstract checkAsset(asset: AssetsEntity): Promise<{
-  //   underlying: string[],
-  //   category: string, // or enum,
-  //   metadata?: any,
-  // }>;
 }

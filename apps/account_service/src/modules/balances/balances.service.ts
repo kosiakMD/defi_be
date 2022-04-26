@@ -89,6 +89,7 @@ export class BalancesService {
     this.roninBalancesStrategy,
   ];
 
+  // TODO: Move to another service and controller
   delegationStrategies: DelegationsStrategy[] = [
     this.solanaDelegationsStrategy,
     this.cardanoDelegationsStrategy,

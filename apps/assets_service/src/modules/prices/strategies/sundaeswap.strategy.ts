@@ -32,7 +32,6 @@ export class SundaeswapStrategy extends PriceStrategy {
       ? {
           address,
           chainId,
-          // TO_CHECK if we need to use BigNumber
           priceInUsd: new BigNumber(priceUSD).toNumber(),
           sourceId,
         }
@@ -41,12 +40,9 @@ export class SundaeswapStrategy extends PriceStrategy {
 
   public createPriceRequests(config: PriceSourceConfig): Promise<AxiosRequestConfig[]> {
     const priceRequests: AxiosRequestConfig[] = [];
-    // TODO: Does 'gqlString' make sense here? I guess not. better have it in code
     const { maxItems, baseURL, path, take, gqlString: query } = config;
     let skipItems = 0;
     while (skipItems < maxItems) {
-      // TODO find out how to use skip
-      // const takeItems = skipItems + take > maxItems ? maxItems - skipItems : take;
       priceRequests.push({
         method: 'POST',
         url: `${baseURL}${path}`,

@@ -98,6 +98,7 @@ export class BalancesController {
     description: 'Array of chain ID',
     example: [1, 2, 3, 4, 5],
   })
+  // TODO: DTO should be declared here
   getUserDelegations(@Query() query) {
     return this.balancesService.getUserDelegations(query.addresses);
   }

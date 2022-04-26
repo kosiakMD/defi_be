@@ -59,13 +59,9 @@ export class DebankStrategy extends PriceStrategy {
       throw Error(`No Debank chain for chainId: ${chainId}`);
     }
     if (this.loading) await delay(5000);
-    // TODO find out debank chain id on https://pro-openapi.debank.com/v1/chain/list
     const AbsoluteChainId = AbsoluteChainIdEnum[chainName];
-    return (
-      // it's good to have an error here in case of it's not found
-      this.chains //
-        .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId).id
-    );
+    return this.chains //
+      .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId).id;
   }
 
   public async createPriceRequests(
@@ -84,6 +80,12 @@ export class DebankStrategy extends PriceStrategy {
     const { baseURL, take } = config; // maximum 100 https://docs.open.debank.com/en/reference/api-pro-reference/token#get-the-list-of-the-token-information
     for await (const chainId of assetsChainIds) {
       const debankChain = await this.getDebankChain(chainId); // define debank chain by chainId
+      if (debankChain) {
+        this.logger.error(
+          `No chain id ${chainId} on Debank API! see https://pro-openapi.debank.com/v1/chain/list community_ids`,
+        );
+        continue;
+      }
       const trackedAssetsFindConditions = {
         chainId,
         isTracked: true,

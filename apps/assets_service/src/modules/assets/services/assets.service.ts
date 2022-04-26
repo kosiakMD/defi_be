@@ -3,6 +3,7 @@ import { Cache } from 'cache-manager';
 
 import { InjectQueue } from '@nestjs/bull';
 import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -25,6 +26,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     private assetsRepository: AssetsRepository,
     @InjectRepository(AssetsCandidateRepository)
     private assetsCandidateRepository: AssetsCandidateRepository,
+    private configService: ConfigService,
     @InjectQueue('assets') private readonly assetsQueue: Queue,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
@@ -52,11 +54,9 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
-    // TODO: It's required to use config here, it's never boolean
-    if (!process.env.USE_REDIS_TO_GET_ASSETS) {
+    if (!this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
       return this.getAssetsFromDatabaseAndInitiateProcessing(assetsBulkQuery);
     } else {
-      // TODO: I think we should always use cache
       const cachedAssets = await this.getAssetsFromCache(assetsBulkQuery);
       if (cachedAssets.length >= assetsBulkQuery.length) {
         return cachedAssets;
@@ -64,7 +64,6 @@ export class AssetsService extends CrudService<AssetsRepository> {
       const notCachedAssets = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
         return !cachedAssets?.find((assetsEntity: AssetsEntity) => {
           return (
-            // TODO: We need to be sure we store addresses in correct case (web3.utils.toChecksumAddress)
             assetsEntity.address === assetQueryDto.address &&
             assetsEntity.chainId === assetQueryDto.chainId
           );
@@ -108,30 +107,34 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
     const { address, chainId } = assetQuery;
-    const keyPrefix = `${(process.env.SERVICE_NAME || 'assets-service')
+    const keyPrefix = `${this.configService //
+      .get('SERVICE_NAME')
       .replace(' ', '-')
       .toLowerCase()}`;
     return `${keyPrefix}${chainId}${address}`;
   }
 
-  // TODO: This methods should accept list of { chainId, address }
-  //  filtering should be moved out
+  private checkIfAssetNotInDatabase(
+    assetQueryDto: AssetsGetDto,
+    assetsFromDatabase: AssetsEntity[],
+  ) {
+    return !assetsFromDatabase.find((assetEntity: AssetsEntity) => {
+      return (
+        assetEntity.address === assetQueryDto.address &&
+        assetEntity.chainId === assetQueryDto.chainId
+      );
+    });
+  }
+
   private async processAssets(
     assetsBulkQuery: AssetsGetDto[],
     assetsFromDatabase: AssetsEntity[],
   ): Promise<void> {
-    const assetsNotInDatabase = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
-      return !assetsFromDatabase.find((assetEntity: AssetsEntity) => {
-        return (
-          assetEntity.address === assetQueryDto.address &&
-          assetEntity.chainId === assetQueryDto.chainId
-        );
-      });
-    });
+    const assetsNotInDatabase = assetsBulkQuery //
+      .filter((assetQueryDto) => this.checkIfAssetNotInDatabase(assetQueryDto, assetsFromDatabase));
 
     assetsNotInDatabase.map(async (asset) => {
-      // TODO: Queue name should be configurable
-      return await this.assetsQueue.add('metadata', {
+      return await this.assetsQueue.add(this.configService.get('ASSETS_METADATA_JOB_TYPE'), {
         address: asset.address,
         chainId: asset.chainId,
       });

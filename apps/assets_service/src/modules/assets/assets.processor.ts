@@ -39,8 +39,10 @@ export class AssetsProcessor {
   @Process('metadata')
   public async handleMetadataJob(job: Job) {
     try {
-      this.logger.debug(`Received job ${job.id}. Start getting metadata`, job.data);
       const { address, chainId } = job.data;
+      this.logger.debug(
+        `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
+      );
       const asset: AssetsEntity = await this.processAsset(address, chainId);
       this.logger.debug('Processed asset:', asset);
       return JobCompleteStates.SUCCESS;

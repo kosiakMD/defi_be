@@ -40,6 +40,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   private headers = {
     // eslint-disable-next-line camelcase
     // TODO: Move to .env
+    // eslint-disable-next-line camelcase
     project_id: 'mainnetDGLOdhwzeWRwDgIrlO22kRh3BJwPA2t0',
   };
 

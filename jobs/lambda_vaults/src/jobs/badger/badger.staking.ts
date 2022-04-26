@@ -1,28 +1,31 @@
 // eslint-disable-next-line max-classes-per-file
-import { plainToClass } from 'class-transformer';
-import { Injectable } from '@nestjs/common';
 import BigNumber from 'bignumber.js';
+import { plainToClass } from 'class-transformer';
+
+import { Injectable } from '@nestjs/common';
+
 import { CurrencyIdEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationStakingPositionDto,
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
 } from '@app/common/jobs/staking';
-import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
-import { CallData } from '@app/common/dto/CallData';
+import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
+import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
-import { concatStrings } from '@app/common/utils';
 import { toDecimals } from '../../utils/number';
+import { isTimeToDo } from '../../utils/time';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { IntegrationDataConverter } from '../integration.data.converter';
-import { Abis } from './abis/abis.common';
 import { DbMapping } from '../utils/dbmapping';
-import { isTimeToDo } from '../../utils/time';
+import { Abis } from './abis/abis.common';
 
 @Injectable()
 export abstract class BadgerStaking {
@@ -104,10 +107,13 @@ export abstract class BadgerStaking {
       name: multicallRsp.get(this.getNameLabel(tokenAddress)).output.data,
       symbol: multicallRsp.get(this.getSymbolLabel(tokenAddress)).output.data,
       decimals: multicallRsp.get(this.getDecimalsLabel(tokenAddress)).output.data,
-    }
+    };
   }
 
-  async saveTokens(lpTokenAddress: string, rewardTokenAddress: string): Promise<[IntegrationERC20TokenDto, IntegrationClaimableTokenDto, LiquidityPoolTokenDto]> {
+  async saveTokens(
+    lpTokenAddress: string,
+    rewardTokenAddress: string,
+  ): Promise<[IntegrationERC20TokenDto, IntegrationClaimableTokenDto, LiquidityPoolTokenDto]> {
     const rewardTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
       rewardTokenAddress,
       this.chain,
@@ -138,11 +144,11 @@ export abstract class BadgerStaking {
   protected mapVaultsToPools(pools) {
     const vaultsToPoolsMap = new Map<string, any>();
 
-    this.addresses.stakingKeys.map(k => {
+    this.addresses.stakingKeys.map((k) => {
       const vaultAddress = this.addresses.settVaults[k].toLowerCase();
       const poolAddress = pools[k]?.toLowerCase();
 
-      vaultsToPoolsMap.set(vaultAddress, { 
+      vaultsToPoolsMap.set(vaultAddress, {
         vault: vaultAddress,
         pool: poolAddress,
       });
@@ -153,8 +159,11 @@ export abstract class BadgerStaking {
 
   async updateWithChainData(): Promise<any[]> {
     const vaultToStrategy: Map<string, string> = new Map<string, string>();
-    this.addresses.stakingKeys.forEach(stakingKey => {
-      vaultToStrategy.set(this.addresses.settVaults[stakingKey].toLowerCase(), this.addresses.settStrategies[stakingKey].toLowerCase());
+    this.addresses.stakingKeys.forEach((stakingKey) => {
+      vaultToStrategy.set(
+        this.addresses.settVaults[stakingKey].toLowerCase(),
+        this.addresses.settStrategies[stakingKey].toLowerCase(),
+      );
     });
 
     const batchCalls = [];
@@ -176,15 +185,11 @@ export abstract class BadgerStaking {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(
-        pricedTokenAddresses,
-        CurrencyIdEnum.usd,
-        this.chain,
-      ),
+      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
       this.multicallService.handleInBatches(batchCallsMap, this.chain),
     ]);
-    
-    // remove zero prices 
+
+    // remove zero prices
     this.removeZeroPrices(prices);
 
     this.mapping = await Promise.all(
@@ -200,7 +205,7 @@ export abstract class BadgerStaking {
 
           return m;
         }
-      })
+      }),
     );
 
     return this.mapping;
@@ -210,7 +215,7 @@ export abstract class BadgerStaking {
     multicallRsp: Map<string, CallData>,
     stakingPos: IntegrationStakingPositionDto,
     prices,
-    strategy
+    strategy,
   ) {
     const stakingTokenAddress = stakingPos.stakingToken.address.toLowerCase();
 
@@ -240,16 +245,18 @@ export abstract class BadgerStaking {
         const reserves = [];
 
         for (let i = 0; i < tokenCount; i++) {
-          reserves.push(multicallRsp.get(this.getCoinBalanceLabel(stakingPos.address, i)).output.data);
+          reserves.push(
+            multicallRsp.get(this.getCoinBalanceLabel(stakingPos.address, i)).output.data,
+          );
         }
         stakingPos.stakingToken.tokens.map((t, i) => {
           t.reserve = toDecimals(reserves[i], t.decimals);
           t.price = Number(prices[t.address.toLowerCase()]);
           t.balance = t.reserve * poolShare;
           t.value = t.balance * t.price;
-  
+
           stakingPos.stats.tvl += t.value;
-  
+
           return t;
         });
       } else if (stakingPos.stakingToken.tokens.length === 1) {
@@ -259,8 +266,7 @@ export abstract class BadgerStaking {
         if (stakingTokenAddress === BadgerStaking.cvxVault) {
           reserve = multicallRsp.get(this.getBalanceLabel(strategy)).output.data;
         } else {
-          reserve = multicallRsp.get(this.totalSupplyLabel(vault)).output
-            .data;
+          reserve = multicallRsp.get(this.totalSupplyLabel(vault)).output.data;
         }
 
         stakingPos.stakingToken.tokens.map((t) => {
@@ -291,14 +297,16 @@ export abstract class BadgerStaking {
           return t;
         });
       }
-    } else if ([BadgerStaking.bDIGGPool, BadgerStaking.bBadgerPool].includes(stakingPos.address)) { // bBadger or bDIGG pool
+    } else if ([BadgerStaking.bDIGGPool, BadgerStaking.bBadgerPool].includes(stakingPos.address)) {
+      // bBadger or bDIGG pool
       const vault = stakingPos.address.toLowerCase();
-      const balance = 
-        toDecimals(multicallRsp.get(this.getBalanceLabel(vault)).output.data, stakingPos.rewards[0].decimals);
+      const balance = toDecimals(
+        multicallRsp.get(this.getBalanceLabel(vault)).output.data,
+        stakingPos.rewards[0].decimals,
+      );
       const token0 = stakingPos.rewards[0].address.toLowerCase();
       const token0Price = Number(prices[token0]);
       stakingPos.stats.tvl += token0Price * balance;
-      
     } else {
       stakingPos.stakingToken.price = Number(prices[stakingTokenAddress]);
       stakingPos.stakingToken.value =
@@ -374,7 +382,10 @@ export abstract class BadgerStaking {
 
     calls.set(this.getBalanceLabel(strategy), {
       address: strategy,
-      abi: strategy.toLowerCase() !== BadgerStaking.cvxStategy ? Abis.stratGetBalanceOf : Abis.strategyTotalAssets,
+      abi:
+        strategy.toLowerCase() !== BadgerStaking.cvxStategy
+          ? Abis.stratGetBalanceOf
+          : Abis.strategyTotalAssets,
       input: {
         data: [],
       },

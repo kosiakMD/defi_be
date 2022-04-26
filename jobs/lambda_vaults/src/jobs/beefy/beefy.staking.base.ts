@@ -374,6 +374,7 @@ export abstract class BeefyStakingBase
 
     // Convert IBeefyStrategyAssets<CallData> to callable Map
     const calls = new Map<string, any>([
+      // eslint-disable-next-line no-unsafe-optional-chaining
       ...callObj.underlying?.map((call, idx): [string, CallData] => [`lpToken${idx}`, call]),
       ['output', callObj.output],
       ['want', callObj.want],

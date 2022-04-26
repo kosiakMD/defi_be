@@ -5,29 +5,28 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
-
-import { CallData } from '@app/common/dto/CallData';
+import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
+
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
 import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
-import { concatStrings } from '@app/common/utils';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { JobInterface } from '../job.interface';
+import { DbMapping } from '../utils/dbmapping';
 import { Abis } from './abis/abis.common';
 import { AbisEth } from './abis/abis.eth';
 import BadgerAddresses from './addresses/addresses.ethereum';
-import { DbMapping } from '../utils/dbmapping';
-
 import { BadgerStaking } from './badger.staking';
 
 @Injectable()
@@ -83,7 +82,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
           rewardAddress,
           this.chain,
         );
-        
+
         const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
           address: accountTokenDto.address,
           name: accountTokenDto.name,
@@ -110,7 +109,11 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
           const abiVersion = this.specialAddresses.includes(crvPool) ? 'V1' : 'V2';
           const calls = new Map<string, CallData>();
 
-          const tokenCount = (crvPool === BadgerAddresses.crvPools.bcrvTricrypto) || (crvPool === BadgerAddresses.crvPools.bcrvTricrypto2) ? 3 : 2;
+          const tokenCount =
+            crvPool === BadgerAddresses.crvPools.bcrvTricrypto ||
+            crvPool === BadgerAddresses.crvPools.bcrvTricrypto2
+              ? 3
+              : 2;
 
           for (let i = 0; i < tokenCount; i++) {
             calls.set(this.getCoinLabel(address, i), {
@@ -123,15 +126,17 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
             });
           }
 
-          let multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
+          const multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
             calls,
             this.chain,
           );
 
-          let tokens = [];
+          const tokens = [];
 
           for (let i = 0; i < tokenCount; i++) {
-            const tokenAddress = multicallRsp.get(this.getCoinLabel(address, i)).output.data.toString();
+            const tokenAddress = multicallRsp
+              .get(this.getCoinLabel(address, i))
+              .output.data.toString();
 
             const tokenData = await this.getTokenData(tokenAddress);
 
@@ -149,7 +154,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
           stakingToken.tokens.push(...tokens);
         } else if (sushiPool) {
           const calls = new Map<string, CallData>();
-          
+
           calls.set(this.getTokenLabel(address, 0), {
             address: sushiPool,
             abi: AbisEth.getToken0,
@@ -166,14 +171,16 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
             },
             output: {},
           });
-          
-          let multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
+
+          const multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
             calls,
             this.chain,
           );
 
           for (let i = 0; i < 2; i++) {
-            const tokenAddress = multicallRsp.get(this.getTokenLabel(address, i)).output.data.toString();
+            const tokenAddress = multicallRsp
+              .get(this.getTokenLabel(address, i))
+              .output.data.toString();
             const tokenData = await this.getTokenData(tokenAddress);
             const token = plainToClass(IntegrationPoolTokenDto, {
               address: tokenAddress,
@@ -199,14 +206,17 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
           });
         }
 
-        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-          address: vault,
-          poolId: null,
-          poolName: null,
-          rewards: [rewardToken],
-          stakingToken: stakingToken,
-        });
-        
+        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+          IntegrationStakingPositionDto,
+          {
+            address: vault,
+            poolId: null,
+            poolName: null,
+            rewards: [rewardToken],
+            stakingToken: stakingToken,
+          },
+        );
+
         stakingFeatures.push(stakingPoolFeature);
       } catch (e) {
         this.logger.error(
@@ -215,14 +225,14 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
         );
       }
     }
-    
+
     const mappings = [];
     for (let i = 0; i < stakingFeatures.length; i++) {
       mappings.push(await this.dbMapping.toDbMapping(stakingFeatures[i], this.chain));
     }
-    
+
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -231,7 +241,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
   private async getAllPoolInfo(): Promise<Map<string, any>> {
     const poolsInfoMap: Map<string, any> = new Map<string, any>();
 
-    for (let stakingKey of this.addresses.stakingKeys) {
+    for (const stakingKey of this.addresses.stakingKeys) {
       if (stakingKey !== 'byvWBTC') {
         const settVault = this.addresses.settVaults[stakingKey].toLowerCase();
         const settStrategy = this.addresses.settStrategies[stakingKey].toLowerCase();
@@ -246,12 +256,14 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
           output: {},
         });
 
-        let multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
+        const multicallRsp: Map<string, CallData> = await this.multicallService.handleInBatches(
           calls,
           this.chain,
         );
 
-        const wantAddress = multicallRsp.get(this.getWantLabel(settStrategy)).output.data.toLowerCase();
+        const wantAddress = multicallRsp
+          .get(this.getWantLabel(settStrategy))
+          .output.data.toLowerCase();
         const rewardAddress = BadgerAddresses.vaultToReward[stakingKey];
 
         const lpToken = this.addresses.stakingKeys[0] !== stakingKey ? wantAddress : settVault;
@@ -276,7 +288,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
       BadgerAddresses.vaultToReward.byvWBTC,
       this.chain,
     );
-    
+
     const rewardToken = plainToClass(IntegrationClaimableTokenDto, {
       address: rewardTokenData.address,
       name: rewardTokenData.name,
@@ -311,20 +323,21 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
 
     stakingToken.tokens.push(token);
 
-    const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-      address: BadgerAddresses.settVaults.byvWBTC,
-      poolId: null,
-      poolName: null,
-      rewards: [rewardToken],
-      stakingToken: stakingToken,
-    });
+    const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+      IntegrationStakingPositionDto,
+      {
+        address: BadgerAddresses.settVaults.byvWBTC,
+        poolId: null,
+        poolName: null,
+        rewards: [rewardToken],
+        stakingToken: stakingToken,
+      },
+    );
 
     stakingFeatures.push(stakingPoolFeature);
   }
 
-  getCallsForWant(
-    stakingPosition: IntegrationStakingPositionDto
-  ) {
+  getCallsForWant(stakingPosition: IntegrationStakingPositionDto) {
     const calls: Map<string, CallData> = new Map<string, CallData>();
     const wantAddress = stakingPosition.stakingToken.address.toLowerCase();
     const vaultAddress = stakingPosition.address.toLowerCase();
@@ -338,7 +351,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
         const abiVersion = this.specialAddresses.includes(crvPool) ? 'V1' : 'V2';
 
         const tokenCount = stakingPosition.stakingToken.tokens.length;
-        
+
         for (let i = 0; i < tokenCount; i++) {
           calls.set(this.getCoinBalanceLabel(vaultAddress, i), {
             address: crvPool,
@@ -359,7 +372,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
           output: {},
         });
       }
-      
+
       // total supply supply of staking lp token
       calls.set(this.totalSupplyLabel(wantAddress), {
         address: wantAddress,
@@ -370,7 +383,7 @@ export class BadgerStakingEth extends BadgerStaking implements JobInterface {
         output: {},
       });
     }
-    
+
     return calls;
   }
 

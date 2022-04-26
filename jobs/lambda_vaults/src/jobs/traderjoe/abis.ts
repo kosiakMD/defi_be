@@ -126,7 +126,7 @@ export class Abis {
     name: 'rewardToken',
     inputs: [],
   };
-  
+
   static readonly tokenPerSec: AbiItem = {
     type: 'function',
     stateMutability: 'view',

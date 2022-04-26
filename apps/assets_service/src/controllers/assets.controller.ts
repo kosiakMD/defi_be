@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { GetAssetsResponseDto } from '../common/dto/GetAssetsResponse.dto';
+import { HistoricalPricesQuery } from '../common/dto/HistoricalPricesQuery.dto';
 import { SearchResultsEntryDto } from '../common/dto/SearchResultsEntry.dto';
 import { SearchParams, SearchResultsAssetEntry } from '../common/interfaces/search.interface';
 
@@ -50,8 +51,11 @@ export class AssetsController {
     required: true,
   })
   @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
-  async getBulk(@Body() body: AssetsGetDto[]): Promise<GetAssetsResponseDto> {
-    return new GetAssetsResponseDto(await this.assetsService.getBulkAssets(body));
+  async getBulk(
+    @Body() body: AssetsGetDto[],
+    @Query() query: HistoricalPricesQuery,
+  ): Promise<GetAssetsResponseDto> {
+    return new GetAssetsResponseDto(await this.assetsService.getBulkAssets(body, query));
   }
 
   @Get('/search')

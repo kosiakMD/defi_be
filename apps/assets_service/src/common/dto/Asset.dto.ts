@@ -3,6 +3,7 @@ import { classToPlain, Exclude, Expose, plainToClass } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { AssetsCategoryDto } from './AssetsCategory.dto';
+import { AssetsHistoricalPriceDto } from './AssetsHistoricalPrice.dto';
 import { AssetsPriceDto } from './AssetsPrice.dto';
 import { AssetUnderlyingDto } from './AssetsUnderlying.dto';
 
@@ -51,6 +52,10 @@ export class AssetDto {
   public prices: AssetsPriceDto[];
 
   @Expose()
+  @ApiProperty({ type: [AssetsHistoricalPriceDto] })
+  public historicalPrices: AssetsHistoricalPriceDto[];
+
+  @Expose()
   @ApiProperty({ type: [AssetUnderlyingDto] })
   public underlyingTokens: AssetUnderlyingDto[];
 
@@ -65,7 +70,11 @@ export class AssetDto {
   toJSON() {
     return classToPlain({
       ...this,
-      ...{ category: plainToClass(AssetsCategoryDto, this.category) },
+      ...{
+        category: plainToClass(AssetsCategoryDto, this.category),
+        prices: plainToClass(AssetsPriceDto, this.prices),
+        historicalPrices: plainToClass(AssetsHistoricalPriceDto, this.historicalPrices),
+      },
     });
   }
 }

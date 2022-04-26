@@ -43,7 +43,7 @@ export class CoingeckoStrategy extends PriceStrategy {
       });
       let skip = 0;
       while (skip < trackedAssetsNumber) {
-        priceRequests.push({
+        const request = {
           url: `${baseURL}/${coingeckoChainId}`,
           method: 'GET',
           params: {
@@ -60,7 +60,8 @@ export class CoingeckoStrategy extends PriceStrategy {
             // eslint-disable-next-line camelcase
             vs_currencies: 'usd',
           },
-        });
+        };
+        priceRequests.push(request);
         skip += take;
       }
     }
@@ -82,12 +83,14 @@ export class CoingeckoStrategy extends PriceStrategy {
       try {
         const data: CoingeckoTokens = response.data;
         assetPrices.push(
-          ...Object.keys(data).map((key: string) => ({
-            address: key,
-            chainId,
-            sourceId,
-            priceInUsd: data[key] && data[key].usd,
-          })),
+          ...Object.keys(data)
+            .filter((key: string) => data[key] && data[key].usd)
+            .map((key: string) => ({
+              address: key,
+              chainId,
+              sourceId,
+              price: data[key] && data[key].usd,
+            })),
         );
       } catch (error) {
         this.handleFailResponse(error);

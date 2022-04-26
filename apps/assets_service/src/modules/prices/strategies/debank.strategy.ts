@@ -61,7 +61,7 @@ export class DebankStrategy extends PriceStrategy {
     if (this.loading) await delay(5000);
     const AbsoluteChainId = AbsoluteChainIdEnum[chainName];
     return this.chains //
-      .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId).id;
+      .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId)?.id;
   }
 
   public async createPriceRequests(
@@ -80,19 +80,18 @@ export class DebankStrategy extends PriceStrategy {
     const { baseURL, take } = config; // maximum 100 https://docs.open.debank.com/en/reference/api-pro-reference/token#get-the-list-of-the-token-information
     for await (const chainId of assetsChainIds) {
       const debankChain = await this.getDebankChain(chainId); // define debank chain by chainId
-      if (debankChain) {
+      if (!debankChain) {
         this.logger.error(
           `No chain id ${chainId} on Debank API! see https://pro-openapi.debank.com/v1/chain/list community_ids`,
         );
         continue;
       }
-      const trackedAssetsFindConditions = {
+      const assetsFindConditions = {
         chainId,
-        isTracked: true,
         disabled: false,
       };
       const trackedAssetsNumber = await assetsRepository.count({
-        where: trackedAssetsFindConditions,
+        where: assetsFindConditions,
       });
       let skip = 0;
       while (skip < trackedAssetsNumber) {
@@ -109,7 +108,7 @@ export class DebankStrategy extends PriceStrategy {
               await assetsRepository.find({
                 // TO_CHECK why select doesn't work
                 // select: ['address']
-                where: trackedAssetsFindConditions,
+                where: assetsFindConditions,
                 take: Math.min(take, trackedAssetsNumber - skip),
                 skip,
               })

@@ -9,7 +9,9 @@ import { Logger, LoggerModule } from '@app/common/Logger';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
-import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { HeadersEntryInterceptor } from '@app/common/interceptors/headers-entry.interceptor';
+import { HeadersExitInterceptor } from '@app/common/interceptors/headers-exit.interceptor';
+import { ResponseInterceptor } from '@app/common/interceptors/response.interceptor';
 import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
@@ -59,6 +61,10 @@ import { PricesModule } from './modules/prices/prices.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
+      useClass: HeadersEntryInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
       useClass: SentryInterceptor,
     },
     {
@@ -68,6 +74,10 @@ import { PricesModule } from './modules/prices/prices.module';
     {
       provide: APP_INTERCEPTOR,
       useClass: ResponseInterceptor,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HeadersExitInterceptor,
     },
   ],
 })

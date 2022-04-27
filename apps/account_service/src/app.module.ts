@@ -14,13 +14,13 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { HealthController } from '@app/common/controllers/health.controller';
 import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
+import { HealthController } from './controllers/health.controller';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ApprovalsModule } from './modules/approvals/approvals.module';
 import { AssetsModule } from './modules/assets/assets.module';

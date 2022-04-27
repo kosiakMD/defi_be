@@ -16,6 +16,14 @@ configMaps:
     TENDERLY_API_URL: https://api.tenderly.co/api
     TEST_RUN: true
 
+#resources:
+#  requests:
+#    cpu: 100m
+#    memory: 400Mi
+#  limits:
+#    cpu: 200m
+#    memory: 600Mi
+
 secrets:
 - redis
 - databasecategorization

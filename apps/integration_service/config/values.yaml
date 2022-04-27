@@ -125,3 +125,6 @@ secrets:
 - logs
 - sentry
 - covalent
+- avaxscan
+- optimismscan
+- arbiscan

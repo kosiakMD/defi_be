@@ -117,13 +117,13 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: development
 
-  resources:
-    requests:
-      cpu: "1"
-      memory: 1Gi
-    limits:
-      cpu: "2"
-      memory: 2Gi
+resources:
+  requests:
+    cpu: "1"
+    memory: 1Gi
+  limits:
+    cpu: "2"
+    memory: 2Gi
 
 secrets:
   - database

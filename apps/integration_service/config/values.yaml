@@ -117,14 +117,22 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: development
 
+  resources:
+    requests:
+      cpu: 200m
+      memory: 600Mi
+    limits:
+      cpu: 300m
+      memory: 800Mi
+
 secrets:
-- database
-- redis
-- bscscan
-- etherscan
-- logs
-- sentry
-- covalent
-- avaxscan
-- optimismscan
-- arbiscan
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - sentry
+  - covalent
+  - avaxscan
+  - optimismscan
+  - arbiscan

@@ -119,11 +119,11 @@ configMaps:
 
   resources:
     requests:
+      cpu: "1"
+      memory: 1Gi
+    limits:
       cpu: "2"
       memory: 2Gi
-    limits:
-      cpu: 300m
-      memory: 800Mi
 
 secrets:
   - database

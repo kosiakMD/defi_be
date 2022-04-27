@@ -30,10 +30,10 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
     context: ExecutionContext,
     next: CallHandler<R>,
   ): Observable<T> | Promise<Observable<T>> {
-    const controllerName = context.getClass().name;
+    const className = context.getClass().name;
 
     // TODO: temporary enabled only for protocols and health checks
-    if (allowedControllers.includes(controllerName)) {
+    if (allowedControllers.includes(className)) {
       let reqId, sessionId, timestampEntry, timestampExit, timeExecute, request: Request;
       const hostType = context.getType();
       if (hostType === 'http') {
@@ -48,7 +48,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
       const args = context.getArgs();
       const sentryMeta = {
-        controllerName,
+        className,
         reqId,
         sessionId,
         timestampEntry,

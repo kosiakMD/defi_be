@@ -59,6 +59,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     this.times.delete(message);
     const diff = finish - start;
     super.debug(diff / 100, `Time: ${message}`);
+    // console.log(this.reflector.getAll());
     return diff;
   }
 }

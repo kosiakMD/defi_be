@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer';
-import { Request, Response } from 'express';
+import { Request } from 'express';
 
 import {
   ArgumentsHost,
@@ -15,10 +15,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
 import {
-  HEADER_PROTOCOL,
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
-  HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
 } from '@app/common/constant';
@@ -35,7 +33,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const hostType = host.getType();
     // TODO: implement all host types we use
     // 'http' | 'ws' | 'rpc'
-    // OR host.switchToHttp() anyway
+    // const context = host.switchToWs();
     if (hostType === 'http') {
       const contextHttp = host.switchToHttp();
 
@@ -66,21 +64,22 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // In certain situations `httpAdapter` might not be available in the
       // constructor method, thus we should resolve it here.
       const { httpAdapter } = this.httpAdapterHost;
+      const args = host.getArgs(); // TODO: m.b. take from request
+      const protocolName = args?.[0]?.params?.protocolName || null;
 
-      const response: Response = contextHttp.getResponse<Response>();
-      const reqId = response.get(HEADER_REQUEST_ID);
-      const sessionId = response.get(HEADER_SESSION_ID);
-      const timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
-      const timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
-      const timeExecute = response.get(HEADER_TIME_EXECUTE);
-      const protocolName = response.get(HEADER_PROTOCOL);
+      // N.B! letters sensitive to register and it's a risky
+      const reqId = request.header(HEADER_REQUEST_ID);
+      const sessionId = request.header(HEADER_SESSION_ID);
+      const timestampEntry = Number(request.header(HEADER_TIMESTAMP_ENTRY));
+      const timestampExit = Number(request.header(HEADER_TIMESTAMP_EXIT)) || Date.now();
+      const timeExecute = timestampExit - timestampEntry;
       // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
         message: errorMessage || exception.message || exception,
-        timestampEntry: timestampEntry,
-        timestampExit: timestampExit,
-        timeExecute: timeExecute,
+        timestampEntry: timestampEntry.toString(),
+        timestampExit: timestampExit.toString(),
+        timeExecute: timeExecute.toString(),
         path: httpAdapter.getRequestUrl(request),
         reqId,
         sessionId,

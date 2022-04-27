@@ -8,14 +8,15 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
+import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -72,10 +73,17 @@ const controllers = [
   ],
   controllers: [HealthController],
   providers: [
-    ...interceptorsOrder,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: SentryInterceptor,
+    },
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ResponseInterceptor,
     },
   ],
 })

@@ -3,6 +3,7 @@ import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { AssetsCategoryEntity } from '../../assets-category/entities/assets-category.entity';
+import { AssetsHistoricalPriceEntity } from '../../prices/entities/assets-historical-price.entity';
 import { AssetsPriceEntity } from '../../prices/entities/assets-price.entity';
 import { AssetUnderlyingEntity } from './assets-underlying.entity';
 
@@ -39,8 +40,14 @@ export class AssetsEntity extends BaseEntity {
   })
   public category: AssetsCategoryEntity;
 
-  @OneToMany(() => AssetsPriceEntity, (assetsPriceEntity) => assetsPriceEntity)
+  @OneToMany(() => AssetsPriceEntity, (assetsPriceEntity) => assetsPriceEntity.assetId)
   public prices: AssetsPriceEntity[];
+
+  @OneToMany(
+    () => AssetsHistoricalPriceEntity,
+    (assetsHistoricalPriceEntity) => assetsHistoricalPriceEntity.assetId,
+  )
+  public historicalPrices: AssetsHistoricalPriceEntity[];
 
   @OneToMany(() => AssetUnderlyingEntity, (assetUnderlying) => assetUnderlying)
   public underlyingTokens: AssetUnderlyingEntity[];

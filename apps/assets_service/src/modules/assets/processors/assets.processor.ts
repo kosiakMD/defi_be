@@ -8,17 +8,17 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AssetCategoryEnum } from '@app/common/enum';
 
-import { JobCompleteStates } from '../../common/enum/JobStates.enum';
-import { MetadataService } from '../../common/services/metadata/metadata.service';
+import { JobCompleteStates } from '../../../common/enum/JobStates.enum';
+import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
-import { AssetsCategoryEntity } from '../assets-category/entities/assets-category.entity';
-import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
-import { IconsService } from '../icons/icons.service';
-import { AssetUnderlyingEntity } from './entities/assets-underlying.entity';
-import { AssetsEntity } from './entities/assets.entity';
-import { AssetsRepository } from './repositories/assets.repository';
-import { AssetsService } from './services/assets.service';
-import { TokenService } from './services/token.service';
+import { AssetsCategoryEntity } from '../../assets-category/entities/assets-category.entity';
+import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
+import { IconsService } from '../../icons/icons.service';
+import { AssetUnderlyingEntity } from '../entities/assets-underlying.entity';
+import { AssetsEntity } from '../entities/assets.entity';
+import { AssetsRepository } from '../repositories/assets.repository';
+import { AssetsService } from '../services/assets.service';
+import { TokenService } from '../services/token.service';
 
 @Processor('assets')
 export class AssetsProcessor {
@@ -39,13 +39,16 @@ export class AssetsProcessor {
   @Process('metadata')
   public async handleMetadataJob(job: Job) {
     try {
-      this.logger.debug(`Received job ${job.id}. Start getting metadata`, job.data);
       const { address, chainId } = job.data;
+      this.logger.debug(
+        `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
+      );
       const asset: AssetsEntity = await this.processAsset(address, chainId);
       this.logger.debug('Processed asset:', asset);
       return JobCompleteStates.SUCCESS;
     } catch (error) {
-      this.logger.error(`Error to progress job: ${job.id}, message: ${error.message}`);
+      this.logger.error(`Error to progress job: ${job.id}`);
+      this.logger.debug(error);
       return JobCompleteStates.FAILURE;
     }
   }

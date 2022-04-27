@@ -15,9 +15,10 @@ export function calculateAPY({
   const blocksPerDay = 86400 / blockTime;
   const rewardPerDay = poolRewardPerBlock.multipliedBy(blocksPerDay);
 
-  return (((rewardPerDay).div(farmingPoolTVL) //
-    .plus(1))
+  return rewardPerDay
+    .div(farmingPoolTVL) //
+    .plus(1)
     .pow(365)
-    .minus(1))
+    .minus(1)
     .multipliedBy(100);
 }

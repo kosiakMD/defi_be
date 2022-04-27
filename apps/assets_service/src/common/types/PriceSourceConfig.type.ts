@@ -7,4 +7,5 @@ export type PriceSourceConfig = {
   maxItems?: number;
   take?: number;
   gqlString?: string;
+  keepHistoricalPrices?: boolean;
 };

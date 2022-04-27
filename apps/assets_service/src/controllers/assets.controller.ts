@@ -1,12 +1,13 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { GetAssetsResponseDto } from '../common/dto/GetAssetsResponse.dto';
+import { HistoricalPricesQuery } from '../common/dto/HistoricalPricesQuery.dto';
 import { SearchResultsEntryDto } from '../common/dto/SearchResultsEntry.dto';
 import { SearchParams, SearchResultsAssetEntry } from '../common/interfaces/search.interface';
 
 import { AssetsCandidateDto } from '../modules/assets/dto/assets-candidate.dto';
 import { AssetsGetDto } from '../modules/assets/dto/assets-get.dto';
-import { AssetsEntity } from '../modules/assets/entities/assets.entity';
 import { AssetsService } from '../modules/assets/services/assets.service';
 
 @ApiTags('Assets')
@@ -15,19 +16,47 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Get('/')
-  @ApiResponse({ status: HttpStatus.OK })
-  // TODO: Create DTO instead of database objects
-  // TODO: Return prices for assets
-  get(@Query() query: AssetsGetDto): Promise<AssetsEntity> {
-    // TODO: Return something from API
-    return this.assetsService.getAsset(query);
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'address to get or process an asset',
+    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'chainId',
+    type: Number,
+    description: 'text to search assets by name or symbol',
+    example: 22,
+    required: true,
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
+  async get(@Query() query: AssetsGetDto): Promise<GetAssetsResponseDto> {
+    return new GetAssetsResponseDto([await this.assetsService.getAsset(query)]);
   }
 
   @Post('/get-bulk')
-  @ApiResponse({ status: HttpStatus.OK })
-  getBulk(@Body() body: AssetsGetDto[]): Promise<AssetsEntity[]> {
-    // TODO: Return something from API
-    return this.assetsService.getBulkAssets(body);
+  @ApiQuery({
+    name: 'address',
+    type: String,
+    description: 'address to get or process an asset',
+    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'chainId',
+    type: Number,
+    description: 'text to search assets by name or symbol',
+    example: 22,
+    required: true,
+  })
+  @ApiBody({ type: [AssetsGetDto] })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
+  async getBulk(
+    @Body() body: AssetsGetDto[],
+    @Query() query: HistoricalPricesQuery,
+  ): Promise<GetAssetsResponseDto> {
+    return new GetAssetsResponseDto(await this.assetsService.getBulkAssets(body, query));
   }
 
   @Get('/search')

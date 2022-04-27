@@ -378,13 +378,13 @@ export const multicallAbi = [
     type: 'function',
   },
 ];
-export const insertAtPosition = <T extends any>(array: T[], index: number, newItem: T): T[] => [
+export const insertAtPosition = <T>(array: T[], index: number, newItem: T): T[] => [
   ...array.slice(0, index),
   newItem,
   ...array.slice(index),
 ];
 
-export function chunkArray<T extends any>(array: T[], chunkSize: number): T[][] {
+export function chunkArray<T>(array: T[], chunkSize: number): T[][] {
   const arrayLength = array.length;
   const result: T[][] = [];
 

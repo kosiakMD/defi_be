@@ -4,11 +4,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 
-import { CakeVault } from '../support/EVM/protocols/Yield/CakeVault';
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
-import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
-import { RootPlatform } from '../support/RootPlatform';
 import { MasterChefTreeDefi } from '../support/EVM/protocols/Yield/MasterChefTreeDefi';
+import { RootPlatform } from '../support/RootPlatform';
 
 export class TreeDefi extends RootPlatform {
   constructor(

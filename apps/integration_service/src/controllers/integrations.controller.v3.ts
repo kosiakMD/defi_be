@@ -29,6 +29,12 @@ export class IntegrationsControllerV3 {
     return this.platformService.getProtocolList();
   }
 
+  @ApiResponse({ status: 200 })
+  @Get('/sync')
+  async cacheAllPools(): Promise<any> {
+    return this.platformService.cacheOpportunities();
+  }
+
   @ApiParam({
     name: 'protocolName',
     enum: ProtocolNameEnum,

@@ -86,7 +86,7 @@ export class TrackedTokenPopulationProcessor {
           if (!chainId) {
             this.logger.warn(`Unknown Coingecko chain! No platform: ${chain} in Database`);
           } else if (address) {
-            this.assetsProcessor.processAsset(address, chainId);
+            this.assetsProcessor.processAsset({ address, chainId, isTracked: true });
           }
         });
     }
@@ -122,7 +122,7 @@ export class TrackedTokenPopulationProcessor {
         if (!chainId) {
           this.logger.warn(`Unknown Coinmarketcap chain! No chain name: ${chain} in Database`);
         } else if (address) {
-          this.assetsProcessor.processAsset(address, chainId, rank);
+          this.assetsProcessor.processAsset({ address, chainId, rank, isTracked: true });
         }
       }
     }

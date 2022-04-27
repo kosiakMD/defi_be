@@ -25,16 +25,16 @@ export class PriceJobEmitter {
 
   // CURRENT PRICES
   // because of Coingecko API rate limits
-  @Cron('0 */7 * * * *')
+  @Cron(`0 */7 * * * *`)
   async handleUpdateFromDatabaseCron() {
-    this.logger.debug('Broadcast assets price jobs every 5 minutes');
+    this.logger.debug(`Broadcast assets price jobs every 7 minutes`);
     await this.broadcastAssetsPriceJobs();
   }
 
   // HISTORICAL PRICES
-  @Cron('0 */15 * * * *')
+  @Cron(`0 */15 * * * *`)
   handeHistoricalPricesCron() {
-    this.logger.debug('Broadcast historical prices job every 15 minutes');
+    this.logger.debug(`Broadcast historical prices job every 15 minutes`);
     this.broadcastHistoricalPricesJobs();
   }
 

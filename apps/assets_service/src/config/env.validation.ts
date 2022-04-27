@@ -36,9 +36,13 @@ export const validationSchema = Joi.object({
   ASSETS_TAKE_SIZE: Joi.number() //
     .default(1000),
   ASSETS_HISTORICAL_PRICES_DEFAULT_DATE_LIMIT: Joi.number() //
-    .default(1000 * 60 * 60 * 48), // about 2 Days
+    .default(1000 * 60 * 60 * 24 * 2), // about 2 Days
   ASSETS_CURRENT_PRICES_DEADLINE_TO_KEEP_IN_DATABASE: Joi.number() //
-    .default(1000 * 60 * 60 * 24 * 7), // about 2 weeks
+    .default(1000 * 60 * 60 * 24 * 7), // about 1 weeks
+  ASSETS_CURRENT_PRICE_JOB_INTERVAL: Joi.number() //
+    .default(7), // in minutes
+  ASSETS_HISTORICAL_PRICE_JOB_INTERVAL: Joi.number() //
+    .default(15), // in minutes
   ...databaseValidationSchema,
   ...cacheValidationSchema,
   ...awsValidationSchema,

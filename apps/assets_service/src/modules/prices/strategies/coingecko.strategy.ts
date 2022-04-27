@@ -1,5 +1,5 @@
 import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
 import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
 import { delay } from '@app/common/helpers/delay';
@@ -7,6 +7,7 @@ import { delay } from '@app/common/helpers/delay';
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetPrice } from '../types/AssetPrice.type';
 import { PriceJobData } from '../types/PriceJobData.type';
+import { PriceRequestData } from '../types/PriceRequestData.type';
 import { PriceStrategy } from './strategy';
 
 type CoingeckoTokens = {
@@ -22,7 +23,7 @@ export class CoingeckoStrategy extends PriceStrategy {
   public async createPriceRequests(
     config: PriceSourceConfig,
     assetsRepository?: AssetsRepository,
-  ): Promise<AxiosRequestConfig[]> {
+  ): Promise<PriceRequestData[]> {
     /**
      * 1) get all assets chains
      * 2) for each chain:
@@ -62,13 +63,14 @@ export class CoingeckoStrategy extends PriceStrategy {
             vs_currencies: 'usd',
           },
         };
-        priceRequests.push(request);
+        priceRequests.push({ request, chainId });
         skip += take;
       }
     }
     this.logger.log('Coingecko requests: ', priceRequests.length);
     return priceRequests.slice(0, 60);
   }
+
   public async fetchPrices(
     priceJobData: PriceJobData,
     assetsRepository: AssetsRepository,
@@ -76,33 +78,21 @@ export class CoingeckoStrategy extends PriceStrategy {
     const assetPrices: AssetPrice[] = [];
     const {
       config,
-      config: { chainId, requestDelay },
+      config: { requestDelay },
       sourceId,
     } = priceJobData;
     const requests = await this.createPriceRequests(config, assetsRepository);
     const responses = [];
     this.logger.log(`Processing ${requests.length} Coingecko requests`);
-    if (requestDelay) {
-      for await (const request of requests) {
-        try {
-          const result = await axios.request(request);
-          responses.push(result);
-          this.logger.log(
-            `Coingecko request ${request.url} done, got prices num: ${
-              Object.keys(result.data).length
-            }`,
-          );
-        } catch (error) {
-          this.logger.error(`Error to get Coingecko prices on ${request.url}`);
-          this.logger.error(error);
-        }
-        await delay(requestDelay * 1000);
-      }
-    } else {
-      responses.push(await Promise.all(requests.map((req) => axios.request(req))));
-    }
-    for (const response of responses) {
+    for await (const { request, chainId } of requests) {
       try {
+        const response = await axios.request(request);
+        responses.push({ response, chainId });
+        this.logger.log(
+          `Coingecko request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const data: CoingeckoTokens = response.data;
         assetPrices.push(
           ...Object.keys(data)
@@ -115,7 +105,11 @@ export class CoingeckoStrategy extends PriceStrategy {
             })),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get Coingecko prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

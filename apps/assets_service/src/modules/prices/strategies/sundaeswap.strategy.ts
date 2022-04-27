@@ -65,29 +65,15 @@ export class SundaeswapStrategy extends PriceStrategy {
       config: { requestDelay },
     } = priceJobData;
     const requests = await this.createPriceRequests(config);
-    const responses = [];
     this.logger.log(`Processing ${requests.length} Sundaeswap requests`);
-    if (requestDelay) {
-      for await (const request of requests) {
-        try {
-          const result = await axios.request(request);
-          responses.push(result);
-          this.logger.log(
-            `Sandauswap request ${request.url} done, got prices num: ${
-              Object.keys(result.data).length
-            }`,
-          );
-        } catch (error) {
-          this.logger.error(`Error to get Sandaeswap prices on ${request.url}`);
-          this.logger.error(error);
-        }
-        await delay(requestDelay * 1000);
-      }
-    } else {
-      responses.push(await Promise.all(requests.map((req) => axios.request(req))));
-    }
-    for (const response of responses) {
+    for await (const request of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `Sandauswap request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const {
           data: {
             data: { poolsPopular },
@@ -99,7 +85,11 @@ export class SundaeswapStrategy extends PriceStrategy {
             .filter((assetPrice: AssetPrice | boolean) => !!assetPrice),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get Sandaeswap prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

@@ -22,7 +22,7 @@ COPY package*.json ./
 COPY yarn.lock ./
 RUN yarn install --only=production
 
-FROM node:14.17-alpine as production
+FROM node:14.17-slim as production
 
 # Setup default environment variables
 ENV NODE_ENV production

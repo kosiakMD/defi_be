@@ -119,8 +119,8 @@ configMaps:
 
   resources:
     requests:
-      cpu: 200m
-      memory: 600Mi
+      cpu: "2"
+      memory: 2Gi
     limits:
       cpu: 300m
       memory: 800Mi

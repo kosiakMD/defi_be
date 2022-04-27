@@ -1,5 +1,5 @@
 import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';

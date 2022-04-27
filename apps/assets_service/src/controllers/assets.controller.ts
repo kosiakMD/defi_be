@@ -7,6 +7,7 @@ import { SearchResultsEntryDto } from '../common/dto/SearchResultsEntry.dto';
 import { SearchParams, SearchResultsAssetEntry } from '../common/interfaces/search.interface';
 
 import { AssetsCandidateDto } from '../modules/assets/dto/assets-candidate.dto';
+import { AssetsGetBulkDto } from '../modules/assets/dto/assets-get-bulk.dto';
 import { AssetsGetDto } from '../modules/assets/dto/assets-get.dto';
 import { AssetsService } from '../modules/assets/services/assets.service';
 
@@ -50,7 +51,7 @@ export class AssetsController {
     example: 22,
     required: true,
   })
-  @ApiBody({ type: [AssetsGetDto] })
+  @ApiBody({ type: [AssetsGetBulkDto] })
   @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
   async getBulk(
     @Body() body: AssetsGetDto[],

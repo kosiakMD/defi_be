@@ -64,29 +64,15 @@ export class TheGraphStrategy extends PriceStrategy {
       config: { chainId, requestDelay },
     } = priceJobData;
     const requests = await this.createPriceRequests(config);
-    const responses = [];
     this.logger.log(`Processing ${requests.length} TheGraph(chainId:${chainId}) requests`);
-    if (requestDelay) {
-      for await (const request of requests) {
-        try {
-          const result = await axios.request(request);
-          responses.push(result);
-          this.logger.log(
-            `TheGraph(chainId:${chainId}) request ${request.url} done, got prices num: ${
-              Object.keys(result.data).length
-            }`,
-          );
-        } catch (error) {
-          this.logger.error(`Error to get TheGraph(chainId:${chainId}) prices on ${request.url}`);
-          this.logger.error(error);
-        }
-        await delay(requestDelay * 1000);
-      }
-    } else {
-      responses.push(await Promise.all(requests.map((req) => axios.request(req))));
-    }
-    for (const response of responses) {
+    for await (const request of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `TheGraph(chainId:${chainId}) request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const {
           data: {
             data: {
@@ -99,7 +85,11 @@ export class TheGraphStrategy extends PriceStrategy {
           tokens.map((token: TheGraphToken) => this.parseToken(priceJobData, token, price)),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get TheGraph(chainId:${chainId}) prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

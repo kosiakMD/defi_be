@@ -1,5 +1,5 @@
 import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';
@@ -7,6 +7,7 @@ import { delay } from '@app/common/helpers/delay';
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetPrice } from '../types/AssetPrice.type';
 import { PriceJobData } from '../types/PriceJobData.type';
+import { PriceRequestData } from '../types/PriceRequestData.type';
 import { PriceStrategy } from './strategy';
 
 type DebankToken = {
@@ -67,7 +68,7 @@ export class DebankStrategy extends PriceStrategy {
   public async createPriceRequests(
     config: PriceSourceConfig,
     assetsRepository: AssetsRepository,
-  ): Promise<AxiosRequestConfig[]> {
+  ): Promise<PriceRequestData[]> {
     /**
      * 1) get all assets chains
      * 2) for each chain:
@@ -95,7 +96,7 @@ export class DebankStrategy extends PriceStrategy {
       });
       let skip = 0;
       while (skip < trackedAssetsNumber) {
-        priceRequests.push({
+        const request = {
           url: `${baseURL}`,
           method: 'GET', // TO_CHECK if we can move it to source config
           headers: {
@@ -116,7 +117,8 @@ export class DebankStrategy extends PriceStrategy {
               .map(({ address }) => address)
               .join(','),
           },
-        });
+        };
+        priceRequests.push({ request, chainId });
         skip += take;
       }
     }
@@ -129,33 +131,19 @@ export class DebankStrategy extends PriceStrategy {
     const assetPrices: AssetPrice[] = [];
     const {
       config,
-      config: { chainId, requestDelay },
+      config: { requestDelay },
       sourceId,
     } = priceJobData;
     const requests = await this.createPriceRequests(config, assetsRepository);
-    const responses = [];
     this.logger.log(`Processing ${requests.length} Debank requests`);
-    if (requestDelay) {
-      for await (const request of requests) {
-        try {
-          const result = await axios.request(request);
-          responses.push(result);
-          this.logger.log(
-            `Debank request ${request.url} done, got prices num: ${
-              Object.keys(result.data).length
-            }`,
-          );
-        } catch (error) {
-          this.logger.error(`Error to get Debank prices on ${request.url}`);
-          this.logger.error(error);
-        }
-        await delay(requestDelay * 1000);
-      }
-    } else {
-      responses.push(await Promise.all(requests.map((req) => axios.request(req))));
-    }
-    for (const response of responses) {
+    for await (const { request, chainId } of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `Debank request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const { data } = response;
         assetPrices.push(
           data.map((token: DebankToken) => ({
@@ -166,7 +154,11 @@ export class DebankStrategy extends PriceStrategy {
           })),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get Debank prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

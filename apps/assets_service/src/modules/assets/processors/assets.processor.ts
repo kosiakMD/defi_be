@@ -43,7 +43,7 @@ export class AssetsProcessor {
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset: AssetsEntity = await this.processAsset(address, chainId);
+      const asset: AssetsEntity = await this.processAsset({ address, chainId });
       this.logger.debug('Processed asset:', asset);
       return JobCompleteStates.SUCCESS;
     } catch (error) {
@@ -66,18 +66,15 @@ export class AssetsProcessor {
     return savedAsset;
   }
 
-  public async processAsset(
-    address: string,
-    chainId: number,
-    rank?: number,
-  ): Promise<AssetsEntity> {
+  public async processAsset(assetData: Partial<AssetsEntity>): Promise<AssetsEntity> {
+    const { address, chainId, rank, isTracked } = assetData;
     const existentAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
 
     if (existentAsset) {
       if (rank) {
         existentAsset.rank = rank;
         this.assetRepository
-          .update(existentAsset, { rank })
+          .update(existentAsset, { rank, ...(isTracked ? { isTracked } : {}) })
           .catch(({ message }) =>
             this.logger.warn(
               `Asset ${address} chainId ${chainId} rank was not updated! Error: ${message}`,
@@ -96,6 +93,7 @@ export class AssetsProcessor {
     processingAsset.name = assetMetadata.name;
     processingAsset.decimals = assetMetadata.decimals;
     processingAsset.rank = rank < 0 ? -1 : rank;
+    processingAsset.isTracked = Boolean(isTracked);
 
     const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
     processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens?.length));
@@ -111,7 +109,10 @@ export class AssetsProcessor {
 
     if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
       underlyingTokens.map(async (underlyingToken: AssetsEntity, index: number) => {
-        const newAsset = await this.processAsset(underlyingToken.address, underlyingToken.chainId);
+        const newAsset = await this.processAsset({
+          address: underlyingToken.address,
+          chainId: underlyingToken.chainId,
+        });
 
         const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
           asset: processingAsset,

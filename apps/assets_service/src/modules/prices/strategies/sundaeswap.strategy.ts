@@ -2,6 +2,8 @@ import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSou
 import axios, { AxiosRequestConfig } from 'axios';
 import BigNumber from 'bignumber.js';
 
+import { delay } from '@app/common/helpers/delay';
+
 import { AssetPrice } from '../types/AssetPrice.type';
 import { PriceJobData } from '../types/PriceJobData.type';
 import { PriceStrategy } from './strategy';
@@ -58,9 +60,32 @@ export class SundaeswapStrategy extends PriceStrategy {
 
   public async fetchPrices(priceJobData: PriceJobData): Promise<AssetPrice[]> {
     const assetPrices: AssetPrice[] = [];
-    const { config } = priceJobData;
+    const {
+      config,
+      config: { requestDelay },
+    } = priceJobData;
     const requests = await this.createPriceRequests(config);
-    const responses = await Promise.all(requests.map((request) => axios.request(request)));
+    const responses = [];
+    this.logger.log(`Processing ${requests.length} Sundaeswap requests`);
+    if (requestDelay) {
+      for await (const request of requests) {
+        try {
+          const result = await axios.request(request);
+          responses.push(result);
+          this.logger.log(
+            `Sandauswap request ${request.url} done, got prices num: ${
+              Object.keys(result.data).length
+            }`,
+          );
+        } catch (error) {
+          this.logger.error(`Error to get Sandaeswap prices on ${request.url}`);
+          this.logger.error(error);
+        }
+        await delay(requestDelay * 1000);
+      }
+    } else {
+      responses.push(await Promise.all(requests.map((req) => axios.request(req))));
+    }
     for (const response of responses) {
       try {
         const {

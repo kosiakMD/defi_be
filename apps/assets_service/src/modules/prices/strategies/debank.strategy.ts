@@ -129,11 +129,31 @@ export class DebankStrategy extends PriceStrategy {
     const assetPrices: AssetPrice[] = [];
     const {
       config,
-      config: { chainId },
+      config: { chainId, requestDelay },
       sourceId,
     } = priceJobData;
     const requests = await this.createPriceRequests(config, assetsRepository);
-    const responses = await Promise.all(requests.map((request) => axios.request(request)));
+    const responses = [];
+    this.logger.log(`Processing ${requests.length} Debank requests`);
+    if (requestDelay) {
+      for await (const request of requests) {
+        try {
+          const result = await axios.request(request);
+          responses.push(result);
+          this.logger.log(
+            `Debank request ${request.url} done, got prices num: ${
+              Object.keys(result.data).length
+            }`,
+          );
+        } catch (error) {
+          this.logger.error(`Error to get Debank prices on ${request.url}`);
+          this.logger.error(error);
+        }
+        await delay(requestDelay * 1000);
+      }
+    } else {
+      responses.push(await Promise.all(requests.map((req) => axios.request(req))));
+    }
     for (const response of responses) {
       try {
         const { data } = response;

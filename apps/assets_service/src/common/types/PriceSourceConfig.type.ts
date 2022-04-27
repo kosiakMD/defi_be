@@ -8,4 +8,5 @@ export type PriceSourceConfig = {
   take?: number;
   gqlString?: string;
   keepHistoricalPrices?: boolean;
+  requestDelay?: number;
 };

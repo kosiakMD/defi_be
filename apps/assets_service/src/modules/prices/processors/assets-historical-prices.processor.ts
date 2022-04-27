@@ -34,7 +34,6 @@ export class AssetsHistoricalPricesProcessor {
   async handlePriceJob(job: Job) {
     try {
       const { assetId } = job.data;
-      this.logger.debug(`Processing historical price job for assetId ${assetId}`);
       await this.processingJob(job.data);
       return JobCompleteStates.SUCCESS;
     } catch (error) {

@@ -57,7 +57,9 @@ export class AbiFetcherTenderly implements IAbiFetcher {
       const chainsData = await firstValueFrom(
         this.httpService.get(`${this.apiUrl}/v1/public-networks`),
       );
-      this.chainsInfo = chainsData.data.map(({ id, name }) => [id, name.toLowerCase()]);
+      this.chainsInfo = new Map<string, string>(
+        chainsData.data.map(({ id, name }) => [id, name.toLowerCase()]),
+      );
     } catch (e) {
       this.logger.error(`AbiFetcherTenderly :: /v1/public-networks - ${e}`);
     }

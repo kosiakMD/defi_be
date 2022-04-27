@@ -33,13 +33,11 @@ export class AssetsHistoricalPricesProcessor {
   @Process('historicalPrices')
   async handlePriceJob(job: Job) {
     try {
-      const { assetId } = job.data;
-      this.logger.debug(`Processing historical price job for assetId ${assetId}`);
       await this.processingJob(job.data);
       return JobCompleteStates.SUCCESS;
     } catch (error) {
       this.logger.error(`Error to process historical price job.id: ${job.id}`);
-      this.logger.debug(error);
+      this.logger.error(error);
       return JobCompleteStates.FAILURE;
     }
   }

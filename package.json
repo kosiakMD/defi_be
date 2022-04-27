@@ -177,13 +177,16 @@
     "opportunities-start:debug": "nest start opportunities_service --debug --watch",
     "opportunities-start:prod": "nest start opportunities_service",
     "categorization_tool-build": "nest build categorization_tool",
-    "categorization_tool-start": "nest start categorization_tool --watch",
-    "categorization_tool-start:dev": "nest start categorization_tool",
+    "categorization_tool-start": "nest start categorization_tool",
+    "categorization_tool-start:dev": "nest start categorization_tool --watch",
     "categorization_tool-migration:generate-dev": "ts-node ./node_modules/typeorm/cli.js migration:generate -f 'apps/categorization_tool/ormconfig-dev.ts'",
     "categorization_tool-migration:run-dev": "ts-node ./node_modules/typeorm/cli.js migration:run -f 'apps/categorization_tool/ormconfig-dev.ts'",
     "categorization_tool-migration:revert-dev": "ts-node ./node_modules/typeorm/cli.js migration:revert -f 'apps/categorization_tool/ormconfig-dev.ts'",
     "categorization_tool-migration:run": "node ./node_modules/typeorm/cli.js migration:run -f 'dist/apps/categorization_tool/src/ormconfig.js'",
-    "categorization_tool-migration:revert": "node ./node_modules/typeorm/cli.js migration:revert -f 'dist/apps/categorization_tool/src/ormconfig.js'"
+    "categorization_tool-migration:revert": "node ./node_modules/typeorm/cli.js migration:revert -f 'dist/apps/categorization_tool/src/ormconfig.js'",
+    "nft-build": "nest build nft_service",
+    "nft-start": "nest start nft_service",
+    "nft-start:dev": "nest start nft_service --watch"
   },
   "repository": {
     "type": "git",

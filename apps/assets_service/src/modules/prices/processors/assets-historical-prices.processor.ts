@@ -33,7 +33,6 @@ export class AssetsHistoricalPricesProcessor {
   @Process('historicalPrices')
   async handlePriceJob(job: Job) {
     try {
-      const { assetId } = job.data;
       await this.processingJob(job.data);
       return JobCompleteStates.SUCCESS;
     } catch (error) {

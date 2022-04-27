@@ -66,7 +66,7 @@ export class CoingeckoStrategy extends PriceStrategy {
         skip += take;
       }
     }
-    console.log('RN ', priceRequests.length);
+    this.logger.log('Coingecko requests: ', priceRequests.length);
     return priceRequests.slice(0, 60);
   }
   public async fetchPrices(

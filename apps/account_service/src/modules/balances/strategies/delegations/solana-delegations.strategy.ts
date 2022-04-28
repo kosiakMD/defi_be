@@ -65,7 +65,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     return [stakesData, stakingRewardsData];
   }
 
-  public async getDelegatedAssets(address) {
+  public async getDelegatedAssets(address: string) {
     if (!isSolAddress(address)) return [];
     const result = [];
 
@@ -113,6 +113,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     } catch (err) {
       // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
+      throw err;
     }
   }
 }

@@ -99,6 +99,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
         },
       ];
     } catch (err) {
+      // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
       throw err;
     }

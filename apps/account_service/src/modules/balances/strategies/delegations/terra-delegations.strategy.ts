@@ -41,7 +41,6 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: StaderAddresses.luna,
-      // TODO: This chain id cannot be hardcoded
       chain: ChainIdEnum.terra,
     });
   }
@@ -109,6 +108,7 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
     } catch (err) {
       // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
+      throw err;
     }
   }
 

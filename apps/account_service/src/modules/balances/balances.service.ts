@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
+import { AsyncHrTimer } from '@app/common/decorators/time.decorators';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
@@ -52,6 +53,7 @@ type PartialBalancesResponse = {
   errors: ErrorMessage[];
   balances: TokenBalance[];
 };
+
 export class BalancesService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -148,8 +150,8 @@ export class BalancesService {
     return this.calculate24HourReturns(now, then);
   }
 
-  public async getUserDelegations(addresses: Address[]) {
-    return Promise.all(addresses.map((address: Address) => this.getDelegationsForAddress(address)));
+  public async getUserDelegations(addresses: Address[]): Promise<Record<Address, any>[]> {
+    return Promise.all(addresses.map(this.getDelegationsForAddress, this));
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {
@@ -306,6 +308,7 @@ export class BalancesService {
       });
     }
   }
+
   private async getChainBlocksAtDate(
     chains: number[],
     date: Date,
@@ -609,13 +612,16 @@ export class BalancesService {
     }, {});
   }
 
-  private async getDelegationsForAddress(address: string) {
-    const result = [];
-
-    for (const strategy of this.delegationStrategies) {
-      const delegation = await strategy.getDelegatedAssets(address);
-      result.push(delegation);
-    }
+  @AsyncHrTimer
+  private async getDelegationsForAddress(address: string): Promise<Record<Address, any>> {
+    const result = await Promise.all(
+      this.delegationStrategies.map((strategy) => strategy.getDelegatedAssets(address)),
+    );
+    // const result = [];
+    // for (const strategy of this.delegationStrategies) {
+    //   const delegation = await strategy.getDelegatedAssets(address);
+    //   result.push(delegation);
+    // }
     return { [address]: result.flat() };
   }
 }

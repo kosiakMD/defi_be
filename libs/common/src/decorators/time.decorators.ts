@@ -1,6 +1,6 @@
 import { Logger } from '@app/common';
 
-const logTimeMsg = (timerName, t0) =>
+const logTimeMsg = (timerName, t0): string =>
   `[timer] [${timerName}]: timer ${((new Date().valueOf() - t0) * 0.001).toFixed(3)}s`;
 
 const getTimerName = (target: any, propertyKey: string) =>
@@ -12,13 +12,13 @@ export function SyncTimer(
   propertyKey: string,
   propertyDescriptor: PropertyDescriptor,
 ): PropertyDescriptor {
-  const logger: Logger = this.logger;
-
   propertyDescriptor = propertyDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
 
   const timerName = getTimerName(target, propertyKey);
   const originalMethod = propertyDescriptor.value;
+
   propertyDescriptor.value = function (...args: any[]) {
+    const logger: Logger = this.logger;
     const t0 = new Date().valueOf();
     logger.log(`[timer] [${timerName}]: begin`);
     try {
@@ -38,13 +38,13 @@ export function AsyncTimer(
   propertyKey: string,
   propertyDescriptor: PropertyDescriptor,
 ): PropertyDescriptor {
-  const logger: Logger = this.logger;
-
   propertyDescriptor = propertyDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
 
   const timerName = getTimerName(target, propertyKey);
   const originalMethod = propertyDescriptor.value;
+
   propertyDescriptor.value = async function (...args: any[]) {
+    const logger: Logger = this.logger;
     const t0 = new Date().valueOf();
     logger.log(`[timer] [${timerName}]: begin`);
     try {
@@ -61,21 +61,23 @@ export function AsyncTimer(
 
 // HrTime - the current high-resolution real time in nanoseconds as a bigint.
 
-const logHrTimeMsg = (timerName, t0) =>
-  `[hrtimer] [${timerName}]: timer ${process.hrtime.bigint() - t0}ns`;
+const logHrTimeMsg = (timerName, t0): string => {
+  const timeNS = process.hrtime.bigint() - t0;
+  return `[hrtimer] [${timerName}]: timer ${timeNS} ns, ${Number(timeNS) / 1e9} sec`;
+};
 
 export function SyncHrTimer(
   target: any,
   propertyKey: string,
   propertyDescriptor: PropertyDescriptor,
 ): PropertyDescriptor {
-  const logger: Logger = this.logger;
-
   propertyDescriptor = propertyDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
 
   const timerName = getTimerName(target, propertyKey);
   const originalMethod = propertyDescriptor.value;
+
   propertyDescriptor.value = function (...args: any[]) {
+    const logger: Logger = this.logger;
     const t0 = process.hrtime.bigint();
     logger.log(`[hrtimer] [${timerName}]: begin`);
     try {
@@ -95,13 +97,14 @@ export function AsyncHrTimer(
   propertyKey: string,
   propertyDescriptor: PropertyDescriptor,
 ): PropertyDescriptor {
-  const logger: Logger = this.logger;
-
   propertyDescriptor = propertyDescriptor || Object.getOwnPropertyDescriptor(target, propertyKey);
 
   const timerName = getTimerName(target, propertyKey);
   const originalMethod = propertyDescriptor.value;
+  console.log('propertyDescriptor', propertyDescriptor);
+
   propertyDescriptor.value = async function (...args: any[]) {
+    const logger: Logger = this.logger;
     const t0 = process.hrtime.bigint();
     logger.log(`[hrtimer] [${timerName}]: begin`);
     try {

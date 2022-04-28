@@ -20,7 +20,8 @@ import { DelegationsStrategy } from './index';
 export class CardanoDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
-  protected url = 'https://cardano-mainnet.blockfrost.io/api/v0';
+  protected url: string;
+  protected path = 'api/v0';
 
   private headers = {
     // eslint-disable-next-line camelcase
@@ -28,7 +29,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   };
 
   constructor(
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly http: HttpService,
     private readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -36,6 +37,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     private readonly assetsRepository: Repository<AssetsEntity>,
   ) {
     super();
+    this.url = new URL(this.path, this.configService.get<string>('CARDANO_URL')).toString();
   }
 
   async onModuleInit(): Promise<void> {

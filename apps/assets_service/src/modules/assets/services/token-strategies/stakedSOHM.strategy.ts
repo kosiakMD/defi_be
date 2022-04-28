@@ -11,5 +11,6 @@ export class StakedSOHMStrategy extends UnderlyingTokenStrategy {
     } catch (error) {
       this.logger.debug(`Error to get StakedSOHMStrategy underlying tokens ${error.message}`);
     }
+    return [];
   }
 }

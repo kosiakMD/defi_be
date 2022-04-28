@@ -11,5 +11,6 @@ export class StakedSushiStrategy extends UnderlyingTokenStrategy {
     } catch (error) {
       this.logger.debug(`Error to get StakedSushiStrategy underlying tokens ${error.message}`);
     }
+    return [];
   }
 }

@@ -44,7 +44,9 @@ export class AssetsProcessor {
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
       const asset: AssetsEntity = await this.processAsset({ address, chainId });
-      this.logger.debug('Processed asset:', asset);
+      this.logger.debug(
+        `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is prcessed`,
+      );
       return JobCompleteStates.SUCCESS;
     } catch (error) {
       this.logger.error(`Error to progress job: ${job.id}`);
@@ -72,12 +74,20 @@ export class AssetsProcessor {
 
     if (existentAsset) {
       if (rank) {
-        existentAsset.rank = rank;
         this.assetRepository
-          .update(existentAsset, { rank, ...(isTracked ? { isTracked } : {}) })
+          .update(existentAsset, { rank })
           .catch(({ message }) =>
             this.logger.warn(
               `Asset ${address} chainId ${chainId} rank was not updated! Error: ${message}`,
+            ),
+          );
+      }
+      if (isTracked) {
+        this.assetRepository
+          .update(existentAsset, { isTracked })
+          .catch(({ message }) =>
+            this.logger.warn(
+              `Asset ${address} chainId ${chainId} iaTracked was not updated! Error: ${message}`,
             ),
           );
       }

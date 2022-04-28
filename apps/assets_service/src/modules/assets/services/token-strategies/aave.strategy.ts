@@ -32,5 +32,6 @@ export class AaveStrategy extends UnderlyingTokenStrategy {
     } catch {
       //
     }
+    return [];
   }
 }

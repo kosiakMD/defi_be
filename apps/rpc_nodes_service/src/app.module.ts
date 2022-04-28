@@ -11,9 +11,10 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
-import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';

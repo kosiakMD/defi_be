@@ -47,19 +47,19 @@ export class ResponseDto<T = any> extends DetailedResponseDto<T> {
 export class ResponseMetaDto {
   @ApiProperty({
     type: String,
-    example: '2021-12-16T09:43:51.398Z',
+    example: '1650579202013',
   })
   timestampEntry: string;
 
   @ApiProperty({
     type: String,
-    example: '2021-12-16T09:43:51.398Z',
+    example: '1650579202034',
   })
   timestampExit: string;
 
   @ApiProperty({
     type: String,
-    example: '2021-12-16T09:43:51.398Z',
+    example: '21',
   })
   timeExecute: string;
 
@@ -74,6 +74,7 @@ export class ResponseMetaDto {
     type: String,
     description: 'uuid generated at the Gateway entry point',
     example: 'fab15d01-7cb6-4a14-ac4f-92785fa988c3',
+    required: false,
   })
   sessionId: string;
 }

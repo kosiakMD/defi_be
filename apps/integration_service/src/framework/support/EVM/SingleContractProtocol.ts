@@ -5,11 +5,11 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import {
   INamedFunctionPredicates,
   INamedFunctions,
-  IWalletOpportunity,
-  IWalletMinimal,
-  TokenMap,
-  IWalletUserEntry,
   IProtocolMeta,
+  IWalletMinimal,
+  IWalletOpportunity,
+  IWalletUserEntry,
+  TokenMap,
 } from '../interfaces';
 import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';

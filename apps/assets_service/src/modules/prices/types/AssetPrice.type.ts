@@ -1,6 +1,6 @@
 export type AssetPrice = {
   address: string;
   chainId: number;
-  priceInUsd: number;
+  price: number;
   sourceId: number;
 };

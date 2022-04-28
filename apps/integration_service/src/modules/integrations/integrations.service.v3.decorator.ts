@@ -7,6 +7,7 @@ import {
   Address,
   ChainAbbrEnum,
   FeaturesResponseDto,
+  LendingPositionDto,
   ProtocolDataDto,
   ProtocolName,
 } from '@app/common';
@@ -156,12 +157,62 @@ export class IntegrationsServiceV3Decorator {
             },
           );
         }
+        if (v3WalletChain.positions.lending) {
+          v2WalletChain.features.push(FeatureEnum.borrowing);
+          v2WalletChain[FeatureEnum.lending] = {
+            totalValue: 0,
+            items: [],
+          };
+
+          v2WalletChain[FeatureEnum.borrowing] = {
+            totalValue: 0,
+            items: [],
+          };
+
+          v2WalletChain[FeatureEnum.lending].items.push(
+            ...v3WalletChain.positions.lending.flatMap((v3LendingPos) => {
+              const suppliedItems = IntegrationsServiceV3Decorator.lendingToV2(
+                v3LendingPos['supplied'],
+              );
+              suppliedItems?.forEach(
+                (lend) => (v2WalletChain[FeatureEnum.lending].totalValue += lend.value),
+              );
+              v2Response.data.total += v2WalletChain[FeatureEnum.lending].totalValue;
+              return suppliedItems;
+            }),
+          );
+
+          v2WalletChain[FeatureEnum.borrowing].items.push(
+            ...v3WalletChain.positions.lending.flatMap((v3LendingPos) => {
+              const borrowedItems = IntegrationsServiceV3Decorator.lendingToV2(
+                v3LendingPos['borrowed'],
+              );
+              borrowedItems?.forEach(
+                (lend) => (v2WalletChain[FeatureEnum.borrowing].totalValue += lend.value),
+              );
+              v2Response.data.total -= v2WalletChain[FeatureEnum.borrowing].totalValue;
+              return borrowedItems;
+            }),
+          );
+        }
         return v2WalletChain;
       });
       return v2Wallet;
     });
 
     return v2Response;
+  }
+
+  static lendingToV2(v3Items): LendingPositionDto[] {
+    return v3Items.map((item) => {
+      return plainToClass(LendingPositionDto, {
+        address: item.token.address,
+        balance: item.amount,
+        value: item.value,
+        apy: item.apy.supplyApy ?? item.apy.stableApy ?? item.apy.variableApy,
+        token: item.token,
+      });
+    });
   }
 
   /* IStakingFeatureUserEntry */

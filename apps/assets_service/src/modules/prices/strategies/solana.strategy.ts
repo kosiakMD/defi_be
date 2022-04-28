@@ -2,6 +2,7 @@ import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSou
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { ChainIdEnum } from '@app/common/enum';
+import { delay } from '@app/common/helpers/delay';
 import { ChainCoinAddresses } from '@app/common/utils/chains';
 
 import { AssetPrice } from '../types/AssetPrice.type';
@@ -37,13 +38,19 @@ export class SolanaStrategy extends PriceStrategy {
     const assetPrices: AssetPrice[] = [];
     const {
       config,
-      config: { chainId },
+      config: { chainId, requestDelay },
       sourceId,
     } = priceJobData;
     const requests = await this.createPriceRequests(config);
-    const responses = await Promise.all(requests.map((request) => axios.request(request)));
-    for (const response of responses) {
+    this.logger.log(`Processing ${requests.length} Solana requests`);
+    for await (const request of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `Solana request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const {
           data: { data },
         } = response;
@@ -55,11 +62,15 @@ export class SolanaStrategy extends PriceStrategy {
                 : token.mintAddress,
             chainId,
             sourceId,
-            priceInUsd: token.priceUst,
+            price: token.priceUst,
           })),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get Solana prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

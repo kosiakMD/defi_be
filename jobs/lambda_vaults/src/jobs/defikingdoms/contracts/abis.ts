@@ -1,4 +1,5 @@
 import { AbiItem } from 'web3-utils';
+
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
 
 export class Abis extends MultiCallAbiProxy {
@@ -113,22 +114,22 @@ export class Abis extends MultiCallAbiProxy {
   };
 
   static readonly getNewRewardPerBlock: AbiItem = {
-    stateMutability: "view",
+    stateMutability: 'view',
     inputs: [
       {
-        internalType: "uint256",
-        name: "pid1",
-        type: "uint256",
+        internalType: 'uint256',
+        name: 'pid1',
+        type: 'uint256',
       },
     ],
     outputs: [
       {
-        type: "uint256",
-        internalType: "uint256",
-        name: "",
+        type: 'uint256',
+        internalType: 'uint256',
+        name: '',
       },
     ],
-    name: "getNewRewardPerBlock",
-    type: "function",
-  }
+    name: 'getNewRewardPerBlock',
+    type: 'function',
+  };
 }

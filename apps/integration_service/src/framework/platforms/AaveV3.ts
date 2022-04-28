@@ -53,13 +53,14 @@ export class AaveV3 extends RootPlatform {
       pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
     });
 
-    await this.registerProtocol(AaveV3Lending, {
-      chain: ChainIdEnum.harm,
-      name: 'Lending - Aave',
-      feature: FeatureEnum.lending,
-      address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
-      pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
-    });
+    // TODO: it is necessary to additionally explore the method of obtaining contracts abi on the Harmony chain
+    // await this.registerProtocol(AaveV3Lending, {
+    //   chain: ChainIdEnum.harm,
+    //   name: 'Lending - Aave',
+    //   feature: FeatureEnum.lending,
+    //   address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
+    //   pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
+    // });
 
     await this.registerProtocol(AaveV3Lending, {
       chain: ChainIdEnum.opt,

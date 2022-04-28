@@ -5,7 +5,7 @@ import { AbiItem } from 'web3-utils';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -122,6 +122,26 @@ export class AaveV3Lending
           rewarded: [],
         };
       },
+    );
+  }
+
+  async initialize() {
+    this.logger.log(
+      `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
+      `SingleContractProtocol/${this.constructor.name}`,
+    );
+
+    this.functions = await this.abiService.parseFunctionsFromAddress(
+      this.meta.address,
+      this.meta.chain === ChainIdEnum.ftm ? ChainIdEnum.plg : this.meta.chain,
+      this.functionPredicates,
+    );
+
+    this.logger.log(
+      `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${
+        Object.keys(this.functionPredicates).length
+      } functions`,
+      `SingleContractProtocol/${this.constructor.name}`,
     );
   }
 

@@ -4,7 +4,7 @@ import { ContractProjectDto } from './contract.project.dto';
 import { ContractTokenDto } from './contract.token.dto';
 
 export class ContractApprovalDetailedResponseDto {
-  @ApiProperty({ example: 1})
+  @ApiProperty({ example: 1 })
   chainId: number;
 
   @ApiProperty({

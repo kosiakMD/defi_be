@@ -49,8 +49,8 @@ export class DefiKingdomsStaking {
     },
   };
 
-  static startBlock: number = 19_071_967; // start of the 10th epoch
-  static epochDuration: number = 302400;
+  static startBlock = 19_071_967; // start of the 10th epoch
+  static epochDuration = 302400;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,

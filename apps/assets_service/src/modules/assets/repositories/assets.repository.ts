@@ -16,23 +16,13 @@ export class AssetsRepository extends Repository<AssetsEntity> {
       skip: (page - 1) * limit,
       take: limit,
     };
-    // findManyOptions.join = {
-    //   alias: 'price',
-    //   leftJoinAndSelect: {
-    //     price: 'assets_prices.asset_id',
-    //   },
-    // };
     if (queryOptions) {
       findManyOptions.where = queryOptions.where;
     }
-    // if (sortField && sortDirection) {
-    //   findManyOptions.order = {};
-    //   findManyOptions.order[sortField] = sortDirection;
-    // }
     return this.find(findManyOptions);
   }
 
-  async findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetsEntity> {
+  findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetsEntity> {
     return this.findOne({
       where: { address, chainId },
     });
@@ -43,7 +33,6 @@ export class AssetsRepository extends Repository<AssetsEntity> {
       await this.query(`
       SELECT DISTINCT ON ("assets"."chain_id") "assets"."chain_id"
       FROM "assets"
-      WHERE "assets"."is_tracked" IS true
       GROUP BY "assets"."chain_id"
       ORDER BY "assets"."chain_id" ASC
     `)

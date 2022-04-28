@@ -2,8 +2,8 @@ name: 'ReviewDog'
 on: [ pull_request ]
 
 jobs:
-  reviewdog:
-    name: runner / eslint
+  build:
+    name: 'ReviewDog'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out Git repository'

@@ -19,7 +19,7 @@ export class CurrencyDto implements Currency {
 
 export class CryptoCurrencyDto {
   @ApiProperty({ example: 1 })
-  id: number = 1;
+  id = 1;
 
   @ApiProperty({ enum: ChainAbbrEnum, default: ChainAbbrEnum.eth })
   name: ChainAbbrEnum = ChainAbbrEnum.eth;

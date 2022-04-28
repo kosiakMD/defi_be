@@ -1,7 +1,7 @@
 import { map } from 'rxjs/operators';
 
-import { Injectable } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { ChainIdEnum } from '@app/common';
@@ -23,17 +23,15 @@ export class TraderJoeSubgraph {
     return this.subgraphUrls[chainId.toString()];
   }
 
-  async getPools(
-    chainId: ChainIdEnum,
-  ): Promise<any> {
+  async getPools(chainId: ChainIdEnum): Promise<any> {
     return this.httpService
       .post(this.getChainSubgraphEndpoint(chainId), {
         variables: {
           first: 500,
           skip: 0,
-          orderBy: "reserveUSD",
-          orderDirection: "desc",
-          dateAfter: 1639324800
+          orderBy: 'reserveUSD',
+          orderDirection: 'desc',
+          dateAfter: 1639324800,
         },
         query: `
         query pairsQuery($first: Int! = 1000, $skip: Int! = 0, $orderBy: String! = "reserveUSD", $orderDirection: String! = "desc", $dateAfter: Int! = 1622419200) {

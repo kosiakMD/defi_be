@@ -20,6 +20,7 @@ import { DelegationsStrategy } from './index';
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
+  // TODO: Move to .env
   protected url = 'https://api.solanabeach.io/v1/account';
 
   constructor(
@@ -35,6 +36,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: SOL_COIN_ADDRESS,
+      // TODO: This chain id cannot be hardcoded
       chain: ChainIdEnum.sol,
     });
   }
@@ -63,43 +65,50 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     if (!isSolAddress(address)) return [];
     const result = [];
 
-    const [{ prices }, [stakesData, stakingRewardsData]] = await Promise.all([
-      this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
-      this.getData(address),
-    ]);
+    try {
+      const [{ prices }, [stakesData, stakingRewardsData]] = await Promise.all([
+        this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
+        this.getData(address),
+      ]);
 
-    stakesData.forEach((staking) => {
-      const stakingReward = stakingRewardsData[0];
-      if (stakingReward) {
-        const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
-        const claimableRewardsAmount = normalizeDecimals(stakingReward.amount, this.asset.decimals);
-        const price = prices[this.asset.address];
-        const { identityPubkey, name, image, website } =
-          staking.data.stake.delegation.validatorInfo;
+      stakesData.forEach((staking) => {
+        const stakingReward = stakingRewardsData[0];
+        if (stakingReward) {
+          const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
+          const claimableRewardsAmount = normalizeDecimals(
+            stakingReward.amount,
+            this.asset.decimals,
+          );
+          const price = prices[this.asset.address];
+          const { identityPubkey, name, image, website } =
+            staking.data.stake.delegation.validatorInfo;
 
-        result.push({
-          address,
-          // TODO: add correct AssetDTO extended from AssetEntity
-          //  with omitting redundant methods and properties
-          asset: { ...this.asset, price },
-          validator: {
-            address: identityPubkey,
-            name: name,
-            logo: image,
-            website: website,
-          },
-          balance: {
-            amount: balanceAmount,
-            amountUsd: balanceAmount * price,
-          },
-          claimableRewards: {
-            amount: claimableRewardsAmount,
-            amountUsd: claimableRewardsAmount * price,
-          },
-        });
-      }
-    });
-
-    return result;
+          result.push({
+            address,
+            // TODO: add correct AssetDTO extended from AssetEntity
+            //  with omitting redundant methods and properties
+            asset: { ...this.asset, price },
+            validator: {
+              address: identityPubkey,
+              name: name,
+              logo: image,
+              website: website,
+            },
+            balance: {
+              amount: balanceAmount,
+              amountUsd: balanceAmount * price,
+            },
+            claimableRewards: {
+              amount: claimableRewardsAmount,
+              amountUsd: claimableRewardsAmount * price,
+            },
+          });
+        }
+      });
+      return result;
+    } catch (err) {
+      // TODO: We should expose error and handle in upstream code
+      this.logger.error(err);
+    }
   }
 }

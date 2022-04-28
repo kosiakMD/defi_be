@@ -16,7 +16,7 @@ import { PriceService } from '../../../../common/providers/microservices/price/p
 
 import { StaderAddresses } from '../../../../../../integration_service/src/modules/protocols/protocols/stader/stader.addresses';
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
-import { DelegationsStrategy } from './index';
+import { DelegationsStrategy } from './delegation.strategy';
 
 @Injectable()
 export class TerraDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
@@ -46,17 +46,13 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
   }
 
   private async getData(address: string): Promise<any[]> {
-    const promises = [];
-
     const validators = await this.getValidators();
 
-    for (const validator of validators) {
-      promises.push(
-        lastValueFrom(
-          this.http.get(`${this.url}/${validator.operator_address}/delegations/${address}`),
-        ),
-      );
-    }
+    const promises = validators.map((validator) =>
+      lastValueFrom(
+        this.http.get(`${this.url}/${validator.operator_address}/delegations/${address}`),
+      ),
+    );
 
     const data = handlePromiseAllSettled(await Promise.allSettled(promises))[0];
 

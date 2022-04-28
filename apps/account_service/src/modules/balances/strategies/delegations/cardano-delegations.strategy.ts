@@ -1,4 +1,4 @@
-import { lastValueFrom } from 'rxjs';
+import { lastValueFrom, map, switchMap } from 'rxjs';
 import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
@@ -14,7 +14,7 @@ import { isCardanoAddress, normalizeDecimals } from '@app/common/utils';
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
-import { DelegationsStrategy } from './index';
+import { DelegationsStrategy } from './delegation.strategy';
 
 @Injectable()
 export class CardanoDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
@@ -51,24 +51,41 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   private async getFeatures(address: string): Promise<any[]> {
     const getConfig = { headers: this.headers };
 
-    const { data: addressResponse } = await lastValueFrom(
-      // TODO: Not use this method as it will be deprecated
-      this.http.get(`${this.url}/addresses/${address}`, getConfig),
+    // const { data: addressResponse } = await lastValueFrom(
+    //   // TODO: Not use this method as it will be deprecated
+    //   this.http.get(`${this.url}/addresses/${address}`, getConfig),
+    // );
+    // const { data: stakeData } = await lastValueFrom(
+    //   this.http.get(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig),
+    // );
+    // const { data: poolData } = await lastValueFrom(
+    //   this.http.get(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig),
+    // );
+    // return [addressResponse, stakeData, poolData];
+    return lastValueFrom(
+      this.http
+        .get<any>(`${this.url}/addresses/${address}`, getConfig)
+        .pipe(
+          switchMap(({ data: addressResponse }) =>
+            this.http
+              .get<any>(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig)
+              .pipe(
+                switchMap(({ data: stakeData }) =>
+                  this.http
+                    .get<any>(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig)
+                    .pipe(map(({ data: poolData }) => [stakeData, poolData])),
+                ),
+              ),
+          ),
+        ),
     );
-    const { data: stakeData } = await lastValueFrom(
-      this.http.get(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig),
-    );
-    const { data: poolData } = await lastValueFrom(
-      this.http.get(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig),
-    );
-    return [addressResponse, stakeData, poolData];
   }
 
   public async getDelegatedAssets(address): Promise<any[]> {
     if (!isCardanoAddress(address)) return [];
 
     try {
-      const [{ prices }, [, stakeData, poolData]] = await Promise.all([
+      const [{ prices }, [stakeData, poolData]] = await Promise.all([
         this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
         this.getFeatures(address),
       ]);

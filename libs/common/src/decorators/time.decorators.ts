@@ -101,7 +101,6 @@ export function AsyncHrTimer(
 
   const timerName = getTimerName(target, propertyKey);
   const originalMethod = propertyDescriptor.value;
-  console.log('propertyDescriptor', propertyDescriptor);
 
   propertyDescriptor.value = async function (...args: any[]) {
     const logger: Logger = this.logger;

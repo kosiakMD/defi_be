@@ -36,8 +36,8 @@ import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto'
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
-import { DelegationsStrategy } from './strategies/delegations';
 import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
+import { DelegationsStrategy } from './strategies/delegations/delegation.strategy';
 import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
 import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
 import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
@@ -617,11 +617,6 @@ export class BalancesService {
     const result = await Promise.all(
       this.delegationStrategies.map((strategy) => strategy.getDelegatedAssets(address)),
     );
-    // const result = [];
-    // for (const strategy of this.delegationStrategies) {
-    //   const delegation = await strategy.getDelegatedAssets(address);
-    //   result.push(delegation);
-    // }
     return { [address]: result.flat() };
   }
 }

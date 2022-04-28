@@ -104,7 +104,7 @@ export class AssetsCurrentPricesProcessor {
         }
       }
     } catch (error) {
-      this.logger.error(`Error to update asset price ${assetPrice}`);
+      this.logger.error(`Error to update asset price ${JSON.stringify(assetPrice)}`);
     }
   }
 

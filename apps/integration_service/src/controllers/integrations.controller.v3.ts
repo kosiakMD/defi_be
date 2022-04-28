@@ -25,8 +25,16 @@ export class IntegrationsControllerV3 {
   constructor(private readonly platformService: PlatformService) {}
 
   @Get('/')
-  async getProtocolList(): Promise<IPlatformMeta[]> {
-    return this.platformService.getProtocolList();
+  async getProtocolList(): Promise<{ data: IPlatformMeta[] }> {
+    return {
+      data: await this.platformService.getProtocolList(),
+    };
+  }
+
+  @ApiResponse({ status: 200 })
+  @Get('/sync')
+  async cacheAllPools(): Promise<any> {
+    return this.platformService.cacheOpportunities();
   }
 
   @ApiParam({

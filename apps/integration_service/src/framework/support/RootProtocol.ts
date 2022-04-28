@@ -2,8 +2,7 @@ import { Cache } from 'cache-manager';
 import crypto from 'crypto';
 
 import { Address, Logger } from '@app/common';
-
-import { getChainById } from '../../common/utils/chain';
+import { getChainById } from '@app/common/utils';
 
 import { AccountService } from '../../modules/microservices/account.service';
 import { PriceService } from '../../modules/microservices/price.service';

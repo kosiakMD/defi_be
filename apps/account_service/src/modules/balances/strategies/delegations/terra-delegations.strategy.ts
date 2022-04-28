@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -21,10 +22,11 @@ import { DelegationsStrategy } from './index';
 export class TerraDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
-  // TODO: Move to .env file
-  protected url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators';
+  protected readonly url: string;
+  protected readonly path = 'cosmos/staking/v1beta1/validators';
 
   constructor(
+    private readonly configService: ConfigService,
     private readonly http: HttpService,
     private readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -32,6 +34,8 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
     private readonly assetsRepository: Repository<AssetsEntity>,
   ) {
     super();
+
+    this.url = new URL(this.path, this.configService.get<string>('TERRA_URL')).toString();
   }
 
   async onModuleInit(): Promise<void> {
@@ -75,7 +79,9 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
       );
 
       data.forEach((r) => {
-        const validator = validatorsMap.get(r.data.delegation_response.delegation.validator_address);
+        const validator = validatorsMap.get(
+          r.data.delegation_response.delegation.validator_address,
+        );
         const balanceAmount = normalizeDecimals(
           r.data.delegation_response.balance.amount,
           this.asset.decimals,

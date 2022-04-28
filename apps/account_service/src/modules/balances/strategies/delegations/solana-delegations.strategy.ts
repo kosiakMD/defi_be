@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -20,10 +21,11 @@ import { DelegationsStrategy } from './index';
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
-  // TODO: Move to .env
   protected url = 'https://api.solanabeach.io/v1/account';
+  protected path = 'v1/account';
 
   constructor(
+    private readonly configService: ConfigService,
     private httpService: HttpService,
     private readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -31,6 +33,8 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     private readonly assetsRepository: Repository<AssetsEntity>,
   ) {
     super();
+
+    this.url = new URL(this.path, this.configService.get<string>('SOLANA_URL')).toString();
   }
 
   async onModuleInit(): Promise<void> {

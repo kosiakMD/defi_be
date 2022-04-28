@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -70,10 +71,14 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
         this.getData(address),
       ]);
 
-      const validatorsMap: Map<string, any> = new Map(validators.map((v) => [v.operator_address, v]));
+      const validatorsMap: Map<string, any> = new Map(
+        validators.map((v) => [v.operator_address, v]),
+      );
 
       data.forEach((r) => {
-        const validator = validatorsMap.get(r.data.delegation_response.delegation.validator_address);
+        const validator = validatorsMap.get(
+          r.data.delegation_response.delegation.validator_address,
+        );
         const balanceAmount = normalizeDecimals(
           r.data.delegation_response.balance.amount,
           this.asset.decimals,

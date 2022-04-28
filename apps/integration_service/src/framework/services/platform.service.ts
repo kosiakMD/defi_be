@@ -29,6 +29,7 @@ import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
+import { Platypus } from '../platforms/Platypus';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -61,6 +62,7 @@ export class PlatformService {
       LimeSwap,
       BalancerV2,
       AaveV3,
+      Platypus,
     });
   }
 

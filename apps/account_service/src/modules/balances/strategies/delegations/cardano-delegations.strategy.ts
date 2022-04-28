@@ -62,12 +62,12 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     return [addressResponse, stakeData, poolData];
   }
 
-  public async getDelegatedAssets(address) {
+  public async getDelegatedAssets(address): Promise<any[]> {
     if (!isCardanoAddress(address)) return [];
 
     try {
-      const [ { prices }, [ , stakeData, poolData ] ] = await Promise.all([
-        this.priceService.fetchTokenPrices([ this.asset.address ], this.asset.chain),
+      const [{ prices }, [, stakeData, poolData]] = await Promise.all([
+        this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
         this.getFeatures(address),
       ]);
 

@@ -27,7 +27,7 @@ export class ProtocolsPropertiesRepository extends Repository<ProtocolProperty> 
           return this.save({ name, value, source, protocol });
         }
 
-        if (existing?.value !== value.toString()) {
+        if (existing?.value !== value?.toString()) {
           await this.update({ id: existing.id }, { value });
         }
 

@@ -6,8 +6,7 @@ import { ModuleRef } from '@nestjs/core';
 
 import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { groupBy, keepAddressesByChainId } from '@app/common/utils';
-
-import { getChainById } from '../../common/utils/chain';
+import { getChainById } from '@app/common/utils';
 
 import {
   IChainGroupedWallet,

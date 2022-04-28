@@ -7,7 +7,9 @@ import { ERC20 } from './ERC20';
 export class UNIV2LP extends ERC20 {
   constructor(address: string, web3Provider: Web3) {
     super(address, web3Provider);
-    this.contract = new web3Provider.eth.Contract(UNIV2LP_ABI as AbiItem[], address);
+    this.contract = web3Provider.eth
+      ? new web3Provider.eth.Contract(UNIV2LP_ABI as AbiItem[], address)
+      : {};
   }
 
   async getReserves(): Promise<{ _reserve0: string; _reserve1: number }> {

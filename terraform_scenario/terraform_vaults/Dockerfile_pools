@@ -1,6 +1,5 @@
 FROM amazon/aws-lambda-nodejs:14
 ADD ./apps ./apps
-ADD ./frontend_service ./frontend_service
 ADD ./jobs ./jobs
 ADD ./libs ./libs
 ADD ./nest-cli.json ./

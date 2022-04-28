@@ -235,6 +235,21 @@
           }
         ]
       }
+    },
+    "nft_service": {
+      "type": "application",
+      "root": "apps/nft_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/nft_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/nft_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/nft_service"
+          }
+        ]
+      }
     }
   }
 }

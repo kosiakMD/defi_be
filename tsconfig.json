@@ -23,6 +23,10 @@
     "target": "es2017",
     "baseUrl": "./",
     "incremental": true,
+    "typeRoots": [
+      "./custom_typings",
+      "./node_modules/@types"
+    ],
     "paths": {
       "@app/common": [
         "libs/common/src"

@@ -29,16 +29,23 @@ enum tokens {
 const crvPools = {
   bcrvTricrypto: '0x960ea3e3C7FB317332d990873d354E18d7645590',
   bcrvRenBTC: '0x3E01dD8a5E1fb3481F0F589056b428Fc308AF0Fb',
-}
+};
 
-const stakingKeys = ['bslpWbtcEth', 'bslpSushiWeth', 'bcrvRenBTC', 'bcrvTricrypto', 'bdxsSwaprWeth', 
-  'bdxsWbtcWeth', 'bdxsBadgerWeth', 'bdxsIbbtcWeth'
+const stakingKeys = [
+  'bslpWbtcEth',
+  'bslpSushiWeth',
+  'bcrvRenBTC',
+  'bcrvTricrypto',
+  'bdxsSwaprWeth',
+  'bdxsWbtcWeth',
+  'bdxsBadgerWeth',
+  'bdxsIbbtcWeth',
 ];
 
-export default { 
-  settStrategies, 
-  settVaults, 
-  tokens, 
-  crvPools, 
+export default {
+  settStrategies,
+  settVaults,
+  tokens,
+  crvPools,
   stakingKeys,
 };

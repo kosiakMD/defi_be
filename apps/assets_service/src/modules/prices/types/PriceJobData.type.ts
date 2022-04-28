@@ -5,4 +5,5 @@ export type PriceJobData = {
   sourceId: number;
   strategy: PriceSourceStrategies;
   config: PriceSourceConfig;
+  clearDBOnCurrentPrices?: boolean;
 };

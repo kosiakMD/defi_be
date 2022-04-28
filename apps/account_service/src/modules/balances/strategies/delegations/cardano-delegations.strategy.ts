@@ -41,6 +41,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: CARDANO_COIN_ADDRESS,
+      // TODO: This chain id cannot be hardcoded
       chain: ChainIdEnum.cardano,
     });
   }
@@ -49,6 +50,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     const getConfig = { headers: this.headers };
 
     const { data: addressResponse } = await lastValueFrom(
+      // TODO: Not use this method as it will be deprecated
       this.http.get(`${this.url}/addresses/${address}`, getConfig),
     );
     const { data: stakeData } = await lastValueFrom(
@@ -63,35 +65,40 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   public async getDelegatedAssets(address) {
     if (!isCardanoAddress(address)) return [];
 
-    const [{ prices }, [, stakeData, poolData]] = await Promise.all([
-      this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
-      this.getFeatures(address),
-    ]);
+    try {
+      const [ { prices }, [ , stakeData, poolData ] ] = await Promise.all([
+        this.priceService.fetchTokenPrices([ this.asset.address ], this.asset.chain),
+        this.getFeatures(address),
+      ]);
 
-    const balanceAmount = normalizeDecimals(stakeData.controlled_amount, this.asset.decimals);
-    const claimableRewardsAmount = normalizeDecimals(stakeData.rewards_sum, this.asset.decimals);
-    const price = prices[this.asset.address];
+      const balanceAmount = normalizeDecimals(stakeData.controlled_amount, this.asset.decimals);
+      const claimableRewardsAmount = normalizeDecimals(stakeData.rewards_sum, this.asset.decimals);
+      const price = prices[this.asset.address];
 
-    return [
-      {
-        address,
-        // TODO: add correct AssetDTO extended from AssetEntity
-        //  with omitting redundant methods and properties
-        asset: { ...this.asset, price },
-        validator: {
-          address: poolData.pool_id,
-          name: poolData.name,
-          website: poolData.homepage,
+      return [
+        {
+          address,
+          // TODO: add correct AssetDTO extended from AssetEntity
+          //  with omitting redundant methods and properties
+          asset: { ...this.asset, price },
+          validator: {
+            address: poolData.pool_id,
+            name: poolData.name,
+            website: poolData.homepage,
+          },
+          balance: {
+            amount: balanceAmount,
+            amountUsd: balanceAmount * price,
+          },
+          claimableRewards: {
+            amount: claimableRewardsAmount,
+            amountUsd: claimableRewardsAmount * price,
+          },
         },
-        balance: {
-          amount: balanceAmount,
-          amountUsd: balanceAmount * price,
-        },
-        claimableRewards: {
-          amount: claimableRewardsAmount,
-          amountUsd: claimableRewardsAmount * price,
-        },
-      },
-    ];
+      ];
+    } catch (err) {
+      this.logger.error(err);
+      throw err;
+    }
   }
 }

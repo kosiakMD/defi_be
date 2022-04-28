@@ -15,7 +15,7 @@ import {
 } from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -28,9 +28,10 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { calculateAPR } from '../utils/apr';
-import { Abis } from './contracts/abis';
-import { ViperswapAddresses } from './addresses';
 import { DbMapping } from '../utils/dbmapping';
+import { fillUnderlyingTokens } from '../utils/token';
+import { ViperswapAddresses } from './addresses';
+import { Abis } from './contracts/abis';
 
 @Injectable()
 export class ViperswapStaking implements JobInterface {
@@ -55,9 +56,9 @@ export class ViperswapStaking implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    
+
     if (
-      !jobMapping.mapping || 
+      !jobMapping.mapping ||
       isTimeToDo(jobMapping.updatedAt ?? jobMapping.createdAt, jobMapping.updateFrequency)
     ) {
       this.logger.log('it is time to update mapping', this.placeholder);
@@ -115,14 +116,17 @@ export class ViperswapStaking implements JobInterface {
             stakingToken.tokens.push(poolToken);
           });
         }
-        
-        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(IntegrationStakingPositionDto, {
-          address: ViperswapAddresses.masterBreeder,
-          poolId: poolsInfo.get(address).id.toString(),
-          poolName: null,
-          rewards: [rewardToken],
-          stakingToken: stakingToken,
-        });
+
+        const stakingPoolFeature: IntegrationStakingPositionDto = plainToClass(
+          IntegrationStakingPositionDto,
+          {
+            address: ViperswapAddresses.masterBreeder,
+            poolId: poolsInfo.get(address).id.toString(),
+            poolName: null,
+            rewards: [rewardToken],
+            stakingToken: stakingToken,
+          },
+        );
 
         stakingFeatures.push(stakingPoolFeature);
       } catch (e) {
@@ -137,9 +141,9 @@ export class ViperswapStaking implements JobInterface {
     for (let i = 0; i < stakingFeatures.length; i++) {
       mappings.push(await this.dbMapping.toDbMapping(stakingFeatures[i], this.chain));
     }
-    
+
     jobMapping.mapping = mappings;
-    
+
     const updatedMapping = await this.storeService.updateMapping(jobMapping);
     TrackedVaultsMap.add(updatedMapping);
     return updatedMapping;
@@ -244,9 +248,7 @@ export class ViperswapStaking implements JobInterface {
 
         m.rewards[0].price = Number(prices[m.rewards[0].address]);
 
-        const { allocPoint } = multicallRsp.get(
-          this.poolInfoLabel(m),
-        ).output.data;
+        const { allocPoint } = multicallRsp.get(this.poolInfoLabel(m)).output.data;
 
         const aprStats = {
           totalAllocPoints: totalAllocPoint,
@@ -256,9 +258,9 @@ export class ViperswapStaking implements JobInterface {
           blockTime: blockTime,
           farmingPoolTVL: m.stats.tvl,
         };
-        
+
         m.rewards[0].apr = calculateAPR(aprStats);
-        
+
         return m;
       }
     });
@@ -289,7 +291,12 @@ export class ViperswapStaking implements JobInterface {
       const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(stakingPos)).output
         .data;
 
-      stakingPos.stats.tvl = fillUnderlyingTokens(stakingPos.stakingToken.tokens, [_reserve0, _reserve1], prices, poolShare);
+      stakingPos.stats.tvl = fillUnderlyingTokens(
+        stakingPos.stakingToken.tokens,
+        [_reserve0, _reserve1],
+        prices,
+        poolShare,
+      );
     } else {
       stakingPos.stakingToken.price = Number(prices[stakingPos.stakingToken.address]);
       stakingPos.stakingToken.value =
@@ -301,7 +308,7 @@ export class ViperswapStaking implements JobInterface {
 
   private getCurrentWeek() {
     const currentTime = new Date().getTime() / 1000; // get current time in seconds
-    
+
     const initialTimestamp = 1639353600; // unix timestamp of the 37 period
     const week = 60 * 60 * 24 * 7; // number of seconds per week
     return 37 + ~~((currentTime - initialTimestamp) / week) - 1; // returning the current week
@@ -324,12 +331,21 @@ export class ViperswapStaking implements JobInterface {
     }
 
     // balance of lp token on masterchief contract
-    calls.set(this.balanceOfLabel(stakingPosition, chiefContract), stakingTokenContract.balanceOf(chiefContract));
+    calls.set(
+      this.balanceOfLabel(stakingPosition, chiefContract),
+      stakingTokenContract.balanceOf(chiefContract),
+    );
 
     // poolInfo to calculate APR
-    calls.set(this.poolInfoLabel(stakingPosition), masterBreederContract.poolInfo(stakingPosition.poolId));
+    calls.set(
+      this.poolInfoLabel(stakingPosition),
+      masterBreederContract.poolInfo(stakingPosition.poolId),
+    );
 
-    calls.set(this.rewardMultiplierLabel(chiefContract), masterBreederContract.rewardMultiplier(this.getCurrentWeek()));
+    calls.set(
+      this.rewardMultiplierLabel(chiefContract),
+      masterBreederContract.rewardMultiplier(this.getCurrentWeek()),
+    );
 
     return calls;
   }
@@ -337,14 +353,8 @@ export class ViperswapStaking implements JobInterface {
   private getCallsForChief(chiefContract: ViperswapAddresses) {
     const masterBreederContract = new Abis(chiefContract);
     return new Map<string, CallData>([
-      [
-        this.totalAllocPointLabel(chiefContract),
-        masterBreederContract.totalAllocPoint(),
-      ],
-      [
-        this.rewardPerBlockLabel(chiefContract),
-        masterBreederContract.rewardPerBlock(),
-      ],
+      [this.totalAllocPointLabel(chiefContract), masterBreederContract.totalAllocPoint()],
+      [this.rewardPerBlockLabel(chiefContract), masterBreederContract.rewardPerBlock()],
     ]);
   }
 

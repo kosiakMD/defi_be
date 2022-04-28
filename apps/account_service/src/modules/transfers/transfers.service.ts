@@ -80,10 +80,7 @@ export class TransfersService {
     };
   }
 
-  private async queryTransfers(
-    addresses: Address[],
-    chainId,
-  ): Promise<TransferEntity[]> {
+  private async queryTransfers(addresses: Address[], chainId): Promise<TransferEntity[]> {
     try {
       const dbTransfers: TransferEntity[] = await this.dbService.getTransfersDataFromDb(
         addresses,
@@ -109,10 +106,7 @@ export class TransfersService {
     }
   }
 
-  private async getPrices(
-    transferRows: TransferEntity[],
-    chainId,
-  ): Promise<HistoricalPricesMap> {
+  private async getPrices(transferRows: TransferEntity[], chainId): Promise<HistoricalPricesMap> {
     // form request params
     const tokenAddresses: Set<string> = new Set<string>();
     const assetsForPrices = [];

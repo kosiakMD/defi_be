@@ -1,7 +1,10 @@
 import BigNumber from 'bignumber.js';
-import { PairTokens, UniswapMulticallService } from './chain/uniswap-multicall/uniswap-multicall.service';
-import { web3 } from './chain/web3';
 
+import {
+  PairTokens,
+  UniswapMulticallService,
+} from './chain/uniswap-multicall/uniswap-multicall.service';
+import { web3 } from './chain/web3';
 import {
   baseTokens,
   chainId,
@@ -10,12 +13,10 @@ import {
   multicallContractAddress,
   poolsBatchSize,
   protocols,
-  stableCoins
+  stableCoins,
 } from './config';
-
 import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { PriceService } from './services/price.service';
-
 import { normalizeDecimals } from './utils';
 import { blacklisted } from './utils/blacklisted';
 import { logger } from './utils/logger';
@@ -49,9 +50,13 @@ export async function process(): Promise<void> {
       for (let from = 0; from < total; from += batchSize) {
         try {
           const fixedBatchSize = Math.min(batchSize, total - from);
-          logger.info(`Checking pair from ${from} to ${from + fixedBatchSize} of ${total}. (new: ${missingAssets.length})`);
+          logger.info(
+            `Checking pair from ${from} to ${from + fixedBatchSize} of ${total}. (new: ${
+              missingAssets.length
+            })`,
+          );
 
-          const pairIds = Array.from(Array(fixedBatchSize - 1).keys()).map(key => from + key);
+          const pairIds = Array.from(Array(fixedBatchSize - 1).keys()).map((key) => from + key);
           const pairAddresses = await uniswapMulticall.getPairs(protocol.address, pairIds);
 
           let pairsTokens = await uniswapMulticall.getTokensForPairs(pairAddresses);
@@ -66,7 +71,6 @@ export async function process(): Promise<void> {
           const pairs = await getPairsDetails(uniswapMulticall, pairsTokens);
 
           for (const pair of pairs) {
-
             let stableToken;
             let stableReserved;
 
@@ -76,8 +80,8 @@ export async function process(): Promise<void> {
             let decimals;
 
             const {
-              token0: { address: token0, reserve: reserve0, },
-              token1: { address: token1, reserve: reserve1, }
+              token0: { address: token0, reserve: reserve0 },
+              token1: { address: token1, reserve: reserve1 },
             } = pair;
 
             if (stableCoins.includes(token0)) {
@@ -102,7 +106,10 @@ export async function process(): Promise<void> {
             }
 
             const tokenAmount = normalizeDecimals(tokenReserve.toString(), decimals);
-            const stableTokenAmount = normalizeDecimals(stableReserved.toString(), stableTokensMap.get(stableToken).decimals);
+            const stableTokenAmount = normalizeDecimals(
+              stableReserved.toString(),
+              stableTokensMap.get(stableToken).decimals,
+            );
             const stableTokenLiquidity = stableTokenAmount.times(pricesMap.get(stableToken));
             const poolLiquidity = stableTokenLiquidity.times(2);
 
@@ -123,7 +130,9 @@ export async function process(): Promise<void> {
                 address: token,
               });
 
-              logger.info(`NEW Token ${token} price: ${price.valueOf()}. Liquidity ${poolLiquidity.valueOf()}`);
+              logger.info(
+                `NEW Token ${token} price: ${price.valueOf()}. Liquidity ${poolLiquidity.valueOf()}`,
+              );
             } catch (e) {
               logger.error(`Error saving token ${token}`, e);
             }
@@ -171,7 +180,10 @@ function filterKnownTokenPairs(pairs: PairTokens[], pairsMap: Map<string, string
   return results;
 }
 
-async function getPairsDetails(multicall: UniswapMulticallService, pairsTokens: PairTokens[]): Promise<Pair[]> {
+async function getPairsDetails(
+  multicall: UniswapMulticallService,
+  pairsTokens: PairTokens[],
+): Promise<Pair[]> {
   const pairAddresses = pairsTokens.map(({ address }) => address);
 
   const [reserves, tokens0Decimals, tokens1Decimals] = await Promise.all([
@@ -194,26 +206,20 @@ async function getPairsDetails(multicall: UniswapMulticallService, pairsTokens: 
         address: token1.toLowerCase(),
         decimals: tokens1Decimals[token1],
         reserve: reserves[pair.address].reserve1,
-      }
-    }
+      },
+    };
   });
 }
 
 function buildPairsMap(assets: AssetsApiDto[]) {
-  return assets.reduce(
-    (map, { address, pairs }) => {
-      pairs?.forEach(pair => map.set(pair.address, address))
-      return map;
-    },
-    new Map<string, string>(),
-  );
+  return assets.reduce((map, { address, pairs }) => {
+    pairs?.forEach((pair) => map.set(pair.address, address));
+    return map;
+  }, new Map<string, string>());
 }
 
 function buildAssetsMap(assets: AssetsApiDto[]) {
-  return assets.reduce(
-    (map, dto) => map.set(dto.address, dto),
-    new Map<string, AssetsApiDto>(),
-  );
+  return assets.reduce((map, dto) => map.set(dto.address, dto), new Map<string, AssetsApiDto>());
 }
 
 function buildStableTokensMap(assetsMap: Map<string, AssetsApiDto>) {
@@ -249,19 +255,18 @@ async function buildPricesMap() {
 function containsBlacklistedToken(pairsTokens: PairTokens[]) {
   return pairsTokens.some(
     ({ token1, token0 }) =>
-      blacklisted.includes(token0.toLowerCase()) ||
-      blacklisted.includes(token1.toLowerCase())
+      blacklisted.includes(token0.toLowerCase()) || blacklisted.includes(token1.toLowerCase()),
   );
 }
 
 export type PairToken = {
-  address: string,
-  decimals: number,
-  reserve: BigNumber,
-}
+  address: string;
+  decimals: number;
+  reserve: BigNumber;
+};
 
 export type Pair = {
   address: string;
-  token0: PairToken,
-  token1: PairToken,
-}
+  token0: PairToken;
+  token1: PairToken;
+};

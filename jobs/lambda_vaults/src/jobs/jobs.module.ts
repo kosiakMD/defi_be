@@ -60,6 +60,7 @@ import { IslandswapStaking } from './islandswap/islandswap.staking';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
+import { JobsV3Runner } from './jobs.v3.runner';
 import { MarinadeFarms } from './marinade/marinade.farms';
 import { MarinadePools } from './marinade/marinade.pools';
 import { MarinadeUtils } from './marinade/marinade.utils';
@@ -201,6 +202,7 @@ const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMappi
   ],
   providers: [
     JobsRunner,
+    JobsV3Runner,
     JobsRegistry,
     IntegrationDataConverter,
     MulticallAggregator,
@@ -209,6 +211,6 @@ const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMappi
     ...Helpers,
     ...ActiveJobs,
   ],
-  exports: [JobsRunner, IntegrationDataConverter],
+  exports: [JobsRunner, JobsV3Runner, IntegrationDataConverter],
 })
 export class JobsModule {}

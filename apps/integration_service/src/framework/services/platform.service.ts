@@ -7,7 +7,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId, Logger } from '@app/common';
+import { Address, ChainDto, ChainId, Logger } from '@app/common';
+import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
@@ -90,11 +91,6 @@ export class PlatformService {
       mergeMap(async (name) => {
         try {
           const instance = await this.getPlatform(name);
-          // const chains: ChainId[] = [];
-          // instance.getMeta().features.forEach(async (f) => {
-          //   chains.push(f.chain.id);
-          // });
-          // await instance.getPoolData(chains);
           return instance.getMeta();
         } catch (err) {
           this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);
@@ -147,6 +143,43 @@ export class PlatformService {
         protocol: platform.getMeta(),
         items: items.flat(),
       },
+    };
+  }
+
+  public async cacheOpportunities(): Promise<StandardResponse<any>> {
+    const chainsProtocols: {
+      // key is ChainId
+      [key: string]: string[];
+    } = {};
+    const protocols = await this.getProtocolList();
+    protocols.forEach((p) => {
+      p.features.forEach((f) => {
+        if (!chainsProtocols[f.chain.id]) {
+          chainsProtocols[f.chain.id.toString()] = [];
+        }
+        chainsProtocols[f.chain.id.toString()].push(p.name);
+      });
+    });
+
+    const promises: Promise<{
+      chain: ChainDto;
+      results: any;
+    }>[] = Object.entries(chainsProtocols).map(async ([chain, cProtocols]) => {
+      const result = [];
+      for (const protocol of cProtocols as string[]) {
+        const res = await this.cacheOpportunitiesForProtocol(protocol, [Number(chain)], false);
+        result.push(res);
+      }
+      return {
+        chain: getChainById(Number(chain)),
+        results: result,
+      };
+    });
+
+    const results = await Promise.all(promises);
+    return {
+      errors: [],
+      data: results,
     };
   }
 

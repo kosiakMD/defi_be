@@ -76,7 +76,7 @@ configMaps:
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     XDAI_URL: https://rpc.xdaichain.com
     POLYGON_URL: https://polygon-rpc.com/
-    SOL_URL: https://rpc.ankr.com/solana
+    SOL_URL: https://solana-api.projectserum.com/
     BOBA_URL: https://lightning-replica.boba.network
     CRONOS_URL: https://evm-cronos.crypto.org
     KCC_URL: https://rpc-mainnet.kcc.network
@@ -117,11 +117,22 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: development
 
+resources:
+  requests:
+    cpu: 200m
+    memory: 400Mi
+  limits:
+    cpu: "1"
+    memory: 2Gi
+
 secrets:
-- database
-- redis
-- bscscan
-- etherscan
-- logs
-- sentry
-- covalent
+  - database
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - sentry
+  - covalent
+  - avaxscan
+  - optimismscan
+  - arbiscan

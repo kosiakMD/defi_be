@@ -1,5 +1,5 @@
 import { plainToClass } from 'class-transformer';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 import {
   ArgumentsHost,
@@ -15,8 +15,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
 import {
+  HEADER_PROTOCOL,
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
+  HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
 } from '@app/common/constant';
@@ -33,7 +35,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const hostType = host.getType();
     // TODO: implement all host types we use
     // 'http' | 'ws' | 'rpc'
-    // const context = host.switchToWs();
+    // OR host.switchToHttp() anyway
     if (hostType === 'http') {
       const contextHttp = host.switchToHttp();
 
@@ -46,42 +48,49 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       let errorMessage;
       if (
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production &&
-        exception.message.startsWith('connect ECONNREFUSED') &&
-        !exception.message.endsWith('Service')
+        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production ||
+        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging
       ) {
-        errorMessage = 'connect ECONNREFUSED';
-      } else {
-        errorMessage = exception.message;
+        exception.stack = undefined;
+        if (
+          exception.message &&
+          exception.message.startsWith('connect ECONNREFUSED') &&
+          !exception.message.endsWith('Service')
+        ) {
+          errorMessage = 'connect ECONNREFUSED';
+        } else {
+          errorMessage = exception.message;
+        }
       }
 
       // In certain situations `httpAdapter` might not be available in the
       // constructor method, thus we should resolve it here.
       const { httpAdapter } = this.httpAdapterHost;
-      const args = host.getArgs(); // TODO: m.b. take from request
-      const protocolName = args?.[0]?.params?.protocolName || null;
 
-      // N.B! letters sensitive to register and it's a risky
-      const reqId = request.header(HEADER_REQUEST_ID);
-      const sessionId = request.header(HEADER_SESSION_ID);
-      const timestampEntry = Number(request.header(HEADER_TIMESTAMP_ENTRY));
-      const timestampExit = Number(request.header(HEADER_TIMESTAMP_EXIT)) || Date.now();
-      const timeExecute = timestampExit - timestampEntry;
+      const response: Response = contextHttp.getResponse<Response>();
+      const reqId = response.get(HEADER_REQUEST_ID);
+      const sessionId = response.get(HEADER_SESSION_ID);
+      const timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
+      const timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
+      const timeExecute = response.get(HEADER_TIME_EXECUTE);
+      const protocolName = response.get(HEADER_PROTOCOL);
       // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
-        message: errorMessage || exception,
-        timestampEntry: timestampEntry.toString(),
-        timestampExit: timestampExit.toString(),
-        timeExecute: timeExecute.toString(),
+        message: errorMessage || exception.message || exception,
+        timestampEntry: timestampEntry,
+        timestampExit: timestampExit,
+        timeExecute: timeExecute,
         path: httpAdapter.getRequestUrl(request),
         reqId,
         sessionId,
         protocolName,
       });
 
+      const newException = { ...exception, responseBody: responseBody };
+
       this.logger.error(
-        { ...exception, responseBody: responseBody },
+        newException,
         `${exception.stack || ''}\n${this.constructor.name}`,
         // this.constructor.name,
       );

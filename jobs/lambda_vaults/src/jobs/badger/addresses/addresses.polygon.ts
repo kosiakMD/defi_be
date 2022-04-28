@@ -15,7 +15,7 @@ enum settVaults {
 const crvPools = {
   bcrvTricrypto: '0x751B1e21756bDbc307CBcC5085c042a0e9AaEf36',
   bcrvRenBTC: '0xC2d95EEF97Ec6C17551d45e77B590dc1F9117C67',
-}
+};
 
 enum tokens {
   ibBTC = '0x4eac4c4e9050464067d673102f8e24b2fcceb350',
@@ -24,10 +24,10 @@ enum tokens {
 
 const stakingKeys = ['bslpibBTCWbtc', 'bqlpUsdcWbtc', 'bcrvRenBTC', 'bcrvTricrypto'];
 
-export default { 
-  settStrategies, 
-  settVaults, 
-  crvPools, 
-  tokens, 
+export default {
+  settStrategies,
+  settVaults,
+  crvPools,
+  tokens,
   stakingKeys,
 };

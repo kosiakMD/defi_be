@@ -3,9 +3,9 @@ declare module '@makerdao/multicall' {
   import Web3 from 'web3';
 
   type Call = {
-    target: string,
-    call: any[],
-    returns: any[][],
+    target: string;
+    call: any[];
+    returns: any[][];
   };
 
   type Options = {
@@ -16,10 +16,10 @@ declare module '@makerdao/multicall' {
   type MulticallResponse = {
     results: {
       blockNumber: BigNumber;
-      original: { [key: string]: any },
+      original: { [key: string]: any };
       transformed: { [key: string]: any };
-    }
+    };
   };
 
-  export function aggregate(calls: Call | Call[], options?: Options): Promise<MulticallResponse>
+  export function aggregate(calls: Call | Call[], options?: Options): Promise<MulticallResponse>;
 }

@@ -7,7 +7,9 @@ export class ERC20 {
   protected contract;
 
   constructor(address: string, web3Provider: Web3) {
-    this.contract = new web3Provider.eth.Contract(ERC20_ABI as AbiItem[], address);
+    this.contract = web3Provider.eth
+      ? new web3Provider.eth.Contract(ERC20_ABI as AbiItem[], address)
+      : {};
   }
 
   async getContractData(): Promise<{ name?: string; symbol?: string; decimals?: number }> {

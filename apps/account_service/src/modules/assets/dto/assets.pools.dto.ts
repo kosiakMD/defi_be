@@ -2,7 +2,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 
-
 import { AssetsForLambdaResponse } from '../../../common/interfaces/assets.interface';
 
 import { PairDto } from './pair.dto';

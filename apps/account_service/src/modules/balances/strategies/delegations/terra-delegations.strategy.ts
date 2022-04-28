@@ -21,6 +21,7 @@ import { DelegationsStrategy } from './index';
 export class TerraDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
+  // TODO: Move to .env file
   protected url = 'https://lcd.terra.dev/cosmos/staking/v1beta1/validators';
 
   constructor(
@@ -36,6 +37,7 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: StaderAddresses.luna,
+      // TODO: This chain id cannot be hardcoded
       chain: ChainIdEnum.terra,
     });
   }
@@ -62,38 +64,44 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
     if (!isTerraAddress(address)) return [];
     const result = [];
 
-    const [{ prices }, [validators, data]] = await Promise.all([
-      this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
-      this.getData(address),
-    ]);
-    const validatorsMap: Map<string, any> = new Map(validators.map((v) => [v.operator_address, v]));
+    try {
+      const [{ prices }, [validators, data]] = await Promise.all([
+        this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
+        this.getData(address),
+      ]);
 
-    data.forEach((r) => {
-      const validator = validatorsMap.get(r.data.delegation_response.delegation.validator_address);
-      const balanceAmount = normalizeDecimals(
-        r.data.delegation_response.balance.amount,
-        this.asset.decimals,
-      );
-      const price = prices[this.asset.address];
+      const validatorsMap: Map<string, any> = new Map(validators.map((v) => [v.operator_address, v]));
 
-      result.push({
-        address,
-        // TODO: add correct AssetDTO extended from AssetEntity
-        //  with omitting redundant methods and properties
-        asset: { ...this.asset, price },
-        validator: {
-          address: validator.operator_address,
-          name: validator.description.moniker,
-          website: validator.description.website,
-        },
-        balance: {
-          amount: balanceAmount,
-          amountUsd: balanceAmount * price,
-        },
+      data.forEach((r) => {
+        const validator = validatorsMap.get(r.data.delegation_response.delegation.validator_address);
+        const balanceAmount = normalizeDecimals(
+          r.data.delegation_response.balance.amount,
+          this.asset.decimals,
+        );
+        const price = prices[this.asset.address];
+
+        result.push({
+          address,
+          // TODO: add correct AssetDTO extended from AssetEntity
+          //  with omitting redundant methods and properties
+          asset: { ...this.asset, price },
+          validator: {
+            address: validator.operator_address,
+            name: validator.description.moniker,
+            website: validator.description.website,
+          },
+          balance: {
+            amount: balanceAmount,
+            amountUsd: balanceAmount * price,
+          },
+        });
       });
-    });
 
-    return result;
+      return result;
+    } catch (err) {
+      // TODO: We should expose error and handle in upstream code
+      this.logger.error(err);
+    }
   }
 
   private async getValidators() {

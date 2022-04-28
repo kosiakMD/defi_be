@@ -17,6 +17,10 @@ export class AssetsServiceMigration61645025639200 implements MigrationInterface 
       `CREATE TABLE IF NOT EXISTS "icon_sources" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "name" character varying NOT NULL, "config" json NOT NULL, "enabled" boolean NOT NULL, CONSTRAINT "PK_d02c524197e2ccdbba5d3fe930a" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
+      `CREATE TABLE IF NOT EXISTS "assets_historical_prices" ("created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "open" numeric NOT NULL, "high" numeric NOT NULL, "low" numeric NOT NULL, "close" numeric NOT NULL, "ticks" integer NOT NULL, "open" integer NOT NULL, "asset_id" integer NOT NULL, "time_granularity" integer NOT NULL, "timestamp" TIMESTAMP NOT NULL, CONSTRAINT "PK_ASSET_TIME_GRANULARITY" PRIMARY KEY ("asset_id", "time_granularity", "timestamp"))`,
+    );
+
+    await queryRunner.query(
       `CREATE TABLE IF NOT EXISTS "assets_invalid_address" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "address" character varying NOT NULL, "chain_id" integer NOT NULL, CONSTRAINT "PK_cb4e45298b22aa5acb261c1eec1" PRIMARY KEY ("id"))`,
     );
 
@@ -68,5 +72,6 @@ export class AssetsServiceMigration61645025639200 implements MigrationInterface 
     await queryRunner.query(`DROP TABLE IF EXISTS "assets_underlying"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "assets"`);
     await queryRunner.query(`DROP TABLE IF EXISTS "assets_category"`);
+    await queryRunner.query(`DROP TABLE IF EXISTS "assets_historical_prices"`);
   }
 }

@@ -23,6 +23,8 @@ export class BlockScan {
     this.apiKeys[ChainIdEnum.plg] = config.get('BLOCKSCAN_PLG_KEY');
     this.apiKeys[ChainIdEnum.mriver] = config.get('BLOCKSCAN_MOVR_KEY');
     this.apiKeys[ChainIdEnum.arbi] = config.get('BLOCKSCAN_ARBI_KEY');
+    this.apiKeys[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_KEY');
+    this.apiKeys[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_KEY');
 
     // Endpoints
     this.endpoints[ChainIdEnum.ftm] = config.get('BLOCKSCAN_FTM_URL');
@@ -31,6 +33,8 @@ export class BlockScan {
     this.endpoints[ChainIdEnum.plg] = config.get('BLOCKSCAN_PLG_URL');
     this.endpoints[ChainIdEnum.mriver] = config.get('BLOCKSCAN_MOVR_URL');
     this.endpoints[ChainIdEnum.arbi] = config.get('BLOCKSCAN_ARBI_URL');
+    this.endpoints[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_URL');
+    this.endpoints[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_URL');
   }
 
   // TODO: Endpoints & API keys to config

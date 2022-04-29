@@ -32,6 +32,7 @@ configMaps:
     HECO_URL: https://http-mainnet.hecochain.com
     POLYGON_RPC_URL: https://polygon-rpc.com/
     SOLANA_URL: https://solana-api.projectserum.com/
+    SOL_URL: https://solana-api.projectserum.com/
     OKEX_URL: https://exchainrpc.okex.org
     CRONOS_URL: https://evm-cronos.crypto.org
     BOBA_URL: https://mainnet.boba.network/

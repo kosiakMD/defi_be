@@ -13,7 +13,7 @@ configMaps:
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
-    ETHEREUM_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+       ETHEREUM_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     BINANCE_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
     BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
@@ -32,6 +32,7 @@ configMaps:
     HECO_URL: https://http-mainnet.hecochain.com
     POLYGON_RPC_URL: https://polygon-rpc.com/
     SOLANA_URL: https://solana-api.projectserum.com/
+    SOL_URL: https://solana-api.projectserum.com/
     OKEX_URL: https://exchainrpc.okex.org
     CRONOS_URL: https://evm-cronos.crypto.org
     BOBA_URL: https://mainnet.boba.network/

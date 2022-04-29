@@ -39,7 +39,7 @@ configMaps:
     KLAYTN_URL: https://public-node-api.klaytnapi.com/v1/cypress
     FUSE_URL: https://rpc.fuse.io
     KAVA_URL: https://rpc.kava.io
-    CARDANO_URL: https://google.com
+    CARDANO_URL: https://cardano-mainnet.blockfrost.io
     COSMOS_URL: https://cosmoshub-4--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     OSMOSIS_URL: https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     SECRET_URL: https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/

@@ -1,4 +1,4 @@
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
@@ -142,14 +142,16 @@ export class PriceService {
     try {
       this.logger.time(timerKey);
 
-      const response = await this.httpService
+      return await this.httpService
         .post(this.fetchPricesUrl, request)
-        .pipe(map((response) => response.data))
+        .pipe(
+          tap({
+            next: () => this.logger.timeEnd(timerKey),
+            error: () => this.logger.timeEnd(timerKey),
+          }),
+          map((response) => response.data),
+        )
         .toPromise();
-
-      this.logger.timeEnd(timerKey);
-
-      return response;
     } catch (e) {
       e.response && this.logger.error(e.response.data);
       this.logger.error(e);

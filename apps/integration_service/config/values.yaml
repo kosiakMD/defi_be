@@ -117,6 +117,14 @@ configMaps:
     LOG_LEVEL: debug
     NODE_ENV: staging
 
+resources:
+  requests:
+    cpu: 300m
+    memory: 500Mi
+  limits:
+    cpu: 500m
+    memory: 1Gi
+
 secrets:
   - database
   - redis
@@ -125,3 +133,6 @@ secrets:
   - logs
   - sentry
   - covalent
+  - avaxscan
+  - optimismscan
+  - arbiscan

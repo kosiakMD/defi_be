@@ -29,7 +29,7 @@ configMaps:
     MRIVER_URL: https://rpc.api.moonriver.moonbeam.network
     HARMONY_URL: https://a.api.s0.t.hmny.io
     HARM_URL: https://a.api.s0.t.hmny.io
-    HECO_URL: https://http-mainnet.hecochain.com
+    HECO_URL: https://http-mainnet.hecochain.com/
     POLYGON_RPC_URL: https://polygon-rpc.com/
     SOLANA_URL: https://solana-api.projectserum.com/
     SOL_URL: https://solana-api.projectserum.com/

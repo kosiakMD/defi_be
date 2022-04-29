@@ -17,57 +17,16 @@ configMaps:
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80
-    PRICE_STATUS: v1/status
     PRICES_PATH: v1/prices
-    PRICE_CHAINS_PATH: v1/chains
-    PRICE_CURRENCIES_PATH: v1/currencies
-    PRICE_BATCH_PATH: v1/prices/batch
-    PRICE_RANGE_PATH: v1/priceRange
     INTEGRATION_SERVICE_HOST: http://integration-service
     INTEGRATION_SERVICE_PORT: 80
-    INTEGRATION_STATUS: v1/status
-    INTEGRATION_UNISWAP: v1/integration/uniswap
-    INTEGRATION_SUSHISWAP: v1/integration/sushiswap
-    INTEGRATION_BALANCER: v1/integration/balancer
-    INTEGRATION_CURVE: v1/integration/curve
-    INTEGRATION_PANCAKE: v1/integration/pancake
-    INTEGRATION_PROTOCOLS: v1/protocols
-    INTEGRATION_SPOOKYSWAP: v1/integration/spookyswap
-    INTEGRATION_PANGOLIN: v1/integration/pangolin
-    INTEGRATION_NFT_ASSETS: v1/nft/assets
-    INTEGRATION_PROTOCOLS_V2: v2/protocols
-    INTEGRATION_SEARCH_URL: v1/protocols/search
     ACCOUNT_SERVICE_HOST: http://account-service
     ACCOUNT_SERVICE_PORT: 80
-    ACCOUNT_STATUS: v1/status
-    ACCOUNT_TRANSACTIONS: v1/transactions
-    ACCOUNT_BALANCE: v1/balances
-    ACCOUNT_APPROVALS: v1/approvals
-    ACCOUNT_TRANSFERS: v1/transfers
-    ACCOUNT_ASSETS: v1/assets
-    ACCOUNT_ANALYTIC: v1/analytic
-    ACCOUNT_24H_RETURNS: v1/balances/24-hour-returns
-    ACCOUNT_COVALENT_BALANCES: v1/balances/covalent
-    ACCOUNT_SEARCH_URL: v1/assets/search
-    TOKENS_PATH: tokens
-    APPROVALS_PATH: tool/approvals/eth
     POOLS_SERVICE_URL: https://integration-service
-    POOLS_PATH: v1/pools
     VAULTS_SERVICE_URL: https://integration-service
-    VAULTS_PATH: v1/vaults
     IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
     SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
     SAFE_PROXY_SERVICE_PORT: 80
-    SAFE_PROXY_STATUS: v1/status
-    SAFE_PROXY_NETWORKS: v1/networks
-    SAFE_PROXY_PARTNERS: v1/partners
-    SAFE_PROXY_PROJECTS: v1/projects
-    SAFE_PROXY_SCAMS: v1/scams
-    SAFE_PROXY_SCAM_TYPES: v1/scams/types
-    SAFE_PROXY_SCAM_FUNCTIONS: v1/scams/functions
-    NFT_ASSETS: v1/nft/assets
-    NFT_PROJECTS: v1/nft/projects
-    NFT_COLLECTIONS: v1/nft/collections
     OPPORTUNITIES_SERVICE_HOST: https://eop.dfyield.xyz
     OPPORTUNITIES_SERVICE_PORT: 443
     ASSETS_SERVICE_HOST: http://devassets.defiyield.app

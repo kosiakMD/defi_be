@@ -29,22 +29,6 @@ export class BeefyApiService {
     [ChainIdEnum.plg]: 'polygon',
   };
 
-  // Enabled Platforms. These should already be supported by us
-  // Or at least a uniswap clone for basic support
-  // TODO: Add more platforms! :)
-  platforms = {
-    [ChainIdEnum.ftm]: ['SpookySwap', 'TombFinance'],
-    [ChainIdEnum.bnb]: ['PancakeSwap'],
-    [ChainIdEnum.avax]: ['TraderJoe', 'Aave', 'Pangolin'],
-    [ChainIdEnum.cro]: ['VVS', 'CronaSwap'],
-    [ChainIdEnum.mriver]: ['SolarBeam'],
-    [ChainIdEnum.plg]: ['SushiSwap', 'QuickSwap'],
-    [ChainIdEnum.arbi]: ['SushiSwap'],
-    [ChainIdEnum.harm]: ['SushiSwap'],
-    [ChainIdEnum.celo]: ['SushiSwap'],
-    [ChainIdEnum.heco]: [], // TODO: disabled since no supported underlying platforms
-  };
-
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly httpService: HttpService,
@@ -53,17 +37,12 @@ export class BeefyApiService {
   async fetchVaults(chain: ChainIdEnum): Promise<IBeefyHttpVault[]> {
     if (!this.supportedChains[chain]) throw new Error(`Unsupported Beefy Chain ${chain}`);
 
-    if (!this.platforms[chain]?.length) {
-      this.logger.warn(`No Platforms Enabled for chain ${chain}`, 'BeefyApiService.fetchVaults');
-    }
-
     const vaults = await this.getSharedActiveVaultInfo();
 
     const requestedChain = this.supportedChains[chain];
 
     const response$ = from(vaults).pipe(
       filter(({ chain }) => chain === requestedChain),
-      filter(({ platform }) => this.platforms[chain]?.includes(platform)),
       toArray(),
     );
 

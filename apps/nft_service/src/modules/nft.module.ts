@@ -13,7 +13,7 @@ import { NftService } from './nft.service';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         store: redisStore,
-        ttl: configService.get('REDIS_CACHE_TTL') || 30,
+        ttl: configService.get('REDIS_CACHE_TTL'),
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
         // eslint-disable-next-line camelcase

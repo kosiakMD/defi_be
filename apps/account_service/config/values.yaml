@@ -40,9 +40,9 @@ configMaps:
     FUSE_URL: https://rpc.fuse.io
     KAVA_URL: https://rpc.kava.io
     CARDANO_URL: https://google.com
-    COSMOS_URL: https://google.com
-    OSMOSIS_URL: https://google.com
-    SECRET_URL: https://google.com
+    COSMOS_URL: https://cosmoshub-4--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    OSMOSIS_URL: https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    SECRET_URL: https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80

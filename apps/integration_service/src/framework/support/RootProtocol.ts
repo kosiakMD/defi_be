@@ -226,7 +226,12 @@ export abstract class RootProtocol<
     features.forEach((featureName) => {
       pools.forEach((pool) => {
         if (pool?.[featureName]?.length) {
-          pool[featureName].forEach((item) => tokens.add(item.token.address.toLowerCase()));
+          pool[featureName].forEach((item) => {
+            tokens.add(item.token.address);
+            if (item.token?.underlying) {
+              item.token?.underlying.map((token) => tokens.add(token.address));
+            }
+          });
         }
       });
     });

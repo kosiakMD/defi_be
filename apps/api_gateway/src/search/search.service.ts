@@ -1,5 +1,3 @@
-import { OpportunityListDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.list.dto';
-
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -16,8 +14,6 @@ import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
 import { addressSearchResultParser } from './utils/search.utils';
-
-const SEARCH_ITEMS_LIMIT = process.env.SEARCH_ITEMS_LIMIT || 30;
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -92,23 +88,11 @@ export class SearchService extends BaseService {
 
   private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
     const assetsSearchUrl = new URL('v1/assets/search', this.accountUrl);
-    const opportunitiesSearchUrl = new URL('v1/opportunities', this.opportunityUrl);
     const promises = [this.requestProxy(assetsSearchUrl.toString(), 'GET', { params })];
-    if (params.text) {
-      promises.push(
-        this.requestProxy(opportunitiesSearchUrl.toString(), 'GET', {
-          params: {
-            search: params.text,
-            limit: params.limit || SEARCH_ITEMS_LIMIT,
-          },
-        }),
-      );
-    }
     const searchResults = await Promise.all(promises);
     const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
-    const opportunitiesSearchResults: OpportunityListDto = searchResults.shift();
     return {
-      entries: [...assetsSearchResults, ...(opportunitiesSearchResults?.items || [])],
+      entries: [...assetsSearchResults],
     };
   }
 }

@@ -15,7 +15,7 @@ import { isSolAddress, normalizeDecimals } from '@app/common/utils';
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
-import { DelegationsStrategy } from './index';
+import { DelegationsStrategy } from './delegation.strategy';
 
 @Injectable()
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
@@ -62,10 +62,10 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
 
     const stakingRewardsData = await Promise.all(stakingRewardsPromises);
 
-    return [stakesData, stakingRewardsData];
+    return [stakesData, stakingRewardsData[0]];
   }
 
-  public async getDelegatedAssets(address) {
+  public async getDelegatedAssets(address: string) {
     if (!isSolAddress(address)) return [];
     const result = [];
 
@@ -76,7 +76,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
       ]);
 
       stakesData.forEach((staking) => {
-        const stakingReward = stakingRewardsData[0];
+        const stakingReward = stakingRewardsData;
         if (stakingReward) {
           const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
           const claimableRewardsAmount = normalizeDecimals(
@@ -113,6 +113,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     } catch (err) {
       // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
+      throw err;
     }
   }
 }

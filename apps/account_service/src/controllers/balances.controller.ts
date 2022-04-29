@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { getUniqList } from '@app/common/utils';
+
 import { BalancesResponse } from '../modules/balances/balances.interfaces';
 import { BalancesService } from '../modules/balances/balances.service';
 import {
@@ -100,6 +102,6 @@ export class BalancesController {
   })
   // TODO: DTO should be declared here
   getUserDelegations(@Query() query) {
-    return this.balancesService.getUserDelegations(query.addresses);
+    return this.balancesService.getUserDelegations(getUniqList(query.addresses));
   }
 }

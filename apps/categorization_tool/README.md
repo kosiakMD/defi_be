@@ -12,7 +12,8 @@
 ### Installation
 
 ```bash
-npm install
+yarn install
+yarn categorization_tool-build
 ```
 
 ### Backing Services
@@ -31,18 +32,29 @@ docker-compose -f apps/categorization_tool/docker-compose.yml down
 ### DB migrations
 
 #### Migrations Up
+##### Local Development
+```bash
+npm run categorization_tool-migration:run-dev
+```
+##### Environment
 ```bash
 npm run categorization_tool-migration:run
 ```
 
 #### Migration Down
+##### Local Development
+```bash
+npm run categorization_tool-migration:revert-dev
+```
+##### Environment
 ```bash
 npm run categorization_tool-migration:revert
 ```
 
 #### Create New Migration
+##### Local Development
 ```bash
-npm run categorization_tool-migration:generate -- -n ${YOUR_MIGRATION_NAME}
+npm run categorization_tool-migration:generate-dev -- -n ${YOUR_MIGRATION_NAME}
 ```
 
 ### Running The Service

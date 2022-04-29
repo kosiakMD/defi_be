@@ -6,8 +6,7 @@ import { ModuleRef } from '@nestjs/core';
 
 import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { groupBy, keepAddressesByChainId } from '@app/common/utils';
-
-import { getChainById } from '../../common/utils/chain';
+import { getChainById } from '@app/common/utils';
 
 import {
   IChainGroupedWallet,
@@ -262,7 +261,9 @@ export abstract class RootPlatform implements IRootPlatform {
     resolvedProtocols.forEach((protocol) => {
       if (protocol.chain.id !== chain) return;
       protocol.features.forEach((feature) => features.add(feature));
-      positions.push(...protocol.wallets.get(user));
+      if (protocol.wallets.has(user)) {
+        positions.push(...protocol.wallets.get(user));
+      }
     });
     const total = this.getPositionsTotal(positions);
     const positionsByFeature = Object.fromEntries(groupBy(positions, (i) => i.feature).entries());

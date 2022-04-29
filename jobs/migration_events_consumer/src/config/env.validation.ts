@@ -28,7 +28,7 @@ export const validationSchema = Joi.object({
   LOG_IN_JSON: Joi.string() //
     .allow('')
     .equal('true', 'false'),
-  SENTRY_DSN: Joi.string(),
+  SENTRY_DSN: Joi.string().allow(''),
   DB_HOST: Joi.string().required(),
   DB_PORT: Joi.number() //
     .default(5432)

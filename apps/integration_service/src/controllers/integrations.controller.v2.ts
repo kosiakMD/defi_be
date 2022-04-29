@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
@@ -6,6 +6,7 @@ import {
   AddressesArray,
   ChainIdEnum,
   ChainsArray,
+  ErrorResponseDto,
   ProtocolNameEnum,
   ProtocolParams,
 } from '@app/common';
@@ -50,7 +51,8 @@ export class IntegrationsControllerV2 {
     type: String,
     example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
   })
-  @ApiResponse({ status: 200, type: IntegrationsResponseV2Dto })
+  @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseV2Dto })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ErrorResponseDto })
   @Get('/:protocolName/')
   async getProtocolFeature(
     @Param() params: ProtocolParams,
@@ -58,6 +60,10 @@ export class IntegrationsControllerV2 {
     @ChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IntegrationsResponseV2Dto> {
     const { protocolName } = params;
-    return this.integrationsServiceDecorator.getProtocolFeaturesDataV2(protocolName, chains, addresses);
+    return this.integrationsServiceDecorator.getProtocolFeaturesDataV2(
+      protocolName,
+      chains,
+      addresses,
+    );
   }
 }

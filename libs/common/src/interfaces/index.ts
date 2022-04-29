@@ -18,7 +18,7 @@ export * from './subgraph.response.base';
 export * from './transactions.interfaces';
 export * from './lending.position.interface';
 export * from './leverage.farming.interface';
-export * from './terra.interfaces'
+export * from './terra.interfaces';
 
 export interface BaseData<T = keyof typeof ProtocolTypeEnum> {
   chainId: ChainIdEnum;

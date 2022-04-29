@@ -10,7 +10,7 @@ export class Puppeteer {
   private launch() {
     const defaultOptions = {
       headless: true,
-      args: ['--disable-setuid-sandbox'],
+      args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu'],
       ignoreHTTPSErrors: true,
       defaultViewport: {
         width: 1200,
@@ -27,10 +27,13 @@ export class Puppeteer {
     return this.page;
   }
 
-  async loadPage(url, waitTimeout = 1000) {
+  async loadPage(url) {
     const page = await this.openTab();
-    await page.goto(url);
-    await page.waitForTimeout(waitTimeout);
+    await page.goto(url, {
+      waitUntil: 'load',
+      // Remove the timeout
+      timeout: 0,
+    });
     return page;
   }
 }

@@ -1,22 +1,31 @@
+import { lastValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
+import { SOL_COIN_ADDRESS } from '@app/common/constant/index';
 import { isSolAddress, normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
-import { DelegationsStrategy } from './index';
+import { DelegationsStrategy } from './delegation.strategy';
 
 @Injectable()
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
+
+  protected url = 'https://api.solanabeach.io/v1/account';
+  protected path = 'v1/account';
+
   constructor(
+    private readonly configService: ConfigService,
     private httpService: HttpService,
     private readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -24,64 +33,87 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     private readonly assetsRepository: Repository<AssetsEntity>,
   ) {
     super();
+
+    this.url = new URL(this.path, this.configService.get<string>('SOLANA_URL')).toString();
   }
 
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
-      address: '00000000000000000000000000000000000000000000',
-      chain: 12,
+      address: SOL_COIN_ADDRESS,
+      // TODO: This chain id cannot be hardcoded
+      chain: ChainIdEnum.sol,
     });
   }
 
-  url = 'https://api.solanabeach.io/v1/account';
+  private async getData(address: string): Promise<any[]> {
+    const stakesData = await lastValueFrom(
+      this.httpService
+        .get(`${this.url}/${address}/stakes?limit=1000`)
+        .pipe(map(({ data: { data } }) => data)),
+    );
 
-  public async getDelegatedAssets(address) {
+    const stakingRewardsPromises = stakesData.map((staking) =>
+      lastValueFrom(
+        this.httpService
+          .get(`${this.url}/${staking.pubkey.address}/stake-rewards`)
+          .pipe(map(({ data }) => data)),
+      ),
+    );
+
+    const stakingRewardsData = await Promise.all(stakingRewardsPromises);
+
+    return [stakesData, stakingRewardsData[0]];
+  }
+
+  public async getDelegatedAssets(address: string) {
     if (!isSolAddress(address)) return [];
     const result = [];
 
     try {
-      const { prices } = await this.priceService.fetchTokenPrices(
-        [this.asset.address],
-        this.asset.chain,
-      );
+      const [{ prices }, [stakesData, stakingRewardsData]] = await Promise.all([
+        this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
+        this.getData(address),
+      ]);
 
-      const { data: stakesData } = await this.httpService
-        .get(`${this.url}/${address}/stakes?limit=1000`)
-        .toPromise();
+      stakesData.forEach((staking) => {
+        const stakingReward = stakingRewardsData;
+        if (stakingReward) {
+          const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
+          const claimableRewardsAmount = normalizeDecimals(
+            stakingReward.amount,
+            this.asset.decimals,
+          );
+          const price = prices[this.asset.address];
+          const { identityPubkey, name, image, website } =
+            staking.data.stake.delegation.validatorInfo;
 
-      for (const staking of stakesData.data) {
-        const { data: stakingRewardsData } = await this.httpService
-          .get(`${this.url}/${staking.pubkey.address}/stake-rewards`)
-          .toPromise();
-
-        for (const stakingReward of stakingRewardsData) {
           result.push({
             address,
-            asset: this.asset,
+            // TODO: add correct AssetDTO extended from AssetEntity
+            //  with omitting redundant methods and properties
+            asset: { ...this.asset, price },
             validator: {
-              address: staking.data.stake.delegation.validatorInfo.identityPubkey,
-              name: staking.data.stake.delegation.validatorInfo.name,
-              logo: staking.data.stake.delegation.validatorInfo.image,
-              website: staking.data.stake.delegation.validatorInfo.website,
+              address: identityPubkey,
+              name: name,
+              logo: image,
+              website: website,
             },
             balance: {
-              amount: normalizeDecimals(stakingReward.postBalance, this.asset.decimals),
-              amountUsd:
-                normalizeDecimals(stakingReward.postBalance, this.asset.decimals) *
-                prices[this.asset.address],
+              amount: balanceAmount,
+              amountUsd: balanceAmount * price,
             },
             claimableRewards: {
-              amount: normalizeDecimals(stakingReward.amount, this.asset.decimals),
-              amountUsd:
-                normalizeDecimals(stakingReward.amount, this.asset.decimals) *
-                prices[this.asset.address],
+              amount: claimableRewardsAmount,
+              amountUsd: claimableRewardsAmount * price,
             },
           });
         }
-      }
+      });
       return result;
     } catch (err) {
+      // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
+      throw err;
     }
   }
 }

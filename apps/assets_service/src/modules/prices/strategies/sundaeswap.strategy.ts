@@ -2,6 +2,8 @@ import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSou
 import axios, { AxiosRequestConfig } from 'axios';
 import BigNumber from 'bignumber.js';
 
+import { delay } from '@app/common/helpers/delay';
+
 import { AssetPrice } from '../types/AssetPrice.type';
 import { PriceJobData } from '../types/PriceJobData.type';
 import { PriceStrategy } from './strategy';
@@ -32,8 +34,7 @@ export class SundaeswapStrategy extends PriceStrategy {
       ? {
           address,
           chainId,
-          // TO_CHECK if we need to use BigNumber
-          priceInUsd: new BigNumber(priceUSD).toNumber(),
+          price: new BigNumber(priceUSD).toNumber(),
           sourceId,
         }
       : false;
@@ -41,12 +42,9 @@ export class SundaeswapStrategy extends PriceStrategy {
 
   public createPriceRequests(config: PriceSourceConfig): Promise<AxiosRequestConfig[]> {
     const priceRequests: AxiosRequestConfig[] = [];
-    // TODO: Does 'gqlString' make sense here? I guess not. better have it in code
     const { maxItems, baseURL, path, take, gqlString: query } = config;
     let skipItems = 0;
     while (skipItems < maxItems) {
-      // TODO find out how to use skip
-      // const takeItems = skipItems + take > maxItems ? maxItems - skipItems : take;
       priceRequests.push({
         method: 'POST',
         url: `${baseURL}${path}`,
@@ -62,11 +60,20 @@ export class SundaeswapStrategy extends PriceStrategy {
 
   public async fetchPrices(priceJobData: PriceJobData): Promise<AssetPrice[]> {
     const assetPrices: AssetPrice[] = [];
-    const { config } = priceJobData;
+    const {
+      config,
+      config: { requestDelay },
+    } = priceJobData;
     const requests = await this.createPriceRequests(config);
-    const responses = await Promise.all(requests.map((request) => axios.request(request)));
-    for (const response of responses) {
+    this.logger.log(`Processing ${requests.length} Sundaeswap requests`);
+    for await (const request of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `Sandauswap request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const {
           data: {
             data: { poolsPopular },
@@ -78,7 +85,11 @@ export class SundaeswapStrategy extends PriceStrategy {
             .filter((assetPrice: AssetPrice | boolean) => !!assetPrice),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get Sandaeswap prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

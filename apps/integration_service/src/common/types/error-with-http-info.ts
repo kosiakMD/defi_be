@@ -1,4 +1,4 @@
 export type ErrorWithHttpInfo = Error & {
-    request?: { host: string; path: string };
-    response?: any;
+  request?: { host: string; path: string };
+  response?: any;
 };

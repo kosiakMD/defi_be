@@ -22,6 +22,14 @@ export class insertMasterchefTemplateContract1649335021487 implements MigrationI
     await queryRunner.query(
       `
           DELETE
+          FROM "contracts_analysis"
+          WHERE contract_id = $1;
+      `,
+      [AbiMasterchefTemplate.id],
+    );
+    await queryRunner.query(
+      `
+          DELETE
           FROM "contracts"
           WHERE id = $1;
       `,

@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
+    "moduleResolution": "node",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -16,10 +17,16 @@
       "DOM"
     ],
     "sourceMap": true,
+    "noEmitHelpers": true,
+    "importHelpers": true,
     "esModuleInterop": true,
     "target": "es2017",
     "baseUrl": "./",
     "incremental": true,
+    "typeRoots": [
+      "./custom_typings",
+      "./node_modules/@types"
+    ],
     "paths": {
       "@app/common": [
         "libs/common/src"

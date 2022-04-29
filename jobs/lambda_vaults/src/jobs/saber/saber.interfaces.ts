@@ -17,15 +17,3 @@ export interface rpcDataPools {
   method: string;
   params: [string, { encoding: string }];
 }
-
-export interface poolData {
-  decimals: number;
-  mintAuthority: string;
-  supply: string;
-  tokens: {
-    mint: string;
-    owner: string;
-    decimals: number;
-    amount: string;
-  }[];
-}

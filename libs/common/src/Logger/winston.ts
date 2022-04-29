@@ -11,7 +11,11 @@ import { EnvEnum } from '@app/common';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 
-const AWS_CW_LOGS_ENVIRONMENTS: EnvEnum[] = [EnvEnum.development, EnvEnum.production];
+const AWS_CW_LOGS_ENVIRONMENTS: EnvEnum[] = [
+  EnvEnum.development,
+  EnvEnum.production,
+  EnvEnum.staging,
+];
 
 export type LogConfig = {
   identifier: string;

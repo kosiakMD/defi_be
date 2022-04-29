@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -16,8 +16,8 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { interceptorsOrder } from '@app/common/interceptors';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
@@ -105,19 +105,11 @@ import { VaultsModule } from './vaults/vaults.module';
     OpportunitiesController,
   ].sort(),
   providers: [
+    ...interceptorsOrder,
     {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
-    },
-    // TODO: testing 1 Sentry middleware only, without interceptors
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
     {
       provide: APP_GUARD,
       useClass: ApiVersionGuard,

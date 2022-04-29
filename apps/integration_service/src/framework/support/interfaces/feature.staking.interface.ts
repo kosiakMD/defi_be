@@ -12,7 +12,7 @@ import {
   ISupplyTokenUserEntry,
 } from './tokens.supplied.interface';
 
-interface IStakingFeatureEntryGeneric<TSupplied, TRewarded> extends IPartialBaseFeature {
+export interface IStakingFeatureEntryGeneric<TSupplied, TRewarded> extends IPartialBaseFeature {
   feature: FeatureEnum.staking;
   supplied: TSupplied[];
   rewarded: TRewarded[];

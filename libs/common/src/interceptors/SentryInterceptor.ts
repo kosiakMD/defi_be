@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/minimal';
 import { Severity } from '@sentry/node';
 import { Request } from 'express';
-import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
@@ -24,19 +24,21 @@ const allowedControllers = [
 
 @Injectable()
 export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T> {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
   intercept(
     context: ExecutionContext,
     next: CallHandler<R>,
   ): Observable<T> | Promise<Observable<T>> {
-    const className = context.getClass().name;
+    const controllerName = context.getClass().name;
 
     // TODO: temporary enabled only for protocols and health checks
-    if (allowedControllers.includes(className)) {
-      let reqId, sessionId, timestampEntry, timestampExit, timeExecute;
+    if (allowedControllers.includes(controllerName)) {
+      let reqId, sessionId, timestampEntry, timestampExit, timeExecute, request: Request;
       const hostType = context.getType();
       if (hostType === 'http') {
         const contextHttp = context.switchToHttp();
-        const request: Request = contextHttp.getRequest<Request>();
+        request = contextHttp.getRequest<Request>();
         reqId = request.header(HEADER_REQUEST_ID)?.toString();
         sessionId = request.header(HEADER_SESSION_ID)?.toString();
         timestampEntry = request.header(HEADER_TIMESTAMP_ENTRY)?.toString();
@@ -46,7 +48,7 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
 
       const args = context.getArgs();
       const sentryMeta = {
-        className,
+        controllerName,
         reqId,
         sessionId,
         timestampEntry,
@@ -61,10 +63,10 @@ export class SentryInterceptor<R = any, T = any> implements NestInterceptor<R, T
       };
 
       return next.handle().pipe(
-        catchError<T, any>((exception) => {
-          Sentry.captureException(exception, sentryParams);
-          throwError(exception);
-        }) as any,
+        // catchError<T, any>((exception) => {
+        //   Sentry.captureException(exception, sentryParams);
+        //   throwError(exception);
+        // }) as any,
         tap<T>(null, (exception) => {
           Sentry.captureException(exception, sentryParams);
         }) as any,

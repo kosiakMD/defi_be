@@ -2,6 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
+
 import { SortDirectionEnum } from '../enum';
 
 export class BaseListQueryDto {

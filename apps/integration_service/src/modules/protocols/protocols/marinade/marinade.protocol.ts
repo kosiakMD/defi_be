@@ -18,7 +18,6 @@ import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import AbstractProtocol from '../abstractProtocol';
 import DataProviderProtocol from '../dataProviderProtocol';
-import { MarinadeFarms } from './marinade.farms';
 import { MarinadePools } from './marinade.pools';
 
 @Injectable()
@@ -28,7 +27,7 @@ export class MarinadeProtocol extends DataProviderProtocol implements AbstractPr
   readonly displayName = 'Marinade';
   readonly name = MarinadeProtocolEnum.marinade;
   readonly features = {
-    [ChainAbbrEnum.sol]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.sol]: [FeatureEnum.pools],
   };
 
   protected dataProvider;
@@ -38,7 +37,6 @@ export class MarinadeProtocol extends DataProviderProtocol implements AbstractPr
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     private readonly poolService: MarinadePools,
-    private readonly farmService: MarinadeFarms,
   ) {
     super();
     this.dataProvider = this;
@@ -48,8 +46,6 @@ export class MarinadeProtocol extends DataProviderProtocol implements AbstractPr
     switch (feature) {
       case FeatureEnum.pools:
         return this.poolService.getData(addresses, chain, this.name);
-      case FeatureEnum.staking:
-        return this.farmService.getData(addresses, chain, this.name);
       default:
         return [];
     }

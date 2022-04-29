@@ -140,7 +140,7 @@ export class BadgerStaking {
   }
 
   private async getBalances(addresses, pools, multicall) {
-    let calls = new Map<string, ICallData>();
+    const calls = new Map<string, ICallData>();
 
     addresses.forEach((address) => {
       pools.items.forEach((pool) => {

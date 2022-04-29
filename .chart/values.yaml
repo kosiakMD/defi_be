@@ -63,11 +63,11 @@ readinessProbe:
 
 resources:
   requests:
-    cpu: 200m
-    memory: 400Mi
+    cpu: 100m
+    memory: 200Mi
   limits:
-    cpu: "2"
-    memory: 2Gi
+    cpu: 200m
+    memory: 600Mi
 
 serviceAccount:
   create: true
@@ -87,8 +87,10 @@ ingress:
   enabled: false
   host: defiyield.app
   annotations: {}
-  certificate_arn: arn:aws:acm:us-west-2:625623467395:certificate/a19eacc1-004c-4ce4-ab7f-fcb0f3d911b8
-  wafv2_acl_arn: arn:aws:wafv2:us-east-2:625623467395:regional/webacl/defiyield-backend-staging/71e7a1f4-1edb-404b-9440-c03a64fffcb5
+  certificate_arn: arn:aws:acm:eu-central-1:625623467395:certificate/0451fee0-71c4-4989-b584-189e73945b0b
+  wafv2_acl_arn: arn:aws:wafv2:eu-central-1:625623467395:regional/webacl/defiyield-backend-production/9eadcd76-96cb-4761-aaf4-5b4320f4d249
+#  certificate_arn: arn:aws:acm:us-west-2:625623467395:certificate/a19eacc1-004c-4ce4-ab7f-fcb0f3d911b8
+#  wafv2_acl_arn: arn:aws:wafv2:us-east-2:625623467395:regional/webacl/defiyield-backend-staging/71e7a1f4-1edb-404b-9440-c03a64fffcb5
 
 configMaps:
   common:
@@ -100,4 +102,11 @@ configMaps:
     DB_LOGGING: true
 
 secrets:
-- database
+  - database
+
+initContainer:
+  enabled: false
+  name: init
+  image: ""
+  spec:
+    command: [ "sh", "-c" ]

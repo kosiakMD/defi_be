@@ -40,6 +40,7 @@ import {
   MinswapProtocolEnum,
   StaderProtocolEnum,
   OsmosisProtocolEnum,
+  AaveV3ProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -88,7 +89,8 @@ export type ProtocolName =
   | MinswapProtocolEnum
   | MirrorProtocolEnum
   | StaderProtocolEnum
-  | OsmosisProtocolEnum;
+  | OsmosisProtocolEnum
+  | AaveV3ProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

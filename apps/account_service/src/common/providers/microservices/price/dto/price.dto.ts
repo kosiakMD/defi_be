@@ -80,12 +80,7 @@ export class FetchTimestampPricesRequestDto {
 }
 
 export class PriceHistoricalRequestDto extends PriceCurrentRequestDto {
-  constructor(
-    addresses: Address[],
-    timestamps: Timestamp[],
-    chain: number,
-    currency: CurrencyId,
-  ) {
+  constructor(addresses: Address[], timestamps: Timestamp[], chain: number, currency: CurrencyId) {
     super(addresses, chain, currency);
     this.timestamps = timestamps;
   }

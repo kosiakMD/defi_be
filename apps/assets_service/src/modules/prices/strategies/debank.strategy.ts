@@ -1,5 +1,5 @@
 import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
-import axios, { AxiosRequestConfig } from 'axios';
+import axios from 'axios';
 
 import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';
@@ -7,6 +7,7 @@ import { delay } from '@app/common/helpers/delay';
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetPrice } from '../types/AssetPrice.type';
 import { PriceJobData } from '../types/PriceJobData.type';
+import { PriceRequestData } from '../types/PriceRequestData.type';
 import { PriceStrategy } from './strategy';
 
 type DebankToken = {
@@ -59,19 +60,15 @@ export class DebankStrategy extends PriceStrategy {
       throw Error(`No Debank chain for chainId: ${chainId}`);
     }
     if (this.loading) await delay(5000);
-    // TODO find out debank chain id on https://pro-openapi.debank.com/v1/chain/list
     const AbsoluteChainId = AbsoluteChainIdEnum[chainName];
-    return (
-      // it's good to have an error here in case of it's not found
-      this.chains //
-        .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId).id
-    );
+    return this.chains //
+      .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId)?.id;
   }
 
   public async createPriceRequests(
     config: PriceSourceConfig,
     assetsRepository: AssetsRepository,
-  ): Promise<AxiosRequestConfig[]> {
+  ): Promise<PriceRequestData[]> {
     /**
      * 1) get all assets chains
      * 2) for each chain:
@@ -84,17 +81,22 @@ export class DebankStrategy extends PriceStrategy {
     const { baseURL, take } = config; // maximum 100 https://docs.open.debank.com/en/reference/api-pro-reference/token#get-the-list-of-the-token-information
     for await (const chainId of assetsChainIds) {
       const debankChain = await this.getDebankChain(chainId); // define debank chain by chainId
-      const trackedAssetsFindConditions = {
+      if (!debankChain) {
+        this.logger.error(
+          `No chain id ${chainId} on Debank API! see https://pro-openapi.debank.com/v1/chain/list community_ids`,
+        );
+        continue;
+      }
+      const assetsFindConditions = {
         chainId,
-        isTracked: true,
         disabled: false,
       };
       const trackedAssetsNumber = await assetsRepository.count({
-        where: trackedAssetsFindConditions,
+        where: assetsFindConditions,
       });
       let skip = 0;
       while (skip < trackedAssetsNumber) {
-        priceRequests.push({
+        const request = {
           url: `${baseURL}`,
           method: 'GET', // TO_CHECK if we can move it to source config
           headers: {
@@ -107,7 +109,7 @@ export class DebankStrategy extends PriceStrategy {
               await assetsRepository.find({
                 // TO_CHECK why select doesn't work
                 // select: ['address']
-                where: trackedAssetsFindConditions,
+                where: assetsFindConditions,
                 take: Math.min(take, trackedAssetsNumber - skip),
                 skip,
               })
@@ -115,7 +117,8 @@ export class DebankStrategy extends PriceStrategy {
               .map(({ address }) => address)
               .join(','),
           },
-        });
+        };
+        priceRequests.push({ request, chainId });
         skip += take;
       }
     }
@@ -128,24 +131,34 @@ export class DebankStrategy extends PriceStrategy {
     const assetPrices: AssetPrice[] = [];
     const {
       config,
-      config: { chainId },
+      config: { requestDelay },
       sourceId,
     } = priceJobData;
     const requests = await this.createPriceRequests(config, assetsRepository);
-    const responses = await Promise.all(requests.map((request) => axios.request(request)));
-    for (const response of responses) {
+    this.logger.log(`Processing ${requests.length} Debank requests`);
+    for await (const { request, chainId } of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `Debank request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const { data } = response;
         assetPrices.push(
           data.map((token: DebankToken) => ({
             address: token.id,
             chainId,
             sourceId,
-            priceInUsd: token.price,
+            price: token.price,
           })),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get Debank prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

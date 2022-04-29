@@ -11,7 +11,6 @@ import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { PriceService } from '../../microservices/price.service';
 import {
   Farm,
-  MarinadeFarmsResponse,
   MarinadePoolsResponse,
   Pool,
   SolanaToken,
@@ -41,11 +40,6 @@ export class MarinadeUtils {
   public async initMarinadePools() {
     this.assets = await this.getTokensInformation();
     this.pools = await this.getPoolInformation();
-  }
-
-  public async initMarinadeFarms() {
-    this.assets = await this.getTokensInformation();
-    this.farms = await this.getFarmInformation();
   }
 
   public async getTokensInformation(): Promise<Map<string, SolanaToken>> {
@@ -94,36 +88,5 @@ export class MarinadeUtils {
     }
 
     return marinadeMap;
-  }
-
-  private async getFarmInformation(): Promise<Map<string, Farm>> {
-    const request = this.httpService
-      .get<MarinadeFarmsResponse>(this.sonarFarmsURI)
-      .pipe(map((r) => r.data));
-    const response = await firstValueFrom(request);
-
-    const farmMap = new Map<string, Farm>();
-
-    for (const farm of Object.values(response)) {
-      if (farm.method === 'quarry_farm') {
-        const replicaFarms = farm.additional.replicaFarms;
-
-        if (replicaFarms.length > 0) {
-          replicaFarms.map((replicaFarm) => {
-            replicaFarm.additional.replicaMint = farm.additional.replicaMint;
-            if (replicaFarm.additional?.rewarderInfo?.id === 'marinade') {
-              farmMap.set(replicaFarm.address, replicaFarm);
-            }
-          });
-          farm.additional.replicaFarms = [];
-        }
-
-        if (farm.additional?.rewarderInfo?.id === 'marinade') {
-          farmMap.set(farm.address, farm);
-        }
-      }
-    }
-
-    return farmMap;
   }
 }

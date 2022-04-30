@@ -71,13 +71,13 @@ export interface Pool {
   tokens: Token[];
 }
 
-export interface IBalancerPoolsResponce {
+export interface IBalancerPoolsResponse {
   data: {
     pools: Pool[];
   };
 }
 
-export interface IBalancerUserResponce {
+export interface IBalancerUserResponse {
   data: {
     users: {
       id: string;
@@ -91,7 +91,7 @@ export interface IBalancerUserResponce {
   };
 }
 
-export interface IBalancerUsersYieldsResponce {
+export interface IBalancerUsersYieldsResponse {
   data: {
     users: {
       id: string;

@@ -70,7 +70,7 @@ export class PlatformService {
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
   platformsInitialized: Map<string, RootPlatform> = new Map();
-  protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
+  protected registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
     Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
   }
 

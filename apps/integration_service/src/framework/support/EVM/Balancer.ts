@@ -1,4 +1,4 @@
-import { map, mergeMap, toArray, firstValueFrom } from 'rxjs';
+import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 
@@ -6,12 +6,9 @@ import { FeatureEnum } from '@app/common';
 
 import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 import { ERC20Token } from '../interfaces/tokens.common.interface';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-} from '../interfaces/tokens.supplied.interface';
+import { ISupplyTokenMinimal, ISupplyTokenOpportunity, } from '../interfaces/tokens.supplied.interface';
 import { EVMCore } from './EVMCore';
-import { IBalancerPoolsResponce, Pool, POOL_QUERY } from './Subgraphs/BalancerSubgraph';
+import { IBalancerPoolsResponse, Pool, POOL_QUERY } from './Subgraphs/BalancerSubgraph';
 
 type ERC20TokenMinimal = {
   reserve: number;
@@ -36,7 +33,7 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
 
   async getCacheableOpportunityData(): Promise<TMinimal[]> {
     const $data = this.httpService
-      .post<IBalancerPoolsResponce>(this.baseURI + this.meta.context.key, {
+      .post<IBalancerPoolsResponse>(this.baseURI + this.meta.context.key, {
         query: POOL_QUERY,
       })
       .pipe(
@@ -58,6 +55,7 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
       tvl: +poolToken.totalSupplied * token.price,
     };
   }
+
   protected calculateBalances(
     poolsMap: Map<string, TOpportunity>,
     balances: { balance: string; address: string }[],
@@ -72,7 +70,6 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
 
         const underlyingTokens = pool.supplied;
         const lpPrice = underlyingTokens.reduce((prev, t) => t.tvl + prev, 0) / pool.token.reserve;
-        // const lpPrice = lpTVL ;
         const supplied = [
           {
             token: {
@@ -83,12 +80,11 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
               symbol: pool.token.symbol,
               underlying: underlyingTokens.map((token: ISupplyTokenOpportunity) => {
                 const balance = token.totalSupplied * poolShare;
-                const result = {
+                return {
                   ...token.token,
                   balance: balance,
                   value: balance * token.token.price,
                 };
-                return result;
               }),
             },
             totalSupplied: pool.token.reserve,

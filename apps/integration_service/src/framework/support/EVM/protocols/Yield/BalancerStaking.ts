@@ -13,20 +13,20 @@ import { PriceService } from '../../../../../modules/microservices/price.service
 import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import { IStakingFeatureUserEntry } from '../../../interfaces/feature.staking.interface';
 import { Balancer } from '../../Balancer';
-import { IBalancerUsersYieldsResponce, USERS_YIELDS } from '../../Subgraphs/BalancerSubgraph';
+import { IBalancerUsersYieldsResponse, USERS_YIELDS } from '../../Subgraphs/BalancerSubgraph';
 
 interface IBalancerVaultMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
 }
 
 export class BalancerStaking extends Balancer implements IRootProtocol {
-  protected multicall: MulticallAggregator;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
     protected priceService: PriceService,
     protected httpService: HttpService,
+    protected multicall: MulticallAggregator,
   ) {
     super();
   }
@@ -48,11 +48,13 @@ export class BalancerStaking extends Balancer implements IRootProtocol {
       const balances = new Map(accountBalances.map((b) => [b.address, b.yields]));
 
       for (const address of addresses) {
-        if (!balances.has(address)) continue;
-        const data = this.calculateBalances(poolsMap, balances.get(address));
-        wallets.set(address, data);
+        if (balances.has(address)) {
+          const data = this.calculateBalances(poolsMap, balances.get(address));
+          wallets.set(address, data);
+        }
       }
     } catch (err) {
+      this.logger.error(`Loading BalancerV2 farms for ${addresses.join()} failed ${err}`);
       errors.push(err);
     }
 
@@ -61,12 +63,12 @@ export class BalancerStaking extends Balancer implements IRootProtocol {
 
   private async accountBalances(addresses: string[]) {
     const $data = this.httpService
-      .post<IBalancerUsersYieldsResponce>(this.gaugesURI, {
+      .post<IBalancerUsersYieldsResponse>(this.gaugesURI, {
         query: USERS_YIELDS,
         variables: { addresses },
       })
       .pipe(
-        mergeMap((responce) => responce.data.data.users),
+        mergeMap((response) => response.data.data.users),
         map((farm) => {
           return {
             address: farm.id,

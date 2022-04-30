@@ -13,7 +13,7 @@ import { PriceService } from '../../../../../modules/microservices/price.service
 import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import { IPoolFeatureEntryUserEntry } from '../../../interfaces/feature.pool.interface';
 import { Balancer } from '../../Balancer';
-import { IBalancerUserResponce, USERS_POOL_SHARES } from '../../Subgraphs/BalancerSubgraph';
+import { IBalancerUserResponse, USERS_POOL_SHARES } from '../../Subgraphs/BalancerSubgraph';
 
 interface IBalancerVaultMeta extends IProtocolMeta {
   context: {
@@ -23,13 +23,13 @@ interface IBalancerVaultMeta extends IProtocolMeta {
 }
 
 export class BalancerLiquidity extends Balancer implements IRootProtocol {
-  protected multicall: MulticallAggregator;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
     protected priceService: PriceService,
     protected httpService: HttpService,
+    protected multicall: MulticallAggregator,
   ) {
     super();
   }
@@ -46,11 +46,13 @@ export class BalancerLiquidity extends Balancer implements IRootProtocol {
       const balances = new Map(addressesBalances.map((b) => [b.address, b.liquidity]));
 
       for (const address of addresses) {
-        if (!balances.has(address)) continue;
-        const data = this.calculateBalances(poolsMap, balances.get(address));
-        wallets.set(address, data);
+        if (balances.has(address)) {
+          const data = this.calculateBalances(poolsMap, balances.get(address));
+          wallets.set(address, data);
+        }
       }
     } catch (err) {
+      this.logger.error(`Loading BalancerV2 liquidity for ${addresses.join()} failed ${err}`);
       errors.push(err);
     }
 
@@ -59,12 +61,12 @@ export class BalancerLiquidity extends Balancer implements IRootProtocol {
 
   private async accountBalances(addresses: string[]) {
     const $data = this.httpService
-      .post<IBalancerUserResponce>(this.baseURI + this.meta.context.key, {
+      .post<IBalancerUserResponse>(this.baseURI + this.meta.context.key, {
         query: USERS_POOL_SHARES,
         variables: { addresses },
       })
       .pipe(
-        mergeMap((responce) => responce.data.data.users),
+        mergeMap((response) => response.data.data.users),
         map((liquidity) => {
           return {
             address: liquidity.id,

@@ -37,7 +37,7 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
         query: POOL_QUERY,
       })
       .pipe(
-        mergeMap((responce) => responce.data.data.pools),
+        mergeMap((response) => response.data.data.pools),
         map((pool) => this.toFeatureEntryMinimal(pool)),
         toArray(),
       );

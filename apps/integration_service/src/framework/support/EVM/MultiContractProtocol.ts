@@ -67,6 +67,7 @@ export abstract class MultiContractProtocol<
       `MultiContractProtocol/${this.constructor.name}`,
     );
   }
+
   async getCacheableOpportunityData(): Promise<TMinimalType[]> {
     return this.fetchOpportunityData(this.meta.context ?? {});
   }

@@ -17,7 +17,6 @@ import { PriceService } from '../../../../../modules/microservices/price.service
 import {
   INamedFunctionPredicates,
   IProtocolMeta,
-  IRootProtocol,
   TokenMap,
 } from '../../../interfaces';
 import {
@@ -45,7 +44,6 @@ export class AaveV3Lending
     ILendingFeatureUserEntry,
     IAaveV3Meta
   >
-  implements IRootProtocol
 {
   constructor(
     protected abiService: AbiService,
@@ -145,7 +143,7 @@ export class AaveV3Lending
     );
   }
 
-  updateBorrowRateField(field: string, rate: BigNumber, debtValue: BigNumber, borrowRate: any) {
+  private updateBorrowRateField(field: string, rate: BigNumber, debtValue: BigNumber, borrowRate: any) {
     if (Number(debtValue) > 0) {
       borrowRate[field] = rate.toString();
     }
@@ -295,7 +293,7 @@ export class AaveV3Lending
     return [results, errors];
   }
 
-  formatLendingUserData(pool: ILendingFeatureOpportunity, balance: string, feature: string) {
+  private formatLendingUserData(pool: ILendingFeatureOpportunity, balance: string, feature: string) {
     const featureObject = pool[feature][0];
     const userBalance = toDecimals(balance, featureObject.token.decimals);
     return Object.assign(featureObject, {
@@ -338,7 +336,7 @@ export class AaveV3Lending
   }
 }
 
-export const abiGetUserAccountData: AbiItem = {
+const abiGetUserAccountData: AbiItem = {
   inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
   name: 'getUserAccountData',
   outputs: [

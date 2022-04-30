@@ -31,32 +31,19 @@ export abstract class SolanaCore<
     // This retrieves a list of all registered tokens on solana
     // const tokenList = await new TokenListProvider().resolve();
     // const tokens = tokenList.filterByChainId(Number(getAbsoluteChainId(ChainIdEnum.sol))).getList();
-
     const NATIVE_SOL = '11111111111111111111111111111111';
     const WRAPPED_SOL = 'So11111111111111111111111111111111111111112';
 
-    const tokensWithNativeAndWrapped = Array.from(
-      new Set(
-        addresses.concat(
-          // we add the wrapped token to get the native tokens price
-          // (coingecko doesn't report the native tokens price by address)
-          WRAPPED_SOL,
-        ),
-      ),
-    );
+    //  we add the wrapped token to get the native tokens price
+    //  (coingecko doesn't report the native tokens price by address)
+    //  WRAPPED_SOL,
+    // :TODO: removed since we can't use coingecko for getting prices to need to find a way not to use api.sonar.prices
+    const tokensWithNativeAndWrapped = Array.from(new Set(addresses.concat(WRAPPED_SOL)));
 
-    const [{ data: prices }, { data: tokens }, { data: supplies }] = await Promise.all([
+    /** @todo need to find a way to extract solana prices */
+    const [{ prices }, { data: tokens }, { data: supplies }] = await Promise.all([
       // Coingecko prices
-      firstValueFrom(
-        this.httpService.get(`https://api.coingecko.com/api/v3/simple/token_price/solana`, {
-          params: {
-            // eslint-disable-next-line camelcase
-            contract_addresses: tokensWithNativeAndWrapped.join(','),
-            // eslint-disable-next-line camelcase
-            vs_currencies: 'usd',
-          },
-        }),
-      ),
+      this.priceService.getTokenPricesFetch(tokensWithNativeAndWrapped, this.meta.chain),
       // Account Service
       this.accountService.getAssets(tokensWithNativeAndWrapped, [ChainIdEnum.sol]),
       // RPC to get token supplies
@@ -96,8 +83,9 @@ export abstract class SolanaCore<
             name: token.name,
             symbol: token.symbol,
             decimals: token.decimals,
+            reserve: supplyMap.get(token.address),
             totalSupply: supplyMap.get(token.address),
-            price: prices[token.address].usd,
+            price: prices[token.address] || 0,
           },
         ];
       });

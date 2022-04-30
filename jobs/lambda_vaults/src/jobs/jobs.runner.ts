@@ -170,15 +170,11 @@ export class JobsRunner {
     jobPlaceholdersSet.add(`${ChainIdEnum.cardano}_${ProtocolNameEnum.minswap}_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.cardano}_${ProtocolNameEnum.sundaeswap}_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.marinade}_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.marinade}_farming`);
     jobPlaceholdersSet.add(`${ChainIdEnum.osmosis}_${ProtocolNameEnum.osmosis}_pools`);
-
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);
-
     jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_staking`);
-
     jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Astroport_pools`);
     jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Astroport_staking`);
     return jobPlaceholdersSet;

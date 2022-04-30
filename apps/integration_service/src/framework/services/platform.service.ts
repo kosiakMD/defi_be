@@ -23,6 +23,7 @@ import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
+import { Quarry } from '../platforms/Quarry';
 import { QuickSwap } from '../platforms/QuickSwap';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { SpookySwap } from '../platforms/SpookySwap';
@@ -62,6 +63,7 @@ export class PlatformService {
       LimeSwap,
       BalancerV2,
       AaveV3,
+      Quarry,
       Platypus,
     });
   }

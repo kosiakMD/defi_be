@@ -143,7 +143,7 @@ export class TraderJoeStaking {
     });
 
     const pendingTokensCalls = new Map<string, ICallData>();
-    claimableRewards.map((d) => {
+    claimableRewards.forEach((d) => {
       pendingTokensCalls.set(
         TraderJoeStaking.pendingTokensLabel(d.userAddress, d.contract, d.poolId),
         {

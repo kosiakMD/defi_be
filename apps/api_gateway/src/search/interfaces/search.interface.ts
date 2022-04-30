@@ -1,9 +1,7 @@
-import { OpportunityDto } from 'apps/opportunities_service/src/modules/opportunity/dtos/opportunity.dto';
-
 import { SearchResultType } from './search.enum';
 
 export interface SearchResults {
-  entries: (SearchResultsBaseEntry | OpportunityDto)[];
+  entries: SearchResultsBaseEntry[];
 }
 export interface SearchResultsBaseEntry {
   type: SearchResultType;

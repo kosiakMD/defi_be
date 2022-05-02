@@ -192,7 +192,7 @@ export class MasterChef
   }
 
   /**
-   * Returns the user friendly pool, with tokens & proper decimals
+   * Returns the user-friendly pool, with tokens & proper decimals
    *
    * @param pool Single raw pool (see above)
    * @param tokens map of priced tokens

@@ -51,6 +51,7 @@ export abstract class SingleContractProtocol<
    * and parses it for the requested functions
    */
   async initialize() {
+    // TODO: 'name' and 'address' could be not part of meta
     this.logger.log(
       `Initializing: ${this.meta.name} ${this.meta.chain}/${this.meta.address}`,
       `SingleContractProtocol/${this.constructor.name}`,
@@ -113,6 +114,7 @@ export abstract class SingleContractProtocol<
         });
       });
     } catch (err) {
+      // TODO: Log error here?
       errors.push(err);
     }
 
@@ -143,6 +145,7 @@ export abstract class SingleContractProtocol<
    *
    * @returns { [key: string]: any }
    */
+  // TODO: Add typing here
   protected async callInputlessFunctions() {
     // Prepare all inputless contract calls for automated multicall
     const inputlessCalls = Object.entries(this.functions).filter(

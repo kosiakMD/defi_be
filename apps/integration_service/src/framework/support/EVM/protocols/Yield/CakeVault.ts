@@ -168,6 +168,7 @@ export class CakeVault
 
     return this.multicall.handleInBatches(calls, this.meta.chain);
   }
+
   protected formatUserData(
     address: string,
     pool: IStakingFeatureOpportunity,

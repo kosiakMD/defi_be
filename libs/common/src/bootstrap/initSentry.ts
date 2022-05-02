@@ -44,15 +44,24 @@ export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string
         root: global.__rootdir__,
       }),
     ],
-    beforeSend: function (event, hint) {
+    beforeSend: function (event: Sentry.Event, hint: Sentry.EventHint) {
       const exception: any = hint.originalException;
 
       if (exception.isAxiosError) {
-        event.fingerprint = [
-          '{{ default }}',
-          String(exception.functionName),
-          String(exception.errorCode),
-        ];
+        // TODO turn of axios HTTP Error = 500 for a while
+        if (
+          exception?.request?.res?.statusCode === 400 ||
+          exception?.response?.status === 400 ||
+          exception?.response?.data?.status_code === 400
+        ) {
+          return null;
+        } else {
+          event.fingerprint = [
+            '{{ default }}',
+            String(exception.functionName),
+            String(exception.errorCode),
+          ];
+        }
       }
 
       return event;

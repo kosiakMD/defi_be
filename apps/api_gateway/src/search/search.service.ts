@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ServiceEnum } from '@app/common';
+import { ProtocolDataDto, ServiceEnum } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { isSomeAddress } from '@app/common/utils';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
@@ -12,13 +12,14 @@ import { BaseService } from '../common/services/base.service';
 
 import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
+import { SearchResultType } from './interfaces/search.enum';
 import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
 import { addressSearchResultParser } from './utils/search.utils';
 
 @Injectable()
 export class SearchService extends BaseService {
   private readonly accountUrl: string;
-  private readonly opportunityUrl: string;
+  private readonly integrationUrl: string;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -29,7 +30,7 @@ export class SearchService extends BaseService {
     super(logger, httpService, configService);
 
     this.accountUrl = this.getServiceUrl(ServiceEnum.Account);
-    this.opportunityUrl = this.getServiceUrl(ServiceEnum.Opportunities);
+    this.integrationUrl = this.getServiceUrl(ServiceEnum.Integration);
   }
 
   public async getAddressSuggestions(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
@@ -88,11 +89,28 @@ export class SearchService extends BaseService {
 
   private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
     const assetsSearchUrl = new URL('v1/assets/search', this.accountUrl);
-    const promises = [this.requestProxy(assetsSearchUrl.toString(), 'GET', { params })];
+    const protocolsSearchUrl = new URL('v1/protocols', this.integrationUrl);
+    const promises = [
+      this.requestProxy(assetsSearchUrl.toString(), 'GET', { params }),
+      this.requestProxy(protocolsSearchUrl.toString()),
+      // this.requestProxy(`{this.integrationUrl}/v1`),
+    ];
     const searchResults = await Promise.all(promises);
     const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();
+    const protocolsSearchResponse: ProtocolDataDto[] = searchResults.shift()?.data || [];
+    const query = `${params.text}`.toLowerCase();
+    const protocolsSearchResult = protocolsSearchResponse //
+      .filter(
+        ({ name, project }) =>
+          `${name.toLowerCase()}`.includes(query) || `${project.toLowerCase()}`.includes(query),
+      )
+      .map((protocol) => ({
+        name: protocol.name,
+        type: SearchResultType.PROTOCOL,
+        metadata: protocol.features,
+      }));
     return {
-      entries: [...assetsSearchResults],
+      entries: [...assetsSearchResults, ...protocolsSearchResult],
     };
   }
 }

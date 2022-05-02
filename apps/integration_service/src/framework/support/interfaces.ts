@@ -7,6 +7,7 @@ import {
   ILendingFeatureOpportunity,
   ILendingFeatureUserEntry,
 } from './interfaces/feature.lending.interface';
+import * as lp from './interfaces/feature.liqudity-pool.interface';
 import {
   IPoolFeatureEntryMinimal,
   IPoolFeatureEntryOpportunity,
@@ -38,16 +39,19 @@ export interface IProtocolMeta {
 
 export type IWalletMinimal =
   | IPoolFeatureEntryMinimal
+  | lp.IPoolFeatureEntryMinimal
   | IStakingFeatureMinimal
   | ILendingFeatureEntryMinimal;
 
 export type IWalletOpportunity =
   | IPoolFeatureEntryOpportunity
+  | lp.IPoolFeatureEntryOpportunity
   | IStakingFeatureOpportunity
   | ILendingFeatureOpportunity;
 
 export type IWalletUserEntry =
   | IPoolFeatureEntryUserEntry
+  | lp.IPoolFeatureEntryUserEntry
   | IStakingFeatureUserEntry
   | ILendingFeatureUserEntry;
 

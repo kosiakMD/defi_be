@@ -7,7 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { Address, CurrencyIdEnum } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
-import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto/price.response.dto';
+import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 
 @Injectable()
 export class PriceService {

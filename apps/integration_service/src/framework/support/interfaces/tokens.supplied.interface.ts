@@ -7,6 +7,7 @@ import { ITokenMinimal, ITokenOpportunity, ITokenUserEntry } from './tokens.comm
 // values (decimal value, full token details, etc)
 export interface ISupplyTokenMinimal extends ITokenMinimal {
   weight?: string;
+  // TODO: What is difference between two bellow?
   totalSupply?: string; // number of tokens staked (we won't have prices here)
   totalSupplied: string; // number of tokens staked (we won't have prices here)
   rate?: { [key: string]: string };

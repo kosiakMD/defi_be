@@ -32,6 +32,7 @@ export abstract class RootProtocol<
   protected abstract accountService: AccountService;
   protected abstract priceService: PriceService;
 
+  // TODO: void | Promise<void> ?
   abstract initialize(): Promise<void>;
 
   abstract getCacheableOpportunityData(): Promise<TMinimal[]>; // get all raw data that can be cached (pools with token address, but not token details/price)
@@ -147,6 +148,7 @@ export abstract class RootProtocol<
 
   protected abstract formatOpportunity(
     opportunity: TMinimal,
+    // TODO: Why any?
     tokens: Map<Address, any>,
   ): TOpportunity | void;
 
@@ -170,6 +172,7 @@ export abstract class RootProtocol<
     try {
       tokens = await this.getTokensForOpportunities(opportunities); // returns all required tokens for these pools
     } catch (e) {
+      this.logger.error(`Error getting token for opportunity: ${e}`);
       if (e) {
         return [[], [e]];
       }
@@ -180,6 +183,7 @@ export abstract class RootProtocol<
     try {
       updatedOpportunities = await this.updateRealTimeData(opportunities);
     } catch (e) {
+      this.logger.error(`Error updating realtime data: ${e}`);
       updatedOpportunitiesError = e;
     }
 
@@ -196,6 +200,7 @@ export abstract class RootProtocol<
             );
           }
         } catch (err) {
+          this.logger.error(`Error formatting opportunity: ${err}`);
           errors.push(err);
         }
         return [finalOpportunityList, errors];
@@ -232,6 +237,15 @@ export abstract class RootProtocol<
               item.token?.underlying.map((token) => tokens.add(token.address));
             }
           });
+        }
+
+        // TODO: Very bad solution, should be override
+        const token = pool['token'];
+        if (pool['token']) {
+          tokens.add(token.address);
+          if (token?.underlying) {
+            token?.underlying.map((token) => tokens.add(token.address));
+          }
         }
       });
     });

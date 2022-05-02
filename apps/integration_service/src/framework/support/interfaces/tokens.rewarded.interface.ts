@@ -6,6 +6,7 @@ export interface IRewardRates {
   month: number;
   year: number;
 }
+
 export interface IRewardTokenMinimal extends ITokenMinimal {
   // TODO: Discuss: should this be 'rate' and time frame block/second/year
   // or should this be standardized somehow i.e. 'perSecond'
@@ -22,6 +23,7 @@ export interface IRewardTokenMinimal extends ITokenMinimal {
 
   rewardPerSecond: string;
 }
+
 export interface IRewardTokenOpportunity extends ITokenOpportunity {
   harvests: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price

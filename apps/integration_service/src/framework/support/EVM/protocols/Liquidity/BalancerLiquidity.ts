@@ -22,6 +22,7 @@ interface IBalancerVaultMeta extends IProtocolMeta {
   feature: FeatureEnum.pools;
 }
 
+// TODO: This one is not correct, is that pool? what type is that?
 export class BalancerLiquidity extends Balancer implements IRootProtocol {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,

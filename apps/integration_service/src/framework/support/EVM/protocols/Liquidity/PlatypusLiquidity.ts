@@ -7,7 +7,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
-import { gql } from '@app/common/utils';
+import { gql, normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -46,10 +46,42 @@ export class PlatypusLiquidity extends RootProtocol<
   async getUsersData(
     addresses: Address[],
   ): Promise<[Map<Address, IPoolFeatureEntryUserEntry[]>, Error[]]> {
+    // TODO: How to return common errors?
     const [pools, errors] = await this.getPoolData();
-    this.logger.error('POOLS: ' + JSON.stringify(pools) + ' ERRORS ' + JSON.stringify(errors.map(e => e.toString())));
 
-    return Promise.resolve([undefined, []]);
+    // TODO: Any way to handle this better for few users?
+    // TODO: Should we have try catch here?
+    const promises = addresses.map<Promise<[Address, IPoolFeatureEntryUserEntry[]]>>(
+      async (address) => {
+        const balances = await this.multicall.callArray(
+          pools.map(({ token }) =>
+            new DynamicContract(token.address).createCall(ERC20.balanceOf, address),
+          ),
+          this.meta.chain,
+        );
+
+        // TODO: This models and mapping code seems to be too complex
+        const userPromises = pools.map<IPoolFeatureEntryUserEntry>((pool, index) => {
+          const balance = balances[index];
+          const value = normalizeDecimals(balance, pool.token.decimals) * pool.token.price;
+          return {
+            ...pool,
+            balance,
+            value,
+          };
+        });
+
+        const userResults = await Promise.all(userPromises);
+
+        // TODO: Would be good to move it to common code
+        return [address, userResults.filter(({ value }) => value > 0)];
+      },
+    );
+
+    const results = await Promise.all(promises);
+
+    // TODO: How to handle errors here?
+    return [new Map(results), errors];
   }
 
   async getCacheableOpportunityData(): Promise<IPoolFeatureEntryMinimal[]> {
@@ -88,8 +120,8 @@ export class PlatypusLiquidity extends RootProtocol<
       this.meta.chain,
     );
 
-    const xx = assets.map((asset, index) => ({
-      feature: FeatureEnum.pools as any,
+    return assets.map((asset, index) => ({
+      feature: FeatureEnum.pools,
       chain: this.meta.chain,
       token: {
         address: asset.id,
@@ -110,52 +142,30 @@ export class PlatypusLiquidity extends RootProtocol<
         liability: asset.liability,
       },
     }));
-
-    this.logger.warn('AAAAAAAA ' + JSON.stringify(xx));
-
-    return xx;
   }
 
   protected formatOpportunity(
     opportunity: IPoolFeatureEntryMinimal<CacheMeta>,
     tokens: Map<Address, any>,
   ): void | IPoolFeatureEntryOpportunity {
-    this.logger.warn('Opportunity: ' + JSON.stringify(opportunity));
-    this.logger.warn('Tokens: ' + JSON.stringify(tokens));
-    this.logger.warn('Opportunity 1: ' + JSON.stringify(opportunity.token));
-    this.logger.warn('Opportunity 2: ' + JSON.stringify(opportunity.token.underlying));
-    this.logger.warn('Opportunity 3: ' + JSON.stringify(opportunity.token.underlying[0]));
-    this.logger.warn('Opportunity 4: ' + JSON.stringify(opportunity.token.underlying[0].address));
-
     const underlyingAddress = opportunity.token.underlying[0].address;
-    this.logger.warn('Opportunity 5: ' + JSON.stringify(tokens.get(underlyingAddress)));
     const underlying = tokens.get(underlyingAddress);
     if (!underlying) {
       this.logger.warn(`Missing underlying token ${underlyingAddress}`, this.constructor.name);
       return null;
     }
 
-    this.logger.log('here1');
-
     const { token } = opportunity;
     const { liability, totalSupply } = opportunity.meta;
 
-    this.logger.log('here2');
-
     const decimalsMultiplier = new BN(10).pow(token.decimals);
-
-    this.logger.log('here3');
 
     const price = new BN(liability)
       .times(decimalsMultiplier)
       .div(new BN(totalSupply))
       .times(new BN(underlying.price));
 
-    this.logger.log('here5');
-
     const tvl = price.times(new BN(totalSupply)).div(decimalsMultiplier);
-
-    this.logger.log('here5');
 
     return {
       chain: this.meta.chain,

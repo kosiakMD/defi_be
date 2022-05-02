@@ -19,5 +19,7 @@ export interface IPoolFeatureEntryOpportunity extends IPartialBaseFeature {
 export interface IPoolFeatureEntryUserEntry extends IPartialBaseFeature {
   feature: FeatureEnum.pools;
   token: ERC20Token;
+  balance: string;
+  value: number;
   tvl?: number;
 }

@@ -35,9 +35,13 @@ export class Platypus extends RootPlatform {
       name: 'PTP Staking',
       feature: FeatureEnum.staking,
       // TODO: The same as vePTP, address is needed for abi loader, fix it
-      address: '0x0104eC62Afc47aF38CE214568927287E4bfDc773',
-      PTP: '0x22d4002028f537599bE9f666d1c4Fa138522f9c8',
-      vePTP: '0x0104eC62Afc47aF38CE214568927287E4bfDc773',
+      // address: '0x5857019c749147EEE22b1Fe63500F237F3c1B692',
+      // PTP: '0x22d4002028f537599bE9f666d1c4Fa138522f9c8',
+      // vePTP: '0x5857019c749147EEE22b1Fe63500F237F3c1B692',
+      // TODO: Should be lowercase due to account service response
+      address: '0x5857019c749147EEE22b1Fe63500F237F3c1B692'.toLowerCase(),
+      PTP: '0x22d4002028f537599bE9f666d1c4Fa138522f9c8'.toLowerCase(),
+      vePTP: '0x5857019c749147EEE22b1Fe63500F237F3c1B692'.toLowerCase(),
     });
 
     // await this.registerProtocol(MasterChef, {

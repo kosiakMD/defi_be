@@ -102,8 +102,14 @@ export class PlatypusPTPStaking
   ): void | IStakingFeatureOpportunity {
     const [supplied] = pool.supplied;
     const [rewarded] = pool.rewarded;
-    if (!tokens.has(supplied.token.address) || !tokens.has(rewarded.token.address)) {
-      this.logger.warn(`Missing staked or reward token info`, this.constructor.name);
+
+    if (!tokens.has(supplied.token.address)) {
+      this.logger.warn(`Missing staked token info`, this.constructor.name);
+      return;
+    }
+
+    if (!tokens.has(rewarded.token.address)) {
+      this.logger.warn(`Missing rewarded token info`, this.constructor.name);
       return;
     }
 

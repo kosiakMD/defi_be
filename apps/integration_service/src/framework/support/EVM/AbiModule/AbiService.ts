@@ -1,4 +1,5 @@
 import { Cache } from 'cache-manager';
+import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -106,17 +107,21 @@ export class AbiService {
     );
   }
   private async handleAsEIP1967Proxy(address: Address, chain: ChainId) {
-    const web = this.multicall.web3(chain);
-    const target = web.utils.numberToHex(
-      web.utils.hexToNumberString(
-        await web.eth.getStorageAt(
-          address,
-          // TODO: I don't know if this is a constant or not. This is the value for Lido on moonriver
-          // gotten from https://moonriver.moonscan.io/address/0xffc7780c34b450d917d557e728f033033cb4fa8c#code
-          // bytes32 internal constant _IMPLEMENTATION_SLOT of ERC1967Upgrade.sol
-          '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc',
+    const web: Web3 = this.multicall.web3(chain);
+    const target = web.utils.padLeft(
+      web.utils.numberToHex(
+        web.utils.hexToNumberString(
+          await web.eth.getStorageAt(
+            address,
+            // TODO: I don't know if this is a constant or not. This is the value for Lido on moonriver
+            // gotten from https://moonriver.moonscan.io/address/0xffc7780c34b450d917d557e728f033033cb4fa8c#code
+            // bytes32 internal constant _IMPLEMENTATION_SLOT of ERC1967Upgrade.sol
+            '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc',
+          ),
         ),
       ),
+      // Pad left 40 characters so address format is correct
+      40,
     );
     return this.fetchAbi(target, chain);
   }

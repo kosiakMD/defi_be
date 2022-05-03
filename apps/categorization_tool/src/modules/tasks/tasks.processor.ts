@@ -46,7 +46,7 @@ export class TasksProcessor {
         // await this.protocolService.parseProtocolsGithubPage(); //enable it when needed
         await this.protocolService.crawlHtml();
         await this.protocolService.fetchAbi();
-        await this.contractAnalysisService.analyseContracts();
+        await this.contractsAnalysisServiceV1.analyseContracts();
         return;
       }
       case CommandUnparameterized.fetch_protocols:

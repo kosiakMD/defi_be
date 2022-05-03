@@ -95,44 +95,6 @@ export class ContractsAnalysisService {
     this.logger.log('analyzeContractsWithTemplates finished');
   }
 
-  async analyseContracts(): Promise<void> {
-    this.logger.log('analyseContracts started');
-    const contracts = await this.getContractsWithValidAbi();
-    await parallelLimit(
-      contracts.map((contract) => async () => {
-        const parsedContractAbi = JSON.parse(contract.abi);
-        for (const counterpartContract of contracts) {
-          if (contract.id === counterpartContract.id) continue;
-          this.logger.debug(
-            `analyse contracts: [${contract.address}]-[${counterpartContract.address}]`,
-          );
-          try {
-            const { abiCodeSimilarity, abiJsonDiff, abiJsonSimilarity } =
-              await this.analysAbiAndAbiCode(
-                contract.abiCode,
-                counterpartContract,
-                parsedContractAbi,
-              );
-
-            await this.contractAnalysisRepository.upsertContractAnalysis(
-              contract,
-              counterpartContract,
-              abiCodeSimilarity,
-              abiJsonSimilarity,
-              abiJsonDiff,
-            );
-          } catch (e) {
-            this.logger.warn(
-              `analyseContracts error - [${contract.address}], [${counterpartContract.address}]: ${e.stack}`,
-            );
-          }
-        }
-      }),
-      ANALYSE_CONTRACTS_PARALLEL_LIMIT,
-    );
-    this.logger.log('analyseContracts finished');
-  }
-
   private async analysAbiAndAbiCode(
     abiCode: string,
     counterpartContract: Contract,

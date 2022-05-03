@@ -98,6 +98,7 @@ import WePiggyProtocol from './protocols/wepiggyProtocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import OsmosisProtocol from "./protocols/osmosis/osmosis.protocol";
 
 @Injectable()
 export class ProtocolService {
@@ -149,6 +150,7 @@ export class ProtocolService {
     private readonly minswapProtocol: MinswapProtocol,
     private readonly mirrorProtocol: MirrorProtocol,
     private readonly staderProtocol: StaderProtocol,
+    private readonly osmosisProtocol: OsmosisProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -193,6 +195,7 @@ export class ProtocolService {
       minswapProtocol,
       mirrorProtocol,
       staderProtocol,
+      osmosisProtocol,
     ];
   }
 

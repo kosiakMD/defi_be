@@ -7,6 +7,7 @@ import { addGithubFilesTable1648469052708 } from './migrations/1648469052708-add
 import { addContractAnalysisTable1648707974543 } from './migrations/1648707974543-add_contract_analysis_table';
 import { insertMasterchefTemplateContract1649335021487 } from './migrations/1649335021487-insert-masterchef-template-contract';
 import { insertCompoundTemplateContract1649760170586 } from './migrations/1649760170586-insert-compound-template-contract';
+import { contractAnalysisUniqueKey1651230074616 } from './migrations/1651230074616-contract_analysis_unique_key';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { insertCompoundTemplateContract1649760170586 } from './migrations/164976
           addContractAnalysisTable1648707974543,
           insertMasterchefTemplateContract1649335021487,
           insertCompoundTemplateContract1649760170586,
+          contractAnalysisUniqueKey1651230074616,
         ],
       }),
     }),

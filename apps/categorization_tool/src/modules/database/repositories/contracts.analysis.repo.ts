@@ -26,17 +26,18 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
     abiJsonSimilarity: number,
     abiJsonDiff: object,
   ) {
-    const cId = contract.id;
-    const ccId = counterpartContract.id;
-    const analysis = await this.findOneByContractIdAndCounterpartContractId(cId, ccId);
-    return analysis
-      ? this.update({ id: analysis.id }, { abiCodeSimilarity, abiJsonSimilarity, abiJsonDiff })
-      : this.save({
-          contract,
-          counterpartContractId: ccId,
-          abiCodeSimilarity,
-          abiJsonSimilarity,
-          abiJsonDiff,
-        });
+    return this.upsert(
+      {
+        counterpartContractId: counterpartContract.id,
+        contract,
+        abiCodeSimilarity,
+        abiJsonSimilarity,
+        abiJsonDiff,
+      },
+      {
+        conflictPaths: ['counterpartContractId', 'contract'],
+        skipUpdateIfNoValuesChanged: true,
+      },
+    );
   }
 }

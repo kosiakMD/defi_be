@@ -4,7 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { endsWith, normalizeDecimals, startsWith } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -13,7 +13,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { INamedFunctionPredicates, IProtocolMeta, TokenMap } from '../../../interfaces';
+import { INamedFunctionPredicates, TokenMap } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
@@ -31,19 +31,6 @@ import {
 import { AbiService } from '../../AbiModule/AbiService';
 import { MultiContractProtocol } from '../../MultiContractProtocol';
 
-interface IStakingRewardMeta extends IProtocolMeta {
-  feature: FeatureEnum.staking;
-  name: string;
-  api?: {
-    endpoint: string;
-    path: string;
-    handler: () => Address[];
-  };
-  scrape: {
-    url: string;
-  };
-}
-
 /**
  * This Template is for when many pools each have individual contracts for staking
  * however every contract has the same (or close enough) ABI. This is in contrast to
@@ -52,8 +39,7 @@ interface IStakingRewardMeta extends IProtocolMeta {
 export class StakingRewards extends MultiContractProtocol<
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
-  IStakingFeatureUserEntry,
-  IStakingRewardMeta
+  IStakingFeatureUserEntry
 > {
   protected functionPredicates: INamedFunctionPredicates = {
     balanceOf: () => (item) => ['balanceOf', 'userInfo'].includes(item.name),

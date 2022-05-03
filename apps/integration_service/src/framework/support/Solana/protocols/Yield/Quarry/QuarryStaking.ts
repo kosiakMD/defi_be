@@ -32,7 +32,8 @@ export class QuarryStaking
   extends SolanaCore<
     IQuarryStakingFeatureMinimal,
     IQuarryStakingFeatureOpportunity,
-    IStakingFeatureUserEntry
+    IStakingFeatureUserEntry,
+    IQuarryMeta
   >
   implements IRootProtocol
 {
@@ -49,7 +50,6 @@ export class QuarryStaking
   }
   solRPC: string = this.configService.get<string>('SOL_URL');
   LIMIT_DATA: number;
-  meta: IQuarryMeta;
 
   async initialize(): Promise<void> {
     this.LIMIT_DATA = 100;

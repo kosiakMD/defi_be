@@ -45,6 +45,10 @@ export interface IQuarryStakingFeatureOpportunity
 
 export interface IQuarryMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  api: {
+    endpoint: string;
+  };
 }
 
 export interface IQuarryOpportunityResponse {

@@ -15,14 +15,13 @@ import { IPoolFeatureEntryUserEntry } from '../../../interfaces/feature.pool.int
 import { Balancer } from '../../Balancer';
 import { IBalancerUserResponce, USERS_POOL_SHARES } from '../../Subgraphs/BalancerSubgraph';
 
-interface IBalancerVaultMeta extends IProtocolMeta {
-  context: {
-    key: string;
-  };
+export interface IBalancerPoolMeta extends IProtocolMeta {
+  context: { key: string };
+  name: string;
   feature: FeatureEnum.pools;
 }
 
-export class BalancerLiquidity extends Balancer implements IRootProtocol {
+export class BalancerLiquidity extends Balancer<IBalancerPoolMeta> implements IRootProtocol {
   protected multicall: MulticallAggregator;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
@@ -33,7 +32,6 @@ export class BalancerLiquidity extends Balancer implements IRootProtocol {
   ) {
     super();
   }
-  meta: IBalancerVaultMeta;
 
   async getUsersData(
     addresses: string[],

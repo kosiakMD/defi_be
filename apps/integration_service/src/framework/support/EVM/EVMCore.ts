@@ -10,14 +10,15 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
 import { RootProtocol } from '../RootProtocol';
-import { IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
+import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 import { ERC20Token } from '../interfaces/tokens.common.interface';
 
 export abstract class EVMCore<
   TMinimalType extends IWalletMinimal,
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
-> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType> {
+  TProtocolMeta extends IProtocolMeta = IProtocolMeta,
+> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
   protected abstract cache: Cache;

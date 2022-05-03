@@ -8,7 +8,7 @@ import { RootPlatform } from '../support/RootPlatform';
 
 // import { MasterChefWePiggy } from '../support/EVM/protocols/Yield/MasterChefWePiggy';
 
-export class Wepiggy extends RootPlatform {
+export class WePiggy extends RootPlatform {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly moduleRef: ModuleRef,
@@ -20,6 +20,11 @@ export class Wepiggy extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://www.wepiggy.com/',
+        logo: 'https://icons.llama.fi/wepiggy.png',
+        twitter: 'wepiggydotcom',
+      },
     });
 
     // await this.registerProtocol(MasterChefWePiggy, {

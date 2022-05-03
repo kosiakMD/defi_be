@@ -20,6 +20,11 @@ export class QuickSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://quickswap.exchange/',
+        logo: 'https://icons.llama.fi/quickswap.jpg',
+        twitter: 'QuickswapDEX',
+      },
     });
 
     const quickSwapPoolsEndpoint =

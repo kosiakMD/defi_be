@@ -19,6 +19,11 @@ export class AaveV3 extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://aave.com',
+        logo: 'https://icons.llama.fi/aave-v3.png',
+        twitter: 'AaveAave',
+      },
     });
 
     await this.registerProtocol(AaveV3Lending, {

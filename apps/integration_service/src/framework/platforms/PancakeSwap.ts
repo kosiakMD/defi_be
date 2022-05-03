@@ -21,6 +21,11 @@ export class PancakeSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://pancakeswap.finance/',
+        logo: 'https://icons.llama.fi/pancakeswap.jpg',
+        twitter: 'PancakeSwap',
+      },
     });
 
     // TODO: This single pool has not yet been implemented

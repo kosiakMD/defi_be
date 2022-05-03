@@ -32,10 +32,12 @@ interface IAaveV3LendContext {
   allReservedTokens: { address: string; symbol: string }[];
 }
 
-interface IAaveV3Meta extends IProtocolMeta {
+export interface IAaveV3Meta extends IProtocolMeta {
   feature: FeatureEnum.lending;
   address: Address;
   pool: Address;
+  context: any;
+  name: string;
 }
 
 export class AaveV3Lending

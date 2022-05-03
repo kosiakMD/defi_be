@@ -10,13 +10,14 @@ import { normalizeDecimals } from '@app/common/utils';
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
 import { RootProtocol } from '../RootProtocol';
-import { IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
+import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 
 export abstract class SolanaCore<
   TMinimalType extends IWalletMinimal,
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
-> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType> {
+  TProtocolMeta extends IProtocolMeta = IProtocolMeta,
+> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
   protected abstract cache: Cache;

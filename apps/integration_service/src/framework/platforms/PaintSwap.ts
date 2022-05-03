@@ -19,6 +19,11 @@ export class PaintSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://paintswap.finance',
+        logo: 'https://icons.llama.fi/paint-swap.png',
+        twitter: 'paint_swap',
+      },
     });
 
     // Single Staking

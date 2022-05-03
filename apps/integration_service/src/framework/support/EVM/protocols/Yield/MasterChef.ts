@@ -18,6 +18,7 @@ import {
   IRootProtocol,
   TokenMap,
 } from '../../../interfaces';
+import { IFeatureLinks } from '../../../interfaces/feature.common.interface';
 import {
   IStakingFeatureOpportunity,
   IStakingFeatureMinimal,
@@ -43,6 +44,9 @@ interface IMasterChefMeta extends IProtocolMeta {
     badPools?: number[]; // poolIds to skip
     [key: string]: any;
   };
+  links: {
+    getOpportunityLink: (opportunity: any) => string;
+  };
 }
 
 interface IPoolInfo {
@@ -53,6 +57,10 @@ interface IPoolInfo {
 
 const REWARD_REGEX = /^(\w+)(per)((block|sec(ond)?))$/;
 
+/**
+ * Classic masterchef. Deposit a token, or LP token into
+ * a pool, and receive a portion of the pool emissions
+ */
 export class MasterChef
   extends SingleContractProtocol<
     IStakingFeatureMinimal,
@@ -199,12 +207,12 @@ export class MasterChef
    * @returns formatted pool
    */
   protected formatOpportunity(
-    pool: IStakingFeatureMinimal,
+    opportunity: IStakingFeatureMinimal,
     tokens: TokenMap,
   ): void | IStakingFeatureOpportunity {
     if (
-      !pool.supplied.every((t) => tokens.has(t.token.address)) ||
-      !pool.rewarded.every((t) => tokens.has(t.token.address))
+      !opportunity.supplied.every((t) => tokens.has(t.token.address)) ||
+      !opportunity.rewarded.every((t) => tokens.has(t.token.address))
     ) {
       // throw error or just return; to silently skip pools
       // throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
@@ -212,20 +220,26 @@ export class MasterChef
       return;
     }
 
-    const tvl = pool.supplied.reduce((tvl, poolToken) => {
+    const tvl = opportunity.supplied.reduce((tvl, poolToken) => {
       const token = tokens.get(poolToken.token.address);
       return tvl + token.price * normalizeDecimals(poolToken.totalSupplied, token.decimals);
     }, 0);
 
+    const links: IFeatureLinks = {};
+    if (this.meta.links?.getOpportunityLink) {
+      links.opportunity = this.meta.links.getOpportunityLink(opportunity);
+    }
+
     return {
-      feature: pool.feature,
-      id: pool.id,
-      chain: pool.chain,
-      supplied: pool.supplied.map((poolToken) =>
+      feature: opportunity.feature,
+      id: opportunity.id,
+      chain: opportunity.chain,
+      links,
+      supplied: opportunity.supplied.map((poolToken) =>
         this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
       ),
 
-      rewarded: pool.rewarded.map((poolToken) =>
+      rewarded: opportunity.rewarded.map((poolToken) =>
         this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
       ),
     };

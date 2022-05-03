@@ -15,11 +15,13 @@ import { IStakingFeatureUserEntry } from '../../../interfaces/feature.staking.in
 import { Balancer } from '../../Balancer';
 import { IBalancerUsersYieldsResponce, USERS_YIELDS } from '../../Subgraphs/BalancerSubgraph';
 
-interface IBalancerVaultMeta extends IProtocolMeta {
+export interface IBalancerVaultMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  context: { key: string };
 }
 
-export class BalancerStaking extends Balancer implements IRootProtocol {
+export class BalancerStaking extends Balancer<IBalancerVaultMeta> implements IRootProtocol {
   protected multicall: MulticallAggregator;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
@@ -30,7 +32,7 @@ export class BalancerStaking extends Balancer implements IRootProtocol {
   ) {
     super();
   }
-  meta: IBalancerVaultMeta;
+
   private gaugesURI = 'https://api.thegraph.com/subgraphs/name/balancer-labs/balancer-gauges';
 
   initialize(): Promise<void> {

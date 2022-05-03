@@ -17,8 +17,13 @@ export class WaultFinance extends RootPlatform {
 
   async register() {
     this.registerMeta({
-      name: this.constructor.name,
+      name: 'Wault',
       project: this.constructor.name,
+      links: {
+        url: 'https://wault.finance/',
+        logo: 'https://icons.llama.fi/wault.jpg',
+        twitter: 'Wault_Finance',
+      },
     });
 
     await this.registerProtocol(MasterChef, {

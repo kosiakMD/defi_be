@@ -25,8 +25,15 @@ import {
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-interface ILidoMeta extends IProtocolMeta {
+export interface ILidoEVMMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  address: Address;
+  context: {
+    stakedToken: Address;
+    statsApi: string;
+    statsProcessor: (data: any) => number;
+  };
 }
 
 export class LidoStaking
@@ -34,7 +41,7 @@ export class LidoStaking
     IStakingFeatureMinimal,
     IStakingFeatureOpportunity,
     IStakingFeatureUserEntry,
-    ILidoMeta
+    ILidoEVMMeta
   >
   implements IRootProtocol
 {

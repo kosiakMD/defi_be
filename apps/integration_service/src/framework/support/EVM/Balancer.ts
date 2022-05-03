@@ -142,4 +142,8 @@ export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUs
       }),
     };
   }
+
+  protected async updateTokenData(tokens: any) {
+    return tokens;
+  }
 }

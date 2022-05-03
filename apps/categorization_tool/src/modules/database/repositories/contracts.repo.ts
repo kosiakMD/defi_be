@@ -16,9 +16,11 @@ export class ContractsRepository extends Repository<Contract> {
     });
   }
 
-  async findAllWithAbiAndAbiCode(): Promise<Contract[]> {
+  async findAllWithAbiAndAbiCode(skip = 0, take = 100): Promise<Contract[]> {
     return this.find({
       where: { id: MoreThan(0), abi: Not(IsNull()), abiCode: Not(IsNull()) },
+      skip,
+      take,
     });
   }
 

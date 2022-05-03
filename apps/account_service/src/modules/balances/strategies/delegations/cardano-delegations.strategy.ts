@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
-import { isCardanoAddress, normalizeDecimals } from '@app/common/utils';
+import { isCardanoLikeAddress, normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
@@ -82,7 +82,7 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   }
 
   public async getDelegatedAssets(address): Promise<any[]> {
-    if (!isCardanoAddress(address)) return [];
+    if (!isCardanoLikeAddress(address)) return [];
 
     try {
       const [{ prices }, [stakeData, poolData]] = await Promise.all([

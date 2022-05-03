@@ -31,7 +31,7 @@ const addressValidators: typeof ChainIdEnum = {
   terra: isTerraAddress as any,
   klay: isETHAddress as any,
   fuse: isETHAddress as any,
-  cardano: isCardanoAddress as any,
+  cardano: isCardanoLikeAddress as any,
   metis: isETHAddress as any,
   ronin: isRoninAddress as any,
   cosmos: isCosmosAddress as any,
@@ -98,53 +98,39 @@ export function isSolAddress(address: string): boolean {
   }
 }
 
-export function isCardanoAddress(address: string): boolean {
-  return !!address.match(/^addr1.*/);
-}
-export function isRoninAddress(address: string): boolean {
-  return !!address.match(/^ronin.*/);
-}
-export function isKavaAddress(address: string): boolean {
-  return !!address.match(/^kava1.*/);
-}
-
-export function isCosmosAddress(address: string): boolean {
-  return !!address.match(/^cosmos1.*/);
-}
-
-export function isOsmosisAddress(address: string): boolean {
-  return !!address.match(/^osmo1.*/);
-}
-
-export function isSecretAddress(address: string): boolean {
-  return !!address.match(/^secret1.*/);
-}
-
-export function isTerraAddress(address: string): boolean {
+export function isCardanoLikeAddress(address: string): boolean {
   try {
-    if (address.match(/^terra.*/)) {
-      return true;
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const { prefix: decodedPrefix } = bech32.decode(address);
-    return decodedPrefix === 'terra';
+    const { prefix } = bech32.decode(address);
+    return ['addr', 'kava', 'secret', 'osmo', 'terra', 'cosmos', 'ronin'].includes(prefix);
   } catch {
     return false;
   }
 }
+export function isRoninAddress(address: string): boolean {
+  return isCardanoLikeAddress(address);
+}
+export function isKavaAddress(address: string): boolean {
+  return isCardanoLikeAddress(address);
+}
+
+export function isCosmosAddress(address: string): boolean {
+  return isCardanoLikeAddress(address);
+}
+
+export function isOsmosisAddress(address: string): boolean {
+  return isCardanoLikeAddress(address);
+}
+
+export function isSecretAddress(address: string): boolean {
+  return isCardanoLikeAddress(address);
+}
+
+export function isTerraAddress(address: string): boolean {
+  return isCardanoLikeAddress(address);
+}
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [
-    isCardanoAddress,
-    isETHAddress,
-    isSolAddress,
-    isTerraAddress,
-    isCosmosAddress,
-    isKavaAddress,
-    isOsmosisAddress,
-    isSecretAddress,
-  ];
+  const addressChecks = [isCardanoLikeAddress, isETHAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

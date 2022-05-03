@@ -19,6 +19,11 @@ export class ApeSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://apeswap.finance',
+        logo: 'https://icons.llama.fi/apeswap.svg',
+        twitter: 'ape_swap',
+      },
     });
 
     await this.registerProtocol(MasterChef, {

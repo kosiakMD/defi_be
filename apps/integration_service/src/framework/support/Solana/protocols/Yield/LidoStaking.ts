@@ -9,7 +9,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
@@ -24,11 +24,24 @@ import {
 import { LidoSchema } from '../../Schemas/Lido';
 import { SolanaCore } from '../../SolanaCore';
 
-interface ILidoMeta extends IProtocolMeta {
+export interface ILidoSolanaMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  address: Address;
+  context: {
+    program: Address;
+    stakedToken: Address;
+    statsApi: string;
+    statsProcessor: (data: any) => number;
+  };
 }
 export class LidoStaking
-  extends SolanaCore<IStakingFeatureMinimal, IStakingFeatureOpportunity, IStakingFeatureUserEntry>
+  extends SolanaCore<
+    IStakingFeatureMinimal,
+    IStakingFeatureOpportunity,
+    IStakingFeatureUserEntry,
+    ILidoSolanaMeta
+  >
   implements IRootProtocol
 {
   constructor(
@@ -42,7 +55,6 @@ export class LidoStaking
   ) {
     super();
   }
-  meta: ILidoMeta;
 
   async initialize(): Promise<void> {
     //

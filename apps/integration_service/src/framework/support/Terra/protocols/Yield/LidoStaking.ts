@@ -21,12 +21,20 @@ import {
 } from '../../../interfaces/feature.staking.interface';
 import { TerraCore } from '../../TerraCore';
 
-interface ILidoMeta extends IProtocolMeta {
+export interface ILidoTerraMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  address: Address;
+  context: any;
 }
 
 export class LidoStaking
-  extends TerraCore<IStakingFeatureMinimal, IStakingFeatureOpportunity, IStakingFeatureUserEntry>
+  extends TerraCore<
+    IStakingFeatureMinimal,
+    IStakingFeatureOpportunity,
+    IStakingFeatureUserEntry,
+    ILidoTerraMeta
+  >
   implements IRootProtocol
 {
   constructor(
@@ -40,7 +48,6 @@ export class LidoStaking
     super();
   }
 
-  meta: ILidoMeta;
   async initialize(): Promise<void> {
     //
   }

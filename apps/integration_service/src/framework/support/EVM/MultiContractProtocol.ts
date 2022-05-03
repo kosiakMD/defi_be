@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 
-import { Address } from '@app/common';
+import { Address, FeatureEnum } from '@app/common';
 
 import {
   INamedFunctionPredicates,
@@ -18,18 +18,51 @@ import {
 import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';
 
+interface ICoreMultiContractProtocol extends IProtocolMeta {
+  feature: FeatureEnum.staking;
+  name: string;
+  context?: any;
+}
+
+interface IHasApiHandler {
+  scrape: never;
+  poolList: never;
+  api: {
+    endpoint: string;
+    handler: (data: unknown) => Address[];
+    path: string;
+  };
+}
+
+interface IHasWebScraper {
+  api: never;
+  poolList: never;
+  scrape: {
+    url: string;
+    handler: (...args: any[]) => Address[];
+  };
+}
+
+interface IHasPoolList {
+  api: never;
+  scrape: never;
+  poolList: Address[];
+}
+
+type IMultiContractProtocolMeta = ICoreMultiContractProtocol &
+  (IHasApiHandler | IHasWebScraper | IHasPoolList);
+
 export abstract class MultiContractProtocol<
   TMinimalType extends IWalletMinimal,
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
-  TMeta extends IProtocolMeta = IProtocolMeta,
-> extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType> {
+  TProtocolMeta extends IMultiContractProtocolMeta = IMultiContractProtocolMeta,
+> extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract abiService: AbiService;
   protected abstract httpService: HttpService;
   // User Defined
   protected abstract functionPredicates: INamedFunctionPredicates;
   functions: INamedFunctions = {};
-  meta: TMeta;
 
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
   protected abstract formatOpportunity(

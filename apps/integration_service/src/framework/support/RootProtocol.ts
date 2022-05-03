@@ -23,21 +23,61 @@ export abstract class RootProtocol<
   TMinimal extends IWalletMinimal,
   TOpportunity extends IWalletOpportunity,
   TUserEntry extends IWalletUserEntry,
-> implements IRootProtocol
+  TProtocolMeta extends IProtocolMeta = IProtocolMeta,
+> implements IRootProtocol<TProtocolMeta>
 {
-  meta: IProtocolMeta;
+  meta: TProtocolMeta;
   protected abstract logger: Logger;
   protected abstract cache: Cache;
   // TODO: use new asset service :)
   protected abstract accountService: AccountService;
   protected abstract priceService: PriceService;
 
-  abstract initialize(): Promise<void>;
+  /**
+   * Run any async protocol initializations. This may be fetching and parsing the ABI's
+   * but is not limited to that
+   */
+  async initialize(): Promise<void> {
+    // Run during protocol initialization. Override if needed
+  }
 
+  /**
+   * Returns the list of all available minimal pools
+   * This is long term cachable data, so for example,
+   * the token address, but not the token price
+   */
   abstract getCacheableOpportunityData(): Promise<TMinimal[]>; // get all raw data that can be cached (pools with token address, but not token details/price)
 
+  /**
+   * Converts a minimal entry into a full opportunity entry
+   *
+   * @param opportunity A specific opportunity
+   * @param tokens map of all tokens (and token details) keyed by token address
+   */
+  protected abstract formatOpportunity(
+    opportunity: TMinimal,
+    tokens: Map<Address, any>,
+    idx?: number,
+    allOpportunities?: TMinimal[],
+  ): TOpportunity | void;
+
+  /**
+   * This will fetch all of the requested users positions.
+   * Likely the developer will want to call getPools() to fetch
+   * all available opportunities and cycle through them checking the user
+   * balances & filtering down to only include the user positions
+   *
+   * @param addresses User Addresses
+   */
   abstract getUsersData(addresses: Address[]): Promise<[Map<Address, TUserEntry[]>, Error[]]>; // fetch user balances for each pool, and filter to only owned pools
 
+  /**
+   * This will fetch all cacheable data for this
+   * protocol & cache it along with a list of all
+   * pools belonging to this protocol
+   *
+   * @returns MinimalOpportunities[]
+   */
   async cachePoolData(): Promise<TMinimal[]> {
     let pools: TMinimal[] = [];
     try {
@@ -64,6 +104,14 @@ export abstract class RootProtocol<
     return pools;
   }
 
+  /**
+   * This will fetch all available opportunities for this protocol.
+   * It will attempt to return the list from the cache, however if that
+   * is not available, it will fetch the data live & cache it for the
+   * next request
+   *
+   * @returns [Opportunities[], errors[]]
+   */
   async getPoolData(): Promise<[TOpportunity[], Error[]]> {
     // console.log('deleting ' + `pool_list_${this.getProtocolId()}`);
     // await this.cache.del(`pool_list_${this.getProtocolId()}`);
@@ -103,6 +151,9 @@ export abstract class RootProtocol<
     return this.hydrateOpportunityData(pools);
   }
 
+  /**
+   * Protocol specific metadata
+   */
   getMeta(): IFeatureMeta {
     return {
       chain: getChainById(this.meta.chain),
@@ -110,11 +161,14 @@ export abstract class RootProtocol<
     };
   }
 
-  public registerMeta(meta: IProtocolMeta) {
-    this.meta = Object.assign(this.meta ?? {}, meta);
+  public registerMeta(meta: TProtocolMeta) {
+    this.meta = meta;
   }
 
-  // generates a unique ID per protocol (useful for caching)
+  /**
+   * generates a unique ID per protocol to be
+   * used with cacheing the protocols pool list
+   */
   getProtocolId() {
     const hash = crypto
       .createHash('sha256') //
@@ -145,14 +199,12 @@ export abstract class RootProtocol<
     return data;
   }
 
-  protected abstract formatOpportunity(
-    opportunity: TMinimal,
-    tokens: Map<Address, any>,
-  ): TOpportunity | void;
-
   /**
    * Update real time info thats not available from the tokens themselves.
-   * (such as APR returned from an external API)
+   * (such as APR returned from an external API). This is likely to be realtime
+   * data related to a specific opportunity such as APR, or live exchange rates
+   * or other information thats required to process the full opportunity data
+   * and user account information
    *
    * Override if required.
    *
@@ -163,12 +215,21 @@ export abstract class RootProtocol<
     return opportunities;
   }
 
+  /**
+   * This loops through the full minimal opportunity list
+   * and fills in all real time data. prices, APR, etc. All
+   * Information that can not be cached for extended periods
+   * of time
+   *
+   * @param opportunities
+   * @returns
+   */
   protected async hydrateOpportunityData(
     opportunities: TMinimal[],
   ): Promise<[TOpportunity[], Error[]]> {
     let tokens;
     try {
-      tokens = await this.getTokensForOpportunities(opportunities); // returns all required tokens for these pools
+      tokens = await this.getTokensForOpportunities(opportunities);
     } catch (e) {
       if (e) {
         return [[], [e]];
@@ -180,13 +241,15 @@ export abstract class RootProtocol<
     try {
       updatedOpportunities = await this.updateRealTimeData(opportunities);
     } catch (e) {
-      updatedOpportunitiesError = e;
+      if (e) {
+        updatedOpportunitiesError = e;
+      }
     }
 
     return (updatedOpportunities ? updatedOpportunities : opportunities).reduce(
-      ([finalOpportunityList, errors], opportunity) => {
+      ([finalOpportunityList, errors], opportunity, idx, allOpportunities) => {
         try {
-          const pool = this.formatOpportunity(opportunity, tokens);
+          const pool = this.formatOpportunity(opportunity, tokens, idx, allOpportunities);
           if (pool) {
             finalOpportunityList.push(pool);
           } else {
@@ -204,7 +267,13 @@ export abstract class RootProtocol<
     ); // hydrates each pool with full token details & live prices
   }
 
-  // protected async getTokensForPools(pools: TMinimal[]): Promise<Map<Asset, FungibleToken>> {
+  /**
+   * Loops through all opportunities & fetches all required token details
+   * This includes Price data, reserves, underlying tokens, etc
+   *
+   * @param opportunities minimal opportunity data
+   * @returns all tokens
+   */
   protected async getTokensForOpportunities(opportunities: TMinimal[]): Promise<Map<Address, any>> {
     // get all the token addresses from the pools
     const addresses = this.getUniqueTokensFromRawPools(opportunities);

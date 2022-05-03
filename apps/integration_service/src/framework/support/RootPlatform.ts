@@ -34,8 +34,13 @@ export abstract class RootPlatform implements IRootPlatform {
   }
 
   // Component Registration
+  // To get a decluttered list from defilama
+  // $ curl https://api.llama.fi/protocols | jq '.[] | to_entries | map(select(.key | in({ name: true, twitter: true, url: true, logo: true }) )) | from_entries'
   protected protocols: Set<IRootProtocol> = new Set();
-  protected async registerProtocol(protocol: ClassConstructor<IRootProtocol>, meta: IProtocolMeta) {
+  protected async registerProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta>(
+    protocol: ClassConstructor<IRootProtocol>,
+    meta: TProtocolMeta,
+  ) {
     const instance = await this.moduleRef.create(protocol);
     instance.registerMeta(meta);
     await instance.initialize();
@@ -69,12 +74,13 @@ export abstract class RootPlatform implements IRootPlatform {
     });
 
     return {
-      name: this.meta.name,
-      project: this.meta.name, // why do we need both, what are clear definitions of both
+      name: this.meta.name, // human readable name
+      project: this.meta.project, // slug/key
       features: Array.from(features.entries()).map(([chain, list]) => ({
         chain: getChainById(chain),
         list: Array.from(list),
       })),
+      links: this.meta.links || {},
     };
   }
 

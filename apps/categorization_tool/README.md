@@ -89,7 +89,7 @@ Categorization Tool Service uses Bull Queue based on Redis to process tasks. The
 
 All the tasks are processed sequentially (it might be changed in the future). It is possible to trigger each individual task via API:
 ```bash
-curl -X POST http://localhost:3000/command --data '{"command":"$TASK_NAME"}' -H "content-type:application/json"
+curl http://localhost:3000/command?command=$TASK_NAME -H "content-type:application/json"
 ```
 
 To trigger executing all tasks in the described order use **start_fetching** as a name of the task (according to the diagram here: https://defiyield.atlassian.net/wiki/spaces/PD/pages/572260357/Categorization+Tool)

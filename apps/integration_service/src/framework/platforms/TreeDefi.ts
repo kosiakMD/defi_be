@@ -17,8 +17,14 @@ export class TreeDefi extends RootPlatform {
 
   async register() {
     this.registerMeta({
-      name: this.constructor.name,
+      name: 'TreeDefi',
       project: this.constructor.name,
+
+      links: {
+        url: 'https://treedefi.com',
+        logo: 'https://icons.llama.fi/treedefi.png',
+        twitter: 'treedefi',
+      },
     });
 
     await this.registerProtocol(MasterChefTreeDefi, {

@@ -1,8 +1,13 @@
 import { ChainId, FeatureEnum } from '@app/common';
 
-export interface IPartialBaseFeature<TMeta = any> {
+export interface IFeatureLinks {
+  opportunity?: string;
+}
+
+export interface IPartialBaseFeature<TOpportunityMeta = any> {
   feature: FeatureEnum;
   id?: string;
   chain: ChainId;
-  meta?: TMeta;
+  meta?: TOpportunityMeta;
+  links?: IFeatureLinks;
 }

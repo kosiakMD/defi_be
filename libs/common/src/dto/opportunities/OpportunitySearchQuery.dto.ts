@@ -82,12 +82,26 @@ export class OpportunitySearchQueryDto {
   @Transform(({ value }) => Math.max(0, Number(value)))
   minTVL = 1000;
 
+  @ApiProperty({ type: Number, default: null, required: false })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  @Transform(({ value }) => (value ? Math.max(0, Number(value)) : null))
+  maxTVL: number = null;
+
   @ApiProperty({ type: Number, default: 0, required: false })
   @IsNumber()
   @IsNotEmpty()
   @IsOptional()
   @Transform(({ value }) => Math.max(0, Number(value)))
   minAPR = 0;
+
+  @ApiProperty({ type: Number, default: null, required: false })
+  @IsNumber()
+  @IsNotEmpty()
+  @IsOptional()
+  @Transform(({ value }) => (value ? Math.max(0, Number(value)) : null))
+  maxAPR: number = null;
 
   @ApiProperty({ type: [Number], example: [1, 4, 12, 19], default: [], required: false })
   @IsArray()

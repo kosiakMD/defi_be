@@ -23,16 +23,19 @@ type ERC20TokenMinimal = {
 
 type TMinimal = IWalletMinimal & { token: ERC20TokenMinimal };
 type TOpportunity = IWalletOpportunity & { token: ERC20TokenMinimal };
-type IBalancerVaultMeta = IProtocolMeta & { feature: FeatureEnum.pools | FeatureEnum.staking };
+export type IBalancerVaultMeta = IProtocolMeta & {
+  feature: FeatureEnum.pools | FeatureEnum.staking;
+  context: { key: string };
+};
 
-export abstract class Balancer extends EVMCore<TMinimal, TOpportunity, IWalletUserEntry> {
+export abstract class Balancer<TProtocolMeta extends IBalancerVaultMeta> extends EVMCore<
+  TMinimal,
+  TOpportunity,
+  IWalletUserEntry,
+  TProtocolMeta
+> {
   protected abstract httpService: HttpService;
   protected baseURI = 'https://api.thegraph.com/subgraphs/name/balancer-labs/';
-  meta: IBalancerVaultMeta;
-
-  initialize(): Promise<void> {
-    return void 0;
-  }
 
   async getCacheableOpportunityData(): Promise<TMinimal[]> {
     const $data = this.httpService

@@ -12,12 +12,9 @@ import { ContractsAnalysisRepository } from '../../database/repositories/contrac
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
 import { ANALYSE_CONTRACTS_PARALLEL_LIMIT } from '../protocols.constant';
-import { AbiCompoundTemplate } from './abi/abi.compound.template';
-import { AbiMasterchefTemplate } from './abi/abi.masterchef.template';
 
 @Injectable()
 export class ContractsAnalysisServiceV1 {
-  readonly abiTemplates: Map<number, any>;
   readonly contractsFetchLimit = 50;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -27,12 +24,7 @@ export class ContractsAnalysisServiceV1 {
     private readonly contractAnalysisRepository: ContractsAnalysisRepository,
     @InjectRepository(ProtocolsRepository)
     private readonly protocolsRepository: ProtocolsRepository,
-  ) {
-    this.abiTemplates = new Map<number, any>([
-      [AbiMasterchefTemplate.id, AbiMasterchefTemplate],
-      [AbiCompoundTemplate.id, AbiCompoundTemplate],
-    ]);
-  }
+  ) {}
 
   async analyseContracts(): Promise<void> {
     this.logger.log('analyseContracts started');

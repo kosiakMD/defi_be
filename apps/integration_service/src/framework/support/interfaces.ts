@@ -26,14 +26,30 @@ export interface IFeatureMeta {
 
 // minimum viable metadata
 export interface IPlatformMeta {
+  // Human Readable Name
   name: string;
+
+  // Platform Slug/Key
+  // TODO: rename of Platform (or rename all Platforms as Projects)
   project: string;
+
+  // All enabled features for this platform
+  // (detected automatically based on registered protocols)
   features: IFeatureMeta[];
+
+  // Social Media Links
+  links?: {
+    logo?: string; // main platform logo
+    discord?: string; // project discord
+    twitter?: string; // project twitter
+    telegram?: string; // community telegram channel
+    url?: string; // website url
+    github?: string; // github profile
+  };
 }
 export interface IProtocolMeta {
   chain: ChainIdEnum;
   feature: FeatureEnum;
-  [key: string]: any; // TODO: is there a better way here? maybe a generic passed through masterchef?
 }
 
 export type IWalletMinimal =
@@ -72,7 +88,7 @@ export interface IRootPlatform {
   getUsersData(chains: ChainId[], addresses: Address[]): Promise<[IPlatformUserEntry[], Error[]]>;
 }
 
-export interface IRootProtocol {
+export interface IRootProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta> {
   // Preparation steps (downloading the ABI)
   initialize(): Promise<void>;
 
@@ -90,7 +106,8 @@ export interface IRootProtocol {
   cachePoolData(): Promise<IWalletMinimal[]>;
 
   // sets all required metadata for the instance
-  registerMeta(meta: IProtocolMeta): void;
+  meta: TProtocolMeta;
+  registerMeta(meta: TProtocolMeta): void;
   // returns formatted metadata from the instance
   getMeta(): IFeatureMeta;
   // gets a unique ID per protocol

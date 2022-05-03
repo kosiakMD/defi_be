@@ -33,9 +33,11 @@ interface ICakeVaultContext {
   pricePerShare: string;
 }
 
-interface ICakeVaultMeta extends IProtocolMeta {
+export interface ICakeVaultMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
   context: ICakeVaultContext;
+  address: Address;
 }
 
 export class CakeVault

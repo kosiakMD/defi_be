@@ -4,8 +4,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 
-import { BalancerLiquidity } from '../support/EVM/protocols/Liquidity/BalancerLiquidity';
-import { BalancerStaking } from '../support/EVM/protocols/Yield/BalancerStaking';
+import {
+  BalancerLiquidity,
+  IBalancerPoolMeta,
+} from '../support/EVM/protocols/Liquidity/BalancerLiquidity';
+import {
+  BalancerStaking,
+  IBalancerVaultMeta,
+} from '../support/EVM/protocols/Yield/BalancerStaking';
 import { RootPlatform } from '../support/RootPlatform';
 
 export class BalancerV2 extends RootPlatform {
@@ -20,9 +26,14 @@ export class BalancerV2 extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://balancer.finance/',
+        logo: 'https://icons.llama.fi/balancer.png',
+        twitter: 'BalancerLabs',
+      },
     });
 
-    await this.registerProtocol(BalancerLiquidity, {
+    await this.registerProtocol<IBalancerPoolMeta>(BalancerLiquidity, {
       chain: ChainIdEnum.eth,
       name: 'Liquidity - Balancer',
       feature: FeatureEnum.pools,
@@ -30,7 +41,7 @@ export class BalancerV2 extends RootPlatform {
         key: 'balancer-v2',
       },
     });
-    await this.registerProtocol(BalancerStaking, {
+    await this.registerProtocol<IBalancerVaultMeta>(BalancerStaking, {
       chain: ChainIdEnum.eth,
       name: 'Staking - Balancer',
       feature: FeatureEnum.staking,
@@ -39,7 +50,7 @@ export class BalancerV2 extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(BalancerLiquidity, {
+    await this.registerProtocol<IBalancerPoolMeta>(BalancerLiquidity, {
       chain: ChainIdEnum.plg,
       name: 'Liquidity - Balancer',
       feature: FeatureEnum.pools,
@@ -48,7 +59,7 @@ export class BalancerV2 extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(BalancerLiquidity, {
+    await this.registerProtocol<IBalancerPoolMeta>(BalancerLiquidity, {
       chain: ChainIdEnum.arbi,
       name: 'Liquidity - Balancer',
       feature: FeatureEnum.pools,

@@ -19,6 +19,11 @@ export class CafeSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://cafeswap.finance',
+        logo: 'https://icons.llama.fi/cafeswap.png',
+        twitter: 'CafeSwapFinance',
+      },
     });
 
     await this.registerProtocol(MasterChef, {

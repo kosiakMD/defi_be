@@ -18,12 +18,20 @@ import { AbiFetcherService } from './abi/fetcher/abi.fetcher.service';
 
 type ListSimilarData = {
   address: string;
+  contractId: number;
   chain: string;
   protocolId?: number;
   protocol?: { name: string; url: string };
   abiCodeSimilarity: number;
   abiJsonDiff: any;
   abiJsonSimilarity: number;
+};
+
+type ListSimilarResults = {
+  address: string;
+  abiCodeSimilarity: number;
+  abiJsonSimilarity: number;
+  protocol: { name: string; url: string };
 };
 
 @Injectable()
@@ -200,17 +208,30 @@ export class ContractsAnalysisService {
     );
   }
 
-  async findSimilarAbiAndAbiCode(data: {
-    contract: string;
-    minSimilarityRate: number;
-  }): Promise<{ error: string } | ListSimilarData[]> {
-    const { abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(data.contract);
+  async findSimilarAbiAndAbiCode(data: { contract: string }) {
+    //checking exists contract in DB
+    const contractInDb = await this.contractsRepository.findOne({ address: data.contract });
+    if (contractInDb) {
+      this.logger.log('Contract address already exists.');
+      return;
+    }
+
+    const { abi, abiCode, chain } = await this.abiFetcherService.fetchAbiAndAbiCode(data.contract);
     try {
+      const currentContract = await this.contractsRepository.save({
+        address: data.contract,
+        abi,
+        abiCode,
+        chain,
+        Protocol: null,
+      });
+
       const parsedContractAbi = JSON.parse(abi);
 
-      const allContracts = await this.contractsRepository.findAllWithAbiAndAbiCode();
       const ListSimilarData: ListSimilarData[] = await parallelLimit(
-        allContracts
+        (
+          await this.contractsRepository.findAllWithAbiAndAbiCode()
+        )
           .filter(({ abi }) => safeJsonParse(abi))
           .map((counterpartContract) => async () => {
             const { abiCodeSimilarity, abiJsonDiff, abiJsonSimilarity } =
@@ -218,8 +239,9 @@ export class ContractsAnalysisService {
 
             return {
               address: counterpartContract.address,
+              contractId: counterpartContract.id,
               chain: counterpartContract.chain,
-              protocolId: counterpartContract.protocol.id,
+              protocolId: counterpartContract?.protocol?.id,
               abiCodeSimilarity,
               abiJsonDiff,
               abiJsonSimilarity,
@@ -228,38 +250,54 @@ export class ContractsAnalysisService {
         ANALYSE_CONTRACTS_PARALLEL_LIMIT,
       );
 
-      const filtredList = ListSimilarData.filter(
-        ({ abiCodeSimilarity, abiJsonSimilarity }) =>
-          abiCodeSimilarity >= data.minSimilarityRate ||
-          abiJsonSimilarity >= data.minSimilarityRate,
+      await this.contractAnalysisRepository.save(
+        ListSimilarData.map((s) => ({
+          contract: currentContract,
+          counterpartContractId: s.contractId,
+          abiCodeSimilarity: s.abiCodeSimilarity,
+          abiJsonSimilarity: s.abiJsonSimilarity,
+          abiJsonDiff: s.abiJsonDiff,
+        })),
       );
-
-      const protocolInfo = await this.protocolsRepository.findByIds(
-        Array.from(new Set(filtredList.map(({ protocolId }) => protocolId))).map((id) => id),
-      );
-      const sortById = new Map(protocolInfo.map((protocol) => [protocol.id, protocol]));
-
-      return (
-        filtredList
-          .map((f) => {
-            const find = sortById?.get(f.protocolId);
-            f.protocol = {
-              name: find?.name,
-              url: find?.url,
-            };
-            delete f.protocolId;
-            return f;
-          })
-          //sort by field "abiCodeSimilarity"
-          .sort((a, b) => {
-            if (a.abiCodeSimilarity > b.abiCodeSimilarity) return -1;
-            else if (a.abiCodeSimilarity < b.abiCodeSimilarity) return 1;
-            return 0;
-          })
-      );
+      this.logger.log(`Completed similarity`);
     } catch (e) {
       this.logger.error(`Error for similarity contracts ${e}`);
-      return { error: `Error for similarity contracts: ${abi}` };
     }
+  }
+
+  async getSimilarForContractAddress({
+    contract,
+    minSimilarityRate,
+  }: {
+    contract: string;
+    minSimilarityRate: number;
+  }): Promise<ListSimilarResults[]> {
+    const contractInDb = await this.contractsRepository.findOne({ address: contract });
+    if (!contractInDb) {
+      return [];
+    }
+    const similarData = await this.contractAnalysisRepository.findWithJoinContract(contractInDb.id);
+
+    const filtredList = similarData.filter(
+      ({ abicodesimilarity, abijsonsimilarity }) =>
+        abicodesimilarity >= minSimilarityRate || abijsonsimilarity >= minSimilarityRate,
+    );
+
+    return filtredList
+      .map((f) => ({
+        address: f.address,
+        abiCodeSimilarity: f.abicodesimilarity,
+        abiJsonSimilarity: f.abijsonsimilarity,
+        protocol: {
+          name: f.nameprotocol,
+          url: f.urlprotocol,
+          TVL: f.tvl,
+        },
+      }))
+      .sort((a, b) => {
+        if (a.abiCodeSimilarity > b.abiCodeSimilarity) return -1;
+        else if (a.abiCodeSimilarity < b.abiCodeSimilarity) return 1;
+        return 0;
+      });
   }
 }

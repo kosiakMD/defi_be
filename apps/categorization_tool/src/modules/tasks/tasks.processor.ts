@@ -5,10 +5,14 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { REDIS_TASK_QUEUE, COMMON_TASK } from '../../common/constants';
-import { Command } from '../../common/enum/service.enum';
+import { ListProtocolsDTO } from '../../common/dto/service.dto';
+import {
+  CommandUnparameterized,
+  CommandParameterized,
+  CommandType,
+} from '../../common/enum/service.enum';
 
 import { AggregatorsService } from '../aggregators/aggregator.service';
-import { IListProtocol } from '../protocols/interfaces/protocol.interface';
 import { ProtocolService } from '../protocols/protocols.service';
 import { ContractsAnalysisService } from '../protocols/services/contracts.analysis.service';
 import { ContractsAnalysisServiceV1 } from '../protocols/services/contracts.analysis.service.v1';
@@ -25,10 +29,16 @@ export class TasksProcessor {
   ) {}
 
   @Process(COMMON_TASK) // the name of the executed task
-  public async process(job: Job<{ command: string; listProtocol?: IListProtocol }>) {
+  public async process(
+    job: Job<{
+      command: CommandType;
+      listProtocol?: ListProtocolsDTO;
+      similarData: { contract: string };
+    }>,
+  ) {
     this.logger.debug(`job: '${job.data.command}'`);
     switch (job.data.command) {
-      case Command.start_fetching: {
+      case CommandUnparameterized.start_fetching: {
         await this.aggregatorsService.run();
         await this.protocolService.parseProtocolsMainPage();
         await this.protocolService.parseProtocolsAppPage();
@@ -39,26 +49,28 @@ export class TasksProcessor {
         await this.contractAnalysisService.analyseContracts();
         return;
       }
-      case Command.fetch_protocols:
+      case CommandUnparameterized.fetch_protocols:
         return this.aggregatorsService.run();
-      case Command.parse_protocols_app_page:
+      case CommandUnparameterized.parse_protocols_app_page:
         return this.protocolService.parseProtocolsAppPage();
-      case Command.parse_protocols_main_page:
+      case CommandUnparameterized.parse_protocols_main_page:
         return this.protocolService.parseProtocolsMainPage();
-      case Command.parse_protocols_docs_page:
+      case CommandUnparameterized.parse_protocols_docs_page:
         return this.protocolService.parseProtocolsDocsPage();
-      case Command.crawl_html:
+      case CommandUnparameterized.crawl_html:
         return this.protocolService.crawlHtml();
-      case Command.fetch_abi:
+      case CommandUnparameterized.fetch_abi:
         return this.protocolService.fetchAbi();
-      case Command.parse_protocols_github_page:
+      case CommandUnparameterized.parse_protocols_github_page:
         return this.protocolService.parseProtocolsGithubPage();
-      case Command.analyse_contracts:
+      case CommandUnparameterized.analyse_contracts:
         return this.contractsAnalysisServiceV1.analyseContracts();
-      case Command.analyse_contracts_against_templates:
+      case CommandUnparameterized.analyse_contracts_against_templates:
         return this.contractAnalysisService.analyzeContractsAgainstTemplates();
-      case Command.run_parsing_custom_protocol:
+      case CommandParameterized.run_parsing_custom_protocol:
         return this.protocolService.parseCustomProtocol(job.data.listProtocol);
+      case CommandParameterized.similar_contract:
+        return this.contractAnalysisService.findSimilarAbiAndAbiCode(job.data.similarData);
       default:
         this.logger.warn(`unsupported command: '${job.data.command}', skipping...`);
     }

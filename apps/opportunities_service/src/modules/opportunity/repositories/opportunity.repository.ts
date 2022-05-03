@@ -41,15 +41,29 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
   async search(
     queryParams: OpportunitySearchQueryDto,
   ): Promise<PaginationResult<OpportunityEntity>> {
-    const { search, limit, page, sortDirection, sortField, categories, minTVL, minAPR, chains } =
-      queryParams;
+    const {
+      search,
+      limit,
+      page,
+      sortDirection,
+      sortField,
+      categories,
+      minTVL,
+      maxTVL,
+      minAPR,
+      maxAPR,
+      chains,
+    } = queryParams;
 
     const baseQuery = this.createQueryBuilder('opportunities')
       .leftJoinAndSelect('opportunities.farm', 'farm')
       .where(this.internalFuzzyFind(search))
-      .andWhere('categories @> :categories', { categories })
-      .andWhere(`apr >= :apr`, { apr: minAPR })
-      .andWhere(`total_value_locked >= :tvl`, { tvl: minTVL });
+      .andWhere(this.internalWhereInCategories(categories));
+
+    if (minAPR) baseQuery.andWhere(`apr >= :minAPR`, { minAPR });
+    if (maxAPR) baseQuery.andWhere(`apr <= :maxAPR`, { maxAPR });
+    if (minTVL) baseQuery.andWhere(`total_value_locked >= :minTVL`, { minTVL });
+    if (maxTVL) baseQuery.andWhere(`total_value_locked <= :maxTVL`, { maxTVL });
 
     if (chains && chains.length) {
       baseQuery.andWhere(`chain_id in (:...chains)`, { chains });
@@ -72,6 +86,20 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       limit,
       pages: Math.ceil(total / limit),
       page: page,
+    });
+  }
+
+  private internalWhereInCategories(categories: string[]) {
+    return new Brackets((query: SelectQueryBuilder<OpportunityEntity>) => {
+      if (categories.length) {
+        const first = categories.shift();
+        query.where('categories @> :category0', { category0: [first] });
+        categories.forEach((category, idx) => {
+          query.orWhere(`categories @> :category${idx + 1}`, {
+            [`category${idx + 1}`]: [category],
+          });
+        });
+      }
     });
   }
 

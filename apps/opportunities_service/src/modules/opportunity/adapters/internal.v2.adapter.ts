@@ -136,7 +136,9 @@ export class InternalV2Adapter implements IOpportunityAdapter {
                     }),
                   });
 
-                  opportunities.push(opportunity);
+                  if (apr) {
+                    opportunities.push(opportunity);
+                  }
                 }),
               );
             }),
@@ -227,14 +229,14 @@ export class InternalV2Adapter implements IOpportunityAdapter {
   }
   private vaultIsNoIL(vault: any) {
     const tokens = vault.stakingToken?.tokens ?? vault.tokens;
-    if (Array.isArray(tokens)) {
+    if (Array.isArray(tokens) && tokens.length) {
       return tokens.map(this.tokenIsStablecoin).some(this.isTruthy);
     }
     return false;
   }
   private vaultIsStablePool(vault: any) {
     const tokens = vault.stakingToken?.tokens ?? vault.tokens;
-    if (Array.isArray(tokens)) {
+    if (Array.isArray(tokens) && tokens.length) {
       return tokens.map(this.tokenIsStablecoin).every(this.isTruthy);
     }
     return false;

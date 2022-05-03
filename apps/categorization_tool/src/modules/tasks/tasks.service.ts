@@ -6,7 +6,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { REDIS_TASK_QUEUE, COMMON_TASK } from '../../common/constants';
-import { Command } from '../../common/enum/service.enum';
+import { CommandUnparameterized } from '../../common/enum/service.enum';
 
 @Injectable()
 export class TasksService {
@@ -17,7 +17,7 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_8PM)
   async cronTask() {
-    const task = { command: Command.start_fetching };
+    const task = { command: CommandUnparameterized.start_fetching };
     this.logger.log(`cronTask: ${task.command}`);
     await this.queueTask(task);
   }

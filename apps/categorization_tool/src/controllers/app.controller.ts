@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import { ListProtocolsDTO } from '../common/dto/service.dto';
 import { SimilarDTO } from '../common/dto/similar.dto';
@@ -8,6 +8,7 @@ import { CommandParameterized, CommandUnparameterized } from '../common/enum/ser
 import { ContractsAnalysisService } from '../modules/protocols/services/contracts.analysis.service';
 import { TasksService } from '../modules/tasks/tasks.service';
 
+@ApiTags('Categorization Tool Service')
 @Controller('')
 export class AppController {
   constructor(
@@ -45,12 +46,5 @@ export class AppController {
   @ApiBody({ type: SimilarDTO })
   public async similarContracts(@Body() similarData: { contract: string }) {
     return this.service.queueTask({ command: 'similar_contract', similarData });
-  }
-
-  @Get('/v1/status')
-  public async status() {
-    return {
-      status: 'OK',
-    };
   }
 }

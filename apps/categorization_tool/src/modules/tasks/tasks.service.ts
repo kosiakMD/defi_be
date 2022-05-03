@@ -22,12 +22,33 @@ export class TasksService {
     await this.queueTask(task);
   }
 
-  public async queueTask(data): Promise<void> {
+  async queueTask(data): Promise<void> {
     try {
       await this.queue.add(COMMON_TASK, data);
     } catch (error) {
       this.logger.error(`Error queueing task ${data.command}`);
       throw error;
     }
+  }
+
+  async getJobsStats() {
+    return {
+      active: await this.getActiveJobs(),
+      waiting: await this.getJobsInQueue(),
+      failed: await this.getFailedJobs(),
+    };
+  }
+
+  private async getActiveJobs() {
+    return this.queue.getJobs(['active']);
+  }
+
+  private async getJobsInQueue() {
+    return this.queue.getJobs(['waiting']);
+  }
+
+  private async getFailedJobs() {
+    // get latest 4 failed jobs
+    return this.queue.getJobs(['failed'], -4);
   }
 }

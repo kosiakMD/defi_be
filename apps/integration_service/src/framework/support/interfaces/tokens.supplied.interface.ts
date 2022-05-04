@@ -1,4 +1,9 @@
-import { ITokenMinimal, ITokenOpportunity, ITokenUserEntry } from './tokens.common.interface';
+import {
+  IBaseApy,
+  ITokenMinimal,
+  ITokenOpportunity,
+  ITokenUserEntry,
+} from './tokens.common.interface';
 
 // 'Minimal' interfaces are the minimal needed web3/thegraph/api data
 // i.e. usually tokens are just the token address,
@@ -15,14 +20,17 @@ export interface ISupplyTokenMinimal extends ITokenMinimal {
 export interface ISupplyTokenOpportunity extends ITokenOpportunity {
   weight?: number;
   totalSupply?: number; // number of tokens staked
-  totalSupplied: number; // number of tokens staked
+  totalSupplied?: number; // number of tokens staked
   tvl: number;
-  apy?: { [key: string]: number };
+  apy?: ISupplyApy;
 }
 
 export interface ISupplyTokenUserEntry extends ITokenUserEntry {
   totalSupply: number; // number of tokens staked
-  totalSupplied: number; // number of tokens staked
+  totalSupplied?: number; // number of tokens staked
   tvl: number; // number of tokens * token price
-  apy?: { [key: string]: number };
+  apy?: ISupplyApy;
+}
+interface ISupplyApy extends IBaseApy {
+  supplyApy?: number;
 }

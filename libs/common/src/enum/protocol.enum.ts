@@ -201,6 +201,9 @@ export enum StaderProtocolEnum {
 export enum OsmosisProtocolEnum {
   osmosis = 'Osmosis',
 }
+export enum SolendProtocolEnum {
+  solend = 'Solend',
+}
 
 export enum AaveV3ProtocolEnum {
   aaveV3 = 'AaveV3',
@@ -249,6 +252,7 @@ export const ProtocolNameEnum = {
   ...MirrorProtocolEnum,
   ...StaderProtocolEnum,
   ...OsmosisProtocolEnum,
+  ...SolendProtocolEnum,
   ...LidoProtocolEnum,
   ...AaveV3ProtocolEnum,
 };

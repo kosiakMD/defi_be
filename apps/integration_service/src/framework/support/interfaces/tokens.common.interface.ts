@@ -27,3 +27,7 @@ export interface ITokenUserEntry {
   amount: number; // user balance
   value: number; // balance * price
 }
+export interface IBaseApy {
+  variableApy?: number;
+  stableApy?: number;
+}

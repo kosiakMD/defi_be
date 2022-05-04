@@ -20,12 +20,12 @@ import {
   ISupplyTokenUserEntry,
 } from './tokens.supplied.interface';
 
-interface ILendingFeatureEntryGeneric<TSupplied, TRewarded, TBorrowed> extends IPartialBaseFeature {
+export interface ILendingFeatureEntryGeneric<TSupplied, TRewarded, TBorrowed>
+  extends IPartialBaseFeature {
   feature: FeatureEnum.lending;
   supplied: TSupplied[];
   rewarded: TRewarded[];
   borrowed: TBorrowed[];
-  debtRatio: number;
 }
 
 export type ILendingFeatureEntryMinimal = ILendingFeatureEntryGeneric<
@@ -42,4 +42,4 @@ export type ILendingFeatureUserEntry = ILendingFeatureEntryGeneric<
   ISupplyTokenUserEntry,
   IRewardTokenUserEntry,
   IBorrowTokenUserEntity
->;
+> & { debtRatio: number };

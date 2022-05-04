@@ -78,7 +78,7 @@ export class TasksProcessor {
 
   @OnQueueActive()
   public onActive(job: Job) {
-    this.logger.debug(`Processing job ${job.id}]`);
+    this.logger.debug(`Processing job ${job.id}`);
   }
 
   @OnQueueCompleted()

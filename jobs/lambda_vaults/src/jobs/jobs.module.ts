@@ -55,8 +55,6 @@ import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
-import { IslandswapPools } from './islandswap/islandswap.pools';
-import { IslandswapStaking } from './islandswap/islandswap.staking';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
@@ -137,7 +135,6 @@ const Curve = [
 const Sundaeswap = [SundaeswapPools];
 const DefiKingdoms = [DefiKingdomsPools, DefiKingdomsStaking];
 const Ellipsis = [EllipsisLp, EllipsisStaking];
-const IslandSwap = [IslandswapPools, IslandswapStaking];
 const Mojitoswap = [MojitoswapPools, MojitoswapStaking];
 const Orca = [OrcaPools, OrcaStaking];
 const Pancake = [PancakePoolsV1, PancakePoolsV2, PancakeStaking];
@@ -166,7 +163,6 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Curve,
   ...DefiKingdoms,
   ...Ellipsis,
-  ...IslandSwap,
   ...Mojitoswap,
   ...Orca,
   ...Pancake,

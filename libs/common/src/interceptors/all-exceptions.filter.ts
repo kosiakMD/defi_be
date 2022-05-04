@@ -40,8 +40,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (hostType === 'http') {
       const contextHttp = host.switchToHttp();
 
-      console.log('__exception', exception);
-
       let httpStatus: number;
       if (exception.isAxiosError) {
         httpStatus =

@@ -253,6 +253,7 @@
     "@nestjsx/api-version": "^0.1.1",
     "@project-serum/borsh": "^0.2.3",
     "@raydium-io/raydium-sdk": "1.0.1-beta.7",
+    "@sentry/integrations": "^6.19.6",
     "@sentry/node": "^6.17.2",
     "@sentry/serverless": "^6.17.2",
     "@sentry/tracing": "^6.17.2",

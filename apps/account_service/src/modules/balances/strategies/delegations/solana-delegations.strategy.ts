@@ -21,7 +21,7 @@ import { DelegationsStrategy } from './delegation.strategy';
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
-  protected url = 'https://api.solanabeach.io/v1/account';
+  protected url: string;
   protected path = 'v1/account';
 
   constructor(
@@ -34,7 +34,10 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
   ) {
     super();
 
-    this.url = new URL(this.path, this.configService.get<string>('SOLANA_URL')).toString();
+    this.url = new URL(
+      this.path,
+      this.configService.get<string>('SOLANA_DELEGATION_API_URL'),
+    ).toString();
   }
 
   async onModuleInit(): Promise<void> {

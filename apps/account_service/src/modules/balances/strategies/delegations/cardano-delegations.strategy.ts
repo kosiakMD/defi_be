@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
-import { isCardanoLikeAddress, normalizeDecimals } from '@app/common/utils';
+import { normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
@@ -37,7 +37,10 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     private readonly assetsRepository: Repository<AssetsEntity>,
   ) {
     super();
-    this.url = new URL(this.path, this.configService.get<string>('CARDANO_URL')).toString();
+    this.url = new URL(
+      this.path,
+      this.configService.get<string>('CARDANO_DELEGATION_API_URL'),
+    ).toString();
   }
 
   async onModuleInit(): Promise<void> {
@@ -51,49 +54,58 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
   private async getFeatures(address: string): Promise<any[]> {
     const getConfig = { headers: this.headers };
 
-    // const { data: addressResponse } = await lastValueFrom(
-    //   // TODO: Not use this method as it will be deprecated
-    //   this.http.get(`${this.url}/addresses/${address}`, getConfig),
-    // );
-    // const { data: stakeData } = await lastValueFrom(
-    //   this.http.get(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig),
-    // );
-    // const { data: poolData } = await lastValueFrom(
-    //   this.http.get(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig),
-    // );
-    // return [addressResponse, stakeData, poolData];
     return lastValueFrom(
-      this.http
-        .get<any>(`${this.url}/addresses/${address}`, getConfig)
-        .pipe(
-          switchMap(({ data: addressResponse }) =>
-            this.http
-              .get<any>(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig)
-              .pipe(
-                switchMap(({ data: stakeData }) =>
-                  this.http
-                    .get<any>(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig)
-                    .pipe(map(({ data: poolData }) => [stakeData, poolData])),
-                ),
-              ),
-          ),
-        ),
+      this.http.get<any>(`${this.url}/addresses/${address}`, getConfig).pipe(
+        switchMap(({ data: addressResponse }) => {
+          console.log('__addressResponse', addressResponse);
+          return this.http
+            .get<any>(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig)
+            .pipe(
+              switchMap(({ data: stakeData }) => {
+                console.log('__stakeData', stakeData);
+                return this.http
+                  .get<any>(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig)
+                  .pipe(
+                    map(({ data: poolData }) => {
+                      console.log('__poolData', poolData);
+                      return [stakeData, poolData];
+                    }),
+                  );
+              }),
+            );
+        }),
+      ),
     );
+    //
+    // const { data: addressResponse } = await this.http
+    //   .get(`${this.url}/addresses/${address}`, { headers: this.headers })
+    //   // TODO: Not use this method as it will be deprecated
+    //   .toPromise();
+    //
+    // const { data: stakeData } = await this.http
+    //   .get(`${this.url}/accounts/${addressResponse.stake_address}`, { headers: this.headers })
+    //   .toPromise();
+    //
+    // const { data: poolData } = await this.http
+    //   .get(`${this.url}/pools/${stakeData.pool_id}/metadata`, { headers: this.headers })
+    //   .toPromise();
+    // return [stakeData, poolData];
   }
 
   public async getDelegatedAssets(address): Promise<any[]> {
-    if (!isCardanoLikeAddress(address)) return [];
+    // if (!isCardanoLikeAddress(address)) return [];
 
     try {
       const [{ prices }, [stakeData, poolData]] = await Promise.all([
         this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
         this.getFeatures(address),
       ]);
+      console.log('__prices', prices);
 
       const balanceAmount = normalizeDecimals(stakeData.controlled_amount, this.asset.decimals);
       const claimableRewardsAmount = normalizeDecimals(stakeData.rewards_sum, this.asset.decimals);
       const price = prices[this.asset.address];
-
+      console.log('__price', price);
       return [
         {
           address,

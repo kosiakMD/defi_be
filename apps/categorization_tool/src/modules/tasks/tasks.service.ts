@@ -1,4 +1,4 @@
-import { Queue } from 'bull';
+import { JobStatusClean, Queue } from 'bull';
 
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -37,6 +37,10 @@ export class TasksService {
       waiting: await this.getJobsInQueue(),
       failed: await this.getFailedJobs(),
     };
+  }
+
+  async cleanQueue(grace: number, status?: JobStatusClean, limit?: number) {
+    return this.queue.clean(grace, status, limit);
   }
 
   private async getActiveJobs() {

@@ -93,13 +93,6 @@ export class BalancesController {
       'terra1qqu376azltyc5wnsje5qgwru5mtj2yqdhj0cwl',
     ],
   })
-  @ApiQuery({
-    name: 'chains',
-    type: Number,
-    isArray: true,
-    description: 'Array of chain ID',
-    example: [1, 2, 3, 4, 5],
-  })
   // TODO: DTO should be declared here
   getUserDelegations(@Query() query) {
     return this.balancesService.getUserDelegations(getUniqList(query.addresses));

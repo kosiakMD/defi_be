@@ -10,6 +10,12 @@ export class NftAssetDtoV1 {
   @ApiProperty({ example: '9119' })
   id: string = null;
 
+  @ApiProperty({ example: 1 })
+  chainId: number;
+
+  @ApiProperty({ example: '0x64850F38e800E04eF773efca8FCaFdceFe977f9D' })
+  wallet: string;
+
   @ApiProperty({ example: 'Super Shiba #9119' })
   name: string = null;
 

@@ -68,7 +68,7 @@ configMaps:
     AVAX_URL: https://api.avax.network/ext/bc/C/rpc
     CELO_URL: https://forno.celo.org
     HARM_URL: https://a.api.s0.t.hmny.io
-    HECO_URL: https://http-mainnet-node.huobichain.com
+    HECO_URL: https://http-mainnet.hecochain.com
     MRIVER_URL: https://rpc.moonriver.moonbeam.network
     XDAI_URL: https://rpc.xdaichain.com
     POLYGON_URL: https://polygon-rpc.com/

@@ -49,11 +49,12 @@ export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string
 
       if (exception.isAxiosError) {
         // TODO turn of axios HTTP Error = 500 for a while
-        if (
-          exception?.request?.res?.statusCode === 400 ||
-          exception?.response?.status === 400 ||
-          exception?.response?.data?.status_code === 400
-        ) {
+        const excluded = [500, 502];
+        const code =
+          exception?.request?.res?.statusCode ||
+          exception?.response?.status ||
+          exception?.response?.data?.status_code;
+        if (excluded.includes(code)) {
           return null;
         } else {
           event.fingerprint = [

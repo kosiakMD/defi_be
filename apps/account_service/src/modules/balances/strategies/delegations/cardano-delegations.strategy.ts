@@ -55,41 +55,22 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
     const getConfig = { headers: this.headers };
 
     return lastValueFrom(
-      this.http.get<any>(`${this.url}/addresses/${address}`, getConfig).pipe(
-        switchMap(({ data: addressResponse }) => {
-          console.log('__addressResponse', addressResponse);
-          return this.http
-            .get<any>(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig)
-            .pipe(
-              switchMap(({ data: stakeData }) => {
-                console.log('__stakeData', stakeData);
-                return this.http
-                  .get<any>(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig)
-                  .pipe(
-                    map(({ data: poolData }) => {
-                      console.log('__poolData', poolData);
-                      return [stakeData, poolData];
-                    }),
-                  );
-              }),
-            );
-        }),
-      ),
+      this.http
+        .get<any>(`${this.url}/addresses/${address}`, getConfig)
+        .pipe(
+          switchMap(({ data: addressResponse }) =>
+            this.http
+              .get<any>(`${this.url}/accounts/${addressResponse.stake_address}`, getConfig)
+              .pipe(
+                switchMap(({ data: stakeData }) =>
+                  this.http
+                    .get<any>(`${this.url}/pools/${stakeData.pool_id}/metadata`, getConfig)
+                    .pipe(map(({ data: poolData }) => [stakeData, poolData])),
+                ),
+              ),
+          ),
+        ),
     );
-    //
-    // const { data: addressResponse } = await this.http
-    //   .get(`${this.url}/addresses/${address}`, { headers: this.headers })
-    //   // TODO: Not use this method as it will be deprecated
-    //   .toPromise();
-    //
-    // const { data: stakeData } = await this.http
-    //   .get(`${this.url}/accounts/${addressResponse.stake_address}`, { headers: this.headers })
-    //   .toPromise();
-    //
-    // const { data: poolData } = await this.http
-    //   .get(`${this.url}/pools/${stakeData.pool_id}/metadata`, { headers: this.headers })
-    //   .toPromise();
-    // return [stakeData, poolData];
   }
 
   public async getDelegatedAssets(address): Promise<any[]> {
@@ -100,12 +81,10 @@ export class CardanoDelegationsStrategy extends DelegationsStrategy implements O
         this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
         this.getFeatures(address),
       ]);
-      console.log('__prices', prices);
 
       const balanceAmount = normalizeDecimals(stakeData.controlled_amount, this.asset.decimals);
       const claimableRewardsAmount = normalizeDecimals(stakeData.rewards_sum, this.asset.decimals);
       const price = prices[this.asset.address];
-      console.log('__price', price);
       return [
         {
           address,

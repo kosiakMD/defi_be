@@ -9,7 +9,7 @@ export class StatusController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get('/v1/status')
-  public async status() {
+  async status() {
     return {
       status: 'OK',
       jobs: await this.tasksService.getJobsStats(),

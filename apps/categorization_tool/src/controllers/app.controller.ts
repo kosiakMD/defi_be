@@ -45,6 +45,6 @@ export class AppController {
   @Post('/requests/similar-contract')
   @ApiBody({ type: SimilarDTO })
   public async similarContracts(@Body() similarData: { contract: string }) {
-    return this.service.queueTask({ command: 'similar_contract', similarData });
+    return this.service.queueTask({ command: CommandParameterized.similar_contract, similarData });
   }
 }

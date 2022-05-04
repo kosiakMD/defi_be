@@ -70,7 +70,7 @@ export class TasksProcessor {
       case CommandParameterized.run_parsing_custom_protocol:
         return this.protocolService.parseCustomProtocol(job.data.listProtocol);
       case CommandParameterized.similar_contract:
-        return this.contractAnalysisService.findSimilarAbiAndAbiCode(job.data.similarData);
+        return this.contractsAnalysisServiceV1.findSimilarAbiAndAbiCode(job.data.similarData);
       default:
         this.logger.warn(`unsupported command: '${job.data.command}', skipping...`);
     }
@@ -78,16 +78,16 @@ export class TasksProcessor {
 
   @OnQueueActive()
   public onActive(job: Job) {
-    this.logger.debug(`Processing job ${job.id} of type [${job.name}]`);
+    this.logger.debug(`Processing job ${job.id}]`);
   }
 
   @OnQueueCompleted()
   public onComplete(job: Job) {
-    this.logger.debug(`Completed job ${job.id} of type [${job.name}]`);
+    this.logger.debug(`Completed job ${job.id}`);
   }
 
   @OnQueueFailed()
   public onError(job: Job<any>, error: any) {
-    this.logger.error(`Failed job ${job.id} of type [${job.name}]: ${error.message}`, error.stack);
+    this.logger.error(`Failed job ${job.id}: ${error.message}`, error.stack);
   }
 }

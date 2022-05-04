@@ -28,7 +28,7 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
     return (await this.query(query, [contractId, counterpartContractId]))[0];
   }
 
-  async findWithJoinContract(id: number): Promise<SimilarWithProtocolData[]> {
+  async findWithJoinContract(id: number, minRate: number): Promise<SimilarWithProtocolData[]> {
     const query = `
       SELECT
         ca.abi_code_similarity abiCodeSimilarity,
@@ -42,9 +42,10 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
           left join contracts c2 on ca.counterpart_contract_id = c2.id
           left join protocols p2 on c2.protocol_id = p2.id
           left join protocols_properties pp2 on p2.id = pp2.protocol_id and pp2.name = 'TVL'
-      WHERE ca.contract_id = $1;
+      WHERE ca.contract_id = $1
+          AND (ca.abi_json_similarity >= $2 OR ca.abi_code_similarity >= $3);
     `;
-    return await this.query(query, [id]);
+    return this.query(query, [id, minRate, minRate]);
   }
 
   async upsertContractAnalysis(

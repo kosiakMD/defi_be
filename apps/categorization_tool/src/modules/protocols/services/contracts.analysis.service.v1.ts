@@ -12,6 +12,7 @@ import { ContractsAnalysisRepository } from '../../database/repositories/contrac
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
 import { ANALYSE_CONTRACTS_PARALLEL_LIMIT } from '../protocols.constant';
+import { AbiFetcherService } from './abi/fetcher/abi.fetcher.service';
 
 @Injectable()
 export class ContractsAnalysisServiceV1 {
@@ -24,6 +25,7 @@ export class ContractsAnalysisServiceV1 {
     private readonly contractAnalysisRepository: ContractsAnalysisRepository,
     @InjectRepository(ProtocolsRepository)
     private readonly protocolsRepository: ProtocolsRepository,
+    private readonly abiFetcherService: AbiFetcherService,
   ) {}
 
   async analyseContracts(): Promise<void> {
@@ -45,7 +47,26 @@ export class ContractsAnalysisServiceV1 {
     this.logger.log('analyseContracts finished');
   }
 
-  async analyseContract(contract: Contract): Promise<void> {
+  async findSimilarAbiAndAbiCode(data: { contract: string }) {
+    const address = data.contract;
+    this.logger.log(`findSimilarAbiAndAbiCode started: ${address}`);
+    //try to find contract in DB
+    let contract = await this.contractsRepository.findByAddress(address);
+    if (!contract) {
+      //fetch contract ABI and ABI Code to save into DB
+      const { abi, abiCode, chain } = await this.abiFetcherService.fetchAbiAndAbiCode(address);
+      contract = await this.contractsRepository.save({ address, abi, abiCode, chain });
+    }
+    if (!safeJsonParse(contract.abi)) {
+      this.logger.warn(`there is invalid ABI for contract: [${data.contract}]`);
+      //aborting - we don't have valid ABI to compare
+      return;
+    }
+    await this.analyseContract(contract);
+    this.logger.log(`findSimilarAbiAndAbiCode finished: ${data.contract}`);
+  }
+
+  private async analyseContract(contract: Contract): Promise<void> {
     this.logger.debug(`analysing contract: [${contract.address}]`);
     let skip = 0;
     await doWhilst(
@@ -58,7 +79,7 @@ export class ContractsAnalysisServiceV1 {
     );
   }
 
-  async processContractAnalysis(contract: Contract, contracts: Contract[]): Promise<void> {
+  private async processContractAnalysis(contract: Contract, contracts: Contract[]): Promise<void> {
     const parsedContractAbi = JSON.parse(contract.abi);
     for (const counterpartContract of contracts) {
       if (contract.id === counterpartContract.id) continue;

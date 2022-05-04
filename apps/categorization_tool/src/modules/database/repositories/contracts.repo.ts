@@ -30,4 +30,8 @@ export class ContractsRepository extends Repository<Contract> {
       where: { id: LessThan(0) },
     });
   }
+
+  async findByAddress(address: string) {
+    return this.findOne({ address });
+  }
 }

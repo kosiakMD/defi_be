@@ -70,7 +70,7 @@ export abstract class RootProtocol<
     // await this.cache.del(`pool_list_${this.getProtocolId()}`);
     const list = await this.cache.get<string[]>(`pool_list_${this.getProtocolId()}`);
 
-    if (!list) {
+    if (!list?.length) {
       // If protocol pool list is not available, then
       // refetch all the pools and cache for the next person
       // (Only would likely be used for new deploys, or failed background job)

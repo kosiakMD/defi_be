@@ -617,6 +617,7 @@ export class BalancesService {
       this.delegationStrategies.map((strategy) => strategy.getDelegatedAssets(address)),
     );
 
+    // TODO better to handle only specific error in Cardano - TBD with Artem
     // Some Cardano delegator throw exception if address is not valid for its network and we ignore them
     const result = handlePromiseAllSettled(allResult)[0];
 

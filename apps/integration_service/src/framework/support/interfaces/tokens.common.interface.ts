@@ -12,7 +12,7 @@ export interface ERC20Token {
   balance?: number;
   reserve?: number;
   position?: number;
-  underlying: ERC20Token[];
+  underlying?: ERC20Token[];
 }
 
 export interface ITokenMinimal {

@@ -1,4 +1,4 @@
-import { map, mergeMap, toArray, firstValueFrom } from 'rxjs';
+import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 
@@ -86,12 +86,11 @@ export abstract class Balancer<TProtocolMeta extends IBalancerVaultMeta> extends
               symbol: pool.token.symbol,
               underlying: underlyingTokens.map((token: ISupplyTokenOpportunity) => {
                 const balance = token.totalSupplied * poolShare;
-                const result = {
+                return {
                   ...token.token,
                   balance: balance,
                   value: balance * token.token.price,
                 };
-                return result;
               }),
             },
             totalSupplied: pool.token.reserve,
@@ -108,7 +107,8 @@ export abstract class Balancer<TProtocolMeta extends IBalancerVaultMeta> extends
       .filter((pool) => pool !== null);
   }
 
-  protected formatOpportunity(opportunity: TMinimal, tokens: Map<string, any>): TOpportunity {
+  // todo: fix types!
+  protected formatOpportunity(opportunity: TMinimal, tokens: Map<string, any>): any {
     if (opportunity.supplied.some((t) => !tokens.has(t.token.address))) {
       const message = `Failed to resolve some tokens for pool - ${opportunity.chain}/${opportunity.id}`;
       throw new Error(message);
@@ -125,7 +125,8 @@ export abstract class Balancer<TProtocolMeta extends IBalancerVaultMeta> extends
     };
   }
 
-  private toFeatureEntryMinimal(pool: Pool): TMinimal {
+  // todo: fix types!
+  private toFeatureEntryMinimal(pool: Pool): any {
     return {
       id: pool.address,
       chain: this.meta.chain,

@@ -11,6 +11,7 @@ import {
   IPoolFeatureEntryMinimal,
   IPoolFeatureEntryOpportunity,
   IPoolFeatureEntryUserEntry,
+  IPoolFeatureOpportunity,
 } from './interfaces/feature.pool.interface';
 import {
   IStakingFeatureOpportunity,
@@ -53,11 +54,13 @@ export interface IProtocolMeta {
 }
 
 export type IWalletMinimal =
+  | IPoolFeatureOpportunity
   | IPoolFeatureEntryMinimal
   | IStakingFeatureMinimal
   | ILendingFeatureEntryMinimal;
 
 export type IWalletOpportunity =
+  | IPoolFeatureOpportunity
   | IPoolFeatureEntryOpportunity
   | IStakingFeatureOpportunity
   | ILendingFeatureOpportunity;

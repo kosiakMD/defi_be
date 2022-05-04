@@ -52,6 +52,9 @@ configMaps:
     OSMOSIS_URL: https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     SECRET_URL: https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     NEAR_URL: https://mainnet.aurora.dev/
+    TERRA_DELEGATION_API_URL: https://lcd.terra.dev
+    SOLANA_DELEGATION_API_URL: https://api.solanabeach.io
+    CARDANO_DELEGATION_API_URL: https://cardano-mainnet.blockfrost.io
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80

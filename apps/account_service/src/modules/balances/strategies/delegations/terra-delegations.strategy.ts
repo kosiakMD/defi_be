@@ -35,7 +35,10 @@ export class TerraDelegationsStrategy extends DelegationsStrategy implements OnM
   ) {
     super();
 
-    this.url = new URL(this.path, this.configService.get<string>('TERRA_URL')).toString();
+    this.url = new URL(
+      this.path,
+      this.configService.get<string>('TERRA_DELEGATION_API_URL'),
+    ).toString();
   }
 
   async onModuleInit(): Promise<void> {

@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
-import { AsyncHrTimer } from '@app/common/decorators/time.decorators';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
@@ -612,11 +612,15 @@ export class BalancesService {
     }, {});
   }
 
-  @AsyncHrTimer
   private async getDelegationsForAddress(address: string): Promise<Record<Address, any>> {
-    const result = await Promise.all(
+    const allResult = await Promise.allSettled(
       this.delegationStrategies.map((strategy) => strategy.getDelegatedAssets(address)),
     );
+
+    // TODO better to handle only specific error in Cardano - TBD with Artem
+    // Some Cardano delegator throw exception if address is not valid for its network and we ignore them
+    const result = handlePromiseAllSettled(allResult)[0];
+
     return { [address]: result.flat() };
   }
 }

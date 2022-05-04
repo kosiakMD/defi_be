@@ -46,4 +46,9 @@ export class NftAssetsQueryDtoV1 extends BaseListQueryDto {
   @IsNotEmpty()
   @IsOptional()
   sortField = NftAssetSortFieldEnum.PRICE;
+
+  @ApiProperty({ type: String, default: '', required: false })
+  @IsString()
+  @IsOptional()
+  search = '';
 }

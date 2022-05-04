@@ -4,10 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger, NftEndpointsEnum } from '@app/common';
 import { NftAssetsQueryDtoV1 } from '@app/common/dto/nft/nft.assets.query.dto.v1';
-import { NftChainsAssetsResponseDto } from '@app/common/dto/nft/nft.chains.assets.response.dto';
-import { NftChainsCollectionsResponseDto } from '@app/common/dto/nft/nft.chains.collections.response.dto';
+import { NftAssetsResponseDtoV1 } from '@app/common/dto/nft/nft.assets.response.dto.v1';
 import { NftChainsResponseDto } from '@app/common/dto/nft/nft.chains.response.dto';
 import { NftCollectionsQueryDtoV1 } from '@app/common/dto/nft/nft.collections.query.dto.v1';
+import { NftCollectionsResponseDtoV1 } from '@app/common/dto/nft/nft.collections.response.dto.v1';
 
 import { NftService } from '../modules/nft.service';
 
@@ -31,7 +31,7 @@ export class NftController {
   }
 
   @Get(NftEndpointsEnum.collections)
-  @ApiResponse({ status: HttpStatus.OK, type: NftChainsCollectionsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: NftCollectionsResponseDtoV1 })
   getCollections(@Query() query: NftCollectionsQueryDtoV1) {
     try {
       return this.nftService.getCollections(query);
@@ -42,7 +42,7 @@ export class NftController {
   }
 
   @Get(NftEndpointsEnum.assets)
-  @ApiResponse({ status: HttpStatus.OK, type: NftChainsAssetsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: NftAssetsResponseDtoV1 })
   getAssets(@Query() query: NftAssetsQueryDtoV1) {
     try {
       return this.nftService.getAssets(query);

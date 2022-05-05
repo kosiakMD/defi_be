@@ -1,4 +1,3 @@
-import { BlockFrostAPI } from '@blockfrost/blockfrost-js';
 import { Connection } from '@solana/web3.js';
 import { LCDClient } from '@terra-money/terra.js';
 import { ChainsService } from 'apps/account_service/src/modules/chains/chains.service';
@@ -30,10 +29,6 @@ export class Web3Provider implements OnModuleInit {
     return this.providers[chain];
   }
 
-  public getCardanoInstance(chain: number): BlockFrostAPI {
-    return this.providers[chain];
-  }
-
   private async initWeb3Providers() {
     const chains = await this.chainsService.getAll();
 
@@ -44,11 +39,6 @@ export class Web3Provider implements OnModuleInit {
     this.providers[terraId] = new LCDClient({
       URL: this.configService.get<string>('TERRA_URL'),
       chainID: AbsoluteChainIdEnum.terra.toString(),
-    });
-
-    const cardanoId = await this.chainsService.getChainIdByName(ChainNameEnum.cardano);
-    this.providers[cardanoId] = new BlockFrostAPI({
-      projectId: this.configService.get<string>('CARDANO_BLOCKFROST_API_KEY'),
     });
 
     for (const chain of chains) {

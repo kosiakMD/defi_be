@@ -80,6 +80,10 @@ export const validationSchema = Joi.object({
   MAIL_QUESTION_TO: Joi.string() //
     .allow('')
     .required(),
+  RPC_SERVICE_HOST: Joi.string() //
+    .required(),
+  RPC_SERVICE_PORT: Joi.number() //
+    .allow(''),
 });
 
 export const validationOptions = {

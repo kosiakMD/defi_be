@@ -13,7 +13,12 @@ import { BaseService } from '../common/services/base.service';
 import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchResultType } from './interfaces/search.enum';
-import { SearchParams, SearchResults, SearchResultsBaseEntry } from './interfaces/search.interface';
+import {
+  SearchParams,
+  SearchResults,
+  SearchResultsAddressEntry,
+  SearchResultsBaseEntry,
+} from './interfaces/search.interface';
 import { addressSearchResultParser } from './utils/search.utils';
 
 @Injectable()
@@ -46,6 +51,9 @@ export class SearchService extends BaseService {
     const { text, limit } = query;
     if (isSomeAddress(text)) {
       const searchResult = await this.getSearchEntries({ address: text, limit });
+      if (!searchResult.entries.length) {
+        searchResult.entries.push(this.getAddressSearchEntry(text));
+      }
       return addressSearchResultParser(text, searchResult);
     }
     try {
@@ -53,6 +61,9 @@ export class SearchService extends BaseService {
       if (address) {
         this.logger.debug(`Resolved address ${address}`);
         const searchResult = await this.getSearchEntries({ address, text, limit });
+        if (!searchResult.entries.length) {
+          searchResult.entries.push(this.getAddressSearchEntry(text));
+        }
         return addressSearchResultParser(address, searchResult);
       }
     } catch (error) {
@@ -61,13 +72,19 @@ export class SearchService extends BaseService {
     return this.getSearchEntries({ text, limit });
   }
 
+  private getAddressSearchEntry(address: string): SearchResultsAddressEntry {
+    return {
+      type: SearchResultType.ADDRESS,
+      metadata: { address },
+    };
+  }
+
   private async tryToResolveAddress(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
     const { text } = query;
     // need it to check ENS name on all networks
     const substitution = text.endsWith('.') ? text.slice(0, -1) : text;
     const addresses = await Promise.all([
       this.web3NameService.resolveNameResponseWithName(`${substitution}.eth`.toLowerCase()),
-      this.web3NameService.resolveNameResponseWithName(`${substitution}.eth`.toUpperCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.tns`.toLowerCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.tns`.toUpperCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.ust`.toLowerCase()),

@@ -92,10 +92,13 @@ export class Web3NameService {
   public async resolveNameResponseWithName(
     name: string,
   ): Promise<{ address: string; name: string }> {
-    for await (const [{ resolver }, provider] of this.providers) {
+    for await (const [{ chain, resolver }, provider] of this.providers) {
       const address = await resolver(name, provider);
       if (address) {
-        return { address, name };
+        return {
+          address,
+          name: [ChainIdEnum.sol].includes(chain) ? name.replace('.sol', '') + '.sol' : name,
+        };
       }
     }
     return null;

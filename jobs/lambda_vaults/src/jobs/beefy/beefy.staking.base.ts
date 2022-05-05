@@ -83,6 +83,9 @@ export abstract class BeefyStakingBase
 
   async fillChainData(): Promise<IntegrationStakingPositionDto[]> {
     const supportedVaults = new Map<Address, IBeefyVaultDetails>();
+
+    const aprs = await this.api.fetchAprs();
+
     const multicallPromises = this.mapping.map(async (m) => {
       const vault = await this.getBeefyVault(m);
 
@@ -139,7 +142,9 @@ export abstract class BeefyStakingBase
 
       // All prices have been updated, Update total TVL
       stakingPosition.stats.tvl = stakingPosition.stakingToken.value;
-
+      if (aprs[stakingPosition.extra.id]?.totalApy) {
+        stakingPosition.stats.poolApy = aprs[stakingPosition.extra.id].totalApy * 100;
+      }
       formattedVaults.push(stakingPosition);
     });
 
@@ -293,8 +298,8 @@ export abstract class BeefyStakingBase
           new Strategy(stakingPosition.address),
           (vault) => ({
             totalSupply: vault.totalSupply(),
-            strategy: vault.strategy(),
-            want: vault.want(),
+            strategy: vault.strategy(), // can get from api (strategy)
+            want: vault.want(), // can get from api (tokenAddress)
             balance: vault.balance(),
             getPricePerFullShare: vault.getPricePerFullShare(),
             decimals: vault.decimals(),
@@ -404,8 +409,8 @@ export abstract class BeefyStakingBase
           vault.earnContractAddress,
           vault.name,
           vault.tokenAddress ?? ZERO_ADDRESS,
+          { id: vault.id },
         );
-
         stakingFeatures.push(stakingPoolFeature);
       } catch (e) {
         this.logger.error(
@@ -424,6 +429,7 @@ export abstract class BeefyStakingBase
     address: Address,
     name: string,
     underlying: Address,
+    extra: any,
   ): Promise<IntegrationStakingPositionDto> {
     const stakingToken = await this.createStakingToken(underlying);
 
@@ -432,6 +438,7 @@ export abstract class BeefyStakingBase
       poolName: name, // vault name
       rewards: [],
       stakingToken: stakingToken, // underlying token
+      extra,
     });
   }
 

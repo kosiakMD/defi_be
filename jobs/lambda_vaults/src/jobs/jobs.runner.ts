@@ -114,7 +114,7 @@ export class JobsRunner {
         } catch (e) {
           this.logger.error(
             `error during job mapping update [${job.placeholder}], [${e}]`,
-            '',
+            e.stack,
             JobsRunner.name,
           );
         }

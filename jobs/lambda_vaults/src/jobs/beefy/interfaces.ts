@@ -15,6 +15,23 @@ export type BeefySupportedChains =
 type BeefyVaultStatus = 'active';
 type BeefyStratType = 'StratLp' | 'SingleStake' | 'StratMultiLP';
 
+export interface IBeefyHttpApr {
+  vaultApr: number;
+  compoundingsPerYear: number;
+  beefyPerformanceFee: number;
+  vaultApy: number;
+  lpFee: number;
+  tradingApr: number;
+  totalApy: number; // legacy and does not include trading fees, calculate if possible
+}
+export interface IBeefyHttpAprLegacy {
+  totalApy: number;
+}
+
+export interface IBeefyHttpAprs {
+  [vaultId: string]: IBeefyHttpApr | IBeefyHttpAprLegacy;
+}
+
 export interface IBeefyHttpVault {
   id: string;
   logo: string;

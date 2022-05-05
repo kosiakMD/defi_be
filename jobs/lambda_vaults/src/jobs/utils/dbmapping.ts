@@ -108,6 +108,7 @@ export class DbMapping {
         address: item.address,
         poolId: item.poolId,
         poolName: item.poolName,
+        extra: item.extra,
       };
       newIntegrationJobItem.name = universalDto.poolName
         ? universalDto.poolName

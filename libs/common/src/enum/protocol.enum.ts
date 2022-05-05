@@ -13,7 +13,6 @@ export enum ProjectEnum {
   curve = 'curve',
   defikingdoms = 'defikingdoms',
   ellipsis = 'ellipsis',
-  islandswap = 'islandswap',
   mojitoswap = 'mojitoswap',
   olympus = 'olympus',
   pancake = 'pancake',
@@ -169,10 +168,6 @@ export enum SaberProtocolEnum {
   saber = 'Saber',
 }
 
-export enum IslandswapProtocolEnum {
-  islandswap = 'Islandswap',
-}
-
 export enum OlympusProtocolEnum {
   olympus = 'Olympus',
 }
@@ -206,6 +201,9 @@ export enum StaderProtocolEnum {
 export enum OsmosisProtocolEnum {
   osmosis = 'Osmosis',
 }
+export enum SolendProtocolEnum {
+  solend = 'Solend',
+}
 
 export enum AaveV3ProtocolEnum {
   aaveV3 = 'AaveV3',
@@ -226,7 +224,6 @@ export const ProtocolNameEnum = {
   ...CurveProtocolEnum,
   ...DefiKingdomsProtocolEnum,
   ...EllipsisProtocolEnum,
-  ...IslandswapProtocolEnum,
   ...MojitoswapProtocolEnum,
   ...OlympusProtocolEnum,
   ...PancakeProtocolEnum,
@@ -255,6 +252,7 @@ export const ProtocolNameEnum = {
   ...MirrorProtocolEnum,
   ...StaderProtocolEnum,
   ...OsmosisProtocolEnum,
+  ...SolendProtocolEnum,
   ...LidoProtocolEnum,
   ...AaveV3ProtocolEnum,
 };

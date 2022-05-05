@@ -11,7 +11,6 @@ import {
   CurveProtocolEnum,
   DefiKingdomsProtocolEnum,
   EllipsisProtocolEnum,
-  IslandswapProtocolEnum,
   MojitoswapProtocolEnum,
   OlympusProtocolEnum,
   PancakeProtocolEnum,
@@ -61,7 +60,6 @@ export type ProtocolName =
   | CurveProtocolEnum
   | DefiKingdomsProtocolEnum
   | EllipsisProtocolEnum
-  | IslandswapProtocolEnum
   | MojitoswapProtocolEnum
   | OlympusProtocolEnum
   | PancakeProtocolEnum

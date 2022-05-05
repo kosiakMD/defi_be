@@ -26,6 +26,7 @@ import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
 import { QuickSwap } from '../platforms/QuickSwap';
 import { RuneFarm } from '../platforms/RuneFarm';
+import { Solend } from '../platforms/Solend';
 import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
@@ -62,6 +63,7 @@ export class PlatformService {
       LimeSwap,
       BalancerV2,
       AaveV3,
+      Solend,
       Quarry,
     });
   }

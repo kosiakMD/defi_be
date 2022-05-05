@@ -52,9 +52,6 @@ import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staki
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
-import { IslandswapPools } from './protocols/islandswap/islandswap.pools';
-import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
-import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import { MinswapFarms } from './protocols/minswap/minswap.farms';
@@ -140,7 +137,6 @@ const Convex = [
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
-const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
 const Olympus = [OlympusProtocol, OlympusStaking, OlympusBonding];
 const TraderJoe = [
   TraderJoeProtocol,
@@ -212,7 +208,6 @@ const ProtocolList = [
   ...Curve,
   ...DefiKingdoms,
   ...Ellipsis,
-  ...Islandswap,
   ...Mirror,
   ...Mojitoswap,
   ...Olympus,

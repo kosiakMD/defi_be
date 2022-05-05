@@ -196,7 +196,6 @@ export class AaveV3Lending
     }, {});
 
     return {
-      debtRatio: 0,
       feature: pool.feature,
       id: pool.id,
       chain: pool.chain,

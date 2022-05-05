@@ -58,14 +58,17 @@ export abstract class SolanaCore<
             params: [address],
           })),
         ),
-      ),
+      ).catch((e) => {
+        this.logger.error(e);
+        return null;
+      }),
     ]);
 
     // Set native sol price since coingecko doesn't look up native token by address
     prices[NATIVE_SOL] = prices[WRAPPED_SOL];
 
     const supplyMap = new Map();
-    supplies.forEach((supply) => {
+    supplies?.forEach((supply) => {
       if (supply.result?.value && !supply.error) {
         return supplyMap.set(
           supply.id,
@@ -91,4 +94,18 @@ export abstract class SolanaCore<
         ];
       });
   }
+
+  // protected getUniqueTokensFromRawPools(pools: TMinimalType[]) {
+  //   const tokens = new Set<string>();
+  //   const features = ['supplied', 'borrowed', 'rewarded'];
+  //   features.forEach((featureName) => {
+  //     pools.forEach((pool) => {
+  //       if (pool?.[featureName]?.length) {
+  //         pool[featureName].forEach((item) => tokens.add(item.token.address));
+  //       }
+  //     });
+  //   });
+
+  //   return Array.from(tokens);
+  // }
 }

@@ -209,7 +209,7 @@ export class IntegrationsServiceV3Decorator {
         address: item.token.address,
         balance: item.amount,
         value: item.value,
-        apy: item.apy.supplyApy ?? item.apy.stableApy ?? item.apy.variableApy,
+        apy: item.apy.supplyApy ?? item.apy.borrowApy ?? item.apy.stableApy ?? item.apy.variableApy,
         token: item.token,
       });
     });

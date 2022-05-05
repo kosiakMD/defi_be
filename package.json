@@ -232,8 +232,9 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
+    "@emurgo/cardano-serialization-lib-nodejs": "10.0.4",
     "@anchor-protocol/anchor.js": "^5.0.0",
-    "@blockfrost/blockfrost-js": "4.0.1",
+    "@blockfrost/blockfrost-js": "4.1.0",
     "@ethersproject/providers": "5.4.5",
     "@indexed-finance/multicall": "^2.0.0",
     "@mirror-protocol/mirror.js": "^2.1.4",

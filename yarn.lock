@@ -461,13 +461,14 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-"@blockfrost/blockfrost-js@4.0.1":
-  version "4.0.1"
-  resolved "https://registry.yarnpkg.com/@blockfrost/blockfrost-js/-/blockfrost-js-4.0.1.tgz#b7225385be8709ab326b5860e1fc392bda8ddd5a"
-  integrity sha512-BQBGO9y/kvux1kKuUYg9JOBU/fDALkJTnT51dAFujDHHjC+NN+7yoYypgRlr8H1vcue9XxlsfYk0xMx3S11dRA==
+"@blockfrost/blockfrost-js@4.1.0":
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/@blockfrost/blockfrost-js/-/blockfrost-js-4.1.0.tgz#d1a3bd72ea114749b91d3c184701a7d5a0218468"
+  integrity sha512-dt3yD01FeHxJzfrMF3hK0C4K4dxqKWeGugxcCiNnGPDfBcfYZ27KFZF3Zf5mFGfy4X9eBhI8zUcvpnJQLSBiWQ==
   dependencies:
-    "@emurgo/cardano-serialization-lib-nodejs" "^9.1.2"
+    "@emurgo/cardano-serialization-lib-nodejs" "^10.0.4"
     "@emurgo/cip14-js" "3.0.1"
+    bottleneck "^2.19.5"
     form-data "^4.0.0"
     got "^11.8.3"
 
@@ -497,10 +498,10 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@emurgo/cardano-serialization-lib-nodejs@^9.1.2":
-  version "9.1.4"
-  resolved "https://registry.yarnpkg.com/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-9.1.4.tgz#802396562ee35312003713e3a48f0dfef7ee1bd6"
-  integrity sha512-zDYQ4E5CAz89OuXCPV7k3v5kLWkwUS5Jg7QZ5m/4vPkeuZolOXyqo84p6AYf0qZ14xkgxnvHIRY+heJKNs7Ddw==
+"@emurgo/cardano-serialization-lib-nodejs@10.0.4", "@emurgo/cardano-serialization-lib-nodejs@^10.0.4":
+  version "10.0.4"
+  resolved "https://registry.yarnpkg.com/@emurgo/cardano-serialization-lib-nodejs/-/cardano-serialization-lib-nodejs-10.0.4.tgz#e3e3530e1cdfd6540c14c4c4fe8f1be1a0055e19"
+  integrity sha512-s0/bzBvR+wCL8IwB/2IU0yHdSybfGVORrOPxCuEMOFvvIM4KO5aYVoHMFjqzEO2A4aXk+yPx6E2R2zyndxWGVA==
 
 "@emurgo/cip14-js@3.0.1":
   version "3.0.1"
@@ -3643,6 +3644,11 @@ bottleneck@^1.16.0:
   version "1.16.0"
   resolved "https://registry.yarnpkg.com/bottleneck/-/bottleneck-1.16.0.tgz#d6ce13808527afc80b69092f15606655e5b21f1a"
   integrity sha1-1s4TgIUnr8gLaQkvFWBmVeWyHxo=
+
+bottleneck@^2.19.5:
+  version "2.19.5"
+  resolved "https://registry.yarnpkg.com/bottleneck/-/bottleneck-2.19.5.tgz#5df0b90f59fd47656ebe63c78a98419205cadd91"
+  integrity sha512-VHiNCbI1lKdl44tGrhNfU3lup0Tj/ZBMJB5/2ZbNXRCPuRCO7ed2mgcK4r17y+KB2EfuYuRaVlwNbAeaWGSpbw==
 
 brace-expansion@^1.1.7:
   version "1.1.11"

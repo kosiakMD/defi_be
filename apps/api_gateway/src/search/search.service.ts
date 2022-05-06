@@ -51,9 +51,7 @@ export class SearchService extends BaseService {
     const { text, limit } = query;
     if (isSomeAddress(text)) {
       const searchResult = await this.getSearchEntries({ address: text, limit });
-      if (!searchResult.entries.length) {
-        searchResult.entries.push(this.getAddressSearchEntry(text));
-      }
+      searchResult.entries.push(this.getAddressSearchEntry(text));
       return addressSearchResultParser(text, searchResult);
     }
     try {
@@ -61,9 +59,7 @@ export class SearchService extends BaseService {
       if (address) {
         this.logger.debug(`Resolved address ${address}`);
         const searchResult = await this.getSearchEntries({ address, text, limit });
-        if (!searchResult.entries.length) {
-          searchResult.entries.push(this.getAddressSearchEntry(text));
-        }
+        searchResult.entries.push(this.getAddressSearchEntry(text));
         return addressSearchResultParser(address, searchResult);
       }
     } catch (error) {

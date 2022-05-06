@@ -1,5 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 import bech32 from 'bech32';
+import * as CardanoCryptoJs from 'cardano-crypto.js';
 import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
@@ -31,7 +32,7 @@ const addressValidators: typeof ChainIdEnum = {
   terra: isTerraAddress as any,
   klay: isETHAddress as any,
   fuse: isETHAddress as any,
-  cardano: isCardanoLikeAddress as any,
+  cardano: isCardanoAddress as any,
   metis: isETHAddress as any,
   ronin: isRoninAddress as any,
   cosmos: isCosmosAddress as any,
@@ -98,10 +99,20 @@ export function isSolAddress(address: string): boolean {
   }
 }
 
+export function isCardanoAddress(address: string): boolean {
+  try {
+    const { prefix } = bech32.decode(address);
+    return prefix.startsWith('addr');
+  } catch {
+    const { isValidBootstrapAddress, isValidShelleyAddress } = CardanoCryptoJs;
+    return isValidBootstrapAddress(address) || isValidShelleyAddress(address);
+  }
+}
+
 export function isCardanoLikeAddress(address: string): boolean {
   try {
     const { prefix } = bech32.decode(address);
-    return ['addr', 'kava', 'secret', 'osmo', 'terra', 'cosmos', 'ronin'].includes(prefix);
+    return ['kava', 'secret', 'osmo', 'terra', 'cosmos', 'ronin'].includes(prefix);
   } catch {
     return false;
   }
@@ -130,7 +141,7 @@ export function isTerraAddress(address: string): boolean {
 }
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [isCardanoLikeAddress, isETHAddress, isSolAddress];
+  const addressChecks = [isETHAddress, isCardanoAddress, isCardanoLikeAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

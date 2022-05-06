@@ -51,4 +51,14 @@ export class NftController {
       throw e;
     }
   }
+
+  @Get('price/fetch')
+  fetchPrices() {
+    try {
+      return this.nftService.fetchPrice();
+    } catch (e) {
+      this.logger.error(`fetchPrices error: ${e.message}`);
+      throw e;
+    }
+  }
 }

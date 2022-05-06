@@ -177,15 +177,9 @@ export class SoLending
     opportunity: SolendLendingFeatureEntryMinimal,
     tokens: Map<string, any>,
   ): void | SolendLendingFeatureOpportunity {
-    if (
-      !opportunity.supplied.every((t) => tokens.has(t.token.address)) ||
-      !opportunity.rewarded.every((t) => tokens.has(t.token.address))
-    ) {
-      return;
-    }
     const tokenAddressToTvlMap = new Map();
 
-    const supplied = opportunity.supplied.map((poolToken) => {
+    const supplied = opportunity.supplied.filter(x => tokens.has(x.token.address)).map((poolToken) => {
       const token = tokens.get(poolToken.token.address);
       const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals)
       const tvl = new BN(token.price).multipliedBy(new BN(totalSupplied))
@@ -201,7 +195,7 @@ export class SoLending
       };
     });
 
-    const borrowed = opportunity.borrowed.map((poolToken) => {
+    const borrowed = opportunity.borrowed.filter(x => tokens.has(x.token.address)).map((poolToken) => {
       const token = tokens.get(poolToken.token.address);
       const totalBorrowed = normalizeDecimals(poolToken.totalBorrowed, token.decimals);
 
@@ -224,7 +218,7 @@ export class SoLending
       chain: opportunity.chain,
       supplied,
       borrowed,
-      rewarded: opportunity.rewarded.map((poolToken) => {
+      rewarded: opportunity.rewarded.filter(x => tokens.has(x.token.address)).map((poolToken) => {
         
         const token = tokens.get(poolToken.token.address);
         const apyPercentage = +poolToken.apy;
@@ -269,7 +263,7 @@ export class SoLending
 
       for (const userAddress of addresses) {
         const userPositions: ILendingFeatureUserEntry[] = [];
-
+ 
         for (const pool of pools) {
           const lendingMarketAddress = pool.id;
           const seed = lendingMarketAddress.slice(0, 32);

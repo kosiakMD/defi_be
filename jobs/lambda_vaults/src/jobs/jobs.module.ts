@@ -102,16 +102,17 @@ const AutoFarm = [
 ];
 
 const Badger = [BadgerStakingArbi, BadgerStakingEth, BadgerStakingPLG];
+
 const Beefy = [
-  BeefyStakingArbi,
-  BeefyStakingAvax,
-  BeefyStakingBsc,
-  BeefyStakingCelo,
-  BeefyStakingCro,
-  BeefyStakingFtm,
-  BeefyStakingMoonRiver,
-  BeefyStakingOne,
-  BeefyStakingPlg,
+  BeefyStakingCro, // 14
+  BeefyStakingArbi, // 5
+  BeefyStakingAvax, // 6
+  BeefyStakingBsc, // 2
+  BeefyStakingCelo, // 8
+  BeefyStakingOne, // 10
+  BeefyStakingPlg, // 3
+  BeefyStakingFtm, // 4
+  BeefyStakingMoonRiver, // 9
 ];
 const Convex = [ConvexStaking];
 const Curve = [
@@ -141,7 +142,8 @@ const Pancake = [PancakePoolsV1, PancakePoolsV2, PancakeStaking];
 const Pangolin = [PangolinPoolsAvax, PangolinStakingAvax];
 const Raydium = [RaydiumPools, RaydiumStaking];
 const Saber = [SaberPools];
-const Spookyswap = [SpookyswapPools, SushiswapPools];
+const Spookyswap = [SpookyswapPools];
+const SushiSwap = [SushiswapPools];
 const Terra = [TerraswapLp];
 const TraderJoe = [TraderJoeStaking, TraderjoePools];
 const Trisolaris = [TrisolarisPools, TrisolarisStaking];
@@ -161,6 +163,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Beefy,
   ...Convex,
   ...Curve,
+  ...SushiSwap,
   ...DefiKingdoms,
   ...Ellipsis,
   ...Mojitoswap,

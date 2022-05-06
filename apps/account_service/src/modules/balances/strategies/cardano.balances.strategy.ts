@@ -1,10 +1,13 @@
+import {
+  AssetsBalance,
+  CardanoService,
+} from 'apps/account_service/src/common/providers/3rdparty/cardano.service';
+
 import { Injectable } from '@nestjs/common';
 
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import type { CardanoBalance } from '../../../common/interfaces/cardano.interface';
-import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
 import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 import { BalancesRequest } from '../../../common/types';
 
@@ -15,7 +18,7 @@ export class CardanoBalancesStrategy
   extends BaseBalanceStrategy
   implements BalancesLoadingStrategy
 {
-  constructor(private readonly web3Provider: Web3Provider) {
+  constructor(private readonly cardanoService: CardanoService) {
     super();
   }
 
@@ -24,26 +27,44 @@ export class CardanoBalancesStrategy
     chainId,
     tokens: originalTokens,
   }: BalancesRequest): Promise<TokenBalance[]> {
-    if (!originalTokens.length || !address.match(/^addr1.*/) || this.isAddressInBlocklist(address))
+    if (!originalTokens.length || !address.match(/^addr1.*/) || this.isAddressInBlockList(address))
       return [];
 
     const tokensFilter = new Set<string>(originalTokens.map((token) => token.replace(/\./, '')));
-    const cardano = this.web3Provider.getCardanoInstance(chainId);
+
     try {
-      const wallet = await cardano.addresses(address);
-      return this.mapCardanoResponse(wallet, tokensFilter, chainId);
+      const stakeAddress = this.cardanoService.getStakeAddress(address);
+      const [total, assets] = await Promise.all([
+        this.cardanoService.obtainInformationAboutStakedAccount(stakeAddress),
+        this.cardanoService.assetsFromStakeAddress(stakeAddress),
+      ]);
+
+      const isAccountDelegatedToPool = total.pool_id !== null;
+
+      /** Coins delegated to the pool are excluded from balances and returned as part of delegations
+       *  In Cardano it's possible to delegate all coins to a single pool only
+       *  ADA coins will shown then in assets list
+       */
+      if (!isAccountDelegatedToPool) {
+        assets.push({
+          quantity: total.controlled_amount,
+          unit: 'lovelace',
+        });
+      }
+
+      return this.mapCardanoResponse(assets, tokensFilter, chainId);
     } catch (error) {
       return this.returnZeroBalanceAddressOrError(error, chainId);
     }
   }
 
   private mapCardanoResponse(
-    wallet: CardanoBalance,
+    assets: AssetsBalance,
     tokensFilter: Set<string>,
     chainId: number,
   ): TokenBalance[] {
     const tokenBalances: TokenBalance[] = [];
-    for (const asset of wallet.amount) {
+    for (const asset of assets) {
       if (tokensFilter.has(asset.unit) || asset.unit === 'lovelace') {
         tokenBalances.push({
           token: {
@@ -75,7 +96,7 @@ export class CardanoBalancesStrategy
     throw new Error(error);
   }
 
-  private isAddressInBlocklist(address: string): boolean {
+  private isAddressInBlockList(address: string): boolean {
     /** temporary created blocked list addresses */
     const blockList = new Set(['addr1w999n67e86jn6xal07pzxtrmqynspgx0fwmcmpua4wc6yzsxpljz3']);
     return blockList.has(address);

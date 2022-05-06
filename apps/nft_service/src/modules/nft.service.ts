@@ -1,13 +1,29 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { NftAssetsQueryDtoV1 } from '@app/common/dto/nft/nft.assets.query.dto.v1';
 import { NftAssetsResponseDtoV1 } from '@app/common/dto/nft/nft.assets.response.dto.v1';
 import { NftChainsResponseDto } from '@app/common/dto/nft/nft.chains.response.dto';
 import { NftCollectionsQueryDtoV1 } from '@app/common/dto/nft/nft.collections.query.dto.v1';
 import { NftCollectionsResponseDtoV1 } from '@app/common/dto/nft/nft.collections.response.dto.v1';
 
+import { NftFetchPriceRequestProviderMock } from './nft.fetch.price.request.provider.mock';
+
 @Injectable()
 export class NftService {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly nftFetchPriceRequestProviderMock: NftFetchPriceRequestProviderMock,
+  ) {}
+
+  async fetchPrice() {
+    //todo implement fetching price from marketplaces
+    const mockReq = await this.nftFetchPriceRequestProviderMock.getRequest();
+    this.logger.debug(`mockReq: ${JSON.stringify(mockReq)}`);
+    return mockReq;
+  }
+
   async getChains(): Promise<NftChainsResponseDto> {
     return {
       chainIds: [1],

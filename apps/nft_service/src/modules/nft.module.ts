@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { NftFetchPriceRequestProviderMock } from './nft.fetch.price.request.provider.mock';
 import { NftService } from './nft.service';
 
 @Module({
@@ -22,7 +23,7 @@ import { NftService } from './nft.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [NftService],
+  providers: [NftService, NftFetchPriceRequestProviderMock],
   exports: [NftService],
 })
 export class NftModule {}

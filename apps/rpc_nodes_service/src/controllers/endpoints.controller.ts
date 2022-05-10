@@ -1,4 +1,5 @@
 import {
+  CacheTTL,
   Controller,
   Delete,
   Get,
@@ -25,6 +26,7 @@ import { EndpointsEntity } from '../modules/endpoints/endpoints.entity';
 import { EndpointsService } from '../modules/endpoints/services/endpoints.service';
 
 @ApiTags('Endpoints')
+@CacheTTL(0.03)
 @Controller('endpoints')
 export class EndpointsController {
   constructor(

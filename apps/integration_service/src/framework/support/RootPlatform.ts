@@ -142,8 +142,8 @@ export abstract class RootPlatform implements IRootPlatform {
     this.protocols.forEach((protocol) => {
       const { chain } = protocol.getMeta();
       supportedChains.add(chain.id);
-      if (chains.includes(chain.id) && protocol.getPoolData) {
-        promises.push(protocol.getPoolData());
+      if (chains.includes(chain.id)) {
+        promises.push(protocol.getFormattedPoolData?.() ?? protocol.getPoolData());
       }
     });
 

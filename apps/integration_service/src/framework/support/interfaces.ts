@@ -1,6 +1,7 @@
 import type { AbiItem } from 'web3-utils';
 
 import type { Address, ChainDto, ChainId, ChainIdEnum, FeatureEnum } from '@app/common';
+import { IPlatformLinks } from '@app/common/interfaces/platform.v3.links';
 
 import {
   ILendingFeatureEntryMinimal,
@@ -38,14 +39,7 @@ export interface IPlatformMeta {
   features: IFeatureMeta[];
 
   // Social Media Links
-  links?: {
-    logo?: string; // main platform logo
-    discord?: string; // project discord
-    twitter?: string; // project twitter
-    telegram?: string; // community telegram channel
-    url?: string; // website url
-    github?: string; // github profile
-  };
+  links?: IPlatformLinks;
 }
 export interface IProtocolMeta {
   id?: string; // todo: should be required
@@ -114,6 +108,9 @@ export interface IRootProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMe
 
   // caches all pool data
   cachePoolData?(): Promise<IWalletMinimal[]>;
+
+  // returns the fully hydrated, and formatted pool data
+  getFormattedPoolData?(): Promise<[IWalletOpportunity[], Error[]]>;
 
   // returns the fully hydrated (with real-time prices) pool data
   getPoolData?(): Promise<[IWalletOpportunity[], Error[]]>;

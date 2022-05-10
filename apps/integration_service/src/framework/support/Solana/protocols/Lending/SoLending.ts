@@ -53,7 +53,8 @@ export class SoLending
   extends SolanaCore<
     SolendLendingFeatureEntryMinimal,
     SolendLendingFeatureOpportunity,
-    ILendingFeatureUserEntry
+    ILendingFeatureUserEntry,
+    IProtocolMeta & { baseApiUrl: string, address: string}
   >
   implements IRootProtocol
 {
@@ -68,11 +69,6 @@ export class SoLending
   ) {
     super();
   }
-  meta: IProtocolMeta & { baseApiUrl: string, address: string};
-
-  async initialize(): Promise<void> {
-    //
-  }
 
   async getCacheableOpportunityData(): Promise<SolendLendingFeatureEntryMinimal[]> {
     const markets = (await this.getConfig()).markets;
@@ -82,7 +78,7 @@ export class SoLending
       await this.getReserveAddressToDetailsMap();
 
     return markets.map((market) => ({
-      id: market.address, 
+      id: market.address,
       chain: this.meta?.chain,
       debtRatio: 0,
       feature: FeatureEnum.lending,
@@ -105,10 +101,10 @@ export class SoLending
           ...reserveDetails.rewards.map(({ side, rewardMint, apy }) => ({
             token: {
               address: rewardMint,
-              rewardedForLendingSide: side === 'borrow' ? 'borrowed' : 'supplied',
-              rewardedForTokenAddress: assetSymbolToAddressMap.get(reserve.asset),
-              apy
             },
+            rewardedForLendingSide: side === 'borrow' ? 'borrowed' : 'supplied',
+            rewardedForTokenAddress: assetSymbolToAddressMap.get(reserve.asset),
+            apy
           })),
         ];
       }, []) : [],
@@ -133,23 +129,45 @@ export class SoLending
     });
   }
 
+  async getFormattedPoolData(): Promise<[SolendLendingFeatureOpportunity[], Error[]]> {
+    const [markets, errors] = await this.getPoolData()
+
+
+    return [markets.flatMap(market => {
+      return [
+        ...market.supplied.map(supplied => {
+          const rewarded = market.rewarded.filter(r => r.rewardedForLendingSide === 'supplied' && r.rewardedForTokenAddress === supplied.token.address)
+          return {
+            ...market,
+            id: `${market.id}::${supplied.token.address}`,
+            supplied: [supplied],
+            rewarded,
+            borrowed: [] //; hide borrowed details for opportunity data
+          }
+        })
+      ]
+    }), errors]
+  }
+
   private async getReserveAddressToDetailsMap(): Promise<Map<string, any> | undefined> {
-   
+
       const markets = (await this.getConfig()).markets;
       const reserveAddresses = markets.reduce(
         (acc, market) => [...acc, ...market.reserves.map(({ address }) => address)],
         [],
       );
-      const reserveDetailsPromises = reserveAddresses.map(x => firstValueFrom(this.httpService.get(this.meta.baseApiUrl + '/reserves/?ids=' + x))
-                                                                                              .catch(() => null));
+      const reserveDetailsPromises = reserveAddresses.map(x => {
+        return firstValueFrom(this.httpService.get(this.meta.baseApiUrl + '/reserves/?ids=' + x)).catch(() => null)
+      });
 
       let reserveDetails;
       const notFoundReserveIndexes = [];
-     try{
+
+     try {
       const cacheKey = 'solend_reserves_response';
       const cached = await this.cache.get<Map<string, any>>(cacheKey);
       if (cached) reserveDetails = cached;
-     
+
 
       reserveDetails = (await Promise.all(reserveDetailsPromises)).filter((x, index) => {
         if(!x) {
@@ -163,14 +181,8 @@ export class SoLending
        this.logger.error(e);
        return;
      }
-      
-       return this.createMapFromArrays(reserveAddresses.filter((_, index) => !notFoundReserveIndexes.includes(index)), reserveDetails);
-  }
 
-  protected async updateRealTimeData(
-    opportunities: SolendLendingFeatureEntryMinimal[],
-  ): Promise<SolendLendingFeatureEntryMinimal[]> {
-    return opportunities;
+       return this.createMapFromArrays(reserveAddresses.filter((_, index) => !notFoundReserveIndexes.includes(index)), reserveDetails);
   }
 
   protected formatOpportunity(
@@ -189,7 +201,7 @@ export class SoLending
 
       return {
         token,
-        totalSupplied,          
+        totalSupplied,
         reserveAddress: poolToken.reserveAddress,
         tvl,
       };
@@ -219,7 +231,7 @@ export class SoLending
       supplied,
       borrowed,
       rewarded: opportunity.rewarded.filter(x => tokens.has(x.token.address)).map((poolToken) => {
-        
+
         const token = tokens.get(poolToken.token.address);
         const apyPercentage = +poolToken.apy;
 
@@ -247,7 +259,7 @@ export class SoLending
           apr: apyBreakdown
         };
       }),
-   
+
     };
   }
 
@@ -263,7 +275,7 @@ export class SoLending
 
       for (const userAddress of addresses) {
         const userPositions: ILendingFeatureUserEntry[] = [];
- 
+
         for (const pool of pools) {
           const lendingMarketAddress = pool.id;
           const seed = lendingMarketAddress.slice(0, 32);
@@ -297,7 +309,7 @@ export class SoLending
 
           let totalValueBorrowed = 0;
           for (const borrow of obligation.info.borrows as any) {
-          
+
             const rawBorrowReserve = await this.web3Service
               .getInstanceByChainId(ChainIdEnum.sol)
               .getAccountInfo((borrow as any).borrowReserve);
@@ -309,9 +321,9 @@ export class SoLending
 
             const borrowReserveDetailsFromApi = reserveAddressToDetailsMap?.get(borrowedOpportunity.reserveAddress);
             const normalizedBorrowedAmount = normalizeDecimals(borrow.borrowedAmountWads.toString(), borrowedOpportunity.token.decimals + 18);
-            
+
             const valueBorrowed = borrowedOpportunity.token.price ? new BN(normalizedBorrowedAmount).multipliedBy(borrowedOpportunity.token.price)
-                                                                                                    .toNumber() 
+                                                                                                    .toNumber()
                                                                   : normalizeDecimals(borrow.marketValue.toString(), 18);
 
             totalValueBorrowed += valueBorrowed;
@@ -338,18 +350,18 @@ export class SoLending
             const depositTokenAddress = depositReserve.info.liquidity.mintPubkey.toString();
             // eslint-disable-next-line prettier/prettier
             const depositOpportunity = <ISupplyTokenOpportunity & { reserveAddress: string }>(poolTokensAddressesToOpportunityMap.get(depositTokenAddress) as unknown);
-             
+
             const depositReserveDetailsFromApi = reserveAddressToDetailsMap.get(depositOpportunity.reserveAddress);
 
             const totalSuppliedByAllUsers = normalizeDecimals(depositReserve.info.collateral.mintTotalSupply.toString(), depositOpportunity.token.decimals);
 
             const normalizedDepositAmount = normalizeDecimals(
               deposit.depositedAmount.toString(),
-              depositOpportunity.token.decimals, 
+              depositOpportunity.token.decimals,
             );
 
             const depositValue = depositOpportunity.token.price ? new BN(normalizedDepositAmount).multipliedBy(depositOpportunity.token.price)
-                                                                                                 .toNumber()    
+                                                                                                 .toNumber()
                                                                 : normalizeDecimals(deposit.marketValue.toString(), 18);
 
             if(depositValue > 0) {
@@ -357,7 +369,7 @@ export class SoLending
                                                                                       .dividedBy(new BN(100))
                                                                                       .toNumber();
             }
-            
+
             supplied.push({
               apy: { variableApy: +depositReserveDetailsFromApi?.rates?.supplyInterest },
               token: depositOpportunity.token,
@@ -367,7 +379,7 @@ export class SoLending
               tvl: depositOpportunity.token.price ? new BN(depositOpportunity.token.price).multipliedBy(new BN(totalSuppliedByAllUsers))
                                                                                           .toNumber() : 0,
               totalSupply: (depositOpportunity.token as any).totalSupply,
-            });        
+            });
           };
 
           userPositions.push({
@@ -379,7 +391,7 @@ export class SoLending
             debtRatio: new BN(totalValueSuppliedFactoredByLiquidationThreshold).dividedBy(new BN(totalValueBorrowed ? totalValueBorrowed : 1))
                                                                                .toNumber(),
           });
-        } 
+        }
 
         wallets.set(userAddress, userPositions);
       }
@@ -398,4 +410,3 @@ export class SoLending
     return new Map<T,G>(array1.map((x,i) => [x, array2[i]]))
   }
 }
- 

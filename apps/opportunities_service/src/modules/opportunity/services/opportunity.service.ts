@@ -8,6 +8,7 @@ import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/Opportu
 import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
 
 import { InternalV2Adapter } from '../adapters/internal.v2.adapter';
+import { InternalV3Adapter } from '../adapters/internal.v3.adapter';
 // import { MultifarmAdapter } from '../adapters/multifarm/multifarm.adapter';
 import { OpportunityEntity } from '../entities/opportunity.entity';
 import { SyncResult } from '../interfaces/sync.result.interface';
@@ -38,14 +39,15 @@ export class OpportunityService {
     try {
       const { count } = await this.opportunityAdapterService.runInOrder([
         InternalV2Adapter,
+        InternalV3Adapter,
         // MultifarmAdapter,
         // CoinDixAdapter,
         // VFatAdapter
       ]);
 
       return { success: true, count };
-    } catch (e) {
-      this.logger.error(e, 'OpportunityService.sync');
+    } catch (e: any) {
+      this.logger.error(e, e.stack ?? 'OpportunityService.sync');
       return { success: false, count: 0, error: e.message };
     }
   }

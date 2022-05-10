@@ -60,13 +60,7 @@ export class OpportunitySearchQueryDto {
 
   @ApiProperty({
     type: [VaultTypeEnum],
-    example: [
-      VaultTypeEnum.POOL,
-      VaultTypeEnum.NO_IL,
-      VaultTypeEnum.SINGLE_STAKE,
-      VaultTypeEnum.STABLE_POOL,
-      VaultTypeEnum.LENDING,
-    ],
+    example: [VaultTypeEnum.POOL, VaultTypeEnum.SINGLE_STAKE, VaultTypeEnum.LENDING],
     default: [],
     required: false,
   })

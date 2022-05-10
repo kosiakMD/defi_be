@@ -28,48 +28,27 @@ export class EndpointsToRPCCallService {
     this.updateFromDatabaseEndpointsToRPCCall();
   }
 
-  private successRateCacheKey(endpointToRPCCall: EndpointToRPCCall): string {
-    return `${endpointToRPCCall.endpointsEntity.chainId}${endpointToRPCCall.endpointsEntity.endpoint}`;
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleUpdateFromCacheCron() {
+    this.logger.log('Called every 10 seconds, sortEndpointsToRPCCallByPriorityAndSuccessRate');
+    await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
   }
 
-  private filterEndpointSuccessScores(endpointSuccessScores: SuccessScore[]): SuccessScore[] {
-    const now = Date.now();
-    const endpointsSuccessRateTTL = this.configService.get('ENDPOINTS_SUCCESS_RATE_TTL');
-    const endpointsSuccessRateMaxItemsNum = this.configService.get(
-      'ENDPOINTS_SUCCESS_RATE_MAX_ITEMS_NUM',
-    );
-    return endpointSuccessScores.filter(
-      (score: SuccessScore, index: number) =>
-        index < endpointsSuccessRateMaxItemsNum - 1 &&
-        now - score.timestamp < endpointsSuccessRateTTL,
-    );
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  async handleUpdateFromDatabaseCron() {
+    this.logger.log('Called every 30 seconds, updateFromDatabaseEndpointsToRPCCall');
+    await this.updateFromDatabaseEndpointsToRPCCall();
   }
 
-  private async getEndpointToRPCSuccessRateCache(
-    endpointToRPCCall: EndpointToRPCCall,
-  ): Promise<SuccessScore[]> {
-    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
-    const endpointSuccessScores: string = await this.cacheManager.get(cacheKey);
-    return JSON.parse(endpointSuccessScores || '[]');
+  public getAllEndpointsToRPCCall(): Map<number, EndpointToRPCCall[]> {
+    return this.endpointsToRPCCall;
   }
 
-  private async setEndpointToRPCSuccessRateCache(
-    endpointToRPCCall: EndpointToRPCCall,
-    successScores: SuccessScore[],
-  ): Promise<void> {
-    const endpointsSuccessRateHistoryTTL =
-      (this.configService.get('ENDPOINTS_SUCCESS_RATE_HISTORY_TTL') || 24 * 60) * 1000;
-    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
-    await this.cacheManager.set(cacheKey, JSON.stringify(successScores), {
-      ttl: endpointsSuccessRateHistoryTTL,
-    });
-  }
-
-  getEndpointsToRPCCall(chainId: number): EndpointToRPCCall[] {
+  public getEndpointsToRPCCall(chainId: number): EndpointToRPCCall[] {
     return this.endpointsToRPCCall.get(chainId);
   }
 
-  async updateEndpointSuccessRate(
+  public async updateEndpointSuccessRate(
     endpointToRPCCall: EndpointToRPCCall,
     scoreValue: EndpointsSuccessScore,
   ): Promise<void> {
@@ -157,15 +136,40 @@ export class EndpointsToRPCCallService {
     await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
   }
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async handleUpdateFromCacheCron() {
-    this.logger.log('Called every 10 seconds, sortEndpointsToRPCCallByPriorityAndSuccessRate');
-    await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
+  private successRateCacheKey(endpointToRPCCall: EndpointToRPCCall): string {
+    return `${endpointToRPCCall.endpointsEntity.chainId}${endpointToRPCCall.endpointsEntity.endpoint}`;
   }
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
-  async handleUpdateFromDatabaseCron() {
-    this.logger.log('Called every 30 seconds, updateFromDatabaseEndpointsToRPCCall');
-    await this.updateFromDatabaseEndpointsToRPCCall();
+  private filterEndpointSuccessScores(endpointSuccessScores: SuccessScore[]): SuccessScore[] {
+    const now = Date.now();
+    const endpointsSuccessRateTTL = this.configService.get('ENDPOINTS_SUCCESS_RATE_TTL');
+    const endpointsSuccessRateMaxItemsNum = this.configService.get(
+      'ENDPOINTS_SUCCESS_RATE_MAX_ITEMS_NUM',
+    );
+    return endpointSuccessScores.filter(
+      (score: SuccessScore, index: number) =>
+        index < endpointsSuccessRateMaxItemsNum - 1 &&
+        now - score.timestamp < endpointsSuccessRateTTL,
+    );
+  }
+
+  private async getEndpointToRPCSuccessRateCache(
+    endpointToRPCCall: EndpointToRPCCall,
+  ): Promise<SuccessScore[]> {
+    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
+    const endpointSuccessScores: string = await this.cacheManager.get(cacheKey);
+    return JSON.parse(endpointSuccessScores || '[]');
+  }
+
+  private async setEndpointToRPCSuccessRateCache(
+    endpointToRPCCall: EndpointToRPCCall,
+    successScores: SuccessScore[],
+  ): Promise<void> {
+    const endpointsSuccessRateHistoryTTL =
+      (this.configService.get('ENDPOINTS_SUCCESS_RATE_HISTORY_TTL') || 24 * 60) * 1000;
+    const cacheKey = this.successRateCacheKey(endpointToRPCCall);
+    await this.cacheManager.set(cacheKey, JSON.stringify(successScores), {
+      ttl: endpointsSuccessRateHistoryTTL,
+    });
   }
 }

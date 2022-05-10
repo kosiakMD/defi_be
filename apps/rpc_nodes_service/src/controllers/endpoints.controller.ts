@@ -9,7 +9,7 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiResponse, ApiTags, PartialType } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
@@ -18,6 +18,7 @@ import { FindOneParamsDto } from '../common/dto/FindOneParams.dto';
 import { ListQueryDto } from '../common/dto/ListQuery.dto';
 
 import { EndpointCreateDto } from '../modules/endpoints/dto/endpoint.create.dto';
+import { EndpointDto } from '../modules/endpoints/dto/endpoint.dto';
 import { EndpointUpdateDto } from '../modules/endpoints/dto/endpoint.update.dto';
 import { EndpointsListDto } from '../modules/endpoints/dto/endpoints.list.dto';
 import { EndpointsEntity } from '../modules/endpoints/endpoints.entity';
@@ -45,12 +46,14 @@ export class EndpointsController {
   }
 
   @Post('/')
+  @ApiBody({ type: PartialType(EndpointDto) })
   @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
   post(@Query() query: EndpointCreateDto): Promise<EndpointsEntity> {
     return this.endpointsService.createEndpoint(query);
   }
 
   @Put('/:id')
+  @ApiBody({ type: PartialType(EndpointDto) })
   @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
   put(
     @Param() params: FindOneParamsDto,

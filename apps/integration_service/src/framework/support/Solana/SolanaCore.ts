@@ -9,7 +9,7 @@ import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
-import { RootProtocol } from '../RootProtocol';
+import { RootProtocolCacheable } from '../RootProtocolCacheable';
 import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 
 export abstract class SolanaCore<
@@ -17,7 +17,7 @@ export abstract class SolanaCore<
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
   TProtocolMeta extends IProtocolMeta = IProtocolMeta,
-> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
+> extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
   protected abstract cache: Cache;
@@ -89,23 +89,9 @@ export abstract class SolanaCore<
             decimals: token.decimals,
             reserve: supplyMap.get(token.address),
             totalSupply: supplyMap.get(token.address),
-            price: prices[token.address] || 0,
+            price: Number(prices[token.address] || 0),
           },
         ];
       });
   }
-
-  // protected getUniqueTokensFromRawPools(pools: TMinimalType[]) {
-  //   const tokens = new Set<string>();
-  //   const features = ['supplied', 'borrowed', 'rewarded'];
-  //   features.forEach((featureName) => {
-  //     pools.forEach((pool) => {
-  //       if (pool?.[featureName]?.length) {
-  //         pool[featureName].forEach((item) => tokens.add(item.token.address));
-  //       }
-  //     });
-  //   });
-
-  //   return Array.from(tokens);
-  // }
 }

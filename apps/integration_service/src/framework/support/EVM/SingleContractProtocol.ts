@@ -9,7 +9,6 @@ import {
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
-  TokenMap,
 } from '../interfaces';
 import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';
@@ -36,10 +35,6 @@ export abstract class SingleContractProtocol<
    *
    */
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
-  protected abstract formatOpportunity(
-    pool: TMinimalType,
-    tokens: TokenMap,
-  ): TOpportunityType | void;
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;

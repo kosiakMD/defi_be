@@ -33,6 +33,10 @@ export class BalancerLiquidity extends Balancer<IBalancerPoolMeta> implements IR
     super();
   }
 
+  async initialize() {
+    //
+  }
+
   async getUsersData(
     addresses: string[],
   ): Promise<[Map<string, IPoolFeatureEntryUserEntry[]>, Error[]]> {

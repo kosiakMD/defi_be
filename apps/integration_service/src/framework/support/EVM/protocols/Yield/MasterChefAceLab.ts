@@ -1,5 +1,5 @@
 import { Address } from '@app/common';
-import { equals, startsWith } from '@app/common/utils';
+import { equals } from '@app/common/utils';
 
 import { IFunctionPredicate } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
@@ -15,20 +15,20 @@ interface IContext {
   badPools?: number[]; // poolIds to skip
 }
 
-type IAceLabFunctionPredicate = RequiredKeys<IFunctionPredicate>;
-
 /**
  * 'Flipped' masterchef. deposit the same token into
  * every pool, but get a different reward from each
  */
 export class MasterChefAceLab extends MasterChef {
-  functionPredicates: IAceLabFunctionPredicate = {
-    poolLength: () => (item) => startsWith(item.name, 'poollen'),
-    depositToken: () => (item) => equals(item.name, 'xboo'),
-    poolInfo: () => (item) => startsWith(item.name, 'poolinf'),
-    userInfo: () => (item) => startsWith(item.name, 'userinf'),
-    pendingRewards: () => (item) => startsWith(item.name, 'pending'),
-  };
+  protected updateFunctionPredicates(): void {
+    // reward token info is inside of poolInfo for ace lab
+    delete this.functionPredicates.rewardPerSecond;
+    delete this.functionPredicates.rewardToken;
+    delete this.functionPredicates.totalAllocPoint;
+
+    // xBoo is the only deposit token for all pools (rewards are different per pool)
+    this.functionPredicates.depositToken = () => (item) => equals(item.name, 'xboo');
+  }
 
   protected formatContext(context: RequiredKeys<any>): IContext {
     context.poolLength = parseInt(context.poolLength, 10);

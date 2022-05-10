@@ -108,7 +108,7 @@ export class PlatformService {
     return lastValueFrom(data$);
   }
 
-  public async getUserPositionsForProtocol(
+  public async getUserPositionsForPlatform(
     platformName: string,
     chains: ChainId[],
     addresses: Address[],
@@ -131,7 +131,7 @@ export class PlatformService {
     };
   }
 
-  public async getOpportunitiesForProtocol(
+  public async getOpportunitiesForPlatform(
     platformName: string,
     chains: ChainId[],
   ): Promise<IOpportunityResponse> {
@@ -171,7 +171,7 @@ export class PlatformService {
     }>[] = Object.entries(chainsProtocols).map(async ([chain, cProtocols]) => {
       const result = [];
       for (const protocol of cProtocols as string[]) {
-        const res = await this.cacheOpportunitiesForProtocol(protocol, [Number(chain)], false);
+        const res = await this.cacheOpportunitiesForPlatform(protocol, [Number(chain)], false);
         result.push(res);
       }
       return {
@@ -187,7 +187,7 @@ export class PlatformService {
     };
   }
 
-  public async cacheOpportunitiesForProtocol(
+  public async cacheOpportunitiesForPlatform(
     platformName: string,
     chains: ChainId[],
     debug: boolean,

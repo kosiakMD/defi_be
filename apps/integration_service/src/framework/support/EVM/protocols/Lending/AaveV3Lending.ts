@@ -1,6 +1,5 @@
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
-import { AbiItem } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -14,24 +13,30 @@ import { toDecimals } from '../../../../../common/utils/util';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import {
-  INamedFunctionPredicates,
-  IProtocolMeta,
-  IRootProtocol,
-  TokenMap,
-} from '../../../interfaces';
+import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
   ILendingFeatureEntryMinimal,
   ILendingFeatureOpportunity,
   ILendingFeatureUserEntry,
 } from '../../../interfaces/feature.lending.interface';
+import {
+  IBorrowTokenMinimal,
+  IBorrowTokenOpportunity,
+} from '../../../interfaces/tokens.borrowed.interface';
+import {
+  ISupplyTokenMinimal,
+  ISupplyTokenOpportunity,
+} from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
 interface IAaveV3LendContext {
-  allReservedTokens: { address: string; symbol: string }[];
+  allReservedTokens: { tokenAddress: string; symbol: string }[];
+  allATokens: any;
+  reserveTokensAddresses: any;
 }
 
+const AAVE_RATE_DECIMALS = 27;
 export interface IAaveV3Meta extends IProtocolMeta {
   feature: FeatureEnum.lending;
   address: Address;
@@ -61,6 +66,7 @@ export class AaveV3Lending
   }
 
   protected functionPredicates: INamedFunctionPredicates = {
+    allATokens: () => (item) => item.name === 'getAllATokens',
     allReservedTokens: () => (item) => item.name === 'getAllReservesTokens',
     reserveData: () => (item) => item.name === 'getReserveData',
     userReserveData: () => (item) => item.name === 'getUserReserveData',
@@ -71,11 +77,10 @@ export class AaveV3Lending
     context: IAaveV3LendContext,
   ): Promise<ILendingFeatureEntryMinimal[]> {
     const contract = this.getMainContract();
-
     const reservesDataResp = await this.multicall.callArray(
-      context.allReservedTokens.map((token) =>
-        contract.createCall(this.functions.reserveData, token.address),
-      ),
+      context.allReservedTokens.map((token) => {
+        return contract.createCall(this.functions.reserveData, token.tokenAddress);
+      }),
       this.meta.chain,
     );
 
@@ -92,6 +97,8 @@ export class AaveV3Lending
         index,
       ) => {
         const reservedPool = context.allReservedTokens[index];
+        const aToken = context.allATokens[index];
+
         const borrowRate = {};
         this.updateBorrowRateField(
           'variableRate',
@@ -105,18 +112,17 @@ export class AaveV3Lending
         return {
           feature: this.meta.feature,
           chain: this.meta.chain,
-          id: reservedPool.symbol,
-          debtRatio: 0,
+          id: aToken.tokenAddress.toLowerCase(),
           supplied: [
             {
-              token: { address: reservedPool.address },
+              token: { address: reservedPool.tokenAddress.toLowerCase() },
               totalSupplied: totalAToken.toString(),
               rate: { supplyRate: liquidityRate.toString() },
             },
           ],
           borrowed: [
             {
-              token: { address: reservedPool.address },
+              token: { address: reservedPool.tokenAddress.toLowerCase() },
               totalBorrowed: (totalVariableDebt as BigNumber).plus(totalStableDebt).toString(),
               rate: borrowRate,
             },
@@ -135,7 +141,7 @@ export class AaveV3Lending
 
     this.functions = await this.abiService.parseFunctionsFromAddress(
       this.meta.address,
-      this.meta.chain === ChainIdEnum.ftm ? ChainIdEnum.plg : this.meta.chain,
+      ChainIdEnum.plg, // TODO: update to this.meta.chain once they are verified
       this.functionPredicates,
     );
 
@@ -147,21 +153,33 @@ export class AaveV3Lending
     );
   }
 
-  updateBorrowRateField(field: string, rate: BigNumber, debtValue: BigNumber, borrowRate: any) {
+  protected updateBorrowRateField(
+    field: string,
+    rate: BigNumber,
+    debtValue: BigNumber,
+    borrowRate: any,
+  ) {
     if (Number(debtValue) > 0) {
       borrowRate[field] = rate.toString();
     }
   }
 
-  protected fetchUserData(addresses: Address[], pools: ILendingFeatureOpportunity[]) {
+  protected async fetchUserData(addresses: Address[], pools: ILendingFeatureOpportunity[]) {
     const contract = this.getMainContract();
     const poolContract = new DynamicContract(this.meta.pool);
+    const poolFunctions = await this.abiService.parseFunctionsFromAddress(
+      this.meta.pool,
+      ChainIdEnum.avax, // TODO: update to this.meta.chain once they are verified
+      {
+        getUserAccountData: () => (item) => item.name === 'getUserAccountData',
+      },
+    );
 
     const calls = new Map();
     addresses.forEach((address) => {
       calls.set(
         `${address}.getUserAccountData`,
-        poolContract.createCall(abiGetUserAccountData, address),
+        poolContract.createCall(poolFunctions.getUserAccountData, address),
       );
       return pools.forEach((pool) => {
         calls.set(
@@ -178,72 +196,19 @@ export class AaveV3Lending
     return this.multicall.handleInBatches(calls, this.meta.chain);
   }
 
-  protected formatOpportunity(
-    pool: ILendingFeatureEntryMinimal,
-    tokens: TokenMap,
-  ): void | ILendingFeatureOpportunity {
-    const suppliedToken = tokens.get(pool.supplied[0].token.address.toLowerCase());
-    const borrowedToken = tokens.get(pool.borrowed[0].token.address.toLowerCase());
-    if (!suppliedToken || !borrowedToken) return;
-    const totalSupplied = normalizeDecimals(pool.supplied[0].totalSupplied, suppliedToken.decimals);
-    const totalBorrowed = normalizeDecimals(pool.borrowed[0].totalBorrowed, borrowedToken.decimals);
-    const tvl = totalSupplied * suppliedToken.price;
-    const borrowTvl = totalBorrowed * borrowedToken.price;
-
-    const borrowApy = Object.entries(pool.borrowed[0].rate)?.reduce((resp, [key, value]) => {
-      Object.assign(resp, { [key.replace('Rate', 'Apy')]: this.getApyFromRate(value) });
-      return resp;
+  protected formatBorrowApy(borrowed: IBorrowTokenMinimal) {
+    return Object.entries(borrowed.rate)?.reduce((resp, [key, value]) => {
+      // renames variableRate, stableRate => variableApy, stableApy (if present)
+      return Object.assign(resp, {
+        [key.replace('Rate', 'Apy')]: normalizeDecimals(value, AAVE_RATE_DECIMALS),
+      });
     }, {});
+  }
 
+  protected formatSupplyApy(supplied: ISupplyTokenMinimal) {
     return {
-      feature: pool.feature,
-      id: pool.id,
-      chain: pool.chain,
-      borrowed: [
-        {
-          token: borrowedToken,
-          tvl: borrowTvl,
-          apy: borrowApy,
-        },
-      ],
-      supplied: [
-        {
-          token: suppliedToken,
-          totalSupplied,
-          tvl,
-          apy: { supplyApy: this.getApyFromRate(pool.supplied[0].rate.supplyRate) },
-        },
-      ],
-      rewarded: [],
+      supplyApy: normalizeDecimals(supplied.rate.supplyRate, AAVE_RATE_DECIMALS),
     };
-  }
-
-  getApyFromRate(rate: string): number {
-    return new BigNumber(rate) //
-      .div(new BigNumber(10).pow(25))
-      .toNumber();
-  }
-
-  protected async callInputlessFunctions() {
-    // Prepare all inputless contract calls for automated multicall
-    const inputlessCalls = Object.entries(this.functions).filter(
-      ([, abiItem]) => !abiItem.inputs?.length,
-    );
-
-    // Execute multicall
-    const contract = this.getMainContract();
-    const results = await this.multicall.callArray(
-      inputlessCalls.map(([, abiItem]) => contract.createCall(abiItem)),
-      this.meta.chain,
-    );
-
-    return inputlessCalls.reduce((acc, [name]) => {
-      acc[name] = results[0].map((item) => ({
-        address: item['tokenAddress'],
-        symbol: item['symbol'],
-      }));
-      return acc;
-    }, this.meta.context ?? ({} as { [ley: string]: any }));
   }
 
   async getUsersData(
@@ -267,15 +232,16 @@ export class AaveV3Lending
               data: { currentATokenBalance, currentStableDebt, currentVariableDebt },
             },
           } = multicallResults.get(`${pool.id}.userReserveData(${address})`);
-          if (Number(currentATokenBalance) > 0)
-            supplyTokens.push(this.formatLendingUserData(pool, currentATokenBalance, 'supplied'));
+          if (Number(currentATokenBalance) > 0) {
+            supplyTokens.push(this.formatLendingUserData(pool.supplied[0], currentATokenBalance));
+          }
           if (Number(currentVariableDebt) > 0) {
             delete pool.borrowed[0].apy.stableApy;
-            borrowTokens.push(this.formatLendingUserData(pool, currentVariableDebt, 'borrowed'));
+            borrowTokens.push(this.formatLendingUserData(pool.borrowed[0], currentVariableDebt));
           }
           if (Number(currentStableDebt) > 0) {
             delete pool.borrowed[0].apy.variableApy;
-            borrowTokens.push(this.formatLendingUserData(pool, currentStableDebt, 'borrowed'));
+            borrowTokens.push(this.formatLendingUserData(pool.borrowed[0], currentStableDebt));
           }
         });
         const userHealthFactorRaw = multicallResults.get(`${address}.getUserAccountData`).output
@@ -287,7 +253,10 @@ export class AaveV3Lending
           borrowed: borrowTokens,
           supplied: supplyTokens,
           rewarded: [],
-          debtRatio: toDecimals(userHealthFactorRaw, 18),
+          debtRatio:
+            borrowTokens.length || supplyTokens.length
+              ? Math.min(toDecimals(userHealthFactorRaw, 18), 1_000_000)
+              : 0,
         });
       });
     } catch (err) {
@@ -296,12 +265,31 @@ export class AaveV3Lending
     return [results, errors];
   }
 
-  formatLendingUserData(pool: ILendingFeatureOpportunity, balance: string, feature: string) {
-    const featureObject = pool[feature][0];
-    const userBalance = toDecimals(balance, featureObject.token.decimals);
-    return Object.assign(featureObject, {
+  formatLendingUserData(pool: IBorrowTokenOpportunity | ISupplyTokenOpportunity, balance: string) {
+    const userBalance = toDecimals(balance, pool.token.decimals);
+    let apy = null;
+    if (pool.apy) {
+      const variants = ['supplyApy', 'borrowApy', 'stableApy', 'variableApy'];
+      for (const variant of variants) {
+        if (pool.apy[variant]) {
+          apy = pool.apy[variant];
+          break;
+        }
+      }
+    }
+
+    const breakdown = {
+      day: apy / 365,
+      week: apy / 52,
+      month: apy / 12,
+      year: apy,
+    };
+
+    return Object.assign({}, pool, {
       amount: userBalance,
-      value: userBalance * featureObject.token.price,
+      value: userBalance * pool.token.price,
+      apr: breakdown,
+      apy: breakdown,
     });
   }
 
@@ -338,18 +326,3 @@ export class AaveV3Lending
     return pool as ILendingFeatureUserEntry;
   }
 }
-
-export const abiGetUserAccountData: AbiItem = {
-  inputs: [{ internalType: 'address', name: 'user', type: 'address' }],
-  name: 'getUserAccountData',
-  outputs: [
-    { internalType: 'uint256', name: 'totalCollateralBase', type: 'uint256' },
-    { internalType: 'uint256', name: 'totalDebtBase', type: 'uint256' },
-    { internalType: 'uint256', name: 'availableBorrowsBase', type: 'uint256' },
-    { internalType: 'uint256', name: 'currentLiquidationThreshold', type: 'uint256' },
-    { internalType: 'uint256', name: 'ltv', type: 'uint256' },
-    { internalType: 'uint256', name: 'healthFactor', type: 'uint256' },
-  ],
-  stateMutability: 'view',
-  type: 'function',
-};

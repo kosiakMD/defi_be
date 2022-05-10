@@ -58,8 +58,11 @@ export class CakeVault
     protected priceService: PriceService,
   ) {
     super();
+    if (this.updateFunctionPredicates) {
+      this.updateFunctionPredicates();
+    }
   }
-
+  protected updateFunctionPredicates?(): void;
   protected functionPredicates: INamedFunctionPredicates = {
     totalStaked: () => (item) => item.name === 'balanceOf', // not an erc20, this reports the contracts amount on pool 0 of masterchef
     stakedToken: () => (item) => item.name === 'token',

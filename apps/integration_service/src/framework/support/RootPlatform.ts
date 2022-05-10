@@ -43,7 +43,9 @@ export abstract class RootPlatform implements IRootPlatform {
   ) {
     const instance = await this.moduleRef.create(protocol);
     instance.registerMeta(meta);
-    await instance.initialize();
+    if (instance.initialize) {
+      await instance.initialize();
+    }
     if (this.registrationLocked) {
       return this.logger.error(
         `Protocol Registration occurred after platform has been initialized. Likely forgot 'await' in platforms register handle`,
@@ -95,7 +97,7 @@ export abstract class RootPlatform implements IRootPlatform {
       const { chain, list: features } = protocol.getMeta();
       supportedChains.add(chain.id);
 
-      if (!chains.includes(chain.id)) {
+      if (!chains.includes(chain.id) || !protocol.getUsersData) {
         return;
       }
       const validAddressesForChain = keepAddressesByChainId(addresses, chain.id);
@@ -140,7 +142,7 @@ export abstract class RootPlatform implements IRootPlatform {
     this.protocols.forEach((protocol) => {
       const { chain } = protocol.getMeta();
       supportedChains.add(chain.id);
-      if (chains.includes(chain.id)) {
+      if (chains.includes(chain.id) && protocol.getPoolData) {
         promises.push(protocol.getPoolData());
       }
     });
@@ -173,7 +175,7 @@ export abstract class RootPlatform implements IRootPlatform {
     const promises = [];
     this.protocols.forEach((protocol) => {
       const { chain } = protocol.getMeta();
-      if (chains.includes(chain.id)) {
+      if (chains.includes(chain.id) && protocol.cachePoolData) {
         promises.push(protocol.cachePoolData());
       }
     });

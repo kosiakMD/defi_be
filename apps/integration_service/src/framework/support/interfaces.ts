@@ -11,7 +11,6 @@ import {
   IPoolFeatureEntryMinimal,
   IPoolFeatureEntryOpportunity,
   IPoolFeatureEntryUserEntry,
-  IPoolFeatureOpportunity,
 } from './interfaces/feature.pool.interface';
 import {
   IStakingFeatureOpportunity,
@@ -49,18 +48,19 @@ export interface IPlatformMeta {
   };
 }
 export interface IProtocolMeta {
+  id?: string; // todo: should be required
+  name: string;
   chain: ChainIdEnum;
   feature: FeatureEnum;
+  links?: any; // TODO: match IFeaturedLinks, but this is callable functions to generate the urls
 }
 
 export type IWalletMinimal =
-  | IPoolFeatureOpportunity
   | IPoolFeatureEntryMinimal
   | IStakingFeatureMinimal
   | ILendingFeatureEntryMinimal;
 
 export type IWalletOpportunity =
-  | IPoolFeatureOpportunity
   | IPoolFeatureEntryOpportunity
   | IStakingFeatureOpportunity
   | ILendingFeatureOpportunity;
@@ -87,34 +87,39 @@ export interface IPlatformUserEntry {
 // common required platform interface
 export interface IRootPlatform {
   getMeta(): IPlatformMeta;
-  getPoolData(chains: ChainId[]): Promise<[IWalletOpportunity[], Error[]]>; // return all pools
-  getUsersData(chains: ChainId[], addresses: Address[]): Promise<[IPlatformUserEntry[], Error[]]>;
+  cachePoolData;
+  getPoolData?(chains: ChainId[]): Promise<[IWalletOpportunity[], Error[]]>; // return all pools
+  getUsersData?(chains: ChainId[], addresses: Address[]): Promise<[IPlatformUserEntry[], Error[]]>;
 }
 
+// TODO: CacheData, PoolData, UserData are all optional
+// TODO: this should just be 1. initialization, meta, cache, pools, user
 export interface IRootProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta> {
-  // Preparation steps (downloading the ABI)
-  initialize(): Promise<void>;
-
-  // returns the fully hydrated (with real-time prices) pool data
-  getPoolData(): Promise<[IWalletOpportunity[], Error[]]>;
-  // filters pool data to only include user positions
-  getUsersData(addresses: Address[]): Promise<[Map<Address, IWalletUserEntry[]>, Error[]]>;
-
-  // gets the cacheable pool data (without realtime such as prices)
-  // getCacheableOpportunityData(): Promise<IWalletMinimal[]>;
-  // // fills cached pool data with realtime prices etc
-  // hydrateOpportunityData(pools: IWalletMinimal[]): Promise<IWalletOpportunity[]>;
-
-  // caches all pool data
-  cachePoolData(): Promise<IWalletMinimal[]>;
-
   // sets all required metadata for the instance
   meta: TProtocolMeta;
-  registerMeta(meta: TProtocolMeta): void;
+
+  readonly protocolId: string;
+
+  registerMeta(meta: TProtocolMeta): void; // TODO: SetMeta
+
   // returns formatted metadata from the instance
   getMeta(): IFeatureMeta;
-  // gets a unique ID per protocol
-  getProtocolId(): string;
+
+  // generates a unique ID per protocol
+
+  // Preparation steps (downloading the ABI)
+  // This prepares any common utilities and sets common data
+  // that is likely required for both getPoolData & getUsersData
+  initialize?(): Promise<void>;
+
+  // caches all pool data
+  cachePoolData?(): Promise<IWalletMinimal[]>;
+
+  // returns the fully hydrated (with real-time prices) pool data
+  getPoolData?(): Promise<[IWalletOpportunity[], Error[]]>;
+
+  // filters pool data to only include user positions
+  getUsersData?(addresses: Address[]): Promise<[Map<Address, IWalletUserEntry[]>, Error[]]>;
 }
 export interface IChainGroupedWallet {
   chain: ChainDto;

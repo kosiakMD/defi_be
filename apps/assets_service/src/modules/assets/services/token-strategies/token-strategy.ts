@@ -17,5 +17,5 @@ export abstract class UnderlyingTokenStrategy {
     protected readonly multicall: MulticallAggregator,
   ) {}
   // TODO: Rename method and not return any
-  public abstract attemptToLoadUnderlyingTokens(asset: AssetsEntity): Promise<string[]>;
+  public abstract attemptToLoadUnderlyingTokens(asset: AssetsEntity);
 }

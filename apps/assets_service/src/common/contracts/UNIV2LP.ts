@@ -12,13 +12,19 @@ export class UNIV2LP extends ERC20 {
       : {};
   }
 
-  async getReserves(): Promise<{ _reserve0: string; _reserve1: number }> {
+  async getReserves(): Promise<{
+    _reserve0: string;
+    _reserve1: number;
+    _blockTimestampLast: number;
+  }> {
     const callResult = await this.contract.methods.getReserves().call();
     return {
       // eslint-disable-next-line no-underscore-dangle
       _reserve0: callResult._reserve0,
       // eslint-disable-next-line no-underscore-dangle
       _reserve1: callResult._reserve1,
+      // eslint-disable-next-line no-underscore-dangle
+      _blockTimestampLast: callResult._blockTimestampLast,
     };
   }
 

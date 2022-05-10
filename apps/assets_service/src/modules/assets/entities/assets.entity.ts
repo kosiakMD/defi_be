@@ -2,6 +2,8 @@ import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
+import { AssetsMetadata } from '../../../common/interfaces/assets.interface';
+
 import { AssetsCategoryEntity } from '../../assets-category/entities/assets-category.entity';
 import { AssetsHistoricalPriceEntity } from '../../prices/entities/assets-historical-price.entity';
 import { AssetsPriceEntity } from '../../prices/entities/assets-price.entity';
@@ -32,6 +34,9 @@ export class AssetsEntity extends BaseEntity {
 
   @Column({ type: Boolean, nullable: false, default: false })
   public disabled: boolean;
+
+  @Column({ type: 'json', nullable: true })
+  public metadata: AssetsMetadata;
 
   @ManyToOne(() => AssetsCategoryEntity, {
     nullable: true,

@@ -45,7 +45,7 @@ export class AssetsProcessor {
       );
       const asset: AssetsEntity = await this.processAsset({ address, chainId });
       this.logger.debug(
-        `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is prcessed`,
+        `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is processed`,
       );
       return JobCompleteStates.SUCCESS;
     } catch (error) {

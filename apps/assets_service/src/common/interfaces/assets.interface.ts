@@ -28,6 +28,12 @@ export interface Pair {
   tokens?: IToken[];
 }
 
+export interface AssetsMetadata {
+  reserve0?: number;
+  reserve1?: number;
+  blockTimestampLast?: number;
+}
+
 export interface AssetsForLambdaResponse {
   id: number;
   address: string;

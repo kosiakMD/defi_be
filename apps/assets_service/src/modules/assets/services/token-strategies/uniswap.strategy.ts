@@ -9,8 +9,10 @@ export class UniswapStrategy extends UnderlyingTokenStrategy {
       asset.address,
       this.metadataService.getInstanceByChainId(asset.chainId),
     );
-
-    // TODO: Return metadata. E.g. factory
-    return Promise.all([assetContract.token0(), assetContract.token1()]);
+    return Promise.all([
+      assetContract.token0(),
+      assetContract.token1(),
+      assetContract.getReserves(),
+    ]);
   }
 }

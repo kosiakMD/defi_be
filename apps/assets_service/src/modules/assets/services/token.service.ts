@@ -51,14 +51,17 @@ export class TokenService {
       const underlyingAssets = [];
       results.forEach((result) => {
         if (this.isFulfilled(result)) {
-          result.value.forEach((token: string) => {
+          result.value.forEach((r: any) => {
+            if (typeof r === 'object' && r._reserve0) {
+              processingAsset.metadata = r;
+            }
             const underlyingAsset = new AssetsEntity();
-            underlyingAsset.address = token;
+            underlyingAsset.address = r;
             underlyingAsset.chainId = processingAsset.chainId;
             underlyingAssets.push(underlyingAsset);
           });
         } else {
-          this.logger.debug(`Error to get undelying tokens`, result.reason);
+          this.logger.debug(`Error to get underlying tokens`, result.reason);
         }
       });
 

@@ -1,3 +1,5 @@
+import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/CallsStatistic.dto';
+
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -27,11 +29,11 @@ export class EndpointsService {
     const endpoints = await this.endpointsRepository.getList(query);
     const endpointsToRPCCall = await this.endpointsToRPCCallService.getAllEndpointsToRPCCall();
     const items = endpoints.map((endpoint) => {
-      const successRate = this.getEndpointSuccessRateFromEndpointsToRPCCall(
+      const callsStatistic = this.getEndpointSuccessRateFromEndpointsToRPCCall(
         endpoint,
         endpointsToRPCCall,
       );
-      return Object.assign(endpoint, { successRate });
+      return Object.assign(endpoint, { callsStatistic });
     });
     return { items };
   }
@@ -42,11 +44,11 @@ export class EndpointsService {
       throw new Error(`Not found! endpoint id: ${endpointId}`);
     }
     const endpointsToRPCCall = await this.endpointsToRPCCallService.getAllEndpointsToRPCCall();
-    const successRate = this.getEndpointSuccessRateFromEndpointsToRPCCall(
+    const callsStatistic = this.getEndpointSuccessRateFromEndpointsToRPCCall(
       endpoint,
       endpointsToRPCCall,
     );
-    return Object.assign(endpoint, { successRate });
+    return Object.assign(endpoint, { callsStatistic });
   }
 
   async createEndpoint(newEndpoint: EndpointCreateDto): Promise<EndpointsEntity> {
@@ -67,16 +69,16 @@ export class EndpointsService {
   private getEndpointSuccessRateFromEndpointsToRPCCall(
     endpoint: EndpointsEntity,
     endpointsToRPCCall: Map<number, EndpointToRPCCall[]>,
-  ): number {
-    let successRate = 0;
+  ): CallsStatistic {
+    let callsStatistic = new CallsStatistic();
     const endpointToRPCCall = (endpointsToRPCCall.get(endpoint.chainId) || []).find(
       (endpointToRPCCall) => endpointToRPCCall.endpointsEntity.id === endpoint.id,
     );
     if (endpointToRPCCall) {
-      successRate = endpointToRPCCall.successRate;
+      callsStatistic = endpointToRPCCall.callsStatistic;
     } else {
       this.logger.warn(`No cached endpoint id: ${endpoint.id} to get success rate!`);
     }
-    return successRate;
+    return callsStatistic;
   }
 }

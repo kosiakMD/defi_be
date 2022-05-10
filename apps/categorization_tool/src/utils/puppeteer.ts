@@ -25,14 +25,11 @@ export class Puppeteer {
     return (await this.browser).newPage();
   }
 
-  async loadPage(url) {
+  async loadPage(url, waitTimeout = 1000) {
     const page = await this.openTab();
     try {
-      await page.goto(url, {
-        waitUntil: 'load',
-        // Remove the timeout
-        timeout: 0,
-      });
+      await page.goto(url);
+      await page.waitForTimeout(waitTimeout);
     } catch (e) {
       await page.close();
       throw e;

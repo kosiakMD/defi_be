@@ -257,6 +257,6 @@ const ProtocolList = [
     LiquidityPools,
     CardanoService,
   ],
-  exports: [ProtocolService],
+  exports: [ProtocolService, UniswapProtocolV3],
 })
 export class ProtocolModule {}

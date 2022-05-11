@@ -75,7 +75,8 @@ export abstract class EVMCore<
               symbol: token.symbol,
               chainId: token.chain,
               decimals: token.decimals,
-              price: Number(prices[token.address]),
+              price: token.price || Number(prices[token.address]),
+              totalSupply: token.totalSupply,
               underlying: token.underlyingAssets?.map((u) => {
                 return {
                   address: u.address,

@@ -7,6 +7,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AccountService } from './account.service';
 import { PriceService } from './price.service';
+import { Puppeteer } from './puppeteer';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { PriceService } from './price.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AccountService, PriceService],
-  exports: [AccountService, PriceService],
+  providers: [AccountService, PriceService, Puppeteer],
+  exports: [AccountService, PriceService, Puppeteer],
 })
 export class MicroservicesModule {}

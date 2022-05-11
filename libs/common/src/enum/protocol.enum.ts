@@ -218,6 +218,10 @@ export enum KavaProtocolEnum {
   kava = 'Kava',
 }
 
+export enum FraxProtocolEnum {
+  frax = 'Frax',
+}
+
 export enum BiSwapProtocolEnum {
   biswap = 'BiSwap',
 }
@@ -285,9 +289,11 @@ export const ProtocolNameEnum = {
   ...SolendProtocolEnum,
   ...LidoProtocolEnum,
   ...AaveV3ProtocolEnum,
+  ...FraxProtocolEnum,
   ...BiSwapProtocolEnum,
   ...MdexProtocolEnum,
   ...KnightSwapProtocolEnum,
   ...BeltProtocolEnum,
   ...MarsEcosystemProtocolEnum,
+  ...KavaProtocolEnum,
 };

@@ -15,12 +15,18 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
+import { Belt } from '../platforms/Belt';
+import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { Evodefi } from '../platforms/Evodefi';
+import { Goose } from '../platforms/Goose';
+import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
+import { MarsEcosystem } from '../platforms/MarsEcosystem';
+import { Mdex } from '../platforms/Mdex';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
@@ -65,6 +71,12 @@ export class PlatformService {
       AaveV3,
       Solend,
       Quarry,
+      BiSwap,
+      Mdex,
+      KnightSwap,
+      Belt,
+      MarsEcosystem,
+      Goose,
     });
   }
 

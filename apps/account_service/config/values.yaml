@@ -81,8 +81,8 @@ configMaps:
     FUSE_URL: http://rpc-nodes-service/v1/rpc/21
     #KAVA_URL: https://rpc.kava.io
     KAVA_URL: http://rpc-nodes-service/v1/rpc/26
-    #CARDANO_URL: https://cardano-mainnet.blockfrost.io
-    CARDANO_URL: http://rpc-nodes-service/v1/rpc/22
+    CARDANO_URL: https://cardano-mainnet.blockfrost.io
+    #CARDANO_URL: http://rpc-nodes-service/v1/rpc/22
     #COSMOS_URL: https://cosmoshub-4--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
     COSMOS_URL: http://rpc-nodes-service/v1/rpc/25
     #OSMOSIS_URL: https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/

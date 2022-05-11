@@ -56,37 +56,61 @@ configMaps:
     SUSHISWAP_GNOSIS_BENTOBOX_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-bentobox
     SUSHISWAP_GNOSIS_EXCHANGE_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/sushiswap/xdai-exchange
     MINSWAP_URL: https://monorepo-mainnet-prod.minswap.org/graphql
+    SUNDAESWAP_URL: https://stats.sundaeswap.finance/graphql
+  staking:
+    THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
+    PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/pcv2-msc
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
-    COINGECKO_API_URL: https://api.coingecko.com/api/v3/
-    THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
-    ETH_URL: https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7
-    BSC_URL: https://bsc-dataseed.binance.org
-    POLYGON_RPC_URL: https://polygon-rpc.com/
-    FTM_RPC_URL: https://rpc.ftm.tools
-    FTM_URL: https://rpc.ftm.tools
-    AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
-    PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/pcv2-msc
-    OPEN_SEA_URL: https://api.opensea.io/api/v1
-    AVAX_URL: https://api.avax.network/ext/bc/C/rpc
-    CELO_URL: https://forno.celo.org
-    HARM_URL: https://a.api.s0.t.hmny.io
-    HECO_URL: https://http-mainnet.hecochain.com/
-    MRIVER_URL: https://rpc.moonriver.moonbeam.network
-    XDAI_URL: https://rpc.xdaichain.com
-    POLYGON_URL: https://polygon-rpc.com/
+    #ETH_URL: https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7
+    ETH_URL: http://rpc-nodes-service/v1/rpc/1
+    #BSC_URL: https://bsc-dataseed.binance.org
+    BSC_URL: http://rpc-nodes-service/v1/rpc/2
+    #POLYGON_RPC_URL: https://polygon-rpc.com/
+    POLYGON_RPC_URL: http://rpc-nodes-service/v1/rpc/3
+    #FTM_RPC_URL: https://rpc.ftm.tools
+    #FTM_URL: https://rpc.ftm.tools
+    FTM_RPC_URL: http://rpc-nodes-service/v1/rpc/4
+    FTM_URL: http://rpc-nodes-service/v1/rpc/4
+    #AVAX_URL: https://api.avax.network/ext/bc/C/rpc
+    AVAX_URL: http://rpc-nodes-service/v1/rpc/6
+    #CELO_URL: https://forno.celo.org
+    CELO_URL: http://rpc-nodes-service/v1/rpc/8
+    #HARM_URL: https://a.api.s0.t.hmny.io
+    HARM_URL: http://rpc-nodes-service/v1/rpc/10
+    #HECO_URL: https://http-mainnet.hecochain.com/
+    HECO_URL: http://rpc-nodes-service/v1/rpc/11
+    #MRIVER_URL: https://rpc.moonriver.moonbeam.network
+    MRIVER_URL: http://rpc-nodes-service/v1/rpc/9
+    #XDAI_URL: https://rpc.xdaichain.com
+    XDAI_URL: http://rpc-nodes-service/v1/rpc/7
+    #POLYGON_URL: https://polygon-rpc.com/
+    POLYGON_URL: http://rpc-nodes-service/v1/rpc/3
+    #SOL_URL: https://solana-api.projectserum.com/
     SOL_URL: https://solana-api.projectserum.com/
-    BOBA_URL: https://lightning-replica.boba.network
-    CRONOS_URL: https://evm-cronos.crypto.org
-    KCC_URL: https://rpc-mainnet.kcc.network
-    OKEX_URL: https://exchainrpc.okex.org/
-    OPT_URL: https://mainnet.optimism.io/
-    ARBITRUM_URL: https://arb1.arbitrum.io/rpc
-    SUNDAESWAP_URL: https://stats.sundaeswap.finance/graphql
-    TERRA_URL: https://lcd.terra.dev
-    GNOSIS_URL: https://rpc.xdaichain.com
-    AURORA_URL: https://mainnet.aurora.dev
+    #BOBA_URL: https://lightning-replica.boba.network
+    BOBA_URL: http://rpc-nodes-service/v1/rpc/15
+    #CRONOS_URL: https://evm-cronos.crypto.org
+    CRONOS_URL: http://rpc-nodes-service/v1/rpc/14
+    #KCC_URL: https://rpc-mainnet.kcc.network
+    KCC_URL: http://rpc-nodes-service/v1/rpc/16
+    #OKEX_URL: https://exchainrpc.okex.org/
+    OKEX_URL: http://rpc-nodes-service/v1/rpc/13
+    #OPT_URL: https://mainnet.optimism.io/
+    OPT_URL: http://rpc-nodes-service/v1/rpc/17
+    #ARBITRUM_URL: https://arb1.arbitrum.io/rpc
+    ARBITRUM_URL: http://rpc-nodes-service/v1/rpc/5
+    #TERRA_URL: https://lcd.terra.dev
+    TERRA_URL: http://rpc-nodes-service/v1/rpc/19
+    #GNOSIS_URL: https://rpc.xdaichain.com
+    GNOSIS_URL: http://rpc-nodes-service/v1/rpc/7
+    #AURORA_URL: https://mainnet.aurora.dev
+    AURORA_URL: http://rpc-nodes-service/v1/rpc/18
+  external:
+    AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
+    COINGECKO_API_URL: https://api.coingecko.com/api/v3/
+    OPEN_SEA_URL: https://api.opensea.io/api/v1
   endpoints:
     ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service

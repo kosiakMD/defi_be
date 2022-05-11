@@ -13,7 +13,10 @@ export async function bootstrap(): Promise<void> {
 
   const jobsV3Runner = app.select(JobsModule).get(JobsV3Runner);
 
-  await Promise.all([jobsRunner.update(), jobsV3Runner.update()]);
+  await Promise.allSettled([
+    jobsRunner.update(), //
+    jobsV3Runner.update(),
+  ]);
 
   await app.close();
 }

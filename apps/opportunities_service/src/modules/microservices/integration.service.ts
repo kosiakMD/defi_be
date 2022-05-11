@@ -15,15 +15,16 @@ import {
 
 @Injectable()
 export class IntegrationService {
-  private readonly protocolsUrl: string;
+  private readonly protocolsV1Url: string;
+  private readonly protocolsV3Url: string;
 
   constructor(
     private http: HttpService,
     private config: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
-    this.protocolsUrl = new URL('/v1/protocols', config.get('services.integrations')).href; // returns v2 protocols
-    this.protocolsUrl = new URL('/v3/protocols', config.get('services.integrations')).href;
+    this.protocolsV1Url = new URL('/v1/protocols', config.get('services.integrations')).href; // returns v2 protocols
+    this.protocolsV3Url = new URL('/v3/protocols', config.get('services.integrations')).href;
   }
 
   /**
@@ -34,14 +35,14 @@ export class IntegrationService {
    */
   @RequestErrorHandler()
   async getV2ProtocolList(): Promise<ProtocolDataDto[]> {
-    const $data = this.http.get(this.protocolsUrl);
+    const $data = this.http.get(this.protocolsV1Url);
     const { data } = await firstValueFrom($data);
     return data.data;
   }
 
   @RequestErrorHandler()
   async getV3ProtocolList(): Promise<ProtocolV3DataDto[]> {
-    const $data = this.http.get(this.protocolsUrl);
+    const $data = this.http.get(this.protocolsV3Url);
     const { data } = await firstValueFrom($data);
     return data.data;
   }
@@ -50,7 +51,7 @@ export class IntegrationService {
   // TODO: this should be <IOpportunityResponse> from integration_service. How do we want to handle shared interfaces
   async getV3ProtocolOpportunities(projectName: string, chains: ChainIdEnum[]): Promise<any> {
     const $data = this.http.get(
-      `${this.protocolsUrl}/${projectName}/opportunities?chains=${chains.join(',')}`,
+      `${this.protocolsV3Url}/${projectName}/opportunities?chains=${chains.join(',')}`,
     );
     const { data } = await firstValueFrom($data);
     return data.data;

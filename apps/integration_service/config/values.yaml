@@ -107,7 +107,7 @@ configMaps:
     GNOSIS_URL: http://rpc-nodes-service/v1/rpc/7
     #AURORA_URL: https://mainnet.aurora.dev
     AURORA_URL: http://rpc-nodes-service/v1/rpc/18
-    KAVA_URL: https://api2.kava.io
+    KAVA_API: https://api2.kava.io
   external:
     AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/

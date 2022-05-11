@@ -11,15 +11,18 @@ import { retry } from '@app/common/utils/retry';
 
 import { BalancesLoadingStrategy } from '../../../common/interfaces';
 import { Web3Provider } from '../../../common/providers/chainRelated/web3.provider';
+import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 import { BalancesRequest } from '../../../common/types';
 import { chunkArray, insertAtPosition } from '../../../common/utils';
 
 import { ChainsService } from '../../chains/chains.service';
 import { TokenBalance } from '../balances.interfaces';
 import { BalancesContract } from '../contracts/balances.contract';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
 
-export class NetworkBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
+export class NetworkBalancesStrategy
+  extends BaseBalanceStrategy
+  implements BalancesLoadingStrategy
+{
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly web3Provider: Web3Provider,
@@ -43,8 +46,9 @@ export class NetworkBalancesStrategy extends BaseBalanceStrategy implements Bala
       return [];
     }
 
-    const message = `Network balances loading for address ${address} and chain ${chainId}  at block ${block?.block ?? "'latest'"
-      }`;
+    const message = `Network balances loading for address ${address} and chain ${chainId}  at block ${
+      block?.block ?? "'latest'"
+    }`;
     this.logger.time(message);
 
     const contractAddress = await this.getBalancesContractAddress(chainId);
@@ -61,12 +65,16 @@ export class NetworkBalancesStrategy extends BaseBalanceStrategy implements Bala
       tokens.splice(nativeCoinIndex, 1);
     }
 
-    let promises: Promise<string | string[]>[] = chunkArray(tokens, this.DEFAULT_BATCH_SIZE).map((chunk) =>
-      retry(() => contract.getBalances(address, chunk, block), this.WEB3_RETRY_CALL_IN_MS),
+    let promises: Promise<string | string[]>[] = chunkArray(tokens, this.DEFAULT_BATCH_SIZE).map(
+      (chunk) =>
+        retry(() => contract.getBalances(address, chunk, block), this.WEB3_RETRY_CALL_IN_MS),
     );
 
     if (hasNativeCoin) {
-      promises = [retry(() => web3.eth.getBalance(address), this.WEB3_RETRY_CALL_IN_MS), ...promises];
+      promises = [
+        retry(() => web3.eth.getBalance(address), this.WEB3_RETRY_CALL_IN_MS),
+        ...promises,
+      ];
     }
 
     const batchedBalances = await Promise.all<string | string[]>(promises);

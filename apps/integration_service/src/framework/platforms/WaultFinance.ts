@@ -17,7 +17,7 @@ export class WaultFinance extends RootPlatform {
 
   async register() {
     this.registerMeta({
-      name: 'Wault',
+      name: this.constructor.name,
       project: this.constructor.name,
       links: {
         url: 'https://wault.finance/',

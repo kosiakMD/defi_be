@@ -118,7 +118,7 @@ export class IntegrationsServiceV3Decorator {
 
     const v2Protocol: ProtocolInfoDto = plainToClass(ProtocolInfoDto, {
       name: v3response.data.protocol.name,
-      project: v3response.data.protocol.name,
+      project: v3response.data.protocol.project,
       label: v3response.data.protocol.name,
     });
     v2Protocol.chains = getUniqList(

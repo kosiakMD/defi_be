@@ -17,7 +17,7 @@ export class TombFinance extends RootPlatform {
 
   async register() {
     this.registerMeta({
-      name: 'Tomb Finance',
+      name: this.constructor.name,
       project: this.constructor.name,
       links: {
         url: 'https://tomb.finance/',

@@ -17,7 +17,7 @@ export class TreeDefi extends RootPlatform {
 
   async register() {
     this.registerMeta({
-      name: 'TreeDefi',
+      name: this.constructor.name,
       project: this.constructor.name,
 
       links: {

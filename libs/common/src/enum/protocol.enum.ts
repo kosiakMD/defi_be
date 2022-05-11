@@ -40,6 +40,7 @@ export enum ProjectEnum {
   stader = 'stader',
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
+  kava = 'kava',
 }
 
 export enum YearnProtocolEnum {
@@ -211,6 +212,10 @@ export enum AaveV3ProtocolEnum {
 
 export enum LidoProtocolEnum {
   lido = 'Lido',
+}
+
+export enum KavaProtocolEnum {
+  kava = 'Kava',
 }
 
 export enum BiSwapProtocolEnum {

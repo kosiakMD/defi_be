@@ -1,5 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
 import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
@@ -22,6 +21,7 @@ import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { Evodefi } from '../platforms/Evodefi';
 import { Goose } from '../platforms/Goose';
+import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
@@ -69,6 +69,7 @@ export class PlatformService {
       LimeSwap,
       BalancerV2,
       AaveV3,
+      Kava,
       Solend,
       Quarry,
       BiSwap,

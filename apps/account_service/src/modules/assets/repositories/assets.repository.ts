@@ -66,6 +66,9 @@ export class AssetsRepository extends Repository<AssetsEntity> {
       where: { address: address, chain: chainId },
     });
   }
+  async findByAddressesAndChain(addresses: string[], chainId: number): Promise<AssetsEntity[]> {
+    return this.find({ where: { address: In(addresses), chain: chainId } });
+  }
 
   async findAllTrackedAssetsWithPoolsByChain(chainId: number): Promise<AssetsForLambdaResponse[]> {
     const lambdaAssetsSql = `

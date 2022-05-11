@@ -4,7 +4,17 @@ import { HttpService } from '@nestjs/axios';
 
 import { FeatureEnum } from '@app/common';
 
-import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
+import { IProtocolMeta } from '../interfaces';
+import {
+  IPoolFeatureEntryMinimal,
+  IPoolFeatureEntryOpportunity,
+  IPoolFeatureEntryUserEntry,
+} from '../interfaces/feature.pool.interface';
+import {
+  IStakingFeatureMinimal,
+  IStakingFeatureOpportunity,
+  IStakingFeatureUserEntry,
+} from '../interfaces/feature.staking.interface';
 import { ERC20Token } from '../interfaces/tokens.common.interface';
 import {
   ISupplyTokenMinimal,
@@ -21,9 +31,13 @@ type ERC20TokenMinimal = {
   totalSupplied?: number;
 };
 
-type TMinimal = IWalletMinimal & { token: ERC20TokenMinimal };
-type TOpportunity = IWalletOpportunity & { token: ERC20TokenMinimal };
-export type IBalancerVaultMeta = IProtocolMeta & {
+type TMinimal = (IStakingFeatureMinimal | IPoolFeatureEntryMinimal) & { token: ERC20TokenMinimal };
+type TOpportunity = (IStakingFeatureOpportunity | IPoolFeatureEntryOpportunity) & {
+  token: ERC20TokenMinimal;
+};
+type IWalletUserEntry = IStakingFeatureUserEntry | IPoolFeatureEntryUserEntry;
+
+type IBalancerVaultMeta = IProtocolMeta & {
   feature: FeatureEnum.pools | FeatureEnum.staking;
   context: { key: string };
 };

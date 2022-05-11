@@ -13,7 +13,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common/Logger/Logger.service';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
-import { ChainNameEnum, ResultStatus } from '@app/common/enum';
+import { ChainIdEnum, ChainNameEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
 import { Address, Chains } from '@app/common/types';
 import { AToken } from '@app/common/web3provider/contracts/protocols/aave/AToken';
@@ -35,7 +35,7 @@ import { MINTER } from '../approvals/contracts/MINTER';
 import { UNIV2LP } from '../approvals/contracts/UNIV2LP';
 import { ChainsService } from '../chains/chains.service';
 import { MinimalStakedTokenCheck } from './contracts/MinimalStakedTokenCheck';
-import { AssetDto, AssetResponseDto, AssetTrackDto } from './dto/asset.dto';
+import { AssetDto, AssetResponseDto, AssetTrackDto, AssetWithUnderlying } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsRepository } from './repositories/assets.repository';
@@ -137,6 +137,12 @@ export class AssetsService {
     if (assetChain === terraChainId) {
       // eslint-disable-next-line camelcase
       return await chainProvider.wasm.contractQuery(assetAddress, { token_info: {} });
+    } else if (assetChain === ChainIdEnum.kava) {
+      return {
+        name: assetAddress,
+        symbol: assetAddress,
+        decimals: 6,
+      };
     } else {
       // bind asset to LP token contract because it extends from ERC20 by default
       const assetContract = new ERC20(assetAddress, chainProvider);
@@ -202,9 +208,11 @@ export class AssetsService {
       assetToSave = await this.assetRepository.saveAsset(assetToSave);
     }
 
-    assetToSave.name = assetData.name;
-    assetToSave.symbol = assetData.symbol;
-    assetToSave.decimals = assetData.decimals;
+    if (assetData) {
+      assetToSave.name = assetData.name;
+      assetToSave.symbol = assetData.symbol;
+      assetToSave.decimals = assetData.decimals;
+    }
 
     // Needs asset to exist in the database, as
     assetToSave.isLp = await this.assetHasUnderlying(assetToSave);
@@ -215,6 +223,20 @@ export class AssetsService {
     assetToSave = await this.assetRepository.saveAsset(assetToSave);
 
     return await this.withUnderlying(assetToSave);
+  }
+
+  async saveAssetWithUnderlying(asset: AssetWithUnderlying): Promise<AssetResponseDto> {
+    const existedAsset: AssetsEntity = await this.assetRepository.findOneByAddressAndChain(
+      asset.address,
+      asset.chain,
+    );
+    if (!existedAsset) throw new Error("Asset doesn't exists with address" + asset.address);
+
+    await Promise.all(
+      asset.pairs.map((address, idx) => this.saveAndRelate(existedAsset, address, idx)),
+    );
+
+    return this.withUnderlying(existedAsset);
   }
 
   async attemptTerraLp(asset: AssetsEntity) {
@@ -347,8 +369,11 @@ export class AssetsService {
    * @returns Promise<void>
    */
   private async saveAndRelate(asset: AssetsEntity, underlyingAsset: Address, poolId = 0) {
+    const underlyingAddress = underlyingAsset.startsWith('0x')
+      ? underlyingAsset.toLowerCase()
+      : underlyingAsset;
     const underlying = await this.saveTrackingAsset({
-      address: underlyingAsset.toLowerCase(),
+      address: underlyingAddress,
       chain: asset.chain,
     });
 

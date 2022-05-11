@@ -45,7 +45,7 @@ export abstract class RootProtocolCacheable<
   protected abstract accountService: AccountService;
   protected abstract priceService: PriceService;
 
-  // 1. get cachable data
+  // 1. get cacheable data
   // 2. cache above data
   /** for pools */
   // 3. retrieve cached data and fill in 'real-time' data (prices, reserves) * most of this will come directly from asset service
@@ -65,7 +65,7 @@ export abstract class RootProtocolCacheable<
 
   /**
    * Returns the list of all available pools
-   * This is long term cachable data, so for example,
+   * This is long term cacheable data, so for example,
    * the token address, but not the token price
    */
   // TODO: Rename OpportunityList
@@ -441,6 +441,8 @@ export abstract class RootProtocolCacheable<
       // so any trading fees are not included here
       apr,
       apy,
+      rewardedForLendingSide: poolToken.rewardedForLendingSide,
+      rewardedForTokenAddress: poolToken.rewardedForTokenAddress,
     };
   }
 

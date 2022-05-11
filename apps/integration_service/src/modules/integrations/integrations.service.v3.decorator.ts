@@ -230,7 +230,6 @@ export class IntegrationsServiceV3Decorator {
     v2Item.address = poolAddress.toLowerCase();
     v2Item.poolId = Number(poolId);
     v2Item.poolName = null;
-    v2Item.staked = lpToken.totalSupplied.toString();
     v2Item.stats = {
       tvl: lpToken.tvl,
       poolApy: null,

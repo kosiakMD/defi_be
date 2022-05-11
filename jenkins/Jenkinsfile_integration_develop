@@ -25,6 +25,7 @@ pipeline {
         DOCKER_CREDENTIALS  = "ecr:${env.AWS_REGION}:defiyield-aws"
         JOB_NAME = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
         JOB_NAME_SERVICE = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 12)
+        REPLICAS = 1
     }
     stages {
         stage("Build") {
@@ -75,7 +76,7 @@ pipeline {
         }
         stage('Webhook') {
             steps {
-                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME}"
+                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
             }
   }
     }

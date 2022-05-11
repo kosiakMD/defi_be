@@ -1,43 +1,41 @@
 import { Cache } from 'cache-manager';
-import { cloneDeep } from 'lodash';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { FeatureEnum, Logger } from '@app/common';
+import { Address, FeatureEnum, Logger } from '@app/common';
+import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { RootProtocol } from '../../../RootProtocol';
+import { RootProtocolCacheable } from '../../../RootProtocolCacheable';
 import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
+  IPoolFeatureEntryMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
+import {
+  ISupplyTokenMinimal,
+  ISupplyTokenOpportunity,
+  ISupplyTokenUserEntry,
+} from '../../../interfaces/tokens.supplied.interface';
 import {
   BALANCES_QUERY,
   IUniswapBalanceSubgraphResponse,
   POOLS_QUERY,
 } from '../../Subgraphs/UniswapSubgraph';
 
-const LPDefault = {
-  name: 'ApeSwapFinance LPs',
-  symbol: 'APE-LP',
-  decimals: 18,
-  price: null,
-};
-
 export type IUniswapVaultMeta = IProtocolMeta & {
   ammSubgraphUrl: string;
 };
 
 export class UniswapV2Liquidity
-  extends RootProtocol<
-    IPoolFeatureOpportunity,
+  extends RootProtocolCacheable<
+    IPoolFeatureEntryMinimal,
     IPoolFeatureOpportunity,
     IPoolFeatureUser,
     IUniswapVaultMeta
@@ -54,11 +52,16 @@ export class UniswapV2Liquidity
     super();
   }
 
-  async getCacheableOpportunityData(): Promise<IPoolFeatureOpportunity[]> {
+  /**
+   * Get longer term cacheable info
+   */
+  async getCacheableOpportunityData(): Promise<IPoolFeatureEntryMinimal[]> {
     const $data = this.httpService
       .post(this.meta.ammSubgraphUrl, {
         query: POOLS_QUERY,
       })
+
+      // console.log({ result: (await firstValueFrom($data)).data });
       .pipe(
         mergeMap((rsp) => rsp.data.data.pairs),
         map((pool) => this.toFeatureEntryMinimal(pool)),
@@ -67,49 +70,95 @@ export class UniswapV2Liquidity
     return firstValueFrom($data);
   }
 
-  private toFeatureEntryMinimal(pool): IPoolFeatureOpportunity {
+  private toFeatureEntryMinimal(pool): IPoolFeatureEntryMinimal {
     return {
-      id: pool.id,
+      id: pool.address,
       chain: this.meta.chain,
       feature: FeatureEnum.pools,
       supplied: [
-        {
-          totalSupply: pool.totalSupply,
-          totalSupplied: pool.totalSupply,
-          tvl: Number(pool.reserveUSD),
-          token: {
-            ...LPDefault,
-            address: pool.address,
-            underlying: [
-              {
-                address: pool.token0.id,
-                decimals: pool.token0.decimals,
-                name: pool.token0.name,
-                symbol: pool.token0.symbol,
-                price: pool.reserveUSD / 2 / pool.reserve0,
-                reserve: pool.reserve0,
-                position: 0,
-              },
-              {
-                address: pool.token1.id,
-                decimals: pool.token1.decimals,
-                name: pool.token1.name,
-                symbol: pool.token1.symbol,
-                price: pool.reserveUSD / 2 / pool.reserve1,
-                reserve: pool.reserve1,
-                position: 1,
-              },
-            ],
-          },
-        },
+        { token: { address: pool.token0.address } },
+        { token: { address: pool.token1.address } },
       ],
     };
   }
 
-  protected async hydrateOpportunityData(
-    opportunities: IPoolFeatureOpportunity[],
-  ): Promise<[IPoolFeatureOpportunity[], Error[]]> {
-    return [opportunities, []];
+  protected async updateRealTimeData(
+    opportunities: IPoolFeatureEntryMinimal[],
+  ): Promise<IPoolFeatureEntryMinimal[]> {
+    // TODO: cache for 5 minutes?
+    const poolsArray = await this.getOrSet(60 * 60 * 24, 'ape-swap-pool-list-dev', () => {
+      const $data = this.httpService
+        .post(this.meta.ammSubgraphUrl, {
+          query: POOLS_QUERY,
+        })
+        .pipe(
+          mergeMap((rsp) => rsp.data.data.pairs),
+          toArray(),
+        );
+      return firstValueFrom($data);
+    });
+
+    const pools = new Map(poolsArray.map((p: any) => [p.address, p]));
+    return opportunities.map((opportunity) => {
+      const pool = pools.get(opportunity.id);
+      const reserves = [pool.reserve0, pool.reserve1];
+      return {
+        ...opportunity,
+        token: {
+          // TODO: Filled by asset service
+          // address: '0x603c7f932ed1fc6575303d8fb018fdcbb0f39a95',
+          // name: 'ApeSwapFinance Banana',
+          // symbol: 'BANANA',
+          // chainId: 2,
+          // decimals: 18,
+          // price: 0.208363,
+          totalSupply: Math.max(Number(pool.totalSupply), 0),
+        },
+        supplied: opportunity.supplied.map((supplied, idx) => {
+          const totalSupplied = reserves[idx];
+          return {
+            token: supplied.token,
+            totalSupplied,
+          };
+        }),
+      };
+    });
+  }
+
+  protected formatOpportunityReceiptToken(
+    opportunity: IPoolFeatureEntryMinimal,
+    token: ERC20Token,
+    tokens: Map<Address, ERC20Token>,
+  ) {
+    if (!token) return null;
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { underlying, ...rest } = token;
+
+    // TODO: totalSupply & price should come from asset service making this function unnecessary
+    const tvl = opportunity.supplied.reduce(
+      (total, cur) => total + Number(cur.totalSupplied) * tokens.get(cur.token.address).price,
+      0,
+    );
+
+    return {
+      ...opportunity.token, // merge in totalSupply
+      ...rest,
+      price: tvl / opportunity.token.totalSupply,
+    };
+  }
+
+  protected formatOpportunitySuppliedToken(
+    poolToken: ISupplyTokenMinimal,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    const totalSupply = normalizeDecimals(poolToken.totalSupply, token.decimals);
+    return {
+      token,
+      totalSupply,
+      totalSupplied: Number(poolToken.totalSupplied),
+      tvl: Number(poolToken.totalSupplied) * token.price,
+    };
   }
 
   async getUsersData(addresses: string[]): Promise<[Map<string, IPoolFeatureUser[]>, Error[]]> {
@@ -117,18 +166,22 @@ export class UniswapV2Liquidity
     const wallets = new Map();
     const poolsMap = new Map(pools.map((p) => [p.id, p]));
     try {
+      // TODO: pass poolsMap.keys to only check balances for these pools?
       const balances = await this.getSubgraphAccountBalances(addresses);
       for (const balance of balances) {
-        if (poolsMap.has(balance.pair)) {
-          const data = this.calculateBalances(poolsMap.get(balance.pair), {
-            balance: balance.balance,
-            address: balance.user,
-          });
-          if (!wallets.has(balance.user)) {
-            wallets.set(balance.user, []);
-          }
-          wallets.get(balance.user).push(data);
+        if (!poolsMap.has(balance.pair)) {
+          continue;
         }
+
+        const data = this.calculateBalances(poolsMap.get(balance.pair), {
+          balance: balance.balance,
+          address: balance.user,
+        });
+
+        if (!wallets.has(balance.user)) {
+          wallets.set(balance.user, []);
+        }
+        wallets.get(balance.user).push(data);
       }
     } catch (err) {
       errors.push(err);
@@ -163,7 +216,6 @@ export class UniswapV2Liquidity
     pool: IPoolFeatureOpportunity,
     balance: { balance: string; address: string },
   ): IPoolFeatureUser {
-    const userPool = cloneDeep(pool);
     const lpTokenPrice = pool.supplied[0].tvl / pool.supplied[0].totalSupply;
     const poolShare = Number(balance.balance) / pool.supplied[0].totalSupply;
 
@@ -189,16 +241,8 @@ export class UniswapV2Liquidity
     });
 
     return {
-      ...userPool,
+      ...pool,
       supplied,
     };
-  }
-
-  initialize(): Promise<void> {
-    return Promise.resolve(undefined);
-  }
-
-  protected formatOpportunity(opportunity: IPoolFeatureOpportunity): IPoolFeatureOpportunity {
-    return opportunity;
   }
 }

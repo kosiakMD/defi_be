@@ -14,6 +14,14 @@ import {
 
 interface IPoolFeatureEntryGeneric<TSupplied, TRewarded = never> extends IPartialBaseFeature {
   feature: FeatureEnum.pools;
+  token?: {
+    address?: string;
+    name?: string;
+    symbol?: string;
+    decimals?: number;
+    price?: number;
+    totalSupply?: number;
+  };
   supplied: TSupplied[];
   rewarded?: TRewarded[];
 }

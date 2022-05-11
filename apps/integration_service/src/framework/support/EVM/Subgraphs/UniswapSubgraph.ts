@@ -4,22 +4,22 @@ export const POOLS_QUERY = gql`
   {
     pairs(orderBy: reserveUSD, orderDirection: desc, first: 1000, where: { reserveUSD_gt: 25000 }) {
       #pairs(first: 1, where: { reserveUSD_gt: 25000 }) {
-      id
+      address: id
       reserve0
       reserve1
       totalSupply
-      reserveUSD
+      # reserveUSD
       token0 {
-        id
-        name
-        symbol
-        decimals
+        address: id
+        #   # name
+        #   # symbol
+        #   # decimals
       }
       token1 {
-        id
-        name
-        symbol
-        decimals
+        address: id
+        #   # name
+        #   # symbol
+        #   # decimals
       }
     }
   }

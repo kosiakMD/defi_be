@@ -212,6 +212,31 @@ export enum AaveV3ProtocolEnum {
 export enum LidoProtocolEnum {
   lido = 'Lido',
 }
+
+export enum BiSwapProtocolEnum {
+  biswap = 'BiSwap',
+}
+
+export enum MdexProtocolEnum {
+  mdex = 'Mdex',
+}
+
+export enum KnightSwapProtocolEnum {
+  knightswap = 'KnightSwap',
+}
+
+export enum BeltProtocolEnum {
+  belt = 'Belt',
+}
+
+export enum MarsEcosystemProtocolEnum {
+  marsEcosystem = 'MarsEcosystem',
+}
+
+export enum GooseProtocolEnum {
+  goose = 'Goose',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -255,4 +280,9 @@ export const ProtocolNameEnum = {
   ...SolendProtocolEnum,
   ...LidoProtocolEnum,
   ...AaveV3ProtocolEnum,
+  ...BiSwapProtocolEnum,
+  ...MdexProtocolEnum,
+  ...KnightSwapProtocolEnum,
+  ...BeltProtocolEnum,
+  ...MarsEcosystemProtocolEnum,
 };

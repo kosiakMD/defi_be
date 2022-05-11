@@ -5,7 +5,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger, ProtocolDataDto, RequestErrorHandler } from '@app/common';
+import {
+  ChainIdEnum,
+  Logger,
+  ProtocolDataDto,
+  ProtocolV3DataDto,
+  RequestErrorHandler,
+} from '@app/common';
 
 @Injectable()
 export class IntegrationService {
@@ -16,12 +22,36 @@ export class IntegrationService {
     private config: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
-    this.protocolsUrl = new URL('/v1/protocols', config.get('services.integrations')).href;
+    this.protocolsUrl = new URL('/v1/protocols', config.get('services.integrations')).href; // returns v2 protocols
+    this.protocolsUrl = new URL('/v3/protocols', config.get('services.integrations')).href;
+  }
+
+  /**
+   * Note Function name is V2 since it returns v2 protocols, however
+   * api is v1 for reasons
+   *
+   * @returns Protocol List
+   */
+  @RequestErrorHandler()
+  async getV2ProtocolList(): Promise<ProtocolDataDto[]> {
+    const $data = this.http.get(this.protocolsUrl);
+    const { data } = await firstValueFrom($data);
+    return data.data;
   }
 
   @RequestErrorHandler()
-  async getAllFeatures(): Promise<ProtocolDataDto[]> {
+  async getV3ProtocolList(): Promise<ProtocolV3DataDto[]> {
     const $data = this.http.get(this.protocolsUrl);
+    const { data } = await firstValueFrom($data);
+    return data.data;
+  }
+
+  @RequestErrorHandler()
+  // TODO: this should be <IOpportunityResponse> from integration_service. How do we want to handle shared interfaces
+  async getV3ProtocolOpportunities(projectName: string, chains: ChainIdEnum[]): Promise<any> {
+    const $data = this.http.get(
+      `${this.protocolsUrl}/${projectName}/opportunities?chains=${chains.join(',')}`,
+    );
     const { data } = await firstValueFrom($data);
     return data.data;
   }

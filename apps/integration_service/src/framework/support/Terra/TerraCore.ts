@@ -4,7 +4,7 @@ import { Logger } from '@app/common';
 
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
-import { RootProtocol } from '../RootProtocol';
+import { RootProtocolCacheable } from '../RootProtocolCacheable';
 import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 
 export abstract class TerraCore<
@@ -12,7 +12,7 @@ export abstract class TerraCore<
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
   TProtocolMeta extends IProtocolMeta = IProtocolMeta,
-> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
+> extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
   protected abstract cache: Cache;

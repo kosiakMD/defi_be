@@ -1,23 +1,41 @@
 import { plainToClass } from 'class-transformer';
 import { Brackets, EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
-import { InjectRepository } from '@nestjs/typeorm';
-
 import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
 import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
+import {
+  IChainStats,
+  IFeatureStats,
+} from '@app/common/interfaces/services/opportunities/opportunity.stats.interfaces';
 import { chunk } from '@app/common/utils';
 
-import { FarmEntity } from '../entities/farm.entity';
 import { OpportunityEntity } from '../entities/opportunity.entity';
-import { FarmRepository } from './farm.repository';
 
 @EntityRepository(OpportunityEntity)
 export class OpportunityRepository extends Repository<OpportunityEntity> {
-  constructor(@InjectRepository(FarmEntity) private readonly farmRepository: FarmRepository) {
-    super();
+  /**
+   * Gets the list of chains & the number of pools on each chain
+   */
+  async getChainStats(): Promise<IChainStats[]> {
+    return this.query(`
+      SELECT COUNT(DISTINCT id)::int as count, chain_id
+      FROM opportunities
+      GROUP BY chain_id
+    `);
   }
 
+  /**
+   * Gets a list of the number of pools belonging to each feature
+   */
+  async getFeatureStats(): Promise<IFeatureStats[]> {
+    return this.query(`
+      SELECT COUNT(feature)::int as count, feature as feature
+      FROM opportunities
+      CROSS JOIN LATERAL UNNEST(categories) as feature
+      GROUP BY feature
+    `);
+  }
   /**
    * Search, Sort, and Filter opportunities
    *

@@ -18,6 +18,7 @@ import { StakingPositionFeatureDto } from './StakingPositionFeatureDto';
 import { ChainDto } from './chain.dto';
 import { LiquidityPoolFeature } from './liquidity.pool.dto';
 import { ResponseDto } from './response.dto';
+import { IPlatformLinks } from '../interfaces/platform.v3.links';
 
 export class ProtocolFeaturesExportDto {
   // [FeatureEnum.pools]: FeatureDtoType;
@@ -92,6 +93,10 @@ export class ProtocolDataDto {
   name: ProtocolName;
 
   features: ProtocolFeaturesExportDto[];
+}
+
+export class ProtocolV3DataDto extends ProtocolDataDto {
+  links?: IPlatformLinks
 }
 
 export class FeaturesResponseDto extends ResponseDto<ProtocolDataDto[]> {

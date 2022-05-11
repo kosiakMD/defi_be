@@ -3,13 +3,13 @@ import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
-import { aprToApy, chunk, normalizeDecimals } from '@app/common/utils';
+import { chunk, normalizeDecimals } from '@app/common/utils';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/UniswapV2Pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
-import { RootProtocol } from '../RootProtocol';
+import { RootProtocolCacheable } from '../RootProtocolCacheable';
 import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 import { ERC20Token } from '../interfaces/tokens.common.interface';
 
@@ -18,7 +18,7 @@ export abstract class EVMCore<
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
   TProtocolMeta extends IProtocolMeta = IProtocolMeta,
-> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
+> extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
   protected abstract cache: Cache;
@@ -99,43 +99,16 @@ export abstract class EVMCore<
   }
 
   /**
-   *
-   * @param perSecond number of tokens, or value of rewards per second
-   * @param ratio 1 tokens, or tvl for value of tokens
-   * @returns
-   */
-  protected getYieldBreakdown(perSecond: number, ratio: number) {
-    const perDay = perSecond * 60 * 60 * 24;
-    const apr = {
-      day: perDay / ratio || 0,
-      week: (perDay * 7) / ratio || 0,
-      month: (perDay * 365) / 12 / ratio || 0,
-      year: (perDay * 365) / ratio || 0,
-    };
-
-    return {
-      apr,
-      apy: {
-        // TODO: this does not take into account fees on each harvest
-        day: aprToApy(apr.day, 1) || 0,
-        week: aprToApy(apr.week, 7) || 0,
-        month: aprToApy(apr.month, 365 / 12) || 0,
-        year: aprToApy(apr.year, 365) || 0,
-      },
-    };
-  }
-
-  /**
-   * gets a deduplicated list of all tokens used within this protocol
-   *
-   * @param pools all available pools
-   * @returns Address[]
+   * Overridden because currently all EVM tokens need to be
+   * lowercased in out system
    */
   protected getUniqueTokensFromRawPools(pools: TMinimalType[]) {
     const tokens = new Set<string>();
     const features = ['supplied', 'borrowed', 'rewarded'];
     features.forEach((featureName) => {
       pools.forEach((pool) => {
+        tokens.add(pool.id);
+
         if (pool?.[featureName]?.length) {
           pool[featureName].forEach((item) => tokens.add(item.token.address.toLowerCase()));
         }

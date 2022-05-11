@@ -90,7 +90,7 @@ export class IntegrationsServiceV3Decorator {
     const v3AllProtocols = await this.platformService.getProtocolList();
     const v3Protocol = v3AllProtocols.find((p) => p.name === protocolName);
     if (v3Protocol) {
-      const v3Response = await this.platformService.getUserPositionsForProtocol(
+      const v3Response = await this.platformService.getUserPositionsForPlatform(
         protocolName,
         chains,
         addresses,
@@ -205,11 +205,14 @@ export class IntegrationsServiceV3Decorator {
 
   static lendingToV2(v3Items): LendingPositionDto[] {
     return v3Items.map((item) => {
+      const apy = item.apy.year
+        ? item.apy.year * 100
+        : item.apy.supplyApy ?? item.apy.borrowApy ?? item.apy.stableApy ?? item.apy.variableApy;
       return plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,
         value: item.value,
-        apy: item.apy.supplyApy ?? item.apy.borrowApy ?? item.apy.stableApy ?? item.apy.variableApy,
+        apy,
         token: item.token,
       });
     });

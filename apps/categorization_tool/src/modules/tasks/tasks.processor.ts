@@ -16,6 +16,7 @@ import { AggregatorsService } from '../aggregators/aggregator.service';
 import { ProtocolService } from '../protocols/protocols.service';
 import { ContractsAnalysisService } from '../protocols/services/contracts.analysis.service';
 import { ContractsAnalysisServiceV1 } from '../protocols/services/contracts.analysis.service.v1';
+import { TasksService } from './tasks.service';
 
 @Injectable()
 @Processor(REDIS_TASK_QUEUE)
@@ -26,6 +27,7 @@ export class TasksProcessor {
     private readonly protocolService: ProtocolService,
     private readonly contractAnalysisService: ContractsAnalysisService,
     private readonly contractsAnalysisServiceV1: ContractsAnalysisServiceV1,
+    private readonly tasksService: TasksService,
   ) {}
 
   @Process(COMMON_TASK) // the name of the executed task
@@ -39,14 +41,16 @@ export class TasksProcessor {
     this.logger.debug(`job: '${job.data.command}'`);
     switch (job.data.command) {
       case CommandUnparameterized.start_fetching: {
-        await this.aggregatorsService.run();
-        await this.protocolService.parseProtocolsMainPage();
-        await this.protocolService.parseProtocolsAppPage();
-        await this.protocolService.parseProtocolsDocsPage();
-        // await this.protocolService.parseProtocolsGithubPage(); //enable it when needed
-        await this.protocolService.crawlHtml();
-        await this.protocolService.fetchAbi();
-        await this.contractsAnalysisServiceV1.analyseContracts();
+        for (const command of [
+          CommandUnparameterized.fetch_protocols,
+          CommandUnparameterized.parse_protocols_main_page,
+          CommandUnparameterized.parse_protocols_app_page,
+          CommandUnparameterized.parse_protocols_docs_page,
+          CommandUnparameterized.fetch_abi,
+          CommandUnparameterized.analyse_contracts,
+        ]) {
+          await this.tasksService.queueTask({ command });
+        }
         return;
       }
       case CommandUnparameterized.fetch_protocols:
@@ -87,7 +91,7 @@ export class TasksProcessor {
   }
 
   @OnQueueFailed()
-  public onError(job: Job<any>, error: any) {
+  public onError(job: Job, error: any) {
     this.logger.error(`Failed job ${job.id}: ${error.message}`, error.stack);
   }
 }

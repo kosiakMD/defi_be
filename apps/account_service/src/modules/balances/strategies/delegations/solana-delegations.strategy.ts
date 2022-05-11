@@ -81,9 +81,12 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
       stakesData.forEach((staking) => {
         const stakingReward = stakingRewardsData;
         if (stakingReward) {
-          const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
+          const balanceAmount = normalizeDecimals(
+            stakingReward[0].postBalance,
+            this.asset.decimals,
+          );
           const claimableRewardsAmount = normalizeDecimals(
-            stakingReward.amount,
+            stakingReward[0].amount,
             this.asset.decimals,
           );
           const price = prices[this.asset.address];

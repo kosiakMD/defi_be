@@ -357,6 +357,14 @@ export class TraderJoeStaking implements JobInterface {
 
             if (rewarder !== TraderjoeAddresses.zeroAddress) {
               const calls: Map<string, CallData> = new Map<string, CallData>();
+              calls.set(concatStrings(Abis.balance.name, rewarder), {
+                address: rewarder,
+                abi: Abis.balance,
+                input: {
+                  data: [],
+                },
+                output: {},
+              });
               calls.set(concatStrings(Abis.rewardToken.name, rewarder), {
                 address: rewarder,
                 abi: Abis.rewardToken,
@@ -382,12 +390,18 @@ export class TraderJoeStaking implements JobInterface {
                 return m;
               }
 
+              // reward token balance in contract
+              const balance = toDecimals(
+                rewardInfo.get(concatStrings(Abis.balance.name, rewarder)).output.data,
+                18,
+              );
+              const tokenPerSecond = toDecimals(
+                rewardInfo.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
+                18,
+              );
+
               const aprStatsBonus = {
-                rewardTokenPerBlock:
-                  toDecimals(
-                    rewardInfo.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
-                    18,
-                  ) * blockTime,
+                rewardTokenPerBlock: balance ? tokenPerSecond * blockTime : 0,
                 rewardTokenPrice: Number(
                   prices[
                     rewardInfo

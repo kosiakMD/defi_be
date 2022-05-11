@@ -14,12 +14,12 @@ import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';
 import { SearchResultType } from './interfaces/search.enum';
 import {
+  AddressMetadata,
   SearchParams,
   SearchResults,
   SearchResultsAddressEntry,
   SearchResultsBaseEntry,
 } from './interfaces/search.interface';
-import { addressSearchResultParser } from './utils/search.utils';
 
 @Injectable()
 export class SearchService extends BaseService {
@@ -49,18 +49,19 @@ export class SearchService extends BaseService {
 
   public async search(query: SearchQueryDto): Promise<SearchResults> {
     const { text, limit } = query;
-    if (isSomeAddress(text)) {
-      const searchResult = await this.getSearchEntries({ address: text, limit });
-      searchResult.entries.push(this.getAddressSearchEntry(text));
-      return addressSearchResultParser(text, searchResult);
-    }
     try {
-      const address = await this.web3NameService.resolveName(text);
-      if (address) {
-        this.logger.debug(`Resolved address ${address}`);
-        const searchResult = await this.getSearchEntries({ address, text, limit });
-        searchResult.entries.push(this.getAddressSearchEntry(address));
-        return addressSearchResultParser(address, searchResult);
+      const addresses = await this.getAddressSuggestions({ text });
+      if (addresses.length > 0) {
+        this.logger.debug(`Resolved addresses ${addresses}`);
+        const promises = addresses.map(({ address }) =>
+          this.getSearchEntries({ address, text, limit }),
+        );
+        const searchResultEntries = (await Promise.all(promises)).flatMap(({ entries }) => entries);
+        const entries = [
+          ...searchResultEntries,
+          ...addresses.map((addressSuggestion) => this.getAddressSearchEntry(addressSuggestion)),
+        ];
+        return { entries };
       }
     } catch (error) {
       this.logger.debug(`Error to resolve address ${error}`);
@@ -68,26 +69,31 @@ export class SearchService extends BaseService {
     return this.getSearchEntries({ text, limit });
   }
 
-  private getAddressSearchEntry(address: string): SearchResultsAddressEntry {
+  private getAddressSearchEntry(metadata: AddressMetadata): SearchResultsAddressEntry {
     return {
       type: SearchResultType.ADDRESS,
-      metadata: { address },
+      metadata,
     };
   }
 
   private async tryToResolveAddress(query: SearchQueryDto): Promise<AddressSuggestionDto[]> {
     const { text } = query;
-    // need it to check ENS name on all networks
     const substitution = text.endsWith('.') ? text.slice(0, -1) : text;
-    const addresses = await Promise.all([
+    let promises = [
       this.web3NameService.resolveNameResponseWithName(`${substitution}.eth`.toLowerCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.tns`.toLowerCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.tns`.toUpperCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.ust`.toLowerCase()),
       this.web3NameService.resolveNameResponseWithName(`${substitution}.ust`.toUpperCase()),
+    ];
+    const postfix = text.toLowerCase().slice(-4);
+    promises = promises.concat([
+      ...(postfix === '.eth'
+        ? []
+        : [this.web3NameService.resolveNameResponseWithName(text.toUpperCase())]),
       this.web3NameService.resolveNameResponseWithName(text.toLowerCase()),
-      this.web3NameService.resolveNameResponseWithName(text.toUpperCase()),
     ]);
+    const addresses = await Promise.all(promises);
     return addresses //
       .filter((result) => !!result)
       .map(({ address, name }) => new AddressSuggestionDto(address, name));

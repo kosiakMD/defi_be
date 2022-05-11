@@ -9,4 +9,5 @@ export type PriceSourceConfig = {
   gqlString?: string;
   keepHistoricalPrices?: boolean;
   requestDelay?: number;
+  currentPriceJobInterval?: number;
 };

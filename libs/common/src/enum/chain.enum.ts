@@ -117,7 +117,7 @@ export enum CoingeckoPlatformEnum {
   terra = 'terra',
   vvs = 'vvs',
   klay = 'klay-token',
-  fuse = '',
+  fuse = 'fuse',
   cardano = 'cardano',
   metis = 'metis-andromeda',
   ronin = 'ronin',

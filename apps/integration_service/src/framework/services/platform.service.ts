@@ -13,6 +13,7 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { Belt } from '../platforms/Belt';
 import { BiSwap } from '../platforms/BiSwap';
@@ -38,6 +39,7 @@ import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
+import { YelFinance } from '../platforms/YelFinance';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -80,6 +82,8 @@ export class PlatformService {
       Belt,
       MarsEcosystem,
       Goose,
+      BabySwap,
+      YelFinance,
     });
   }
 

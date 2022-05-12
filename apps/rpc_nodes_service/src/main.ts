@@ -1,6 +1,8 @@
+import { json, urlencoded } from 'express';
 import * as fs from 'fs';
 
 import { ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -45,6 +47,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1'); // temporary global as only 1 version
+
+  const configService = app.get<ConfigService>(ConfigService);
+
+  app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
+  app.use(urlencoded({ extended: true, limit: configService.get<string>('URL_LIMIT') }));
 
   initSwagger(app);
 

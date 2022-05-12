@@ -63,7 +63,7 @@ export class ContractsAnalysisServiceV1 {
         );
         skip += taken;
         this.logger.debug(`analysed [${skip}] contracts`);
-        return !!contracts.length;
+        return !!taken;
       },
     );
     this.logger.log('analyseContracts finished');
@@ -99,7 +99,7 @@ export class ContractsAnalysisServiceV1 {
       async ({ taken, contracts }) => {
         await processor(contract, contracts);
         skip += taken;
-        return !!contracts.length;
+        return !!taken;
       },
     );
   }

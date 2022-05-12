@@ -1,6 +1,5 @@
 import { PublicKey } from '@solana/web3.js';
 import bech32 from 'bech32';
-import * as CardanoCryptoJs from 'cardano-crypto.js';
 import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
@@ -52,6 +51,7 @@ export function keepAddressesByChainId(addresses: string | string[], chainId: Ch
   }
   return addressArray;
 }
+
 export function splitToAddressesArray(addresses: string | any): Address[] {
   if (!addresses) {
     return [];
@@ -99,49 +99,44 @@ export function isSolAddress(address: string): boolean {
   }
 }
 
-export function isCardanoAddress(address: string): boolean {
+export function isBech32LikeAddress(address: string, length?: number): boolean {
   try {
-    const { prefix } = bech32.decode(address);
-    return prefix.startsWith('addr');
-  } catch {
-    const { isValidBootstrapAddress, isValidShelleyAddress } = CardanoCryptoJs;
-    return isValidBootstrapAddress(address) || isValidShelleyAddress(address);
-  }
-}
-
-export function isCardanoLikeAddress(address: string): boolean {
-  try {
-    const { prefix } = bech32.decode(address);
-    return ['kava', 'secret', 'osmo', 'terra', 'cosmos', 'ronin'].includes(prefix);
+    const { prefix } = bech32.decode(address, length);
+    return ['addr', 'kava', 'secret', 'osmo', 'terra', 'cosmos'].includes(prefix);
   } catch {
     return false;
   }
 }
+
+export function isCardanoAddress(address: string): boolean {
+  return isBech32LikeAddress(address, 103);
+}
+
 export function isRoninAddress(address: string): boolean {
-  return isCardanoLikeAddress(address);
+  return address.includes('ronin');
 }
 export function isKavaAddress(address: string): boolean {
-  return isCardanoLikeAddress(address);
+  return isBech32LikeAddress(address);
 }
 
 export function isCosmosAddress(address: string): boolean {
-  return isCardanoLikeAddress(address);
+  return isBech32LikeAddress(address);
 }
 
 export function isOsmosisAddress(address: string): boolean {
-  return isCardanoLikeAddress(address);
+  return isBech32LikeAddress(address);
 }
 
 export function isSecretAddress(address: string): boolean {
-  return isCardanoLikeAddress(address);
+  return isBech32LikeAddress(address);
 }
 
 export function isTerraAddress(address: string): boolean {
-  return isCardanoLikeAddress(address);
+  return isBech32LikeAddress(address);
 }
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [isETHAddress, isCardanoAddress, isCardanoLikeAddress, isSolAddress];
+  const addressChecks = [isBech32LikeAddress, isETHAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

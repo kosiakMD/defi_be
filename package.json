@@ -292,8 +292,6 @@
     "bull": "^4.8.1",
     "cache-manager": "^3.4.3",
     "cache-manager-redis-store": "^2.0.0",
-    "cardano-addresses": "^3.9.0",
-    "cardano-crypto.js": "^6.1.1",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
     "deep-object-diff": "^1.1.7",

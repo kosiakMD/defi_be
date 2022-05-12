@@ -32,6 +32,10 @@ export const validationSchema = Joi.object({
     .default('.ssl/dev.local+3-key.pem'),
   SSL_CERT_PATH: Joi.string() //
     .default('.ssl/dev.local+3.pem'),
+  BODY_LIMIT: Joi.string() //
+    .default('10mb'),
+  URL_LIMIT: Joi.string() //
+    .default('10mb'),
 });
 
 export const validationOptions = {

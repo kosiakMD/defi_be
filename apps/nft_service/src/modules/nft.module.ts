@@ -6,10 +6,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { NftFetchPriceRequestProviderMock } from './nft.fetch.price.request.provider.mock';
 import { NftService } from './nft.service';
+import { NftPricesModule } from './prices/nft.prices.module';
 
 @Module({
   imports: [
     HttpModule,
+    NftPricesModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

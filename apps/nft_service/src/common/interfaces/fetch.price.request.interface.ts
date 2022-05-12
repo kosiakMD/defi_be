@@ -1,5 +1,5 @@
 export interface IFetchPriceAssetRequest {
-  collectionAddress: string;
+  address: string;
   tokenId: string;
 }
 

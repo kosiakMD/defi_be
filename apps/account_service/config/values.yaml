@@ -15,80 +15,80 @@ configMaps:
   links:
     #ETHEREUM_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     #ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    ETHEREUM_URL: http://rpc-nodes-service/v1/rpc/1
-    ETH_URL: http://rpc-nodes-service/v1/rpc/1
+    ETHEREUM_URL: http://rpc-nodes-service/v1/rpc-call/1
+    ETH_URL: http://rpc-nodes-service/v1/rpc-call/1
     #BINANCE_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
     #BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
-    BINANCE_URL: http://rpc-nodes-service/v1/rpc/2
-    BSC_URL: http://rpc-nodes-service/v1/rpc/2
+    BINANCE_URL: http://rpc-nodes-service/v1/rpc-call/2
+    BSC_URL: http://rpc-nodes-service/v1/rpc-call/2
     #POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
-    #POLYGON_RPC_URL: https://polygon-rpc.com/
-    POLYGON_URL: http://rpc-nodes-service/v1/rpc/3
-    POLYGON_RPC_URL: http://rpc-nodes-service/v1/rpc/3
-    #FANTOM_URL: https://rpc.ftm.tools/
-    #FTM_URL: https://rpc.ftm.tools/
-    FANTOM_URL: http://rpc-nodes-service/v1/rpc/4
-    FTM_URL: http://rpc-nodes-service/v1/rpc/4
-    #AVALANCHE_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
-    #AVAX_URL: https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc
-    AVALANCHE_URL: http://rpc-nodes-service/v1/rpc/6
-    AVAX_URL: http://rpc-nodes-service/v1/rpc/6
-    #ARBITRUM_URL: https://rpc.ankr.com/arbitrum
-    ARBITRUM_URL: http://rpc-nodes-service/v1/rpc/5
+    #POLYGON_rpc-call_URL: https://polygon-rpc-call.com/
+    POLYGON_URL: http://rpc-nodes-service/v1/rpc-call/3
+    POLYGON_rpc-call_URL: http://rpc-nodes-service/v1/rpc-call/3
+    #FANTOM_URL: https://rpc-call.ftm.tools/
+    #FTM_URL: https://rpc-call.ftm.tools/
+    FANTOM_URL: http://rpc-nodes-service/v1/rpc-call/4
+    FTM_URL: http://rpc-nodes-service/v1/rpc-call/4
+    #AVALANCHE_URL: https://avalanche--mainnet--rpc-call.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc-call
+    #AVAX_URL: https://avalanche--mainnet--rpc-call.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc-call
+    AVALANCHE_URL: http://rpc-nodes-service/v1/rpc-call/6
+    AVAX_URL: http://rpc-nodes-service/v1/rpc-call/6
+    #ARBITRUM_URL: https://rpc-call.ankr.com/arbitrum
+    ARBITRUM_URL: http://rpc-nodes-service/v1/rpc-call/5
     #XDAI_URL: https://xdai-archive.blockscout.com
-    XDAI_URL: http://rpc-nodes-service/v1/rpc/7
-    #CELO_URL: https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
-    CELO_URL: http://rpc-nodes-service/v1/rpc/8
-    #MOONRIVER_URL: https://rpc.api.moonriver.moonbeam.network
-    #MRIVER_URL: https://rpc.api.moonriver.moonbeam.network
-    MOONRIVER_URL: http://rpc-nodes-service/v1/rpc/9
-    MRIVER_URL: http://rpc-nodes-service/v1/rpc/9
+    XDAI_URL: http://rpc-nodes-service/v1/rpc-call/7
+    #CELO_URL: https://celo-mainnet--rpc-call.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/
+    CELO_URL: http://rpc-nodes-service/v1/rpc-call/8
+    #MOONRIVER_URL: https://rpc-call.api.moonriver.moonbeam.network
+    #MRIVER_URL: https://rpc-call.api.moonriver.moonbeam.network
+    MOONRIVER_URL: http://rpc-nodes-service/v1/rpc-call/9
+    MRIVER_URL: http://rpc-nodes-service/v1/rpc-call/9
     #HARMONY_URL: https://a.api.s0.t.hmny.io
     #HARM_URL: https://a.api.s0.t.hmny.io
-    HARMONY_URL: http://rpc-nodes-service/v1/rpc/10
-    HARM_URL: http://rpc-nodes-service/v1/rpc/10
+    HARMONY_URL: http://rpc-nodes-service/v1/rpc-call/10
+    HARM_URL: http://rpc-nodes-service/v1/rpc-call/10
     #HECO_URL: https://http-mainnet.hecochain.com/
-    HECO_URL: http://rpc-nodes-service/v1/rpc/11
+    HECO_URL: http://rpc-nodes-service/v1/rpc-call/11
     SOLANA_URL: https://solana-api.projectserum.com/
     SOL_URL: https://solana-api.projectserum.com/
-    #OKEX_URL: https://exchainrpc.okex.org
-    OKEX_URL: http://rpc-nodes-service/v1/rpc/13
+    #OKEX_URL: https://exchainrpc-call.okex.org
+    OKEX_URL: http://rpc-nodes-service/v1/rpc-call/13
     #CRONOS_URL: https://evm-cronos.crypto.org
-    CRONOS_URL: http://rpc-nodes-service/v1/rpc/14
+    CRONOS_URL: http://rpc-nodes-service/v1/rpc-call/14
     #BOBA_URL: https://mainnet.boba.network/
-    BOBA_URL: http://rpc-nodes-service/v1/rpc/15
-    #KUCOIN_URL: https://rpc-mainnet.kcc.network
-    KUCOIN_URL: http://rpc-nodes-service/v1/rpc/16
+    BOBA_URL: http://rpc-nodes-service/v1/rpc-call/15
+    #KUCOIN_URL: https://rpc-call-mainnet.kcc.network
+    KUCOIN_URL: http://rpc-nodes-service/v1/rpc-call/16
     #OPTIMISM_URL: https://mainnet.optimism.io/
     #OPT_URL: https://mainnet.optimism.io/
-    OPTIMISM_URL: http://rpc-nodes-service/v1/rpc/17
-    OPT_URL: http://rpc-nodes-service/v1/rpc/17
+    OPTIMISM_URL: http://rpc-nodes-service/v1/rpc-call/17
+    OPT_URL: http://rpc-nodes-service/v1/rpc-call/17
     #AURORA_URL: https://mainnet.aurora.dev
     #NEAR_URL: https://mainnet.aurora.dev/
-    AURORA_URL: http://rpc-nodes-service/v1/rpc/18
-    NEAR_URL: http://rpc-nodes-service/v1/rpc/18
+    AURORA_URL: http://rpc-nodes-service/v1/rpc-call/18
+    NEAR_URL: http://rpc-nodes-service/v1/rpc-call/18
     #TERRA_URL: https://lcd.terra.dev
-    TERRA_URL: http://rpc-nodes-service/v1/rpc/19
-    #METIS_URL: https://andromeda-rpc.metis.io/
-    METIS_URL: http://rpc-nodes-service/v1/rpc/23
-    #RONIN_URL: https://api.roninchain.com/rpc
-    RONIN_URL: http://rpc-nodes-service/v1/rpc/24
+    TERRA_URL: http://rpc-nodes-service/v1/rpc-call/19
+    #METIS_URL: https://andromeda-rpc-call.metis.io/
+    METIS_URL: http://rpc-nodes-service/v1/rpc-call/23
+    #RONIN_URL: https://api.roninchain.com/rpc-call
+    RONIN_URL: http://rpc-nodes-service/v1/rpc-call/24
     #GNOSIS_URL: https://poa-xdai-archival.gateway.pokt.network/v1/lb/61f959410d66d80038fc1da0
-    GNOSIS_URL: http://rpc-nodes-service/v1/rpc/7
+    GNOSIS_URL: http://rpc-nodes-service/v1/rpc-call/7
     #KLAYTN_URL: https://public-node-api.klaytnapi.com/v1/cypress
-    KLAYTN_URL: http://rpc-nodes-service/v1/rpc/20
-    #FUSE_URL: https://rpc.fuse.io
-    FUSE_URL: http://rpc-nodes-service/v1/rpc/21
-    #KAVA_URL: https://rpc.kava.io
-    KAVA_URL: http://rpc-nodes-service/v1/rpc/26
+    KLAYTN_URL: http://rpc-nodes-service/v1/rpc-call/20
+    #FUSE_URL: https://rpc-call.fuse.io
+    FUSE_URL: http://rpc-nodes-service/v1/rpc-call/21
+    #KAVA_URL: https://rpc-call.kava.io
+    KAVA_URL: http://rpc-nodes-service/v1/rpc-call/26
     CARDANO_URL: https://cardano-mainnet.blockfrost.io
-    #CARDANO_URL: http://rpc-nodes-service/v1/rpc/22
-    #COSMOS_URL: https://cosmoshub-4--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
-    COSMOS_URL: http://rpc-nodes-service/v1/rpc/25
-    #OSMOSIS_URL: https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
-    OSMOSIS_URL: http://rpc-nodes-service/v1/rpc/27
-    #SECRET_URL: https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
-    SECRET_URL: http://rpc-nodes-service/v1/rpc/28
+    #CARDANO_URL: http://rpc-nodes-service/v1/rpc-call/22
+    #COSMOS_URL: https://cosmoshub-4--rpc-call--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    COSMOS_URL: http://rpc-nodes-service/v1/rpc-call/25
+    #OSMOSIS_URL: https://osmosis-1--rpc-call--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    OSMOSIS_URL: http://rpc-nodes-service/v1/rpc-call/27
+    #SECRET_URL: https://secret-3--rpc-call--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/
+    SECRET_URL: http://rpc-nodes-service/v1/rpc-call/28
   endpoints:
     PRICE_SERVICE_HOST: http://price-service
     PRICE_SERVICE_PORT: 80

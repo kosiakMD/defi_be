@@ -1,4 +1,4 @@
-export enum Command {
+export enum CommandUnparameterized {
   start_fetching = 'start_fetching',
   fetch_protocols = 'fetch_protocols',
   parse_protocols_main_page = 'parse_protocols_main_page',
@@ -9,5 +9,11 @@ export enum Command {
   fetch_abi = 'fetch_abi',
   analyse_contracts = 'analyse_contracts',
   analyse_contracts_against_templates = 'analyse_contracts_against_templates',
+}
+
+export enum CommandParameterized {
+  similar_contract = 'similar_contract',
   run_parsing_custom_protocol = 'run_parsing_custom_protocol',
 }
+
+export type CommandType = CommandUnparameterized | CommandParameterized;

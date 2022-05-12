@@ -13,3 +13,5 @@ export const getUniqList = <T = string | number>(values: T[]): T[] => {
 export function filterByEnum<T = Array<string | number>>(value: Array<T>, enumName: any): Array<T> {
   return value.filter((_) => enumName[_]);
 }
+
+export const notEmpty = <T = any>(arr): T[] => arr.filter((x) => x);

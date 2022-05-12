@@ -9,17 +9,22 @@ import {
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
-  TokenMap,
 } from '../interfaces';
 import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';
+
+interface IEVMMeta extends IProtocolMeta {
+  name: string;
+  address: Address;
+  context?: any;
+}
 
 export abstract class SingleContractProtocol<
   TMinimalType extends IWalletMinimal,
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
-  TMeta extends IProtocolMeta = IProtocolMeta,
-> extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType> {
+  TProtocolMeta extends IEVMMeta = IEVMMeta,
+> extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract multicall: MulticallAggregator;
   protected abstract abiService: AbiService;
 
@@ -30,10 +35,6 @@ export abstract class SingleContractProtocol<
    *
    */
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
-  protected abstract formatOpportunity(
-    pool: TMinimalType,
-    tokens: TokenMap,
-  ): TOpportunityType | void;
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
@@ -44,7 +45,6 @@ export abstract class SingleContractProtocol<
     data: any,
   ): TUserEntryType;
   functions: INamedFunctions = {};
-  meta: TMeta;
 
   /**
    * Initialize the protocol. In this case it fetches the ABI using the supplied address

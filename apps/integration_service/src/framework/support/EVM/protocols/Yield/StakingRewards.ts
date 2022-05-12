@@ -4,7 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { endsWith, normalizeDecimals, startsWith } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -13,36 +13,14 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { INamedFunctionPredicates, IProtocolMeta, TokenMap } from '../../../interfaces';
+import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import {
-  IRewardTokenMinimal,
-  IRewardTokenOpportunity,
-} from '../../../interfaces/tokens.rewarded.interface';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-} from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { MultiContractProtocol } from '../../MultiContractProtocol';
-
-interface IStakingRewardMeta extends IProtocolMeta {
-  feature: FeatureEnum.staking;
-  name: string;
-  api?: {
-    endpoint: string;
-    path: string;
-    handler: () => Address[];
-  };
-  scrape: {
-    url: string;
-  };
-}
 
 /**
  * This Template is for when many pools each have individual contracts for staking
@@ -52,8 +30,7 @@ interface IStakingRewardMeta extends IProtocolMeta {
 export class StakingRewards extends MultiContractProtocol<
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
-  IStakingFeatureUserEntry,
-  IStakingRewardMeta
+  IStakingFeatureUserEntry
 > {
   protected functionPredicates: INamedFunctionPredicates = {
     balanceOf: () => (item) => ['balanceOf', 'userInfo'].includes(item.name),
@@ -88,6 +65,7 @@ export class StakingRewards extends MultiContractProtocol<
 
   protected async fetchOpportunityData(): Promise<IStakingFeatureMinimal[]> {
     const poolAddresses = await this.fetchPoolList();
+
     // Dynamically load inputless functions here instead of hardcoding each
     // call so when its extended, we have a better chance of minimal changes
     const inputlessFunctions = Object.values(this.functions).filter((item) => !item.inputs?.length);
@@ -196,7 +174,7 @@ export class StakingRewards extends MultiContractProtocol<
     address: Address,
     data: Map<string, CallData>,
   ): IStakingFeatureMinimal {
-    return {
+    const opportunity = {
       id: address,
       chain: this.meta.chain,
       feature: this.meta.feature,
@@ -223,71 +201,7 @@ export class StakingRewards extends MultiContractProtocol<
         },
       ],
     };
-  }
 
-  // same as masterchef
-  protected formatOpportunity(
-    pool: IStakingFeatureMinimal,
-    tokens: TokenMap,
-  ): void | IStakingFeatureOpportunity {
-    if (
-      !pool.supplied.every((t) => tokens.has(t.token.address)) ||
-      !pool.rewarded.every((t) => tokens.has(t.token.address))
-    ) {
-      throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
-    }
-
-    const tvl = pool.supplied.reduce((tvl, poolToken) => {
-      const token = tokens.get(poolToken.token.address);
-      return tvl + token.price * normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    }, 0);
-
-    return {
-      feature: pool.feature,
-      id: pool.id,
-      chain: pool.chain,
-      supplied: pool.supplied.map((poolToken) =>
-        this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
-      ),
-
-      rewarded: pool.rewarded.map((poolToken) =>
-        this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
-      ),
-    };
-  }
-  // same as masterchef
-  protected formatOpportunitySuppliedToken(
-    poolToken: ISupplyTokenMinimal,
-    token: ERC20Token,
-  ): ISupplyTokenOpportunity {
-    const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    return {
-      token,
-      totalSupplied,
-      tvl: totalSupplied * token.price,
-    };
-  }
-
-  // same as masterchef
-  protected formatOpportunityRewardedToken(
-    poolToken: IRewardTokenMinimal,
-    token: ERC20Token,
-    tvl: number, // for calculating apr
-  ): IRewardTokenOpportunity {
-    const tokensPerSecond = normalizeDecimals(poolToken.rewardPerSecond, token.decimals);
-    const pricePerSecond = tokensPerSecond * token.price;
-
-    // yield is a reserved word 🙄
-    const { apr: harvests } = this.getYieldBreakdown(tokensPerSecond, 1);
-    const { apr, apy } = this.getYieldBreakdown(pricePerSecond, tvl);
-
-    return {
-      token,
-      harvests,
-      // Note: This only includes APR for _this token's rewards_ on the farm
-      // so any trading fees are not included here
-      apr,
-      apy,
-    };
+    return opportunity;
   }
 }

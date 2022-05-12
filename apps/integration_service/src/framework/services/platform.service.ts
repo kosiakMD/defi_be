@@ -1,5 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
 import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
@@ -7,23 +6,34 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainId, Logger } from '@app/common';
+import { Address, ChainDto, ChainId, Logger } from '@app/common';
+import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
+import { Belt } from '../platforms/Belt';
+import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { Evodefi } from '../platforms/Evodefi';
+import { Frax } from '../platforms/Frax';
+import { Goose } from '../platforms/Goose';
+import { Kava } from '../platforms/Kava';
+import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
+import { MarsEcosystem } from '../platforms/MarsEcosystem';
+import { Mdex } from '../platforms/Mdex';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
+import { Quarry } from '../platforms/Quarry';
 import { QuickSwap } from '../platforms/QuickSwap';
 import { RuneFarm } from '../platforms/RuneFarm';
+import { Solend } from '../platforms/Solend';
 import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
@@ -60,6 +70,16 @@ export class PlatformService {
       LimeSwap,
       BalancerV2,
       AaveV3,
+      Frax,
+      Kava,
+      Solend,
+      Quarry,
+      BiSwap,
+      Mdex,
+      KnightSwap,
+      Belt,
+      MarsEcosystem,
+      Goose,
     });
   }
 
@@ -90,11 +110,6 @@ export class PlatformService {
       mergeMap(async (name) => {
         try {
           const instance = await this.getPlatform(name);
-          // const chains: ChainId[] = [];
-          // instance.getMeta().features.forEach(async (f) => {
-          //   chains.push(f.chain.id);
-          // });
-          // await instance.getPoolData(chains);
           return instance.getMeta();
         } catch (err) {
           this.logger.error(err.message || err, err.stack, `${this.constructor.name}/${name}`);
@@ -108,7 +123,7 @@ export class PlatformService {
     return lastValueFrom(data$);
   }
 
-  public async getUserPositionsForProtocol(
+  public async getUserPositionsForPlatform(
     platformName: string,
     chains: ChainId[],
     addresses: Address[],
@@ -131,7 +146,7 @@ export class PlatformService {
     };
   }
 
-  public async getOpportunitiesForProtocol(
+  public async getOpportunitiesForPlatform(
     platformName: string,
     chains: ChainId[],
   ): Promise<IOpportunityResponse> {
@@ -150,7 +165,44 @@ export class PlatformService {
     };
   }
 
-  public async cacheOpportunitiesForProtocol(
+  public async cacheOpportunities(): Promise<StandardResponse<any>> {
+    const chainsProtocols: {
+      // key is ChainId
+      [key: string]: string[];
+    } = {};
+    const protocols = await this.getProtocolList();
+    protocols.forEach((p) => {
+      p.features.forEach((f) => {
+        if (!chainsProtocols[f.chain.id]) {
+          chainsProtocols[f.chain.id.toString()] = [];
+        }
+        chainsProtocols[f.chain.id.toString()].push(p.name);
+      });
+    });
+
+    const promises: Promise<{
+      chain: ChainDto;
+      results: any;
+    }>[] = Object.entries(chainsProtocols).map(async ([chain, cProtocols]) => {
+      const result = [];
+      for (const protocol of cProtocols as string[]) {
+        const res = await this.cacheOpportunitiesForPlatform(protocol, [Number(chain)], false);
+        result.push(res);
+      }
+      return {
+        chain: getChainById(Number(chain)),
+        results: result,
+      };
+    });
+
+    const results = await Promise.all(promises);
+    return {
+      errors: [],
+      data: results,
+    };
+  }
+
+  public async cacheOpportunitiesForPlatform(
     platformName: string,
     chains: ChainId[],
     debug: boolean,

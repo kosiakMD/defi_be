@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { getUniqList } from '@app/common/utils';
 import { unifyAddresses } from '@app/common/utils/addresses';
 import { roundToNearestHour } from '@app/common/utils/dates';
@@ -35,8 +36,8 @@ import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto'
 import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
 import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
 import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
-import { DelegationsStrategy } from './strategies/delegations';
 import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
+import { DelegationsStrategy } from './strategies/delegations/delegation.strategy';
 import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
 import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
 import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
@@ -52,6 +53,7 @@ type PartialBalancesResponse = {
   errors: ErrorMessage[];
   balances: TokenBalance[];
 };
+
 export class BalancesService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -148,8 +150,8 @@ export class BalancesService {
     return this.calculate24HourReturns(now, then);
   }
 
-  public async getUserDelegations(addresses: Address[]) {
-    return Promise.all(addresses.map((address: Address) => this.getDelegationsForAddress(address)));
+  public async getUserDelegations(addresses: Address[]): Promise<Record<Address, any>[]> {
+    return Promise.all(addresses.map(this.getDelegationsForAddress, this));
   }
 
   async getBlockFromDate(target: Date, web3: Web3): Promise<BlockTimestamp> {
@@ -306,6 +308,7 @@ export class BalancesService {
       });
     }
   }
+
   private async getChainBlocksAtDate(
     chains: number[],
     date: Date,
@@ -609,13 +612,15 @@ export class BalancesService {
     }, {});
   }
 
-  private async getDelegationsForAddress(address: string) {
-    const result = [];
+  private async getDelegationsForAddress(address: string): Promise<Record<Address, any>> {
+    const allResult = await Promise.allSettled(
+      this.delegationStrategies.map((strategy) => strategy.getDelegatedAssets(address)),
+    );
 
-    for (const strategy of this.delegationStrategies) {
-      const delegation = await strategy.getDelegatedAssets(address);
-      result.push(delegation);
-    }
+    // TODO better to handle only specific error in Cardano - TBD with Artem
+    // Some Cardano delegator throw exception if address is not valid for its network and we ignore them
+    const result = handlePromiseAllSettled(allResult)[0];
+
     return { [address]: result.flat() };
   }
 }

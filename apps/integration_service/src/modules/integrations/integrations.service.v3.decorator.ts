@@ -11,6 +11,7 @@ import {
   ProtocolDataDto,
   ProtocolName,
 } from '@app/common';
+import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import {
   IntegrationClaimableTokenDto,
@@ -90,7 +91,7 @@ export class IntegrationsServiceV3Decorator {
     const v3AllProtocols = await this.platformService.getProtocolList();
     const v3Protocol = v3AllProtocols.find((p) => p.name === protocolName);
     if (v3Protocol) {
-      const v3Response = await this.platformService.getUserPositionsForProtocol(
+      const v3Response = await this.platformService.getUserPositionsForPlatform(
         protocolName,
         chains,
         addresses,
@@ -117,7 +118,7 @@ export class IntegrationsServiceV3Decorator {
 
     const v2Protocol: ProtocolInfoDto = plainToClass(ProtocolInfoDto, {
       name: v3response.data.protocol.name,
-      project: v3response.data.protocol.name,
+      project: v3response.data.protocol.project,
       label: v3response.data.protocol.name,
     });
     v2Protocol.chains = getUniqList(
@@ -158,42 +159,39 @@ export class IntegrationsServiceV3Decorator {
           );
         }
         if (v3WalletChain.positions.lending) {
-          v2WalletChain.features.push(FeatureEnum.borrowing);
-          v2WalletChain[FeatureEnum.lending] = {
-            totalValue: 0,
-            items: [],
-          };
-
-          v2WalletChain[FeatureEnum.borrowing] = {
-            totalValue: 0,
-            items: [],
-          };
-
-          v2WalletChain[FeatureEnum.lending].items.push(
-            ...v3WalletChain.positions.lending.flatMap((v3LendingPos) => {
-              const suppliedItems = IntegrationsServiceV3Decorator.lendingToV2(
-                v3LendingPos['supplied'],
-              );
-              suppliedItems?.forEach(
-                (lend) => (v2WalletChain[FeatureEnum.lending].totalValue += lend.value),
-              );
-              v2Response.data.total += v2WalletChain[FeatureEnum.lending].totalValue;
-              return suppliedItems;
-            }),
+          v2WalletChain.features.push(
+            ...[FeatureEnum.claimable, FeatureEnum.borrowing, FeatureEnum.health],
           );
-
-          v2WalletChain[FeatureEnum.borrowing].items.push(
-            ...v3WalletChain.positions.lending.flatMap((v3LendingPos) => {
-              const borrowedItems = IntegrationsServiceV3Decorator.lendingToV2(
-                v3LendingPos['borrowed'],
+          v2WalletChain.features.forEach((feature) => {
+            v3WalletChain.positions.lending.forEach((position) => {
+              if (feature === FeatureEnum.health) {
+                v2WalletChain[feature] = {
+                  totalValue: 0,
+                  items: position['debtRatio']
+                    ? [plainToClass(HealthFactorDto, { healthFactor: position['debtRatio'] })]
+                    : [],
+                };
+                return;
+              }
+              const positionField =
+                feature === FeatureEnum.lending
+                  ? 'supplied'
+                  : feature === FeatureEnum.borrowing
+                  ? 'borrowed'
+                  : 'rewarded';
+              const featureItems = IntegrationsServiceV3Decorator.lendingToV2(
+                position[positionField],
               );
-              borrowedItems?.forEach(
-                (lend) => (v2WalletChain[FeatureEnum.borrowing].totalValue += lend.value),
-              );
-              v2Response.data.total -= v2WalletChain[FeatureEnum.borrowing].totalValue;
-              return borrowedItems;
-            }),
-          );
+              let totalValue = 0;
+              featureItems?.forEach((featureItem) => (totalValue += featureItem.value));
+              v2Response.data.total +=
+                feature === FeatureEnum.borrowing ? totalValue * -1 : totalValue;
+              v2WalletChain[feature] = {
+                totalValue,
+                items: featureItems || [],
+              };
+            });
+          });
         }
         return v2WalletChain;
       });
@@ -205,11 +203,17 @@ export class IntegrationsServiceV3Decorator {
 
   static lendingToV2(v3Items): LendingPositionDto[] {
     return v3Items.map((item) => {
+      const apy = item.apy?.year
+        ? item.apy?.year * 100
+        : item.apy?.supplyApy ??
+          item.apy?.borrowApy ??
+          item.apy?.stableApy ??
+          item.apy?.variableApy;
       return plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,
         value: item.value,
-        apy: item.apy.supplyApy ?? item.apy.stableApy ?? item.apy.variableApy,
+        apy,
         token: item.token,
       });
     });
@@ -227,7 +231,6 @@ export class IntegrationsServiceV3Decorator {
     v2Item.address = poolAddress.toLowerCase();
     v2Item.poolId = Number(poolId);
     v2Item.poolName = null;
-    v2Item.staked = lpToken.totalSupplied.toString();
     v2Item.stats = {
       tvl: lpToken.tvl,
       poolApy: null,
@@ -251,7 +254,7 @@ export class IntegrationsServiceV3Decorator {
       v2RewardToken.price = v3RewardToken.token.price;
       v2RewardToken.claimableData.balance = v3RewardToken.amount;
       v2RewardToken.claimableData.value = v3RewardToken.value;
-      v2RewardToken.apr = v3RewardToken.apr.year * 100;
+      v2RewardToken.apr = v3RewardToken.apr?.year * 100;
       return v2RewardToken;
     });
 

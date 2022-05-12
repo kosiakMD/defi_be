@@ -20,6 +20,11 @@ export class QuickSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://quickswap.exchange/',
+        logo: 'https://icons.llama.fi/quickswap.jpg',
+        twitter: 'QuickswapDEX',
+      },
     });
 
     const quickSwapPoolsEndpoint =
@@ -31,6 +36,7 @@ export class QuickSwap extends RootPlatform {
       chain: ChainIdEnum.plg,
       name: 'Syrup',
       feature: FeatureEnum.staking,
+      address: '0xAf94537FB2499276a87870B7328CC21e9bEB2BB0', // Randomly chosen vault to fetch ABI from
       api: {
         endpoint: quickSwapPoolsEndpoint,
         // see: https://www.npmjs.com/package/jsonpath-plus
@@ -46,6 +52,7 @@ export class QuickSwap extends RootPlatform {
       chain: ChainIdEnum.plg,
       name: 'Dual Rewards',
       feature: FeatureEnum.staking,
+      address: '0x3c1f53fed2238176419F8f897aEc8791C499e3c8', // Randomly chosen vault to fetch ABI from
       api: {
         endpoint: quickSwapPoolsEndpoint,
         path: '$.[dualrewards].*.stakingRewardAddress',

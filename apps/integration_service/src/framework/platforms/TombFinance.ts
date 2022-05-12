@@ -19,6 +19,11 @@ export class TombFinance extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://tomb.finance/',
+        logo: 'https://icons.llama.fi/tomb-finance.jpg',
+        twitter: 'tombfinance',
+      },
     });
 
     // TODO: Add algo stable (boardroom)

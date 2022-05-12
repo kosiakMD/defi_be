@@ -7,6 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   ChainIdEnum,
+  ChainNameEnum,
   ChainWrappedTokens,
   CurrencyIdEnum,
   FeatureEnum,
@@ -387,29 +388,23 @@ export class CurveGaugesBase implements JobInterface {
     return savedItem;
   }
 
-  async getChainMainPoolsAprs() {
+  protected async getPoolsDataMap() {
     const curveApi = new CurveApi(this.logger);
-    switch (this.chain) {
-      case ChainIdEnum.plg:
-        return await curveApi.getMainPoolsAprPlg();
-      case ChainIdEnum.avax:
-        return await curveApi.getMainPoolsAprAvax();
-      case ChainIdEnum.ftm:
-        return await curveApi.getMainPoolsAprFtm();
-      case ChainIdEnum.arbi:
-        return await curveApi.getMainPoolsAprArbi();
-      case ChainIdEnum.opt:
-        return await curveApi.getMainPoolsAprOpt();
-      case ChainIdEnum.harm:
-        return await curveApi.getMainPoolsAprHarm();
-      case ChainIdEnum.gnosis:
-        return await curveApi.getMainPoolsAprGnosis();
-    }
+    const poolsSubgraphData = await curveApi.getSubgraphPoolsData(
+      this.chain === ChainIdEnum.gnosis ? 'xdai' : ChainNameEnum[ChainIdEnum[this.chain]],
+    );
+    return poolsSubgraphData.reduce((resp, value) => {
+      resp.set(value.address.toLowerCase(), {
+        price: value.virtualPrice,
+        apy: value.latestDailyApy,
+      });
+      return resp;
+    }, new Map());
   }
 
   async updateWithChainData(): Promise<any[]> {
     try {
-      const mainPoolsAprs = await this.getChainMainPoolsAprs();
+      const poolsDataMap = await this.getPoolsDataMap();
       const lps = [];
       this.mapping.forEach((staking) => {
         lps.push(staking.stakingToken.address);
@@ -443,6 +438,9 @@ export class CurveGaugesBase implements JobInterface {
       ]);
 
       this.mapping = this.mapping.map((position) => {
+        const poolData =
+          poolsDataMap.get(position.pool.toLowerCase()) || poolsDataMap.get(position.poolName);
+
         const getTokenReserve = (address: Address, positionInPool: number) =>
           multicallResponses
             .get(this.getPoolBalances(lpTokensMinters.get(address) ?? address, positionInPool))
@@ -453,7 +451,8 @@ export class CurveGaugesBase implements JobInterface {
         )?.output.data;
 
         position.stakingToken.price =
-          normalizeDecimals(lpVirtualPrice, position.stakingToken.decimals) || null;
+          normalizeDecimals(lpVirtualPrice, position.stakingToken.decimals) ||
+          normalizeDecimals(poolData?.price, position.stakingToken.decimals);
 
         const staked = multicallResponses
           .get(this.getGaugeLpPoolBalanceOf(position.stakingToken.address))
@@ -479,7 +478,7 @@ export class CurveGaugesBase implements JobInterface {
           })
           .filter((reward) => reward.apr !== undefined);
 
-        position.stats.poolApy = mainPoolsAprs[position.poolName];
+        position.stats.poolApy = poolData?.apy ?? null;
         position.stakingToken.tokens?.forEach((coin) => {
           const coinReserve = getTokenReserve(position.stakingToken.address, coin.positionInPool);
           const coinTotalSupply = multicallResponses
@@ -532,6 +531,8 @@ export class CurveGaugesBase implements JobInterface {
             coin.value = reserveDec * price;
             position.stats.tvl += coin.value;
           }
+          position.stats.tvl =
+            position.stats.tvl || position.staked * position.stakingToken.price || null;
         });
         delete position.registry;
         delete position.pool;

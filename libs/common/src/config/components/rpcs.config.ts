@@ -42,4 +42,5 @@ export const rpcValidation = {
   SOL_URL: Joi.string().required(),
   GNOSIS_URL: Joi.string().required(),
   TERRA_URL: Joi.string().required(),
+  KAVA_URL: Joi.string().required(),
 };

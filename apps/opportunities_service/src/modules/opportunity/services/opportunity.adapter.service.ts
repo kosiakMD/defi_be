@@ -38,8 +38,12 @@ export class OpportunityAdapterService {
       opportunities.push(...localOpportunities);
       this.logger.timeEnd(`Processing ${adapterClass.name}`);
     }
-
-    return await this.refreshOpportunities(opportunities);
+    if (opportunities.length) {
+      return await this.refreshOpportunities(opportunities);
+    } else {
+      this.logger.warn('Failed to find any opportunities. Skipping');
+      return [];
+    }
   }
 
   async refreshOpportunities(opportunities: OpportunityCreateDto[]): Promise<any> {

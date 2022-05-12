@@ -27,7 +27,7 @@ export class TrackedTokenPopulationProcessor {
     this.coinmarketcapPlatformChainIdEnum = {};
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  @Cron(CronExpression.EVERY_30_MINUTES) //.EVERY_DAY_AT_10AM)
   async processor() {
     this.logger.log('Every day at 10AM tracked tokens population processing...');
     // Tracked Tokens Population - TTP

@@ -1,7 +1,11 @@
 import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
+import { Chain } from 'apps/assets_service/src/common/types/chain.type';
 import axios from 'axios';
+import { firstValueFrom } from 'rxjs';
 
-import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+
 import { delay } from '@app/common/helpers/delay';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
@@ -15,54 +19,13 @@ type DebankToken = {
   price: number;
 };
 
-type DebankChain = {
-  id: string;
-  community_id: number;
-  name: string;
-  native_token_id: string;
-  logo_url: string;
-  wrapped_token_id: string;
-  support_balance_change: boolean;
-};
-
 export class DebankStrategy extends PriceStrategy {
-  private loading: boolean;
-  private chains: DebankChain[] = [];
+  private httpService: HttpService;
+  private configService: ConfigService;
   constructor() {
     super();
-    this.loading = true;
-    setTimeout(() => {
-      this.fetchDebankChains() //
-        .then(
-          (chains) => (this.chains = chains),
-          (error) => {
-            throw Error(error);
-          },
-        )
-        .finally(() => (this.loading = false));
-    });
-  }
-  private async fetchDebankChains(): Promise<DebankChain[]> {
-    const debankChainsUrl = process.env.DEBANK_CHAINS_LIST_URL;
-    const { data } = await axios.get(debankChainsUrl, {
-      headers: {
-        AccessKey: process.env.DEBANK_API_ACCESS_KEY,
-      },
-    });
-    return data;
-  }
-  private async getDebankChain(chainId: number): Promise<string> {
-    const chainName = Object.entries(ChainIdEnum)
-      .filter(([, id]) => id === chainId)
-      .map(([chain]) => chain)
-      .shift();
-    if (!chainName) {
-      throw Error(`No Debank chain for chainId: ${chainId}`);
-    }
-    if (this.loading) await delay(5000);
-    const AbsoluteChainId = AbsoluteChainIdEnum[chainName];
-    return this.chains //
-      .find((debankChain: DebankChain) => debankChain.community_id === AbsoluteChainId)?.id;
+    this.httpService = new HttpService();
+    this.configService = new ConfigService();
   }
 
   public async createPriceRequests(
@@ -79,11 +42,14 @@ export class DebankStrategy extends PriceStrategy {
     const assetsChainIds = await assetsRepository.getAllTrackedAssetChains();
     const priceRequests = [];
     const { baseURL, take } = config; // maximum 100 https://docs.open.debank.com/en/reference/api-pro-reference/token#get-the-list-of-the-token-information
+    const { data: chains } = await firstValueFrom(
+      this.httpService.get<Chain[]>(this.configService.get('ACCOUNT_SERVICE_CHAINS_LIST_URL')),
+    );
     for await (const chainId of assetsChainIds) {
-      const debankChain = await this.getDebankChain(chainId); // define debank chain by chainId
+      const debankChain = chains.find((chain) => chain.id === chainId)?.metadata?.debankPlatformId;
       if (!debankChain) {
         this.logger.error(
-          `No chain id ${chainId} on Debank API! see https://pro-openapi.debank.com/v1/chain/list community_ids`,
+          `No Coingecko chain in database on chainId: ${chainId}, see https://pro-openapi.debank.com/v1/chain/list community_ids`,
         );
         continue;
       }

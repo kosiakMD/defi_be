@@ -7,6 +7,8 @@ import { HeadersContextMiddleware, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 
 import { AppController } from './controllers/app.controller';
+import { QueueManagementController } from './controllers/queue.management.controller';
+import { StatusController } from './controllers/status.controller';
 import { ProtocolModule } from './modules/protocols/protocols.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 
@@ -31,7 +33,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
     ProtocolModule,
   ],
   providers: [],
-  controllers: [AppController],
+  controllers: [AppController, StatusController, QueueManagementController],
 })
 export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}

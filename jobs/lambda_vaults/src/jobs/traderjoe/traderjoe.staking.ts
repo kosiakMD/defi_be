@@ -5,7 +5,8 @@ import { plainToClass } from 'class-transformer';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { Address, ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { CallData } from '@app/common/dto/CallData';
 import {
   IntegrationClaimableTokenDto,
@@ -85,13 +86,6 @@ export class TraderJoeStaking implements JobInterface {
       decimals: accountTokenDto.decimals,
     });
 
-    const rewardTokenAVAX = plainToClass(IntegrationClaimableTokenDto, {
-      address: TraderjoeAddresses.avax,
-      name: 'Avalanche',
-      symbol: 'AVAX',
-      decimals: 18,
-    });
-
     const poolsInfoV2: Map<string, any> = await this.getAllPoolInfo(TraderjoeAddresses.chiefV2);
     const poolsInfoV3: Map<string, any> = await this.getAllPoolInfo(TraderjoeAddresses.chiefV3);
 
@@ -101,12 +95,16 @@ export class TraderJoeStaking implements JobInterface {
     ];
 
     for (const { poolsInfo, chiefContract } of poolsInfoArray) {
-      for (const address of poolsInfo.keys()) {
+      for (const [address, poolInfo] of poolsInfo.entries()) {
         try {
           const poolTokenData: LiquidityPoolTokenDto = await this.accountService.saveTrackingAsset(
             address,
             this.chain,
           );
+
+          const bonusToken = poolInfo.bonusToken
+            ? await this.accountService.saveTrackingAsset(poolInfo.bonusToken, this.chain)
+            : null;
 
           const stakingToken: IntegrationERC20TokenDto = plainToClass(IntegrationERC20TokenDto, {
             address: poolTokenData.address,
@@ -128,25 +126,26 @@ export class TraderJoeStaking implements JobInterface {
               stakingToken.tokens.push(poolToken);
             });
           }
-          let stakingPoolFeature: IntegrationStakingPositionDto;
 
-          if (chiefContract === TraderjoeAddresses.chiefV2) {
-            stakingPoolFeature = plainToClass(IntegrationStakingPositionDto, {
-              address: chiefContract,
-              poolId: poolsInfo.get(address).id.toString(),
-              poolName: null,
-              rewards: [rewardTokenJOE],
-              stakingToken: stakingToken,
-            });
-          } else {
-            stakingPoolFeature = plainToClass(IntegrationStakingPositionDto, {
-              address: chiefContract,
-              poolId: poolsInfo.get(address).id.toString(),
-              poolName: null,
-              rewards: [rewardTokenJOE, rewardTokenAVAX],
-              stakingToken: stakingToken,
-            });
+          const rewards = [rewardTokenJOE];
+          if (bonusToken) {
+            rewards.push(
+              plainToClass(IntegrationClaimableTokenDto, {
+                address: bonusToken.address,
+                name: bonusToken.name,
+                symbol: bonusToken.symbol,
+                decimals: bonusToken.decimals,
+              }),
+            );
           }
+
+          const stakingPoolFeature = plainToClass(IntegrationStakingPositionDto, {
+            address: chiefContract,
+            poolId: poolsInfo.get(address).id.toString(),
+            poolName: null,
+            rewards,
+            stakingToken: stakingToken,
+          });
 
           stakingFeatures.push(stakingPoolFeature);
         } catch (e) {
@@ -171,8 +170,8 @@ export class TraderJoeStaking implements JobInterface {
   }
 
   private async getAllPoolInfo(chiefContract: TraderjoeAddresses): Promise<Map<string, any>> {
-    const call = new Map<string, CallData>();
-    call.set(this.poolLengthLabel(chiefContract), {
+    const poolLengthCall = new Map<string, CallData>();
+    poolLengthCall.set(this.poolLengthLabel(chiefContract), {
       address: chiefContract,
       abi: Abis.poolLength,
       input: {
@@ -181,31 +180,33 @@ export class TraderJoeStaking implements JobInterface {
       output: {},
     });
 
-    const poolsInfo: Map<string, CallData> = await this.multicallService.handleInBatches(
-      call,
+    const poolsLengthRaw: Map<string, CallData> = await this.multicallService.handleInBatches(
+      poolLengthCall,
       this.chain,
     );
 
-    const poolLengthResult = parseInt(poolsInfo.values().next().value.output.plain, 16);
+    const poolLength = parseInt(poolsLengthRaw.values().next().value.output.plain, 16);
 
     const poolsInfoMap: Map<string, any> = new Map<string, any>();
 
     const calls = new Map<string, CallData>();
-    for (let i = 0; i < poolLengthResult; i++) {
+    for (let poolId = 0; poolId < poolLength; poolId++) {
       const mappedDTO = plainToClass(IntegrationStakingPositionDto, {});
-      mappedDTO.poolId = i;
+      mappedDTO.poolId = poolId;
 
       calls.set(this.poolInfoLabel(mappedDTO, chiefContract), {
         address: chiefContract,
         abi: chiefContract === TraderjoeAddresses.chiefV2 ? Abis.poolInfoV2 : Abis.poolInfoV3,
         input: {
-          data: [i],
+          data: [poolId],
         },
         output: {},
       });
     }
 
     const poolInfos = await this.multicallService.handleInBatches(calls, this.chain);
+
+    const bonusRewards = await this.getBonusRewards(chiefContract, poolInfos);
 
     let i = 0;
     for (const poolInfo of poolInfos.values()) {
@@ -216,12 +217,65 @@ export class TraderJoeStaking implements JobInterface {
         allocPoint: poolInfo.output.data.allocPoint,
         lastRewardTimestamp: poolInfo.output.data.lastRewardTimestamp,
         accJoePerShare: poolInfo.output.data.accJoePerShare,
+        bonusToken: bonusRewards.get(i),
       });
 
       i++;
     }
 
     return poolsInfoMap;
+  }
+
+  async getBonusRewards(
+    chiefContract: Address,
+    poolInfos: Map<string, CallData>,
+  ): Promise<Map<number, Address>> {
+    const bonusRewards = new Map();
+    if (chiefContract === TraderjoeAddresses.chiefV2) {
+      const v2Calls = new Map(
+        Array.from(Array(poolInfos.size).keys()).map((poolId) => [
+          poolId.toString(),
+          {
+            address: chiefContract,
+            abi: Abis.rewarderBonusTokenInfo,
+            input: {
+              data: [poolId],
+            },
+            output: {},
+          },
+        ]),
+      );
+      const v2Results = await this.multicallService.handleInBatches(v2Calls, this.chain);
+      v2Results.forEach((value, key) => {
+        const bonus = value.output.data.bonusTokenAddress.toLowerCase();
+        if (bonus !== ZERO_ADDRESS) {
+          bonusRewards.set(Number(key), bonus);
+        }
+      });
+    } else if (chiefContract === TraderjoeAddresses.chiefV3) {
+      const v3Calls = new Map();
+      poolInfos.forEach((value: any) => {
+        if (value.output.data.rewarder !== ZERO_ADDRESS) {
+          v3Calls.set(value.input.data[0].toString(), {
+            address: value.output.data.rewarder,
+            abi: Abis.rewarderRewardToken,
+            input: {},
+            output: {},
+          });
+        }
+      });
+
+      const v3Results = await this.multicallService.handleInBatches(v3Calls, this.chain);
+
+      v3Results.forEach((value, key) => {
+        const bonus = value.output.data.toLowerCase();
+        if (bonus !== ZERO_ADDRESS) {
+          bonusRewards.set(Number(key), bonus);
+        }
+      });
+    }
+
+    return bonusRewards;
   }
 
   async updateWithChainData(): Promise<any[]> {
@@ -303,6 +357,14 @@ export class TraderJoeStaking implements JobInterface {
 
             if (rewarder !== TraderjoeAddresses.zeroAddress) {
               const calls: Map<string, CallData> = new Map<string, CallData>();
+              calls.set(concatStrings(Abis.balance.name, rewarder), {
+                address: rewarder,
+                abi: Abis.balance,
+                input: {
+                  data: [],
+                },
+                output: {},
+              });
               calls.set(concatStrings(Abis.rewardToken.name, rewarder), {
                 address: rewarder,
                 abi: Abis.rewardToken,
@@ -328,12 +390,18 @@ export class TraderJoeStaking implements JobInterface {
                 return m;
               }
 
+              // reward token balance in contract
+              const balance = toDecimals(
+                rewardInfo.get(concatStrings(Abis.balance.name, rewarder)).output.data,
+                18,
+              );
+              const tokenPerSecond = toDecimals(
+                rewardInfo.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
+                18,
+              );
+
               const aprStatsBonus = {
-                rewardTokenPerBlock:
-                  toDecimals(
-                    rewardInfo.get(concatStrings(Abis.tokenPerSec.name, rewarder)).output.data,
-                    18,
-                  ) * blockTime,
+                rewardTokenPerBlock: balance ? tokenPerSecond * blockTime : 0,
                 rewardTokenPrice: Number(
                   prices[
                     rewardInfo
@@ -544,11 +612,7 @@ export class TraderJoeStaking implements JobInterface {
     stakingPosition: IntegrationStakingPositionDto,
     chiefContract: TraderjoeAddresses,
   ) {
-    return concatStrings(
-      chiefContract === TraderjoeAddresses.chiefV2 ? Abis.poolInfoV2.name : Abis.poolInfoV3.name,
-      TraderjoeAddresses.chiefV3,
-      stakingPosition.poolId,
-    );
+    return concatStrings('poolInfo', chiefContract, stakingPosition.poolId);
   }
 
   private totalAllocPointLabel(chiefContract: TraderjoeAddresses) {

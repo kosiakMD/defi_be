@@ -1,15 +1,14 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
 
-import { CommandDTO } from '../common/dto/command.dto';
 import { ListProtocolsDTO } from '../common/dto/service.dto';
 import { SimilarDTO } from '../common/dto/similar.dto';
-import { Command } from '../common/enum/service.enum';
+import { CommandParameterized, CommandUnparameterized } from '../common/enum/service.enum';
 
-import { IListProtocol } from '../modules/protocols/interfaces/protocol.interface';
 import { ContractsAnalysisService } from '../modules/protocols/services/contracts.analysis.service';
 import { TasksService } from '../modules/tasks/tasks.service';
 
+@ApiTags('Categorization Tool Service')
 @Controller('')
 export class AppController {
   constructor(
@@ -17,30 +16,35 @@ export class AppController {
     private readonly contractsAnalysisService: ContractsAnalysisService,
   ) {}
 
-  @Post('/command')
-  @ApiBody({ type: CommandDTO })
-  public async aggregatorsParse(@Body() command: CommandDTO) {
-    return this.service.queueTask(command);
-  }
-
-  @Post('/requests/link')
-  @ApiBody({ type: [ListProtocolsDTO] })
-  public async parsingProtocolPost(@Body() listProtocol: IListProtocol) {
-    return this.service.queueTask({ command: Command.run_parsing_custom_protocol, listProtocol });
-  }
-
-  @Post('/requests/similar_contract')
-  @ApiBody({ type: SimilarDTO })
-  public async similarContracts(
-    @Body() similarData: { contract: string; minSimilarityRate: number },
+  @Get('/command')
+  @ApiQuery({ name: 'command', enum: CommandUnparameterized })
+  public async aggregatorsParse(
+    @Query('command') command: CommandUnparameterized = CommandUnparameterized.start_fetching,
   ) {
-    return await this.contractsAnalysisService.findSimilarAbiAndAbiCode(similarData);
+    return this.service.queueTask({ command });
   }
 
-  @Get('/v1/status')
-  public async status() {
-    return {
-      status: 'OK',
-    };
+  @Post('/website/protocol')
+  @ApiBody({ type: ListProtocolsDTO })
+  public async parsingProtocolPost(@Body() listProtocol: ListProtocolsDTO) {
+    return this.service.queueTask({
+      command: CommandParameterized.run_parsing_custom_protocol,
+      listProtocol,
+    });
+  }
+
+  @Get('/requests/similar-contract')
+  @ApiQuery({ name: 'contract' })
+  @ApiQuery({ name: 'minSimilarityRate' })
+  public async getSimilarContracts(
+    @Query() similarData: { contract: string; minSimilarityRate: number },
+  ) {
+    return await this.contractsAnalysisService.getSimilarForContractAddress(similarData);
+  }
+
+  @Post('/requests/similar-contract')
+  @ApiBody({ type: SimilarDTO })
+  public async similarContracts(@Body() similarData: { contract: string }) {
+    return this.service.queueTask({ command: CommandParameterized.similar_contract, similarData });
   }
 }

@@ -9,6 +9,7 @@ import { AaveProtocol } from './aave/aave.protocol';
 import { CompoundProtocol } from './compound/compound.protocol';
 import { IearnProtocol } from './iearn/iearn.protocol';
 import { JoeProtocol } from './joe/joe.protocol';
+import { MirrorProtocol } from './mirror/mirror.protocol';
 import { ProtocolBase } from './protocol.base';
 import { SynthetixProtocol } from './synthetix/synthetix.protocol';
 import { YearnProtocol } from './yearn/yearn.protocol';
@@ -20,6 +21,7 @@ export const ActiveProtocols: ClassConstructor<ProtocolBase>[] = [
   JoeProtocol,
   SynthetixProtocol,
   YearnProtocol,
+  MirrorProtocol,
 ];
 
 @Module({

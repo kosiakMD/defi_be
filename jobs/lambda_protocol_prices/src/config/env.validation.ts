@@ -9,7 +9,7 @@ export const validationSchema = Joi.object({
     .required(),
   CHAIN_ID: Joi.string().required(),
   RPC_URL: Joi.string().required(),
-  MULTICALL_CONTRACT: Joi.string().required(),
+  // MULTICALL_CONTRACT: Joi.string().required(),
   ACCOUNT_SERVICE_HOST: Joi.string().required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
   LOG_ERROR_FILE: Joi.string().required(),

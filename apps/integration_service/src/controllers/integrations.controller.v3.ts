@@ -25,8 +25,16 @@ export class IntegrationsControllerV3 {
   constructor(private readonly platformService: PlatformService) {}
 
   @Get('/')
-  async getProtocolList(): Promise<IPlatformMeta[]> {
-    return this.platformService.getProtocolList();
+  async getProtocolList(): Promise<{ data: IPlatformMeta[] }> {
+    return {
+      data: await this.platformService.getProtocolList(),
+    };
+  }
+
+  @ApiResponse({ status: 200 })
+  @Get('/sync')
+  async cacheAllPools(): Promise<any> {
+    return this.platformService.cacheOpportunities();
   }
 
   @ApiParam({
@@ -50,7 +58,7 @@ export class IntegrationsControllerV3 {
     @ChainsArray('chains') chains: ChainIdEnum[],
     @AddressesArray('addresses') addresses: Address[],
   ): Promise<IUserEntryResponse> {
-    return this.platformService.getUserPositionsForProtocol(protocolName, chains, addresses);
+    return this.platformService.getUserPositionsForPlatform(protocolName, chains, addresses);
   }
 
   @ApiParam({
@@ -69,7 +77,7 @@ export class IntegrationsControllerV3 {
     @Param() { protocolName }: ProtocolParams,
     @ChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IOpportunityResponse> {
-    return this.platformService.getOpportunitiesForProtocol(protocolName, chains);
+    return this.platformService.getOpportunitiesForPlatform(protocolName, chains);
   }
 
   @ApiParam({
@@ -95,7 +103,7 @@ export class IntegrationsControllerV3 {
     @ChainsArray('chains') chains: ChainIdEnum[],
     @Query() { debug }: { debug?: string },
   ): Promise<any> {
-    return this.platformService.cacheOpportunitiesForProtocol(
+    return this.platformService.cacheOpportunitiesForPlatform(
       protocolName,
       chains,
       debug === 'true',

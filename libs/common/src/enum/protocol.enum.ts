@@ -13,7 +13,6 @@ export enum ProjectEnum {
   curve = 'curve',
   defikingdoms = 'defikingdoms',
   ellipsis = 'ellipsis',
-  islandswap = 'islandswap',
   mojitoswap = 'mojitoswap',
   olympus = 'olympus',
   pancake = 'pancake',
@@ -41,6 +40,7 @@ export enum ProjectEnum {
   stader = 'stader',
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
+  kava = 'kava',
 }
 
 export enum YearnProtocolEnum {
@@ -169,10 +169,6 @@ export enum SaberProtocolEnum {
   saber = 'Saber',
 }
 
-export enum IslandswapProtocolEnum {
-  islandswap = 'Islandswap',
-}
-
 export enum OlympusProtocolEnum {
   olympus = 'Olympus',
 }
@@ -206,6 +202,9 @@ export enum StaderProtocolEnum {
 export enum OsmosisProtocolEnum {
   osmosis = 'Osmosis',
 }
+export enum SolendProtocolEnum {
+  solend = 'Solend',
+}
 
 export enum AaveV3ProtocolEnum {
   aaveV3 = 'AaveV3',
@@ -214,6 +213,39 @@ export enum AaveV3ProtocolEnum {
 export enum LidoProtocolEnum {
   lido = 'Lido',
 }
+
+export enum KavaProtocolEnum {
+  kava = 'Kava',
+}
+
+export enum FraxProtocolEnum {
+  frax = 'Frax',
+}
+
+export enum BiSwapProtocolEnum {
+  biswap = 'BiSwap',
+}
+
+export enum MdexProtocolEnum {
+  mdex = 'Mdex',
+}
+
+export enum KnightSwapProtocolEnum {
+  knightswap = 'KnightSwap',
+}
+
+export enum BeltProtocolEnum {
+  belt = 'Belt',
+}
+
+export enum MarsEcosystemProtocolEnum {
+  marsEcosystem = 'MarsEcosystem',
+}
+
+export enum GooseProtocolEnum {
+  goose = 'Goose',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -226,7 +258,6 @@ export const ProtocolNameEnum = {
   ...CurveProtocolEnum,
   ...DefiKingdomsProtocolEnum,
   ...EllipsisProtocolEnum,
-  ...IslandswapProtocolEnum,
   ...MojitoswapProtocolEnum,
   ...OlympusProtocolEnum,
   ...PancakeProtocolEnum,
@@ -255,6 +286,14 @@ export const ProtocolNameEnum = {
   ...MirrorProtocolEnum,
   ...StaderProtocolEnum,
   ...OsmosisProtocolEnum,
+  ...SolendProtocolEnum,
   ...LidoProtocolEnum,
   ...AaveV3ProtocolEnum,
+  ...FraxProtocolEnum,
+  ...BiSwapProtocolEnum,
+  ...MdexProtocolEnum,
+  ...KnightSwapProtocolEnum,
+  ...BeltProtocolEnum,
+  ...MarsEcosystemProtocolEnum,
+  ...KavaProtocolEnum,
 };

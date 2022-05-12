@@ -12,7 +12,7 @@ export interface ERC20Token {
   balance?: number;
   reserve?: number;
   position?: number;
-  underlying: ERC20Token[];
+  underlying?: ERC20Token[];
 }
 
 export interface ITokenMinimal {
@@ -26,4 +26,8 @@ export interface ITokenUserEntry {
   token: ERC20Token; // full erc20 token with price
   amount: number; // user balance
   value: number; // balance * price
+}
+export interface IBaseApy {
+  variableApy?: number;
+  stableApy?: number;
 }

@@ -19,6 +19,11 @@ export class CubFinance extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       project: this.constructor.name,
+      links: {
+        url: 'https://cubdefi.com',
+        logo: 'https://icons.llama.fi/cub-finance.svg',
+        twitter: 'FinanceLeo',
+      },
     });
 
     await this.registerProtocol(MasterChef, {

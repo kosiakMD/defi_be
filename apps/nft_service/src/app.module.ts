@@ -1,4 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
+import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -6,7 +6,9 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { HeadersContextMiddleware, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 
-import { AppController } from './controllers/app.controller';
+import { NftController } from './controllers/nft.controller';
+import { StatusController } from './controllers/status.controller';
+import { NftModule } from './modules/nft.module';
 
 @Module({
   imports: [
@@ -17,7 +19,8 @@ import { AppController } from './controllers/app.controller';
       useFactory: async (configService: ConfigService) =>
         getWinstonParams('nft_service', configService),
     }),
-    HttpModule.registerAsync({
+    TracingModule.forRoot({ serviceName: 'nft-service' }),
+    HttpTracingModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         timeout: configService.get('HTTP_TIMEOUT') || 60e3,
@@ -25,9 +28,10 @@ import { AppController } from './controllers/app.controller';
       }),
       inject: [ConfigService],
     }),
+    NftModule,
   ],
   providers: [],
-  controllers: [AppController],
+  controllers: [StatusController, NftController],
 })
 export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}

@@ -4,8 +4,8 @@ import { Protocol } from '../entities/protocol.entity';
 
 @EntityRepository(Protocol)
 export class ProtocolsRepository extends Repository<Protocol> {
-  async findAll(): Promise<Protocol[]> {
-    return this.find();
+  async findAllLimit(skip = 0, take = 100): Promise<Protocol[]> {
+    return this.find({ skip, take });
   }
 
   async findWithoutLinks() {
@@ -38,6 +38,14 @@ export class ProtocolsRepository extends Repository<Protocol> {
 
   async findAllWithLinks(): Promise<Protocol[]> {
     return this.find({
+      relations: ['links'],
+    });
+  }
+
+  async findAllWithLinksLimit(skip = 0, take = 100): Promise<Protocol[]> {
+    return this.find({
+      skip,
+      take,
       relations: ['links'],
     });
   }

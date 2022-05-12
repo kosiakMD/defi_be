@@ -1,3 +1,4 @@
+import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/CallsStatistic.dto';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
@@ -26,6 +27,122 @@ export class EndpointsToRPCCallService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
     this.updateFromDatabaseEndpointsToRPCCall();
+  }
+
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async handleUpdateFromCacheCron() {
+    this.logger.log('Called every 10 seconds, sortEndpointsToRPCCallByPriorityAndSuccessRate');
+    await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
+  }
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  async handleUpdateFromDatabaseCron() {
+    this.logger.log('Called every 30 seconds, updateFromDatabaseEndpointsToRPCCall');
+    await this.updateFromDatabaseEndpointsToRPCCall();
+  }
+
+  public getAllEndpointsToRPCCall(): Map<number, EndpointToRPCCall[]> {
+    return this.endpointsToRPCCall;
+  }
+
+  public getEndpointsToRPCCall(chainId: number): EndpointToRPCCall[] {
+    return this.endpointsToRPCCall.get(chainId);
+  }
+
+  public async updateEndpointSuccessRate(
+    endpointToRPCCall: EndpointToRPCCall,
+    scoreValue: EndpointsSuccessScore,
+  ): Promise<void> {
+    const endpointSuccessScores = await this.getEndpointToRPCSuccessRateCache(endpointToRPCCall);
+    const newEndpointScores: SuccessScore[] = [{ value: scoreValue, timestamp: Date.now() }];
+    const refreshedEndpointSuccessScores = this.filterEndpointSuccessScores(endpointSuccessScores);
+    await this.setEndpointToRPCSuccessRateCache(
+      endpointToRPCCall,
+      newEndpointScores.concat(refreshedEndpointSuccessScores),
+    );
+  }
+
+  public async updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate(): Promise<void> {
+    const chainIds = this.endpointsToRPCCall.keys();
+    for await (const chainId of chainIds) {
+      const endpointsToRPCCall = this.endpointsToRPCCall.get(chainId);
+      const newEndpointsToRPCCall = [];
+      for await (const endpointToRPCCall of endpointsToRPCCall) {
+        const endpointSuccessScores = await this.getEndpointToRPCSuccessRateCache(
+          endpointToRPCCall,
+        );
+        endpointToRPCCall.callsStatistic = endpointSuccessScores.reduce(
+          (previous: CallsStatistic, current: SuccessScore) => {
+            if (current.value === EndpointsSuccessScore.fail) {
+              previous.fail += 1;
+            } else {
+              previous.success += 1;
+            }
+            previous.successRating += current.value;
+            return previous;
+          },
+          new CallsStatistic(),
+        );
+        newEndpointsToRPCCall.push(endpointToRPCCall);
+      }
+      this.endpointsToRPCCall.set(
+        chainId,
+        newEndpointsToRPCCall.sort((a: EndpointToRPCCall, b: EndpointToRPCCall) => {
+          if ((a.endpointsEntity.priority = b.endpointsEntity.priority)) {
+            return b.callsStatistic.successRating - a.callsStatistic.successRating;
+          }
+          return b.endpointsEntity.priority - a.endpointsEntity.priority;
+        }),
+      );
+    }
+  }
+
+  public async updateFromDatabaseEndpointsToRPCCall(): Promise<any> {
+    const endpointsToRPCCall: { [key: string]: EndpointToRPCCall[] } = {};
+    let page = 0;
+    const limit = 100;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      try {
+        page += 1;
+        const endpoints = await this.endpointsRepository.getList(
+          {
+            page,
+            limit,
+            sortDirection: SortDirectionEnum.ASC,
+            sortField: EndpointsSortFieldEnum.CHAIN_ID,
+          },
+          false,
+        );
+        if (endpoints.length === 0) {
+          break;
+        }
+        endpoints.forEach((endpoint: EndpointsEntity) => {
+          const prevEndpoints: EndpointToRPCCall[] = this.endpointsToRPCCall.get(endpoint.chainId);
+          const prevEndpoint = prevEndpoints?.find(
+            (prevEndpoint: EndpointToRPCCall) => prevEndpoint.endpointsEntity.id === endpoint.id,
+          );
+          const callsStatistic = prevEndpoint ? prevEndpoint.callsStatistic : new CallsStatistic();
+          const newEndpoint = { callsStatistic, endpointsEntity: endpoint };
+          if (!endpointsToRPCCall[endpoint.chainId]) {
+            endpointsToRPCCall[endpoint.chainId] = [newEndpoint];
+          } else {
+            endpointsToRPCCall[endpoint.chainId].push(newEndpoint);
+          }
+        });
+      } catch (error) {
+        this.logger.error(`Error to update Endpoints from Database ${error.message}`);
+        return;
+      }
+    }
+    const chainIds = this.endpointsToRPCCall.keys();
+    for (const chainId of chainIds) {
+      this.endpointsToRPCCall.delete(chainId);
+    }
+    Object.entries(endpointsToRPCCall).forEach(([chainId, endpointsToRPC]) =>
+      this.endpointsToRPCCall.set(Number(chainId), endpointsToRPC),
+    );
+    await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
   }
 
   private successRateCacheKey(endpointToRPCCall: EndpointToRPCCall): string {
@@ -63,109 +180,5 @@ export class EndpointsToRPCCallService {
     await this.cacheManager.set(cacheKey, JSON.stringify(successScores), {
       ttl: endpointsSuccessRateHistoryTTL,
     });
-  }
-
-  getEndpointsToRPCCall(chainId: number): EndpointToRPCCall[] {
-    return this.endpointsToRPCCall.get(chainId);
-  }
-
-  async updateEndpointSuccessRate(
-    endpointToRPCCall: EndpointToRPCCall,
-    scoreValue: EndpointsSuccessScore,
-  ): Promise<void> {
-    const endpointSuccessScores = await this.getEndpointToRPCSuccessRateCache(endpointToRPCCall);
-    const newEndpointScores: SuccessScore[] = [{ value: scoreValue, timestamp: Date.now() }];
-    const refreshedEndpointSuccessScores = this.filterEndpointSuccessScores(endpointSuccessScores);
-    await this.setEndpointToRPCSuccessRateCache(
-      endpointToRPCCall,
-      newEndpointScores.concat(refreshedEndpointSuccessScores),
-    );
-  }
-
-  public async updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate(): Promise<void> {
-    const chainIds = this.endpointsToRPCCall.keys();
-    for await (const chainId of chainIds) {
-      const endpointsToRPCCall = this.endpointsToRPCCall.get(chainId);
-      const newEndpointsToRPCCall = [];
-      for await (const endpointToRPCCall of endpointsToRPCCall) {
-        const endpointSuccessScores = await this.getEndpointToRPCSuccessRateCache(
-          endpointToRPCCall,
-        );
-        endpointToRPCCall.successRate = endpointSuccessScores.reduce(
-          (previous: number, current: SuccessScore) => previous + current.value,
-          0,
-        );
-        newEndpointsToRPCCall.push(endpointToRPCCall);
-      }
-      this.endpointsToRPCCall.set(
-        chainId,
-        newEndpointsToRPCCall.sort((a: EndpointToRPCCall, b: EndpointToRPCCall) => {
-          if ((a.endpointsEntity.priority = b.endpointsEntity.priority)) {
-            return b.successRate - a.successRate;
-          }
-          return b.endpointsEntity.priority - a.endpointsEntity.priority;
-        }),
-      );
-    }
-  }
-
-  public async updateFromDatabaseEndpointsToRPCCall(): Promise<any> {
-    const endpointsToRPCCall: { [key: string]: EndpointToRPCCall[] } = {};
-    let page = 0;
-    const limit = 100;
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      try {
-        page += 1;
-        const endpoints = await this.endpointsRepository.getList(
-          {
-            page,
-            limit,
-            sortDirection: SortDirectionEnum.ASC,
-            sortField: EndpointsSortFieldEnum.CHAIN_ID,
-          },
-          false,
-        );
-        if (endpoints.length === 0) {
-          break;
-        }
-        endpoints.forEach((endpoint: EndpointsEntity) => {
-          const prevEndpoints: EndpointToRPCCall[] = this.endpointsToRPCCall.get(endpoint.chainId);
-          const prevEndpoint = prevEndpoints?.find(
-            (prevEndpoint: EndpointToRPCCall) => prevEndpoint.endpointsEntity.id === endpoint.id,
-          );
-          const successRate = prevEndpoint ? prevEndpoint.successRate : 0;
-          const newEndpoint = { successRate, endpointsEntity: endpoint };
-          if (!endpointsToRPCCall[endpoint.chainId]) {
-            endpointsToRPCCall[endpoint.chainId] = [newEndpoint];
-          } else {
-            endpointsToRPCCall[endpoint.chainId].push(newEndpoint);
-          }
-        });
-      } catch (error) {
-        this.logger.error(`Error to update Endpoints from Database ${error.message}`);
-        return;
-      }
-    }
-    const chainIds = this.endpointsToRPCCall.keys();
-    for (const chainId of chainIds) {
-      this.endpointsToRPCCall.delete(chainId);
-    }
-    Object.entries(endpointsToRPCCall).forEach(([chainId, endpointsToRPC]) =>
-      this.endpointsToRPCCall.set(Number(chainId), endpointsToRPC),
-    );
-    await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
-  }
-
-  @Cron(CronExpression.EVERY_10_SECONDS)
-  async handleUpdateFromCacheCron() {
-    this.logger.log('Called every 10 seconds, sortEndpointsToRPCCallByPriorityAndSuccessRate');
-    await this.updateFromCacheAndSortEndpointsToRPCCallByPriorityAndSuccessRate();
-  }
-
-  @Cron(CronExpression.EVERY_30_SECONDS)
-  async handleUpdateFromDatabaseCron() {
-    this.logger.log('Called every 30 seconds, updateFromDatabaseEndpointsToRPCCall');
-    await this.updateFromDatabaseEndpointsToRPCCall();
   }
 }

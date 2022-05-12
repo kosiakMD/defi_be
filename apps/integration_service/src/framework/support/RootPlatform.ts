@@ -6,8 +6,7 @@ import { ModuleRef } from '@nestjs/core';
 
 import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { groupBy, keepAddressesByChainId } from '@app/common/utils';
-
-import { getChainById } from '../../common/utils/chain';
+import { getChainById } from '@app/common/utils';
 
 import {
   IChainGroupedWallet,
@@ -35,11 +34,18 @@ export abstract class RootPlatform implements IRootPlatform {
   }
 
   // Component Registration
+  // To get a decluttered list from defilama
+  // $ curl https://api.llama.fi/protocols | jq '.[] | to_entries | map(select(.key | in({ name: true, twitter: true, url: true, logo: true }) )) | from_entries'
   protected protocols: Set<IRootProtocol> = new Set();
-  protected async registerProtocol(protocol: ClassConstructor<IRootProtocol>, meta: IProtocolMeta) {
+  protected async registerProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta>(
+    protocol: ClassConstructor<IRootProtocol>,
+    meta: TProtocolMeta,
+  ) {
     const instance = await this.moduleRef.create(protocol);
     instance.registerMeta(meta);
-    await instance.initialize();
+    if (instance.initialize) {
+      await instance.initialize();
+    }
     if (this.registrationLocked) {
       return this.logger.error(
         `Protocol Registration occurred after platform has been initialized. Likely forgot 'await' in platforms register handle`,
@@ -70,12 +76,13 @@ export abstract class RootPlatform implements IRootPlatform {
     });
 
     return {
-      name: this.meta.name,
-      project: this.meta.name, // why do we need both, what are clear definitions of both
+      name: this.meta.name, // human readable name
+      project: this.meta.project, // slug/key
       features: Array.from(features.entries()).map(([chain, list]) => ({
         chain: getChainById(chain),
         list: Array.from(list),
       })),
+      links: this.meta.links || {},
     };
   }
 
@@ -90,7 +97,7 @@ export abstract class RootPlatform implements IRootPlatform {
       const { chain, list: features } = protocol.getMeta();
       supportedChains.add(chain.id);
 
-      if (!chains.includes(chain.id)) {
+      if (!chains.includes(chain.id) || !protocol.getUsersData) {
         return;
       }
       const validAddressesForChain = keepAddressesByChainId(addresses, chain.id);
@@ -136,7 +143,7 @@ export abstract class RootPlatform implements IRootPlatform {
       const { chain } = protocol.getMeta();
       supportedChains.add(chain.id);
       if (chains.includes(chain.id)) {
-        promises.push(protocol.getPoolData());
+        promises.push(protocol.getFormattedPoolData?.() ?? protocol.getPoolData());
       }
     });
 
@@ -168,7 +175,7 @@ export abstract class RootPlatform implements IRootPlatform {
     const promises = [];
     this.protocols.forEach((protocol) => {
       const { chain } = protocol.getMeta();
-      if (chains.includes(chain.id)) {
+      if (chains.includes(chain.id) && protocol.cachePoolData) {
         promises.push(protocol.cachePoolData());
       }
     });

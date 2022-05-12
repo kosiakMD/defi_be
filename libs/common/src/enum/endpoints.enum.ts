@@ -4,4 +4,8 @@ export enum NftEndpointsEnum {
   projects = 'projects',
   collectionsByProjectName = 'collections/:projectName',
   assetsByProjectName = 'assets/:projectName',
+
+  chains = 'chains',
+  collections = 'collections',
+  assets = 'assets',
 }

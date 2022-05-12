@@ -438,7 +438,7 @@ export class PangolinStakingAvax implements JobInterface {
               poolAllocPoints: allocPoint,
               rewardTokenPerBlock: toDecimals(rewardPerSecond, m.rewards[0].decimals),
               rewardTokenPrice: m.rewards[0].price,
-              blockTime: 3,
+              blockTime: 1, //rewards are per second, not per block
               farmingPoolTVL: m.stats.tvl,
             };
             m.rewards[0].apr = calculateAPR(aprStats);
@@ -554,30 +554,6 @@ export class PangolinStakingAvax implements JobInterface {
     } catch (e) {
       this.logger.error(e, 'getPricedTokensSet');
     }
-  }
-
-  public calculateAPR({
-    totalAllocPoints,
-    poolAllocPoints,
-    rewardTokenPerBlock,
-    rewardTokenPrice,
-    blockTime,
-    farmingPoolTVL,
-  }): number {
-    const poolRewardPerBlock = poolAllocPoints
-      .div(totalAllocPoints)
-      .times(rewardTokenPerBlock)
-      .times(rewardTokenPrice)
-      .toString(); // 180
-    const aprPerBlock =
-      new BigNumber(poolRewardPerBlock) //
-        .div(farmingPoolTVL)
-        .toNumber() * 100; //0.000005229834724386371
-    const blocksPerYear = (86400 * 365) / blockTime; // 10512000
-    const apr = new BigNumber(aprPerBlock) //
-      .times(blocksPerYear)
-      .toString();
-    return Number(apr);
   }
 
   private static getReservesLabel(stakingPosition: IntegrationStakingPositionDto) {

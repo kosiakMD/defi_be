@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 
-import { Address } from '@app/common';
+import { Address, FeatureEnum } from '@app/common';
 
 import {
   INamedFunctionPredicates,
@@ -13,29 +13,62 @@ import {
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
-  TokenMap,
 } from '../interfaces';
 import { AbiService } from './AbiModule/AbiService';
 import { EVMCore } from './EVMCore';
+
+interface ICoreMultiContractProtocol extends IProtocolMeta {
+  feature: FeatureEnum.staking;
+  name: string;
+  context?: any;
+  address?: string;
+}
+
+interface IHasApiHandler {
+  scrape: never;
+  poolList: never;
+  api: {
+    endpoint: string;
+    handler: (data: unknown) => Address[];
+    path: string;
+  };
+}
+
+interface IHasWebScraper {
+  api: never;
+  poolList: never;
+  scrape: {
+    url: string;
+    handler: (...args: any[]) => Address[];
+  };
+}
+
+interface IHasPoolList {
+  api: never;
+  scrape: never;
+  poolList: Address[];
+}
+
+type IMultiContractProtocolMeta = ICoreMultiContractProtocol &
+  (IHasApiHandler | IHasWebScraper | IHasPoolList);
 
 export abstract class MultiContractProtocol<
   TMinimalType extends IWalletMinimal,
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
-  TMeta extends IProtocolMeta = IProtocolMeta,
-> extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType> {
+  TProtocolMeta extends IMultiContractProtocolMeta = IMultiContractProtocolMeta,
+> extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract abiService: AbiService;
   protected abstract httpService: HttpService;
   // User Defined
   protected abstract functionPredicates: INamedFunctionPredicates;
   functions: INamedFunctions = {};
-  meta: TMeta;
 
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
-  protected abstract formatOpportunity(
-    pool: TMinimalType,
-    tokens: TokenMap,
-  ): TOpportunityType | void;
+  // protected abstract formatOpportunity(
+  //   pool: TMinimalType,
+  //   tokens: TokenMap,
+  // ): TOpportunityType | void;
   // TODO: Type. The output on this, is the 'data' input on formatUserData
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
   // TODO: type; data: any is the return value from getAsyncUserData
@@ -47,24 +80,37 @@ export abstract class MultiContractProtocol<
 
   async initialize() {
     const addresses = await this.fetchPoolList();
+    // Max 3 attempts
+    for (let i = -1; i < Math.min(addresses.length, 3); i++) {
+      const addressToTry = addresses[i] ?? this.meta.address;
 
-    const [address] = addresses;
-    this.logger.log(
-      `Initializing: ${this.meta.name} ${this.meta.chain}/${address}`,
-      `MultiContractProtocol/${this.constructor.name}`,
-    );
+      try {
+        this.logger.log(
+          `Initializing: ${this.meta.name} ${this.meta.chain}/${addressToTry}`,
+          `MultiContractProtocol/${this.constructor.name}`,
+        );
 
-    this.functions = await this.abiService.parseFunctionsFromAddress(
-      address,
-      this.meta.chain,
-      this.functionPredicates,
-    );
+        this.functions = await this.abiService.parseFunctionsFromAddress(
+          addressToTry,
+          this.meta.chain,
+          this.functionPredicates,
+        );
 
-    this.logger.log(
-      `${this.meta.chain}/${address} found ${Object.keys(this.functions).length}/${
-        Object.keys(this.functionPredicates).length
-      } functions`,
-      `MultiContractProtocol/${this.constructor.name}`,
+        this.logger.log(
+          `${this.meta.chain}/${addressToTry} found ${Object.keys(this.functions).length}/${
+            Object.keys(this.functionPredicates).length
+          } functions`,
+          `MultiContractProtocol/${this.constructor.name}`,
+        );
+        return;
+      } catch (err) {
+        // failed to fetch abi. Moving along to the next address to try
+      }
+    }
+
+    this.logger.error(
+      `Failed to initialize protocol ${this.constructor.name}`,
+      new Error('Failed to decode ABI').stack,
     );
   }
   async getCacheableOpportunityData(): Promise<TMinimalType[]> {
@@ -98,6 +144,7 @@ export abstract class MultiContractProtocol<
 
   /*******
    * Utilities
+   * TODO: this should be cached so subsequent visits don't re-fetch/screenscrape, etc
    */
   async fetchPoolList(): Promise<Address[]> {
     // Hard Coded Pools (Try To Avoid, left just in case)

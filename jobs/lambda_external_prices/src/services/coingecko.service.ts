@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { coingeckoApiUrl } from '../config';
+import { coingeckoApiKey, coingeckoApiUrl } from '../config';
 import { CoingeckoRequestItemIds } from '../interfaces/coingecko.interface';
 import { logger } from '../utils/logger';
 import { preparePricesCoingeckoId } from '../utils/modifyData';
@@ -20,6 +20,8 @@ export class CoingeckoService {
             contract_addresses: input.contractAddresses,
             // eslint-disable-next-line camelcase
             vs_currencies: input.vsCurrencies,
+            // eslint-disable-next-line camelcase
+            x_cg_pro_api_key: coingeckoApiKey,
           },
         },
       );
@@ -42,6 +44,8 @@ export class CoingeckoService {
           ids: input.ids,
           // eslint-disable-next-line camelcase
           vs_currencies: input.vsCurrencies,
+          // eslint-disable-next-line camelcase
+          x_cg_pro_api_key: coingeckoApiKey,
         },
       });
       return input.extras ? preparePricesCoingeckoId(data, input.extras) : data;

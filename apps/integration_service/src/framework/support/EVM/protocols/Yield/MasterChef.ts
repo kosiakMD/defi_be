@@ -12,26 +12,12 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import {
-  INamedFunctionPredicates,
-  IProtocolMeta,
-  IRootProtocol,
-  TokenMap,
-} from '../../../interfaces';
+import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,
   IStakingFeatureMinimal,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import {
-  IRewardTokenMinimal,
-  IRewardTokenOpportunity,
-} from '../../../interfaces/tokens.rewarded.interface';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-} from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
@@ -43,6 +29,9 @@ interface IMasterChefMeta extends IProtocolMeta {
     badPools?: number[]; // poolIds to skip
     [key: string]: any;
   };
+  links: {
+    getOpportunityLink: (opportunity: any) => string;
+  };
 }
 
 interface IPoolInfo {
@@ -53,6 +42,10 @@ interface IPoolInfo {
 
 const REWARD_REGEX = /^(\w+)(per)((block|sec(ond)?))$/;
 
+/**
+ * Classic masterchef. Deposit a token, or LP token into
+ * a pool, and receive a portion of the pool emissions
+ */
 export class MasterChef
   extends SingleContractProtocol<
     IStakingFeatureMinimal,
@@ -71,7 +64,12 @@ export class MasterChef
     protected priceService: PriceService,
   ) {
     super();
+    if (this.updateFunctionPredicates) {
+      this.updateFunctionPredicates();
+    }
   }
+
+  protected updateFunctionPredicates?(): void;
 
   // Best Guess predicates to auto detect masterchef contract
   // Ideally in a base class such as MasterChef these will be as generic as possible and
@@ -188,82 +186,6 @@ export class MasterChef
           rewardPerSecond,
         },
       ],
-    };
-  }
-
-  /**
-   * Returns the user friendly pool, with tokens & proper decimals
-   *
-   * @param pool Single raw pool (see above)
-   * @param tokens map of priced tokens
-   * @returns formatted pool
-   */
-  protected formatOpportunity(
-    pool: IStakingFeatureMinimal,
-    tokens: TokenMap,
-  ): void | IStakingFeatureOpportunity {
-    if (
-      !pool.supplied.every((t) => tokens.has(t.token.address)) ||
-      !pool.rewarded.every((t) => tokens.has(t.token.address))
-    ) {
-      // throw error or just return; to silently skip pools
-      // throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
-      // todo: consider how to handle such cases, because exceptions generates many error logs
-      return;
-    }
-
-    const tvl = pool.supplied.reduce((tvl, poolToken) => {
-      const token = tokens.get(poolToken.token.address);
-      return tvl + token.price * normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    }, 0);
-
-    return {
-      feature: pool.feature,
-      id: pool.id,
-      chain: pool.chain,
-      supplied: pool.supplied.map((poolToken) =>
-        this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
-      ),
-
-      rewarded: pool.rewarded.map((poolToken) =>
-        this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
-      ),
-    };
-  }
-
-  protected formatOpportunitySuppliedToken(
-    poolToken: ISupplyTokenMinimal,
-    token: ERC20Token,
-  ): ISupplyTokenOpportunity {
-    const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    const totalSupply = normalizeDecimals(poolToken.totalSupply, token.decimals);
-    return {
-      token,
-      totalSupply,
-      totalSupplied,
-      tvl: totalSupplied * token.price,
-    };
-  }
-
-  protected formatOpportunityRewardedToken(
-    poolToken: IRewardTokenMinimal,
-    token: ERC20Token,
-    tvl: number, // for calculating apr
-  ): IRewardTokenOpportunity {
-    const tokensPerSecond = normalizeDecimals(poolToken.rewardPerSecond, token.decimals);
-    const pricePerSecond = tokensPerSecond * token.price;
-
-    // yield is a reserved word 🙄
-    const { apr: harvests } = this.getYieldBreakdown(tokensPerSecond, 1);
-    const { apr, apy } = this.getYieldBreakdown(pricePerSecond, tvl);
-
-    return {
-      token,
-      harvests,
-      // Note: This only includes APR for _this token's rewards_ on the farm
-      // so any trading fees are not included here
-      apr,
-      apy,
     };
   }
 

@@ -128,25 +128,24 @@ services:
   #     - "apps/rpc_nodes_service/config/.env"
   #     - ".env"
 
-
-  assets-service:
-    image: node:14
-    container_name: assets-service
-    ports:
-      - "${ASSETS_SERVICE_PORT:-6066}:${ASSETS_SERVICE_PORT:-6066}"
-    working_dir: /usr/src/app
-    depends_on:
-      - redis
-      - postgres
-    volumes:
-      - .:/usr/src/app
-    command: "yarn assets-start:dev"
-    restart: always
-    environment:
-      - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
-    env_file:
-      - "apps/assets_service/config/.env"
-      - ".env"
+  # assets-service:
+  #   image: node:14
+  #   container_name: assets-service
+  #   ports:
+  #     - "${ASSETS_SERVICE_PORT:-6066}:${ASSETS_SERVICE_PORT:-6066}"
+  #   working_dir: /usr/src/app
+  #   depends_on:
+  #     - redis
+  #     - postgres
+  #   volumes:
+  #     - .:/usr/src/app
+  #   command: "yarn assets-start:dev"
+  #   restart: always
+  #   environment:
+  #     - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
+  #   env_file:
+  #     - "apps/assets_service/config/.env"
+  #     - ".env"
 
   opportunities-service:
     image: node:14

@@ -43,7 +43,7 @@ export class CurveGaugesArbi extends CurveGaugesBase {
 
   async updateWithChainData(): Promise<any[]> {
     try {
-      const mainPoolsAprs = await this.getChainMainPoolsAprs();
+      const poolsSubgraphData = await this.getPoolsDataMap();
       const stakingTokensPools = new Map();
       this.mapping.forEach((staking) => {
         stakingTokensPools.set(staking.stakingToken.address, staking.pool);
@@ -111,7 +111,9 @@ export class CurveGaugesArbi extends CurveGaugesBase {
           })
           .filter((reward) => reward.apr !== undefined);
 
-        position.stats.poolApy = mainPoolsAprs[position.poolName];
+        const poolSubgraphData = poolsSubgraphData.get(position.pool?.toLowerCase());
+
+        position.stats.poolApy = poolSubgraphData?.apy;
         position.stakingToken.tokens?.forEach((coin) => {
           const coinReserve = getTokenReserve(position.stakingToken.address, coin.positionInPool);
           const coinTotalSupply = multicallResponses

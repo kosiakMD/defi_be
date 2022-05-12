@@ -2,7 +2,6 @@ import puppeteer from 'puppeteer';
 
 export class Puppeteer {
   public browser: Promise<puppeteer.Browser>;
-  private page: Promise<puppeteer.Page>;
   constructor() {
     this.launch();
   }
@@ -23,14 +22,18 @@ export class Puppeteer {
   }
 
   async openTab(): Promise<puppeteer.Page> {
-    this.page = (await this.browser).newPage();
-    return this.page;
+    return (await this.browser).newPage();
   }
 
   async loadPage(url, waitTimeout = 1000) {
     const page = await this.openTab();
-    await page.goto(url);
-    await page.waitForTimeout(waitTimeout);
+    try {
+      await page.goto(url);
+      await page.waitForTimeout(waitTimeout);
+    } catch (e) {
+      await page.close();
+      throw e;
+    }
     return page;
   }
 }

@@ -1,9 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class ListProtocolsDTO {
   @ApiProperty()
-  protocol: string;
+  website: string;
 
-  @ApiProperty()
-  chain: string;
+  @ApiPropertyOptional()
+  name?: string;
 }

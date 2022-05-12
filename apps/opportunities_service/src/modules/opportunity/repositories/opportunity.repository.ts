@@ -1,23 +1,41 @@
 import { plainToClass } from 'class-transformer';
 import { Brackets, EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
-import { InjectRepository } from '@nestjs/typeorm';
-
 import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
 import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
+import {
+  IChainStats,
+  IFeatureStats,
+} from '@app/common/interfaces/services/opportunities/opportunity.stats.interfaces';
 import { chunk } from '@app/common/utils';
 
-import { FarmEntity } from '../entities/farm.entity';
 import { OpportunityEntity } from '../entities/opportunity.entity';
-import { FarmRepository } from './farm.repository';
 
 @EntityRepository(OpportunityEntity)
 export class OpportunityRepository extends Repository<OpportunityEntity> {
-  constructor(@InjectRepository(FarmEntity) private readonly farmRepository: FarmRepository) {
-    super();
+  /**
+   * Gets the list of chains & the number of pools on each chain
+   */
+  async getChainStats(): Promise<IChainStats[]> {
+    return this.query(`
+      SELECT COUNT(DISTINCT id)::int as count, chain_id
+      FROM opportunities
+      GROUP BY chain_id
+    `);
   }
 
+  /**
+   * Gets a list of the number of pools belonging to each feature
+   */
+  async getFeatureStats(): Promise<IFeatureStats[]> {
+    return this.query(`
+      SELECT COUNT(feature)::int as count, feature as feature
+      FROM opportunities
+      CROSS JOIN LATERAL UNNEST(categories) as feature
+      GROUP BY feature
+    `);
+  }
   /**
    * Search, Sort, and Filter opportunities
    *
@@ -41,15 +59,29 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
   async search(
     queryParams: OpportunitySearchQueryDto,
   ): Promise<PaginationResult<OpportunityEntity>> {
-    const { search, limit, page, sortDirection, sortField, categories, minTVL, minAPR, chains } =
-      queryParams;
+    const {
+      search,
+      limit,
+      page,
+      sortDirection,
+      sortField,
+      categories,
+      minTVL,
+      maxTVL,
+      minAPR,
+      maxAPR,
+      chains,
+    } = queryParams;
 
     const baseQuery = this.createQueryBuilder('opportunities')
       .leftJoinAndSelect('opportunities.farm', 'farm')
       .where(this.internalFuzzyFind(search))
-      .andWhere('categories @> :categories', { categories })
-      .andWhere(`apr >= :apr`, { apr: minAPR })
-      .andWhere(`total_value_locked >= :tvl`, { tvl: minTVL });
+      .andWhere(this.internalWhereInCategories(categories));
+
+    if (minAPR) baseQuery.andWhere(`apr >= :minAPR`, { minAPR });
+    if (maxAPR) baseQuery.andWhere(`apr <= :maxAPR`, { maxAPR });
+    if (minTVL) baseQuery.andWhere(`total_value_locked >= :minTVL`, { minTVL });
+    if (maxTVL) baseQuery.andWhere(`total_value_locked <= :maxTVL`, { maxTVL });
 
     if (chains && chains.length) {
       baseQuery.andWhere(`chain_id in (:...chains)`, { chains });
@@ -72,6 +104,20 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       limit,
       pages: Math.ceil(total / limit),
       page: page,
+    });
+  }
+
+  private internalWhereInCategories(categories: string[]) {
+    return new Brackets((query: SelectQueryBuilder<OpportunityEntity>) => {
+      if (categories.length) {
+        const first = categories.shift();
+        query.where('categories @> :category0', { category0: [first] });
+        categories.forEach((category, idx) => {
+          query.orWhere(`categories @> :category${idx + 1}`, {
+            [`category${idx + 1}`]: [category],
+          });
+        });
+      }
     });
   }
 

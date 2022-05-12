@@ -1,3 +1,5 @@
+import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/CallsStatistic.dto';
+
 import { ApiProperty } from '@nestjs/swagger';
 
 export class EndpointDto {
@@ -18,6 +20,9 @@ export class EndpointDto {
 
   @ApiProperty({ type: Number, example: 0 })
   priority: number;
+
+  @ApiProperty({ type: CallsStatistic })
+  callsStatistic?: CallsStatistic;
 
   @ApiProperty({ type: Date, example: '2022-01-25T14:21:57.003' })
   createdAt: Date;

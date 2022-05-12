@@ -1,8 +1,9 @@
 export interface IFetchPriceAssetResponse {
-  collectionAddress: string;
+  address: string;
   tokenId: string;
   floorPrice: number;
   lastPrice: number;
+  date: number;
 }
 
 export interface IFetchPriceResponse {

@@ -9,19 +9,20 @@ import { NftCollectionsQueryDtoV1 } from '@app/common/dto/nft/nft.collections.qu
 import { NftCollectionsResponseDtoV1 } from '@app/common/dto/nft/nft.collections.response.dto.v1';
 
 import { NftFetchPriceRequestProviderMock } from './nft.fetch.price.request.provider.mock';
+import { NftPricesService } from './prices/nft.prices.service';
 
 @Injectable()
 export class NftService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly nftFetchPriceRequestProviderMock: NftFetchPriceRequestProviderMock,
+    private readonly nftPricesService: NftPricesService,
   ) {}
 
   async fetchPrice() {
     //todo implement fetching price from marketplaces
     const mockReq = await this.nftFetchPriceRequestProviderMock.getRequest();
-    this.logger.debug(`mockReq: ${JSON.stringify(mockReq)}`);
-    return mockReq;
+    return this.nftPricesService.fetchPrices(mockReq);
   }
 
   async getChains(): Promise<NftChainsResponseDto> {

@@ -13,16 +13,19 @@ import {
 } from '@app/common';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { ChainIdEnum } from '@app/common/enum';
+import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
   IntegrationClaimableTokenDto,
-  IntegrationPoolTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
+import { ERC20Token } from '@app/common/jobs/token';
 import { getUniqList } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../../api_gateway/src/common/enum/feature.enum';
 import { PancakeSwap } from '../../framework/platforms/PancakeSwap';
 import { PlatformService } from '../../framework/services/platform.service';
+import { IClaimableFeatureUser } from '../../framework/support/interfaces/feature.claimable.interface';
+import { IPoolFeatureEntryUserEntry } from '../../framework/support/interfaces/feature.pool.interface';
 import { IStakingFeatureUserEntry } from '../../framework/support/interfaces/feature.staking.interface';
 import { IUserEntryResponse } from '../../framework/support/interfaces/responses.interface';
 import {
@@ -158,6 +161,44 @@ export class IntegrationsServiceV3Decorator {
             },
           );
         }
+
+        if (v3WalletChain.positions.pools) {
+          v2WalletChain[FeatureEnum.pools] = { totalValue: 0, items: [] };
+
+          v2WalletChain[FeatureEnum.pools].items = v3WalletChain.positions.pools.map(
+            (liquidityV3: IPoolFeatureEntryUserEntry) => {
+              const liquidityV2 = IntegrationsServiceV3Decorator.liquidityToV2(liquidityV3);
+              liquidityV2.tokens?.map((token) => {
+                if (token.value) {
+                  v2Response.data.total += token.value;
+                  v2WalletChain[FeatureEnum.pools].totalValue += token.value;
+                }
+              });
+
+              liquidityV2.rewards?.map((r) => {
+                if (r.claimableData.value) {
+                  v2Response.data.total += r.claimableData.value;
+                  v2WalletChain[FeatureEnum.pools].totalValue += r.claimableData.value;
+                }
+              });
+              return liquidityV2;
+            },
+          );
+        }
+
+        if (v3WalletChain.positions.claimable) {
+          v2WalletChain[FeatureEnum.claimable] = { totalValue: 0, items: [] };
+          v2WalletChain[FeatureEnum.claimable].items = v3WalletChain.positions.claimable.map(
+            (claimableV3: IClaimableFeatureUser) => {
+              const claimableV2 = IntegrationsServiceV3Decorator.claimableToV2(claimableV3);
+
+              v2Response.data.total += claimableV2.claimableData.value;
+              v2WalletChain[FeatureEnum.claimable].totalValue += claimableV2.claimableData.value;
+              return claimableV2;
+            },
+          );
+        }
+
         if (v3WalletChain.positions.lending) {
           v2WalletChain.features.push(
             ...[FeatureEnum.claimable, FeatureEnum.borrowing, FeatureEnum.health],
@@ -172,27 +213,29 @@ export class IntegrationsServiceV3Decorator {
                     : [],
                 };
                 return;
+              } else if (feature === FeatureEnum.borrowing || feature === FeatureEnum.lending) {
+                const positionField =
+                  feature === FeatureEnum.lending
+                    ? 'supplied'
+                    : feature === FeatureEnum.borrowing
+                    ? 'borrowed'
+                    : 'rewarded';
+                const featureItems = IntegrationsServiceV3Decorator.lendingToV2(
+                  position[positionField],
+                );
+                let totalValue = 0;
+                featureItems?.forEach((featureItem) => (totalValue += featureItem.value));
+                v2Response.data.total +=
+                  feature === FeatureEnum.borrowing ? totalValue * -1 : totalValue;
+                v2WalletChain[feature] = {
+                  totalValue,
+                  items: featureItems || [],
+                };
               }
-              const positionField =
-                feature === FeatureEnum.lending
-                  ? 'supplied'
-                  : feature === FeatureEnum.borrowing
-                  ? 'borrowed'
-                  : 'rewarded';
-              const featureItems = IntegrationsServiceV3Decorator.lendingToV2(
-                position[positionField],
-              );
-              let totalValue = 0;
-              featureItems?.forEach((featureItem) => (totalValue += featureItem.value));
-              v2Response.data.total +=
-                feature === FeatureEnum.borrowing ? totalValue * -1 : totalValue;
-              v2WalletChain[feature] = {
-                totalValue,
-                items: featureItems || [],
-              };
             });
           });
         }
+
         return v2WalletChain;
       });
       return v2Wallet;
@@ -271,9 +314,48 @@ export class IntegrationsServiceV3Decorator {
           balance: u.balance,
           price: u.price,
           positionInPool: u.position,
-        } as IntegrationPoolTokenDto;
+        };
       });
     }
     return v2Item;
+  }
+
+  static claimableToV2(claimableV3: IClaimableFeatureUser): IntegrationClaimableTokenDto {
+    const supplied = claimableV3.supplied[0];
+    const claimableV2 = plainToClass(IntegrationClaimableTokenDto, supplied.token);
+
+    claimableV2.claimableData = {
+      balance: supplied.amount,
+      value: supplied.value,
+    };
+
+    return claimableV2;
+  }
+
+  static liquidityToV2(liquidityV3: IPoolFeatureEntryUserEntry): LiquidityPoolFeature {
+    const supplied = liquidityV3.supplied[0];
+    const liquidityV2 = plainToClass(LiquidityPoolFeature, {});
+    const { underlying, ...rest } = supplied.token;
+    liquidityV2.address = liquidityV3.id;
+    liquidityV2.lpToken = plainToClass(ERC20Token, rest);
+    liquidityV2.tokens = plainToClass(PoolTokenDto, underlying);
+
+    liquidityV2.stats.tvl = supplied.tvl;
+    liquidityV2.stats.share = supplied.amount / supplied.totalSupplied;
+
+    liquidityV2.rewards = liquidityV3.rewarded?.map((v3RewardToken) => {
+      const v2RewardToken = plainToClass(IntegrationClaimableTokenDto, {});
+      v2RewardToken.address = v3RewardToken.token.address;
+      v2RewardToken.name = v3RewardToken.token.name;
+      v2RewardToken.symbol = v3RewardToken.token.symbol;
+      v2RewardToken.decimals = v3RewardToken.token.decimals;
+      v2RewardToken.price = v3RewardToken.token.price;
+      v2RewardToken.claimableData.balance = v3RewardToken.amount;
+      v2RewardToken.claimableData.value = v3RewardToken.value;
+      v2RewardToken.apr = v3RewardToken.apr.year * 100;
+      return v2RewardToken;
+    });
+
+    return liquidityV2;
   }
 }

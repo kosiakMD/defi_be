@@ -14,14 +14,14 @@ import { IKavaMeta as IKavaMetaLiquidity } from '../support/CosmosHub/protocols/
 import { RootPlatform } from '../support/RootPlatform';
 
 export class Kava extends RootPlatform {
-  private KAVA_URL: string;
+  private KAVA_API: string;
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly moduleRef: ModuleRef,
     protected configService: ConfigService,
   ) {
     super();
-    this.KAVA_URL = this.configService.get<string>('KAVA_URL');
+    this.KAVA_API = this.configService.get<string>('KAVA_API');
   }
 
   async register() {
@@ -40,7 +40,7 @@ export class Kava extends RootPlatform {
       name: 'Kava Liquidity',
       feature: FeatureEnum.pools,
       context: {
-        endpoint: this.KAVA_URL,
+        endpoint: this.KAVA_API,
       },
     });
 
@@ -49,7 +49,7 @@ export class Kava extends RootPlatform {
       name: 'Kava Claimable',
       feature: FeatureEnum.claimable,
       context: {
-        endpoint: this.KAVA_URL,
+        endpoint: this.KAVA_API,
       },
     });
 
@@ -58,7 +58,7 @@ export class Kava extends RootPlatform {
       name: 'Kava Lending',
       feature: FeatureEnum.lending,
       context: {
-        endpoint: this.KAVA_URL,
+        endpoint: this.KAVA_API,
       },
     });
   }

@@ -18,6 +18,7 @@ import {
   StakingPositionFeatureDto
 } from '@app/common';
 import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import { LiquidityPoolFeature as IntegrationLiquidityPoolFeature } from '@app/common/jobs/pools';
 
 export class Fee {
   // feeVolume: number;
@@ -84,7 +85,7 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   errors: string[] | Error[];
   @Expose()
     // eslint-disable-next-line prettier/prettier
-  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature>;
+  [FeatureEnum.pools]?: FeatureResult<LiquidityPoolFeature> | FeatureResult<IntegrationLiquidityPoolFeature>;
   @Expose()
   [FeatureEnum.staking]?: FeatureResult<StakingPositionFeatureDto> | FeatureResult<IntegrationStakingPositionDto>;
 }

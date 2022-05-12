@@ -132,7 +132,7 @@ export class KavaLiquidity
     pools: IPoolFeatureEntryOpportunity[],
     deposits: Map<string, IKavaDeposits[]>,
   ): IPoolFeatureEntryUserEntry[] {
-    const result: IPoolFeatureEntryUserEntry[] = deposits.get(address).map((deposit) => {
+    const result: IPoolFeatureEntryUserEntry[] = deposits.get(address)?.map((deposit) => {
       const pool = pools.find((x) => x.id === deposit.pool_id);
       if (!pool) return;
       const clone = cloneDeep(pool);
@@ -171,7 +171,7 @@ export class KavaLiquidity
       return { ...clone, supplied, rewarded };
     });
 
-    return result;
+    return result || [];
   }
 
   protected formatOpportunitySuppliedToken(

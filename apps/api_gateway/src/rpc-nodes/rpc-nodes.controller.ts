@@ -36,7 +36,7 @@ export class RPCNodesController extends BaseService implements IBaseService {
   @Get('/:chainId')
   get(@Param() params: RPCParamsDto, @Query() query: RPCCallDto): Promise<void> {
     const { chainId } = params;
-    return this.requestProxy(this.url + `v1/rpc/${chainId}`, 'POST', query);
+    return this.requestProxy(this.url + `v1/rpc-call/${chainId}`, 'POST', query);
   }
 
   @ApiBody({ type: RPCCallDto })
@@ -45,7 +45,7 @@ export class RPCNodesController extends BaseService implements IBaseService {
   @Post('/:chainId')
   post(@Param() params: RPCParamsDto, @Req() request: Request): Promise<void> {
     const { chainId } = params;
-    return this.requestProxy(this.url + `v1/rpc/${chainId}`, 'POST', request.body);
+    return this.requestProxy(this.url + `v1/rpc-call/${chainId}`, 'POST', request.body);
   }
 
   @ApiBody({ type: RPCCallDto })
@@ -54,7 +54,7 @@ export class RPCNodesController extends BaseService implements IBaseService {
   @Patch('/:chainId')
   patch(@Param() params: RPCParamsDto, @Req() request: Request): Promise<void> {
     const { chainId } = params;
-    return this.requestProxy(this.url + `v1/rpc/${chainId}`, 'POST', request.body);
+    return this.requestProxy(this.url + `v1/rpc-call/${chainId}`, 'POST', request.body);
   }
 
   @ApiBody({ type: RPCCallDto })
@@ -63,7 +63,7 @@ export class RPCNodesController extends BaseService implements IBaseService {
   @Put('/:chainId')
   put(@Param() params: RPCParamsDto, @Req() request: Request): Promise<void> {
     const { chainId } = params;
-    return this.requestProxy(this.url + `v1/rpc/${chainId}`, 'POST', request.body);
+    return this.requestProxy(this.url + `v1/rpc-call/${chainId}`, 'POST', request.body);
   }
 
   @ApiBody({ type: RPCCallDto })
@@ -73,6 +73,6 @@ export class RPCNodesController extends BaseService implements IBaseService {
   @Delete('/:chainId')
   delete(@Param() params: RPCParamsDto, @Req() request: Request): Promise<void> {
     const { chainId } = params;
-    return this.requestProxy(this.url + `v1/rpc/${chainId}`, 'POST', request.body);
+    return this.requestProxy(this.url + `v1/rpc-call/${chainId}`, 'POST', request.body);
   }
 }

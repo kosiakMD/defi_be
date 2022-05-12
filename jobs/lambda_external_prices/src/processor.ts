@@ -1,11 +1,10 @@
-import { toDecimals } from 'apps/account_service/src/common/utils';
 import axios from 'axios';
 import { partition } from 'lodash';
 
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
-import { concatStrings } from '@app/common/utils';
+import { concatStrings, normalizeDecimals } from '@app/common/utils';
 import { ChainCoinAddresses, getCoingeckoPlatformId } from '@app/common/utils/chains';
 import { toChunkedArray } from '@app/common/utils/transform';
 
@@ -123,7 +122,8 @@ export async function process(): Promise<void> {
     for (const token of tokensPrices) {
       const address = token.assetB.assetId.replace(/\./g, '');
       const lp =
-        toDecimals(+token.quantityA, 6) / toDecimals(+token.quantityB, token.assetB.decimals);
+        normalizeDecimals(token.quantityA, 6) /
+        normalizeDecimals(token.quantityB, token.assetB.decimals);
       if (token.assetB.decimals !== null) {
         cardanoPrices.push({
           address: address,

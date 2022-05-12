@@ -12,7 +12,8 @@ import {
   ISupplyTokenUserEntry,
 } from './tokens.supplied.interface';
 
-interface IPoolFeatureEntryGeneric<TSupplied, TRewarded = never> extends IPartialBaseFeature {
+export interface IPoolFeatureEntryGeneric<TSupplied, TRewarded = never>
+  extends IPartialBaseFeature {
   feature: FeatureEnum.pools;
   token?: {
     address?: string;
@@ -25,8 +26,10 @@ interface IPoolFeatureEntryGeneric<TSupplied, TRewarded = never> extends IPartia
   supplied: TSupplied[];
   rewarded?: TRewarded[];
 }
+export type IPoolFeatureMinimal = IPoolFeatureEntryGeneric<ISupplyTokenMinimal>;
 export type IPoolFeatureOpportunity = IPoolFeatureEntryGeneric<ISupplyTokenOpportunity>;
 export type IPoolFeatureUser = IPoolFeatureEntryGeneric<ISupplyTokenUserEntry>;
+
 export type IPoolFeatureEntryMinimal = IPoolFeatureEntryGeneric<
   ISupplyTokenMinimal,
   IRewardTokenMinimal

@@ -18,20 +18,15 @@ export class AaveStrategy extends UnderlyingTokenStrategy {
       //
     }
 
-    try {
-      const contract = new AToken(asset.address);
-      const tokenAddress = await this.multicall.call(
-        contract.underlyingAssetAddress(),
-        asset.chainId,
-      );
-      return [
-        tokenAddress
-          .toLowerCase()
-          .replace(/^0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee$/, ZERO_ADDRESS),
-      ];
-    } catch {
-      //
-    }
-    return [];
+    const contract = new AToken(asset.address);
+    const tokenAddress = await this.multicall.call(
+      contract.underlyingAssetAddress(),
+      asset.chainId,
+    );
+    return [
+      tokenAddress
+        .toLowerCase()
+        .replace(/^0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee$/, ZERO_ADDRESS),
+    ];
   }
 }

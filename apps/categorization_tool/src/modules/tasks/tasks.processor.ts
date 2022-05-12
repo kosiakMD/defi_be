@@ -14,7 +14,6 @@ import {
 
 import { AggregatorsService } from '../aggregators/aggregator.service';
 import { ProtocolService } from '../protocols/protocols.service';
-import { ContractsAnalysisService } from '../protocols/services/contracts.analysis.service';
 import { ContractsAnalysisServiceV1 } from '../protocols/services/contracts.analysis.service.v1';
 import { TasksService } from './tasks.service';
 
@@ -25,7 +24,6 @@ export class TasksProcessor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     private readonly aggregatorsService: AggregatorsService,
     private readonly protocolService: ProtocolService,
-    private readonly contractAnalysisService: ContractsAnalysisService,
     private readonly contractsAnalysisServiceV1: ContractsAnalysisServiceV1,
     private readonly tasksService: TasksService,
   ) {}
@@ -70,7 +68,7 @@ export class TasksProcessor {
       case CommandUnparameterized.analyse_contracts:
         return this.contractsAnalysisServiceV1.analyseContracts();
       case CommandUnparameterized.analyse_contracts_against_templates:
-        return this.contractAnalysisService.analyzeContractsAgainstTemplates();
+        return this.contractsAnalysisServiceV1.analyzeContractsAgainstTemplates();
       case CommandParameterized.run_parsing_custom_protocol:
         return this.protocolService.parseCustomProtocol(job.data.listProtocol);
       case CommandParameterized.similar_contract:

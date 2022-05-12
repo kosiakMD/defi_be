@@ -101,6 +101,7 @@ export class JobsRunner {
       for (const job of jobs) {
         try {
           const resultJob = await job.updateWithChainData();
+
           const jobData = {
             chain: job.chain,
             protocolName: job.protocol,
@@ -110,7 +111,10 @@ export class JobsRunner {
           const check = jobsDataMap.get(chain);
           check.push(jobData);
           results.push(resultJob);
-          this.logger.log(`job mapping updated [${job.placeholder}]`, JobsRunner.name);
+          this.logger.log(
+            `job mapping updated [${job.placeholder}] (${resultJob.length} pools)`,
+            JobsRunner.name,
+          );
         } catch (e) {
           this.logger.error(
             `error during job mapping update [${job.placeholder}], [${e}]`,

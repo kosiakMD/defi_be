@@ -38,6 +38,7 @@ import {
   AssetQueryDto,
   AssetResponseDto,
   AssetTrackDto,
+  AssetWithUnderlying,
 } from '../modules/assets/dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from '../modules/assets/dto/assets.pools.dto';
 
@@ -96,6 +97,13 @@ export class AssetsController {
   @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
   async addAssetToTrack(@Body() asset: AssetTrackDto): Promise<AssetResponseDto> {
     return await this.assetsService.saveTrackingAsset(asset);
+  }
+
+  @Post('save-underlying')
+  @ApiBody({ type: AssetWithUnderlying })
+  @ApiResponse({ status: HttpStatus.OK, type: AssetResponseDto })
+  async saveAssetWithUnderlying(@Body() asset: AssetWithUnderlying): Promise<AssetResponseDto> {
+    return await this.assetsService.saveAssetWithUnderlying(asset);
   }
 
   @Post('save')

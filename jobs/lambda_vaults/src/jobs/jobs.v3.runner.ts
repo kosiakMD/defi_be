@@ -25,7 +25,7 @@ export class JobsV3Runner {
         if (!chainsProtocols[f.chain.id]) {
           chainsProtocols[f.chain.id.toString()] = [];
         }
-        chainsProtocols[f.chain.id.toString()].push(p.name);
+        chainsProtocols[f.chain.id.toString()].push(p.project);
       });
     });
 

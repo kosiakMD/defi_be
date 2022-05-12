@@ -21,8 +21,8 @@ resources:
     cpu: 100m
     memory: 2Gi
   limits:
-    cpu: 200m
-    memory: 2Gi
+    cpu: 1
+    memory: 4Gi
 
 secrets:
 - redis

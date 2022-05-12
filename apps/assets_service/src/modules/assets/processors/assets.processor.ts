@@ -69,71 +69,78 @@ export class AssetsProcessor {
   }
 
   public async processAsset(assetData: Partial<AssetsEntity>): Promise<AssetsEntity> {
-    const { address, chainId, rank, isTracked } = assetData;
-    const existentAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
+    try {
+      this.logger.debug(`Process asset data ${JSON.stringify(assetData)}`);
 
-    if (existentAsset) {
-      if (rank) {
-        this.assetRepository
-          .update(existentAsset, { rank })
-          .catch(({ message }) =>
-            this.logger.warn(
-              `Asset ${address} chainId ${chainId} rank was not updated! Error: ${message}`,
-            ),
-          );
+      const { address, chainId, rank, isTracked } = assetData;
+      const existentAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
+
+      if (existentAsset) {
+        if (rank) {
+          this.assetRepository
+            .update(existentAsset.id, { rank })
+            .catch(({ message }) =>
+              this.logger.warn(
+                `Asset ${address} chainId ${chainId} rank was not updated! Error: ${message}`,
+              ),
+            );
+        }
+        if (isTracked) {
+          this.assetRepository
+            .update(existentAsset.id, { isTracked })
+            .catch(({ message }) =>
+              this.logger.warn(
+                `Asset ${address} chainId ${chainId} isTracked was not updated! Error: ${message}`,
+              ),
+            );
+        }
+        return existentAsset;
       }
-      if (isTracked) {
-        this.assetRepository
-          .update(existentAsset, { isTracked })
-          .catch(({ message }) =>
-            this.logger.warn(
-              `Asset ${address} chainId ${chainId} iaTracked was not updated! Error: ${message}`,
-            ),
-          );
-      }
-      return existentAsset;
-    }
 
-    const assetMetadata = await this.metadataService.getMetadata(address, chainId);
-    let processingAsset = new AssetsEntity();
+      const assetMetadata = await this.metadataService.getMetadata(address, chainId);
+      let processingAsset = new AssetsEntity();
 
-    processingAsset.address = address;
-    processingAsset.chainId = chainId;
-    processingAsset.symbol = assetMetadata.symbol;
-    processingAsset.name = assetMetadata.name;
-    processingAsset.decimals = assetMetadata.decimals;
-    processingAsset.rank = rank < 0 ? -1 : rank;
-    processingAsset.isTracked = Boolean(isTracked);
+      processingAsset.address = address;
+      processingAsset.chainId = chainId;
+      processingAsset.symbol = assetMetadata.symbol;
+      processingAsset.name = assetMetadata.name;
+      processingAsset.decimals = assetMetadata.decimals;
+      processingAsset.rank = rank < 0 ? -1 : rank;
+      processingAsset.isTracked = Boolean(isTracked);
 
-    const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
-    processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens?.length));
-    const icons = await this.iconsService.getIconUrls({
-      symbol: processingAsset.symbol,
-      chainId: processingAsset.chainId,
-      address: processingAsset.address,
-    });
-
-    processingAsset.icon = icons[0]?.Location;
-
-    processingAsset = await this.saveAsset(processingAsset);
-
-    if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
-      underlyingTokens.map(async (underlyingToken: AssetsEntity, index: number) => {
-        const newAsset = await this.processAsset({
-          address: underlyingToken.address,
-          chainId: underlyingToken.chainId,
-        });
-
-        const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
-          asset: processingAsset,
-          underlyingAsset: newAsset,
-          position: index,
-        });
-
-        await this.assetUnderlyingRepository.save(newUnderlyingTokenRelation);
+      const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
+      processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens?.length));
+      const icons = await this.iconsService.getIconUrls({
+        symbol: processingAsset.symbol,
+        chainId: processingAsset.chainId,
+        address: processingAsset.address,
       });
-    }
 
-    return processingAsset;
+      processingAsset.icon = icons[0]?.Location;
+
+      processingAsset = await this.saveAsset(processingAsset);
+
+      if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
+        underlyingTokens.map(async (underlyingToken: AssetsEntity, index: number) => {
+          const newAsset = await this.processAsset({
+            address: underlyingToken.address,
+            chainId: underlyingToken.chainId,
+          });
+
+          const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
+            asset: processingAsset,
+            underlyingAsset: newAsset,
+            position: index,
+          });
+
+          await this.assetUnderlyingRepository.save(newUnderlyingTokenRelation);
+        });
+      }
+
+      return processingAsset;
+    } catch (error) {
+      this.logger.error(`Error to process asset data ${JSON.stringify(assetData)}`);
+      throw error;
+    }
   }
 }

@@ -40,6 +40,7 @@ export enum ProjectEnum {
   stader = 'stader',
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
+  kava = 'kava',
 }
 
 export enum YearnProtocolEnum {
@@ -213,6 +214,14 @@ export enum LidoProtocolEnum {
   lido = 'Lido',
 }
 
+export enum KavaProtocolEnum {
+  kava = 'Kava',
+}
+
+export enum FraxProtocolEnum {
+  frax = 'Frax',
+}
+
 export enum BiSwapProtocolEnum {
   biswap = 'BiSwap',
 }
@@ -280,9 +289,11 @@ export const ProtocolNameEnum = {
   ...SolendProtocolEnum,
   ...LidoProtocolEnum,
   ...AaveV3ProtocolEnum,
+  ...FraxProtocolEnum,
   ...BiSwapProtocolEnum,
   ...MdexProtocolEnum,
   ...KnightSwapProtocolEnum,
   ...BeltProtocolEnum,
   ...MarsEcosystemProtocolEnum,
+  ...KavaProtocolEnum,
 };

@@ -136,3 +136,19 @@ export class AssetTrackDto {
   @ApiProperty({ type: Boolean, default: false, example: false })
   force?: boolean = false;
 }
+
+export class AssetWithUnderlying {
+  @Expose()
+  @IsNotEmpty()
+  @ApiProperty({ type: String, example: '0xf411903cbc70a74d22900a5de66a2dda66507255' })
+  address: string;
+
+  @Expose()
+  @IsNotEmpty()
+  @ApiProperty({ type: Number, example: 1 })
+  chain: number;
+
+  @Expose()
+  @IsNotEmpty()
+  pairs: string[];
+}

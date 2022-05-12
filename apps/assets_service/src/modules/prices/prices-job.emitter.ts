@@ -1,4 +1,5 @@
 import { Queue } from 'bull';
+import { v4 as uuid } from 'uuid';
 
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
@@ -8,6 +9,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AssetsRepository } from '../assets/repositories/assets.repository';
+import { PriceSourceMetadata } from './dto/PriceSourceMetadata.dto';
 import { PriceSourceEntity } from './entities/price-sources.entity';
 import { PriceSourceRepository } from './repositories/price-source.repository';
 
@@ -24,8 +26,7 @@ export class PriceJobEmitter {
   ) {}
 
   // CURRENT PRICES
-  // because of Coingecko API rate limits
-  @Cron(`0 */7 * * * *`)
+  @Cron(`0 */1 * * * *`)
   async handleUpdateFromDatabaseCron() {
     this.logger.debug(`Broadcast assets price jobs every 7 minutes`);
     await this.broadcastAssetsPriceJobs();
@@ -80,16 +81,35 @@ export class PriceJobEmitter {
      * for each price source:
      * - add price jobs including strategy config and sourseId to be able to process it on job consumer
      */
+    const processingUUID = uuid();
     priceSources.forEach(async (priceSource: PriceSourceEntity) => {
       const { config, id: sourceId, name, type: strategy } = priceSource;
-      this.logger.debug(`Assets price job for ${name}`);
-
-      const priceJobData = {
-        config,
-        sourceId,
-        strategy,
-      };
-      this.assetsQueue.add(this.configService.get('ASSETS_PRICE_JOB_TYPE'), priceJobData);
+      const metadata = priceSource.metadata || new PriceSourceMetadata();
+      this.logger.debug(`Try to process price source id: ${sourceId}`);
+      const currentPriceJobInterval = config.currentPriceJobInterval * 1000; // config value in sec
+      if (Date.now() - metadata.lastOperation > currentPriceJobInterval) {
+        metadata.executionInstanceMarker = processingUUID;
+        await this.priceSourceRepository.update(sourceId, { metadata });
+        const processingPriceSource = await this.priceSourceRepository.findOne({
+          id: priceSource.id,
+        });
+        if ((processingPriceSource.metadata.executionInstanceMarker = processingUUID)) {
+          this.logger.debug(`Assets price job for ${name}`);
+          const priceJobData = {
+            config,
+            sourceId,
+            strategy,
+          };
+          this.assetsQueue.add(this.configService.get('ASSETS_PRICE_JOB_TYPE'), priceJobData);
+          metadata.lastOperation = Date.now();
+          await this.priceSourceRepository.update(sourceId, { metadata });
+        }
+      } else {
+        this.logger //
+          .debug(
+            `Last price source id: ${sourceId} operation(${metadata.lastOperation}) in distance less than ${currentPriceJobInterval}`,
+          );
+      }
     });
   }
 }

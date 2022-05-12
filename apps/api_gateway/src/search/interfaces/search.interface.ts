@@ -24,6 +24,7 @@ export interface SearchResultsProtocolEntry extends SearchResultsBaseEntry {
 }
 export interface AddressMetadata {
   address: string;
+  domain?: string;
 }
 export interface AssetMetadata extends AddressMetadata {
   chainId: number;

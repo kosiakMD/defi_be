@@ -4,6 +4,10 @@ import type { Address, ChainDto, ChainId, ChainIdEnum, FeatureEnum } from '@app/
 import { IPlatformLinks } from '@app/common/interfaces/platform.v3.links';
 
 import {
+  IClaimableFeatureOpportunity,
+  IClaimableFeatureUser,
+} from './interfaces/feature.claimable.interface';
+import {
   ILendingFeatureEntryMinimal,
   ILendingFeatureOpportunity,
   ILendingFeatureUserEntry,
@@ -57,12 +61,14 @@ export type IWalletMinimal =
 export type IWalletOpportunity =
   | IPoolFeatureEntryOpportunity
   | IStakingFeatureOpportunity
-  | ILendingFeatureOpportunity;
+  | ILendingFeatureOpportunity
+  | IClaimableFeatureOpportunity;
 
 export type IWalletUserEntry =
   | IPoolFeatureEntryUserEntry
   | IStakingFeatureUserEntry
-  | ILendingFeatureUserEntry;
+  | ILendingFeatureUserEntry
+  | IClaimableFeatureUser;
 
 export interface IChainUserEntry {
   // TODO: why doesn't partial work? it still requires all keys in RootPlatform@mergeUserProtocolDataPerChain

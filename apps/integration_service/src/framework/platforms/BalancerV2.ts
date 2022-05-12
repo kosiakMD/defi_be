@@ -22,6 +22,10 @@ export class BalancerV2 extends RootPlatform {
     super();
   }
 
+  get endpoint(): string {
+    return 'https://api.thegraph.com/subgraphs/name/balancer-labs/';
+  }
+
   async register() {
     this.registerMeta({
       name: this.constructor.name,
@@ -38,24 +42,17 @@ export class BalancerV2 extends RootPlatform {
       name: 'Liquidity - Balancer',
       feature: FeatureEnum.pools,
       context: {
-        key: 'balancer-v2',
+        endpoint: this.endpoint,
+        networkId: 'balancer-v2',
       },
     });
-    await this.registerProtocol<IBalancerVaultMeta>(BalancerStaking, {
-      chain: ChainIdEnum.eth,
-      name: 'Staking - Balancer',
-      feature: FeatureEnum.staking,
-      context: {
-        key: 'balancer-v2',
-      },
-    });
-
     await this.registerProtocol<IBalancerPoolMeta>(BalancerLiquidity, {
       chain: ChainIdEnum.plg,
       name: 'Liquidity - Balancer',
       feature: FeatureEnum.pools,
       context: {
-        key: 'balancer-polygon-v2',
+        endpoint: this.endpoint,
+        networkId: 'balancer-polygon-v2',
       },
     });
 
@@ -64,7 +61,41 @@ export class BalancerV2 extends RootPlatform {
       name: 'Liquidity - Balancer',
       feature: FeatureEnum.pools,
       context: {
-        key: 'balancer-arbitrum-v2',
+        endpoint: this.endpoint,
+        networkId: 'balancer-arbitrum-v2',
+      },
+    });
+
+    await this.registerProtocol<IBalancerVaultMeta>(BalancerStaking, {
+      chain: ChainIdEnum.eth,
+      name: 'Staking - Balancer',
+      feature: FeatureEnum.staking,
+      context: {
+        endpoint: this.endpoint,
+        networkId: 'balancer-v2',
+        gaugesId: 'balancer-gauges',
+      },
+    });
+
+    await this.registerProtocol<IBalancerVaultMeta>(BalancerStaking, {
+      chain: ChainIdEnum.plg,
+      name: 'Staking - Balancer',
+      feature: FeatureEnum.staking,
+      context: {
+        endpoint: this.endpoint,
+        networkId: 'balancer-polygon-v2',
+        gaugesId: 'balancer-gauges-polygon',
+      },
+    });
+
+    await this.registerProtocol<IBalancerVaultMeta>(BalancerStaking, {
+      chain: ChainIdEnum.arbi,
+      name: 'Staking - Balancer',
+      feature: FeatureEnum.staking,
+      context: {
+        endpoint: this.endpoint,
+        networkId: 'balancer-arbitrum-v2',
+        gaugesId: 'balancer-gauges-arbitrum',
       },
     });
   }

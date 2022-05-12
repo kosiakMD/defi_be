@@ -166,7 +166,7 @@ export class AutofarmStaking implements JobInterface {
 
     const poolsInfoMap: Map<string, any> = new Map<string, any>();
 
-    for (const poolData of autofarmPoolsData) {
+    for (const poolData of autofarmPoolsData.filter((pool) => pool.allowDeposits)) {
       const wantAddress = poolData.wantAddress.toLowerCase();
       poolsInfoMap.set(wantAddress, {
         id: poolData.pid,

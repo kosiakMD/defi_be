@@ -14,6 +14,7 @@ import { StoreService } from '../../store/store.service';
 import { CurveLpAbi } from './abis/CurveLpAbi';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
 import { ERC20Abi } from './abis/ERC20Abi';
+import { CurveApi } from './curve.api';
 import { CurveGaugesBase } from './curve.gauges.base';
 import { LocalMultiCall } from './local.multicall';
 
@@ -94,5 +95,17 @@ export class CurveGaugesHarm extends CurveGaugesBase {
       });
     });
     return calls;
+  }
+
+  protected async getPoolsDataMap() {
+    const curveApi = new CurveApi(this.logger);
+    const poolsApr = await curveApi.getMainPoolsAprHarm();
+    return Object.entries(poolsApr).reduce((resp, [key, value]) => {
+      resp.set(key, {
+        price: null,
+        apy: value,
+      });
+      return resp;
+    }, new Map());
   }
 }

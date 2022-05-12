@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { IAssetResponseDto } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
+import LiquidityPoolTokenDto from '@app/common/dto/LiquidityPoolToken.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
 import { chunk } from '@app/common/utils';
@@ -18,6 +19,8 @@ export class AccountService {
 
   private getBalanceUrl: string;
   private getAssetsUrl: string;
+  private saveAssetsUrl: string;
+  private saveAssetsUnderlyingUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -31,6 +34,8 @@ export class AccountService {
 
     this.getBalanceUrl = `${url}/v1/balances`;
     this.getAssetsUrl = `${url}/v1/assets`;
+    this.saveAssetsUrl = `${url}/v1/assets/save`;
+    this.saveAssetsUnderlyingUrl = `${url}/v1/assets/save-underlying`;
   }
 
   async getBalances(
@@ -97,6 +102,25 @@ export class AccountService {
 
       return data.data;
     }
+  }
+
+  async saveAssetsAndUnderlying(asset: Partial<Asset>): Promise<LiquidityPoolTokenDto> {
+    const { chainId, ...other } = asset;
+    const data = await this.httpService
+      .post(this.saveAssetsUrl, {
+        ...other,
+        chain: chainId,
+      })
+      .toPromise();
+
+    const dataWithUnderlying = await this.httpService
+      .post<LiquidityPoolTokenDto>(this.saveAssetsUnderlyingUrl, {
+        ...data.data,
+        pairs: asset.address.split(':'),
+      })
+      .toPromise();
+
+    return dataWithUnderlying.data;
   }
 
   /**

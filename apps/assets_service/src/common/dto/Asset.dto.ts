@@ -49,15 +49,15 @@ export class AssetDto {
 
   @Expose()
   @ApiProperty({ type: [AssetsPriceDto] })
-  public prices: AssetsPriceDto[];
+  public prices: AssetsPriceDto[] = [];
 
   @Expose()
   @ApiProperty({ type: [AssetsHistoricalPriceDto] })
-  public historicalPrices: AssetsHistoricalPriceDto[];
+  public historicalPrices: AssetsHistoricalPriceDto[] = [];
 
   @Expose()
   @ApiProperty({ type: [AssetUnderlyingDto] })
-  public underlyingTokens: AssetUnderlyingDto[];
+  public underlyingTokens: AssetUnderlyingDto[] = [];
 
   @Expose()
   @ApiProperty({ type: Number })

@@ -2,11 +2,13 @@ import { Connection } from 'typeorm';
 
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RedisOptions, Transport } from '@nestjs/microservices';
 import {
   HealthCheck,
   HealthCheckResult,
   HealthCheckService,
   HealthIndicatorResult,
+  MicroserviceHealthIndicator,
 } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
 
@@ -23,6 +25,7 @@ export class HealthController {
     private readonly connection: Connection,
     private readonly health: HealthCheckService,
     private readonly configService: ConfigService,
+    private microservice: MicroserviceHealthIndicator,
   ) {}
 
   @Get()
@@ -39,6 +42,13 @@ export class HealthController {
           status: this.connection.isConnected ? StatusEnum.up : StatusEnum.down,
         },
       }),
+      () =>
+        this.microservice.pingCheck<RedisOptions>('redis', {
+          transport: Transport.REDIS,
+          options: {
+            url: 'redis://localhost:6379',
+          },
+        }),
     ]);
   }
 }

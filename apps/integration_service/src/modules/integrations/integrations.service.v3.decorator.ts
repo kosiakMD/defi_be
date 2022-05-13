@@ -209,7 +209,10 @@ export class IntegrationsServiceV3Decorator {
                 v2WalletChain[feature] = {
                   totalValue: 0,
                   items: position['debtRatio']
-                    ? [plainToClass(HealthFactorDto, { healthFactor: position['debtRatio'] })]
+                    ? [
+                        ...(v2WalletChain[feature]?.items || []),
+                        plainToClass(HealthFactorDto, { healthFactor: position['debtRatio'] }),
+                      ]
                     : [],
                 };
                 return;
@@ -228,8 +231,10 @@ export class IntegrationsServiceV3Decorator {
                 v2Response.data.total +=
                   feature === FeatureEnum.borrowing ? totalValue * -1 : totalValue;
                 v2WalletChain[feature] = {
-                  totalValue,
-                  items: featureItems || [],
+                  totalValue: v2WalletChain[feature]?.totalValue
+                    ? v2WalletChain[feature].totalValue + totalValue
+                    : totalValue,
+                  items: [...(v2WalletChain[feature]?.items || []), ...featureItems] || [],
                 };
               }
             });

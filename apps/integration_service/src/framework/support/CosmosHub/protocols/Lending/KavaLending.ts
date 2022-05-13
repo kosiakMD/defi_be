@@ -26,6 +26,7 @@ import {
 } from '../../../interfaces/tokens.borrowed.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
+  IRewardTokenMinimal,
   IRewardTokenOpportunity,
   IRewardTokenUserEntry,
 } from '../../../interfaces/tokens.rewarded.interface';
@@ -41,6 +42,8 @@ import {
   IKavaRepositoryResponse,
   IKavaDenomAmount,
   IKavaLendingResponse,
+  IncentiveParameterResponse,
+  CDPParameterResponse,
 } from '../interfaces/Kava/KavaLending';
 
 export class KavaLending
@@ -85,33 +88,58 @@ export class KavaLending
     return new URL('incentive/parameters', this.meta.context.endpoint).toString();
   }
 
+  get cdpParameter(): string {
+    return new URL('cdp/parameters', this.meta.context.endpoint).toString();
+  }
+
   protected async updateRealTimeData(
     opportunities: ILendingFeatureEntryMinimal[],
   ): Promise<ILendingFeatureEntryMinimal[]> {
-    const stats: any[] = await firstValueFrom(
-      this.httpService.get(this.incentiveParameter).pipe(
-        mergeMap((response) => response.data.result.hard_supply_reward_periods),
-        toArray(),
-      ),
-    );
+    const [collateralStats, collateralParams] = await Promise.all([
+      this.getIncentiveParameter(),
+      this.getCDPParameter(),
+    ]);
 
-    const statsMap = new Map(
-      stats.map((collateral) => [collateral.collateral_type, collateral.rewards_per_second]),
+    const collateralStatsMap = new Map(
+      collateralStats.map((collateral) => [
+        collateral.collateral_type,
+        collateral.rewards_per_second,
+      ]),
+    );
+    const collateralParamsMap = new Map(
+      collateralParams.map((collateral) => [collateral.type, collateral]),
     );
 
     opportunities.forEach((opportunity) => {
-      for (const [address, rewards] of statsMap.entries()) {
+      for (const [address, rewards] of collateralStatsMap.entries()) {
         opportunity.rewarded.push(
           ...rewards.map((reward) => {
-            return {
+            const result: IRewardTokenMinimal = {
               token: { address: reward.denom },
               rewardPerSecond: reward.amount,
               rewardedForTokenAddress: address,
               rewardedForLendingSide: 'supplied',
             };
+            return result;
           }),
         );
       }
+
+      opportunity.borrowed.forEach((token) => {
+        const collateralKey = token.token.address + '-a';
+        const collateral = collateralParamsMap.get(collateralKey);
+        token.rate = { stabilityFee: collateral?.stability_fee || '0' };
+
+        return token;
+      });
+
+      opportunity.supplied.forEach((token) => {
+        const collateralKey = token.token.address + '-a';
+        const collateral = collateralParamsMap.get(collateralKey);
+        token.rate = { ltv: collateral?.liquidation_ratio || '0' };
+
+        return token;
+      });
     });
 
     return opportunities;
@@ -156,7 +184,7 @@ export class KavaLending
     lendingMap: UserLendingMap,
   ): ILendingFeatureUserEntry[] {
     const result: ILendingFeatureUserEntry[] = [];
-    const lending = lendingMap.get(address);
+    const lending = lendingMap.get(address) || [];
 
     const pool = pools.find((x) => x.id === this.KAVA_LENDING_KEY);
     const supplied: ISupplyTokenUserEntry[] = [];
@@ -170,8 +198,9 @@ export class KavaLending
         borrowed.push(...this.mapSuppliedBorrowList(pool.borrowed, userData.amount));
       }
     }
-    /** TODO: Find Loan-To-Value (LTV) */
-    const suppliedUSD = supplied.reduce((prev, next) => prev + next.amount, 0);
+
+    /** TODO: WHAT IF LTV - ZERO */
+    const suppliedUSD = supplied.reduce((prev, next) => prev + next.amount * next.ltv, 0);
     const borrowedUSD = borrowed.reduce((prev, next) => prev + next.amount, 0);
 
     for (const { token } of supplied) {
@@ -188,6 +217,28 @@ export class KavaLending
     });
 
     return result;
+  }
+
+  protected formatOpportunitySuppliedToken(
+    supplied: ISupplyTokenMinimal,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    const totalSupplied = normalizeDecimals(supplied.totalSupplied, token.decimals);
+    const ltv = supplied.rate.ltv === '0' ? 0 : (1 / Number(supplied.rate.ltv)) * 100;
+    return {
+      token,
+      tvl: totalSupplied * token.price,
+      ltv,
+    };
+  }
+
+  protected formatBorrowApy(borrowed: IBorrowTokenMinimal) {
+    if (borrowed.rate.stabilityFee === '0') return 0;
+
+    const borrowApy = Number(borrowed.rate.stabilityFee) ** 31536000 - 1;
+    return new BN(borrowApy) //
+      .times(100)
+      .toNumber();
   }
 
   private async hardDepositedBorrowedList(link: string): Promise<IKavaDenomAmount[]> {
@@ -251,6 +302,28 @@ export class KavaLending
     return firstValueFrom($data);
   }
 
+  private async getIncentiveParameter(): Promise<IncentiveParameterResponse[]> {
+    return this.getOrSet(60 * 60 * 24, 'kava_incentive_parameter', async () => {
+      const $data: any = this.httpService.get(this.incentiveParameter).pipe(
+        mergeMap((response) => response.data.result.hard_supply_reward_periods),
+        toArray(),
+      );
+
+      return firstValueFrom($data);
+    });
+  }
+
+  private async getCDPParameter(): Promise<CDPParameterResponse[]> {
+    return this.getOrSet(60 * 60 * 24, 'kava_cdp_parameter', async () => {
+      const $data: any = this.httpService.get(this.cdpParameter).pipe(
+        mergeMap((response) => response.data.result.collateral_params),
+        toArray(),
+      );
+
+      return firstValueFrom($data);
+    });
+  }
+
   private mapSuppliedBorrowList(
     supplied: Array<ISupplyTokenOpportunity | IBorrowTokenOpportunity>,
     userData: IKavaDenomAmount[],
@@ -261,7 +334,7 @@ export class KavaLending
       if (!suppliedMap.has(denom)) continue;
       const position = suppliedMap.get(denom);
       const balance = normalizeDecimals(amount, position.token.decimals);
-      const balanceUSD = new BN(amount) //
+      const balanceUSD = new BN(balance) //
         .times(position.token.price)
         .toNumber();
       result.push({

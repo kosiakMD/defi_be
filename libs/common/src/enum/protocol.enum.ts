@@ -246,6 +246,14 @@ export enum GooseProtocolEnum {
   goose = 'Goose',
 }
 
+export enum BabySwapProtocolEnum {
+  babySwap = 'BabySwap',
+}
+
+export enum YelFinanceEnum {
+  yelFinance = 'YelFinance',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -295,5 +303,8 @@ export const ProtocolNameEnum = {
   ...KnightSwapProtocolEnum,
   ...BeltProtocolEnum,
   ...MarsEcosystemProtocolEnum,
+  ...BabySwapProtocolEnum,
+  ...GooseProtocolEnum,
+  ...YelFinanceEnum,
   ...KavaProtocolEnum,
 };

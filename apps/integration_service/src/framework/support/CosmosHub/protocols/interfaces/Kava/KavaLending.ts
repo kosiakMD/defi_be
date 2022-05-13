@@ -35,3 +35,16 @@ export interface IKavaLendingResponse {
     index: IKavaDenomIndex[];
   }[];
 }
+
+export interface IncentiveParameterResponse {
+  collateral_type: string;
+  rewards_per_second: IKavaDenomAmount[];
+}
+
+export interface CDPParameterResponse {
+  denom: string;
+  type: string;
+  liquidation_ratio: string;
+  stability_fee: string;
+  liquidation_penalty: string;
+}

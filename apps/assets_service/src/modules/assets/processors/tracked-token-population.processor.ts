@@ -4,7 +4,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Chain } from '../../../common/types/chain.type';
@@ -27,7 +27,7 @@ export class TrackedTokenPopulationProcessor {
     this.coinmarketcapPlatformChainIdEnum = {};
   }
 
-  @Cron(CronExpression.EVERY_30_MINUTES) //.EVERY_DAY_AT_10AM)
+  @Cron('0 10 * * *')
   async processor() {
     this.logger.log('Every day at 10AM tracked tokens population processing...');
     // Tracked Tokens Population - TTP

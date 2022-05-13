@@ -4,7 +4,7 @@ import { v4 as uuid } from 'uuid';
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -40,7 +40,7 @@ export class PriceJobEmitter {
   }
 
   // CLEAR DATABASE ON CURRENT PRICES
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
+  @Cron('0 10 * * *')
   handeClearDatabaseOnCurrentPricesCron() {
     this.logger.debug('Clear database on current prices every day at 10AM');
     const priceJobData = { clearDBOnCurrentPrices: true, config: {} };
@@ -93,7 +93,7 @@ export class PriceJobEmitter {
         const processingPriceSource = await this.priceSourceRepository.findOne({
           id: priceSource.id,
         });
-        if ((processingPriceSource.metadata.executionInstanceMarker = processingUUID)) {
+        if (processingPriceSource.metadata.executionInstanceMarker === processingUUID) {
           this.logger.debug(`Assets price job for ${name}`);
           const priceJobData = {
             config,

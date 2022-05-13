@@ -12,6 +12,7 @@ import { AbsoluteChainIdEnum, ChainIdEnum } from '@app/common/enum';
 import { AssetMetadata } from '../../types/asset-metadata.type';
 import { EVMMetaDataStrategy } from './strategies/EVM.strategy';
 import { CardanoMetadataStrategy } from './strategies/cardano.strategy';
+import { CosmosMetadataStrategy } from './strategies/cosmos.strategy';
 import { SolanaMetadataStrategy } from './strategies/solana.strategy';
 import { TerraMetadataStrategy } from './strategies/terra.strategy';
 
@@ -56,6 +57,12 @@ export class MetadataService {
         break;
       case ChainIdEnum.cardano:
         metadataStrategy = new CardanoMetadataStrategy();
+        break;
+      case ChainIdEnum.cosmos:
+      case ChainIdEnum.kava:
+      case ChainIdEnum.osmosis:
+      case ChainIdEnum.secret:
+        metadataStrategy = new CosmosMetadataStrategy(this.http);
         break;
       default:
         metadataStrategy = new EVMMetaDataStrategy();

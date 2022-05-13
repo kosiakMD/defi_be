@@ -172,14 +172,20 @@ Run Linter checking `npm run lint`
 To get API documentation of each service need to run each service and get by link path `/api`, e.g. `localhost:3000/api`
 
 ### Docker Compose
+To read environments from AWS READ .env FROM AWS Systems Manager - Parameter Store and crete .env files
+```shell
+[sudo] docker-compose -f docker-compose-env.yml up
+```
 
 To start backed with docker compose run (gateway: http://localhost:3000):
-
-`[sudo] docker-compose up`
+```shell
+[sudo] docker-compose up
+```
 
 To start web with docker compose run (url: http://localhost:3333):
-
-`[sudo] docker-compose -f docker-compose-web.yml up`
+```shell
+[sudo] docker-compose -f docker-compose-web.yml up
+```
 
 #### Troubleshooting
 

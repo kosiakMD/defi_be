@@ -23,6 +23,7 @@ export interface ISupplyTokenOpportunity extends ITokenOpportunity {
   totalSupplied?: number; // number of tokens staked
   tvl: number;
   apy?: ISupplyApy;
+  ltv?: number;
 }
 
 export interface ISupplyTokenUserEntry extends ITokenUserEntry {
@@ -30,6 +31,7 @@ export interface ISupplyTokenUserEntry extends ITokenUserEntry {
   totalSupplied?: number; // number of tokens staked
   tvl: number; // number of tokens * token price
   apy?: ISupplyApy;
+  ltv?: number;
 }
 interface ISupplyApy extends IBaseApy {
   supplyApy?: number;

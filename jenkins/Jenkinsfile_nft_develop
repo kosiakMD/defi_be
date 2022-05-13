@@ -4,7 +4,7 @@ pipeline {
     agent any
     parameters {
         string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
-        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_in", trim: true)
+        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_nft", trim: true)
     }
     options {
         buildDiscarder(
@@ -25,7 +25,6 @@ pipeline {
         DOCKER_CREDENTIALS  = "ecr:${env.AWS_REGION}:defiyield-aws"
         JOB_NAME = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
         JOB_NAME_SERVICE = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 12)
-        REPLICAS = 1
     }
     stages {
         stage("Build") {
@@ -76,7 +75,7 @@ pipeline {
         }
         stage('Webhook') {
             steps {
-                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
+                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME}"
             }
   }
     }

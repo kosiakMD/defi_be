@@ -44,7 +44,7 @@ pipeline {
             steps {
                 script {
                     sh """#!/bin/bash
-                    aws ecr create-repository --region ${env.AWS_REGION} --repository-name ${env.JOB_NAME_SERVICE} || true
+                    aws ecr create-repository --region ${env.AWS_REGION} --repository-name ${env.JOB_NAME} || true
                     """
                 }
             }

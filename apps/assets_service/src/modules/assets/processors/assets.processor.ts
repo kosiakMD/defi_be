@@ -63,6 +63,14 @@ export class AssetsProcessor {
   }
 
   private async saveAsset(asset: AssetsEntity): Promise<AssetsEntity> {
+    const { chainId, address } = asset;
+    const existentAsset = await this.assetRepository //
+      .findOne({ where: { chainId, address, disabled: false } });
+    if (existentAsset) {
+      throw Error(
+        `Try to proccess already existing asset chainId: ${chainId}, address: ${address}`,
+      );
+    }
     const savedAsset = await this.assetRepository.save(asset);
     await this.assetsService.setAssetsToCache([savedAsset]);
     return savedAsset;

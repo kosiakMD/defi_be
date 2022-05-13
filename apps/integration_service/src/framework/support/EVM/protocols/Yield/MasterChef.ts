@@ -236,7 +236,10 @@ export class MasterChef
     } = data.get(this.userInfoLabel(masterchef, poolId, address));
 
     // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
-    const balance = normalizeDecimals(userInfo.amount.toString(), pool.supplied[0].token.decimals);
+    const balance = normalizeDecimals(
+      userInfo[this.getUserInfoAmountKey()].toString(),
+      pool.supplied[0].token.decimals,
+    );
 
     if (!balance) return;
     // Update supplied token
@@ -306,5 +309,9 @@ export class MasterChef
       stakedToken: Object.values(pool)[lpTokenIdx].toString().toLowerCase(),
       allocPoint: parseInt(Object.values(pool)[allocPointIdx].toString(), 10),
     }));
+  }
+
+  protected getUserInfoAmountKey(): string {
+    return 'amount';
   }
 }

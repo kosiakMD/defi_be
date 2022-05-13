@@ -194,7 +194,10 @@ export class BalancerLiquidity
     tokens: TokenMap,
   ): ISupplyTokenOpportunity {
     const underlying = poolToken.token.underlying?.map((token) => {
-      return { ...tokens.get(token.address), reserve: Number(token.reserve) };
+      return {
+        ...tokens.get(token.address),
+        reserve: Number(token.reserve),
+      };
     });
 
     const token = tokens.get(poolToken.token.address);

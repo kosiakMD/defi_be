@@ -13,6 +13,7 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { Belt } from '../platforms/Belt';
 import { BiSwap } from '../platforms/BiSwap';
@@ -28,6 +29,7 @@ import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
+import { Mojitoswap } from '../platforms/Mojitoswap';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
@@ -38,6 +40,7 @@ import { SpookySwap } from '../platforms/SpookySwap';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
+import { YelFinance } from '../platforms/YelFinance';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -74,12 +77,15 @@ export class PlatformService {
       Kava,
       Solend,
       Quarry,
+      Mojitoswap,
       BiSwap,
       Mdex,
       KnightSwap,
       Belt,
       MarsEcosystem,
       Goose,
+      BabySwap,
+      YelFinance,
     });
   }
 

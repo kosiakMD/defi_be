@@ -227,7 +227,7 @@ export class TraderJoeStaking {
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
           .toString();
 
-        if (b.contract === this.masterChiefAddressV3) {
+        if (stakingPosition.rewards.length > 1 && claimableReward.bonusTokenAddress) {
           stakingPosition.rewards[1].claimableData = plainToClass(ClaimableDto, {});
           stakingPosition.rewards[1].address = claimableReward.bonusTokenAddress.toLowerCase();
           stakingPosition.rewards[1].claimableData.balance = claimableReward.pendingBonusToken

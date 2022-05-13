@@ -4,7 +4,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 
-import { UniswapV2Liquidity } from '../support/EVM/protocols/Liquidity/UniswapV2Liquidity';
 import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { RootPlatform } from '../support/RootPlatform';
 
@@ -34,11 +33,12 @@ export class ApeSwap extends RootPlatform {
       address: '0x5c8D727b265DBAfaba67E050f2f739cAeEB4A6F9',
     });
 
-    await this.registerProtocol(UniswapV2Liquidity, {
-      chain: ChainIdEnum.bnb,
-      name: 'Liquidity - ApeSwap',
-      feature: FeatureEnum.pools,
-      ammSubgraphUrl: 'https://graph.apeswap.finance/subgraphs/name/ape-swap/apeswap-subgraph',
-    });
+    // subgraph is not working
+    // await this.registerProtocol(UniswapV2Liquidity, {
+    //   chain: ChainIdEnum.bnb,
+    //   name: 'Liquidity - ApeSwap',
+    //   feature: FeatureEnum.pools,
+    //   ammSubgraphUrl: 'https://graph.apeswap.finance/subgraphs/name/ape-swap/apeswap-subgraph',
+    // });
   }
 }

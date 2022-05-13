@@ -3,23 +3,29 @@ import { gql } from '@app/common/utils';
 export const POOLS_QUERY = gql`
   {
     pairs(orderBy: reserveUSD, orderDirection: desc, first: 1000, where: { reserveUSD_gt: 25000 }) {
-      #pairs(first: 1, where: { reserveUSD_gt: 25000 }) {
+      address: id
+      token0 {
+        address: id
+      }
+      token1 {
+        address: id
+      }
+    }
+  }
+`;
+
+export const POOLS_DATA_QUERY = gql`
+  query ($pairs: [String!]!) {
+    pairs(where: { id_in: $pairs }) {
       address: id
       reserve0
       reserve1
       totalSupply
-      # reserveUSD
       token0 {
         address: id
-        #   # name
-        #   # symbol
-        #   # decimals
       }
       token1 {
         address: id
-        #   # name
-        #   # symbol
-        #   # decimals
       }
     }
   }

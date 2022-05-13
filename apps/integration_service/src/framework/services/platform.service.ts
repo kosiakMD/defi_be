@@ -29,6 +29,7 @@ import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
+import { Mojitoswap } from '../platforms/Mojitoswap';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
@@ -76,6 +77,7 @@ export class PlatformService {
       Kava,
       Solend,
       Quarry,
+      Mojitoswap,
       BiSwap,
       Mdex,
       KnightSwap,

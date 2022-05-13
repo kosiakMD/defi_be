@@ -6,7 +6,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
-import { normalizeDecimals } from '@app/common/utils';
+import { concatStrings, normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
@@ -26,11 +26,18 @@ import {
 import {
   BALANCES_QUERY,
   IUniswapBalanceSubgraphResponse,
+  POOLS_DATA_QUERY,
   POOLS_QUERY,
 } from '../../Subgraphs/UniswapSubgraph';
 
 export type IUniswapVaultMeta = IProtocolMeta & {
   ammSubgraphUrl: string;
+  lpToken: {
+    name: string;
+    symbol: string;
+    decimals: number;
+    price;
+  };
 };
 
 export class UniswapV2Liquidity
@@ -60,8 +67,6 @@ export class UniswapV2Liquidity
       .post(this.meta.ammSubgraphUrl, {
         query: POOLS_QUERY,
       })
-
-      // console.log({ result: (await firstValueFrom($data)).data });
       .pipe(
         mergeMap((rsp) => rsp.data.data.pairs),
         map((pool) => this.toFeatureEntryMinimal(pool)),
@@ -85,18 +90,18 @@ export class UniswapV2Liquidity
   protected async updateRealTimeData(
     opportunities: IPoolFeatureEntryMinimal[],
   ): Promise<IPoolFeatureEntryMinimal[]> {
-    // TODO: cache for 5 minutes?
-    const poolsArray = await this.getOrSet(60 * 60 * 24, 'ape-swap-pool-list-dev', () => {
-      const $data = this.httpService
-        .post(this.meta.ammSubgraphUrl, {
-          query: POOLS_QUERY,
-        })
-        .pipe(
-          mergeMap((rsp) => rsp.data.data.pairs),
-          toArray(),
-        );
-      return firstValueFrom($data);
-    });
+    const $data = this.httpService
+      .post(this.meta.ammSubgraphUrl, {
+        query: POOLS_DATA_QUERY,
+        variables: {
+          pairs: opportunities.map((o) => o.id),
+        },
+      })
+      .pipe(
+        mergeMap((rsp) => rsp.data.data.pairs),
+        toArray(),
+      );
+    const poolsArray = await firstValueFrom($data);
 
     const pools = new Map(poolsArray.map((p: any) => [p.address, p]));
     return opportunities.map((opportunity) => {
@@ -105,13 +110,6 @@ export class UniswapV2Liquidity
       return {
         ...opportunity,
         token: {
-          // TODO: Filled by asset service
-          // address: '0x603c7f932ed1fc6575303d8fb018fdcbb0f39a95',
-          // name: 'ApeSwapFinance Banana',
-          // symbol: 'BANANA',
-          // chainId: 2,
-          // decimals: 18,
-          // price: 0.208363,
           totalSupply: Math.max(Number(pool.totalSupply), 0),
         },
         supplied: opportunity.supplied.map((supplied, idx) => {
@@ -159,6 +157,17 @@ export class UniswapV2Liquidity
       totalSupplied: Number(poolToken.totalSupplied),
       tvl: Number(poolToken.totalSupplied) * token.price,
     };
+  }
+
+  // make pools update 'autonomus' here, to have common logic need asset service
+  async getPoolData(): Promise<[IPoolFeatureOpportunity[], Error[]]> {
+    return this.getOrSet(
+      60,
+      concatStrings(this.meta.name, this.meta.feature, this.meta.chain),
+      async () => {
+        return await this.hydrateOpportunityData(await this.cachePoolData());
+      },
+    );
   }
 
   async getUsersData(addresses: string[]): Promise<[Map<string, IPoolFeatureUser[]>, Error[]]> {
@@ -216,32 +225,28 @@ export class UniswapV2Liquidity
     pool: IPoolFeatureOpportunity,
     balance: { balance: string; address: string },
   ): IPoolFeatureUser {
-    const lpTokenPrice = pool.supplied[0].tvl / pool.supplied[0].totalSupply;
-    const poolShare = Number(balance.balance) / pool.supplied[0].totalSupply;
+    const poolShare = Number(balance.balance) / pool.token.totalSupply;
+
+    const token = {
+      ...pool.token,
+      amount: Number(balance.balance),
+      value: Number(balance.balance) * pool.token.price,
+    };
 
     const supplied: ISupplyTokenUserEntry[] = pool.supplied.map((tokenSupplied) => {
       return {
         ...tokenSupplied,
-        totalSupply: tokenSupplied.totalSupply,
-        amount: Number(balance.balance),
-        value: lpTokenPrice * Number(balance.balance),
+        amount: poolShare * tokenSupplied.totalSupplied,
+        value: tokenSupplied.token.price * poolShare * tokenSupplied.totalSupplied,
         token: {
           ...tokenSupplied.token,
-          price: lpTokenPrice,
-          underlying: tokenSupplied.token.underlying.map((token: ERC20Token) => {
-            const balance = poolShare * token.reserve;
-            return {
-              ...token,
-              balance: poolShare * token.reserve,
-              value: balance * token.price,
-            };
-          }),
         },
       };
     });
 
     return {
       ...pool,
+      token: token,
       supplied,
     };
   }

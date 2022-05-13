@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { GetAssetsResponseDto } from '../common/dto/GetAssetsResponse.dto';
+import { GetAssetResponseDto } from '../common/dto/GetAssetResponse.dto';
 import { HistoricalPricesQuery } from '../common/dto/HistoricalPricesQuery.dto';
 import { SearchResultsEntryDto } from '../common/dto/SearchResultsEntry.dto';
 import { SearchParams, SearchResultsAssetEntry } from '../common/interfaces/search.interface';
@@ -31,33 +31,19 @@ export class AssetsController {
     example: 22,
     required: true,
   })
-  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
-  async get(@Query() query: AssetsGetDto): Promise<GetAssetsResponseDto> {
-    return new GetAssetsResponseDto([await this.assetsService.getAsset(query)]);
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetResponseDto })
+  async get(@Query() query: AssetsGetDto): Promise<GetAssetResponseDto> {
+    return this.assetsService.getAsset(query);
   }
 
   @Post('/get-bulk')
-  @ApiQuery({
-    name: 'address',
-    type: String,
-    description: 'address to get or process an asset',
-    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-    required: true,
-  })
-  @ApiQuery({
-    name: 'chainId',
-    type: Number,
-    description: 'text to search assets by name or symbol',
-    example: 22,
-    required: true,
-  })
   @ApiBody({ type: [AssetsGetBulkDto] })
-  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
+  @ApiResponse({ status: HttpStatus.OK, type: [GetAssetResponseDto] })
   async getBulk(
     @Body() body: AssetsGetDto[],
     @Query() query: HistoricalPricesQuery,
-  ): Promise<GetAssetsResponseDto> {
-    return new GetAssetsResponseDto(await this.assetsService.getBulkAssets(body, query));
+  ): Promise<GetAssetResponseDto[]> {
+    return this.assetsService.getBulkAssets(body, query);
   }
 
   @Get('/search')

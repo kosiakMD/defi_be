@@ -1,4 +1,6 @@
+import { GetAssetResponseDto } from 'apps/assets_service/src/common/dto/GetAssetResponse.dto';
 import { HistoricalPricesQuery } from 'apps/assets_service/src/common/dto/HistoricalPricesQuery.dto';
+import { GetAssetResponseStatus } from 'apps/assets_service/src/common/enum/GetAssetResponseStatus.enum';
 import { TimeRange } from 'apps/assets_service/src/common/enum/TimeRange.enum';
 import { Queue } from 'bull';
 import { Cache } from 'cache-manager';
@@ -10,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
+import { isSomeAddress } from '@app/common/utils/addresses';
 
 import { SearchResultType } from '../../../common/enum/SearchResultType.enum';
 import { SearchParams, SearchResultsAssetEntry } from '../../../common/interfaces/search.interface';
@@ -63,17 +66,34 @@ export class AssetsService extends CrudService<AssetsRepository> {
     }));
   }
 
-  public async getAsset(assetCommonQuery: AssetsGetDto): Promise<AssetsEntity> {
+  public async getAsset(assetCommonQuery: AssetsGetDto): Promise<GetAssetResponseDto> {
     const { historicalPrices, pricesStart, pricesEnd, ...assetQuery } = assetCommonQuery;
     const historicalPricesQuery = { historicalPrices, pricesStart, pricesEnd };
+    if (!isSomeAddress(assetQuery.address)) {
+      return new GetAssetResponseDto(GetAssetResponseStatus.UNKNOWN_ADDRESS, assetQuery);
+    }
     const assetsBulkQuery = [assetQuery];
-    return (await this.getBulkAssets(assetsBulkQuery, historicalPricesQuery)).shift();
+    const asset = (await this.getBulkAssets(assetsBulkQuery, historicalPricesQuery)).shift();
+    if (!asset) {
+      return new GetAssetResponseDto(GetAssetResponseStatus.NOT_FOUND, assetCommonQuery);
+    }
+    return asset;
   }
 
   public async getBulkAssets(
     assetsBulkQuery: AssetsGetDto[],
     historicalPricesQuery: HistoricalPricesQuery,
-  ): Promise<AssetsEntity[]> {
+  ): Promise<GetAssetResponseDto[]> {
+    const assetstoResponse = [];
+    const validAssets = assetsBulkQuery.filter(({ address, chainId }) => {
+      if (!isSomeAddress(address)) {
+        assetstoResponse.push(
+          new GetAssetResponseDto(GetAssetResponseStatus.UNKNOWN_ADDRESS, { address, chainId }),
+        );
+        return false;
+      }
+      return true;
+    });
     // TODO figure out how to operate with historical prices in cache
     if (historicalPricesQuery.historicalPrices) {
       const assets = await this.getAssets(assetsBulkQuery);
@@ -82,10 +102,17 @@ export class AssetsService extends CrudService<AssetsRepository> {
           asset.id,
           historicalPricesQuery,
         );
+        assetstoResponse.push(new GetAssetResponseDto(GetAssetResponseStatus.SUCCESS, asset));
       }
-      return assets;
+      return assetstoResponse;
     } else {
-      return this.getAssets(assetsBulkQuery);
+      const resultAssets = await this.getAssets(validAssets);
+      return [
+        ...resultAssets.map(
+          (resultAsset) => new GetAssetResponseDto(GetAssetResponseStatus.SUCCESS, resultAsset),
+        ),
+        ...assetstoResponse,
+      ];
     }
   }
 

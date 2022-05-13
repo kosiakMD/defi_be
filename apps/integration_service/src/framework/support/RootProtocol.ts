@@ -1,10 +1,7 @@
 import crypto from 'crypto';
 
-import { Logger } from '@app/common';
 import { getChainById } from '@app/common/utils';
 
-import { AccountService } from '../../modules/microservices/account.service';
-import { PriceService } from '../../modules/microservices/price.service';
 import { IFeatureMeta, IProtocolMeta, IRootProtocol } from './interfaces';
 
 /**
@@ -15,10 +12,6 @@ export abstract class RootProtocol<TProtocolMeta extends IProtocolMeta = IProtoc
   implements IRootProtocol<TProtocolMeta>
 {
   meta: TProtocolMeta;
-  protected abstract logger: Logger;
-  // TODO: use new asset service :)
-  protected abstract accountService: AccountService;
-  protected abstract priceService: PriceService;
 
   /**
    * Protocol specific metadata

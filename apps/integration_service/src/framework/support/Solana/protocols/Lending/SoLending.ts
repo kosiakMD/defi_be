@@ -17,7 +17,6 @@ import { AccountService } from '../../../../../modules/microservices/account.ser
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IPoolDataProtocolResponse, IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
-  ILendingFeatureEntryGeneric,
   ILendingFeatureUserEntry,
 } from '../../../interfaces/feature.lending.interface';
 import {
@@ -37,16 +36,17 @@ import {
 import { ObligationParser } from '../../Schemas/Solend/Obligation';
 import { ReserveParser } from '../../Schemas/Solend/Reserve';
 import { SolanaCore } from '../../SolanaCore';
+import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 
-type SolendLendingFeatureEntryMinimal = ILendingFeatureEntryGeneric<
-  ISupplyTokenMinimal & { reserveAddress: string },
-  IRewardTokenMinimal & { reserveAddress: string, apy: string },
-  IBorrowTokenMinimal & { reserveAddress: string }
+type SolendLendingFeatureEntryMinimal = BaseWithTokens<
+  (ISupplyTokenMinimal & { reserveAddress: string })[],
+  (IRewardTokenMinimal & { reserveAddress: string, apy: string })[],
+  (IBorrowTokenMinimal & { reserveAddress: string })[]
 >;
-type SolendLendingFeatureOpportunity = ILendingFeatureEntryGeneric<
-  ISupplyTokenOpportunity & { reserveAddress: string },
-  IRewardTokenOpportunity & { reserveAddress: string },
-  IBorrowTokenOpportunity & { reserveAddress: string }
+type SolendLendingFeatureOpportunity = BaseWithTokens<
+  (ISupplyTokenOpportunity & { reserveAddress: string })[],
+  (IRewardTokenOpportunity & { reserveAddress: string })[],
+  (IBorrowTokenOpportunity & { reserveAddress: string })[]
 >;
 
 export class SoLending
@@ -71,8 +71,8 @@ export class SoLending
   }
 
   async getCacheableOpportunityData(): Promise<SolendLendingFeatureEntryMinimal[]> {
-    const markets = (await this.getConfig()).markets;
-    const assetSymbolToAddressMap = this.createSymbolToAddressMap((await this.getConfig()).assets);
+    const { markets, assets } = await this.getConfig()
+    const assetSymbolToAddressMap = this.createSymbolToAddressMap(assets);
 
     const reserveAddressToDetailsMap: Map<string, any> =
       await this.getReserveAddressToDetailsMap();
@@ -153,8 +153,8 @@ export class SoLending
   }
 
   private async getReserveAddressToDetailsMap(): Promise<Map<string, any> | undefined> {
-
-      const markets = (await this.getConfig()).markets;
+    const config = await this.getConfig()
+      const markets = config.markets;
       const reserveAddresses = markets.reduce(
         (acc, market) => [...acc, ...market.reserves.map(({ address }) => address)],
         [],
@@ -386,6 +386,7 @@ export class SoLending
           };
 
           userPositions.push({
+            id: 'solend-lending',
             chain: ChainIdEnum.sol,
             feature: FeatureEnum.lending,
             borrowed,

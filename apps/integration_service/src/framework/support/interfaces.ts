@@ -22,6 +22,7 @@ import {
   IStakingFeatureUserEntry,
   IStakingFeatureMinimal,
 } from './interfaces/feature.staking.interface';
+import { BaseWithTokens } from './interfaces/new.interfaces';
 import type { ERC20Token } from './interfaces/tokens.common.interface';
 
 export interface IFeatureMeta {
@@ -53,18 +54,22 @@ export interface IProtocolMeta {
   links?: any; // TODO: match IFeaturedLinks, but this is callable functions to generate the urls
 }
 
+// TODO: Update BaseWithTokens any to be a generic extending the proper form
 export type IWalletMinimal =
+  | BaseWithTokens<any, any, any, any>
   | IPoolFeatureEntryMinimal
   | IStakingFeatureMinimal
   | ILendingFeatureEntryMinimal;
 
 export type IWalletOpportunity =
+  | BaseWithTokens<any, any, any, any>
   | IPoolFeatureEntryOpportunity
   | IStakingFeatureOpportunity
   | ILendingFeatureOpportunity
   | IClaimableFeatureOpportunity;
 
 export type IWalletUserEntry =
+  | BaseWithTokens<any, any, any, any>
   | IPoolFeatureEntryUserEntry
   | IStakingFeatureUserEntry
   | ILendingFeatureUserEntry

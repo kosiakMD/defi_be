@@ -2,8 +2,7 @@ export interface ERC20TokenMinimal {
   address: string;
 }
 // TODO: This needs to match asset service interface
-export interface ERC20Token {
-  address: string;
+export interface ERC20Token extends ERC20TokenMinimal {
   symbol: string;
   name: string;
   decimals: number;

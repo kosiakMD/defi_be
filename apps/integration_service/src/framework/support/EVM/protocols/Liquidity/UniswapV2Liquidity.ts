@@ -13,7 +13,7 @@ import { PriceService } from '../../../../../modules/microservices/price.service
 import { RootProtocolCacheable } from '../../../RootProtocolCacheable';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
-  IPoolFeatureEntryMinimal,
+  IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
@@ -42,7 +42,7 @@ export type IUniswapVaultMeta = IProtocolMeta & {
 
 export class UniswapV2Liquidity
   extends RootProtocolCacheable<
-    IPoolFeatureEntryMinimal,
+    IPoolFeatureMinimal,
     IPoolFeatureOpportunity,
     IPoolFeatureUser,
     IUniswapVaultMeta
@@ -62,7 +62,7 @@ export class UniswapV2Liquidity
   /**
    * Get longer term cacheable info
    */
-  async getCacheableOpportunityData(): Promise<IPoolFeatureEntryMinimal[]> {
+  async getCacheableOpportunityData(): Promise<IPoolFeatureMinimal[]> {
     const $data = this.httpService
       .post(this.meta.ammSubgraphUrl, {
         query: POOLS_QUERY,
@@ -75,7 +75,7 @@ export class UniswapV2Liquidity
     return firstValueFrom($data);
   }
 
-  private toFeatureEntryMinimal(pool): IPoolFeatureEntryMinimal {
+  private toFeatureEntryMinimal(pool): IPoolFeatureMinimal {
     return {
       id: pool.address,
       chain: this.meta.chain,
@@ -88,8 +88,8 @@ export class UniswapV2Liquidity
   }
 
   protected async updateRealTimeData(
-    opportunities: IPoolFeatureEntryMinimal[],
-  ): Promise<IPoolFeatureEntryMinimal[]> {
+    opportunities: IPoolFeatureMinimal[],
+  ): Promise<IPoolFeatureMinimal[]> {
     const $data = this.httpService
       .post(this.meta.ammSubgraphUrl, {
         query: POOLS_DATA_QUERY,
@@ -124,7 +124,7 @@ export class UniswapV2Liquidity
   }
 
   protected formatOpportunityReceiptToken(
-    opportunity: IPoolFeatureEntryMinimal,
+    opportunity: IPoolFeatureMinimal,
     token: ERC20Token,
     tokens: Map<Address, ERC20Token>,
   ) {

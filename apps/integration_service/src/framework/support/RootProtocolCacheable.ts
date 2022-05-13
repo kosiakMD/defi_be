@@ -150,6 +150,41 @@ export abstract class RootProtocolCacheable<
   protected updateRealTimeData?(opportunities: TMinimal[]): Promise<TMinimal[]>;
 
   /**
+   * Formats the output for listing all pools.
+   * v3/protocols/:protocolName/opportunities
+   * used by the opportunities service
+   */
+  async getFormattedPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
+    const { data: pools, errors } = await this.getPoolData();
+
+    return { data: this.enforceTokenArrayOutput(pools), errors };
+  }
+
+  /**
+   * Converts all token types to be arrays if not already
+   */
+  protected enforceTokenArrayOutput(pools: TOpportunity[]): TOpportunity[] {
+    // Enforce array output
+    pools.forEach((pool) => {
+      if ('supply' in pool) {
+        pool.supplied = [pool.supply];
+        delete pool.supply;
+      }
+
+      if ('reward' in pool) {
+        pool.rewarded = [pool.reward];
+        delete pool.reward;
+      }
+
+      if ('borrow' in pool) {
+        pool.borrowed = [pool.borrow];
+        delete pool.borrow;
+      }
+    });
+    return pools;
+  }
+
+  /**
    * This will fetch all available opportunities for this protocol.
    * It will attempt to return the list from the cache, however if that
    * is not available, it will fetch the data live & cache it for the
@@ -277,11 +312,13 @@ export abstract class RootProtocolCacheable<
    */
   protected getUniqueTokensFromRawPools(pools: TMinimal[]): Address[] {
     const tokens = new Set<string>();
-    const features = ['supplied', 'borrowed', 'rewarded'];
-    features.forEach((featureName) => {
-      pools.forEach((pool) => {
-        tokens.add(pool.id); // LP token, yearn/beefy vault, etc
+    const multi = ['supplied', 'borrowed', 'rewarded'];
+    const single = ['supply', 'borrow', 'reward'];
+    pools.forEach((pool) => {
+      tokens.add(pool.id); // LP token, yearn/beefy vault, etc
 
+      multi.forEach((featureName) => {
+        // array tokens
         if (pool?.[featureName]?.length) {
           pool[featureName].forEach((item) => {
             tokens.add(item.token.address);
@@ -294,9 +331,16 @@ export abstract class RootProtocolCacheable<
           });
         }
       });
+
+      // Single Tokens
+      single.forEach((featureName) => {
+        if (pool?.[featureName]) {
+          tokens.add(pool[featureName].token.address);
+        }
+      });
     });
 
-    return Array.from(tokens);
+    return Array.from(tokens); // TODO: Filter out invalid addresses
   }
 
   /**
@@ -361,9 +405,22 @@ export abstract class RootProtocolCacheable<
         throw new Error(`Failed to find Supplied: ${JSON.stringify(token)}`);
       }
 
-      base.supplied = opportunity.supplied?.map((poolToken) =>
+      base.supplied = opportunity.supplied.map((poolToken) =>
         this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
       );
+    }
+    if ('supply' in opportunity) {
+      if (!tokens.has(opportunity.supply.token.address)) {
+        // throw new MissingSuppliedToken(`Failed to find ${token}`, this.constructor.name)
+        throw new Error(`Failed to find Supplied: ${JSON.stringify(opportunity.supply.token)}`);
+      }
+
+      base.supplied = [
+        this.formatOpportunitySuppliedToken(
+          opportunity.supply,
+          tokens.get(opportunity.supply.token.address),
+        ),
+      ];
     }
 
     if ('rewarded' in opportunity) {

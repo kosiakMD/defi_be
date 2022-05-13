@@ -305,6 +305,7 @@ export class AaveV3Lending
 
         results.get(address).push({
           feature: FeatureEnum.lending,
+          id: 'aave-lending',
           chain: this.meta.chain,
           borrowed: borrowTokens,
           supplied: supplyTokens,

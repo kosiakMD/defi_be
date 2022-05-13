@@ -296,7 +296,7 @@ export abstract class RootPlatform implements IRootPlatform {
       if (protocol.chain.id !== chain) return;
       protocol.features.forEach((feature) => features.add(feature));
       if (protocol.wallets.has(user)) {
-        positions.push(...protocol.wallets.get(user));
+        positions.push(...this.enforceTokenArrayOutput(protocol.wallets.get(user)));
       }
     });
     const total = this.getPositionsTotal(positions);
@@ -317,5 +317,29 @@ export abstract class RootPlatform implements IRootPlatform {
       total,
       chain: getChainById(chain),
     };
+  }
+
+  /**
+   * Converts all token types to be arrays if not already
+   */
+  protected enforceTokenArrayOutput(pools: IWalletUserEntry[]): IWalletUserEntry[] {
+    // Enforce array output
+    pools.forEach((pool) => {
+      if ('supply' in pool) {
+        pool.supplied = [pool.supply];
+        delete pool.supply;
+      }
+
+      if ('reward' in pool) {
+        pool.rewarded = [pool.reward];
+        delete pool.reward;
+      }
+
+      if ('borrow' in pool) {
+        pool.borrowed = [pool.borrow];
+        delete pool.borrow;
+      }
+    });
+    return pools;
   }
 }

@@ -13,11 +13,10 @@ import { AccountService } from '../../../../../modules/microservices/account.ser
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
 import {
-  IPoolFeatureEntryGeneric,
   IPoolFeatureOpportunity,
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
-import { IRewardTokenMinimal } from '../../../interfaces/tokens.rewarded.interface';
+import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
@@ -54,10 +53,7 @@ export interface IBalancerPoolMeta extends IProtocolMeta {
   feature: FeatureEnum.pools;
 }
 
-type IBalancerPoolMinimal = IPoolFeatureEntryGeneric<
-  IBalancerSupplyTokenMinimal,
-  IRewardTokenMinimal
->;
+type IBalancerPoolMinimal = BaseWithTokens<IBalancerSupplyTokenMinimal[], void, void, void>;
 
 export class BalancerLiquidity
   extends SubgraphsContractProtocol<

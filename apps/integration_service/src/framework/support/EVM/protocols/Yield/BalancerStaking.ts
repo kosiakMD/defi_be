@@ -13,10 +13,10 @@ import { AccountService } from '../../../../../modules/microservices/account.ser
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
 import {
-  IStakingFeatureEntryGeneric,
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
+import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import { IRewardTokenMinimal } from '../../../interfaces/tokens.rewarded.interface';
 import {
   ISupplyTokenMinimal,
@@ -45,9 +45,11 @@ interface IBalancerSupplyTokenMinimal extends ISupplyTokenMinimal {
   token: ERC20TokenMinimal;
 }
 
-type IBalancerStakingMinimal = IStakingFeatureEntryGeneric<
-  IBalancerSupplyTokenMinimal,
-  IRewardTokenMinimal
+type IBalancerStakingMinimal = BaseWithTokens<
+  IBalancerSupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  void,
+  void
 >;
 
 export interface IBalancerVaultMeta extends IProtocolMeta {

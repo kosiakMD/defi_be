@@ -1,7 +1,7 @@
 import { FeatureEnum } from '@app/common';
 
 import { IProtocolMeta } from '../../../../interfaces';
-import { IStakingFeatureEntryGeneric } from '../../../../interfaces/feature.staking.interface';
+import { BaseWithTokens } from '../../../../interfaces/new.interfaces';
 import { ERC20TokenMinimal } from '../../../../interfaces/tokens.common.interface';
 import {
   IRewardTokenMinimal,
@@ -35,13 +35,22 @@ export interface IQuarryExtra {
   };
 }
 
-export interface IQuarryStakingFeatureMinimal
-  extends IStakingFeatureEntryGeneric<IQuarrySupplyTokenMinimal, IRewardTokenMinimal>,
-    IQuarryExtra {}
+// TODO: move IQuarryExtra into 'meta/extra' interface
+export type IQuarryStakingFeatureMinimal = BaseWithTokens<
+  IQuarrySupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  void,
+  any
+> &
+  IQuarryExtra;
 
-export interface IQuarryStakingFeatureOpportunity
-  extends IStakingFeatureEntryGeneric<ISupplyTokenOpportunity, IRewardTokenOpportunity>,
-    IQuarryExtra {}
+export type IQuarryStakingFeatureOpportunity = BaseWithTokens<
+  ISupplyTokenOpportunity[],
+  IRewardTokenOpportunity[],
+  void,
+  any
+> &
+  IQuarryExtra;
 
 export interface IQuarryMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;

@@ -11,7 +11,7 @@ import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IRootProtocol } from '../../../interfaces';
+import { IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IClaimableFeatureOpportunity,
   IClaimableFeatureUser,
@@ -61,7 +61,7 @@ export class KavaClaimable
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, IClaimableFeatureUser[]>, Error[]]> {
+  ): Promise<IUserDataProtocolResponse<IClaimableFeatureUser>> {
     const results = new Map<string, IClaimableFeatureUser[]>(
       addresses.map((address) => [address, [] as IClaimableFeatureUser[]]),
     );
@@ -80,7 +80,7 @@ export class KavaClaimable
       errors.push(err);
     }
 
-    return [results, errors];
+    return { data: results, errors };
   }
 
   protected async fetchUserData(addresses: string[]): Promise<Map<string, IKavaUserRewards[]>> {

@@ -13,7 +13,7 @@ import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
@@ -187,8 +187,8 @@ export class LidoStaking
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, IStakingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<IStakingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
 
     const balances = await this.accountService.getBalances(
       addresses,
@@ -226,7 +226,7 @@ export class LidoStaking
       });
     });
 
-    return [results, rewardError ? [...errors, rewardError] : errors];
+    return { data: results, errors: rewardError ? [...errors, rewardError] : errors };
   }
 
   protected formatUserData(

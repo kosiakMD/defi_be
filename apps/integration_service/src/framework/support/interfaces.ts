@@ -84,12 +84,35 @@ export interface IPlatformUserEntry {
   chains: IChainUserEntry[];
 }
 
+type IFunctionPredicateContext = { readonly: AbiItem[]; full: AbiItem[]; [key: string]: any };
+export type IFunctionPredicate = (context: IFunctionPredicateContext) => (item: AbiItem) => boolean;
+export type INamedFunctionPredicates = { [key: string]: IFunctionPredicate };
+export type INamedFunctions = { [key: string]: AbiItem };
+export type TokenMap = Map<string, ERC20Token>;
+
+type GenericDataResponse<TDataType> = {
+  data: TDataType;
+  errors: Error[];
+};
+
+// Data Returned From getPoolData (from protocol or platform)
+export type IPoolDataProtocolResponse<TWalletType extends IWalletOpportunity> = GenericDataResponse<
+  TWalletType[]
+>;
+export type IUserDataProtocolResponse<TWalletType extends IWalletUserEntry> = GenericDataResponse<
+  Map<Address, TWalletType[]>
+>;
+
+// Data returned from getUserData (from protocol or platform)
+export type IPoolDataPlatformResponse = GenericDataResponse<IWalletOpportunity[]>;
+export type IUserDataPlatformResponse = GenericDataResponse<IPlatformUserEntry[]>;
+
 // common required platform interface
 export interface IRootPlatform {
   getMeta(): IPlatformMeta;
   cachePoolData;
-  getPoolData?(chains: ChainId[]): Promise<[IWalletOpportunity[], Error[]]>; // return all pools
-  getUsersData?(chains: ChainId[], addresses: Address[]): Promise<[IPlatformUserEntry[], Error[]]>;
+  getPoolData?(chains: ChainId[]): Promise<IPoolDataPlatformResponse>; // return all pools
+  getUsersData?(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse>;
 }
 
 // TODO: CacheData, PoolData, UserData are all optional
@@ -116,23 +139,16 @@ export interface IRootProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMe
   cachePoolData?(): Promise<IWalletMinimal[]>;
 
   // returns the fully hydrated, and formatted pool data
-  getFormattedPoolData?(): Promise<[IWalletOpportunity[], Error[]]>;
+  getFormattedPoolData?(): Promise<IPoolDataProtocolResponse<IWalletOpportunity>>;
 
   // returns the fully hydrated (with real-time prices) pool data
-  getPoolData?(): Promise<[IWalletOpportunity[], Error[]]>;
+  getPoolData?(): Promise<IPoolDataProtocolResponse<IWalletOpportunity>>;
 
   // filters pool data to only include user positions
-  getUsersData?(addresses: Address[]): Promise<[Map<Address, IWalletUserEntry[]>, Error[]]>;
+  getUsersData?(addresses: Address[]): Promise<IUserDataProtocolResponse<IWalletUserEntry>>;
 }
 export interface IChainGroupedWallet {
   chain: ChainDto;
   features: FeatureEnum[];
   wallets: Map<string, IWalletUserEntry[]>;
 }
-
-type IFunctionPredicateContext = { readonly: AbiItem[]; full: AbiItem[]; [key: string]: any };
-export type IFunctionPredicate = (context: IFunctionPredicateContext) => (item: AbiItem) => boolean;
-export type INamedFunctionPredicates = { [key: string]: IFunctionPredicate };
-export type INamedFunctions = { [key: string]: AbiItem };
-export type TokenMap = Map<string, ERC20Token>;
-export type UserEntryMap = Map<Address, IWalletUserEntry[]>;

@@ -15,7 +15,7 @@ import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../../modules/microservices/price.service';
-import { IRootProtocol } from '../../../../interfaces';
+import { IRootProtocol, IUserDataProtocolResponse } from '../../../../interfaces';
 import { IStakingFeatureUserEntry } from '../../../../interfaces/feature.staking.interface';
 import { QUARRY_QUARRY_LAYOUT } from '../../../Schemas/Quarry';
 import { SolanaCore } from '../../../SolanaCore';
@@ -189,8 +189,8 @@ export class QuarryStaking
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, IStakingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<IStakingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
     const wallets = new Map();
     try {
       const connection = this.web3Service.getInstanceByChainId(this.meta.chain);
@@ -209,7 +209,7 @@ export class QuarryStaking
       errors.push(err);
     }
 
-    return [wallets, errors];
+    return { data: wallets, errors };
   }
 
   private toFeatureEntryMinimal(farm: IQuarryOpportunityResponse): IQuarryStakingFeatureMinimal {

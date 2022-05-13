@@ -1,13 +1,7 @@
 import puppeteer from 'puppeteer';
 
 export class Puppeteer {
-  public browser: Promise<puppeteer.Browser>;
-  private page: Promise<puppeteer.Page>;
-  constructor() {
-    this.launch();
-  }
-
-  private launch() {
+  private async launch() {
     const defaultOptions = {
       headless: true,
       args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu'],
@@ -19,18 +13,18 @@ export class Puppeteer {
       },
     };
 
-    this.browser = puppeteer.launch(defaultOptions);
+    return puppeteer.launch(defaultOptions);
   }
 
-  async openTab(): Promise<puppeteer.Page> {
-    this.page = (await this.browser).newPage();
-    return this.page;
-  }
-
-  async loadPage(url, waitTimeout = 1000) {
-    const page = await this.openTab();
+  public async extractText(url, waitTimeout = 1000) {
+    const browser = await this.launch();
+    const page = await browser.newPage();
     await page.goto(url);
     await page.waitForTimeout(waitTimeout);
-    return page;
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    const text = await page.$eval('*', (el) => el.innerText);
+    await browser.close();
+    return text;
   }
 }

@@ -6,12 +6,12 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
-import { concatStrings, normalizeDecimals } from '@app/common/utils';
+import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { RootProtocolCacheable } from '../../../RootProtocolCacheable';
-import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IPoolFeatureEntryMinimal,
   IPoolFeatureOpportunity,
@@ -159,19 +159,8 @@ export class UniswapV2Liquidity
     };
   }
 
-  // make pools update 'autonomus' here, to have common logic need asset service
-  async getPoolData(): Promise<[IPoolFeatureOpportunity[], Error[]]> {
-    return this.getOrSet(
-      60,
-      concatStrings(this.meta.name, this.meta.feature, this.meta.chain),
-      async () => {
-        return await this.hydrateOpportunityData(await this.cachePoolData());
-      },
-    );
-  }
-
-  async getUsersData(addresses: string[]): Promise<[Map<string, IPoolFeatureUser[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  async getUsersData(addresses: string[]): Promise<IUserDataProtocolResponse<IPoolFeatureUser>> {
+    const { data: pools, errors } = await this.getPoolData();
     const wallets = new Map();
     const poolsMap = new Map(pools.map((p) => [p.id, p]));
     try {
@@ -196,7 +185,7 @@ export class UniswapV2Liquidity
       errors.push(err);
     }
 
-    return [wallets, errors];
+    return { data: wallets, errors };
   }
 
   private async getSubgraphAccountBalances(addresses: string[]) {

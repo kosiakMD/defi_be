@@ -6,7 +6,13 @@ import { Address, Logger } from '@app/common';
 
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
-import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
+import {
+  IProtocolMeta,
+  IUserDataProtocolResponse,
+  IWalletMinimal,
+  IWalletOpportunity,
+  IWalletUserEntry,
+} from '../interfaces';
 import { CosmosHubCore } from './CosmosHubCore';
 
 export abstract class SingleContractProtocol<
@@ -30,8 +36,8 @@ export abstract class SingleContractProtocol<
     data: Map<string, any[]>,
   ): TUserEntryType[];
 
-  async getUsersData(addresses: string[]): Promise<[Map<string, TUserEntryType[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  async getUsersData(addresses: string[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
+    const { data: pools, errors } = await this.getPoolData();
     const results = new Map<string, TUserEntryType[]>(
       addresses.map((address) => [address, [] as TUserEntryType[]]),
     );
@@ -45,6 +51,6 @@ export abstract class SingleContractProtocol<
       errors.push(err);
     }
 
-    return [results, errors];
+    return { data: results, errors };
   }
 }

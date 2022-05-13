@@ -136,7 +136,7 @@ export class PlatformService {
   ): Promise<IUserEntryResponse> {
     const platform = await this.getPlatform(platformName);
 
-    const [wallets, errors] = await platform.getUsersData(chains, addresses);
+    const { data: wallets, errors } = await platform.getUsersData(chains, addresses);
 
     const total = wallets.reduce((total, wallet) => total + wallet.total, 0);
 
@@ -158,7 +158,7 @@ export class PlatformService {
   ): Promise<IOpportunityResponse> {
     const platform = await this.getPlatform(platformName);
 
-    const [items, errors] = await platform.getPoolData(chains);
+    const { data: items, errors } = await platform.getPoolData(chains);
 
     const errorMessages = this.processErrors(errors, platformName);
 
@@ -220,7 +220,7 @@ export class PlatformService {
     const errorMessages = this.processErrors(errors, platformName);
 
     if (debug) {
-      const [pools, poolErrors] = await platform.getPoolData(chains);
+      const { data: pools, errors: poolErrors } = await platform.getPoolData(chains);
 
       const poolErrorMessages = this.processErrors(poolErrors, platformName);
       return {

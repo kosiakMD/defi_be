@@ -15,7 +15,7 @@ import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import { IPoolDataProtocolResponse, IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   ILendingFeatureEntryGeneric,
   ILendingFeatureUserEntry,
@@ -129,24 +129,27 @@ export class SoLending
     });
   }
 
-  async getFormattedPoolData(): Promise<[SolendLendingFeatureOpportunity[], Error[]]> {
-    const [markets, errors] = await this.getPoolData()
+  async getFormattedPoolData(): Promise<IPoolDataProtocolResponse<SolendLendingFeatureOpportunity>> {
+    const { data: markets, errors } = await this.getPoolData()
 
 
-    return [markets.flatMap(market => {
-      return [
-        ...market.supplied.map(supplied => {
-          const rewarded = market.rewarded.filter(r => r.rewardedForLendingSide === 'supplied' && r.rewardedForTokenAddress === supplied.token.address)
-          return {
-            ...market,
-            id: `${market.id}::${supplied.token.address}`,
-            supplied: [supplied],
-            rewarded,
-            borrowed: [] //; hide borrowed details for opportunity data
-          }
-        })
-      ]
-    }), errors]
+    return {
+      data: markets.flatMap(market => {
+        return [
+          ...market.supplied.map(supplied => {
+            const rewarded = market.rewarded.filter(r => r.rewardedForLendingSide === 'supplied' && r.rewardedForTokenAddress === supplied.token.address)
+            return {
+              ...market,
+              id: `${market.id}::${supplied.token.address}`,
+              supplied: [supplied],
+              rewarded,
+              borrowed: [] //; hide borrowed details for opportunity data
+            }
+          })
+        ]
+      }),
+      errors
+    }
   }
 
   private async getReserveAddressToDetailsMap(): Promise<Map<string, any> | undefined> {
@@ -265,8 +268,8 @@ export class SoLending
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, ILendingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<ILendingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
     const wallets: Map<string, ILendingFeatureUserEntry[]> = new Map();
     const combinedErrors = [...errors];
 
@@ -399,7 +402,7 @@ export class SoLending
       combinedErrors.push(err);
     }
 
-    return [wallets, combinedErrors];
+    return { data: wallets, errors: combinedErrors};
   }
 
   private createSymbolToAddressMap(assets) {

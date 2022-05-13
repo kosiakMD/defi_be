@@ -31,7 +31,7 @@ import { AccountService } from '../../../../../modules/microservices/account.ser
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { Puppeteer } from '../../../../../modules/microservices/puppeteer';
 import UniswapProtocolV3 from '../../../../../modules/protocols/protocols/uniswapProtocolV3';
-import { IProtocolMeta } from '../../../interfaces';
+import { IProtocolMeta, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
@@ -86,12 +86,9 @@ export class FraxStaking extends EVMCore<
 
   private async getGitHubParseAddresses() {
     try {
-      const page = await this.browser.loadPage(
+      const extractedText = await this.browser.extractText(
         'https://github.com/FraxFinance/frax-solidity/blob/master/src/types/constants.ts',
       );
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const extractedText: string = await page.$eval('*', (el) => el.innerText);
 
       return ['export const CONTRACT_ADDRESSES', 'export const StakeChoices'].map((constName) => {
         const startIndex = extractedText.indexOf(constName);
@@ -589,8 +586,8 @@ export class FraxStaking extends EVMCore<
 
   async getUsersData(
     addresses: Address[],
-  ): Promise<[Map<Address, IStakingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<IStakingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
     let formattedData = new Map();
     try {
       const multicallUserData = await this.fetchMulticallUserData(pools, addresses);
@@ -652,7 +649,7 @@ export class FraxStaking extends EVMCore<
     } catch (e) {
       errors.push(e);
     }
-    return [formattedData, errors];
+    return { data: formattedData, errors };
   }
 
   formatV3UserData(

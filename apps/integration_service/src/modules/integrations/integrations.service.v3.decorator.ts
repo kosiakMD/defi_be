@@ -203,6 +203,7 @@ export class IntegrationsServiceV3Decorator {
           v2WalletChain.features.push(
             ...[FeatureEnum.claimable, FeatureEnum.borrowing, FeatureEnum.health],
           );
+
           v2WalletChain.features.forEach((feature) => {
             v3WalletChain.positions.lending.forEach((position) => {
               if (feature === FeatureEnum.health) {
@@ -257,6 +258,7 @@ export class IntegrationsServiceV3Decorator {
           item.apy?.borrowApy ??
           item.apy?.stableApy ??
           item.apy?.variableApy;
+
       return plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,

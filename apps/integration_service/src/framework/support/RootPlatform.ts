@@ -12,10 +12,11 @@ import {
   IChainGroupedWallet,
   IChainUserEntry,
   IPlatformMeta,
-  IPlatformUserEntry,
+  IPoolDataPlatformResponse,
   IProtocolMeta,
   IRootPlatform,
   IRootProtocol,
+  IUserDataPlatformResponse,
   IWalletOpportunity,
   IWalletUserEntry,
 } from './interfaces';
@@ -90,10 +91,7 @@ export abstract class RootPlatform implements IRootPlatform {
     this.logger.log(`Finish getting meta for: ${this.meta.name}`);
   }
 
-  async getUsersData(
-    chains: ChainId[],
-    addresses: Address[],
-  ): Promise<[IPlatformUserEntry[], Error[]]> {
+  async getUsersData(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse> {
     this.logger.log(`Start getting user data for: ${this.meta.name}`);
 
     const promises: Promise<IChainGroupedWallet>[] = [];
@@ -110,10 +108,12 @@ export abstract class RootPlatform implements IRootPlatform {
 
       if (validAddressesForChain?.length) {
         promises.push(
-          protocol.getUsersData(validAddressesForChain).then(([wallets, userErrors]) => {
-            errors.push(...userErrors);
-            return { chain, features, wallets, errors };
-          }),
+          protocol
+            .getUsersData(validAddressesForChain)
+            .then(({ data: wallets, errors: userErrors }) => {
+              errors.push(...userErrors);
+              return { chain, features, wallets, errors };
+            }),
         );
       }
     });
@@ -145,10 +145,10 @@ export abstract class RootPlatform implements IRootPlatform {
 
     this.logger.log(`Finish getting user data for: ${this.meta.name}`);
 
-    return [wallets, errors];
+    return { data: wallets, errors };
   }
 
-  async getPoolData(chains: ChainId[]): Promise<[IWalletOpportunity[], Error[]]> {
+  async getPoolData(chains: ChainId[]): Promise<IPoolDataPlatformResponse> {
     this.logger.log(`Start getting pool data: ${this.meta.name}`);
 
     const promises = [];
@@ -177,8 +177,8 @@ export abstract class RootPlatform implements IRootPlatform {
     protocolResults.forEach((protocol) => {
       switch (protocol.status) {
         case 'fulfilled':
-          protocols.push(...protocol.value[0]);
-          errors.push(...protocol.value[1]);
+          protocols.push(...protocol.value.data);
+          errors.push(...protocol.value.errors);
           break;
         case 'rejected':
           errors.push(protocol.reason);
@@ -187,7 +187,7 @@ export abstract class RootPlatform implements IRootPlatform {
     });
 
     this.logger.log(`Finishing getting pool data: ${this.meta.name}`);
-    return [protocols, errors];
+    return { data: protocols, errors };
   }
 
   async cachePoolData(chains: ChainId[]) {

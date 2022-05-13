@@ -1,8 +1,8 @@
 export class PriceSourceMetadata {
   constructor() {
-    this.executionInstanceMarker = '';
     this.lastOperation = 0;
+    this.lastExecutionHistoricalPricesJob = 0;
   }
-  executionInstanceMarker: string;
   lastOperation: number;
+  lastExecutionHistoricalPricesJob: number;
 }

@@ -7,7 +7,8 @@ export type PriceSourceConfig = {
   maxItems?: number;
   take?: number;
   gqlString?: string;
-  keepHistoricalPrices?: boolean;
+  keepHistoricalPricesJobLastExecutionTime?: boolean;
   requestDelay?: number;
   currentPriceJobInterval?: number;
+  historicalPriceJobInterval?: number;
 };

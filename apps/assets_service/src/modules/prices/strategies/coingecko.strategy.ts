@@ -83,7 +83,7 @@ export class CoingeckoStrategy extends PriceStrategy {
         skip += take;
       }
     }
-    this.logger.log('Coingecko requests: ', priceRequests.length);
+    this.logger.log(`Created Coingecko requests: ${priceRequests.length}`);
     return priceRequests;
   }
 

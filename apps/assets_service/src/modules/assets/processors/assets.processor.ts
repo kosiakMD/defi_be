@@ -117,7 +117,9 @@ export class AssetsProcessor {
       processingAsset.isTracked = Boolean(isTracked);
 
       const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
-      processingAsset.category = await this.getAssetCategory(Boolean(underlyingTokens?.length));
+
+      //todo temp compilation fix - logic is incorrect
+      processingAsset.categories = [await this.getAssetCategory(Boolean(underlyingTokens?.length))];
       const icons = await this.iconsService.getIconUrls({
         symbol: processingAsset.symbol,
         chainId: processingAsset.chainId,

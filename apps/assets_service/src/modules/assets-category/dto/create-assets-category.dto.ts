@@ -7,4 +7,8 @@ export class CreateAssetsCategoryDto {
   @IsString()
   @IsNotEmpty()
   name: string;
+  @ApiProperty({ type: String, example: 'tkn' })
+  @IsString()
+  @IsNotEmpty()
+  code: string;
 }

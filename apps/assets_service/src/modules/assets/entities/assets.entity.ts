@@ -1,4 +1,13 @@
-import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  JoinTableOptions,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
+import { JoinColumnOptions } from 'typeorm/decorator/options/JoinColumnOptions';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
@@ -33,12 +42,23 @@ export class AssetsEntity extends BaseEntity {
   @Column({ type: Boolean, nullable: false, default: false })
   public disabled: boolean;
 
-  @ManyToOne(() => AssetsCategoryEntity, {
-    nullable: true,
+  @ManyToMany(() => AssetsCategoryEntity, {
+    nullable: false,
     eager: true,
     cascade: false,
   })
-  public category: AssetsCategoryEntity;
+  @JoinTable({
+    name: 'assets_to_categories',
+    joinColumn: {
+      name: 'asset_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'category_id',
+      referencedColumnName: 'id',
+    },
+  } as JoinTableOptions)
+  public categories: AssetsCategoryEntity[];
 
   @OneToMany(() => AssetsPriceEntity, (assetsPriceEntity) => assetsPriceEntity.assetId)
   public prices: AssetsPriceEntity[];
@@ -49,7 +69,7 @@ export class AssetsEntity extends BaseEntity {
   )
   public historicalPrices: AssetsHistoricalPriceEntity[];
 
-  @OneToMany(() => AssetUnderlyingEntity, (assetUnderlying) => assetUnderlying)
+  @ManyToMany(() => AssetUnderlyingEntity, (assetUnderlying) => assetUnderlying)
   public underlyingTokens: AssetUnderlyingEntity[];
 
   public averagePrice?: number;

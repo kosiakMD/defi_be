@@ -25,16 +25,6 @@ pipeline {
         JOB_NAME = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
         JOB_NAME_WOSERVICE = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 12)
         DOCKERFILE_NAME = "Dockerfile_${JOB_NAME_WOSERVICE}"
-        if (JOB_BASE_NAME == 'api-gateway-service-dev') {
-          DOCKERFILE_NAME = "Dockerfile_api_gateway"
-        }  else {
-          DOCKERFILE_NAME = "Dockerfile_${JOB_NAME_WOSERVICE}"
-        }
-        if (JOB_BASE_NAME == 'categorization-tool-service-dev') {
-          DOCKERFILE_NAME = "Dockerfile_categorization_tool"
-        }  else {
-          DOCKERFILE_NAME = "Dockerfile_${JOB_NAME_WOSERVICE}"
-        }
         REPLICAS = 1
     }
     stages {
@@ -42,6 +32,19 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
+                        if (JOB_BASE_NAME == 'api-gateway-service-dev') {
+                          DOCKERFILE_NAME = "Dockerfile_api_gateway"
+                        }
+                        else {
+                          DOCKERFILE_NAME = "Dockerfile_${JOB_NAME_WOSERVICE}"
+                        }
+                        if (JOB_BASE_NAME == 'categorization-tool-service-dev') {
+                          DOCKERFILE_NAME = "Dockerfile_categorization_tool"
+                        }
+                        else {
+                          DOCKERFILE_NAME = "Dockerfile_${JOB_NAME_WOSERVICE}"
+                        }
+                        DOCKERFILE_NAME = "Dockerfile_${JOB_NAME_WOSERVICE}"
                         SERVICE_FOLDER = env.JOB_NAME.replace("-", "_")
                         DOCKER_REGISTRY = DOCKER_REGISTRY_URL.replace("https://", "")
                         DOCKER_TAG = sh(script: "git log --pretty=tformat:'%h' -n1 ./apps/${SERVICE_FOLDER}", returnStdout: true).trim().take(7)

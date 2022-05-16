@@ -36,15 +36,30 @@ export interface IKavaLendingResponse {
   }[];
 }
 
-export interface IncentiveParameterResponse {
-  collateral_type: string;
-  rewards_per_second: IKavaDenomAmount[];
+export interface IHardParameterResponse {
+  result: {
+    money_markets: {
+      denom: string;
+      borrow_limit: {
+        loan_to_value: string;
+      };
+    }[];
+  };
 }
 
-export interface CDPParameterResponse {
-  denom: string;
-  type: string;
-  liquidation_ratio: string;
-  stability_fee: string;
-  liquidation_penalty: string;
+export interface IncentiveParametersResponse {
+  result: {
+    hard_supply_reward_periods: {
+      collateral_type: string;
+      rewards_per_second: IKavaDenomAmount[];
+    }[];
+  };
+}
+
+export interface InterestRateResponse {
+  result: {
+    denom: string;
+    supply_interest_rate: string;
+    borrow_interest_rate: string;
+  }[];
 }

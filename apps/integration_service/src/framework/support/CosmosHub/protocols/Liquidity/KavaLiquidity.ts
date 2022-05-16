@@ -12,7 +12,7 @@ import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IRootProtocol } from '../../../interfaces';
+import { IRootProtocol, TokenMap } from '../../../interfaces';
 import {
   IPoolFeatureEntryOpportunity,
   IPoolFeatureEntryUserEntry,
@@ -172,6 +172,55 @@ export class KavaLiquidity
     });
 
     return result || [];
+  }
+
+  // TODO. remove it after assets service!
+  protected formatOpportunity(
+    opportunity: IKavaPoolFeatureEntryMinimal,
+    tokens: TokenMap,
+  ): IPoolFeatureEntryOpportunity {
+    const tvl = opportunity.supplied.reduce((tvl, poolToken) => {
+      return (
+        tvl +
+        poolToken.token.underlying.reduce((prev, next) => {
+          const token = tokens.get(next.address);
+          return prev + token.price * normalizeDecimals(next.totalSupplied, token.decimals);
+        }, 0)
+      );
+    }, 0);
+
+    // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
+    const base: any = {
+      feature: opportunity.feature,
+      id: opportunity.id,
+      chain: opportunity.chain,
+      links: this.generateLinks(opportunity),
+      token: this.formatOpportunityReceiptToken(opportunity, tokens.get(opportunity.id), tokens),
+    };
+
+    if ('supplied' in opportunity) {
+      if (!opportunity.supplied.every((t) => tokens.has(t.token.address))) {
+        const token = opportunity.supplied.find((t) => !tokens.has(t.token.address));
+        // throw new MissingSuppliedToken(`Failed to find ${token}`, this.constructor.name)
+        throw new Error(`Failed to find Supplied: ${JSON.stringify(token)}`);
+      }
+
+      base.supplied = opportunity.supplied.map((poolToken) =>
+        this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
+      );
+    }
+
+    if ('rewarded' in opportunity) {
+      if (!opportunity.rewarded.every((t) => tokens.has(t.token.address))) {
+        const token = opportunity.rewarded.find((t) => !tokens.has(t.token.address));
+        // throw new MissingRewardedToken(`Failed to find ${token}`, this.constructor.name)
+        throw new Error(`Failed to find Rewarded: ${token.token.address}`);
+      }
+      base.rewarded = opportunity.rewarded?.map((poolToken) =>
+        this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
+      );
+    }
+    return base;
   }
 
   protected formatOpportunitySuppliedToken(

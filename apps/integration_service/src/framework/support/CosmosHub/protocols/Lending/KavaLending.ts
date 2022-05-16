@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
-import { cloneDeep } from 'lodash';
-import { firstValueFrom, mergeMap, toArray } from 'rxjs';
+import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -13,7 +12,7 @@ import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IRootProtocol } from '../../../interfaces';
+import { IPoolDataProtocolResponse, IRootProtocol } from '../../../interfaces';
 import {
   ILendingFeatureEntryMinimal,
   ILendingFeatureOpportunity,
@@ -42,9 +41,20 @@ import {
   IKavaRepositoryResponse,
   IKavaDenomAmount,
   IKavaLendingResponse,
-  IncentiveParameterResponse,
-  CDPParameterResponse,
+  IncentiveParametersResponse,
+  InterestRateResponse,
+  IHardParameterResponse,
 } from '../interfaces/Kava/KavaLending';
+
+type DenomInterestRate = [string, { borrowAPR: string; supplyAPR: string }];
+type DenomLTV = [string, string];
+type DenomRewardPerSecond = [string, IKavaDenomAmount[]];
+type SupplyBorrowParams = {
+  ltv: string;
+  rewards: IKavaDenomAmount[];
+  supplyAPR: string;
+  borrowAPR: string;
+};
 
 export class KavaLending
   extends SingleContractProtocol<
@@ -68,81 +78,30 @@ export class KavaLending
     super();
   }
 
-  get hardDepositedRepository(): string {
-    return new URL('hard/total-deposited', this.meta.context.endpoint).toString();
-  }
+  async getFormattedPoolData(): Promise<IPoolDataProtocolResponse<ILendingFeatureOpportunity>> {
+    const { data: markets, errors } = await this.getPoolData();
 
-  get hardBorrowedRepository(): string {
-    return new URL('hard/total-borrowed', this.meta.context.endpoint).toString();
-  }
-
-  get hardUserDeposited(): string {
-    return new URL('hard/deposits', this.meta.context.endpoint).toString();
-  }
-
-  get hardUserBorrowed(): string {
-    return new URL('hard/borrows', this.meta.context.endpoint).toString();
-  }
-
-  get incentiveParameter(): string {
-    return new URL('incentive/parameters', this.meta.context.endpoint).toString();
-  }
-
-  get cdpParameter(): string {
-    return new URL('cdp/parameters', this.meta.context.endpoint).toString();
-  }
-
-  protected async updateRealTimeData(
-    opportunities: ILendingFeatureEntryMinimal[],
-  ): Promise<ILendingFeatureEntryMinimal[]> {
-    const [collateralStats, collateralParams] = await Promise.all([
-      this.getIncentiveParameter(),
-      this.getCDPParameter(),
-    ]);
-
-    const collateralStatsMap = new Map(
-      collateralStats.map((collateral) => [
-        collateral.collateral_type,
-        collateral.rewards_per_second,
-      ]),
-    );
-    const collateralParamsMap = new Map(
-      collateralParams.map((collateral) => [collateral.type, collateral]),
-    );
-
-    opportunities.forEach((opportunity) => {
-      for (const [address, rewards] of collateralStatsMap.entries()) {
-        opportunity.rewarded.push(
-          ...rewards.map((reward) => {
-            const result: IRewardTokenMinimal = {
-              token: { address: reward.denom },
-              rewardPerSecond: reward.amount,
-              rewardedForTokenAddress: address,
-              rewardedForLendingSide: 'supplied',
+    return {
+      data: markets.flatMap((market) => {
+        return [
+          ...market.supplied.map((supplied) => {
+            const rewarded = market.rewarded.filter(
+              (r) =>
+                r.rewardedForLendingSide === 'supplied' &&
+                r.rewardedForTokenAddress === supplied.token.address,
+            );
+            return {
+              ...market,
+              id: `${market.id}::${supplied.token.address}`,
+              supplied: [supplied],
+              rewarded,
+              borrowed: [],
             };
-            return result;
           }),
-        );
-      }
-
-      opportunity.borrowed.forEach((token) => {
-        const collateralKey = token.token.address + '-a';
-        const collateral = collateralParamsMap.get(collateralKey);
-        token.rate = { stabilityFee: collateral?.stability_fee || '0' };
-
-        return token;
-      });
-
-      opportunity.supplied.forEach((token) => {
-        const collateralKey = token.token.address + '-a';
-        const collateral = collateralParamsMap.get(collateralKey);
-        token.rate = { ltv: collateral?.liquidation_ratio || '0' };
-
-        return token;
-      });
-    });
-
-    return opportunities;
+        ];
+      }),
+      errors,
+    };
   }
 
   async getCacheableOpportunityData(): Promise<ILendingFeatureEntryMinimal[]> {
@@ -152,6 +111,50 @@ export class KavaLending
     ]);
 
     return this.toLendingFeatureEntryMinimal(deposited, borrowed);
+  }
+
+  protected async updateRealTimeData(
+    opportunities: ILendingFeatureEntryMinimal[],
+  ): Promise<ILendingFeatureEntryMinimal[]> {
+    const TWO_HOUR_CACHE = 60 * 60 * 2;
+    const realTimeData = await this.getOrSet(TWO_HOUR_CACHE, 'kava_real_time_data', async () =>
+      this.supplyBorrowDenomParameters(opportunities),
+    );
+    const realTimeDataMap = new Map(realTimeData);
+
+    opportunities.forEach((opportunity) => {
+      opportunity.borrowed.forEach((token) => {
+        const data = realTimeDataMap.get(token.token.address);
+        token.rate = {
+          borrowApy: data.borrowAPR,
+        };
+
+        return token;
+      });
+
+      opportunity.supplied.forEach((token) => {
+        const address = token.token.address;
+        const data = realTimeDataMap.get(token.token.address);
+        token.rate = { supplyApy: data.supplyAPR };
+        token.ltv = data.ltv;
+
+        opportunity.rewarded.push(
+          ...data.rewards.map((reward) => {
+            const result: IRewardTokenMinimal = {
+              token: { address: reward.denom },
+              rewardPerSecond: reward.amount,
+              rewardedForTokenAddress: address,
+              rewardedForLendingSide: 'supplied',
+            };
+            return result;
+          }),
+        );
+
+        return token;
+      });
+    });
+
+    return opportunities;
   }
 
   protected async fetchUserData(addresses: string[]): Promise<UserLendingMap> {
@@ -199,20 +202,14 @@ export class KavaLending
       }
     }
 
-    /** TODO: WHAT IF LTV - ZERO */
     const suppliedUSD = supplied.reduce((prev, next) => prev + next.amount * next.ltv, 0);
     const borrowedUSD = borrowed.reduce((prev, next) => prev + next.amount, 0);
-
-    for (const { token } of supplied) {
-      const filteredRewards = this.filterRewardsBySuppliedToken(pool.rewarded, token);
-      rewarded.push(...filteredRewards);
-    }
 
     result.push({
       ...pool,
       supplied: supplied,
       borrowed: borrowed,
-      rewarded: rewarded,
+      rewarded: [],
       debtRatio: suppliedUSD / borrowedUSD || 0,
     });
 
@@ -224,21 +221,20 @@ export class KavaLending
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
     const totalSupplied = normalizeDecimals(supplied.totalSupplied, token.decimals);
-    const ltv = supplied.rate.ltv === '0' ? 0 : (1 / Number(supplied.rate.ltv)) * 100;
+    const variableApy = Number(supplied.rate.supplyApy) * 100;
+    const ltv = Number(supplied.ltv);
     return {
       token,
       tvl: totalSupplied * token.price,
+      apy: { variableApy },
       ltv,
     };
   }
 
   protected formatBorrowApy(borrowed: IBorrowTokenMinimal) {
-    if (borrowed.rate.stabilityFee === '0') return 0;
+    const borrowApy = Number(borrowed.rate.borrowApy) * 100;
 
-    const borrowApy = Number(borrowed.rate.stabilityFee) ** 31536000 - 1;
-    return new BN(borrowApy) //
-      .times(100)
-      .toNumber();
+    return { borrowApy };
   }
 
   private async hardDepositedBorrowedList(link: string): Promise<IKavaDenomAmount[]> {
@@ -247,20 +243,6 @@ export class KavaLending
       toArray(),
     );
     return firstValueFrom($data);
-  }
-
-  private filterRewardsBySuppliedToken(
-    rewarded: IRewardTokenOpportunity[],
-    token: ERC20Token,
-  ): IRewardTokenUserEntry[] {
-    return rewarded
-      .filter(
-        (r) =>
-          r.rewardedForLendingSide === 'supplied' && r.rewardedForTokenAddress === token.address,
-      )
-      .map((r) => {
-        return { ...r, amount: 0, value: 0 };
-      });
   }
 
   private toLendingFeatureEntryMinimal(
@@ -302,26 +284,84 @@ export class KavaLending
     return firstValueFrom($data);
   }
 
-  private async getIncentiveParameter(): Promise<IncentiveParameterResponse[]> {
-    return this.getOrSet(60 * 60 * 24, 'kava_incentive_parameter', async () => {
-      const $data: any = this.httpService.get(this.incentiveParameter).pipe(
-        mergeMap((response) => response.data.result.hard_supply_reward_periods),
-        toArray(),
-      );
+  private async supplyBorrowDenomParameters(opportunities: ILendingFeatureEntryMinimal[]) {
+    const [incentiveStats, hardParameter, interestRate] = await Promise.all([
+      this.getIncentiveParameter(),
+      this.getHardParameter(),
+      this.getInterestRate(),
+    ]);
+    const suppliedDenomSet = new Set(
+      opportunities.flatMap((o) => o.supplied.map((s) => s.token.address)),
+    );
 
-      return firstValueFrom($data);
-    });
+    const supplyBorrowMap: [string, SupplyBorrowParams][] = [];
+
+    const incentiveStatsMap = new Map(incentiveStats);
+    const hardParameterMap = new Map(hardParameter);
+    const interestRateMap = new Map(interestRate);
+
+    for (const denom of suppliedDenomSet.values()) {
+      const rewards = incentiveStatsMap.get(denom);
+      const ltv = hardParameterMap.get(denom);
+      const rate = interestRateMap.get(denom);
+
+      supplyBorrowMap.push([
+        denom,
+        {
+          supplyAPR: rate.supplyAPR,
+          borrowAPR: rate.borrowAPR,
+          ltv: ltv,
+          rewards: rewards,
+        },
+      ]);
+    }
+    return supplyBorrowMap;
   }
 
-  private async getCDPParameter(): Promise<CDPParameterResponse[]> {
-    return this.getOrSet(60 * 60 * 24, 'kava_cdp_parameter', async () => {
-      const $data: any = this.httpService.get(this.cdpParameter).pipe(
-        mergeMap((response) => response.data.result.collateral_params),
-        toArray(),
-      );
+  /**
+   * @return {Promise<DenomRewardPerSecond[]>} denom and reward per second for supplied position
+   * */
+  private async getIncentiveParameter(): Promise<DenomRewardPerSecond[]> {
+    const $data = this.httpService.get<IncentiveParametersResponse>(this.incentiveParameter).pipe(
+      mergeMap((response) => response.data.result.hard_supply_reward_periods),
+      map((denom): DenomRewardPerSecond => [denom.collateral_type, denom.rewards_per_second]),
+      toArray(),
+    );
 
-      return firstValueFrom($data);
-    });
+    return firstValueFrom($data);
+  }
+
+  /**
+   * @return {Promise<DenomLTV[]>} denom key and LTV value
+   * */
+  private async getHardParameter(): Promise<DenomLTV[]> {
+    const $data = this.httpService.get<IHardParameterResponse>(this.hardParameters).pipe(
+      mergeMap((response) => response.data.result.money_markets),
+      map((market): DenomLTV => [market.denom, market.borrow_limit.loan_to_value]),
+      toArray(),
+    );
+
+    return firstValueFrom($data);
+  }
+
+  /**
+   * @return {Promise<DenomInterestRate[]>} denom key and APR
+   * */
+  private async getInterestRate(): Promise<DenomInterestRate[]> {
+    const $data = this.httpService.get<InterestRateResponse>(this.interestRate).pipe(
+      mergeMap((response) => response.data.result),
+      map((rate) => {
+        return [
+          rate.denom,
+          {
+            borrowAPR: rate.borrow_interest_rate,
+            supplyAPR: rate.supply_interest_rate,
+          },
+        ] as DenomInterestRate;
+      }),
+      toArray(),
+    );
+    return firstValueFrom($data);
   }
 
   private mapSuppliedBorrowList(
@@ -345,5 +385,33 @@ export class KavaLending
     }
 
     return result;
+  }
+
+  private get hardDepositedRepository(): string {
+    return new URL('hard/total-deposited', this.meta.context.endpoint).toString();
+  }
+
+  private get hardBorrowedRepository(): string {
+    return new URL('hard/total-borrowed', this.meta.context.endpoint).toString();
+  }
+
+  private get hardUserDeposited(): string {
+    return new URL('hard/deposits', this.meta.context.endpoint).toString();
+  }
+
+  private get hardUserBorrowed(): string {
+    return new URL('hard/borrows', this.meta.context.endpoint).toString();
+  }
+
+  private get hardParameters(): string {
+    return new URL('hard/parameters', this.meta.context.endpoint).toString();
+  }
+
+  private get incentiveParameter(): string {
+    return new URL('incentive/parameters', this.meta.context.endpoint).toString();
+  }
+
+  private get interestRate(): string {
+    return new URL('hard/interest-rate', this.meta.context.endpoint).toString();
   }
 }

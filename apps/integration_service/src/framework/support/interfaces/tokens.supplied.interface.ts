@@ -15,6 +15,7 @@ export interface ISupplyTokenMinimal extends ITokenMinimal {
   totalSupply?: string; // number of tokens staked (we won't have prices here)
   totalSupplied?: string; // number of tokens staked (we won't have prices here)
   rate?: { [key: string]: string };
+  ltv?: string;
 }
 
 export interface ISupplyTokenOpportunity extends ITokenOpportunity {

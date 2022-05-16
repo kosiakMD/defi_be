@@ -41,6 +41,7 @@ import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { YelFinance } from '../platforms/YelFinance';
+import { Atrix } from '../platforms/Atrix';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -86,6 +87,7 @@ export class PlatformService {
       Goose,
       BabySwap,
       YelFinance,
+      Atrix,
     });
   }
 

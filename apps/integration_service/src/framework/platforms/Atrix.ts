@@ -15,10 +15,6 @@ export class Atrix extends RootPlatform {
     super();
   }
 
-  get endpoint(): string {
-    return 'https://api.thegraph.com/subgraphs/name/balancer-labs/';
-  }
-
   async register() {
     this.registerMeta({
       name: this.constructor.name,
@@ -35,6 +31,7 @@ export class Atrix extends RootPlatform {
       name: 'Atrix - Staking',
       feature: FeatureEnum.staking,
       context: {
+        endpoint: 'https://api.atrix.finance/api/all',
         programID: 'BLDDrex4ZSWBgPYaaH6CQCzkJXWfzCiiur9cSFJT8t3x',
       },
     });

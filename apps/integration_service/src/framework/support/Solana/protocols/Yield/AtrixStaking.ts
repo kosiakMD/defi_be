@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { Cache } from 'cache-manager';
+import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -23,6 +24,7 @@ export interface IAtrixSolanaMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
   name: string;
   context: {
+    endpoint: string;
     programID: string;
   };
 }
@@ -47,21 +49,28 @@ export class AtrixStaking
     super();
   }
 
-  async initialize(): Promise<void> {
-    //
-  }
-
   async getCacheableOpportunityData(): Promise<IStakingFeatureMinimal[]> {
-    const configStaker = {
-      commitment: 'confirmed',
-      encoding: 'base64',
-      filters: stakerAccountFilter(address.toString()),
-    };
+    const $data = this.httpService.get(this.meta.context.endpoint).pipe(
+      mergeMap((response) => response.data.farms),
+      map((farm) => this.toFeatureMinimal(farm)),
+      toArray(),
+    );
+    return firstValueFrom($data);
   }
 
   getUsersData(
     addresses: string[],
   ): Promise<{ data: Map<string, IStakingFeatureUserEntry[]>; errors: Error[] }> {
     throw new Error('Method not implemented.');
+  }
+
+  private toFeatureMinimal(farm: any): IStakingFeatureMinimal {
+    return {
+      id: farm.key,
+      chain: this.meta.chain,
+      feature: this.meta.feature,
+      rewarded: [],
+      supplied: [],
+    };
   }
 }

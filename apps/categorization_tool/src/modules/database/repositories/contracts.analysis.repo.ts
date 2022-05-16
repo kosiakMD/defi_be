@@ -53,7 +53,6 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
     counterpartContract: Contract,
     abiCodeSimilarity: number,
     abiJsonSimilarity: number,
-    abiJsonDiff: object,
   ) {
     return this.upsert(
       {
@@ -61,7 +60,6 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
         contract,
         abiCodeSimilarity,
         abiJsonSimilarity,
-        abiJsonDiff,
       },
       {
         conflictPaths: ['counterpartContractId', 'contract'],

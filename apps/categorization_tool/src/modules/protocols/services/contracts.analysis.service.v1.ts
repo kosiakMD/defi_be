@@ -119,13 +119,12 @@ export class ContractsAnalysisServiceV1 {
         const functionPredicates = this.getTemplateFunctionPredicates(tContract);
         const tAbi = this.extractAbiByPredicates(tContractAbi, functionPredicates);
         const abi = this.extractAbiByPredicates(parsedContractAbi, functionPredicates);
-        const [abiJsonSimilarity, abiJsonDiff] = this.analyseAbiAgainstTemplate(tAbi, abi);
+        const abiJsonSimilarity = this.analyseAbiAgainstTemplate(tAbi, abi);
         await this.contractAnalysisRepository.upsertContractAnalysis(
           tContract,
           contract,
           abiCodeSimilarity,
           abiJsonSimilarity,
-          abiJsonDiff,
         );
       } catch (e) {
         this.logger.warn(
@@ -149,15 +148,14 @@ export class ContractsAnalysisServiceV1 {
     });
   }
 
-  private analyseAbiAgainstTemplate(tAbi, abi): [number, object] {
+  private analyseAbiAgainstTemplate(tAbi, abi): number {
     const abiJsonDiff = detailedDiff(tAbi, abi) as {
       deleted: object;
       updated: object;
     };
     const diffCount = this.count(abiJsonDiff.deleted) + this.count(abiJsonDiff.updated);
     const totalFieldsCount = this.count(tAbi);
-    const abiJsonSimilarity = 1 - diffCount / totalFieldsCount;
-    return [abiJsonSimilarity, abiJsonDiff];
+    return 1 - diffCount / totalFieldsCount;
   }
 
   private async processContractAnalysis(contract: Contract, contracts: Contract[]): Promise<void> {
@@ -165,15 +163,17 @@ export class ContractsAnalysisServiceV1 {
     for (const counterpartContract of contracts) {
       if (contract.id === counterpartContract.id) continue;
       try {
-        const { abiCodeSimilarity, abiJsonDiff, abiJsonSimilarity } =
-          await this.analyseAbiAndAbiCode(contract.abiCode, counterpartContract, parsedContractAbi);
+        const { abiCodeSimilarity, abiJsonSimilarity } = await this.analyseAbiAndAbiCode(
+          contract.abiCode,
+          counterpartContract,
+          parsedContractAbi,
+        );
 
         await this.contractAnalysisRepository.upsertContractAnalysis(
           contract,
           counterpartContract,
           abiCodeSimilarity,
           abiJsonSimilarity,
-          abiJsonDiff,
         );
       } catch (e) {
         this.logger.warn(
@@ -187,17 +187,13 @@ export class ContractsAnalysisServiceV1 {
     abiCode: string,
     counterpartContract: Contract,
     parsedContractAbi: any,
-  ): Promise<{ abiCodeSimilarity: number; abiJsonSimilarity: number; abiJsonDiff: any }> {
+  ): Promise<{ abiCodeSimilarity: number; abiJsonSimilarity: number }> {
     const abiCodeSimilarity = this.analyseAbiCode(abiCode, counterpartContract);
     const parsedCounterpartContractAbi = JSON.parse(counterpartContract.abi);
-    const [abiJsonSimilarity, abiJsonDiff] = this.analyseAbi(
-      parsedContractAbi,
-      parsedCounterpartContractAbi,
-    );
+    const abiJsonSimilarity = this.analyseAbi(parsedContractAbi, parsedCounterpartContractAbi);
     return {
       abiCodeSimilarity,
       abiJsonSimilarity,
-      abiJsonDiff,
     };
   }
 
@@ -216,7 +212,7 @@ export class ContractsAnalysisServiceV1 {
     };
   }
 
-  private analyseAbi(abi1, abi2): [number, object] {
+  private analyseAbi(abi1, abi2): number {
     const abiJsonDiff = detailedDiff(abi1, abi2) as {
       added: object;
       deleted: object;
@@ -227,8 +223,7 @@ export class ContractsAnalysisServiceV1 {
       this.count(abiJsonDiff.deleted) +
       this.count(abiJsonDiff.updated);
     const totalFieldsCount = this.count(abi1) + this.count(abi2);
-    const abiJsonSimilarity = 1 - diffCount / totalFieldsCount;
-    return [abiJsonSimilarity, abiJsonDiff];
+    return 1 - diffCount / totalFieldsCount;
   }
 
   private count(o: object): number {

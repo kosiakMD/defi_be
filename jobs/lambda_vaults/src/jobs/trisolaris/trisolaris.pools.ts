@@ -36,6 +36,7 @@ import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
 import { Abis } from './abis';
 import { TrisolarisAddresses } from './addresses';
+import { STABLE_USDC_USDT } from './trisolaris.const';
 
 @Injectable()
 export class TrisolarisPools implements JobInterface {
@@ -122,7 +123,11 @@ export class TrisolarisPools implements JobInterface {
 
     const v1TokenAddresses = await this.masterChefV1PoolsTokenAddresses(v1PoolIdFrom, v1PoolIdTo);
     const v2TokenAddresses = await this.masterChefV2PoolsTokenAddresses(v2PoolIdFrom, v2PoolIdTo);
-    const tokenAddresses = new Set<string>([...v1TokenAddresses, ...v2TokenAddresses]);
+    const tokenAddresses = new Set<string>([
+      ...v1TokenAddresses,
+      ...v2TokenAddresses,
+      STABLE_USDC_USDT,
+    ]);
 
     const promises = [];
     tokenAddresses.forEach((tokenAddress) =>
@@ -313,7 +318,6 @@ export class TrisolarisPools implements JobInterface {
 
   async updateWithChainData(): Promise<LiquidityPoolFeature[]> {
     let batchCallsMap: Map<string, CallData> = new Map<string, CallData>();
-
     this.mapping.forEach((m) => {
       if (m instanceof LiquidityPoolFeature) {
         batchCallsMap = new Map<string, CallData>([
@@ -334,7 +338,8 @@ export class TrisolarisPools implements JobInterface {
       if (lp instanceof LiquidityPoolFeature) {
         const totalSupply: BigNumber = multicallRsp.get(this.totalSupplyLabel(lp)).output.data;
         lp.lpToken.totalSupply = toDecimals(totalSupply, lp.lpToken.decimals);
-        const { _reserve0, _reserve1 } = multicallRsp.get(this.getReservesLabel(lp)).output.data;
+        const reserves = multicallRsp.get(this.getReservesLabel(lp))?.output?.data;
+        const { _reserve0, _reserve1 } = reserves || { _reserve0: 0, _reserve1: 0 };
         lp.tokens.map((t) => {
           t.reserve = toDecimals(t.positionInPool === 0 ? _reserve0 : _reserve1, t.decimals);
           t.balance = t.reserve;
@@ -356,13 +361,15 @@ export class TrisolarisPools implements JobInterface {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
     // reserves of lp token
-    calls.set(
-      this.getReservesLabel(liquidityPoolFeature),
-      plainToClass(CallData, {
-        address: liquidityPoolFeature.lpToken.address,
-        abi: Abis.getReserves,
-      }),
-    );
+    if (liquidityPoolFeature.lpToken.address !== STABLE_USDC_USDT) {
+      calls.set(
+        this.getReservesLabel(liquidityPoolFeature),
+        plainToClass(CallData, {
+          address: liquidityPoolFeature.lpToken.address,
+          abi: Abis.getReserves,
+        }),
+      );
+    }
 
     // total supply of staking lp token
     calls.set(

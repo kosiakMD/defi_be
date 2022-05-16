@@ -236,7 +236,7 @@ export class SoLending
       rewarded: opportunity.rewarded.filter(x => tokens.has(x.token.address)).map((poolToken) => {
 
         const token = tokens.get(poolToken.token.address);
-        const apyPercentage = +poolToken.apy;
+        const apyPercentage = +poolToken.apy / 100;
 
         const apyBreakdown = {
           day: apyPercentage / 365,

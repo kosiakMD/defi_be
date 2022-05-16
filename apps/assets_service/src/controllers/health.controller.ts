@@ -3,6 +3,7 @@ import { Connection } from 'typeorm';
 import { Controller, Get } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RedisOptions, Transport } from '@nestjs/microservices';
+import { ApiTags } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckResult,
@@ -18,6 +19,8 @@ enum StatusEnum {
   up = 'up',
   down = 'down',
 }
+
+@ApiTags('Health')
 @Controller('status')
 export class HealthController {
   constructor(

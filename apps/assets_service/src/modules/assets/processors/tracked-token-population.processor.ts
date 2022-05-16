@@ -10,7 +10,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Chain } from '../../../common/types/chain.type';
 
 import { CoingeckoToken } from '../types/coingecko-token.type';
-import { CoinmarketcapToken } from '../types/coinmarketcap-toekn.type';
+import { CoinmarketcapToken } from '../types/coinmarketcap-token.type';
 import { AssetsProcessor } from './assets.processor';
 
 @Injectable()

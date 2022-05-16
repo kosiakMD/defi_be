@@ -7,15 +7,15 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { JobCompleteStates } from '../../../common/enum/JobStates.enum';
+import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetsService } from '../../assets/services/assets.service';
-import { AssetsPriceEntity } from '../entities/assets-price.entity';
+import { AssetPriceEntity } from '../entities/asset-price.entity';
 import { AssetsPriceRepository } from '../repositories/asset-price.repository';
 import priceStrategies from '../strategies';
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
 
 @Processor('assets')
 export class AssetsCurrentPricesProcessor {
@@ -82,7 +82,7 @@ export class AssetsCurrentPricesProcessor {
         if (assetPrice) {
           assetPrice.price = price;
         } else {
-          assetPrice = new AssetsPriceEntity();
+          assetPrice = new AssetPriceEntity();
           assetPrice.price = price;
           assetPrice.sourceId = sourceId;
           assetFromCache.prices.push(assetPrice);

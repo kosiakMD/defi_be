@@ -5,7 +5,7 @@ import { ConfigHostModule } from '@nestjs/config/dist/config-host.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AwsModule } from '../aws/aws.module';
-import { IconSourceEntity } from './entities/IconSources.entity';
+import { IconSourceEntity } from './entities/icon-sources.entity';
 import { IconsService } from './icons.service';
 
 @Module({

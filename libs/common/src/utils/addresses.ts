@@ -115,6 +115,7 @@ export function isCardanoAddress(address: string): boolean {
 export function isRoninAddress(address: string): boolean {
   return address.includes('ronin');
 }
+
 export function isKavaAddress(address: string): boolean {
   return isBech32LikeAddress(address);
 }

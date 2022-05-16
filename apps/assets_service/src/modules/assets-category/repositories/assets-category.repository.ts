@@ -1,10 +1,10 @@
 import { EntityRepository, Repository } from 'typeorm';
 
-import { AssetsCategoryEntity } from '../entities/assets-category.entity';
+import { AssetCategoryEntity } from '../entities/asset-category.entity';
 
-@EntityRepository(AssetsCategoryEntity)
-export class AssetsCategoryRepository extends Repository<AssetsCategoryEntity> {
-  findOneByName(name: string): Promise<AssetsCategoryEntity> {
+@EntityRepository(AssetCategoryEntity)
+export class AssetsCategoryRepository extends Repository<AssetCategoryEntity> {
+  findOneByName(name: string): Promise<AssetCategoryEntity> {
     return this.findOne({
       where: { name },
     });

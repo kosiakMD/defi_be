@@ -10,7 +10,7 @@ import { ChainIdEnum, ChainNameEnum } from '@app/common';
 import { CrudService } from '@app/common/services/crud.service';
 
 import { AwsService } from '../aws/aws.service';
-import { IconSourceEntity } from './entities/IconSources.entity';
+import { IconSourceEntity } from './entities/icon-sources.entity';
 import { IconsFactory } from './icons.factory';
 
 export interface IconConfig {

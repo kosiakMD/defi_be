@@ -8,14 +8,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AssetCategoryEnum } from '@app/common/enum';
 
-import { JobCompleteStates } from '../../../common/enum/JobStates.enum';
+import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
-import { AssetsCategoryEntity } from '../../assets-category/entities/assets-category.entity';
+import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
 import { IconsService } from '../../icons/icons.service';
-import { AssetUnderlyingEntity } from '../entities/assets-underlying.entity';
-import { AssetsEntity } from '../entities/assets.entity';
+import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
+import { AssetEntity } from '../entities/asset.entity';
 import { AssetsRepository } from '../repositories/assets.repository';
 import { AssetsService } from '../services/assets.service';
 import { TokenService } from '../services/token.service';
@@ -43,9 +43,9 @@ export class AssetsProcessor {
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset: AssetsEntity = await this.processAsset({ address, chainId });
+      const asset: AssetEntity = await this.processAsset({ address, chainId });
       this.logger.debug(
-        `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is prcessed`,
+        `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is processed`,
       );
       return JobCompleteStates.SUCCESS;
     } catch (error) {
@@ -55,28 +55,26 @@ export class AssetsProcessor {
     }
   }
 
-  private async getAssetCategory(hasUnderlying: boolean): Promise<AssetsCategoryEntity> {
+  private async getAssetCategory(hasUnderlying: boolean): Promise<AssetCategoryEntity> {
     if (hasUnderlying) {
       return this.assetsCategoryRepository.findOneByName(AssetCategoryEnum.LP_TOKEN);
     }
     return this.assetsCategoryRepository.findOneByName(AssetCategoryEnum.TOKEN);
   }
 
-  private async saveAsset(asset: AssetsEntity): Promise<AssetsEntity> {
+  private async saveAsset(asset: AssetEntity): Promise<AssetEntity> {
     const { chainId, address } = asset;
     const existentAsset = await this.assetRepository //
       .findOne({ where: { chainId, address, disabled: false } });
     if (existentAsset) {
-      throw Error(
-        `Try to proccess already existing asset chainId: ${chainId}, address: ${address}`,
-      );
+      throw Error(`Try to process already existing asset chainId: ${chainId}, address: ${address}`);
     }
     const savedAsset = await this.assetRepository.save(asset);
     await this.assetsService.setAssetsToCache([savedAsset]);
     return savedAsset;
   }
 
-  public async processAsset(assetData: Partial<AssetsEntity>): Promise<AssetsEntity> {
+  public async processAsset(assetData: Partial<AssetEntity>): Promise<AssetEntity> {
     try {
       this.logger.debug(`Process asset data ${JSON.stringify(assetData)}`);
 
@@ -106,7 +104,7 @@ export class AssetsProcessor {
       }
 
       const assetMetadata = await this.metadataService.getMetadata(address, chainId);
-      let processingAsset = new AssetsEntity();
+      let processingAsset = new AssetEntity();
 
       processingAsset.address = address;
       processingAsset.chainId = chainId;
@@ -131,7 +129,7 @@ export class AssetsProcessor {
       processingAsset = await this.saveAsset(processingAsset);
 
       if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
-        underlyingTokens.map(async (underlyingToken: AssetsEntity, index: number) => {
+        underlyingTokens.map(async (underlyingToken: AssetEntity, index: number) => {
           const newAsset = await this.processAsset({
             address: underlyingToken.address,
             chainId: underlyingToken.chainId,

@@ -1,10 +1,10 @@
 import { PoolAssetsQueryResp } from '@app/common';
 
-import { AssetsEntity } from '../../entities/assets.entity';
+import { AssetEntity } from '../../entities/asset.entity';
 import { UnderlyingTokenStrategy } from './token-strategy';
 
 export class TerraStrategy extends UnderlyingTokenStrategy {
-  async attemptToLoadUnderlyingTokens(asset: AssetsEntity) {
+  async attemptToLoadUnderlyingTokens(asset: AssetEntity) {
     const chainProvider = this.metadataService.getInstanceByChainId(asset.chainId);
     const { minter } = await chainProvider.wasm.contractQuery(asset.address, { minter: {} });
     const underlyingInfo: PoolAssetsQueryResp = await chainProvider.wasm.contractQuery(minter, {

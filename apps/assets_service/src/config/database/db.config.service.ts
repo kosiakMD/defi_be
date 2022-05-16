@@ -1,3 +1,5 @@
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
@@ -17,6 +19,7 @@ export class DatabaseConfigService implements TypeOrmOptionsFactory {
       database: this.configService.get<string>('database.name'),
       synchronize: true,
       logging: false,
+      namingStrategy: new SnakeNamingStrategy(),
     };
   }
 }

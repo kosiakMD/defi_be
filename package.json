@@ -244,9 +244,9 @@
     "typescript": "^4.2.3"
   },
   "dependencies": {
-    "@emurgo/cardano-serialization-lib-nodejs": "10.0.4",
     "@anchor-protocol/anchor.js": "^5.0.0",
     "@blockfrost/blockfrost-js": "4.1.0",
+    "@emurgo/cardano-serialization-lib-nodejs": "10.0.4",
     "@ethersproject/providers": "5.4.5",
     "@indexed-finance/multicall": "^2.0.0",
     "@mirror-protocol/mirror.js": "^2.1.4",
@@ -329,6 +329,7 @@
     "swagger-ui-express": "^4.1.6",
     "tor-axios": "^1.0.9",
     "typeorm": "^0.2.37",
+    "typeorm-naming-strategies": "^4.1.0",
     "uuid": "^8.3.2",
     "web3": "^1.6.0",
     "winston": "^3.3.3",

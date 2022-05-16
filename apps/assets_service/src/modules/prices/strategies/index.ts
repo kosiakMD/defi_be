@@ -1,4 +1,4 @@
-import { PriceSourceStrategies } from 'apps/assets_service/src/common/enum/PriceSourceStrategies.enum';
+import { PriceSourceStrategies } from 'apps/assets_service/src/common/enum/price-source-strategies.enum';
 
 import { CoingeckoStrategy } from './coingecko.strategy';
 import { DebankStrategy } from './debank.strategy';

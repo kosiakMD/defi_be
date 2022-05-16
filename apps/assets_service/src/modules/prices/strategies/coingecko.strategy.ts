@@ -1,5 +1,5 @@
-import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
 import { Chain } from 'apps/assets_service/src/common/types/chain.type';
+import { PriceSourceConfig } from 'apps/assets_service/src/common/types/price-source-config.type';
 import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
 
@@ -9,9 +9,9 @@ import { ConfigService } from '@nestjs/config';
 import { delay } from '@app/common/helpers/delay';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
-import { PriceRequestData } from '../types/PriceRequestData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
+import { PriceRequestData } from '../types/price-request-data.type';
 import { PriceStrategy } from './strategy';
 
 type CoingeckoTokens = {

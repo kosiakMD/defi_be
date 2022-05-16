@@ -10,6 +10,7 @@ import { IAbiFetcher } from './abi.fetcher.interface';
 
 @Injectable()
 export class AbiFetcherEtherscan implements IAbiFetcher {
+  readonly name = this.constructor.name;
   etherscanApiUrl: string;
   etherscanApiKey: string;
   constructor(

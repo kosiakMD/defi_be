@@ -10,6 +10,7 @@ import { IAbiFetcher } from './abi.fetcher.interface';
 
 @Injectable()
 export class AbiFetcherBscscan implements IAbiFetcher {
+  readonly name = this.constructor.name;
   bscscanApiUrl: string;
   bscscanApiKey: string;
   constructor(

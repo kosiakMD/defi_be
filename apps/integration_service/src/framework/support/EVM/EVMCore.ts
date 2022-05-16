@@ -3,7 +3,7 @@ import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
-import { chunk, normalizeDecimals } from '@app/common/utils';
+import { chunk, keepAddressesByChainId, normalizeDecimals } from '@app/common/utils';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/UniswapV2Pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -101,22 +101,38 @@ export abstract class EVMCore<
 
   /**
    * Overridden because currently all EVM tokens need to be
-   * lowercased in out system
+   * lowercased in our system
    */
   protected getUniqueTokensFromRawPools(pools: TMinimalType[]) {
     const tokens = new Set<string>();
-    const features = ['supplied', 'borrowed', 'rewarded'];
-    features.forEach((featureName) => {
-      pools.forEach((pool) => {
-        tokens.add(pool.id);
-
+    const multi = ['supplied', 'borrowed', 'rewarded'];
+    const single = ['supply', 'borrow', 'reward'];
+    pools.forEach((pool) => {
+      tokens.add(pool.id.toLowerCase()); // LP token, yearn/beefy vault, etc
+      multi.forEach((featureName) => {
+        // array tokens
         if (pool?.[featureName]?.length) {
-          pool[featureName].forEach((item) => tokens.add(item.token.address.toLowerCase()));
+          pool[featureName].forEach((item) => {
+            tokens.add(item.token.address.toLowerCase());
+
+            // TODO: This is only required if asset-service doesn't provide
+            // proper underlying token support (i.e. balancer, solana, etc)
+            if (item.token?.underlying) {
+              item.token?.underlying.map((token) => tokens.add(token.address.toLowerCase()));
+            }
+          });
+        }
+      });
+
+      // Single Tokens
+      single.forEach((featureName) => {
+        if (pool?.[featureName]) {
+          tokens.add(pool[featureName].token.address.toLowerCase());
         }
       });
     });
 
-    return Array.from(tokens);
+    return keepAddressesByChainId(Array.from(tokens), this.meta.chain);
   }
 
   /**

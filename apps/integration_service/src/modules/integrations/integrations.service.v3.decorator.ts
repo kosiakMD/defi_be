@@ -203,6 +203,7 @@ export class IntegrationsServiceV3Decorator {
           v2WalletChain.features.push(
             ...[FeatureEnum.claimable, FeatureEnum.borrowing, FeatureEnum.health],
           );
+
           v2WalletChain.features.forEach((feature) => {
             v3WalletChain.positions.lending.forEach((position) => {
               if (feature === FeatureEnum.health) {
@@ -241,6 +242,7 @@ export class IntegrationsServiceV3Decorator {
           });
         }
 
+        v2WalletChain.features = [...new Set(v2WalletChain.features)];
         return v2WalletChain;
       });
       return v2Wallet;
@@ -257,6 +259,7 @@ export class IntegrationsServiceV3Decorator {
           item.apy?.borrowApy ??
           item.apy?.stableApy ??
           item.apy?.variableApy;
+
       return plainToClass(LendingPositionDto, {
         address: item.token.address,
         balance: item.amount,
@@ -357,7 +360,7 @@ export class IntegrationsServiceV3Decorator {
       v2RewardToken.price = v3RewardToken.token.price;
       v2RewardToken.claimableData.balance = v3RewardToken.amount;
       v2RewardToken.claimableData.value = v3RewardToken.value;
-      v2RewardToken.apr = v3RewardToken.apr.year * 100;
+      v2RewardToken.apr = v3RewardToken.apr?.year * 100;
       return v2RewardToken;
     });
 

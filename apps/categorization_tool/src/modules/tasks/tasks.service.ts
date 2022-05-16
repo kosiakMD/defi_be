@@ -5,7 +5,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 // import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { REDIS_TASK_QUEUE, COMMON_TASK } from '../../common/constants';
+import { REDIS_TASK_QUEUE, REGULAR_TASK } from '../../common/constants';
 import { CommandUnparameterized } from '../../common/enum/service.enum';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class TasksService {
 
   async queueTask(data): Promise<void> {
     try {
-      await this.queue.add(COMMON_TASK, data);
+      await this.queue.add(REGULAR_TASK, data);
     } catch (error) {
       this.logger.error(`Error queueing task ${data.command}`);
       throw error;

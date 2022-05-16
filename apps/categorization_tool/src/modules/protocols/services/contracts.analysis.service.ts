@@ -32,7 +32,7 @@ export class ContractsAnalysisService {
     contract: string;
     minSimilarityRate: number;
   }): Promise<ListSimilarResults[]> {
-    const contractInDb = await this.contractsRepository.findOne({ address: contract });
+    const contractInDb = await this.contractsRepository.findByAddressCaseInsensitive(contract);
     if (!contractInDb) {
       return [];
     }

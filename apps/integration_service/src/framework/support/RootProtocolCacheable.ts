@@ -7,6 +7,7 @@ import { AccountService } from '../../modules/microservices/account.service';
 import { PriceService } from '../../modules/microservices/price.service';
 import { RootProtocol } from './RootProtocol';
 import {
+  IPoolDataProtocolResponse,
   IProtocolMeta,
   IWalletMinimal,
   IWalletOpportunity,
@@ -149,6 +150,41 @@ export abstract class RootProtocolCacheable<
   protected updateRealTimeData?(opportunities: TMinimal[]): Promise<TMinimal[]>;
 
   /**
+   * Formats the output for listing all pools.
+   * v3/protocols/:protocolName/opportunities
+   * used by the opportunities service
+   */
+  async getFormattedPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
+    const { data: pools, errors } = await this.getPoolData();
+
+    return { data: this.enforceTokenArrayOutput(pools), errors };
+  }
+
+  /**
+   * Converts all token types to be arrays if not already
+   */
+  protected enforceTokenArrayOutput(pools: TOpportunity[]): TOpportunity[] {
+    // Enforce array output
+    pools.forEach((pool) => {
+      if ('supply' in pool) {
+        pool.supplied = [pool.supply];
+        delete pool.supply;
+      }
+
+      if ('reward' in pool) {
+        pool.rewarded = [pool.reward];
+        delete pool.reward;
+      }
+
+      if ('borrow' in pool) {
+        pool.borrowed = [pool.borrow];
+        delete pool.borrow;
+      }
+    });
+    return pools;
+  }
+
+  /**
    * This will fetch all available opportunities for this protocol.
    * It will attempt to return the list from the cache, however if that
    * is not available, it will fetch the data live & cache it for the
@@ -156,32 +192,40 @@ export abstract class RootProtocolCacheable<
    *
    * @returns [Opportunities[], errors[]]
    */
-  async getPoolData(): Promise<[TOpportunity[], Error[]]> {
-    // get pool list from cache
-    const list = await this.cache.get<string[]>(this.poolListCacheKey);
+  async getPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
+    return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list`, async () => {
+      // get pool list from cache
+      const list = await this.cache.get<string[]>(this.poolListCacheKey);
 
-    if (!list?.length) {
-      // If protocol pool list is not available, then
-      // refetch all the pools and cache for the next user
-      // (Only would likely be used for new deploys, or failed background job)
-      this.logger.warn(`Failed to get pools list from cache. Fetching On Demand`, this.protocolId);
-      return this.hydrateOpportunityData(await this.cachePoolData());
-    }
+      if (!list?.length) {
+        // If protocol pool list is not available, then
+        // refetch all the pools and cache for the next user
+        // (Only would likely be used for new deploys, or failed background job)
+        this.logger.warn(
+          `Failed to get pools list from cache. Fetching On Demand`,
+          this.protocolId,
+        );
+        return this.hydrateOpportunityData(await this.cachePoolData());
+      }
 
-    // fetch all cached pools from redis
-    const pools = await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {});
+      // fetch all cached pools from redis
+      const pools = await this.cache.store.mget(
+        ...list.map(this.singlePoolCacheKey.bind(this)),
+        {},
+      );
 
-    if (list.length !== pools.length) {
-      // Should only occur if pools list is cached, however the pools themselves are not cached
-      // this could be an error due to ttl configuration between the pools. Falls back
-      // to just refetching all the pools for next time
-      this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
+      if (list.length !== pools.length) {
+        // Should only occur if pools list is cached, however the pools themselves are not cached
+        // this could be an error due to ttl configuration between the pools. Falls back
+        // to just refetching all the pools for next time
+        this.logger.warn('Pool list mismatch. Fetching On Demand', this.protocolId);
 
-      return this.hydrateOpportunityData(await this.cachePoolData());
-    }
+        return this.hydrateOpportunityData(await this.cachePoolData());
+      }
 
-    // Hydrate Cached Data
-    return this.hydrateOpportunityData(pools);
+      // Hydrate Cached Data
+      return this.hydrateOpportunityData(pools);
+    });
   }
 
   /**
@@ -195,13 +239,13 @@ export abstract class RootProtocolCacheable<
    */
   protected async hydrateOpportunityData(
     opportunities: TMinimal[],
-  ): Promise<[TOpportunity[], Error[]]> {
+  ): Promise<{ data: TOpportunity[]; errors: Error[] }> {
     let tokens;
     try {
       tokens = await this.getTokensForOpportunities(opportunities);
     } catch (e) {
       if (e) {
-        return [[], [e]];
+        return { data: [], errors: [e] };
       }
     }
     let updatedOpportunities;
@@ -219,7 +263,7 @@ export abstract class RootProtocolCacheable<
     }
 
     return (updatedOpportunities ? updatedOpportunities : opportunities).reduce(
-      ([finalOpportunityList, errors], opportunity) => {
+      ({ data: finalOpportunityList, errors }, opportunity) => {
         try {
           const pool = this.formatOpportunity(opportunity, tokens);
           if (pool) {
@@ -233,9 +277,9 @@ export abstract class RootProtocolCacheable<
         } catch (err) {
           errors.push(err);
         }
-        return [finalOpportunityList, errors];
+        return { data: finalOpportunityList, errors };
       },
-      [[], updatedOpportunitiesError ? [updatedOpportunitiesError] : []],
+      { data: [], errors: updatedOpportunitiesError ? [updatedOpportunitiesError] : [] },
     ); // hydrates each pool with full token details & live prices
   }
 
@@ -268,11 +312,13 @@ export abstract class RootProtocolCacheable<
    */
   protected getUniqueTokensFromRawPools(pools: TMinimal[]): Address[] {
     const tokens = new Set<string>();
-    const features = ['supplied', 'borrowed', 'rewarded'];
-    features.forEach((featureName) => {
-      pools.forEach((pool) => {
-        tokens.add(pool.id); // LP token, yearn/beefy vault, etc
+    const multi = ['supplied', 'borrowed', 'rewarded'];
+    const single = ['supply', 'borrow', 'reward'];
+    pools.forEach((pool) => {
+      tokens.add(pool.id); // LP token, yearn/beefy vault, etc
 
+      multi.forEach((featureName) => {
+        // array tokens
         if (pool?.[featureName]?.length) {
           pool[featureName].forEach((item) => {
             tokens.add(item.token.address);
@@ -285,9 +331,16 @@ export abstract class RootProtocolCacheable<
           });
         }
       });
+
+      // Single Tokens
+      single.forEach((featureName) => {
+        if (pool?.[featureName]) {
+          tokens.add(pool[featureName].token.address);
+        }
+      });
     });
 
-    return Array.from(tokens);
+    return Array.from(tokens); // TODO: Filter out invalid addresses
   }
 
   /**
@@ -352,9 +405,22 @@ export abstract class RootProtocolCacheable<
         throw new Error(`Failed to find Supplied: ${JSON.stringify(token)}`);
       }
 
-      base.supplied = opportunity.supplied?.map((poolToken) =>
+      base.supplied = opportunity.supplied.map((poolToken) =>
         this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
       );
+    }
+    if ('supply' in opportunity) {
+      if (!tokens.has(opportunity.supply.token.address)) {
+        // throw new MissingSuppliedToken(`Failed to find ${token}`, this.constructor.name)
+        throw new Error(`Failed to find Supplied: ${JSON.stringify(opportunity.supply.token)}`);
+      }
+
+      base.supplied = [
+        this.formatOpportunitySuppliedToken(
+          opportunity.supply,
+          tokens.get(opportunity.supply.token.address),
+        ),
+      ];
     }
 
     if ('rewarded' in opportunity) {
@@ -476,7 +542,9 @@ export abstract class RootProtocolCacheable<
    *
    * @param addresses User Addresses
    */
-  abstract getUsersData(addresses: Address[]): Promise<[Map<Address, TUserEntry[]>, Error[]]>; // fetch user balances for each pool, and filter to only owned pools
+  abstract getUsersData(
+    addresses: Address[],
+  ): Promise<{ data: Map<Address, TUserEntry[]>; errors: Error[] }>; // fetch user balances for each pool, and filter to only owned pools
 
   /****************************************************
    *

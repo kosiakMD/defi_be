@@ -9,17 +9,17 @@ import { Web3ProviderService } from '@app/common/web3provider/web3.provider.serv
 import { MetadataService } from '../../common/services/metadata/metadata.service';
 
 import { AssetsController } from '../../controllers/assets.controller';
-import { AssetsCategoryEntity } from '../assets-category/entities/assets-category.entity';
+import { AssetCategoryEntity } from '../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { IconsModule } from '../icons/icons.module';
-import { AssetsHistoricalPriceEntity } from '../prices/entities/assets-historical-price.entity';
-import { AssetsPriceEntity } from '../prices/entities/assets-price.entity';
+import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
+import { AssetPriceEntity } from '../prices/entities/asset-price.entity';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
 import { AssetsPriceRepository } from '../prices/repositories/asset-price.repository';
-import { AssetsCandidateEntity } from './entities/assets-candidate.entity';
-import { AssetsInvalidAddressEntity } from './entities/assets-invalid-address.entity';
-import { AssetUnderlyingEntity } from './entities/assets-underlying.entity';
-import { AssetsEntity } from './entities/assets.entity';
+import { AssetCandidateEntity } from './entities/asset-candidate.entity';
+import { AssetInvalidAddressEntity } from './entities/asset-invalid-address.entity';
+import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
+import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
 import { TrackedTokenPopulationProcessor } from './processors/tracked-token-population.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
@@ -33,17 +33,17 @@ import { TokenService } from './services/token.service';
       name: 'assets',
     }),
     TypeOrmModule.forFeature([
-      AssetsCandidateEntity,
+      AssetCandidateEntity,
       AssetsCandidateRepository,
-      AssetsCategoryEntity,
+      AssetCategoryEntity,
       AssetsCategoryRepository,
-      AssetsEntity,
+      AssetEntity,
       AssetsRepository,
-      AssetsPriceEntity,
+      AssetPriceEntity,
       AssetsPriceRepository,
-      AssetsHistoricalPriceEntity,
+      AssetHistoricalPriceEntity,
       AssetsHistoricalPriceRepository,
-      AssetsInvalidAddressEntity,
+      AssetInvalidAddressEntity,
       AssetUnderlyingEntity,
     ]),
     IconsModule,

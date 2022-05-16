@@ -15,7 +15,7 @@ import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
@@ -141,8 +141,8 @@ export class LidoStaking
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, IStakingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<IStakingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
     const wallets = new Map();
 
     try {
@@ -188,7 +188,7 @@ export class LidoStaking
       errors.push(err);
     }
 
-    return [wallets, errors];
+    return { data: wallets, errors };
   }
 
   protected async getStats() {

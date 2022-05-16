@@ -1,12 +1,12 @@
-import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
+import { PriceSourceConfig } from 'apps/assets_service/src/common/types/price-source-config.type';
 import axios, { AxiosRequestConfig } from 'axios';
 
 import { ChainIdEnum } from '@app/common/enum';
 import { delay } from '@app/common/helpers/delay';
 import { ChainCoinAddresses } from '@app/common/utils/chains';
 
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
 import { PriceStrategy } from './strategy';
 
 // TO_CHECK all Solana strategy

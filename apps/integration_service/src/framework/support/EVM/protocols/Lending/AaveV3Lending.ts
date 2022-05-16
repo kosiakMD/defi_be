@@ -18,6 +18,7 @@ import {
   INamedFunctions,
   IProtocolMeta,
   IRootProtocol,
+  IUserDataProtocolResponse,
 } from '../../../interfaces';
 import {
   ILendingFeatureEntryMinimal,
@@ -248,8 +249,8 @@ export class AaveV3Lending
 
   async getUsersData(
     addresses: Address[],
-  ): Promise<[Map<Address, ILendingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<ILendingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
 
     const results = new Map<Address, ILendingFeatureUserEntry[]>(
       addresses.map((address) => [address, [] as ILendingFeatureUserEntry[]]),
@@ -304,6 +305,7 @@ export class AaveV3Lending
 
         results.get(address).push({
           feature: FeatureEnum.lending,
+          id: 'aave-lending',
           chain: this.meta.chain,
           borrowed: borrowTokens,
           supplied: supplyTokens,
@@ -317,7 +319,7 @@ export class AaveV3Lending
     } catch (err) {
       errors.push(err);
     }
-    return [results, errors];
+    return { data: results, errors };
   }
 
   formatLendingUserData(pool: IBorrowTokenOpportunity | ISupplyTokenOpportunity, balance: string) {

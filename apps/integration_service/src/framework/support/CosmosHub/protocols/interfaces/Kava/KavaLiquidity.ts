@@ -1,7 +1,7 @@
 import type { FeatureEnum } from '@app/common';
 
 import type { IProtocolMeta } from '../../../../interfaces';
-import { IPoolFeatureEntryGeneric } from '../../../../interfaces/feature.pool.interface';
+import { BaseWithTokens } from '../../../../interfaces/new.interfaces';
 import { IRewardTokenMinimal } from '../../../../interfaces/tokens.rewarded.interface';
 import { ISupplyTokenMinimal } from '../../../../interfaces/tokens.supplied.interface';
 
@@ -50,7 +50,9 @@ export interface IKavaSupplyTokenMinimal extends ISupplyTokenMinimal {
   };
 }
 
-export type IKavaPoolFeatureEntryMinimal = IPoolFeatureEntryGeneric<
-  IKavaSupplyTokenMinimal,
-  IRewardTokenMinimal
+export type IKavaPoolFeatureEntryMinimal = BaseWithTokens<
+  IKavaSupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  void,
+  void
 >;

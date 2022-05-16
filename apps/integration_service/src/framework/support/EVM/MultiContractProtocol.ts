@@ -10,6 +10,7 @@ import {
   INamedFunctionPredicates,
   INamedFunctions,
   IProtocolMeta,
+  IUserDataProtocolResponse,
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
@@ -117,8 +118,8 @@ export abstract class MultiContractProtocol<
     return this.fetchOpportunityData(this.meta.context ?? {});
   }
 
-  async getUsersData(addresses: string[]): Promise<[Map<string, TUserEntryType[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  async getUsersData(addresses: string[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
+    const { data: pools, errors } = await this.getPoolData();
 
     const results = new Map<Address, TUserEntryType[]>(
       addresses.map((address) => [address, [] as TUserEntryType[]]),
@@ -139,7 +140,7 @@ export abstract class MultiContractProtocol<
       errors.push(err);
     }
 
-    return [results, errors];
+    return { data: results, errors };
   }
 
   /*******

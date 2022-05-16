@@ -6,6 +6,7 @@ import {
   INamedFunctionPredicates,
   INamedFunctions,
   IProtocolMeta,
+  IUserDataProtocolResponse,
   IWalletMinimal,
   IWalletOpportunity,
   IWalletUserEntry,
@@ -94,8 +95,8 @@ export abstract class SingleContractProtocol<
    * @param addresses user addresses
    * @returns user wallets related to this protocol
    */
-  async getUsersData(addresses: Address[]): Promise<[Map<Address, TUserEntryType[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
+    const { data: pools, errors } = await this.getPoolData();
 
     const results = new Map<Address, TUserEntryType[]>(
       addresses.map((address) => [address, [] as TUserEntryType[]]),
@@ -116,7 +117,7 @@ export abstract class SingleContractProtocol<
       errors.push(err);
     }
 
-    return [results, errors];
+    return { data: results, errors };
   }
 
   /**************

@@ -4,7 +4,7 @@ import { OnQueueActive, OnQueueCompleted, OnQueueFailed, Process, Processor } fr
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { REDIS_TASK_QUEUE, COMMON_TASK } from '../../common/constants';
+import { REDIS_TASK_QUEUE, REGULAR_TASK } from '../../common/constants';
 import { ListProtocolsDTO } from '../../common/dto/service.dto';
 import {
   CommandUnparameterized,
@@ -28,7 +28,7 @@ export class TasksProcessor {
     private readonly tasksService: TasksService,
   ) {}
 
-  @Process(COMMON_TASK) // the name of the executed task
+  @Process(REGULAR_TASK) // the name of the executed task
   public async process(
     job: Job<{
       command: CommandType;
@@ -45,7 +45,7 @@ export class TasksProcessor {
           CommandUnparameterized.parse_protocols_app_page,
           CommandUnparameterized.parse_protocols_docs_page,
           CommandUnparameterized.fetch_abi,
-          CommandUnparameterized.analyse_contracts,
+          CommandUnparameterized.analyse_contracts_against_templates,
         ]) {
           await this.tasksService.queueTask({ command });
         }

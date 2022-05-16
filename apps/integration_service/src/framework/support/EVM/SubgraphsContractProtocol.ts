@@ -1,7 +1,13 @@
 import { Address } from '@app/common';
 
 import { RootProtocolCacheable } from '../RootProtocolCacheable';
-import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
+import {
+  IProtocolMeta,
+  IUserDataProtocolResponse,
+  IWalletMinimal,
+  IWalletOpportunity,
+  IWalletUserEntry,
+} from '../interfaces';
 
 export abstract class SubgraphsContractProtocol<
   TMinimalType extends IWalletMinimal,
@@ -23,8 +29,8 @@ export abstract class SubgraphsContractProtocol<
    * @param addresses user addresses
    * @returns user wallets related to this protocol
    */
-  async getUsersData(addresses: Address[]): Promise<[Map<Address, TUserEntryType[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
+    const { data: pools, errors } = await this.getPoolData();
 
     const results = new Map<Address, TUserEntryType[]>(
       addresses.map((address) => [address, [] as TUserEntryType[]]),
@@ -41,7 +47,7 @@ export abstract class SubgraphsContractProtocol<
       errors.push(err);
     }
 
-    return [results, errors];
+    return { data: results, errors };
   }
 
   protected async updateTokenData(tokens: any) {

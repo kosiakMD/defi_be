@@ -1,6 +1,4 @@
-import { FeatureEnum } from '@app/common';
-
-import { IPartialBaseFeature } from './feature.common.interface';
+import { BaseWithTokens } from './new.interfaces';
 import {
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
@@ -12,25 +10,26 @@ import {
   ISupplyTokenUserEntry,
 } from './tokens.supplied.interface';
 
-export interface IStakingFeatureEntryGeneric<TSupplied, TRewarded> extends IPartialBaseFeature {
-  feature: FeatureEnum.staking;
-  supplied: TSupplied[];
-  rewarded: TRewarded[];
-}
 // raw web3 minimal data (tokens are just an address, numbers are stringified BigNumber)
-export type IStakingFeatureMinimal = IStakingFeatureEntryGeneric<
-  ISupplyTokenMinimal,
-  IRewardTokenMinimal
+export type IStakingFeatureMinimal = BaseWithTokens<
+  ISupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  void,
+  any
 >;
 
 // User-less opportunities (getOpportunities)
-export type IStakingFeatureOpportunity = IStakingFeatureEntryGeneric<
-  ISupplyTokenOpportunity,
-  IRewardTokenOpportunity
+export type IStakingFeatureOpportunity = BaseWithTokens<
+  ISupplyTokenOpportunity[],
+  IRewardTokenOpportunity[],
+  void,
+  any
 >;
 
 // User Info (getUserPositions)
-export type IStakingFeatureUserEntry = IStakingFeatureEntryGeneric<
-  ISupplyTokenUserEntry,
-  IRewardTokenUserEntry
+export type IStakingFeatureUserEntry = BaseWithTokens<
+  ISupplyTokenUserEntry[],
+  IRewardTokenUserEntry[],
+  void,
+  any
 >;

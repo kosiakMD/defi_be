@@ -1,9 +1,11 @@
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, lastValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { delay } from '@app/common/helpers/delay';
 
 import { ChainAbi } from '../../../interfaces/abi.interfaces';
 import { IAbiFetcher } from './abi.fetcher.interface';
@@ -11,6 +13,9 @@ import { IAbiFetcher } from './abi.fetcher.interface';
 @Injectable()
 export class AbiFetcherTenderly implements IAbiFetcher {
   readonly apiUrl: string;
+  readonly name = this.constructor.name;
+  readonly retryInterval = 30000; //30 seconds
+  readonly maxRetries = 3;
 
   private chainsInfo: Map<string, string>;
 
@@ -32,15 +37,28 @@ export class AbiFetcherTenderly implements IAbiFetcher {
     return this.getContractDetails(chainId, address);
   }
 
-  private async getContractDetails(chain: string, address: string): Promise<ChainAbi> {
-    const details = await firstValueFrom(
-      this.httpService.get(`${this.apiUrl}/v1/public-contracts/${chain}/${address}`),
-    );
-    return {
-      chain: this.chainsInfo.get(chain),
-      abi: JSON.stringify(details.data.data.raw_abi),
-      abiCode: details.data.data.contract_info[0].source,
-    };
+  private async getContractDetails(chain: string, address: string, retries = 0): Promise<ChainAbi> {
+    try {
+      const details = await lastValueFrom(
+        this.httpService.get(`${this.apiUrl}/v1/public-contracts/${chain}/${address}`),
+      );
+      return {
+        chain: this.chainsInfo.get(chain),
+        abi: JSON.stringify(details.data.data.raw_abi),
+        abiCode: details.data.data.contract_info[0].source,
+      };
+    } catch (e) {
+      if (e.response.status === HttpStatus.TOO_MANY_REQUESTS) {
+        this.logger.warn(`TOO_MANY_REQUESTS, waiting for ${this.retryInterval} ms`, this.name);
+        if (retries < this.maxRetries) {
+          await delay(this.retryInterval);
+          this.logger.debug(`retrying: address=[${address}]`);
+          return this.getContractDetails(chain, address, retries + 1);
+        }
+        this.logger.warn(`too many attempts (${retries}), giving up`);
+      }
+      throw e;
+    }
   }
 
   private async searchForChainsWithContract(address: string): Promise<string[]> {

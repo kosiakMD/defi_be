@@ -8,8 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AssetsRepository } from '../assets/repositories/assets.repository';
-import { PriceSourceMetadata } from './dto/PriceSourceMetadata.dto';
-import { PriceSourceEntity } from './entities/price-sources.entity';
+import { PriceSourceEntity } from './entities/price-source.entity';
 import { PriceSourceRepository } from './repositories/price-source.repository';
 
 @Injectable()
@@ -64,7 +63,10 @@ export class PriceJobEmitter {
       this.logger.debug(
         `Try to pocessing Price Source ${processingPriceSource.name} for historical prices job`,
       );
-      const metadata = processingPriceSource?.metadata || new PriceSourceMetadata();
+      const metadata = processingPriceSource?.metadata || {
+        lastExecutionHistoricalPricesJob: 0,
+        lastOperation: 0,
+      };
       const historicalPriceJobInterval =
         (processingPriceSource?.config?.historicalPriceJobInterval ||
           this.configService.get('ASSETS_HISTORICAL_PRICE_JOB_INTERVAL')) * 1000; // 15 min default historical prices processing interval
@@ -127,7 +129,10 @@ export class PriceJobEmitter {
           { lock: { mode: 'pessimistic_write' } },
         );
         const { config, id: sourceId, name, type: strategy } = processingPriceSource;
-        const metadata = processingPriceSource.metadata || new PriceSourceMetadata();
+        const metadata = processingPriceSource.metadata || {
+          lastExecutionHistoricalPricesJob: 0,
+          lastOperation: 0,
+        };
         this.logger.debug(`Try to process price source id: ${sourceId}`);
         const currentPriceJobInterval =
           (config?.currentPriceJobInterval ||

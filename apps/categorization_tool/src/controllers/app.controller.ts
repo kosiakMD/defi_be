@@ -34,8 +34,8 @@ export class AppController {
   }
 
   @Get('/requests/similar-contract')
-  @ApiQuery({ name: 'contract' })
-  @ApiQuery({ name: 'minSimilarityRate' })
+  @ApiQuery({ name: 'minSimilarityRate', example: 0.5 })
+  @ApiQuery({ name: 'contract', example: '0xEF0881eC094552b2e128Cf945EF17a6752B4Ec5d' })
   public async getSimilarContracts(
     @Query() similarData: { contract: string; minSimilarityRate: number },
   ) {

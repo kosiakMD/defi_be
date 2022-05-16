@@ -29,7 +29,7 @@ export class AbiFetcherService {
       try {
         return await abiFetcher.fetchAbiAndAbiCode(contract);
       } catch (e) {
-        this.logger.warn(`abiFetcher.fetchAbiAndAbiCode error - ${e.message}`);
+        this.logger.warn(`${abiFetcher.name} error - ${e.message}`);
       }
     }
     return { chain: null, abi: null, abiCode: null };

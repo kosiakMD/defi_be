@@ -6,7 +6,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MetadataService } from '../../../../common/services/metadata/metadata.service';
 
-import { AssetsEntity } from '../../entities/assets.entity';
+import { AssetEntity } from '../../entities/asset.entity';
 
 // TODO: Rename class to more specific
 export abstract class UnderlyingTokenStrategy {
@@ -17,5 +17,5 @@ export abstract class UnderlyingTokenStrategy {
     protected readonly multicall: MulticallAggregator,
   ) {}
   // TODO: Rename method and not return any
-  public abstract attemptToLoadUnderlyingTokens(asset: AssetsEntity): Promise<string[]>;
+  public abstract attemptToLoadUnderlyingTokens(asset: AssetEntity): Promise<string[]>;
 }

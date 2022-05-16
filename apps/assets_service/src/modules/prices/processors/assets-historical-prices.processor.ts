@@ -6,15 +6,15 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { JobCompleteStates } from '../../../common/enum/JobStates.enum';
+import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetsService } from '../../assets/services/assets.service';
-import { AssetsHistoricalPriceEntity } from '../entities/assets-historical-price.entity';
+import { AssetHistoricalPriceEntity } from '../entities/asset-historical-price.entity';
 import { TimeGranularity } from '../enums/time-granularity.enum';
 import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
 import { AssetsPriceRepository } from '../repositories/asset-price.repository';
-import { HistoricalPriceJobData } from '../types/HistoricalPriceJobData.type';
+import { HistoricalPriceJobData } from '../types/historical-price-job-data.type';
 
 @Processor('assets')
 export class AssetsHistoricalPricesProcessor {
@@ -48,7 +48,7 @@ export class AssetsHistoricalPricesProcessor {
   ): Promise<void> {
     const candles = await this.assetsPriceRepository.getAssetPriceCandles(assetId, timeGranularity);
     const candleEntities = candles.map((candle) => {
-      const candleEntity = new AssetsHistoricalPriceEntity();
+      const candleEntity = new AssetHistoricalPriceEntity();
       Object.assign(candleEntity, candle, { timestamp: candle.time });
       return candleEntity;
     });

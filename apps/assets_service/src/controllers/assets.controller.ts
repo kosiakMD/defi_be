@@ -1,14 +1,14 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
 import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { GetAssetsResponseDto } from '../common/dto/GetAssetsResponse.dto';
-import { HistoricalPricesQuery } from '../common/dto/HistoricalPricesQuery.dto';
-import { SearchResultsEntryDto } from '../common/dto/SearchResultsEntry.dto';
-import { SearchParams, SearchResultsAssetEntry } from '../common/interfaces/search.interface';
+import { SearchParams } from '../common/interfaces/search.interfaces';
 
-import { AssetsCandidateDto } from '../modules/assets/dto/assets-candidate.dto';
-import { AssetsGetBulkDto } from '../modules/assets/dto/assets-get-bulk.dto';
-import { AssetsGetDto } from '../modules/assets/dto/assets-get.dto';
+import { AssetCandidateRequest } from '../modules/assets/dto/asset-candidate.request';
+import { GetAssetRequest } from '../modules/assets/dto/get-asset.request';
+import { GetAssetResponse } from '../modules/assets/dto/get-asset.response';
+import { GetAssetsRequest } from '../modules/assets/dto/get-assets.request';
+import { GetAssetsResponse } from '../modules/assets/dto/get-assets.response';
+import { SearchResultsEntryDto } from '../modules/assets/dto/search-results-entry.dto';
 import { AssetsService } from '../modules/assets/services/assets.service';
 
 @ApiTags('Assets')
@@ -17,47 +17,20 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Get('/')
-  @ApiQuery({
-    name: 'address',
-    type: String,
-    description: 'address to get or process an asset',
-    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-    required: true,
-  })
-  @ApiQuery({
-    name: 'chainId',
-    type: Number,
-    description: 'text to search assets by name or symbol',
-    example: 22,
-    required: true,
-  })
-  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
-  async get(@Query() query: AssetsGetDto): Promise<GetAssetsResponseDto> {
-    return new GetAssetsResponseDto([await this.assetsService.getAsset(query)]);
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetResponse })
+  async get(@Query() query: GetAssetRequest): Promise<GetAssetResponse> {
+    const response = new GetAssetResponse();
+    response.asset = await this.assetsService.getAsset(query);
+    return response;
   }
 
   @Post('/get-bulk')
-  @ApiQuery({
-    name: 'address',
-    type: String,
-    description: 'address to get or process an asset',
-    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
-    required: true,
-  })
-  @ApiQuery({
-    name: 'chainId',
-    type: Number,
-    description: 'text to search assets by name or symbol',
-    example: 22,
-    required: true,
-  })
-  @ApiBody({ type: [AssetsGetBulkDto] })
-  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponseDto })
-  async getBulk(
-    @Body() body: AssetsGetDto[],
-    @Query() query: HistoricalPricesQuery,
-  ): Promise<GetAssetsResponseDto> {
-    return new GetAssetsResponseDto(await this.assetsService.getBulkAssets(body, query));
+  @ApiBody({ type: GetAssetsRequest })
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponse })
+  async getBulk(@Body() body: GetAssetsRequest): Promise<GetAssetsResponse> {
+    const response = new GetAssetsResponse();
+    response.assets = await this.assetsService.getBulkAssets(body.assets);
+    return response;
   }
 
   @Get('/search')
@@ -78,18 +51,19 @@ export class AssetsController {
   @ApiQuery({
     name: 'limit',
     type: Number,
-    description: 'maximal number of rearch result entries',
+    description: 'maximal number of search result entries',
     example: 30,
     required: false,
   })
-  @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })
-  async search(@Query() query: SearchParams): Promise<SearchResultsAssetEntry[]> {
+  @ApiResponse({ status: HttpStatus.OK, type: [SearchResultsEntryDto] })
+  async search(@Query() query: SearchParams): Promise<SearchResultsEntryDto[]> {
     return this.assetsService.search(query);
   }
 
   @Post('/candidate')
-  @ApiResponse({ status: HttpStatus.OK })
-  saveAssetsCandidate(@Body() body: AssetsCandidateDto) {
-    return this.assetsService.saveAssetCandidate(body);
+  @ApiResponse({ status: HttpStatus.ACCEPTED })
+  async saveAssetsCandidate(@Body() body: AssetCandidateRequest) {
+    await this.assetsService.saveAssetCandidate(body);
+    return HttpStatus.ACCEPTED;
   }
 }

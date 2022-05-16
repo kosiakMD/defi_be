@@ -1,6 +1,4 @@
-import { FeatureEnum } from '@app/common';
-
-import { IPartialBaseFeature } from './feature.common.interface';
+import { BaseWithTokens } from './new.interfaces';
 import './tokens.borrowed.interface';
 import {
   IBorrowTokenMinimal,
@@ -20,26 +18,18 @@ import {
   ISupplyTokenUserEntry,
 } from './tokens.supplied.interface';
 
-export interface ILendingFeatureEntryGeneric<TSupplied, TRewarded, TBorrowed>
-  extends IPartialBaseFeature {
-  feature: FeatureEnum.lending;
-  supplied: TSupplied[];
-  rewarded: TRewarded[];
-  borrowed: TBorrowed[];
-}
-
-export type ILendingFeatureEntryMinimal = ILendingFeatureEntryGeneric<
-  ISupplyTokenMinimal,
-  IRewardTokenMinimal,
-  IBorrowTokenMinimal
+export type ILendingFeatureEntryMinimal = BaseWithTokens<
+  ISupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  IBorrowTokenMinimal[]
 >;
-export type ILendingFeatureOpportunity = ILendingFeatureEntryGeneric<
-  ISupplyTokenOpportunity,
-  IRewardTokenOpportunity,
-  IBorrowTokenOpportunity
+export type ILendingFeatureOpportunity = BaseWithTokens<
+  ISupplyTokenOpportunity[],
+  IRewardTokenOpportunity[],
+  IBorrowTokenOpportunity[]
 >;
-export type ILendingFeatureUserEntry = ILendingFeatureEntryGeneric<
-  ISupplyTokenUserEntry,
-  IRewardTokenUserEntry,
-  IBorrowTokenUserEntity
+export type ILendingFeatureUserEntry = BaseWithTokens<
+  ISupplyTokenUserEntry[],
+  IRewardTokenUserEntry[],
+  IBorrowTokenUserEntity[]
 > & { debtRatio: number };

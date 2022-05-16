@@ -1,10 +1,10 @@
-import { UNIV2LP } from '../../../../common/contracts/UNIV2LP';
+import { UNIV2LP } from '../../../../common/contracts/univ2-lp.contract';
 
-import { AssetsEntity } from '../../entities/assets.entity';
+import { AssetEntity } from '../../entities/asset.entity';
 import { UnderlyingTokenStrategy } from './token-strategy';
 
 export class UniswapStrategy extends UnderlyingTokenStrategy {
-  attemptToLoadUnderlyingTokens(asset: AssetsEntity) {
+  attemptToLoadUnderlyingTokens(asset: AssetEntity) {
     const assetContract = new UNIV2LP(
       asset.address,
       this.metadataService.getInstanceByChainId(asset.chainId),

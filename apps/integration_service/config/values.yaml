@@ -88,7 +88,7 @@ configMaps:
     #POLYGON_URL: https://polygon-rpc-call.com/
     POLYGON_URL: http://rpc-nodes-service/v1/rpc-call/3
     #SOL_URL: https://solana-api.projectserum.com/
-    SOL_URL: https://solana-api.projectserum.com/
+    SOL_URL: https://rpc.ankr.com/solana
     #BOBA_URL: https://lightning-replica.boba.network
     BOBA_URL: http://rpc-nodes-service/v1/rpc-call/15
     #CRONOS_URL: https://evm-cronos.crypto.org

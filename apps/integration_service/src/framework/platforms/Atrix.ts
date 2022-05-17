@@ -5,7 +5,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 
 import { RootPlatform } from '../support/RootPlatform';
-import { AtrixStaking, IAtrixSolanaMeta } from '../support/Solana/protocols/Yield/AtrixStaking';
+import { AtrixStaking } from '../support/Solana/protocols/Yield/AtrixStaking';
+import { IAtrixSolanaMeta } from '../support/Solana/protocols/interfaces/Atrix/AtrixStaking';
 
 export class Atrix extends RootPlatform {
   constructor(
@@ -31,7 +32,7 @@ export class Atrix extends RootPlatform {
       name: 'Atrix - Staking',
       feature: FeatureEnum.staking,
       context: {
-        endpoint: 'https://api.atrix.finance/api/all',
+        endpoint: 'https://api.atrix.finance/api/farms',
         programID: 'BLDDrex4ZSWBgPYaaH6CQCzkJXWfzCiiur9cSFJT8t3x',
       },
     });

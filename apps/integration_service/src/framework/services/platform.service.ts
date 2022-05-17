@@ -13,6 +13,7 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { Atrix } from '../platforms/Atrix';
 import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { Belt } from '../platforms/Belt';
@@ -41,7 +42,6 @@ import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { YelFinance } from '../platforms/YelFinance';
-import { Atrix } from '../platforms/Atrix';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {

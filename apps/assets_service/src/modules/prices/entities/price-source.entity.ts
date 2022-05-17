@@ -23,7 +23,4 @@ export class PriceSourceEntity extends BaseEntity {
 
   @Column()
   enabled: boolean;
-
-  @Column({ type: 'json' })
-  metadata: PriceSourceMetadata;
 }

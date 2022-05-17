@@ -28,7 +28,7 @@ export class AssetEntity extends BaseEntity {
   @Column({ type: Number, nullable: false })
   public decimals: number;
 
-  // TODO: It should be saved into database
+  // TODO*: It should be saved into database
   public averagePrice?: number;
 
   @Column({ type: Number, nullable: true })

@@ -21,8 +21,6 @@ export const validationSchema = Joi.object({
     .required(),
   USE_REDIS_TO_GET_ASSETS: Joi.boolean() //
     .default(true),
-  UPDATE_ASSET_PRICES_IN_DB: Joi.boolean() //
-    .default(true),
   ACCOUNT_SERVICE_CHAINS_LIST_URL: Joi.string() //
     .required(),
   ASSETS_QUEUE_NAME: Joi.string() //

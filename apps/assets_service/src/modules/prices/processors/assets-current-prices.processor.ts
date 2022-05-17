@@ -54,6 +54,7 @@ export class AssetsCurrentPricesProcessor {
   }
 
   private async clearDBOnCurrentPrices(): Promise<void> {
+    // TODO: implement database time granularity cleaning
     try {
       await this.assetsPriceRepository.delete({
         timestamp: LessThan(
@@ -70,8 +71,8 @@ export class AssetsCurrentPricesProcessor {
 
   private async updateAssetPrice(assetPrice: AssetPrice): Promise<void> {
     try {
-      const { chainId, address, price, sourceId } = assetPrice;
-      const assetFromCache = (await this.assetsService.getAssetsFromCache([assetPrice])).shift();
+      const { price, sourceId } = assetPrice;
+      const [assetFromCache] = await this.assetsService.getAssetsFromCache([assetPrice]);
       if (assetFromCache) {
         if (!assetFromCache.prices) {
           assetFromCache.prices = [];
@@ -89,22 +90,10 @@ export class AssetsCurrentPricesProcessor {
         }
         await this.assetsService.setAssetsToCache([assetFromCache]);
       }
-      if (this.configService.get('UPDATE_ASSET_PRICES_IN_DB')) {
-        const asset = await this.assetRepository.findOne({
-          where: { chainId, address },
-        });
-        // TODO check if we need to filter price sources
-        if (asset) {
-          const { id: assetId } = asset;
-          await this.assetsPriceRepository.save({
-            assetId,
-            price,
-            sourceId,
-          });
-        }
-      }
     } catch (error) {
-      this.logger.error(`Error to update asset price ${JSON.stringify(assetPrice)}`);
+      this.logger.error(
+        `Error to update asset price ${JSON.stringify(assetPrice)} ${JSON.stringify(error)}`,
+      );
     }
   }
 

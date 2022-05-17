@@ -4,9 +4,9 @@ import { AssetCategoryEntity } from '../entities/asset-category.entity';
 
 @EntityRepository(AssetCategoryEntity)
 export class AssetsCategoryRepository extends Repository<AssetCategoryEntity> {
-  findOneByName(name: string): Promise<AssetCategoryEntity> {
+  findOneByCode(code: string): Promise<AssetCategoryEntity> {
     return this.findOne({
-      where: { name },
+      where: { code },
     });
   }
 }

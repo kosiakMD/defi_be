@@ -15,6 +15,7 @@ import { ProtocolsRepository } from '../database/repositories/protocols.repo';
 import { ProtocolService } from './protocols.service';
 import { AbiFetcherBscscan } from './services/abi/fetcher/abi.fetcher.bscscan';
 import { AbiFetcherEtherscan } from './services/abi/fetcher/abi.fetcher.etherscan';
+import { AbiFetcherHelper } from './services/abi/fetcher/abi.fetcher.helper';
 import { AbiFetcherService } from './services/abi/fetcher/abi.fetcher.service';
 import { AbiFetcherTenderly } from './services/abi/fetcher/abi.fetcher.tenderly';
 import { ContractsAnalysisService } from './services/contracts.analysis.service';
@@ -51,6 +52,7 @@ import { GeneralPageParsing } from './strategies/contract';
     AbiFetcherTenderly,
     AbiFetcherEtherscan,
     AbiFetcherBscscan,
+    AbiFetcherHelper,
     GithubService,
     AbiFetcherService,
     ContractsAnalysisService,

@@ -81,7 +81,7 @@ export class TrackedTokenPopulationProcessor {
           this.logger.warn(`Unknown Coingecko chain! No platform: ${chain} in Database`);
         } else if (address) {
           await this.assetsProcessor.processAsset({ address, chainId, isTracked: true });
-          await delay(50); // need this dealy beacuse of rate limits in case a lot of tokens
+          await delay(50); // need this delay because of rate limits in case a lot of tokens
         }
       }
     }

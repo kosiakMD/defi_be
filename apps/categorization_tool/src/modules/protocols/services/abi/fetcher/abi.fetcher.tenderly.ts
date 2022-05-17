@@ -55,7 +55,7 @@ export class AbiFetcherTenderly implements IAbiFetcher {
           this.logger.debug(`retrying: address=[${address}]`);
           return this.getContractDetails(chain, address, retries + 1);
         }
-        this.logger.warn(`too many attempts (${retries}), giving up`);
+        this.logger.warn(`too many attempts (${retries}), giving up`, this.name);
       }
       throw e;
     }

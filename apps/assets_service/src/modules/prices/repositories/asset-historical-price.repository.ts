@@ -7,6 +7,6 @@ export class AssetsHistoricalPriceRepository extends Repository<AssetHistoricalP
   public async updateAssetPrices(
     assetsHistoricalPrices: AssetHistoricalPriceEntity[],
   ): Promise<void> {
-    await this.upsert(assetsHistoricalPrices, ['assetId', 'timestamp', 'timeGranularity']);
+    await this.upsert(assetsHistoricalPrices, ['asset_id', 'timestamp', 'time_granularity']);
   }
 }

@@ -52,7 +52,7 @@ export class AssetsHistoricalPricesProcessor {
       Object.assign(candleEntity, candle, { timestamp: candle.time });
       return candleEntity;
     });
-    await this.assetsHistoricalPriceRepository.updateAssetPrices(candleEntities);
+    await this.assetsHistoricalPriceRepository.save(candleEntities);
   }
 
   private async processingJob(jobData: HistoricalPriceJobData): Promise<void> {

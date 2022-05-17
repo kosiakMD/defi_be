@@ -106,7 +106,10 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
   }
 
   private internalFuzzyFind(fullSearch: string) {
-    const searchItems = fullSearch.split(',').map((a) => a.trim().toLowerCase());
+    const searchItems = fullSearch
+      .split(',')
+      .map((a) => a.trim().toLowerCase())
+      .filter(Boolean);
 
     const first = searchItems.shift();
 

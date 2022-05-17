@@ -49,7 +49,7 @@ export class DebankStrategy extends PriceStrategy {
       const debankChain = chains.find((chain) => chain.id === chainId)?.metadata?.debankPlatformId;
       if (!debankChain) {
         this.logger.error(
-          `No Coingecko chain in database on chainId: ${chainId}, see https://pro-openapi.debank.com/v1/chain/list community_ids`,
+          `No Debank chain in database on chainId: ${chainId}, see https://pro-openapi.debank.com/v1/chain/list community_ids`,
         );
         continue;
       }

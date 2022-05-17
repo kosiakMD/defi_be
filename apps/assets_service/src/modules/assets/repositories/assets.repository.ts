@@ -33,21 +33,13 @@ export class AssetsRepository extends Repository<AssetEntity> {
     });
   }
 
-  // TODO: This method is not doing what mentions in name
-  // TODO: Why do we do group by and order by
-  // return this.createQueryBuilder('assets')
-  //   .select('assets.column')
-  //   .distinct(true)
-  //   .getRawMany();
   async getAllTrackedAssetChains(): Promise<number[]> {
-    return (
-      await this.query(`
-      SELECT DISTINCT ON ("assets"."chain_id") "assets"."chain_id"
-      FROM "assets"
-      GROUP BY "assets"."chain_id"
-      ORDER BY "assets"."chain_id" ASC
-    `)
-    ).flatMap((item) => Object.values(item));
+    const chains = await this.createQueryBuilder('assets')
+      .select('assets.chain_id as "chainId"')
+      .where('assets.is_tracked = true and assets.disabled = false')
+      .distinct(true)
+      .getRawMany();
+    return chains.map(({ chainId }) => chainId);
   }
 
   async findAssetsByParams({ address, text, limit }: SearchParams): Promise<AssetEntity[]> {

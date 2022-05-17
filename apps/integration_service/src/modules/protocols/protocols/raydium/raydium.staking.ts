@@ -77,10 +77,9 @@ export class RaydiumStaking {
 
     for (const b of balances) {
       const vault = cachedPoolsMap.get(b.poolId);
-      // tooo: add fusion (version 5 vaults here)
-      if (!vault) {
-        continue;
-      }
+      // TODO: add fusion (version 5 vaults here)
+      if (!vault || (new BN(b.depositBalance).isZero() && new BN(b.rewardDebt).isZero())) continue;
+
       const stakingPosition: IntegrationStakingPositionDto = cloneDeep(vault);
       const balance = new BN(b.depositBalance).div(decimalsDivider(vault.stakingToken.decimals));
       const userShare = balance.div(new BN(vault.stakingToken.totalSupply));
@@ -205,5 +204,8 @@ function getPendingValueV3(stakingPosition: IntegrationStakingPositionDto, rewar
     decimalsDivider(9),
   );
   const rewardDebtBN = new BN(rewardDebt).div(decimalsDivider(stakingPosition.rewards[0].decimals));
-  return Number(balanceBN.multipliedBy(rewardPerShareBN).minus(rewardDebtBN));
+  return balanceBN
+    .multipliedBy(rewardPerShareBN) //
+    .minus(rewardDebtBN)
+    .toNumber();
 }

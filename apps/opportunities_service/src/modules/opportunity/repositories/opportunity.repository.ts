@@ -15,28 +15,6 @@ import { OpportunityEntity } from '../entities/opportunity.entity';
 @EntityRepository(OpportunityEntity)
 export class OpportunityRepository extends Repository<OpportunityEntity> {
   /**
-   * Gets the list of chains & the number of pools on each chain
-   */
-  async getChainStats(): Promise<IChainStats[]> {
-    return this.query(`
-      SELECT COUNT(DISTINCT id)::int as count, chain_id
-      FROM opportunities
-      GROUP BY chain_id
-    `);
-  }
-
-  /**
-   * Gets a list of the number of pools belonging to each feature
-   */
-  async getFeatureStats(): Promise<IFeatureStats[]> {
-    return this.query(`
-      SELECT COUNT(feature)::int as count, feature as feature
-      FROM opportunities
-      CROSS JOIN LATERAL UNNEST(categories) as feature
-      GROUP BY feature
-    `);
-  }
-  /**
    * Search, Sort, and Filter opportunities
    *
    * Searchable Fields:
@@ -87,7 +65,7 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
       baseQuery.andWhere(`chain_id in (:...chains)`, { chains });
     }
 
-    const [items, total] = await Promise.all([
+    const [items, total, chainStats, featureStats] = await Promise.all([
       baseQuery
         .offset((page - 1) * limit)
         .limit(limit)
@@ -95,10 +73,16 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
         .getMany(),
 
       baseQuery.getCount(),
+      this.getChainStats(queryParams),
+      this.getFeatureStats(queryParams),
     ]);
 
     return plainToClass(PaginationResult, {
       items,
+      stats: {
+        chains: chainStats,
+        features: featureStats,
+      },
       total,
       count: items.length,
       limit,
@@ -182,6 +166,51 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
         )
         .setParameters(parameters);
     });
+  }
+  /**
+   * Gets the list of chains & the number of pools on each chain
+   */
+  private async getChainStats(queryParams: OpportunitySearchQueryDto): Promise<IChainStats[]> {
+    const { minTVL } = queryParams;
+    return this.query(
+      `
+        SELECT COALESCE(MAX(count), 0)::int AS count, opportunities.chain_id
+        FROM opportunities
+          FULL JOIN (
+            SELECT COUNT(DISTINCT id) AS count, x.chain_id
+            FROM opportunities AS x
+            WHERE x.total_value_locked > $1
+            GROUP BY x.chain_id
+          ) AS counts
+          ON opportunities.chain_id = counts.chain_id
+        GROUP BY opportunities.chain_id
+      `,
+      [minTVL],
+    );
+  }
+
+  /**
+   * Gets a list of the number of pools belonging to each feature
+   */
+  private async getFeatureStats(queryParams: OpportunitySearchQueryDto): Promise<IFeatureStats[]> {
+    const { minTVL } = queryParams;
+    return this.query(
+      `
+        SELECT COALESCE(MAX(counter), 0)::int AS count, opp.feature
+        FROM opportunities
+          CROSS JOIN LATERAL UNNEST(opportunities.categories) AS opp (feature)
+          FULL JOIN (
+            SELECT COUNT(feature) AS counter, feature
+            FROM opportunities AS x
+            CROSS JOIN LATERAL UNNEST(x.categories) AS feature
+            WHERE total_value_locked > $1
+            GROUP BY feature
+          ) AS counts
+          ON opp.feature = counts.feature
+      GROUP BY opp.feature
+      `,
+      [minTVL],
+    );
   }
 
   async findItem(endpointId: number): Promise<OpportunityEntity> {

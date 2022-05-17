@@ -6,7 +6,6 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
 import { OpportunityListDto } from '@app/common/dto/opportunities/opportunity.list.dto';
-import { IOpportunityStats } from '@app/common/interfaces/services/opportunities/opportunity.stats.interfaces';
 
 import { FindOneParamsDto } from '../common/dto/FindOneParams.dto';
 
@@ -24,12 +23,6 @@ export class OpportunitiesController {
   @ApiResponse({ status: HttpStatus.OK, type: OpportunityListDto })
   get(@Query() query: OpportunitySearchQueryDto): Promise<OpportunityListDto> {
     return this.opportunityService.search(query);
-  }
-
-  @Get('/stats')
-  @ApiResponse({ status: HttpStatus.OK })
-  async stats(): Promise<IOpportunityStats> {
-    return this.opportunityService.stats();
   }
 
   @Get('/:id')

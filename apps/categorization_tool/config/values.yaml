@@ -15,6 +15,7 @@ configMaps:
     DIR_SAVE_SCREENSHOTS: none
     TENDERLY_API_URL: https://api.tenderly.co/api
     TEST_RUN: false
+    DB_LOGGING: false
 
 resources:
   requests:

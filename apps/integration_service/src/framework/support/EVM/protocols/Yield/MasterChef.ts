@@ -34,7 +34,7 @@ interface IMasterChefMeta extends IProtocolMeta {
   };
 }
 
-interface IPoolInfo {
+export interface IMasterChefPoolInfo {
   poolId: number;
   stakedToken: Address;
   allocPoint: number;
@@ -129,7 +129,7 @@ export class MasterChef
       context.badPools.sort((a, b) => (a > b ? -1 : 1)).forEach((id) => poolIds.splice(id, 1));
     }
 
-    const poolInfos: IPoolInfo[] = await this.fetchPoolInfos(poolIds);
+    const poolInfos: IMasterChefPoolInfo[] = await this.fetchPoolInfos(poolIds);
 
     const totalStakedCalls = poolInfos.map((poolInfo) => {
       const lpContract = new ERC20(poolInfo.stakedToken);
@@ -156,7 +156,7 @@ export class MasterChef
   }
 
   protected formatStakingOpportunityMinimal(
-    poolInfo: IPoolInfo,
+    poolInfo: IMasterChefPoolInfo,
     totalStaked: string,
     totalSupply: string,
     context: { [key: string]: any },

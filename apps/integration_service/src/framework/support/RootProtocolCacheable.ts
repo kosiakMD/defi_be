@@ -209,10 +209,9 @@ export abstract class RootProtocolCacheable<
       }
 
       // fetch all cached pools from redis
-      const pools = await this.cache.store.mget(
-        ...list.map(this.singlePoolCacheKey.bind(this)),
-        {},
-      );
+      const pools = (
+        await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
+      ).filter((pool) => pool);
 
       if (list.length !== pools.length) {
         // Should only occur if pools list is cached, however the pools themselves are not cached

@@ -18,6 +18,7 @@ import {
   IStakingFeatureMinimal,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
+import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
@@ -204,7 +205,7 @@ export class MasterChef
     // then pendingRewards for only the required pools
     const calls = new Map();
     addresses.forEach((address) => {
-      return pools.forEach((pool) => {
+      pools.forEach((pool) => {
         // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
         // This works, but feels like a hack. but how to cleanly allow extra pool metadata
         // without abuse/misuse?
@@ -222,6 +223,20 @@ export class MasterChef
     });
 
     return this.multicall.handleInBatches(calls, this.meta.chain);
+  }
+
+  protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
+    // const poolShare = balance / supplied.token['totalSupply'];
+    const poolShare = balance / supplied.totalSupply;
+    supplied.token.underlying?.forEach((underlying) => {
+      underlying.balance = underlying.reserve * poolShare;
+      underlying.value = underlying.balance * underlying.price;
+    });
+
+    return Object.assign(supplied, {
+      amount: balance,
+      value: balance * supplied.token.price,
+    });
   }
 
   protected formatUserData(
@@ -243,18 +258,7 @@ export class MasterChef
 
     if (!balance) return;
     // Update supplied token
-    Object.assign(pool.supplied[0], {
-      amount: balance,
-      value: balance * pool.supplied[0].token.price,
-    });
-    // Update underlying assets
-    if (pool.supplied[0].token.underlying?.length === 2) {
-      const poolShare = balance / pool.supplied[0].totalSupply;
-      pool.supplied[0].token.underlying.forEach((u) => {
-        u.balance = u.reserve * poolShare;
-        u.value = u.balance * u.price;
-      });
-    }
+    pool.supplied[0] = this.modifyUserEntrySupplied(pool.supplied[0], balance);
 
     const {
       output: { data: pendingRewards },
@@ -306,7 +310,7 @@ export class MasterChef
     );
     return poolInfo.map((pool) => ({
       poolId: pool.poolId,
-      stakedToken: Object.values(pool)[lpTokenIdx].toString().toLowerCase(),
+      stakedToken: pool.stakedToken || Object.values(pool)[lpTokenIdx]?.toString().toLowerCase(),
       allocPoint: parseInt(Object.values(pool)[allocPointIdx].toString(), 10),
     }));
   }

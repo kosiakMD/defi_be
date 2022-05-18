@@ -153,7 +153,7 @@ export abstract class EVMCore<
     try {
       const calls = new Map();
       tokens.forEach((token: any) => {
-        if (!token.underlyingAssets?.length) return;
+        if (token.underlyingAssets?.length !== 2) return;
         const contract = new UniswapV2Pair(token.address);
         calls.set(`${token.address}.totalSupply()`, contract.totalSupply());
         calls.set(`${token.address}.getReserves()`, contract.getReserves());

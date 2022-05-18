@@ -260,6 +260,14 @@ export enum WingRidersProtocolEnum {
   wingriders = 'WingRiders',
 }
 
+export enum StargateProtocolEnum {
+  stargate = 'Stargate',
+}
+
+export enum SynapseProtocolEnum {
+  synapse = 'Synapse',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -314,4 +322,6 @@ export const ProtocolNameEnum = {
   ...YelFinanceEnum,
   ...KavaProtocolEnum,
   ...WingRidersProtocolEnum,
+  ...SynapseProtocolEnum,
+  ...StargateProtocolEnum,
 };

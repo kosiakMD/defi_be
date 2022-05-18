@@ -37,6 +37,8 @@ import { QuickSwap } from '../platforms/QuickSwap';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { Solend } from '../platforms/Solend';
 import { SpookySwap } from '../platforms/SpookySwap';
+import { Stargate } from '../platforms/Stargate';
+import { Synapse } from '../platforms/Synapse';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
@@ -86,6 +88,8 @@ export class PlatformService {
       Goose,
       BabySwap,
       YelFinance,
+      Stargate,
+      Synapse,
     });
   }
 

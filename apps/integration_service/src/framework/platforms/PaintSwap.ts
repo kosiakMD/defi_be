@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class PaintSwap extends RootPlatform {
   constructor(
@@ -27,7 +28,7 @@ export class PaintSwap extends RootPlatform {
     });
 
     // Single Staking
-    await this.registerProtocol(MasterChef, {
+    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
       chain: ChainIdEnum.ftm,
       name: 'Decorator',
       feature: FeatureEnum.staking,

@@ -2,11 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { RootPlatform } from '../support/RootPlatform';
 import { QuarryStaking } from '../support/Solana/protocols/Yield/Quarry/QuarryStaking';
 import { IQuarryMeta } from '../support/Solana/protocols/Yield/Quarry/interfaces';
+import { FeatureEnum } from '../support/enums';
 
 export class Quarry extends RootPlatform {
   constructor(

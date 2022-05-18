@@ -2,11 +2,15 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { TombMasonry } from '../support/EVM/protocols/AlgoStable/TombMasonry';
-import { MasterChefCemetary } from '../support/EVM/protocols/Yield/MasterChefCemetary';
+import {
+  IMasterChefCemetaryMeta,
+  MasterChefCemetary,
+} from '../support/EVM/protocols/Yield/MasterChefCemetary';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class TombFinance extends RootPlatform {
   constructor(
@@ -34,7 +38,7 @@ export class TombFinance extends RootPlatform {
       address: '0x8764DE60236C5843D9faEB1B638fbCE962773B67',
     });
 
-    await this.registerProtocol(MasterChefCemetary, {
+    await this.registerProtocol<IMasterChefCemetaryMeta>(MasterChefCemetary, {
       chain: ChainIdEnum.ftm,
       name: 'Cemetary',
       feature: FeatureEnum.staking,
@@ -46,7 +50,7 @@ export class TombFinance extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(MasterChefCemetary, {
+    await this.registerProtocol<IMasterChefCemetaryMeta>(MasterChefCemetary, {
       chain: ChainIdEnum.ftm,
       name: 'Genesis',
       feature: FeatureEnum.staking,

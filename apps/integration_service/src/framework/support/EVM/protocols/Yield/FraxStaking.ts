@@ -8,15 +8,7 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import {
-  Address,
-  ChainAbbrEnum,
-  ChainDto,
-  ChainIdEnum,
-  ChainNameEnum,
-  FeatureEnum,
-  Logger,
-} from '@app/common';
+import { Address, ChainAbbrEnum, ChainDto, ChainIdEnum, ChainNameEnum, Logger } from '@app/common';
 import { BaseData } from '@app/common/dto/BaseData';
 import { CallData } from '@app/common/dto/CallData';
 import { normalizeDecimals } from '@app/common/utils';
@@ -31,6 +23,7 @@ import { AccountService } from '../../../../../modules/microservices/account.ser
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { Puppeteer } from '../../../../../modules/microservices/puppeteer';
 import UniswapProtocolV3 from '../../../../../modules/protocols/protocols/uniswapProtocolV3';
+import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
@@ -41,7 +34,7 @@ import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { EVMCore } from '../../EVMCore';
 
-interface IFraxStakingMeta extends IProtocolMeta {
+export interface IFraxStakingMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
   gaugeController: string;
   fxsStaking: string;

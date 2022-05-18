@@ -2,11 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { SynapseLiquidity } from '../support/EVM/protocols/Liquidity/SynapseLiquidity';
 import { SynapseStaking } from '../support/EVM/protocols/Yield/SynapseStaking';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class Synapse extends RootPlatform {
   constructor(

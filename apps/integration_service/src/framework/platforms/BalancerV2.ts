@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import {
   BalancerLiquidity,
@@ -13,6 +13,7 @@ import {
   IBalancerVaultMeta,
 } from '../support/EVM/protocols/Yield/BalancerStaking';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class BalancerV2 extends RootPlatform {
   constructor(

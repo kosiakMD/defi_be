@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { KavaClaimable } from '../support/CosmosHub/protocols/Claimable/KavaClaimable';
 import { KavaLending } from '../support/CosmosHub/protocols/Lending/KavaLending';
@@ -12,6 +12,7 @@ import { IKavaMeta as IKavaMetaClaimable } from '../support/CosmosHub/protocols/
 import { IKavaMeta as IKavaMetaLending } from '../support/CosmosHub/protocols/interfaces/Kava/KavaLending';
 import { IKavaMeta as IKavaMetaLiquidity } from '../support/CosmosHub/protocols/interfaces/Kava/KavaLiquidity';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class Kava extends RootPlatform {
   private KAVA_API: string;

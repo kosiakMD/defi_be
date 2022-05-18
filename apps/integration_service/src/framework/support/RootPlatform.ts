@@ -4,10 +4,11 @@ import { ClassConstructor } from 'class-transformer';
 
 import { ModuleRef } from '@nestjs/core';
 
-import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainId, ChainIdEnum, Logger } from '@app/common';
 import { groupBy, keepAddressesByChainId } from '@app/common/utils';
 import { getChainById } from '@app/common/utils';
 
+import { FeatureEnum } from './enums';
 import {
   IChainGroupedWallet,
   IChainUserEntry,

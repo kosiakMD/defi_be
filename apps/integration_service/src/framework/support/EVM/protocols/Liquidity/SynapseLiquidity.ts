@@ -51,16 +51,23 @@ export class SynapseLiquidity extends SingleContractProtocol<
     poolLength: () => (item) => item.name === 'poolLength',
   };
 
-  protected fetchUserData(addresses: Address[], pools: IPoolFeatureOpportunity[]) {
+  protected async fetchUserData(address: Address, pools: IPoolFeatureOpportunity[]) {
     const calls = new Map();
-    addresses.forEach((address) => {
-      pools.forEach((pool) => {
-        const contract = new ERC20(pool.supplied[0].token.address);
-        calls.set(`${address}.${pool.id}`, contract.balanceOf(address));
-      });
+    pools.forEach((pool) => {
+      const contract = new ERC20(pool.supplied[0].token.address);
+      calls.set(`${address}.${pool.id}`, contract.balanceOf(address));
     });
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
   }
 
   protected async updateTokenData(

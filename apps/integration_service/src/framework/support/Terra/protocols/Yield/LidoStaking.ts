@@ -7,12 +7,13 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { AccountBalance, Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { AccountBalance, Address, ChainIdEnum, Logger } from '@app/common';
 import { aprToApy, apyToApr, normalizeDecimals } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,

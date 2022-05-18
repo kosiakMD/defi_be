@@ -2,11 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { StakingDualRewards } from '../support/EVM/protocols/Yield/StakingDualRewards';
 import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class QuickSwap extends RootPlatform {
   constructor(

@@ -4,7 +4,7 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
 import { equals, normalizeDecimals, regex, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
@@ -12,6 +12,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,
@@ -22,16 +23,15 @@ import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.int
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-interface IMasterChefMeta extends IProtocolMeta {
+export interface IMasterChefMeta extends IProtocolMeta {
   address: Address;
   feature: FeatureEnum.staking;
   name: string; // Genesis, Farm, AceLab
   context?: {
     badPools?: number[]; // poolIds to skip
-    [key: string]: any;
   };
-  links: {
-    getOpportunityLink: (opportunity: any) => string;
+  links?: {
+    getOpportunityLink: () => string;
   };
 }
 
@@ -197,32 +197,39 @@ export class MasterChef
     return `${masterchef}.pendingRewards(${poolId}, ${user})`;
   }
 
-  protected fetchUserData(addresses: Address[], pools: IStakingFeatureOpportunity[]) {
+  protected async fetchUserData(
+    address: Address,
+    pools: IStakingFeatureOpportunity[],
+  ): Promise<IStakingFeatureUserEntry[]> {
     const contract = this.getMainContract();
 
-    // Loop and get all user balances for all pools
-    // TODO: Benchmark all calls at once, or userInfo once,
-    // then pendingRewards for only the required pools
     const calls = new Map();
-    addresses.forEach((address) => {
-      pools.forEach((pool) => {
-        // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
-        // This works, but feels like a hack. but how to cleanly allow extra pool metadata
-        // without abuse/misuse?
-        const [masterchef, poolId] = pool.id.split('::');
+    pools.forEach((pool) => {
+      // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
+      // This works, but feels like a hack. but how to cleanly allow extra pool metadata
+      // without abuse/misuse?
+      const [masterchef, poolId] = pool.id.split('::');
 
-        calls.set(
-          this.userInfoLabel(masterchef, poolId, address),
-          contract.createCall(this.functions.userInfo, poolId, address),
-        );
-        calls.set(
-          this.pendingRewardsLabel(masterchef, poolId, address),
-          contract.createCall(this.functions.pendingRewards, poolId, address),
-        );
-      });
+      calls.set(
+        this.userInfoLabel(masterchef, poolId, address),
+        contract.createCall(this.functions.userInfo, poolId, address),
+      );
+      calls.set(
+        this.pendingRewardsLabel(masterchef, poolId, address),
+        contract.createCall(this.functions.pendingRewards, poolId, address),
+      );
     });
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
   }
 
   protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
@@ -257,6 +264,7 @@ export class MasterChef
     );
 
     if (!balance) return;
+
     // Update supplied token
     pool.supplied[0] = this.modifyUserEntrySupplied(pool.supplied[0], balance);
 

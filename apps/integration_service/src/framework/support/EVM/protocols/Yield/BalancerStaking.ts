@@ -7,10 +7,11 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,

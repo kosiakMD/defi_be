@@ -9,12 +9,13 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
@@ -54,10 +55,6 @@ export class LidoStaking
     protected configService: ConfigService,
   ) {
     super();
-  }
-
-  async initialize(): Promise<void> {
-    //
   }
 
   async getCacheableOpportunityData(): Promise<IStakingFeatureMinimal[]> {

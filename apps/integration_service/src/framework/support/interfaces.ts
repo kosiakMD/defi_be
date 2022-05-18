@@ -1,8 +1,9 @@
 import type { AbiItem } from 'web3-utils';
 
-import type { Address, ChainDto, ChainId, ChainIdEnum, FeatureEnum } from '@app/common';
+import type { Address, ChainDto, ChainId, ChainIdEnum } from '@app/common';
 import { IPlatformLinks } from '@app/common/interfaces/platform.v3.links';
 
+import { FeatureEnum } from './enums';
 import {
   IClaimableFeatureOpportunity,
   IClaimableFeatureUser,

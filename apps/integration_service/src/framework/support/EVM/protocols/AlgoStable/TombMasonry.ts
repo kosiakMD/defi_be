@@ -6,7 +6,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { FeatureEnum, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { equals, normalizeDecimals } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
@@ -56,9 +55,6 @@ export class TombMasonry extends SingleContractProtocol<
   protected async fetchOpportunityData(context: {
     [key: string]: any;
   }): Promise<IStakingFeatureMinimal[]> {
-    const totalSupplyCall = new ERC20(context.stakingToken).totalSupply();
-    const totalSupply = await this.multicall.call(totalSupplyCall, this.meta.chain);
-
     const data: IStakingFeatureMinimal = {
       id: this.meta.address,
       feature: FeatureEnum.staking,
@@ -68,7 +64,6 @@ export class TombMasonry extends SingleContractProtocol<
           token: {
             address: context.stakingToken,
           },
-          totalSupply: totalSupply.toString(),
           totalSupplied: context.totalSupply,
         },
       ],
@@ -83,19 +78,21 @@ export class TombMasonry extends SingleContractProtocol<
 
     return [data];
   }
-
-  protected async fetchUserData(addresses: string[]): Promise<any> {
+  protected async fetchUserData(
+    address: string,
+    pools: IStakingFeatureOpportunity[],
+  ): Promise<IStakingFeatureUserEntry[]> {
     const contract = this.getMainContract();
 
     const calls = new Map<string, CallData>();
 
-    addresses.forEach((address) => {
-      calls.set('earned', contract.createCall(this.functions.earned, address));
+    calls.set('earned', contract.createCall(this.functions.earned, address));
 
-      calls.set('balance', contract.createCall(this.functions.balance, address));
-    });
+    calls.set('balance', contract.createCall(this.functions.balance, address));
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return [this.formatUserData(address, pools[0], results)];
   }
 
   protected formatUserData(

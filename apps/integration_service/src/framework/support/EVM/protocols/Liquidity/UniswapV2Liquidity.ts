@@ -32,12 +32,6 @@ import {
 
 export type IUniswapVaultMeta = IProtocolMeta & {
   ammSubgraphUrl: string;
-  lpToken: {
-    name: string;
-    symbol: string;
-    decimals: number;
-    price;
-  };
 };
 
 export class UniswapV2Liquidity

@@ -2,21 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
+import { IMasterChefMeta } from '../support/EVM/protocols/Yield/MasterChef';
 import { MasterChefYel } from '../support/EVM/protocols/Yield/MasterChefYel';
 import { RootPlatform } from '../support/RootPlatform';
-import { IProtocolMeta } from '../support/interfaces';
-
-interface IMasterChefMeta extends IProtocolMeta {
-  address: Address;
-  feature: FeatureEnum.staking;
-  name: string; // Genesis, Farm, AceLab
-  context?: {
-    badPools?: number[]; // poolIds to skip
-    [key: string]: any;
-  };
-}
+import { FeatureEnum } from '../support/enums';
 
 export class YelFinance extends RootPlatform {
   constructor(

@@ -1,7 +1,13 @@
 import { startsWith } from '@app/common/utils';
 
-import { MasterChef } from './MasterChef';
+import { IMasterChefMeta, MasterChef } from './MasterChef';
 
+export interface IMasterChefCemetaryMeta extends IMasterChefMeta {
+  context: {
+    badPools?: number[];
+    poolLength: number;
+  };
+}
 /**
  * @notice nearly Standard Masterchef however no poolLength is available onchain
  */

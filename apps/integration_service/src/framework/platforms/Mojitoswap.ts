@@ -2,10 +2,14 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { UniswapV2Liquidity } from '../support/EVM/protocols/Liquidity/UniswapV2Liquidity';
+import {
+  IUniswapVaultMeta,
+  UniswapV2Liquidity,
+} from '../support/EVM/protocols/Liquidity/UniswapV2Liquidity';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class Mojitoswap extends RootPlatform {
   constructor(
@@ -25,7 +29,7 @@ export class Mojitoswap extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(UniswapV2Liquidity, {
+    await this.registerProtocol<IUniswapVaultMeta>(UniswapV2Liquidity, {
       chain: ChainIdEnum.kcc,
       name: 'Liquidity - Mojitoswap',
       feature: FeatureEnum.pools,

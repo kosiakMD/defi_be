@@ -2,12 +2,13 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { CakeVault } from '../support/EVM/protocols/Yield/CakeVault';
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { CakeVault, ICakeVaultMeta } from '../support/EVM/protocols/Yield/CakeVault';
+import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class PancakeSwap extends RootPlatform {
   constructor(
@@ -39,7 +40,7 @@ export class PancakeSwap extends RootPlatform {
     // Custom single autocompounding vault (compounds pool 0 of masterchef below)
     // TODO: when pools are saved to cache, instead of calculating APR again here
     // just grab masterchef from cache
-    await this.registerProtocol(CakeVault, {
+    await this.registerProtocol<ICakeVaultMeta>(CakeVault, {
       chain: ChainIdEnum.bnb,
       name: 'Auto CAKE',
       feature: FeatureEnum.staking,
@@ -47,7 +48,7 @@ export class PancakeSwap extends RootPlatform {
       context: { poolId: 0 },
     });
 
-    await this.registerProtocol(MasterChef, {
+    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
       chain: ChainIdEnum.bnb,
       name: 'Farms - Masterchef',
       feature: FeatureEnum.staking,

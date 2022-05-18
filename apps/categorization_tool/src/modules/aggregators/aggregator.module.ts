@@ -9,6 +9,7 @@ import { ChainsRepository } from '../database/repositories/chains.repo';
 import { ProtocolChainRepository } from '../database/repositories/protocol.chain.repo';
 import { ProtocolsPropertiesRepository } from '../database/repositories/protocols.properties.repo';
 import { ProtocolsRepository } from '../database/repositories/protocols.repo';
+import { ServicesModule } from '../services/services.module';
 import { AggregatorsService } from './aggregator.service';
 import { DefilamaAggregator } from './impls/defilama.aggregator';
 import { MultifarmFiAggregator } from './impls/multifarm.fi.aggregator';
@@ -19,6 +20,7 @@ import { VfatToolsAggregator } from './impls/vfat.tools.aggregator';
     HttpModule,
     DatabaseModule,
     ConfigModule,
+    ServicesModule,
     TypeOrmModule.forFeature([
       ChainsRepository,
       ProtocolChainRepository,

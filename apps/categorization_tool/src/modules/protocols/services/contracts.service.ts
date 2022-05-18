@@ -8,6 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Protocol } from '../../database/entities/protocol.entity';
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
+import { TasksAbortChecker } from '../../services/tasks.abort.checker';
 import { IListContract } from '../interfaces/protocol.interface';
 import {
   FETCH_ABI_PARALLEL_LIMIT,
@@ -27,6 +28,7 @@ export class ContractsService {
     private readonly generalParsingPage: GeneralPageParsing,
     private readonly abiFetcherService: AbiFetcherService,
     private readonly configService: ConfigService,
+    private readonly tasksAbortChecker: TasksAbortChecker,
   ) {
     this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
@@ -43,6 +45,7 @@ export class ContractsService {
         } catch (e) {
           this.logger.error(`Parsing page [${url}], error [${e.message}]`);
         }
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
       PROTOCOL_LINKS_PROCESS_PARALLEL_LIMIT,
     );
@@ -72,6 +75,7 @@ export class ContractsService {
 
         //update DB info
         await this.contractsRepository.update({ id }, { abi, abiCode, chain });
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
       FETCH_ABI_PARALLEL_LIMIT,
     );

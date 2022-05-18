@@ -11,6 +11,7 @@ import {
   CommandParameterized,
   CommandType,
 } from '../../common/enum/service.enum';
+import { TaskAbortError } from '../../common/errors/task.abort.error';
 
 import { AggregatorsService } from '../aggregators/aggregator.service';
 import { ProtocolService } from '../protocols/protocols.service';
@@ -29,7 +30,25 @@ export class TasksProcessor {
   ) {}
 
   @Process(REGULAR_TASK) // the name of the executed task
-  public async process(
+  async processWithAbort(
+    job: Job<{
+      command: CommandType;
+      listProtocol?: ListProtocolsDTO;
+      similarData: { contract: string };
+    }>,
+  ) {
+    try {
+      await this.process(job);
+    } catch (e) {
+      if (e instanceof TaskAbortError) {
+        this.logger.log(`job aborted: '${job.data.command}'`);
+        return;
+      }
+      throw e;
+    }
+  }
+
+  private async process(
     job: Job<{
       command: CommandType;
       listProtocol?: ListProtocolsDTO;

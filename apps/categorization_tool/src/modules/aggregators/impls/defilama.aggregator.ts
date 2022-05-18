@@ -11,6 +11,7 @@ import { ChainsRepository } from '../../database/repositories/chains.repo';
 import { ProtocolChainRepository } from '../../database/repositories/protocol.chain.repo';
 import { ProtocolsPropertiesRepository } from '../../database/repositories/protocols.properties.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
+import { TasksAbortChecker } from '../../services/tasks.abort.checker';
 import { IAggregator } from '../aggregator.interface';
 
 @Injectable()
@@ -29,6 +30,7 @@ export class DefilamaAggregator implements IAggregator {
     private readonly protocolsPropertiesRepo: ProtocolsPropertiesRepository,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly tasksAbortChecker: TasksAbortChecker,
   ) {
     this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
@@ -64,6 +66,7 @@ export class DefilamaAggregator implements IAggregator {
           protocol,
         );
         await this.protocolChainRepo.upsertProtocolChains(protocol, chains);
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
     );
   }

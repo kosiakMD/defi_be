@@ -16,6 +16,7 @@ import { GithubFilesRepository } from '../database/repositories/github.files.rep
 import { LinksRepository } from '../database/repositories/links.repo';
 import { ProtocolChainRepository } from '../database/repositories/protocol.chain.repo';
 import { ProtocolsRepository } from '../database/repositories/protocols.repo';
+import { TasksAbortChecker } from '../services/tasks.abort.checker';
 import { FilteredLinks } from './interfaces/protocol.interface';
 import {
   PARSE_GITHUB_LINKS_PARALLEL_LIMIT,
@@ -44,6 +45,7 @@ export class ProtocolService {
     private readonly contractService: ContractsService,
     private readonly githubService: GithubService,
     private readonly configService: ConfigService,
+    private readonly tasksAbortChecker: TasksAbortChecker,
   ) {
     this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
@@ -124,6 +126,7 @@ export class ProtocolService {
             link: { id },
           })),
         );
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
       PARSE_GITHUB_LINKS_PARALLEL_LIMIT,
     );
@@ -149,6 +152,7 @@ export class ProtocolService {
         await this.linksRepo.update({ id }, { html });
         await page.close();
         this.logger.debug(`updated html for link - [${url}]`);
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
     );
     this.logger.log('crawlHtml finished');
@@ -198,26 +202,36 @@ export class ProtocolService {
   ): Promise<Link[]> {
     this.logger.log('scanWebsitesForLinks started');
     const arraysOfLinks = await parallelLimit(
-      websites.map(({ url, protocol }) => async () => {
-        try {
-          this.logger.debug(`scan url: [${url}]`);
-          const [, linksMap] = await strategy.parsing({
-            url,
-            name: protocol.name,
-          });
-          return [
-            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.APP, protocol),
-            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.GITHUB, protocol),
-            ...this.linksFromParsedResult(linksMap, LinkTypeEnum.DOCS, protocol),
-          ];
-        } catch (e) {
-          this.logger.error(`website scanning error ${url} error: ${e.message}`);
-        }
+      websites.map((website) => async () => {
+        const links = await this.scanWebsiteForLinks(website, strategy);
+        this.tasksAbortChecker.ensureTaskNotAborted();
+        return links;
       }),
       PROTOCOL_PROCESS_PARALLEL_LIMIT,
     );
     this.logger.log('scanWebsitesForLinks finished');
     return arraysOfLinks.flat();
+  }
+
+  private async scanWebsiteForLinks(
+    website: { url: string; protocol: Protocol },
+    strategy: AbstractStrategy,
+  ): Promise<Link[]> {
+    const { url, protocol } = website;
+    try {
+      this.logger.debug(`scan url: [${url}]`);
+      const [, linksMap] = await strategy.parsing({
+        url,
+        name: protocol.name,
+      });
+      return [
+        ...this.linksFromParsedResult(linksMap, LinkTypeEnum.APP, protocol),
+        ...this.linksFromParsedResult(linksMap, LinkTypeEnum.GITHUB, protocol),
+        ...this.linksFromParsedResult(linksMap, LinkTypeEnum.DOCS, protocol),
+      ];
+    } catch (e) {
+      this.logger.error(`website scanning error ${url} error: ${e.message}`);
+    }
   }
 
   private linksFromParsedResult(

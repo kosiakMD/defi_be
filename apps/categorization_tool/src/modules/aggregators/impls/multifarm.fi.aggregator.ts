@@ -13,6 +13,7 @@ import { ChainsRepository } from '../../database/repositories/chains.repo';
 import { ProtocolChainRepository } from '../../database/repositories/protocol.chain.repo';
 import { ProtocolsPropertiesRepository } from '../../database/repositories/protocols.properties.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
+import { TasksAbortChecker } from '../../services/tasks.abort.checker';
 import { IAggregator } from '../aggregator.interface';
 
 type FarmInfo = {
@@ -49,6 +50,7 @@ export class MultifarmFiAggregator implements IAggregator {
     private readonly protocolsPropertiesRepo: ProtocolsPropertiesRepository,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    private readonly tasksAbortChecker: TasksAbortChecker,
   ) {
     this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
@@ -90,6 +92,7 @@ export class MultifarmFiAggregator implements IAggregator {
             protocol,
           });
         }
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
     );
 

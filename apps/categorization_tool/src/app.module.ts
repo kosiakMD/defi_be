@@ -10,6 +10,7 @@ import { AppController } from './controllers/app.controller';
 import { QueueManagementController } from './controllers/queue.management.controller';
 import { StatusController } from './controllers/status.controller';
 import { ProtocolModule } from './modules/protocols/protocols.module';
+import { ServicesModule } from './modules/services/services.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 
 @Module({
@@ -31,6 +32,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
     }),
     TasksModule,
     ProtocolModule,
+    ServicesModule,
   ],
   providers: [],
   controllers: [AppController, StatusController, QueueManagementController],

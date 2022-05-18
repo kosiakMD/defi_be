@@ -122,6 +122,21 @@
         ]
       }
     },
+    "scheduler_service": {
+      "type": "application",
+      "root": "apps/scheduler_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/scheduler_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/scheduler_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/scheduler_service"
+          }
+        ]
+      }
+    },
     "migration_chain_crawler": {
       "type": "application",
       "root": "jobs/migration_chain_crawler",

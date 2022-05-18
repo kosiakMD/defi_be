@@ -9,12 +9,8 @@ module.exports = {
   password: process.env.DB_PASSWORD,
   synchronize: process.env.DB_SYNCHRONIZE,
   logging: process.env.DB_LOGGING,
-  entities: [
-    'apps/assets_service/src/modules/database/entities/**/*.entity.ts',
-  ],
-  migrations: [
-    'apps/assets_service/src/modules/database/migrations/**/*.ts',
-  ],
+  entities: ['apps/assets_service/src/modules/database/entities/**/*.entity.ts'],
+  migrations: ['apps/assets_service/src/modules/database/migrations/**/*.ts'],
   cli: {
     migrationsDir: 'apps/assets_service/src/modules/database/migrations',
   },

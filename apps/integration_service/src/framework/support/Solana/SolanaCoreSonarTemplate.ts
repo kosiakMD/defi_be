@@ -62,6 +62,9 @@ export abstract class SolanaCoreSonarTemplate<
         const sonarLP = sonarMap.get(opportunity.id);
         const token = tokensMap.get(address);
         if (sonarLP.lp.value === 0) continue;
+        if (!token) continue;
+        if (sonarLP.rewardAssets.some((x) => !tokensMap.get(x.mint))) continue;
+
         updatedTokens.push([
           opportunity.id,
           {
@@ -74,9 +77,9 @@ export abstract class SolanaCoreSonarTemplate<
             totalSupply: sonarLP.lp.supply,
             value: sonarLP.lp.value,
             underlying: sonarLP.lp.assets
+              .filter((t) => tokensMap.get(t.mint))
               .map((asset) => {
                 const token = tokensMap.get(asset.mint);
-                if (!token) return null;
                 return {
                   address: asset.mint,
                   symbol: token?.symbol,
@@ -85,8 +88,7 @@ export abstract class SolanaCoreSonarTemplate<
                   price: asset.price,
                   reserve: asset.amount,
                 };
-              })
-              .filter((asset) => asset !== null),
+              }),
           },
         ]);
 

@@ -124,7 +124,7 @@ export class QuarryStaking
 
     if ('supplied' in opportunity) {
       if (!tokens.has(opportunity.id)) {
-        throw new Error(`Failed to find Supplied: ${opportunity.id}`);
+        return;
       }
 
       base.supplied = opportunity.supplied?.map((poolToken) =>
@@ -134,8 +134,7 @@ export class QuarryStaking
 
     if ('rewarded' in opportunity) {
       if (!opportunity.rewarded.every((t) => tokens.has(t.token.address))) {
-        const token = opportunity.rewarded.find((t) => !tokens.has(t.token.address));
-        throw new Error(`Failed to find Rewarded: ${token.token.address}`);
+        return;
       }
       base.rewarded = opportunity.rewarded?.map((poolToken) =>
         this.formatOpportunityRewardedToken(
@@ -195,14 +194,12 @@ export class QuarryStaking
   }
 
   private async accountContractsInformation(keys: PublicKey[]): Promise<AccountInfo<Buffer>[]> {
-    return this.getOrSet(60 * 60 * 1, 'quarry_account_information', async () => {
-      const chunked = toChunkedArray(keys, this.LIMIT_DATA);
-      const connection = this.web3Service.getInstanceByChainId(this.meta.chain);
-      const accountsInfoRaw = await Promise.all(
-        chunked.flatMap((keys) => connection.getMultipleAccountsInfo(keys)),
-      );
+    const chunked = toChunkedArray(keys, this.LIMIT_DATA);
+    const connection = this.web3Service.getInstanceByChainId(this.meta.chain);
+    const accountsInfoRaw = await Promise.all(
+      chunked.flatMap((keys) => connection.getMultipleAccountsInfo(keys)),
+    );
 
-      return accountsInfoRaw.flat();
-    });
+    return accountsInfoRaw.flat();
   }
 }

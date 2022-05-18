@@ -41,6 +41,7 @@ export enum ProjectEnum {
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
   kava = 'kava',
+  wingriders = 'wingriders',
 }
 
 export enum YearnProtocolEnum {
@@ -254,6 +255,10 @@ export enum YelFinanceEnum {
   yelFinance = 'YelFinance',
 }
 
+export enum WingRidersProtocolEnum {
+  wingriders = 'WingRiders',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -307,4 +312,5 @@ export const ProtocolNameEnum = {
   ...GooseProtocolEnum,
   ...YelFinanceEnum,
   ...KavaProtocolEnum,
+  ...WingRidersProtocolEnum,
 };

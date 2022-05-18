@@ -51,6 +51,7 @@
     "integration-start:dev": "nest start integration_service --watch",
     "integration-start:debug": "nest start integration_service --debug --watch",
     "integration-start:prod": "nest start integration_service",
+    "integration-test": "yarn run jest ./apps/integration_service/test/* --config ./apps/integration_service/test/jest.config.js",
     "price-format": "yarn --cwd ./apps/price_service run format",
     "price-lint": "eslint \"./apps/price_service/{src,config}/**/*.ts\"",
     "price-prebuild": "yarn yarn --cwd ./apps/price_service run prebuild",

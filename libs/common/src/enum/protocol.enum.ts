@@ -41,6 +41,7 @@ export enum ProjectEnum {
   osmosis = 'osmosis',
   aaveV3 = 'aaveV3',
   kava = 'kava',
+  solend = 'solend',
   wingriders = 'wingriders',
 }
 

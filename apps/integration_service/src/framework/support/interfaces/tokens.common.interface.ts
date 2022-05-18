@@ -12,6 +12,7 @@ export interface ERC20Token extends ERC20TokenMinimal {
   reserve?: number;
   position?: number;
   underlying?: ERC20Token[];
+  totalSupply?: number;
 }
 
 export interface ITokenMinimal {

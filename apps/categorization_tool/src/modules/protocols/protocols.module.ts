@@ -12,6 +12,7 @@ import { LinksRepository } from '../database/repositories/links.repo';
 import { ProtocolChainRepository } from '../database/repositories/protocol.chain.repo';
 import { ProtocolsPropertiesRepository } from '../database/repositories/protocols.properties.repo';
 import { ProtocolsRepository } from '../database/repositories/protocols.repo';
+import { ServicesModule } from '../services/services.module';
 import { ProtocolService } from './protocols.service';
 import { AbiFetcherBscscan } from './services/abi/fetcher/abi.fetcher.bscscan';
 import { AbiFetcherEtherscan } from './services/abi/fetcher/abi.fetcher.etherscan';
@@ -30,6 +31,7 @@ import { GeneralPageParsing } from './strategies/contract';
   imports: [
     HttpModule,
     ConfigModule,
+    ServicesModule,
     TypeOrmModule.forFeature([
       ProtocolsRepository,
       ChainsRepository,

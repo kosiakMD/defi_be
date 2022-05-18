@@ -9,6 +9,7 @@ import { Puppeteer } from '../../../utils';
 import { ChainsRepository } from '../../database/repositories/chains.repo';
 import { ProtocolChainRepository } from '../../database/repositories/protocol.chain.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
+import { TasksAbortChecker } from '../../services/tasks.abort.checker';
 import { IAggregator } from '../aggregator.interface';
 
 @Injectable()
@@ -25,6 +26,7 @@ export class VfatToolsAggregator implements IAggregator {
     @InjectRepository(ProtocolChainRepository)
     private readonly protocolChainRepo: ProtocolChainRepository,
     private readonly configService: ConfigService,
+    private readonly tasksAbortChecker: TasksAbortChecker,
   ) {
     this.testRun = JSON.parse(configService.get('TEST_RUN'));
   }
@@ -47,6 +49,7 @@ export class VfatToolsAggregator implements IAggregator {
         await Promise.all(
           protocols.map((p) => this.protocolChainRepo.upsertProtocolChains(p, chains)),
         );
+        this.tasksAbortChecker.ensureTaskNotAborted();
       }),
     );
   }

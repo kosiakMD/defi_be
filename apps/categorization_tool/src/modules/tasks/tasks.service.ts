@@ -2,7 +2,7 @@ import { JobStatusClean, Queue } from 'bull';
 
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, Logger } from '@nestjs/common';
-// import { Cron, CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { REDIS_TASK_QUEUE, REGULAR_TASK } from '../../common/constants';
@@ -15,7 +15,7 @@ export class TasksService {
     @InjectQueue(REDIS_TASK_QUEUE) private readonly queue: Queue,
   ) {}
 
-  // @Cron(CronExpression.EVERY_DAY_AT_8PM) //uncomment to enable daily running
+  @Cron(CronExpression.EVERY_DAY_AT_8PM) //uncomment to enable daily running
   async cronTask() {
     const task = { command: CommandUnparameterized.start_fetching };
     this.logger.log(`cronTask: ${task.command}`);
@@ -52,7 +52,7 @@ export class TasksService {
   }
 
   private async getFailedJobs() {
-    // get latest 4 failed jobs
+    // get 4 latest failed jobs
     return this.queue.getJobs(['failed'], -4);
   }
 }

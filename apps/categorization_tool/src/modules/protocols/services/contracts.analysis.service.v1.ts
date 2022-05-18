@@ -11,6 +11,7 @@ import { Contract } from '../../database/entities/contract.entity';
 import { ContractsAnalysisRepository } from '../../database/repositories/contracts.analysis.repo';
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
 import { ProtocolsRepository } from '../../database/repositories/protocols.repo';
+import { TasksAbortChecker } from '../../services/tasks.abort.checker';
 import { ANALYSE_CONTRACTS_PARALLEL_LIMIT } from '../protocols.constant';
 import { AbiCompoundTemplate } from './abi/abi.compound.template';
 import { AbiMasterchefTemplate } from './abi/abi.masterchef.template';
@@ -30,6 +31,7 @@ export class ContractsAnalysisServiceV1 {
     @InjectRepository(ProtocolsRepository)
     private readonly protocolsRepository: ProtocolsRepository,
     private readonly abiFetcherService: AbiFetcherService,
+    private readonly tasksAbortChecker: TasksAbortChecker,
   ) {
     this.abiTemplates = new Map<number, any>([
       [AbiMasterchefTemplate.id, AbiMasterchefTemplate],
@@ -98,6 +100,7 @@ export class ContractsAnalysisServiceV1 {
       async () => this.getContractsWithValidAbi(skip),
       async ({ taken, contracts }) => {
         await processor(contract, contracts);
+        this.tasksAbortChecker.ensureTaskNotAborted();
         skip += taken;
         return !!taken;
       },

@@ -66,11 +66,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       } else {
         errorMessage = exception.message;
       }
-      if (
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production ||
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging
-      ) {
-        exception.stack = undefined;
+      if (isProd || isStage) {
         if (
           exception.message &&
           exception.message.startsWith('connect ECONNREFUSED') &&

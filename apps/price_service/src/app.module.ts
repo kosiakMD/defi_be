@@ -8,8 +8,8 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { Logger, LoggerModule } from '@app/common/Logger';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { ResponseInterceptor } from '@app/common/interceptors/Response.interceptor';
+import { SentryInterceptor } from '@app/common/interceptors/Sentry.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 

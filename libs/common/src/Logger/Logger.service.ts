@@ -1,10 +1,14 @@
 import { Logger as WinstonLoggerInterface } from 'winston';
 
-import { LoggerService, LoggerService as NestLoggerService } from '@nestjs/common';
+import {
+  Injectable,
+  LoggerService,
+  LoggerService as NestLoggerService,
+  Scope,
+} from '@nestjs/common';
 import { WinstonLogger } from 'nest-winston';
 
-// TODO: TBD?
-// @Injectable({ scope: Scope.TRANSIENT })
+@Injectable({ scope: Scope.REQUEST })
 export class Logger extends WinstonLogger implements NestLoggerService {
   static logger: WinstonLogger;
   // TODO: temporary need static for SingleTone

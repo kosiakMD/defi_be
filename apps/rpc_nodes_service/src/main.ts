@@ -1,13 +1,14 @@
 import * as fs from 'fs';
 
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
+import initListening from '@app/common/bootstrap/initListening';
+import { initLogger } from '@app/common/bootstrap/initLogger';
+import initPipes from '@app/common/bootstrap/initPipes';
+import initPrefix from '@app/common/bootstrap/initPrefix';
+import initSwagger from '@app/common/bootstrap/initSwagger';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -35,25 +36,14 @@ async function bootstrap() {
     httpsOptions,
   });
 
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
+  initLogger(app);
 
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('v1'); // temporary global as only 1 version
+  initPipes(app);
+  initPrefix(app);
 
-  const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
+  initSwagger(app);
 
-  if (NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle(SERVICE_NAME)
-      .setDescription(`${SERVICE_NAME} description`)
-      .setVersion('1.0') // temporary global as only 1 version
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
-  }
-
-  await app.listen(SERVICE_PORT, SERVICE_HOST);
+  await initListening(app);
 }
 
 bootstrap().catch((e) => {

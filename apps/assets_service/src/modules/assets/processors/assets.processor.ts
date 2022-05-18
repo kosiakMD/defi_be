@@ -114,15 +114,20 @@ export class AssetsProcessor {
 
       const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
 
-      //todo temp compilation fix - logic is incorrect
+      // TODO: temp compilation fix - logic is incorrect
       processingAsset.categories = [await this.getAssetCategory(Boolean(underlyingTokens?.length))];
-      const icons = await this.iconsService.getIconUrls({
+      const icons = await this.iconsService.loadAssetIcons({
         symbol: processingAsset.symbol,
         chainId: processingAsset.chainId,
         address: processingAsset.address,
       });
 
-      processingAsset.icon = icons[0]?.Location;
+      // NOTE: Largest loaded icon is selected
+      const largestIcon = icons.reduce(
+        (largest, current) => (current.fileSize >= largest.fileSize ? current : largest),
+        { url: null, fileSize: 0 },
+      );
+      processingAsset.icon = largestIcon.url;
 
       processingAsset = await this.saveAsset(processingAsset);
 

@@ -6,7 +6,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
-import { RedisCacheService } from '@app/common/services/cache.service';
+import { CacheService } from '@app/common/services/cache.service';
 
 import { HealthController } from '../controllers/health.controller';
 
@@ -50,7 +50,7 @@ import { HealthController } from '../controllers/health.controller';
     TerminusModule,
   ],
   controllers: [HealthController],
-  exports: [RedisCacheService],
-  providers: [RedisCacheService],
+  exports: [CacheService],
+  providers: [CacheService],
 })
 export class CommonModule {}

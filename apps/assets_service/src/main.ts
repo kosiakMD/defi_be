@@ -1,5 +1,3 @@
-import { config } from 'aws-sdk';
-
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -11,7 +9,6 @@ import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
-import { AwsConfigService } from './config/aws/aws.config.service';
 
 const logger = createLogger(logFileDir);
 
@@ -30,14 +27,6 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.setGlobalPrefix('v1');
-
-  const awsConfigService = app.get(AwsConfigService);
-
-  config.update({
-    accessKeyId: awsConfigService.awsKeyId,
-    secretAccessKey: awsConfigService.awsSecretAccessKey,
-    region: awsConfigService.region,
-  });
 
   initSwagger(app);
 

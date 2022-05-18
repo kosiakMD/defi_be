@@ -49,9 +49,9 @@ export class HealthController {
         this.microservice.pingCheck<RedisOptions>('redis', {
           transport: Transport.REDIS,
           options: {
-            url: `redis://${this.configService.get('REDIS_HOST')}:${this.configService.get(
-              'REDIS_PORT',
-            )}`,
+            url: `redis://${this.configService.get('REDIS_AUTH')}@${this.configService.get(
+              'REDIS_HOST',
+            )}:${this.configService.get('REDIS_PORT')}`,
           },
         }),
     ]);

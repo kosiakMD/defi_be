@@ -29,7 +29,7 @@ export class Mdex extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         discord: 'https://discord.com/invite/3TYDPktjqC',
         telegram: 'https://t.me/MdexEN',

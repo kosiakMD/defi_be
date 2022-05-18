@@ -5,7 +5,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger, ProtocolDataDto } from '@app/common';
+import { Logger, ProtocolV3DataDto } from '@app/common';
 import { DepositTokenDto } from '@app/common/dto/opportunities/deposit.token.dto';
 import { FarmCreateDto } from '@app/common/dto/opportunities/farm.create.dto';
 import { InvestmentTokensDto } from '@app/common/dto/opportunities/investment.tokens.dto';
@@ -18,7 +18,7 @@ import { IntegrationService } from '../../microservices/integration.service';
 import { FarmEntity } from '../entities/farm.entity';
 import { IOpportunityAdapter } from '../interfaces/opportunity.adapter.interface';
 import { FarmRepository } from '../repositories/farm.repository';
-import { AdapterResults, LegacyFetchOpportunityOptions } from '../types/opportunity.adapter.types';
+import { AdapterResults, FetchV3OpportunityOptions } from '../types/opportunity.adapter.types';
 
 @Injectable()
 export class InternalV3Adapter implements IOpportunityAdapter {
@@ -53,21 +53,21 @@ export class InternalV3Adapter implements IOpportunityAdapter {
    *
    * @returns FarmEntity[]
    */
-  private async loadFarms(): Promise<{ farms: FarmEntity[]; protocols: ProtocolDataDto[] }> {
+  private async loadFarms(): Promise<{ farms: FarmEntity[]; protocols: ProtocolV3DataDto[] }> {
     const protocols = await this.integrationService.getV3ProtocolList();
 
     const farms = await this.farmRepository.findAllByName(
-      Array.from(new Set(protocols.map((p) => p.project))),
+      Array.from(new Set(protocols.map((p) => p.slug))),
     );
     const farmMap = new Map(farms.map((f) => [f.name, f]));
 
     const missing = [];
     const updating = [];
     protocols.forEach((protocol) => {
-      const farm = farmMap.get(protocol.project);
+      const farm = farmMap.get(protocol.slug);
       if (!farm) {
         missing.push(
-          plainToClass(FarmCreateDto, { name: protocol.project, url: protocol.links.url ?? '' }),
+          plainToClass(FarmCreateDto, { name: protocol.slug, url: protocol.links.url ?? '' }),
         );
       } else if (farm.url !== protocol.links.url && protocol.links.url) {
         // update url if changed (likely hasn't)
@@ -95,7 +95,7 @@ export class InternalV3Adapter implements IOpportunityAdapter {
   private async fetchOpportunitiesForFarms({
     include,
     protocols,
-  }: LegacyFetchOpportunityOptions): Promise<OpportunityCreateDto[]> {
+  }: FetchV3OpportunityOptions): Promise<OpportunityCreateDto[]> {
     const included = new Map(include.map((f) => [f.name, f]));
     const opportunities = await this.getOpportunitiesFromProtocols(included, protocols);
 
@@ -105,20 +105,20 @@ export class InternalV3Adapter implements IOpportunityAdapter {
 
   private async getOpportunitiesFromProtocols(
     included: Map<string, FarmEntity>,
-    protocols: ProtocolDataDto[],
+    protocols: ProtocolV3DataDto[],
   ): Promise<OpportunityCreateDto[]> {
     const opportunities: OpportunityCreateDto[] = [];
     const promises = protocols.map(async (protocol) => {
-      this.logger.time(`V3 Adapter - Processing ${protocol.project}`);
+      this.logger.time(`V3 Adapter - Processing ${protocol.slug}`);
       try {
-        const farm = included.get(protocol.project);
+        const farm = included.get(protocol.slug);
         if (!farm) {
-          this.logger.timeEnd(`V3 Adapter - Processing ${protocol.project}`);
+          this.logger.timeEnd(`V3 Adapter - Processing ${protocol.slug}`);
           return;
         }
 
         const { items } = await this.integrationService.getV3ProtocolOpportunities(
-          protocol.project,
+          protocol.slug,
           protocol.features.map(({ chain }) => chain.id),
         );
 
@@ -180,10 +180,10 @@ export class InternalV3Adapter implements IOpportunityAdapter {
             }
           }
         });
-        this.logger.timeEnd(`V3 Adapter - Processing ${protocol.project}`);
+        this.logger.timeEnd(`V3 Adapter - Processing ${protocol.slug}`);
       } catch (e) {
-        this.logger.timeEnd(`V3 Adapter - Processing ${protocol.project}`);
-        this.logger.error(`Failed in ${protocol.project}`, e.stack);
+        this.logger.timeEnd(`V3 Adapter - Processing ${protocol.slug}`);
+        this.logger.error(`Failed in ${protocol.slug}`, e.stack);
         return;
       }
     });

@@ -29,7 +29,7 @@ export class YelFinance extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         discord: 'https://discord.com/invite/yield-enhancement-labs',
         telegram: 'https://t.me/yelfinance',

@@ -18,7 +18,7 @@ export class AaveV3 extends RootPlatform {
   async register(): Promise<void> {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://aave.com',
         logo: 'https://icons.llama.fi/aave-v3.png',

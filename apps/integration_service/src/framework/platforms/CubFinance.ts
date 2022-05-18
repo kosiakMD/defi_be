@@ -18,7 +18,7 @@ export class CubFinance extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://cubdefi.com',
         logo: 'https://icons.llama.fi/cub-finance.svg',

@@ -29,7 +29,7 @@ export class Belt extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         telegram: 'https://t.me/BeltFinance',
         twitter: 'https://twitter.com/BELT_Finance',

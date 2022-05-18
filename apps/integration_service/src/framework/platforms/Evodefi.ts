@@ -18,7 +18,7 @@ export class Evodefi extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
     });
 
     await this.registerProtocol(MasterChef, {

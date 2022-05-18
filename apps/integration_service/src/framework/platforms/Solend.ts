@@ -18,7 +18,7 @@ export class Solend extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://solend.fi',
         logo: 'https://icons.llama.fi/solend.png',

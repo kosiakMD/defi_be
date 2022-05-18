@@ -66,7 +66,12 @@ export class IntegrationsServiceV3Decorator {
         !v2ProtocolsSet.has(v3Protocol.name) &&
         !this.protocolsV3Exceptions.has(v3Protocol.name)
       ) {
-        v2Protocols.data.push(v3Protocol as ProtocolDataDto);
+        v2Protocols.data.push({
+          project: v3Protocol.name,
+          name: v3Protocol.name,
+          features: v3Protocol.features,
+          links: v3Protocol.links,
+        } as unknown as ProtocolDataDto);
       }
     });
 
@@ -122,7 +127,7 @@ export class IntegrationsServiceV3Decorator {
 
     const v2Protocol: ProtocolInfoDto = plainToClass(ProtocolInfoDto, {
       name: v3response.data.protocol.name,
-      project: v3response.data.protocol.project,
+      project: v3response.data.protocol.name,
       label: v3response.data.protocol.name,
     });
     v2Protocol.chains = getUniqList(

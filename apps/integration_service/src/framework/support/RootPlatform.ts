@@ -80,7 +80,7 @@ export abstract class RootPlatform implements IRootPlatform {
 
     return {
       name: this.meta.name, // human readable name
-      project: this.meta.project, // slug/key
+      slug: this.meta.slug, // slug/key
       features: Array.from(features.entries()).map(([chain, list]) => ({
         chain: getChainById(chain),
         list: Array.from(list),

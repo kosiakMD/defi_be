@@ -18,7 +18,7 @@ export class ApeSwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://apeswap.finance',
         logo: 'https://icons.llama.fi/apeswap.svg',

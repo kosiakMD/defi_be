@@ -33,7 +33,7 @@ export class SpookySwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         logo: 'https://icons.llama.fi/spookyswap.jpg',
         discord: 'https://discord.gg/spookyswap',

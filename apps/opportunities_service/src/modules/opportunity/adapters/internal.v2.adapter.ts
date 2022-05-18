@@ -18,7 +18,7 @@ import { IntegrationService } from '../../microservices/integration.service';
 import { FarmEntity } from '../entities/farm.entity';
 import { IOpportunityAdapter } from '../interfaces/opportunity.adapter.interface';
 import { FarmRepository } from '../repositories/farm.repository';
-import { AdapterResults, LegacyFetchOpportunityOptions } from '../types/opportunity.adapter.types';
+import { AdapterResults, FetchV2OpportunityOptions } from '../types/opportunity.adapter.types';
 
 @Injectable()
 export class InternalV2Adapter implements IOpportunityAdapter {
@@ -85,7 +85,7 @@ export class InternalV2Adapter implements IOpportunityAdapter {
   private async fetchOpportunitiesForFarms({
     include,
     protocols,
-  }: LegacyFetchOpportunityOptions): Promise<OpportunityCreateDto[]> {
+  }: FetchV2OpportunityOptions): Promise<OpportunityCreateDto[]> {
     const included = new Map(include.map((f) => [f.name, f]));
     const opportunities = await this.getOpportunitiesFromProtocols(included, protocols);
 

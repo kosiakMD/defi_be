@@ -18,7 +18,7 @@ export class Frax extends RootPlatform {
   async register(): Promise<void> {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
     });
 
     await this.registerProtocol(FraxStaking, {

@@ -29,7 +29,7 @@ export class BabySwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         discord: 'https://discord.com/invite/babyswap',
         telegram: 'https://t.me/baby_swap',

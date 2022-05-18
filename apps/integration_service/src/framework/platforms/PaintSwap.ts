@@ -18,7 +18,7 @@ export class PaintSwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://paintswap.finance',
         logo: 'https://icons.llama.fi/paint-swap.png',

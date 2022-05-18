@@ -29,7 +29,7 @@ export class KnightSwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         discord: 'https://discord.com/invite/pvM2kQzv4C',
         telegram: 'https://twitter.com/KnightEcosystem',

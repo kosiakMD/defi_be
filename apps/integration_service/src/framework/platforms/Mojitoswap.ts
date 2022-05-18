@@ -18,7 +18,7 @@ export class Mojitoswap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://www.mojitoswap.finance/',
         logo: 'https://www.mojitoswap.finance/favicon.png',

@@ -30,7 +30,7 @@ export class Lido extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://lido.fi/',
         logo: 'https://icons.llama.fi/lido.png',

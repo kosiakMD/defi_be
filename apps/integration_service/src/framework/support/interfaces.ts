@@ -32,12 +32,11 @@ export interface IFeatureMeta {
 
 // minimum viable metadata
 export interface IPlatformMeta {
-  // Human Readable Name
+  // Human Readable Name (Display Name)
   name: string;
 
-  // Platform Slug/Key
-  // TODO: rename of Platform (or rename all Platforms as Projects)
-  project: string;
+  // Platform Slug/Key. Used in URL's and filenames
+  slug: string;
 
   // All enabled features for this platform
   // (detected automatically based on registered protocols)

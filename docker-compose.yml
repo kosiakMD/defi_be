@@ -183,8 +183,8 @@ services:
     environment:
       - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
     env_file:
-      - "apps/assets_service/config/.env"
       - ".env"
+      - "apps/assets_service/config/.env"
 
   opportunities-service:
     image: node:14

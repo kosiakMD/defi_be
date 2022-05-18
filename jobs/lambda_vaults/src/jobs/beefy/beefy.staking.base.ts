@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { Address, ChainIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CallData } from '@app/common/dto/CallData';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import {
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
@@ -86,20 +87,20 @@ export abstract class BeefyStakingBase
 
     const aprs = await this.api.fetchAprs();
 
-    const multicallPromises = this.mapping.map(async (m) => {
-      const vault = await this.getBeefyVault(m);
-
+    const multicallPromises = this.mapping.map(async (position) => {
+      const vault = await this.getBeefyVault(position);
+      if (!vault) return;
       const strategy = await this.getBeefyStrategy(vault);
 
       if (vault && strategy) {
-        supportedVaults.set(m.address, { vault, strategy });
+        supportedVaults.set(position.address, { vault, strategy });
       }
       return;
     });
 
     // Data is gathered in 'supportedVaults'.
     // this is to wait for everything above to complete
-    await Promise.all(multicallPromises);
+    await Promise.allSettled(multicallPromises);
 
     // Get extra data not retrieved from above
     const { prices, totalSupplies, pools } = await this.fetchAssets(supportedVaults);
@@ -198,19 +199,22 @@ export abstract class BeefyStakingBase
   }
 
   private async fetchTotalSupplies(addresses: Address[]): Promise<Map<Address, string>> {
-    const calls = new Map(
-      addresses.map((address) => {
-        const contract = new ERC20(address);
-        return [address, contract.totalSupply()];
-      }),
+    const callGroup = addresses.map((address) => {
+      const contract = new ERC20(address);
+      return new Map<string, CallData>([[address, contract.totalSupply()]]);
+    });
+
+    const responsesRaw = await Promise.allSettled(
+      callGroup.flatMap((call) => this.multicall(call)),
     );
 
-    const responsesRaw = await this.multicall(calls);
+    const [data] = handlePromiseAllSettled(responsesRaw);
 
     const responses = new Map();
-    responsesRaw.forEach((callData, address) =>
-      responses.set(address, callData.output.data.toString()),
-    );
+    for (const callData of data) {
+      const [[key, value]] = callData.entries();
+      responses.set(key, value.output.data.toString());
+    }
 
     return responses;
   }

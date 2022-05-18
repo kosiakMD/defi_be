@@ -4,6 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 
+import { TombMasonry } from '../support/EVM/protocols/AlgoStable/TombMasonry';
 import { MasterChefCemetary } from '../support/EVM/protocols/Yield/MasterChefCemetary';
 import { RootPlatform } from '../support/RootPlatform';
 
@@ -26,17 +27,12 @@ export class TombFinance extends RootPlatform {
       },
     });
 
-    // TODO: Add algo stable (boardroom)
-    // await this.registerProtocol(AlgoStable, {
-    //     chain: ChainIdEnum.ftm,
-    //     name: 'Masonry',
-    //     feature: FeatureEnum.staking,
-    //     address: '0x8764DE60236C5843D9faEB1B638fbCE962773B67',
-    //     data: {
-    //         share: '0x4cdf39285d7ca8eb3f090fda0c069ba5f4145b37',
-    //         reward: '0x6c021ae822bea943b2e66552bde1d2696a53fbb7'
-    //     },
-    //   });
+    await this.registerProtocol(TombMasonry, {
+      chain: ChainIdEnum.ftm,
+      name: 'Masonry',
+      feature: FeatureEnum.staking,
+      address: '0x8764DE60236C5843D9faEB1B638fbCE962773B67',
+    });
 
     await this.registerProtocol(MasterChefCemetary, {
       chain: ChainIdEnum.ftm,

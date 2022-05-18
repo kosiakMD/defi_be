@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv';
 
-dotenv.config({ path: 'apps/categorization_tool/config/.env' });
+dotenv.config({ path: 'dist/apps/categorization_service/.env' });
 
 export default {
   type: process.env.DB_CONNECTION,
@@ -11,9 +11,9 @@ export default {
   password: process.env.DB_PASSWORD,
   synchronize: process.env.DB_SYNCHRONIZE,
   logging: process.env.DB_LOGGING,
-  entities: ['apps/categorization_tool/src/modules/database/entities/**/*.entity.ts'],
-  migrations: ['apps/categorization_tool/src/modules/database/migrations/**/*.ts'],
+  entities: ['dist/apps/categorization_service/src/modules/database/entities/**/*.entity.js'],
+  migrations: ['dist/apps/categorization_service/src/modules/database/migrations/**/*.js'],
   cli: {
-    migrationsDir: 'apps/categorization_tool/src/modules/database/migrations',
+    migrationsDir: 'dist/apps/categorization_service/src/modules/database/migrations',
   },
 };

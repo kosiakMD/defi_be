@@ -4,7 +4,7 @@ pipeline {
     agent any
     parameters {
         string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
-        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_categorization_tool", trim: true)
+        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_categorization_service", trim: true)
     }
     options {
         buildDiscarder(
@@ -32,10 +32,10 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
-                        SERVICE_FOLDER = env.JOB_NAME_SERVICE.replace("-", "_")
+                        SERVICE_FOLDER = env.JOB_NAME.replace("-", "_")
                         DOCKER_REGISTRY = DOCKER_REGISTRY_URL.replace("https://", "")
                         DOCKER_TAG = sh(script: "git log --pretty=tformat:'%h' -n1 ./apps/${SERVICE_FOLDER}", returnStdout: true).trim().take(7)
-                        DOCKER_IMAGE = docker.build("${env.JOB_NAME_SERVICE}:${DOCKER_TAG}", "-f ./${DOCKERFILE_NAME} .")
+                        DOCKER_IMAGE = docker.build("${env.JOB_NAME}:${DOCKER_TAG}", "-f ./${DOCKERFILE_NAME} .")
                     }
                 }
             }
@@ -44,7 +44,7 @@ pipeline {
             steps {
                 script {
                     sh """#!/bin/bash
-                    aws ecr create-repository --region ${env.AWS_REGION} --repository-name ${env.JOB_NAME_SERVICE} || true
+                    aws ecr create-repository --region ${env.AWS_REGION} --repository-name ${env.JOB_NAME} || true
                     """
                 }
             }
@@ -62,7 +62,7 @@ pipeline {
                         json: [
                             "image": DOCKER_IMAGE.imageName(),
                             "registry": DOCKER_REGISTRY,
-                            "repository": env.JOB_NAME_SERVICE,
+                            "repository": env.JOB_NAME,
                             "tag": DOCKER_TAG
                         ]
                     )
@@ -84,13 +84,13 @@ pipeline {
         always {
             cleanWs()
             script {
-                currentBuild.displayName = "${env.JOB_NAME_SERVICE} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
+                currentBuild.displayName = "${env.JOB_NAME} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
                 currentBuild.description = DOCKER_IMAGE.imageName()
             }
             sh """
                 docker rmi --force \
                   ${DOCKER_IMAGE.imageName()} \
-                  ${DOCKER_REGISTRY}/${env.JOB_NAME_SERVICE}:latest
+                  ${DOCKER_REGISTRY}/${env.JOB_NAME}:latest
             """
         }
     }

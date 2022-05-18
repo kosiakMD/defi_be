@@ -20,7 +20,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) =>
-        getWinstonParams('categorization_tool', configService),
+        getWinstonParams('categorization_service', configService),
     }),
     HttpModule.registerAsync({
       imports: [ConfigModule],

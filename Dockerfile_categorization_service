@@ -8,9 +8,9 @@ RUN yarn install --loglevel verbose
 
 # Build application
 COPY . .
-RUN yarn categorization_tool-build
-#RUN yarn categorization_tool-migration:generate
-# RUN npm run categorization_tool-migration:generate -- -n first
+RUN yarn categorization_service-build
+#RUN yarn categorization_service-migration:generate
+# RUN npm run categorization_service-migration:generate -- -n first
 
 # Configure application startup command
 CMD ["npm", "run", "start"]
@@ -42,11 +42,11 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
-#COPY --from=development /usr/src/app/apps/categorization_tool/ormconfig.ts ./dist/apps/categorization_tool/ormconfig.ts
+#COPY --from=development /usr/src/app/apps/categorization_service/ormconfig.ts ./dist/apps/categorization_service/ormconfig.ts
 #COPY --from=development /usr/src/app/ormconfig.ts ./
-#COPY --from=development /usr/src/app/apps/categorization_tool/config/.env /dist/apps/categorization_tool/.env
-RUN touch /usr/src/app/dist/apps/categorization_tool/.env
+#COPY --from=development /usr/src/app/apps/categorization_service/config/.env /dist/apps/categorization_service/.env
+RUN touch /usr/src/app/dist/apps/categorization_service/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/categorization_tool/src/main"]
+CMD ["dist/apps/categorization_service/src/main"]

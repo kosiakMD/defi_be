@@ -13,20 +13,20 @@
 
 ```bash
 yarn install
-yarn categorization_tool-build
+yarn categorization_service-build
 ```
 
 ### Backing Services
 
 #### Start Services
 ```bash
-docker-compose -f apps/categorization_tool/docker-compose.yml up -d
+docker-compose -f apps/categorization_service/docker-compose.yml up -d
 ```
 
 #### Stop Services
 Add ```--volume``` option if you want to clean up the data.
 ```bash
-docker-compose -f apps/categorization_tool/docker-compose.yml down
+docker-compose -f apps/categorization_service/docker-compose.yml down
 ```
 
 ### DB migrations
@@ -34,34 +34,34 @@ docker-compose -f apps/categorization_tool/docker-compose.yml down
 #### Migrations Up
 ##### Local Development
 ```bash
-npm run categorization_tool-migration:run-dev
+npm run categorization_service-migration:run-dev
 ```
 ##### Environment
 ```bash
-npm run categorization_tool-migration:run
+npm run categorization_service-migration:run
 ```
 
 #### Migration Down
 ##### Local Development
 ```bash
-npm run categorization_tool-migration:revert-dev
+npm run categorization_service-migration:revert-dev
 ```
 ##### Environment
 ```bash
-npm run categorization_tool-migration:revert
+npm run categorization_service-migration:revert
 ```
 
 #### Create New Migration
 ##### Local Development
 ```bash
-npm run categorization_tool-migration:generate-dev -- -n ${YOUR_MIGRATION_NAME}
+npm run categorization_service-migration:generate-dev -- -n ${YOUR_MIGRATION_NAME}
 ```
 
 ### Running The Service
 
 ```bash
 # watch mode
-npm run categorization_tool-start:dev
+npm run categorization_service-start:dev
 ```
 
 ### Swagger API

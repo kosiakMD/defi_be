@@ -37,6 +37,6 @@ initContainer:
   name: ctmigration
   image: ""
   spec:
-    command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/categorization_tool/src/ormconfig.js" ]
+    command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/categorization_service/src/ormconfig.js" ]
 
 

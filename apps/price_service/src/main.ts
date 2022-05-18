@@ -1,14 +1,19 @@
 import { json, urlencoded } from 'express';
 
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
-import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
+import {
+  initContext,
+  initListening,
+  initPipes,
+  initPrefix,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
+import { initLogger } from '@app/common/bootstrap/initLogger';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -24,23 +29,20 @@ async function bootstrap(): Promise<void> {
   });
 
   initSentry();
-
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
-
-  app.setGlobalPrefix('v1');
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  initContext(app);
+  initLogger(app);
+  initSwagger(app);
+  initPrefix(app);
+  initPipes(app);
 
   const configService = app.get<ConfigService>(ConfigService);
-
   app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
   app.use(urlencoded({ extended: true, limit: configService.get<string>('URL_LIMIT') }));
 
-  initSwagger(app);
-
-  await startApp(app);
+  await initListening(app);
 }
 
 bootstrap().catch((e) => {
   logger.error(e, undefined, 'Bootstrap');
+  throw e;
 });

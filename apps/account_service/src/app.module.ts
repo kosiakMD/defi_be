@@ -15,7 +15,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
-import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { AllExceptionsFilter } from '@app/common/interceptors/AllExceptions.filter';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 

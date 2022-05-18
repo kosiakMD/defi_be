@@ -1,8 +1,9 @@
 import { getManager } from 'typeorm';
 
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { ETH_ADDRESS } from '@app/common/constant';
 
 import { Network } from '../enum/temporary.tokens.enum';
@@ -19,7 +20,7 @@ import { CoingeckoService } from './coingecko.service';
 export class TemporaryTokensService {
   constructor(
     private coingeckoService: CoingeckoService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
 
   async getTemporaryTokens(): Promise<string> {

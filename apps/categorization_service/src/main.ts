@@ -1,15 +1,14 @@
 import * as bodyParser from 'body-parser';
 import { install } from 'source-map-support';
 
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { addTimeLogFeature } from '@app/common';
 import { createLogger } from '@app/common/Logger/winston';
+import { initListening } from '@app/common/bootstrap/initListening';
+import { initLogger } from '@app/common/bootstrap/initLogger';
+import { initPipes } from '@app/common/bootstrap/initPipes';
 import { initSwagger } from '@app/common/bootstrap/initSwagger';
-import { startApp } from '@app/common/bootstrap/startApp';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -25,16 +24,14 @@ async function bootstrap() {
     logger,
   });
 
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
+  initLogger(app);
+  initSwagger(app);
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  initPipes(app);
 
-  initSwagger(app);
-
-  await startApp(app);
+  await initListening(app);
 }
 
 bootstrap();

@@ -1,6 +1,6 @@
 import { Connection } from 'typeorm';
 
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   HealthCheck,
@@ -9,7 +9,9 @@ import {
   HealthIndicatorResult,
 } from '@nestjs/terminus';
 import { InjectConnection } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { camelize } from '@app/common/utils';
 
 enum StatusEnum {
@@ -24,6 +26,7 @@ export class HealthController {
     private readonly connection: Connection,
     private readonly health: HealthCheckService,
     private readonly configService: ConfigService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
 
   @Get()

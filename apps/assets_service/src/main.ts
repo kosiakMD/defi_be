@@ -1,14 +1,22 @@
-import { ValidationPipe } from '@nestjs/common';
+import { config } from 'aws-sdk';
+
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
-import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
+import {
+  initContext,
+  initListening,
+  initPipes,
+  initPrefix,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
+import { initLogger } from '@app/common/bootstrap/initLogger';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
+import { AwsConfigService } from './config/aws/aws.config.service';
 
 const logger = createLogger(logFileDir);
 
@@ -21,18 +29,24 @@ async function bootstrap() {
   });
 
   initSentry();
-
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
-
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('v1');
-
+  initContext(app);
+  initLogger(app);
   initSwagger(app);
+  initPrefix(app);
+  initPipes(app);
 
-  await startApp(app);
+  const awsConfigService = app.get(AwsConfigService);
+
+  config.update({
+    accessKeyId: awsConfigService.awsKeyId,
+    secretAccessKey: awsConfigService.awsSecretAccessKey,
+    region: awsConfigService.region,
+  });
+
+  await initListening(app);
 }
 
 bootstrap().catch((e) => {
   logger.error(e, undefined, 'Bootstrap');
+  throw e;
 });

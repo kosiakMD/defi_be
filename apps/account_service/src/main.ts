@@ -1,11 +1,17 @@
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
-import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
+import {
+  initContext,
+  initListening,
+  initLogger,
+  initPipes,
+  initPrefix,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
+import { withContext, withRequestId } from '@app/common/middlewares/withContext';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -21,19 +27,19 @@ async function bootstrap() {
     logger,
   });
 
+  app.use(withContext, withRequestId);
+
   initSentry();
-
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
-
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
-  app.setGlobalPrefix('v1'); // temporary global as only 1 version
-
+  initContext(app);
+  initLogger(app);
   initSwagger(app);
+  initPrefix(app);
+  initPipes(app);
 
-  await startApp(app);
+  await initListening(app);
 }
 
 bootstrap().catch((e) => {
   logger.error(e, undefined, 'Bootstrap');
+  throw e;
 });

@@ -28,6 +28,7 @@ declare global {
 global.__rootdir__ = __dirname || process.cwd();
 
 const TEST_SENTRY = false;
+
 // arg sentryDSN for test reason only
 export const initSentry = function (sentryDSN = process.env.SENTRY_DSN as string): void {
   if (!TEST_SENTRY && !sentryDSN) return;

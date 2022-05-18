@@ -33,6 +33,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
   ) {}
 
   catch(exception: any | Error | AxiosError, host: ArgumentsHost): void {
+    const isProd = this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production;
+    const isStage = this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging;
+    const hideStack = isProd || isStage;
     const hostType = host.getType();
     // TODO: implement all host types we use
     // 'http' | 'ws' | 'rpc'
@@ -92,11 +95,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
       const timeExecute = response.get(HEADER_TIME_EXECUTE);
       const protocolName = response.get(HEADER_PROTOCOL);
+
       // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
         error: error,
         message: errorMessage || exception.message || exception,
+        stack: hideStack ? undefined : exception.stack,
         timestampEntry: timestampEntry,
         timestampExit: timestampExit,
         timeExecute: timeExecute,
@@ -116,6 +121,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {
+      hideStack && delete exception.stack;
       throw exception;
     }
   }

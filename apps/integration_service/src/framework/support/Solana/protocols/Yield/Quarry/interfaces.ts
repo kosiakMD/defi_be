@@ -2,7 +2,6 @@ import { FeatureEnum } from '@app/common';
 
 import { IProtocolMeta } from '../../../../interfaces';
 import { BaseWithTokens } from '../../../../interfaces/new.interfaces';
-import { ERC20TokenMinimal } from '../../../../interfaces/tokens.common.interface';
 import {
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
@@ -11,17 +10,6 @@ import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
 } from '../../../../interfaces/tokens.supplied.interface';
-
-export interface IQuarrySupplyTokenMinimal extends ISupplyTokenMinimal {
-  token: ERC20TokenMinimal & {
-    underlying: {
-      address: string;
-      reserveAddress?: string;
-      reserve?: number;
-      price?: number;
-    }[];
-  };
-}
 
 export interface IQuarryExtra {
   replicaMint: string;
@@ -37,7 +25,7 @@ export interface IQuarryExtra {
 
 // TODO: move IQuarryExtra into 'meta/extra' interface
 export type IQuarryStakingFeatureMinimal = BaseWithTokens<
-  IQuarrySupplyTokenMinimal[],
+  ISupplyTokenMinimal[],
   IRewardTokenMinimal[],
   void,
   any
@@ -55,19 +43,46 @@ export type IQuarryStakingFeatureOpportunity = BaseWithTokens<
 export interface IQuarryMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
   name: string;
-  api: {
+  context: {
     endpoint: string;
   };
 }
 
-export interface IQuarryOpportunityResponse {
-  isParent: boolean;
-  address: string;
-  stakedToken: string;
-  assets: {
+export interface IQuarryRedeemer {
+  method: string;
+  underlyingToken: string;
+  underlyingTokenInfo: {
     address: string;
-    reserveAddress?: string;
-  }[];
-  rewardAssets: string[];
+    extensions: {
+      [x: string]: string;
+    };
+    logoURI: string;
+  };
+}
+export interface IQuarryFarm {
+  isReplica: boolean;
+  primaryQuarries: IQuarryFarm[];
+  quarry: string;
   replicaMint: string;
+  replicaQuarries: IQuarryFarm[];
+  stakedToken: {
+    mint: string;
+  };
+  rewardsToken?: {
+    mint: string;
+  };
+}
+
+export interface IQuarryProtocol {
+  info?: {
+    redeemer?: IQuarryRedeemer;
+  };
+  quarries: IQuarryFarm[];
+  rewardsToken: {
+    mint: string;
+  };
+}
+
+export interface IQuarryOpportunityResponse {
+  [x: string]: IQuarryProtocol;
 }

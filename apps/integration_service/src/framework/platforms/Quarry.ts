@@ -28,14 +28,13 @@ export class Quarry extends RootPlatform {
     });
 
     const endpointQuarry =
-      'https://gist.githubusercontent.com/x-ror/e0726d93bcc62b4ff5583479a5b79795/raw/';
-    // const endpointQuarry = 'https://api.sonar.watch/latest/farms';
+      'https://raw.githubusercontent.com/QuarryProtocol/rewarder-list-build/master/mainnet-beta/all-rewarders-with-info.json';
 
     await this.registerProtocol<IQuarryMeta>(QuarryStaking, {
       chain: ChainIdEnum.sol,
       name: 'Quarry',
       feature: FeatureEnum.staking,
-      api: {
+      context: {
         endpoint: endpointQuarry,
       },
     });

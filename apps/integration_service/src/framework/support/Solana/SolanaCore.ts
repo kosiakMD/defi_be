@@ -68,14 +68,16 @@ export abstract class SolanaCore<
     prices[NATIVE_SOL] = prices[WRAPPED_SOL];
 
     const supplyMap = new Map();
-    supplies?.forEach((supply) => {
-      if (supply.result?.value && !supply.error) {
-        return supplyMap.set(
-          supply.id,
-          normalizeDecimals(supply.result.value.amount, supply.result.value.decimals),
-        );
-      }
-    });
+    if (Array.isArray(supplies)) {
+      supplies.forEach((supply) => {
+        if (supply.result?.value && !supply.error) {
+          return supplyMap.set(
+            supply.id,
+            normalizeDecimals(supply.result.value.amount, supply.result.value.decimals),
+          );
+        }
+      });
+    }
 
     return tokens
       .filter((token) => addresses.includes(token.address))

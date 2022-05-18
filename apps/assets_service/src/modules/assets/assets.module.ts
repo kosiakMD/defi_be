@@ -61,6 +61,6 @@ import { TokenService } from './services/token.service';
     TrackedTokenPopulationProcessor,
     Web3ProviderService,
   ],
-  exports: [AssetsService],
+  exports: [AssetsService, AssetsRepository],
 })
 export class AssetsModule {}

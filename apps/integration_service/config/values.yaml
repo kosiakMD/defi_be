@@ -87,6 +87,8 @@ configMaps:
     TERRA_URL: https://lcd.terra.dev
     GNOSIS_URL: https://rpc.xdaichain.com
     AURORA_URL: https://mainnet.aurora.dev
+    KAVA_API: https://api2.kava.io
+    KAVA_URL: https://api2.kava.io
   endpoints:
     ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service

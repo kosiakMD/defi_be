@@ -195,7 +195,7 @@ export class OrcaPools {
       if (aq) {
         rpcDataRequests.push({
           jsonrpc: options.jsonrpc,
-          id: idRpc,
+          id: idRpc + ':' + aq.account,
           method: options.method[0],
           params: [
             aq.account,
@@ -206,7 +206,7 @@ export class OrcaPools {
         });
         rpcDataRequests.push({
           jsonrpc: options.jsonrpc,
-          id: idRpc,
+          id: idRpc + ':' + aq.farmTokenMint,
           method: options.method[1],
           params: [aq.farmTokenMint],
         });

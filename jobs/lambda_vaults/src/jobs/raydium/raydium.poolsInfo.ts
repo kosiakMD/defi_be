@@ -11,7 +11,7 @@ import { toChunkedArray } from '@app/common/utils/transform';
 const RPC_URL = new ConfigService().get('SOL_URL');
 const LIMIT_PER_REQUEST = 50;
 
-export async function generateTx(pool, blockHash: string) {
+export function generateTx(pool, blockHash: string) {
   const instructions = [
     Liquidity.makeSimulatePoolInfoInstruction({
       poolKeys: solanaStringsToKeys(pool) as LiquidityPoolKeysV4,
@@ -26,12 +26,16 @@ export async function generateTx(pool, blockHash: string) {
   }
 
   transaction.recentBlockhash = blockHash;
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
+  // eslint-disable-next-line no-underscore-dangle
   const message = transaction._compile();
   const signData = message.serialize();
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
+  // eslint-disable-next-line no-underscore-dangle
   const wireTransaction = transaction._serialize(signData);
 
   const encodedTransaction = wireTransaction.toString('base64');
@@ -45,18 +49,17 @@ export async function generateTx(pool, blockHash: string) {
 }
 
 export async function getInfoPools(connection: Connection, httpService: HttpService, listPools) {
-  const blockhash = (await connection.getRecentBlockhash()).blockhash;
+  const blockhash = (await connection.getLatestBlockhash()).blockhash;
   const listTx = [];
-  for (const pool of listPools) {
-    if (pool) {
-      const tx = await generateTx(pool, blockhash);
-      listTx.push({
-        jsonrpc: '2.0',
-        id: 0,
-        method: 'simulateTransaction',
-        params: tx,
-      });
-    }
+  for (let i = 0; i < listPools.length; i++) {
+    const pool = listPools[i];
+    const tx = generateTx(pool, blockhash);
+    listTx.push({
+      jsonrpc: '2.0',
+      id: i + '::' + pool.id,
+      method: 'simulateTransaction',
+      params: tx,
+    });
   }
 
   const chunks = toChunkedArray(listTx, LIMIT_PER_REQUEST);

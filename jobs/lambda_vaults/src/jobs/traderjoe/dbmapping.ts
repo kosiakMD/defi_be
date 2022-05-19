@@ -34,25 +34,25 @@ export class DbMapping {
 
     if (stakingPosition.rewards.length === 2) {
       //reward token
-      const rewardTokenUniqueIdJOE = concatStrings(chain, TraderjoeAddresses.joe);
-      const rewardTokenUniqueIdAVAX = concatStrings(chain, TraderjoeAddresses.avax);
+      const rewardTokenUniqueIdOne = concatStrings(chain, stakingPosition.rewards[0].address);
+      const rewardTokenUniqueIdTwo = concatStrings(chain, stakingPosition.rewards[1].address);
 
-      const rewardTokenItemJOE: TrackedVaultItem = await this.getDbItem(
+      const rewardTokenItemOne: TrackedVaultItem = await this.getDbItem(
         stakingPosition.rewards[0],
-        rewardTokenUniqueIdJOE,
+        rewardTokenUniqueIdOne,
       );
-      const rewardTokenItemAVAX: TrackedVaultItem = await this.getDbItem(
+      const rewardTokenItemTwo: TrackedVaultItem = await this.getDbItem(
         stakingPosition.rewards[1],
-        rewardTokenUniqueIdAVAX,
+        rewardTokenUniqueIdTwo,
       );
 
       mappedDto.rewards = [
         {
-          dbId: rewardTokenItemJOE.id,
+          dbId: rewardTokenItemOne.id,
           dtoName: stakingPosition.rewards[0].constructor.name,
         },
         {
-          dbId: rewardTokenItemAVAX.id,
+          dbId: rewardTokenItemTwo.id,
           dtoName: stakingPosition.rewards[1].constructor.name,
         },
       ];

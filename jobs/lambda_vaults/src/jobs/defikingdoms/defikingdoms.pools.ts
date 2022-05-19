@@ -192,6 +192,7 @@ export class DefiKingdomsPools extends JobPoolsBase<LiquidityPoolFeature> implem
         pricedTokenAddresses,
         CurrencyIdEnum.usd,
         ChainIdEnum.harm,
+        this.protocol,
       ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.harm),
     ]);

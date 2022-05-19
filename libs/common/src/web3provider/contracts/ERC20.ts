@@ -26,4 +26,12 @@ export class ERC20 extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+
+  static readonly owner: AbiItem = {
+    inputs: [],
+    name: 'owner',
+    outputs: [{ internalType: 'address', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

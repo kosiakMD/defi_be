@@ -1,7 +1,7 @@
 import * as Joi from 'joi';
 
 export const cacheValidationSchema = {
-  REDIS_HOST: Joi.string().default('127.0.0.1'),
+  REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().default(6379),
   REDIS_AUTH: Joi.string() //
     .allow('')

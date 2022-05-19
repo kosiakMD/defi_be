@@ -4,7 +4,7 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { averageBlockTimeByChain } from '@app/common/constant/blocktime';
 import { equals, normalizeDecimals, regex, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
@@ -12,40 +12,30 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import {
-  INamedFunctionPredicates,
-  IProtocolMeta,
-  IRootProtocol,
-  TokenMap,
-} from '../../../interfaces';
+import { FeatureEnum } from '../../../enums';
+import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,
   IStakingFeatureMinimal,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import {
-  IRewardTokenMinimal,
-  IRewardTokenOpportunity,
-} from '../../../interfaces/tokens.rewarded.interface';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-} from '../../../interfaces/tokens.supplied.interface';
+import { ISupplyTokenOpportunity } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-interface IMasterChefMeta extends IProtocolMeta {
+export interface IMasterChefMeta extends IProtocolMeta {
   address: Address;
   feature: FeatureEnum.staking;
   name: string; // Genesis, Farm, AceLab
   context?: {
     badPools?: number[]; // poolIds to skip
-    [key: string]: any;
+  };
+  links?: {
+    getOpportunityLink: () => string;
   };
 }
 
-interface IPoolInfo {
+export interface IMasterChefPoolInfo {
   poolId: number;
   stakedToken: Address;
   allocPoint: number;
@@ -53,6 +43,10 @@ interface IPoolInfo {
 
 const REWARD_REGEX = /^(\w+)(per)((block|sec(ond)?))$/;
 
+/**
+ * Classic masterchef. Deposit a token, or LP token into
+ * a pool, and receive a portion of the pool emissions
+ */
 export class MasterChef
   extends SingleContractProtocol<
     IStakingFeatureMinimal,
@@ -71,7 +65,12 @@ export class MasterChef
     protected priceService: PriceService,
   ) {
     super();
+    if (this.updateFunctionPredicates) {
+      this.updateFunctionPredicates();
+    }
   }
+
+  protected updateFunctionPredicates?(): void;
 
   // Best Guess predicates to auto detect masterchef contract
   // Ideally in a base class such as MasterChef these will be as generic as possible and
@@ -131,36 +130,27 @@ export class MasterChef
       context.badPools.sort((a, b) => (a > b ? -1 : 1)).forEach((id) => poolIds.splice(id, 1));
     }
 
-    const poolInfos: IPoolInfo[] = await this.fetchPoolInfos(poolIds);
+    const poolInfos: IMasterChefPoolInfo[] = await this.fetchPoolInfos(poolIds);
 
     const totalStakedCalls = poolInfos.map((poolInfo) => {
       const lpContract = new ERC20(poolInfo.stakedToken);
       return lpContract.balanceOf(this.meta.address);
     });
 
-    const totalSupplyCalls = poolInfos.map((poolInfo) => {
-      const lpContract = new ERC20(poolInfo.stakedToken);
-      return lpContract.totalSupply();
-    });
-    const [totalStakedPerPool, totalSupplyPerPool] = await Promise.all([
-      this.multicall.callArray(totalStakedCalls, this.meta.chain),
-      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
-    ]);
+    const totalStakedPerPool = await this.multicall.callArray(totalStakedCalls, this.meta.chain);
 
     return poolInfos.map((poolInfo, poolIdx) => {
       return this.formatStakingOpportunityMinimal(
         poolInfo,
         totalStakedPerPool[poolIdx].toString(), // totalStaked
-        totalSupplyPerPool[poolIdx].toString(), // totalSupply
         context,
       );
     });
   }
 
   protected formatStakingOpportunityMinimal(
-    poolInfo: IPoolInfo,
+    poolInfo: IMasterChefPoolInfo,
     totalStaked: string,
-    totalSupply: string,
     context: { [key: string]: any },
   ): IStakingFeatureMinimal {
     const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
@@ -178,7 +168,6 @@ export class MasterChef
           token: {
             address: poolInfo.stakedToken,
           },
-          totalSupply: totalSupply,
           totalSupplied: totalStaked,
         },
       ],
@@ -191,82 +180,6 @@ export class MasterChef
     };
   }
 
-  /**
-   * Returns the user friendly pool, with tokens & proper decimals
-   *
-   * @param pool Single raw pool (see above)
-   * @param tokens map of priced tokens
-   * @returns formatted pool
-   */
-  protected formatOpportunity(
-    pool: IStakingFeatureMinimal,
-    tokens: TokenMap,
-  ): void | IStakingFeatureOpportunity {
-    if (
-      !pool.supplied.every((t) => tokens.has(t.token.address)) ||
-      !pool.rewarded.every((t) => tokens.has(t.token.address))
-    ) {
-      // throw error or just return; to silently skip pools
-      // throw new Error(`Failed to resolve all tokens for pool - ${pool.chain}/${pool.id}`);
-      // todo: consider how to handle such cases, because exceptions generates many error logs
-      return;
-    }
-
-    const tvl = pool.supplied.reduce((tvl, poolToken) => {
-      const token = tokens.get(poolToken.token.address);
-      return tvl + token.price * normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    }, 0);
-
-    return {
-      feature: pool.feature,
-      id: pool.id,
-      chain: pool.chain,
-      supplied: pool.supplied.map((poolToken) =>
-        this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
-      ),
-
-      rewarded: pool.rewarded.map((poolToken) =>
-        this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
-      ),
-    };
-  }
-
-  protected formatOpportunitySuppliedToken(
-    poolToken: ISupplyTokenMinimal,
-    token: ERC20Token,
-  ): ISupplyTokenOpportunity {
-    const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    const totalSupply = normalizeDecimals(poolToken.totalSupply, token.decimals);
-    return {
-      token,
-      totalSupply,
-      totalSupplied,
-      tvl: totalSupplied * token.price,
-    };
-  }
-
-  protected formatOpportunityRewardedToken(
-    poolToken: IRewardTokenMinimal,
-    token: ERC20Token,
-    tvl: number, // for calculating apr
-  ): IRewardTokenOpportunity {
-    const tokensPerSecond = normalizeDecimals(poolToken.rewardPerSecond, token.decimals);
-    const pricePerSecond = tokensPerSecond * token.price;
-
-    // yield is a reserved word 🙄
-    const { apr: harvests } = this.getYieldBreakdown(tokensPerSecond, 1);
-    const { apr, apy } = this.getYieldBreakdown(pricePerSecond, tvl);
-
-    return {
-      token,
-      harvests,
-      // Note: This only includes APR for _this token's rewards_ on the farm
-      // so any trading fees are not included here
-      apr,
-      apy,
-    };
-  }
-
   protected userInfoLabel(masterchef: Address, poolId: string, user: Address): string {
     return `${masterchef}.userInfo(${poolId}, ${user})`;
   }
@@ -274,32 +187,53 @@ export class MasterChef
     return `${masterchef}.pendingRewards(${poolId}, ${user})`;
   }
 
-  protected fetchUserData(addresses: Address[], pools: IStakingFeatureOpportunity[]) {
+  protected async fetchUserData(
+    address: Address,
+    pools: IStakingFeatureOpportunity[],
+  ): Promise<IStakingFeatureUserEntry[]> {
     const contract = this.getMainContract();
 
-    // Loop and get all user balances for all pools
-    // TODO: Benchmark all calls at once, or userInfo once,
-    // then pendingRewards for only the required pools
     const calls = new Map();
-    addresses.forEach((address) => {
-      return pools.forEach((pool) => {
-        // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
-        // This works, but feels like a hack. but how to cleanly allow extra pool metadata
-        // without abuse/misuse?
-        const [masterchef, poolId] = pool.id.split('::');
+    pools.forEach((pool) => {
+      // TODO: include 'meta' object so we can just provide e.g. poolId on masterchefs?
+      // This works, but feels like a hack. but how to cleanly allow extra pool metadata
+      // without abuse/misuse?
+      const [masterchef, poolId] = pool.id.split('::');
 
-        calls.set(
-          this.userInfoLabel(masterchef, poolId, address),
-          contract.createCall(this.functions.userInfo, poolId, address),
-        );
-        calls.set(
-          this.pendingRewardsLabel(masterchef, poolId, address),
-          contract.createCall(this.functions.pendingRewards, poolId, address),
-        );
-      });
+      calls.set(
+        this.userInfoLabel(masterchef, poolId, address),
+        contract.createCall(this.functions.userInfo, poolId, address),
+      );
+      calls.set(
+        this.pendingRewardsLabel(masterchef, poolId, address),
+        contract.createCall(this.functions.pendingRewards, poolId, address),
+      );
     });
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
+  }
+
+  protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
+    // const poolShare = balance / supplied.token['totalSupply'];
+    const poolShare = balance / supplied.token.totalSupply;
+    supplied.token.underlying?.forEach((underlying) => {
+      underlying.balance = underlying.reserve * poolShare;
+      underlying.value = underlying.balance * underlying.price;
+    });
+
+    return Object.assign(supplied, {
+      amount: balance,
+      value: balance * supplied.token.price,
+    });
   }
 
   protected formatUserData(
@@ -314,22 +248,15 @@ export class MasterChef
     } = data.get(this.userInfoLabel(masterchef, poolId, address));
 
     // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
-    const balance = normalizeDecimals(userInfo.amount.toString(), pool.supplied[0].token.decimals);
+    const balance = normalizeDecimals(
+      userInfo[this.getUserInfoAmountKey()].toString(),
+      pool.supplied[0].token.decimals,
+    );
 
     if (!balance) return;
+
     // Update supplied token
-    Object.assign(pool.supplied[0], {
-      amount: balance,
-      value: balance * pool.supplied[0].token.price,
-    });
-    // Update underlying assets
-    if (pool.supplied[0].token.underlying?.length === 2) {
-      const poolShare = balance / pool.supplied[0].totalSupply;
-      pool.supplied[0].token.underlying.forEach((u) => {
-        u.balance = u.reserve * poolShare;
-        u.value = u.balance * u.price;
-      });
-    }
+    pool.supplied[0] = this.modifyUserEntrySupplied(pool.supplied[0], balance);
 
     const {
       output: { data: pendingRewards },
@@ -381,8 +308,12 @@ export class MasterChef
     );
     return poolInfo.map((pool) => ({
       poolId: pool.poolId,
-      stakedToken: Object.values(pool)[lpTokenIdx].toString().toLowerCase(),
+      stakedToken: pool.stakedToken || Object.values(pool)[lpTokenIdx]?.toString().toLowerCase(),
       allocPoint: parseInt(Object.values(pool)[allocPointIdx].toString(), 10),
     }));
+  }
+
+  protected getUserInfoAmountKey(): string {
+    return 'amount';
   }
 }

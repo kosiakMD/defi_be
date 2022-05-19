@@ -3,8 +3,13 @@
     "chain_id": 1,
     "endpoints": [
       {
-        "endpoint": "https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7",
+        "endpoint": "https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b",
         "priority": 10,
+        "is_enabled": true
+      },
+      {
+        "endpoint": "https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7",
+        "priority": 8,
         "is_enabled": true
       },
       {
@@ -32,7 +37,10 @@
   {
     "chain_id": 2,
     "endpoints": [
-
+      {
+        "endpoint": "https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive",
+        "priority": 10
+      },
       {
         "endpoint": "https://bsc-dataseed1.binance.org/",
         "priority": 5
@@ -58,6 +66,10 @@
   {
     "chain_id": 3,
     "endpoints": [
+      {
+        "endpoint": "https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive",
+        "priority": 10
+      },
       {
         "endpoint": "https://polygon-rpc.com/",
         "priority": 5
@@ -126,8 +138,12 @@
     "chain_id": 6,
     "endpoints": [
       {
-        "endpoint": "https://api.avax.network/ext/bc/C/rpc",
+        "endpoint": "https://avalanche--mainnet--rpc.datahub.figment.io/apikey/eb4092c651b0af2e17fd2ecb0f5966bd/ext/bc/C/rpc",
         "priority": 10
+      },
+      {
+        "endpoint": "https://api.avax.network/ext/bc/C/rpc",
+        "priority": 8
       },
       {
         "endpoint": "https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/avalanche/mainnet",
@@ -143,8 +159,16 @@
     "chain_id": 7,
     "endpoints": [
       {
-        "endpoint": "https://rpc.xdaichain.com",
+        "endpoint": "https://poa-xdai-archival.gateway.pokt.network/v1/lb/61f959410d66d80038fc1da0",
         "priority": 10
+      },
+      {
+        "endpoint": "https://xdai-archive.blockscout.com",
+        "priority": 8
+      },
+      {
+        "endpoint": "https://rpc.xdaichain.com",
+        "priority": 8
       },
       {
         "endpoint": "https://rpc.gnosischain.com/",
@@ -168,8 +192,12 @@
     "chain_id": 8,
     "endpoints": [
       {
-        "endpoint": "https://forno.celo.org",
+        "endpoint": "https://celo-mainnet--rpc.datahub.figment.io/apikey/4db2dc6e107f70e18fd4bdbb549b9aa1/",
         "priority": 10
+      },
+      {
+        "endpoint": "https://forno.celo.org",
+        "priority": 5
       }
     ]
   },
@@ -182,7 +210,7 @@
       },
       {
         "endpoint": "https://rpc.api.moonriver.moonbeam.network/",
-        "priority": 5
+        "priority": 10
       }
     ]
   },
@@ -208,19 +236,10 @@
     "endpoints": [
       {
         "endpoint": "https://http-mainnet-node.huobichain.com",
-        "priority": 10
+        "priority": 2
       },
       {
         "endpoint": "https://http-mainnet.hecochain.com/",
-        "priority": 5
-      }
-    ]
-  },
-  {
-    "chain_id": 12,
-    "endpoints": [
-      {
-        "endpoint": "https://solana-api.projectserum.com/",
         "priority": 10
       }
     ]
@@ -248,11 +267,11 @@
     "endpoints": [
       {
         "endpoint": "https://lightning-replica.boba.network",
-        "priority": 10
+        "priority": 5
       },
       {
         "endpoint": "https://mainnet.boba.network/",
-        "priority": 5
+        "priority": 10
       }
     ]
   },
@@ -311,10 +330,64 @@
     ]
   },
   {
+    "chain_id": 22,
+    "endpoints": [
+      {
+        "endpoint": "https://cardano-mainnet.blockfrost.io",
+        "priority": 5
+      }
+    ]
+  },
+  {
     "chain_id": 23,
     "endpoints": [
       {
         "endpoint": "https://andromeda.metis.io/?owner=1088",
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "chain_id": 24,
+    "endpoints": [
+      {
+        "endpoint": "https://api.roninchain.com/rpc",
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "chain_id": 25,
+    "endpoints": [
+      {
+        "endpoint": "https://cosmoshub-4--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/",
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "chain_id": 26,
+    "endpoints": [
+      {
+        "endpoint": "https://rpc.kava.io",
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "chain_id": 27,
+    "endpoints": [
+      {
+        "endpoint": "https://osmosis-1--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/",
+        "priority": 5
+      }
+    ]
+  },
+  {
+    "chain_id": 28,
+    "endpoints": [
+      {
+        "endpoint": "https://secret-3--rpc--archive.datahub.figment.io/apikey/91e126bee34f826357715bff8eac3441/",
         "priority": 5
       }
     ]

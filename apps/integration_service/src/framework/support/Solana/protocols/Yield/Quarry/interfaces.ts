@@ -1,8 +1,6 @@
-import { FeatureEnum } from '@app/common';
-
+import { FeatureEnum } from '../../../../enums';
 import { IProtocolMeta } from '../../../../interfaces';
-import { IStakingFeatureEntryGeneric } from '../../../../interfaces/feature.staking.interface';
-import { ERC20TokenMinimal } from '../../../../interfaces/tokens.common.interface';
+import { BaseWithTokens } from '../../../../interfaces/new.interfaces';
 import {
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
@@ -11,17 +9,6 @@ import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
 } from '../../../../interfaces/tokens.supplied.interface';
-
-export interface IQuarrySupplyTokenMinimal extends ISupplyTokenMinimal {
-  token: ERC20TokenMinimal & {
-    underlying: {
-      address: string;
-      reserveAddress?: string;
-      reserve?: number;
-      price?: number;
-    }[];
-  };
-}
 
 export interface IQuarryExtra {
   replicaMint: string;
@@ -35,26 +22,66 @@ export interface IQuarryExtra {
   };
 }
 
-export interface IQuarryStakingFeatureMinimal
-  extends IStakingFeatureEntryGeneric<IQuarrySupplyTokenMinimal, IRewardTokenMinimal>,
-    IQuarryExtra {}
+// TODO: move IQuarryExtra into 'meta/extra' interface
+export type IQuarryStakingFeatureMinimal = BaseWithTokens<
+  ISupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  void,
+  any
+> &
+  IQuarryExtra;
 
-export interface IQuarryStakingFeatureOpportunity
-  extends IStakingFeatureEntryGeneric<ISupplyTokenOpportunity, IRewardTokenOpportunity>,
-    IQuarryExtra {}
+export type IQuarryStakingFeatureOpportunity = BaseWithTokens<
+  ISupplyTokenOpportunity[],
+  IRewardTokenOpportunity[],
+  void,
+  any
+> &
+  IQuarryExtra;
 
 export interface IQuarryMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  context: {
+    endpoint: string;
+  };
+}
+
+export interface IQuarryRedeemer {
+  method: string;
+  underlyingToken: string;
+  underlyingTokenInfo: {
+    address: string;
+    extensions: {
+      [x: string]: string;
+    };
+    logoURI: string;
+  };
+}
+export interface IQuarryFarm {
+  isReplica: boolean;
+  primaryQuarries: IQuarryFarm[];
+  quarry: string;
+  replicaMint: string;
+  replicaQuarries: IQuarryFarm[];
+  stakedToken: {
+    mint: string;
+  };
+  rewardsToken?: {
+    mint: string;
+  };
+}
+
+export interface IQuarryProtocol {
+  info?: {
+    redeemer?: IQuarryRedeemer;
+  };
+  quarries: IQuarryFarm[];
+  rewardsToken: {
+    mint: string;
+  };
 }
 
 export interface IQuarryOpportunityResponse {
-  isParent: boolean;
-  address: string;
-  stakedToken: string;
-  assets: {
-    address: string;
-    reserveAddress?: string;
-  }[];
-  rewardAssets: string[];
-  replicaMint: string;
+  [x: string]: IQuarryProtocol;
 }

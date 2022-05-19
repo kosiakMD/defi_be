@@ -2,11 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { StakingDualRewards } from '../support/EVM/protocols/Yield/StakingDualRewards';
 import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class QuickSwap extends RootPlatform {
   constructor(
@@ -19,7 +20,12 @@ export class QuickSwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
+      links: {
+        url: 'https://quickswap.exchange/',
+        logo: 'https://icons.llama.fi/quickswap.jpg',
+        twitter: 'QuickswapDEX',
+      },
     });
 
     const quickSwapPoolsEndpoint =
@@ -31,6 +37,7 @@ export class QuickSwap extends RootPlatform {
       chain: ChainIdEnum.plg,
       name: 'Syrup',
       feature: FeatureEnum.staking,
+      address: '0xAf94537FB2499276a87870B7328CC21e9bEB2BB0', // Randomly chosen vault to fetch ABI from
       api: {
         endpoint: quickSwapPoolsEndpoint,
         // see: https://www.npmjs.com/package/jsonpath-plus
@@ -46,6 +53,7 @@ export class QuickSwap extends RootPlatform {
       chain: ChainIdEnum.plg,
       name: 'Dual Rewards',
       feature: FeatureEnum.staking,
+      address: '0x3c1f53fed2238176419F8f897aEc8791C499e3c8', // Randomly chosen vault to fetch ABI from
       api: {
         endpoint: quickSwapPoolsEndpoint,
         path: '$.[dualrewards].*.stakingRewardAddress',

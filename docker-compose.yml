@@ -1,5 +1,14 @@
 version: "3.9"
+
 services:
+  init-read-env:
+    image: public.ecr.aws/u0p0n5o0/envread:latest
+    environment:
+      - ENV_READER_PRIORITY=local
+    env_file:
+      .env
+    volumes:
+      - ./apps:/apps
 
   redis:
     image: "bitnami/redis:latest"
@@ -30,8 +39,12 @@ services:
       - "${PRICE_SERVICE_PORT:-3002}:${PRICE_SERVICE_PORT:-3002}"
     working_dir: /usr/src/app
     depends_on:
-      - redis
-      - postgres
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
     volumes:
       - .:/usr/src/app
     command: "yarn price-start:dev"
@@ -39,8 +52,8 @@ services:
     environment:
       - SERVICE_PORT=${PRICE_SERVICE_PORT:-3002}
     env_file:
-      - "apps/price_service/config/.env"
       - ".env"
+      - "apps/price_service/config/.env"
 
   account-service:
     image: node:14
@@ -49,9 +62,14 @@ services:
       - "${ACCOUNT_SERVICE_PORT:-3003}:${ACCOUNT_SERVICE_PORT:-3003}"
     working_dir: /usr/src/app
     depends_on:
-      - redis
-      - postgres
-      - price-service
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      price-service:
+        condition: service_started
     volumes:
       - .:/usr/src/app
     command: "yarn account-start:dev"
@@ -59,8 +77,8 @@ services:
     environment:
       - SERVICE_PORT=${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
-      - "apps/account_service/config/.env"
       - ".env"
+      - "apps/account_service/config/.env"
 
   integration-service:
     build:
@@ -71,10 +89,16 @@ services:
       - "${INTEGRATION_SERVICE_PORT:-3004}:${INTEGRATION_SERVICE_PORT:-3004}"
     working_dir: /usr/src/app
     depends_on:
-      - redis
-      - postgres
-      - price-service
-      - account-service
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      price-service:
+        condition: service_started
+      account-service:
+        condition: service_started
     volumes:
       - .:/usr/src/app
     command: "yarn integration-start:dev"
@@ -94,11 +118,18 @@ services:
       - "${GATEWAY_SERVICE_PORT:-3001}:${GATEWAY_SERVICE_PORT:-3001}"
     working_dir: /usr/src/app
     depends_on:
-      - redis
-      - postgres
-      - price-service
-      - integration-service
-      - account-service
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+      price-service:
+        condition: service_started
+      integration-service:
+        condition: service_started
+      account-service:
+        condition: service_started
     volumes:
       - .:/usr/src/app
     command: "yarn gateway-start:dev"
@@ -106,8 +137,32 @@ services:
     environment:
       - SERVICE_PORT=${GATEWAY_SERVICE_PORT:-3001}
     env_file:
-      - "apps/api_gateway/config/.env"
       - ".env"
+      - "apps/api_gateway/config/.env"
+
+
+  scheduler-service:
+    image: node:14
+    container_name: scheduler-service
+    ports:
+      - "${SCHEDULER_SERVICE_PORT:-3007}:${SCHEDULER_SERVICE_PORT:-3007}"
+    working_dir: /usr/src/app
+    depends_on:
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
+    volumes:
+      - .:/usr/src/app
+    command: "yarn scheduler-start:dev"
+    restart: always
+    environment:
+      - SERVICE_PORT=${SCHEDULER_SERVICE_PORT:-3007}
+    env_file:
+      - ".env"
+      - "apps/scheduler_service/config/.env"
 
   # rpc-nodes-service:
   #   image: node:14
@@ -116,8 +171,12 @@ services:
   #     - "${RPC_NODES_SERVICE_PORT:-3005}:${RPC_NODES_SERVICE_PORT:-3005}"
   #   working_dir: /usr/src/app
   #   depends_on:
-  #     - redis
-  #     - postgres
+  #     init-read-env:
+  #       condition: service_completed_successfully
+  #     redis:
+  #       condition: service_started
+  #     postgres:
+  #       condition: service_started
   #   volumes:
   #     - .:/usr/src/app
   #   command: "yarn rpc-nodes-start:dev"
@@ -125,9 +184,8 @@ services:
   #   environment:
   #     - SERVICE_PORT=${RPC_NODES_SERVICE_PORT:-3005}
   #   env_file:
-  #     - "apps/rpc_nodes_service/config/.env"
   #     - ".env"
-
+  #     - "apps/rpc_nodes_service/config/.env"
 
   assets-service:
     image: node:14
@@ -136,8 +194,12 @@ services:
       - "${ASSETS_SERVICE_PORT:-6066}:${ASSETS_SERVICE_PORT:-6066}"
     working_dir: /usr/src/app
     depends_on:
-      - redis
-      - postgres
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
     volumes:
       - .:/usr/src/app
     command: "yarn assets-start:dev"
@@ -145,8 +207,8 @@ services:
     environment:
       - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
     env_file:
-      - "apps/assets_service/config/.env"
       - ".env"
+      - "apps/assets_service/config/.env"
 
   opportunities-service:
     image: node:14
@@ -155,8 +217,12 @@ services:
       - "${OPPORTUNITIES_SERVICE_PORT:-3006}:${OPPORTUNITIES_SERVICE_PORT:-3006}"
     working_dir: /usr/src/app
     depends_on:
-      - redis
-      - postgres
+      init-read-env:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_started
     volumes:
       - .:/usr/src/app
     command: "yarn opportunities-start:dev"
@@ -165,5 +231,5 @@ services:
       - SERVICE_PORT=${OPPORTUNITIES_SERVICE_PORT:-3006}
       - INTEGRATION_SERVICE_URL=${INTEGRATION_SERVICE_HOST}:${INTEGRATION_SERVICE_PORT:-3004}
     env_file:
-      - "apps/opportunities_service/config/.env"
       - ".env"
+      - "apps/opportunities_service/config/.env"

@@ -316,6 +316,7 @@ export class RaydiumStaking implements JobInterface {
   }
 
   async updateWithChainData(): Promise<any[]> {
+    this.mapping = this.mapping.filter((x) => x.extra.farm.id);
     this.mapping = await this.adjustFarmInfo(this.mapping);
 
     const tokenAddressesSet = new Set<string>();
@@ -333,7 +334,12 @@ export class RaydiumStaking implements JobInterface {
     );
 
     const [{ prices }, farmsInfos] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
       Farm.getMultipleInfo({
         connection: this.web3,
         pools: farmsKeys,
@@ -343,7 +349,7 @@ export class RaydiumStaking implements JobInterface {
     const infoPools = await getInfoPools(
       this.web3,
       this.httpService,
-      this.mapping.map((m) => m.extra.pool),
+      this.mapping.filter((m) => m.extra.pool).map((m) => m.extra.pool),
     );
     const decodedInfoPools = infoPools.map((p) => decodeTxLogs(p.result.value.logs));
     const decodedInfoPoolsMap = new Map(decodedInfoPools.map((dip) => [dip.ammId, dip]));
@@ -389,10 +395,7 @@ export class RaydiumStaking implements JobInterface {
   }
 
   private async adjustFarmInfo(mapping: IntegrationStakingPositionDto[]) {
-    const publicKeys = [];
-    mapping.forEach((m) => {
-      publicKeys.push(new PublicKey(m.extra.farm.id));
-    });
+    const publicKeys = mapping.map((x) => new PublicKey(x.extra.farm.id));
     const rpcInfo = await this.web3.getMultipleAccountsInfo(publicKeys);
 
     for (let i = 0; i < mapping.length; i++) {

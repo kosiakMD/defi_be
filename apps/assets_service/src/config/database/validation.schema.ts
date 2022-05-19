@@ -7,4 +7,6 @@ export const databaseValidationSchema = {
   DB_USERNAME: joi.string().default('postgres'),
   DB_PASSWORD: joi.string(),
   DB_NAME: joi.string().optional(),
+  DB_SYNC: joi.boolean().default(true),
+  DB_SCHEMA: joi.string().default('public'),
 };

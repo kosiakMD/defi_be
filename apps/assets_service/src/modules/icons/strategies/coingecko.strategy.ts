@@ -1,24 +1,37 @@
+import { firstValueFrom } from 'rxjs';
+
+import { HttpService } from '@nestjs/axios';
+import { Inject, LoggerService } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
 import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
 
-import { IconConfig } from '../icons.service';
-import { IconsStrategy } from './icons-strategy';
+import { AssetIcon, AssetReference } from '../types';
+import { IconStrategy } from './icon-strategy';
 
-export class CoingeckoStrategy extends IconsStrategy {
-  constructor(sourceConfig) {
-    super(sourceConfig.name, sourceConfig);
+type CoingeckoConfig = never;
+
+export class CoingeckoStrategy extends IconStrategy<CoingeckoConfig> {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private readonly httpService: HttpService,
+  ) {
+    super();
   }
 
-  async loadIcons(iconConfig: IconConfig, httpService): Promise<any> {
+  async loadIcons({ chainId, address }: AssetReference): Promise<AssetIcon[]> {
     try {
-      const chainId = CoingeckoPlatformEnum[ChainIdEnum[iconConfig.chainId]];
-      const response = await httpService
-        .get(`${this.sourceConfig.config.url}/${chainId}/contract/${iconConfig.address}`)
-        .toPromise();
+      const coingeckoChainId = CoingeckoPlatformEnum[ChainIdEnum[chainId]];
+      const { data } = await firstValueFrom(
+        this.httpService.get(
+          `https://api.coingecko.com/api/v3/coins/${coingeckoChainId}/contract/${address}`,
+        ),
+      );
 
-      if (response?.data) {
-        return Object.values(response?.data.image);
-      }
+      const images: { [key: string]: string } = data?.image || {};
+      return Object.entries(images).map(([key, value]) => ({ label: key, url: value }));
     } catch (e) {
+      this.logger.warn('Error coingecko loading icons', { chainId, address }, e);
       return [];
     }
   }

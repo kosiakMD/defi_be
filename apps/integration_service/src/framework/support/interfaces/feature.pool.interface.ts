@@ -1,6 +1,4 @@
-import { FeatureEnum } from '@app/common';
-
-import { IPartialBaseFeature } from './feature.common.interface';
+import { BaseWithTokens } from './new.interfaces';
 import {
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
@@ -12,20 +10,22 @@ import {
   ISupplyTokenUserEntry,
 } from './tokens.supplied.interface';
 
-interface IPoolFeatureEntryGeneric<TSupplied, TRewarded> extends IPartialBaseFeature {
-  feature: FeatureEnum.pools;
-  supplied: TSupplied[];
-  rewarded: TRewarded[];
-}
-export type IPoolFeatureEntryMinimal = IPoolFeatureEntryGeneric<
-  ISupplyTokenMinimal,
-  IRewardTokenMinimal
+export type IPoolFeatureMinimal = BaseWithTokens<ISupplyTokenMinimal[], void, void>;
+export type IPoolFeatureOpportunity = BaseWithTokens<ISupplyTokenOpportunity[], void, void>;
+export type IPoolFeatureUser = BaseWithTokens<ISupplyTokenUserEntry[], void, void>;
+
+export type IPoolFeatureEntryMinimal = BaseWithTokens<
+  ISupplyTokenMinimal[],
+  IRewardTokenMinimal[],
+  void
 >;
-export type IPoolFeatureEntryOpportunity = IPoolFeatureEntryGeneric<
-  ISupplyTokenOpportunity,
-  IRewardTokenOpportunity
+export type IPoolFeatureEntryOpportunity = BaseWithTokens<
+  ISupplyTokenOpportunity[],
+  IRewardTokenOpportunity[],
+  void
 >;
-export type IPoolFeatureEntryUserEntry = IPoolFeatureEntryGeneric<
-  ISupplyTokenUserEntry,
-  IRewardTokenUserEntry
+export type IPoolFeatureEntryUserEntry = BaseWithTokens<
+  ISupplyTokenUserEntry[],
+  IRewardTokenUserEntry[],
+  void
 >;

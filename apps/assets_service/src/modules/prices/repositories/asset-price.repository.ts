@@ -1,19 +1,11 @@
 import { EntityRepository, Repository } from 'typeorm';
 
-import { AssetsPriceEntity } from '../entities/assets-price.entity';
-import { AssetPriceCandle } from '../types/AssetPriceCandle.type';
+import { AssetPriceEntity } from '../entities/asset-price.entity';
+import { AssetPriceCandle } from '../types/asset-price-candle.type';
 
-@EntityRepository(AssetsPriceEntity)
-export class AssetsPriceRepository extends Repository<AssetsPriceEntity> {
-  public findAssetCurrentPrices(assetId: number): Promise<AssetsPriceEntity[]> {
-    const q = this.createQueryBuilder('assets_prices') //
-      .distinctOn(['source_id'])
-      .where('asset_id = :assetId', { assetId })
-      .orderBy('source_id')
-      .addOrderBy('created_at', 'DESC');
-    return q.getMany();
-  }
-
+// TODO: We don't need this repository, data should be stored in scope of asset
+@EntityRepository(AssetPriceEntity)
+export class AssetsPriceRepository extends Repository<AssetPriceEntity> {
   public getAssetPriceCandles(
     assetId: number,
     timeGranularity: number,

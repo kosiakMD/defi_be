@@ -43,7 +43,7 @@ export class CurveGaugesArbi extends CurveGaugesBase {
 
   async updateWithChainData(): Promise<any[]> {
     try {
-      const mainPoolsAprs = await this.getChainMainPoolsAprs();
+      const poolsSubgraphData = await this.getPoolsDataMap();
       const stakingTokensPools = new Map();
       this.mapping.forEach((staking) => {
         stakingTokensPools.set(staking.stakingToken.address, staking.pool);
@@ -65,7 +65,12 @@ export class CurveGaugesArbi extends CurveGaugesBase {
       });
 
       const [{ prices }, multicallResponses] = await Promise.all([
-        this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+        this.priceService.getCurrentPrices(
+          tokenAddresses,
+          CurrencyIdEnum.usd,
+          this.chain,
+          this.protocol,
+        ),
         this.multicallService.handleInBatches(calls, this.chain),
       ]);
 
@@ -111,7 +116,9 @@ export class CurveGaugesArbi extends CurveGaugesBase {
           })
           .filter((reward) => reward.apr !== undefined);
 
-        position.stats.poolApy = mainPoolsAprs[position.poolName];
+        const poolSubgraphData = poolsSubgraphData.get(position.pool?.toLowerCase());
+
+        position.stats.poolApy = poolSubgraphData?.apy;
         position.stakingToken.tokens?.forEach((coin) => {
           const coinReserve = getTokenReserve(position.stakingToken.address, coin.positionInPool);
           const coinTotalSupply = multicallResponses
@@ -133,11 +140,12 @@ export class CurveGaugesArbi extends CurveGaugesBase {
           // Update parent stats
           position.stats.tvl += coin.value;
 
-          if (!price) {
-            this.logger.warn(
-              `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
-            );
-          }
+          // TODO: temporarily to make logs clearer
+          // if (!price) {
+          //   this.logger.warn(
+          //     `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
+          //   );
+          // }
 
           if (coin.tokens?.length) {
             let lpValue = 0;

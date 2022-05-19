@@ -7,15 +7,15 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { JobCompleteStates } from '../../../common/enum/JobStates.enum';
+import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetsService } from '../../assets/services/assets.service';
-import { AssetsPriceEntity } from '../entities/assets-price.entity';
+import { AssetPriceEntity } from '../entities/asset-price.entity';
 import { AssetsPriceRepository } from '../repositories/asset-price.repository';
 import priceStrategies from '../strategies';
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
 
 @Processor('assets')
 export class AssetsCurrentPricesProcessor {
@@ -54,6 +54,7 @@ export class AssetsCurrentPricesProcessor {
   }
 
   private async clearDBOnCurrentPrices(): Promise<void> {
+    // TODO: implement database time granularity cleaning
     try {
       await this.assetsPriceRepository.delete({
         timestamp: LessThan(
@@ -70,8 +71,8 @@ export class AssetsCurrentPricesProcessor {
 
   private async updateAssetPrice(assetPrice: AssetPrice): Promise<void> {
     try {
-      const { chainId, address, price, sourceId } = assetPrice;
-      const assetFromCache = (await this.assetsService.getAssetsFromCache([assetPrice])).shift();
+      const { price, sourceId } = assetPrice;
+      const [assetFromCache] = await this.assetsService.getAssetsFromCache([assetPrice]);
       if (assetFromCache) {
         if (!assetFromCache.prices) {
           assetFromCache.prices = [];
@@ -82,29 +83,17 @@ export class AssetsCurrentPricesProcessor {
         if (assetPrice) {
           assetPrice.price = price;
         } else {
-          assetPrice = new AssetsPriceEntity();
+          assetPrice = new AssetPriceEntity();
           assetPrice.price = price;
           assetPrice.sourceId = sourceId;
           assetFromCache.prices.push(assetPrice);
         }
         await this.assetsService.setAssetsToCache([assetFromCache]);
       }
-      if (this.configService.get('UPDATE_ASSET_PRICES_IN_DB')) {
-        const asset = await this.assetRepository.findOne({
-          where: { chainId, address },
-        });
-        // TODO check if we need to filter price sources
-        if (asset) {
-          const { id: assetId } = asset;
-          await this.assetsPriceRepository.save({
-            assetId,
-            price,
-            sourceId,
-          });
-        }
-      }
     } catch (error) {
-      this.logger.error(`Error to update asset price ${JSON.stringify(assetPrice)}`);
+      this.logger.error(
+        `Error to update asset price ${JSON.stringify(assetPrice)} ${JSON.stringify(error)}`,
+      );
     }
   }
 

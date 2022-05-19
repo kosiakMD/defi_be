@@ -4,18 +4,20 @@ import { ClassConstructor } from 'class-transformer';
 
 import { ModuleRef } from '@nestjs/core';
 
-import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainId, ChainIdEnum, Logger } from '@app/common';
 import { groupBy, keepAddressesByChainId } from '@app/common/utils';
 import { getChainById } from '@app/common/utils';
 
+import { FeatureEnum } from './enums';
 import {
   IChainGroupedWallet,
   IChainUserEntry,
   IPlatformMeta,
-  IPlatformUserEntry,
+  IPoolDataPlatformResponse,
   IProtocolMeta,
   IRootPlatform,
   IRootProtocol,
+  IUserDataPlatformResponse,
   IWalletOpportunity,
   IWalletUserEntry,
 } from './interfaces';
@@ -34,11 +36,18 @@ export abstract class RootPlatform implements IRootPlatform {
   }
 
   // Component Registration
+  // To get a decluttered list from defilama
+  // $ curl https://api.llama.fi/protocols | jq '.[] | to_entries | map(select(.key | in({ name: true, twitter: true, url: true, logo: true }) )) | from_entries'
   protected protocols: Set<IRootProtocol> = new Set();
-  protected async registerProtocol(protocol: ClassConstructor<IRootProtocol>, meta: IProtocolMeta) {
+  protected async registerProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMeta>(
+    protocol: ClassConstructor<IRootProtocol>,
+    meta: TProtocolMeta,
+  ) {
     const instance = await this.moduleRef.create(protocol);
     instance.registerMeta(meta);
-    await instance.initialize();
+    if (instance.initialize) {
+      await instance.initialize();
+    }
     if (this.registrationLocked) {
       return this.logger.error(
         `Protocol Registration occurred after platform has been initialized. Likely forgot 'await' in platforms register handle`,
@@ -58,6 +67,8 @@ export abstract class RootPlatform implements IRootPlatform {
   getMeta(): IPlatformMeta {
     // Loop through all supported protocols
     // dedupe & merge
+    this.logger.log(`Start getting meta for: ${this.meta.name}`);
+
     const features = new Map<ChainId, Set<FeatureEnum>>();
     this.protocols.forEach((protocol) => {
       const meta = protocol.getMeta();
@@ -69,19 +80,21 @@ export abstract class RootPlatform implements IRootPlatform {
     });
 
     return {
-      name: this.meta.name,
-      project: this.meta.name, // why do we need both, what are clear definitions of both
+      name: this.meta.name, // human readable name
+      slug: this.meta.slug, // slug/key
       features: Array.from(features.entries()).map(([chain, list]) => ({
         chain: getChainById(chain),
         list: Array.from(list),
       })),
+      links: this.meta.links || {},
     };
+
+    this.logger.log(`Finish getting meta for: ${this.meta.name}`);
   }
 
-  async getUsersData(
-    chains: ChainId[],
-    addresses: Address[],
-  ): Promise<[IPlatformUserEntry[], Error[]]> {
+  async getUsersData(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse> {
+    this.logger.log(`Start getting user data for: ${this.meta.name}`);
+
     const promises: Promise<IChainGroupedWallet>[] = [];
     const errors: Error[] = [];
     const supportedChains = new Set();
@@ -89,17 +102,19 @@ export abstract class RootPlatform implements IRootPlatform {
       const { chain, list: features } = protocol.getMeta();
       supportedChains.add(chain.id);
 
-      if (!chains.includes(chain.id)) {
+      if (!chains.includes(chain.id) || !protocol.getUsersData) {
         return;
       }
       const validAddressesForChain = keepAddressesByChainId(addresses, chain.id);
 
       if (validAddressesForChain?.length) {
         promises.push(
-          protocol.getUsersData(validAddressesForChain).then(([wallets, userErrors]) => {
-            errors.push(...userErrors);
-            return { chain, features, wallets, errors };
-          }),
+          protocol
+            .getUsersData(validAddressesForChain)
+            .then(({ data: wallets, errors: userErrors }) => {
+              errors.push(...userErrors);
+              return { chain, features, wallets, errors };
+            }),
         );
       }
     });
@@ -111,7 +126,12 @@ export abstract class RootPlatform implements IRootPlatform {
       }
     });
 
+    this.logger.log(`Trying to get user data for: ${this.meta.name}`);
+
     const resolvedProtocols = await Promise.all(promises);
+
+    this.logger.log(`Formatting fetched data for: ${this.meta.name}`);
+
     const wallets = addresses.map((address) => {
       const chainData = chains.map((chain) =>
         this.mergeUserProtocolDataPerChain(address, chain, resolvedProtocols),
@@ -124,10 +144,14 @@ export abstract class RootPlatform implements IRootPlatform {
       };
     });
 
-    return [wallets, errors];
+    this.logger.log(`Finish getting user data for: ${this.meta.name}`);
+
+    return { data: wallets, errors };
   }
 
-  async getPoolData(chains: ChainId[]): Promise<[IWalletOpportunity[], Error[]]> {
+  async getPoolData(chains: ChainId[]): Promise<IPoolDataPlatformResponse> {
+    this.logger.log(`Start getting pool data: ${this.meta.name}`);
+
     const promises = [];
     const errors: Error[] = [];
     const supportedChains = new Set();
@@ -135,7 +159,7 @@ export abstract class RootPlatform implements IRootPlatform {
       const { chain } = protocol.getMeta();
       supportedChains.add(chain.id);
       if (chains.includes(chain.id)) {
-        promises.push(protocol.getPoolData());
+        promises.push(protocol.getFormattedPoolData?.() ?? protocol.getPoolData());
       }
     });
 
@@ -149,30 +173,37 @@ export abstract class RootPlatform implements IRootPlatform {
     const protocolResults = await Promise.allSettled(promises);
     const protocols: IWalletOpportunity[] = [];
 
+    this.logger.log(`Start formatting pool data: ${this.meta.name}`);
+
     protocolResults.forEach((protocol) => {
       switch (protocol.status) {
         case 'fulfilled':
-          protocols.push(...protocol.value[0]);
-          errors.push(...protocol.value[1]);
+          protocols.push(...protocol.value.data);
+          errors.push(...protocol.value.errors);
           break;
         case 'rejected':
           errors.push(protocol.reason);
           break;
       }
     });
-    return [protocols, errors];
+
+    this.logger.log(`Finishing getting pool data: ${this.meta.name}`);
+    return { data: protocols, errors };
   }
 
   async cachePoolData(chains: ChainId[]) {
+    this.logger.log(`Start caching pool data: ${this.meta.name}`);
     const promises = [];
     this.protocols.forEach((protocol) => {
       const { chain } = protocol.getMeta();
-      if (chains.includes(chain.id)) {
+      if (chains.includes(chain.id) && protocol.cachePoolData) {
         promises.push(protocol.cachePoolData());
       }
     });
 
     const resolvedProtocols = await Promise.allSettled(promises);
+
+    this.logger.log(`Pool data cached: ${this.meta.name}`);
 
     const protocols = [];
     const errors = [];
@@ -186,6 +217,8 @@ export abstract class RootPlatform implements IRootPlatform {
           break;
       }
     });
+
+    this.logger.log(`Finish caching: ${this.meta.name}`);
     return [protocols, errors];
   }
 
@@ -255,6 +288,8 @@ export abstract class RootPlatform implements IRootPlatform {
     chain: ChainIdEnum,
     resolvedProtocols: IChainGroupedWallet[],
   ): IChainUserEntry {
+    this.logger.log(`Start merging data: ${this.meta.name}`);
+
     const positions: IWalletUserEntry[] = [];
     const features = new Set<Partial<FeatureEnum>>();
 
@@ -262,7 +297,7 @@ export abstract class RootPlatform implements IRootPlatform {
       if (protocol.chain.id !== chain) return;
       protocol.features.forEach((feature) => features.add(feature));
       if (protocol.wallets.has(user)) {
-        positions.push(...protocol.wallets.get(user));
+        positions.push(...this.enforceTokenArrayOutput(protocol.wallets.get(user)));
       }
     });
     const total = this.getPositionsTotal(positions);
@@ -273,6 +308,9 @@ export abstract class RootPlatform implements IRootPlatform {
         positionsByFeature[feature] = [];
       }
     });
+
+    this.logger.log(`Finish merging data: ${this.meta.name}`);
+
     return {
       // group positions by feature  { staking: [....], lending: [...] }
       positions: positionsByFeature,
@@ -280,5 +318,29 @@ export abstract class RootPlatform implements IRootPlatform {
       total,
       chain: getChainById(chain),
     };
+  }
+
+  /**
+   * Converts all token types to be arrays if not already
+   */
+  protected enforceTokenArrayOutput(pools: IWalletUserEntry[]): IWalletUserEntry[] {
+    // Enforce array output
+    pools.forEach((pool) => {
+      if ('supply' in pool) {
+        pool.supplied = [pool.supply];
+        delete pool.supply;
+      }
+
+      if ('reward' in pool) {
+        pool.rewarded = [pool.reward];
+        delete pool.reward;
+      }
+
+      if ('borrow' in pool) {
+        pool.borrowed = [pool.borrow];
+        delete pool.borrow;
+      }
+    });
+    return pools;
   }
 }

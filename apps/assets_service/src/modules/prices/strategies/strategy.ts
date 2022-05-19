@@ -1,8 +1,8 @@
 import { Logger } from '@nestjs/common';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
 
 export abstract class PriceStrategy {
   protected readonly logger = new Logger();

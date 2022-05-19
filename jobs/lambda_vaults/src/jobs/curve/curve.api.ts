@@ -37,6 +37,16 @@ export class CurveApi {
     }
   }
 
+  async getSubgraphPoolsData(chainName: string) {
+    try {
+      const { data } = await axios.get(`${curveApiUrl}/getSubgraphData/${chainName}`);
+      return data?.data?.poolList;
+    } catch (e) {
+      this.logger.error(e, 'getChainPoolsInfo');
+      throw e;
+    }
+  }
+
   async getCrvAprForMainPools(): Promise<CrvAprs> {
     try {
       const { data } = await axios.get(`${curveApiUrl}/getApys`);

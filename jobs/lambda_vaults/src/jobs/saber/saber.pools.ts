@@ -312,6 +312,7 @@ export class SaberPools implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     const dataLp = await this.getPoolsInfo(this.mapping);

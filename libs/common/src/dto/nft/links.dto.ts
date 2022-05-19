@@ -34,6 +34,7 @@ export class LinksDto {
   @ApiProperty({ example: 'https://discord.gg/angryapearmy' })
   discordUrl: string = null;
 
+  //todo this is link to the asset, probably it should be moved to asset DTO
   @Expose()
   @ApiProperty({
     required: false,

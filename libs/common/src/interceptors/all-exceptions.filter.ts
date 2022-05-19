@@ -1,3 +1,4 @@
+import { AxiosError } from 'axios';
 import { plainToClass } from 'class-transformer';
 import { Request, Response } from 'express';
 
@@ -31,7 +32,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     protected readonly configService: ConfigService,
   ) {}
 
-  catch(exception: Error, host: ArgumentsHost): void {
+  catch(exception: any | Error | AxiosError, host: ArgumentsHost): void {
+    const isProd = this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production;
+    const isStage = this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging;
+    const hideStack = isProd || isStage;
     const hostType = host.getType();
     // TODO: implement all host types we use
     // 'http' | 'ws' | 'rpc'
@@ -39,28 +43,41 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (hostType === 'http') {
       const contextHttp = host.switchToHttp();
 
-      const httpStatus =
-        exception instanceof HttpException
-          ? exception.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
+      let httpStatus: number;
+      if (exception.isAxiosError) {
+        httpStatus =
+          exception?.response?.status ||
+          exception?.response?.data?.status_code ||
+          exception?.request?.res?.statusCode;
+      } else {
+        httpStatus =
+          exception instanceof HttpException
+            ? exception.getStatus()
+            : HttpStatus.INTERNAL_SERVER_ERROR;
+      }
 
       const request: Request = contextHttp.getRequest<Request>();
 
-      let errorMessage;
-      if (
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production ||
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging
-      ) {
-        exception.stack = undefined;
+      let errorMessage, error;
+
+      error = exception.toString();
+      if (exception.isAxiosError) {
+        errorMessage = exception?.response?.data?.message;
+      } else {
+        errorMessage = exception.message;
+      }
+      if (isProd || isStage) {
         if (
           exception.message &&
           exception.message.startsWith('connect ECONNREFUSED') &&
           !exception.message.endsWith('Service')
         ) {
           errorMessage = 'connect ECONNREFUSED';
-        } else {
-          errorMessage = exception.message;
+          error = 'ECONNREFUSED';
         }
+        // TODO: for dev could be turned on
+        // } else {
+        //   error = exception;
       }
 
       // In certain situations `httpAdapter` might not be available in the
@@ -74,10 +91,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
       const timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
       const timeExecute = response.get(HEADER_TIME_EXECUTE);
       const protocolName = response.get(HEADER_PROTOCOL);
+
       // TODO: m.b. use plainToClass but seems no benefits
       const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
+        error: error,
         message: errorMessage || exception.message || exception,
+        stack: hideStack ? undefined : exception.stack,
         timestampEntry: timestampEntry,
         timestampExit: timestampExit,
         timeExecute: timeExecute,
@@ -97,6 +117,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {
+      hideStack && delete exception.stack;
       throw exception;
     }
   }

@@ -1,13 +1,17 @@
-import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
+import { Chain } from 'apps/assets_service/src/common/types/chain.type';
+import { PriceSourceConfig } from 'apps/assets_service/src/common/types/price-source-config.type';
 import axios from 'axios';
+import { firstValueFrom } from 'rxjs';
 
-import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
+import { HttpService } from '@nestjs/axios';
+import { ConfigService } from '@nestjs/config';
+
 import { delay } from '@app/common/helpers/delay';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
-import { PriceRequestData } from '../types/PriceRequestData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
+import { PriceRequestData } from '../types/price-request-data.type';
 import { PriceStrategy } from './strategy';
 
 type CoingeckoTokens = {
@@ -17,8 +21,12 @@ type CoingeckoTokens = {
 };
 
 export class CoingeckoStrategy extends PriceStrategy {
+  private httpService: HttpService;
+  private configService: ConfigService;
   constructor() {
     super();
+    this.httpService = new HttpService();
+    this.configService = new ConfigService();
   }
   public async createPriceRequests(
     config: PriceSourceConfig,
@@ -34,8 +42,16 @@ export class CoingeckoStrategy extends PriceStrategy {
     const assetsChainIds = await assetsRepository.getAllTrackedAssetChains();
     const priceRequests = [];
     const { baseURL, take } = config;
+    const { data: chains } = await firstValueFrom(
+      this.httpService.get<Chain[]>(this.configService.get('ACCOUNT_SERVICE_CHAINS_LIST_URL')),
+    );
     for await (const chainId of assetsChainIds) {
-      const coingeckoChainId = CoingeckoPlatformEnum[ChainIdEnum[chainId]];
+      const coingeckoChainId = chains.find((chain) => chain.id === chainId)?.metadata
+        ?.coingeckoPlatformId;
+      if (!coingeckoChainId) {
+        this.logger.error(`No Coingecko chain in database on chainId: ${chainId}`);
+        continue;
+      }
       const trackedAssetsFindConditions = {
         chainId,
         disabled: false,
@@ -67,8 +83,8 @@ export class CoingeckoStrategy extends PriceStrategy {
         skip += take;
       }
     }
-    this.logger.log('Coingecko requests: ', priceRequests.length);
-    return priceRequests.slice(0, 60);
+    this.logger.log(`Created Coingecko requests: ${priceRequests.length}`);
+    return priceRequests;
   }
 
   public async fetchPrices(

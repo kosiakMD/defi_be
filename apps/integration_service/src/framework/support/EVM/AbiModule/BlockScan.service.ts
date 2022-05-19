@@ -35,6 +35,7 @@ export class BlockScan {
     this.endpoints[ChainIdEnum.arbi] = config.get('BLOCKSCAN_ARBI_URL');
     this.endpoints[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_URL');
     this.endpoints[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_URL');
+    this.endpoints[ChainIdEnum.boba] = config.get('BLOCKSCAN_BOBA_URL');
   }
 
   // TODO: Endpoints & API keys to config
@@ -43,17 +44,18 @@ export class BlockScan {
   apiKeys = {};
 
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[] | void> {
-    if (!this.endpoints[chain] || !this.apiKeys[chain]) {
+    if (!this.endpoints[chain]) {
       this.logger.debug(`Chain ${chain} not initialized for ABI fetching`, this.constructor.name);
       return;
     }
 
+    const apiKey = this.apiKeys[chain];
     const data$ = this.httpService.get(this.endpoints[chain], {
       params: {
         module: 'contract',
         action: 'getabi',
         address,
-        apiKey: this.apiKeys[chain],
+        apiKey,
       },
     });
 

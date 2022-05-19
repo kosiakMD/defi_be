@@ -4,9 +4,16 @@ import { ConfigService } from '@nestjs/config';
 import { ConfigHostModule } from '@nestjs/config/dist/config-host.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CacheService } from '@app/common/services/cache.service';
+
 import { AwsModule } from '../aws/aws.module';
-import { IconSourceEntity } from './entities/IconSources.entity';
+import { IconSourceEntity } from './entities/icon-sources.entity';
 import { IconsService } from './icons.service';
+import { CoingeckoStrategy } from './strategies/coingecko.strategy';
+import { CoinmarketcapStrategy } from './strategies/coinmarketcap.strategy';
+import { TrustWalletStrategy } from './strategies/trust-wallet.strategy';
+
+const iconStrategies = [CoingeckoStrategy, CoinmarketcapStrategy, TrustWalletStrategy];
 
 @Module({
   imports: [
@@ -22,6 +29,6 @@ import { IconsService } from './icons.service';
     }),
   ],
   exports: [IconsService],
-  providers: [IconsService],
+  providers: [...iconStrategies, IconsService, CacheService],
 })
 export class IconsModule {}

@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class ApeSwap extends RootPlatform {
   constructor(
@@ -18,14 +19,27 @@ export class ApeSwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
+      links: {
+        url: 'https://apeswap.finance',
+        logo: 'https://icons.llama.fi/apeswap.svg',
+        twitter: 'ape_swap',
+      },
     });
 
-    await this.registerProtocol(MasterChef, {
+    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
       chain: ChainIdEnum.bnb,
       name: 'Farms - Masterchef',
       feature: FeatureEnum.staking,
       address: '0x5c8D727b265DBAfaba67E050f2f739cAeEB4A6F9',
     });
+
+    // subgraph is not working
+    // await this.registerProtocol(UniswapV2Liquidity, {
+    //   chain: ChainIdEnum.bnb,
+    //   name: 'Liquidity - ApeSwap',
+    //   feature: FeatureEnum.pools,
+    //   ammSubgraphUrl: 'https://graph.apeswap.finance/subgraphs/name/ape-swap/apeswap-subgraph',
+    // });
   }
 }

@@ -65,6 +65,7 @@ export interface PoolToken extends ERC20Token, AmountAble, PriceAble {
 export interface Asset extends ERC20Token {
   id: number;
   chainId: number;
+  isLp?: boolean;
   isTracked: boolean;
 }
 

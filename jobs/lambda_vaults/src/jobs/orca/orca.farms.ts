@@ -297,6 +297,7 @@ export class OrcaStaking implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     const poolsInfo = await this.getPoolsInfo(this.mapping);

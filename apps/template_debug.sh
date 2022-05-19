@@ -1,5 +1,5 @@
 #!/bin/bash
-app="categorization_tool"
+app="categorization_service"
 version="ver_debug"
 environment="env_debug"
 outdir="./${app}/out"

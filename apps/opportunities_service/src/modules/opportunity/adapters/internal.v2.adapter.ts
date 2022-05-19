@@ -18,7 +18,7 @@ import { IntegrationService } from '../../microservices/integration.service';
 import { FarmEntity } from '../entities/farm.entity';
 import { IOpportunityAdapter } from '../interfaces/opportunity.adapter.interface';
 import { FarmRepository } from '../repositories/farm.repository';
-import { AdapterResults, LegacyFetchOpportunityOptions } from '../types/opportunity.adapter.types';
+import { AdapterResults, FetchV2OpportunityOptions } from '../types/opportunity.adapter.types';
 
 @Injectable()
 export class InternalV2Adapter implements IOpportunityAdapter {
@@ -54,7 +54,7 @@ export class InternalV2Adapter implements IOpportunityAdapter {
    * @returns FarmEntity[]
    */
   private async loadFarms(): Promise<{ farms: FarmEntity[]; protocols: ProtocolDataDto[] }> {
-    const protocols = await this.integrationService.getAllFeatures();
+    const protocols = await this.integrationService.getV2ProtocolList();
 
     const protocolNames = new Set(protocols.map((p) => p.name));
     const farms = await this.farmRepository.findAllByName(Array.from(protocolNames));
@@ -85,7 +85,7 @@ export class InternalV2Adapter implements IOpportunityAdapter {
   private async fetchOpportunitiesForFarms({
     include,
     protocols,
-  }: LegacyFetchOpportunityOptions): Promise<OpportunityCreateDto[]> {
+  }: FetchV2OpportunityOptions): Promise<OpportunityCreateDto[]> {
     const included = new Map(include.map((f) => [f.name, f]));
     const opportunities = await this.getOpportunitiesFromProtocols(included, protocols);
 
@@ -93,7 +93,10 @@ export class InternalV2Adapter implements IOpportunityAdapter {
     return opportunities;
   }
 
-  private async getOpportunitiesFromProtocols(included, protocols) {
+  private async getOpportunitiesFromProtocols(
+    included: Map<string, FarmEntity>,
+    protocols: ProtocolDataDto[],
+  ) {
     const opportunities = [];
     const promises = protocols.map(async (protocol) => {
       // Ensure its not a farm that has already been processed in another adapter
@@ -136,7 +139,9 @@ export class InternalV2Adapter implements IOpportunityAdapter {
                     }),
                   });
 
-                  opportunities.push(opportunity);
+                  if (apr) {
+                    opportunities.push(opportunity);
+                  }
                 }),
               );
             }),
@@ -205,12 +210,6 @@ export class InternalV2Adapter implements IOpportunityAdapter {
    * Categorization
    */
 
-  private tokenIsStablecoin(token: { price: number }): boolean {
-    return Math.round(token.price) === 1;
-  }
-  private isTruthy(value: any) {
-    return Boolean(value);
-  }
   private vaultIsPool(vault: any) {
     const tokens = vault.stakingToken?.tokens ?? vault.tokens;
     if (Array.isArray(tokens)) {
@@ -225,21 +224,6 @@ export class InternalV2Adapter implements IOpportunityAdapter {
     }
     return true;
   }
-  private vaultIsNoIL(vault: any) {
-    const tokens = vault.stakingToken?.tokens ?? vault.tokens;
-    if (Array.isArray(tokens)) {
-      return tokens.map(this.tokenIsStablecoin).some(this.isTruthy);
-    }
-    return false;
-  }
-  private vaultIsStablePool(vault: any) {
-    const tokens = vault.stakingToken?.tokens ?? vault.tokens;
-    if (Array.isArray(tokens)) {
-      return tokens.map(this.tokenIsStablecoin).every(this.isTruthy);
-    }
-    return false;
-  }
-
   private getVaultCategories(vault: unknown) {
     const categories = new Set<VaultTypeEnum>();
     if (this.vaultIsPool(vault)) {
@@ -248,14 +232,6 @@ export class InternalV2Adapter implements IOpportunityAdapter {
 
     if (this.vaultIsSingleStake(vault)) {
       categories.add(VaultTypeEnum.SINGLE_STAKE);
-    }
-
-    if (this.vaultIsNoIL(vault)) {
-      categories.add(VaultTypeEnum.NO_IL);
-    }
-
-    if (this.vaultIsStablePool(vault)) {
-      categories.add(VaultTypeEnum.STABLE_POOL);
     }
 
     return Array.from(categories);

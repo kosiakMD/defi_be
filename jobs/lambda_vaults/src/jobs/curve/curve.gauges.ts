@@ -7,6 +7,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import {
   Address,
   ChainIdEnum,
+  ChainNameEnum,
   CurrencyIdEnum,
   CurrentPricesPayload,
   FeatureEnum,
@@ -53,7 +54,6 @@ import {
   FactoryAPYItem,
   FactoryV2PoolItem,
   PoolGaugeReward,
-  PoolsAprs,
 } from './curve.api.interfaces';
 import { LocalMultiCall } from './local.multicall';
 
@@ -116,6 +116,10 @@ export class CurveGauges implements JobInterface {
 
   getGaugeLpPoolBalanceOf(lpAddress: Address) {
     return concatStrings(CurveLpAbi.balanceOf.name, lpAddress);
+  }
+
+  getGaugeTotalSupply(gauge: string) {
+    return concatStrings(gauge, GaugeAbi.totalSupply.name);
   }
 
   getPoolFromLpLabel(lpAddress: Address) {
@@ -553,10 +557,7 @@ export class CurveGauges implements JobInterface {
           )
           ?.output.data.toString();
         const reserveDec = toDecimals(reserve, coin.decimals);
-        const price =
-          // TODO: need to test
-          // toDecimals(nonRegisterLpVirtualPrices.get(coin.address), coin.decimals) ||
-          prices[coin.address];
+        const price = prices[coin.address];
         coin.price = Number(price);
         const coinTotalSupply = multicallResponses
           .get(this.getTotalSupplyLabel(coin.address))
@@ -637,19 +638,17 @@ export class CurveGauges implements JobInterface {
     try {
       const curveApi = new CurveApi(this.logger);
       const [
-        mainPoolsAprs,
-        mainPoolsCryptoAprs,
         mainPoolsCrvAprs,
         registerAdditionalRewards,
         factoryV2Pools,
         factoryApys,
+        poolsSubgraphData,
       ] = await Promise.all([
-        curveApi.getMainPoolsAprs(),
-        curveApi.getMainPoolsCryptoAprs(),
         curveApi.getCrvAprForMainPools(),
         curveApi.getAdditionalRewardTokensInfo(),
         curveApi.getFactoryV2Pools(),
         curveApi.getFactoryApysV2(),
+        curveApi.getSubgraphPoolsData(ChainNameEnum[ChainIdEnum[this.chain]]),
       ]);
       const additionalRewardMap = new Map<string, PoolGaugeReward>();
       Object.entries(registerAdditionalRewards).forEach(([, value]) => {
@@ -658,17 +657,19 @@ export class CurveGauges implements JobInterface {
         });
       });
 
+      const poolsSubgraphDataMap = poolsSubgraphData.reduce((resp, value) => {
+        resp.set(value.address.toLowerCase(), {
+          price: value.virtualPrice,
+          apy: value.latestDailyApy,
+        });
+        return resp;
+      }, new Map());
+
       const [registerLpPools, nonRegisterLps] = await this.getPoolsMap();
       const nonRegisterLpsArray = Array.from(nonRegisterLps.keys());
       const lpMintersMap = await this.localMulticall.getNonRegisterMinters(nonRegisterLpsArray);
 
       const calls = this.getCallsMap(registerLpPools, lpMintersMap);
-      // Get all balance Calls
-      // TODO: need to test
-      // const nonRegisterLpPrices = await this.localMulticall.getTokensVirtualPrices(
-      //   nonRegisterLpsArray,
-      //   lpMintersMap,
-      // );
 
       const tokenAddresses = [];
       this.mapping.forEach((stakingPosition) => {
@@ -684,7 +685,12 @@ export class CurveGauges implements JobInterface {
       });
 
       const [{ prices }, multicallResponses] = await Promise.all([
-        this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+        this.priceService.getCurrentPrices(
+          tokenAddresses,
+          CurrencyIdEnum.usd,
+          this.chain,
+          this.protocol,
+        ),
         this.multicallService.handleInBatches(calls, this.chain),
       ]);
 
@@ -692,8 +698,6 @@ export class CurveGauges implements JobInterface {
         if (nonRegisterLps.get(position.stakingToken.address)) {
           return this.nonRegisterLpPoolsHandling(
             position,
-            // TODO: need to test
-            // nonRegisterLpPrices,
             multicallResponses,
             prices,
             factoryV2Pools,
@@ -706,9 +710,8 @@ export class CurveGauges implements JobInterface {
             multicallResponses,
             prices,
             additionalRewardMap,
-            mainPoolsAprs,
-            mainPoolsCryptoAprs,
             mainPoolsCrvAprs,
+            poolsSubgraphDataMap,
           );
         }
       });
@@ -742,6 +745,7 @@ export class CurveGauges implements JobInterface {
       } else {
         // Registry uses pool address for most calls
         const stakingTokenContract = new CurveLpAbi(staking.stakingToken.address);
+        const gaugeContract = new GaugeAbi(staking.address);
 
         calls.set(this.getPoolName(poolAddress), registry.getPoolName(poolAddress));
         calls.set(
@@ -769,6 +773,8 @@ export class CurveGauges implements JobInterface {
           stakingTokenContract.balanceOf(staking.address),
         );
 
+        calls.set(this.getGaugeTotalSupply(staking.address), gaugeContract.totalSupply());
+
         staking.stakingToken.tokens?.forEach((coin) => {
           // If its an underlying LP, get the virtual prices for it too
           if (coin?.tokens?.length > 1) {
@@ -794,25 +800,27 @@ export class CurveGauges implements JobInterface {
     multicallResponses: Map<string, CallData>,
     prices: CurrentPricesPayload,
     additionalRewardMap: Map<string, PoolGaugeReward>,
-    mainPoolsAprs: PoolsAprs,
-    mainPoolsCryptoAprs: PoolsAprs,
     mainPoolsCrvAprs: CrvAprs,
+    poolsSubgraphDataMap: Map<string, { price; apy }>,
   ) {
     const poolAddress = registerLpPools.get(position.stakingToken.address);
     const balances = multicallResponses.get(this.getBalancesLabel(position.stakingToken.address))
       .output.data;
 
-    const lpVirtualPrice = multicallResponses.get(
-      this.getVirtualPriceFromLpTokenLabel(position.stakingToken.address),
-    ).output.data;
+    const poolSubgraphData = poolsSubgraphDataMap.get(poolAddress.toLowerCase());
 
     position.poolName = multicallResponses.get(this.getPoolName(poolAddress)).output.data;
 
-    position.stakingToken.price = normalizeDecimals(lpVirtualPrice, position.stakingToken.decimals);
+    position.stakingToken.price = normalizeDecimals(
+      poolSubgraphData?.price,
+      position.stakingToken.decimals,
+    );
 
-    const staked = multicallResponses
-      .get(this.getGaugeLpPoolBalanceOf(position.stakingToken.address))
-      ?.output.data.toString();
+    const staked =
+      Number(
+        multicallResponses.get(this.getGaugeLpPoolBalanceOf(position.stakingToken.address))?.output
+          .data,
+      ) || Number(multicallResponses.get(this.getGaugeTotalSupply(position.address))?.output.data);
 
     const lpTokenTotalSupply = multicallResponses
       .get(this.getTotalSupplyLabel(position.stakingToken.address))
@@ -838,10 +846,7 @@ export class CurveGauges implements JobInterface {
       })
       .filter((reward) => reward.apr !== undefined);
 
-    position.stats.poolApy =
-      mainPoolsAprs[this.handleCurvePoolsNames(position.poolName)] ??
-      mainPoolsCryptoAprs[this.handleCurvePoolsNames(position.poolName)];
-
+    position.stats.poolApy = poolSubgraphData?.apy;
     position.stakingToken.tokens?.forEach((coin) => {
       const coinVirtualPrice = multicallResponses.get(
         this.getVirtualPriceFromLpTokenLabel(coin.address),
@@ -962,4 +967,8 @@ export const excludeGaugePools = [
   '0x319e268f0a4c85d404734ee7958857f5891506d7',
   '0xbc38bd19227f91424ed4132f630f51c9a42fa338',
   '0x82049b520cac8b05e703bb35d1691b5005a92848',
+  '0xf4ea7617e7999710244e2eabfc8730d35482ee76',
+  '0xd1426c391a7cbe9decd302ac9c44e65c3505d1f0',
+  '0xb721cc32160ab0da2614cc6ab16ed822aeebc101',
+  '0x94a5e05d66834c6c6961e199d34da576679fc187',
 ];

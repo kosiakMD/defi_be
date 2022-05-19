@@ -9,14 +9,15 @@ import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
-import { RootProtocol } from '../RootProtocol';
-import { IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
+import { RootProtocolCacheable } from '../RootProtocolCacheable';
+import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 
 export abstract class SolanaCore<
   TMinimalType extends IWalletMinimal,
   TOpportunityType extends IWalletOpportunity,
   TUserEntryType extends IWalletUserEntry,
-> extends RootProtocol<TMinimalType, TOpportunityType, TUserEntryType> {
+  TProtocolMeta extends IProtocolMeta = IProtocolMeta,
+> extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
   protected abstract cache: Cache;
@@ -49,6 +50,7 @@ export abstract class SolanaCore<
       // RPC to get token supplies
       firstValueFrom(
         this.httpService.post(
+          // TODO: SOL_URL or SOLANA_URL
           this.configService.get('SOL_URL'),
           tokensWithNativeAndWrapped.map((address) => ({
             jsonrpc: '2.0',
@@ -57,21 +59,26 @@ export abstract class SolanaCore<
             params: [address],
           })),
         ),
-      ),
+      ).catch((e) => {
+        this.logger.error(e);
+        return null;
+      }),
     ]);
 
     // Set native sol price since coingecko doesn't look up native token by address
     prices[NATIVE_SOL] = prices[WRAPPED_SOL];
 
     const supplyMap = new Map();
-    supplies.forEach((supply) => {
-      if (supply.result?.value && !supply.error) {
-        return supplyMap.set(
-          supply.id,
-          normalizeDecimals(supply.result.value.amount, supply.result.value.decimals),
-        );
-      }
-    });
+    if (Array.isArray(supplies)) {
+      supplies.forEach((supply) => {
+        if (supply.result?.value && !supply.error) {
+          return supplyMap.set(
+            supply.id,
+            normalizeDecimals(supply.result.value.amount, supply.result.value.decimals),
+          );
+        }
+      });
+    }
 
     return tokens
       .filter((token) => addresses.includes(token.address))
@@ -85,7 +92,7 @@ export abstract class SolanaCore<
             decimals: token.decimals,
             reserve: supplyMap.get(token.address),
             totalSupply: supplyMap.get(token.address),
-            price: prices[token.address] || 0,
+            price: Number(prices[token.address] || 0),
           },
         ];
       });

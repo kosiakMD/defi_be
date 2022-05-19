@@ -27,6 +27,7 @@ import { AssetsV2Controller } from './assets-v2/assets-v2.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import { BlacklistController } from './blacklist/blacklist.controller';
+import { ChainsController } from './chains/chains.controller';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
@@ -42,6 +43,8 @@ import { PricesModule } from './prices/prices.module';
 import { ProjectsController } from './projects/projects.controller';
 import { ProtocolController } from './protocol/protocol.controller';
 import { ProtocolControllerV2 } from './protocol/protocol.controller.v2';
+import { EndpointsController } from './rpc-nodes/endpoints.controller';
+import { RPCNodesController } from './rpc-nodes/rpc-nodes.controller';
 import { ScamsController } from './scams/scams.controller.dto';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SearchController } from './search/search.controller';
@@ -92,6 +95,8 @@ import { VaultsModule } from './vaults/vaults.module';
     ApprovalsController,
     BalancesController,
     BlacklistController,
+    ChainsController,
+    EndpointsController,
     TransactionsController,
     ProtocolController,
     NftController,
@@ -103,6 +108,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScamsController,
     TokensController,
     OpportunitiesController,
+    RPCNodesController,
   ].sort(),
   providers: [
     ...interceptorsOrder,

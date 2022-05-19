@@ -11,7 +11,6 @@ import {
   CurveProtocolEnum,
   DefiKingdomsProtocolEnum,
   EllipsisProtocolEnum,
-  IslandswapProtocolEnum,
   MojitoswapProtocolEnum,
   OlympusProtocolEnum,
   PancakeProtocolEnum,
@@ -41,6 +40,7 @@ import {
   StaderProtocolEnum,
   OsmosisProtocolEnum,
   AaveV3ProtocolEnum,
+  WingRidersProtocolEnum,
 } from '@app/common/enum';
 import { AccountBalance } from '@app/common/interfaces';
 
@@ -61,7 +61,6 @@ export type ProtocolName =
   | CurveProtocolEnum
   | DefiKingdomsProtocolEnum
   | EllipsisProtocolEnum
-  | IslandswapProtocolEnum
   | MojitoswapProtocolEnum
   | OlympusProtocolEnum
   | PancakeProtocolEnum
@@ -90,7 +89,8 @@ export type ProtocolName =
   | MirrorProtocolEnum
   | StaderProtocolEnum
   | OsmosisProtocolEnum
-  | AaveV3ProtocolEnum;
+  | AaveV3ProtocolEnum
+  | WingRidersProtocolEnum;
 
 export enum ColumnType {
   json = 'json',

@@ -1,5 +1,4 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { ClassConstructor } from 'class-transformer';
 import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
@@ -14,22 +13,36 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
 import { AaveV3 } from '../platforms/AaveV3';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
+import { Belt } from '../platforms/Belt';
+import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { Evodefi } from '../platforms/Evodefi';
+import { Frax } from '../platforms/Frax';
+import { Goose } from '../platforms/Goose';
+import { Kava } from '../platforms/Kava';
+import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
+import { MarsEcosystem } from '../platforms/MarsEcosystem';
+import { Mdex } from '../platforms/Mdex';
+import { Mojitoswap } from '../platforms/Mojitoswap';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
 import { QuickSwap } from '../platforms/QuickSwap';
 import { RuneFarm } from '../platforms/RuneFarm';
+import { Solend } from '../platforms/Solend';
 import { SpookySwap } from '../platforms/SpookySwap';
+import { Stargate } from '../platforms/Stargate';
+import { Synapse } from '../platforms/Synapse';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
+import { YelFinance } from '../platforms/YelFinance';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
 import {
@@ -62,7 +75,21 @@ export class PlatformService {
       LimeSwap,
       BalancerV2,
       AaveV3,
+      Frax,
+      Kava,
+      Solend,
       Quarry,
+      Mojitoswap,
+      BiSwap,
+      Mdex,
+      KnightSwap,
+      Belt,
+      MarsEcosystem,
+      Goose,
+      BabySwap,
+      YelFinance,
+      Stargate,
+      Synapse,
     });
   }
 
@@ -106,14 +133,14 @@ export class PlatformService {
     return lastValueFrom(data$);
   }
 
-  public async getUserPositionsForProtocol(
+  public async getUserPositionsForPlatform(
     platformName: string,
     chains: ChainId[],
     addresses: Address[],
   ): Promise<IUserEntryResponse> {
     const platform = await this.getPlatform(platformName);
 
-    const [wallets, errors] = await platform.getUsersData(chains, addresses);
+    const { data: wallets, errors } = await platform.getUsersData(chains, addresses);
 
     const total = wallets.reduce((total, wallet) => total + wallet.total, 0);
 
@@ -129,13 +156,13 @@ export class PlatformService {
     };
   }
 
-  public async getOpportunitiesForProtocol(
+  public async getOpportunitiesForPlatform(
     platformName: string,
     chains: ChainId[],
   ): Promise<IOpportunityResponse> {
     const platform = await this.getPlatform(platformName);
 
-    const [items, errors] = await platform.getPoolData(chains);
+    const { data: items, errors } = await platform.getPoolData(chains);
 
     const errorMessages = this.processErrors(errors, platformName);
 
@@ -169,7 +196,7 @@ export class PlatformService {
     }>[] = Object.entries(chainsProtocols).map(async ([chain, cProtocols]) => {
       const result = [];
       for (const protocol of cProtocols as string[]) {
-        const res = await this.cacheOpportunitiesForProtocol(protocol, [Number(chain)], false);
+        const res = await this.cacheOpportunitiesForPlatform(protocol, [Number(chain)], false);
         result.push(res);
       }
       return {
@@ -185,7 +212,7 @@ export class PlatformService {
     };
   }
 
-  public async cacheOpportunitiesForProtocol(
+  public async cacheOpportunitiesForPlatform(
     platformName: string,
     chains: ChainId[],
     debug: boolean,
@@ -197,7 +224,7 @@ export class PlatformService {
     const errorMessages = this.processErrors(errors, platformName);
 
     if (debug) {
-      const [pools, poolErrors] = await platform.getPoolData(chains);
+      const { data: pools, errors: poolErrors } = await platform.getPoolData(chains);
 
       const poolErrorMessages = this.processErrors(poolErrors, platformName);
       return {

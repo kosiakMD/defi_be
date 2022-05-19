@@ -1,5 +1,3 @@
-import { lastValueFrom } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
@@ -9,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
-import { SOL_COIN_ADDRESS } from '@app/common/constant/index';
+import { SOL_COIN_ADDRESS } from '@app/common/constant';
 import { isSolAddress, normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
@@ -21,7 +19,7 @@ import { DelegationsStrategy } from './delegation.strategy';
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
 
-  protected url = 'https://api.solanabeach.io/v1/account';
+  protected url: string;
   protected path = 'v1/account';
 
   constructor(
@@ -34,49 +32,39 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
   ) {
     super();
 
-    this.url = new URL(this.path, this.configService.get<string>('SOLANA_URL')).toString();
+    this.url = new URL(
+      this.path,
+      this.configService.get<string>('SOLANA_DELEGATION_API_URL'),
+    ).toString();
   }
 
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
       address: SOL_COIN_ADDRESS,
-      // TODO: This chain id cannot be hardcoded
       chain: ChainIdEnum.sol,
     });
   }
 
-  private async getData(address: string): Promise<any[]> {
-    const stakesData = await lastValueFrom(
-      this.httpService
-        .get(`${this.url}/${address}/stakes?limit=1000`)
-        .pipe(map(({ data: { data } }) => data)),
-    );
-
-    const stakingRewardsPromises = stakesData.map((staking) =>
-      lastValueFrom(
-        this.httpService
-          .get(`${this.url}/${staking.pubkey.address}/stake-rewards`)
-          .pipe(map(({ data }) => data)),
-      ),
-    );
-
-    const stakingRewardsData = await Promise.all(stakingRewardsPromises);
-
-    return [stakesData, stakingRewardsData[0]];
-  }
-
-  public async getDelegatedAssets(address: string) {
+  public async getDelegatedAssets(address) {
     if (!isSolAddress(address)) return [];
     const result = [];
 
     try {
-      const [{ prices }, [stakesData, stakingRewardsData]] = await Promise.all([
-        this.priceService.fetchTokenPrices([this.asset.address], this.asset.chain),
-        this.getData(address),
-      ]);
+      const { prices } = await this.priceService.fetchTokenPrices(
+        [this.asset.address],
+        this.asset.chain,
+      );
 
-      stakesData.forEach((staking) => {
-        const stakingReward = stakingRewardsData;
+      const { data: stakesData } = await this.httpService
+        .get(`${this.url}/${address}/stakes?limit=1000`)
+        .toPromise();
+
+      for (const staking of stakesData.data) {
+        const { data: stakingRewardsData } = await this.httpService
+          .get(`${this.url}/${staking.pubkey.address}/stake-rewards`)
+          .toPromise();
+
+        const stakingReward = stakingRewardsData[0];
         if (stakingReward) {
           const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
           const claimableRewardsAmount = normalizeDecimals(
@@ -108,10 +96,9 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
             },
           });
         }
-      });
+      }
       return result;
     } catch (err) {
-      // TODO: We should expose error and handle in upstream code
       this.logger.error(err);
       throw err;
     }

@@ -51,4 +51,5 @@ export const dataSourceConfig = {
   YEARN_ETH_SUBGRAPH_URL: Joi.string().required(),
   YEARN_FTM_SUBGRAPH_URL: Joi.string().required(),
   YEARN_V1_ETH_SUBGRAPH_URL: Joi.string().required(),
+  KAVA_API: Joi.string().required(),
 };

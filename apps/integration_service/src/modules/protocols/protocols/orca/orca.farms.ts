@@ -221,7 +221,7 @@ export class OrcaFarms {
       if (aq) {
         rpcDataRequests.push({
           jsonrpc: options.jsonrpc,
-          id: idRpc,
+          id: idRpc + ':' + aq.account,
           method: options.method[0],
           params: [
             aq.account,
@@ -232,7 +232,7 @@ export class OrcaFarms {
         });
         rpcDataRequests.push({
           jsonrpc: options.jsonrpc,
-          id: idRpc,
+          id: idRpc + ':' + aq.farmTokenMint,
           method: options.method[1],
           params: [aq.farmTokenMint],
         });
@@ -241,7 +241,7 @@ export class OrcaFarms {
       if (dd) {
         rpcDataRequests.push({
           jsonrpc: options.jsonrpc,
-          id: idRpc,
+          id: idRpc + ':' + dd.account,
           method: options.method[0],
           params: [
             dd.account,
@@ -252,7 +252,7 @@ export class OrcaFarms {
         });
         rpcDataRequests.push({
           jsonrpc: options.jsonrpc,
-          id: idRpc,
+          id: idRpc + ':' + dd.farmTokenMint,
           method: options.method[1],
           params: [dd.farmTokenMint],
         });
@@ -294,7 +294,7 @@ export class OrcaFarms {
           const addressAQ = await findProgramAddress(aq.account, wallet);
           rpcDataRequests.push({
             jsonrpc: options.jsonrpc,
-            id: idRpc++,
+            id: idRpc + ':' + addressAQ.toBase58(),
             method: options.method,
             params: [
               addressAQ.toBase58(),
@@ -308,7 +308,7 @@ export class OrcaFarms {
           const addressDD = await findProgramAddress(dd.account, wallet);
           rpcDataRequests.push({
             jsonrpc: options.jsonrpc,
-            id: idRpc++,
+            id: idRpc + ':' + addressDD.toBase58(),
             method: options.method,
             params: [
               addressDD.toBase58(),
@@ -318,6 +318,8 @@ export class OrcaFarms {
             ],
           });
         }
+
+        idRpc++;
       }
     }
 

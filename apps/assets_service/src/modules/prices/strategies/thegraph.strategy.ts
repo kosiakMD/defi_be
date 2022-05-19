@@ -1,11 +1,11 @@
-import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
+import { PriceSourceConfig } from 'apps/assets_service/src/common/types/price-source-config.type';
 import axios, { AxiosRequestConfig } from 'axios';
 import BigNumber from 'bignumber.js';
 
 import { delay } from '@app/common/helpers/delay';
 
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
 import { PriceStrategy } from './strategy';
 
 type TheGraphToken = {

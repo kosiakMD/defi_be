@@ -6,7 +6,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
-import { AssetsEntity } from '../entities/assets.entity';
+import { AssetEntity } from '../entities/asset.entity';
 import { AaveStrategy } from './token-strategies/aave.strategy';
 import { CompoundStrategy } from './token-strategies/compound.strategy';
 import { CurveStrategy } from './token-strategies/curve.strategy';
@@ -37,7 +37,7 @@ export class TokenService {
     YearnStrategy,
   ];
 
-  public async getUnderlyingAssetsIfExists(processingAsset: AssetsEntity): Promise<AssetsEntity[]> {
+  public async getUnderlyingAssetsIfExists(processingAsset: AssetEntity): Promise<AssetEntity[]> {
     const resultsPromises = [];
 
     try {
@@ -52,7 +52,7 @@ export class TokenService {
       results.forEach((result) => {
         if (this.isFulfilled(result)) {
           result.value.forEach((token: string) => {
-            const underlyingAsset = new AssetsEntity();
+            const underlyingAsset = new AssetEntity();
             underlyingAsset.address = token;
             underlyingAsset.chainId = processingAsset.chainId;
             underlyingAssets.push(underlyingAsset);

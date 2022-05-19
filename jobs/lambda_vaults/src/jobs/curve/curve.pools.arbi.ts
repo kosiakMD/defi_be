@@ -43,7 +43,12 @@ export class CurvePoolsArbi extends CurvePoolBase {
     });
 
     const [{ prices }, multicallResponses] = await Promise.all([
-      this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        tokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(calls, this.chain),
     ]);
 
@@ -104,11 +109,12 @@ export class CurvePoolsArbi extends CurvePoolBase {
               poolToken.value = poolToken.balance * poolTokenPrice;
               lpValue += poolToken.value;
               tokens.push(poolToken);
-              if (!poolToken.price) {
-                this.logger.warn(
-                  `Missing Curve token price Chain: ${this.chain}, address: ${poolToken.address} - (${poolToken.symbol})`,
-                );
-              }
+              // TODO: temporarily to make logs clearer
+              // if (!poolToken.price) {
+              //   this.logger.warn(
+              //     `Missing Curve token price Chain: ${this.chain}, address: ${poolToken.address} - (${poolToken.symbol})`,
+              //   );
+              // }
             });
             index += coin.tokens.length;
             curveLiquidityPoolFeature.stats.tvl += lpValue;

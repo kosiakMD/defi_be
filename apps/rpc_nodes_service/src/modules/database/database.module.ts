@@ -20,7 +20,7 @@ import { Endpoints1643205463195 } from './migrations/1643205463195-Endpoints';
         entities: [EndpointsEntity],
         migrations: [Endpoints1643205463195],
         synchronize: false,
-        logging: true,
+        logging: false,
       }),
     }),
   ],

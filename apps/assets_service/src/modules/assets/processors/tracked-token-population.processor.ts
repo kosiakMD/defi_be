@@ -4,13 +4,14 @@ import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { delay } from '@app/common/helpers/delay';
 
 import { Chain } from '../../../common/types/chain.type';
 
 import { CoingeckoToken } from '../types/coingecko-token.type';
-import { CoinmarketcapToken } from '../types/coinmarketcap-toekn.type';
+import { CoinmarketcapToken } from '../types/coinmarketcap-token.type';
 import { AssetsProcessor } from './assets.processor';
 
 @Injectable()
@@ -27,14 +28,8 @@ export class TrackedTokenPopulationProcessor {
     this.coinmarketcapPlatformChainIdEnum = {};
   }
 
-  @Cron(CronExpression.EVERY_DAY_AT_10AM)
-  async processor() {
-    this.logger.log('Every day at 10AM tracked tokens population processing...');
-    // Tracked Tokens Population - TTP
-    this.processingTTP();
-  }
-
-  private async processingTTP(): Promise<void> {
+  // Tracked Tokens Population - TTP
+  public async processingTTP(): Promise<void> {
     /**
      * get tokens(for each Coinmarketcap and Coingecko)
      * for each token
@@ -77,18 +72,18 @@ export class TrackedTokenPopulationProcessor {
     ).then(this.processCoingeckoTokens.bind(this), (error) => this.logger.error(error));
   }
 
-  private processCoingeckoTokens(coingeckoResponse: AxiosResponse): void {
+  private async processCoingeckoTokens(coingeckoResponse: AxiosResponse): Promise<void> {
     const coingeckoTokens: CoingeckoToken[] = coingeckoResponse.data;
-    for (const { platforms } of coingeckoTokens) {
-      Object.entries(platforms) //
-        .forEach(([chain, address]) => {
-          const chainId = this.coingeckoPlatformChainIdEnum[chain];
-          if (!chainId) {
-            this.logger.warn(`Unknown Coingecko chain! No platform: ${chain} in Database`);
-          } else if (address) {
-            this.assetsProcessor.processAsset({ address, chainId, isTracked: true });
-          }
-        });
+    for await (const { platforms } of coingeckoTokens) {
+      for await (const [chain, address] of Object.entries(platforms)) {
+        const chainId = this.coingeckoPlatformChainIdEnum[chain];
+        if (!chainId) {
+          this.logger.warn(`Unknown Coingecko chain! No platform: ${chain} in Database`);
+        } else if (address) {
+          await this.assetsProcessor.processAsset({ address, chainId, isTracked: true });
+          await delay(50); // need this delay because of rate limits in case a lot of tokens
+        }
+      }
     }
   }
 
@@ -107,7 +102,7 @@ export class TrackedTokenPopulationProcessor {
     ).then(this.processCoinmarketcapTokens.bind(this), (error) => this.logger.error(error));
   }
 
-  private processCoinmarketcapTokens(coinmarketcapResponse: AxiosResponse): void {
+  private async processCoinmarketcapTokens(coinmarketcapResponse: AxiosResponse): Promise<void> {
     const coinmarketcapTokens: CoinmarketcapToken[] = coinmarketcapResponse.data.data;
     if (coinmarketcapTokens.length) {
       const { limit, start: previousStart } = coinmarketcapResponse.config.params;
@@ -116,13 +111,14 @@ export class TrackedTokenPopulationProcessor {
         // we need to run request to get next chunk
         this.runCoinmarketcapTokensRequest(start);
       }
-      for (const { platform, rank } of coinmarketcapTokens) {
+      for await (const { platform, rank } of coinmarketcapTokens) {
         const { name: chain, token_address: address } = platform || {};
         const chainId = this.coinmarketcapPlatformChainIdEnum[chain];
         if (!chainId) {
           this.logger.warn(`Unknown Coinmarketcap chain! No chain name: ${chain} in Database`);
         } else if (address) {
-          this.assetsProcessor.processAsset({ address, chainId, rank, isTracked: true });
+          await this.assetsProcessor.processAsset({ address, chainId, rank, isTracked: true });
+          await delay(50); // need this dealy beacuse of rate limits in case a lot of tokens
         }
       }
     }

@@ -50,7 +50,9 @@ export function createHttpClient(): {
 
     return {
       http,
-      refreshIpAddress: () => {},
+      refreshIpAddress: () => {
+        //
+      },
     };
   }
 }

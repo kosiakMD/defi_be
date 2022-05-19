@@ -21,8 +21,6 @@ export const validationSchema = Joi.object({
     .required(),
   USE_REDIS_TO_GET_ASSETS: Joi.boolean() //
     .default(true),
-  UPDATE_ASSET_PRICES_IN_DB: Joi.boolean() //
-    .default(true),
   ACCOUNT_SERVICE_CHAINS_LIST_URL: Joi.string() //
     .required(),
   ASSETS_QUEUE_NAME: Joi.string() //
@@ -40,9 +38,9 @@ export const validationSchema = Joi.object({
   ASSETS_CURRENT_PRICES_DEADLINE_TO_KEEP_IN_DATABASE: Joi.number() //
     .default(1000 * 60 * 60 * 24 * 7), // about 1 weeks
   ASSETS_CURRENT_PRICE_JOB_INTERVAL: Joi.number() //
-    .default(7), // in minutes
+    .default(7 * 60), // in seconds
   ASSETS_HISTORICAL_PRICE_JOB_INTERVAL: Joi.number() //
-    .default(15), // in minutes
+    .default(15 * 60), // in seconds
   ...databaseValidationSchema,
   ...cacheValidationSchema,
   ...awsValidationSchema,

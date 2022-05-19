@@ -80,7 +80,11 @@ export class TraderjoePools implements JobInterface {
 
     for (let i = 0; i < lpTokenAddresses.length; i++) {
       const tokenAddress = lpTokenAddresses[i];
-      await this.lpProcessing(tokenAddress, liquidityPools);
+      try {
+        await this.lpProcessing(tokenAddress, liquidityPools);
+      } catch (err) {
+        await this.lpProcessing(tokenAddress, liquidityPools);
+      }
     }
 
     // add to DB
@@ -264,6 +268,7 @@ export class TraderjoePools implements JobInterface {
         pricedTokenAddresses,
         CurrencyIdEnum.usd,
         ChainIdEnum.avax,
+        this.protocol,
       ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.avax),
     ]);

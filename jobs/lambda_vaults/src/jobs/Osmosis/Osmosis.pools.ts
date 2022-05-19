@@ -134,6 +134,7 @@ export class OsmosisPools implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     const pools = new Map<string, IFormatOpportunity>(this.pools.map((x) => [x.address, x]));

@@ -5,7 +5,12 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 type IAddressUtxosContent = components['schemas']['address_utxo_content'];
+type IAssetsAddresses = components['schemas']['asset_addresses'];
 
+/**
+ * @description BlockFrost API implementation
+ * @link https://github.com/blockfrost/blockfrost-js/wiki/BlockFrostAPI.md
+ */
 @Injectable()
 export class CardanoService {
   private blockfrost: BlockFrostAPI;
@@ -22,5 +27,14 @@ export class CardanoService {
    */
   async obtainAddressesUtxos(address: string): Promise<IAddressUtxosContent> {
     return this.blockfrost.addressesUtxos(address);
+  }
+
+  /**
+   *
+   * @param asset Concatenation of the policy_id and hex-encoded asset_name
+   * @returns List of a addresses containing a specific asset
+   */
+  async obtainAssetsAddresses(asset: string): Promise<IAssetsAddresses> {
+    return this.blockfrost.assetsAddresses(asset);
   }
 }

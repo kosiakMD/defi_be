@@ -25,6 +25,8 @@ import {
   LOVELACE_TOKEN_TICKER,
   WING_RIDERS_ADA_ASSET_NAME,
   WING_RIDERS_CONTRACT_POLICY_ID,
+  WING_RIDERS_DEFAULT_TOTAL_SUPPLY,
+  WING_RIDERS_MAX_TOTAL_SUPPLY,
 } from '../../utils/constants';
 import { toDecimals } from '../../utils/number';
 import { isTimeToDo } from '../../utils/time';
@@ -121,7 +123,17 @@ export class WingRidersPools extends CardanoPools implements JobInterface {
             return tvl + token.price * token.reserve;
           }, 0);
 
-        lp.lpToken.totalSupply = toDecimals(pool.quantityLP, lp.lpToken.decimals);
+        const assetsAddresses = await this.cardanoService.obtainAssetsAddresses(lp.lpToken.address);
+
+        const lpTotalSupply =
+          assetsAddresses.reduce(
+            (prevTotalSupply, assetAddress): number =>
+              prevTotalSupply +
+              +(assetAddress.quantity > WING_RIDERS_MAX_TOTAL_SUPPLY ? 0 : assetAddress.quantity),
+            0,
+          ) || +WING_RIDERS_DEFAULT_TOTAL_SUPPLY;
+
+        lp.lpToken.totalSupply = lpTotalSupply;
         lp.stats.feeRate = Number(pool.fee);
       }
     }

@@ -31,6 +31,7 @@ configMaps:
     OPPORTUNITIES_SERVICE_PORT: 443
     ASSETS_SERVICE_HOST: http://devassets.defiyield.app
     ASSETS_SERVICE_PORT: 443
+    RPC_SERVICE_HOST: https://devrpc.defiyield.app/
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug

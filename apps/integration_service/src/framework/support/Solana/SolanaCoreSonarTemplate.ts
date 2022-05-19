@@ -71,6 +71,7 @@ export abstract class SolanaCoreSonarTemplate<
             address: token.address,
             symbol: token.symbol,
             name: token.name,
+            chainId: token.chainId,
             decimals: token.decimals,
             price: sonarLP.lp.price,
             reserve: sonarLP.lp.amount,
@@ -84,6 +85,7 @@ export abstract class SolanaCoreSonarTemplate<
                   address: asset.mint,
                   symbol: token?.symbol,
                   name: token?.name,
+                  chainId: token?.chainId,
                   decimals: token?.decimals,
                   price: asset.price,
                   reserve: asset.amount,
@@ -100,6 +102,7 @@ export abstract class SolanaCoreSonarTemplate<
               address: token.address,
               symbol: token.symbol,
               name: token.name,
+              chainId: token.chainId,
               decimals: token.decimals,
               price: sonarLP.lp.price,
             },
@@ -120,7 +123,6 @@ export abstract class SolanaCoreSonarTemplate<
       token,
       apy,
       totalSupplied: normalizeDecimals(supplied.totalSupplied, token.decimals),
-      totalSupply: normalizeDecimals(token.totalSupply.toString(), token.decimals), // TODO: Move into token
       tvl: token.value,
     };
   }

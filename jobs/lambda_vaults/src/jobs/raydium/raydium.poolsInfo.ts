@@ -26,12 +26,16 @@ export function generateTx(pool, blockHash: string) {
   }
 
   transaction.recentBlockhash = blockHash;
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
+  // eslint-disable-next-line no-underscore-dangle
   const message = transaction._compile();
   const signData = message.serialize();
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
+  // @ts-ignore
+  // eslint-disable-next-line no-underscore-dangle
   const wireTransaction = transaction._serialize(signData);
 
   const encodedTransaction = wireTransaction.toString('base64');

@@ -6,11 +6,10 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, FeatureEnum, Logger } from '@app/common';
-import { normalizeDecimals } from '@app/common/utils';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { RootProtocolCacheable } from '../../../RootProtocolCacheable';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
@@ -23,6 +22,7 @@ import {
   ISupplyTokenOpportunity,
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens.supplied.interface';
+import { EVMCore } from '../../EVMCore';
 import {
   BALANCES_QUERY,
   IUniswapBalanceSubgraphResponse,
@@ -35,12 +35,7 @@ export type IUniswapVaultMeta = IProtocolMeta & {
 };
 
 export class UniswapV2Liquidity
-  extends RootProtocolCacheable<
-    IPoolFeatureMinimal,
-    IPoolFeatureOpportunity,
-    IPoolFeatureUser,
-    IUniswapVaultMeta
-  >
+  extends EVMCore<IPoolFeatureMinimal, IPoolFeatureOpportunity, IPoolFeatureUser, IUniswapVaultMeta>
   implements IRootProtocol
 {
   constructor(
@@ -49,6 +44,8 @@ export class UniswapV2Liquidity
     protected accountService: AccountService,
     protected priceService: PriceService,
     protected httpService: HttpService,
+    // only used to get totalSupply
+    protected multicall: MulticallAggregator,
   ) {
     super();
   }
@@ -103,9 +100,6 @@ export class UniswapV2Liquidity
       const reserves = [pool.reserve0, pool.reserve1];
       return {
         ...opportunity,
-        token: {
-          totalSupply: Math.max(Number(pool.totalSupply), 0),
-        },
         supplied: opportunity.supplied.map((supplied, idx) => {
           const totalSupplied = reserves[idx];
           return {
@@ -136,7 +130,7 @@ export class UniswapV2Liquidity
     return {
       ...opportunity.token, // merge in totalSupply
       ...rest,
-      price: tvl / opportunity.token.totalSupply,
+      price: tvl / token.totalSupply,
     };
   }
 
@@ -144,10 +138,8 @@ export class UniswapV2Liquidity
     poolToken: ISupplyTokenMinimal,
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
-    const totalSupply = normalizeDecimals(poolToken.totalSupply, token.decimals);
     return {
       token,
-      totalSupply,
       totalSupplied: Number(poolToken.totalSupplied),
       tvl: Number(poolToken.totalSupplied) * token.price,
     };

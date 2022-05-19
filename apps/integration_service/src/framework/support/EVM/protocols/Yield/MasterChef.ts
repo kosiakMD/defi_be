@@ -137,20 +137,12 @@ export class MasterChef
       return lpContract.balanceOf(this.meta.address);
     });
 
-    const totalSupplyCalls = poolInfos.map((poolInfo) => {
-      const lpContract = new ERC20(poolInfo.stakedToken);
-      return lpContract.totalSupply();
-    });
-    const [totalStakedPerPool, totalSupplyPerPool] = await Promise.all([
-      this.multicall.callArray(totalStakedCalls, this.meta.chain),
-      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
-    ]);
+    const totalStakedPerPool = await this.multicall.callArray(totalStakedCalls, this.meta.chain);
 
     return poolInfos.map((poolInfo, poolIdx) => {
       return this.formatStakingOpportunityMinimal(
         poolInfo,
         totalStakedPerPool[poolIdx].toString(), // totalStaked
-        totalSupplyPerPool[poolIdx].toString(), // totalSupply
         context,
       );
     });
@@ -159,7 +151,6 @@ export class MasterChef
   protected formatStakingOpportunityMinimal(
     poolInfo: IMasterChefPoolInfo,
     totalStaked: string,
-    totalSupply: string,
     context: { [key: string]: any },
   ): IStakingFeatureMinimal {
     const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
@@ -177,7 +168,6 @@ export class MasterChef
           token: {
             address: poolInfo.stakedToken,
           },
-          totalSupply: totalSupply,
           totalSupplied: totalStaked,
         },
       ],
@@ -234,7 +224,7 @@ export class MasterChef
 
   protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
     // const poolShare = balance / supplied.token['totalSupply'];
-    const poolShare = balance / supplied.totalSupply;
+    const poolShare = balance / supplied.token.totalSupply;
     supplied.token.underlying?.forEach((underlying) => {
       underlying.balance = underlying.reserve * poolShare;
       underlying.value = underlying.balance * underlying.price;

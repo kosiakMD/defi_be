@@ -51,26 +51,19 @@ export class StargateStaking extends MasterChef {
 
     const lpAbi = await this.abiService.fetchAbi(poolInfos[0].stakedToken, this.meta.chain);
     const totalLiquidityAbi = lpAbi.find((item) => item.name === 'totalLiquidity');
-    const totalSupplyAbi = lpAbi.find((item) => item.name === 'totalSupply');
 
-    const totalSupplyCalls = [];
     const totalLiquidityCalls = [];
     poolInfos.forEach((poolInfo) => {
       const lpContract = new DynamicContract(poolInfo.stakedToken);
-      totalSupplyCalls.push(lpContract.createCall(totalSupplyAbi));
       totalLiquidityCalls.push(lpContract.createCall(totalLiquidityAbi));
     });
 
-    const [totalStakedPerPool, totalSupplyPerPool] = await Promise.all([
-      this.multicall.callArray(totalLiquidityCalls, this.meta.chain),
-      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
-    ]);
+    const totalStakedPerPool = await this.multicall.callArray(totalLiquidityCalls, this.meta.chain);
 
     return poolInfos.map((poolInfo, poolIdx) => {
       return this.formatStakingOpportunityMinimal(
         poolInfo,
         totalStakedPerPool[poolIdx].toString(),
-        totalSupplyPerPool[poolIdx].toString(),
         context,
       );
     });
@@ -92,7 +85,6 @@ export class StargateStaking extends MasterChef {
     return {
       token,
       apy,
-      totalSupply: normalizeDecimals(supplied.totalSupply, token.decimals),
       tvl: totalSupplied * token.underlying[0].price,
     };
   }

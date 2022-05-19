@@ -533,7 +533,6 @@ export abstract class RootProtocolCacheable<
     return {
       token,
       apy,
-      totalSupply: normalizeDecimals(supplied.totalSupply, token.decimals), // TODO: Move into token
       tvl: totalSupplied * token.price,
     };
   }

@@ -1,7 +1,6 @@
 import { equals } from 'class-validator';
 
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
-import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
@@ -35,20 +34,12 @@ export class MasterBelt extends MasterChef {
       return new DynamicContract(poolInfo.vaultTokenAddress).createCall(vaultFunctions.totalStaked);
     });
 
-    const totalSupplyCalls = poolInfos.map((poolInfo) => {
-      const lpContract = new ERC20(poolInfo.stakedToken);
-      return lpContract.totalSupply();
-    });
-    const [totalStakedPerPool, totalSupplyPerPool] = await Promise.all([
-      this.multicall.callArray(totalStakedCalls, this.meta.chain),
-      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
-    ]);
+    const totalStakedPerPool = await this.multicall.callArray(totalStakedCalls, this.meta.chain);
 
     return poolInfos.map((poolInfo, poolIdx) => {
       return this.formatStakingOpportunityMinimal(
         poolInfo,
         totalStakedPerPool[poolIdx].toString(), // totalStaked
-        totalSupplyPerPool[poolIdx].toString(), // totalSupply
         context,
       );
     });

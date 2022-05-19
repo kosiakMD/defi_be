@@ -4,6 +4,7 @@ import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { chunk, keepAddressesByChainId, normalizeDecimals } from '@app/common/utils';
+import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/UniswapV2Pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -62,7 +63,7 @@ export abstract class EVMCore<
 
         // need :any as Asset doesn't have underlying tokens
         // return entries, but not a map so we can cache (serialize/deserialize) easily
-        return tokenUpdated.map((token: any) => {
+        return tokenUpdated.map((token: any): [Address, ERC20Token] => {
           return [
             token.address,
             {
@@ -73,17 +74,22 @@ export abstract class EVMCore<
               address: token.address,
               name: token.name,
               symbol: token.symbol,
-              chainId: token.chain,
               decimals: token.decimals,
-              price: token.price || Number(prices[token.address]),
               totalSupply: token.totalSupply,
-              underlying: token.underlyingAssets?.map((u) => {
+
+              chainId: token.chain,
+              price: token.price || Number(prices[token.address]),
+
+              underlying: token.underlyingAssets?.map((u): ERC20Token => {
                 return {
+                  // ERC20
                   address: u.address,
                   name: u.name,
                   symbol: u.symbol,
-                  chainId: u.chainId,
+                  totalSupply: u.totalSupply,
                   decimals: u.decimals,
+                  // Extra Token Info
+                  chainId: u.chainId,
                   price: Number(prices[u.address]),
                   position: u.positionInPool,
                   reserve: u.reserve,
@@ -159,6 +165,10 @@ export abstract class EVMCore<
         calls.set(`${token.address}.getReserves()`, contract.getReserves());
         calls.set(`${token.address}.token0()`, contract.token0());
         calls.set(`${token.address}.token1()`, contract.token1());
+        token.underlyingAssets.forEach((asset) => {
+          const c = new ERC20(asset.address);
+          calls.set(`${asset.address}.totalSupply()`, c.totalSupply());
+        });
       });
       const results = await this.multicall.handleInBatches(calls, this.meta.chain);
       tokens.forEach((token: any) => {
@@ -180,10 +190,18 @@ export abstract class EVMCore<
         // calculate/fill the LP token price into the price array
         const tvl0 = _reserve0.times(prices[token0Address]);
         const tvl1 = _reserve1.times(prices[token1Address]);
+
+        token.totalSupply = normalizeDecimals(totalSupply, token.decimals);
+
         prices[token.address] = new BigNumber(tvl0.plus(tvl1).toString()) //
           .div(totalSupply)
           .toNumber();
         token.underlyingAssets.forEach((u) => {
+          u.totalSupply = normalizeDecimals(
+            results.get(`${u.address}.totalSupply()`).output.data,
+            u.decimals,
+          );
+
           u.reserve = normalizeDecimals(
             (u.reserve = u.positionInPool === 0 ? _reserve0 : _reserve1).toString(),
             u.decimals,

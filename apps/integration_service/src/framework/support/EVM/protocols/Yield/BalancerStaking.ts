@@ -8,6 +8,7 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
@@ -78,6 +79,7 @@ export class BalancerStaking
     protected accountService: AccountService,
     protected priceService: PriceService,
     protected httpService: HttpService,
+    protected multicall: MulticallAggregator,
   ) {
     super();
   }
@@ -141,7 +143,6 @@ export class BalancerStaking
           ...position,
           amount: amountBN.toNumber(),
           value: amountUSD.toNumber(),
-          totalSupply: position.totalSupplied,
         };
         return result;
       });

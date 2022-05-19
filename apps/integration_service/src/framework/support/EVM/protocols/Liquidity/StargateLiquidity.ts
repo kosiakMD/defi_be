@@ -73,13 +73,9 @@ export class StargateLiquidity extends SingleContractProtocol<
     poolToken: ISupplyTokenMinimal,
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
-    const totalSupplyDec = toDecimals(poolToken.totalSupply, token.decimals);
-    token['totalSupply'] = totalSupplyDec;
-
     return {
       token,
       totalSupplied: +poolToken.totalSupplied,
-      totalSupply: totalSupplyDec,
       tvl: toDecimals(poolToken.totalSupplied, token.decimals) * token.underlying[0].price,
     };
   }
@@ -107,34 +103,23 @@ export class StargateLiquidity extends SingleContractProtocol<
 
     const lpAbi = await this.abiService.fetchAbi(poolInfos[0].pool, this.meta.chain);
     const totalLiquidityAbi = lpAbi.find((item) => item.name === 'totalLiquidity');
-    const totalSupplyAbi = lpAbi.find((item) => item.name === 'totalSupply');
 
-    const totalSupplyCalls = [];
     const totalLiquidityCalls = [];
     poolInfos.forEach((poolInfo) => {
       const lpContract = new DynamicContract(poolInfo.pool);
-      totalSupplyCalls.push(lpContract.createCall(totalSupplyAbi));
       totalLiquidityCalls.push(lpContract.createCall(totalLiquidityAbi));
     });
 
-    const [totalStakedPerPool, totalSupplyPerPool] = await Promise.all([
-      this.multicall.callArray(totalLiquidityCalls, this.meta.chain),
-      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
-    ]);
+    const totalStakedPerPool = await this.multicall.callArray(totalLiquidityCalls, this.meta.chain);
 
     return poolInfos.map((poolInfo, poolIdx) => {
-      return this.formatPoolsOpportunityMinimal(
-        poolInfo,
-        totalStakedPerPool[poolIdx].toString(),
-        totalSupplyPerPool[poolIdx].toString(),
-      );
+      return this.formatPoolsOpportunityMinimal(poolInfo, totalStakedPerPool[poolIdx].toString());
     });
   }
 
   protected formatPoolsOpportunityMinimal(
     poolInfo: { pool; poolId },
     totalLiquidity: string,
-    totalSupply: string,
   ): IPoolFeatureMinimal {
     return {
       id: `${poolInfo.pool}`,
@@ -145,7 +130,6 @@ export class StargateLiquidity extends SingleContractProtocol<
           token: {
             address: poolInfo.pool,
           },
-          totalSupply: totalSupply,
           totalSupplied: totalLiquidity,
         },
       ],

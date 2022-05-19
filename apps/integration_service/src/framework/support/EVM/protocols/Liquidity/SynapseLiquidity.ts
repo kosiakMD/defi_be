@@ -93,7 +93,6 @@ export class SynapseLiquidity extends SingleContractProtocol<
     poolToken: ISupplyTokenMinimal,
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
-    token['totalSupply'] = toDecimals(poolToken.totalSupply, token.decimals);
     let tvl = 0;
     token.underlying?.forEach((underlying) => {
       underlying.value = underlying.reserve * underlying.price;
@@ -128,25 +127,10 @@ export class SynapseLiquidity extends SingleContractProtocol<
 
     const poolInfos = await this.fetchPoolInfos(poolIds);
 
-    const totalSupplyCalls = [];
-    poolInfos.forEach((poolInfo) => {
-      const lpContract = new ERC20(poolInfo.pool);
-      totalSupplyCalls.push(lpContract.totalSupply());
-    });
-
-    const [totalSupplyPerPool] = await Promise.all([
-      this.multicall.callArray(totalSupplyCalls, this.meta.chain),
-    ]);
-
-    return poolInfos.map((poolInfo, poolIdx) => {
-      return this.formatPoolsOpportunityMinimal(poolInfo, totalSupplyPerPool[poolIdx].toString());
-    });
+    return poolInfos.map((poolInfo) => this.formatPoolsOpportunityMinimal(poolInfo));
   }
 
-  protected formatPoolsOpportunityMinimal(
-    poolInfo: { pool; poolId },
-    totalSupply: string,
-  ): IPoolFeatureMinimal {
+  protected formatPoolsOpportunityMinimal(poolInfo: { pool; poolId }): IPoolFeatureMinimal {
     return {
       id: `${poolInfo.pool}`,
       chain: this.meta.chain,
@@ -156,7 +140,6 @@ export class SynapseLiquidity extends SingleContractProtocol<
           token: {
             address: poolInfo.pool,
           },
-          totalSupply: totalSupply,
           totalSupplied: null,
         },
       ],
@@ -171,7 +154,7 @@ export class SynapseLiquidity extends SingleContractProtocol<
     const balanceRaw = data.get(`${address}.${pool.id}`)?.output.data;
     const balance = normalizeDecimals(balanceRaw, pool.supplied[0].token.decimals);
     if (!balance) return;
-    const poolShare = balance / pool.supplied[0].token['totalSupply'];
+    const poolShare = balance / pool.supplied[0].token.totalSupply;
     pool.supplied[0]['amount'] = balance; // user balance
     pool.supplied[0]['value'] = pool.supplied[0].token.underlying.reduce((value, underlying) => {
       underlying.balance = poolShare * underlying.reserve;

@@ -50,6 +50,7 @@ export abstract class SolanaCore<
       // RPC to get token supplies
       firstValueFrom(
         this.httpService.post(
+          // TODO: SOL_URL or SOLANA_URL
           this.configService.get('SOL_URL'),
           tokensWithNativeAndWrapped.map((address) => ({
             jsonrpc: '2.0',

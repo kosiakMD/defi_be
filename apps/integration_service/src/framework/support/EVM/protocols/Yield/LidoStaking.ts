@@ -201,7 +201,6 @@ export class LidoStaking
     const {
       output: { data: balanceRaw },
     } = data.get(this.balanceOfLabel(pool.id, address));
-
     // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
 

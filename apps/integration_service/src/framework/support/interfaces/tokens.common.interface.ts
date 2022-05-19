@@ -3,16 +3,25 @@ export interface ERC20TokenMinimal {
 }
 // TODO: This needs to match asset service interface
 export interface ERC20Token extends ERC20TokenMinimal {
+  // ERC20 Standard
+  address: string;
   symbol: string;
   name: string;
   decimals: number;
+  totalSupply?: number;
+
+  // Extra Token Info
   price: number;
+  chainId: number;
+
+  // User Details
   value?: number;
   balance?: number;
+
+  // LP/Wrapped/Underlying token extras
   reserve?: number;
   position?: number;
   underlying?: ERC20Token[];
-  totalSupply?: number;
 }
 
 export interface ITokenMinimal {

@@ -97,6 +97,7 @@ export class MinswapPools extends CardanoPools implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     const pools = await this.getPools().then((pools) => this.poolsToMap(pools));

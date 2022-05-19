@@ -235,7 +235,12 @@ export class AutofarmStakingBSC implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp, autofarmApiData] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        ChainIdEnum.bnb,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
       /* added for the case when there is no token price in bd
       and we can get want token price from this api data(temporary decision)

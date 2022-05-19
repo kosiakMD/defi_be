@@ -230,7 +230,12 @@ export class MojitoswapStaking
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.kcc),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        ChainIdEnum.kcc,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.kcc),
     ]);
 

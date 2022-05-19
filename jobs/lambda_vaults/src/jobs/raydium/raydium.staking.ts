@@ -334,7 +334,12 @@ export class RaydiumStaking implements JobInterface {
     );
 
     const [{ prices }, farmsInfos] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
       Farm.getMultipleInfo({
         connection: this.web3,
         pools: farmsKeys,

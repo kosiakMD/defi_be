@@ -108,6 +108,7 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
       addresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     return new Map(Object.entries(prices));
@@ -118,6 +119,7 @@ export abstract class JobBase<T extends NotifySupportedFeature> implements JobIn
       [address],
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     return prices[address];

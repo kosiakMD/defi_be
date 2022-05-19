@@ -58,6 +58,7 @@ module "lambda" {
     "WINGRIDERS_AGGREGATOR_URL"  = data.aws_ssm_parameter.WINGRIDERS_AGGREGATOR_URL.value,
     "WINGRIDERS_EXPLORER_URL"    = data.aws_ssm_parameter.WINGRIDERS_EXPLORER_URL.value,
     "CARDANO_BLOCKFROST_API_KEY" = data.aws_ssm_parameter.CARDANO_BLOCKFROST_API_KEY.value,
+    "CHAIN_IDS"                  = data.aws_ssm_parameter.CHAIN_IDS.value,
   }
 }
 

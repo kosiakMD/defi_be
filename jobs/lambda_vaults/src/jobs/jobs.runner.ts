@@ -13,6 +13,7 @@ import { Logger } from '../logger/logger.service';
 import { IntegrationService } from '../microservices/integration.service';
 import { TrackedVault } from '../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
+import { chainIdsMap } from '../utils/constants';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { TrackedVaultsMap } from './data/tracked.vaults.map';
 import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from './integrations.dto';
@@ -42,7 +43,7 @@ export class JobsRunner {
 
     this.jobsRegistry.registry.forEach((_, v) => {
       if (integrationServiceJobsPlaceholdersSet.has(v)) {
-        jobsPlaceholdersIntersection.add(v);
+        if (chainIdsMap.get(v.split('_')[0])) jobsPlaceholdersIntersection.add(v);
       } else {
         this.logger.warn(`[${v}] was registered manually but is not running`);
       }

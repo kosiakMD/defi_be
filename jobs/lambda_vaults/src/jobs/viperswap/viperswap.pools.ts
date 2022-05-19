@@ -272,6 +272,7 @@ export class ViperswapPools implements JobInterface {
         pricedTokenAddresses,
         CurrencyIdEnum.usd,
         ChainIdEnum.harm,
+        this.protocol,
       ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.harm),
     ]);

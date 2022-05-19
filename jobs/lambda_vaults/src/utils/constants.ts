@@ -5,3 +5,8 @@ export const WING_RIDERS_CONTRACT_POLICY_ID =
 export const ADA_TOKEN_TICKER = 'ADA';
 export const ADA_TOKEN_DECIMALS = 6;
 export const LOVELACE_TOKEN_TICKER = 'lovelace';
+
+export const chainIdsMap = process.env.CHAIN_IDS.split(',').reduce((res, chain) => {
+  res.set(chain, chain);
+  return res;
+}, new Map());

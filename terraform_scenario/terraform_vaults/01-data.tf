@@ -197,3 +197,7 @@ data "aws_ssm_parameter" "WINGRIDERS_EXPLORER_URL" {
 data "aws_ssm_parameter" "CARDANO_BLOCKFROST_API_KEY" {
   name = upper("/${var.environment}/CARDANO_BLOCKFROST_API_KEY")
 }
+
+data "aws_ssm_parameter" "CHAIN_IDS" {
+  name = upper("/${var.environment}/CHAIN_IDS")
+}

@@ -415,6 +415,7 @@ export class TrisolarisStaking implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     //getting data for calculate Apr

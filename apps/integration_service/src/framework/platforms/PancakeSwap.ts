@@ -9,6 +9,7 @@ import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/Mast
 import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { MasterChefV2 } from '../support/EVM/protocols/Yield/MasterChefV2';
 
 export class PancakeSwap extends RootPlatform {
   constructor(
@@ -56,6 +57,13 @@ export class PancakeSwap extends RootPlatform {
       context: {
         badPools: [105, 444, 514, 515, 516, 517, 518, 519, 520, 521],
       },
+    });
+
+    await this.registerProtocol<IMasterChefMeta>(MasterChefV2, {
+      chain: ChainIdEnum.bnb,
+      name: 'Farms - MasterchefV2',
+      feature: FeatureEnum.staking,
+      address: '0xa5f8C5Dbd5F286960b9d90548680aE5ebFf07652',
     });
 
     // TODO: Unpredictable errors. Seem to be related to the screen scraping

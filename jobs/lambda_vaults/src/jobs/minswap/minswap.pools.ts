@@ -107,7 +107,11 @@ export class MinswapPools extends CardanoPools implements JobInterface {
         const pool = pools.get(lp.address);
 
         lp.tokens[0].reserve = toDecimals(pool.quantityA, pool.assetA.decimals);
-        lp.tokens[0].price = Number(prices[CARDANO_COIN_ADDRESS]);
+        if (!pool.assetA.assetId) {
+          lp.tokens[0].price = Number(prices[CARDANO_COIN_ADDRESS]);
+        } else {
+          lp.tokens[0].price = Number(prices[this.removeDotInAssetID(pool.assetA.assetId)]);
+        }
 
         lp.tokens[1].reserve = toDecimals(pool.quantityB, pool.assetB.decimals);
         lp.tokens[1].price = Number(prices[this.removeDotInAssetID(pool.assetB.assetId)]);
@@ -126,44 +130,64 @@ export class MinswapPools extends CardanoPools implements JobInterface {
   }
 
   async getPools(): Promise<Pool[]> {
-    const request = this.httpService
-      .post<MinswapResponse>(this.subgraphUrl, {
-        query: AVAILABLE_POOLS_QUERY,
-        variables: { limit: 200 },
-      })
-      .pipe(map((r) => r.data));
-    const response = await firstValueFrom(request);
-    return this.minswapPoolToCardanoPool(response?.data?.topPools || []);
+    const poolLength = 320;
+    const limit = 20;
+    const requests = [];
+    for (let offset = 0; offset < poolLength; offset += limit) {
+      requests.push(
+        this.httpService
+          .post<MinswapResponse>(this.subgraphUrl, {
+            query: AVAILABLE_POOLS_QUERY,
+            variables: { limit, offset },
+          })
+          .pipe(map((r) => r.data?.data?.topPools)),
+      );
+    }
+    const response = await Promise.allSettled(requests.map((request) => firstValueFrom(request)));
+    const [data] = handlePromiseAllSettled(response);
+
+    const pools = data.flat() as unknown as MinswapPool[];
+    return this.minswapPoolToCardanoPool(pools);
   }
 
   private minswapPoolToCardanoPool(data: MinswapPool[]): Pool[] {
     const pool: Pool[] = [];
 
     for (const minPool of data) {
-      if (!minPool.assetB.metadata) continue;
+      if (
+        !minPool.assetB.metadata ||
+        (minPool.assetA.currencySymbol && !minPool.assetA.metadata?.name)
+      )
+        continue;
+
+      const assetA = {
+        assetId: minPool.assetA.currencySymbol + minPool.assetA.tokenName || '',
+        assetName: minPool.assetA.metadata?.name || 'ADA',
+        decimals: minPool.assetA.metadata?.decimals || 6,
+        ticker: minPool.assetA.metadata?.ticker || 'ADA',
+      };
+
+      const assetB = {
+        assetId: minPool.assetB.currencySymbol + minPool.assetB.tokenName,
+        assetName: minPool.assetB.metadata.name,
+        decimals: minPool.assetB.metadata.decimals,
+        ticker: minPool.assetB.metadata.ticker,
+      };
+
+      const assetLP = {
+        assetId: minPool.lpAsset.currencySymbol + minPool.lpAsset.tokenName,
+        assetName: assetA.assetName + '/' + assetB.assetName,
+        decimals: minPool.assetB.metadata.decimals,
+        ticker: assetA.ticker + '/' + assetB.ticker,
+      };
 
       pool.push({
-        assetA: {
-          assetId: minPool.assetA.currencySymbol + minPool.assetA.tokenName || '',
-          assetName: minPool.assetA.metadata?.name || 'ADA',
-          decimals: minPool.assetA.metadata?.decimals || 6,
-          ticker: minPool.assetA.metadata?.ticker || 'ADA',
-        },
-        assetB: {
-          assetId: minPool.assetB.currencySymbol + minPool.assetB.tokenName,
-          assetName: minPool.assetB.metadata.name,
-          decimals: minPool.assetB.metadata.decimals,
-          ticker: minPool.assetB.metadata.ticker,
-        },
-        assetLP: {
-          assetId: minPool.lpAsset.currencySymbol + minPool.lpAsset.tokenName,
-          assetName: 'ADA/' + minPool.assetB.metadata.name,
-          decimals: minPool.assetB.metadata.decimals,
-          ticker: 'ADA/' + minPool.assetB.metadata.ticker,
-        },
+        assetA,
+        assetB,
+        assetLP,
         apr: 0,
         fee: minPool.tradingFeeARP?.toString(),
-        name: 'ADA/' + minPool.assetB.metadata.ticker,
+        name: assetLP.ticker,
         quantityA: minPool.reserveA.toString(),
         quantityB: minPool.reserveB.toString(),
         quantityLP: minPool.totalLiquidity.toString(),

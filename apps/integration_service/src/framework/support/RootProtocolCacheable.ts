@@ -274,13 +274,15 @@ export abstract class RootProtocolCacheable<
         } catch (err) {
           switch (true) {
             case err instanceof MissingOpportunityException: {
-              this.logger.error(err.message, this.constructor.name);
-              errors.push(err);
+              this.logger.warn(err.message, this.constructor.name);
+              // TODO: enable in dev
+              // errors.push(err);
               break;
             }
             case err instanceof MissingTokenException: {
               this.logger.warn(err.message, this.constructor.name);
-              errors.push(err);
+              // TODO: enable in dev
+              // errors.push(err);
               break;
             }
             default: {
@@ -445,7 +447,7 @@ export abstract class RootProtocolCacheable<
         throw new MissingTokenException(opportunity.reward.token, opportunity, this.meta.chain);
       }
 
-      base.reward = this.formatOpportunitySuppliedToken(opportunity.reward, token);
+      base.reward = this.formatOpportunityRewardedToken(opportunity.reward, token, tvl);
     }
 
     // fill & format borrowed tokens
@@ -456,7 +458,7 @@ export abstract class RootProtocolCacheable<
           throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
         }
 
-        return this.formatOpportunityRewardedToken(poolToken, token, tvl);
+        return this.formatOpportunityBorrowedToken(poolToken, token);
       });
     } else if ('borrow' in opportunity) {
       const token = tokens.get(opportunity.borrow.token.address);
@@ -464,7 +466,7 @@ export abstract class RootProtocolCacheable<
         throw new MissingTokenException(opportunity.borrow.token, opportunity, this.meta.chain);
       }
 
-      base.borrow = this.formatOpportunitySuppliedToken(opportunity.borrow, token);
+      base.borrow = this.formatOpportunityBorrowedToken(opportunity.borrow, token);
     }
 
     return base;
@@ -545,7 +547,7 @@ export abstract class RootProtocolCacheable<
     const tokensPerSecond = normalizeDecimals(poolToken.rewardPerSecond, token.decimals);
     const pricePerSecond = tokensPerSecond * token.price;
 
-    const { apr: harvests } = this.getYieldBreakdown(tokensPerSecond, 1);
+    const { apr: harvests } = this.getHarvestBreakdown(tokensPerSecond);
     const { apr, apy } = this.getYieldBreakdown(pricePerSecond, tvl);
 
     return {

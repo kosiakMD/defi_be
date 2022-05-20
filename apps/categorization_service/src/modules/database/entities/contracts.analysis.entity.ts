@@ -19,4 +19,7 @@ export class ContractsAnalysis {
 
   @Column({ name: 'abi_json_similarity', type: 'decimal' })
   abiJsonSimilarity: number;
+
+  @Column({ name: 'metadata', type: 'jsonb' })
+  metadata?: object;
 }

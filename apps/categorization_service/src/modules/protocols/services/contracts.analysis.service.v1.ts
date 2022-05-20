@@ -6,6 +6,9 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ContractSimilarRequestDto } from '../../../common/dto/contract.similar.request.dto';
+import { ContractSimilarResponseDto } from '../../../common/dto/contract.similar.response.dto';
+
 import { safeJsonParse } from '../../../utils';
 import { Contract } from '../../database/entities/contract.entity';
 import { ContractsAnalysisRepository } from '../../database/repositories/contracts.analysis.repo';
@@ -37,6 +40,32 @@ export class ContractsAnalysisServiceV1 {
       [AbiMasterchefTemplate.id, AbiMasterchefTemplate],
       [AbiCompoundTemplate.id, AbiCompoundTemplate],
     ]);
+  }
+
+  async getSimilarContracts(
+    request: ContractSimilarRequestDto,
+  ): Promise<ContractSimilarResponseDto> {
+    const { address, minRate } = request;
+    const contractInDb = await this.contractsRepository.findByAddressCaseInsensitive(address);
+    if (!contractInDb) {
+      return {};
+    }
+    const similarData = await this.contractAnalysisRepository.findSimilar(contractInDb.id, minRate);
+    return {
+      contracts: similarData
+        .map((f) => ({
+          address: f.address,
+          abiCodeSimilarity: f.abiCodeSimilarity,
+          abiJsonSimilarity: f.abiJsonSimilarity,
+          metadata: f.metadata,
+          protocol: {
+            name: f.protocolName,
+            url: f.protocolUrl,
+            tvl: f.tvl,
+          },
+        }))
+        .sort((a, b) => b.abiCodeSimilarity - a.abiCodeSimilarity), //DESC by abiCodeSimilarity
+    };
   }
 
   async analyzeContractsAgainstTemplates(): Promise<void> {
@@ -112,6 +141,8 @@ export class ContractsAnalysisServiceV1 {
     contracts: Contract[],
   ): Promise<void> {
     const tContractAbi = JSON.parse(tContract.abi);
+    const functionPredicates = this.getTemplateFunctionPredicates(tContract);
+    const tAbi = this.extractAbiByPredicates(tContractAbi, functionPredicates);
     for (const contract of contracts) {
       try {
         const abiCodeSimilarity = stringSimilarity.compareTwoStrings(
@@ -119,15 +150,18 @@ export class ContractsAnalysisServiceV1 {
           contract.abiCode,
         );
         const parsedContractAbi = JSON.parse(contract.abi);
-        const functionPredicates = this.getTemplateFunctionPredicates(tContract);
-        const tAbi = this.extractAbiByPredicates(tContractAbi, functionPredicates);
         const abi = this.extractAbiByPredicates(parsedContractAbi, functionPredicates);
         const abiJsonSimilarity = this.analyseAbiAgainstTemplate(tAbi, abi);
+        const metadata = {
+          templateMethodsCount: tAbi.length,
+          matchedMethodsCount: abi.length,
+        };
         await this.contractAnalysisRepository.upsertContractAnalysis(
           tContract,
           contract,
           abiCodeSimilarity,
           abiJsonSimilarity,
+          metadata,
         );
       } catch (e) {
         this.logger.warn(
@@ -145,8 +179,9 @@ export class ContractsAnalysisServiceV1 {
     if (!functionPredicates) {
       return abi;
     }
+    const context = {};
     return functionPredicates.map(({ predicate, modifier }) => {
-      const foundItem = abi.find((item) => predicate(item)) || {};
+      const foundItem = abi.find((item) => predicate(item, context)) || {};
       return modifier ? modifier(foundItem) : foundItem;
     });
   }

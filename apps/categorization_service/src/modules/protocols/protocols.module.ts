@@ -19,7 +19,6 @@ import { AbiFetcherEtherscan } from './services/abi/fetcher/abi.fetcher.ethersca
 import { AbiFetcherHelper } from './services/abi/fetcher/abi.fetcher.helper';
 import { AbiFetcherService } from './services/abi/fetcher/abi.fetcher.service';
 import { AbiFetcherTenderly } from './services/abi/fetcher/abi.fetcher.tenderly';
-import { ContractsAnalysisService } from './services/contracts.analysis.service';
 import { ContractsAnalysisServiceV1 } from './services/contracts.analysis.service.v1';
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
@@ -57,9 +56,8 @@ import { GeneralPageParsing } from './strategies/contract';
     AbiFetcherHelper,
     GithubService,
     AbiFetcherService,
-    ContractsAnalysisService,
     ContractsAnalysisServiceV1,
   ],
-  exports: [ProtocolService, ContractsAnalysisService, ContractsAnalysisServiceV1],
+  exports: [ProtocolService, ContractsAnalysisServiceV1],
 })
 export class ProtocolModule {}

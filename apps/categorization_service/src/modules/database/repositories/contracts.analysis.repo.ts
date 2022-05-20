@@ -4,12 +4,13 @@ import { Contract } from '../entities/contract.entity';
 import { ContractsAnalysis } from '../entities/contracts.analysis.entity';
 
 type SimilarWithProtocolData = {
-  abicodesimilarity: number;
-  abijsonsimilarity: number;
+  abiCodeSimilarity: number;
+  abiJsonSimilarity: number;
   address: string;
-  nameprotocol: string;
-  urlprotocol: string;
+  protocolName: string;
+  protocolUrl: string;
   tvl: string;
+  metadata?: object;
 };
 
 @EntityRepository(ContractsAnalysis)
@@ -28,15 +29,16 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
     return (await this.query(query, [contractId, counterpartContractId]))[0];
   }
 
-  async findWithJoinContract(id: number, minRate: number): Promise<SimilarWithProtocolData[]> {
+  async findSimilar(id: number, minRate: number): Promise<SimilarWithProtocolData[]> {
     const query = `
       SELECT
-        ca.abi_code_similarity abiCodeSimilarity,
-        ca.abi_json_similarity abiJsonSimilarity,
+        ca.abi_code_similarity "abiCodeSimilarity",
+        ca.abi_json_similarity "abiJsonSimilarity",
+        ca.metadata,
         c2.address,
-        p2.name nameProtocol,
-        p2.url urlProtocol,
-        pp2.value TVL
+        p2.name "protocolName",
+        p2.url "protocolUrl",
+        pp2.value tvl
       FROM contracts_analysis ca
           left join contracts c1 on ca.contract_id = c1.id
           left join contracts c2 on ca.counterpart_contract_id = c2.id
@@ -53,6 +55,7 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
     counterpartContract: Contract,
     abiCodeSimilarity: number,
     abiJsonSimilarity: number,
+    metadata?: object,
   ) {
     return this.upsert(
       {
@@ -60,6 +63,7 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
         contract,
         abiCodeSimilarity,
         abiJsonSimilarity,
+        metadata,
       },
       {
         conflictPaths: ['counterpartContractId', 'contract'],

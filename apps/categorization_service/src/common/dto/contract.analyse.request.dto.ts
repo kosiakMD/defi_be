@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class SimilarDTO {
+export class ContractAnalyseRequestDto {
   @ApiProperty({ type: String })
-  contract: string;
+  address: string;
 }

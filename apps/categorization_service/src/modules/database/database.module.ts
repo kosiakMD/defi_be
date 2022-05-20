@@ -9,6 +9,7 @@ import { insertMasterchefTemplateContract1649335021487 } from './migrations/1649
 import { insertCompoundTemplateContract1649760170586 } from './migrations/1649760170586-insert-compound-template-contract';
 import { contractAnalysisUniqueKey1651230074616 } from './migrations/1651230074616-contract_analysis_unique_key';
 import { removeColumnAbiDiff1652691673678 } from './migrations/1652691673678-remove-column-abi_diff';
+import { addAnalysisMetadata1652958378507 } from './migrations/1652958378507-add-analysis-metadata';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { removeColumnAbiDiff1652691673678 } from './migrations/1652691673678-rem
           insertCompoundTemplateContract1649760170586,
           contractAnalysisUniqueKey1651230074616,
           removeColumnAbiDiff1652691673678,
+          addAnalysisMetadata1652958378507,
         ],
       }),
     }),

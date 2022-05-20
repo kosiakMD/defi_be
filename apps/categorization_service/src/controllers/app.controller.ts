@@ -1,11 +1,13 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { ContractAnalyseRequestDto } from '../common/dto/contract.analyse.request.dto';
+import { ContractSimilarRequestDto } from '../common/dto/contract.similar.request.dto';
+import { ContractSimilarResponseDto } from '../common/dto/contract.similar.response.dto';
 import { ListProtocolsDTO } from '../common/dto/service.dto';
-import { SimilarDTO } from '../common/dto/similar.dto';
 import { CommandParameterized, CommandUnparameterized } from '../common/enum/service.enum';
 
-import { ContractsAnalysisService } from '../modules/protocols/services/contracts.analysis.service';
+import { ContractsAnalysisServiceV1 } from '../modules/protocols/services/contracts.analysis.service.v1';
 import { TasksService } from '../modules/tasks/tasks.service';
 
 @ApiTags('Categorization Tool Service')
@@ -13,7 +15,7 @@ import { TasksService } from '../modules/tasks/tasks.service';
 export class AppController {
   constructor(
     private readonly service: TasksService,
-    private readonly contractsAnalysisService: ContractsAnalysisService,
+    private readonly contractsAnalysisServiceV1: ContractsAnalysisServiceV1,
   ) {}
 
   @Get('/command')
@@ -33,17 +35,14 @@ export class AppController {
     });
   }
 
-  @Get('/requests/similar-contract')
-  @ApiQuery({ name: 'minSimilarityRate', example: 0.5 })
-  @ApiQuery({ name: 'contract', example: '0xEF0881eC094552b2e128Cf945EF17a6752B4Ec5d' })
-  public async getSimilarContracts(
-    @Query() similarData: { contract: string; minSimilarityRate: number },
-  ) {
-    return await this.contractsAnalysisService.getSimilarForContractAddress(similarData);
+  @Get('/contract/similar')
+  @ApiResponse({ status: HttpStatus.OK, type: ContractSimilarResponseDto })
+  public async getSimilarContracts(@Query() request: ContractSimilarRequestDto) {
+    return this.contractsAnalysisServiceV1.getSimilarContracts(request);
   }
 
-  @Post('/requests/similar-contract')
-  @ApiBody({ type: SimilarDTO })
+  @Post('/contract/analyse')
+  @ApiBody({ type: ContractAnalyseRequestDto })
   public async similarContracts(@Body() similarData: { contract: string }) {
     return this.service.queueTask({ command: CommandParameterized.similar_contract, similarData });
   }

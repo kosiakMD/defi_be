@@ -438,11 +438,12 @@ export class CurvePoolBase extends JobPoolsBase<CurveLiquidityPoolFeature> {
                 coin.value = coin.price * reserve;
                 curveLiquidityPoolFeature.stats.tvl += coin.value;
                 tokens.push(coin);
-                if (!coin.price) {
-                  this.logger.warn(
-                    `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
-                  );
-                }
+                // TODO: temporarily to make logs clearer
+                // if (!coin.price) {
+                //   this.logger.warn(
+                //     `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
+                //   );
+                // }
               }
             }),
           );

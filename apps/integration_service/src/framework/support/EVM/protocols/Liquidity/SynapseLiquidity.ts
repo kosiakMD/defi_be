@@ -174,38 +174,44 @@ export const updateSynapseLpTokens = async (
   abiService: AbiService,
   chain: ChainIdEnum,
 ) => {
-  const ownerCalls = new Map();
+  const lpContractCalls = new Map();
   const lpTokensMap = new Map();
   tokens.forEach((token) => {
     if (token.isLp) {
       const owner = new Ownable(token.address);
+      const lpContract = new ERC20(token.address);
       lpTokensMap.set(token.address, token);
-      ownerCalls.set(token.address, owner.owner());
+      lpContractCalls.set(token.address, owner.owner());
+      lpContractCalls.set(`${token.address}.totalSupply`, lpContract.totalSupply());
       token.underlyingAssets.forEach((underlying) => {
         if (underlying.isLp) {
           const underlyingOwner = new Ownable(underlying.address);
-          ownerCalls.set(underlying.address, underlyingOwner.owner());
+          lpContractCalls.set(underlying.address, underlyingOwner.owner());
         }
       });
     }
   });
 
-  const tokensOwners = await multiCall.handleInBatches(ownerCalls, chain);
+  const lpCallsResp = await multiCall.handleInBatches(lpContractCalls, chain);
   const ownerAbi = await abiService.fetchAbi(
-    Array.from(tokensOwners.values())[0]?.output.data,
+    Array.from(lpCallsResp.values())[0]?.output.data,
     chain,
   );
   const getVirtualPriceAbi = ownerAbi.find((item) => item.name === 'getVirtualPrice');
   const getTokenBalanceAbi = ownerAbi.find((item) => item.name === 'getTokenBalance');
   const calls = new Map();
   Array.from(lpTokensMap.entries()).forEach(([key, value]) => {
-    const owner = tokensOwners.get(key).output.data;
+    const owner = lpCallsResp.get(key).output.data;
     const ownerContract = new DynamicContract(owner);
+    value.totalSupply = toDecimals(
+      lpCallsResp.get(`${key}.totalSupply`).output.data,
+      value.decimals,
+    );
     calls.set(`${key}.price`, ownerContract.createCall(getVirtualPriceAbi));
     value.underlyingAssets.forEach((underlying) => {
       if (underlying.isLp) {
         const underlyingOwner = new DynamicContract(
-          tokensOwners.get(underlying.address).output.data,
+          lpCallsResp.get(underlying.address).output.data,
         );
         calls.set(`${underlying.address}.price`, underlyingOwner.createCall(getVirtualPriceAbi));
       }

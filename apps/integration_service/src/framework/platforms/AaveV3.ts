@@ -34,6 +34,7 @@ export class AaveV3 extends RootPlatform {
       address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
       pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
       incentivesV3: '0x929EC64c34a17401F460460D4B9390518E5B473e',
+      context: {},
     });
 
     await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
@@ -43,6 +44,7 @@ export class AaveV3 extends RootPlatform {
       address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
       pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
       incentivesV3: '0x929EC64c34a17401F460460D4B9390518E5B473e',
+      context: {},
     });
 
     await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
@@ -52,6 +54,7 @@ export class AaveV3 extends RootPlatform {
       address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
       pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
       incentivesV3: '0x929EC64c34a17401F460460D4B9390518E5B473e',
+      context: {},
     });
 
     await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
@@ -61,6 +64,7 @@ export class AaveV3 extends RootPlatform {
       address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
       pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
       incentivesV3: '0x929EC64c34a17401F460460D4B9390518E5B473e',
+      context: {},
     });
 
     // TODO: it is necessary to additionally explore the method of obtaining contracts abi on the Harmony chain
@@ -81,6 +85,7 @@ export class AaveV3 extends RootPlatform {
       address: '0x69FA688f1Dc47d4B5d8029D5a35FB7a548310654',
       pool: '0x794a61358D6845594F94dc1DB02A252b5b4814aD',
       incentivesV3: '0x929EC64c34a17401F460460D4B9390518E5B473e',
+      context: {},
     });
   }
 }

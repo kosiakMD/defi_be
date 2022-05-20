@@ -37,9 +37,9 @@ import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
 interface IAaveV3LendContext {
-  allReservedTokens: { tokenAddress: string; symbol: string }[];
-  allATokens: { tokenAddress: string; symbol: string }[];
-  reserveTokensAddresses: any;
+  allReservedTokens?: { tokenAddress: string; symbol: string }[];
+  allATokens?: { tokenAddress: string; symbol: string }[];
+  reserveTokensAddresses?: any;
 }
 
 const AAVE_RATE_DECIMALS = 27;
@@ -48,7 +48,7 @@ export interface IAaveV3Meta extends IProtocolMeta {
   address: Address;
   pool: Address;
   incentivesV3: Address;
-  context?: IAaveV3LendContext;
+  context: IAaveV3LendContext;
   name: string;
 }
 

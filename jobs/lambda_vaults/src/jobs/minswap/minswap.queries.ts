@@ -1,8 +1,8 @@
 import { gql } from '@app/common/utils/graphql';
 
 export const AVAILABLE_POOLS_QUERY = gql`
-  query TopPools($assetName: String, $offset: Int, $limit: Int) {
-    topPools(assetName: $assetName, offset: $offset, limit: $limit) {
+  query TopPools($asset: String, $offset: Int, $limit: Int) {
+    topPools(asset: $asset, offset: $offset, limit: $limit) {
       assetA {
         currencySymbol
         tokenName
@@ -23,7 +23,6 @@ export const AVAILABLE_POOLS_QUERY = gql`
       reserveADA
       volumeADAByDay
       volumeADAByWeek
-      pendingOrders
       tradingFeeARP
     }
   }

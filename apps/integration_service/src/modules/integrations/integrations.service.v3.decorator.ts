@@ -321,7 +321,7 @@ export class IntegrationsServiceV3Decorator {
     v2Item.poolName = null;
     v2Item.stats = {
       tvl: lpToken.tvl,
-      poolApy: v3Item.rewarded.reduce((total, reward) => reward.apr.year + total, 0) * 100,
+      poolApy: v3Item.rewarded.reduce((total, reward) => reward.apr?.year + total, 0) * 100,
     };
 
     v2Item.stakingToken.address = lpToken.token.address;

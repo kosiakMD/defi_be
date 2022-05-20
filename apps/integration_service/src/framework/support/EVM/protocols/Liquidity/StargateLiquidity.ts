@@ -4,12 +4,13 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
+import { CurrentPricesPayload } from '../../../../../common/dto';
 import { toDecimals } from '../../../../../common/utils/util';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
@@ -21,10 +22,6 @@ import {
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenOpportunity,
-} from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
@@ -69,17 +66,6 @@ export class StargateLiquidity extends SingleContractProtocol<
     }, []);
   }
 
-  protected formatOpportunitySuppliedToken(
-    poolToken: ISupplyTokenMinimal,
-    token: ERC20Token,
-  ): ISupplyTokenOpportunity {
-    return {
-      token,
-      totalSupplied: +poolToken.totalSupplied,
-      tvl: toDecimals(poolToken.totalSupplied, token.decimals) * token.underlying[0].price,
-    };
-  }
-
   protected async fetchPoolInfos(poolIds: number[]): Promise<any[]> {
     const contract = this.getMainContract();
 
@@ -101,13 +87,10 @@ export class StargateLiquidity extends SingleContractProtocol<
 
     const poolInfos = await this.fetchPoolInfos(poolIds);
 
-    const lpAbi = await this.abiService.fetchAbi(poolInfos[0].pool, this.meta.chain);
-    const totalLiquidityAbi = lpAbi.find((item) => item.name === 'totalLiquidity');
-
     const totalLiquidityCalls = [];
     poolInfos.forEach((poolInfo) => {
-      const lpContract = new DynamicContract(poolInfo.pool);
-      totalLiquidityCalls.push(lpContract.createCall(totalLiquidityAbi));
+      const lp = new ERC20(poolInfo.pool);
+      totalLiquidityCalls.push(lp.totalSupply());
     });
 
     const totalStakedPerPool = await this.multicall.callArray(totalLiquidityCalls, this.meta.chain);
@@ -115,6 +98,24 @@ export class StargateLiquidity extends SingleContractProtocol<
     return poolInfos.map((poolInfo, poolIdx) => {
       return this.formatPoolsOpportunityMinimal(poolInfo, totalStakedPerPool[poolIdx].toString());
     });
+  }
+
+  protected async updateTokenData(
+    tokens: any[],
+    prices: CurrentPricesPayload,
+  ): Promise<ERC20Token[]> {
+    try {
+      return updateStargateLpTokens(
+        tokens,
+        prices,
+        this.multicall,
+        this.abiService,
+        this.meta.chain,
+      );
+    } catch (err) {
+      this.logger.error(err.message, err.stack, 'StargateLiquidity');
+      return tokens;
+    }
   }
 
   protected formatPoolsOpportunityMinimal(
@@ -146,8 +147,38 @@ export class StargateLiquidity extends SingleContractProtocol<
     if (!balance) return;
     const underlying = pool.supplied[0].token.underlying[0];
     pool.supplied[0]['amount'] = underlying.balance = balance;
-    pool.supplied[0]['value'] = underlying.value = balance * underlying.price;
+    pool.supplied[0]['value'] = underlying.value = balance * pool.supplied[0].token.price;
 
     return pool as IPoolFeatureUser;
   }
 }
+
+export const updateStargateLpTokens = async (
+  tokens: any[],
+  prices: CurrentPricesPayload,
+  multiCall: MulticallAggregator,
+  abiService: AbiService,
+  chain: ChainIdEnum,
+) => {
+  const calls = new Map();
+  const lp = tokens.find((token) => token.isLp);
+  const lpAbi = await abiService.fetchAbi(lp.address, chain);
+  const amountLpToLDAbi = lpAbi.find((item) => item.name === 'amountLPtoLD');
+
+  tokens.forEach((token: any) => {
+    if (token.isLp) {
+      const contract = new DynamicContract(token.address);
+      calls.set(
+        `${token.address}.amount`,
+        contract.createCall(amountLpToLDAbi, 10 ** token.decimals),
+      );
+    }
+  });
+  const results = await multiCall.handleInBatches(calls, chain);
+  tokens.forEach((token: any) => {
+    if (token.isLp) {
+      prices[token.address] = toDecimals(results.get(`${token.address}.amount`).output.data, 18);
+    }
+  });
+  return tokens;
+};

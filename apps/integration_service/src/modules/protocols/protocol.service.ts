@@ -75,6 +75,7 @@ import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
+import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
@@ -98,7 +99,6 @@ import { WingRidersProtocol } from './protocols/wingriders/wingriders.protocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
-import OsmosisProtocol from "./protocols/osmosis/osmosis.protocol";
 
 @Injectable()
 export class ProtocolService {

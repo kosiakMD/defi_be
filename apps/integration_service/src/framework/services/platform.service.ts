@@ -27,6 +27,7 @@ import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
+import { Marinade } from '../platforms/Marinade';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
@@ -90,6 +91,7 @@ export class PlatformService {
       YelFinance,
       Stargate,
       Synapse,
+      Marinade,
     });
   }
 

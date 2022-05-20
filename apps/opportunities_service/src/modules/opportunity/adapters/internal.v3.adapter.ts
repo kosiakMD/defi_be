@@ -123,64 +123,30 @@ export class InternalV3Adapter implements IOpportunityAdapter {
         );
 
         items.map((item) => {
-          // TODO: Handle Other Feature Types
-          if (item.feature === 'staking') {
-            const totalApr =
-              'rewarded' in item ? item.rewarded.reduce((acc, r) => acc + r.apr.year, 0) : null;
+          const totalApr = this.getTotalApr(item);
 
-            const opportunity = plainToClass(OpportunityCreateDto, {
-              farm: farm,
-              source: 'internal_v3',
-              sourceId: item.id,
-              chainId: item.chain,
-              apr: totalApr,
-              apy: aprToApy(totalApr),
-              investmentUrl: item.links?.opportunity ?? null,
-              totalValueLocked: item.supplied.reduce((acc, s) => acc + s.tvl, 0),
-              categories: this.getVaultCategories(item),
-              tokens: plainToClass(InvestmentTokensDto, {
-                rewards: this.getRewardTokens(item),
-                deposit: this.getDepositToken(item),
-              }),
-            });
-            if (opportunity.apr) {
-              opportunities.push(opportunity);
-            }
-          } else if (item.feature === 'lending') {
-            let totalApr = 0;
-            if ('supplied' in item) {
-              // TODO: supplyApy is for AaveV3. Remove when reward DTO gets finalized
-              totalApr += item.supplied.reduce(
-                (acc, r) => acc + (r.apr?.year || r.apy?.supplyApy || 0),
-                0,
-              );
-            }
-            if ('rewarded' in item) {
-              totalApr += item.rewarded.reduce((acc, r) => acc + (r.apr?.year || 0), 0);
-            }
+          const opportunity = plainToClass(OpportunityCreateDto, {
+            farm: farm,
+            source: 'internal_v3',
+            sourceId: item.id,
+            chainId: item.chain,
+            apr: totalApr,
+            apy: aprToApy(totalApr),
+            investmentUrl: item.links?.opportunity ?? null,
+            totalValueLocked: item.supplied.reduce((acc, s) => acc + s.tvl, 0),
+            categories: this.getVaultCategories(item),
+            tokens: plainToClass(InvestmentTokensDto, {
+              rewards: this.getRewardTokens(item),
+              deposit: this.getDepositToken(item),
+            }),
+          });
 
-            const opportunity = plainToClass(OpportunityCreateDto, {
-              farm: farm,
-              source: 'internal_v3',
-              sourceId: item.id,
-              chainId: item.chain,
-              apr: totalApr,
-              apy: aprToApy(totalApr),
-              investmentUrl: item.links?.opportunity ?? null,
-              totalValueLocked: item.supplied.reduce((acc, s) => acc + s.tvl, 0),
-              categories: this.getVaultCategories(item),
-              tokens: plainToClass(InvestmentTokensDto, {
-                rewards: this.getRewardTokens(item),
-                deposit: this.getDepositToken(item),
-              }),
-            });
-
-            if (opportunity.apr) {
-              opportunities.push(opportunity);
-            }
+          if (opportunity.apr) {
+            opportunities.push(opportunity);
           }
         });
         this.logger.timeEnd(`V3 Adapter - Processing ${protocol.slug}`);
+        this.logger.log(`V3 Adapter - ${protocol.slug} - ${opportunities.length} opportunities`);
       } catch (e) {
         this.logger.timeEnd(`V3 Adapter - Processing ${protocol.slug}`);
         this.logger.error(`Failed in ${protocol.slug}`, e.stack);
@@ -196,6 +162,20 @@ export class InternalV3Adapter implements IOpportunityAdapter {
   /*****
    * Formatting Tokens
    */
+
+  private getTotalApr(item: any) {
+    let totalApr = 0;
+    if ('supplied' in item) {
+      // TODO: supplyApy is for AaveV3. Remove when reward DTO gets finalized
+      totalApr += item.supplied.reduce((acc, r) => acc + (r.apr?.year || r.apy?.supplyApy || 0), 0);
+    }
+
+    if ('rewarded' in item) {
+      totalApr += item.rewarded.reduce((acc, r) => acc + (r.apr?.year || 0), 0);
+    }
+
+    return totalApr;
+  }
 
   private getRewardTokens(item: any) {
     if (!item?.rewarded?.length) return [];

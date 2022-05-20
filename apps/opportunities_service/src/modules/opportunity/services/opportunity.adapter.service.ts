@@ -37,6 +37,9 @@ export class OpportunityAdapterService {
       farms.push(...localFarms);
       opportunities.push(...localOpportunities);
       this.logger.timeEnd(`Processing ${adapterClass.name}`);
+      this.logger.log(
+        `Processing ${adapterClass.name}. found: ${localFarms.length} Farms & ${localOpportunities.length} Opportunities`,
+      );
     }
     if (opportunities.length) {
       return await this.refreshOpportunities(opportunities);

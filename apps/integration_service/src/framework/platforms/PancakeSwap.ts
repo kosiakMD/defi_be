@@ -73,26 +73,6 @@ export class PancakeSwap extends RootPlatform {
             .map((a) => a.trim())
             .filter((a) => a.startsWith('56:'))
             .map((a) => a.replace(/56: '(0x[\w]{40})',/, '$1'))
-            .slice(1) // first is masterchef
-            .slice(0, 154); // after this its a different format 155-264?
-        },
-      },
-    });
-
-    await this.registerProtocol(StakingRewards, {
-      chain: ChainIdEnum.bnb,
-      name: 'Active Pools',
-      feature: FeatureEnum.staking,
-      scrape: {
-        url: 'https://raw.githubusercontent.com/pancakeswap/pancake-frontend/develop/src/config/constants/pools.tsx',
-        //     // Returns a list of all available pools
-        handler: async () => {
-          // scrapes typescript from github
-          return document.body.innerText
-            .split('\n')
-            .map((a) => a.trim())
-            .filter((a) => a.startsWith('56:'))
-            .map((a) => a.replace(/56: '(0x[\w]{40})',/, '$1'))
             .slice(1, 157); // after this its a different format 155-264?
         },
       },

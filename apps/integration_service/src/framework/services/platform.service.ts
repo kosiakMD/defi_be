@@ -35,6 +35,7 @@ import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
 import { QuickSwap } from '../platforms/QuickSwap';
+import { RocketPool } from '../platforms/RocketPool';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { Solend } from '../platforms/Solend';
 import { SpookySwap } from '../platforms/SpookySwap';
@@ -89,6 +90,7 @@ export class PlatformService {
       Goose,
       BabySwap,
       YelFinance,
+      RocketPool,
       Stargate,
       Synapse,
       Marinade,

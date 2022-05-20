@@ -177,7 +177,10 @@ export const updateStargateLpTokens = async (
   const results = await multiCall.handleInBatches(calls, chain);
   tokens.forEach((token: any) => {
     if (token.isLp) {
-      prices[token.address] = toDecimals(results.get(`${token.address}.amount`).output.data, 18);
+      prices[token.address] = toDecimals(
+        results.get(`${token.address}.amount`).output.data,
+        token.underlyingAssets[0]?.decimals,
+      );
     }
   });
   return tokens;

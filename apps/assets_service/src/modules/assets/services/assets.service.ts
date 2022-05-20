@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
-import { isSomeAddress } from '@app/common/utils/addresses';
 
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
@@ -52,8 +51,8 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
-    const validRequests = requests.filter(({ address }) => isSomeAddress(address));
-    const assets = await this.getAssets(validRequests);
+    // const validRequests = requests.filter(({ address }) => isSomeAddress(address));
+    const assets = await this.getAssets(requests);
     // TODO: Historical prices are not handled
     // TODO: Add mapping, not expose everything (e.g. created at)
     return assets;

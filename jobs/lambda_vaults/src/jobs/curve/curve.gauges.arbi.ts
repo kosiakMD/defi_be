@@ -161,11 +161,12 @@ export class CurveGaugesArbi extends CurveGaugesBase {
               underlyingToken.value = underlyingToken.reserve * underlyingToken.price;
               lpValue += underlyingToken.value;
 
-              if (!underlyingToken.price) {
-                this.logger.warn(
-                  `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
-                );
-              }
+              // TODO: temporarily to make logs clearer
+              // if (!underlyingToken.price) {
+              //   this.logger.warn(
+              //     `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
+              //   );
+              // }
             });
             coin.value = lpValue;
           } else {

@@ -14,7 +14,7 @@ export class PriceJobEmitterController {
   @ApiParam({ name: 'job', enum: JobName })
   @ApiResponse({ status: HttpStatus.OK })
   async get(@Param('job') job: JobName) {
-    await this.priceJobEmitter.emitJob(job);
+    this.priceJobEmitter.emitJob(job);
     return HttpStatus.OK;
   }
 }

@@ -1,3 +1,5 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule, Module } from '@nestjs/common';
@@ -26,6 +28,7 @@ import { HealthController } from '../controllers/health.controller';
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
         host: configService.get<string>('cache.host'),
         port: configService.get<number>('cache.port'),
         password: configService.get<string>('cache.password'),

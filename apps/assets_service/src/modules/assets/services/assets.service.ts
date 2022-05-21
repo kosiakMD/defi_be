@@ -1,5 +1,6 @@
 import { Queue } from 'bull';
 import { Cache } from 'cache-manager';
+import { plainToClass } from 'class-transformer';
 
 import { InjectQueue } from '@nestjs/bull';
 import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
@@ -15,6 +16,9 @@ import { SearchParams } from '../../../common/interfaces/search.interfaces';
 import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
 import { AssetsPriceRepository } from '../../prices/repositories/asset-price.repository';
 import { AssetCandidateRequest } from '../dto/asset-candidate.request';
+import { AssetCategoryDto } from '../dto/asset-category.dto';
+import { AssetHistoricalPriceDto } from '../dto/asset-historical-price.dto';
+import { AssetUnderlyingDto } from '../dto/asset-underlying.dto';
 import { AssetDto } from '../dto/asset.dto';
 import { GetAssetRequest } from '../dto/get-asset.request';
 import { SearchResultsEntryDto } from '../dto/search-results-entry.dto';
@@ -55,7 +59,28 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const assets = await this.getAssets(requests);
     // TODO: Historical prices are not handled
     // TODO: Add mapping, not expose everything (e.g. created at)
-    return assets;
+    return assets.map((asset) =>
+      plainToClass(AssetDto, {
+        ...asset,
+        categories: asset.categories.map((assetCategory) =>
+          plainToClass(AssetCategoryDto, assetCategory),
+        ),
+        ...(asset.historicalPrices
+          ? {
+              historicalPrices: asset.historicalPrices.map((historicalPrice) =>
+                plainToClass(AssetHistoricalPriceDto, historicalPrice),
+              ),
+            }
+          : {}),
+        ...(asset.underlying
+          ? {
+              underlying: asset.underlying.map((underlyingAsset) =>
+                plainToClass(AssetUnderlyingDto, underlyingAsset),
+              ),
+            }
+          : {}),
+      }),
+    );
   }
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
@@ -74,7 +99,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
     assets.push(...databaseAssets);
 
-    this.setAssetsToCache(databaseAssets);
+    // this.setAssetsToCache(databaseAssets);
 
     if (assets.length === requests.length) {
       return assets;
@@ -110,22 +135,20 @@ export class AssetsService extends CrudService<AssetsRepository> {
     return assets.filter((asset) => !!asset);
   }
 
-  public async setAssetsToCache(assets: AssetEntity[]): Promise<void> {
-    const promises = assets.map((asset: AssetEntity) => {
-      // TODO: Price should not be calculated here
-      // TODO: Prices should weighted by volume, everything cannot be counted the same
-      if (asset.prices && asset.prices.length) {
-        asset.averagePrice =
-          asset.prices.reduce((prev, curr) => prev + Number(curr.price), 0) / asset.prices.length;
-      }
-      return this.cacheManager.set(this.getAssetCacheKey(asset), asset);
+  public async setAssetsToCache(assets: AssetEntity[] | AssetDto[]): Promise<void> {
+    const promises = assets.map((asset) => {
+      return this.cacheManager.set(
+        this.getAssetCacheKey(asset),
+        asset,
+        this.configService.get('cache.assetsTtl'),
+      );
     });
     await Promise.all(promises);
   }
 
   private getAssetCacheKey(request: GetAssetRequest) {
     const { address, chainId } = request;
-    return `${this.cacheKeyPrefix}${chainId}${address}`;
+    return `${this.cacheKeyPrefix}-${chainId}-${address}`;
   }
 
   private getAssetsFromDatabase(requests: GetAssetRequest[]): Promise<AssetEntity[]> {

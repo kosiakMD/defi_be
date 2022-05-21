@@ -14,6 +14,12 @@ export type AssetReference = {
 
 @EntityRepository(AssetEntity)
 export class AssetsRepository extends Repository<AssetEntity> {
+  getAllTrackedAssets(): Promise<AssetEntity[]> {
+    return this.find({
+      where: { disabled: false, isTracked: true },
+    });
+  }
+
   findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetEntity> {
     return this.findOne({
       where: { chainId, address: ILike(address) },

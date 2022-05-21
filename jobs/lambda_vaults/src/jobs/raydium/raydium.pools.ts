@@ -66,9 +66,9 @@ export class RaydiumPools implements JobInterface {
 
   async manageMapping(): Promise<void> {
     let jobMapping = TrackedVaultsMap.get(this.placeholder) as TrackedVault;
-    if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
-      jobMapping = await this.buildInitialMapping(jobMapping);
-    }
+    // if (!jobMapping.mapping || jobMapping.mapping.length === 0) {
+    jobMapping = await this.buildInitialMapping(jobMapping);
+    // }
     jobMapping.mapping.forEach((jm) => {
       this.mapping.push(IntegrationDataConverter.toDTO(jm));
     });
@@ -79,7 +79,7 @@ export class RaydiumPools implements JobInterface {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const allPools = await Liquidity.getPools(this.web3);
+    const allPools = await Liquidity.fetchAllPoolKeys(this.web3);
 
     const mainnetPools = allPools.filter((p) =>
       MAINNET_OFFICIAL_LIQUIDITY_POOLS.includes(p.id.toString()),

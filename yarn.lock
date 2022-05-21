@@ -1358,7 +1358,7 @@
     form-data "^4.0.0"
     got "^11.8.3"
 
-"@colors/colors@1.5.0":
+"@colors/colors@1.5.0", "@colors/colors@^1.5.0":
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@colors/colors/-/colors-1.5.0.tgz#bb504579c1cae923e6576a4f5da43d25f97bdbd9"
   integrity sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==
@@ -2537,15 +2537,18 @@
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
 
-"@raydium-io/raydium-sdk@1.0.1-beta.7":
-  version "1.0.1-beta.7"
-  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk/-/raydium-sdk-1.0.1-beta.7.tgz#af3c68b91b8a36796bddb185b6a8b57c878957f3"
-  integrity sha512-PvSuoeHE0BNVwUNy4vQx+G2+xEQ8b1MSk4sJMS7HFQcYSVvElfNNST3QdcCzVrkuTuMBi046pzS/w7+RhXKwLA==
+"@raydium-io/raydium-sdk@^1.1.0-beta.1":
+  version "1.1.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@raydium-io/raydium-sdk/-/raydium-sdk-1.1.0-beta.1.tgz#6c2e97799419fd8a100ce46951e6d9de5aba4036"
+  integrity sha512-rRHOlQLLCixQYXFd5NVYFhcUcd2JBsr2f2vfDx8Wem+zFRUSuAn6KI8Z4KN1E9dgfbSj4BzMGdrvRu+0ZOMLZQ==
   dependencies:
+    "@colors/colors" "^1.5.0"
     "@solana/buffer-layout" "^3.0.0"
     "@solana/spl-token" "^0.1.8"
     big.js "^6.1.1"
     decimal.js-light "^2.5.1"
+    fecha "^4.2.1"
+    lodash "^4.17.21"
     toformat "^2.0.0"
 
 "@schematics/schematics@0.1102.6":
@@ -7233,6 +7236,11 @@ fecha@^4.2.0:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/fecha/-/fecha-4.2.1.tgz#0a83ad8f86ef62a091e22bb5a039cd03d23eecce"
   integrity sha512-MMMQ0ludy/nBs1/o0zVOiKTpG7qMbonKUzjJgQFEuvq6INZ1OraKPRAWkBq5vlKLOUMpmNYG1JoN3oDPUQ9m3Q==
+
+fecha@^4.2.1:
+  version "4.2.3"
+  resolved "https://registry.yarnpkg.com/fecha/-/fecha-4.2.3.tgz#4d9ccdbc61e8629b259fdca67e65891448d569fd"
+  integrity sha512-OP2IUU6HeYKJi3i0z4A19kHMQoLVs4Hc+DPqqxI2h/DPZHTm/vjsfC6P0b4jCMy14XizLBqvndQ+UilD7707Jw==
 
 figures@^3.0.0:
   version "3.2.0"

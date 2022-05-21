@@ -1,4 +1,4 @@
-import { Farm, FarmPoolKeys, Liquidity } from '@raydium-io/raydium-sdk';
+import { Liquidity, FarmPoolKeys, Farm } from '@raydium-io/raydium-sdk';
 import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 import { map } from 'rxjs/operators';
@@ -104,7 +104,7 @@ export class RaydiumStaking implements JobInterface {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const lpPools = await Liquidity.getPools(this.web3);
+    const lpPools = await Liquidity.fetchAllPoolKeys(this.web3);
 
     const stakingFeatures: IntegrationStakingPositionDto[] = [];
     for (const farm of farms) {
@@ -332,9 +332,7 @@ export class RaydiumStaking implements JobInterface {
     });
 
     const pricedTokenAddresses: string = Array.from(tokenAddressesSet).join(',');
-    const farmsKeys: FarmPoolKeys[] = this.mapping.map(
-      (m) => solanaStringsToKeys(m.extra.farm) as FarmPoolKeys,
-    );
+    const farmsKeys = this.mapping.map((m) => solanaStringsToKeys(m.extra.farm) as FarmPoolKeys);
 
     const [{ prices }, farmsInfos] = await Promise.all([
       this.priceService.getCurrentPrices(
@@ -343,7 +341,7 @@ export class RaydiumStaking implements JobInterface {
         this.chain,
         this.protocol,
       ),
-      Farm.getMultipleInfo({
+      Farm.fetchMultipleInfo({
         connection: this.web3,
         pools: farmsKeys,
       }),
@@ -359,7 +357,7 @@ export class RaydiumStaking implements JobInterface {
 
     for (const index in this.mapping) {
       const mapping: IntegrationStakingPositionDto = this.mapping[index];
-      const farmInfo = farmsInfos[index];
+      const farmInfo = farmsInfos[mapping.address];
       if (mapping.extra.pool) {
         const poolInfo = decodedInfoPoolsMap.get(mapping.extra.pool.id);
         if (poolInfo) {

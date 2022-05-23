@@ -54,6 +54,7 @@ import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
+import { MarinadeStaking } from './protocols/marinade/marinade.staking';
 import { MinswapFarms } from './protocols/minswap/minswap.farms';
 import { MinswapPools } from './protocols/minswap/minswap.pools';
 import MinswapProtocol from './protocols/minswap/minswap.protocol';
@@ -165,7 +166,7 @@ const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
-const Marinade = [MarinadeProtocol, MarinadePools];
+const Marinade = [MarinadeProtocol, MarinadePools, MarinadeStaking];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
 const Astroport = [

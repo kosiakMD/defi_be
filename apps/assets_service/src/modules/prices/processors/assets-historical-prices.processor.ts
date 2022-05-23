@@ -19,15 +19,14 @@ import { HistoricalPriceJobData } from '../types/historical-price-job-data.type'
 @Processor('assets')
 export class AssetsHistoricalPricesProcessor {
   constructor(
-    @InjectRepository(AssetsRepository)
-    private readonly assetRepository: AssetsRepository,
+    private configService: ConfigService,
+    private assetsService: AssetsService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectRepository(AssetsRepository) private readonly assetRepository: AssetsRepository,
     @InjectRepository(AssetsPriceRepository)
     private readonly assetsPriceRepository: AssetsPriceRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
-    private assetsService: AssetsService,
-    private configService: ConfigService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {}
 
   @Process('historicalPrices')

@@ -1,24 +1,37 @@
-import { Cache, CachingConfig } from 'cache-manager';
+import { Cache, CachingConfig, StoreConfig } from 'cache-manager';
 
 import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
 
 @Injectable()
 export class CacheService {
-  constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
+  constructor(@Inject(CACHE_MANAGER) private cache: Cache) {}
 
   public async getOrLoad<T = any>(
     key: string,
     load: () => T | Promise<T>,
     options?: CachingConfig,
   ): Promise<T> {
-    const cached = await this.cacheManager.get<T>(key);
-    if (cached !== undefined) {
+    const cached = await this.cache.get<T>(key);
+    if (cached !== undefined && cached !== null) {
       return cached;
     }
 
     const loaded = await load();
-    await this.cacheManager.set(key, loaded, options);
+    await this.cache.set(key, loaded, options);
 
     return loaded;
+  }
+
+  public async mget<T = any>(keys: string[]): Promise<T[]> {
+    const response = await this.cache.store.mget(...keys);
+    return response as T[];
+  }
+
+  public async mset<T = any>(
+    values: { key: string; value: T }[],
+    options: Partial<StoreConfig> = {},
+  ): Promise<void> {
+    const cacheArray = values.reduce((arr, curr) => arr.concat([curr.key, curr.value]), []);
+    await this.cache.store.mset(...cacheArray, options);
   }
 }

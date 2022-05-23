@@ -2,13 +2,7 @@ import { Column, Entity } from 'typeorm';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
-import { PriceSourceStrategies } from '../../../common/enum/price-source-strategies.enum';
-import { PriceSourceConfig } from '../../../common/types/price-source-config.type';
-
-export interface PriceSourceMetadata {
-  lastOperation: number;
-  lastExecutionHistoricalPricesJob: number;
-}
+import { PriceSourceStrategy } from '../enums/price-source-strategy.enum';
 
 @Entity({ name: 'price_sources' })
 export class PriceSourceEntity extends BaseEntity {
@@ -16,10 +10,10 @@ export class PriceSourceEntity extends BaseEntity {
   name: string;
 
   @Column()
-  type: PriceSourceStrategies;
+  type: PriceSourceStrategy;
 
   @Column({ type: 'json' })
-  config: PriceSourceConfig;
+  config: unknown;
 
   @Column()
   enabled: boolean;

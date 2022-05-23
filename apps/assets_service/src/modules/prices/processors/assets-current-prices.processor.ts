@@ -5,6 +5,7 @@ import { plainToClass } from 'class-transformer';
 import { Process, Processor } from '@nestjs/bull';
 import { CACHE_MANAGER, Inject, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ModuleRef } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -14,24 +15,22 @@ import { AssetsRepository } from '../../assets/repositories/assets.repository';
 import { AssetHistoricalPriceEntity } from '../entities/asset-historical-price.entity';
 import { AssetPriceEntity } from '../entities/asset-price.entity';
 import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
-import { PriceSourceRepository } from '../repositories/price-source.repository';
-import priceStrategies from '../strategies';
+import { getPriceStrategyType } from '../strategies';
+import { BaseStrategy } from '../strategies/base.strategy';
 import { AssetPrice } from '../types/asset-price.type';
-import { PriceJobData } from '../types/price-job-data.type';
+import { PriceSource } from '../types/price-source.type';
 import { getAssetAveragePricesCacheKey, getAssetPriceCacheKey } from '../utils/price-cache.utils';
 
 @Processor('assets')
 export class AssetsCurrentPricesProcessor {
   constructor(
-    @InjectRepository(AssetsRepository)
-    private readonly assetsRepository: AssetsRepository,
+    private readonly moduleRef: ModuleRef,
+    private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Store,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
-    @Inject(CACHE_MANAGER) private cacheManager: Store,
-    private configService: ConfigService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    @InjectRepository(PriceSourceRepository)
-    private readonly priceSourceRepository: PriceSourceRepository,
   ) {}
 
   @Process('prices')
@@ -149,10 +148,11 @@ export class AssetsCurrentPricesProcessor {
     }
   }
 
-  private async processingJob(jobData: PriceJobData): Promise<void> {
+  private async processingJob(jobData: PriceSource): Promise<void> {
     const { strategy } = jobData;
-    const priceStrategy = priceStrategies.get(strategy);
-    const assetsPrices = await priceStrategy.fetchPrices(jobData, this.assetsRepository);
+    const priceStrategyType = getPriceStrategyType(strategy);
+    const priceStrategy = await this.moduleRef.resolve<BaseStrategy>(priceStrategyType);
+    const assetsPrices = await priceStrategy.fetchPrices(jobData);
     const promises = assetsPrices.map(this.updateAssetPrice.bind(this));
     await Promise.all(promises);
   }

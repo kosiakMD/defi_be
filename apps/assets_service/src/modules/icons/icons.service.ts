@@ -14,8 +14,8 @@ import { CacheService } from '@app/common/services/cache.service';
 import { CrudService } from '@app/common/services/crud.service';
 import { getFulfilledPromises } from '@app/common/utils/promise';
 
+import { AwsService } from '../../aws/aws.service';
 import { AwsConfigService } from '../../config/aws/aws.config.service';
-import { AwsService } from '../aws/aws.service';
 import { IconSourceEntity } from './entities/icon-sources.entity';
 import { CoingeckoStrategy } from './strategies/coingecko.strategy';
 import { CoinmarketcapStrategy } from './strategies/coinmarketcap.strategy';

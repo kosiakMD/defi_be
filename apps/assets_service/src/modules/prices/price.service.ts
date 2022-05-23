@@ -1,64 +1,150 @@
-import { Store } from 'cache-manager';
-import { plainToClass } from 'class-transformer';
-
-import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { AssetDto } from '../assets/dto/asset.dto';
-import { AssetsRepository } from '../assets/repositories/assets.repository';
-import { AssetsService } from '../assets/services/assets.service';
-import { AssetPriceEntity } from './entities/asset-price.entity';
-import { PriceSourceRepository } from './repositories/price-source.repository';
-import { getAssetAveragePricesCacheKey, getAssetPriceCacheKey } from './utils/price-cache.utils';
+import { CacheService } from '@app/common/services/cache.service';
+
+import { AssetPrice } from './types/asset-price.type';
 
 @Injectable()
 export class PriceService {
   constructor(
-    @Inject(CACHE_MANAGER) private cacheStore: Store,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    @InjectRepository(AssetsRepository) private assetsRepository: AssetsRepository,
-    private readonly assetsService: AssetsService,
-    private configService: ConfigService,
-    @InjectRepository(PriceSourceRepository)
-    private readonly priceSourceRepository: PriceSourceRepository,
+    private readonly cache: CacheService,
+    private readonly config: ConfigService,
   ) {}
 
-  public async calculateAveragePrices(): Promise<void> {
-    const assets = await this.assetsRepository.getAllTrackedAssets();
+  public async saveAssetPrices(prices: AssetPrice[]) {
+    this.logger.log(`Saving ${prices.length} prices into cache`);
 
-    const priceSources = await this.priceSourceRepository.find({
-      where: { enabled: true },
-    });
+    const assetPricesTTLInSeconds = this.config.get<number>('ASSET_PRICES_CACHE_TTL') || 60 * 60;
+    const assetPricesTTLInMs = assetPricesTTLInSeconds * 1000;
+    const expiredPricesTimestamp = Date.now() - assetPricesTTLInMs;
 
-    for (const asset of assets) {
-      const { address, chainId } = asset;
-      // TODO try to use mget
-      const promises = priceSources.map(({ id: sourceId }) =>
-        this.cacheStore.get(getAssetPriceCacheKey({ address, chainId, sourceId })),
-      );
-      const assetAveragePricesCacheKey = getAssetAveragePricesCacheKey({ address, chainId });
-      const [assetAveragePrices, ...assetPrices] = await Promise.all([
-        this.cacheStore.get(assetAveragePricesCacheKey),
-        ...promises,
-      ]);
-      const priceEntity = new AssetPriceEntity();
-      // TODO improve this algorithm to use liquidity or trade volume
-      priceEntity.price =
-        assetPrices.filter(Boolean).reduce((prev, curr) => prev + Number(curr.price), 0) /
-        assetPrices.length;
-      priceEntity.timestamp = new Date();
-      await Promise.all([
-        this.cacheStore.set(
-          assetAveragePricesCacheKey,
-          [...(assetAveragePrices || []), priceEntity],
-          this.configService.get('ASSETS_HISTORICAL_PRICES_DEFAULT_DATE_LIMIT'), // may be it could be less
-        ),
-        this.assetsService.setAssetsToCache([
-          plainToClass(AssetDto, { ...asset, price: priceEntity.price }),
-        ]),
-      ]);
-    }
+    const sourcePricesCacheKeys = prices.map(getSourcePricesCacheKey);
+    const priceMap = createPriceMap(prices);
+
+    // NOTE: All source prices per asset are stored as single cache item to reduce number of cache calls
+    // Because of this we need to expire some source items manually
+    const cachedAssetPrices = await this.cache.mget<AssetPrices>(sourcePricesCacheKeys);
+    const updatedPrices = cachedAssetPrices.map<AssetPrices>((price, index) =>
+      updatePrices(price || emptyPrices(prices[index]), priceMap, expiredPricesTimestamp),
+    );
+    const notEmptyUpdatedPrices = updatedPrices.filter(({ prices }) => prices?.length > 0);
+    const sourcePriceCacheItems = notEmptyUpdatedPrices.map(toSourcePricesCacheItem);
+    await this.cache.mset(sourcePriceCacheItems, { ttl: assetPricesTTLInSeconds });
+
+    // NOTE: Average price stored separately for easier retrieval
+    const averagePrices = updatedPrices.map(calculateAveragePrice).filter(({ price }) => price);
+    const avgPriceCacheItems = averagePrices.map(toAvgPriceCacheItem);
+    await this.cache.mset(avgPriceCacheItems, { ttl: assetPricesTTLInSeconds });
+
+    this.logger.log(`Saved ${notEmptyUpdatedPrices.length} not empty prices into cache`);
+  }
+
+  async getPrices(assets: AssetReference[]): Promise<AssetAvgPrice[]> {
+    const avgPricesCacheKeys = assets.map(getAvgPriceCacheKey);
+    const cachedAssetPrices = await this.cache.mget<number>(avgPricesCacheKeys);
+    return cachedAssetPrices.map((price, index) => ({ price, asset: assets[index] }));
   }
 }
+
+type PriceMap = Map<string, AssetPrice>;
+
+type AssetReference = {
+  chainId: number;
+  address: string;
+};
+
+type SourceAssetPrice = {
+  sourceId: number;
+  price: number;
+  timestamp: number;
+};
+
+type AssetPrices = {
+  asset: AssetReference;
+  prices: SourceAssetPrice[];
+};
+
+type AssetAvgPrice = {
+  asset: AssetReference;
+  price: number;
+};
+
+function createPriceMap(prices: AssetPrice[]): PriceMap {
+  const map = new Map<string, AssetPrice>();
+
+  for (const price of prices) {
+    map.set(getPriceMapKey(price), price);
+  }
+
+  return map;
+}
+
+function emptyPrices(asset: AssetReference): AssetPrices {
+  return {
+    asset,
+    prices: [],
+  };
+}
+
+function updatePrices(ap: AssetPrices, priceMap: PriceMap, expiredAt: number): AssetPrices {
+  const { asset, prices } = ap;
+  const { chainId, address } = asset;
+  const priceMapKey = getPriceMapKey(asset);
+  const updatedPrice = priceMap.get(priceMapKey);
+
+  if (!updatedPrice.price) {
+    return {
+      asset: { chainId, address },
+      prices,
+    };
+  }
+
+  const updatedPrices = prices
+    .filter(
+      ({ sourceId, timestamp }) => sourceId !== updatedPrice.sourceId || timestamp < expiredAt,
+    )
+    .concat({
+      price: updatedPrice.price,
+      sourceId: updatedPrice.sourceId,
+      timestamp: Date.now(),
+    });
+
+  return {
+    asset: { chainId, address },
+    prices: updatedPrices,
+  };
+}
+
+function calculateAveragePrice({ asset, prices = [] }: AssetPrices): AssetAvgPrice {
+  const { chainId, address } = asset;
+  // TODO: Update this one to count volume, as of now base on all prices sources
+  return {
+    asset: { chainId, address },
+    price: prices.length ? prices.reduce((sum, cur) => sum + cur.price, 0) / prices.length : null,
+  };
+}
+
+function toSourcePricesCacheItem(assetPrices: AssetPrices) {
+  return {
+    key: getSourcePricesCacheKey(assetPrices.asset),
+    value: assetPrices,
+  };
+}
+
+function toAvgPriceCacheItem({ asset, price }: AssetAvgPrice) {
+  return {
+    key: getAvgPriceCacheKey(asset),
+    value: price,
+  };
+}
+
+const getPriceMapKey = ({ chainId, address }: AssetReference) => `${chainId}_${address}`;
+
+const getSourcePricesCacheKey = ({ chainId, address }: AssetReference) =>
+  `asset_source_prices_${chainId}_${address}`;
+
+const getAvgPriceCacheKey = ({ chainId, address }: AssetReference) =>
+  `asset_avg_price_${chainId}_${address}`;

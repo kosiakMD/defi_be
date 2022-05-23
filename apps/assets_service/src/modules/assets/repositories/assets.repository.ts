@@ -1,6 +1,8 @@
 import { EntityRepository, ILike, Repository } from 'typeorm';
 import { FindConditions } from 'typeorm/find-options/FindConditions';
 
+import { Injectable } from '@nestjs/common';
+
 import { ChainIdEnum } from '@app/common/enum';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
@@ -12,6 +14,7 @@ export type AssetReference = {
   address: string;
 };
 
+@Injectable()
 @EntityRepository(AssetEntity)
 export class AssetsRepository extends Repository<AssetEntity> {
   getAllTrackedAssets(): Promise<AssetEntity[]> {

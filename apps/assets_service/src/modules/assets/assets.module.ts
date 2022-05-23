@@ -3,9 +3,11 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CacheService } from '@app/common/services/cache.service';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 import { Web3ProviderService } from '@app/common/web3provider/web3.provider.service';
 
+import { QueueName } from '../../common/enum/queue-name.enum';
 import { MetadataService } from '../../common/services/metadata/metadata.service';
 
 import { AssetsController } from '../../controllers/assets.controller';
@@ -14,6 +16,7 @@ import { AssetsCategoryRepository } from '../assets-category/repositories/assets
 import { IconsModule } from '../icons/icons.module';
 import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
 import { AssetPriceEntity } from '../prices/entities/asset-price.entity';
+import { PriceService } from '../prices/price.service';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
 import { AssetsPriceRepository } from '../prices/repositories/asset-price.repository';
 import { AssetCandidateEntity } from './entities/asset-candidate.entity';
@@ -30,7 +33,14 @@ import { TokenService } from './services/token.service';
 @Module({
   imports: [
     BullModule.registerQueue({
-      name: 'assets',
+      name: QueueName.ASSETS,
+      settings: {
+        maxStalledCount: 0,
+      },
+      defaultJobOptions: {
+        removeOnComplete: true,
+        removeOnFail: true,
+      },
     }),
     TypeOrmModule.forFeature([
       AssetCandidateEntity,
@@ -55,11 +65,18 @@ import { TokenService } from './services/token.service';
     AssetsService,
     MetadataService,
     AssetsRepository,
+    // TODO: It should not be in this module
+    AssetsPriceRepository,
+    // TODO: It should not be in this module
+    AssetsHistoricalPriceRepository,
+    // TODO: It should not be in this module
+    PriceService,
     AssetsCandidateRepository,
     MulticallAggregator,
     TokenService,
     TrackedTokenPopulationProcessor,
     Web3ProviderService,
+    CacheService,
   ],
   exports: [AssetsService, AssetsRepository],
 })

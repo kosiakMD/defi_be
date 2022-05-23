@@ -9,10 +9,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
+import { isSomeAddress } from '@app/common/utils';
 
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
+import { PriceService } from '../../prices/price.service';
 import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
 import { AssetsPriceRepository } from '../../prices/repositories/asset-price.repository';
 import { AssetCandidateRequest } from '../dto/asset-candidate.request';
@@ -35,12 +37,14 @@ export class AssetsService extends CrudService<AssetsRepository> {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @InjectQueue('assets') private readonly assetsQueue: Queue,
-    @InjectRepository(AssetsRepository) private assetsRepository: AssetsRepository,
-    @InjectRepository(AssetsPriceRepository) private assetsPriceRepository: AssetsPriceRepository,
+    @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsPriceRepository)
+    private readonly assetsPriceRepository: AssetsPriceRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
-    private assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
+    private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
     @InjectRepository(AssetsCandidateRepository)
-    private assetsCandidateRepository: AssetsCandidateRepository,
+    private readonly assetsCandidateRepository: AssetsCandidateRepository,
+    private readonly priceService: PriceService,
   ) {
     super(AssetsRepository);
     this.cacheKeyPrefix = `${this.configService //
@@ -55,11 +59,12 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
-    // const validRequests = requests.filter(({ address }) => isSomeAddress(address));
-    const assets = await this.getAssets(requests);
+    const validRequests = requests.filter(({ address }) => isSomeAddress(address));
+    const assets = await this.getAssets(validRequests);
     // TODO: Historical prices are not handled
     // TODO: Add mapping, not expose everything (e.g. created at)
-    return assets.map((asset) =>
+    // TODO: This mapping code looks ugly, it should be extracted into mapper or use https://www.npmjs.com/package/@automapper/nestjs
+    const dtos = assets.map((asset) =>
       plainToClass(AssetDto, {
         ...asset,
         categories: asset.categories.map((assetCategory) =>
@@ -81,12 +86,21 @@ export class AssetsService extends CrudService<AssetsRepository> {
           : {}),
       }),
     );
+
+    return this.addPrices(dtos);
+  }
+
+  private async addPrices(dtos: AssetDto[]): Promise<AssetDto[]> {
+    const prices = await this.priceService.getPrices(dtos);
+    // TODO: Not base on index
+    return dtos.map((dto, index) => ({ ...dto, price: prices[index].price }));
   }
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = [];
 
     if (this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
+      // TODO: Instead of doing this we should just add cached repository
       const cachedAssets = await this.getAssetsFromCache(requests);
       assets.push(...cachedAssets);
     }
@@ -99,7 +113,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
     assets.push(...databaseAssets);
 
-    // this.setAssetsToCache(databaseAssets);
+    this.setAssetsToCache(databaseAssets);
 
     if (assets.length === requests.length) {
       return assets;
@@ -140,6 +154,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
       return this.cacheManager.set(
         this.getAssetCacheKey(asset),
         asset,
+        // TODO: Why use this strange naming convention here
         this.configService.get('cache.assetsTtl'),
       );
     });

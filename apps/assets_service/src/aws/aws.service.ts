@@ -4,7 +4,7 @@ import zlib from 'zlib';
 
 import { Injectable } from '@nestjs/common';
 
-import { AwsConfigService } from '../../config/aws/aws.config.service';
+import { AwsConfigService } from '../config/aws/aws.config.service';
 import { UploadFileRequest } from './types/upload-file.request';
 import { UploadFileResponse } from './types/upload-file.response';
 

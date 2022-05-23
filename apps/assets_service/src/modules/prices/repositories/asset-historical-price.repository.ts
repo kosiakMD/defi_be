@@ -1,7 +1,10 @@
 import { EntityRepository, Repository } from 'typeorm';
 
+import { Injectable } from '@nestjs/common';
+
 import { AssetHistoricalPriceEntity } from '../entities/asset-historical-price.entity';
 
+@Injectable()
 @EntityRepository(AssetHistoricalPriceEntity)
 export class AssetsHistoricalPriceRepository extends Repository<AssetHistoricalPriceEntity> {
   public clearPrices() {

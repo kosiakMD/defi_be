@@ -1,9 +1,12 @@
 import { EntityRepository, Repository } from 'typeorm';
 
+import { Injectable } from '@nestjs/common';
+
 import { AssetPriceEntity } from '../entities/asset-price.entity';
 import { AssetPriceCandle } from '../types/asset-price-candle.type';
 
 // TODO: We don't need this repository, data should be stored in scope of asset
+@Injectable()
 @EntityRepository(AssetPriceEntity)
 export class AssetsPriceRepository extends Repository<AssetPriceEntity> {
   public getAssetPriceCandles(

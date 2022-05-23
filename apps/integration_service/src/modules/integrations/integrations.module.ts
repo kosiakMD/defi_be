@@ -13,6 +13,7 @@ import { IntegrationsControllerV2 } from '../../controllers/integrations.control
 import { IntegrationsControllerV3 } from '../../controllers/integrations.controller.v3';
 import { PlatformService } from '../../framework/services/platform.service';
 import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
+import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ProtocolModule } from '../protocols/protocol.module';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
@@ -50,6 +51,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3ProviderService,
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
+    CurveAssetsManager,
   ].sort(),
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })

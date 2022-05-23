@@ -29,6 +29,8 @@ export interface IRewardTokenOpportunity extends ITokenOpportunity {
   harvests: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price
   apy: IRewardRates; // estimated APY based on APR compounded daily
+  aprMax?: IRewardRates; // max rates for pools with boost
+  apyMax?: IRewardRates; // max rates for pools with boost
   // to connect later rewards with what they are awarded for
   rewardedForTokenAddress?: string;
   rewardedForLendingSide?: 'supplied' | 'borrowed';

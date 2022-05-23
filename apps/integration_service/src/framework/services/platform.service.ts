@@ -20,6 +20,7 @@ import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
+import { Ellipsis } from '../platforms/Ellipsis';
 import { Evodefi } from '../platforms/Evodefi';
 import { Frax } from '../platforms/Frax';
 import { Goose } from '../platforms/Goose';
@@ -89,6 +90,7 @@ export class PlatformService {
       Goose,
       BabySwap,
       YelFinance,
+      Ellipsis,
       RocketPool,
       Stargate,
       Synapse,

@@ -3,7 +3,7 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { CurrentPricesPayload } from '../../../../../common/dto';
@@ -66,6 +66,15 @@ export class SynapseStaking extends MasterChef {
     prices: CurrentPricesPayload,
   ): Promise<ERC20Token[]> {
     try {
+      // Synapse use of ethereum sushiSwap token
+      if (this.meta.chain === ChainIdEnum.eth) {
+        await this.updateUniswapLikeTokensData(
+          tokens.filter((token) => token.underlyingAssets?.length === 2),
+          prices,
+        );
+        return tokens;
+      }
+
       return await updateSynapseLpTokens(
         tokens,
         prices,

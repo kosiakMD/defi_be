@@ -235,7 +235,7 @@ export class WingRidersPools extends CardanoPools implements JobInterface {
       const assetB: Asset = {
         assetId: assetBToken.policyId + assetBToken.assetName,
         assetName: assetBTokenMetadata?.name?.value,
-        decimals: assetBTokenMetadata?.decimals?.value || 6,
+        decimals: assetBTokenMetadata?.decimals?.value ?? 6,
         ticker: assetBTokenMetadata?.ticker?.value,
       };
       const quantityB = assetBToken.quantity;

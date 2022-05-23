@@ -23,6 +23,7 @@ import { CoingeckoService } from './services/coingecko.service';
 import { DebankService } from './services/debank.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
 import { SundaeSwapService } from './services/sundaeswap.service';
+import { WingRidersService } from './services/wingriders.service';
 import { DebankChainsIdEnum } from './utils/debank.chains.id.enum';
 import { duplicateAssetsPricesMap } from './utils/duplicate.assets.prices.map';
 import { logger } from './utils/logger';
@@ -30,6 +31,8 @@ import { logger } from './utils/logger';
 export async function process(): Promise<void> {
   try {
     logger.info(`External prices job started`);
+    const wingRidersService = new WingRidersService();
+
     const allAssets = await AssetsService.getAllAssets();
     logger.info(`Assets total ${allAssets.length} assets from asset service`);
     const allCurrentPricesMap = new Map(
@@ -135,7 +138,7 @@ export async function process(): Promise<void> {
       }
     }
 
-    chainsPrices = chainsPrices.concat(cardanoPrices);
+    chainsPrices = chainsPrices.concat(cardanoPrices, await wingRidersService.getPrices());
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);

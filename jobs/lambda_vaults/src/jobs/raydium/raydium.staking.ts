@@ -1,5 +1,5 @@
 import { Farm, FarmPoolKeys, Liquidity } from '@raydium-io/raydium-sdk';
-import { Connection, PublicKey } from '@solana/web3.js';
+import { AccountInfo, Connection, PublicKey } from '@solana/web3.js';
 import { classToPlain, plainToClass } from 'class-transformer';
 import { map } from 'rxjs/operators';
 
@@ -8,6 +8,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { RaydiumFarmVersion, RaydiymFarm } from '@app/common/jobs/raydiym.farm';
 import {
   IntegrationClaimableTokenDto,
@@ -16,7 +17,7 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
-import { concatStrings, objToString } from '@app/common/utils';
+import { chunk, concatStrings, objToString } from '@app/common/utils';
 import { toBN } from '@app/common/utils/number';
 import {
   solanaKeysToStrings,
@@ -46,6 +47,7 @@ const POSITION_0 = 0;
 const POSITION_1 = 1;
 const LP_DEFAULT_NAME = 'Raydium LP Token';
 const LP_DEFAULT_DECIMALS = 9;
+const LENGTH_PER_CALL = 100;
 
 @Injectable()
 export class RaydiumStaking implements JobInterface {
@@ -58,7 +60,7 @@ export class RaydiumStaking implements JobInterface {
   private mapping: IntegrationStakingPositionDto[] = [];
   private availableDtosForConversion: Map<string, string>;
   private web3: Connection;
-  private farmsUrl = 'https://sdk.raydium.io/farm/mainnet.json';
+  private farmsUrl = 'https://api.raydium.io/v2/sdk/farm/mainnet.json';
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -94,7 +96,8 @@ export class RaydiumStaking implements JobInterface {
       .get(this.farmsUrl)
       .pipe(map((r) => r.data))
       .toPromise();
-    let farms = farmsListData.official;
+    // @TODO temp skipped all v5 contracts. because current code cant support it!
+    let farms = farmsListData.official; //.filter((x) => x.version !== 5);
 
     //farms = farms.filter((f) => f.programId === RaydiymFarm.version3.programId);
     farms = farms.map(solanaStringsToKeys);
@@ -396,7 +399,7 @@ export class RaydiumStaking implements JobInterface {
 
   private async adjustFarmInfo(mapping: IntegrationStakingPositionDto[]) {
     const publicKeys = mapping.map((x) => new PublicKey(x.extra.farm.id));
-    const rpcInfo = await this.web3.getMultipleAccountsInfo(publicKeys);
+    const rpcInfo = await this.getMultipleAccountsInfo(publicKeys);
 
     for (let i = 0; i < mapping.length; i++) {
       let layout;
@@ -414,5 +417,14 @@ export class RaydiumStaking implements JobInterface {
       }
     }
     return mapping;
+  }
+
+  private async getMultipleAccountsInfo(publicKeys: PublicKey[]): Promise<AccountInfo<Buffer>[]> {
+    const chunked = chunk(publicKeys, LENGTH_PER_CALL);
+    const result = await Promise.allSettled(
+      chunked.map((chunk) => this.web3.getMultipleAccountsInfo(chunk)),
+    );
+    const [data] = handlePromiseAllSettled<AccountInfo<Buffer>[]>(result);
+    return data.flat();
   }
 }

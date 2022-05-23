@@ -126,12 +126,12 @@ export class WingRidersPools extends CardanoPools implements JobInterface {
         const assetsAddresses = await this.cardanoService.obtainAssetsAddresses(lp.lpToken.address);
 
         const lpTotalSupply =
-          assetsAddresses.reduce(
-            (prevTotalSupply, assetAddress): number =>
+          assetsAddresses.reduce((prevTotalSupply, assetAddress): number => {
+            return (
               prevTotalSupply +
-              +(assetAddress.quantity > WING_RIDERS_MAX_TOTAL_SUPPLY ? 0 : assetAddress.quantity),
-            0,
-          ) || +WING_RIDERS_DEFAULT_TOTAL_SUPPLY;
+              +(+assetAddress.quantity > +WING_RIDERS_MAX_TOTAL_SUPPLY ? 0 : assetAddress.quantity)
+            );
+          }, 0) || +WING_RIDERS_DEFAULT_TOTAL_SUPPLY;
 
         lp.lpToken.totalSupply = lpTotalSupply;
         lp.stats.feeRate = Number(pool.fee);

@@ -18,6 +18,9 @@ export class Link {
   @Column({ name: 'html', type: 'text' })
   html: string;
 
+  @Column({ name: 'processed', type: 'boolean' })
+  processed?: boolean = false;
+
   @ManyToOne(() => Protocol, (p) => p.links)
   @JoinColumn({ name: 'protocol_id' })
   protocol: Protocol;

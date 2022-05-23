@@ -1,11 +1,12 @@
-import { parallelLimit, series, doWhilst } from 'async';
+import { doWhilst, parallelLimit, series } from 'async';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ListProtocolsDTO } from '../../common/dto/service.dto';
+import { CommandRequestDto } from '../../common/dto/command.request.dto';
+import { ProtocolAnalyseRequestDto } from '../../common/dto/protocol.analyse.request.dto';
 
 import { nameFromUrl, Puppeteer } from '../../utils';
 import { Link } from '../database/entities/link.entity';
@@ -24,7 +25,7 @@ import {
 } from './protocols.constant';
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
-import { MainPageStrategy, AppPageStrategy } from './strategies';
+import { AppPageStrategy, MainPageStrategy } from './strategies';
 import { AbstractStrategy } from './strategies/abstract.strategy';
 
 @Injectable()
@@ -68,41 +69,39 @@ export class ProtocolService {
     this.logger.log('parseProtocolsMainPage finished');
   }
 
-  async parseProtocolsAppPage() {
+  async parseProtocolsAppPage(request: CommandRequestDto) {
     this.logger.log('parseProtocolsAppPage started');
     let skip = 0;
     await doWhilst(
-      async () => this.protocolsRepo.findAllWithLinksLimit(skip),
-      async (allProtocolsWithLinks) => {
+      async () =>
+        this.protocolsRepo.findWithLinksLimit(LinkTypeEnum.APP, request.includeProcessed, skip),
+      async (protocolsWithLinks) => {
         const websites = (
-          this.testRun ? allProtocolsWithLinks.slice(0, 10) : allProtocolsWithLinks
-        ).flatMap((protocol) =>
-          protocol.links
-            .filter(({ type }) => type === LinkTypeEnum.APP)
-            .map(({ url }) => ({ url, protocol })),
-        );
+          this.testRun ? protocolsWithLinks.slice(0, 10) : protocolsWithLinks
+        ).flatMap((protocol) => protocol.links.map(({ url }) => ({ url, protocol })));
         const links = await this.scanWebsitesForLinks(websites, this.appPageParsingStrategy);
         await this.saveLinks(links);
-        skip += allProtocolsWithLinks.length;
+        await this.linksRepo.setProcessedByUrls(websites.map(({ url }) => url));
+        skip += protocolsWithLinks.length;
         this.logger.debug(`processed [${skip}] pages`);
-        return !!allProtocolsWithLinks.length;
+        return !!protocolsWithLinks.length;
       },
     );
     this.logger.log('parseProtocolsAppPage finished');
   }
 
-  async parseProtocolsDocsPage() {
+  async parseProtocolsDocsPage(request: CommandRequestDto) {
     this.logger.log('parseProtocolsDocsPage started');
     let skip = 0;
     await doWhilst(
-      async () => this.protocolsRepo.findAllWithLinksLimit(skip),
+      async () =>
+        this.protocolsRepo.findWithLinksLimit(LinkTypeEnum.DOCS, request.includeProcessed, skip),
       async (listProtocols) => {
         const websites = listProtocols.flatMap((protocol) =>
-          protocol.links
-            .filter(({ type }) => type === LinkTypeEnum.DOCS)
-            .map(({ url }) => ({ url, protocol })),
+          protocol.links.map(({ url }) => ({ url, protocol })),
         );
         await this.contractService.scanWebsitesForContracts(websites);
+        await this.linksRepo.setProcessedByUrls(websites.map(({ url }) => url));
         skip += listProtocols.length;
         this.logger.debug(`processed [${skip}] pages`);
         return !!listProtocols.length;
@@ -158,8 +157,8 @@ export class ProtocolService {
     this.logger.log('crawlHtml finished');
   }
 
-  async parseCustomProtocol(listProtocol: ListProtocolsDTO) {
-    const protocol = await this.ensureProtocolExists(listProtocol);
+  async parseCustomProtocol(request: ProtocolAnalyseRequestDto) {
+    const protocol = await this.ensureProtocolExists(request);
     const websites = [{ url: protocol.url, protocol }];
     const links = await this.scanWebsitesForLinks(websites, this.mainPageParsingStrategy);
     await this.saveLinks(links);
@@ -182,15 +181,15 @@ export class ProtocolService {
     }
   }
 
-  private async ensureProtocolExists(listProtocol: ListProtocolsDTO): Promise<Protocol> {
-    const existingProtocol = await this.protocolsRepo.findOneByUrlWithLinks(listProtocol.website);
+  private async ensureProtocolExists(request: ProtocolAnalyseRequestDto): Promise<Protocol> {
+    const existingProtocol = await this.protocolsRepo.findOneByUrlWithLinks(request.website);
     if (existingProtocol) {
       return existingProtocol;
     }
     const [protocol] = await this.protocolsRepo.upsertProtocols([
       {
-        url: listProtocol.website,
-        name: listProtocol.name || nameFromUrl(listProtocol.website),
+        url: request.website,
+        name: request.name || nameFromUrl(request.website),
       },
     ]);
     return protocol;

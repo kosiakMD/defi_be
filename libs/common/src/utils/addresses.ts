@@ -142,7 +142,7 @@ export function isTerraAddress(address: string): boolean {
 }
 
 export function isSomeAddress(address: string) {
-  const addressChecks = [isBech32LikeAddress, isETHAddress, isSolAddress];
+  const addressChecks = [isBech32LikeAddress, isCardanoAddress, isETHAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

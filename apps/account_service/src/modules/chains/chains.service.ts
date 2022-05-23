@@ -1,19 +1,48 @@
+import { firstValueFrom } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { In, Repository } from 'typeorm';
 
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { ChainId } from '@app/common';
 import { CrudService } from '@app/common/services/crud.service';
 
+import { ChainsResponseDto } from './dto/chains-response.dto';
 import { ChainsEntity } from './entities/chain.entity';
 
 @Injectable()
 export class ChainsService extends CrudService<ChainsEntity> {
   constructor(
     @InjectRepository(ChainsEntity) private readonly chainRepository: Repository<ChainsEntity>,
+    private readonly http: HttpService,
+    private readonly config: ConfigService,
   ) {
     super(chainRepository);
+  }
+
+  private rpcMap = new Map<number, any>();
+
+  public async getAllChains() {
+    const chains = await this.getAll();
+    const chainsResponse = chains.map((c: ChainsEntity) => {
+      const chainResponse = new ChainsResponseDto();
+      chainResponse.chain = c;
+      chainResponse.chain.rpc = this.rpcMap.get(c.id);
+      return chainResponse;
+    });
+
+    return chainsResponse;
+  }
+
+  public async getOneChain(id) {
+    const chainResponse = new ChainsResponseDto();
+    chainResponse.chain = await this.get(id);
+    chainResponse.chain.rpc = this.rpcMap.get(chainResponse.chain.id);
+    return chainResponse;
   }
 
   public async getChainIdByName(name: string) {
@@ -64,5 +93,18 @@ export class ChainsService extends CrudService<ChainsEntity> {
   public async getAbsoluteChainId(chainId) {
     const chain = await this.get({ id: chainId });
     return chain.metadata.absoluteChainId;
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  private async getRpcData() {
+    const rpcData = await firstValueFrom(
+      this.http
+        .get(this.config.get('RPC_SERVICE_HOST') + 'v1/endpoints?limit=500')
+        .pipe(map((r) => r.data.items)),
+    );
+
+    for (const rpc of rpcData) {
+      this.rpcMap.set(rpc.chainId, rpc);
+    }
   }
 }

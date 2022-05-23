@@ -64,6 +64,7 @@ export const validationSchema = Joi.object({
   OPEN_SEA_INTERVAL: Joi.number().required(),
   AAVEGOTCHI_SUBGRAPH_POLYGON: Joi.string().required(),
   AAVEGOTCHI_SUBGRAPH_SVG: Joi.string().required(),
+  RPC_SERVICE_HOST: Joi.string().required(),
 });
 
 export const validationOptions = {

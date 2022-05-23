@@ -21,7 +21,7 @@ export class ChainsController {
   @ApiResponse({ status: 200, description: 'Get a list of chains' })
   @Get()
   getAllChains() {
-    return this.chainsService.getAll();
+    return this.chainsService.getAllChains();
   }
 
   @ApiOperation({ summary: 'Get a chain by id' })
@@ -29,7 +29,7 @@ export class ChainsController {
   @ApiResponse({ status: 200, description: 'Get a chain by id' })
   @Get(':id')
   getChainById(@Param('id') id) {
-    return this.chainsService.get(id);
+    return this.chainsService.getOneChain(id);
   }
 
   @ApiOperation({ summary: 'Create a new chain' })

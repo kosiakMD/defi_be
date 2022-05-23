@@ -31,6 +31,7 @@ import { DatabaseModule } from './modules/database.module';
 import { NftModule } from './modules/nft/nft.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TransfersModule } from './modules/transfers/transfers.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 // controllers A-Z sort for Swagger API page
 const controllers = [
@@ -47,6 +48,7 @@ const controllers = [
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot(configuration(config)),
     TracingModule.forRoot({ serviceName: 'account-service' }),
     // TODO implement more universal logic

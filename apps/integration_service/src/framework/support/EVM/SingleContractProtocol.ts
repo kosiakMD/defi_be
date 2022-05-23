@@ -110,8 +110,7 @@ export abstract class SingleContractProtocol<
       await Promise.allSettled(
         addresses.map(async (address) => {
           const userPools = await this.fetchUserData(address, pools);
-          // The filter has been added because an array of undefined values can be obtained
-          if (userPools.filter((data) => data).length) {
+          if (userPools.length) {
             results.get(address).push(...userPools);
           }
         }),

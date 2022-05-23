@@ -421,9 +421,8 @@ export class FraxStaking extends EVMCore<
     addresses.forEach((a) => {
       const userV3Data = uniV3Resp[0].find((item) => item.userAddress === a);
       const userPositions = usersPositions.get(a);
-      const resultUserPools = [];
 
-      const userPools = userPositions?.map(({ liquidity, pool }) => {
+      const userPools = userPositions.map(({ liquidity, pool }) => {
         const liquidityDec = toDecimals(liquidity, pool.supplied[0].token.decimals);
         pool.supplied[0].amount = liquidityDec;
         if (pool.supplied[0].token.underlying?.length === 2) {
@@ -448,11 +447,8 @@ export class FraxStaking extends EVMCore<
         });
         return pool as IStakingFeatureUserEntry;
       });
-      resultUserPools.push(
-        ...(this.formatV3UserData(uniV3Raw.get(a), multicallUserData, userV3Data) || []),
-      );
-      resultUserPools.push(...(userPools || []));
-      resultMap.set(a, resultUserPools);
+      userPools.push(...this.formatV3UserData(uniV3Raw.get(a), multicallUserData, userV3Data));
+      resultMap.set(a, userPools);
     });
     return resultMap;
   }

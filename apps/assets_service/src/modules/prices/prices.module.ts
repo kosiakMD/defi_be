@@ -10,6 +10,7 @@ import { AssetHistoricalPriceEntity } from './entities/asset-historical-price.en
 import { AssetPriceEntity } from './entities/asset-price.entity';
 import { PriceSourceEntity } from './entities/price-source.entity';
 import { PriceJobEmitter } from './price-job.emitter';
+import { PriceService } from './price.service';
 import { AssetsCurrentPricesProcessor } from './processors/assets-current-prices.processor';
 import { AssetsHistoricalPricesProcessor } from './processors/assets-historical-prices.processor';
 import { AssetsHistoricalPriceRepository } from './repositories/asset-historical-price.repository';
@@ -38,6 +39,7 @@ import { PriceSourceRepository } from './repositories/price-source.repository';
     AssetsCurrentPricesProcessor,
     AssetsHistoricalPricesProcessor,
     AssetsService,
+    PriceService,
   ],
 })
 export class PricesModule {}

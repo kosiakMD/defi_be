@@ -685,7 +685,12 @@ export class CurveGauges implements JobInterface {
       });
 
       const [{ prices }, multicallResponses] = await Promise.all([
-        this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+        this.priceService.getCurrentPrices(
+          tokenAddresses,
+          CurrencyIdEnum.usd,
+          this.chain,
+          this.protocol,
+        ),
         this.multicallService.handleInBatches(calls, this.chain),
       ]);
 

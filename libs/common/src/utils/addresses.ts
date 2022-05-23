@@ -3,6 +3,7 @@ import bech32 from 'bech32';
 import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 
 import { ChainIdEnum } from '../enum';
 
@@ -61,6 +62,10 @@ export function splitToAddressesArray(addresses: string | any): Address[] {
   }
 
   return addresses.split(',').map(unifyAddress);
+}
+
+export function isZeroAddress(address: Address) {
+  return address === ZERO_ADDRESS;
 }
 
 // TODO: TBD why only if ETH valid pattern?

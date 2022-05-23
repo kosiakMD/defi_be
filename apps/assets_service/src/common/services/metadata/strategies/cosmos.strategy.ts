@@ -18,7 +18,7 @@ export class CosmosMetadataStrategy extends MetadataStrategy {
       ]),
     );
 
-    return metadata.find((val) => !!val && val.decimals && val.name);
+    return metadata.find((val) => !!val && val.decimals && val.name && val.symbol);
   }
 
   osmosisUrl = 'https://api-osmosis.imperator.co/tokens/v2/all';

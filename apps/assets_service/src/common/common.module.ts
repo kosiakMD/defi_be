@@ -1,3 +1,5 @@
+import * as redisStore from 'cache-manager-redis-store';
+
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { CacheModule, Module } from '@nestjs/common';
@@ -6,7 +8,7 @@ import { TerminusModule } from '@nestjs/terminus';
 import { WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
-import { RedisCacheService } from '@app/common/services/cache.service';
+import { CacheService } from '@app/common/services/cache.service';
 
 import { HealthController } from '../controllers/health.controller';
 
@@ -26,6 +28,7 @@ import { HealthController } from '../controllers/health.controller';
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
+        store: redisStore,
         host: configService.get<string>('cache.host'),
         port: configService.get<number>('cache.port'),
         password: configService.get<string>('cache.password'),
@@ -50,7 +53,7 @@ import { HealthController } from '../controllers/health.controller';
     TerminusModule,
   ],
   controllers: [HealthController],
-  exports: [RedisCacheService],
-  providers: [RedisCacheService],
+  exports: [CacheService],
+  providers: [CacheService],
 })
 export class CommonModule {}

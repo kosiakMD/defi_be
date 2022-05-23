@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
@@ -65,7 +66,12 @@ export class IntegrationsServiceV3Decorator {
         !v2ProtocolsSet.has(v3Protocol.name) &&
         !this.protocolsV3Exceptions.has(v3Protocol.name)
       ) {
-        v2Protocols.data.push(v3Protocol as ProtocolDataDto);
+        v2Protocols.data.push({
+          project: v3Protocol.name,
+          name: v3Protocol.name,
+          features: v3Protocol.features,
+          links: v3Protocol.links,
+        } as unknown as ProtocolDataDto);
       }
     });
 
@@ -121,7 +127,7 @@ export class IntegrationsServiceV3Decorator {
 
     const v2Protocol: ProtocolInfoDto = plainToClass(ProtocolInfoDto, {
       name: v3response.data.protocol.name,
-      project: v3response.data.protocol.project,
+      project: v3response.data.protocol.name,
       label: v3response.data.protocol.name,
     });
     v2Protocol.chains = getUniqList(
@@ -149,12 +155,24 @@ export class IntegrationsServiceV3Decorator {
           v2WalletChain[FeatureEnum.staking].items = v3WalletChain.positions.staking.map(
             (v3StakingPos) => {
               const v2Staking = IntegrationsServiceV3Decorator.stakingToV2(v3StakingPos);
-              v2Response.data.total += v2Staking.stakingToken.value;
-              v2WalletChain[FeatureEnum.staking].totalValue += v2Staking.stakingToken.value;
+              v2Response.data.total = safelyAddDecimals(
+                v2Response.data.total,
+                v2Staking.stakingToken.value,
+              );
+              v2WalletChain[FeatureEnum.staking].totalValue = safelyAddDecimals(
+                v2WalletChain[FeatureEnum.staking].totalValue,
+                v2Staking.stakingToken.value,
+              );
               v2Staking.rewards.forEach((r) => {
                 if (r.claimableData.value) {
-                  v2Response.data.total += r.claimableData.value;
-                  v2WalletChain[FeatureEnum.staking].totalValue += r.claimableData.value;
+                  v2Response.data.total = safelyAddDecimals(
+                    v2Response.data.total,
+                    r.claimableData.value,
+                  );
+                  v2WalletChain[FeatureEnum.staking].totalValue = safelyAddDecimals(
+                    v2WalletChain[FeatureEnum.staking].totalValue,
+                    r.claimableData.value,
+                  );
                 }
               });
               return v2Staking;
@@ -170,15 +188,24 @@ export class IntegrationsServiceV3Decorator {
               const liquidityV2 = IntegrationsServiceV3Decorator.liquidityToV2(liquidityV3);
               liquidityV2.tokens?.map((token) => {
                 if (token.value) {
-                  v2Response.data.total += token.value;
-                  v2WalletChain[FeatureEnum.pools].totalValue += token.value;
+                  v2Response.data.total = safelyAddDecimals(v2Response.data.total, token.value);
+                  v2WalletChain[FeatureEnum.pools].totalValue = safelyAddDecimals(
+                    v2WalletChain[FeatureEnum.pools].totalValue,
+                    token.value,
+                  );
                 }
               });
 
               liquidityV2.rewards?.map((r) => {
                 if (r.claimableData.value) {
-                  v2Response.data.total += r.claimableData.value;
-                  v2WalletChain[FeatureEnum.pools].totalValue += r.claimableData.value;
+                  v2Response.data.total = safelyAddDecimals(
+                    v2Response.data.total,
+                    r.claimableData.value,
+                  );
+                  v2WalletChain[FeatureEnum.pools].totalValue = safelyAddDecimals(
+                    v2WalletChain[FeatureEnum.pools].totalValue,
+                    r.claimableData.value,
+                  );
                 }
               });
               return liquidityV2;
@@ -192,8 +219,14 @@ export class IntegrationsServiceV3Decorator {
             (claimableV3: IClaimableFeatureUser) => {
               const claimableV2 = IntegrationsServiceV3Decorator.claimableToV2(claimableV3);
 
-              v2Response.data.total += claimableV2.claimableData.value;
-              v2WalletChain[FeatureEnum.claimable].totalValue += claimableV2.claimableData.value;
+              v2Response.data.total = safelyAddDecimals(
+                v2Response.data.total,
+                claimableV2.claimableData.value,
+              );
+              v2WalletChain[FeatureEnum.claimable].totalValue = safelyAddDecimals(
+                v2WalletChain[FeatureEnum.claimable].totalValue,
+                claimableV2.claimableData.value,
+              );
               return claimableV2;
             },
           );
@@ -228,12 +261,16 @@ export class IntegrationsServiceV3Decorator {
                   position[positionField],
                 );
                 let totalValue = 0;
-                featureItems?.forEach((featureItem) => (totalValue += featureItem.value));
-                v2Response.data.total +=
-                  feature === FeatureEnum.borrowing ? totalValue * -1 : totalValue;
+                featureItems?.forEach(
+                  (featureItem) => (totalValue = safelyAddDecimals(totalValue, featureItem.value)),
+                );
+                v2Response.data.total = safelyAddDecimals(
+                  v2Response.data.total,
+                  feature === FeatureEnum.borrowing ? totalValue * -1 : totalValue,
+                );
                 v2WalletChain[feature] = {
                   totalValue: v2WalletChain[feature]?.totalValue
-                    ? v2WalletChain[feature].totalValue + totalValue
+                    ? safelyAddDecimals(v2WalletChain[feature].totalValue, totalValue)
                     : totalValue,
                   items: [...(v2WalletChain[feature]?.items || []), ...featureItems] || [],
                 };
@@ -284,8 +321,9 @@ export class IntegrationsServiceV3Decorator {
     v2Item.poolName = null;
     v2Item.stats = {
       tvl: lpToken.tvl,
-      poolApy: null,
+      poolApy: v3Item.rewarded.reduce((total, reward) => reward.apr?.year + total, 0) * 100,
     };
+
     v2Item.stakingToken.address = lpToken.token.address;
 
     v2Item.stakingToken.name = lpToken.token.name;
@@ -347,6 +385,11 @@ export class IntegrationsServiceV3Decorator {
     liquidityV2.address = liquidityV3.id;
     liquidityV2.lpToken = plainToClass(ERC20Token, rest);
     liquidityV2.tokens = plainToClass(PoolTokenDto, underlying);
+    liquidityV2.tokens.forEach((token) => {
+      if (!token.positionInPool) delete token.positionInPool;
+      if (!token.weight) delete token.weight;
+      return token;
+    });
 
     liquidityV2.stats.tvl = supplied.tvl;
     liquidityV2.stats.share = supplied.amount / supplied.totalSupplied;
@@ -367,3 +410,7 @@ export class IntegrationsServiceV3Decorator {
     return liquidityV2;
   }
 }
+
+// competing es-lint rules
+// eslint-disable-next-line newline-per-chained-call
+const safelyAddDecimals = (dec1, dec2) => new BigNumber(dec1).plus(new BigNumber(dec2)).toNumber();

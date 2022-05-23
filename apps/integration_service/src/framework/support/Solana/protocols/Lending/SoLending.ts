@@ -38,6 +38,10 @@ import { ReserveParser } from '../../Schemas/Solend/Reserve';
 import { SolanaCore } from '../../SolanaCore';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 
+export interface ISolendingMeta extends IProtocolMeta {
+  baseApiUrl: string, address: string
+}
+
 type SolendLendingFeatureEntryMinimal = BaseWithTokens<
   (ISupplyTokenMinimal & { reserveAddress: string })[],
   (IRewardTokenMinimal & { reserveAddress: string, apy: string })[],
@@ -54,7 +58,7 @@ export class SoLending
     SolendLendingFeatureEntryMinimal,
     SolendLendingFeatureOpportunity,
     ILendingFeatureUserEntry,
-    IProtocolMeta & { baseApiUrl: string, address: string}
+    ISolendingMeta
   >
   implements IRootProtocol
 {
@@ -381,7 +385,6 @@ export class SoLending
               totalSupplied: depositOpportunity.totalSupplied,
               tvl: depositOpportunity.token.price ? new BN(depositOpportunity.token.price).multipliedBy(new BN(totalSuppliedByAllUsers))
                                                                                           .toNumber() : 0,
-              totalSupply: (depositOpportunity.token as any).totalSupply,
             });
           };
 

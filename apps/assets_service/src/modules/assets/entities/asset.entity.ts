@@ -43,7 +43,7 @@ export class AssetEntity extends BaseEntity {
   @ManyToMany(() => AssetCategoryEntity, {
     nullable: false,
     eager: true,
-    cascade: false,
+    cascade: true,
   })
   @JoinTable({
     name: 'assets_to_categories',

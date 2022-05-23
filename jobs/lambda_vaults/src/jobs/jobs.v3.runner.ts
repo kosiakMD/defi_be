@@ -5,6 +5,7 @@ import { getChainById } from '@app/common/utils';
 
 import { Logger } from '../logger/logger.service';
 import { IntegrationService } from '../microservices/integration.service';
+import { chainIdsMap } from '../utils/constants';
 
 @Injectable()
 export class JobsV3Runner {
@@ -22,10 +23,11 @@ export class JobsV3Runner {
     } = {};
     protocols.forEach((p) => {
       p.features.forEach((f) => {
+        if (!chainIdsMap.get(String(f.chain.id))) return;
         if (!chainsProtocols[f.chain.id]) {
           chainsProtocols[f.chain.id.toString()] = [];
         }
-        chainsProtocols[f.chain.id.toString()].push(p.project);
+        chainsProtocols[f.chain.id.toString()].push(p.name);
       });
     });
 

@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { RootPlatform } from '../support/RootPlatform';
-import { SoLending } from '../support/Solana/protocols/Lending/SoLending';
+import { ISolendingMeta, SoLending } from '../support/Solana/protocols/Lending/SoLending';
+import { FeatureEnum } from '../support/enums';
 
 export class Solend extends RootPlatform {
   constructor(
@@ -18,7 +19,7 @@ export class Solend extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://solend.fi',
         logo: 'https://icons.llama.fi/solend.png',
@@ -26,7 +27,7 @@ export class Solend extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(SoLending, {
+    await this.registerProtocol<ISolendingMeta>(SoLending, {
       chain: ChainIdEnum.sol,
       name: 'Solana Lending',
       feature: FeatureEnum.lending,

@@ -1,4 +1,5 @@
 export enum JobName {
-  PRICES = 'prices',
   CLEAR_PRICES = 'clear-prices',
+  HISTORICAL_PRICES = 'historical-prices',
+  PRICES = 'prices',
 }

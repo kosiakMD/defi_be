@@ -12,6 +12,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { INamedFunctionPredicates, INamedFunctions } from '../../interfaces';
 import { BlockScan } from './BlockScan.service';
 import { BlockScout } from './BlockScout.service';
+import { LocalFile } from './LocalFile.service';
 
 export class AbiService {
   constructor(
@@ -19,6 +20,7 @@ export class AbiService {
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected blockscout: BlockScout,
     protected blockscan: BlockScan,
+    protected localfile: LocalFile,
     protected config: ConfigService,
     protected multicall: MulticallAggregator,
   ) {}
@@ -86,13 +88,18 @@ export class AbiService {
       return fromBlockScan;
     }
 
-    // TODO: always fails
-    this.logger.warn('BlockScout Strategy is not implemented', 'AbiService');
     // 4. try blockscout
     const fromBlockScout = await this.blockscout.fetchAbi(address, chain);
     if (fromBlockScout) {
       this.logger.log(`${chain}/${address} ABI Retrieved from BlockScout`, 'AbiService');
       return fromBlockScout;
+    }
+
+    // 5. worst case, get from local file
+    const fromLocalFile = await this.localfile.getAbi(address, chain);
+    if (fromLocalFile) {
+      this.logger.log(`${chain}/${address} ABI Retrieved from Local File`, 'AbiService');
+      return fromLocalFile;
     }
 
     throw new Error(`Unable to find appropriate ABI ${chain}/${address}`);

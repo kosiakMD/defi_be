@@ -2,21 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { RootPlatform } from '../support/RootPlatform';
-import { IProtocolMeta } from '../support/interfaces';
-
-interface IMasterChefMeta extends IProtocolMeta {
-  address: Address;
-  feature: FeatureEnum.staking;
-  name: string; // Genesis, Farm, AceLab
-  context?: {
-    badPools?: number[]; // poolIds to skip
-    [key: string]: any;
-  };
-}
+import { FeatureEnum } from '../support/enums';
 
 export class BiSwap extends RootPlatform {
   constructor(
@@ -29,7 +19,7 @@ export class BiSwap extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         telegram: 'https://t.me/biswap_news',
         twitter: 'https://twitter.com/Biswap_Dex',

@@ -7,10 +7,12 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
 import {
   IPoolFeatureOpportunity,
@@ -70,6 +72,7 @@ export class BalancerLiquidity
     protected accountService: AccountService,
     protected priceService: PriceService,
     protected httpService: HttpService,
+    protected multicall: MulticallAggregator,
   ) {
     super();
   }
@@ -113,7 +116,7 @@ export class BalancerLiquidity
       const supplied: ISupplyTokenUserEntry[] = poolClone.supplied.map((position) => {
         const amountBN = new BN(balance);
         const amountUSD = amountBN.times(position.token.price);
-        const poolShare = amountBN.div(poolClone.supplied[0].totalSupplied);
+        const poolShare = amountBN.div(poolClone.supplied[0].token.totalSupply);
 
         position.token.underlying = position.token.underlying.map((token) => {
           const tokenBalance = poolShare.times(token.reserve);
@@ -129,7 +132,6 @@ export class BalancerLiquidity
           ...position,
           amount: amountBN.toNumber(),
           value: amountUSD.toNumber(),
-          totalSupply: position.totalSupplied,
         };
         return result;
       });
@@ -185,7 +187,7 @@ export class BalancerLiquidity
     };
   }
 
-  private formatSuppliedToken(
+  protected formatSuppliedToken(
     poolToken: IBalancerSupplyTokenMinimal,
     tokens: TokenMap,
   ): ISupplyTokenOpportunity {

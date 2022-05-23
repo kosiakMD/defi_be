@@ -6,6 +6,7 @@ import { aprToApy, normalizeDecimals } from '@app/common/utils';
 import { AccountService } from '../../modules/microservices/account.service';
 import { PriceService } from '../../modules/microservices/price.service';
 import { RootProtocol } from './RootProtocol';
+import { MissingOpportunityException, MissingTokenException } from './exceptions';
 import {
   IPoolDataProtocolResponse,
   IProtocolMeta,
@@ -194,7 +195,7 @@ export abstract class RootProtocolCacheable<
    */
   async getPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
     return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list`, async () => {
-      // get pool list from cache
+      // get pool list from longer term cache
       const list = await this.cache.get<string[]>(this.poolListCacheKey);
 
       if (!list?.length) {
@@ -209,10 +210,9 @@ export abstract class RootProtocolCacheable<
       }
 
       // fetch all cached pools from redis
-      const pools = await this.cache.store.mget(
-        ...list.map(this.singlePoolCacheKey.bind(this)),
-        {},
-      );
+      const pools = (
+        await this.cache.store.mget(...list.map(this.singlePoolCacheKey.bind(this)), {})
+      ).filter((pool) => pool);
 
       if (list.length !== pools.length) {
         // Should only occur if pools list is cached, however the pools themselves are not cached
@@ -239,7 +239,7 @@ export abstract class RootProtocolCacheable<
    */
   protected async hydrateOpportunityData(
     opportunities: TMinimal[],
-  ): Promise<{ data: TOpportunity[]; errors: Error[] }> {
+  ): Promise<IPoolDataProtocolResponse<TOpportunity>> {
     let tokens;
     try {
       tokens = await this.getTokensForOpportunities(opportunities);
@@ -266,16 +266,31 @@ export abstract class RootProtocolCacheable<
       ({ data: finalOpportunityList, errors }, opportunity) => {
         try {
           const pool = this.formatOpportunity(opportunity, tokens);
-          if (pool) {
-            finalOpportunityList.push(pool);
-          } else {
-            this.logger.warn(
-              `Missing opportunity information: ${opportunity.id}`,
-              this.constructor.name,
-            );
+          if (!pool) {
+            throw new MissingOpportunityException(opportunity, this.meta.chain);
           }
+
+          finalOpportunityList.push(pool);
         } catch (err) {
-          errors.push(err);
+          switch (true) {
+            case err instanceof MissingOpportunityException: {
+              this.logger.warn(err.message, this.constructor.name);
+              // TODO: enable in dev
+              // errors.push(err);
+              break;
+            }
+            case err instanceof MissingTokenException: {
+              this.logger.warn(err.message, this.constructor.name);
+              // TODO: enable in dev
+              // errors.push(err);
+              break;
+            }
+            default: {
+              this.logger.error(err.message, this.constructor.name);
+              errors.push(err);
+              break;
+            }
+          }
         }
         return { data: finalOpportunityList, errors };
       },
@@ -295,11 +310,7 @@ export abstract class RootProtocolCacheable<
     const addresses = this.getUniqueTokensFromRawPools(opportunities);
 
     // get all the priced tokens (including underlying tokens)
-    const tokens = await this.getOrSet(
-      60,
-      `cached_token_response_${this.meta.chain}_${this.protocolId}`,
-      () => this.getTokens(addresses),
-    );
+    const tokens = await this.getTokens(addresses);
 
     // return tokens
     return new Map(tokens);
@@ -382,12 +393,7 @@ export abstract class RootProtocolCacheable<
    * @param tokens map of all tokens (and token details) keyed by token address
    */
   protected formatOpportunity(opportunity: TMinimal, tokens: TokenMap): void | TOpportunity {
-    // handle any missing tokens
-
-    const tvl = opportunity.supplied.reduce((tvl, poolToken) => {
-      const token = tokens.get(poolToken.token.address);
-      return tvl + token.price * normalizeDecimals(poolToken.totalSupplied, token.decimals);
-    }, 0);
+    const tvl = this.getOpportunityTVL(opportunity, tokens);
 
     // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
     const base: any = {
@@ -395,57 +401,101 @@ export abstract class RootProtocolCacheable<
       id: opportunity.id,
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
-      token: this.formatOpportunityReceiptToken(opportunity, tokens.get(opportunity.id), tokens),
     };
 
+    const receipt = this.formatOpportunityReceiptToken(
+      opportunity,
+      tokens.get(opportunity.id),
+      tokens,
+    );
+    if (receipt) {
+      base.token = receipt;
+    }
+
+    // fill & format supplied tokens
     if ('supplied' in opportunity) {
-      if (!opportunity.supplied.every((t) => tokens.has(t.token.address))) {
-        const token = opportunity.supplied.find((t) => !tokens.has(t.token.address));
-        // throw new MissingSuppliedToken(`Failed to find ${token}`, this.constructor.name)
-        throw new Error(`Failed to find Supplied: ${JSON.stringify(token)}`);
+      base.supplied = opportunity.supplied.map((poolToken) => {
+        const token = tokens.get(poolToken.token.address);
+        if (!token) {
+          throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+        }
+
+        return this.formatOpportunitySuppliedToken(poolToken, token);
+      });
+    } else if ('supply' in opportunity) {
+      const token = tokens.get(opportunity.supply.token.address);
+      if (!token) {
+        throw new MissingTokenException(opportunity.supply.token, opportunity, this.meta.chain);
       }
 
-      base.supplied = opportunity.supplied.map((poolToken) =>
-        this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
-      );
-    }
-    if ('supply' in opportunity) {
-      if (!tokens.has(opportunity.supply.token.address)) {
-        // throw new MissingSuppliedToken(`Failed to find ${token}`, this.constructor.name)
-        throw new Error(`Failed to find Supplied: ${JSON.stringify(opportunity.supply.token)}`);
-      }
-
-      base.supplied = [
-        this.formatOpportunitySuppliedToken(
-          opportunity.supply,
-          tokens.get(opportunity.supply.token.address),
-        ),
-      ];
+      base.supply = this.formatOpportunitySuppliedToken(opportunity.supply, token);
     }
 
+    // fill & format reward tokens
     if ('rewarded' in opportunity) {
-      if (!opportunity.rewarded.every((t) => tokens.has(t.token.address))) {
-        const token = opportunity.rewarded.find((t) => !tokens.has(t.token.address));
-        // throw new MissingRewardedToken(`Failed to find ${token}`, this.constructor.name)
-        throw new Error(`Failed to find Rewarded: ${token.token.address}`);
-      }
-      base.rewarded = opportunity.rewarded?.map((poolToken) =>
-        this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
-      );
-    }
-    if ('borrowed' in opportunity) {
-      if (!opportunity.borrowed.every((t) => tokens.has(t.token.address))) {
-        const token = opportunity.borrowed.find((t) => !tokens.has(t.token.address));
+      base.rewarded = opportunity.rewarded.map((poolToken) => {
+        const token = tokens.get(poolToken.token.address);
+        if (!token) {
+          throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+        }
 
-        // throw new MissingBorrowedToken(`Failed to find ${token}`, this.constructor.name)
-        throw new Error(`Failed to find Borrowed: ${token.token.address}`);
+        return this.formatOpportunityRewardedToken(poolToken, token, tvl);
+      });
+    } else if ('reward' in opportunity) {
+      const token = tokens.get(opportunity.reward.token.address);
+      if (!token) {
+        throw new MissingTokenException(opportunity.reward.token, opportunity, this.meta.chain);
       }
-      base.borrowed = opportunity.borrowed?.map((poolToken) =>
-        this.formatOpportunityBorrowedToken(poolToken, tokens.get(poolToken.token.address)),
-      );
+
+      base.reward = this.formatOpportunityRewardedToken(opportunity.reward, token, tvl);
+    }
+
+    // fill & format borrowed tokens
+    if ('borrowed' in opportunity) {
+      base.borrowed = opportunity.borrowed.map((poolToken) => {
+        const token = tokens.get(poolToken.token.address);
+        if (!token) {
+          throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+        }
+
+        return this.formatOpportunityBorrowedToken(poolToken, token);
+      });
+    } else if ('borrow' in opportunity) {
+      const token = tokens.get(opportunity.borrow.token.address);
+      if (!token) {
+        throw new MissingTokenException(opportunity.borrow.token, opportunity, this.meta.chain);
+      }
+
+      base.borrow = this.formatOpportunityBorrowedToken(opportunity.borrow, token);
     }
 
     return base;
+  }
+
+  protected getOpportunityTVL(opportunity: TMinimal, tokens: TokenMap): number {
+    if ('supplied' in opportunity) {
+      return opportunity.supplied.reduce((tvl, position) => {
+        return (
+          tvl + this.getTokenPositionTVL(tokens.get(position.token.address), position.totalSupplied)
+        );
+      }, 0);
+    } else if ('supply' in opportunity) {
+      return this.getTokenPositionTVL(
+        tokens.get(opportunity.supply.token.address),
+        opportunity.supply.totalSupplied,
+      );
+    }
+
+    //TODO: throw error if no supplied tokens
+    return 0;
+  }
+
+  private getTokenPositionTVL(token: ERC20Token, total: string | undefined) {
+    if (!token.price || !total) {
+      return 0;
+    }
+
+    return token.price * normalizeDecimals(total, token.decimals);
   }
 
   /**
@@ -485,7 +535,6 @@ export abstract class RootProtocolCacheable<
     return {
       token,
       apy,
-      totalSupply: normalizeDecimals(supplied.totalSupply, token.decimals), // TODO: Move into token
       tvl: totalSupplied * token.price,
     };
   }
@@ -498,7 +547,7 @@ export abstract class RootProtocolCacheable<
     const tokensPerSecond = normalizeDecimals(poolToken.rewardPerSecond, token.decimals);
     const pricePerSecond = tokensPerSecond * token.price;
 
-    const { apr: harvests } = this.getYieldBreakdown(tokensPerSecond, 1);
+    const { apr: harvests } = this.getHarvestBreakdown(tokensPerSecond);
     const { apr, apy } = this.getYieldBreakdown(pricePerSecond, tvl);
 
     return {

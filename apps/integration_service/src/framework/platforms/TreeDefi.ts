@@ -2,10 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
+import { IMasterChefMeta } from '../support/EVM/protocols/Yield/MasterChef';
 import { MasterChefTreeDefi } from '../support/EVM/protocols/Yield/MasterChefTreeDefi';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class TreeDefi extends RootPlatform {
   constructor(
@@ -18,7 +20,7 @@ export class TreeDefi extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
 
       links: {
         url: 'https://treedefi.com',
@@ -27,7 +29,7 @@ export class TreeDefi extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(MasterChefTreeDefi, {
+    await this.registerProtocol<IMasterChefMeta>(MasterChefTreeDefi, {
       chain: ChainIdEnum.bnb,
       name: 'Farms - Masterchef',
       feature: FeatureEnum.staking,

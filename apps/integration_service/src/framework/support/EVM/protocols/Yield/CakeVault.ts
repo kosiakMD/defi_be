@@ -3,13 +3,14 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
   IProtocolMeta,
@@ -25,12 +26,12 @@ import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
 interface ICakeVaultContext {
-  masterchef: Address;
   poolId: number;
-  totalStaked: string;
-  stakedToken: Address;
-  rewardToken: Address;
-  pricePerShare: string;
+  masterchef?: Address;
+  totalStaked?: string;
+  stakedToken?: Address;
+  rewardToken?: Address;
+  pricePerShare?: string;
 }
 
 export interface ICakeVaultMeta extends IProtocolMeta {
@@ -84,8 +85,6 @@ export class CakeVault
   protected async fetchOpportunityData(
     context: ICakeVaultContext,
   ): Promise<IStakingFeatureMinimal[]> {
-    // fetch masterchef abi
-
     const rewardPerSecond = await this.fetchRewardPerSecond(context);
     // get totalAllocPoints
     // get pool 0 allocPoint
@@ -153,25 +152,35 @@ export class CakeVault
     };
   }
 
-  protected fetchUserData(addresses: Address[], pools: IStakingFeatureOpportunity[]) {
+  protected async fetchUserData(
+    address: Address,
+    pools: IStakingFeatureOpportunity[],
+  ): Promise<IStakingFeatureUserEntry[]> {
     const contract = this.getMainContract();
 
     const calls = new Map();
-    addresses.forEach((address) => {
-      return pools.forEach((pool) => {
-        calls.set(
-          `${pool.id}.balanceOf(${address})`,
-          contract.createCall(this.functions.userInfo, address),
-        );
+    pools.forEach((pool) => {
+      calls.set(
+        `${pool.id}.balanceOf(${address})`,
+        contract.createCall(this.functions.userInfo, address),
+      );
 
-        calls.set(
-          this.functions.pricePerShare.name,
-          contract.createCall(this.functions.pricePerShare),
-        );
-      });
+      calls.set(
+        this.functions.pricePerShare.name,
+        contract.createCall(this.functions.pricePerShare),
+      );
     });
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
   }
   protected formatUserData(
     address: string,
@@ -204,9 +213,14 @@ export class CakeVault
   }
 
   protected async fetchRewardPerSecond(context: {
-    masterchef: Address;
+    masterchef?: Address;
     poolId: number;
   }): Promise<string> {
+    // fetch masterchef abi
+    if (!context.masterchef) {
+      throw new Error('Failed to find active masterchef for cakevault');
+    }
+
     const masterChefAbi = await this.abiService.fetchAbi(context.masterchef, this.meta.chain);
     const contract = new DynamicContract(context.masterchef);
 

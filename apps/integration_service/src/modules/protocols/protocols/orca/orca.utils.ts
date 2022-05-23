@@ -43,6 +43,9 @@ export function filterResponsesUserFarms(responses: any[]) {
 export function filterResponsesGlobalFarm(responses: any[]) {
   const filteredResponses = new Map();
   for (const response of responses) {
+    const [id] = response.id.split(':');
+    const gettedData = filteredResponses.get(id);
+
     if (response.result.value?.data) {
       const [data, encoding] = response.result.value.data;
       const decoded = globalFarmStruct.decode(Buffer.from(data, encoding));
@@ -50,20 +53,17 @@ export function filterResponsesGlobalFarm(responses: any[]) {
       decodedData['cumulativeEmissionsPerFarmToken'] = uint256ToDecimal(
         decoded.cumulativeEmissionsPerFarmToken,
       );
-
-      const gettedData = filteredResponses.get(response.id);
       if (!gettedData) {
-        filteredResponses.set(response.id, decodedData);
+        filteredResponses.set(id, decodedData);
       } else {
-        filteredResponses.set(response.id, { ...gettedData, ...decodedData });
+        filteredResponses.set(id, { ...gettedData, ...decodedData });
       }
     } else if (response.result.value?.amount) {
       const amountTokens = {
         totalDeposit: response.result.value?.amount,
       };
-      const gettedData = filteredResponses.get(response.id);
       if (!gettedData) {
-        filteredResponses.set(response.id, amountTokens);
+        filteredResponses.set(id, amountTokens);
       } else {
         gettedData.totalDeposit = response.result.value?.amount;
       }

@@ -37,14 +37,17 @@ export abstract class SingleContractProtocol<
    */
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
 
-  // TODO: Type. The output on this, is the 'data' input on formatUserData
-  protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
-  // TODO: type; data: any is the return value from getAsyncUserData
-  protected abstract formatUserData(
+  /**
+   * Fetches user balances and injects into pools
+   *
+   * @param address User Address
+   * @param pools All Available pools
+   */
+  protected abstract fetchUserData(
     address: Address,
-    pool: TOpportunityType,
-    data: any,
-  ): TUserEntryType;
+    pools: TOpportunityType[],
+  ): Promise<TUserEntryType[]>;
+
   functions: INamedFunctions = {};
 
   /**
@@ -92,8 +95,9 @@ export abstract class SingleContractProtocol<
   /**
    * Fetches all user positions in this protocol
    *
-   * @param addresses user addresses
-   * @returns user wallets related to this protocol
+   * @param address user address
+   * @param pools all available pools
+   * @returns pools with balances filled in
    */
   async getUsersData(addresses: Address[]): Promise<IUserDataProtocolResponse<TUserEntryType>> {
     const { data: pools, errors } = await this.getPoolData();
@@ -103,16 +107,14 @@ export abstract class SingleContractProtocol<
     );
 
     try {
-      const multicallResults = await this.fetchUserData(addresses, pools);
-
-      addresses.forEach((address) => {
-        pools.forEach((pool) => {
-          const userPool = this.formatUserData(address, pool, multicallResults);
-          if (userPool) {
-            results.get(address).push(userPool);
+      await Promise.allSettled(
+        addresses.map(async (address) => {
+          const userPools = await this.fetchUserData(address, pools);
+          if (userPools.length) {
+            results.get(address).push(...userPools);
           }
-        });
-      });
+        }),
+      );
     } catch (err) {
       errors.push(err);
     }

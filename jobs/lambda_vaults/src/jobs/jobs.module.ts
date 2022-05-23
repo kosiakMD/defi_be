@@ -89,6 +89,7 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
+import { WingRidersPools } from './wingriders/wingriders.pools';
 
 const Anchor = [AnchorLp, AnchorStaking];
 const Astroport = [AstroportLp, AstroportStaking];
@@ -154,6 +155,7 @@ const Marinade = [MarinadePools];
 const SundaeSwap = [SundaeswapPools];
 const Minswap = [MinswapPools];
 const Osmosis = [OsmosisPools];
+const WingRiders = [WingRidersPools];
 
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
@@ -184,6 +186,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Marinade,
   ...Minswap,
   ...Osmosis,
+  ...WingRiders,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];

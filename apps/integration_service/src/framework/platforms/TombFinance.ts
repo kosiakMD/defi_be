@@ -2,10 +2,15 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { MasterChefCemetary } from '../support/EVM/protocols/Yield/MasterChefCemetary';
+import { TombMasonry } from '../support/EVM/protocols/AlgoStable/TombMasonry';
+import {
+  IMasterChefCemetaryMeta,
+  MasterChefCemetary,
+} from '../support/EVM/protocols/Yield/MasterChefCemetary';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class TombFinance extends RootPlatform {
   constructor(
@@ -18,7 +23,7 @@ export class TombFinance extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://tomb.finance/',
         logo: 'https://icons.llama.fi/tomb-finance.jpg',
@@ -26,19 +31,14 @@ export class TombFinance extends RootPlatform {
       },
     });
 
-    // TODO: Add algo stable (boardroom)
-    // await this.registerProtocol(AlgoStable, {
-    //     chain: ChainIdEnum.ftm,
-    //     name: 'Masonry',
-    //     feature: FeatureEnum.staking,
-    //     address: '0x8764DE60236C5843D9faEB1B638fbCE962773B67',
-    //     data: {
-    //         share: '0x4cdf39285d7ca8eb3f090fda0c069ba5f4145b37',
-    //         reward: '0x6c021ae822bea943b2e66552bde1d2696a53fbb7'
-    //     },
-    //   });
+    await this.registerProtocol(TombMasonry, {
+      chain: ChainIdEnum.ftm,
+      name: 'Masonry',
+      feature: FeatureEnum.staking,
+      address: '0x8764DE60236C5843D9faEB1B638fbCE962773B67',
+    });
 
-    await this.registerProtocol(MasterChefCemetary, {
+    await this.registerProtocol<IMasterChefCemetaryMeta>(MasterChefCemetary, {
       chain: ChainIdEnum.ftm,
       name: 'Cemetary',
       feature: FeatureEnum.staking,
@@ -50,7 +50,7 @@ export class TombFinance extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(MasterChefCemetary, {
+    await this.registerProtocol<IMasterChefCemetaryMeta>(MasterChefCemetary, {
       chain: ChainIdEnum.ftm,
       name: 'Genesis',
       feature: FeatureEnum.staking,

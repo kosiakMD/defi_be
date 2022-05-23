@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { AaveV3Lending } from '../support/EVM/protocols/Lending/AaveV3Lending';
+import { AaveV3Lending, IAaveV3Meta } from '../support/EVM/protocols/Lending/AaveV3Lending';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class AaveV3 extends RootPlatform {
   constructor(
@@ -18,7 +19,7 @@ export class AaveV3 extends RootPlatform {
   async register(): Promise<void> {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://aave.com',
         logo: 'https://icons.llama.fi/aave-v3.png',
@@ -26,7 +27,7 @@ export class AaveV3 extends RootPlatform {
       },
     });
 
-    await this.registerProtocol(AaveV3Lending, {
+    await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
       chain: ChainIdEnum.plg,
       name: 'Lending - Aave',
       feature: FeatureEnum.lending,
@@ -36,7 +37,7 @@ export class AaveV3 extends RootPlatform {
       context: {},
     });
 
-    await this.registerProtocol(AaveV3Lending, {
+    await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
       chain: ChainIdEnum.ftm,
       name: 'Lending - Aave',
       feature: FeatureEnum.lending,
@@ -46,7 +47,7 @@ export class AaveV3 extends RootPlatform {
       context: {},
     });
 
-    await this.registerProtocol(AaveV3Lending, {
+    await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
       chain: ChainIdEnum.arbi,
       name: 'Lending - Aave',
       feature: FeatureEnum.lending,
@@ -56,7 +57,7 @@ export class AaveV3 extends RootPlatform {
       context: {},
     });
 
-    await this.registerProtocol(AaveV3Lending, {
+    await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
       chain: ChainIdEnum.avax,
       name: 'Lending - Aave',
       feature: FeatureEnum.lending,
@@ -77,7 +78,7 @@ export class AaveV3 extends RootPlatform {
     // context: {},
     // });
 
-    await this.registerProtocol(AaveV3Lending, {
+    await this.registerProtocol<IAaveV3Meta>(AaveV3Lending, {
       chain: ChainIdEnum.opt,
       name: 'Lending - Aave',
       feature: FeatureEnum.lending,

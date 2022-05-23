@@ -433,7 +433,12 @@ export class CurveGaugesBase implements JobInterface {
       });
 
       const [{ prices }, multicallResponses] = await Promise.all([
-        this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+        this.priceService.getCurrentPrices(
+          tokenAddresses,
+          CurrencyIdEnum.usd,
+          this.chain,
+          this.protocol,
+        ),
         this.multicallService.handleInBatches(calls, this.chain),
       ]);
 
@@ -500,11 +505,12 @@ export class CurveGaugesBase implements JobInterface {
           // Update parent stats
           position.stats.tvl += coin.value;
 
-          if (!price) {
-            this.logger.warn(
-              `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
-            );
-          }
+          // TODO: temporarily to make logs clearer
+          // if (!price) {
+          //   this.logger.warn(
+          //     `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
+          //   );
+          // }
 
           if (coin.tokens?.length) {
             let lpValue = 0;
@@ -519,12 +525,12 @@ export class CurveGaugesBase implements JobInterface {
               underlyingToken.price = Number(prices[underlyingToken.address.toLowerCase()]);
               underlyingToken.value = underlyingToken.reserve * underlyingToken.price;
               lpValue += underlyingToken.value;
-
-              if (!underlyingToken.price) {
-                this.logger.warn(
-                  `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
-                );
-              }
+              // TODO: temporarily to make logs clearer
+              // if (!underlyingToken.price) {
+              //   this.logger.warn(
+              //     `Missing Curve token price Chain: ${this.chain}, address: ${underlyingToken.address} - (${underlyingToken.symbol})`,
+              //   );
+              // }
             });
             coin.value = lpValue;
           } else {

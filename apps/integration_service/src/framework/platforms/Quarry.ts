@@ -2,11 +2,12 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { RootPlatform } from '../support/RootPlatform';
 import { QuarryStaking } from '../support/Solana/protocols/Yield/Quarry/QuarryStaking';
 import { IQuarryMeta } from '../support/Solana/protocols/Yield/Quarry/interfaces';
+import { FeatureEnum } from '../support/enums';
 
 export class Quarry extends RootPlatform {
   constructor(
@@ -19,7 +20,7 @@ export class Quarry extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://quarry.so',
         logo: 'https://icons.llama.fi/quarry.png',
@@ -28,14 +29,13 @@ export class Quarry extends RootPlatform {
     });
 
     const endpointQuarry =
-      'https://gist.githubusercontent.com/x-ror/e0726d93bcc62b4ff5583479a5b79795/raw/';
-    // const endpointQuarry = 'https://api.sonar.watch/latest/farms';
+      'https://raw.githubusercontent.com/QuarryProtocol/rewarder-list-build/master/mainnet-beta/all-rewarders-with-info.json';
 
     await this.registerProtocol<IQuarryMeta>(QuarryStaking, {
       chain: ChainIdEnum.sol,
       name: 'Quarry',
       feature: FeatureEnum.staking,
-      api: {
+      context: {
         endpoint: endpointQuarry,
       },
     });

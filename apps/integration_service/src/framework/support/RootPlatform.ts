@@ -4,10 +4,11 @@ import { ClassConstructor } from 'class-transformer';
 
 import { ModuleRef } from '@nestjs/core';
 
-import { Address, ChainId, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainId, ChainIdEnum, Logger } from '@app/common';
 import { groupBy, keepAddressesByChainId } from '@app/common/utils';
 import { getChainById } from '@app/common/utils';
 
+import { FeatureEnum } from './enums';
 import {
   IChainGroupedWallet,
   IChainUserEntry,
@@ -80,7 +81,7 @@ export abstract class RootPlatform implements IRootPlatform {
 
     return {
       name: this.meta.name, // human readable name
-      project: this.meta.project, // slug/key
+      slug: this.meta.slug, // slug/key
       features: Array.from(features.entries()).map(([chain, list]) => ({
         chain: getChainById(chain),
         list: Array.from(list),

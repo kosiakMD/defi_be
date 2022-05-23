@@ -17,4 +17,5 @@ export const blockscanConfig = {
   BLOCKSCAN_OPT_URL: Joi.string().default('https://api-optimistic.etherscan.io/api'),
   BLOCKSCAN_ARBI_KEY: Joi.string().required(),
   BLOCKSCAN_ARBI_URL: Joi.string().default('https://api.arbiscan.io/api'),
+  BLOCKSCAN_BOBA_URL: Joi.string().default('https://blockexplorer.boba.network/api'),
 };

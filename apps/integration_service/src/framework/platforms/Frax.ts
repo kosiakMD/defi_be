@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { FraxStaking } from '../support/EVM/protocols/Yield/FraxStaking';
+import { FraxStaking, IFraxStakingMeta } from '../support/EVM/protocols/Yield/FraxStaking';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class Frax extends RootPlatform {
   constructor(
@@ -18,10 +19,10 @@ export class Frax extends RootPlatform {
   async register(): Promise<void> {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
     });
 
-    await this.registerProtocol(FraxStaking, {
+    await this.registerProtocol<IFraxStakingMeta>(FraxStaking, {
       chain: ChainIdEnum.eth,
       name: 'Farming - Frax',
       feature: FeatureEnum.staking,

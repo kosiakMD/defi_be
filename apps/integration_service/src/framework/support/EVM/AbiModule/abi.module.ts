@@ -10,6 +10,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AbiService } from './AbiService';
 import { BlockScan } from './BlockScan.service';
 import { BlockScout } from './BlockScout.service';
+import { LocalFile } from './LocalFile.service';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 
@@ -29,7 +30,14 @@ import { BlockScout } from './BlockScout.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [AbiService, BlockScan, BlockScout, MulticallAggregator, Web3ProviderService],
+  providers: [
+    AbiService,
+    BlockScan,
+    BlockScout,
+    LocalFile,
+    MulticallAggregator,
+    Web3ProviderService,
+  ],
   exports: [AbiService],
 })
 export class AbiModule {}

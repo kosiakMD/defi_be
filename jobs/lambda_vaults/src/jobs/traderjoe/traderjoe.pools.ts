@@ -268,6 +268,7 @@ export class TraderjoePools implements JobInterface {
         pricedTokenAddresses,
         CurrencyIdEnum.usd,
         ChainIdEnum.avax,
+        this.protocol,
       ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.avax),
     ]);

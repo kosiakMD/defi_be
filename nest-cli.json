@@ -122,6 +122,21 @@
         ]
       }
     },
+    "scheduler_service": {
+      "type": "application",
+      "root": "apps/scheduler_service",
+      "entryFile": "main",
+      "sourceRoot": "apps/scheduler_service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/scheduler_service/tsconfig.app.json",
+        "assets": [
+          {
+            "include": "../config/*",
+            "outDir": "./dist/apps/scheduler_service"
+          }
+        ]
+      }
+    },
     "migration_chain_crawler": {
       "type": "application",
       "root": "jobs/migration_chain_crawler",
@@ -221,17 +236,17 @@
         "tsConfigPath": "jobs/lambda_protocol_prices/tsconfig.app.json"
       }
     },
-    "categorization_tool": {
+    "categorization_service": {
       "type": "application",
-      "root": "apps/categorization_tool",
+      "root": "apps/categorization_service",
       "entryFile": "main",
-      "sourceRoot": "apps/categorization_tool/src",
+      "sourceRoot": "apps/categorization_service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/categorization_tool/tsconfig.app.json",
+        "tsConfigPath": "apps/categorization_service/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/categorization_tool"
+            "outDir": "./dist/apps/categorization_service"
           }
         ]
       }

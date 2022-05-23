@@ -1,0 +1,119 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent any
+    parameters {
+        string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
+        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_prices_cleanup", trim: true)
+        string(name: "FUNCTION_NAME", description: "Function name use for naming. Must be lowercase", defaultValue: "prices_cleanup", trim: true)
+        string(name: "ENVIRONMENT", description: "Environment name use for naming. Must be lowercase", defaultValue: "prod", trim: true)
+        string(name: "PROJECT_DIR", description: "Directory name with project files.", defaultValue: "terraform_scenario/terraform_prices_cleanup", trim: true)
+        string(name: "ENV_REGION", description: "AWS region for environment. Must be lowercase", defaultValue: "eu-central-1", trim: true)
+        string(name: "SCHEDULE_MINUTES", description: "Amazon EventBridge Rules. Run Lambda function every x minutes", defaultValue: "180", trim: true)
+    }
+    options {
+        buildDiscarder(
+            logRotator(
+                numToKeepStr: "50",
+                daysToKeepStr: "60",
+                artifactNumToKeepStr: "50",
+                artifactDaysToKeepStr: "60"
+            )
+        )
+    }
+    environment {
+        DOCKER_REGISTRY     = ""
+        DOCKER_IMAGE        = ""
+        DOCKER_REGISTRY_NAME = "${ENVIRONMENT}_${FUNCTION_NAME}"
+        DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.${ENV_REGION}.amazonaws.com"
+        DOCKER_CREDENTIALS  = "ecr:${ENV_REGION}:defiyield-aws"
+        DOCKER_TAG = sh(script: "git log --pretty=tformat:'%h' -n1", returnStdout: true).trim().take(7)
+    }
+    stages {
+        stage("Build") {
+            steps {
+                script {
+                    docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
+                        SERVICE_FOLDER = "/"
+                        DOCKER_REGISTRY = DOCKER_REGISTRY_URL.replace("https://", "")
+                        DOCKER_IMAGE = docker.build("${DOCKER_REGISTRY_NAME}:${DOCKER_TAG}", "-f ./${PROJECT_DIR}/${DOCKERFILE_NAME} .")
+                    }
+                }
+            }
+        }
+        stage("CheckECR") {
+            steps {
+                    script {
+                    sh """#!/bin/bash
+                    aws ecr create-repository --region ${ENV_REGION} --repository-name ${DOCKER_REGISTRY_NAME} || true
+                    """
+                }
+            }
+        }
+        stage("Push") {
+            steps {
+                script {
+                    docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
+                        DOCKER_IMAGE.push()
+                        DOCKER_IMAGE.push("latest")
+                    }
+                    writeJSON(
+                        file: "image.json",
+                        pretty: 4,
+                        json: [
+                            "image": DOCKER_IMAGE.imageName(),
+                            "registry": DOCKER_REGISTRY,
+                            "repository": DOCKER_REGISTRY_NAME,
+                            "tag": DOCKER_TAG
+                        ]
+                    )
+                    archiveArtifacts(
+                        artifacts: "image.json",
+                        fingerprint: true,
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        stage("Terraform") {
+            steps {
+                    script {
+                        TF_VAR_tf_state_bucket = "defiyield-terraform-states"
+                        TF_VAR_tf_region = "eu-central-1"
+                    sh """#!/bin/bash
+                    wget -q -O terraform_1.0.0_linux_amd64.zip https://releases.hashicorp.com/terraform/1.0.0/terraform_1.0.0_linux_amd64.zip
+                    unzip terraform_1.0.0_linux_amd64.zip
+                    ./terraform --version
+                    ./terraform -chdir=${PROJECT_DIR} init -backend-config "bucket=${TF_VAR_tf_state_bucket}" -backend-config "region=${TF_VAR_tf_region}" -backend-config "key=${ENVIRONMENT}/lambda/${FUNCTION_NAME}/terraform.tfstate"
+                    ./terraform -chdir=${PROJECT_DIR} apply \
+                    -var "tf_state_bucket=${TF_VAR_tf_state_bucket}" \
+                    -var "tf_region=${TF_VAR_tf_region}" \
+                    -var "environment=${ENVIRONMENT}" \
+                    -var "env_region=${ENV_REGION}" \
+                    -var "lambda_name=${FUNCTION_NAME}" \
+                    -var "image_tag=${DOCKER_TAG}" \
+                    -var "schedule_minutes=${SCHEDULE_MINUTES}" \
+                    --auto-approve -compact-warnings
+                    rm -rf ./terraform
+                    rm -rf ./${PROJECT_DIR}/.terraform
+                    rm -rf ./${PROJECT_DIR}/.terraform.lock.hcl
+                    """
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+            script {
+                currentBuild.displayName = "${env.JOB_BASE_NAME} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
+                currentBuild.description = DOCKER_IMAGE.imageName()
+            }
+            sh """
+                docker rmi --force \
+                  ${DOCKER_IMAGE.imageName()} \
+                  ${DOCKER_REGISTRY}/${DOCKER_REGISTRY_NAME}:latest
+            """
+        }
+    }
+}

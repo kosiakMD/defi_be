@@ -1,8 +1,9 @@
 import { Job } from 'bull';
-import { LessThan } from 'typeorm';
+import { Store } from 'cache-manager';
+import { plainToClass } from 'class-transformer';
 
 import { Process, Processor } from '@nestjs/bull';
-import { Inject, LoggerService } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -10,23 +11,27 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 
 import { AssetsRepository } from '../../assets/repositories/assets.repository';
-import { AssetsService } from '../../assets/services/assets.service';
+import { AssetHistoricalPriceEntity } from '../entities/asset-historical-price.entity';
 import { AssetPriceEntity } from '../entities/asset-price.entity';
-import { AssetsPriceRepository } from '../repositories/asset-price.repository';
+import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
+import { PriceSourceRepository } from '../repositories/price-source.repository';
 import priceStrategies from '../strategies';
 import { AssetPrice } from '../types/asset-price.type';
 import { PriceJobData } from '../types/price-job-data.type';
+import { getAssetAveragePricesCacheKey, getAssetPriceCacheKey } from '../utils/price-cache.utils';
 
 @Processor('assets')
 export class AssetsCurrentPricesProcessor {
   constructor(
     @InjectRepository(AssetsRepository)
-    private readonly assetRepository: AssetsRepository,
-    @InjectRepository(AssetsPriceRepository)
-    private readonly assetsPriceRepository: AssetsPriceRepository,
-    private assetsService: AssetsService,
+    private readonly assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsHistoricalPriceRepository)
+    private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
+    @Inject(CACHE_MANAGER) private cacheManager: Store,
     private configService: ConfigService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectRepository(PriceSourceRepository)
+    private readonly priceSourceRepository: PriceSourceRepository,
   ) {}
 
   @Process('prices')
@@ -35,12 +40,7 @@ export class AssetsCurrentPricesProcessor {
       const {
         config: { chainId },
         strategy,
-        clearDBOnCurrentPrices,
       } = job.data;
-      if (clearDBOnCurrentPrices) {
-        this.clearDBOnCurrentPrices();
-        return JobCompleteStates.SUCCESS;
-      }
       this.logger.debug(
         `Processing price job for assets on chainId: ${chainId}, strategy: ${strategy}`,
       );
@@ -53,46 +53,98 @@ export class AssetsCurrentPricesProcessor {
     }
   }
 
-  private async clearDBOnCurrentPrices(): Promise<void> {
+  public async clearDBOnCurrentPrices(): Promise<void> {
+    await this.assetsHistoricalPriceRepository.clearPrices();
+  }
+
+  public async createHistoricalPrices(): Promise<void> {
     // TODO: implement database time granularity cleaning
     try {
-      await this.assetsPriceRepository.delete({
-        timestamp: LessThan(
-          new Date(
-            Date.now() -
-              this.configService.get<number>('ASSETS_CURRENT_PRICES_DEADLINE_TO_KEEP_IN_DATABASE'),
-          ),
-        ),
-      });
+      const assets = await this.assetsRepository.getAllTrackedAssets();
+      for (const asset of assets) {
+        const { address, chainId } = asset;
+        const cachedAssetAveragePricesKey = getAssetAveragePricesCacheKey({ address, chainId });
+        const cachedAssetAveragePrices: AssetPriceEntity[] =
+          (await this.cacheManager.get(cachedAssetAveragePricesKey)) //
+            ?.filter(Boolean)
+            .map((price) => {
+              price.timestamp = new Date(price.timestamp);
+              return plainToClass(AssetHistoricalPriceEntity, price);
+            }) || [];
+        if (cachedAssetAveragePrices?.length) {
+          // Get start time to prcess and save prices every 15 mins
+          const m15 = 15 * 60 * 1000;
+          let startTime = this.getPricesM15StartTime(cachedAssetAveragePrices[0].timestamp);
+          let newPrice: AssetPriceEntity;
+          const assetPrices = [];
+          while (
+            startTime <
+            cachedAssetAveragePrices[cachedAssetAveragePrices.length - 1].timestamp.getTime() + m15
+          ) {
+            newPrice = this.getNearestArrayItemByTimestamp(
+              startTime,
+              cachedAssetAveragePrices,
+              m15,
+            );
+            if (newPrice) {
+              newPrice.timestamp = new Date(startTime);
+              newPrice.asset = asset;
+              assetPrices.push(newPrice);
+            }
+            startTime += m15;
+            newPrice = null;
+          }
+          await this.assetsHistoricalPriceRepository.upsert(assetPrices, ['asset', 'timestamp']);
+        }
+      }
     } catch (error) {
       this.logger.error(error.message);
     }
   }
 
+  private getNearestArrayItemByTimestamp(
+    timestamp: number,
+    prices: AssetPriceEntity[],
+    range: number,
+  ): AssetPriceEntity {
+    const earlierPrice = prices
+      .filter((price) => {
+        const priceTimestamp = price.timestamp.getTime();
+        return priceTimestamp <= timestamp && priceTimestamp > timestamp - range;
+      })
+      .pop();
+
+    const olderPrice = prices
+      .filter((price) => {
+        const priceTimestamp = price.timestamp.getTime();
+        return priceTimestamp <= timestamp + range && priceTimestamp > timestamp;
+      })
+      .shift();
+
+    if (earlierPrice && olderPrice) {
+      return timestamp - earlierPrice.timestamp.getTime() <
+        olderPrice.timestamp.getTime() - timestamp
+        ? earlierPrice
+        : olderPrice;
+    }
+
+    return earlierPrice ? earlierPrice : olderPrice;
+  }
+
+  private getPricesM15StartTime(timestamp: Date): number {
+    let minutes = timestamp.getMinutes();
+    minutes = minutes >= 45 ? 45 : minutes >= 30 ? 30 : minutes >= 15 ? 15 : 0;
+    return new Date(timestamp).setMinutes(minutes, 0, 0);
+  }
+
   private async updateAssetPrice(assetPrice: AssetPrice): Promise<void> {
     try {
+      const cacheKey = getAssetPriceCacheKey(assetPrice);
       const { price, sourceId } = assetPrice;
-      const [assetFromCache] = await this.assetsService.getAssetsFromCache([assetPrice]);
-      if (assetFromCache) {
-        if (!assetFromCache.prices) {
-          assetFromCache.prices = [];
-        }
-        let assetPrice = assetFromCache.prices.find(
-          (assetPrice) => assetPrice.sourceId === sourceId,
-        );
-        if (assetPrice) {
-          assetPrice.price = price;
-        } else {
-          assetPrice = new AssetPriceEntity();
-          assetPrice.price = price;
-          assetPrice.sourceId = sourceId;
-          assetFromCache.prices.push(assetPrice);
-        }
-        await this.assetsService.setAssetsToCache([assetFromCache]);
-      }
+      await this.cacheManager.set(cacheKey, { price, sourceId }, 30 * 60); // 30 min to process cached prices
     } catch (error) {
       this.logger.error(
-        `Error to update asset price ${JSON.stringify(assetPrice)} ${JSON.stringify(error)}`,
+        `Error to set asset price ${JSON.stringify(assetPrice)} to cache, ${JSON.stringify(error)}`,
       );
     }
   }
@@ -100,7 +152,7 @@ export class AssetsCurrentPricesProcessor {
   private async processingJob(jobData: PriceJobData): Promise<void> {
     const { strategy } = jobData;
     const priceStrategy = priceStrategies.get(strategy);
-    const assetsPrices = await priceStrategy.fetchPrices(jobData, this.assetRepository);
+    const assetsPrices = await priceStrategy.fetchPrices(jobData, this.assetsRepository);
     const promises = assetsPrices.map(this.updateAssetPrice.bind(this));
     await Promise.all(promises);
   }

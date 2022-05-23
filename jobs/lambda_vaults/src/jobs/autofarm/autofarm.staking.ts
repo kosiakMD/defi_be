@@ -219,6 +219,7 @@ export class AutofarmStaking implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     this.mapping = await Promise.all(

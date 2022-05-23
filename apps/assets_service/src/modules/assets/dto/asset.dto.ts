@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { AssetCategoryDto } from './asset-category.dto';
 import { AssetHistoricalPriceDto } from './asset-historical-price.dto';
-import { AssetPriceDto } from './asset-price.dto';
 import { AssetUnderlyingDto } from './asset-underlying.dto';
 
 @Exclude()
@@ -54,10 +53,6 @@ export class AssetDto {
   @Expose()
   @ApiProperty({ type: [AssetCategoryDto] })
   categories: AssetCategoryDto[];
-
-  @Expose()
-  @ApiProperty({ type: [AssetPriceDto] })
-  prices: AssetPriceDto[] = [];
 
   @Expose()
   @ApiProperty({ type: [AssetHistoricalPriceDto] })

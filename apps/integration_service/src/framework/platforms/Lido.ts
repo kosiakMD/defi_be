@@ -2,7 +2,7 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 
 import {
@@ -18,6 +18,7 @@ import {
   ILidoTerraMeta,
   LidoStaking as TerraLidoStaking,
 } from '../support/Terra/protocols/Yield/LidoStaking';
+import { FeatureEnum } from '../support/enums';
 
 export class Lido extends RootPlatform {
   constructor(
@@ -30,7 +31,7 @@ export class Lido extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         url: 'https://lido.fi/',
         logo: 'https://icons.llama.fi/lido.png',

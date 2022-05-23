@@ -1,8 +1,9 @@
 import type { AbiItem } from 'web3-utils';
 
-import type { Address, ChainDto, ChainId, ChainIdEnum, FeatureEnum } from '@app/common';
+import type { Address, ChainDto, ChainId, ChainIdEnum } from '@app/common';
 import { IPlatformLinks } from '@app/common/interfaces/platform.v3.links';
 
+import { FeatureEnum } from './enums';
 import {
   IClaimableFeatureOpportunity,
   IClaimableFeatureUser,
@@ -32,12 +33,11 @@ export interface IFeatureMeta {
 
 // minimum viable metadata
 export interface IPlatformMeta {
-  // Human Readable Name
+  // Human Readable Name (Display Name)
   name: string;
 
-  // Platform Slug/Key
-  // TODO: rename of Platform (or rename all Platforms as Projects)
-  project: string;
+  // Platform Slug/Key. Used in URL's and filenames
+  slug: string;
 
   // All enabled features for this platform
   // (detected automatically based on registered protocols)

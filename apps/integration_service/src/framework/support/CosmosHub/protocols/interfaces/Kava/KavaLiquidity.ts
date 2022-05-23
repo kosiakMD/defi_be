@@ -1,5 +1,4 @@
-import type { FeatureEnum } from '@app/common';
-
+import { FeatureEnum } from '../../../../enums';
 import type { IProtocolMeta } from '../../../../interfaces';
 import { BaseWithTokens } from '../../../../interfaces/new.interfaces';
 import { IRewardTokenMinimal } from '../../../../interfaces/tokens.rewarded.interface';

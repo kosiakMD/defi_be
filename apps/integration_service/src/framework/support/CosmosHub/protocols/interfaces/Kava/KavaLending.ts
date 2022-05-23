@@ -1,5 +1,4 @@
-import { FeatureEnum } from '@app/common';
-
+import { FeatureEnum } from '../../../../enums';
 import { IProtocolMeta } from '../../../../interfaces';
 
 export type UserLendingType = 'supplied' | 'borrowed';

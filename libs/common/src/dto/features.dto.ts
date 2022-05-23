@@ -95,8 +95,11 @@ export class ProtocolDataDto {
   features: ProtocolFeaturesExportDto[];
 }
 
-export class ProtocolV3DataDto extends ProtocolDataDto {
+export class ProtocolV3DataDto {
+  name: ProtocolName;
+  slug: string
   links?: IPlatformLinks
+  features: ProtocolFeaturesExportDto[];
 }
 
 export class FeaturesResponseDto extends ResponseDto<ProtocolDataDto[]> {

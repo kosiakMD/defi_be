@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, Logger } from '@app/common';
 
 import { MasterBelt } from '../support/EVM/protocols/Yield/MasterBelt';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 import { IProtocolMeta } from '../support/interfaces';
 
 interface IMasterChefMeta extends IProtocolMeta {
@@ -29,7 +30,7 @@ export class Belt extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
       links: {
         telegram: 'https://t.me/BeltFinance',
         twitter: 'https://twitter.com/BELT_Finance',

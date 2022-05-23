@@ -1,6 +1,7 @@
 import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -17,6 +18,7 @@ import { PricesModule } from './modules/prices/prices.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot(configuration(config)),
     TracingModule.forRoot({ serviceName: 'assets-service' }),
     TypeOrmModule.forRootAsync({

@@ -27,6 +27,7 @@ import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
+import { Marinade } from '../platforms/Marinade';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
@@ -34,9 +35,12 @@ import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
 import { Quarry } from '../platforms/Quarry';
 import { QuickSwap } from '../platforms/QuickSwap';
+import { RocketPool } from '../platforms/RocketPool';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { Solend } from '../platforms/Solend';
 import { SpookySwap } from '../platforms/SpookySwap';
+import { Stargate } from '../platforms/Stargate';
+import { Synapse } from '../platforms/Synapse';
 import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
@@ -86,6 +90,10 @@ export class PlatformService {
       Goose,
       BabySwap,
       YelFinance,
+      RocketPool,
+      Stargate,
+      Synapse,
+      Marinade,
     });
   }
 

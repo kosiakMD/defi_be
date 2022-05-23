@@ -71,7 +71,9 @@ export class PancakeV2Staking {
     let claimableData: Map<string, CallData> = new Map<string, CallData>();
     // we have only non zero balances here, so we can do this mapping:
     balances.forEach((b) => {
-      const vault = cachedPoolsMap.get(b.id.split('-')[1]);
+      const [, /*address */ id] = b.id.split('-');
+      const vault = cachedPoolsMap.get(id);
+      if (!vault) return;
       const stakingPosition: IntegrationStakingPositionDto = vault;
       // simple rewrite vault values with user values
       const balance = new BN(b.balance).div(decimalsDivider(vault.stakingToken.decimals));

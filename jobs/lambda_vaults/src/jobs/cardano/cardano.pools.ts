@@ -39,13 +39,13 @@ export abstract class CardanoPools {
     ]);
   }
 
-  protected abstract getPoolInformation(): Promise<Pool[]>;
+  protected abstract getPools(): Promise<Pool[]>;
 
   protected async buildInitialMapping(jobMapping: TrackedVault): Promise<any> {
     this.logger.log('building initial mapping', this.placeholder);
 
     const liquidityPools: LiquidityPoolFeature[] = [];
-    const pools = await this.getPoolInformation();
+    const pools = await this.getPools();
     const assets = await Promise.all(pools.map((pool) => this.saveAssets(pool)));
 
     for (const [assetA, assetB, assetLP] of assets) {
@@ -178,31 +178,36 @@ export abstract class CardanoPools {
   }
 
   protected async saveAssets(pool: Pool): Promise<LiquidityPoolTokenDto[]> {
-    const assetA = this.accountService.saveAsset({
-      address: pool.assetA.assetId || CARDANO_COIN_ADDRESS,
-      name: pool.assetA.assetName || 'ADA',
-      symbol: pool.assetA.ticker,
-      decimals: pool.assetA.decimals,
-      chain: this.chain,
-    });
+    try {
+      const assetA = this.accountService.saveAsset({
+        address: pool.assetA.assetId || CARDANO_COIN_ADDRESS,
+        name: pool.assetA.assetName || 'ADA',
+        symbol: pool.assetA.ticker,
+        decimals: pool.assetA.decimals,
+        chain: this.chain,
+      });
 
-    const assetB = this.accountService.saveAsset({
-      address: pool.assetB.assetId, //removeDotInAssetID
-      name: pool.assetB.assetName,
-      symbol: pool.assetB.ticker,
-      decimals: pool.assetB.decimals,
-      chain: this.chain,
-    });
+      const assetB = this.accountService.saveAsset({
+        address: pool.assetB.assetId, //removeDotInAssetID
+        name: pool.assetB.assetName,
+        symbol: pool.assetB.ticker,
+        decimals: pool.assetB.decimals,
+        chain: this.chain,
+      });
 
-    const assetLP = this.accountService.saveAsset({
-      address: pool.assetLP.assetId,
-      name: pool.name,
-      symbol: pool.name,
-      decimals: pool.assetB.decimals,
-      isLp: true,
-      chain: this.chain,
-    });
+      const assetLP = this.accountService.saveAsset({
+        address: pool.assetLP.assetId,
+        name: pool.name,
+        symbol: pool.name,
+        decimals: pool.assetB.decimals,
+        isLp: true,
+        chain: this.chain,
+      });
 
-    return Promise.all([assetA, assetB, assetLP]);
+      return Promise.all([assetA, assetB, assetLP]);
+    } catch (e) {
+      this.logger.error({ pool, this: this });
+      throw e;
+    }
   }
 }

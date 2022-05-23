@@ -95,6 +95,7 @@ import VenusProtocol from './protocols/venusProtocol';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WingRidersProtocol } from './protocols/wingriders/wingriders.protocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
@@ -149,6 +150,7 @@ export class ProtocolService {
     private readonly mirrorProtocol: MirrorProtocol,
     private readonly staderProtocol: StaderProtocol,
     private readonly osmosisProtocol: OsmosisProtocol,
+    private readonly wingridersProtocol: WingRidersProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -193,6 +195,7 @@ export class ProtocolService {
       mirrorProtocol,
       staderProtocol,
       osmosisProtocol,
+      wingridersProtocol,
     ];
   }
 

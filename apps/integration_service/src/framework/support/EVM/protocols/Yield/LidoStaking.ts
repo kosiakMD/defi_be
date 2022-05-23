@@ -5,12 +5,13 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
   IProtocolMeta,
@@ -166,20 +167,30 @@ export class LidoStaking
    * @param pools requested pools
    * @returns
    */
-  protected fetchUserData(addresses: Address[], pools: IStakingFeatureOpportunitySingle[]) {
+  protected async fetchUserData(
+    address: Address,
+    pools: IStakingFeatureOpportunitySingle[],
+  ): Promise<IStakingFeatureUserEntrySingle[]> {
     const contract = this.getMainContract();
 
     const calls = new Map();
-    addresses.forEach((address) => {
-      return pools.forEach((pool) => {
-        calls.set(
-          this.balanceOfLabel(pool.id, address),
-          contract.createCall(this.functions.balanceOf, address),
-        );
-      });
+    pools.forEach((pool) => {
+      calls.set(
+        this.balanceOfLabel(pool.id, address),
+        contract.createCall(this.functions.balanceOf, address),
+      );
     });
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
   }
 
   protected formatUserData(
@@ -190,7 +201,6 @@ export class LidoStaking
     const {
       output: { data: balanceRaw },
     } = data.get(this.balanceOfLabel(pool.id, address));
-
     // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
 

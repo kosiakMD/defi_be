@@ -50,6 +50,7 @@ export abstract class SolanaCore<
       // RPC to get token supplies
       firstValueFrom(
         this.httpService.post(
+          // TODO: SOL_URL or SOLANA_URL
           this.configService.get('SOL_URL'),
           tokensWithNativeAndWrapped.map((address) => ({
             jsonrpc: '2.0',
@@ -68,14 +69,16 @@ export abstract class SolanaCore<
     prices[NATIVE_SOL] = prices[WRAPPED_SOL];
 
     const supplyMap = new Map();
-    supplies?.forEach((supply) => {
-      if (supply.result?.value && !supply.error) {
-        return supplyMap.set(
-          supply.id,
-          normalizeDecimals(supply.result.value.amount, supply.result.value.decimals),
-        );
-      }
-    });
+    if (Array.isArray(supplies)) {
+      supplies.forEach((supply) => {
+        if (supply.result?.value && !supply.error) {
+          return supplyMap.set(
+            supply.id,
+            normalizeDecimals(supply.result.value.amount, supply.result.value.decimals),
+          );
+        }
+      });
+    }
 
     return tokens
       .filter((token) => addresses.includes(token.address))

@@ -6,7 +6,9 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
+import { QueueName } from '../../../common/enum/queue-name.enum';
 import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
@@ -18,7 +20,7 @@ import { AssetsRepository } from '../repositories/assets.repository';
 import { AssetsService } from '../services/assets.service';
 import { TokenService } from '../services/token.service';
 
-@Processor('assets')
+@Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
     @InjectRepository(AssetsRepository)
@@ -34,7 +36,11 @@ export class AssetsProcessor {
     private readonly tokenService: TokenService,
   ) {}
 
-  @Process('metadata')
+  @Process({
+    name: JobName.ASSET_METADATA,
+    // TODO: Move to config (testing this value)
+    concurrency: 2,
+  })
   public async handleMetadataJob(job: Job) {
     try {
       const { address, chainId } = job.data;

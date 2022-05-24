@@ -61,6 +61,7 @@ const priceStrategies = [
         maxStalledCount: 0,
       },
       defaultJobOptions: {
+        attempts: 3,
         removeOnComplete: true,
         removeOnFail: true,
       },

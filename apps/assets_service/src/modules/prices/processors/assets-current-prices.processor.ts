@@ -21,6 +21,7 @@ import { AssetPrice } from '../types/asset-price.type';
 import { PriceSource } from '../types/price-source.type';
 import { getAssetAveragePricesCacheKey, getAssetPriceCacheKey } from '../utils/price-cache.utils';
 
+// TODO: To be removed
 @Processor('assets')
 export class AssetsCurrentPricesProcessor {
   constructor(

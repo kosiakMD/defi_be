@@ -317,6 +317,8 @@
     "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.13.2",
+    "coingecko-api-v3": "^0.0.13",
+    "debank-open-api": "^1.0.1",
     "deep-object-diff": "^1.1.7",
     "dotenv": "^10.0.0",
     "es5": "^1.0.0",

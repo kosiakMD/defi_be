@@ -9,16 +9,12 @@ import { GetAssetResponse } from '../modules/assets/dto/get-asset.response';
 import { GetAssetsRequest } from '../modules/assets/dto/get-assets.request';
 import { GetAssetsResponse } from '../modules/assets/dto/get-assets.response';
 import { SearchResultsEntryDto } from '../modules/assets/dto/search-results-entry.dto';
-import { TrackedTokenPopulationProcessor } from '../modules/assets/processors/tracked-token-population.processor';
 import { AssetsService } from '../modules/assets/services/assets.service';
 
 @ApiTags('Assets')
 @Controller('assets')
 export class AssetsController {
-  constructor(
-    private readonly assetsService: AssetsService,
-    private readonly trackedTokenPopulationProcessor: TrackedTokenPopulationProcessor,
-  ) {}
+  constructor(private readonly assetsService: AssetsService) {}
 
   @Get('/')
   @ApiResponse({ status: HttpStatus.OK, type: GetAssetResponse })
@@ -69,12 +65,5 @@ export class AssetsController {
   async saveAssetsCandidate(@Body() body: AssetCandidateRequest) {
     await this.assetsService.saveAssetCandidate(body);
     return HttpStatus.ACCEPTED;
-  }
-
-  @Get('/populate-tokens')
-  @ApiResponse({ status: HttpStatus.OK })
-  async populateTokens() {
-    await this.trackedTokenPopulationProcessor.processingTTP();
-    return HttpStatus.OK;
   }
 }

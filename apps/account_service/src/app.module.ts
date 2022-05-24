@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
-import { ScheduleModule } from '@nestjs/schedule';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
@@ -48,7 +47,6 @@ const controllers = [
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     ConfigModule.forRoot(configuration(config)),
     TracingModule.forRoot({ serviceName: 'account-service' }),
     // TODO implement more universal logic

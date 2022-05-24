@@ -1,4 +1,4 @@
-import { ERC20 } from '../../../contracts/ERC20';
+import { ERC20 } from '../../../contracts/erc20.contract';
 import { MetadataStrategy } from './index';
 
 export class EVMMetaDataStrategy extends MetadataStrategy {

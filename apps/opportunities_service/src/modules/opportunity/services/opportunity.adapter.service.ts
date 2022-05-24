@@ -37,9 +37,16 @@ export class OpportunityAdapterService {
       farms.push(...localFarms);
       opportunities.push(...localOpportunities);
       this.logger.timeEnd(`Processing ${adapterClass.name}`);
+      this.logger.log(
+        `Processing ${adapterClass.name}. found: ${localFarms.length} Farms & ${localOpportunities.length} Opportunities`,
+      );
     }
-
-    return await this.refreshOpportunities(opportunities);
+    if (opportunities.length) {
+      return await this.refreshOpportunities(opportunities);
+    } else {
+      this.logger.warn('Failed to find any opportunities. Skipping');
+      return [];
+    }
   }
 
   async refreshOpportunities(opportunities: OpportunityCreateDto[]): Promise<any> {

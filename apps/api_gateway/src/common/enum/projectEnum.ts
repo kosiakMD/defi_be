@@ -1,4 +1,9 @@
-import { AnchorProtocolEnum, CurveProtocolEnum, YearnProtocolEnum } from '@app/common';
+import {
+  AaveV3ProtocolEnum,
+  AnchorProtocolEnum,
+  CurveProtocolEnum,
+  YearnProtocolEnum,
+} from '@app/common';
 
 import { QuickswapProtocolEnum } from '.';
 
@@ -78,4 +83,5 @@ export const ProtocolNameEnum = {
   ...EllipsisProtocolEnum,
   ...CurveProtocolEnum,
   ...AnchorProtocolEnum,
+  ...AaveV3ProtocolEnum,
 };

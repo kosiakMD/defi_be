@@ -27,6 +27,7 @@ export class PriceService {
     addresses: string[] | string,
     currency: CurrencyIdEnum,
     chain: ChainIdEnum,
+    integration = 'unknown',
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     try {
       return await this.httpService
@@ -41,7 +42,9 @@ export class PriceService {
         .toPromise();
     } catch (e) {
       if (e.isAxiosError) {
-        this.logger.error(new Error(`${e.code} at ${e.config.url}`));
+        this.logger.error(
+          new Error(`${e.code} at ${e.config.url}, chain ${chain}, integration ${integration}`),
+        );
         if (e.response) {
           this.logger.error(e.response.data);
         }

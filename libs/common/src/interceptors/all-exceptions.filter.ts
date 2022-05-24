@@ -1,4 +1,6 @@
-import { Request } from 'express';
+import { AxiosError } from 'axios';
+import { plainToClass } from 'class-transformer';
+import { Request, Response } from 'express';
 
 import {
   ArgumentsHost,
@@ -14,8 +16,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { EnvEnum, ErrorResponseDto, Logger } from '@app/common';
 import {
+  HEADER_PROTOCOL,
   HEADER_REQUEST_ID,
   HEADER_SESSION_ID,
+  HEADER_TIME_EXECUTE,
   HEADER_TIMESTAMP_ENTRY,
   HEADER_TIMESTAMP_EXIT,
 } from '@app/common/constant';
@@ -28,77 +32,92 @@ export class AllExceptionsFilter implements ExceptionFilter {
     protected readonly configService: ConfigService,
   ) {}
 
-  catch(exception: Error, host: ArgumentsHost): void {
+  catch(exception: any | Error | AxiosError, host: ArgumentsHost): void {
+    const isProd = this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production;
+    const isStage = this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.staging;
+    const hideStack = isProd || isStage;
     const hostType = host.getType();
     // TODO: implement all host types we use
     // 'http' | 'ws' | 'rpc'
-    // const context = host.switchToWs();
+    // OR host.switchToHttp() anyway
     if (hostType === 'http') {
       const contextHttp = host.switchToHttp();
 
-      const httpStatus =
-        exception instanceof HttpException
-          ? exception.getStatus()
-          : HttpStatus.INTERNAL_SERVER_ERROR;
+      let httpStatus: number;
+      if (exception.isAxiosError) {
+        httpStatus =
+          exception?.response?.status ||
+          exception?.response?.data?.status_code ||
+          exception?.request?.res?.statusCode;
+      } else {
+        httpStatus =
+          exception instanceof HttpException
+            ? exception.getStatus()
+            : HttpStatus.INTERNAL_SERVER_ERROR;
+      }
 
       const request: Request = contextHttp.getRequest<Request>();
 
-      let errorMessage;
-      if (
-        this.configService.get<EnvEnum>('NODE_ENV') === EnvEnum.production &&
-        exception.message.startsWith('connect ECONNREFUSED') &&
-        !exception.message.endsWith('Service')
-      ) {
-        errorMessage = 'connect ECONNREFUSED';
+      let errorMessage, error;
+
+      error = exception.toString();
+      if (exception.isAxiosError) {
+        errorMessage = exception?.response?.data?.message;
       } else {
         errorMessage = exception.message;
+      }
+      if (isProd || isStage) {
+        if (
+          exception.message &&
+          exception.message.startsWith('connect ECONNREFUSED') &&
+          !exception.message.endsWith('Service')
+        ) {
+          errorMessage = 'connect ECONNREFUSED';
+          error = 'ECONNREFUSED';
+        }
+        // TODO: for dev could be turned on
+        // } else {
+        //   error = exception;
       }
 
       // In certain situations `httpAdapter` might not be available in the
       // constructor method, thus we should resolve it here.
       const { httpAdapter } = this.httpAdapterHost;
-      const args = host.getArgs(); // TODO: m.b. take from request
-      const protocolName = args?.[0]?.params?.protocolName;
 
-      // N.B! letters sensitive to register and it's a risky
-      const reqId = request.header(HEADER_REQUEST_ID);
-      const sessionId = request.header(HEADER_SESSION_ID);
-      const timestampEntry = Number(request.header(HEADER_TIMESTAMP_ENTRY));
-      const timestampExit = Number(request.header(HEADER_TIMESTAMP_EXIT)) || Date.now();
-      const timeExecute = timestampExit - timestampEntry;
+      const response: Response = contextHttp.getResponse<Response>();
+      const reqId = response.get(HEADER_REQUEST_ID);
+      const sessionId = response.get(HEADER_SESSION_ID);
+      const timestampEntry = response.get(HEADER_TIMESTAMP_ENTRY);
+      const timestampExit = response.get(HEADER_TIMESTAMP_EXIT);
+      const timeExecute = response.get(HEADER_TIME_EXECUTE);
+      const protocolName = response.get(HEADER_PROTOCOL);
+
       // TODO: m.b. use plainToClass but seems no benefits
-      const responseBody: ErrorResponseDto = {
+      const responseBody: ErrorResponseDto = plainToClass(ErrorResponseDto, {
         statusCode: httpStatus,
-        message: errorMessage,
+        error: error,
+        message: errorMessage || exception.message || exception,
+        stack: hideStack ? undefined : exception.stack,
+        timestampEntry: timestampEntry,
+        timestampExit: timestampExit,
+        timeExecute: timeExecute,
         path: httpAdapter.getRequestUrl(request),
         reqId,
         sessionId,
-        timestampEntry: timestampEntry.toString(),
-        timestampExit: timestampExit.toString(),
-        timeExecute: timeExecute.toString(),
         protocolName,
-      };
+      });
+
+      const newException = { ...exception, responseBody: responseBody };
 
       this.logger.error(
-        { ...exception, responseBody: responseBody },
+        newException,
         `${exception.stack || ''}\n${this.constructor.name}`,
         // this.constructor.name,
       );
 
-      // const className = contextHttp.getClass().name;
-      // if (allowedControllers.includes(className)) {
-      //   Sentry.captureException(exception, {
-      //     level: Severity.Error,
-      //     extra: {
-      //       reqId,
-      //       sessionId,
-      //       protocolName,
-      //     },
-      //   });
-      // }
-
       httpAdapter.reply(contextHttp.getResponse(), responseBody, httpStatus);
     } else {
+      hideStack && delete exception.stack;
       throw exception;
     }
   }

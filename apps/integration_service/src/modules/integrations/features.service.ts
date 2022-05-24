@@ -4,8 +4,7 @@ import { Injectable } from '@nestjs/common';
 
 import { FeatureEnum } from '@app/common';
 import { ChainAbbrEnum } from '@app/common/enum';
-
-import { getChainByAbbr } from '../../common/utils/chain';
+import { getChainByAbbr } from '@app/common/utils';
 
 import { ProtocolService } from '../protocols/protocol.service';
 import { ProtocolDataDto, ProtocolFeaturesExportDto } from './dto/features.dto';

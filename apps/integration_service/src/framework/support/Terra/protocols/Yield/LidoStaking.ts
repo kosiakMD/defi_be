@@ -7,13 +7,14 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { AccountBalance, Address, ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { AccountBalance, Address, ChainIdEnum, Logger } from '@app/common';
 import { aprToApy, apyToApr, normalizeDecimals } from '@app/common/utils';
 import { Web3ProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import { FeatureEnum } from '../../../enums';
+import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
@@ -21,12 +22,20 @@ import {
 } from '../../../interfaces/feature.staking.interface';
 import { TerraCore } from '../../TerraCore';
 
-interface ILidoMeta extends IProtocolMeta {
+export interface ILidoTerraMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  address: Address;
+  context: any;
 }
 
 export class LidoStaking
-  extends TerraCore<IStakingFeatureMinimal, IStakingFeatureOpportunity, IStakingFeatureUserEntry>
+  extends TerraCore<
+    IStakingFeatureMinimal,
+    IStakingFeatureOpportunity,
+    IStakingFeatureUserEntry,
+    ILidoTerraMeta
+  >
   implements IRootProtocol
 {
   constructor(
@@ -40,7 +49,6 @@ export class LidoStaking
     super();
   }
 
-  meta: ILidoMeta;
   async initialize(): Promise<void> {
     //
   }
@@ -180,8 +188,8 @@ export class LidoStaking
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, IStakingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<IStakingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
 
     const balances = await this.accountService.getBalances(
       addresses,
@@ -219,7 +227,7 @@ export class LidoStaking
       });
     });
 
-    return [results, rewardError ? [...errors, rewardError] : errors];
+    return { data: results, errors: rewardError ? [...errors, rewardError] : errors };
   }
 
   protected formatUserData(

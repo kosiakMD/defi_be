@@ -240,7 +240,12 @@ export class CurveNonregisterPoolsBase extends JobPoolsBase<CurveLiquidityPoolFe
     });
 
     const [{ prices }, multicallResponses] = await Promise.all([
-      this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        tokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(calls, this.chain),
     ]);
 
@@ -284,11 +289,12 @@ export class CurveNonregisterPoolsBase extends JobPoolsBase<CurveLiquidityPoolFe
               poolToken.value = poolToken.balance * poolTokenPrice;
               lpValue += poolToken.value;
               tokens.push(poolToken);
-              if (!poolToken.price) {
-                this.logger.warn(
-                  `Missing Curve token price Chain: ${this.chain}, address: ${poolToken.address} - (${poolToken.symbol})`,
-                );
-              }
+              // TODO: temporarily to make logs clearer
+              // if (!poolToken.price) {
+              //   this.logger.warn(
+              //     `Missing Curve token price Chain: ${this.chain}, address: ${poolToken.address} - (${poolToken.symbol})`,
+              //   );
+              // }
             });
             curveLiquidityPoolFeature.stats.tvl += lpValue;
           } else {
@@ -296,11 +302,12 @@ export class CurveNonregisterPoolsBase extends JobPoolsBase<CurveLiquidityPoolFe
             coin.value = coin.price * coin.reserve;
             curveLiquidityPoolFeature.stats.tvl += coin.value;
             tokens.push(coin);
-            if (!coin.price) {
-              this.logger.warn(
-                `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
-              );
-            }
+            // TODO: temporarily to make logs clearer
+            // if (!coin.price) {
+            //   this.logger.warn(
+            //     `Missing Curve token price Chain: ${this.chain}, address: ${coin.address} - (${coin.symbol})`,
+            //   );
+            // }
           }
         });
         curveLiquidityPoolFeature.tokens = tokens;

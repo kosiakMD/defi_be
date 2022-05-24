@@ -6,6 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
+import { interceptorsOrder } from '@app/common/interceptors';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -38,13 +39,7 @@ import { OpportunityModule } from './modules/opportunity/opportunity.module';
     OpportunityModule,
   ],
   controllers: [OpportunitiesController, HealthController],
-  providers: [
-    // TODO: testing 1 Sentry middleware only, without interceptors
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
-  ],
+  providers: [...interceptorsOrder],
 })
 export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}

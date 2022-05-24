@@ -66,6 +66,9 @@ export class AssetsRepository extends Repository<AssetsEntity> {
       where: { address: address, chain: chainId },
     });
   }
+  async findByAddressesAndChain(addresses: string[], chainId: number): Promise<AssetsEntity[]> {
+    return this.find({ where: { address: In(addresses), chain: chainId } });
+  }
 
   async findAllTrackedAssetsWithPoolsByChain(chainId: number): Promise<AssetsForLambdaResponse[]> {
     const lambdaAssetsSql = `
@@ -109,9 +112,11 @@ export class AssetsRepository extends Repository<AssetsEntity> {
     }
     const qb = this.createQueryBuilder('assets_new');
     qb.where('is_tracked = :isTracked', { isTracked: true });
+    qb.andWhere('LOWER("name") NOT LIKE \'%liquidity pool%\'');
+    qb.andWhere('LOWER("name") NOT LIKE \'% lp %\'');
     if (address && text) {
       qb.andWhere(
-        '((LOWER(name) LIKE :name) OR (LOWER(symbol) LIKE :symbol) OR (address = :address))',
+        '(((LOWER(name) LIKE :name) OR (LOWER(symbol) LIKE :symbol) OR (address = :address)))',
         {
           name: text,
           symbol: text,

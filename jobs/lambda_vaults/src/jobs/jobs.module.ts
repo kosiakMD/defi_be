@@ -55,12 +55,10 @@ import { DefiKingdomsStaking } from './defikingdoms/defikingdoms.staking';
 import { EllipsisLp } from './ellipsis/ellipsis.lp';
 import { EllipsisStaking } from './ellipsis/ellipsis.staking';
 import { IntegrationDataConverter } from './integration.data.converter';
-import { IslandswapPools } from './islandswap/islandswap.pools';
-import { IslandswapStaking } from './islandswap/islandswap.staking';
 import { JobInterface } from './job.interface';
 import { JobsRegistry } from './jobs.registry';
 import { JobsRunner } from './jobs.runner';
-import { MarinadeFarms } from './marinade/marinade.farms';
+import { JobsV3Runner } from './jobs.v3.runner';
 import { MarinadePools } from './marinade/marinade.pools';
 import { MarinadeUtils } from './marinade/marinade.utils';
 import { MinswapPools } from './minswap/minswap.pools';
@@ -76,7 +74,6 @@ import { PangolinStakingAvax } from './pangolin/pangolin.staking.avax';
 import { RaydiumPools } from './raydium/raydium.pools';
 import { RaydiumStaking } from './raydium/raydium.staking';
 import { SaberPools } from './saber/saber.pools';
-import { SaberStaking } from './saber/saber.staking';
 import { SpookyswapPools } from './spookyswap/spookyswap.pools';
 import { SundaeswapPools } from './sundaeswap/sundaeswap.pools';
 import { SushiswapPools } from './sushiwap/sushiswap.pools';
@@ -92,6 +89,7 @@ import { ViperswapPools } from './viperswap/viperswap.pools';
 import { ViperswapStaking } from './viperswap/viperswap.staking';
 import { VVSPools } from './vvs/vvs.pools';
 import { VVSStaking } from './vvs/vvs.staking';
+import { WingRidersPools } from './wingriders/wingriders.pools';
 
 const Anchor = [AnchorLp, AnchorStaking];
 const Astroport = [AstroportLp, AstroportStaking];
@@ -105,16 +103,17 @@ const AutoFarm = [
 ];
 
 const Badger = [BadgerStakingArbi, BadgerStakingEth, BadgerStakingPLG];
+
 const Beefy = [
-  BeefyStakingArbi,
-  BeefyStakingAvax,
-  BeefyStakingBsc,
-  BeefyStakingCelo,
-  BeefyStakingCro,
-  BeefyStakingFtm,
-  BeefyStakingMoonRiver,
-  BeefyStakingOne,
-  BeefyStakingPlg,
+  BeefyStakingCro, // 14
+  BeefyStakingArbi, // 5
+  BeefyStakingAvax, // 6
+  BeefyStakingBsc, // 2
+  BeefyStakingCelo, // 8
+  BeefyStakingOne, // 10
+  BeefyStakingPlg, // 3
+  BeefyStakingFtm, // 4
+  BeefyStakingMoonRiver, // 9
 ];
 const Convex = [ConvexStaking];
 const Curve = [
@@ -138,24 +137,25 @@ const Curve = [
 const Sundaeswap = [SundaeswapPools];
 const DefiKingdoms = [DefiKingdomsPools, DefiKingdomsStaking];
 const Ellipsis = [EllipsisLp, EllipsisStaking];
-const IslandSwap = [IslandswapPools, IslandswapStaking];
 const Mojitoswap = [MojitoswapPools, MojitoswapStaking];
 const Orca = [OrcaPools, OrcaStaking];
 const Pancake = [PancakePoolsV1, PancakePoolsV2, PancakeStaking];
 const Pangolin = [PangolinPoolsAvax, PangolinStakingAvax];
 const Raydium = [RaydiumPools, RaydiumStaking];
-const Saber = [SaberPools, SaberStaking];
-const Spookyswap = [SpookyswapPools, SushiswapPools];
+const Saber = [SaberPools];
+const Spookyswap = [SpookyswapPools];
+const SushiSwap = [SushiswapPools];
 const Terra = [TerraswapLp];
 const TraderJoe = [TraderJoeStaking, TraderjoePools];
 const Trisolaris = [TrisolarisPools, TrisolarisStaking];
 const Uniswap = [UniswapPoolsV2];
 const VVS = [VVSPools, VVSStaking];
 const ViperSwap = [ViperswapPools, ViperswapStaking];
-const Marinade = [MarinadePools, MarinadeFarms];
+const Marinade = [MarinadePools];
 const SundaeSwap = [SundaeswapPools];
 const Minswap = [MinswapPools];
 const Osmosis = [OsmosisPools];
+const WingRiders = [WingRidersPools];
 
 export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Anchor,
@@ -165,9 +165,9 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Beefy,
   ...Convex,
   ...Curve,
+  ...SushiSwap,
   ...DefiKingdoms,
   ...Ellipsis,
-  ...IslandSwap,
   ...Mojitoswap,
   ...Orca,
   ...Pancake,
@@ -186,6 +186,7 @@ export const ActiveJobs: ClassConstructor<JobInterface>[] = [
   ...Marinade,
   ...Minswap,
   ...Osmosis,
+  ...WingRiders,
 ];
 
 const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMapping, MarinadeUtils];
@@ -201,6 +202,7 @@ const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMappi
   ],
   providers: [
     JobsRunner,
+    JobsV3Runner,
     JobsRegistry,
     IntegrationDataConverter,
     MulticallAggregator,
@@ -209,6 +211,6 @@ const Helpers = [TraderJoeSubgraph, BeefyApiService, AutofarmApiService, DbMappi
     ...Helpers,
     ...ActiveJobs,
   ],
-  exports: [JobsRunner, IntegrationDataConverter],
+  exports: [JobsRunner, JobsV3Runner, IntegrationDataConverter],
 })
 export class JobsModule {}

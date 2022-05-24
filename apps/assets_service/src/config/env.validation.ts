@@ -1,49 +1,12 @@
 import * as Joi from 'joi';
 
-import { EnvEnum } from '@app/common';
+import { logsValidation } from '@app/common/config/components';
 
 import { awsValidationSchema } from './aws/validation.schema';
 import { cacheValidationSchema } from './cache/validation.schema';
 import { databaseValidationSchema } from './database/validation.schema';
 
-const logFileRE = /[a-zA-Z1-9_.]\.log/;
-
 export const validationSchema = Joi.object({
-  NODE_ENV: Joi.string()
-    .equal(...Object.values(EnvEnum))
-    .default('local'),
-  ENV: Joi.string()
-    .equal(
-      '.env',
-      '.env.production',
-      '.env.production.local',
-      '.env.development',
-      '.env.development.local',
-    )
-    .default('.env')
-    .required(),
-
-  SERVICE_NAME: Joi.string().default('Assets Service'),
-  SERVICE_HOST: Joi.string() //
-    .allow('')
-    .default(''),
-  SERVICE_PORT: Joi.number() //
-    .default(6066),
-
-  LOG_ERROR_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .default('error.log'),
-  LOG_COMBINED_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .default('combined.log'),
-
-  LOG_LEVEL: Joi.string() //
-    .equal('debug', 'info')
-    .default('info'),
-  LOG_IN_JSON: Joi.string() //
-    .allow('')
-    .equal('true', 'false'),
-  SENTRY_DSN: Joi.string(),
   DEBANK_CHAINS_LIST_URL: Joi.string() //
     .default(''),
   DEBANK_API_ACCESS_KEY: Joi.string() //
@@ -60,9 +23,28 @@ export const validationSchema = Joi.object({
     .default(true),
   ACCOUNT_SERVICE_CHAINS_LIST_URL: Joi.string() //
     .required(),
+  ASSETS_QUEUE_NAME: Joi.string() //
+    .default('assets'),
+  ASSETS_METADATA_JOB_TYPE: Joi.string() //
+    .default('metadata'),
+  ASSETS_PRICE_JOB_TYPE: Joi.string() //
+    .default('prices'),
+  ASSETS_HISTORICAL_PRICE_JOB_TYPE: Joi.string() //
+    .default('historicalPrices'),
+  ASSETS_TAKE_SIZE: Joi.number() //
+    .default(1000),
+  ASSETS_HISTORICAL_PRICES_DEFAULT_DATE_LIMIT: Joi.number() //
+    .default(1000 * 60 * 60 * 24 * 2), // about 2 Days
+  ASSETS_CURRENT_PRICES_DEADLINE_TO_KEEP_IN_DATABASE: Joi.number() //
+    .default(1000 * 60 * 60 * 24 * 7), // about 1 weeks
+  ASSETS_CURRENT_PRICE_JOB_INTERVAL: Joi.number() //
+    .default(7 * 60), // in seconds
+  ASSETS_HISTORICAL_PRICE_JOB_INTERVAL: Joi.number() //
+    .default(15 * 60), // in seconds
   ...databaseValidationSchema,
   ...cacheValidationSchema,
   ...awsValidationSchema,
+  ...logsValidation,
 });
 
 export const validationOptions = {

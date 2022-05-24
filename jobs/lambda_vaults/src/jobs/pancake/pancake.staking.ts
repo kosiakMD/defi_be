@@ -333,7 +333,12 @@ export class PancakeStaking implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.bnb),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        ChainIdEnum.bnb,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.bnb),
     ]);
 

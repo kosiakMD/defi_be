@@ -71,7 +71,7 @@ export class SundaeswapPools extends CardanoPools implements JobInterface {
     this.logger.log('building initial mapping', this.placeholder);
 
     const liquidityPools: LiquidityPoolFeature[] = [];
-    const pools = await this.getPoolInformation();
+    const pools = await this.getPools();
     const assets = await Promise.all(pools.map((pool) => this.saveAssets(pool)));
 
     for (const [assetA, assetB, assetLP] of assets) {
@@ -99,9 +99,10 @@ export class SundaeswapPools extends CardanoPools implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
-    const pools = await this.getPoolInformation().then((pools) => this.poolsToMap(pools));
+    const pools = await this.getPools().then((pools) => this.poolsToMap(pools));
 
     for (const lp of this.mapping) {
       if (lp instanceof LiquidityPoolFeature && pools.has(lp.address)) {
@@ -121,7 +122,7 @@ export class SundaeswapPools extends CardanoPools implements JobInterface {
     return this.mapping;
   }
 
-  protected async getPoolInformation(): Promise<Pool[]> {
+  protected async getPools(): Promise<Pool[]> {
     const request = this.httpService
       .post<SundaeSwapPoolsResponse>(this.subgraphUrl, {
         query: AVAILABLE_POOLS_QUERY,

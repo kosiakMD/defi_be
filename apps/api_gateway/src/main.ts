@@ -4,12 +4,11 @@ import { install } from 'source-map-support';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { addTimeLogFeature } from '@app/common/Logger/Logger.service';
 import { createLogger } from '@app/common/Logger/winston';
-import { initSentry } from '@app/common/bootstrap';
+import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -33,21 +32,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  const { NODE_ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;
-
-  if (NODE_ENV !== 'production') {
-    const config = new DocumentBuilder()
-      .setTitle(SERVICE_NAME)
-      .setDescription(`${SERVICE_NAME} service description`)
-      .setVersion('1.0') // temporary global as only 1 version
-      .build();
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document);
-  }
-
   app.use(helmet());
 
-  await app.listen(SERVICE_PORT, SERVICE_HOST);
+  initSwagger(app);
+
+  await startApp(app);
 }
 
 bootstrap().catch((e) => {

@@ -8,7 +8,7 @@ import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/Opportu
 import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
 
 import { InternalV2Adapter } from '../adapters/internal.v2.adapter';
-// import { MultifarmAdapter } from '../adapters/multifarm/multifarm.adapter';
+import { InternalV3Adapter } from '../adapters/internal.v3.adapter';
 import { OpportunityEntity } from '../entities/opportunity.entity';
 import { SyncResult } from '../interfaces/sync.result.interface';
 import { OpportunityRepository } from '../repositories/opportunity.repository';
@@ -26,26 +26,24 @@ export class OpportunityService {
     //
   }
 
-  async find(opportunityId: number): Promise<OpportunityDto> {
-    return this.opportunityRepository.findItem(opportunityId);
-  }
-
   async search(query: OpportunitySearchQueryDto): Promise<PaginationResult<OpportunityEntity>> {
     return this.opportunityRepository.search(query);
+  }
+
+  async find(opportunityId: number): Promise<OpportunityDto> {
+    return this.opportunityRepository.findItem(opportunityId);
   }
 
   async sync(): Promise<SyncResult> {
     try {
       const { count } = await this.opportunityAdapterService.runInOrder([
         InternalV2Adapter,
-        // MultifarmAdapter,
-        // CoinDixAdapter,
-        // VFatAdapter
+        InternalV3Adapter,
       ]);
 
       return { success: true, count };
-    } catch (e) {
-      this.logger.error(e, 'OpportunityService.sync');
+    } catch (e: any) {
+      this.logger.error(e, e.stack ?? 'OpportunityService.sync');
       return { success: false, count: 0, error: e.message };
     }
   }

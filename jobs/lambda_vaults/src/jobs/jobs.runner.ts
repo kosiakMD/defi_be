@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, ProtocolNameEnum } from '@app/common';
+import { ChainIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { concatStrings } from '@app/common/utils';
 
@@ -13,6 +13,7 @@ import { Logger } from '../logger/logger.service';
 import { IntegrationService } from '../microservices/integration.service';
 import { TrackedVault } from '../store/tracked.vault.entity';
 import { TrackedVaultItem } from '../store/tracked.vault.item.entity';
+import { chainIdsMap } from '../utils/constants';
 import { TrackedVaultItemsMap } from './data/tracked.vault.items.map';
 import { TrackedVaultsMap } from './data/tracked.vaults.map';
 import { NotifyPayloadFeaturesDto, ProtocolsResponseData } from './integrations.dto';
@@ -42,7 +43,7 @@ export class JobsRunner {
 
     this.jobsRegistry.registry.forEach((_, v) => {
       if (integrationServiceJobsPlaceholdersSet.has(v)) {
-        jobsPlaceholdersIntersection.add(v);
+        if (chainIdsMap.get(v.split('_')[0])) jobsPlaceholdersIntersection.add(v);
       } else {
         this.logger.warn(`[${v}] was registered manually but is not running`);
       }
@@ -101,6 +102,7 @@ export class JobsRunner {
       for (const job of jobs) {
         try {
           const resultJob = await job.updateWithChainData();
+
           const jobData = {
             chain: job.chain,
             protocolName: job.protocol,
@@ -110,11 +112,14 @@ export class JobsRunner {
           const check = jobsDataMap.get(chain);
           check.push(jobData);
           results.push(resultJob);
-          this.logger.log(`job mapping updated [${job.placeholder}]`, JobsRunner.name);
+          this.logger.log(
+            `job mapping updated [${job.placeholder}] (${resultJob.length} pools)`,
+            JobsRunner.name,
+          );
         } catch (e) {
           this.logger.error(
             `error during job mapping update [${job.placeholder}], [${e}]`,
-            '',
+            e.stack,
             JobsRunner.name,
           );
         }
@@ -165,22 +170,38 @@ export class JobsRunner {
         });
       });
     });
-    jobPlaceholdersSet.add('12_Orca_staking');
-    jobPlaceholdersSet.add('12_Orca_pools');
-    jobPlaceholdersSet.add(`${ChainIdEnum.cardano}_${ProtocolNameEnum.minswap}_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.cardano}_${ProtocolNameEnum.sundaeswap}_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.marinade}_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.marinade}_farming`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.osmosis}_${ProtocolNameEnum.osmosis}_pools`);
 
-    jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.near}_Trisolaris_staking`);
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Anchor_staking`);
-
-    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Astroport_pools`);
-    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_Astroport_staking`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.orca}_${FeatureEnum.staking}`);
+    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.orca}_${FeatureEnum.pools}`);
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.cardano}_${ProtocolNameEnum.minswap}_${FeatureEnum.pools}`,
+    );
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.cardano}_${ProtocolNameEnum.sundaeswap}_${FeatureEnum.pools}`,
+    );
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.cardano}_${ProtocolNameEnum.wingriders}_${FeatureEnum.pools}`,
+    );
+    jobPlaceholdersSet.add(`${ChainIdEnum.sol}_${ProtocolNameEnum.marinade}_${FeatureEnum.pools}`);
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.osmosis}_${ProtocolNameEnum.osmosis}_${FeatureEnum.pools}`,
+    );
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.near}_${ProtocolNameEnum.trisolaris}_${FeatureEnum.pools}`,
+    );
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.near}_${ProtocolNameEnum.trisolaris}_${FeatureEnum.staking}`,
+    );
+    jobPlaceholdersSet.add(`${ChainIdEnum.terra}_${ProtocolNameEnum.anchor}_${FeatureEnum.pools}`);
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.terra}_${ProtocolNameEnum.anchor}_${FeatureEnum.staking}`,
+    );
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.terra}_${ProtocolNameEnum.astroport}_${FeatureEnum.pools}`,
+    );
+    jobPlaceholdersSet.add(
+      `${ChainIdEnum.terra}_${ProtocolNameEnum.astroport}_${FeatureEnum.staking}`,
+    );
     return jobPlaceholdersSet;
   }
 }

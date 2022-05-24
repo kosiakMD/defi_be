@@ -20,12 +20,18 @@ export interface IRewardTokenMinimal extends ITokenMinimal {
   // { rate: 123456, type: block | second | yearly }
   // { rewardPerSecond: 123456 }
 
-  rewardPerSecond: string;
+  rewardPerSecond?: string;
+  // to connect later rewards with what they are awarded for
+  rewardedForTokenAddress?: string;
+  rewardedForLendingSide?: 'supplied' | 'borrowed';
 }
 export interface IRewardTokenOpportunity extends ITokenOpportunity {
   harvests: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price
   apy: IRewardRates; // estimated APY based on APR compounded daily
+  // to connect later rewards with what they are awarded for
+  rewardedForTokenAddress?: string;
+  rewardedForLendingSide?: 'supplied' | 'borrowed';
 }
 
 export interface IRewardTokenUserEntry extends ITokenUserEntry {
@@ -33,4 +39,6 @@ export interface IRewardTokenUserEntry extends ITokenUserEntry {
   harvests: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price
   apy: IRewardRates; // estimated APY based on APR compounded daily
+  rewardedForTokenAddress?: string;
+  rewardedForLendingSide?: 'supplied' | 'borrowed';
 }

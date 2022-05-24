@@ -330,7 +330,12 @@ export class MirrorStaking implements JobInterface {
     }, new Map());
 
     const [{ prices }] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
     ]);
 
     this.mapping = await Promise.all(

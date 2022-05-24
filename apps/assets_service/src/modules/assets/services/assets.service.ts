@@ -3,150 +3,175 @@ import { Cache } from 'cache-manager';
 
 import { InjectQueue } from '@nestjs/bull';
 import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CrudService } from '@app/common/services/crud.service';
+import { isSomeAddress } from '@app/common/utils/addresses';
 
-import { SearchResultType } from '../../../common/enum/SearchResultType.enum';
-import { SearchParams, SearchResultsAssetEntry } from '../../../common/interfaces/search.interface';
+import { SearchResultType } from '../../../common/enum/search-result-type.enum';
+import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
-import { AssetsCandidateDto } from '../dto/assets-candidate.dto';
-import { AssetsGetDto } from '../dto/assets-get.dto';
-import { AssetsListQueryDto } from '../dto/assets-list-query.dto';
-import { AssetsEntity } from '../entities/assets.entity';
+import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
+import { AssetsPriceRepository } from '../../prices/repositories/asset-price.repository';
+import { AssetCandidateRequest } from '../dto/asset-candidate.request';
+import { AssetDto } from '../dto/asset.dto';
+import { GetAssetRequest } from '../dto/get-asset.request';
+import { SearchResultsEntryDto } from '../dto/search-results-entry.dto';
+import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
 import { AssetsRepository } from '../repositories/assets.repository';
 
 @Injectable()
 export class AssetsService extends CrudService<AssetsRepository> {
+  private readonly cacheKeyPrefix: string;
+
   constructor(
-    @InjectRepository(AssetsRepository)
-    private assetsRepository: AssetsRepository,
+    private configService: ConfigService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectQueue('assets') private readonly assetsQueue: Queue,
+    @InjectRepository(AssetsRepository) private assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsPriceRepository) private assetsPriceRepository: AssetsPriceRepository,
+    @InjectRepository(AssetsHistoricalPriceRepository)
+    private assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
     @InjectRepository(AssetsCandidateRepository)
     private assetsCandidateRepository: AssetsCandidateRepository,
-    @InjectQueue('assets') private readonly assetsQueue: Queue,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     super(AssetsRepository);
+    this.cacheKeyPrefix = `${this.configService //
+      .get('SERVICE_NAME')
+      .replace(' ', '-')
+      .toLowerCase()}`;
   }
 
-  public async search(searchParams: SearchParams): Promise<SearchResultsAssetEntry[]> {
-    const assets = await this.assetsRepository.findAssetsByParams(searchParams);
-    return assets.map((a) => ({
-      type: SearchResultType.ASSET,
-      icon: a.icon,
-      name: a.name,
-      metadata: {
-        address: a.address,
-        chainId: a.chainId,
-        symbol: a.symbol,
-      },
-    }));
+  public async getAsset(request: GetAssetRequest): Promise<AssetDto> {
+    const [response] = await this.getBulkAssets([request]);
+    return response;
   }
 
-  public async getAsset(assetQuery: AssetsGetDto): Promise<AssetsEntity> {
-    const assetsBulkQuery = [assetQuery];
-    return (await this.getBulkAssets(assetsBulkQuery)).shift();
+  public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
+    const validRequests = requests.filter(({ address }) => isSomeAddress(address));
+    const assets = await this.getAssets(validRequests);
+    // TODO: Historical prices are not handled
+    // TODO: Add mapping, not expose everything (e.g. created at)
+    return assets;
   }
 
-  public async getBulkAssets(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
-    // TODO: It's required to use config here, it's never boolean
-    if (!process.env.USE_REDIS_TO_GET_ASSETS) {
-      return this.getAssetsFromDatabaseAndInitiateProcessing(assetsBulkQuery);
-    } else {
-      // TODO: I think we should always use cache
-      const cachedAssets = await this.getAssetsFromCache(assetsBulkQuery);
-      if (cachedAssets.length >= assetsBulkQuery.length) {
-        return cachedAssets;
-      }
-      const notCachedAssets = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
-        return !cachedAssets?.find((assetsEntity: AssetsEntity) => {
-          return (
-            // TODO: We need to be sure we store addresses in correct case (web3.utils.toChecksumAddress)
-            assetsEntity.address === assetQueryDto.address &&
-            assetsEntity.chainId === assetQueryDto.chainId
-          );
-        });
-      });
-      const databaseAssets = await this.getAssetsFromDatabaseAndInitiateProcessing(notCachedAssets);
-      this.setAssetsToCache(databaseAssets);
+  private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
+    const assets = [];
 
-      return cachedAssets.concat(databaseAssets);
+    if (this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
+      const cachedAssets = await this.getAssetsFromCache(requests);
+      assets.push(...cachedAssets);
     }
+
+    if (assets.length === requests.length) {
+      return assets;
+    }
+
+    const databaseAssetsRequests = this.excludeFoundAssets(requests, assets);
+    const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
+    assets.push(...databaseAssets);
+
+    this.setAssetsToCache(databaseAssets);
+
+    if (assets.length === requests.length) {
+      return assets;
+    }
+
+    const unknownAssetsRequests = this.excludeFoundAssets(databaseAssetsRequests, databaseAssets);
+    this.processAssets(unknownAssetsRequests);
+
+    // TODO: Historical prices are not handled
+    // TODO: Add mapping, not expose everything (e.g. created at)
+    return assets;
   }
 
-  public saveAssetCandidate(assetCandidateDto: AssetsCandidateDto) {
-    const assetsCandidateEntity = this.assetsCandidateRepository.create({
-      address: assetCandidateDto.address,
-      chainId: assetCandidateDto.chainId,
-    });
-    return this.assetsCandidateRepository.save(assetsCandidateEntity);
+  private excludeFoundAssets(requests: GetAssetRequest[], assets: AssetEntity[]) {
+    return requests.filter(
+      (request) => !assets.some((asset) => this.isRequestMatchingAsset(request, asset)),
+    );
   }
 
-  public async getAssetsFromCache(assetsBulkQuery: AssetsGetDto[]): Promise<AssetsEntity[]> {
-    const promises = assetsBulkQuery.map((assetQuery: AssetsGetDto) => {
-      return this.cacheManager.get<AssetsEntity>(this.getAssetCacheKey(assetQuery));
-    });
+  private isRequestMatchingAsset(request: GetAssetRequest, asset: AssetEntity) {
+    return (
+      request.chainId === asset.chainId &&
+      request.address?.toLowerCase() === asset.address?.toLowerCase()
+    );
+  }
+
+  public async getAssetsFromCache(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
+    const promises = requests.map((request) =>
+      this.cacheManager.get<AssetEntity>(this.getAssetCacheKey(request)),
+    );
+    // TODO: Use Redis m_get instead of multiple requests
     const assets = await Promise.all(promises);
     return assets.filter((asset) => !!asset);
   }
 
-  public async setAssetsToCache(notCachedAssets: AssetsEntity[]): Promise<void> {
-    const promises = notCachedAssets.map((assetsEntity: AssetsEntity) => {
-      // TO_CHECK if it's a good place to calculate averagePrice
-      if (assetsEntity.prices && assetsEntity.prices.length) {
-        assetsEntity.averagePrice =
-          assetsEntity.prices.reduce((prev, curr) => prev + curr.price, 0) /
-          assetsEntity.prices.length;
+  public async setAssetsToCache(assets: AssetEntity[]): Promise<void> {
+    const promises = assets.map((asset: AssetEntity) => {
+      // TODO: Price should not be calculated here
+      // TODO: Prices should weighted by volume, everything cannot be counted the same
+      if (asset.prices && asset.prices.length) {
+        asset.averagePrice =
+          asset.prices.reduce((prev, curr) => prev + Number(curr.price), 0) / asset.prices.length;
       }
-      return this.cacheManager.set(this.getAssetCacheKey(assetsEntity), assetsEntity);
+      return this.cacheManager.set(this.getAssetCacheKey(asset), asset);
     });
     await Promise.all(promises);
   }
 
-  private getAssetCacheKey(assetQuery: AssetsGetDto | AssetsEntity): string {
-    const { address, chainId } = assetQuery;
-    const keyPrefix = `${(process.env.SERVICE_NAME || 'assets-service')
-      .replace(' ', '-')
-      .toLowerCase()}`;
-    return `${keyPrefix}${chainId}${address}`;
+  private getAssetCacheKey(request: GetAssetRequest) {
+    const { address, chainId } = request;
+    return `${this.cacheKeyPrefix}${chainId}${address}`;
   }
 
-  // TODO: This methods should accept list of { chainId, address }
-  //  filtering should be moved out
-  private async processAssets(
-    assetsBulkQuery: AssetsGetDto[],
-    assetsFromDatabase: AssetsEntity[],
-  ): Promise<void> {
-    const assetsNotInDatabase = assetsBulkQuery.filter((assetQueryDto: AssetsGetDto) => {
-      return !assetsFromDatabase.find((assetEntity: AssetsEntity) => {
-        return (
-          assetEntity.address === assetQueryDto.address &&
-          assetEntity.chainId === assetQueryDto.chainId
-        );
+  private getAssetsFromDatabase(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
+    // TODO: Filter out outdated prices in repository
+    return this.assetsRepository.findManyByAddressesAndChainIds(requests, ['prices']);
+  }
+
+  private async processAssets(requests: GetAssetRequest[]): Promise<void> {
+    const assetsJobType = this.configService.get('ASSETS_METADATA_JOB_TYPE');
+    requests.map((request) => {
+      this.logger.log('Send asset for processing', request);
+      return this.assetsQueue.add(assetsJobType, {
+        address: request.address,
+        chainId: request.chainId,
       });
     });
+  }
 
-    assetsNotInDatabase.map(async (asset) => {
-      // TODO: Queue name should be configurable
-      return await this.assetsQueue.add('metadata', {
+  public async search(searchParams: SearchParams): Promise<SearchResultsEntryDto[]> {
+    const assets = await this.assetsRepository.findAssetsByParams(searchParams);
+    return assets.map((asset) => ({
+      type: SearchResultType.ASSET,
+      icon: asset.icon,
+      name: asset.name,
+      metadata: {
         address: asset.address,
         chainId: asset.chainId,
-      });
-    });
+        symbol: asset.symbol,
+      },
+    }));
   }
 
-  private async getAssetsFromDatabaseAndInitiateProcessing(
-    assetsBulkQuery: AssetsGetDto[],
-  ): Promise<AssetsEntity[]> {
-    const assetsListQueryDto = new AssetsListQueryDto();
-    const assetsFromDatabase = await this.assetsRepository.findAllAssetsWithPrices(
-      assetsListQueryDto,
-      { where: assetsBulkQuery },
-    );
-    this.processAssets(assetsBulkQuery, assetsFromDatabase);
-    return assetsFromDatabase;
+  public async saveAssetCandidate({ chainId, address }: AssetCandidateRequest) {
+    this.logger.log('Saving assets candidate', { chainId, address });
+    const existing = await this.assetsCandidateRepository.getBy(chainId, address);
+    if (existing) {
+      this.logger.log('Assets candidate already exists', { chainId, address });
+      return;
+    }
+
+    const assetsCandidateEntity = this.assetsCandidateRepository.create({
+      address,
+      chainId,
+    });
+    await this.assetsCandidateRepository.save(assetsCandidateEntity);
+    this.logger.log('Saved assets candidate', { chainId, address });
   }
 }

@@ -12,7 +12,6 @@ import { PriceService } from '../../../microservices/price.service';
 import { LiquidityPools } from '../../features/liquidity-pools';
 import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../dataProviderProtocol';
-import { SaberStaking } from './saber.staking';
 
 @Injectable()
 export default class SaberProtocol extends DataProviderProtocol {
@@ -21,7 +20,7 @@ export default class SaberProtocol extends DataProviderProtocol {
   readonly name = ProtocolNameEnum.saber;
   readonly displayName = ProtocolNameEnum.saber;
   readonly features = {
-    [ChainAbbrEnum.sol]: [FeatureEnum.pools, FeatureEnum.staking],
+    [ChainAbbrEnum.sol]: [FeatureEnum.pools],
   };
   protected readonly dataProvider;
 
@@ -31,7 +30,6 @@ export default class SaberProtocol extends DataProviderProtocol {
     protected readonly priceService: PriceService,
     protected readonly mapper: Mapper,
     private readonly pools: LiquidityPools,
-    private readonly staking: SaberStaking,
   ) {
     super();
   }
@@ -63,8 +61,6 @@ export default class SaberProtocol extends DataProviderProtocol {
           projectName: this.project,
           chain: chain,
         });
-      case FeatureEnum.staking:
-        return this.staking.getData(addresses, chain);
       default:
         return [];
     }

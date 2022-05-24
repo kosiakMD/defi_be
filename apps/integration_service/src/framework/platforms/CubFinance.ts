@@ -2,12 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
-import { CakeVault } from '../support/EVM/protocols/Yield/CakeVault';
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
-import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
+import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
 
 export class CubFinance extends RootPlatform {
   constructor(
@@ -20,10 +19,15 @@ export class CubFinance extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
+      links: {
+        url: 'https://cubdefi.com',
+        logo: 'https://icons.llama.fi/cub-finance.svg',
+        twitter: 'FinanceLeo',
+      },
     });
 
-    await this.registerProtocol(MasterChef, {
+    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
       chain: ChainIdEnum.bnb,
       name: 'Farms - Masterchef',
       feature: FeatureEnum.staking,

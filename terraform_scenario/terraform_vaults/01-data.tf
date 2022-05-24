@@ -173,12 +173,31 @@ data "aws_ssm_parameter" "DB_PASSWORD" {
 data "aws_ssm_parameter" "MINSWAP_URL" {
   name = upper("/${var.environment}/MINSWAP_URL")
 }
+
 data "aws_ssm_parameter" "SOLANA_TOKENS_PUBLIC_API" {
   name = upper("/${var.environment}/SOLANA_TOKENS_PUBLIC_API")
 }
+
 data "aws_ssm_parameter" "SONAR_FARMS_PUBLIC_API" {
   name = upper("/${var.environment}/SONAR_FARMS_PUBLIC_API")
 }
+
 data "aws_ssm_parameter" "SONAR_POOLS_PUBLIC_API" {
   name = upper("/${var.environment}/SONAR_POOLS_PUBLIC_API")
+}
+
+data "aws_ssm_parameter" "WINGRIDERS_AGGREGATOR_URL" {
+  name = upper("/${var.environment}/WINGRIDERS_AGGREGATOR_URL")
+}
+
+data "aws_ssm_parameter" "WINGRIDERS_EXPLORER_URL" {
+  name = upper("/${var.environment}/WINGRIDERS_EXPLORER_URL")
+}
+
+data "aws_ssm_parameter" "CARDANO_BLOCKFROST_API_KEY" {
+  name = upper("/${var.environment}/CARDANO_BLOCKFROST_API_KEY")
+}
+
+data "aws_ssm_parameter" "CHAIN_IDS" {
+  name = upper("/${var.environment}/CHAIN_IDS")
 }

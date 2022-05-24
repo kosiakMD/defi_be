@@ -186,5 +186,7 @@ export class initialMigration1638795497689 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "assets" ALTER COLUMN "decimals" SET NOT NULL`);
   }
 
-  public async down(): Promise<void> {}
+  public async down(): Promise<void> {
+    //
+  }
 }

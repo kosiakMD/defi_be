@@ -1,6 +1,10 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, ILike, Repository } from 'typeorm';
 
-import { AssetsCandidateEntity } from '../entities/assets-candidate.entity';
+import { AssetCandidateEntity } from '../entities/asset-candidate.entity';
 
-@EntityRepository(AssetsCandidateEntity)
-export class AssetsCandidateRepository extends Repository<AssetsCandidateEntity> {}
+@EntityRepository(AssetCandidateEntity)
+export class AssetsCandidateRepository extends Repository<AssetCandidateEntity> {
+  getBy(chainId: number, address: string) {
+    return this.findOne({ where: { chainId, address: ILike(address) } });
+  }
+}

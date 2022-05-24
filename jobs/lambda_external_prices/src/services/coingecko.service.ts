@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-import { coingeckoApiUrl } from '../config';
+import { coingeckoApiKey, coingeckoApiUrl } from '../config';
+import { CoingeckoRequestItemIds } from '../interfaces/coingecko.interface';
 import { logger } from '../utils/logger';
-import { CoingeckoRequestItemIds } from '../interfaces/coingecko.interface'
 import { preparePricesCoingeckoId } from '../utils/modifyData';
 
 export class CoingeckoService {
@@ -20,6 +20,8 @@ export class CoingeckoService {
             contract_addresses: input.contractAddresses,
             // eslint-disable-next-line camelcase
             vs_currencies: input.vsCurrencies,
+            // eslint-disable-next-line camelcase
+            x_cg_pro_api_key: coingeckoApiKey,
           },
         },
       );
@@ -30,10 +32,10 @@ export class CoingeckoService {
     }
   }
 
-  static async simplePrice(input: { 
-    ids: string; 
-    vsCurrencies: string; 
-    extras: CoingeckoRequestItemIds; 
+  static async simplePrice(input: {
+    ids: string;
+    vsCurrencies: string;
+    extras: CoingeckoRequestItemIds;
   }) {
     try {
       const { data } = await axios.get(`${coingeckoApiUrl}/api/v3/simple/price`, {
@@ -42,11 +44,11 @@ export class CoingeckoService {
           ids: input.ids,
           // eslint-disable-next-line camelcase
           vs_currencies: input.vsCurrencies,
+          // eslint-disable-next-line camelcase
+          x_cg_pro_api_key: coingeckoApiKey,
         },
       });
-      return input.extras 
-        ? preparePricesCoingeckoId(data, input.extras)
-        : data
+      return input.extras ? preparePricesCoingeckoId(data, input.extras) : data;
     } catch (e) {
       logger.error('Coingecko simplePrice call failed ' + e.message);
       throw e;

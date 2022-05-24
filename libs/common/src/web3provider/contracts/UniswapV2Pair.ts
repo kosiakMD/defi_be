@@ -39,4 +39,23 @@ export class UniswapV2Pair extends MultiCallAbiProxy {
     stateMutability: 'view',
     type: 'function',
   };
+
+  static readonly getUnderlyingBalances: AbiItem = {
+    inputs: [],
+    name: 'getUnderlyingBalances',
+    outputs: [
+      { internalType: 'uint256', name: 'amount0Current', type: 'uint256' },
+      { internalType: 'uint256', name: 'amount1Current', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static readonly balanceOf: AbiItem = {
+    name: 'balanceOf',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [{ type: 'address', name: 'arg0' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

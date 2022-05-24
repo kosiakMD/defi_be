@@ -83,4 +83,63 @@ export class Abis {
     stateMutability: 'view',
     type: 'function',
   };
+  static readonly rewarder: AbiItem = {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'rewarder',
+    outputs: [{ internalType: 'contract IRewarder', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly getToken0: AbiItem = {
+    inputs: [],
+    name: 'token0',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly getToken1: AbiItem = {
+    inputs: [],
+    name: 'token1',
+    outputs: [
+      {
+        internalType: 'address',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly tokenPerBlock: AbiItem = {
+    inputs: [],
+    name: 'tokenPerBlock',
+    outputs: [
+      {
+        internalType: 'uint256',
+        name: '',
+        type: 'uint256',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly rewardToken: AbiItem = {
+    inputs: [],
+    name: 'rewardToken',
+    outputs: [
+      {
+        internalType: 'contract IERC20',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
 }

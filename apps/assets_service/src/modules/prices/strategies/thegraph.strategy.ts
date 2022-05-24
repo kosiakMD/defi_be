@@ -1,9 +1,11 @@
-import { PriceSourceConfig } from 'apps/assets_service/src/common/types/PriceSourceConfig.type';
+import { PriceSourceConfig } from 'apps/assets_service/src/common/types/price-source-config.type';
 import axios, { AxiosRequestConfig } from 'axios';
 import BigNumber from 'bignumber.js';
 
-import { AssetPrice } from '../types/AssetPrice.type';
-import { PriceJobData } from '../types/PriceJobData.type';
+import { delay } from '@app/common/helpers/delay';
+
+import { AssetPrice } from '../types/asset-price.type';
+import { PriceJobData } from '../types/price-job-data.type';
 import { PriceStrategy } from './strategy';
 
 type TheGraphToken = {
@@ -13,21 +15,25 @@ type TheGraphToken = {
 };
 
 export class TheGraphStrategy extends PriceStrategy {
-  private parseToken(priceJobData: PriceJobData, token: TheGraphToken, price: string): AssetPrice {
+  private parseToken(
+    priceJobData: PriceJobData,
+    token: TheGraphToken,
+    tokenPrice: string,
+  ): AssetPrice {
     const {
       config: { chainId },
       sourceId,
     } = priceJobData;
     const { derived, id: address } = token;
-    const priceInUsd = parseFloat(
-      new BigNumber(price) //
+    const price = parseFloat(
+      new BigNumber(tokenPrice) //
         .multipliedBy(new BigNumber(derived))
         .toString(),
     );
     return {
       address,
       chainId,
-      priceInUsd,
+      price,
       sourceId,
     };
   }
@@ -53,11 +59,20 @@ export class TheGraphStrategy extends PriceStrategy {
 
   public async fetchPrices(priceJobData: PriceJobData): Promise<AssetPrice[]> {
     const assetPrices: AssetPrice[] = [];
-    const { config } = priceJobData;
+    const {
+      config,
+      config: { chainId, requestDelay },
+    } = priceJobData;
     const requests = await this.createPriceRequests(config);
-    const responses = await Promise.all(requests.map((request) => axios.request(request)));
-    for (const response of responses) {
+    this.logger.log(`Processing ${requests.length} TheGraph(chainId:${chainId}) requests`);
+    for await (const request of requests) {
       try {
+        const response = await axios.request(request);
+        this.logger.log(
+          `TheGraph(chainId:${chainId}) request ${request.url} done, got prices num: ${
+            Object.keys(response.data).length
+          }`,
+        );
         const {
           data: {
             data: {
@@ -70,7 +85,11 @@ export class TheGraphStrategy extends PriceStrategy {
           tokens.map((token: TheGraphToken) => this.parseToken(priceJobData, token, price)),
         );
       } catch (error) {
-        this.handleFailResponse(error);
+        this.logger.error(`Error to get TheGraph(chainId:${chainId}) prices on ${request.url}`);
+        this.logger.error(error);
+      }
+      if (requestDelay) {
+        await delay(requestDelay * 1000);
       }
     }
     return assetPrices.flat();

@@ -5,54 +5,64 @@ import { map } from 'rxjs';
 import type { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { solanaStringsToKeys } from '@app/common/utils/solana';
 import { toChunkedArray } from '@app/common/utils/transform';
 
 const RPC_URL = new ConfigService().get('SOL_URL');
 const LIMIT_PER_REQUEST = 50;
 
-export async function generateTx(pool, blockHash: string) {
-  const instructions = [
-    Liquidity.makeSimulatePoolInfoInstruction({
-      poolKeys: solanaStringsToKeys(pool) as LiquidityPoolKeysV4,
-    }),
-  ];
-  const transaction = new Transaction({
-    feePayer: new PublicKey('RaydiumSimuLateTransaction11111111111111111'),
-  });
+export function generateTx(pool, blockHash: string) {
+  try {
+    const instructions = [
+      Liquidity.makeSimulatePoolInfoInstruction({
+        poolKeys: solanaStringsToKeys(pool) as LiquidityPoolKeysV4,
+      }),
+    ];
+    const transaction = new Transaction({
+      feePayer: new PublicKey('RaydiumSimuLateTransaction11111111111111111'),
+    });
 
-  for (const instruction of instructions) {
-    transaction.add(instruction);
+    for (const instruction of instructions) {
+      transaction.add(instruction);
+    }
+
+    transaction.recentBlockhash = blockHash;
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line no-underscore-dangle
+    const message = transaction._compile();
+    const signData = message.serialize();
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line no-underscore-dangle
+    const wireTransaction = transaction._serialize(signData);
+
+    const encodedTransaction = wireTransaction.toString('base64');
+    const config = {
+      encoding: 'base64',
+      // commitment: this.commitment
+    };
+    const args = [encodedTransaction, config];
+
+    return args;
+  } catch {
+    return null;
   }
-
-  transaction.recentBlockhash = blockHash;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  const message = transaction._compile();
-  const signData = message.serialize();
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  //@ts-ignore
-  const wireTransaction = transaction._serialize(signData);
-
-  const encodedTransaction = wireTransaction.toString('base64');
-  const config = {
-    encoding: 'base64',
-    // commitment: this.commitment
-  };
-  const args = [encodedTransaction, config];
-
-  return args;
 }
 
 export async function getInfoPools(connection: Connection, httpService: HttpService, listPools) {
-  const blockhash = (await connection.getRecentBlockhash()).blockhash;
+  const blockhash = (await connection.getLatestBlockhash()).blockhash;
   const listTx = [];
-  for (const pool of listPools) {
-    if (pool) {
-      const tx = await generateTx(pool, blockhash);
+  for (let i = 0; i < listPools.length; i++) {
+    const pool = listPools[i];
+    const tx = generateTx(pool, blockhash);
+    if (tx) {
       listTx.push({
         jsonrpc: '2.0',
-        id: 0,
+        id: i + '::' + pool.id,
         method: 'simulateTransaction',
         params: tx,
       });
@@ -60,16 +70,18 @@ export async function getInfoPools(connection: Connection, httpService: HttpServ
   }
 
   const chunks = toChunkedArray(listTx, LIMIT_PER_REQUEST);
-  const responses = [];
+  const requests = [];
   for (const chunk of chunks) {
-    const request = await httpService
-      .post(RPC_URL, chunk)
-      .pipe(map((d: any) => d.data))
-      .toPromise();
-    responses.push(...request);
+    requests.push(
+      httpService
+        .post(RPC_URL, chunk)
+        .pipe(map((d: any) => d.data))
+        .toPromise(),
+    );
   }
-
-  return responses;
+  const response = await Promise.allSettled(requests);
+  const [data] = handlePromiseAllSettled(response);
+  return data.flat();
 }
 
 export function decodeTxLogs(logs): {

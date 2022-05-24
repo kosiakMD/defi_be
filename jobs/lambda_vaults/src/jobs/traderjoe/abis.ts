@@ -126,7 +126,7 @@ export class Abis {
     name: 'rewardToken',
     inputs: [],
   };
-  
+
   static readonly tokenPerSec: AbiItem = {
     type: 'function',
     stateMutability: 'view',
@@ -139,5 +139,23 @@ export class Abis {
     ],
     name: 'tokenPerSec',
     inputs: [],
+  };
+
+  static readonly rewarderBonusTokenInfo: AbiItem = {
+    inputs: [{ internalType: 'uint256', name: '_pid', type: 'uint256' }],
+    name: 'rewarderBonusTokenInfo',
+    outputs: [
+      { internalType: 'address', name: 'bonusTokenAddress', type: 'address' },
+      { internalType: 'string', name: 'bonusTokenSymbol', type: 'string' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+  static readonly rewarderRewardToken: AbiItem = {
+    inputs: [],
+    name: 'rewardToken',
+    outputs: [{ internalType: 'contract IERC20', name: '', type: 'address' }],
+    stateMutability: 'view',
+    type: 'function',
   };
 }

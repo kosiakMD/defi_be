@@ -274,7 +274,12 @@ export class AutofarmStakingPLG implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.plg),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        ChainIdEnum.plg,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.plg),
     ]);
 
@@ -309,6 +314,7 @@ export class AutofarmStakingPLG implements JobInterface {
             token0Address,
             CurrencyIdEnum.usd,
             ChainIdEnum.bnb,
+            this.protocol,
           );
 
           m = this.getDataFromMulticallRsp(

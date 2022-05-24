@@ -9,13 +9,14 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { Address, ChainIdEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import { FeatureEnum } from '../../../enums';
+import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
@@ -24,11 +25,24 @@ import {
 import { LidoSchema } from '../../Schemas/Lido';
 import { SolanaCore } from '../../SolanaCore';
 
-interface ILidoMeta extends IProtocolMeta {
+export interface ILidoSolanaMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  address: Address;
+  context: {
+    program: Address;
+    stakedToken: Address;
+    statsApi: string;
+    statsProcessor: (data: any) => number;
+  };
 }
 export class LidoStaking
-  extends SolanaCore<IStakingFeatureMinimal, IStakingFeatureOpportunity, IStakingFeatureUserEntry>
+  extends SolanaCore<
+    IStakingFeatureMinimal,
+    IStakingFeatureOpportunity,
+    IStakingFeatureUserEntry,
+    ILidoSolanaMeta
+  >
   implements IRootProtocol
 {
   constructor(
@@ -41,11 +55,6 @@ export class LidoStaking
     protected configService: ConfigService,
   ) {
     super();
-  }
-  meta: ILidoMeta;
-
-  async initialize(): Promise<void> {
-    //
   }
 
   async getCacheableOpportunityData(): Promise<IStakingFeatureMinimal[]> {
@@ -129,8 +138,8 @@ export class LidoStaking
 
   async getUsersData(
     addresses: string[],
-  ): Promise<[Map<string, IStakingFeatureUserEntry[]>, Error[]]> {
-    const [pools, errors] = await this.getPoolData();
+  ): Promise<IUserDataProtocolResponse<IStakingFeatureUserEntry>> {
+    const { data: pools, errors } = await this.getPoolData();
     const wallets = new Map();
 
     try {
@@ -176,7 +185,7 @@ export class LidoStaking
       errors.push(err);
     }
 
-    return [wallets, errors];
+    return { data: wallets, errors };
   }
 
   protected async getStats() {

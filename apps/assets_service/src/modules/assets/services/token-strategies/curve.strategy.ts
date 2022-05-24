@@ -2,22 +2,22 @@ import { ChainIdEnum } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
 
-import { CURVE_METAPOOL_ARBI_ABI } from '../../../../common/abis/CURVE_METAPOOL_ARBI';
-import { CURVE_REGISTRY_ABI } from '../../../../common/abis/CURVE_REGISTRY';
-import { CurveProviderAbi } from '../../../../common/abis/CurveProviderAbi';
-import { CURVE_LP } from '../../../../common/contracts/CURVE_LP';
-import { CURVE_REGISTRY } from '../../../../common/contracts/CURVE_REGISTRY';
+import { CURVE_METAPOOL_ARBI_ABI } from '../../../../common/abis/curve-metapool.abi';
+import { CurveProviderAbi } from '../../../../common/abis/curver-provider.abi';
+import { CURVE_REGISTRY_ABI } from '../../../../common/abis/curver-registry.abi';
+import { CURVE_LP } from '../../../../common/contracts/curve-lp.contract';
+import { CURVE_REGISTRY_CONTRACT } from '../../../../common/contracts/curve-registry.contract';
 
-import { AssetsEntity } from '../../entities/assets.entity';
+import { AssetEntity } from '../../entities/asset.entity';
 import { UnderlyingTokenStrategy } from './token-strategy';
 
 export class CurveStrategy extends UnderlyingTokenStrategy {
-  async attemptToLoadUnderlyingTokens(asset: AssetsEntity): Promise<any> {
+  async attemptToLoadUnderlyingTokens(asset: AssetEntity): Promise<any> {
     if (asset.chainId === ChainIdEnum.arbi) {
       const registries = await this.getCurveRegistries(ChainIdEnum.arbi);
       const registriesResp = await Promise.all(
         registries.map(async (address) => {
-          let contract = new CURVE_REGISTRY(
+          let contract = new CURVE_REGISTRY_CONTRACT(
             address,
             this.metadataService.getInstanceByChainId(asset.chainId),
             CURVE_REGISTRY_ABI,
@@ -27,7 +27,7 @@ export class CurveStrategy extends UnderlyingTokenStrategy {
             pool = await contract.getPoolFromLpToken(asset.address);
             if (pool === ZERO_ADDRESS) return;
           } catch (e) {
-            contract = new CURVE_REGISTRY(
+            contract = new CURVE_REGISTRY_CONTRACT(
               address,
               this.metadataService.getInstanceByChainId(asset.chainId),
               CURVE_METAPOOL_ARBI_ABI,

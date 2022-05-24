@@ -69,13 +69,13 @@ import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
-import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
+import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
@@ -95,6 +95,7 @@ import VenusProtocol from './protocols/venusProtocol';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WingRidersProtocol } from './protocols/wingriders/wingriders.protocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
 import YearnProtocolV2 from './protocols/yearnProtocolV2';
@@ -118,7 +119,6 @@ export class ProtocolService {
     private readonly curveProtocol: CurveProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly ellipsisProtocol: EllipsisProtocol,
-    private readonly islandswapProtocol: IslandswapProtocol,
     private readonly mojitoswapProtocol: MojitoswapProtocol,
     private readonly olympusProtocol: OlympusProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
@@ -149,6 +149,8 @@ export class ProtocolService {
     private readonly minswapProtocol: MinswapProtocol,
     private readonly mirrorProtocol: MirrorProtocol,
     private readonly staderProtocol: StaderProtocol,
+    private readonly osmosisProtocol: OsmosisProtocol,
+    private readonly wingridersProtocol: WingRidersProtocol,
   ) {
     this.protocols = [
       aaveProtocolV2,
@@ -163,7 +165,6 @@ export class ProtocolService {
       curveProtocol,
       defiKingdomsProtocol,
       ellipsisProtocol,
-      islandswapProtocol,
       mojitoswapProtocol,
       olympusProtocol,
       orcaProtocol,
@@ -193,6 +194,8 @@ export class ProtocolService {
       minswapProtocol,
       mirrorProtocol,
       staderProtocol,
+      osmosisProtocol,
+      wingridersProtocol,
     ];
   }
 

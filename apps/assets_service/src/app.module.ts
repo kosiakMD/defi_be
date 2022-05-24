@@ -1,10 +1,12 @@
 import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import configuration from '@app/common/config/configuration';
+import { interceptorsOrder } from '@app/common/interceptors';
 
 import { CommonModule } from './common/common.module';
 import { DatabaseConfigService } from './config/database/db.config.service';
@@ -16,6 +18,7 @@ import { PricesModule } from './modules/prices/prices.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot(configuration(config)),
     TracingModule.forRoot({ serviceName: 'assets-service' }),
     TypeOrmModule.forRootAsync({
@@ -37,13 +40,7 @@ import { PricesModule } from './modules/prices/prices.module';
     AssetsCategoryModule,
   ],
   controllers: [],
-  providers: [
-    // TODO: testing 1 Sentry middleware only, without interceptors
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
-  ],
+  providers: [...interceptorsOrder],
 })
 export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}

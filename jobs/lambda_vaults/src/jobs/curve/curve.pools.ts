@@ -305,7 +305,12 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
     });
 
     const [{ prices }, multicallResponses] = await Promise.all([
-      this.priceService.getCurrentPrices(tokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        tokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(calls, this.chain),
     ]);
 
@@ -354,7 +359,7 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
             (coinVirtualPrice && normalizeDecimals(coinVirtualPrice.toString(), coin.decimals)) ??
             Number(prices[coin.address]);
           coin.price = price;
-          if (coin.tokens?.length) {
+          if (coin.tokens?.length > 1) {
             let lpValue = 0;
             coin.tokens.forEach((poolToken) => {
               const poolTokenPrice = Number(prices[poolToken.address]);
@@ -424,7 +429,7 @@ export class CurvePools extends JobPoolsBase<CurveLiquidityPoolFeature> implemen
       );
       poolFeature.tokens.forEach((coin) => {
         // If its an underlying LP, get the virtual prices for it too
-        if (coin.tokens.length) {
+        if (coin.tokens.length > 1) {
           calls.set(
             this.getVirtualPriceFromLpTokenLabel(coin.address),
             registry.getVirtualPriceFromLpToken(coin.address),

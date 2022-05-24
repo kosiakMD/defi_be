@@ -16,10 +16,10 @@ payload = json.dumps({
   "parameters": {
     "environment": sys.argv[2],
     "namespace": "defiyield",
-    "replicas": "1",
+    "replicas": sys.argv[5],
     "revision": sys.argv[3],
     "template_branch": sys.argv[4],
-    "template_version": "1.0.3"
+    "template_version": "1.0.5"
   }
 })
 headers = {

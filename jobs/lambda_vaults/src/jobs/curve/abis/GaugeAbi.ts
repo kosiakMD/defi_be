@@ -11,6 +11,14 @@ export class GaugeAbi extends MultiCallAbiProxy {
     outputs: [{ name: '', type: 'address' }],
   };
 
+  static readonly totalSupply: AbiItem = {
+    name: 'totalSupply',
+    outputs: [{ type: 'uint256', name: '' }],
+    inputs: [],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
   static readonly balanceOf: AbiItem = {
     stateMutability: 'view',
     type: 'function',

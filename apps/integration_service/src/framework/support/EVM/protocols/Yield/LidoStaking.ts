@@ -5,36 +5,73 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, FeatureEnum, Logger } from '@app/common';
+import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
+import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
   IProtocolMeta,
   IRootProtocol,
   TokenMap,
 } from '../../../interfaces';
+import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
-  IStakingFeatureMinimal,
-  IStakingFeatureOpportunity,
-  IStakingFeatureUserEntry,
-} from '../../../interfaces/feature.staking.interface';
+  IRewardTokenMinimal,
+  IRewardTokenOpportunity,
+  IRewardTokenUserEntry,
+} from '../../../interfaces/tokens.rewarded.interface';
+import {
+  ISupplyTokenMinimal,
+  ISupplyTokenOpportunity,
+  ISupplyTokenUserEntry,
+} from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-interface ILidoMeta extends IProtocolMeta {
+export interface ILidoEVMMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;
+  name: string;
+  address: Address;
+  context: {
+    stakedToken: Address;
+    statsApi: string;
+    statsProcessor: (data: any) => number;
+  };
 }
+
+type IStakingFeatureMinimalSingle = BaseWithTokens<
+  ISupplyTokenMinimal,
+  IRewardTokenMinimal,
+  void,
+  { apr: number } | void
+>;
+
+// User-less opportunities (getOpportunities)
+type IStakingFeatureOpportunitySingle = BaseWithTokens<
+  ISupplyTokenOpportunity,
+  IRewardTokenOpportunity,
+  void,
+  any
+>;
+
+// User Info (getUserPositions)
+type IStakingFeatureUserEntrySingle = BaseWithTokens<
+  ISupplyTokenUserEntry,
+  IRewardTokenUserEntry,
+  void,
+  any
+>;
 
 export class LidoStaking
   extends SingleContractProtocol<
-    IStakingFeatureMinimal,
-    IStakingFeatureOpportunity,
-    IStakingFeatureUserEntry,
-    ILidoMeta
+    IStakingFeatureMinimalSingle,
+    IStakingFeatureOpportunitySingle,
+    IStakingFeatureUserEntrySingle,
+    ILidoEVMMeta
   >
   implements IRootProtocol
 {
@@ -55,50 +92,37 @@ export class LidoStaking
     totalSupply: () => (item) => item.name === 'totalSupply',
   };
 
-  async fetchOpportunityData(context: { [key: string]: any }): Promise<IStakingFeatureMinimal[]> {
+  async fetchOpportunityData(context: {
+    [key: string]: any;
+  }): Promise<IStakingFeatureMinimalSingle[]> {
+    // TODO: does this refresh enough?
+    const { data } = await firstValueFrom(this.httpService.get(this.meta.context.statsApi));
+    const apr = this.meta.context.statsProcessor(data);
+
     return [
       {
         id: this.meta.address,
         chain: this.meta.chain,
         feature: this.meta.feature,
-        supplied: [
-          {
-            token: { address: context.stakedToken },
-            totalSupplied: context.totalSupply.toString(),
-          },
-        ],
-        rewarded: [
-          {
-            token: { address: context.stakedToken },
-            rewardPerSecond: '0', // will be filled in by realTimeData from Lido API
-          },
-        ],
+        supply: {
+          token: { address: context.stakedToken },
+          totalSupplied: context.totalSupply.toString(),
+        },
+        reward: {
+          token: { address: context.stakedToken },
+        },
+        meta: { apr },
       },
     ];
   }
 
-  protected async updateRealTimeData(
-    opportunities: IStakingFeatureMinimal[],
-  ): Promise<IStakingFeatureMinimal[]> {
-    const { data } = await firstValueFrom(this.httpService.get(this.meta.context.statsApi));
-    const apr = this.meta.context.statsProcessor(data);
-    opportunities[0].meta = {
-      apr: apr,
-    };
-
-    return opportunities;
-  }
-
   protected formatOpportunity(
-    opportunity: IStakingFeatureMinimal,
+    opportunity: IStakingFeatureMinimalSingle,
     tokens: TokenMap,
-  ): void | IStakingFeatureOpportunity {
-    const stakedToken = tokens.get(opportunity.supplied[0].token.address);
+  ): void | IStakingFeatureOpportunitySingle {
+    const stakedToken = tokens.get(opportunity.supply.token.address);
     if (!stakedToken) return;
-    const totalSupplied = normalizeDecimals(
-      opportunity.supplied[0].totalSupplied,
-      stakedToken.decimals,
-    );
+    const totalSupplied = normalizeDecimals(opportunity.supply.totalSupplied, stakedToken.decimals);
     const tvl = totalSupplied * stakedToken.price;
 
     const apr = {
@@ -112,26 +136,22 @@ export class LidoStaking
       feature: opportunity.feature,
       id: opportunity.id,
       chain: opportunity.chain,
-      supplied: [
-        {
-          token: stakedToken,
-          totalSupplied,
-          tvl,
+      supply: {
+        token: stakedToken,
+        totalSupplied,
+        tvl,
+      },
+      reward: {
+        token: stakedToken,
+        apr: apr,
+        apy: apr, // due to how the rewards work, compounding is impossible
+        harvests: {
+          day: (apr.day * tvl) / stakedToken.price,
+          week: (apr.week * tvl) / stakedToken.price,
+          month: (apr.month * tvl) / stakedToken.price,
+          year: (apr.year * tvl) / stakedToken.price,
         },
-      ],
-      rewarded: [
-        {
-          token: stakedToken,
-          apr: apr,
-          apy: apr, // due to how the rewards work, compounding is impossible
-          harvests: {
-            day: (apr.day * tvl) / stakedToken.price,
-            week: (apr.week * tvl) / stakedToken.price,
-            month: (apr.month * tvl) / stakedToken.price,
-            year: (apr.year * tvl) / stakedToken.price,
-          },
-        },
-      ],
+      },
     };
   }
 
@@ -147,47 +167,56 @@ export class LidoStaking
    * @param pools requested pools
    * @returns
    */
-  protected fetchUserData(addresses: Address[], pools: IStakingFeatureOpportunity[]) {
+  protected async fetchUserData(
+    address: Address,
+    pools: IStakingFeatureOpportunitySingle[],
+  ): Promise<IStakingFeatureUserEntrySingle[]> {
     const contract = this.getMainContract();
 
     const calls = new Map();
-    addresses.forEach((address) => {
-      return pools.forEach((pool) => {
-        calls.set(
-          this.balanceOfLabel(pool.id, address),
-          contract.createCall(this.functions.balanceOf, address),
-        );
-      });
+    pools.forEach((pool) => {
+      calls.set(
+        this.balanceOfLabel(pool.id, address),
+        contract.createCall(this.functions.balanceOf, address),
+      );
     });
 
-    return this.multicall.handleInBatches(calls, this.meta.chain);
+    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+    return pools.reduce((pools, pool) => {
+      const userPool = this.formatUserData(address, pool, results);
+      if (userPool) {
+        pools.push(userPool);
+      }
+
+      return pools;
+    }, []);
   }
 
   protected formatUserData(
     address: Address,
-    pool: IStakingFeatureOpportunity,
+    pool: IStakingFeatureOpportunitySingle,
     data: any,
-  ): IStakingFeatureUserEntry {
+  ): IStakingFeatureUserEntrySingle {
     const {
       output: { data: balanceRaw },
     } = data.get(this.balanceOfLabel(pool.id, address));
-
     // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
-    const balance = normalizeDecimals(balanceRaw.toString(), pool.supplied[0].token.decimals);
+    const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
 
     if (!balance) return;
 
     // Update supplied token
-    Object.assign(pool.supplied[0], {
+    Object.assign(pool.supply, {
       amount: balance,
-      value: balance * pool.supplied[0].token.price,
+      value: balance * pool.supply.token.price,
     });
 
     // TODO: no rewards at this moment
-    Object.assign(pool.rewarded[0], { amount: 0, value: 0 });
+    Object.assign(pool.reward, { amount: 0, value: 0 });
 
     // TODO: what is the best way to extend the opportunity type to become a userEntry type
     // without forcing a cast like this (only a few fields are added amount, value)
-    return pool as IStakingFeatureUserEntry;
+    return pool as IStakingFeatureUserEntrySingle;
   }
 }

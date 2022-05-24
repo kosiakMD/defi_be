@@ -8,7 +8,7 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -16,8 +16,8 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { ResponseInterceptor } from '@app/common/interceptors/response-interceptor.service';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { interceptorsOrder } from '@app/common/interceptors';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
@@ -27,6 +27,7 @@ import { AssetsV2Controller } from './assets-v2/assets-v2.controller';
 import { AssetsController } from './assets/assets.controller';
 import { BalancesController } from './balances/balances.controller';
 import { BlacklistController } from './blacklist/blacklist.controller';
+import { ChainsController } from './chains/chains.controller';
 import config from './config';
 import { GasModule } from './gas/gas.module';
 import { HealthController } from './health/health.controller';
@@ -42,6 +43,8 @@ import { PricesModule } from './prices/prices.module';
 import { ProjectsController } from './projects/projects.controller';
 import { ProtocolController } from './protocol/protocol.controller';
 import { ProtocolControllerV2 } from './protocol/protocol.controller.v2';
+import { EndpointsController } from './rpc-nodes/endpoints.controller';
+import { RPCNodesController } from './rpc-nodes/rpc-nodes.controller';
 import { ScamsController } from './scams/scams.controller.dto';
 import { ScansApiModule } from './scans-api/scans-api.module';
 import { SearchController } from './search/search.controller';
@@ -92,6 +95,8 @@ import { VaultsModule } from './vaults/vaults.module';
     ApprovalsController,
     BalancesController,
     BlacklistController,
+    ChainsController,
+    EndpointsController,
     TransactionsController,
     ProtocolController,
     NftController,
@@ -103,21 +108,14 @@ import { VaultsModule } from './vaults/vaults.module';
     ScamsController,
     TokensController,
     OpportunitiesController,
+    RPCNodesController,
   ].sort(),
   providers: [
+    ...interceptorsOrder,
     {
-      provide: APP_INTERCEPTOR,
-      useClass: ResponseInterceptor,
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
     },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
-    },
-    // TODO: testing 1 Sentry middleware only, without interceptors
-    // {
-    //   provide: APP_FILTER,
-    //   useClass: AllExceptionsFilter,
-    // },
     {
       provide: APP_GUARD,
       useClass: ApiVersionGuard,

@@ -2,21 +2,28 @@ import { Repository } from 'typeorm';
 
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
+import { SOL_COIN_ADDRESS } from '@app/common/constant';
 import { isSolAddress, normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
-import { DelegationsStrategy } from './index';
+import { DelegationsStrategy } from './delegation.strategy';
 
 @Injectable()
 export class SolanaDelegationsStrategy extends DelegationsStrategy implements OnModuleInit {
   private asset: AssetsEntity;
+
+  protected url: string;
+  protected path = 'v1/account';
+
   constructor(
+    private readonly configService: ConfigService,
     private httpService: HttpService,
     private readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -24,16 +31,19 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
     private readonly assetsRepository: Repository<AssetsEntity>,
   ) {
     super();
+
+    this.url = new URL(
+      this.path,
+      this.configService.get<string>('SOLANA_DELEGATION_API_URL'),
+    ).toString();
   }
 
   async onModuleInit(): Promise<void> {
     this.asset = await this.assetsRepository.findOne({
-      address: '00000000000000000000000000000000000000000000',
-      chain: 12,
+      address: SOL_COIN_ADDRESS,
+      chain: ChainIdEnum.sol,
     });
   }
-
-  url = 'https://api.solanabeach.io/v1/account';
 
   public async getDelegatedAssets(address) {
     if (!isSolAddress(address)) return [];
@@ -54,27 +64,35 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
           .get(`${this.url}/${staking.pubkey.address}/stake-rewards`)
           .toPromise();
 
-        for (const stakingReward of stakingRewardsData) {
+        const stakingReward = stakingRewardsData[0];
+        if (stakingReward) {
+          const balanceAmount = normalizeDecimals(stakingReward.postBalance, this.asset.decimals);
+          const claimableRewardsAmount = normalizeDecimals(
+            stakingReward.amount,
+            this.asset.decimals,
+          );
+          const price = prices[this.asset.address];
+          const { identityPubkey, name, image, website } =
+            staking.data.stake.delegation.validatorInfo;
+
           result.push({
             address,
-            asset: this.asset,
+            // TODO: add correct AssetDTO extended from AssetEntity
+            //  with omitting redundant methods and properties
+            asset: { ...this.asset, price },
             validator: {
-              address: staking.data.stake.delegation.validatorInfo.identityPubkey,
-              name: staking.data.stake.delegation.validatorInfo.name,
-              logo: staking.data.stake.delegation.validatorInfo.image,
-              website: staking.data.stake.delegation.validatorInfo.website,
+              address: identityPubkey,
+              name: name,
+              logo: image,
+              website: website,
             },
             balance: {
-              amount: normalizeDecimals(stakingReward.postBalance, this.asset.decimals),
-              amountUsd:
-                normalizeDecimals(stakingReward.postBalance, this.asset.decimals) *
-                prices[this.asset.address],
+              amount: balanceAmount,
+              amountUsd: balanceAmount * price,
             },
             claimableRewards: {
-              amount: normalizeDecimals(stakingReward.amount, this.asset.decimals),
-              amountUsd:
-                normalizeDecimals(stakingReward.amount, this.asset.decimals) *
-                prices[this.asset.address],
+              amount: claimableRewardsAmount,
+              amountUsd: claimableRewardsAmount * price,
             },
           });
         }
@@ -82,6 +100,7 @@ export class SolanaDelegationsStrategy extends DelegationsStrategy implements On
       return result;
     } catch (err) {
       this.logger.error(err);
+      throw err;
     }
   }
 }

@@ -6,8 +6,10 @@ import { ConfigService } from '@nestjs/config';
 
 import { IAssetResponseDto } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
+import LiquidityPoolTokenDto from '@app/common/dto/LiquidityPoolToken.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
+import { chunk } from '@app/common/utils';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
 
@@ -17,6 +19,8 @@ export class AccountService {
 
   private getBalanceUrl: string;
   private getAssetsUrl: string;
+  private saveAssetsUrl: string;
+  private saveAssetsUnderlyingUrl: string;
 
   constructor(
     private httpService: HttpService,
@@ -30,6 +34,8 @@ export class AccountService {
 
     this.getBalanceUrl = `${url}/v1/balances`;
     this.getAssetsUrl = `${url}/v1/assets`;
+    this.saveAssetsUrl = `${url}/v1/assets/save`;
+    this.saveAssetsUnderlyingUrl = `${url}/v1/assets/save-underlying`;
   }
 
   async getBalances(
@@ -58,21 +64,25 @@ export class AccountService {
     addresses: Address[],
     chainIds?: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
-    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}`;
+    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}_1`;
 
-    const cachedResult: DetailedResponseDto<Asset[]> = await this.cache.get(cacheKey);
+    return this.getOrSet(this.cacheTTLInSeconds, cacheKey, async () => {
+      const dataArray = await Promise.all(
+        // TODO: move max chunk size into env or constants
+        chunk(addresses, 250).map(async (addressChunk) => {
+          const data = await this.httpService
+            .get(this.getAssetsUrl, { params: { addresses: addressChunk, chains: chainIds } })
+            .toPromise();
 
-    if (cachedResult) {
-      return cachedResult;
-    } else {
-      const data = await this.httpService
-        .get(this.getAssetsUrl, { params: { addresses, chains: chainIds } })
-        .toPromise();
+          return data.data;
+        }),
+      );
 
-      await this.cache.set(cacheKey, data.data, { ttl: this.cacheTTLInSeconds });
-
-      return data.data;
-    }
+      return dataArray.reduce((acc, cur) => {
+        acc.data.push(...cur.data);
+        return acc;
+      });
+    });
   }
 
   // @RequestErrorHandler()
@@ -92,5 +102,45 @@ export class AccountService {
 
       return data.data;
     }
+  }
+
+  async saveAssetsAndUnderlying(asset: Partial<Asset>): Promise<LiquidityPoolTokenDto> {
+    const { chainId, ...other } = asset;
+    const data = await this.httpService
+      .post(this.saveAssetsUrl, {
+        ...other,
+        chain: chainId,
+      })
+      .toPromise();
+
+    const dataWithUnderlying = await this.httpService
+      .post<LiquidityPoolTokenDto>(this.saveAssetsUnderlyingUrl, {
+        ...data.data,
+        pairs: asset.address.split(':'),
+      })
+      .toPromise();
+
+    return dataWithUnderlying.data;
+  }
+
+  /**
+   * retrieves from cache if available. If not available, executes the callback
+   * & saves to cache for next time
+   *
+   * @param ttl time to live
+   * @param key cache key
+   * @param callback data to cache
+   * @returns data
+   */
+  private async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
+    const cached = await this.cache.get<T>(key);
+    if (cached) return cached;
+
+    // in the event of an error, nothing will be cached
+    const data = await callback();
+    if (data) {
+      await this.cache.set(key, data, { ttl });
+    }
+    return data;
   }
 }

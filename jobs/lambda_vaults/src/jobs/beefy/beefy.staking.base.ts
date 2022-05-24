@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import { Address, ChainIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CallData } from '@app/common/dto/CallData';
+import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import {
   IntegrationERC20TokenDto,
   IntegrationPoolTokenDto,
@@ -83,20 +84,23 @@ export abstract class BeefyStakingBase
 
   async fillChainData(): Promise<IntegrationStakingPositionDto[]> {
     const supportedVaults = new Map<Address, IBeefyVaultDetails>();
-    const multicallPromises = this.mapping.map(async (m) => {
-      const vault = await this.getBeefyVault(m);
 
+    const aprs = await this.api.fetchAprs();
+
+    const multicallPromises = this.mapping.map(async (position) => {
+      const vault = await this.getBeefyVault(position);
+      if (!vault) return;
       const strategy = await this.getBeefyStrategy(vault);
 
       if (vault && strategy) {
-        supportedVaults.set(m.address, { vault, strategy });
+        supportedVaults.set(position.address, { vault, strategy });
       }
       return;
     });
 
     // Data is gathered in 'supportedVaults'.
     // this is to wait for everything above to complete
-    await Promise.all(multicallPromises);
+    await Promise.allSettled(multicallPromises);
 
     // Get extra data not retrieved from above
     const { prices, totalSupplies, pools } = await this.fetchAssets(supportedVaults);
@@ -139,7 +143,9 @@ export abstract class BeefyStakingBase
 
       // All prices have been updated, Update total TVL
       stakingPosition.stats.tvl = stakingPosition.stakingToken.value;
-
+      if (aprs[stakingPosition.extra.id]?.totalApy) {
+        stakingPosition.stats.poolApy = aprs[stakingPosition.extra.id].totalApy * 100;
+      }
       formattedVaults.push(stakingPosition);
     });
 
@@ -193,19 +199,22 @@ export abstract class BeefyStakingBase
   }
 
   private async fetchTotalSupplies(addresses: Address[]): Promise<Map<Address, string>> {
-    const calls = new Map(
-      addresses.map((address) => {
-        const contract = new ERC20(address);
-        return [address, contract.totalSupply()];
-      }),
+    const callGroup = addresses.map((address) => {
+      const contract = new ERC20(address);
+      return new Map<string, CallData>([[address, contract.totalSupply()]]);
+    });
+
+    const responsesRaw = await Promise.allSettled(
+      callGroup.flatMap((call) => this.multicall(call)),
     );
 
-    const responsesRaw = await this.multicall(calls);
+    const [data] = handlePromiseAllSettled(responsesRaw);
 
     const responses = new Map();
-    responsesRaw.forEach((callData, address) =>
-      responses.set(address, callData.output.data.toString()),
-    );
+    for (const callData of data) {
+      const [[key, value]] = callData.entries();
+      responses.set(key, value.output.data.toString());
+    }
 
     return responses;
   }
@@ -293,8 +302,8 @@ export abstract class BeefyStakingBase
           new Strategy(stakingPosition.address),
           (vault) => ({
             totalSupply: vault.totalSupply(),
-            strategy: vault.strategy(),
-            want: vault.want(),
+            strategy: vault.strategy(), // can get from api (strategy)
+            want: vault.want(), // can get from api (tokenAddress)
             balance: vault.balance(),
             getPricePerFullShare: vault.getPricePerFullShare(),
             decimals: vault.decimals(),
@@ -374,6 +383,7 @@ export abstract class BeefyStakingBase
 
     // Convert IBeefyStrategyAssets<CallData> to callable Map
     const calls = new Map<string, any>([
+      // eslint-disable-next-line no-unsafe-optional-chaining
       ...callObj.underlying?.map((call, idx): [string, CallData] => [`lpToken${idx}`, call]),
       ['output', callObj.output],
       ['want', callObj.want],
@@ -403,8 +413,8 @@ export abstract class BeefyStakingBase
           vault.earnContractAddress,
           vault.name,
           vault.tokenAddress ?? ZERO_ADDRESS,
+          { id: vault.id },
         );
-
         stakingFeatures.push(stakingPoolFeature);
       } catch (e) {
         this.logger.error(
@@ -423,6 +433,7 @@ export abstract class BeefyStakingBase
     address: Address,
     name: string,
     underlying: Address,
+    extra: any,
   ): Promise<IntegrationStakingPositionDto> {
     const stakingToken = await this.createStakingToken(underlying);
 
@@ -431,6 +442,7 @@ export abstract class BeefyStakingBase
       poolName: name, // vault name
       rewards: [],
       stakingToken: stakingToken, // underlying token
+      extra,
     });
   }
 

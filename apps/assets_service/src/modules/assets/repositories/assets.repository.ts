@@ -1,85 +1,66 @@
-import { EntityRepository, FindManyOptions, Repository } from 'typeorm';
+import { EntityRepository, ILike, Repository } from 'typeorm';
+import { FindConditions } from 'typeorm/find-options/FindConditions';
 
 import { ChainIdEnum } from '@app/common/enum';
 
-import { AssetsListQueryDto } from '../dto/assets-list-query.dto';
-import { AssetsEntity } from '../entities/assets.entity';
+import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
-@EntityRepository(AssetsEntity)
-export class AssetsRepository extends Repository<AssetsEntity> {
-  findAllAssetsWithPrices(
-    queryListParams: AssetsListQueryDto,
-    queryOptions?: FindManyOptions,
-  ): Promise<AssetsEntity[]> {
-    const { limit, page } = queryListParams;
-    const findManyOptions: FindManyOptions = {
-      skip: (page - 1) * limit,
-      take: limit,
-    };
-    // findManyOptions.join = {
-    //   alias: 'price',
-    //   leftJoinAndSelect: {
-    //     price: 'assets_prices.asset_id',
-    //   },
-    // };
-    if (queryOptions) {
-      findManyOptions.where = queryOptions.where;
-    }
-    // if (sortField && sortDirection) {
-    //   findManyOptions.order = {};
-    //   findManyOptions.order[sortField] = sortDirection;
-    // }
-    return this.find(findManyOptions);
+import { AssetEntity } from '../entities/asset.entity';
+
+export type AssetReference = {
+  chainId: number;
+  address: string;
+};
+
+@EntityRepository(AssetEntity)
+export class AssetsRepository extends Repository<AssetEntity> {
+  findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetEntity> {
+    return this.findOne({
+      where: { chainId, address: ILike(address) },
+    });
   }
 
-  async findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetsEntity> {
-    return this.findOne({
-      where: { address, chainId },
+  findManyByAddressesAndChainIds(
+    requests: AssetReference[],
+    include?: string[],
+  ): Promise<AssetEntity[]> {
+    return this.find({
+      where: requests.map(({ chainId, address }) => ({
+        chainId,
+        address: ILike(address),
+      })),
+      relations: include,
     });
   }
 
   async getAllTrackedAssetChains(): Promise<number[]> {
-    return (
-      await this.query(`
-      SELECT DISTINCT ON ("assets"."chain_id") "assets"."chain_id"
-      FROM "assets"
-      WHERE "assets"."is_tracked" IS true
-      GROUP BY "assets"."chain_id"
-      ORDER BY "assets"."chain_id" ASC
-    `)
-    ).flatMap((item) => Object.values(item));
+    const chains = await this.createQueryBuilder('assets')
+      .select('assets.chain_id as "chainId"')
+      .where('assets.is_tracked = true and assets.disabled = false')
+      .distinct(true)
+      .getRawMany();
+    return chains.map(({ chainId }) => chainId);
   }
 
-  async findAssetsByParams(searchParams): Promise<AssetsEntity[]> {
-    // eslint-disable-next-line prefer-const
-    let { address, text } = searchParams;
+  async findAssetsByParams({ address, text, limit }: SearchParams): Promise<AssetEntity[]> {
+    const commonConditions: FindConditions<AssetEntity> = { isTracked: true, disabled: false };
+    const conditions: FindConditions<AssetEntity>[] = [];
+    if (address) {
+      conditions.push({ ...commonConditions, address: ILike(address) });
+    }
     if (text) {
-      text = `%${text}%`.toLowerCase();
+      conditions.push({ ...commonConditions, name: ILike(`%${text}%`) });
+      conditions.push({ ...commonConditions, symbol: ILike(`%${text}%`) });
     }
-    const qb = this.createQueryBuilder('assets');
-    qb.where('is_tracked = :isTracked', { isTracked: true });
-    if (address && text) {
-      qb.andWhere(
-        '((LOWER(name) LIKE :name) OR (LOWER(symbol) LIKE :symbol) OR (address = :address))',
-        {
-          name: text,
-          symbol: text,
-          address,
-        },
-      );
-    } else if (address) {
-      qb.andWhere('address = :address', { address });
-    } else {
-      qb.andWhere('(LOWER(name) LIKE :name OR LOWER(symbol) LIKE :symbol)', {
-        name: text,
-        symbol: text,
-      });
-    }
-    qb.orderBy({
-      'assets.name': 'ASC',
-      'assets.symbol': 'ASC',
+
+    return this.find({
+      where: conditions,
+      order: {
+        rank: 'ASC',
+        name: 'ASC',
+        symbol: 'ASC',
+      },
+      take: limit || 30,
     });
-    qb.limit(searchParams.limit || 30);
-    return qb.getMany();
   }
 }

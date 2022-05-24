@@ -179,7 +179,7 @@ export class VenusProtocol extends DataProviderProtocol {
     );
 
     const items = [];
-    let totalValue = 0;
+    const totalValue = 0;
     if (amount > 0) {
       const rewardPosition = plainToClass(IntegrationClaimableTokenDto, {
         address: rewardToken.address,

@@ -42,7 +42,7 @@ export class CurveStaking {
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${CurveProtocolEnum.curve}_${FeatureEnum.staking}`;
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);
-    if (!cachedPools) {
+    if (!cachedPools || !cachedPools.items) {
       throw new Error(`not found cached data for key '${cacheKey}'`);
     }
 

@@ -3,6 +3,7 @@ import bech32 from 'bech32';
 import { isAddress as isETHAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 
 import { ChainIdEnum } from '../enum';
 
@@ -51,6 +52,7 @@ export function keepAddressesByChainId(addresses: string | string[], chainId: Ch
   }
   return addressArray;
 }
+
 export function splitToAddressesArray(addresses: string | any): Address[] {
   if (!addresses) {
     return [];
@@ -60,6 +62,10 @@ export function splitToAddressesArray(addresses: string | any): Address[] {
   }
 
   return addresses.split(',').map(unifyAddress);
+}
+
+export function isZeroAddress(address: Address) {
+  return address === ZERO_ADDRESS;
 }
 
 // TODO: TBD why only if ETH valid pattern?
@@ -98,53 +104,45 @@ export function isSolAddress(address: string): boolean {
   }
 }
 
-export function isCardanoAddress(address: string): boolean {
-  return !!address.match(/^addr1.*/);
-}
-export function isRoninAddress(address: string): boolean {
-  return !!address.match(/^ronin.*/);
-}
-export function isKavaAddress(address: string): boolean {
-  return !!address.match(/^kava1.*/);
-}
-
-export function isCosmosAddress(address: string): boolean {
-  return !!address.match(/^cosmos1.*/);
-}
-
-export function isOsmosisAddress(address: string): boolean {
-  return !!address.match(/^osmo1.*/);
-}
-
-export function isSecretAddress(address: string): boolean {
-  return !!address.match(/^secret1.*/);
-}
-
-export function isTerraAddress(address: string): boolean {
+export function isBech32LikeAddress(address: string, length?: number): boolean {
   try {
-    if (address.match(/^terra.*/)) {
-      return true;
-    }
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const { prefix: decodedPrefix } = bech32.decode(address);
-    return decodedPrefix === 'terra';
+    const { prefix } = bech32.decode(address, length);
+    return ['addr', 'kava', 'secret', 'osmo', 'terra', 'cosmos'].includes(prefix);
   } catch {
     return false;
   }
 }
 
+export function isCardanoAddress(address: string): boolean {
+  return isBech32LikeAddress(address, 103);
+}
+
+export function isRoninAddress(address: string): boolean {
+  return address.includes('ronin');
+}
+
+export function isKavaAddress(address: string): boolean {
+  return isBech32LikeAddress(address);
+}
+
+export function isCosmosAddress(address: string): boolean {
+  return isBech32LikeAddress(address);
+}
+
+export function isOsmosisAddress(address: string): boolean {
+  return isBech32LikeAddress(address);
+}
+
+export function isSecretAddress(address: string): boolean {
+  return isBech32LikeAddress(address);
+}
+
+export function isTerraAddress(address: string): boolean {
+  return isBech32LikeAddress(address);
+}
+
 export function isSomeAddress(address: string) {
-  const addressChecks = [
-    isCardanoAddress,
-    isETHAddress,
-    isSolAddress,
-    isTerraAddress,
-    isCosmosAddress,
-    isKavaAddress,
-    isOsmosisAddress,
-    isSecretAddress,
-  ];
+  const addressChecks = [isBech32LikeAddress, isCardanoAddress, isETHAddress, isSolAddress];
   for (const addressChecker of addressChecks) {
     if (addressChecker(address)) {
       return true;

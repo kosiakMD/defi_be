@@ -207,7 +207,12 @@ export class AnchorLp extends JobPoolsBase<LiquidityPoolFeature> {
     const terra: LCDClient = this.web3ProviderService.getInstanceByChainId(this.chain);
 
     const [{ prices }] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, this.chain),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        this.chain,
+        this.protocol,
+      ),
     ]);
 
     this.mapping = await Promise.all(

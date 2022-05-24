@@ -1,11 +1,10 @@
-import { toDecimals } from 'apps/account_service/src/common/utils';
 import axios from 'axios';
 import { partition } from 'lodash';
 
 import { ChainIdEnum, CurrencyEnum, CurrencyIdEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
-import { concatStrings } from '@app/common/utils';
+import { concatStrings, normalizeDecimals } from '@app/common/utils';
 import { ChainCoinAddresses, getCoingeckoPlatformId } from '@app/common/utils/chains';
 import { toChunkedArray } from '@app/common/utils/transform';
 
@@ -24,6 +23,7 @@ import { CoingeckoService } from './services/coingecko.service';
 import { DebankService } from './services/debank.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
 import { SundaeSwapService } from './services/sundaeswap.service';
+import { WingRidersService } from './services/wingriders.service';
 import { DebankChainsIdEnum } from './utils/debank.chains.id.enum';
 import { duplicateAssetsPricesMap } from './utils/duplicate.assets.prices.map';
 import { logger } from './utils/logger';
@@ -31,6 +31,8 @@ import { logger } from './utils/logger';
 export async function process(): Promise<void> {
   try {
     logger.info(`External prices job started`);
+    const wingRidersService = new WingRidersService();
+
     const allAssets = await AssetsService.getAllAssets();
     logger.info(`Assets total ${allAssets.length} assets from asset service`);
     const allCurrentPricesMap = new Map(
@@ -123,7 +125,8 @@ export async function process(): Promise<void> {
     for (const token of tokensPrices) {
       const address = token.assetB.assetId.replace(/\./g, '');
       const lp =
-        toDecimals(+token.quantityA, 6) / toDecimals(+token.quantityB, token.assetB.decimals);
+        normalizeDecimals(token.quantityA, 6) /
+        normalizeDecimals(token.quantityB, token.assetB.decimals);
       if (token.assetB.decimals !== null) {
         cardanoPrices.push({
           address: address,
@@ -135,7 +138,7 @@ export async function process(): Promise<void> {
       }
     }
 
-    chainsPrices = chainsPrices.concat(cardanoPrices);
+    chainsPrices = chainsPrices.concat(cardanoPrices, await wingRidersService.getPrices());
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);

@@ -1,0 +1,50 @@
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ApiBody, ApiQuery, ApiTags } from '@nestjs/swagger';
+
+import { ListProtocolsDTO } from '../common/dto/service.dto';
+import { SimilarDTO } from '../common/dto/similar.dto';
+import { CommandParameterized, CommandUnparameterized } from '../common/enum/service.enum';
+
+import { ContractsAnalysisService } from '../modules/protocols/services/contracts.analysis.service';
+import { TasksService } from '../modules/tasks/tasks.service';
+
+@ApiTags('Categorization Tool Service')
+@Controller('')
+export class AppController {
+  constructor(
+    private readonly service: TasksService,
+    private readonly contractsAnalysisService: ContractsAnalysisService,
+  ) {}
+
+  @Get('/command')
+  @ApiQuery({ name: 'command', enum: CommandUnparameterized })
+  public async aggregatorsParse(
+    @Query('command') command: CommandUnparameterized = CommandUnparameterized.start_fetching,
+  ) {
+    return this.service.queueTask({ command });
+  }
+
+  @Post('/website/protocol')
+  @ApiBody({ type: ListProtocolsDTO })
+  public async parsingProtocolPost(@Body() listProtocol: ListProtocolsDTO) {
+    return this.service.queueTask({
+      command: CommandParameterized.run_parsing_custom_protocol,
+      listProtocol,
+    });
+  }
+
+  @Get('/requests/similar-contract')
+  @ApiQuery({ name: 'minSimilarityRate', example: 0.5 })
+  @ApiQuery({ name: 'contract', example: '0xEF0881eC094552b2e128Cf945EF17a6752B4Ec5d' })
+  public async getSimilarContracts(
+    @Query() similarData: { contract: string; minSimilarityRate: number },
+  ) {
+    return await this.contractsAnalysisService.getSimilarForContractAddress(similarData);
+  }
+
+  @Post('/requests/similar-contract')
+  @ApiBody({ type: SimilarDTO })
+  public async similarContracts(@Body() similarData: { contract: string }) {
+    return this.service.queueTask({ command: CommandParameterized.similar_contract, similarData });
+  }
+}

@@ -239,6 +239,7 @@ export class RaydiumPools implements JobInterface {
       pricedTokenAddresses,
       CurrencyIdEnum.usd,
       this.chain,
+      this.protocol,
     );
 
     const infoPools = await getInfoPools(

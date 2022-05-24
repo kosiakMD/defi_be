@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
 import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import {
@@ -6,6 +6,7 @@ import {
   AddressesArray,
   ChainIdEnum,
   ChainsArray,
+  ErrorResponseDto,
   ProtocolNameEnum,
   ProtocolParams,
 } from '@app/common';
@@ -24,8 +25,16 @@ export class IntegrationsControllerV3 {
   constructor(private readonly platformService: PlatformService) {}
 
   @Get('/')
-  async getProtocolList(): Promise<IPlatformMeta[]> {
-    return this.platformService.getProtocolList();
+  async getProtocolList(): Promise<{ data: IPlatformMeta[] }> {
+    return {
+      data: await this.platformService.getProtocolList(),
+    };
+  }
+
+  @ApiResponse({ status: 200 })
+  @Get('/sync')
+  async cacheAllPools(): Promise<any> {
+    return this.platformService.cacheOpportunities();
   }
 
   @ApiParam({
@@ -41,14 +50,15 @@ export class IntegrationsControllerV3 {
     name: 'addresses',
     example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
   })
-  @ApiResponse({ status: 200, type: IntegrationsResponseV2Dto })
+  @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseV2Dto })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ErrorResponseDto })
   @Get('/:protocolName/')
   async getUserPositionsForProtocol(
     @Param() { protocolName }: ProtocolParams,
     @ChainsArray('chains') chains: ChainIdEnum[],
     @AddressesArray('addresses') addresses: Address[],
   ): Promise<IUserEntryResponse> {
-    return this.platformService.getUserPositionsForProtocol(protocolName, chains, addresses);
+    return this.platformService.getUserPositionsForPlatform(protocolName, chains, addresses);
   }
 
   @ApiParam({
@@ -67,7 +77,7 @@ export class IntegrationsControllerV3 {
     @Param() { protocolName }: ProtocolParams,
     @ChainsArray('chains') chains: ChainIdEnum[],
   ): Promise<IOpportunityResponse> {
-    return this.platformService.getOpportunitiesForProtocol(protocolName, chains);
+    return this.platformService.getOpportunitiesForPlatform(protocolName, chains);
   }
 
   @ApiParam({
@@ -93,7 +103,7 @@ export class IntegrationsControllerV3 {
     @ChainsArray('chains') chains: ChainIdEnum[],
     @Query() { debug }: { debug?: string },
   ): Promise<any> {
-    return this.platformService.cacheOpportunitiesForProtocol(
+    return this.platformService.cacheOpportunitiesForPlatform(
       protocolName,
       chains,
       debug === 'true',

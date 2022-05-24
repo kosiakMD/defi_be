@@ -1,6 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { getHashedName, getNameAccountKey, NameRegistryState } from '@solana/spl-name-service';
 import { Connection, PublicKey } from '@solana/web3.js';
+import { TNS } from '@tns-money/tns.js';
 import { ethers } from 'ethers';
 import Web3 from 'web3';
 
@@ -8,8 +9,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainIdEnum } from '..';
-
-import { TNS } from '@tns-money/tns.js';
 
 // const tns = new TNS();
 
@@ -57,7 +56,7 @@ export class Web3NameService {
     try {
       return await tns.name(name).getTerraAddress();
     } catch {
-      return null
+      return null;
     }
   }
 
@@ -77,10 +76,7 @@ export class Web3NameService {
   }
 
   private setTnsProvider(chain: ChainIdEnum) {
-    this.providers.set(
-      { chain, resolver: this.resolveTnsName.bind(this) },
-      new TNS(),
-    );
+    this.providers.set({ chain, resolver: this.resolveTnsName.bind(this) }, new TNS());
   }
 
   public async resolveName(name: string, returnName = false): Promise<any> {
@@ -93,11 +89,16 @@ export class Web3NameService {
     return null;
   }
 
-  public async resolveNameResponseWithName(name: string): Promise<{ address: string, name: string }> {
-    for await (const [{ resolver }, provider] of this.providers) {
+  public async resolveNameResponseWithName(
+    name: string,
+  ): Promise<{ address: string; name: string }> {
+    for await (const [{ chain, resolver }, provider] of this.providers) {
       const address = await resolver(name, provider);
       if (address) {
-        return { address, name };
+        return {
+          address,
+          name: [ChainIdEnum.sol].includes(chain) ? name.replace('.sol', '') + '.sol' : name,
+        };
       }
     }
     return null;

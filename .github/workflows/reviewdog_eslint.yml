@@ -1,9 +1,11 @@
 name: 'ReviewDog'
-on: [ pull_request ]
+on:
+  pull_request:
+    types: [ opened, edited, synchronize, unlocked, reopened ]
 
 jobs:
-  reviewdog:
-    name: runner / eslint
+  build:
+    name: 'ReviewDog'
     runs-on: ubuntu-latest
     steps:
       - name: 'Check out Git repository'

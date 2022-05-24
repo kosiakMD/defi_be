@@ -23,6 +23,8 @@ export class BlockScan {
     this.apiKeys[ChainIdEnum.plg] = config.get('BLOCKSCAN_PLG_KEY');
     this.apiKeys[ChainIdEnum.mriver] = config.get('BLOCKSCAN_MOVR_KEY');
     this.apiKeys[ChainIdEnum.arbi] = config.get('BLOCKSCAN_ARBI_KEY');
+    this.apiKeys[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_KEY');
+    this.apiKeys[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_KEY');
 
     // Endpoints
     this.endpoints[ChainIdEnum.ftm] = config.get('BLOCKSCAN_FTM_URL');
@@ -31,6 +33,9 @@ export class BlockScan {
     this.endpoints[ChainIdEnum.plg] = config.get('BLOCKSCAN_PLG_URL');
     this.endpoints[ChainIdEnum.mriver] = config.get('BLOCKSCAN_MOVR_URL');
     this.endpoints[ChainIdEnum.arbi] = config.get('BLOCKSCAN_ARBI_URL');
+    this.endpoints[ChainIdEnum.avax] = config.get('BLOCKSCAN_AVAX_URL');
+    this.endpoints[ChainIdEnum.opt] = config.get('BLOCKSCAN_OPT_URL');
+    this.endpoints[ChainIdEnum.boba] = config.get('BLOCKSCAN_BOBA_URL');
   }
 
   // TODO: Endpoints & API keys to config
@@ -39,17 +44,18 @@ export class BlockScan {
   apiKeys = {};
 
   async fetchAbi(address: Address, chain: ChainId): Promise<AbiItem[] | void> {
-    if (!this.endpoints[chain] || !this.apiKeys[chain]) {
+    if (!this.endpoints[chain]) {
       this.logger.debug(`Chain ${chain} not initialized for ABI fetching`, this.constructor.name);
       return;
     }
 
+    const apiKey = this.apiKeys[chain];
     const data$ = this.httpService.get(this.endpoints[chain], {
       params: {
         module: 'contract',
         action: 'getabi',
         address,
-        apiKey: this.apiKeys[chain],
+        apiKey,
       },
     });
 

@@ -19,9 +19,9 @@ import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { NotifyBase } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { keepAddressesByChainId } from '@app/common/utils';
+import { getChainById } from '@app/common/utils';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
-import { getChainById } from '../../common/utils/chain';
 
 import { ProtocolService } from '../protocols/protocol.service';
 import BasicProtocol from '../protocols/protocols/basicProtocol';

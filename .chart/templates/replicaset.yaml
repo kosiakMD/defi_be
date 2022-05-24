@@ -28,6 +28,28 @@ spec:
           readOnly: true
         - name: secrets
           mountPath: /mnt/secrets
+      {{- if .Values.initContainer.enabled -}}
+        {{- with .Values.initContainer }}
+      - name: {{ .name }}
+        {{- toYaml .spec | nindent 8 }}
+        {{- end }}
+        {{- if .Values.initContainer.image }}
+        image: {{ .Values.initContainer.image }}
+        {{ else }}
+        image: {{ include "defiyield-service.image" . }}
+        {{- end }}
+        env:
+          - name: ENV
+            value: .env
+        volumeMounts:
+          - name: secrets
+            mountPath: /usr/src/app/dist/apps/{{ include "defiyield-service.fullname" . | replace "-" "_" }}/.env
+            subPath: .env
+            readOnly: true
+        envFrom:
+          - configMapRef:
+              name: {{ include "defiyield-service.fullname" . }}-configs
+      {{- end }}
       containers:
       - name: application
         image: {{ include "defiyield-service.image" . }}
@@ -58,7 +80,7 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
         volumeMounts:
         - name: secrets
-          mountPath: /usr/src/app/dist/apps/{{ include "defiyield-service.fullname" . }}/.env
+          mountPath: /usr/src/app/dist/apps/{{ include "defiyield-service.fullname" . | replace "-" "_" }}/.env
           subPath: .env
           readOnly: true
       {{- with .Values.extraContainers }}

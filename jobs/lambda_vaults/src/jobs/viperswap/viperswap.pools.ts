@@ -10,7 +10,7 @@ import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { ERC20Token } from '@app/common/jobs/token';
 import { concatStrings } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { fillUnderlyingTokens } from '../utils/token';
+
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
 import { LiquidityPoolTokenDto } from '../../microservices/dto/account/account.dto';
@@ -28,6 +28,7 @@ import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import { PoolsFeatureMapping } from '../dto/mappings';
 import { IntegrationDataConverter } from '../integration.data.converter';
 import { JobInterface } from '../job.interface';
+import { fillUnderlyingTokens } from '../utils/token';
 import { ViperswapAddresses } from './addresses';
 import { Abis } from './contracts/abis';
 
@@ -271,6 +272,7 @@ export class ViperswapPools implements JobInterface {
         pricedTokenAddresses,
         CurrencyIdEnum.usd,
         ChainIdEnum.harm,
+        this.protocol,
       ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.harm),
     ]);

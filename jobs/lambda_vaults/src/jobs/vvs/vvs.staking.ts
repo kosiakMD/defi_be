@@ -314,7 +314,12 @@ export class VVSStaking implements JobInterface {
     const pricedTokenAddresses: string = Array.from(this.getPricedTokensSet()).join(',');
 
     const [{ prices }, multicallRsp] = await Promise.all([
-      this.priceService.getCurrentPrices(pricedTokenAddresses, CurrencyIdEnum.usd, ChainIdEnum.cro),
+      this.priceService.getCurrentPrices(
+        pricedTokenAddresses,
+        CurrencyIdEnum.usd,
+        ChainIdEnum.cro,
+        this.protocol,
+      ),
       this.multicallService.handleInBatches(batchCallsMap, ChainIdEnum.cro),
     ]);
 
@@ -361,7 +366,7 @@ export class VVSStaking implements JobInterface {
           poolAllocPoints: allocPoint,
           rewardTokenPerBlock: toDecimals(vvsPerBlock, m.rewards[0].decimals),
           rewardTokenPrice: m.rewards[0].price,
-          blockTime: 3,
+          blockTime: 6,
           farmingPoolTVL: m.stats.tvl,
         };
         m.rewards[0].apr = calculateAPR(aprStats);

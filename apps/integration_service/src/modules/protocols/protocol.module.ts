@@ -52,10 +52,6 @@ import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staki
 import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
 import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
-import { IslandswapPools } from './protocols/islandswap/islandswap.pools';
-import IslandswapProtocol from './protocols/islandswap/islandswap.protocol';
-import { IslandswapStaking } from './protocols/islandswap/islandswap.staking';
-import { MarinadeFarms } from './protocols/marinade/marinade.farms';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import { MinswapFarms } from './protocols/minswap/minswap.farms';
@@ -89,7 +85,6 @@ import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import { RaydiumStaking } from './protocols/raydium/raydium.staking';
 import SaberProtocol from './protocols/saber/saber.protocol';
-import { SaberStaking } from './protocols/saber/saber.staking';
 import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
 import { StaderAirdrop } from './protocols/stader/stader.airdrop';
 import { StaderProtocol } from './protocols/stader/stader.protocol';
@@ -120,6 +115,8 @@ import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WingRidersPools } from './protocols/wingriders/wingriders.pools';
+import { WingRidersProtocol } from './protocols/wingriders/wingriders.protocol';
 import { WonderlandStaking } from './protocols/wonderland/features/wonderland.staking';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
 import YearnProtocolV1 from './protocols/yearnProtocolV1';
@@ -142,7 +139,6 @@ const Convex = [
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
 const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
-const Islandswap = [IslandswapProtocol, IslandswapPools, IslandswapStaking];
 const Olympus = [OlympusProtocol, OlympusStaking, OlympusBonding];
 const TraderJoe = [
   TraderJoeProtocol,
@@ -164,12 +160,12 @@ const DefiKingdoms = [
 ];
 const Mojitoswap = [MojitoswapProtocol, MojitoswapStaking, MojitoswapPools];
 const Raydium = [RaydiumStaking];
-const Saber = [SaberProtocol, SaberStaking];
+const Saber = [SaberProtocol];
 const VVS = [VVSProtocol, VVSStaking, VVSPools];
 const Viperswap = [ViperswapProtocol, ViperswapStaking, ViperswapPools, ViperswapLocked];
 const Orca = [OrcaProtocol, OrcaFarms, OrcaPools];
 const SundaeSwap = [SundaeSwapProtocol, SundaeSwapPools, SundaeSwapFarms];
-const Marinade = [MarinadeProtocol, MarinadePools, MarinadeFarms];
+const Marinade = [MarinadeProtocol, MarinadePools];
 const Anchor = [AnchorProtocol, AnchorPools, AnchorStaking, AnchorLending];
 const Terraswap = [TerraswapProtocol, TerraswapPools];
 const Astroport = [
@@ -184,6 +180,7 @@ const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
 const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 const Stader = [StaderProtocol, StaderStaking, StaderAirdrop];
 const Osmosis = [OsmosisProtocol, OsmosisPools, OsmosisLocked];
+const WingRiders = [WingRidersProtocol, WingRidersPools];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -214,7 +211,6 @@ const ProtocolList = [
   ...Curve,
   ...DefiKingdoms,
   ...Ellipsis,
-  ...Islandswap,
   ...Mirror,
   ...Mojitoswap,
   ...Olympus,
@@ -234,6 +230,7 @@ const ProtocolList = [
   ...Minswap,
   ...Stader,
   ...Osmosis,
+  ...WingRiders,
 ];
 
 @Module({
@@ -264,6 +261,6 @@ const ProtocolList = [
     LiquidityPools,
     CardanoService,
   ],
-  exports: [ProtocolService],
+  exports: [ProtocolService, UniswapProtocolV3],
 })
 export class ProtocolModule {}

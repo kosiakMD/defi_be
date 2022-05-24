@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ChainDto, IntegrationClaimableTokenDto, ClaimableDto } from '@app/common/dto';
+import { ChainDto, ClaimableDto, IntegrationClaimableTokenDto } from '@app/common/dto';
 import { BaseData } from '@app/common/dto/BaseData';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import {
@@ -316,11 +316,14 @@ export class UniswapProtocolV3 extends DataProviderProtocol {
     });
   }
 
-  private async getUserPositions(
+  async getUserPositions(
     addresses: Address[],
     chain: ChainDto,
+    inputUsersTokens?: Map<string, number[]>,
   ): Promise<[BaseData[], string[]]> {
-    const userTokens = await this.getUserTokens(addresses, chain);
+    const userTokens = inputUsersTokens
+      ? inputUsersTokens
+      : await this.getUserTokens(addresses, chain);
 
     const userPositions = await this.getTokenDetails(userTokens, chain);
     const pools = await this.getPoolDetails(userPositions, chain);

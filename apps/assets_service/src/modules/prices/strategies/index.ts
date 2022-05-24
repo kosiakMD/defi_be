@@ -1,4 +1,4 @@
-import { PriceSourceStrategies } from 'apps/assets_service/src/common/enum/PriceSourceStrategies.enum';
+import { PriceSourceStrategies } from 'apps/assets_service/src/common/enum/price-source-strategies.enum';
 
 import { CoingeckoStrategy } from './coingecko.strategy';
 import { DebankStrategy } from './debank.strategy';
@@ -7,7 +7,6 @@ import { PriceStrategy } from './strategy';
 import { SundaeswapStrategy } from './sundaeswap.strategy';
 import { TheGraphStrategy } from './thegraph.strategy';
 
-// TODO: Ideally we should be able to add
 const priceStrategies = new Map<string, PriceStrategy>([
   [PriceSourceStrategies.COINGECKO, new CoingeckoStrategy()],
   [PriceSourceStrategies.DEBANK, new DebankStrategy()],

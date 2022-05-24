@@ -2,12 +2,19 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 
-import { LidoStaking as EVMLidoStaking } from '../support/EVM/protocols/Yield/LidoStaking';
+import {
+  ILidoEVMMeta,
+  LidoStaking as EVMLidoStaking,
+} from '../support/EVM/protocols/Yield/LidoStaking';
 import { RootPlatform } from '../support/RootPlatform';
-import { LidoStaking as SolanaLidoStaking } from '../support/Solana/protocols/Yield/LidoStaking';
+import {
+  ILidoSolanaMeta,
+  LidoStaking as SolanaLidoStaking,
+} from '../support/Solana/protocols/Yield/LidoStaking';
+import { FeatureEnum } from '../support/enums';
 
 export class Lido extends RootPlatform {
   constructor(
@@ -20,7 +27,12 @@ export class Lido extends RootPlatform {
   async register() {
     this.registerMeta({
       name: this.constructor.name,
-      project: this.constructor.name,
+      slug: this.constructor.name,
+      links: {
+        url: 'https://lido.fi/',
+        logo: 'https://icons.llama.fi/lido.png',
+        twitter: 'LidoFinance',
+      },
     });
 
     /**
@@ -29,7 +41,7 @@ export class Lido extends RootPlatform {
      * Staking Contract: https://etherscan.io/address/0xae7ab96520de3a18e5e111b5eaab095312d7fe84
      * Deposit TX: unknown
      */
-    await this.registerProtocol(EVMLidoStaking, {
+    await this.registerProtocol<ILidoEVMMeta>(EVMLidoStaking, {
       chain: ChainIdEnum.eth,
       name: 'Lido',
       feature: FeatureEnum.staking,
@@ -47,7 +59,7 @@ export class Lido extends RootPlatform {
      * Staking Contract: https://moonriver.moonscan.io/address/0xffc7780c34b450d917d557e728f033033cb4fa8c
      * Deposit TX: unknown
      */
-    await this.registerProtocol(EVMLidoStaking, {
+    await this.registerProtocol<ILidoEVMMeta>(EVMLidoStaking, {
       chain: ChainIdEnum.mriver,
       name: 'Lido',
       feature: FeatureEnum.staking,
@@ -81,36 +93,12 @@ export class Lido extends RootPlatform {
     // });
 
     /**
-     * Website: https://lido.fi/terra
-     * Docs: https://docs.terra.lido.fi/
-     * Staking Contract: unknown
-     * Deposit TX (stLuna): https://finder.terra.money/mainnet/tx/C45BDFBA96AB797F301B15061214566A1573D28AF1A779251B2C0E43832FA562
-     * Deposit TX (bLuna): https://finder.terra.money/mainnet/tx/E83EE33EF7AB4C0E2DCDD7D7ABA04B6DEF1E5BEF4761FACBE857F6F9DE3B04A8
-     *
-     * @todo Coming Soon
-     */
-    // await this.registerProtocol(TerraLidoStaking, {
-    //   chain: ChainIdEnum.terra,
-    //   name: 'Lido',
-    //   feature: FeatureEnum.staking,
-    //   address: 'terra1mtwph2juhj0rvjz7dy92gvl6xvukaxu8rfv8ts', // hub
-    //   context: {
-    //     // https://docs.terra.lido.fi/introduction/deployed-contracts
-    //     stakedToken: 'uluna', // Luna
-    //     rewardToken: 'uusd', // UST
-    //     reward: 'terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0',
-    //     stLuna: 'terra1yg3j2s986nyp5z7r2lvt0hx3r0lnd7kwvwwtsc',
-    //     bLuna: 'terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp',
-    //   },
-    // });
-
-    /**
      * Website: https://lido.fi/solana
      * Docs: https://docs.solana.lido.fi/
      * Staking Contract: https://solanabeach.io/address/7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj
      * Deposit TX: https://solanabeach.io/tx/n6FpfeiXtsZEE2ZRVEgjbJ5WwpLWLHYD9fUW4WP2BxGnjpwfQdbbATTFro4kvBSicQz1o56ZUUEuJTkUxWLsbkV
      */
-    await this.registerProtocol(SolanaLidoStaking, {
+    await this.registerProtocol<ILidoSolanaMeta>(SolanaLidoStaking, {
       chain: ChainIdEnum.sol,
       name: 'Lido',
       feature: FeatureEnum.staking,

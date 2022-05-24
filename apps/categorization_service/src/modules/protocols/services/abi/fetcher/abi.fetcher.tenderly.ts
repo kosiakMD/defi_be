@@ -32,7 +32,7 @@ export class AbiFetcherTenderly implements IAbiFetcher {
     //take first available chain to fetch contract details for
     const [chainId] = await this.searchForChainsWithContract(address);
     if (!chainId) {
-      throw Error('AbiFetcherTenderly: contract not found');
+      throw Error('contract not found');
     }
     return this.getContractDetails(chainId, address);
   }
@@ -66,7 +66,7 @@ export class AbiFetcherTenderly implements IAbiFetcher {
       this.httpService.get(`${this.apiUrl}/v1/search?query=${address}`),
     );
     // eslint-disable-next-line camelcase
-    return searchResult.data.contracts?.map(({ network_id }) => network_id);
+    return (searchResult.data.contracts || []).map(({ network_id }) => network_id);
   }
 
   private async ensureChainsInfo(): Promise<void> {

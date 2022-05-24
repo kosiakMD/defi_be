@@ -32,7 +32,7 @@ export class AbiFetcherService {
         const chainAbi = await abiFetcher.fetchAbiAndAbiCode(contract);
         return await this.abiFetcherHelper.fetchUnderlyingForProxy(contract, chainAbi);
       } catch (e) {
-        this.logger.warn(`fetchAbiAndAbiCode error - ${e.message}`);
+        this.logger.warn(`${e.message}`, abiFetcher.constructor.name);
       }
     }
     return { chain: null, abi: null, abiCode: null };

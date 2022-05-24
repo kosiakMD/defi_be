@@ -26,6 +26,9 @@ import { TasksService } from './tasks.service';
     }),
     BullModule.registerQueue({
       name: REDIS_TASK_QUEUE,
+      settings: {
+        maxStalledCount: 0,
+      },
     }),
     AggregatorModule,
     ProtocolModule,

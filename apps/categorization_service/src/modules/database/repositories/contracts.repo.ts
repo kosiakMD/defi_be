@@ -7,12 +7,11 @@ import { Contract } from '../entities/contract.entity';
  */
 @EntityRepository(Contract)
 export class ContractsRepository extends Repository<Contract> {
-  async findWithoutAbiOrAbiCode(): Promise<Contract[]> {
+  async findByFetchedAbiFlag(fetchedAbi = false, skip = 0, take = 100): Promise<Contract[]> {
     return this.find({
-      where: [
-        { id: MoreThan(0), abi: null },
-        { id: MoreThan(0), abiCode: null },
-      ],
+      where: { id: MoreThan(0), fetchedAbi },
+      skip,
+      take,
     });
   }
 

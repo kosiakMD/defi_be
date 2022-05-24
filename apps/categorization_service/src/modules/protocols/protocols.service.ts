@@ -132,9 +132,9 @@ export class ProtocolService {
     this.logger.log('parseProtocolsGithubPage finished');
   }
 
-  async fetchAbi() {
+  async fetchAbi(request: CommandRequestDto) {
     this.logger.log('fetchAbi started');
-    await this.contractService.fetchAbiAndAbiCode();
+    await this.contractService.fetchAbiAndAbiCode(request);
     this.logger.log('fetchAbi finished');
   }
 

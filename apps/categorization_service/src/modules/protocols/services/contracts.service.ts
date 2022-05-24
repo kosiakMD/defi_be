@@ -1,9 +1,11 @@
-import parallelLimit from 'async/parallelLimit';
+import { parallelLimit, doWhilst, eachLimit } from 'async';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { CommandRequestDto } from '../../../common/dto/command.request.dto';
 
 import { Protocol } from '../../database/entities/protocol.entity';
 import { ContractsRepository } from '../../database/repositories/contracts.repo';
@@ -64,20 +66,26 @@ export class ContractsService {
     await this.contractsRepository.save(filteredAddresses);
   }
 
-  async fetchAbiAndAbiCode() {
-    const allContracts = await this.contractsRepository.findWithoutAbiOrAbiCode();
-    const contracts = this.testRun ? allContracts.slice(0, 50) : allContracts;
-    await parallelLimit(
-      contracts.map(({ id, address }) => async () => {
-        //fetch ABI and ABI Code
-        this.logger.debug(`fetchAbiAndAbiCode for address: ${address}`);
-        const { chain, abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(address);
+  async fetchAbiAndAbiCode(request: CommandRequestDto) {
+    this.logger.log('fetchAbiAndAbiCode started');
+    let processed = 0;
+    await doWhilst(
+      async () => this.contractsRepository.findByFetchedAbiFlag(request.includeProcessed),
+      async (contracts) => {
+        await eachLimit(contracts, FETCH_ABI_PARALLEL_LIMIT, async ({ id, address }) => {
+          //fetch ABI and ABI Code
+          this.logger.debug(`fetchAbiAndAbiCode for address: ${address}`);
+          const { chain, abi, abiCode } = await this.abiFetcherService.fetchAbiAndAbiCode(address);
 
-        //update DB info
-        await this.contractsRepository.update({ id }, { abi, abiCode, chain });
-        this.tasksAbortChecker.ensureTaskNotAborted();
-      }),
-      FETCH_ABI_PARALLEL_LIMIT,
+          //update DB info
+          await this.contractsRepository.update({ id }, { abi, abiCode, chain, fetchedAbi: true });
+          this.tasksAbortChecker.ensureTaskNotAborted();
+        });
+        processed += contracts.length;
+        this.logger.debug(`fetched abi for [${processed}] contracts`);
+        return !!contracts.length;
+      },
     );
+    this.logger.log('fetchAbiAndAbiCode finished');
   }
 }

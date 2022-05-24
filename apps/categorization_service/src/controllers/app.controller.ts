@@ -18,7 +18,7 @@ export class AppController {
     private readonly contractsAnalysisServiceV1: ContractsAnalysisServiceV1,
   ) {}
 
-  @Get('/command')
+  @Post('/command')
   @ApiResponse({ status: HttpStatus.OK })
   async runCommand(@Query() request: CommandRequestDto) {
     return this.service.queueTask(request);

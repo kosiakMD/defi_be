@@ -53,7 +53,7 @@ export class TasksProcessor {
           ExternalCommand.fetch_abi,
           ExternalCommand.analyse_contracts_against_templates,
         ]) {
-          await this.tasksService.queueTask({ command });
+          await this.tasksService.queueTask({ ...job.data, command });
         }
         return;
       }
@@ -68,7 +68,7 @@ export class TasksProcessor {
       case ExternalCommand.crawl_html:
         return this.protocolService.crawlHtml();
       case ExternalCommand.fetch_abi:
-        return this.protocolService.fetchAbi();
+        return this.protocolService.fetchAbi(job.data as CommandRequestDto);
       case ExternalCommand.parse_protocols_github_page:
         return this.protocolService.parseProtocolsGithubPage();
       case ExternalCommand.analyse_contracts:

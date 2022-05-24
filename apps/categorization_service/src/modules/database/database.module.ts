@@ -11,6 +11,7 @@ import { contractAnalysisUniqueKey1651230074616 } from './migrations/16512300746
 import { removeColumnAbiDiff1652691673678 } from './migrations/1652691673678-remove-column-abi_diff';
 import { addAnalysisMetadata1652958378507 } from './migrations/1652958378507-add-analysis-metadata';
 import { linksAddProcessedFlag1653027759185 } from './migrations/1653027759185-links-add-processed-flag';
+import { contractsFetchedAbiFlag1653292613545 } from './migrations/1653292613545-contracts-fetched-abi-flag';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { linksAddProcessedFlag1653027759185 } from './migrations/1653027759185-l
           removeColumnAbiDiff1652691673678,
           addAnalysisMetadata1652958378507,
           linksAddProcessedFlag1653027759185,
+          contractsFetchedAbiFlag1653292613545,
         ],
       }),
     }),

@@ -10,7 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ChainId } from '@app/common';
 import { CrudService } from '@app/common/services/crud.service';
 
-import { ChainsResponseDto } from './dto/chains-response.dto';
+import { ChainResponseDto } from './dto/chains-response.dto';
 import { ChainsEntity } from './entities/chain.entity';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class ChainsService extends CrudService<ChainsEntity> {
     const chains = await this.getAll();
     const rpcMap = await this.getRpcMap();
     const chainsResponse = chains.map((c: ChainsEntity) => {
-      const chainResponse = new ChainsResponseDto();
+      const chainResponse = new ChainResponseDto();
       chainResponse.chain = c;
       chainResponse.chain.rpc = rpcMap.get(c.id);
       return chainResponse;
@@ -37,7 +37,7 @@ export class ChainsService extends CrudService<ChainsEntity> {
   }
 
   public async getOneChain(id) {
-    const chainResponse = new ChainsResponseDto();
+    const chainResponse = new ChainResponseDto();
     const rpcMap = await this.getRpcMap();
     chainResponse.chain = await this.get(id);
     chainResponse.chain.rpc = rpcMap.get(chainResponse.chain.id);

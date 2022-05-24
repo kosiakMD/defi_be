@@ -12,6 +12,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { NotifySupportedFeature } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { concatStrings } from '@app/common/utils';
+import { retry } from '@app/common/utils/retry';
 
 import { Logger } from '../../logger/logger.service';
 import { AccountService } from '../../microservices/account.service';
@@ -38,6 +39,7 @@ export class MinswapPools extends CardanoPools implements JobInterface {
 
   mapping = [];
   availableDtosForConversion: Map<string, string>;
+  private readonly RETRY_CALL_IN_MS = 5000;
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
@@ -135,16 +137,27 @@ export class MinswapPools extends CardanoPools implements JobInterface {
     const requests = [];
     for (let offset = 0; offset < poolLength; offset += limit) {
       requests.push(
-        this.httpService
-          .post<MinswapResponse>(this.subgraphUrl, {
-            query: AVAILABLE_POOLS_QUERY,
-            variables: { limit, offset },
-          })
-          .pipe(map((r) => r.data?.data?.topPools)),
+        retry(
+          () =>
+            firstValueFrom(
+              this.httpService
+                .post<MinswapResponse>(this.subgraphUrl, {
+                  query: AVAILABLE_POOLS_QUERY,
+                  variables: { limit, offset },
+                })
+                .pipe(map((r) => r.data?.data?.topPools)),
+            ),
+          this.RETRY_CALL_IN_MS,
+        ),
       );
     }
-    const response = await Promise.allSettled(requests.map((request) => firstValueFrom(request)));
-    const [data] = handlePromiseAllSettled(response);
+
+    const response = await Promise.allSettled(requests);
+    const [data, errors] = handlePromiseAllSettled(response);
+
+    if (errors.length > 0) {
+      this.logger.error(`Couldn't process some of minswap pools: ${errors.length}`);
+    }
 
     const pools = data.flat() as unknown as MinswapPool[];
     return this.minswapPoolToCardanoPool(pools);

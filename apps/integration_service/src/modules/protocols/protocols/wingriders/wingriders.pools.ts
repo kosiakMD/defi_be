@@ -13,7 +13,7 @@ import {
 } from '@app/common';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
-import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
+import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -70,8 +70,7 @@ export class WingRidersPools {
       for (const [lpAddress, balance] of availablePoolAddresses.get(address)) {
         const pool = pools.get(lpAddress);
 
-        pool.tokens.forEach(this.formatToDecimals);
-        pool.stats.share = this.cardanoUtils.calculatePoolShare(+balance, pool);
+        pool.stats.share = +balance / pool.lpToken.totalSupply;
         pool.tokens = this.cardanoUtils.mapTokens(pool);
 
         baseDataPoolsMap.get(address).items.push(pool);
@@ -79,10 +78,5 @@ export class WingRidersPools {
     }
 
     return Array.from(baseDataPoolsMap.values());
-  }
-
-  private formatToDecimals(token: PoolTokenDto): PoolTokenDto {
-    token.reserve = token.reserve * 10 ** token.decimals;
-    return token;
   }
 }

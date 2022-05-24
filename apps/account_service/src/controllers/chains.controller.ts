@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  CacheInterceptor,
+  CacheTTL,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseInterceptors,
+} from '@nestjs/common';
 import {
   ApiBody,
   ApiOperation,
@@ -20,6 +30,8 @@ export class ChainsController {
   @ApiOperation({ summary: 'Get a list of all chains' })
   @ApiResponse({ status: 200, description: 'Get a list of chains' })
   @Get()
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300)
   getAllChains() {
     return this.chainsService.getAllChains();
   }
@@ -28,6 +40,8 @@ export class ChainsController {
   @ApiParam({ type: Number, name: 'id' })
   @ApiResponse({ status: 200, description: 'Get a chain by id' })
   @Get(':id')
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300)
   getChainById(@Param('id') id) {
     return this.chainsService.getOneChain(id);
   }

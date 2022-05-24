@@ -24,14 +24,13 @@ export class ChainsService extends CrudService<ChainsEntity> {
     super(chainRepository);
   }
 
-  private rpcMap = new Map<number, any>();
-
   public async getAllChains() {
     const chains = await this.getAll();
+    const rpcMap = await this.getRpcMap();
     const chainsResponse = chains.map((c: ChainsEntity) => {
       const chainResponse = new ChainsResponseDto();
       chainResponse.chain = c;
-      chainResponse.chain.rpc = this.rpcMap.get(c.id);
+      chainResponse.chain.rpc = rpcMap.get(c.id);
       return chainResponse;
     });
 
@@ -40,8 +39,9 @@ export class ChainsService extends CrudService<ChainsEntity> {
 
   public async getOneChain(id) {
     const chainResponse = new ChainsResponseDto();
+    const rpcMap = await this.getRpcMap();
     chainResponse.chain = await this.get(id);
-    chainResponse.chain.rpc = this.rpcMap.get(chainResponse.chain.id);
+    chainResponse.chain.rpc = rpcMap.get(chainResponse.chain.id);
     return chainResponse;
   }
 
@@ -95,8 +95,8 @@ export class ChainsService extends CrudService<ChainsEntity> {
     return chain.metadata.absoluteChainId;
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  private async getRpcData() {
+  private async getRpcMap() {
+    const rpcMap = new Map();
     const rpcData = await firstValueFrom(
       this.http
         .get(this.config.get('RPC_SERVICE_HOST') + 'v1/endpoints?limit=500')
@@ -104,7 +104,8 @@ export class ChainsService extends CrudService<ChainsEntity> {
     );
 
     for (const rpc of rpcData) {
-      this.rpcMap.set(rpc.chainId, rpc);
+      rpcMap.set(rpc.chainId, rpc);
     }
+    return rpcMap;
   }
 }

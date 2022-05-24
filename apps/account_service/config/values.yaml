@@ -31,7 +31,7 @@ configMaps:
     HARM_URL: https://a.api.s0.t.hmny.io
     HECO_URL: https://http-mainnet.hecochain.com/
     POLYGON_RPC_URL: https://polygon-rpc.com/
-    SOLANA_URL: https://solana-api.projectserum.com/
+    SOLANA_URL: https://rpc.ankr.com/solana
     SOL_URL: https://solana-api.projectserum.com/
     OKEX_URL: https://exchainrpc.okex.org
     CRONOS_URL: https://evm-cronos.crypto.org

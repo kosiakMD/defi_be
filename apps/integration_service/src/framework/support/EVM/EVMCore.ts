@@ -187,15 +187,25 @@ export abstract class EVMCore<
           prices[token1Address] = _reserve1.times(prices[token0Address]).div(_reserve1);
         }
 
+        const underlying0 = token.underlyingAssets.find((a) => a.address === token0Address);
+        const underlying1 = token.underlyingAssets.find((a) => a.address === token1Address);
+
         // calculate/fill the LP token price into the price array
-        const tvl0 = _reserve0.times(prices[token0Address]);
-        const tvl1 = _reserve1.times(prices[token1Address]);
+        const tvl0 = new BigNumber(
+          normalizeDecimals(_reserve0.toString(), underlying0.decimals) *
+            Number(prices[token0Address]),
+        );
+        const tvl1 = new BigNumber(
+          normalizeDecimals(_reserve1.toString(), underlying1.decimals) *
+            Number(prices[token1Address]),
+        );
 
         token.totalSupply = normalizeDecimals(totalSupply, token.decimals);
 
-        prices[token.address] = new BigNumber(tvl0.plus(tvl1).toString()) //
-          .div(totalSupply)
+        prices[token.address] = new BigNumber(tvl0.plus(tvl1)) //
+          .div(token.totalSupply)
           .toNumber();
+
         token.underlyingAssets.forEach((u) => {
           u.totalSupply = normalizeDecimals(
             results.get(`${u.address}.totalSupply()`).output.data,

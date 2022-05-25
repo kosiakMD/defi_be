@@ -28,7 +28,7 @@ configMaps:
     SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
     SAFE_PROXY_SERVICE_PORT: 80
     OPPORTUNITIES_SERVICE_HOST: http://opportunities-service
-    OPPORTUNITIES_SERVICE_PORT: 443
+    OPPORTUNITIES_SERVICE_PORT: 80
     ASSETS_SERVICE_HOST: http://devassets.defiyield.app
     ASSETS_SERVICE_PORT: 443
     RPC_SERVICE_HOST: https://devrpc.defiyield.app/

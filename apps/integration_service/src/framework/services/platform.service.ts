@@ -27,7 +27,7 @@ import { Goose } from '../platforms/Goose';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
-import { LimeSwap } from '../platforms/LimeSwap';
+// import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
@@ -74,7 +74,7 @@ export class PlatformService {
       CheesecakeSwap,
       RuneFarm,
       Evodefi,
-      LimeSwap,
+      // LimeSwap,
       BalancerV2,
       AaveV3,
       Frax,

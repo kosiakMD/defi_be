@@ -75,6 +75,11 @@ export class SynapseLiquidity extends SingleContractProtocol<
     prices: CurrentPricesPayload,
   ): Promise<ERC20Token[]> {
     try {
+      // Synapse use the sushiSwap token on ethereum
+      if (this.meta.chain === ChainIdEnum.eth) {
+        return await this.updateUniswapLikeTokensData(tokens, prices);
+      }
+
       return await updateSynapseLpTokens(
         tokens,
         prices,
@@ -176,7 +181,7 @@ export const updateSynapseLpTokens = async (
 ) => {
   const lpContractCalls = new Map();
   const lpTokensMap = new Map();
-  tokens.forEach((token) => {
+  tokens?.forEach((token) => {
     if (token.isLp) {
       const owner = new Ownable(token.address);
       const lpContract = new ERC20(token.address);

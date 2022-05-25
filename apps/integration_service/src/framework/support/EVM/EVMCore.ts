@@ -179,26 +179,24 @@ export abstract class EVMCore<
         const { _reserve0, _reserve1 } = results.get(`${token.address}.getReserves()`).output.data;
         if (!Number(prices[token0Address]) && !Number(prices[token1Address])) return;
 
-        // calculate/fill in missing base token prices based on current LP reserves
-        if (!prices[token0Address]) {
-          prices[token0Address] = _reserve1.times(prices[token1Address]).div(_reserve0);
-        }
-        if (!prices[token1Address]) {
-          prices[token1Address] = _reserve1.times(prices[token0Address]).div(_reserve1);
-        }
-
         const underlying0 = token.underlyingAssets.find((a) => a.address === token0Address);
         const underlying1 = token.underlyingAssets.find((a) => a.address === token1Address);
 
+        const reserve0 = normalizeDecimals(_reserve0.toString(), underlying0.decimals);
+        const reserve1 = normalizeDecimals(_reserve1.toString(), underlying1.decimals);
+
+        // calculate/fill in missing base token prices based on current LP reserves
+        if (!prices[token0Address]) {
+          prices[token0Address] = (reserve1 * Number(prices[token1Address])) / reserve0;
+        }
+
+        if (!prices[token1Address]) {
+          prices[token1Address] = (reserve0 * Number(prices[token0Address])) / reserve1;
+        }
+
         // calculate/fill the LP token price into the price array
-        const tvl0 = new BigNumber(
-          normalizeDecimals(_reserve0.toString(), underlying0.decimals) *
-            Number(prices[token0Address]),
-        );
-        const tvl1 = new BigNumber(
-          normalizeDecimals(_reserve1.toString(), underlying1.decimals) *
-            Number(prices[token1Address]),
-        );
+        const tvl0 = new BigNumber(reserve0 * Number(prices[token0Address]));
+        const tvl1 = new BigNumber(reserve1 * Number(prices[token1Address]));
 
         token.totalSupply = normalizeDecimals(totalSupply, token.decimals);
 

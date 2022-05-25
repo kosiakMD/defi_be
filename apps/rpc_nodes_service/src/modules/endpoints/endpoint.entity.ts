@@ -7,27 +7,26 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'endpoints' })
-export class EndpointsEntity {
+export class EndpointEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   endpoint: string;
 
-  @Column({ name: 'chain_id' })
+  @Column()
   chainId: number;
 
-  @Column({ name: 'is_enabled', default: true })
+  @Column({ default: true })
   isEnabled: boolean;
 
   @Column({ default: 0 })
   priority: number;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 
   @UpdateDateColumn({
-    name: 'updated_at',
     type: 'timestamp',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',

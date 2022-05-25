@@ -1,0 +1,22 @@
+import * as dotenv from 'dotenv';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
+dotenv.config({ path: 'apps/assets_service/config/.env' });
+
+export default {
+  type: 'postgres',
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT,
+  database: process.env.DB_DATABASE,
+  username: process.env.DB_USERNAME,
+  password: process.env.DB_PASSWORD,
+  schema: process.env.DB_SCHEMA,
+  synchronize: process.env.DB_SYNCHRONIZE === 'true',
+  logging: process.env.DB_LOGGING === 'true',
+  entities: [`apps/rpc_nodes_service/src/modules/endpoints/endpoint.entity.ts`],
+  migrations: [`apps/rpc_nodes_service/src/modules/database/migrations/**/*.ts`],
+  cli: {
+    migrationsDir: `apps/rpc_nodes_service/src/modules/database/migrations`,
+  },
+  namingStrategy: new SnakeNamingStrategy(),
+};

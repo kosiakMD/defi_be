@@ -11,7 +11,7 @@ import { ListQueryDto } from '../../../common/dto/ListQuery.dto';
 import { EndpointCreateDto } from '../dto/endpoint.create.dto';
 import { EndpointUpdateDto } from '../dto/endpoint.update.dto';
 import { EndpointsListDto } from '../dto/endpoints.list.dto';
-import { EndpointsEntity } from '../endpoints.entity';
+import { EndpointEntity } from '../endpoint.entity';
 import { EndpointsRepository } from '../endpoints.repository';
 import { EndpointToRPCCall } from '../endpoints.types';
 import { EndpointsToRPCCallService } from './endpoints-to-rpc-call.service';
@@ -38,7 +38,7 @@ export class EndpointsService {
     return { items };
   }
 
-  async getEndpointById(endpointId: number): Promise<EndpointsEntity> {
+  async getEndpointById(endpointId: number): Promise<EndpointEntity> {
     const endpoint = await this.endpointsRepository.findById(endpointId);
     if (!endpoint) {
       throw new Error(`Not found! endpoint id: ${endpointId}`);
@@ -51,14 +51,14 @@ export class EndpointsService {
     return Object.assign(endpoint, { callsStatistic });
   }
 
-  async createEndpoint(newEndpoint: EndpointCreateDto): Promise<EndpointsEntity> {
+  async createEndpoint(newEndpoint: EndpointCreateDto): Promise<EndpointEntity> {
     return this.endpointsRepository.insertOne(newEndpoint);
   }
 
   async updateEndpoint(
     endpointId: number,
     endpointUpdates: EndpointUpdateDto,
-  ): Promise<EndpointsEntity> {
+  ): Promise<EndpointEntity> {
     return this.endpointsRepository.updateItem(endpointId, endpointUpdates);
   }
 
@@ -67,7 +67,7 @@ export class EndpointsService {
   }
 
   private getEndpointSuccessRateFromEndpointsToRPCCall(
-    endpoint: EndpointsEntity,
+    endpoint: EndpointEntity,
     endpointsToRPCCall: Map<number, EndpointToRPCCall[]>,
   ): CallsStatistic {
     let callsStatistic = new CallsStatistic();

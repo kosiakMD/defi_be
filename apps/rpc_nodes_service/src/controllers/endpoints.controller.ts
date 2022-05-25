@@ -22,7 +22,7 @@ import { EndpointCreateDto } from '../modules/endpoints/dto/endpoint.create.dto'
 import { EndpointDto } from '../modules/endpoints/dto/endpoint.dto';
 import { EndpointUpdateDto } from '../modules/endpoints/dto/endpoint.update.dto';
 import { EndpointsListDto } from '../modules/endpoints/dto/endpoints.list.dto';
-import { EndpointsEntity } from '../modules/endpoints/endpoints.entity';
+import { EndpointEntity } from '../modules/endpoints/endpoint.entity';
 import { EndpointsService } from '../modules/endpoints/services/endpoints.service';
 
 @ApiTags('Endpoints')
@@ -41,26 +41,26 @@ export class EndpointsController {
   }
 
   @Get('/:id')
-  @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
-  findOne(@Param() params: FindOneParamsDto): Promise<EndpointsEntity> {
+  @ApiResponse({ status: HttpStatus.OK, type: EndpointEntity })
+  findOne(@Param() params: FindOneParamsDto): Promise<EndpointEntity> {
     const { id } = params;
     return this.endpointsService.getEndpointById(id);
   }
 
   @Post('/')
   @ApiBody({ type: PartialType(EndpointDto) })
-  @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
-  post(@Query() query: EndpointCreateDto): Promise<EndpointsEntity> {
+  @ApiResponse({ status: HttpStatus.OK, type: EndpointEntity })
+  post(@Query() query: EndpointCreateDto): Promise<EndpointEntity> {
     return this.endpointsService.createEndpoint(query);
   }
 
   @Put('/:id')
   @ApiBody({ type: PartialType(EndpointDto) })
-  @ApiResponse({ status: HttpStatus.OK, type: EndpointsEntity })
+  @ApiResponse({ status: HttpStatus.OK, type: EndpointEntity })
   put(
     @Param() params: FindOneParamsDto,
     @Query() query: EndpointUpdateDto,
-  ): Promise<EndpointsEntity> {
+  ): Promise<EndpointEntity> {
     const { id } = params;
     return this.endpointsService.updateEndpoint(id, query);
   }

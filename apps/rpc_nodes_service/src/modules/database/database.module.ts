@@ -1,8 +1,10 @@
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { EndpointsEntity } from '../endpoints/endpoints.entity';
+import { EndpointEntity } from '../endpoints/endpoint.entity';
 import { Endpoints1643205463195 } from './migrations/1643205463195-Endpoints';
 
 @Module({
@@ -17,10 +19,11 @@ import { Endpoints1643205463195 } from './migrations/1643205463195-Endpoints';
         username: configService.get('DB_USERNAME'),
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_DATABASE'),
-        entities: [EndpointsEntity],
+        entities: [EndpointEntity],
         migrations: [Endpoints1643205463195],
-        synchronize: false,
-        logging: false,
+        synchronize: configService.get('DB_SYNCHRONIZE'),
+        logging: configService.get('DB_LOGGING'),
+        namingStrategy: new SnakeNamingStrategy(),
       }),
     }),
   ],

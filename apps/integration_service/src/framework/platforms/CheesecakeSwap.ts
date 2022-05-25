@@ -20,6 +20,9 @@ export class CheesecakeSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       slug: this.constructor.name,
+      links: {
+        url: 'https://cheesecakeswap.com/',
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(MasterChef, {

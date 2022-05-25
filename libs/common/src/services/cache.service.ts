@@ -23,6 +23,10 @@ export class CacheService {
   }
 
   public async mget<T = any>(keys: string[]): Promise<T[]> {
+    if (!keys.length) {
+      return [];
+    }
+
     const response = await this.cache.store.mget(...keys);
     return response as T[];
   }
@@ -31,6 +35,10 @@ export class CacheService {
     values: { key: string; value: T }[],
     options: Partial<StoreConfig> = {},
   ): Promise<void> {
+    if (!values.length) {
+      return;
+    }
+
     const cacheArray = values.reduce((arr, curr) => arr.concat([curr.key, curr.value]), []);
     await this.cache.store.mset(...cacheArray, options);
   }

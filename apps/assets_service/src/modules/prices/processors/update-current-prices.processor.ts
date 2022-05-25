@@ -33,6 +33,7 @@ export class UpdateCurrentPricesProcessor {
         await this.assetsQueue.add(JobName.UPDATE_CURRENT_PRICES_FROM_SOURCE, {
           sourceId: source.id,
           strategy: source.type,
+          name: source.name,
           config: source.config,
         } as PriceSource);
       }

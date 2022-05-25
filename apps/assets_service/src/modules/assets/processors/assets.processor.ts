@@ -6,7 +6,9 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
+import { QueueName } from '../../../common/enum/queue-name.enum';
 import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
@@ -17,8 +19,9 @@ import { AssetEntity } from '../entities/asset.entity';
 import { AssetsRepository } from '../repositories/assets.repository';
 import { AssetsService } from '../services/assets.service';
 import { TokenService } from '../services/token.service';
+import { AssetProcessingRequest } from '../types/asset-processing.request';
 
-@Processor('assets')
+@Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
     @InjectRepository(AssetsRepository)
@@ -34,71 +37,36 @@ export class AssetsProcessor {
     private readonly tokenService: TokenService,
   ) {}
 
-  @Process('metadata')
-  public async handleMetadataJob(job: Job) {
+  @Process({
+    name: JobName.ASSET_METADATA,
+    // TODO: Move to config (testing this value)
+    concurrency: 2,
+  })
+  public async handleMetadataJob(job: Job<AssetProcessingRequest>) {
     try {
       const { address, chainId } = job.data;
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset: AssetEntity = await this.processAsset({ address, chainId });
+      const asset: AssetEntity = await this.processAsset(job.data);
       this.logger.debug(
         `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is processed`,
       );
-      return JobCompleteStates.SUCCESS;
-    } catch (error) {
-      this.logger.error(`Error to progress job: ${job.id}`);
-      this.logger.error(error);
-      return JobCompleteStates.FAILURE;
+      await job.moveToCompleted(JobCompleteStates.SUCCESS);
+    } catch (e) {
+      this.logger.error(`Error to progress job: ${job.id}. Error: ${e}`);
+      await job.moveToFailed({ message: e.toString() });
     }
   }
 
-  private async getAssetCategory(hasUnderlying: boolean): Promise<AssetCategoryEntity> {
-    if (hasUnderlying) {
-      return this.assetsCategoryRepository.findOneByCode('LP');
-    }
-    return this.assetsCategoryRepository.findOneByCode('COIN');
-  }
-
-  private async saveAsset(asset: AssetEntity): Promise<AssetEntity> {
-    const { chainId, address } = asset;
-    const existentAsset = await this.assetRepository //
-      .findOne({ where: { chainId, address, disabled: false } });
-    if (existentAsset) {
-      throw Error(`Try to process already existing asset chainId: ${chainId}, address: ${address}`);
-    }
-    const savedAsset = await this.assetRepository.save(asset);
-    await this.assetsService.setAssetsToCache([savedAsset]);
-    return savedAsset;
-  }
-
-  public async processAsset(assetData: Partial<AssetEntity>): Promise<AssetEntity> {
+  private async processAsset(assetRequest: AssetProcessingRequest): Promise<AssetEntity> {
     try {
-      this.logger.debug(`Process asset data ${JSON.stringify(assetData)}`);
+      this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
-      const { address, chainId, rank, isTracked } = assetData;
-      const existentAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
-
-      if (existentAsset) {
-        if (rank) {
-          this.assetRepository
-            .update(existentAsset.id, { rank })
-            .catch(({ message }) =>
-              this.logger.warn(
-                `Asset ${address} chainId ${chainId} rank was not updated! Error: ${message}`,
-              ),
-            );
-        }
-        if (isTracked) {
-          this.assetRepository
-            .update(existentAsset.id, { isTracked })
-            .catch(({ message }) =>
-              this.logger.warn(
-                `Asset ${address} chainId ${chainId} isTracked was not updated! Error: ${message}`,
-              ),
-            );
-        }
-        return existentAsset;
+      const { address, chainId, rank, isTracked } = assetRequest;
+      const savedAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
+      if (savedAsset) {
+        return await this.updateAsset(savedAsset, assetRequest);
       }
 
       const assetMetadata = await this.metadataService.getMetadata(address, chainId);
@@ -109,26 +77,16 @@ export class AssetsProcessor {
       processingAsset.symbol = assetMetadata.symbol;
       processingAsset.name = assetMetadata.name;
       processingAsset.decimals = assetMetadata.decimals;
-      processingAsset.rank = rank < 0 ? -1 : rank;
-      processingAsset.isTracked = Boolean(isTracked);
+      processingAsset.rank = rank;
+      processingAsset.isTracked = isTracked || false;
 
       const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
 
-      // TODO: temp compilation fix - logic is incorrect
+      // TODO: Temp compilation fix - logic is incorrect
       processingAsset.categories = [await this.getAssetCategory(Boolean(underlyingTokens?.length))];
-      const icons = await this.iconsService.loadAssetIcons({
-        symbol: processingAsset.symbol,
-        chainId: processingAsset.chainId,
-        address: processingAsset.address,
-      });
+      processingAsset.icon = await this.loadAssetIcons(processingAsset);
 
-      // NOTE: Largest loaded icon is selected
-      const largestIcon = icons.reduce(
-        (largest, current) => (current.fileSize >= largest.fileSize ? current : largest),
-        { url: null, fileSize: 0 },
-      );
-      processingAsset.icon = largestIcon.url;
-
+      // TODO: Asset should be saved at the very end
       processingAsset = await this.saveAsset(processingAsset);
 
       if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
@@ -150,8 +108,62 @@ export class AssetsProcessor {
 
       return processingAsset;
     } catch (error) {
-      this.logger.error(`Error to process asset data ${JSON.stringify(assetData)}`);
+      this.logger.error(`Error to process asset data ${JSON.stringify(assetRequest)}`);
       throw error;
     }
+  }
+
+  private async loadAssetIcons(asset: AssetEntity) {
+    const icons = await this.iconsService.loadAssetIcons({
+      symbol: asset.symbol,
+      chainId: asset.chainId,
+      address: asset.address,
+    });
+
+    // NOTE: Largest loaded icon is selected
+    const largestIcon = icons.reduce(
+      (largest, current) => (current.fileSize >= largest.fileSize ? current : largest),
+      { url: null, fileSize: 0 },
+    );
+    return largestIcon.url;
+  }
+
+  private async updateAsset(asset: AssetEntity, request: AssetProcessingRequest) {
+    // TODO: Invalidate / update cache?
+    asset.metadata = {
+      ...asset.metadata,
+      ...request.metadata,
+    };
+
+    if (request.rank && asset.rank !== request.rank) {
+      asset.rank = request.rank;
+    }
+    if (request.isTracked && !asset.isTracked) {
+      asset.isTracked = request.isTracked;
+    }
+    if (!asset.icon) {
+      // TODO: Enable this one and refresh from time to time
+      asset.icon = await this.loadAssetIcons(asset);
+    }
+    return await this.assetRepository.save(asset);
+  }
+
+  private async getAssetCategory(hasUnderlying: boolean): Promise<AssetCategoryEntity> {
+    if (hasUnderlying) {
+      return this.assetsCategoryRepository.findOneByCode('LP');
+    }
+    return this.assetsCategoryRepository.findOneByCode('COIN');
+  }
+
+  private async saveAsset(asset: AssetEntity): Promise<AssetEntity> {
+    const { chainId, address } = asset;
+    const existentAsset = await this.assetRepository //
+      .findOne({ where: { chainId, address, disabled: false } });
+    if (existentAsset) {
+      throw Error(`Try to process already existing asset chainId: ${chainId}, address: ${address}`);
+    }
+    const savedAsset = await this.assetRepository.save(asset);
+    await this.assetsService.setAssetsToCache([savedAsset]);
+    return savedAsset;
   }
 }

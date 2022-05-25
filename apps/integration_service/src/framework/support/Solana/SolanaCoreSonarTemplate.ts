@@ -104,7 +104,7 @@ export abstract class SolanaCoreSonarTemplate<
               name: token.name,
               chainId: token.chainId,
               decimals: token.decimals,
-              price: sonarLP.lp.price,
+              price: token.price,
             },
           ]);
         });

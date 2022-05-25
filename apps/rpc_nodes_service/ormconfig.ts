@@ -13,15 +13,10 @@ export default {
   schema: process.env.DB_SCHEMA,
   synchronize: process.env.DB_SYNCHRONIZE === 'true',
   logging: process.env.DB_LOGGING === 'true',
-  entities: [
-    `apps/assets_service/src/modules/assets/entities/**/*.entity.ts`,
-    `apps/assets_service/src/modules/assets-category/entities/**/*.entity.ts`,
-    `apps/assets_service/src/modules/icons/entities/**/*.entity.ts`,
-    `apps/assets_service/src/modules/prices/entities/**/*.entity.ts`,
-  ],
-  migrations: [`apps/assets_service/src/database/migrations/**/*.ts`],
+  entities: [`apps/rpc_nodes_service/src/modules/endpoints/endpoint.entity.ts`],
+  migrations: [`apps/rpc_nodes_service/src/modules/database/migrations/**/*.ts`],
   cli: {
-    migrationsDir: `apps/assets_service/src/database/migrations`,
+    migrationsDir: `apps/rpc_nodes_service/src/modules/database/migrations`,
   },
   namingStrategy: new SnakeNamingStrategy(),
 };

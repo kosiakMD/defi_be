@@ -3,10 +3,10 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CacheService } from '@app/common/services/cache.service';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 import { Web3ProviderService } from '@app/common/web3provider/web3.provider.service';
 
+import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
 import { MetadataService } from '../../common/services/metadata/metadata.service';
 
@@ -24,20 +24,26 @@ import { AssetInvalidAddressEntity } from './entities/asset-invalid-address.enti
 import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
 import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
-import { TrackedTokenPopulationProcessor } from './processors/tracked-token-population.processor';
+import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
 import { TokenService } from './services/token.service';
+import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
+import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
+
+const trackedTokensProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProvider];
 
 @Module({
   imports: [
+    CommonModule,
     BullModule.registerQueue({
       name: QueueName.ASSETS,
       settings: {
         maxStalledCount: 0,
       },
       defaultJobOptions: {
+        attempts: 3,
         removeOnComplete: true,
         removeOnFail: true,
       },
@@ -61,6 +67,7 @@ import { TokenService } from './services/token.service';
   ],
   controllers: [AssetsController],
   providers: [
+    ...trackedTokensProviders,
     AssetsProcessor,
     AssetsService,
     MetadataService,
@@ -74,9 +81,8 @@ import { TokenService } from './services/token.service';
     AssetsCandidateRepository,
     MulticallAggregator,
     TokenService,
-    TrackedTokenPopulationProcessor,
+    UpdateTrackedAssetsProcessor,
     Web3ProviderService,
-    CacheService,
   ],
   exports: [AssetsService, AssetsRepository],
 })

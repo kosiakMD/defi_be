@@ -46,7 +46,7 @@ export class TombFinance extends RootPlatform {
       context: {
         // TODO: unlikely to change/slow to change, however maybe we want to scrape the screen
         // to count the pools or something here?
-        poolLength: 7,
+        poolLength: 19,
       },
     });
 

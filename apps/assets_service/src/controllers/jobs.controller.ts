@@ -10,7 +10,7 @@ import { QueueName } from '../common/enum/queue-name.enum';
 @ApiTags('Jobs')
 @Controller('jobs')
 export class JobsController {
-  constructor(@InjectQueue(QueueName.ASSETS) private assetsQueue: Queue) {}
+  constructor(@InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue) {}
 
   @Post()
   // NOTE: Job type is past here as query parameter as it's better displayed by swagger

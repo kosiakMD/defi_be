@@ -5,6 +5,7 @@ import { BaseEntity } from '@app/common/entities/Base.entity';
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';
 import { AssetPriceEntity } from '../../prices/entities/asset-price.entity';
+import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetUnderlyingEntity } from './asset-underlying.entity';
 import { Exclude } from 'class-transformer';
 
@@ -35,6 +36,10 @@ export class AssetEntity extends BaseEntity {
   @Exclude()
   @Column({ type: Boolean, default: false })
   public isTracked: boolean;
+
+  @Exclude()
+  @Column({ type: 'json', nullable: false, default: {} })
+  public metadata: AssetMetadata;
 
   @Exclude()
   @Column({ type: Boolean, nullable: false, default: false })

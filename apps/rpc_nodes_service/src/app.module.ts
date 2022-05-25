@@ -39,8 +39,7 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
         ttl: configService.get('REDIS_CACHE_TTL') || 30,
         host: configService.get('REDIS_HOST'),
         port: configService.get('REDIS_PORT'),
-        // eslint-disable-next-line camelcase
-        auth_pass: configService.get('REDIS_AUTH'),
+        password: configService.get('REDIS_AUTH'),
       }),
       inject: [ConfigService],
       isGlobal: true,

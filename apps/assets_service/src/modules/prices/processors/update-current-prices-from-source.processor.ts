@@ -39,13 +39,13 @@ export class UpdateCurrentPricesFromSourceProcessor {
   }
 
   private async process(jobData: PriceSource): Promise<void> {
-    this.logger.debug(`Loading prices from source ${jobData.sourceId}`);
+    const { sourceId, name, strategy } = jobData;
+    this.logger.debug(`Loading prices from source ${sourceId}, name ${name}`);
 
-    const { strategy } = jobData;
     const priceStrategyType = getPriceStrategyType(strategy);
     const priceStrategy = await this.moduleRef.resolve<BaseStrategy>(priceStrategyType);
     const assetsPrices = await priceStrategy.fetchPrices(jobData);
-    this.logger.debug(`Loaded ${assetsPrices.length} prices from source ${jobData.sourceId}`);
+    this.logger.debug(`Loaded ${assetsPrices.length} prices from source ${sourceId}, name ${name}`);
 
     await this.priceService.saveAssetPrices(assetsPrices);
   }

@@ -46,7 +46,12 @@ export abstract class RootPlatform implements IRootPlatform {
     const instance = await this.moduleRef.create(protocol);
     instance.registerMeta(meta);
     if (instance.initialize) {
-      await instance.initialize();
+      try {
+        await instance.initialize();
+      } catch (err) {
+        this.logger.error(err.message, err.stack, 'RootPlatform');
+        return;
+      }
     }
     if (this.registrationLocked) {
       return this.logger.error(

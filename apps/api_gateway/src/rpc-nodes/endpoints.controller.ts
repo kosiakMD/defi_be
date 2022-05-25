@@ -14,37 +14,37 @@ export class EndpointsController extends BaseService implements IBaseService {
   url = `${this.buildUrl(
     this.configService.get<string>('RPC_SERVICE_HOST'),
     this.configService.get<string>('RPC_SERVICE_PORT'),
-  )}/v1/endpoints`;
+  )}v1/endpoints`;
 
   @Get('/')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointsListDto })
   get(@Query() query: ListQueryDto): Promise<EndpointsListDto> {
-    return this.requestProxy(`${this.url}v1/endpoints`, 'GET', query);
+    return this.requestProxy(this.url, 'GET', query);
   }
 
   @Get('/:id')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointDto })
   findOne(@Param('id') id: number): Promise<EndpointDto> {
-    return this.requestProxy(this.url + `v1/endpoints/${id}`);
+    return this.requestProxy(this.url + `/${id}`);
   }
 
   @ApiBody({ type: PartialType(EndpointDto) })
   @Post('/')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointDto })
   post(@Body() body: Partial<EndpointDto>): Promise<EndpointDto> {
-    return this.requestProxy(`${this.url}v1/endpoints`, 'POST', body);
+    return this.requestProxy(this.url, 'POST', body);
   }
 
   @ApiBody({ type: PartialType(EndpointDto) })
   @Put('/:id')
   @ApiResponse({ status: HttpStatus.OK, type: EndpointDto })
   put(@Param('id') id: number, @Body() body: Partial<EndpointDto>): Promise<EndpointDto> {
-    return this.requestProxy(this.url + `v1/endpoints/${id}`, 'POST', body);
+    return this.requestProxy(this.url + `/${id}`, 'POST', body);
   }
 
   @Delete('/:id')
   @ApiResponse({ status: HttpStatus.OK, type: Boolean })
   delete(@Param('id') id: number): Promise<void> {
-    return this.requestProxy(this.url + `v1/endpoints/${id}`, 'DELETE');
+    return this.requestProxy(this.url + `/${id}`, 'DELETE');
   }
 }

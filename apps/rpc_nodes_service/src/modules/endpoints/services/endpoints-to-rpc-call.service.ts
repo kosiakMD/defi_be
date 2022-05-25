@@ -11,7 +11,7 @@ import { Logger } from '@app/common/Logger';
 
 import { SortDirectionEnum } from '../../../common/enum/SortDirection.enum';
 
-import { EndpointsEntity } from '../endpoints.entity';
+import { EndpointEntity } from '../endpoint.entity';
 import { EndpointsSortFieldEnum, EndpointsSuccessScore } from '../endpoints.enums';
 import { EndpointsRepository } from '../endpoints.repository';
 import { EndpointToRPCCall, SuccessScore } from '../endpoints.types';
@@ -117,7 +117,7 @@ export class EndpointsToRPCCallService {
         if (endpoints.length === 0) {
           break;
         }
-        endpoints.forEach((endpoint: EndpointsEntity) => {
+        endpoints.forEach((endpoint: EndpointEntity) => {
           const prevEndpoints: EndpointToRPCCall[] = this.endpointsToRPCCall.get(endpoint.chainId);
           const prevEndpoint = prevEndpoints?.find(
             (prevEndpoint: EndpointToRPCCall) => prevEndpoint.endpointsEntity.id === endpoint.id,

@@ -1,14 +1,17 @@
 import { EntityRepository, Repository } from 'typeorm';
 
+import { Injectable } from '@nestjs/common';
+
 import { ListQueryDto } from '../../common/dto/ListQuery.dto';
 
 import { EndpointCreateDto } from './dto/endpoint.create.dto';
 import { EndpointUpdateDto } from './dto/endpoint.update.dto';
-import { EndpointsEntity } from './endpoints.entity';
+import { EndpointEntity } from './endpoint.entity';
 
-@EntityRepository(EndpointsEntity)
-export class EndpointsRepository extends Repository<EndpointsEntity> {
-  async getList(queryParams: ListQueryDto, getAll = true): Promise<EndpointsEntity[]> {
+@Injectable()
+@EntityRepository(EndpointEntity)
+export class EndpointsRepository extends Repository<EndpointEntity> {
+  async getList(queryParams: ListQueryDto, getAll = true): Promise<EndpointEntity[]> {
     const { limit, page, sortDirection, sortField } = queryParams;
     const queryBuilder = this.createQueryBuilder('public.endpoints');
     if (!getAll) {
@@ -21,11 +24,11 @@ export class EndpointsRepository extends Repository<EndpointsEntity> {
     return queryBuilder.getMany();
   }
 
-  async findById(endpointId: number): Promise<EndpointsEntity> {
+  async findById(endpointId: number): Promise<EndpointEntity> {
     return this.findOne({ id: endpointId });
   }
 
-  async insertOne(endpointData: EndpointCreateDto): Promise<EndpointsEntity> {
+  async insertOne(endpointData: EndpointCreateDto): Promise<EndpointEntity> {
     const { endpoint, chainId } = endpointData;
     const existenEndpoint = await this.findOne({ where: [{ endpoint, chainId }] });
     if (existenEndpoint) {
@@ -34,7 +37,7 @@ export class EndpointsRepository extends Repository<EndpointsEntity> {
     return this.save(endpointData);
   }
 
-  async updateItem(id: number, updates: EndpointUpdateDto): Promise<EndpointsEntity> {
+  async updateItem(id: number, updates: EndpointUpdateDto): Promise<EndpointEntity> {
     await this.update(id, updates);
     return this.findById(id);
   }

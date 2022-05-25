@@ -27,7 +27,7 @@ configMaps:
     IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
     SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
     SAFE_PROXY_SERVICE_PORT: 80
-    OPPORTUNITIES_SERVICE_HOST: https://eop.dfyield.xyz
+    OPPORTUNITIES_SERVICE_HOST: http://opportunities-service
     OPPORTUNITIES_SERVICE_PORT: 443
     ASSETS_SERVICE_HOST: http://devassets.defiyield.app
     ASSETS_SERVICE_PORT: 443

@@ -1,6 +1,4 @@
-import { equals, regex, startsWith } from '@app/common/utils';
-
-import { contains, REWARD_REGEX } from './abi.string.utils';
+import { contains, equals, regex, REWARD_REGEX, startsWith } from './abi.string.utils';
 
 /**
  * SushiSwap: MasterChef V2

@@ -14,10 +14,6 @@ import {
   ILidoSolanaMeta,
   LidoStaking as SolanaLidoStaking,
 } from '../support/Solana/protocols/Yield/LidoStaking';
-import {
-  ILidoTerraMeta,
-  LidoStaking as TerraLidoStaking,
-} from '../support/Terra/protocols/Yield/LidoStaking';
 import { FeatureEnum } from '../support/enums';
 
 export class Lido extends RootPlatform {
@@ -95,30 +91,6 @@ export class Lido extends RootPlatform {
     //     stakedToken: '',
     //   },
     // });
-
-    /**
-     * Website: https://lido.fi/terra
-     * Docs: https://docs.terra.lido.fi/
-     * Staking Contract: unknown
-     * Deposit TX (stLuna): https://finder.terra.money/mainnet/tx/C45BDFBA96AB797F301B15061214566A1573D28AF1A779251B2C0E43832FA562
-     * Deposit TX (bLuna): https://finder.terra.money/mainnet/tx/E83EE33EF7AB4C0E2DCDD7D7ABA04B6DEF1E5BEF4761FACBE857F6F9DE3B04A8
-     *
-     * @todo Coming Soon
-     */
-    await this.registerProtocol<ILidoTerraMeta>(TerraLidoStaking, {
-      chain: ChainIdEnum.terra,
-      name: 'Lido',
-      feature: FeatureEnum.staking,
-      address: 'terra1mtwph2juhj0rvjz7dy92gvl6xvukaxu8rfv8ts', // hub
-      context: {
-        // https://docs.terra.lido.fi/introduction/deployed-contracts
-        stakedToken: 'uluna', // Luna
-        rewardToken: 'uusd', // UST
-        reward: 'terra17yap3mhph35pcwvhza38c2lkj7gzywzy05h7l0',
-        stLuna: 'terra1yg3j2s986nyp5z7r2lvt0hx3r0lnd7kwvwwtsc',
-        bLuna: 'terra1kc87mu460fwkqte29rquh4hc20m54fxwtsx7gp',
-      },
-    });
 
     /**
      * Website: https://lido.fi/solana

@@ -26,4 +26,7 @@ export class Contract {
 
   @OneToMany(() => ContractsAnalysis, (ca) => ca.contract)
   analysis: ContractsAnalysis[];
+
+  @Column({ name: 'fetched_abi', type: 'boolean' })
+  fetchedAbi = false;
 }

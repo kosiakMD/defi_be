@@ -1,6 +1,7 @@
 import { EntityRepository, In, Repository } from 'typeorm';
 
 import { Protocol } from '../entities/protocol.entity';
+import { LinkTypeEnum } from '../enum/link.type.enum';
 
 @EntityRepository(Protocol)
 export class ProtocolsRepository extends Repository<Protocol> {
@@ -42,12 +43,19 @@ export class ProtocolsRepository extends Repository<Protocol> {
     });
   }
 
-  async findAllWithLinksLimit(skip = 0, take = 100): Promise<Protocol[]> {
-    return this.find({
-      skip,
-      take,
-      relations: ['links'],
-    });
+  async findWithLinksLimit(
+    linkType: LinkTypeEnum,
+    processed: boolean,
+    skip = 0,
+    take = 100,
+  ): Promise<Protocol[]> {
+    return this.createQueryBuilder('protocols')
+      .leftJoinAndSelect('protocols.links', 'links')
+      .where('links.type = :linkType', { linkType })
+      .andWhere('links.processed = :processed', { processed })
+      .skip(skip)
+      .take(take)
+      .getMany();
   }
 
   async findOneByNameCaseInsensitive(name: string, url: string): Promise<Protocol> {

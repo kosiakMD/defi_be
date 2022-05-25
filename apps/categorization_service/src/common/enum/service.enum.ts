@@ -1,4 +1,5 @@
-export enum CommandUnparameterized {
+//for external purposes - exposed to API
+export enum ExternalCommand {
   start_fetching = 'start_fetching',
   fetch_protocols = 'fetch_protocols',
   parse_protocols_main_page = 'parse_protocols_main_page',
@@ -11,9 +12,10 @@ export enum CommandUnparameterized {
   analyse_contracts_against_templates = 'analyse_contracts_against_templates',
 }
 
-export enum CommandParameterized {
-  similar_contract = 'similar_contract',
-  run_parsing_custom_protocol = 'run_parsing_custom_protocol',
+//for internal purposes
+export enum InternalCommand {
+  contract_analyse = 'contract_analyse',
+  protocol_analyse = 'protocol_analyse',
 }
 
-export type CommandType = CommandUnparameterized | CommandParameterized;
+export type CommandType = ExternalCommand | InternalCommand;

@@ -1,4 +1,4 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, In, Repository } from 'typeorm';
 
 import { Link } from '../entities/link.entity';
 import { LinkTypeEnum } from '../enum/link.type.enum';
@@ -27,5 +27,9 @@ export class LinksRepository extends Repository<Link> {
           AND gf.id IS NULL
     `;
     return this.query(query);
+  }
+
+  async setProcessedByUrls(urls: string[]) {
+    return this.update({ url: In(urls) }, { processed: true });
   }
 }

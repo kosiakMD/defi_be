@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CacheService } from '@app/common/services/cache.service';
 
-import { AwsModule } from '../aws/aws.module';
+import { AwsModule } from '../../aws/aws.module';
 import { IconSourceEntity } from './entities/icon-sources.entity';
 import { IconsService } from './icons.service';
 import { CoingeckoStrategy } from './strategies/coingecko.strategy';

@@ -6,7 +6,8 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { REDIS_TASK_QUEUE, REGULAR_TASK } from '../../common/constants';
-import { CommandUnparameterized } from '../../common/enum/service.enum';
+import { IJobPayload } from '../../common/dto/job/job.payload.interface';
+import { ExternalCommand } from '../../common/enum/service.enum';
 
 @Injectable()
 export class TasksService {
@@ -17,14 +18,14 @@ export class TasksService {
 
   @Cron(CronExpression.EVERY_DAY_AT_8PM) //uncomment to enable daily running
   async cronTask() {
-    const task = { command: CommandUnparameterized.start_fetching };
+    const task = { command: ExternalCommand.start_fetching };
     this.logger.log(`cronTask: ${task.command}`);
     await this.queueTask(task);
   }
 
-  async queueTask(data): Promise<void> {
+  async queueTask(data: IJobPayload): Promise<void> {
     try {
-      await this.queue.add(REGULAR_TASK, data);
+      await this.queue.add(REGULAR_TASK, data, { removeOnComplete: true });
     } catch (error) {
       this.logger.error(`Error queueing task ${data.command}`);
       throw error;

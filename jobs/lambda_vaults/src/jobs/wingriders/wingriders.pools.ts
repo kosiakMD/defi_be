@@ -126,12 +126,12 @@ export class WingRidersPools extends CardanoPools implements JobInterface {
         const assetsAddresses = await this.cardanoService.obtainAssetsAddresses(lp.lpToken.address);
 
         const lpTotalSupply =
-          assetsAddresses.reduce(
-            (prevTotalSupply, assetAddress): number =>
+          assetsAddresses.reduce((prevTotalSupply, assetAddress): number => {
+            return (
               prevTotalSupply +
-              +(assetAddress.quantity > WING_RIDERS_MAX_TOTAL_SUPPLY ? 0 : assetAddress.quantity),
-            0,
-          ) || +WING_RIDERS_DEFAULT_TOTAL_SUPPLY;
+              +(+assetAddress.quantity > +WING_RIDERS_MAX_TOTAL_SUPPLY ? 0 : assetAddress.quantity)
+            );
+          }, 0) || +WING_RIDERS_DEFAULT_TOTAL_SUPPLY;
 
         lp.lpToken.totalSupply = lpTotalSupply;
         lp.stats.feeRate = Number(pool.fee);
@@ -235,7 +235,7 @@ export class WingRidersPools extends CardanoPools implements JobInterface {
       const assetB: Asset = {
         assetId: assetBToken.policyId + assetBToken.assetName,
         assetName: assetBTokenMetadata?.name?.value,
-        decimals: assetBTokenMetadata?.decimals?.value || 6,
+        decimals: assetBTokenMetadata?.decimals?.value ?? 6,
         ticker: assetBTokenMetadata?.ticker?.value,
       };
       const quantityB = assetBToken.quantity;

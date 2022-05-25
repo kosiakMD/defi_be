@@ -6,6 +6,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ContractAnalyseRequestDto } from '../../../common/dto/contract.analyse.request.dto';
 import { ContractSimilarRequestDto } from '../../../common/dto/contract.similar.request.dto';
 import { ContractSimilarResponseDto } from '../../../common/dto/contract.similar.response.dto';
 
@@ -100,8 +101,8 @@ export class ContractsAnalysisServiceV1 {
     this.logger.log('analyseContracts finished');
   }
 
-  async findSimilarAbiAndAbiCode(data: { contract: string }) {
-    const address = data.contract;
+  async findSimilarAbiAndAbiCode(data: ContractAnalyseRequestDto) {
+    const { address } = data;
     this.logger.log(`findSimilarAbiAndAbiCode started: ${address}`);
     //try to find contract in DB
     let contract = await this.contractsRepository.findByAddress(address);
@@ -111,12 +112,12 @@ export class ContractsAnalysisServiceV1 {
       contract = await this.contractsRepository.save({ address, abi, abiCode, chain });
     }
     if (!safeJsonParse(contract.abi)) {
-      this.logger.warn(`there is invalid ABI for contract: [${data.contract}]`);
+      this.logger.warn(`there is invalid ABI for contract: [${address}]`);
       //aborting - we don't have valid ABI to compare
       return;
     }
     await this.analyseContract(contract);
-    this.logger.log(`findSimilarAbiAndAbiCode finished: ${data.contract}`);
+    this.logger.log(`findSimilarAbiAndAbiCode finished: ${address}`);
   }
 
   private async analyseContract(

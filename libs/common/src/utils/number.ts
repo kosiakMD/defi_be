@@ -14,6 +14,20 @@ export const normalizeDecimals = (number: string, decimals: Decimals): number =>
   );
 };
 
+export const absoluteValue = (value): number => {
+  if (value) {
+    return value / 100;
+  }
+  return 0;
+};
+
+export const percentageValue = (value): number => {
+  if (value) {
+    return value * 100;
+  }
+  return 0;
+};
+
 /**
  * Simple APR to APY conversion. This does not take into account fees taken by the platform
  * i.e. if Beefy takes a 0.04% fee on every harvest.

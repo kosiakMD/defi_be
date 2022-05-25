@@ -28,32 +28,30 @@ export class AbiFetcherBscscan implements IAbiFetcher {
   }
 
   async fetchAbiAndAbiCode(address: string, retries = 0): Promise<ChainAbi> {
-    try {
-      this.logger.debug(`AbiFetcherBscscan: fetchAbiAndAbiCode for address: [${address}]`);
-      const abiCodeResponse = await firstValueFrom(
-        this.httpService.get(
-          `${this.bscscanApiUrl}?module=contract&action=getsourcecode&address=${address}&apikey=${this.bscscanApiKey}`,
-        ),
-      );
-      if (this.rateLimitError(abiCodeResponse)) {
-        if (retries < this.maxRetries) {
-          await delay(this.retryInterval);
-          this.logger.debug(`retrying: address=[${address}]`);
-          return this.fetchAbiAndAbiCode(address, retries + 1);
-        }
-        this.logger.warn(`too many attempts (${retries}), giving up`, this.name);
+    this.logger.debug(`AbiFetcherBscscan: fetchAbiAndAbiCode for address: [${address}]`);
+    const abiCodeResponse = await firstValueFrom(
+      this.httpService.get(
+        `${this.bscscanApiUrl}?module=contract&action=getsourcecode&address=${address}&apikey=${this.bscscanApiKey}`,
+      ),
+    );
+    if (this.rateLimitError(abiCodeResponse)) {
+      if (retries < this.maxRetries) {
+        await delay(this.retryInterval);
+        this.logger.debug(`retrying: address=[${address}]`);
+        return this.fetchAbiAndAbiCode(address, retries + 1);
       }
-      return {
-        chain: 'binance',
-        abi: abiCodeResponse.data.result[0].ABI,
-        abiCode: abiCodeResponse.data.result[0].SourceCode,
-        proxy: abiCodeResponse.data.result[0].Proxy === '1',
-        implementation: abiCodeResponse.data.result[0].Implementation,
-      };
-    } catch (e) {
-      this.logger.error(`AbiFetcherBscscan: fetchAbiAndAbiCode error - ${e}`);
-      throw e;
+      throw Error(`too many attempts (${retries}), giving up`);
     }
+    if (abiCodeResponse.data.result[0].ABI === 'Contract source code not verified') {
+      throw Error(`Contract source code not verified: ${address}`);
+    }
+    return {
+      chain: 'binance',
+      abi: abiCodeResponse.data.result[0].ABI,
+      abiCode: abiCodeResponse.data.result[0].SourceCode,
+      proxy: abiCodeResponse.data.result[0].Proxy === '1',
+      implementation: abiCodeResponse.data.result[0].Implementation,
+    };
   }
 
   private rateLimitError(response: { data: { status: string; result: string } }): boolean {

@@ -1,18 +1,29 @@
-import { PriceSourceStrategies } from 'apps/assets_service/src/common/enum/price-source-strategies.enum';
-
+import { PriceSourceStrategy } from '../enums/price-source-strategy.enum';
 import { CoingeckoStrategy } from './coingecko.strategy';
 import { DebankStrategy } from './debank.strategy';
-import { SolanaStrategy } from './solana.strategy';
-import { PriceStrategy } from './strategy';
-import { SundaeswapStrategy } from './sundaeswap.strategy';
-import { TheGraphStrategy } from './thegraph.strategy';
+import { SolanaScanStrategy } from './solana-scan.strategy';
+import { SundaeSwapStrategy } from './sundae-swap.strategy';
+import { Univ2SubgraphStrategy } from './univ2-subgraph.strategy';
 
-const priceStrategies = new Map<string, PriceStrategy>([
-  [PriceSourceStrategies.COINGECKO, new CoingeckoStrategy()],
-  [PriceSourceStrategies.DEBANK, new DebankStrategy()],
-  [PriceSourceStrategies.SOLANA, new SolanaStrategy()],
-  [PriceSourceStrategies.SUNDAESWAP, new SundaeswapStrategy()],
-  [PriceSourceStrategies.THE_GRAPH, new TheGraphStrategy()],
+type PriceStrategies =
+  | typeof CoingeckoStrategy
+  | typeof DebankStrategy
+  | typeof SolanaScanStrategy
+  | typeof SundaeSwapStrategy
+  | typeof Univ2SubgraphStrategy;
+
+const strategies = new Map<PriceSourceStrategy, PriceStrategies>([
+  [PriceSourceStrategy.COINGECKO, CoingeckoStrategy],
+  [PriceSourceStrategy.DEBANK, DebankStrategy],
+  [PriceSourceStrategy.SOLANA_SCAN, SolanaScanStrategy],
+  [PriceSourceStrategy.SUNDAESWAP, SundaeSwapStrategy],
+  [PriceSourceStrategy.UNIV2_SUBGRAPH, Univ2SubgraphStrategy],
 ]);
 
-export default priceStrategies;
+export const getPriceStrategyType = (strategy: PriceSourceStrategy) => {
+  const strategyType = strategies.get(strategy);
+  if (!strategyType) {
+    throw new Error(`Unknown strategy ${strategy}`);
+  }
+  return strategyType;
+};

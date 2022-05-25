@@ -1,11 +1,11 @@
 import { Body, Controller, Get, HttpStatus, Post, Query } from '@nestjs/common';
-import { ApiBody, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { CommandRequestDto } from '../common/dto/command.request.dto';
 import { ContractAnalyseRequestDto } from '../common/dto/contract.analyse.request.dto';
 import { ContractSimilarRequestDto } from '../common/dto/contract.similar.request.dto';
 import { ContractSimilarResponseDto } from '../common/dto/contract.similar.response.dto';
-import { ListProtocolsDTO } from '../common/dto/service.dto';
-import { CommandParameterized, CommandUnparameterized } from '../common/enum/service.enum';
+import { ProtocolAnalyseRequestDto } from '../common/dto/protocol.analyse.request.dto';
 
 import { ContractsAnalysisServiceV1 } from '../modules/protocols/services/contracts.analysis.service.v1';
 import { TasksService } from '../modules/tasks/tasks.service';
@@ -18,32 +18,27 @@ export class AppController {
     private readonly contractsAnalysisServiceV1: ContractsAnalysisServiceV1,
   ) {}
 
-  @Get('/command')
-  @ApiQuery({ name: 'command', enum: CommandUnparameterized })
-  public async aggregatorsParse(
-    @Query('command') command: CommandUnparameterized = CommandUnparameterized.start_fetching,
-  ) {
-    return this.service.queueTask({ command });
-  }
-
-  @Post('/website/protocol')
-  @ApiBody({ type: ListProtocolsDTO })
-  public async parsingProtocolPost(@Body() listProtocol: ListProtocolsDTO) {
-    return this.service.queueTask({
-      command: CommandParameterized.run_parsing_custom_protocol,
-      listProtocol,
-    });
+  @Post('/command')
+  @ApiResponse({ status: HttpStatus.OK })
+  async runCommand(@Query() request: CommandRequestDto) {
+    return this.service.queueTask(request);
   }
 
   @Get('/contract/similar')
   @ApiResponse({ status: HttpStatus.OK, type: ContractSimilarResponseDto })
-  public async getSimilarContracts(@Query() request: ContractSimilarRequestDto) {
+  async getSimilarContracts(@Query() request: ContractSimilarRequestDto) {
     return this.contractsAnalysisServiceV1.getSimilarContracts(request);
   }
 
   @Post('/contract/analyse')
-  @ApiBody({ type: ContractAnalyseRequestDto })
-  public async similarContracts(@Body() similarData: { contract: string }) {
-    return this.service.queueTask({ command: CommandParameterized.similar_contract, similarData });
+  @ApiResponse({ status: HttpStatus.OK })
+  async contractAnalyse(@Body() request: ContractAnalyseRequestDto) {
+    return this.service.queueTask(request);
+  }
+
+  @Post('/protocol/analyse')
+  @ApiResponse({ status: HttpStatus.OK })
+  async parsingProtocolPost(@Body() request: ProtocolAnalyseRequestDto) {
+    return this.service.queueTask(request);
   }
 }

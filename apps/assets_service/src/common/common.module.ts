@@ -11,6 +11,7 @@ import { getWinstonParams } from '@app/common/Logger/logger.config';
 import { CacheService } from '@app/common/services/cache.service';
 
 import { HealthController } from '../controllers/health.controller';
+import { ChainService } from './services/chain.service';
 
 @Module({
   imports: [
@@ -53,7 +54,7 @@ import { HealthController } from '../controllers/health.controller';
     TerminusModule,
   ],
   controllers: [HealthController],
-  exports: [CacheService],
-  providers: [CacheService],
+  providers: [CacheService, ChainService],
+  exports: [CacheService, ChainService],
 })
 export class CommonModule {}

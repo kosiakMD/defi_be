@@ -20,6 +20,7 @@ import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
+import { Ellipsis } from '../platforms/Ellipsis';
 import { Evodefi } from '../platforms/Evodefi';
 import { Frax } from '../platforms/Frax';
 import { Goose } from '../platforms/Goose';
@@ -27,7 +28,6 @@ import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
-import { Marinade } from '../platforms/Marinade';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
@@ -90,10 +90,10 @@ export class PlatformService {
       Goose,
       BabySwap,
       YelFinance,
+      Ellipsis,
       RocketPool,
       Stargate,
       Synapse,
-      Marinade,
     });
   }
 

@@ -4,7 +4,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { IMasterChefMeta } from '../support/EVM/protocols/Yield/MasterChef';
+import { MasterChefMdex } from '../support/EVM/protocols/Yield/MasterChefMdex';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 
@@ -29,7 +30,7 @@ export class Mdex extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
+    await this.registerProtocol<IMasterChefMeta>(MasterChefMdex, {
       chain: ChainIdEnum.bnb,
       name: 'Farms',
       feature: FeatureEnum.staking,

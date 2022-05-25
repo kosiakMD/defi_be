@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -6,16 +7,18 @@ export class GetAssetRequest {
   @ApiProperty({
     type: Number,
     description: 'Text to search assets by name or symbol',
-    example: 22,
+    example: 1,
     required: true,
   })
+  @IsNumber()
   @IsNotEmpty()
+  @Transform(({ value }) => +value)
   chainId: number;
 
   @ApiProperty({
     type: String,
     description: 'Address to get or process an asset',
-    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
+    example: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599',
     required: true,
   })
   @IsString()

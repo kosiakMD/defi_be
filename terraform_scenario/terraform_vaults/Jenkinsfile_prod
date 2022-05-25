@@ -3,10 +3,10 @@
 pipeline {
     agent any
     parameters {
-        string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
+        string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "master", trim: true)
         string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_pools", trim: true)
         string(name: "FUNCTION_NAME", description: "Function name use for naming. Must be lowercase", defaultValue: "vaults", trim: true)
-        string(name: "ENVIRONMENT", description: "Environment name use for naming. Must be lowercase", defaultValue: "dev", trim: true)
+        string(name: "ENVIRONMENT", description: "Environment name use for naming. Must be lowercase", defaultValue: "prod", trim: true)
         string(name: "PROJECT_DIR", description: "Directory name with project files.", defaultValue: "terraform_scenario/terraform_vaults", trim: true)
         string(name: "ENV_REGION", description: "AWS region for environment. Must be lowercase", defaultValue: "eu-central-1", trim: true)
         string(name: "SCHEDULE_MINUTES", description: "Amazon EventBridge Rules. Run Lambda function every x minutes", defaultValue: "5", trim: true)

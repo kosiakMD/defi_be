@@ -7,7 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainService } from '../../../../common/services/chain.service';
 
-import { TrackedAssetCandidate, TrackedAssetsProvider } from './tracked-assets.provider';
+import { AssetProcessingRequest } from '../../types/asset-processing.request';
+import { TrackedAssetsProvider } from './tracked-assets.provider';
 
 @Injectable()
 export class CoinmarketcapAssetsProvider implements TrackedAssetsProvider {
@@ -22,12 +23,12 @@ export class CoinmarketcapAssetsProvider implements TrackedAssetsProvider {
     return 'CoinMarketCap';
   }
 
-  async getTrackedAssetsCandidates(): Promise<TrackedAssetCandidate[]> {
+  async getTrackedAssetsCandidates(): Promise<AssetProcessingRequest[]> {
     const chainIdMap = await this.getCoinmarketcapChainMap();
     const batchSize = this.config.get<number>('COINMARKETCAP_GET_TOKENS_LIMIT') || 1000;
     const maxTokens = this.config.get<number>('COINMARKETCAP_TOKEN_LIST_LIMIT') || 5000;
 
-    const candidates: TrackedAssetCandidate[] = [];
+    const candidates: AssetProcessingRequest[] = [];
 
     for (let start = 1; start < maxTokens; start += batchSize) {
       this.logger.debug(`Coinmarketcap batch tokens loading [${start}, ${batchSize}]`);
@@ -40,14 +41,14 @@ export class CoinmarketcapAssetsProvider implements TrackedAssetsProvider {
   }
 
   private async getBatchTokens(chainIdMap: Map<string, number>, start: number, batchSize: number) {
-    const candidates: TrackedAssetCandidate[] = [];
+    const candidates: AssetProcessingRequest[] = [];
 
     const coinmarketcapTokens = await this.getCoinmarketcapTokens(start, batchSize);
-    for (const { platform, rank } of coinmarketcapTokens) {
+    for (const { id, platform, rank } of coinmarketcapTokens) {
       const { name: chain, token_address: address } = platform || {};
       const chainId = chainIdMap.get(chain);
       if (chainId && address) {
-        candidates.push({ chainId, address, rank });
+        candidates.push({ chainId, address, rank, metadata: { coinmarketcapId: id.toString() } });
       }
     }
 

@@ -5,6 +5,7 @@ import { BaseEntity } from '@app/common/entities/Base.entity';
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';
 import { AssetPriceEntity } from '../../prices/entities/asset-price.entity';
+import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetUnderlyingEntity } from './asset-underlying.entity';
 
 @Unique(['address', 'chainId'])
@@ -33,6 +34,9 @@ export class AssetEntity extends BaseEntity {
 
   @Column({ type: Boolean, default: false })
   public isTracked: boolean;
+
+  @Column({ type: 'json', nullable: false, default: {} })
+  public metadata: AssetMetadata;
 
   @Column({ type: Boolean, nullable: false, default: false })
   public disabled: boolean;

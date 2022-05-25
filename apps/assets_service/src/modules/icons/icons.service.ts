@@ -111,7 +111,7 @@ export class IconsService extends CrudService<IconSourceEntity> {
   private createIconStrategy(source: IconSourceEntity): IconStrategy {
     switch (source.name) {
       case 'COINGECKO':
-        return new CoingeckoStrategy(this.logger, this.httpService);
+        return new CoingeckoStrategy(this.logger);
       case 'COINMARKETCAP':
         return new CoinmarketcapStrategy(this.logger, this.config, this.httpService);
       case 'TRUST_WALLET':

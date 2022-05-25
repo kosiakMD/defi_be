@@ -12,6 +12,7 @@ import { CrudService } from '@app/common/services/crud.service';
 import { isSomeAddress } from '@app/common/utils';
 
 import { JobName } from '../../../common/enum/job-name.enum';
+import { QueueName } from '../../../common/enum/queue-name.enum';
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
@@ -37,7 +38,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    @InjectQueue('assets') private readonly assetsQueue: Queue,
+    @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
     @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
     @InjectRepository(AssetsPriceRepository)
     private readonly assetsPriceRepository: AssetsPriceRepository,

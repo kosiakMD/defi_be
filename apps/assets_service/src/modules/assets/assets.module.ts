@@ -29,8 +29,8 @@ import { AssetsCandidateRepository } from './repositories/assets-candidate.repos
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
 import { TokenService } from './services/token.service';
-import { CoingeckoAssetsProvider } from './services/tracked-tokens/coingecko-assets.provider';
-import { CoinmarketcapAssetsProvider } from './services/tracked-tokens/coinmarketcap-assets.provider';
+import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
+import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
 
 const trackedTokensProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProvider];
 

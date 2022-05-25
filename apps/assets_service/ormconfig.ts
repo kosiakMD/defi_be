@@ -19,9 +19,9 @@ export default {
     `apps/assets_service/src/modules/icons/entities/**/*.entity.ts`,
     `apps/assets_service/src/modules/prices/entities/**/*.entity.ts`,
   ],
-  migrations: [`apps/assets_service/src/modules/database/migrations/**/*.ts`],
+  migrations: [`apps/assets_service/src/database/migrations/**/*.ts`],
   cli: {
-    migrationsDir: `apps/assets_service/src/modules/database/migrations`,
+    migrationsDir: `apps/assets_service/src/database/migrations`,
   },
   namingStrategy: new SnakeNamingStrategy(),
 };

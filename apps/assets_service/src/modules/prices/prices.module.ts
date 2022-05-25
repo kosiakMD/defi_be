@@ -13,8 +13,8 @@ import { AssetHistoricalPriceEntity } from './entities/asset-historical-price.en
 import { AssetPriceEntity } from './entities/asset-price.entity';
 import { PriceSourceEntity } from './entities/price-source.entity';
 import { PriceService } from './price.service';
-import { AssetsHistoricalPricesProcessor } from './processors/assets-historical-prices.processor';
 import { AssetsHistoricalPricesCleanerProcessor } from './processors/assets-historical-prices-cleaner.processor';
+import { AssetsHistoricalPricesProcessor } from './processors/assets-historical-prices.processor';
 import { UpdateCurrentPricesFromSourceProcessor } from './processors/update-current-prices-from-source.processor';
 import { UpdateCurrentPricesProcessor } from './processors/update-current-prices.processor';
 import { AssetsHistoricalPriceRepository } from './repositories/asset-historical-price.repository';

@@ -7,6 +7,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { CacheService } from '@app/common/services/cache.service';
 import { CrudService } from '@app/common/services/crud.service';
 import { isSomeAddress } from '@app/common/utils';
 
@@ -25,7 +26,6 @@ import { SearchResultsEntryDto } from '../dto/search-results-entry.dto';
 import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
 import { AssetsRepository } from '../repositories/assets.repository';
-import { CacheService } from '@app/common/services/cache.service';
 
 @Injectable()
 export class AssetsService extends CrudService<AssetsRepository> {
@@ -52,7 +52,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
       .toLowerCase()}`;
   }
 
-public async getAsset(request: GetAssetRequest): Promise<AssetDto> {
+  public async getAsset(request: GetAssetRequest): Promise<AssetDto> {
     const [response] = await this.getBulkAssets([request]);
     return response;
   }
@@ -125,7 +125,10 @@ public async getAsset(request: GetAssetRequest): Promise<AssetDto> {
 
   public async setAssetsToCache(assets: AssetDto[]): Promise<void> {
     await this.cache.mset(
-      assets.map((asset) => ({ key: this.getAssetCacheKey(asset), value: plainToClass(AssetDto, asset) })),
+      assets.map((asset) => ({
+        key: this.getAssetCacheKey(asset),
+        value: plainToClass(AssetDto, asset),
+      })),
     );
   }
 

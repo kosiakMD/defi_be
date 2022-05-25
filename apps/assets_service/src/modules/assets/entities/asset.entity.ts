@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, Unique } from 'typeorm';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
@@ -7,7 +8,6 @@ import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historic
 import { AssetPriceEntity } from '../../prices/entities/asset-price.entity';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetUnderlyingEntity } from './asset-underlying.entity';
-import { Exclude } from 'class-transformer';
 
 @Unique(['address', 'chainId'])
 @Entity({ name: 'assets' })

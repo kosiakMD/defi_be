@@ -1,3 +1,5 @@
+import { JobName } from 'apps/assets_service/src/common/enum/job-name.enum';
+import { QueueName } from 'apps/assets_service/src/common/enum/queue-name.enum';
 import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
@@ -6,8 +8,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 
-import { JobName } from 'apps/assets_service/src/common/enum/job-name.enum';
-import { QueueName } from 'apps/assets_service/src/common/enum/queue-name.enum';
 import { PriceService } from '../price.service';
 
 @Processor(QueueName.ASSETS)
@@ -20,9 +20,7 @@ export class AssetsHistoricalPricesProcessor {
   @Process(JobName.HISTORICAL_PRICES)
   async handlePriceJob(job: Job) {
     try {
-      this.logger.debug(
-        `Create Historical Prices Job job.id: ${job.id}`,
-      );
+      this.logger.debug(`Create Historical Prices Job job.id: ${job.id}`);
       await this.createHistoricalPrices();
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (error) {
@@ -33,6 +31,7 @@ export class AssetsHistoricalPricesProcessor {
   }
 
   private async createHistoricalPrices() {
+    // TODO: comming in next PR
     // await this.priceService.saveCachedHistoricalPrices();
   }
 }

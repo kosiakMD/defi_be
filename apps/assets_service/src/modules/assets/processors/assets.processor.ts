@@ -1,5 +1,6 @@
 import { Job } from 'bull';
 import { Repository } from 'typeorm';
+import { QueryRunner } from 'typeorm';
 
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, LoggerService } from '@nestjs/common';
@@ -54,19 +55,26 @@ export class AssetsProcessor {
       );
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (e) {
-      this.logger.error(`Error to progress job: ${job.id}. Error: ${e}`);
+      this.logger.error(
+        `Error to progress job: ${job.id} attemptsMade:${job.attemptsMade}. Error: ${e}`,
+      );
       await job.moveToFailed({ message: e.toString() });
     }
   }
 
   private async processAsset(assetRequest: AssetProcessingRequest): Promise<AssetEntity> {
+    const queryRunner = this.assetRepository.manager.connection.createQueryRunner();
+    await queryRunner.startTransaction();
+
     try {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
       const { address, chainId, rank, isTracked } = assetRequest;
       const savedAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
       if (savedAsset) {
-        return await this.updateAsset(savedAsset, assetRequest);
+        const updatedAsset = await this.updateAsset(queryRunner, savedAsset, assetRequest);
+        await queryRunner.commitTransaction();
+        return updatedAsset;
       }
 
       const assetMetadata = await this.metadataService.getMetadata(address, chainId);
@@ -86,30 +94,35 @@ export class AssetsProcessor {
       processingAsset.categories = [await this.getAssetCategory(Boolean(underlyingTokens?.length))];
       processingAsset.icon = await this.loadAssetIcons(processingAsset);
 
-      // TODO: Asset should be saved at the very end
-      processingAsset = await this.saveAsset(processingAsset);
+      processingAsset = await this.saveAsset(queryRunner, processingAsset);
 
       if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
-        underlyingTokens.map(async (underlyingToken: AssetEntity, index: number) => {
+        for (const [index, underlyingToken] of underlyingTokens.entries()) {
           const newAsset = await this.processAsset({
             address: underlyingToken.address,
             chainId: underlyingToken.chainId,
           });
-
           const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
             asset: processingAsset,
             underlyingAsset: newAsset,
             position: index,
           });
 
-          await this.assetUnderlyingRepository.save(newUnderlyingTokenRelation);
-        });
+          await queryRunner.manager.save(newUnderlyingTokenRelation);
+        }
       }
+
+      await queryRunner.commitTransaction();
+
+      await this.assetsService.setAssetsToCache([processingAsset]);
 
       return processingAsset;
     } catch (error) {
+      await queryRunner.rollbackTransaction();
       this.logger.error(`Error to process asset data ${JSON.stringify(assetRequest)}`);
       throw error;
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -128,7 +141,11 @@ export class AssetsProcessor {
     return largestIcon.url;
   }
 
-  private async updateAsset(asset: AssetEntity, request: AssetProcessingRequest) {
+  private async updateAsset(
+    queryRunner: QueryRunner,
+    asset: AssetEntity,
+    request: AssetProcessingRequest,
+  ) {
     // TODO: Invalidate / update cache?
     asset.metadata = {
       ...asset.metadata,
@@ -145,7 +162,9 @@ export class AssetsProcessor {
       // TODO: Enable this one and refresh from time to time
       asset.icon = await this.loadAssetIcons(asset);
     }
-    return await this.assetRepository.save(asset);
+    const updatedAsset = await queryRunner.manager.save(asset);
+    await this.assetsService.setAssetsToCache([updatedAsset]);
+    return updatedAsset;
   }
 
   private async getAssetCategory(hasUnderlying: boolean): Promise<AssetCategoryEntity> {
@@ -155,15 +174,13 @@ export class AssetsProcessor {
     return this.assetsCategoryRepository.findOneByCode('COIN');
   }
 
-  private async saveAsset(asset: AssetEntity): Promise<AssetEntity> {
+  private async saveAsset(queryRunner: QueryRunner, asset: AssetEntity): Promise<AssetEntity> {
     const { chainId, address } = asset;
     const existentAsset = await this.assetRepository //
       .findOne({ where: { chainId, address, disabled: false } });
     if (existentAsset) {
       throw Error(`Try to process already existing asset chainId: ${chainId}, address: ${address}`);
     }
-    const savedAsset = await this.assetRepository.save(asset);
-    await this.assetsService.setAssetsToCache([savedAsset]);
-    return savedAsset;
+    return await queryRunner.manager.save(asset);
   }
 }

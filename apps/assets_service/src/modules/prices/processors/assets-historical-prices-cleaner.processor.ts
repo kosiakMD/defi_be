@@ -1,3 +1,5 @@
+import { JobName } from 'apps/assets_service/src/common/enum/job-name.enum';
+import { QueueName } from 'apps/assets_service/src/common/enum/queue-name.enum';
 import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
@@ -8,8 +10,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 
 import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
-import { QueueName } from 'apps/assets_service/src/common/enum/queue-name.enum';
-import { JobName } from 'apps/assets_service/src/common/enum/job-name.enum';
 
 @Processor(QueueName.ASSETS)
 export class AssetsHistoricalPricesCleanerProcessor {

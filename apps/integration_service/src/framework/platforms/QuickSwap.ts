@@ -4,8 +4,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
+import { QuickswapStakingRewards } from '../support/EVM/protocols/Yield/QuickswapStakingRewards';
 import { StakingDualRewards } from '../support/EVM/protocols/Yield/StakingDualRewards';
-import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 
@@ -33,7 +33,7 @@ export class QuickSwap extends RootPlatform {
 
     // Good test account: 0x747276019e3340104c96397bf6537ad01f93d7df
 
-    await this.registerProtocol(StakingRewards, {
+    await this.registerProtocol(QuickswapStakingRewards, {
       chain: ChainIdEnum.plg,
       name: 'Syrup',
       feature: FeatureEnum.staking,

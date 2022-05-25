@@ -28,6 +28,15 @@ export class StakingDualRewards extends StakingRewards {
     address: Address,
     data: Map<string, CallData>,
   ): IStakingFeatureMinimal {
+    const active =
+      new Date(
+        Number(
+          data
+            .get(this.callLabel(address, this.functions.periodFinish.name))
+            .output.data.toString(),
+        ) * 1000,
+      ).getTime() > Date.now();
+
     return {
       id: address,
       chain: this.meta.chain,
@@ -49,9 +58,11 @@ export class StakingDualRewards extends StakingRewards {
               .get(this.callLabel(address, this.functions.rewardTokenA.name))
               .output.data.toLowerCase(),
           },
-          rewardPerSecond: data
-            .get(this.callLabel(address, this.functions.rewardRateA.name))
-            .output.data.toString(),
+          rewardPerSecond: active
+            ? data
+                .get(this.callLabel(address, this.functions.rewardRateA.name))
+                .output.data.toString()
+            : '0',
         },
         {
           token: {
@@ -59,9 +70,11 @@ export class StakingDualRewards extends StakingRewards {
               .get(this.callLabel(address, this.functions.rewardTokenB.name))
               .output.data.toLowerCase(),
           },
-          rewardPerSecond: data
-            .get(this.callLabel(address, this.functions.rewardRateB.name))
-            .output.data.toString(),
+          rewardPerSecond: active
+            ? data
+                .get(this.callLabel(address, this.functions.rewardRateB.name))
+                .output.data.toString()
+            : '0',
         },
       ],
     };

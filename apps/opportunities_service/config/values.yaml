@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: account.staging.defyield.xyz
+  host: opportunities.staging.defyield.xyz
 
 configMaps:
   common:

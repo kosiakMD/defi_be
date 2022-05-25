@@ -1,15 +1,7 @@
-import { Request, Response } from 'express';
 import { Logger as WinstonLoggerInterface } from 'winston';
 
-import {
-  Injectable,
-  LoggerService,
-  LoggerService as NestLoggerService,
-  Scope,
-} from '@nestjs/common';
+import { Injectable, LoggerService, LoggerService as NestLoggerService } from '@nestjs/common';
 import { WinstonLogger } from 'nest-winston';
-
-import { ctx } from '@app/common/helpers/context';
 
 export enum LogLevelEnum {
   error = 'error', // 0
@@ -23,16 +15,13 @@ export enum LogLevelEnum {
 
 export type LogMessage = Partial<{ message: string; level?: LogLevelEnum | number }>;
 
-@Injectable({ scope: Scope.REQUEST })
-// @Injectable()
+// @Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class Logger extends WinstonLogger implements NestLoggerService {
   static logger: WinstonLogger;
   // TODO: temporary need static for SingleTone
   private static times = new Map();
   private readonly times = new Map();
-
-  private req: Request;
-  private res: Response;
 
   constructor(logger: WinstonLoggerInterface) {
     super(logger);
@@ -66,33 +55,8 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     return diff;
   }
 
-  static error(message: any, trace?: string, context?: string) {
-    const exContext = ctx();
-    console.log('context', context);
-    console.log('exContext', exContext);
-    // console.log("super", super);
-    // @ts-ignore
-    super.error(message, trace, context);
-  }
-
-  setExContext(req: Request, res: Response) {
-    this.req = req;
-    this.res = res;
-  }
-
   public error(message: any, trace?: string, context?: string): any {
-    const exContext = ctx();
-    console.log('context', context);
-    console.log('exContext', exContext);
-    // console.log('req', this.req);
-    // console.log('res', this.res);
     // TODO: for all exception in the future
-    // Sentry.captureException(message, {
-    //   level: Severity.Error,
-    //   // contexts: { trace, context },
-    //   extra: { trace, context },
-    //   // tags: [],
-    // });
     return Logger.logger.error(message, trace, context);
   }
 

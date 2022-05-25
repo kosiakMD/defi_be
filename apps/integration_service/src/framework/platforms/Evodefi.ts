@@ -20,6 +20,9 @@ export class Evodefi extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       slug: this.constructor.name,
+      links: {
+        url: 'https://evodefi.com/',
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(MasterChef, {

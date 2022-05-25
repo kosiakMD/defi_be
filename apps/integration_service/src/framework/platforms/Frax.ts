@@ -20,6 +20,9 @@ export class Frax extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       slug: this.constructor.name,
+      links: {
+        url: 'https://frax.finance/',
+      },
     });
 
     await this.registerProtocol<IFraxStakingMeta>(FraxStaking, {

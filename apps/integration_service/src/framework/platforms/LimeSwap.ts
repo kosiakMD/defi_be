@@ -20,6 +20,9 @@ export class LimeSwap extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       slug: this.constructor.name,
+      links: {
+        twitter: 'https://twitter.com/limeswapio',
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(MasterChef, {

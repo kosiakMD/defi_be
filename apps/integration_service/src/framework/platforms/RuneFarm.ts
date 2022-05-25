@@ -20,6 +20,9 @@ export class RuneFarm extends RootPlatform {
     this.registerMeta({
       name: this.constructor.name,
       slug: this.constructor.name,
+      links: {
+        url: 'https://rune.game/',
+      },
     });
 
     await this.registerProtocol<IMasterChefMeta>(MasterChef, {

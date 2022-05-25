@@ -44,7 +44,7 @@ export interface IPlatformMeta {
   features: IFeatureMeta[];
 
   // Social Media Links
-  links?: IPlatformLinks;
+  links: IPlatformLinks;
 }
 export interface IProtocolMeta {
   id?: string; // todo: should be required

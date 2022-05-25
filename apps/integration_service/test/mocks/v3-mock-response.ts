@@ -8,7 +8,7 @@ export const v3mockResponseData: IUserEntryResponse = {
   data: {
     protocol: {
       name: 'Solend',
-      project: 'Solend',
+      slug: 'something',
       features: [
         {
           chain: {
@@ -16,7 +16,7 @@ export const v3mockResponseData: IUserEntryResponse = {
             name: ChainNameEnum.sol,
             abbr: ChainAbbrEnum.sol,
           },
-          list: [FeatureEnum.lending],
+          list: [FeatureEnum.lending as any],
         },
       ],
       links: {
@@ -226,7 +226,7 @@ export const v3mockResponseData: IUserEntryResponse = {
                 },
               ],
             },
-            features: [FeatureEnum.lending, FeatureEnum.staking],
+            features: [FeatureEnum.lending as any, FeatureEnum.staking as any],
             total: 0.12774089216279544,
             chain: {
               id: 12,

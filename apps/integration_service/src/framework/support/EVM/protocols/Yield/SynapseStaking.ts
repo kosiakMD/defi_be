@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -12,6 +13,10 @@ import { AccountService } from '../../../../../modules/microservices/account.ser
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
+import {
+  ISupplyTokenMinimal,
+  ISupplyTokenOpportunity,
+} from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { updateSynapseLpTokens } from '../Liquidity/SynapseLiquidity';
 import { MasterChef } from './MasterChef';
@@ -59,6 +64,27 @@ export class SynapseStaking extends MasterChef {
         return poolInfo;
       }),
     );
+  }
+
+  protected formatOpportunitySuppliedToken(
+    poolToken: ISupplyTokenMinimal,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    let tvl = 0;
+    const poolShare = new BigNumber(poolToken.totalSupplied)
+      .div(10 ** token.decimals)
+      .div(token.totalSupply)
+      .toNumber();
+    token.underlying?.forEach((underlying) => {
+      underlying.value = underlying.reserve * poolShare * underlying.price;
+      tvl += underlying.value;
+    });
+
+    return {
+      token,
+      totalSupplied: +poolToken.totalSupplied,
+      tvl: tvl || null,
+    };
   }
 
   protected async updateTokenData(

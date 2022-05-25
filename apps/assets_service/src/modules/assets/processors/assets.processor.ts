@@ -1,4 +1,5 @@
 import { Job } from 'bull';
+import { plainToClass } from 'class-transformer';
 import { Repository } from 'typeorm';
 import { QueryRunner } from 'typeorm';
 
@@ -15,6 +16,7 @@ import { MetadataService } from '../../../common/services/metadata/metadata.serv
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
 import { IconsService } from '../../icons/icons.service';
+import { AssetDto } from '../dto/asset.dto';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
 import { AssetsRepository } from '../repositories/assets.repository';
@@ -70,7 +72,9 @@ export class AssetsProcessor {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
       const { address, chainId, rank, isTracked } = assetRequest;
-      const savedAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
+      const savedAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId, [
+        'underlying',
+      ]);
       if (savedAsset) {
         const updatedAsset = await this.updateAsset(queryRunner, savedAsset, assetRequest);
         await queryRunner.commitTransaction();
@@ -87,6 +91,7 @@ export class AssetsProcessor {
       processingAsset.decimals = assetMetadata.decimals;
       processingAsset.rank = rank;
       processingAsset.isTracked = isTracked || false;
+      processingAsset.underlying = [];
 
       const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
 
@@ -95,6 +100,8 @@ export class AssetsProcessor {
       processingAsset.icon = await this.loadAssetIcons(processingAsset);
 
       processingAsset = await this.saveAsset(queryRunner, processingAsset);
+
+      const assetToCache = plainToClass(AssetDto, processingAsset);
 
       if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
         for (const [index, underlyingToken] of underlyingTokens.entries()) {
@@ -107,14 +114,20 @@ export class AssetsProcessor {
             underlyingAsset: newAsset,
             position: index,
           });
-
+          assetToCache.underlying.push({
+            position: index,
+            underlyingAssetRef: {
+              address: newAsset.address,
+              chainId: newAsset.chainId,
+            },
+          });
           await queryRunner.manager.save(newUnderlyingTokenRelation);
         }
       }
 
       await queryRunner.commitTransaction();
 
-      await this.assetsService.setAssetsToCache([processingAsset]);
+      await this.assetsService.setAssetsToCache([assetToCache]);
 
       return processingAsset;
     } catch (error) {

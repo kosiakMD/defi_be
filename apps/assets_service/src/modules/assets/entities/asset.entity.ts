@@ -70,6 +70,6 @@ export class AssetEntity extends BaseEntity {
   // TODO: Remove this reference from entity
   public historicalPrices: AssetHistoricalPriceEntity[];
 
-  @ManyToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset)
+  @OneToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset)
   public underlying: AssetUnderlyingEntity[];
 }

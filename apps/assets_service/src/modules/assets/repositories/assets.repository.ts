@@ -23,9 +23,14 @@ export class AssetsRepository extends Repository<AssetEntity> {
     });
   }
 
-  findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetEntity> {
+  findOneByAddressAndChain(
+    address: string,
+    chainId: ChainIdEnum,
+    include?: string[],
+  ): Promise<AssetEntity> {
     return this.findOne({
       where: { chainId, address: ILike(address) },
+      relations: include,
     });
   }
 

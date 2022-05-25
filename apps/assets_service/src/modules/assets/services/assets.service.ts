@@ -72,7 +72,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     return dtos.map((dto, index) => ({ ...dto, price: prices[index].price }));
   }
 
-  private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
+  private async getAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
     const assets = [];
 
     if (this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
@@ -87,9 +87,29 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
     const databaseAssetsRequests = this.excludeFoundAssets(requests, assets);
     const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
-    assets.push(...databaseAssets);
+    const databaseAssetsToCache = [];
+    for (const databaseAsset of databaseAssets) {
+      const fn = (dbAsset) => {
+        const dbAssetToCache = plainToClass(AssetDto, dbAsset);
+        dbAssetToCache.underlying = dbAsset.underlying.map((underlying) => {
+          if (underlying.underlyingAsset.underlying?.length) {
+            databaseAssetsToCache.push(fn(underlying.underlyingAsset));
+          }
+          return {
+            underlyingAssetRef: {
+              address: underlying.underlyingAsset.address,
+              chainId: underlying.underlyingAsset.chainId,
+            },
+            position: underlying.position,
+          };
+        });
+        return dbAssetToCache;
+      };
+      databaseAssetsToCache.push(fn(databaseAsset));
+    }
+    assets.push(...databaseAssetsToCache);
 
-    this.setAssetsToCache(databaseAssets);
+    this.setAssetsToCache(databaseAssetsToCache);
 
     if (assets.length === requests.length) {
       return assets;
@@ -103,13 +123,13 @@ export class AssetsService extends CrudService<AssetsRepository> {
     return assets;
   }
 
-  private excludeFoundAssets(requests: GetAssetRequest[], assets: AssetEntity[]) {
+  private excludeFoundAssets(requests: GetAssetRequest[], assets: AssetDto[]) {
     return requests.filter(
       (request) => !assets.some((asset) => this.isRequestMatchingAsset(request, asset)),
     );
   }
 
-  private isRequestMatchingAsset(request: GetAssetRequest, asset: AssetEntity) {
+  private isRequestMatchingAsset(request: GetAssetRequest, asset: AssetDto) {
     return (
       request.chainId === asset.chainId &&
       request.address?.toLowerCase() === asset.address?.toLowerCase()
@@ -117,10 +137,23 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   public async getAssetsFromCache(requests: GetAssetRequest[]): Promise<AssetDto[]> {
-    const assetsFromCache = await this.cache.mget(
-      requests.map((request) => this.getAssetCacheKey(request)),
-    );
-    return assetsFromCache.filter(Boolean);
+    const assetsFromCache = (
+      await this.cache.mget(requests.map((request) => this.getAssetCacheKey(request)))
+    ).filter(Boolean);
+    const underlyingAssetsCacheKeys = [];
+    for (const assetFromCache of assetsFromCache) {
+      if (assetFromCache.underlying) {
+        underlyingAssetsCacheKeys.push(
+          ...assetFromCache.underlying.map((underlying) =>
+            this.getAssetCacheKey(underlying.underlyingAssetRef),
+          ),
+        );
+      }
+    }
+    if (underlyingAssetsCacheKeys.length) {
+      assetsFromCache.push(...(await this.cache.mget(underlyingAssetsCacheKeys)).filter(Boolean));
+    }
+    return assetsFromCache;
   }
 
   public async setAssetsToCache(assets: AssetDto[]): Promise<void> {
@@ -138,7 +171,10 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private getAssetsFromDatabase(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     // TODO: Filter out outdated prices in repository
-    return this.assetsRepository.findManyByAddressesAndChainIds(requests, ['prices']);
+    return this.assetsRepository.findManyByAddressesAndChainIds(requests, [
+      'underlying',
+      'underlying.underlyingAsset',
+    ]);
   }
 
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {

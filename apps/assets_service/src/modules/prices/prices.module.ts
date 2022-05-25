@@ -12,10 +12,9 @@ import { AssetsService } from '../assets/services/assets.service';
 import { AssetHistoricalPriceEntity } from './entities/asset-historical-price.entity';
 import { AssetPriceEntity } from './entities/asset-price.entity';
 import { PriceSourceEntity } from './entities/price-source.entity';
-import { PriceJobEmitter } from './price-job.emitter';
 import { PriceService } from './price.service';
-import { AssetsCurrentPricesProcessor } from './processors/assets-current-prices.processor';
 import { AssetsHistoricalPricesProcessor } from './processors/assets-historical-prices.processor';
+import { AssetsHistoricalPricesCleanerProcessor } from './processors/assets-historical-prices-cleaner.processor';
 import { UpdateCurrentPricesFromSourceProcessor } from './processors/update-current-prices-from-source.processor';
 import { UpdateCurrentPricesProcessor } from './processors/update-current-prices.processor';
 import { AssetsHistoricalPriceRepository } from './repositories/asset-historical-price.repository';
@@ -36,7 +35,7 @@ const repositories = [
 ];
 
 const processors = [
-  AssetsCurrentPricesProcessor,
+  AssetsHistoricalPricesCleanerProcessor,
   AssetsHistoricalPricesProcessor,
   UpdateCurrentPricesProcessor,
   UpdateCurrentPricesFromSourceProcessor,
@@ -72,6 +71,6 @@ const priceStrategies = [
       ...repositories,
     ]),
   ],
-  providers: [...processors, ...priceStrategies, PriceJobEmitter, AssetsService, PriceService],
+  providers: [...processors, ...priceStrategies, AssetsService, PriceService],
 })
 export class PricesModule {}

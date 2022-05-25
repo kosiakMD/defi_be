@@ -6,6 +6,7 @@ import { AssetCategoryEntity } from '../../assets-category/entities/asset-catego
 import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';
 import { AssetPriceEntity } from '../../prices/entities/asset-price.entity';
 import { AssetUnderlyingEntity } from './asset-underlying.entity';
+import { Exclude } from 'class-transformer';
 
 @Unique(['address', 'chainId'])
 @Entity({ name: 'assets' })
@@ -31,9 +32,11 @@ export class AssetEntity extends BaseEntity {
   @Column({ type: Number, nullable: true })
   public rank?: number;
 
+  @Exclude()
   @Column({ type: Boolean, default: false })
   public isTracked: boolean;
 
+  @Exclude()
   @Column({ type: Boolean, nullable: false, default: false })
   public disabled: boolean;
 

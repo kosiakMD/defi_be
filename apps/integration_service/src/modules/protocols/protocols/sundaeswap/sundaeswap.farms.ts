@@ -63,6 +63,7 @@ export class SundaeSwapFarms {
 
       for (const [poolId, staking] of mapFarms.entries()) {
         const poolPosition = pools.get(poolId);
+        if (!poolPosition) continue;
         const stakingBalance = staking.reduce((prev, stacked) => prev + +stacked.quantity, 0);
         poolPosition.stats.share = this.cardanoUtils.calculatePoolShare(
           stakingBalance,

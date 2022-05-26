@@ -5,10 +5,14 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { createLogger } from '@app/common/Logger/winston';
-import { initListening } from '@app/common/bootstrap/initListening';
-import { initLogger } from '@app/common/bootstrap/initLogger';
-import { initPipes } from '@app/common/bootstrap/initPipes';
-import { initSwagger } from '@app/common/bootstrap/initSwagger';
+import {
+  initContext,
+  initListening,
+  initLogger,
+  initPipes,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -24,6 +28,8 @@ async function bootstrap() {
     logger,
   });
 
+  initSentry();
+  initContext(app);
   initLogger(app);
   initSwagger(app);
 

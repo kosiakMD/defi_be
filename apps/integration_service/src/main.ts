@@ -8,7 +8,6 @@ import { createLogger } from '@app/common/Logger/winston';
 import {
   initContext,
   initListening,
-  initLogger,
   initPipes,
   initSentry,
   initSwagger,

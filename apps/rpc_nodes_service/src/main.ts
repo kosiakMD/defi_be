@@ -4,18 +4,22 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { createLogger } from '@app/common/Logger/winston';
-import { initListening } from '@app/common/bootstrap/initListening';
-import { initLogger } from '@app/common/bootstrap/initLogger';
-import { initPipes } from '@app/common/bootstrap/initPipes';
-import { initPrefix } from '@app/common/bootstrap/initPrefix';
-import { initSwagger } from '@app/common/bootstrap/initSwagger';
+import {
+  initContext,
+  initListening,
+  initLogger,
+  initPipes,
+  initPrefix,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
 
 const logger = createLogger(logFileDir);
 
-const ssl = process.env.SSL === 'true' ? true : false;
+const ssl = process.env.SSL === 'true';
 let httpsOptions = null;
 if (ssl) {
   const keyPath = process.env.SSL_KEY_PATH;
@@ -36,6 +40,8 @@ async function bootstrap() {
     httpsOptions,
   });
 
+  initSentry();
+  initContext(app);
   initLogger(app);
   initSwagger(app);
   initPipes(app);

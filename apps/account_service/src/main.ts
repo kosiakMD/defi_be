@@ -11,7 +11,6 @@ import {
   initSentry,
   initSwagger,
 } from '@app/common/bootstrap';
-import { withContext, withRequestId } from '@app/common/middlewares/withContext';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -26,8 +25,6 @@ async function bootstrap() {
     abortOnError: false,
     logger,
   });
-
-  app.use(withContext, withRequestId);
 
   initSentry();
   initContext(app);

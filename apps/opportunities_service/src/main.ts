@@ -5,12 +5,12 @@ import { createLogger } from '@app/common/Logger/winston';
 import {
   initContext,
   initListening,
+  initLogger,
   initPipes,
   initPrefix,
   initSentry,
   initSwagger,
 } from '@app/common/bootstrap';
-import { initLogger } from '@app/common/bootstrap/initLogger';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';

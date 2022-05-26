@@ -1,14 +1,22 @@
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CacheService } from '@app/common/services/cache.service';
 
+import { AssetsRepository } from '../assets/repositories/assets.repository';
+import { AssetHistoricalPriceEntity } from './entities/asset-historical-price.entity';
+import { AssetsHistoricalPriceRepository } from './repositories/asset-historical-price.repository';
 import { AssetPrice } from './types/asset-price.type';
 
 @Injectable()
 export class PriceService {
   constructor(
+    @InjectRepository(AssetsRepository)
+    private readonly assetsRepository: AssetsRepository,
+    @InjectRepository(AssetsHistoricalPriceRepository)
+    private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly cache: CacheService,
     private readonly config: ConfigService,
@@ -40,6 +48,38 @@ export class PriceService {
     await this.cache.mset(avgPriceCacheItems, { ttl: assetPricesTTLInSeconds });
 
     this.logger.log(`Saved ${notEmptyUpdatedPrices.length} not empty prices into cache`);
+  }
+
+  public async saveAssetsHistoricalPrices() {
+    const cachedAveragePrices = await this.getPrices(
+      (
+        await this.cache.getKeysByPattern('asset_avg_price_*')
+      ) //
+        .map((key) => getAssetReferenceFromAveragePriceCacheKey(key)),
+    );
+    const getAssetKey = ({ address, chainId }) => `${chainId}-${address}`;
+    const trackedAssetsMap = new Map(
+      (await this.assetsRepository.getAllTrackedAssets()) //
+        .map((trackedAsset) => [getAssetKey(trackedAsset), trackedAsset]),
+    );
+    const promises = [];
+    while (cachedAveragePrices.length) {
+      const averagePricesChunk = cachedAveragePrices.splice(0, 500);
+      promises.push(
+        this.assetsHistoricalPriceRepository.save(
+          averagePricesChunk
+            .map((averagePrice) => {
+              const newHistoricalPrice = new AssetHistoricalPriceEntity();
+              newHistoricalPrice.asset = trackedAssetsMap.get(getAssetKey(averagePrice.asset));
+              newHistoricalPrice.price = averagePrice.price;
+              newHistoricalPrice.timestamp = new Date();
+              return newHistoricalPrice;
+            })
+            .filter((newHistoricalPrice) => !!newHistoricalPrice.asset),
+        ),
+      );
+    }
+    await Promise.all(promises);
   }
 
   async getPrices(assets: AssetReference[]): Promise<AssetAvgPrice[]> {
@@ -138,6 +178,14 @@ function toAvgPriceCacheItem({ asset, price }: AssetAvgPrice) {
   return {
     key: getAvgPriceCacheKey(asset),
     value: price,
+  };
+}
+
+function getAssetReferenceFromAveragePriceCacheKey(key: string): AssetReference {
+  const keyEntries = key.split('_');
+  return {
+    address: keyEntries.pop(),
+    chainId: +keyEntries.pop(),
   };
 }
 

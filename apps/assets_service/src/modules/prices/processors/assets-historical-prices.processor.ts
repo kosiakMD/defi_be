@@ -32,6 +32,6 @@ export class AssetsHistoricalPricesProcessor {
 
   private async createHistoricalPrices() {
     // TODO: comming in next PR
-    // await this.priceService.saveCachedHistoricalPrices();
+    await this.priceService.saveAssetsHistoricalPrices();
   }
 }

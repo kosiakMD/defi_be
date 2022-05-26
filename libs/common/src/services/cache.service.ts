@@ -6,6 +6,10 @@ import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
 export class CacheService {
   constructor(@Inject(CACHE_MANAGER) private cache: Cache) {}
 
+  public async getKeysByPattern(pattern: string) {
+    return this.cache.store.keys(pattern);
+  }
+
   public async getOrLoad<T = any>(
     key: string,
     load: () => T | Promise<T>,

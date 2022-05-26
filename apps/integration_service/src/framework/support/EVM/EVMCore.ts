@@ -134,6 +134,14 @@ export abstract class EVMCore<
       single.forEach((featureName) => {
         if (pool?.[featureName]) {
           tokens.add(pool[featureName].token.address.toLowerCase());
+
+          // TODO: This is only required if asset-service doesn't provide
+          // proper underlying token support (i.e. balancer, solana, etc)
+          if (pool[featureName].token?.underlying) {
+            pool[featureName].token?.underlying.map((token) =>
+              tokens.add(token.address.toLowerCase()),
+            );
+          }
         }
       });
     });

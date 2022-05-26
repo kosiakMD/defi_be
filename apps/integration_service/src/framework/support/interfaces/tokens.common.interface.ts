@@ -1,6 +1,10 @@
 export interface ERC20TokenMinimal {
   address: string;
 }
+
+export interface ERC20TokenWithUnderlingMinimal extends ERC20TokenMinimal {
+  underlying: ERC20TokenMinimal[];
+}
 // TODO: This needs to match asset service interface
 export interface ERC20Token extends ERC20TokenMinimal {
   // ERC20 Standard

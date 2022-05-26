@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CurrencyIdEnum, FeatureEnum, ProtocolNameEnum } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
-import { RaydiumFarmVersion, RaydiymFarm } from '@app/common/jobs/raydiym.farm';
+import { RaydiumFarmVersion, RaydiumFarm } from '@app/common/jobs/raydium.farm';
 import {
   IntegrationClaimableTokenDto,
   IntegrationERC20TokenDto,
@@ -110,7 +110,7 @@ export class RaydiumStaking implements JobInterface {
     for (const farm of farms) {
       try {
         // for single token
-        if (RaydiymFarm.version3SingleTokens.includes(farm.id.toBase58())) {
+        if (RaydiumFarm.version3SingleTokens.includes(farm.id.toBase58())) {
           stakingFeatures.push(await this.getFarmForSingleToken(farm));
           continue;
         }
@@ -364,7 +364,7 @@ export class RaydiumStaking implements JobInterface {
         const poolInfo = decodedInfoPoolsMap.get(mapping.extra.pool.id);
         if (poolInfo) {
           mapping.staked = farmInfo.lpVault.amount.toString();
-          if (RaydiymFarm.version3SingleTokens.includes(mapping.extra.farm.id)) {
+          if (RaydiumFarm.version3SingleTokens.includes(mapping.extra.farm.id)) {
             mapping.stakingToken.price = Number(prices[mapping.stakingToken.address]);
             mapping.stakingToken.value =
               mapping.stakingToken.price *
@@ -405,10 +405,10 @@ export class RaydiumStaking implements JobInterface {
       let layout;
       switch (mapping[i].extra.farm.version) {
         case RaydiumFarmVersion.version3:
-          layout = RaydiymFarm.version3.stakeInfoLayout;
+          layout = RaydiumFarm.version3.stakeInfoLayout;
           break;
         case RaydiumFarmVersion.version5:
-          layout = RaydiymFarm.version5.stakeInfoLayout;
+          layout = RaydiumFarm.version5.stakeInfoLayout;
           break;
       }
       if (layout) {

@@ -23,7 +23,7 @@ export class AssetsHistoricalPricesCleanerProcessor {
   async handlePriceJob(job: Job) {
     try {
       this.logger.log(`Process Clear Historical Price job.id: ${job.id}`);
-      await this.clearDBOnCurrentPrices();
+      await this.clearPrices();
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (error) {
       this.logger.error(`Error to process historical price job.id: ${job.id}, ${error.message}`);
@@ -31,7 +31,7 @@ export class AssetsHistoricalPricesCleanerProcessor {
     }
   }
 
-  public async clearDBOnCurrentPrices(): Promise<void> {
+  public async clearPrices(): Promise<void> {
     await this.assetsHistoricalPriceRepository.clearPrices();
   }
 }

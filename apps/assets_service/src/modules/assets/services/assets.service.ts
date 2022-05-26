@@ -77,39 +77,32 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
     if (this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
       // TODO: Instead of doing this we should just add cached repository
-      const cachedAssets = await this.getAssetsFromCache(requests);
+      const cachedAssets = await this.getAssetsFromCache(
+        // Asset requests with pricesAt have to be get from database
+        requests, //.filter((request) => !!request.pricesAt),
+      );
       assets.push(...cachedAssets);
     }
 
-    if (assets.length === requests.length) {
+    const databaseAssetsRequests = this.excludeFoundAssets(requests, assets);
+
+    if (!databaseAssetsRequests.length) {
       return assets;
     }
 
-    const databaseAssetsRequests = this.excludeFoundAssets(requests, assets);
     const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
-    const databaseAssetsToCache = [];
-    for (const databaseAsset of databaseAssets) {
-      const fn = (dbAsset) => {
-        const dbAssetToCache = plainToClass(AssetDto, dbAsset);
-        dbAssetToCache.underlying = dbAsset.underlying.map((underlying) => {
-          if (underlying.underlyingAsset.underlying?.length) {
-            databaseAssetsToCache.push(fn(underlying.underlyingAsset));
-          }
-          return {
-            underlyingAssetRef: {
-              address: underlying.underlyingAsset.address,
-              chainId: underlying.underlyingAsset.chainId,
-            },
-            position: underlying.position,
-          };
-        });
-        return dbAssetToCache;
-      };
-      databaseAssetsToCache.push(fn(databaseAsset));
-    }
-    assets.push(...databaseAssetsToCache);
+    const databaseAssetsToCache = {};
 
-    this.setAssetsToCache(databaseAssetsToCache);
+    databaseAssets.forEach((databaseAsset) => {
+      databaseAssetsToCache[this.getAssetCacheKey(databaseAsset)] = this.findUnderlying(
+        //
+        databaseAsset,
+        databaseAssetsToCache,
+      );
+    });
+    assets.push(...Object.values(databaseAssetsToCache));
+
+    // this.setAssetsToCache(databaseAssetsToCache);
 
     if (assets.length === requests.length) {
       return assets;
@@ -143,11 +136,13 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const underlyingAssetsCacheKeys = [];
     for (const assetFromCache of assetsFromCache) {
       if (assetFromCache.underlying) {
-        underlyingAssetsCacheKeys.push(
-          ...assetFromCache.underlying.map((underlying) =>
-            this.getAssetCacheKey(underlying.underlyingAssetRef),
-          ),
-        );
+        assetFromCache.underlying.forEach((underlying) => {
+          const key = this.getAssetCacheKey(underlying.underlyingAssetRef);
+          // Check if the key was found before
+          if (!underlyingAssetsCacheKeys.find((k) => k === key)) {
+            underlyingAssetsCacheKeys.push(key);
+          }
+        });
       }
     }
     if (underlyingAssetsCacheKeys.length) {
@@ -165,16 +160,52 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
   }
 
+  private findUnderlying(dbAsset, dbAsetsToCache) {
+    const dbAssetToCache = { ...dbAsset };
+    dbAssetToCache.underlying = [];
+    dbAsset.underlying?.forEach(({ underlyingAsset, position }) => {
+      if (underlyingAsset.underlying?.length) {
+        underlyingAsset.underlying.forEach(({ underlyingAsset }) => {
+          dbAsetsToCache[this.getAssetCacheKey(underlyingAsset)] = this.findUnderlying(
+            underlyingAsset,
+            dbAsetsToCache,
+          );
+        });
+      }
+      dbAssetToCache.underlying.push({
+        underlyingAssetRef: {
+          address: underlyingAsset.address,
+          chainId: underlyingAsset.chainId,
+        },
+        position,
+      });
+      dbAsetsToCache[this.getAssetCacheKey(underlyingAsset)] = this.findUnderlying(
+        underlyingAsset,
+        dbAsetsToCache,
+      );
+    });
+    return dbAssetToCache;
+  }
+
   private getAssetCacheKey({ address, chainId }) {
     return `${this.cacheKeyPrefix}-${chainId}-${address}`;
   }
 
   private getAssetsFromDatabase(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
+    const underliyngRelationName = 'underlying';
+    const underlyingAssetRelationName = 'underlyingAsset';
+    let initialRelationName = 'underlying.underlyingAsset';
+    const relations = ['underlying', initialRelationName];
+    // It means 3 level tree including initial relations and last one
+    while (relations.length < 3 * 2) {
+      initialRelationName += '.' + underliyngRelationName;
+      relations.push(initialRelationName);
+      initialRelationName += '.' + underlyingAssetRelationName;
+      relations.push(initialRelationName);
+    }
+    relations.push('historicalPrices');
     // TODO: Filter out outdated prices in repository
-    return this.assetsRepository.findManyByAddressesAndChainIds(requests, [
-      'underlying',
-      'underlying.underlyingAsset',
-    ]);
+    return this.assetsRepository.findManyByAddressesAndChainIds(requests, relations);
   }
 
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {

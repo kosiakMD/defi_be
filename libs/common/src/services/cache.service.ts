@@ -6,7 +6,7 @@ import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
 export class CacheService {
   constructor(@Inject(CACHE_MANAGER) private cache: Cache) {}
 
-  public async getKeysByPattern(pattern: string) {
+  public getKeysByPattern(pattern: string) {
     return this.cache.store.keys(pattern);
   }
 

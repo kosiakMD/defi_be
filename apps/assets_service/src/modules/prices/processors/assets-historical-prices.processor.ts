@@ -30,6 +30,6 @@ export class AssetsHistoricalPricesProcessor {
   }
 
   private async createHistoricalPrices() {
-    await this.priceService.saveAssetsHistoricalPrices();
+    await this.priceService.saveHistoricalPricesFromCurrentOnes();
   }
 }

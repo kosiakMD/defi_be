@@ -50,7 +50,7 @@ export class PriceService {
     this.logger.log(`Saved ${notEmptyUpdatedPrices.length} not empty prices into cache`);
   }
 
-  public async saveAssetsHistoricalPrices() {
+  public async saveHistoricalPricesFromCurrentOnes() {
     const cachedAveragePrices = await this.getPrices(
       (
         await this.cache.getKeysByPattern('asset_avg_price_*')
@@ -66,7 +66,7 @@ export class PriceService {
     while (cachedAveragePrices.length) {
       const averagePricesChunk = cachedAveragePrices.splice(0, 500);
       promises.push(
-        this.assetsHistoricalPriceRepository.save(
+        this.assetsHistoricalPriceRepository.insert(
           averagePricesChunk
             .map((averagePrice) => {
               const newHistoricalPrice = new AssetHistoricalPriceEntity();

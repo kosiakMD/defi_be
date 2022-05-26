@@ -206,7 +206,6 @@ export class AlchemixV2Vaults
     pool: IAlchemixLendingFeatureEntryMinimal,
     tokens: TokenMap,
   ): void | IAlchemixLendingFeatureOpportunity {
-    //const suppliedOpportunity = pool.supplied[0];
     const suppliedOpportunity = pool.supply;
     const borrowedOpportunity = pool.borrow;
 
@@ -248,14 +247,12 @@ export class AlchemixV2Vaults
     const borrowTvl = totalBorrowed * borrowedToken.price;
 
     return {
-      //debtRatio: 0,
       feature: pool.feature,
       id: pool.id,
       chain: pool.chain,
       borrow: {
         token: borrowedToken,
         tvl: borrowTvl,
-        //apy: { supplyApy: undefined },
       },
       supply: {
         token: suppliedToken,
@@ -264,8 +261,6 @@ export class AlchemixV2Vaults
         pricePerShare: pricePerShare,
         apy: { supplyApy: apy },
       },
-
-      // rewarded: [],
     };
   }
 
@@ -321,7 +316,6 @@ export class AlchemixV2Vaults
 
         const borrowedEntity: IBorrowTokenUserEntity = {
           tvl: undefined,
-          // apy: null,
           token: debtToken,
           amount: borrowedSharePerUser,
           value: borrowedTotal,

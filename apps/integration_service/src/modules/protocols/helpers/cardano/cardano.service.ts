@@ -1,3 +1,4 @@
+import { Address } from '@emurgo/cardano-serialization-lib-nodejs';
 import { toDecimals } from 'apps/integration_service/src/common/utils/util';
 import BigNumber from 'bignumber.js';
 
@@ -11,6 +12,7 @@ import { Asset } from '../../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
+import { BLAKE_224_LENGTH } from './cardano.constants';
 
 @Injectable()
 export class CardanoService {
@@ -55,6 +57,41 @@ export class CardanoService {
     }
 
     return pools;
+  }
+
+  /**
+   * @param address bech32 address format e.g. addr1q9dlxacm904nz7f3n35g3tf9pulg7kszvmj3296t3039p3l30aezwducj3k27k9ey7r6ndkttc7jnrdd6trs9jq57ccqa3l9g0
+   * @returns hash of an address e.g. 015bf3771b2beb3179319c6888ad250f3e8f5a0266e515174b8be250c7f17f72273798946caf58b92787a9b6cb5e3d298dadd2c702c814f630
+   */
+  addressToHash(address: string): string {
+    return Buffer.from(Address.from_bech32(address).to_bytes()).toString('hex');
+  }
+
+  /**
+   * @description This function cuts prefix and stakeKeyHash from the addressHash
+   *
+   * Example:
+   *
+   * 01 is prefix
+   *
+   * 5bf3771b2beb3179319c6888ad250f3e8f5a0266e515174b8be250c7 is blake224
+   *
+   * f17f72273798946caf58b92787a9b6cb5e3d298dadd2c702c814f630 is stakeKeyHash
+   *
+   * @param addressHash hash of an address e.g. 015bf3771b2beb3179319c6888ad250f3e8f5a0266e515174b8be250c7f17f72273798946caf58b92787a9b6cb5e3d298dadd2c702c814f630
+   * @returns blake224 hash e.g. 5bf3771b2beb3179319c6888ad250f3e8f5a0266e515174b8be250c7
+   */
+  addressHashToBlake224(addressHash: string): string {
+    const PREFIX_LENGTH = 2;
+    return addressHash.slice(PREFIX_LENGTH, BLAKE_224_LENGTH + PREFIX_LENGTH);
+  }
+
+  /**
+   * @param address bech32 address format e.g. addr1q9dlxacm904nz7f3n35g3tf9pulg7kszvmj3296t3039p3l30aezwducj3k27k9ey7r6ndkttc7jnrdd6trs9jq57ccqa3l9g0
+   * @returns blake224 hash e.g. 5bf3771b2beb3179319c6888ad250f3e8f5a0266e515174b8be250c7
+   */
+  addressToBlake224(address: string): string {
+    return this.addressHashToBlake224(this.addressToHash(address));
   }
 
   async getTokenInfo(token: string): Promise<Asset & { price: number }> {

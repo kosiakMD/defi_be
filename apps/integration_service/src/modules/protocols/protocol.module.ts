@@ -116,6 +116,7 @@ import { VVSPools } from './protocols/vvs/vvs.pools';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
 import { VVSStaking } from './protocols/vvs/vvs.staking';
 import WePiggyProtocol from './protocols/wepiggyProtocol';
+import { WingRidersFarms } from './protocols/wingriders/wingriders.farms';
 import { WingRidersPools } from './protocols/wingriders/wingriders.pools';
 import { WingRidersProtocol } from './protocols/wingriders/wingriders.protocol';
 import { WonderlandStaking } from './protocols/wonderland/features/wonderland.staking';
@@ -181,7 +182,7 @@ const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
 const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 const Stader = [StaderProtocol, StaderStaking, StaderAirdrop];
 const Osmosis = [OsmosisProtocol, OsmosisPools, OsmosisLocked];
-const WingRiders = [WingRidersProtocol, WingRidersPools];
+const WingRiders = [WingRidersProtocol, WingRidersPools, WingRidersFarms];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [

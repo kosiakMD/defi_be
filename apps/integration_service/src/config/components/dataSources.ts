@@ -52,4 +52,6 @@ export const dataSourceConfig = {
   YEARN_FTM_SUBGRAPH_URL: Joi.string().required(),
   YEARN_V1_ETH_SUBGRAPH_URL: Joi.string().required(),
   KAVA_API: Joi.string().required(),
+  WING_RIDERS_EXPLORER_URL: Joi.string().required(),
+  WING_RIDERS_AGGREGATOR_URL: Joi.string().required(),
 };

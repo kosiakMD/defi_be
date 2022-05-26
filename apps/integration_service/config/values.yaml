@@ -136,6 +136,8 @@ configMaps:
     BLOCKSCAN_PLG_KEY: TXKCKK5YXGBWEH8YTGWNKCSJPGFKQ2IZZF
     BLOCKSCAN_PLG_URL: https://api.polygonscan.com/api
     BLOCKSCAN_BOBA_URL: https://blockexplorer.boba.network/api
+    WING_RIDERS_EXPLORER_URL: https://explorer.mainnet.wingriders.com
+    WING_RIDERS_AGGREGATOR_URL: https://aggregator.mainnet.wingriders.com
   params:
     JOBS_CACHE_TTL_IN_SECONDS: 86400
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000

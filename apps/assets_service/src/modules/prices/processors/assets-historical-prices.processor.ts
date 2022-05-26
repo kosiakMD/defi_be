@@ -24,14 +24,12 @@ export class AssetsHistoricalPricesProcessor {
       await this.createHistoricalPrices();
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (error) {
-      this.logger.error(`Error to process price job.id: ${job.id}`);
-      this.logger.error(error);
+      this.logger.error(`Error to process price job.id: ${job.id}, ${error.message}`);
       await job.moveToFailed({ message: error.toString() });
     }
   }
 
   private async createHistoricalPrices() {
-    // TODO: comming in next PR
     await this.priceService.saveAssetsHistoricalPrices();
   }
 }

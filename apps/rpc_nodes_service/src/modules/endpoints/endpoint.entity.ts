@@ -1,35 +1,22 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, Unique } from 'typeorm';
 
+import { BaseEntity } from '@app/common/entities/Base.entity';
+
+@Unique(['endpoint', 'chainId'])
 @Entity({ name: 'endpoints' })
-export class EndpointEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
+export class EndpointEntity extends BaseEntity {
+  @Column({ nullable: false })
   endpoint: string;
 
-  @Column()
+  @Column({ nullable: false })
   chainId: number;
 
-  @Column({ default: true })
+  @Column({ default: true, nullable: false })
   isEnabled: boolean;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, nullable: false })
   priority: number;
 
-  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-  createdAt: Date;
-
-  @UpdateDateColumn({
-    type: 'timestamp',
-    default: () => 'CURRENT_TIMESTAMP',
-    onUpdate: 'CURRENT_TIMESTAMP',
-  })
-  updatedAt: Date;
+  @Column({ default: true, nullable: false })
+  archived: boolean;
 }

@@ -1,11 +1,10 @@
-import { NextFunction, Request, Response } from 'express';
+import { Request, Response } from 'express';
 
 import {
   CacheInterceptor,
   Controller,
   HttpStatus,
   Inject,
-  Next,
   Param,
   Post,
   Req,
@@ -35,14 +34,37 @@ export class RPCNodesController {
   @ApiParam({ name: 'chainId', type: Number })
   @ApiResponse({ status: HttpStatus.OK, type: RPCResponse })
   @UseInterceptors(CacheInterceptor)
+  @Post('/:chainId/archive') // TODO find out how to reflect '@All' on Swagger
+  postArchive(
+    @Param() params: RPCParamsDto,
+    @Req() request: Request,
+    @Res() response: Response,
+  ): Promise<void> {
+    const { chainId } = params;
+    return this.rpcNodesService.proxyRPCCall({
+      archive: true,
+      chainId,
+      request,
+      response,
+    });
+  }
+
+  @ApiBody({ type: RPCCallDto })
+  @ApiParam({ name: 'chainId', type: Number })
+  @ApiResponse({ status: HttpStatus.OK, type: RPCResponse })
+  @UseInterceptors(CacheInterceptor)
   @Post('/:chainId') // TODO find out how to reflect '@All' on Swagger
   post(
     @Param() params: RPCParamsDto,
     @Req() request: Request,
     @Res() response: Response,
-    @Next() next: NextFunction,
   ): Promise<void> {
     const { chainId } = params;
-    return this.rpcNodesService.proxyRPCCall(chainId, { request, response, next });
+    return this.rpcNodesService.proxyRPCCall({
+      archive: false,
+      chainId,
+      request,
+      response,
+    });
   }
 }

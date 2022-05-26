@@ -31,4 +31,11 @@ export class EndpointCreateDto {
   @IsOptional()
   @Transform(({ value }) => Number(value))
   priority: number;
+
+  @ApiProperty({ type: Boolean, example: true })
+  @IsBoolean()
+  @IsNotEmpty()
+  @IsOptional()
+  @Transform(({ value }) => value.toLowerCase() === 'true')
+  archived: boolean;
 }

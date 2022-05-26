@@ -49,9 +49,6 @@ import { DefiKingdomsLocked } from './protocols/defikingdoms/defikingdoms.locked
 import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
-import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
-import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
-import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import { MarinadeStaking } from './protocols/marinade/marinade.staking';
@@ -138,7 +135,6 @@ const Convex = [
   ConvexCvxLockedStaking,
 ];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
-const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
 const Olympus = [OlympusProtocol, OlympusStaking, OlympusBonding];
 const TraderJoe = [
@@ -211,7 +207,6 @@ const ProtocolList = [
   ...Convex,
   ...Curve,
   ...DefiKingdoms,
-  ...Ellipsis,
   ...Mirror,
   ...Mojitoswap,
   ...Olympus,

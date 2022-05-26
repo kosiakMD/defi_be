@@ -144,9 +144,9 @@ export class RaydiumStaking {
       const userPosition = chunked[i];
       for (let j = 0; j < userPosition.length; j++) {
         const userDataByProgram = userPosition[j];
-        let layout = layouts[j];
         if (userDataByProgram.length > 0) {
           for (const data of userDataByProgram) {
+            let layout = layouts[j];
             if (j === 2 && data.account.data.length === RaydiumFarm.version4.userInfoLayout.span) {
               layout = RaydiumFarm.version4.userInfoLayout;
             }

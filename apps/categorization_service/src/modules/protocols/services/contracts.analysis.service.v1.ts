@@ -56,6 +56,7 @@ export class ContractsAnalysisServiceV1 {
       contracts: similarData
         .map((f) => ({
           address: f.address,
+          chain: f.chain,
           abiCodeSimilarity: f.abiCodeSimilarity,
           abiJsonSimilarity: f.abiJsonSimilarity,
           metadata: f.metadata,

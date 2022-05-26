@@ -12,26 +12,18 @@ import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IRootProtocol, TokenMap } from '../../../interfaces';
-import {
-  IPoolFeatureEntryOpportunity,
-  IPoolFeatureEntryUserEntry,
-} from '../../../interfaces/feature.pool.interface';
-import { ERC20Token } from '../../../interfaces/tokens.common.interface';
+import { IRootProtocol } from '../../../interfaces';
+import { IPoolFeatureEntryOpportunity, IPoolFeatureEntryUserEntry, } from '../../../interfaces/feature.pool.interface';
 import { IRewardTokenUserEntry } from '../../../interfaces/tokens.rewarded.interface';
-import {
-  ISupplyTokenOpportunity,
-  ISupplyTokenUserEntry,
-} from '../../../interfaces/tokens.supplied.interface';
+import { ISupplyTokenUserEntry, } from '../../../interfaces/tokens.supplied.interface';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 import {
+  IKavaDeposits,
+  IKavaLiquidityDepositsResponse,
+  IKavaLiquidityRepositoryResponse,
   IKavaMeta,
   IKavaPool,
-  IKavaLiquidityRepositoryResponse,
-  IKavaLiquidityDepositsResponse,
   IKavaPoolFeatureEntryMinimal,
-  IKavaSupplyTokenMinimal,
-  IKavaDeposits,
 } from '../interfaces/Kava/KavaLiquidity';
 
 export class KavaLiquidity
@@ -137,28 +129,27 @@ export class KavaLiquidity
       if (!pool) return;
       const clone = cloneDeep(pool);
 
-      const amount = normalizeDecimals(deposit.shares_owned, clone.supplied[0].token.decimals);
-      const amountUSDValue = new BN(amount) //
-        .times(pool.supplied[0].token.price)
+      const amount = normalizeDecimals(deposit.shares_owned, clone.token.decimals);
+      clone.token.amount = amount;
+      clone.token.value = new BN(amount) //
+        .times(clone.token.price)
         .toNumber();
 
-      clone.supplied[0].token.underlying.forEach((token) => {
-        const coin = deposit.shares_value.find((coin) => coin.denom === token.address);
-        if (!coin) return token;
-        token.balance = normalizeDecimals(coin.amount, token.decimals);
-        token.value = new BN(token.balance) //
-          .times(token.price)
-          .toNumber();
-        return token;
+      const supplied: ISupplyTokenUserEntry[] = pool.supplied.map((tokenSupplied) => {
+        const coin = deposit.shares_value.find(
+          (coin) => coin.denom === tokenSupplied.token.address,
+        );
+        return {
+          tvl: tokenSupplied.tvl,
+          amount: normalizeDecimals(coin.amount, tokenSupplied.token.decimals),
+          value:
+            normalizeDecimals(coin.amount, tokenSupplied.token.decimals) *
+            tokenSupplied.token.price,
+          token: {
+            ...tokenSupplied.token,
+          },
+        };
       });
-
-      const supplied: ISupplyTokenUserEntry[] = [
-        {
-          ...clone.supplied[0],
-          amount: amount,
-          value: amountUSDValue,
-        },
-      ];
 
       const rewarded: IRewardTokenUserEntry[] = clone.rewarded.map((reward) => {
         return {
@@ -172,82 +163,6 @@ export class KavaLiquidity
     });
 
     return result || [];
-  }
-
-  // TODO. remove it after assets service!
-  protected formatOpportunity(
-    opportunity: IKavaPoolFeatureEntryMinimal,
-    tokens: TokenMap,
-  ): IPoolFeatureEntryOpportunity {
-    const tvl = opportunity.supplied.reduce((tvl, poolToken) => {
-      return (
-        tvl +
-        poolToken.token.underlying.reduce((prev, next) => {
-          const token = tokens.get(next.address);
-          return prev + token.price * normalizeDecimals(next.totalSupplied, token.decimals);
-        }, 0)
-      );
-    }, 0);
-
-    // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
-    const base: any = {
-      feature: opportunity.feature,
-      id: opportunity.id,
-      chain: opportunity.chain,
-      links: this.generateLinks(opportunity),
-      token: this.formatOpportunityReceiptToken(opportunity, tokens.get(opportunity.id), tokens),
-    };
-
-    if ('supplied' in opportunity) {
-      if (!opportunity.supplied.every((t) => tokens.has(t.token.address))) {
-        const token = opportunity.supplied.find((t) => !tokens.has(t.token.address));
-        // throw new MissingSuppliedToken(`Failed to find ${token}`, this.constructor.name)
-        throw new Error(`Failed to find Supplied: ${JSON.stringify(token)}`);
-      }
-
-      base.supplied = opportunity.supplied.map((poolToken) =>
-        this.formatOpportunitySuppliedToken(poolToken, tokens.get(poolToken.token.address)),
-      );
-    }
-
-    if ('rewarded' in opportunity) {
-      if (!opportunity.rewarded.every((t) => tokens.has(t.token.address))) {
-        const token = opportunity.rewarded.find((t) => !tokens.has(t.token.address));
-        // throw new MissingRewardedToken(`Failed to find ${token}`, this.constructor.name)
-        throw new Error(`Failed to find Rewarded: ${token.token.address}`);
-      }
-      base.rewarded = opportunity.rewarded?.map((poolToken) =>
-        this.formatOpportunityRewardedToken(poolToken, tokens.get(poolToken.token.address), tvl),
-      );
-    }
-    return base;
-  }
-
-  protected formatOpportunitySuppliedToken(
-    poolToken: IKavaSupplyTokenMinimal,
-    token: ERC20Token,
-  ): ISupplyTokenOpportunity {
-    const totalSupplied = normalizeDecimals(poolToken.totalSupplied, 6);
-
-    const tvl = poolToken.token.underlying.reduce((prev, next) => {
-      const underlying = token.underlying.find((token) => token.address === next.address);
-      return new BN(normalizeDecimals(next.totalSupplied, underlying.decimals)) //
-        .times(underlying.price)
-        .plus(prev);
-    }, new BN(0));
-
-    token.price = tvl.div(totalSupplied).toNumber();
-    token.underlying.forEach((token) => {
-      const { totalSupplied } = poolToken.token.underlying.find((t) => t.address === token.address);
-      token.reserve = normalizeDecimals(totalSupplied, token.decimals);
-      return token;
-    });
-
-    return {
-      tvl: tvl.toNumber(),
-      token,
-      totalSupplied,
-    };
   }
 
   private accountLiquidityDeposits(address: string) {
@@ -267,20 +182,19 @@ export class KavaLiquidity
       id: pool.name,
       chain: this.meta.chain,
       feature: this.meta.feature,
-      supplied: [
-        {
+      token: {
+        address: pool.name,
+        totalSupply: pool.total_shares,
+        totalSupplied: pool.total_shares,
+      },
+      supplied: pool.coins.map((coin) => {
+        return {
           token: {
-            address: pool.name,
-            underlying: pool.coins.map((coin) => {
-              return {
-                address: coin.denom,
-                totalSupplied: coin.amount,
-              };
-            }),
+            address: coin.denom,
           },
-          totalSupplied: pool.total_shares,
-        },
-      ],
+          totalSupplied: coin.amount,
+        };
+      }),
       rewarded: [
         {
           token: { address: this.REWARDED_ADDRESS },

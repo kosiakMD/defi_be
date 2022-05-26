@@ -50,7 +50,7 @@ export interface IKavaSupplyTokenMinimal extends ISupplyTokenMinimal {
 }
 
 export type IKavaPoolFeatureEntryMinimal = BaseWithTokens<
-  IKavaSupplyTokenMinimal[],
+  ISupplyTokenMinimal[],
   IRewardTokenMinimal[],
   void,
   void

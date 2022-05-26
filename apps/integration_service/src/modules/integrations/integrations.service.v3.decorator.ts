@@ -379,20 +379,24 @@ export class IntegrationsServiceV3Decorator {
   }
 
   static liquidityToV2(liquidityV3: IPoolFeatureEntryUserEntry): LiquidityPoolFeature {
-    const supplied = liquidityV3.supplied[0];
     const liquidityV2 = plainToClass(LiquidityPoolFeature, {});
-    const { underlying, ...rest } = supplied.token;
     liquidityV2.address = liquidityV3.id;
-    liquidityV2.lpToken = plainToClass(ERC20Token, rest);
-    liquidityV2.tokens = plainToClass(PoolTokenDto, underlying);
-    liquidityV2.tokens.forEach((token) => {
-      if (!token.positionInPool) delete token.positionInPool;
-      if (!token.weight) delete token.weight;
-      return token;
+    // this is 'reciept' token
+    liquidityV2.lpToken = plainToClass(ERC20Token, liquidityV3.token);
+    // this are 'supplied' tokens
+    liquidityV2.tokens = liquidityV3.supplied.map((v3Supplied) => {
+      return plainToClass(PoolTokenDto, {
+        ...v3Supplied.token,
+        reserve: v3Supplied.token.reserve,
+        value: v3Supplied.value,
+        balance: v3Supplied.amount,
+      });
     });
 
-    liquidityV2.stats.tvl = supplied.tvl;
-    liquidityV2.stats.share = supplied.amount / supplied.totalSupplied;
+    liquidityV2.stats.tvl = liquidityV3.supplied.reduce((p, c) => {
+      return p + c.tvl;
+    }, 0);
+    liquidityV2.stats.share = liquidityV3.token.amount / liquidityV3.token.totalSupply;
 
     liquidityV2.rewards = liquidityV3.rewarded?.map((v3RewardToken) => {
       const v2RewardToken = plainToClass(IntegrationClaimableTokenDto, {});

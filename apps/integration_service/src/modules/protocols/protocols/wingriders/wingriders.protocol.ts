@@ -18,6 +18,7 @@ import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import AbstractProtocol from '../abstractProtocol';
 import DataProviderProtocol from '../dataProviderProtocol';
+import { WingRidersFarms } from './wingriders.farms';
 import { WingRidersPools } from './wingriders.pools';
 
 @Injectable()
@@ -27,7 +28,7 @@ export class WingRidersProtocol extends DataProviderProtocol implements Abstract
   readonly displayName = 'WingRiders';
   readonly name = ProtocolNameEnum.wingriders;
   readonly features = {
-    [ChainAbbrEnum.cardano]: [FeatureEnum.pools, FeatureEnum.farming],
+    [ChainAbbrEnum.cardano]: [FeatureEnum.pools, FeatureEnum.staking],
   };
 
   protected dataProvider;
@@ -38,6 +39,7 @@ export class WingRidersProtocol extends DataProviderProtocol implements Abstract
     protected readonly accountService: AccountService,
     protected readonly priceService: PriceService,
     protected readonly poolService: WingRidersPools,
+    protected readonly farmsService: WingRidersFarms,
   ) {
     super();
     this.dataProvider = this;
@@ -47,9 +49,8 @@ export class WingRidersProtocol extends DataProviderProtocol implements Abstract
     switch (feature) {
       case FeatureEnum.pools:
         return this.poolService.getData(addresses, chain, this.name);
-      case FeatureEnum.farming:
-        // TODO: implement farming feature
-        return [];
+      case FeatureEnum.staking:
+        return this.farmsService.getData(addresses, chain, this.name);
       default:
         return [];
     }

@@ -1,6 +1,6 @@
-import { blob, publicKey, struct, u128, u64, u8 } from '@raydium-io/raydium-sdk';
+import { blob, publicKey, seq, struct, u128, u64, u8 } from '@raydium-io/raydium-sdk';
 
-export class RaydiymFarm {
+export class RaydiumFarm {
   public static version3 = {
     programId: 'EhhTKczWMGQt46ynNeRX1WfeagwwJd7ufHvCDjRxjo5Q',
     stakeInfoLayout: struct([
@@ -23,7 +23,6 @@ export class RaydiymFarm {
       publicKey('stakerOwner'),
       u64('depositBalance'),
       u64('rewardDebt'),
-      u64('rewardDebtB'),
     ]),
   };
   public static version4 = {
@@ -78,8 +77,20 @@ export class RaydiymFarm {
       publicKey('poolId'),
       publicKey('stakerOwner'),
       u64('depositBalance'),
-      u64('rewardDebt'),
-      u64('rewardDebtB'),
+      u128('rewardDebt'),
+      u128('rewardDebtB'),
+      seq(u64(), 17),
+    ]),
+  };
+  public static version31 = {
+    ...RaydiumFarm.version3,
+    userInfoLayout: struct([
+      u64('state'),
+      publicKey('poolId'),
+      publicKey('stakerOwner'),
+      u64('depositBalance'),
+      u128('rewardDebt'),
+      seq(u64(), 17),
     ]),
   };
   public static version3SingleTokens = ['4EwbZo8BZXP5313z5A2H11MRBP15M5n6YxfmkjXESKAW'];

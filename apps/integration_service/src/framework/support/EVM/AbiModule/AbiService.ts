@@ -45,9 +45,10 @@ export class AbiService {
     address: Address,
     chain: ChainId,
     predicates: INamedFunctionPredicates,
+    acceptableStateMutability: string[] = ['view', 'pure'],
   ) {
     const abi = await this.fetchAbi(address, chain);
-    return this.parseFunctionsFromAbi(abi, predicates, address, chain);
+    return this.parseFunctionsFromAbi(abi, predicates, address, chain, acceptableStateMutability);
   }
 
   private async parseFunctionsFromAbi(
@@ -55,8 +56,11 @@ export class AbiService {
     predicates: INamedFunctionPredicates,
     address: Address,
     chain: ChainIdEnum,
+    acceptableStateMutability: string[],
   ) {
-    const readonly = abi.filter((item) => ['view', 'pure'].includes(item.stateMutability || ''));
+    const readonly = abi.filter((item) =>
+      acceptableStateMutability.includes(item.stateMutability || ''),
+    );
 
     const params = { readonly, full: abi };
 
@@ -72,34 +76,28 @@ export class AbiService {
   }
 
   private async loadAbi(address: Address, chain: ChainId): Promise<AbiItem[]> {
-    // TODO: always fails
-    this.logger.warn('Database Strategy is not implemented', 'AbiService');
-    // 2. try database
+    const fromLocalFile = await this.localfile.getAbi(address, chain);
+    if (fromLocalFile) {
+      this.logger.log(`${chain}/${address} ABI Retrieved from Local File`, 'AbiService');
+      return fromLocalFile;
+    }
+
     const fromDB = await this.fetchAbiFromDatabase(address, chain);
     if (fromDB) {
       this.logger.log(`${chain}/${address} ABI Retrieved from Database`, 'AbiService');
       return fromDB;
     }
 
-    // 3. try blockscan
     const fromBlockScan = await this.blockscan.fetchAbi(address, chain);
     if (fromBlockScan) {
       this.logger.log(`${chain}/${address} ABI Retrieved from BlockScan`, 'AbiService');
       return fromBlockScan;
     }
 
-    // 4. try blockscout
     const fromBlockScout = await this.blockscout.fetchAbi(address, chain);
     if (fromBlockScout) {
       this.logger.log(`${chain}/${address} ABI Retrieved from BlockScout`, 'AbiService');
       return fromBlockScout;
-    }
-
-    // 5. worst case, get from local file
-    const fromLocalFile = await this.localfile.getAbi(address, chain);
-    if (fromLocalFile) {
-      this.logger.log(`${chain}/${address} ABI Retrieved from Local File`, 'AbiService');
-      return fromLocalFile;
     }
 
     throw new Error(`Unable to find appropriate ABI ${chain}/${address}`);
@@ -121,6 +119,7 @@ export class AbiService {
           // TODO: I don't know if this is a constant or not. This is the value for Lido on moonriver
           // gotten from https://moonriver.moonscan.io/address/0xffc7780c34b450d917d557e728f033033cb4fa8c#code
           // bytes32 internal constant _IMPLEMENTATION_SLOT of ERC1967Upgrade.sol
+          // False positive: https://snowtrace.io/address/0xb3c68d69E95B095ab4b33B4cB67dBc0fbF3Edf56#readContract
           '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc',
         ),
       ),
@@ -151,7 +150,7 @@ export class AbiService {
 
   private async fetchAbiFromDatabase(address: Address, chain: ChainId): Promise<AbiItem[] | void> {
     JSON.stringify({ address, chain });
-    // TODO:
+    this.logger.warn('Database Strategy is not implemented', 'AbiService');
   }
 
   async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {

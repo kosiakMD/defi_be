@@ -40,8 +40,8 @@ export default class YearnProtocolV2 extends YearnProtocolBase {
   readonly chains = [ChainAbbrEnum.eth, ChainAbbrEnum.ftm];
   readonly displayName = 'YearnV2';
   readonly features = {
-    [ChainAbbrEnum.eth]: [FeatureEnum.staking, FeatureEnum.lending, FeatureEnum.borrowing],
-    [ChainAbbrEnum.ftm]: [FeatureEnum.staking, FeatureEnum.lending, FeatureEnum.borrowing],
+    [ChainAbbrEnum.eth]: [FeatureEnum.staking],
+    [ChainAbbrEnum.ftm]: [FeatureEnum.staking],
   };
   readonly project = ProjectEnum.yearn;
   readonly name = YearnProtocolEnum.YearnV2;

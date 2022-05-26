@@ -25,6 +25,7 @@ import { Ellipsis } from '../platforms/Ellipsis';
 import { Evodefi } from '../platforms/Evodefi';
 import { Frax } from '../platforms/Frax';
 import { Goose } from '../platforms/Goose';
+import { IronBank } from '../platforms/IronBank';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
@@ -96,6 +97,7 @@ export class PlatformService {
       RocketPool,
       Stargate,
       Synapse,
+      IronBank,
     });
   }
 

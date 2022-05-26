@@ -43,6 +43,7 @@ export enum ProjectEnum {
   kava = 'kava',
   solend = 'solend',
   wingriders = 'wingriders',
+  ironbank = 'ironbank',
   rocketpool = 'rocketpool',
   quarry = 'quarry',
 }
@@ -270,6 +271,10 @@ export enum SynapseProtocolEnum {
   synapse = 'Synapse',
 }
 
+export enum IronBankProtocolEnum {
+  ironbank = 'IronBank',
+}
+
 export enum RocketPoolProtocolEnum {
   rocketpool = 'rocketpool',
 }
@@ -334,6 +339,7 @@ export const ProtocolNameEnum = {
   ...WingRidersProtocolEnum,
   ...SynapseProtocolEnum,
   ...StargateProtocolEnum,
+  ...IronBankProtocolEnum,
   ...RocketPoolProtocolEnum,
   ...QuarryProtocolEnum,
 };

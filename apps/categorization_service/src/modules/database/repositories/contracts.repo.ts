@@ -1,4 +1,4 @@
-import { EntityRepository, ILike, IsNull, LessThan, MoreThan, Not, Repository } from 'typeorm';
+import { EntityRepository, ILike, In, IsNull, LessThan, MoreThan, Not, Repository } from 'typeorm';
 
 import { Contract } from '../entities/contract.entity';
 
@@ -32,6 +32,12 @@ export class ContractsRepository extends Repository<Contract> {
 
   async findByAddress(address: string) {
     return this.findOne({ address });
+  }
+
+  async findByAddresses(addresses: string[]) {
+    return this.find({
+      where: { address: In(addresses) },
+    });
   }
 
   async findByAddressCaseInsensitive(address: string) {

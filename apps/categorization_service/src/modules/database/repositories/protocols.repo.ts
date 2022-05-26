@@ -45,7 +45,7 @@ export class ProtocolsRepository extends Repository<Protocol> {
 
   async findWithLinksLimit(
     linkType: LinkTypeEnum,
-    processed: boolean,
+    processed = false,
     skip = 0,
     take = 100,
   ): Promise<Protocol[]> {

@@ -1,12 +1,11 @@
 import puppeteer from 'puppeteer';
 
-export class Puppeteer {
-  public browser: Promise<puppeteer.Browser>;
-  constructor() {
-    this.launch();
-  }
+import { OnModuleInit } from '@nestjs/common';
 
-  private launch() {
+export class Puppeteer implements OnModuleInit {
+  public browser: puppeteer.Browser;
+
+  async onModuleInit() {
     const defaultOptions = {
       headless: true,
       args: ['--disable-setuid-sandbox', '--no-sandbox', '--disable-gpu'],
@@ -17,15 +16,14 @@ export class Puppeteer {
         isLandscape: true,
       },
     };
-
-    this.browser = puppeteer.launch(defaultOptions);
+    this.browser = await puppeteer.launch(defaultOptions);
   }
 
   async openTab(): Promise<puppeteer.Page> {
-    return (await this.browser).newPage();
+    return this.browser.newPage();
   }
 
-  async loadPage(url, waitTimeout = 1000) {
+  async loadPage(url, waitTimeout = 1000): Promise<puppeteer.Page> {
     const page = await this.openTab();
     try {
       await page.goto(url);

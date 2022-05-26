@@ -7,3 +7,4 @@ export const PROTOCOL_PROCESS_PARALLEL_LIMIT = 3;
 //number of links of protocols to be parsed in parallel
 export const PROTOCOL_LINKS_PROCESS_PARALLEL_LIMIT = 2;
 export const ANALYSE_CONTRACTS_PARALLEL_LIMIT = 2;
+export const DAPPRADAR_DEFI_CHAINS_IN_PARALLEL = 1;

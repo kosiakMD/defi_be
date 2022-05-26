@@ -2,6 +2,7 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { IAggregator } from './aggregator.interface';
+import { DappradarAggregator } from './impls/dappradar.aggregator';
 import { DefilamaAggregator } from './impls/defilama.aggregator';
 import { MultifarmFiAggregator } from './impls/multifarm.fi.aggregator';
 import { VfatToolsAggregator } from './impls/vfat.tools.aggregator';
@@ -21,11 +22,13 @@ export class AggregatorsService {
     private readonly defilama: DefilamaAggregator,
     private readonly vfat: VfatToolsAggregator,
     private readonly multifarmFi: MultifarmFiAggregator,
+    private readonly dappradarAggregator: DappradarAggregator,
   ) {
     this.aggregators = new Map<string, IAggregator>([
       [defilama.name, defilama],
       [vfat.name, vfat],
       [multifarmFi.name, multifarmFi],
+      [dappradarAggregator.name, dappradarAggregator],
     ]);
     this.serviceStatus = AggregatorServiceStatus.NOT_RUNNING;
   }

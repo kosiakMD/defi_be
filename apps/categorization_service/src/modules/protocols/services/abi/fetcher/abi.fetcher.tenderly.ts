@@ -48,25 +48,26 @@ export class AbiFetcherTenderly implements IAbiFetcher {
         abiCode: details.data.data.contract_info[0].source,
       };
     } catch (e) {
-      if (e.response.status === HttpStatus.TOO_MANY_REQUESTS) {
-        this.logger.warn(`TOO_MANY_REQUESTS, waiting for ${this.retryInterval} ms`, this.name);
-        if (retries < this.maxRetries) {
-          await delay(this.retryInterval);
-          this.logger.debug(`retrying: address=[${address}]`);
-          return this.getContractDetails(chain, address, retries + 1);
-        }
-        this.logger.warn(`too many attempts (${retries}), giving up`, this.name);
+      if (await this.shouldRetryRequest(e, address, retries)) {
+        return this.getContractDetails(chain, address, retries + 1);
       }
       throw e;
     }
   }
 
-  private async searchForChainsWithContract(address: string): Promise<string[]> {
-    const searchResult = await firstValueFrom(
-      this.httpService.get(`${this.apiUrl}/v1/search?query=${address}`),
-    );
-    // eslint-disable-next-line camelcase
-    return (searchResult.data.contracts || []).map(({ network_id }) => network_id);
+  private async searchForChainsWithContract(address: string, retries = 0): Promise<string[]> {
+    try {
+      const searchResult = await firstValueFrom(
+        this.httpService.get(`${this.apiUrl}/v1/search?query=${address}`),
+      );
+      // eslint-disable-next-line camelcase
+      return (searchResult.data.contracts || []).map(({ network_id }) => network_id);
+    } catch (e) {
+      if (await this.shouldRetryRequest(e, address, retries)) {
+        return this.searchForChainsWithContract(address, retries + 1);
+      }
+      throw e;
+    }
   }
 
   private async ensureChainsInfo(): Promise<void> {
@@ -81,5 +82,18 @@ export class AbiFetcherTenderly implements IAbiFetcher {
     } catch (e) {
       this.logger.error(`AbiFetcherTenderly :: /v1/public-networks - ${e}`);
     }
+  }
+
+  private async shouldRetryRequest(e: any, address: string, retries: number): Promise<boolean> {
+    if (e.response.status === HttpStatus.TOO_MANY_REQUESTS) {
+      this.logger.warn(`TOO_MANY_REQUESTS, waiting for ${this.retryInterval} ms`, this.name);
+      if (retries < this.maxRetries) {
+        await delay(this.retryInterval);
+        this.logger.debug(`retrying: address=[${address}]`);
+        return true;
+      }
+      this.logger.warn(`too many attempts (${retries}), giving up`, this.name);
+    }
+    return false;
   }
 }

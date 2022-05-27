@@ -54,4 +54,6 @@ export const dataSourceConfig = {
   KAVA_API: Joi.string().required(),
   WING_RIDERS_EXPLORER_URL: Joi.string().required(),
   WING_RIDERS_AGGREGATOR_URL: Joi.string().required(),
+  MUESLI_SWAP_STAKING_URL: Joi.string().required(),
+  MUESLI_SWAP_ORDERBOOK_URL: Joi.string().required(),
 };

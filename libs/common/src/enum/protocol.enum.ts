@@ -46,6 +46,7 @@ export enum ProjectEnum {
   ironbank = 'ironbank',
   rocketpool = 'rocketpool',
   quarry = 'quarry',
+  muesliswap = 'muesliswap',
 }
 
 export enum YearnProtocolEnum {
@@ -283,6 +284,10 @@ export enum QuarryProtocolEnum {
   quarry = 'quarry',
 }
 
+export enum MuesliSwapProtocolEnum {
+  muesliswap = 'MuesliSwap',
+}
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -342,4 +347,5 @@ export const ProtocolNameEnum = {
   ...IronBankProtocolEnum,
   ...RocketPoolProtocolEnum,
   ...QuarryProtocolEnum,
+  ...MuesliSwapProtocolEnum,
 };

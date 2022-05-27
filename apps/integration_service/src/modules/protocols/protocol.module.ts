@@ -64,6 +64,8 @@ import { MirrorStaking } from './protocols/mirror/mirror.staking';
 import { MojitoswapPools } from './protocols/mojitoswap/mojitoswap.pools';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MojitoswapStaking } from './protocols/mojitoswap/mojitoswap.staking';
+import { MuesliSwapProtocol } from './protocols/muesliswap/muesliswap.protocol';
+import { MuesliSwapStaking } from './protocols/muesliswap/muesliswap.staking';
 import { OlympusBonding } from './protocols/olympus/features/olympus.bonding';
 import { OlympusStaking } from './protocols/olympus/features/olympus.staking';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
@@ -183,6 +185,7 @@ const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 const Stader = [StaderProtocol, StaderStaking, StaderAirdrop];
 const Osmosis = [OsmosisProtocol, OsmosisPools, OsmosisLocked];
 const WingRiders = [WingRidersProtocol, WingRidersPools, WingRidersFarms];
+const MuesliSwap = [MuesliSwapProtocol, MuesliSwapStaking];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
@@ -233,6 +236,7 @@ const ProtocolList = [
   ...Stader,
   ...Osmosis,
   ...WingRiders,
+  ...MuesliSwap,
 ];
 
 @Module({

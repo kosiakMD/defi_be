@@ -60,6 +60,7 @@ configMaps:
   staking:
     THEGRAPH_SUSHISWAP_STAKING_POSITIONS: https://api.thegraph.com/subgraphs/name/sushiswap/master-chef
     PANCAKEV2_MAIN_STAKING_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/defilord/pcv2-msc
+    MUESLI_SWAP_STAKING_URL: https://staking.muesliswap.com
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
@@ -113,6 +114,7 @@ configMaps:
     AUTOFARM_API_URL: https://static.autofarm.network/bsc/farm_data.json
     COINGECKO_API_URL: https://api.coingecko.com/api/v3/
     OPEN_SEA_URL: https://api.opensea.io/api/v1
+    MUESLI_SWAP_ORDERBOOK_URL: https://orderbookv2.muesliswap.com
   endpoints:
     ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service

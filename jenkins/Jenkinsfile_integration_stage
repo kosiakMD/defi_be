@@ -1,0 +1,97 @@
+#!/usr/bin/env groovy
+
+pipeline {
+    agent any
+    parameters {
+        string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "stage", trim: true)
+        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_in", trim: true)
+    }
+    options {
+        buildDiscarder(
+            logRotator(
+                numToKeepStr: "50",
+                daysToKeepStr: "60",
+                artifactNumToKeepStr: "50",
+                artifactDaysToKeepStr: "60"
+            )
+        )
+    }
+    environment {
+        AWS_REGION          = "eu-central-1"
+        DOCKER_REGISTRY     = ""
+        DOCKER_IMAGE        = ""
+        DOCKER_TAG          = ""
+        DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
+        DOCKER_CREDENTIALS  = "ecr:${env.AWS_REGION}:defiyield-aws"
+        JOB_NAME = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
+        JOB_NAME_SERVICE = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 12)
+        REPLICAS = 3
+    }
+    stages {
+        stage("Build") {
+            steps {
+                script {
+                    docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
+                        SERVICE_FOLDER = env.JOB_NAME.replace("-", "_")
+                        DOCKER_REGISTRY = DOCKER_REGISTRY_URL.replace("https://", "")
+                        DOCKER_TAG = sh(script: "git log --pretty=tformat:'%h' -n1 ./apps/${SERVICE_FOLDER}", returnStdout: true).trim().take(7)
+                        DOCKER_IMAGE = docker.build("${env.JOB_NAME}:${DOCKER_TAG}", "-f ./${DOCKERFILE_NAME} .")
+                    }
+                }
+            }
+        }
+        stage("CheckECR") {
+            steps {
+                script {
+                    sh """#!/bin/bash
+                    aws ecr create-repository --region ${env.AWS_REGION} --repository-name ${env.JOB_NAME} || true
+                    """
+                }
+            }
+        }
+        stage("Push") {
+            steps {
+                script {
+                    docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
+                        DOCKER_IMAGE.push()
+                        DOCKER_IMAGE.push("latest")
+                    }
+                    writeJSON(
+                        file: "image.json",
+                        pretty: 4,
+                        json: [
+                            "image": DOCKER_IMAGE.imageName(),
+                            "registry": DOCKER_REGISTRY,
+                            "repository": env.JOB_NAME,
+                            "tag": DOCKER_TAG
+                        ]
+                    )
+                    archiveArtifacts(
+                        artifacts: "image.json",
+                        fingerprint: true,
+                        allowEmptyArchive: true
+                    )
+                }
+            }
+        }
+        stage('Webhook') {
+            steps {
+                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
+            }
+  }
+    }
+    post {
+        always {
+            cleanWs()
+            script {
+                currentBuild.displayName = "${env.JOB_NAME} - ${params.BRANCH_NAME} #${env.BUILD_NUMBER}"
+                currentBuild.description = DOCKER_IMAGE.imageName()
+            }
+            sh """
+                docker rmi --force \
+                  ${DOCKER_IMAGE.imageName()} \
+                  ${DOCKER_REGISTRY}/${env.JOB_NAME}:latest
+            """
+        }
+    }
+}

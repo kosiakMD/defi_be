@@ -24,10 +24,16 @@ export class MinswapSubgraph {
   public async getAccountFarms(address: string): Promise<MinswapStaked[]> {
     const data = await firstValueFrom(
       this.httpService
-        .post<MinswapStakingResponse>(this.subgraphUrl, {
-          query: FARMS_BY_ADDRESS_QUERY,
-          variables: { address },
-        })
+        .post<MinswapStakingResponse>(
+          this.subgraphUrl,
+          {
+            query: FARMS_BY_ADDRESS_QUERY,
+            variables: { address },
+          },
+          {
+            headers: { origin: 'https://defiyield.app' },
+          },
+        )
         .pipe(map((response) => response.data)),
     );
     return data?.data?.farmPoolInfo || [];

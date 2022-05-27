@@ -141,10 +141,16 @@ export class MinswapPools extends CardanoPools implements JobInterface {
           () =>
             firstValueFrom(
               this.httpService
-                .post<MinswapResponse>(this.subgraphUrl, {
-                  query: AVAILABLE_POOLS_QUERY,
-                  variables: { limit, offset },
-                })
+                .post<MinswapResponse>(
+                  this.subgraphUrl,
+                  {
+                    query: AVAILABLE_POOLS_QUERY,
+                    variables: { limit, offset },
+                  },
+                  {
+                    headers: { origin: 'https://defiyield.app' },
+                  },
+                )
                 .pipe(map((r) => r.data?.data?.topPools)),
             ),
           this.RETRY_CALL_IN_MS,

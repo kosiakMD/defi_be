@@ -55,9 +55,9 @@ import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import { MarinadeStaking } from './protocols/marinade/marinade.staking';
-import { MinswapFarms } from './protocols/minswap/minswap.farms';
-import { MinswapPools } from './protocols/minswap/minswap.pools';
-import MinswapProtocol from './protocols/minswap/minswap.protocol';
+// import { MinswapFarms } from './protocols/minswap/minswap.farms';
+// import { MinswapPools } from './protocols/minswap/minswap.pools';
+// import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorMintService } from './protocols/mirror/mirror.mint.service';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import { MirrorStaking } from './protocols/mirror/mirror.staking';
@@ -178,7 +178,7 @@ const Astroport = [
   AstroportBootstrap,
 ];
 const QuickSwap = [QuickswapProtocol, QuickswapHttpService];
-const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
+// const Minswap = [MinswapProtocol, MinswapPools, MinswapFarms];
 const Mirror = [MirrorProtocol, MirrorStaking, MirrorMintService];
 const Stader = [StaderProtocol, StaderStaking, StaderAirdrop];
 const Osmosis = [OsmosisProtocol, OsmosisPools, OsmosisLocked];
@@ -229,7 +229,7 @@ const ProtocolList = [
   ...Viperswap,
   ...Wonderland,
   ...Marinade,
-  ...Minswap,
+  // ...Minswap,
   ...Stader,
   ...Osmosis,
   ...WingRiders,

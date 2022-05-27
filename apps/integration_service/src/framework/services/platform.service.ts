@@ -32,6 +32,7 @@ import { Lido } from '../platforms/Lido';
 // import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
+import { MinSwap } from '../platforms/MinSwap';
 import { Mojitoswap } from '../platforms/Mojitoswap';
 import { PaintSwap } from '../platforms/PaintSwap';
 import { PancakeSwap } from '../platforms/PancakeSwap';
@@ -98,6 +99,7 @@ export class PlatformService {
       Stargate,
       Synapse,
       IronBank,
+      MinSwap,
     });
   }
 

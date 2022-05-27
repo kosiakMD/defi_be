@@ -69,7 +69,7 @@ export class AccountService {
     return this.getOrSet(this.cacheTTLInSeconds, cacheKey, async () => {
       const dataArray = await Promise.all(
         // TODO: move max chunk size into env or constants
-        chunk(addresses, 250).map(async (addressChunk) => {
+        chunk(addresses, 30).map(async (addressChunk) => {
           const data = await this.httpService
             .get(this.getAssetsUrl, { params: { addresses: addressChunk, chains: chainIds } })
             .toPromise();

@@ -25,7 +25,7 @@ import { GetAssetRequest } from '../dto/get-asset.request';
 import { SearchResultsEntryDto } from '../dto/search-results-entry.dto';
 import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
-import { AssetsRepository } from '../repositories/assets.repository';
+import { AssetReference, AssetsRepository } from '../repositories/assets.repository';
 
 @Injectable()
 export class AssetsService extends CrudService<AssetsRepository> {
@@ -91,25 +91,28 @@ export class AssetsService extends CrudService<AssetsRepository> {
     }
 
     const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
-    const databaseAssetsToCache = {};
+    const databaseAssetsToCacheMap = {};
 
     databaseAssets.forEach((databaseAsset) => {
-      databaseAssetsToCache[this.getAssetCacheKey(databaseAsset)] = this.findUnderlying(
+      databaseAssetsToCacheMap[this.getAssetCacheKey(databaseAsset)] = this.findUnderlying(
         //
         databaseAsset,
-        databaseAssetsToCache,
+        databaseAssetsToCacheMap,
       );
     });
-    assets.push(...Object.values(databaseAssetsToCache));
+    const databaseAssetsToCache: AssetDto[] = Object.values(databaseAssetsToCacheMap);
+    assets.push(...databaseAssetsToCache);
 
-    // this.setAssetsToCache(databaseAssetsToCache);
+    this.setAssetsToCache(databaseAssetsToCache);
 
-    if (assets.length === requests.length) {
-      return assets;
-    }
+    // if (assets.length === requests.length) {
+    //   return assets;
+    // }
 
     const unknownAssetsRequests = this.excludeFoundAssets(databaseAssetsRequests, databaseAssets);
-    this.processAssets(unknownAssetsRequests);
+    if (unknownAssetsRequests.length) {
+      this.processAssets(unknownAssetsRequests);
+    }
 
     // TODO: Historical prices are not handled
     // TODO: Add mapping, not expose everything (e.g. created at)
@@ -129,24 +132,34 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
   }
 
-  public async getAssetsFromCache(requests: GetAssetRequest[]): Promise<AssetDto[]> {
+  public async getAssetsFromCache(
+    assetReferences: AssetReference[],
+    removeDuplicates = true,
+  ): Promise<AssetDto[]> {
     const assetsFromCache = (
-      await this.cache.mget(requests.map((request) => this.getAssetCacheKey(request)))
+      await this.cache.mget(
+        assetReferences.map((assetReference) => this.getAssetCacheKey(assetReference)),
+      )
     ).filter(Boolean);
-    const underlyingAssetsCacheKeys = [];
+
     for (const assetFromCache of assetsFromCache) {
-      if (assetFromCache.underlying) {
-        assetFromCache.underlying.forEach((underlying) => {
-          const key = this.getAssetCacheKey(underlying.underlyingAssetRef);
-          // Check if the key was found before
-          if (!underlyingAssetsCacheKeys.find((k) => k === key)) {
-            underlyingAssetsCacheKeys.push(key);
-          }
-        });
+      if (assetFromCache.u?.length) {
+        assetsFromCache.push(
+          ...(await this.getAssetsFromCache(
+            assetFromCache.u.map((uRef) => uRef.underlyingAssetRef),
+            false,
+          )),
+        );
       }
     }
-    if (underlyingAssetsCacheKeys.length) {
-      assetsFromCache.push(...(await this.cache.mget(underlyingAssetsCacheKeys)).filter(Boolean));
+    if (removeDuplicates) {
+      const assetsFromCacheMap: { [key: number]: AssetDto } = {};
+      assetsFromCache.forEach((asset) => {
+        if (!assetsFromCacheMap[asset.id]) {
+          assetsFromCacheMap[asset.id] = asset;
+        }
+      });
+      return Object.values(assetsFromCacheMap);
     }
     return assetsFromCache;
   }
@@ -162,27 +175,21 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private findUnderlying(dbAsset, dbAsetsToCache) {
     const dbAssetToCache = { ...dbAsset };
-    dbAssetToCache.underlying = [];
-    dbAsset.underlying?.forEach(({ underlyingAsset, position }) => {
-      if (underlyingAsset.underlying?.length) {
-        underlyingAsset.underlying.forEach(({ underlyingAsset }) => {
-          dbAsetsToCache[this.getAssetCacheKey(underlyingAsset)] = this.findUnderlying(
-            underlyingAsset,
-            dbAsetsToCache,
-          );
+    dbAssetToCache.u = [];
+    dbAsset.u?.forEach(({ uA, position }) => {
+      if (uA.u?.length) {
+        uA.u.forEach(({ uA }) => {
+          dbAsetsToCache[this.getAssetCacheKey(uA)] = this.findUnderlying(uA, dbAsetsToCache);
         });
       }
-      dbAssetToCache.underlying.push({
+      dbAssetToCache.u.push({
         underlyingAssetRef: {
-          address: underlyingAsset.address,
-          chainId: underlyingAsset.chainId,
+          address: uA.address,
+          chainId: uA.chainId,
         },
         position,
       });
-      dbAsetsToCache[this.getAssetCacheKey(underlyingAsset)] = this.findUnderlying(
-        underlyingAsset,
-        dbAsetsToCache,
-      );
+      dbAsetsToCache[this.getAssetCacheKey(uA)] = this.findUnderlying(uA, dbAsetsToCache);
     });
     return dbAssetToCache;
   }
@@ -192,12 +199,12 @@ export class AssetsService extends CrudService<AssetsRepository> {
   }
 
   private getAssetsFromDatabase(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
-    const underliyngRelationName = 'underlying';
-    const underlyingAssetRelationName = 'underlyingAsset';
-    let initialRelationName = 'underlying.underlyingAsset';
-    const relations = ['underlying', initialRelationName];
-    // It means 3 level tree including initial relations and last one
-    while (relations.length < 3 * 2) {
+    const underliyngRelationName = 'u';
+    const underlyingAssetRelationName = 'uA';
+    let initialRelationName = 'u.uA';
+    const relations = ['u', initialRelationName];
+    // It means 8 level tree including initial relations
+    while (relations.length < 8 * 2) {
       initialRelationName += '.' + underliyngRelationName;
       relations.push(initialRelationName);
       initialRelationName += '.' + underlyingAssetRelationName;

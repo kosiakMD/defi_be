@@ -73,7 +73,7 @@ export class AssetsProcessor {
 
       const { address, chainId, rank, isTracked } = assetRequest;
       const savedAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId, [
-        'underlying',
+        'u',
       ]);
       if (savedAsset) {
         const updatedAsset = await this.updateAsset(queryRunner, savedAsset, assetRequest);
@@ -91,7 +91,7 @@ export class AssetsProcessor {
       processingAsset.decimals = assetMetadata.decimals;
       processingAsset.rank = rank;
       processingAsset.isTracked = isTracked || false;
-      processingAsset.underlying = [];
+      processingAsset.u = [];
 
       const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
 
@@ -111,10 +111,10 @@ export class AssetsProcessor {
           });
           const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
             asset: processingAsset,
-            underlyingAsset: newAsset,
+            uA: newAsset,
             position: index,
           });
-          assetToCache.underlying.push({
+          assetToCache.u.push({
             position: index,
             underlyingAssetRef: {
               address: newAsset.address,

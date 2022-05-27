@@ -4,10 +4,10 @@ import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { AssetEntity } from './asset.entity';
 
-@Unique(['asset', 'underlyingAsset'])
+@Unique(['asset', 'uA'])
 @Entity({ name: 'assets_underlying' })
 export class AssetUnderlyingEntity extends BaseEntity {
-  @ManyToOne(() => AssetEntity, (asset) => asset.underlying)
+  @ManyToOne(() => AssetEntity, (asset) => asset.u)
   @JoinColumn({
     name: 'asset_id',
     referencedColumnName: 'id',
@@ -19,7 +19,7 @@ export class AssetUnderlyingEntity extends BaseEntity {
     name: 'underlying_asset_id',
     referencedColumnName: 'id',
   })
-  underlyingAsset: AssetEntity;
+  uA: AssetEntity;
 
   @Column({ type: Number, nullable: false })
   position: number;

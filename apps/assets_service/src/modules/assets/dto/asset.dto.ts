@@ -60,5 +60,5 @@ export class AssetDto {
 
   @Expose()
   @ApiProperty({ type: [AssetUnderlyingDto] })
-  underlying: AssetUnderlyingDto[] = [];
+  u: AssetUnderlyingDto[] = [];
 }

@@ -7,6 +7,8 @@ import { ChainIdEnum } from '@app/common/enum';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
+// import { TimeGranularity } from '../../prices/enums/time-granularity.enum';
+import { GetAssetRequest } from '../dto/get-asset.request';
 import { AssetEntity } from '../entities/asset.entity';
 
 export type AssetReference = {
@@ -35,15 +37,22 @@ export class AssetsRepository extends Repository<AssetEntity> {
   }
 
   findManyByAddressesAndChainIds(
-    requests: AssetReference[],
+    requests: GetAssetRequest[],
     include?: string[],
   ): Promise<AssetEntity[]> {
+    // const timeDistance = TimeGranularity.M15 * 60 * 1000;
     return this.find({
-      where: requests.map(({ chainId, address }) => ({
+      relations: include,
+      where: requests.map(({ chainId, address /*pricesAt*/ }) => ({
         chainId,
         address: ILike(address),
+        // historicalPrices: pricesAt.map((priceAt) => ({
+        //   timestamp: Between(
+        //     new Date(priceAt - timeDistance),
+        //     new Date(priceAt + timeDistance),
+        //   ),
+        // })),
       })),
-      relations: include,
     });
   }
 

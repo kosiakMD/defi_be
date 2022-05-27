@@ -9,7 +9,7 @@ import { AssetDto } from './asset.dto';
 export class AssetUnderlyingDto {
   @Exclude()
   @ApiProperty({ type: () => AssetDto })
-  underlyingAsset?: AssetDto;
+  uA?: AssetDto;
 
   @Expose()
   @ApiProperty({ type: () => Object })

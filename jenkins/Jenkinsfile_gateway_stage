@@ -76,7 +76,7 @@ pipeline {
         }
         stage('Webhook') {
             steps {
-                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
+                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} staging ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
             }
   }
     }

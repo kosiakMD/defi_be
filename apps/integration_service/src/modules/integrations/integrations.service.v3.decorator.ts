@@ -48,10 +48,10 @@ export class IntegrationsServiceV3Decorator {
   ) {}
 
   async getProtocolsList(): Promise<FeaturesResponseDto> {
-    const cachedFeatures = await this.cache.get<FeaturesResponseDto>('cached_features');
-    if (cachedFeatures) {
-      return cachedFeatures;
-    }
+    // const cachedFeatures = await this.cache.get<FeaturesResponseDto>('cached_features');
+    // if (cachedFeatures) {
+    //   return cachedFeatures;
+    // }
 
     const [v2Protocols, v3Protocols] = await Promise.all([
       this.integrationServiceV2.getAllFeatures(),
@@ -75,7 +75,7 @@ export class IntegrationsServiceV3Decorator {
       }
     });
 
-    await this.cache.set('cached_features', v2Protocols, 300);
+    // await this.cache.set('cached_features', v2Protocols, 300);
     return v2Protocols;
   }
 

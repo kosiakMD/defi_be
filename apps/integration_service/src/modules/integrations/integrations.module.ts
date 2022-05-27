@@ -20,6 +20,7 @@ import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
 import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decorator';
+import { AaveSubgraph } from '../subgraphs/subgraphs/aave.subgraph';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 
@@ -52,6 +53,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
     CurveAssetsManager,
+    AaveSubgraph,
   ].sort(),
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })

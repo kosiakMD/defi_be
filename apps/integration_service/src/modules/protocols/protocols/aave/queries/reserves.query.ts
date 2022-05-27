@@ -11,6 +11,9 @@ export const getReservesQuery = gql`
       liquidityRate
       stableBorrowRate
       variableBorrowRate
+      totalCurrentVariableDebt
+      totalPrincipalStableDebt
+      totalATokenSupply
       aToken {
         id
         underlyingAssetAddress

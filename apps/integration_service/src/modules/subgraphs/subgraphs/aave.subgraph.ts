@@ -24,9 +24,9 @@ export class AaveSubgraph {
     };
   }
 
-  getReserves(chain: ChainDto): Promise<IReserve[]> {
+  getReserves(chainId: ChainIdEnum): Promise<IReserve[]> {
     return this.httpService
-      .post(this.subgraphUrls[chain.id], {
+      .post(this.subgraphUrls[chainId], {
         query: getReservesQuery,
       })
       .pipe(map((response) => response.data.data.reserves))

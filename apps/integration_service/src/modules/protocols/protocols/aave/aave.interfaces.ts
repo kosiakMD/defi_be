@@ -17,6 +17,9 @@ export interface IReserve {
   liquidityRate: BigNumber;
   stableBorrowRate: BigNumber;
   variableBorrowRate: BigNumber;
+  totalCurrentVariableDebt: BigNumber;
+  totalPrincipalStableDebt: BigNumber;
+  totalATokenSupply: BigNumber;
   aToken: AaveToken;
   sToken: AaveToken;
   vToken: AaveToken;

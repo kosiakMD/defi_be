@@ -491,7 +491,7 @@ export abstract class RootProtocolCacheable<
   }
 
   private getTokenPositionTVL(token: ERC20Token, total: string | undefined) {
-    if (!token.price || !total) {
+    if (!token?.price || !total) {
       return 0;
     }
 

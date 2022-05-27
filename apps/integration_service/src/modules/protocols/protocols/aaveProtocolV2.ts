@@ -457,7 +457,7 @@ export class AaveProtocolV2 extends DataProviderProtocol {
   }
 
   getAvailableReserves(chain: ChainDto): Promise<IReserve[]> {
-    return this.subgraph.getReserves(chain);
+    return this.subgraph.getReserves(chain.id);
   }
   getUserAccountData(address: Address, chain: ChainDto) {
     return this.getMulticall(chain).getUserAccountData(address, chain);

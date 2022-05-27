@@ -283,6 +283,9 @@ export enum QuarryProtocolEnum {
   quarry = 'quarry',
 }
 
+export enum AaveV22ProtocolEnum {
+  aaveV22 = 'AaveV22',
+}
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
@@ -342,4 +345,5 @@ export const ProtocolNameEnum = {
   ...IronBankProtocolEnum,
   ...RocketPoolProtocolEnum,
   ...QuarryProtocolEnum,
+  ...AaveV22ProtocolEnum,
 };

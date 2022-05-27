@@ -348,4 +348,5 @@ export const ProtocolNameEnum = {
   ...RocketPoolProtocolEnum,
   ...QuarryProtocolEnum,
   ...MuesliSwapProtocolEnum,
+  Liquity: 'Liquity',
 };

@@ -2,7 +2,6 @@
 import { Exclude } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
-import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum, SushiSwapProtocolEnum, UniswapProtocolEnum } from '../enum';
 
 import { FeaturesType } from '../types/protocol.types';
 import { FeatureDto } from '../types/features.types';
@@ -10,8 +9,8 @@ import { FeatureDto } from '../types/features.types';
 import { ChainDto } from './chain.dto';
 import { ProtocolName } from '../interfaces';
 import { ResponseDto } from './response.dto';
-import { ProtocolNameEnum } from '../enum/projectEnum';
-import { FeatureEnum } from '@app/common';
+
+import { ChainAbbrEnum, FeatureEnum, PancakeProtocolEnum, ProjectEnum, ProtocolNameEnum, SushiSwapProtocolEnum, UniswapProtocolEnum } from '@app/common';
 
 export interface ProtocolParams {
   protocolName: ProtocolName;

@@ -29,6 +29,7 @@ import { IronBank } from '../platforms/IronBank';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
+import { Liquity } from '../platforms/Liquity';
 // import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
@@ -98,6 +99,7 @@ export class PlatformService {
       Stargate,
       Synapse,
       IronBank,
+      Liquity,
     });
   }
 

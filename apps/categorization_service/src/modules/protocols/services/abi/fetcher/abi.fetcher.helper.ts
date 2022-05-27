@@ -28,6 +28,7 @@ export class AbiFetcherHelper {
   }
 
   private proxyAbi(chainAbi: ChainAbi): boolean {
+    if (!chainAbi.abi) return false;
     if (chainAbi.proxy) return true;
     try {
       const parsedAbi = JSON.parse(chainAbi.abi);

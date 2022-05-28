@@ -9,7 +9,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
-import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
@@ -18,7 +17,8 @@ import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
 import { AssetsRepository } from '../repositories/assets.repository';
 import { AssetsService } from '../services/assets.service';
-import { TokenService } from '../services/token.service';
+import { MetadataService } from '../services/metadata/metadata.service';
+import { SpecificAssetsService } from '../services/specific-assets/specific-assets.service';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
 @Processor(QueueName.ASSETS)
@@ -34,7 +34,7 @@ export class AssetsProcessor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly metadataService: MetadataService,
     private readonly iconsService: IconsService,
-    private readonly tokenService: TokenService,
+    private readonly tokenService: SpecificAssetsService,
   ) {}
 
   @Process({

@@ -1,12 +1,18 @@
+import { Injectable } from '@nestjs/common';
+
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { AToken } from '@app/common/web3provider/contracts/protocols/aave/AToken';
 import { VariableDebtToken } from '@app/common/web3provider/contracts/protocols/aave/VariableDebtToken';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AssetEntity } from '../../entities/asset.entity';
+import { AssetEntity } from '../../../entities/asset.entity';
 import { UnderlyingTokenStrategy } from './token-strategy';
 
-export class AaveStrategy extends UnderlyingTokenStrategy {
-  async attemptToLoadUnderlyingTokens(asset: AssetEntity): Promise<any> {
+@Injectable()
+export class AaveStrategy implements UnderlyingTokenStrategy {
+  constructor(private readonly multicall: MulticallAggregator) {}
+
+  async attemptToLoadUnderlyingTokens(asset: AssetEntity): Promise<string[]> {
     try {
       const contract = new VariableDebtToken(asset.address);
       const tokenAddress = await this.multicall.call(

@@ -4,9 +4,9 @@ import { CoinGeckoClient } from 'coingecko-api-v3';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainService } from '../../../../common/services/chain.service';
+import { ChainService } from '../../../../../common/services/chain.service';
 
-import { AssetProcessingRequest } from '../../types/asset-processing.request';
+import { AssetProcessingRequest } from '../../../types/asset-processing.request';
 import { TrackedAssetsProvider } from './tracked-assets.provider';
 
 @Injectable()

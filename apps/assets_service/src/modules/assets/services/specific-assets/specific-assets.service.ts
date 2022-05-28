@@ -1,28 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { MetadataService } from '../../../common/services/metadata/metadata.service';
-
-import { AssetEntity } from '../entities/asset.entity';
-import { AaveStrategy } from './token-strategies/aave.strategy';
-import { CompoundStrategy } from './token-strategies/compound.strategy';
-import { CurveStrategy } from './token-strategies/curve.strategy';
-import { ElipsisStrategy } from './token-strategies/elipsis.strategy';
-import { StakedSOHMStrategy } from './token-strategies/stakedSOHM.strategy';
-import { StakedSushiStrategy } from './token-strategies/stakedSushi.strategy';
-import { TerraStrategy } from './token-strategies/terra.strategy';
-import { UniswapStrategy } from './token-strategies/uniswap.strategy';
-import { YearnStrategy } from './token-strategies/yearn.strategy';
+import { AssetEntity } from '../../entities/asset.entity';
+import { AaveStrategy } from './strategies/aave.strategy';
+import { CompoundStrategy } from './strategies/compound.strategy';
+import { CurveStrategy } from './strategies/curve.strategy';
+import { ElipsisStrategy } from './strategies/elipsis.strategy';
+import { StakedSOHMStrategy } from './strategies/stakedSOHM.strategy';
+import { StakedSushiStrategy } from './strategies/stakedSushi.strategy';
+import { TerraStrategy } from './strategies/terra.strategy';
+import { UniswapStrategy } from './strategies/uniswap.strategy';
+import { YearnStrategy } from './strategies/yearn.strategy';
 
 @Injectable()
-export class TokenService {
+export class SpecificAssetsService {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly metadataService: MetadataService,
-    private readonly multicall: MulticallAggregator,
+    private readonly moduleRef: ModuleRef,
   ) {}
 
   private tokenStrategies = [
@@ -42,9 +39,9 @@ export class TokenService {
 
     try {
       for (const TokenStrategy of this.tokenStrategies) {
-        const tknStrategy = new TokenStrategy(this.logger, this.metadataService, this.multicall);
+        const tknStrategy = this.moduleRef.get(TokenStrategy);
         // TODO: it would be good to know which strategy found underlying tokens
-        // will be done in Max `get reservs` ticket
+        // will be done in Max `get reserves` ticket
         resultsPromises.push(tknStrategy.attemptToLoadUnderlyingTokens(processingAsset));
       }
       const results = await Promise.allSettled(resultsPromises);

@@ -4,5 +4,4 @@ export * from './logger.bootstrap';
 export * from './pipes.bootstrap';
 export * from './prefix.bootstrap';
 export * from './sentry.bootstrap';
-export * from './start.bootstrap';
 export * from './swagger.bootstrap';

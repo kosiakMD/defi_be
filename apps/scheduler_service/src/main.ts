@@ -6,7 +6,13 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 import { createLogger } from '@app/common/Logger/winston';
-import { initContext, initLogger, initSentry, initSwagger, startApp } from '@app/common/bootstrap';
+import {
+  initContext,
+  initListening,
+  initLogger,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -32,7 +38,10 @@ async function bootstrap() {
 
   initSwagger(app);
 
-  await startApp(app);
+  await initListening(app);
 }
 
-bootstrap();
+bootstrap().catch((e) => {
+  logger.error(e, undefined, 'Bootstrap');
+  throw e;
+});

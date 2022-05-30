@@ -174,7 +174,7 @@ export class VVSStaking {
         stakingPosition.rewards[0].claimableData = plainToClass(ClaimableDto, {});
         stakingPosition.rewards[0].claimableData.balance = b.pendingVVS
           .div(decimalsDivider(stakingPosition.rewards[0].decimals))
-          .toString();
+          .toNumber();
       }
 
       stakingPositions.push(stakingPosition);

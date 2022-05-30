@@ -1,6 +1,8 @@
 import BigNumber from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
+import { CallData } from '@app/common/dto/CallData';
+
 export function decodeOutput(abi: AbiItem, outputResult) {
   // if there is one output, it doesn't have a name (check abi)
   if (abi.outputs.length === 1) {
@@ -24,4 +26,8 @@ export function toInternalDataType(type: string, value: any) {
     return new BigNumber(value);
   }
   return value;
+}
+
+export function dataFrom(callsResult: Map<string, CallData>, label: string) {
+  return callsResult.get(label).output.data;
 }

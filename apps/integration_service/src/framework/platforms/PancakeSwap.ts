@@ -6,6 +6,7 @@ import { ChainIdEnum, Logger } from '@app/common';
 
 import { CakeVault, ICakeVaultMeta } from '../support/EVM/protocols/Yield/CakeVault';
 import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { MasterChefPancakeV2 } from '../support/EVM/protocols/Yield/MasterChefPancakeV2';
 import { StakingRewards } from '../support/EVM/protocols/Yield/StakingRewards';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
@@ -138,5 +139,16 @@ export class PancakeSwap extends RootPlatform {
     //     },
     //   },
     // });
+
+    // masterchef v2
+    await this.registerProtocol<IMasterChefMeta>(MasterChefPancakeV2, {
+      chain: ChainIdEnum.bnb,
+      name: 'Farms - Masterchef V2',
+      feature: FeatureEnum.staking,
+      address: '0xa5f8c5dbd5f286960b9d90548680ae5ebff07652',
+      context: {
+        badPools: [],
+      },
+    });
   }
 }

@@ -58,8 +58,9 @@ export class AbiService {
     chain: ChainIdEnum,
     acceptableStateMutability: string[],
   ) {
-    const readonly = abi.filter((item) =>
-      acceptableStateMutability.includes(item.stateMutability || ''),
+    const readonly = abi.filter(
+      (item) =>
+        item.type === 'function' && acceptableStateMutability.includes(item.stateMutability || ''),
     );
 
     const params = { readonly, full: abi };

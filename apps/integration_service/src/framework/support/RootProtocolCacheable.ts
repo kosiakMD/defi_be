@@ -402,6 +402,9 @@ export abstract class RootProtocolCacheable<
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
     };
+    if (opportunity.interactive) {
+      base.interactive = opportunity.interactive;
+    }
 
     const receipt = this.formatOpportunityReceiptToken(
       opportunity,

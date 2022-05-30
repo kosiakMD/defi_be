@@ -71,6 +71,7 @@ export class MasterChefPancakeV2 extends MasterChef {
             rewardPerSecond: rewardPerSecond.toString(),
           },
         ],
+        interactive: this.formatOpportunityInteractiveFunctions(poolInfo),
       };
     });
   }

@@ -19,6 +19,10 @@ import {
 } from '../framework/support/interfaces/responses.interface';
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 
+const SortedProtocolNames = Object.fromEntries(
+  Object.entries(ProtocolNameEnum).sort(([a], [b]) => (a.toLowerCase() > b.toLowerCase() ? 1 : -1)),
+);
+
 @ApiTags('Protocols')
 @Controller('v3/protocols')
 export class IntegrationsControllerV3 {
@@ -39,7 +43,7 @@ export class IntegrationsControllerV3 {
 
   @ApiParam({
     name: 'protocolName',
-    enum: ProtocolNameEnum,
+    enum: SortedProtocolNames,
     example: ProtocolNameEnum.SpookySwap,
   })
   @ApiQuery({
@@ -63,7 +67,7 @@ export class IntegrationsControllerV3 {
 
   @ApiParam({
     name: 'protocolName',
-    enum: ProtocolNameEnum,
+    enum: SortedProtocolNames,
     example: ProtocolNameEnum.SpookySwap,
   })
   @ApiQuery({
@@ -71,7 +75,6 @@ export class IntegrationsControllerV3 {
     example: [ChainIdEnum.eth, ChainIdEnum.ftm, ChainIdEnum.sol, ChainIdEnum.osmosis].join(','),
   })
   @ApiResponse({ status: 200, type: IntegrationsResponseV2Dto })
-  // TODO: not happy with this url...
   @Get('/:protocolName/opportunities')
   async getOpportunitiesForProtocol(
     @Param() { protocolName }: ProtocolParams,
@@ -82,7 +85,7 @@ export class IntegrationsControllerV3 {
 
   @ApiParam({
     name: 'protocolName',
-    enum: ProtocolNameEnum,
+    enum: SortedProtocolNames,
     example: ProtocolNameEnum.SpookySwap,
   })
   @ApiQuery({
@@ -96,7 +99,6 @@ export class IntegrationsControllerV3 {
     example: [ChainIdEnum.eth, ChainIdEnum.ftm, ChainIdEnum.sol, ChainIdEnum.osmosis].join(','),
   })
   @ApiResponse({ status: 200, type: IntegrationsResponseV2Dto })
-  // TODO: not happy with this url...
   @Get('/:protocolName/sync')
   async cacheAvailablePools(
     @Param() { protocolName }: ProtocolParams,

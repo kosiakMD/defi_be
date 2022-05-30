@@ -29,6 +29,7 @@ import { IronBank } from '../platforms/IronBank';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
+import { MakerDAO } from '../platforms/MakerDAO';
 // import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
@@ -97,6 +98,7 @@ export class PlatformService implements OnApplicationBootstrap {
       RocketPool,
       Stargate,
       Synapse,
+      MakerDAO,
       IronBank,
     });
   }
@@ -104,7 +106,9 @@ export class PlatformService implements OnApplicationBootstrap {
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
   platformsInitialized: Map<string, RootPlatform> = new Map();
   protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
-    Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
+    Object.entries(platforms)
+      .sort(([nameA], [nameB]) => (nameA > nameB ? 1 : -1))
+      .forEach(([name, platform]) => this.platforms.set(name, platform));
   }
 
   private async getPlatform(name: string) {

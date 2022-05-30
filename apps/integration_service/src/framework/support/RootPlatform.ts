@@ -211,7 +211,7 @@ export abstract class RootPlatform implements IRootPlatform {
     this.logger.log(`Pool data cached: ${this.meta.name}`);
 
     const protocols = [];
-    const errors = [];
+    const errors: Error[] = [];
     resolvedProtocols.forEach((protocol) => {
       switch (protocol.status) {
         case 'fulfilled':

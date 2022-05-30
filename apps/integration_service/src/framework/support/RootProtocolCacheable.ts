@@ -89,13 +89,10 @@ export abstract class RootProtocolCacheable<
    * @returns MinimalOpportunities[]
    */
   async cachePoolData(): Promise<TMinimal[]> {
-    let pools: TMinimal[] = [];
     const poolList: string[] = [];
-    try {
-      pools = await this.getCacheableOpportunityData();
-    } catch (err) {
-      this.logger.error(err.message, err.stack, this.constructor.name);
-    }
+
+    // Throw error if fails to cache this protocol
+    const pools: TMinimal[] = await this.getCacheableOpportunityData();
 
     // gather cached data => [key, value, key, value, key, value]
     const cached = pools.reduce((cached, pool) => {
@@ -401,6 +398,7 @@ export abstract class RootProtocolCacheable<
       id: opportunity.id,
       chain: opportunity.chain,
       links: this.generateLinks(opportunity),
+      meta: opportunity.meta,
     };
     if (opportunity.interactive) {
       base.interactive = opportunity.interactive;
@@ -528,9 +526,9 @@ export abstract class RootProtocolCacheable<
     return rest;
   }
 
-  protected formatSupplyApy?(supplied: ISupplyTokenMinimal): any;
+  protected formatSupplyApy?(supplied: ISupplyTokenMinimal<unknown>): any;
   protected formatOpportunitySuppliedToken(
-    supplied: ISupplyTokenMinimal,
+    supplied: ISupplyTokenMinimal<unknown>,
     token: ERC20Token,
   ): ISupplyTokenOpportunity {
     const totalSupplied = normalizeDecimals(supplied.totalSupplied, token.decimals);
@@ -565,11 +563,11 @@ export abstract class RootProtocolCacheable<
     };
   }
 
-  protected formatBorrowApy?(borrowed: IBorrowTokenMinimal): any;
+  protected formatBorrowApy?(borrowed: IBorrowTokenMinimal<unknown>): any;
   protected formatOpportunityBorrowedToken(
-    borrowed: IBorrowTokenMinimal,
+    borrowed: IBorrowTokenMinimal<unknown>,
     token: ERC20Token,
-  ): IBorrowTokenOpportunity {
+  ): IBorrowTokenOpportunity<unknown> {
     const totalBorrowed = normalizeDecimals(borrowed.totalBorrowed, token.decimals);
     const tvl = totalBorrowed * token.price;
     const apy = this.formatBorrowApy?.(borrowed);

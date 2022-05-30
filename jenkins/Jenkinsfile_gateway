@@ -22,6 +22,8 @@ pipeline {
         DOCKER_TAG          = ""
         DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.eu-central-1.amazonaws.com"
         DOCKER_CREDENTIALS  = "ecr:eu-central-1:defiyield-aws"
+        JOB_NAME_SERVICE = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 8)
+        REPLICAS = 3
     }
     stages {
         stage("Build") {
@@ -59,6 +61,11 @@ pipeline {
                         allowEmptyArchive: true
                     )
                 }
+            }
+        }
+        stage('Webhook') {
+            steps {
+                sh "python jenkins/hook.py ${JOB_NAME_SERVICE} production ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
             }
         }
     }

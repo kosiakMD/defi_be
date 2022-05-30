@@ -78,7 +78,7 @@ pipeline {
             steps {
                 sh "python jenkins/hook.py ${JOB_NAME_SERVICE} development ${DOCKER_TAG} ${params.BRANCH_NAME} ${REPLICAS}"
             }
-  }
+        }
     }
     post {
         always {

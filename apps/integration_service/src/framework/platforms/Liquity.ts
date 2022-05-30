@@ -4,6 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
+import {
+  ILiquityStabilityPoolMeta,
+  LiquityStabilityPool,
+} from '../support/EVM/protocols/Yield/LiquityStabilityPool';
 import { ILiquityStakingMeta, LiquityStaking } from '../support/EVM/protocols/Yield/LiquityStaking';
 // import { LiquityTrove } from '../support/EVM/protocols/Lending/LiquityTrove';
 import { RootPlatform } from '../support/RootPlatform';
@@ -29,18 +33,26 @@ export class Liquity extends RootPlatform {
       },
     });
 
+    /**
+     * Test Address: 0x854e3e0c05853d1dc9507e36f75e5426a392ea0c
+     * Test Address: 0x1a2da291ebf35d05d29c2753998bfe847e8f5104
+     */
+
     // await this.registerProtocol<ILiquityTroveMeta>(LiquityTrove, {
     //   chain: ChainIdEnum.eth,
     //   name: 'Liquity Trove',
     //   feature: FeatureEnum.lending,
     // });
 
-    // await this.registerProtocol<ILiquityStabilityPoolMeta>(LiquityStabilityPool, {
-    //   chain: ChainIdEnum.eth,
-    //   name: 'Liquity Stability Pools',
-    //   feature: FeatureEnum.staking,
-    //   address: '0x66017d22b0f8556afdd19fc67041899eb65a21bb',
-    // });
+    await this.registerProtocol<ILiquityStabilityPoolMeta>(LiquityStabilityPool, {
+      chain: ChainIdEnum.eth,
+      name: 'Liquity Stability Pools',
+      feature: FeatureEnum.staking,
+      address: '0x66017d22b0f8556afdd19fc67041899eb65a21bb',
+      context: {
+        rewardToken: '0x6DEA81C8171D0bA574754EF6F8b412F2Ed88c54D', // LQTY
+      },
+    });
 
     await this.registerProtocol<ILiquityStakingMeta>(LiquityStaking, {
       chain: ChainIdEnum.eth,

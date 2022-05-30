@@ -27,8 +27,11 @@ import {
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export interface ILiquityStakingMeta extends IProtocolMeta {
+export interface ILiquityStabilityPoolMeta extends IProtocolMeta {
   address: Address;
+  context: {
+    rewardToken: Address;
+  };
 }
 
 export type ILiquityStakingFeatureMinimal = BaseWithTokens<
@@ -48,11 +51,11 @@ export type ILiquityStakingFeatureUserEntry = BaseWithTokens<
 /**
  * @notice nearly Standard Masterchef however no poolLength is available onchain
  */
-export class LiquityStaking extends SingleContractProtocol<
+export class LiquityStabilityPool extends SingleContractProtocol<
   ILiquityStakingFeatureMinimal,
   ILiquityStakingFeatureOpportunity,
   ILiquityStakingFeatureUserEntry,
-  ILiquityStakingMeta
+  ILiquityStabilityPoolMeta
 > {
   constructor(
     protected abiService: AbiService,
@@ -66,12 +69,11 @@ export class LiquityStaking extends SingleContractProtocol<
   }
 
   protected functionPredicates: INamedFunctionPredicates = {
-    stakedToken: () => (item) => item.name === 'lqtyToken',
-    rewardToken: () => (item) => item.name === 'lusdToken', // secondary reward token is native ETH 0x000
-    balance: () => (item) => item.name === 'stakes',
-    pendingETH: () => (item) => item.name === 'getPendingETHGain',
-    pendingLUSD: () => (item) => item.name === 'getPendingLUSDGain',
-    totalStaked: () => (item) => item.name === 'totalLQTYStaked',
+    stakedToken: () => (item) => item.name === 'lusdToken',
+    totalStaked: () => (item) => item.name === 'getTotalLUSDDeposits',
+    balance: () => (item) => item.name === 'getCompoundedLUSDDeposit',
+    pendingETH: () => (item) => item.name === 'getDepositorETHGain',
+    pendingLQTY: () => (item) => item.name === 'getDepositorLQTYGain',
   };
 
   async fetchOpportunityData(context): Promise<ILiquityStakingFeatureMinimal[]> {
@@ -115,11 +117,11 @@ export class LiquityStaking extends SingleContractProtocol<
     pools: ILiquityStakingFeatureOpportunity[],
   ): Promise<ILiquityStakingFeatureUserEntry[]> {
     const contract = new DynamicContract(this.meta.address);
-    const [balance, pendingETH, pendingLUSD] = await this.multicall.callArray(
+    const [balance, pendingETH, pendingLQTY] = await this.multicall.callArray(
       [
         contract.createCall(this.functions.balance, address),
         contract.createCall(this.functions.pendingETH, address),
-        contract.createCall(this.functions.pendingLUSD, address),
+        contract.createCall(this.functions.pendingLQTY, address),
       ],
       this.meta.chain,
     );
@@ -135,12 +137,12 @@ export class LiquityStaking extends SingleContractProtocol<
           value: amount * pool.supply.token.price,
         },
         rewarded: pool.rewarded.map((reward) => {
-          const amountRaw = reward.token.address === ZERO_ADDRESS ? pendingETH : pendingLUSD;
+          const amountRaw = reward.token.address === ZERO_ADDRESS ? pendingETH : pendingLQTY;
           const amount = normalizeDecimals(amountRaw, reward.token.decimals);
           return {
             ...reward,
             amount,
-            value: amount * reward.token.price,
+            value: reward.token.price,
           };
         }),
       };

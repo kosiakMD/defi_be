@@ -9,7 +9,7 @@ import { delay } from '@app/common/helpers/delay';
 import { chunkRunAsync } from '@app/common/utils';
 
 import { ChainService } from '../../../common/services/chain.service';
-import { Chain } from '../../../common/types/chain.type';
+import { Chain } from '../../../common/types';
 
 import { AssetEntity } from '../../assets/entities/asset.entity';
 import { AssetsRepository } from '../../assets/repositories/assets.repository';

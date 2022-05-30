@@ -86,6 +86,7 @@ Categorization Tool Service uses Bull Queue based on Redis to process tasks. The
 * **crawl_html** - crawl html for app and docs links
 * **fetch_abi** - fetch ABI and ABI Code for the contracts
 * **analyse_contracts** - match contract ABI
+* **analyse_contracts_against_templates** - match contract ABI
 
 All the tasks are processed sequentially (it might be changed in the future). It is possible to trigger each individual task via API:
 ```bash

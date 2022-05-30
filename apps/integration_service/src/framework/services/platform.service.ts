@@ -2,7 +2,7 @@
 import { ClassConstructor } from 'class-transformer';
 import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -30,6 +30,7 @@ import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
 import { Liquity } from '../platforms/Liquity';
+import { MakerDAO } from '../platforms/MakerDAO';
 // import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
@@ -57,7 +58,7 @@ import {
 } from '../support/interfaces/responses.interface';
 
 @Injectable()
-export class PlatformService {
+export class PlatformService implements OnApplicationBootstrap {
   constructor(
     private readonly moduleRef: ModuleRef,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -98,6 +99,7 @@ export class PlatformService {
       RocketPool,
       Stargate,
       Synapse,
+      MakerDAO,
       IronBank,
       Liquity,
     });
@@ -106,7 +108,9 @@ export class PlatformService {
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
   platformsInitialized: Map<string, RootPlatform> = new Map();
   protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
-    Object.entries(platforms).map(([name, platform]) => this.platforms.set(name, platform));
+    Object.entries(platforms)
+      .sort(([nameA], [nameB]) => (nameA > nameB ? 1 : -1))
+      .forEach(([name, platform]) => this.platforms.set(name, platform));
   }
 
   private async getPlatform(name: string) {
@@ -269,5 +273,9 @@ export class PlatformService {
       }
       return message;
     });
+  }
+
+  async onApplicationBootstrap() {
+    await this.getProtocolList();
   }
 }

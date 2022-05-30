@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
+import { AbiInput } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -92,6 +93,10 @@ export class MasterChef
     pendingRewards: () => (item) => startsWith(item.name, 'pending'),
   };
 
+  interactiveFunctionPredicates: INamedFunctionPredicates = {
+    claim: () => (item) => equals(item.name, 'withdraw'),
+  };
+
   protected formatContext(context: { [key: string]: any }) {
     context.poolLength = parseInt(context.poolLength, 10);
     context.rewardToken = context.rewardToken.toLowerCase();
@@ -177,7 +182,40 @@ export class MasterChef
           rewardPerSecond,
         },
       ],
+      interactive: this.formatOpportunityInteractiveFunctions(poolInfo),
     };
+  }
+
+  protected formatOpportunityInteractiveFunctions(poolInfo: { poolId: number }) {
+    const formatted = [];
+
+    const claimFunctionAbi = this.interactiveFunctions.claim;
+    if (claimFunctionAbi) {
+      formatted.push({
+        action: 'claim',
+        input: this.getClaimInputValues(claimFunctionAbi.inputs, poolInfo),
+        abi: claimFunctionAbi,
+      });
+    }
+
+    return formatted;
+  }
+
+  protected getClaimInputValues(inputs: AbiInput[], poolInfo: { poolId: number }) {
+    const inputValues = {};
+    inputs.forEach((input) => {
+      switch (input.name) {
+        case '_pid':
+          inputValues[input.name] = poolInfo.poolId;
+          break;
+        case '_amount':
+          inputValues[input.name] = 0;
+          break;
+        default:
+          throw new Error(`Unable to build claim input ${input.name}`);
+      }
+    });
+    return inputValues;
   }
 
   protected userInfoLabel(masterchef: Address, poolId: string, user: Address): string {

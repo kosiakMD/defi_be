@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
-import { absoluteValue, equals, normalizeDecimals, startsWith } from '@app/common/utils';
+import { absoluteValue, dataFrom, equals, normalizeDecimals, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -423,8 +423,4 @@ function userInfoLabel(lpStaker: Address, lpToken: Address, user: Address): stri
 
 function pendingRewardsLabel(lpStaker: Address, user: Address, lpToken: Address): string {
   return `${lpStaker}.pendingRewards(${user}, ${lpToken})`;
-}
-
-function dataFrom(callsResult: Map<string, CallData>, label: string) {
-  return callsResult.get(label).output.data;
 }

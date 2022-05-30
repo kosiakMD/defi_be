@@ -9,6 +9,8 @@ import { WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import { CacheService } from '@app/common/services/cache.service';
+import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { HealthController } from '../controllers/health.controller';
 import { ChainService } from './services/chain.service';
@@ -54,7 +56,21 @@ import { ChainService } from './services/chain.service';
     TerminusModule,
   ],
   controllers: [HealthController],
-  providers: [CacheService, ChainService],
-  exports: [CacheService, ChainService],
+  providers: [
+    CacheService,
+    ChainService,
+    Web3ProviderService,
+    Web3SolanaProviderService,
+    Web3ProviderService,
+    MulticallAggregator,
+  ],
+  exports: [
+    CacheService,
+    ChainService,
+    Web3ProviderService,
+    Web3SolanaProviderService,
+    Web3ProviderService,
+    MulticallAggregator,
+  ],
 })
 export class CommonModule {}

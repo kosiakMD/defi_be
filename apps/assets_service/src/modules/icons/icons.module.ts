@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { ConfigHostModule } from '@nestjs/config/dist/config-host.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CacheService } from '@app/common/services/cache.service';
+import { CommonModule } from '../../common/common.module';
 
 import { AwsModule } from '../../aws/aws.module';
 import { IconSourceEntity } from './entities/icon-sources.entity';
@@ -18,6 +18,7 @@ const iconStrategies = [CoingeckoStrategy, CoinmarketcapStrategy, TrustWalletStr
 @Module({
   imports: [
     AwsModule,
+    CommonModule,
     TypeOrmModule.forFeature([IconSourceEntity]),
     HttpModule.registerAsync({
       imports: [ConfigHostModule],
@@ -28,7 +29,7 @@ const iconStrategies = [CoingeckoStrategy, CoinmarketcapStrategy, TrustWalletStr
       inject: [ConfigService],
     }),
   ],
+  providers: [...iconStrategies, IconsService],
   exports: [IconsService],
-  providers: [...iconStrategies, IconsService, CacheService],
 })
 export class IconsModule {}

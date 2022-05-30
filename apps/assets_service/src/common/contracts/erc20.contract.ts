@@ -12,7 +12,7 @@ export class ERC20 {
       : {};
   }
 
-  async getContractData(): Promise<{ name?: string; symbol?: string; decimals?: number }> {
+  async getContractData(): Promise<{ name: string; symbol: string; decimals: number }> {
     const [name, symbol, decimals] = await Promise.all([
       this.contract.methods.name().call(),
       this.contract.methods.symbol().call(),

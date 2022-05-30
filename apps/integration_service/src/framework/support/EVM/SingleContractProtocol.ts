@@ -31,6 +31,7 @@ export abstract class SingleContractProtocol<
 
   // Implemented in user-land
   protected abstract functionPredicates: INamedFunctionPredicates;
+  protected interactiveFunctionPredicates: INamedFunctionPredicates = {};
 
   /**
    *
@@ -49,6 +50,7 @@ export abstract class SingleContractProtocol<
   ): Promise<TUserEntryType[]>;
 
   functions: INamedFunctions = {};
+  interactiveFunctions: INamedFunctions = {};
 
   /**
    * Initialize the protocol. In this case it fetches the ABI using the supplied address
@@ -65,6 +67,24 @@ export abstract class SingleContractProtocol<
       this.meta.chain,
       this.functionPredicates,
     );
+
+    if (this.interactiveFunctionPredicates) {
+      try {
+        this.interactiveFunctions = await this.abiService.parseFunctionsFromAddress(
+          this.meta.address,
+          this.meta.chain,
+          this.interactiveFunctionPredicates,
+          ['nonpayable'],
+        );
+      } catch (err) {
+        this.logger.error(
+          `${this.meta.chain}/${this.meta.address} found ${
+            Object.keys(this.interactiveFunctions).length
+          }/${Object.keys(this.interactiveFunctionPredicates).length} interactive functions`,
+          `SingleContractProtocol/${this.constructor.name}`,
+        );
+      }
+    }
 
     this.logger.log(
       `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.functions).length}/${

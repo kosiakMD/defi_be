@@ -4,6 +4,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CacheService } from '@app/common/services/cache.service';
 
+import { AssetReference } from '../../common/types';
+
 import { AssetPrice } from './types/asset-price.type';
 
 @Injectable()
@@ -51,23 +53,18 @@ export class PriceService {
 
 type PriceMap = Map<string, AssetPrice>;
 
-type AssetReference = {
-  chainId: number;
-  address: string;
-};
-
-type SourceAssetPrice = {
+export type SourceAssetPrice = {
   sourceId: number;
   price: number;
   timestamp: number;
 };
 
-type AssetPrices = {
+export type AssetPrices = {
   asset: AssetReference;
   prices: SourceAssetPrice[];
 };
 
-type AssetAvgPrice = {
+export type AssetAvgPrice = {
   asset: AssetReference;
   price: number;
 };

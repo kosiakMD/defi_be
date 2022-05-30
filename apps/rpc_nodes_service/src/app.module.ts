@@ -11,14 +11,14 @@ import {
   OnModuleInit,
 } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { SentryLogInterceptor } from '@app/common/interceptors/sentry-log.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -69,7 +69,7 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
+      useClass: SentryLogInterceptor,
     },
     {
       provide: APP_FILTER,

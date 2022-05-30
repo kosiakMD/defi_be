@@ -1,5 +1,4 @@
 import { Job } from 'bull';
-import { Repository } from 'typeorm';
 
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, LoggerService } from '@nestjs/common';
@@ -9,32 +8,26 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
-import { MetadataService } from '../../../common/services/metadata/metadata.service';
 
-import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
 import { IconsService } from '../../icons/icons.service';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
-import { AssetsRepository } from '../repositories/assets.repository';
-import { AssetsService } from '../services/assets.service';
-import { TokenService } from '../services/token.service';
+import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
+import { MetadataService } from '../services/metadata/metadata.service';
+import { SpecificAssetsService } from '../services/specific-assets/specific-assets.service';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
 @Processor(QueueName.ASSETS)
 export class AssetsProcessor {
   constructor(
-    @InjectRepository(AssetsRepository)
-    private readonly assetRepository: AssetsRepository,
-    private readonly assetsService: AssetsService,
-    @InjectRepository(AssetUnderlyingEntity)
-    private readonly assetUnderlyingRepository: Repository<AssetUnderlyingEntity>,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsCategoryRepository)
     private readonly assetsCategoryRepository: AssetsCategoryRepository,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly metadataService: MetadataService,
     private readonly iconsService: IconsService,
-    private readonly tokenService: TokenService,
+    private readonly specificAssetsService: SpecificAssetsService,
   ) {}
 
   @Process({
@@ -64,13 +57,16 @@ export class AssetsProcessor {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
       const { address, chainId, rank, isTracked } = assetRequest;
-      const savedAsset = await this.assetRepository.findOneByAddressAndChain(address, chainId);
+      const savedAsset = await this.assetsRepository.findOneByAddressAndChain(address, chainId);
       if (savedAsset) {
+        this.logger.debug(
+          `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} found, updating`,
+        );
         return await this.updateAsset(savedAsset, assetRequest);
       }
 
       const assetMetadata = await this.metadataService.getMetadata(address, chainId);
-      let processingAsset = new AssetEntity();
+      const processingAsset = new AssetEntity();
 
       processingAsset.address = address;
       processingAsset.chainId = chainId;
@@ -79,34 +75,29 @@ export class AssetsProcessor {
       processingAsset.decimals = assetMetadata.decimals;
       processingAsset.rank = rank;
       processingAsset.isTracked = isTracked || false;
+      processingAsset.underlying = [];
 
-      const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
-
-      // TODO: Temp compilation fix - logic is incorrect
-      processingAsset.categories = [await this.getAssetCategory(Boolean(underlyingTokens?.length))];
       processingAsset.icon = await this.loadAssetIcons(processingAsset);
 
-      // TODO: Asset should be saved at the very end
-      processingAsset = await this.saveAsset(processingAsset);
+      const analysis = await this.specificAssetsService.analyseAsset(processingAsset);
+      if (analysis.done) {
+        processingAsset.metadata = analysis.metadata;
+        processingAsset.categories = await this.assetsCategoryRepository.findOrCreate(
+          analysis.categories,
+        );
 
-      if (Array.isArray(underlyingTokens) && underlyingTokens?.length !== 0) {
-        underlyingTokens.map(async (underlyingToken: AssetEntity, index: number) => {
-          const newAsset = await this.processAsset({
-            address: underlyingToken.address,
-            chainId: underlyingToken.chainId,
+        for (const underlyingAddress of analysis.underlying) {
+          const underlying = new AssetUnderlyingEntity();
+          underlying.position = analysis.underlying.indexOf(underlyingAddress);
+          underlying.underlyingAsset = await this.processAsset({
+            address: underlyingAddress,
+            chainId,
           });
-
-          const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
-            asset: processingAsset,
-            underlyingAsset: newAsset,
-            position: index,
-          });
-
-          await this.assetUnderlyingRepository.save(newUnderlyingTokenRelation);
-        });
+          processingAsset.underlying.push(underlying);
+        }
       }
 
-      return processingAsset;
+      return await this.assetsRepository.save(processingAsset);
     } catch (error) {
       this.logger.error(`Error to process asset data ${JSON.stringify(assetRequest)}`);
       throw error;
@@ -145,25 +136,6 @@ export class AssetsProcessor {
       // TODO: Enable this one and refresh from time to time
       asset.icon = await this.loadAssetIcons(asset);
     }
-    return await this.assetRepository.save(asset);
-  }
-
-  private async getAssetCategory(hasUnderlying: boolean): Promise<AssetCategoryEntity> {
-    if (hasUnderlying) {
-      return this.assetsCategoryRepository.findOneByCode('LP');
-    }
-    return this.assetsCategoryRepository.findOneByCode('COIN');
-  }
-
-  private async saveAsset(asset: AssetEntity): Promise<AssetEntity> {
-    const { chainId, address } = asset;
-    const existentAsset = await this.assetRepository //
-      .findOne({ where: { chainId, address, disabled: false } });
-    if (existentAsset) {
-      throw Error(`Try to process already existing asset chainId: ${chainId}, address: ${address}`);
-    }
-    const savedAsset = await this.assetRepository.save(asset);
-    await this.assetsService.setAssetsToCache([savedAsset]);
-    return savedAsset;
+    return await this.assetsRepository.save(asset);
   }
 }

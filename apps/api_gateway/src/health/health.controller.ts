@@ -9,7 +9,7 @@ import {
   HttpHealthIndicator,
 } from '@nestjs/terminus';
 
-import { AddVersion } from '@app/common/decorators/AddVersion';
+import { AddVersionDecorator } from '@app/common/decorators/add-version.decorator';
 import { HealthStatusEnum } from '@app/common/enum';
 
 import { HealthServicesResponse200Dto } from './dto/health.services.response.200.dto';
@@ -37,14 +37,14 @@ export class HealthController {
     private serviceHealthIndicator: ServiceHealthIndicator,
   ) {}
 
-  @AddVersion('v1')
+  @AddVersionDecorator('v1')
   @Get('/')
   @HealthCheck()
   check(): Promise<HealthCheckResult> {
     return this.health.check([async (): Promise<HealthIndicatorResult> => ServiceHealthOk]);
   }
 
-  @AddVersion('v1')
+  @AddVersionDecorator('v1')
   @Get('/services')
   @ApiResponse({
     type: HealthServicesResponse200Dto,

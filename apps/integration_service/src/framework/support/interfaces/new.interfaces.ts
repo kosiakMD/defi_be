@@ -8,6 +8,7 @@ interface Base {
   id: string | `${string}::${string}`; // unique id for investment. this is used as the cache key, so must be unique
   chain: number;
   links?: IFeatureLinks; // website, discord, twitter, etc
+  interactive?: any;
 }
 
 // TODO: rename 'meta' to 'extra'... meta is defined during registration,

@@ -8,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
-import { concatStrings, equals, normalizeDecimals, startsWith } from '@app/common/utils';
+import { concatStrings, dataFrom, equals, normalizeDecimals, startsWith } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -232,8 +232,4 @@ export class EllipsisLiquidity
 
 function userBalanceLabel(lpAddress, userAddress): string {
   return concatStrings(lpAddress, userAddress);
-}
-
-function dataFrom(callsResult: Map<string, CallData>, label: string) {
-  return callsResult.get(label).output.data;
 }

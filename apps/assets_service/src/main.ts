@@ -31,9 +31,9 @@ async function bootstrap() {
   initSentry();
   initContext(app);
   initLogger(app);
-  initSwagger(app);
   initPrefix(app);
   initPipes(app);
+  initSwagger(app);
 
   const awsConfigService = app.get(AwsConfigService);
 

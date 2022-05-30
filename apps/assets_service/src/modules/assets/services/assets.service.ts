@@ -79,7 +79,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
       // TODO: Instead of doing this we should just add cached repository
       const cachedAssets = await this.getAssetsFromCache(
         // Asset requests with pricesAt have to be get from database
-        requests, //.filter((request) => !!request.pricesAt),
+        requests.filter((request) => !request.pricesAt?.length),
       );
       assets.push(...cachedAssets);
     }
@@ -93,11 +93,18 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
     const databaseAssetsToCacheMap = {};
 
+    const prices = (await this.priceService.getPrices(databaseAssets)) //
+      .reduce((pricesMap, curr) => {
+        pricesMap[this.getAssetCacheKey(curr.asset)] = curr.price;
+        return pricesMap;
+      }, {});
+
     databaseAssets.forEach((databaseAsset) => {
-      databaseAssetsToCacheMap[this.getAssetCacheKey(databaseAsset)] = this.findUnderlying(
+      databaseAssetsToCacheMap[this.getAssetCacheKey(databaseAsset)] = this.findDBUnderlying(
         //
         databaseAsset,
         databaseAssetsToCacheMap,
+        prices,
       );
     });
     const databaseAssetsToCache: AssetDto[] = Object.values(databaseAssetsToCacheMap);
@@ -153,12 +160,19 @@ export class AssetsService extends CrudService<AssetsRepository> {
       }
     }
     if (removeDuplicates) {
-      const assetsFromCacheMap: { [key: number]: AssetDto } = {};
-      assetsFromCache.forEach((asset) => {
-        if (!assetsFromCacheMap[asset.id]) {
-          assetsFromCacheMap[asset.id] = asset;
+      const prices = (await this.priceService.getPrices(assetsFromCache)) //
+        .reduce((pricesMap, curr) => {
+          pricesMap[this.getAssetCacheKey(curr.asset)] = curr.price;
+          return pricesMap;
+        }, {});
+      const assetsFromCacheMap: { [key: string]: AssetDto } = {};
+      for (const assetFromCache of assetsFromCache) {
+        const key = this.getAssetCacheKey(assetFromCache);
+        if (!assetsFromCacheMap[key]) {
+          assetFromCache.price = prices[key];
+          assetsFromCacheMap[key] = assetFromCache;
         }
-      });
+      }
       return Object.values(assetsFromCacheMap);
     }
     return assetsFromCache;
@@ -168,18 +182,26 @@ export class AssetsService extends CrudService<AssetsRepository> {
     await this.cache.mset(
       assets.map((asset) => ({
         key: this.getAssetCacheKey(asset),
-        value: plainToClass(AssetDto, asset),
+        // need to clear historicalPrices
+        value: { ...plainToClass(AssetDto, asset), historicalPrices: [] },
       })),
     );
   }
 
-  private findUnderlying(dbAsset, dbAsetsToCache) {
-    const dbAssetToCache = { ...dbAsset };
+  private findDBUnderlying(dbAsset, dbAsetsToCache, assetsPrices) {
+    const dbAssetToCache = {
+      ...plainToClass(AssetDto, dbAsset),
+      price: assetsPrices[this.getAssetCacheKey(dbAsset)],
+    };
     dbAssetToCache.u = [];
     dbAsset.u?.forEach(({ uA, position }) => {
       if (uA.u?.length) {
         uA.u.forEach(({ uA }) => {
-          dbAsetsToCache[this.getAssetCacheKey(uA)] = this.findUnderlying(uA, dbAsetsToCache);
+          dbAsetsToCache[this.getAssetCacheKey(uA)] = this.findDBUnderlying(
+            uA,
+            dbAsetsToCache,
+            assetsPrices,
+          );
         });
       }
       dbAssetToCache.u.push({
@@ -189,7 +211,11 @@ export class AssetsService extends CrudService<AssetsRepository> {
         },
         position,
       });
-      dbAsetsToCache[this.getAssetCacheKey(uA)] = this.findUnderlying(uA, dbAsetsToCache);
+      dbAsetsToCache[this.getAssetCacheKey(uA)] = this.findDBUnderlying(
+        uA,
+        dbAsetsToCache,
+        assetsPrices,
+      );
     });
     return dbAssetToCache;
   }

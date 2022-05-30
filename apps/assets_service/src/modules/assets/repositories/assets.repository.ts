@@ -36,12 +36,13 @@ export class AssetsRepository extends Repository<AssetEntity> {
     });
   }
 
-  findManyByAddressesAndChainIds(
+  async findManyByAddressesAndChainIds(
     requests: GetAssetRequest[],
     include?: string[],
   ): Promise<AssetEntity[]> {
+    // TODO historical prices should be done in other smart way
     // const timeDistance = TimeGranularity.M15 * 60 * 1000;
-    return this.find({
+    const assets = await this.find({
       relations: include,
       where: requests.map(({ chainId, address /*pricesAt*/ }) => ({
         chainId,
@@ -54,6 +55,37 @@ export class AssetsRepository extends Repository<AssetEntity> {
         // })),
       })),
     });
+    const requestsMap: { [key: string]: GetAssetRequest } = {};
+    requests.forEach((request) => (requestsMap[this.getAssetKey(request)] = request));
+    return assets.map((asset) => {
+      const key = this.getAssetKey(asset);
+      const now = Date.now();
+      // This filtering should be discussed. not sure it's correct to keep pricesAt as array
+      asset.historicalPrices = requestsMap[key]?.pricesAt?.length
+        ? asset.historicalPrices.filter((assetHistoricalPrice) => {
+            const pricesAt = requestsMap[key]?.pricesAt || [];
+            for (const priceAt of pricesAt) {
+              if (
+                (now - priceAt < 15 * 60 * 1000 &&
+                  Math.abs(priceAt - assetHistoricalPrice.timestamp.getTime()) <= 15 * 60 * 1000) ||
+                (now - priceAt < 60 * 60 * 1000 &&
+                  Math.abs(priceAt - assetHistoricalPrice.timestamp.getTime()) <= 60 * 60 * 1000) ||
+                (now - priceAt < 4 * 60 * 60 * 1000 &&
+                  Math.abs(priceAt - assetHistoricalPrice.timestamp.getTime()) <=
+                    4 * 60 * 60 * 1000)
+              ) {
+                return true;
+              }
+            }
+            return false;
+          })
+        : [];
+      return asset;
+    });
+  }
+
+  getAssetKey({ address, chainId }) {
+    return `${address}-${chainId}`;
   }
 
   async getAllTrackedAssetChains(): Promise<number[]> {

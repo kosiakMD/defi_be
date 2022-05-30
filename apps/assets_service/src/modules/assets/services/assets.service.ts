@@ -193,7 +193,9 @@ export class AssetsService extends CrudService<AssetsRepository> {
       ...plainToClass(AssetDto, dbAsset),
       price: assetsPrices[this.getAssetCacheKey(dbAsset)],
     };
+    // u - is 'underlying', using it because of typeorm cyclic relation name length limit
     dbAssetToCache.u = [];
+    // uA - is 'underlyingAsset', using it because of typeorm cyclic relation name length limit
     dbAsset.u?.forEach(({ uA, position }) => {
       if (uA.u?.length) {
         uA.u.forEach(({ uA }) => {

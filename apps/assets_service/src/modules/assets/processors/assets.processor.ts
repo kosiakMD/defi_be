@@ -91,6 +91,7 @@ export class AssetsProcessor {
       processingAsset.decimals = assetMetadata.decimals;
       processingAsset.rank = rank;
       processingAsset.isTracked = isTracked || false;
+      // u - is 'underlying', using it because of typeorm cyclic relation name length limit
       processingAsset.u = [];
 
       const underlyingTokens = await this.tokenService.getUnderlyingAssetsIfExists(processingAsset);
@@ -111,6 +112,7 @@ export class AssetsProcessor {
           });
           const newUnderlyingTokenRelation = this.assetUnderlyingRepository.create({
             asset: processingAsset,
+            // uA - is 'underlyingAsset', using it because of typeorm cyclic relation name length limit
             uA: newAsset,
             position: index,
           });

@@ -1,10 +1,11 @@
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common';
 import { ChainAbbrEnum } from '@app/common/enum';
 
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
@@ -18,7 +19,7 @@ export class ScanApi {
   constructor(
     private httpService: HttpService,
     private configService: ConfigService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {
     this.url = this.configService.get<string>('BSCSCAN_URL');

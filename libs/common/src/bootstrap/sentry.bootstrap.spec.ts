@@ -1,7 +1,7 @@
 // import * as Sentry from '@sentry/node';
 import * as Sentry from '@sentry/minimal';
 
-import { initSentry } from './initSentry';
+import { initSentry } from './sentry.bootstrap';
 
 // arg sentryDSN for test reason only
 const sentryDSN = 'https://d3623ec62dd14dbe81d0b82391c95d5d@o1128743.ingest.sentry.io/6171835';

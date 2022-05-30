@@ -1,14 +1,18 @@
 import * as bodyParser from 'body-parser';
 import { install } from 'source-map-support';
 
-import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { addTimeLogFeature } from '@app/common';
 import { createLogger } from '@app/common/Logger/winston';
-import { initSentry, initSwagger, startApp } from '@app/common/bootstrap';
+import {
+  initContext,
+  initListening,
+  initLogger,
+  initPipes,
+  initSentry,
+  initSwagger,
+} from '@app/common/bootstrap';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
@@ -25,21 +29,18 @@ async function bootstrap(): Promise<void> {
   });
 
   initSentry();
-
-  // app.useGlobalFilters(new AllExceptionsFilter());
-
-  const enhancedLogger = addTimeLogFeature(app.get(WINSTON_MODULE_NEST_PROVIDER));
-  app.useLogger(enhancedLogger);
+  initContext(app);
+  initLogger(app);
+  initSwagger(app);
+  initPipes(app);
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-  app.useGlobalPipes(new ValidationPipe({ transform: true }));
 
-  initSwagger(app);
-
-  await startApp(app);
+  await initListening(app);
 }
 
 bootstrap().catch((e) => {
   logger.error(e, undefined, 'Bootstrap');
+  throw e;
 });

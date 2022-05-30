@@ -2,7 +2,7 @@
 import { ClassConstructor } from 'class-transformer';
 import { filter, from, lastValueFrom, mergeMap, toArray } from 'rxjs';
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -56,7 +56,7 @@ import {
 } from '../support/interfaces/responses.interface';
 
 @Injectable()
-export class PlatformService {
+export class PlatformService implements OnApplicationBootstrap {
   constructor(
     private readonly moduleRef: ModuleRef,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
@@ -267,5 +267,9 @@ export class PlatformService {
       }
       return message;
     });
+  }
+
+  async onApplicationBootstrap() {
+    await this.getProtocolList();
   }
 }

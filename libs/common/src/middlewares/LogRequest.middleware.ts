@@ -22,7 +22,7 @@ export class LogRequestMiddleware implements NestMiddleware {
     this.logger.time(originalUrl);
     const reqId = req.get(HEADER_REQUEST_ID);
     const sessionId = req.get(HEADER_SESSION_ID);
-    res.on('finish', () =>
+    res.once('finish', () =>
       this.logger.timeEnd(originalUrl, {
         reqId,
         sessionId,

@@ -14,43 +14,15 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { CurveAssetsManager } from '../../../assets/curve.assets.manager';
-import { FeatureEnum } from '../../../enums';
-import { INamedFunctionPredicates, IProtocolMeta } from '../../../interfaces';
+import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
-import { BaseWithTokens } from '../../../interfaces/new.interfaces';
-import {
-  ISupplyTokenMinimal,
-  ISupplyTokenUserEntry,
-} from '../../../interfaces/tokens.supplied.interface';
+import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
-
-export interface IEllipsisLiquidityMeta extends IProtocolMeta {
-  address: Address;
-  feature: FeatureEnum.pools;
-  context: {
-    aprUrl: string;
-  };
-  links: {
-    getOpportunityLink: (opportunity) => string;
-  };
-}
-
-export type EllipsisExtraData = {
-  id: number;
-  minter: string;
-};
-export type IPoolFeatureMinimalEllipsis = BaseWithTokens<
-  ISupplyTokenMinimal[],
-  void,
-  void,
-  EllipsisExtraData
->;
 
 export class SpiritLiquidity extends SingleContractProtocol<
   IPoolFeatureMinimal,
@@ -64,7 +36,6 @@ export class SpiritLiquidity extends SingleContractProtocol<
     protected multicall: MulticallAggregator,
     protected accountService: AccountService,
     protected priceService: PriceService,
-    protected assetsManager: CurveAssetsManager,
     protected httpService: HttpService,
   ) {
     super();

@@ -66,9 +66,7 @@ export class AssetEntity extends BaseEntity {
   @OneToMany(() => AssetPriceEntity, (price) => price.asset)
   public prices: AssetPriceEntity[];
 
-  @OneToMany(() => AssetHistoricalPriceEntity, (historicalPrice) => historicalPrice.asset, {
-    eager: true,
-  })
+  @OneToMany(() => AssetHistoricalPriceEntity, (historicalPrice) => historicalPrice.asset)
   // TODO: Remove this reference from entity
   public historicalPrices: AssetHistoricalPriceEntity[];
 

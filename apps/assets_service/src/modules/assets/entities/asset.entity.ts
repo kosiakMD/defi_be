@@ -4,7 +4,6 @@ import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';
-import { AssetPriceEntity } from '../../prices/entities/asset-price.entity';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetUnderlyingEntity } from './asset-underlying.entity';
 
@@ -59,13 +58,10 @@ export class AssetEntity extends BaseEntity {
   })
   public categories: AssetCategoryEntity[];
 
-  @OneToMany(() => AssetPriceEntity, (price) => price.asset)
-  public prices: AssetPriceEntity[];
-
   @OneToMany(() => AssetHistoricalPriceEntity, (historicalPrice) => historicalPrice.asset)
   // TODO: Remove this reference from entity
   public historicalPrices: AssetHistoricalPriceEntity[];
 
-  @ManyToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset)
+  @OneToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset, { cascade: true })
   public underlying: AssetUnderlyingEntity[];
 }

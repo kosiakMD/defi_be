@@ -1,20 +1,13 @@
 import { EntityRepository, ILike, Repository } from 'typeorm';
 import { FindConditions } from 'typeorm/find-options/FindConditions';
 
-import { Injectable } from '@nestjs/common';
-
 import { ChainIdEnum } from '@app/common/enum';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
+import { AssetReference } from '../../../common/types';
 
 import { AssetEntity } from '../entities/asset.entity';
 
-export type AssetReference = {
-  chainId: number;
-  address: string;
-};
-
-@Injectable()
 @EntityRepository(AssetEntity)
 export class AssetsRepository extends Repository<AssetEntity> {
   getAllTrackedAssets(): Promise<AssetEntity[]> {
@@ -26,29 +19,22 @@ export class AssetsRepository extends Repository<AssetEntity> {
   findOneByAddressAndChain(address: string, chainId: ChainIdEnum): Promise<AssetEntity> {
     return this.findOne({
       where: { chainId, address: ILike(address) },
+      relations: ['underlying', 'underlying.underlyingAsset'],
     });
   }
 
-  findManyByAddressesAndChainIds(
-    requests: AssetReference[],
-    include?: string[],
-  ): Promise<AssetEntity[]> {
+  async findManyByAddressesAndChainIds(requests: AssetReference[]): Promise<AssetEntity[]> {
+    if (!requests.length) {
+      return [];
+    }
+
     return this.find({
       where: requests.map(({ chainId, address }) => ({
         chainId,
         address: ILike(address),
       })),
-      relations: include,
+      relations: ['underlying', 'underlying.underlyingAsset'],
     });
-  }
-
-  async getAllTrackedAssetChains(): Promise<number[]> {
-    const chains = await this.createQueryBuilder('assets')
-      .select('assets.chain_id as "chainId"')
-      .where('assets.is_tracked = true and assets.disabled = false')
-      .distinct(true)
-      .getRawMany();
-    return chains.map(({ chainId }) => chainId);
   }
 
   async findAssetsByParams({ address, text, limit }: SearchParams): Promise<AssetEntity[]> {

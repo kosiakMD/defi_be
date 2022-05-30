@@ -1,10 +1,9 @@
+import { AssetReference } from 'apps/assets_service/src/common/types';
 import { Queue } from 'bull';
-import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
 import { InjectQueue } from '@nestjs/bull';
-import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -16,9 +15,8 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
 
-import { PriceService } from '../../prices/price.service';
+import { AssetAvgPrice, PriceService } from '../../prices/price.service';
 import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
-import { AssetsPriceRepository } from '../../prices/repositories/asset-price.repository';
 import { AssetCandidateRequest } from '../dto/asset-candidate.request';
 import { AssetCategoryDto } from '../dto/asset-category.dto';
 import { AssetHistoricalPriceDto } from '../dto/asset-historical-price.dto';
@@ -28,31 +26,24 @@ import { GetAssetRequest } from '../dto/get-asset.request';
 import { SearchResultsEntryDto } from '../dto/search-results-entry.dto';
 import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
+import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { AssetsRepository } from '../repositories/assets.repository';
+import { SpecificAssetsService } from './specific-assets/specific-assets.service';
 
 @Injectable()
 export class AssetsService extends CrudService<AssetsRepository> {
-  private readonly cacheKeyPrefix: string;
-
   constructor(
-    private configService: ConfigService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
-    @InjectRepository(AssetsRepository) private readonly assetsRepository: AssetsRepository,
-    @InjectRepository(AssetsPriceRepository)
-    private readonly assetsPriceRepository: AssetsPriceRepository,
+    private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsHistoricalPriceRepository)
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
     @InjectRepository(AssetsCandidateRepository)
     private readonly assetsCandidateRepository: AssetsCandidateRepository,
     private readonly priceService: PriceService,
+    private readonly specificAssetsService: SpecificAssetsService,
   ) {
-    super(AssetsRepository);
-    this.cacheKeyPrefix = `${this.configService //
-      .get('SERVICE_NAME')
-      .replace(' ', '-')
-      .toLowerCase()}`;
+    super(AssetsCachedRepository);
   }
 
   public async getAsset(request: GetAssetRequest): Promise<AssetDto> {
@@ -66,66 +57,69 @@ export class AssetsService extends CrudService<AssetsRepository> {
     // TODO: Historical prices are not handled
     // TODO: Add mapping, not expose everything (e.g. created at)
     // TODO: This mapping code looks ugly, it should be extracted into mapper or use https://www.npmjs.com/package/@automapper/nestjs
-    const dtos = assets.map((asset) =>
-      plainToClass(AssetDto, {
-        ...asset,
-        categories: asset.categories.map((assetCategory) =>
-          plainToClass(AssetCategoryDto, assetCategory),
-        ),
-        ...(asset.historicalPrices
-          ? {
-              historicalPrices: asset.historicalPrices.map((historicalPrice) =>
-                plainToClass(AssetHistoricalPriceDto, historicalPrice),
-              ),
-            }
-          : {}),
-        ...(asset.underlying
-          ? {
-              underlying: asset.underlying.map((underlyingAsset) =>
-                plainToClass(AssetUnderlyingDto, underlyingAsset),
-              ),
-            }
-          : {}),
-      }),
-    );
+    const dtos = assets.map((asset) => this.mapAssetToDto(asset));
 
     return this.addPrices(dtos);
   }
 
   private async addPrices(dtos: AssetDto[]): Promise<AssetDto[]> {
-    const prices = await this.priceService.getPrices(dtos);
-    // TODO: Not base on index
-    return dtos.map((dto, index) => ({ ...dto, price: prices[index].price }));
+    const assets = this.getAllNestedAssets(dtos);
+    const prices = await this.priceService.getPrices(assets);
+    this.updateDtosWithPrices(dtos, prices);
+    return this.specificAssetsService.updateSpecificAssetsPrices(dtos);
+  }
+
+  private getAllNestedAssets(dtos: AssetDto[]): AssetReference[] {
+    const getKey = (ar: AssetReference) => `${ar.chainId}_${ar.address}`;
+    const map = new Map<string, AssetReference>();
+    for (const dto of dtos) {
+      const assets = this.getDtoNestedAssets(dto);
+      for (const asset of assets) {
+        const key = getKey(asset);
+        map.set(key, asset);
+      }
+    }
+    return [...map.values()];
+  }
+
+  private getDtoNestedAssets(dto: AssetDto): AssetReference[] {
+    return [
+      { chainId: dto.chainId, address: dto.address },
+      ...(dto.underlying || [])
+        .map(({ underlyingAsset }) => this.getDtoNestedAssets(underlyingAsset))
+        .flat(),
+    ];
+  }
+
+  private updateDtosWithPrices(dtos: AssetDto[], prices: AssetAvgPrice[]) {
+    for (const dto of dtos) {
+      this.updateDtoWithPrices(dto, prices);
+    }
+  }
+
+  private updateDtoWithPrices(dto: AssetDto, prices: AssetAvgPrice[]) {
+    const assetPrice = prices.find(
+      ({ asset }) => asset.address === dto.address && asset.chainId === dto.chainId,
+    );
+    dto.price = assetPrice?.price;
+    if (!dto.underlying?.length) {
+      return;
+    }
+    this.updateDtosWithPrices(
+      dto.underlying.map(({ underlyingAsset }) => underlyingAsset),
+      prices,
+    );
   }
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
-    const assets = [];
-
-    if (this.configService.get('USE_REDIS_TO_GET_ASSETS')) {
-      // TODO: Instead of doing this we should just add cached repository
-      const cachedAssets = await this.getAssetsFromCache(requests);
-      assets.push(...cachedAssets);
-    }
-
+    const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
     if (assets.length === requests.length) {
       return assets;
     }
 
-    const databaseAssetsRequests = this.excludeFoundAssets(requests, assets);
-    const databaseAssets = await this.getAssetsFromDatabase(databaseAssetsRequests);
-    assets.push(...databaseAssets);
-
-    this.setAssetsToCache(databaseAssets);
-
-    if (assets.length === requests.length) {
-      return assets;
-    }
-
-    const unknownAssetsRequests = this.excludeFoundAssets(databaseAssetsRequests, databaseAssets);
+    const unknownAssetsRequests = this.excludeFoundAssets(requests, assets);
     this.processAssets(unknownAssetsRequests);
 
-    // TODO: Historical prices are not handled
-    // TODO: Add mapping, not expose everything (e.g. created at)
     return assets;
   }
 
@@ -142,37 +136,6 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
   }
 
-  public async getAssetsFromCache(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
-    const promises = requests.map((request) =>
-      this.cacheManager.get<AssetEntity>(this.getAssetCacheKey(request)),
-    );
-    // TODO: Use Redis m_get instead of multiple requests
-    const assets = await Promise.all(promises);
-    return assets.filter((asset) => !!asset);
-  }
-
-  public async setAssetsToCache(assets: AssetEntity[] | AssetDto[]): Promise<void> {
-    const promises = assets.map((asset) => {
-      return this.cacheManager.set(
-        this.getAssetCacheKey(asset),
-        asset,
-        // TODO: Why use this strange naming convention here
-        this.configService.get('cache.assetsTtl'),
-      );
-    });
-    await Promise.all(promises);
-  }
-
-  private getAssetCacheKey(request: GetAssetRequest) {
-    const { address, chainId } = request;
-    return `${this.cacheKeyPrefix}-${chainId}-${address}`;
-  }
-
-  private getAssetsFromDatabase(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
-    // TODO: Filter out outdated prices in repository
-    return this.assetsRepository.findManyByAddressesAndChainIds(requests, ['prices']);
-  }
-
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {
     requests.map((request) => {
       this.logger.log('Send asset for processing', request);
@@ -180,6 +143,29 @@ export class AssetsService extends CrudService<AssetsRepository> {
         address: request.address,
         chainId: request.chainId,
       });
+    });
+  }
+
+  private mapAssetToDto(asset: AssetEntity) {
+    return plainToClass(AssetDto, {
+      ...asset,
+      categories: asset.categories?.map((assetCategory) =>
+        plainToClass(AssetCategoryDto, assetCategory),
+      ),
+      ...(asset.historicalPrices
+        ? {
+            historicalPrices: asset.historicalPrices.map((historicalPrice) =>
+              plainToClass(AssetHistoricalPriceDto, historicalPrice),
+            ),
+          }
+        : {}),
+      ...(asset.underlying
+        ? {
+            underlying: asset.underlying.map((underlyingAsset) =>
+              plainToClass(AssetUnderlyingDto, underlyingAsset),
+            ),
+          }
+        : {}),
     });
   }
 

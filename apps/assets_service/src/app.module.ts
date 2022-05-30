@@ -2,6 +2,7 @@ import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
 import { BullModule } from '@nestjs/bull';
 import { Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
@@ -9,6 +10,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
+import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 
 import { AwsModule } from './aws/aws.module';
 import { CommonModule } from './common/common.module';
@@ -53,14 +55,21 @@ import { PricesModule } from './modules/prices/prices.module';
       }),
       inject: [ConfigService],
     }),
-    AssetsModule,
     AwsModule,
     CommonModule,
+    AssetsModule,
     PricesModule,
     AssetsCategoryModule,
   ],
   controllers: [JobsController],
-  providers: [...interceptorsOrder],
+  providers: [
+    // TODO: Fix this, remove 'ResponseInterceptor'
+    ...interceptorsOrder.slice(2, 1),
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
+    },
+  ],
 })
 export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}

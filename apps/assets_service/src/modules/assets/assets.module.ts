@@ -3,21 +3,18 @@ import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { Web3ProviderService } from '@app/common/web3provider/web3.provider.service';
-
 import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
 
 import { AssetsController } from '../../controllers/assets.controller';
+import { AssetsCategoryModule } from '../assets-category/assets-category.module';
 import { AssetCategoryEntity } from '../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
 import { IconsModule } from '../icons/icons.module';
 import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
-import { AssetPriceEntity } from '../prices/entities/asset-price.entity';
 import { PriceService } from '../prices/price.service';
+import { PricesModule } from '../prices/prices.module';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
-import { AssetsPriceRepository } from '../prices/repositories/asset-price.repository';
 import { AssetCandidateEntity } from './entities/asset-candidate.entity';
 import { AssetInvalidAddressEntity } from './entities/asset-invalid-address.entity';
 import { AssetUnderlyingEntity } from './entities/asset-underlying.entity';
@@ -25,6 +22,7 @@ import { AssetEntity } from './entities/asset.entity';
 import { AssetsProcessor } from './processors/assets.processor';
 import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets.processor';
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
+import { AssetsCachedRepository } from './repositories/assets.cached-repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
 import { MetadataService } from './services/metadata/metadata.service';
@@ -33,6 +31,8 @@ import { CosmosMetadataStrategy } from './services/metadata/strategies/cosmos.st
 import { EVMMetaDataStrategy } from './services/metadata/strategies/evm.strategy';
 import { SolanaMetadataStrategy } from './services/metadata/strategies/solana.strategy';
 import { TerraMetadataStrategy } from './services/metadata/strategies/terra.strategy';
+import { SaberAssetAnalyser } from './services/specific-assets/analysers/saber.asset-analyser';
+import { UniswapV2AssetAnalyser } from './services/specific-assets/analysers/uniswapv2.asset-analyser';
 import { SpecificAssetsService } from './services/specific-assets/specific-assets.service';
 import { AaveStrategy } from './services/specific-assets/strategies/aave.strategy';
 import { CompoundStrategy } from './services/specific-assets/strategies/compound.strategy';
@@ -68,8 +68,11 @@ const specificAssetsStrategies = [
   YearnStrategy,
 ];
 
+const assetAnalysers = [UniswapV2AssetAnalyser, SaberAssetAnalyser];
+
 @Module({
   imports: [
+    HttpModule,
     CommonModule,
     BullModule.registerQueue({
       name: QueueName.ASSETS,
@@ -89,37 +92,29 @@ const specificAssetsStrategies = [
       AssetsCategoryRepository,
       AssetEntity,
       AssetsRepository,
-      AssetPriceEntity,
-      AssetsPriceRepository,
       AssetHistoricalPriceEntity,
       AssetsHistoricalPriceRepository,
       AssetInvalidAddressEntity,
       AssetUnderlyingEntity,
     ]),
     IconsModule,
-    HttpModule,
+    PricesModule,
+    AssetsCategoryModule,
   ],
   controllers: [AssetsController],
   providers: [
     ...trackedAssetsProviders,
     ...metadataStrategies,
     ...specificAssetsStrategies,
-    AssetsProcessor,
+    ...assetAnalysers,
+    AssetsCachedRepository,
     AssetsService,
     MetadataService,
-    AssetsRepository,
-    // TODO: It should not be in this module
-    AssetsPriceRepository,
-    // TODO: It should not be in this module
-    AssetsHistoricalPriceRepository,
-    // TODO: It should not be in this module
     PriceService,
-    AssetsCandidateRepository,
-    MulticallAggregator,
     SpecificAssetsService,
+    AssetsProcessor,
     UpdateTrackedAssetsProcessor,
-    Web3ProviderService,
   ],
-  exports: [AssetsService, AssetsRepository],
+  exports: [AssetsService],
 })
 export class AssetsModule {}

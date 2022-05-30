@@ -1,11 +1,8 @@
-import { Expose } from 'class-transformer';
-
+import { IAssetResponseDto } from '@app/common';
 import { ApiProperty } from '@nestjs/swagger';
+import { Expose, Transform } from 'class-transformer';
 
-import { IAssetDto } from '@app/common';
-import { AssetState } from '@app/common/enum';
-
-export class AssetDto implements IAssetDto {
+export class AssetResponseDto implements IAssetResponseDto {
   @ApiProperty({ type: Number, example: 1066834 })
   @Expose()
   id: number;
@@ -16,28 +13,32 @@ export class AssetDto implements IAssetDto {
 
   @ApiProperty({ type: String, example: '0x Protocol Token' })
   @Expose()
-  name: string = null;
+  name: string;
 
   @ApiProperty({ type: String, example: 'ZRX' })
   @Expose()
-  symbol: string = null;
+  symbol: string;
 
   @ApiProperty({ example: 1 })
-  @Expose()
+  @Expose({ name: 'chain' })
   chain: number;
 
   @ApiProperty({ type: Number, example: 18 })
   @Expose()
   decimals: number;
 
-  @ApiProperty({ type: Boolean, example: false })
+  @ApiProperty({ type: Boolean, example: true })
   @Expose()
+  @Transform(({ value }) => Boolean(value))
   isLp = false;
 
-  @ApiProperty({ enum: AssetState, enumName: 'AssetState', example: AssetState.pending })
+  @ApiProperty({ type: Boolean, example: true })
   @Expose()
-  status: AssetState;
+  isTracked: boolean;
 
   @Expose()
-  extensions: any;
+  positionInPool?: number;
+
+  @Expose()
+  underlyingAssets?: AssetResponseDto[];
 }

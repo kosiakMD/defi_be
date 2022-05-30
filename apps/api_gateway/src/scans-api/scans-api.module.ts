@@ -4,14 +4,15 @@ import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
+import { AssetsModule } from '../../../account_service/src/modules/assets/assets.module';
 import { BscScanService } from './modules/bscscan/bsc-scan.service';
 import { EtherScanService } from './modules/etherscan/ether-scan.service';
 import { ScansApiController } from './scans-api.controller';
 
 @Module({
   imports: [
+    AssetsModule,
     HttpModule,
-    // ConfigModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

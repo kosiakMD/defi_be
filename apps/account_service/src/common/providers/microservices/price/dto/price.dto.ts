@@ -7,7 +7,6 @@ import { Address, CurrencyId, Timestamp } from '@app/common/types';
 import { ChainDto } from '../../../../dto/chain.dto';
 import { CurrencyDto } from '../../../../dto/currency.dto';
 import { PriceServiceResponse } from '../../../../interfaces/prices.comon.interfaces';
-import { CurrentTokensPrices } from '../prices.interfaces';
 
 export class PriceCurrentRequestDto {
   constructor(addresses: Address[], chain: number, currency: CurrencyId) {
@@ -113,13 +112,4 @@ export class PriceResponseDto<T> implements PriceServiceResponse<T> {
 
   @ApiProperty({ type: Object })
   prices: T;
-}
-
-export class CurrentTokensPricesDto implements CurrentTokensPrices {
-  @ApiProperty({ type: Boolean, example: true })
-  isLp = false;
-  @ApiProperty({ type: String, example: 'COINGECKO' })
-  platform: string = null;
-  @ApiProperty({ type: String, example: 1233 })
-  price: number = null;
 }

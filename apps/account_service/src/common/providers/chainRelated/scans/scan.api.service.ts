@@ -12,6 +12,7 @@ import { DEFAULT_MULTIPLIER } from '@app/common/constant';
 import { ChainAbbrEnum, ResultStatus } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
+import { AssetsService } from '../../../../modules/assets/assets.service';
 import {
   Transaction,
   TransactionsResult,
@@ -32,14 +33,13 @@ import {
   transferTokenAddressNotIn,
 } from '../../../utils';
 import { HistoricalPricesMap } from '../../microservices/price/dto/price.response.dto';
-import { PriceService } from '../../microservices/price/price.service';
 import { EtherScanTransactionResponseDto } from './dto/ether.scan.transaction.response.dto';
 
 const TRANSACTIONS_CACHE_TIME = 30; // 30 sec
 const TRANSFERS_CACHE_TIME = 30; // 30 sec
 const MAX_RETRY = 2;
 
-export class ScanApiService {
+export abstract class ScanApiService {
   private retries: 0;
   protected readonly url: string;
   protected readonly apiKey: string;
@@ -47,12 +47,12 @@ export class ScanApiService {
   protected readonly chainId: number;
   protected readonly mainCoinAddress: Address;
 
-  constructor(
+  protected constructor(
     protected readonly httpService: HttpService,
     protected readonly configService: ConfigService,
     protected readonly cacheManager: Cache,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    protected readonly priceService: PriceService,
+    protected readonly assetsService: AssetsService,
   ) {}
 
   private formatTransfersDto(hashTransfers): ERC20Transfer[] {
@@ -246,7 +246,7 @@ export class ScanApiService {
           timestamps: timestamps,
         },
       ];
-      return await this.priceService.getHistoricalPrices(assets, this.chainId);
+      return await this.assetsService.getMultipleHistoricalPrices(assets, this.chainId);
     } catch (e) {
       this.logger.error(e.message, 'getTransactionPrices');
       throw e;
@@ -267,9 +267,9 @@ export class ScanApiService {
 
     if (!transactions.length) return { status: ResultStatus.ok, data: transactions };
 
-    let prices: PriceServiceResponse<HistoricalPricesMap>;
+    let prices;
     try {
-      const txTimestamps = transactions.map((tx) => Number(tx.timeStamp));
+      const txTimestamps: number[] = transactions.map((tx) => Number(tx.timeStamp));
       prices = await this.getTransactionPrices(txTimestamps);
     } catch (e) {
       let error = `Price Service Error: ${e.message}`;

@@ -1,9 +1,3 @@
-import { Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Logger } from '@app/common/Logger/Logger.service';
-
 import {
   ScanTransfer,
   TransfersResponse,
@@ -13,11 +7,7 @@ import { mergeTransfersResponse } from '../../common/utils';
 import { WETH } from '../approvals/contracts/WETH';
 
 export class AssetService {
-  constructor(
-    protected readonly configService: ConfigService,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    protected readonly wrappedEther: WETH,
-  ) {}
+  constructor(protected readonly wrappedEther: WETH) {}
 
   async getConvertedTransfers(addresses: string[]): Promise<TransfersResponse<ScanTransfer>> {
     // TODO: add try catch, add caching

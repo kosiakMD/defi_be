@@ -34,6 +34,7 @@ import { GotchiOwned, Id, Svg, User } from './interfaces/aavegotchi.interface';
 import { NftBasicService } from './nft.basic.service';
 import { OpenSeaService } from './open.sea.service';
 import { AavegotchiSubgraph } from './subgraphes/aavegotchi/aavegotchi.subgraph';
+import { AssetsService } from '../assets/assets.service';
 
 export class AavegotchiService extends NftBasicService implements OnModuleInit {
   public readonly project = NftProjectEnum.aavegotchi;
@@ -49,6 +50,7 @@ export class AavegotchiService extends NftBasicService implements OnModuleInit {
     protected readonly subgraph: AavegotchiSubgraph,
     protected readonly openSeaService: OpenSeaService,
     private readonly chainsService: ChainsService,
+    private readonly assetsService: AssetsService,
   ) {
     super();
     BigNumber.config({ EXPONENTIAL_AT: 30 });
@@ -257,7 +259,8 @@ export class AavegotchiService extends NftBasicService implements OnModuleInit {
 
     const rawAssets = await this.subgraph.getUsers(accounts);
 
-    const { prices } = await this.priceService.fetchTokenPrices(
+    // TODO: Check if ZERO_ADDRESS is supported by assets service
+    const { prices } = await this.assetsService.getPricesForAssets(
       [GHST_ADDRESS_POLYGON, ZERO_ADDRESS],
       chain,
     );

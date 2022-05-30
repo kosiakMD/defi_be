@@ -10,6 +10,7 @@ import { PriceService } from '../../common/providers/microservices/price/price.s
 import { TransfersController } from '../../controllers/transfers.controller';
 import { WETH } from '../approvals/contracts/WETH';
 import { AssetService } from '../assets/asset.service';
+import { AssetsModule } from '../assets/assets.module';
 import { ChainsModule } from '../chains/chains.module';
 import { ScansApiModule } from '../scans.api.module';
 import { TransferEntityNew } from './entities/transfers.entity';
@@ -19,6 +20,7 @@ import { TransfersService } from './transfers.service';
 
 @Module({
   imports: [
+    AssetsModule,
     ConfigModule,
     HttpModule,
     TypeOrmModule.forFeature([TransferEntityNew]),

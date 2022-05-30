@@ -9,10 +9,12 @@ import { EtherScanService } from '../common/providers/chainRelated/scans/ether-s
 import { PolygonScanService } from '../common/providers/chainRelated/scans/polygon-scan.service';
 import { PriceService } from '../common/providers/microservices/price/price.service';
 
+import { AssetsModule } from './assets/assets.module';
 import { ChainsModule } from './chains/chains.module';
 
 @Module({
   imports: [
+    AssetsModule,
     HttpModule,
     ConfigModule,
     CacheModule.registerAsync({

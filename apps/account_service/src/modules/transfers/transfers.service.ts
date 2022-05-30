@@ -30,6 +30,7 @@ import {
 import { isEthChain } from '../../common/utils/web3';
 
 import { AssetService } from '../assets/asset.service';
+import { AssetsService } from '../assets/assets.service';
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import {
   ERC20TransferDto,
@@ -70,6 +71,7 @@ export class TransfersService {
     private readonly dbService: TransfersDbService,
     protected readonly priceService: PriceService,
     private readonly assetService: AssetService,
+    private readonly assetsService: AssetsService,
     private readonly blocksSubgraph: TransfersBlocksSubgraph,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {
@@ -123,9 +125,11 @@ export class TransfersService {
       });
     });
     this.logger.debug(`tokenAddresses: ${tokenAddresses.size} chainId: ${chainId}`);
-    // request
-    const dataPrices = await this.priceService.getHistoricalPrices(assetsForPrices, chainId);
-    // handle response
+
+    const dataPrices = await this.assetsService.getMultipleHistoricalPrices(
+      assetsForPrices,
+      chainId,
+    );
     const { prices: priceData } = dataPrices;
     return priceData;
   }
@@ -375,7 +379,7 @@ export class TransfersService {
           }
         });
       });
-      return await this.priceService.getHistoricalPrices(unpricedContracts, chainId);
+      return await this.assetsService.getMultipleHistoricalPrices(unpricedContracts, chainId);
     } catch (e) {
       this.logger.warn('error fetching token prices for transfers');
       throw e;

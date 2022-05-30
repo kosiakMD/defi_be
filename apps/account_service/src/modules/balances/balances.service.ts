@@ -22,6 +22,7 @@ import { Web3Provider } from '../../common/providers/chainRelated/web3.provider'
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 import { excludeSecondArray } from '../../common/utils';
 
+import { AssetsService } from '../assets/assets.service';
 import { AssetsEntity } from '../assets/entities/assets.entity';
 import { BlacklistService } from '../blacklists/blacklist.service';
 import { ChainsService } from '../chains/chains.service';
@@ -61,6 +62,7 @@ export class BalancesService {
     private readonly configService: ConfigService,
     @InjectRepository(AssetsEntity)
     private readonly assetsRepository: Repository<AssetsEntity>,
+    private readonly assetsService: AssetsService,
     private readonly priceService: PriceService,
     private readonly blacklistService: BlacklistService,
     private readonly web3Provider: Web3Provider,
@@ -462,18 +464,16 @@ export class BalancesService {
   private async getTokenPrices(tokens: Address[], chain: number, block?: BlockTimestamp) {
     // latest/pending/earliest/null
     if (!block?.block || Number.isNaN(Number(block?.block))) {
-      const { prices: pricesMap } = await this.priceService.fetchTokenPrices(
+      const { prices: pricesMap } = await this.assetsService.getPricesForAssets(
         getUniqList(tokens),
         chain,
       );
       return pricesMap;
     }
 
-    const { prices: pricesMap } = await this.priceService.getBulkPriceAtTimestamp(
-      tokens,
-      chain,
+    const { prices: pricesMap } = await this.assetsService.getPricesForAssets(tokens, chain, [
       block.timestamp,
-    );
+    ]);
 
     return pricesMap;
   }

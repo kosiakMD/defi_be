@@ -1,3 +1,4 @@
+import { HttpModule } from '@nestjs/axios';
 import { CacheModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -8,7 +9,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AssetsController } from '../../controllers/assets.controller';
 import { WETH } from '../approvals/contracts/WETH';
 import { ChainsModule } from '../chains/chains.module';
-import { AssetsPoolsService } from './assets.pools.service';
 import { AssetsService } from './assets.service';
 import { AssetsEntity } from './entities/assets.entity';
 import { AssetsPoolsEntity } from './entities/assets.pools.entity';
@@ -16,6 +16,7 @@ import { AssetsRepository } from './repositories/assets.repository';
 
 @Module({
   imports: [
+    HttpModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -28,7 +29,7 @@ import { AssetsRepository } from './repositories/assets.repository';
     forwardRef(() => ChainsModule),
   ],
   controllers: [AssetsController],
-  providers: [WETH, AssetsService, AssetsPoolsService, MulticallAggregator, Web3ProviderService],
+  providers: [WETH, AssetsService, MulticallAggregator, Web3ProviderService],
   exports: [AssetsService],
 })
 export class AssetsModule {}

@@ -42,9 +42,9 @@ export class ProfitAndLossService {
     if (!asset) {
       response.errors.push(`Asset with address ${assetAddress} not found`);
     }
-    if (!asset.isAnalyticAvailable) {
-      response.errors.push(`Asset with address ${assetAddress} is not ready`);
-    }
+    // if (!asset.isAnalyticAvailable) {
+    //   response.errors.push(`Asset with address ${assetAddress} is not ready`); // TODO: new assets service doesn't have analytics
+    // }
     const addressBlacklisted: string[] = await this.blacklistedService.filterIsBlacklisted(
       addresses,
     );
@@ -70,15 +70,22 @@ export class ProfitAndLossService {
 
     const currentTimestamp: number = Math.floor(Date.now() / 1000);
     const timestamp24hAgo: number = currentTimestamp - SECONDS_IN_DAY;
-    const assetTimestamps = {
-      address: asset.address,
-      timestamps: [...transfers.map((t) => t.blockTimeStamp), currentTimestamp, timestamp24hAgo],
-    };
     transfers.sort((t1, t2) => {
       return Number(t1.blockTimeStamp) - Number(t2.blockTimeStamp);
     });
     const fromTimestamp = Number(transfers[0].blockTimeStamp);
-    const priceData = await this.priceService.getHistoricalPrices([assetTimestamps], chain);
+    const assetTimestamps = {
+      address: asset.address,
+      timestamps: [
+        ...transfers.map((t) => Number(t.blockTimeStamp)),
+        currentTimestamp,
+        timestamp24hAgo,
+      ],
+    };
+    const priceData = await this.assetsService.getMultipleHistoricalPrices(
+      [assetTimestamps],
+      chain,
+    );
     const plTotal = this.calculateProfitAndLoss(
       asset,
       transfers,
@@ -106,7 +113,7 @@ export class ProfitAndLossService {
     asset: AssetsEntity,
     transfers: TransferEntityNew[],
     addresses: string[],
-    priceData: PriceServiceResponse<HistoricalPricesMap>,
+    priceData,
     fromTimestamp: number,
     toTimestamp: number,
   ): any {

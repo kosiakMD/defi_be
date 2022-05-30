@@ -46,7 +46,7 @@ export const validationSchema = Joi.object({
   SOLANA_DELEGATION_API_URL: Joi.string().required(),
   CARDANO_DELEGATION_API_URL: Joi.string().required(),
   PRICE_SERVICE_HOST: Joi.string().required(),
-  PRICE_SERVICE_PORT: Joi.number().required(),
+  PRICE_SERVICE_PORT: Joi.number().optional(),
   PRICES_PATH: Joi.string().required(),
   BSCSCAN_URL: Joi.string().required(),
   BSCSCAN_KEY: Joi.string().required(),
@@ -64,6 +64,7 @@ export const validationSchema = Joi.object({
   OPEN_SEA_INTERVAL: Joi.number().required(),
   AAVEGOTCHI_SUBGRAPH_POLYGON: Joi.string().required(),
   AAVEGOTCHI_SUBGRAPH_SVG: Joi.string().required(),
+  ASSETS_SERVICE_HOST: Joi.string().required(),
 });
 
 export const validationOptions = {

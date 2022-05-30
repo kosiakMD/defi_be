@@ -9,6 +9,7 @@ import { Logger } from '@app/common/Logger/Logger.service';
 import { ChainAbbrEnum, ChainNameEnum } from '@app/common/enum';
 import { Address } from '@app/common/types';
 
+import { AssetsService } from '../../../../modules/assets/assets.service';
 import { PriceService } from '../../microservices/price/price.service';
 import { ChainsService } from './../../../../modules/chains/chains.service';
 import { ScanApiService } from './scan.api.service';
@@ -28,8 +29,9 @@ export class PolygonScanService extends ScanApiService implements OnModuleInit {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) logger: Logger,
     priceService: PriceService,
     private readonly chainsService: ChainsService,
+    assetsService: AssetsService,
   ) {
-    super(httpService, configService, cacheManager, logger, priceService);
+    super(httpService, configService, cacheManager, logger, assetsService);
 
     this.url = this.configService.get<string>('POLYGONSCAN_URL');
     this.apiKey = this.configService.get<string>('POLYGONSCAN_KEY');

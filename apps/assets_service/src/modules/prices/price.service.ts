@@ -51,27 +51,27 @@ export class PriceService {
   }
 
   public async saveHistoricalPricesFromCurrentOnes() {
-    const cachedAveragePrices = await this.getPrices(
-      (
-        await this.cache.getKeysByPattern('asset_avg_price_*')
-      ) //
-        .map((key) => getAssetReferenceFromAveragePriceCacheKey(key)),
-    );
-    const getAssetKey = ({ address, chainId }) => `${chainId}-${address}`;
-    const trackedAssetsMap = new Map(
-      (await this.assetsRepository.getAllTrackedAssets()) //
-        .map((trackedAsset) => [getAssetKey(trackedAsset), trackedAsset]),
-    );
+    const trackedAssets = await this.assetsRepository.getAllTrackedAssets();
+
     const promises = [];
-    while (cachedAveragePrices.length) {
-      const averagePricesChunk = cachedAveragePrices.splice(0, 500);
+    while (trackedAssets.length) {
+      const trackedAssetsChunk = trackedAssets.splice(0, 500);
+      const assetsPricesMap = (await this.getPrices(trackedAssetsChunk)) //
+        // need to avoid null prices
+        .filter((assetPrice) => assetPrice.price)
+        .reduce((priceMap, assetPrice) => {
+          priceMap[getPriceMapKey(assetPrice.asset)] = assetPrice;
+          return priceMap;
+        }, {});
       promises.push(
         this.assetsHistoricalPriceRepository.insert(
-          averagePricesChunk
-            .map((averagePrice) => {
+          trackedAssetsChunk
+            // need to avoid null prices
+            .filter((asset) => assetsPricesMap[getPriceMapKey(asset)])
+            .map((trackedAsset) => {
               const newHistoricalPrice = new AssetHistoricalPriceEntity();
-              newHistoricalPrice.asset = trackedAssetsMap.get(getAssetKey(averagePrice.asset));
-              newHistoricalPrice.price = averagePrice.price;
+              newHistoricalPrice.asset = trackedAsset;
+              newHistoricalPrice.price = assetsPricesMap[getPriceMapKey(trackedAsset)].price;
               newHistoricalPrice.timestamp = new Date();
               return newHistoricalPrice;
             })
@@ -178,14 +178,6 @@ function toAvgPriceCacheItem({ asset, price }: AssetAvgPrice) {
   return {
     key: getAvgPriceCacheKey(asset),
     value: price,
-  };
-}
-
-function getAssetReferenceFromAveragePriceCacheKey(key: string): AssetReference {
-  const keyEntries = key.split('_');
-  return {
-    address: keyEntries.pop(),
-    chainId: +keyEntries.pop(),
   };
 }
 

@@ -59,10 +59,10 @@ export interface AaveV2Reserve {
 export interface IAaveV2Meta extends IProtocolMeta {
   feature: FeatureEnum.lending;
   address: Address;
-  incentives: Address;
+  incentives?: Address;
   name: string;
 }
-interface Aave2LendingFeatureMinimal extends ILendingFeatureEntryMinimal {
+export interface Aave2LendingFeatureMinimal extends ILendingFeatureEntryMinimal {
   sTokenAddress: Address;
   vTokenAddress: Address;
 }
@@ -398,12 +398,12 @@ export class AaveV2Lending
         }
       });
 
-      const claimableBalance: BigNumber = await this.getClaimableBalance(
-        checkClaimableForAddresses,
-        address,
-      );
+      let claimableBalance: BigNumber;
+      if (this.meta.incentives) {
+        claimableBalance = await this.getClaimableBalance(checkClaimableForAddresses, address);
+      }
 
-      if (claimableBalance.gt(0)) {
+      if (claimableBalance?.gt(0)) {
         const rewardToken = pools[0].rewarded[0];
         const normalizedRewardAmount = normalizeDecimals(
           claimableBalance.toString(),

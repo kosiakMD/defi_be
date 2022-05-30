@@ -1,6 +1,8 @@
 // import * as fs from 'fs';
 // import { createProxyMiddleware } from 'http-proxy-middleware';
 // import { HttpsProxyAgent } from 'https-proxy-agent'
+import { Request, Response } from 'express';
+
 import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -11,7 +13,6 @@ import { HEADER_REQUEST_ID } from '@app/common/constant';
 
 import { EndpointsSuccessScore } from '../endpoints/endpoints.enums';
 import { EndpointsToRPCCallService } from '../endpoints/services/endpoints-to-rpc-call.service';
-import { IProxyCall } from './rpc-nodes.interfaces';
 
 @Injectable()
 export class RPCNodesService {
@@ -24,8 +25,11 @@ export class RPCNodesService {
   ) {
     this.maxRetries = Number(this.configService.get('RPC_NODES_MAX_RETRIES'));
   }
-  private async makeRPCCall(target: string, proxyCall: IProxyCall): Promise<boolean> {
-    const { request, response } = proxyCall;
+  private async makeRPCCall(
+    target: string,
+    request: Request,
+    response: Response,
+  ): Promise<boolean> {
     return new Promise((ok) => {
       this.logger.log(
         `Proxying RPC request ID: ${request.headers[HEADER_REQUEST_ID]} originally made to '${request.originalUrl}'...`,
@@ -51,17 +55,21 @@ export class RPCNodesService {
         );
     });
   }
-  async proxyRPCCall(chainId: number, proxyCall: IProxyCall): Promise<void> {
-    const endpointsToRPCCall = this.endpointsToRPCCallService.getEndpointsToRPCCall(chainId);
+  async proxyRPCCall({ chainId, archive, request, response }): Promise<void> {
+    const endpointsToRPCCall = this.endpointsToRPCCallService.getEndpointsToRPCCall(
+      chainId,
+      archive,
+    );
     if (!endpointsToRPCCall) {
-      proxyCall.response.status(409).json({ error: `No endpoints for chainId ${chainId}` });
+      response.status(409).json({ error: `No endpoints for chainId ${chainId}` });
     } else {
       for await (const endpointToRPCCall of endpointsToRPCCall) {
         let retries = this.maxRetries || 3;
         while (retries) {
           const callResult = await this.makeRPCCall(
             endpointToRPCCall.endpointsEntity.endpoint,
-            proxyCall,
+            request,
+            response,
           );
           const endpointSuccessScore = callResult
             ? EndpointsSuccessScore.success
@@ -76,7 +84,7 @@ export class RPCNodesService {
           retries -= 1;
         }
       }
-      proxyCall.response
+      response
         .status(418)
         .json({ error: `Sorry, no one of endpoints for chainId ${chainId} replies with success` });
     }

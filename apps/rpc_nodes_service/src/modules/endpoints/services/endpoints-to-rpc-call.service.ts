@@ -45,8 +45,10 @@ export class EndpointsToRPCCallService {
     return this.endpointsToRPCCall;
   }
 
-  public getEndpointsToRPCCall(chainId: number): EndpointToRPCCall[] {
-    return this.endpointsToRPCCall.get(chainId);
+  public getEndpointsToRPCCall(chainId: number, archive: boolean): EndpointToRPCCall[] {
+    return this.endpointsToRPCCall
+      .get(chainId)
+      ?.filter((endpoint) => endpoint.endpointsEntity.archived === archive);
   }
 
   public async updateEndpointSuccessRate(

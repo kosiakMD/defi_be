@@ -6,8 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { ChainIdEnum } from '@app/common';
 import { CHAIN_ID_ETH } from '@app/common/constant';
 import { ERC20Token } from '@app/common/interfaces';
-
-import { MetadataService } from '../services/metadata/metadata.service';
+import { Web3ProviderService } from '@app/common/web3provider';
 
 interface ERC20TokenLocal extends ERC20Token {
   chainId: typeof CHAIN_ID_ETH;
@@ -16,6 +15,11 @@ interface ERC20TokenLocal extends ERC20Token {
 // events: https://web3js.readthedocs.io/en/v1.2.11/web3-eth-contract.html#events
 @Injectable()
 export class WETH {
+  constructor(private readonly chainProvider: Web3ProviderService) {
+    this.ETHProvider = this.chainProvider.getInstanceByChainId(ChainIdEnum.eth);
+    this.contract = new this.ETHProvider.eth.Contract(this.abi as AbiItem[], this.address);
+  }
+
   public static token: ERC20TokenLocal = {
     address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
     chainId: CHAIN_ID_ETH,
@@ -181,9 +185,4 @@ export class WETH {
       type: 'event',
     },
   ];
-
-  constructor(private readonly chainProvider: MetadataService) {
-    this.ETHProvider = this.chainProvider.getInstanceByChainId(ChainIdEnum.eth);
-    this.contract = new this.ETHProvider.eth.Contract(this.abi as AbiItem[], this.address);
-  }
 }

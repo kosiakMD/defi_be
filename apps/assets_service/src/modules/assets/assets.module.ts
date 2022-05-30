@@ -8,7 +8,6 @@ import { Web3ProviderService } from '@app/common/web3provider/web3.provider.serv
 
 import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
-import { MetadataService } from '../../common/services/metadata/metadata.service';
 
 import { AssetsController } from '../../controllers/assets.controller';
 import { AssetCategoryEntity } from '../assets-category/entities/asset-category.entity';
@@ -28,11 +27,46 @@ import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
 import { AssetsRepository } from './repositories/assets.repository';
 import { AssetsService } from './services/assets.service';
-import { TokenService } from './services/token.service';
-import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
-import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
+import { MetadataService } from './services/metadata/metadata.service';
+import { CardanoMetadataStrategy } from './services/metadata/strategies/cardano.strategy';
+import { CosmosMetadataStrategy } from './services/metadata/strategies/cosmos.strategy';
+import { EVMMetaDataStrategy } from './services/metadata/strategies/evm.strategy';
+import { SolanaMetadataStrategy } from './services/metadata/strategies/solana.strategy';
+import { TerraMetadataStrategy } from './services/metadata/strategies/terra.strategy';
+import { SpecificAssetsService } from './services/specific-assets/specific-assets.service';
+import { AaveStrategy } from './services/specific-assets/strategies/aave.strategy';
+import { CompoundStrategy } from './services/specific-assets/strategies/compound.strategy';
+import { CurveStrategy } from './services/specific-assets/strategies/curve.strategy';
+import { ElipsisStrategy } from './services/specific-assets/strategies/elipsis.strategy';
+import { StakedSOHMStrategy } from './services/specific-assets/strategies/stakedSOHM.strategy';
+import { StakedSushiStrategy } from './services/specific-assets/strategies/stakedSushi.strategy';
+import { TerraStrategy } from './services/specific-assets/strategies/terra.strategy';
+import { UniswapStrategy } from './services/specific-assets/strategies/uniswap.strategy';
+import { YearnStrategy } from './services/specific-assets/strategies/yearn.strategy';
+import { CoingeckoAssetsProvider } from './services/tracked-assets/strategies/coingecko-assets.provider';
+import { CoinmarketcapAssetsProvider } from './services/tracked-assets/strategies/coinmarketcap-assets.provider';
 
-const trackedTokensProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProvider];
+const trackedAssetsProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProvider];
+
+const metadataStrategies = [
+  CardanoMetadataStrategy,
+  CosmosMetadataStrategy,
+  EVMMetaDataStrategy,
+  SolanaMetadataStrategy,
+  TerraMetadataStrategy,
+];
+
+const specificAssetsStrategies = [
+  UniswapStrategy,
+  CompoundStrategy,
+  AaveStrategy,
+  CurveStrategy,
+  ElipsisStrategy,
+  StakedSOHMStrategy,
+  StakedSushiStrategy,
+  TerraStrategy,
+  YearnStrategy,
+];
 
 @Module({
   imports: [
@@ -67,7 +101,9 @@ const trackedTokensProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProv
   ],
   controllers: [AssetsController],
   providers: [
-    ...trackedTokensProviders,
+    ...trackedAssetsProviders,
+    ...metadataStrategies,
+    ...specificAssetsStrategies,
     AssetsProcessor,
     AssetsService,
     MetadataService,
@@ -80,7 +116,7 @@ const trackedTokensProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProv
     PriceService,
     AssetsCandidateRepository,
     MulticallAggregator,
-    TokenService,
+    SpecificAssetsService,
     UpdateTrackedAssetsProcessor,
     Web3ProviderService,
   ],

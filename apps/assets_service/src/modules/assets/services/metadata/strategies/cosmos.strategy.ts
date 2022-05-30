@@ -2,13 +2,19 @@
 import { lastValueFrom, map } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
-import { MetadataStrategy } from './index';
+import { AssetMetadata, MetadataStrategy } from './metadata.strategy';
 
-export class CosmosMetadataStrategy extends MetadataStrategy {
-  public async getMetadata(address) {
+// TODO: Looks like not all cosmos chains are handled
+// TODO: Review this implementation and use native APIs or on-chain data
+@Injectable()
+export class CosmosMetadataStrategy implements MetadataStrategy {
+  constructor(private readonly http: HttpService) {}
+
+  async getMetadata(address: string): Promise<AssetMetadata> {
     const [metadata] = handlePromiseAllSettled(
       await Promise.allSettled([
         this.getKavaMetadata(address),
@@ -26,11 +32,7 @@ export class CosmosMetadataStrategy extends MetadataStrategy {
   mintScanUrl = 'https://api.mintscan.io/v1/assets';
   kavaUrl = 'https://api-utility.cosmostation.io/v1/ibc/tokens/kava-9';
 
-  constructor(private http: HttpService) {
-    super();
-  }
-
-  private async getMintMetadata(address) {
+  private async getMintMetadata(address: string): Promise<AssetMetadata> {
     const tokens = await lastValueFrom(
       this.http.get(this.mintScanUrl).pipe(map(({ data }) => data.assets)),
     );
@@ -45,7 +47,7 @@ export class CosmosMetadataStrategy extends MetadataStrategy {
     }
   }
 
-  private async getKavaMetadata(address) {
+  private async getKavaMetadata(address: string): Promise<AssetMetadata> {
     const tokens = await lastValueFrom(
       this.http.get(this.kavaUrl).pipe(map(({ data }) => data.ibc_tokens)),
     );
@@ -60,7 +62,7 @@ export class CosmosMetadataStrategy extends MetadataStrategy {
     }
   }
 
-  private async getOsmosis1Metadata(address) {
+  private async getOsmosis1Metadata(address: string): Promise<AssetMetadata> {
     const tokens = await lastValueFrom(
       this.http.get(this.osmosis1Url).pipe(map(({ data }) => data.ibc_tokens)),
     );
@@ -75,7 +77,7 @@ export class CosmosMetadataStrategy extends MetadataStrategy {
     }
   }
 
-  private async getOsmosisMetadata(address) {
+  private async getOsmosisMetadata(address: string): Promise<AssetMetadata> {
     const tokens = await lastValueFrom(
       this.http.get(this.osmosisUrl).pipe(map(({ data }) => data)),
     );

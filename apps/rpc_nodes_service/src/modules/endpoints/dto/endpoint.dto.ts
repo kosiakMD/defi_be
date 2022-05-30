@@ -29,4 +29,7 @@ export class EndpointDto {
 
   @ApiProperty({ type: Date, example: '2022-01-25T14:21:57.004' })
   updatedAt: Date;
+
+  @ApiProperty({ type: Boolean, example: false })
+  archived: boolean;
 }

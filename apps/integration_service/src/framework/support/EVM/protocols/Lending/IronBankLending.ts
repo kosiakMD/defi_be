@@ -73,14 +73,14 @@ export class IronBankLending
             token: { address: res.underlying_address.toLowerCase() },
             // eslint-disable-next-line newline-per-chained-call
             totalSupplied: new BN(res.cash.value).plus(new BN(res.total_borrows.value)).toString(),
-            apy: { supplyApy: +res.supply_apy.value * 100 },
+            apy: { year: +res.supply_apy.value },
           },
         ],
         borrowed: [
           {
             token: { address: res.underlying_address.toLowerCase() },
             totalBorrowed: res.total_borrows.value,
-            apy: { borrowApy: +res.borrow_apy.value * 100 },
+            apy: { year: +res.borrow_apy.value },
           },
         ],
       };

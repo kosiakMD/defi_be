@@ -72,6 +72,7 @@ import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
 import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
+import { MuesliSwapProtocol } from './protocols/muesliswap/muesliswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
 import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
@@ -149,6 +150,7 @@ export class ProtocolService {
     private readonly staderProtocol: StaderProtocol,
     private readonly osmosisProtocol: OsmosisProtocol,
     private readonly wingridersProtocol: WingRidersProtocol,
+    private readonly muesliSwapProtocol: MuesliSwapProtocol,
   ) {
     this.protocols = [
       abracadabraProtocol,
@@ -193,6 +195,7 @@ export class ProtocolService {
       staderProtocol,
       osmosisProtocol,
       wingridersProtocol,
+      muesliSwapProtocol,
     ];
   }
 
@@ -869,7 +872,8 @@ export class ProtocolService {
             stakingPosition.rewards?.forEach((reward) => {
               reward.price =
                 chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
-              reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;
+              reward.claimableData.value =
+                reward.claimableData.value ?? Number(reward.claimableData.balance) * reward.price;
               if (reward.claimableData.lockedBalance) {
                 reward.claimableData.lockedValue =
                   Number(reward.claimableData.lockedBalance) * reward.price;

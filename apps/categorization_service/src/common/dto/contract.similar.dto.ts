@@ -18,4 +18,7 @@ export class ContractSimilarDto {
     example: { name: 'TendieSwap', url: 'https://www.tendieswap.org', tvl: '257783.0618425319' },
   })
   protocol: { name: string; url: string; tvl: string };
+
+  @ApiProperty({ type: String, example: 'ethereum' })
+  chain: string;
 }

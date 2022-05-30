@@ -7,6 +7,7 @@ type SimilarWithProtocolData = {
   abiCodeSimilarity: number;
   abiJsonSimilarity: number;
   address: string;
+  chain: string;
   protocolName: string;
   protocolUrl: string;
   tvl: string;
@@ -36,14 +37,15 @@ export class ContractsAnalysisRepository extends Repository<ContractsAnalysis> {
         ca.abi_json_similarity "abiJsonSimilarity",
         ca.metadata,
         c2.address,
+        c2.chain,
         p2.name "protocolName",
         p2.url "protocolUrl",
         pp2.value tvl
       FROM contracts_analysis ca
-          left join contracts c1 on ca.contract_id = c1.id
-          left join contracts c2 on ca.counterpart_contract_id = c2.id
-          left join protocols p2 on c2.protocol_id = p2.id
-          left join protocols_properties pp2 on p2.id = pp2.protocol_id and pp2.name = 'TVL'
+          LEFT JOIN contracts c1 ON ca.contract_id = c1.id
+          LEFT JOIN contracts c2 ON ca.counterpart_contract_id = c2.id
+          LEFT JOIN protocols p2 ON c2.protocol_id = p2.id
+          LEFT JOIN protocols_properties pp2 ON p2.id = pp2.protocol_id AND pp2.name = 'TVL'
       WHERE ca.contract_id = $1
           AND (ca.abi_json_similarity >= $2 OR ca.abi_code_similarity >= $3);
     `;

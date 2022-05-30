@@ -86,6 +86,8 @@ configMaps:
     AURORA_URL: https://mainnet.aurora.dev
     KAVA_API: https://api2.kava.io
     KAVA_URL: https://api2.kava.io
+    WING_RIDERS_EXPLORER_URL: https://explorer.mainnet.wingriders.com
+    WING_RIDERS_AGGREGATOR_URL: https://aggregator.mainnet.wingriders.com
   endpoints:
     ACCOUNT_SERVICE_URL: http://account-service
     PRICE_SERVICE_HOST: http://price-service

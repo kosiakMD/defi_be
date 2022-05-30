@@ -40,6 +40,7 @@ const addressValidators: typeof ChainIdEnum = {
   osmosis: isOsmosisAddress as any,
   secret: isSecretAddress as any,
   iotex: isETHAddress as any,
+  milkomeda: isETHAddress as any,
 };
 
 export function keepAddressesByChainId(addresses: string | string[], chainId: ChainIdEnum) {

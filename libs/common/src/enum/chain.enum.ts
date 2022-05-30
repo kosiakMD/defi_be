@@ -28,6 +28,7 @@ export enum ChainAbbrEnum {
   osmosis = 'osmosis',
   secret = 'secret',
   iotex = 'iotex',
+  milkomeda = 'milkomeda',
 }
 
 export enum ChainNameEnum {
@@ -60,6 +61,7 @@ export enum ChainNameEnum {
   osmosis = 'osmosis',
   secret = 'secret',
   iotex = 'iotex',
+  milkomeda = 'milkomeda',
 }
 
 export enum ChainIdEnum {
@@ -92,6 +94,7 @@ export enum ChainIdEnum {
   osmosis = 27,
   secret = 28,
   iotex = 29,
+  milkomeda = 30,
 }
 
 // INFO: https://api.coingecko.com/api/v3/asset_platforms
@@ -126,73 +129,7 @@ export enum CoingeckoPlatformEnum {
   osmosis = 'osmosis',
   secret = 'secret',
   iotex = 'iotex',
-}
-
-export enum CoingeckoPlatformChainIdEnum {
-  'ethereum' = 1,
-  'binance-smart-chain' = 2,
-  'polygon-pos' = 3,
-  'fantom' = 4,
-  'arbitrum-one' = 5,
-  'avalanche' = 6,
-  'xdai' = 7,
-  'celo' = 8,
-  'moonriver' = 9,
-  'harmony-shard-0' = 10,
-  'huobi-token' = 11,
-  'solana' = 12,
-  'okex-chain' = 13,
-  'cronos' = 14,
-  'boba' = 15,
-  'kucoin-community-chain' = 16,
-  'optimistic-ethereum' = 17,
-  'near-protocol' = 18,
-  'terra' = 19,
-  // vvs = 'vvs',
-  'klay-token' = 20,
-  'fuse' = 21,
-  'cardano' = 22,
-  'metis-andromeda' = 23,
-  'ronin' = 24,
-  'cosmos' = 25,
-  'kava' = 26,
-  'osmosis' = 27,
-  'secret' = 28,
-  'iotex' = 29,
-}
-
-// TODO check if all chain(slug) is correct
-export enum CoinmarketcapPlatformChainIdEnum {
-  'ethereum' = 1,
-  'bnb' = 2,
-  'polygon' = 3,
-  'fantom' = 4,
-  'arbitrum-one' = 5,
-  'avalanche' = 6,
-  'xdai' = 7,
-  'celo' = 8,
-  'moonriver' = 9,
-  'harmony-shard-0' = 10,
-  'huobi-token' = 11,
-  'solana' = 12,
-  'okex-chain' = 13,
-  'cronos' = 14,
-  'boba' = 15,
-  'kucoin-community-chain' = 16,
-  'optimistic-ethereum' = 17,
-  'near-protocol' = 18,
-  'terra' = 19,
-  // vvs = 'vvs',
-  'klay-token' = 20,
-  'fuse' = 21,
-  'cardano' = 22,
-  'metis-andromeda' = 23,
-  'ronin' = 24,
-  'cosmos' = 25,
-  'kava' = 26,
-  'osmosis' = 27,
-  'secret' = 28,
-  'iotex' = 29,
+  milkomeda = 'milkomeda-cardano',
 }
 
 export enum AbsoluteChainIdEnum {
@@ -218,6 +155,7 @@ export enum AbsoluteChainIdEnum {
   fuse = 122,
   metis = 1088,
   iotex = 1099,
+  milkomeda = 2001,
   // INFO: Not EVM chains
   cardano = 1003,
   cosmos = 2004,
@@ -250,11 +188,4 @@ export enum EtherScanMessageEnum {
 export enum TransactionType {
   normal = 'normal',
   internal = 'internal',
-}
-
-export enum ChainSymbols {
-  eth = 'eth',
-  ETH = 'ETH',
-  bsc = 'bsc',
-  BSC = 'BSC',
 }

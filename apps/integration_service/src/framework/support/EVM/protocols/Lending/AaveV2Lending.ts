@@ -8,40 +8,36 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
+import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-
-import { toDecimals } from '../../../../../common/utils/util';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
+import { MissingTokenException } from '../../../exceptions';
 import {
   INamedFunctionPredicates,
   INamedFunctions,
   IProtocolMeta,
   IRootProtocol,
+  TokenMap,
 } from '../../../interfaces';
 import {
   ILendingFeatureEntryMinimal,
   ILendingFeatureOpportunity,
   ILendingFeatureUserEntry,
 } from '../../../interfaces/feature.lending.interface';
+import { IBorrowTokenUserEntity } from '../../../interfaces/tokens.borrowed.interface';
+import { ERC20Token } from '../../../interfaces/tokens.common.interface';
+import { IRewardTokenUserEntry } from '../../../interfaces/tokens.rewarded.interface';
 import {
-  IBorrowTokenMinimal,
-  IBorrowTokenOpportunity,
-} from '../../../interfaces/tokens.borrowed.interface';
-import {
-  ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
+  ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { EVMCore } from '../../EVMCore';
 
-// interface IAaveV3LendContext {
-//   allReservedTokens?: { tokenAddress: string; symbol: string }[];
-//   allATokens?: { tokenAddress: string; symbol: string }[];
-//   reserveTokensAddresses?: any;
-// }
+export const RAY = new BigNumber(10).pow(27);
 
 export interface AaveV2Reserve {
   id: Address;
@@ -60,22 +56,26 @@ export interface AaveV2Reserve {
   vToken: { id: Address };
 }
 
-const AAVE_RATE_DECIMALS = 27;
-export interface IAaveV22Meta extends IProtocolMeta {
+export interface IAaveV2Meta extends IProtocolMeta {
   feature: FeatureEnum.lending;
   address: Address;
-  pool: Address;
   incentives: Address;
-  //   context: IAaveV3LendContext;
   name: string;
 }
-
+interface Aave2LendingFeatureMinimal extends ILendingFeatureEntryMinimal {
+  sTokenAddress: Address;
+  vTokenAddress: Address;
+}
+interface AaveLendingFeatureOpportunity extends ILendingFeatureOpportunity {
+  sTokenAddress: Address;
+  vTokenAddress: Address;
+}
 export class AaveV2Lending
   extends EVMCore<
-    ILendingFeatureEntryMinimal,
-    ILendingFeatureOpportunity,
+    Aave2LendingFeatureMinimal,
+    AaveLendingFeatureOpportunity,
     ILendingFeatureUserEntry,
-    IAaveV22Meta
+    IAaveV2Meta
   >
   implements IRootProtocol
 {
@@ -98,13 +98,16 @@ export class AaveV2Lending
     getUserAccountData: () => (item) => item.name === 'getUserAccountData',
   };
 
+  protected balanceOfFunction: INamedFunctionPredicates = {
+    balanceOf: () => (item) => item.name === 'balanceOf',
+  };
+
   protected incentivesFunctionsPredicates: INamedFunctionPredicates = {
     getRewardsBalance: () => (item) => item.name === 'getRewardsBalance',
     rewardToken: () => (item) => item.name === 'REWARD_TOKEN',
   };
 
-  async getCacheableOpportunityData(): Promise<ILendingFeatureEntryMinimal[]> {
-    // const contract = this.getMainContract();
+  async getCacheableOpportunityData(): Promise<Aave2LendingFeatureMinimal[]> {
     const incentivesContract = new DynamicContract(this.meta.incentives);
 
     const rewardTokenCall = incentivesContract.createCall(this.incentivesFunctions.rewardToken);
@@ -113,31 +116,28 @@ export class AaveV2Lending
     const reserves: AaveV2Reserve[] = (await this.subgraph.getReserves(this.meta.chain)) as any;
 
     return reserves.map(
-      (
-        {
-          aToken,
-          sToken,
-          vToken,
-          underlyingAsset,
-          variableBorrowRate,
-          stableBorrowRate,
-          liquidityRate,
-          totalCurrentVariableDebt,
-          totalPrincipalStableDebt,
-          totalATokenSupply,
-        },
-        index,
-      ) => {
+      ({
+        aToken,
+        sToken,
+        vToken,
+        underlyingAsset,
+        variableBorrowRate,
+        stableBorrowRate,
+        liquidityRate,
+        totalCurrentVariableDebt,
+        totalPrincipalStableDebt,
+        totalATokenSupply,
+      }) => {
         const borrowRate = {};
         this.updateBorrowRateField(
-          'variableRate',
+          'variableApy',
           variableBorrowRate,
           totalCurrentVariableDebt,
           borrowRate,
         );
 
         this.updateBorrowRateField(
-          'stableRate',
+          'stableApy',
           stableBorrowRate,
           totalPrincipalStableDebt,
           borrowRate,
@@ -147,11 +147,17 @@ export class AaveV2Lending
           feature: this.meta.feature,
           chain: this.meta.chain,
           id: aToken.id,
+          sTokenAddress: sToken.id,
+          vTokenAddress: vToken.id,
           supplied: [
             {
               token: { address: underlyingAsset.toLowerCase() },
               totalSupplied: totalATokenSupply.toString(),
-              rate: { supplyRate: liquidityRate.toString() },
+              apy: {
+                year: new BigNumber(liquidityRate) //
+                  .dividedBy(RAY)
+                  .toNumber(),
+              },
             },
           ],
           borrowed: [
@@ -160,7 +166,7 @@ export class AaveV2Lending
               totalBorrowed: new BigNumber(totalCurrentVariableDebt as any)
                 .plus(new BigNumber(totalPrincipalStableDebt as any))
                 .toString(),
-              rate: borrowRate,
+              apy: borrowRate,
             },
           ],
           rewarded: [
@@ -180,14 +186,14 @@ export class AaveV2Lending
     );
 
     this.poolFunctions = await this.abiService.parseFunctionsFromAddress(
-      this.meta.pool,
-      this.meta.chain, // TODO: update to this.meta.chain once they are verified
+      '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
+      1,
       this.poolFunctionPredicates,
     );
 
     this.incentivesFunctions = await this.abiService.parseFunctionsFromAddress(
-      this.meta.incentives,
-      this.meta.chain,
+      '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
+      1,
       this.incentivesFunctionsPredicates,
     );
 
@@ -201,108 +207,317 @@ export class AaveV2Lending
 
   protected updateBorrowRateField(field: string, rate: string, debtValue: string, borrowRate: any) {
     if (Number(debtValue) > 0) {
-      borrowRate[field] = rate;
+      borrowRate[field] = new BigNumber(rate) //
+        .dividedBy(RAY)
+        .toNumber();
     }
+  }
+  protected formatOpportunity(
+    opportunity: Aave2LendingFeatureMinimal,
+    tokens: TokenMap,
+  ): void | AaveLendingFeatureOpportunity {
+    const base: any = {
+      feature: opportunity.feature,
+      id: opportunity.id,
+      chain: opportunity.chain,
+      links: this.generateLinks(opportunity),
+      ...opportunity,
+    };
+
+    const receipt = this.formatOpportunityReceiptToken(
+      opportunity,
+      tokens.get(opportunity.id),
+      tokens,
+    );
+    if (receipt) {
+      base.token = receipt;
+    }
+
+    // fill & format supplied tokens
+    if ('supplied' in opportunity) {
+      base.supplied = opportunity.supplied.map((poolToken) => {
+        const token = tokens.get(poolToken.token.address);
+        if (!token) {
+          throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+        }
+
+        return this.formatOpportunitySuppliedToken(poolToken, token);
+      });
+    } else if ('supply' in opportunity) {
+      const token = tokens.get((opportunity.supply as any).token.address);
+      if (!token) {
+        throw new MissingTokenException(
+          (opportunity.supply as any).token,
+          opportunity,
+          this.meta.chain,
+        );
+      }
+
+      base.supply = this.formatOpportunitySuppliedToken(opportunity.supply, token);
+    }
+
+    const tvl = this.getOpportunityTVL(opportunity, tokens);
+
+    // fill & format reward tokens
+    if ('rewarded' in opportunity) {
+      base.rewarded = opportunity.rewarded.map((poolToken) => {
+        const token = tokens.get(poolToken.token.address);
+        if (!token) {
+          throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+        }
+
+        return this.formatOpportunityRewardedToken(poolToken, token, tvl);
+      });
+    } else if ('reward' in opportunity) {
+      const token = tokens.get((opportunity.reward as any).token.address);
+      if (!token) {
+        throw new MissingTokenException(
+          (opportunity.reward as any).token,
+          opportunity,
+          this.meta.chain,
+        );
+      }
+
+      base.reward = this.formatOpportunityRewardedToken(opportunity.reward, token, tvl);
+    }
+
+    // fill & format borrowed tokens
+    if ('borrowed' in opportunity) {
+      base.borrowed = opportunity.borrowed.map((poolToken) => {
+        const token = tokens.get(poolToken.token.address);
+        if (!token) {
+          throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+        }
+
+        return this.formatOpportunityBorrowedToken(poolToken, token);
+      });
+    } else if ('borrow' in opportunity) {
+      const token = tokens.get((opportunity.borrow as any).token.address);
+      if (!token) {
+        throw new MissingTokenException(
+          (opportunity.borrow as any).token,
+          opportunity,
+          this.meta.chain,
+        );
+      }
+
+      base.borrow = this.formatOpportunityBorrowedToken(opportunity.borrow, token);
+    }
+
+    return base;
+  }
+
+  protected formatOpportunitySuppliedToken(
+    supplied: any,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    const totalSupplied = normalizeDecimals(supplied.totalSupplied, token.decimals);
+
+    return {
+      token,
+      apy: supplied.apy,
+      // eslint-disable-next-line newline-per-chained-call
+      tvl: new BigNumber(totalSupplied).multipliedBy(new BigNumber(token.price)).toNumber(),
+    };
+  }
+
+  protected formatOpportunityBorrowedToken(
+    borrowed: any,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    const totalBorrowed = normalizeDecimals(borrowed.totalBorrowed, token.decimals);
+
+    return {
+      token,
+      apy: borrowed.apy,
+      // eslint-disable-next-line newline-per-chained-call
+      tvl: new BigNumber(totalBorrowed).multipliedBy(new BigNumber(token.price)).toNumber(),
+    };
   }
 
   async getUsersData(
     addresses: string[],
   ): Promise<{ data: Map<string, ILendingFeatureUserEntry[]>; errors: Error[] }> {
-    // const contract = this.getMainContract();
     const { data: pools, errors } = await this.getPoolData();
 
     const wallets = new Map();
-    // const poolContract = new DynamicContract(this.meta.pool);
-    // const incentives = new DynamicContract(this.meta.incentives);
 
     for (const address of addresses) {
-      const supplyTokens = [];
-      const borrowTokens = [];
-      const rewardTokens = [];
+      const aTokenBalanceCalls = [];
+      const sTokenBalanceCalls = [];
+      const vTokenBalanceCalls = [];
+
+      for (const pool of pools) {
+        const aTokenContract = new ERC20(pool.id);
+        aTokenBalanceCalls.push(aTokenContract.balanceOf(address));
+
+        const sTokenContract = new ERC20(pool.sTokenAddress);
+        sTokenBalanceCalls.push(sTokenContract.balanceOf(address));
+
+        const vTokenContract = new ERC20(pool.vTokenAddress);
+        vTokenBalanceCalls.push(vTokenContract.balanceOf(address));
+      }
+
+      const aTokenBalances: BigNumber[] = await this.multicall.callArray(
+        aTokenBalanceCalls,
+        this.meta.chain,
+      );
+      const sTokenBalances: BigNumber[] = await this.multicall.callArray(
+        sTokenBalanceCalls,
+        this.meta.chain,
+      );
+      const vTokenBalances: BigNumber[] = await this.multicall.callArray(
+        vTokenBalanceCalls,
+        this.meta.chain,
+      );
+
+      const suppliedTokens: ISupplyTokenUserEntry[] = [];
+      const borrowedTokens: IBorrowTokenUserEntity[] = [];
+      const rewardTokens: IRewardTokenUserEntry[] = [];
+
+      const checkClaimableForAddresses = [];
+
+      pools.forEach(async (pool, ind) => {
+        const aTokenBalance = aTokenBalances[ind];
+        const sTokenBalance = sTokenBalances[ind];
+        const vTokenBalance = vTokenBalances[ind];
+
+        if (aTokenBalance.gt(0)) {
+          checkClaimableForAddresses.push(pool.id);
+          suppliedTokens.push(this.formatFinalSupplyToken(pool, aTokenBalance));
+        }
+
+        if (sTokenBalance.gt(0)) {
+          checkClaimableForAddresses.push(pool.sTokenAddress);
+          borrowedTokens.push(this.formatFinalBorrowToken(pool, sTokenBalance, 'stableApy'));
+        }
+
+        if (vTokenBalance.gt(0)) {
+          checkClaimableForAddresses.push(pool.vTokenAddress);
+          borrowedTokens.push(this.formatFinalBorrowToken(pool, vTokenBalance, 'variableApy'));
+        }
+      });
+
+      const claimableBalance: BigNumber = await this.getClaimableBalance(
+        checkClaimableForAddresses,
+        address,
+      );
+
+      if (claimableBalance.gt(0)) {
+        const rewardToken = pools[0].rewarded[0];
+        const normalizedRewardAmount = normalizeDecimals(
+          claimableBalance.toString(),
+          rewardToken.token.decimals,
+        );
+
+        rewardTokens.push({
+          ...rewardToken,
+          amount: normalizedRewardAmount,
+          value: new BigNumber(normalizedRewardAmount)
+            .multipliedBy(new BigNumber(rewardToken.token.price))
+            .toNumber(),
+        });
+      }
+
+      const debtRatio = await this.getDebtRatio(address);
+
       wallets.set(address, [
         {
           feature: FeatureEnum.lending,
           id: 'aave-lending',
           chain: this.meta.chain,
-          borrowed: borrowTokens,
-          supplied: supplyTokens,
+          borrowed: borrowedTokens,
+          supplied: suppliedTokens,
           rewarded: rewardTokens,
-          debtRatio: 0,
+          debtRatio,
         },
       ]);
     }
 
-    // const calls = new Map();
-    // calls.set(
-    //   `${address}.rewards`,
-    //   incentivesV3.createCall(
-    //     this.incentivesFunctions.allUserRewards,
-    //     this.meta.context.allATokens.map((data) => data.tokenAddress),
-    //     address,
-    //   ),
-    // );
-    // calls.set(
-    //   `${address}.getUserAccountData`,
-    //   poolContract.createCall(poolFunctions.getUserAccountData, address),
-    // );
-    // pools.forEach((pool) => {
-    //   calls.set(
-    //     `${pool.id}.userReserveData(${address})`,
-    //     contract.createCall(
-    //       this.poolFunctions.userReserveData,
-    //       pool.supplied[0].token.address,
-    //       address,
-    //     ),
-    //   );
-    // });
-
-    // const multicallResults = await this.multicall.handleInBatches(calls, this.meta.chain);
-
-    // const { healthFactor } = multicallResults.get(`${address}.getUserAccountData`).output.data;
-
     return { data: wallets, errors };
   }
+  private async getClaimableBalance(
+    assetAddresses: string[],
+    userAddress: string,
+  ): Promise<BigNumber> {
+    const blacklistedRewardAssetAddress = '0x3356ec1efa75d9d150da1ec7d944d9edf73703b7';
+    const incentivesContract = new DynamicContract(this.meta.incentives);
 
-  protected formatBorrowApy(borrowed: IBorrowTokenMinimal) {
-    return Object.entries(borrowed.rate)?.reduce((resp, [key, value]) => {
-      // renames variableRate, stableRate => variableApy, stableApy (if present)
-      return Object.assign(resp, {
-        [key.replace('Rate', 'Apy')]: normalizeDecimals(value, AAVE_RATE_DECIMALS),
-      });
-    }, {});
+    return (
+      await this.multicall.callArray(
+        [
+          incentivesContract.createCall(
+            this.incentivesFunctions.getRewardsBalance,
+            assetAddresses.filter((x) => x !== blacklistedRewardAssetAddress),
+            userAddress,
+          ),
+        ],
+        this.meta.chain,
+      )
+    )[0];
   }
 
-  protected formatSupplyApy(supplied: ISupplyTokenMinimal) {
+  private formatFinalBorrowToken(
+    pool: AaveLendingFeatureOpportunity,
+    sTokenBalance: BigNumber,
+    apyField: 'stableApy' | 'variableApy',
+  ): IBorrowTokenUserEntity {
+    const borrowedToken = pool.borrowed[0];
+
+    const normalizedBorrowAmount = normalizeDecimals(
+      sTokenBalance.toString(),
+      borrowedToken.token.decimals,
+    );
+    const borrowValueBn = new BigNumber(normalizedBorrowAmount).multipliedBy(
+      new BigNumber(borrowedToken.token.price),
+    );
+
     return {
-      supplyApy: normalizeDecimals(supplied.rate.supplyRate, AAVE_RATE_DECIMALS),
+      ...borrowedToken,
+      apy: { year: borrowedToken.apy[apyField] },
+      amount: normalizedBorrowAmount,
+      value: borrowValueBn.toNumber(),
+    };
+  }
+  private formatFinalSupplyToken(
+    pool: AaveLendingFeatureOpportunity,
+    aTokenBalance: BigNumber,
+  ): ISupplyTokenUserEntry {
+    const suppliedToken = pool.supplied[0];
+    const normalizedSupplyAmount = normalizeDecimals(
+      aTokenBalance.toString(),
+      suppliedToken.token.decimals,
+    );
+    const supplyValueBn = new BigNumber(normalizedSupplyAmount).multipliedBy(
+      new BigNumber(suppliedToken.token.price),
+    );
+
+    return {
+      ...suppliedToken,
+      amount: normalizedSupplyAmount,
+      value: supplyValueBn.toNumber(),
     };
   }
 
-  formatLendingUserData(pool: IBorrowTokenOpportunity | ISupplyTokenOpportunity, balance: string) {
-    const userBalance = toDecimals(balance, pool.token.decimals);
-    let apy = null;
-    if (pool.apy) {
-      const variants = ['supplyApy', 'borrowApy', 'stableApy', 'variableApy'];
-      for (const variant of variants) {
-        if (pool.apy[variant]) {
-          apy = pool.apy[variant];
-          break;
-        }
-      }
+  private async getDebtRatio(userAddress: string) {
+    let debtRatio = 0;
+    const poolContract = new DynamicContract(this.meta.address);
+
+    const { totalCollateralETH, totalDebtETH, healthFactor } = (
+      await this.multicall.callArray(
+        [poolContract.createCall(this.poolFunctions.getUserAccountData, userAddress)],
+        this.meta.chain,
+      )
+    )[0];
+
+    if (Number(totalCollateralETH.toString()) || Number(totalDebtETH.toString())) {
+      const MAX_HEALTH = 100;
+
+      debtRatio = BigNumber.minimum(
+        normalizeDecimals(healthFactor.toString(), 18),
+        MAX_HEALTH,
+      ).toNumber();
     }
-
-    const breakdown = {
-      day: apy / 365,
-      week: apy / 52,
-      month: apy / 12,
-      year: apy,
-    };
-
-    return Object.assign({}, pool, {
-      amount: userBalance,
-      value: userBalance * pool.token.price,
-      apr: breakdown,
-      apy: breakdown,
-    });
+    return debtRatio;
   }
 }

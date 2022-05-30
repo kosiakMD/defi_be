@@ -16,11 +16,11 @@ import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ProtocolModule } from '../protocols/protocol.module';
+import { AaveSubgraph } from '../subgraphs/subgraphs/aave.subgraph';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
 import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decorator';
-import { AaveSubgraph } from '../subgraphs/subgraphs/aave.subgraph';
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 

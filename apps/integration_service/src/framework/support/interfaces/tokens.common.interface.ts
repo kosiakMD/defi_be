@@ -41,6 +41,7 @@ export interface ITokenUserEntry {
   value: number; // balance * price
 }
 export interface IBaseApy {
+  year?: number;
   variableApy?: number;
   stableApy?: number;
 }

@@ -1,13 +1,12 @@
+import { IReserve } from 'apps/integration_service/src/framework/support/EVM/protocols/Lending/AaveV2/aave.interfaces';
+import { getReservesQuery } from 'apps/integration_service/src/framework/support/EVM/protocols/Lending/AaveV2/reserves.query';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainDto, ChainIdEnum } from '@app/common';
-
-import { IReserve } from '../../protocols/protocols/aave/aave.interfaces';
-import { getReservesQuery } from '../../protocols/protocols/aave/queries/reserves.query';
+import { ChainIdEnum } from '@app/common';
 
 @Injectable()
 export class AaveSubgraph {

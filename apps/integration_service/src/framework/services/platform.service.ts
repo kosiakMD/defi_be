@@ -11,8 +11,8 @@ import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
+import { AaveV2 } from '../platforms/AaveV2';
 import { AaveV3 } from '../platforms/AaveV3';
-import { AaveV22 } from '../platforms/AaveV22';
 import { AlchemixV2 } from '../platforms/AlchemixV2';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BabySwap } from '../platforms/BabySwap';
@@ -99,7 +99,7 @@ export class PlatformService {
       Stargate,
       Synapse,
       IronBank,
-      AaveV22,
+      AaveV2,
     });
   }
 

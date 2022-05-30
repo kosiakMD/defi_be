@@ -1,0 +1,69 @@
+import { Inject } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { ChainIdEnum, Logger } from '@app/common';
+
+import { SpiritLiquidity } from '../support/EVM/protocols/Liquidity/SpiritLiquidity';
+import { SpiritLocked } from '../support/EVM/protocols/Locked/SpiritLocked';
+import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { SpiritStaking } from '../support/EVM/protocols/Yield/SpiritStaking';
+import { RootPlatform } from '../support/RootPlatform';
+import { FeatureEnum } from '../support/enums';
+
+export class Spiritswap extends RootPlatform {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly moduleRef: ModuleRef,
+  ) {
+    super();
+  }
+
+  async register() {
+    this.registerMeta({
+      name: this.constructor.name,
+      slug: this.constructor.name,
+      links: {
+        url: 'https://spiritswap.finance/',
+        logo: 'https://spiritswap.finance/favicon.png',
+      },
+    });
+
+    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
+      chain: ChainIdEnum.ftm,
+      name: 'Farms - Masterchef - Spiritswap',
+      feature: FeatureEnum.staking,
+      address: '0x9083ea3756bde6ee6f27a6e996806fbd37f6f093',
+    });
+
+    await this.registerProtocol(SpiritLocked, {
+      chain: ChainIdEnum.ftm,
+      name: 'Locked - Spiritswap',
+      feature: FeatureEnum.lockedBalances,
+      address: '0x2FBFf41a9efAEAE77538bd63f1ea489494acdc08',
+    });
+
+    await this.registerProtocol(SpiritStaking, {
+      chain: ChainIdEnum.ftm,
+      name: 'Farms - Spiritswap',
+      feature: FeatureEnum.staking,
+      address: '0x420b17f69618610DE18caCd1499460EFb29e1d8f',
+      context: { rewardToken: '0x5cc61a78f164885776aa610fb0fe1257df78e59b' },
+    });
+
+    await this.registerProtocol(SpiritLiquidity, {
+      chain: ChainIdEnum.ftm,
+      name: 'Luquidity - Spiritswap',
+      feature: FeatureEnum.pools,
+      address: '0xef45d134b73241eda7703fa787148d9c9f4950b0',
+    });
+
+    // await this.registerProtocol(SpiritLending, {
+    //   chain: ChainIdEnum.ftm,
+    //   name: 'Lending - Spiritswap',
+    //   feature: FeatureEnum.lending,
+    //   address: '0x550c720D32D47A0Cb471d29b2fdF009F884d45dA',
+    //   // address: '0x892701d128d63c9856a9eb5d967982f78fd3f2ae',
+    // });
+  }
+}

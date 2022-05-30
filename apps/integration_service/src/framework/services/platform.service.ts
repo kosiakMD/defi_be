@@ -38,6 +38,7 @@ import { QuickSwap } from '../platforms/QuickSwap';
 import { RocketPool } from '../platforms/RocketPool';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { Solend } from '../platforms/Solend';
+import { Spiritswap } from '../platforms/Spiritswap';
 import { SpookySwap } from '../platforms/SpookySwap';
 import { Stargate } from '../platforms/Stargate';
 import { Synapse } from '../platforms/Synapse';
@@ -94,6 +95,7 @@ export class PlatformService {
       RocketPool,
       Stargate,
       Synapse,
+      Spiritswap,
     });
   }
 

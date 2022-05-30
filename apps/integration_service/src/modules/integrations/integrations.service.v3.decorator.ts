@@ -13,6 +13,7 @@ import {
   ProtocolName,
 } from '@app/common';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
+import { BalanceData, LockedToken } from '@app/common/dto/base.data.locked.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
@@ -279,7 +280,30 @@ export class IntegrationsServiceV3Decorator {
           });
         }
 
+        if (v3WalletChain.positions.lockedBalances) {
+          v2WalletChain[FeatureEnum.lockedBalances] = {
+            totalValue: 0,
+            items: [],
+          };
+
+          v2WalletChain[FeatureEnum.lockedBalances].items =
+            v3WalletChain.positions.lockedBalances.map((v3LockedPos) => {
+              const v2Locked = plainToClass(LockedToken, {
+                address: v3LockedPos.supplied[0].token.address,
+                name: v3LockedPos.supplied[0].token.name,
+                symbol: v3LockedPos.supplied[0].token.symbol,
+                decimals: v3LockedPos.supplied[0].token.decimals,
+                locked: plainToClass(BalanceData, {
+                  balance: +v3LockedPos.supplied[0].amount,
+                }),
+              });
+              v2Locked.totalBalance = v2Locked.locked.balance;
+              return v2Locked;
+            });
+        }
+
         v2WalletChain.features = [...new Set(v2WalletChain.features)];
+
         return v2WalletChain;
       });
       return v2Wallet;
@@ -377,6 +401,17 @@ export class IntegrationsServiceV3Decorator {
 
     return claimableV2;
   }
+
+  // static lockedToV2(lockedV3: ILockedFeatureUser): any {
+  //   const test = plainToClass(BaseDataLocked, {
+  //     chain: lockedV3.chain,
+  //     protocolType: FeatureEnum.staking,
+  //     feature: FeatureEnum.lockedBalances,
+  //     items: [],
+  //   });
+
+  //   return test;
+  // }
 
   static liquidityToV2(liquidityV3: IPoolFeatureEntryUserEntry): LiquidityPoolFeature {
     const supplied = liquidityV3.supplied[0];

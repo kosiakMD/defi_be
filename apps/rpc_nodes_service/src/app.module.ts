@@ -18,7 +18,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
-import { SentryInterceptor } from '@app/common/interceptors/sentry.interceptor';
+import { SentryLogInterceptor } from '@app/common/interceptors/sentry-log.interceptor';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
@@ -70,7 +70,7 @@ import { RPCNodesModule } from './modules/rpc_nodes/rpc-nodes.module';
   providers: [
     {
       provide: APP_INTERCEPTOR,
-      useClass: SentryInterceptor,
+      useClass: SentryLogInterceptor,
     },
     {
       provide: APP_FILTER,

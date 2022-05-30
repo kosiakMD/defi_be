@@ -50,8 +50,8 @@ interface SentryEntry {
 }
 
 @Injectable()
-// export class SentryInterceptor<T = any, R = any> implements NestInterceptor<T, R> {
-export class SentryInterceptor implements NestInterceptor {
+// export class SentryLogInterceptor<T = any, R = any> implements NestInterceptor<T, R> {
+export class SentryLogInterceptor implements NestInterceptor {
   private sentryLog(
     err: Error | string,
     sentryParams: CaptureContext,

@@ -40,7 +40,7 @@ export class Nereus extends RootPlatform {
     await this.registerProtocol(MasterChefNeureus, {
       chain: ChainIdEnum.avax,
       name: 'Lending - Nereus',
-      feature: FeatureEnum.lending,
+      feature: FeatureEnum.staking,
       address: '0xa57a8C5dd29bd9CC605027E62935db2cB5485378',
     });
   }

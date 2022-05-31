@@ -40,7 +40,7 @@
     "assets-typeorm:generate": "yarn assets-typeorm migration:generate",
     "assets-typeorm:run": "yarn assets-typeorm migration:run",
     "assets-typeorm:revert": "yarn assets-typeorm migration:revert",
-    "assets-prestart-fix": "sh ./apps/assets_service/require_es_module_fix.sh",
+    "assets-prestart-fix": "sh ./apps/assets/require_es_module_fix.sh",
     "assets-start": "yarn assets-prestart-fix && nest start assets",
     "assets-start:dev": "yarn assets-prestart-fix && nest start assets --watch",
     "assets-start:debug": "yarn assets-prestart-fix && nest start assets --debug --watch",

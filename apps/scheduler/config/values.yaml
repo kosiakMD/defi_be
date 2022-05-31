@@ -1,3 +1,7 @@
+ingress:
+  enabled: true
+  host: devscheduler.defiyield.app
+
 configMaps:
   logs:
     LOG_AWS_ENABLED: true
@@ -6,10 +10,10 @@ configMaps:
 
 resources:
   requests:
-    cpu: 100m
+    cpu: 50m
     memory: 200Mi
   limits:
-    cpu: 100m
+    cpu: 50m
     memory: 200Mi
 
 secrets:

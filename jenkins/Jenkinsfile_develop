@@ -4,7 +4,7 @@ pipeline {
     agent any
     parameters {
         string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
-        string(name: "REPLICAS", description: "Default amount of replicas", defaultValue: "3", trim: true)
+        string(name: "REPLICAS", description: "Default amount of replicas", defaultValue: "2", trim: true)
         string(name: "TEMPLATE", description: "Default chart template", defaultValue: "1.0.5", trim: true)
     }
     options {

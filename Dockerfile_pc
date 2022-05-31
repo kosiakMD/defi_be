@@ -30,9 +30,9 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
-#COPY --from=development /usr/src/app/apps/price_service/config/.env /dist/apps/price_service/.env
-RUN touch /usr/src/app/dist/apps/price_service/.env
+#COPY --from=development /usr/src/app/apps/price/config/.env /dist/apps/price/.env
+RUN touch /usr/src/app/dist/apps/price/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/price_service/src/main"]
+CMD ["dist/apps/price/src/main"]

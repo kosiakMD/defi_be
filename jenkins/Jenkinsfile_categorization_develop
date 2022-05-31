@@ -4,7 +4,7 @@ pipeline {
     agent any
     parameters {
         string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
-        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_categorization_service", trim: true)
+        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_categorization", trim: true)
     }
     options {
         buildDiscarder(

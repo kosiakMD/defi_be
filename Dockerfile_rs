@@ -8,7 +8,7 @@ RUN yarn install --loglevel verbose
 
 # Build application
 COPY . .
-RUN yarn rpc-nodes-build
+RUN yarn rpc-build
 
 # Configure application startup command
 CMD ["npm", "run", "start"]
@@ -30,9 +30,9 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
-#COPY --from=development /usr/src/app/apps/rpc_nodes_service/config/.env /dist/apps/rpc_nodes_service/.env
-RUN touch /usr/src/app/dist/apps/rpc_nodes_service/.env
+#COPY --from=development /usr/src/app/apps/rpc/config/.env /dist/apps/rpc/.env
+RUN touch /usr/src/app/dist/apps/rpc/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/rpc_nodes_service/src/main"]
+CMD ["dist/apps/rpc/src/main"]

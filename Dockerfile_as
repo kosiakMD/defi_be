@@ -53,10 +53,10 @@ COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
 RUN sed '/"type": "module"/d' node_modules/@saberhq/solana-contrib/package.json -i
 RUN sed '/"type": "module"/d' node_modules/@saberhq/option-utils/package.json -i
-#COPY --from=development /usr/src/app/apps/assets_service/config/.env /dist/apps/assets_service/.env
+#COPY --from=development /usr/src/app/apps/assets/config/.env /dist/apps/assets/.env
 
-RUN touch /usr/src/app/dist/apps/assets_service/.env
+RUN touch /usr/src/app/dist/apps/assets/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/assets_service/src/main"]
+CMD ["dist/apps/assets/src/main"]

@@ -30,9 +30,9 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
-#COPY --from=development /usr/src/app/apps/opportunities_service/config/.env /dist/apps/opportunities_service/.env
-RUN touch /usr/src/app/dist/apps/opportunities_service/.env
+#COPY --from=development /usr/src/app/apps/opportunities/config/.env /dist/apps/opportunities/.env
+RUN touch /usr/src/app/dist/apps/opportunities/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/opportunities_service/src/main"]
+CMD ["dist/apps/opportunities/src/main"]

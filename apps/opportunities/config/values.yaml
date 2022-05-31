@@ -4,7 +4,7 @@ ingress:
 
 configMaps:
   common:
-    INTEGRATION_SERVICE_URL: http://integration-service
+    INTEGRATION_SERVICE_URL: http://integration
   config:
     HTTP_TIMEOUT: 60000
     HTTP_MAX_REDIRECTS: 2

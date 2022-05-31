@@ -65,49 +65,49 @@ configMaps:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
     #ETH_URL: https://mainnet.infura.io/v3/eb49fe03a73a40dc91bf236e3a604fe7
-    ETH_URL: http://rpc-nodes-service/v1/rpc-call/1
+    ETH_URL: http://rpc/v1/rpc-call/1
     #BSC_URL: https://bsc-dataseed.binance.org
-    BSC_URL: http://rpc-nodes-service/v1/rpc-call/2
+    BSC_URL: http://rpc/v1/rpc-call/2
     #POLYGON_rpc-call_URL: https://polygon-rpc-call.com/
-    POLYGON_rpc-call_URL: http://rpc-nodes-service/v1/rpc-call/3
+    POLYGON_rpc-call_URL: http://rpc/v1/rpc-call/3
     #FTM_rpc-call_URL: https://rpc-call.ftm.tools
     #FTM_URL: https://rpc-call.ftm.tools
-    FTM_rpc-call_URL: http://rpc-nodes-service/v1/rpc-call/4
-    FTM_URL: http://rpc-nodes-service/v1/rpc-call/4
+    FTM_rpc-call_URL: http://rpc/v1/rpc-call/4
+    FTM_URL: http://rpc/v1/rpc-call/4
     #AVAX_URL: https://api.avax.network/ext/bc/C/rpc-call
-    AVAX_URL: http://rpc-nodes-service/v1/rpc-call/6
+    AVAX_URL: http://rpc/v1/rpc-call/6
     #CELO_URL: https://forno.celo.org
-    CELO_URL: http://rpc-nodes-service/v1/rpc-call/8
+    CELO_URL: http://rpc/v1/rpc-call/8
     #HARM_URL: https://a.api.s0.t.hmny.io
-    HARM_URL: http://rpc-nodes-service/v1/rpc-call/10
+    HARM_URL: http://rpc/v1/rpc-call/10
     #HECO_URL: https://http-mainnet.hecochain.com/
-    HECO_URL: http://rpc-nodes-service/v1/rpc-call/11
+    HECO_URL: http://rpc/v1/rpc-call/11
     #MRIVER_URL: https://rpc-call.moonriver.moonbeam.network
-    MRIVER_URL: http://rpc-nodes-service/v1/rpc-call/9
+    MRIVER_URL: http://rpc/v1/rpc-call/9
     #XDAI_URL: https://rpc-call.xdaichain.com
-    XDAI_URL: http://rpc-nodes-service/v1/rpc-call/7
+    XDAI_URL: http://rpc/v1/rpc-call/7
     #POLYGON_URL: https://polygon-rpc-call.com/
-    POLYGON_URL: http://rpc-nodes-service/v1/rpc-call/3
+    POLYGON_URL: http://rpc/v1/rpc-call/3
     #SOL_URL: https://solana-api.projectserum.com/
     SOL_URL: https://rpc.ankr.com/solana
     #BOBA_URL: https://lightning-replica.boba.network
-    BOBA_URL: http://rpc-nodes-service/v1/rpc-call/15
+    BOBA_URL: http://rpc/v1/rpc-call/15
     #CRONOS_URL: https://evm-cronos.crypto.org
-    CRONOS_URL: http://rpc-nodes-service/v1/rpc-call/14
+    CRONOS_URL: http://rpc/v1/rpc-call/14
     #KCC_URL: https://rpc-call-mainnet.kcc.network
-    KCC_URL: http://rpc-nodes-service/v1/rpc-call/16
+    KCC_URL: http://rpc/v1/rpc-call/16
     #OKEX_URL: https://exchainrpc-call.okex.org/
-    OKEX_URL: http://rpc-nodes-service/v1/rpc-call/13
+    OKEX_URL: http://rpc/v1/rpc-call/13
     #OPT_URL: https://mainnet.optimism.io/
-    OPT_URL: http://rpc-nodes-service/v1/rpc-call/17
+    OPT_URL: http://rpc/v1/rpc-call/17
     #ARBITRUM_URL: https://arb1.arbitrum.io/rpc-call
-    ARBITRUM_URL: http://rpc-nodes-service/v1/rpc-call/5
+    ARBITRUM_URL: http://rpc/v1/rpc-call/5
     #TERRA_URL: https://lcd.terra.dev
-    TERRA_URL: http://rpc-nodes-service/v1/rpc-call/19
+    TERRA_URL: http://rpc/v1/rpc-call/19
     #GNOSIS_URL: https://rpc-call.xdaichain.com
-    GNOSIS_URL: http://rpc-nodes-service/v1/rpc-call/7
+    GNOSIS_URL: http://rpc/v1/rpc-call/7
     #AURORA_URL: https://mainnet.aurora.dev
-    AURORA_URL: http://rpc-nodes-service/v1/rpc-call/18
+    AURORA_URL: http://rpc/v1/rpc-call/18
     KAVA_API: https://api2.kava.io
     KAVA_URL: https://api2.kava.io
   external:
@@ -116,12 +116,12 @@ configMaps:
     OPEN_SEA_URL: https://api.opensea.io/api/v1
     MUESLI_SWAP_ORDERBOOK_URL: https://orderbookv2.muesliswap.com
   endpoints:
-    ACCOUNT_SERVICE_URL: http://account-service
-    PRICE_SERVICE_HOST: http://price-service
-    PRICE_SERVICE_URL: http://price-service
+    ACCOUNT_SERVICE_URL: http://account
+    PRICE_SERVICE_HOST: http://price
+    PRICE_SERVICE_URL: http://price
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
-    ACCOUNT_SERVICE_HOST: http://account-service
+    ACCOUNT_SERVICE_HOST: http://account
     ACCOUNT_SERVICE_PORT: 80
     ACCOUNT_BALANCE: v1/balances
     ACCOUNT_ASSETS: v1/assets

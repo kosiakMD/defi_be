@@ -15,23 +15,23 @@ configMaps:
     ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
     SOL_URL: https://solana-api.projectserum.com
   endpoints:
-    PRICE_SERVICE_HOST: http://price-service
+    PRICE_SERVICE_HOST: http://price
     PRICE_SERVICE_PORT: 80
     PRICES_PATH: v1/prices
-    INTEGRATION_SERVICE_HOST: http://integration-service
+    INTEGRATION_SERVICE_HOST: http://integration
     INTEGRATION_SERVICE_PORT: 80
-    ACCOUNT_SERVICE_HOST: http://account-service
+    ACCOUNT_SERVICE_HOST: http://account
     ACCOUNT_SERVICE_PORT: 80
-    ASSETS_SERVICE_HOST: http://assets-service
+    ASSETS_SERVICE_HOST: http://assets
     ASSETS_SERVICE_PORT: 80
-    POOLS_SERVICE_URL: https://integration-service
-    VAULTS_SERVICE_URL: https://integration-service
+    POOLS_SERVICE_URL: https://integration
+    VAULTS_SERVICE_URL: https://integration
     IL_CALCULATOR: https://ilapi1.defiyield.info/api/v2/calc
     SAFE_PROXY_SERVICE_HOST: http://safe.proxy.dfyield.xyz
     SAFE_PROXY_SERVICE_PORT: 80
-    OPPORTUNITIES_SERVICE_HOST: http://opportunities-service
+    OPPORTUNITIES_SERVICE_HOST: http://opportunities
     OPPORTUNITIES_SERVICE_PORT: 80
-    RPC_SERVICE_HOST: http://rpc-nodes-service
+    RPC_SERVICE_HOST: http://rpc
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug

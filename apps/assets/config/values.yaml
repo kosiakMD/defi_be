@@ -32,7 +32,7 @@ configMaps:
     RONIN_URL: https://api.roninchain.com/rpc
 
   services:
-    ACCOUNT_SERVICE_CHAINS_LIST_URL: https://acc.dfyield.xyz/v1/chains
+    ACCOUNT_SERVICE_CHAINS_LIST_URL: https://account/v1/chains
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug

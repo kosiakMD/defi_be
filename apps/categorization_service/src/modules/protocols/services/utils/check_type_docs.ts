@@ -22,7 +22,7 @@ export class CheckTypeDoc {
       const links = document.querySelectorAll('a');
 
       for (const key in links) {
-        // links[key]?.innerHTML?.search('/Powered By+.+GitBook/ig');
+        // links[key]?.innerHTML?.search('/powered By+.+GitBook/ig');
         // if (links[key].innerHTML.includes('Powered By GitBook')) {
         //   return true;
         // }
@@ -34,7 +34,7 @@ export class CheckTypeDoc {
 
     let type: TypeDocs = 'other';
     for (const e of evaluated) {
-      if (e?.search(/Powered By+.+GitBook/gi) >= 0) {
+      if (e?.search(/powered By+.+GitBook/gi) >= 0) {
         type = 'gitbook';
       }
     }

@@ -1,33 +1,33 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/api_gateway/src",
+  "sourceRoot": "apps/gateway_service/src",
   "monorepo": true,
-  "root": "apps/api_gateway",
+  "root": "apps/gateway_service",
   "compilerOptions": {
     "webpack": false,
-    "tsConfigPath": "apps/api_gateway/tsconfig.app.json"
+    "tsConfigPath": "apps/gateway_service/tsconfig.app.json"
   },
   "projects": {
     "common": {
       "type": "library",
-      "root": "libs/common",
+      "root": "libraries/common",
       "entryFile": "index",
-      "sourceRoot": "libs/common/src",
+      "sourceRoot": "libraries/common/src",
       "compilerOptions": {
-        "tsConfigPath": "libs/common/tsconfig.lib.json"
+        "tsConfigPath": "libraries/common/tsconfig.lib.json"
       }
     },
-    "api_gateway": {
+    "gateway_service": {
       "type": "application",
-      "root": "apps/api_gateway",
+      "root": "apps/gateway_service",
       "entryFile": "main",
-      "sourceRoot": "apps/api_gateway/src",
+      "sourceRoot": "apps/gateway_service/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api_gateway/tsconfig.app.json",
+        "tsConfigPath": "apps/gateway_service/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/api_gateway"
+            "outDir": "./dist/apps/gateway_service"
           }
         ]
       }

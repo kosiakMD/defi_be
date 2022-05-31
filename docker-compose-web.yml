@@ -1,14 +1,13 @@
-version: "3.9"
+version: '3.9'
 services:
-
   website:
     image: node:14
     ports:
-      - "3000:3000"
+      - '3000:3000'
     working_dir: /usr/src/app
     volumes:
       - ../defiyield-website:/usr/src/app
-    command: "yarn start"
+    command: 'yarn start'
     restart: always
     env_file:
-      - "../defiyield-website/.env"
+      - '../defiyield-website/.env'

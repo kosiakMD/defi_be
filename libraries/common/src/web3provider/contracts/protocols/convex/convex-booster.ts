@@ -1,0 +1,28 @@
+import { AbiItem } from 'web3-utils';
+
+import { MulticallAbiProxy } from '../../../multicall-abi.proxy';
+
+export class ConvexBooster extends MulticallAbiProxy {
+  static readonly poolLength: AbiItem = {
+    inputs: [],
+    name: 'poolLength',
+    outputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    stateMutability: 'view',
+    type: 'function',
+  };
+
+  static readonly poolInfo: AbiItem = {
+    inputs: [{ internalType: 'uint256', name: '', type: 'uint256' }],
+    name: 'poolInfo',
+    outputs: [
+      { internalType: 'address', name: 'lptoken', type: 'address' },
+      { internalType: 'address', name: 'token', type: 'address' },
+      { internalType: 'address', name: 'gauge', type: 'address' },
+      { internalType: 'address', name: 'crvRewards', type: 'address' },
+      { internalType: 'address', name: 'stash', type: 'address' },
+      { internalType: 'bool', name: 'shutdown', type: 'bool' },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  };
+}

@@ -5,11 +5,11 @@ import { Injectable } from '@nestjs/common';
 import { ChainNameEnum } from '@app/common';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 
-import { GetAllApprovalsDto } from '../../common/dto/GetAllApprovals.dto';
+import { GetAllApprovalsDto } from '../../common/dto/get-all-approvals.dto';
 
 import { BlacklistService } from '../blacklists/blacklist.service';
 import { ChainsService } from '../chains/chains.service';
-import ApprovalMapper from './helpers/approvalMapper';
+import ApprovalMapper from './helpers/approval-mapper';
 
 @Injectable()
 export class ApprovalsService {
@@ -17,6 +17,7 @@ export class ApprovalsService {
     private readonly blacklistService: BlacklistService,
     private readonly chainsService: ChainsService,
   ) {}
+
   async getAllApprovals(
     getAllApprovalsQuery: GetAllApprovalsDto,
   ): Promise<ContractApprovalResponse> {

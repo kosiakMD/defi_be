@@ -1,4 +1,4 @@
-import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/CallsStatistic.dto';
+import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/calls-statistic.dto';
 
 import { ApiProperty } from '@nestjs/swagger';
 

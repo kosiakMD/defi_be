@@ -8,11 +8,11 @@ export class NftFetchPriceRequestProviderMock {
     return {
       assets: [
         {
-          address: '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e', //Doodles
+          address: '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e', //doodles
           tokenId: '7794',
         },
         {
-          address: '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e', //Doodles
+          address: '0x8a90cab2b38dba80c64b7734e58ee1db38b8992e', //doodles
           tokenId: '4289',
         },
         {

@@ -8,7 +8,7 @@ import { AssetsModule } from '../assets/assets.module';
 import { BlacklistModule } from '../blacklists/blacklist.module';
 import { ChainsModule } from '../chains/chains.module';
 import { TransfersModule } from '../transfers/transfers.module';
-import { ProfitAndLossService } from './profitandloss.service';
+import { ProfitAndLossService } from './profit-and-loss.service';
 
 @Module({
   imports: [HttpModule, ChainsModule, AssetsModule, TransfersModule, BlacklistModule],

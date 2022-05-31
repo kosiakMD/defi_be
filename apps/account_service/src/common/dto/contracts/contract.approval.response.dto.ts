@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { ContractApprovalDetailedResponseDto } from './contract.approval.detailed.response.dto';
+import { ContractApprovalDetailedResponseDto } from './contract-approval-detailed-response.dto';
 
 export class ContractApprovalResponseDto {
   @ApiProperty({ type: ContractApprovalDetailedResponseDto, isArray: true })

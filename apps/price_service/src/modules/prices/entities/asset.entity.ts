@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { ChainEntity } from '../../lookup/entities/chain.entity';
-import { AssetPriceEntity } from './asset_price.entity';
+import { AssetPriceEntity } from './asset-price.entity';
 
 @Entity({ name: 'prices.asset' })
 export class AssetEntity {

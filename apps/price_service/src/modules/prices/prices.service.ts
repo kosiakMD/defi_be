@@ -11,9 +11,9 @@ import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
+import { Logger } from '@app/common/logger/logger.service';
 import { dateToTimestamp, roundToNearestHour } from '@app/common/utils/dates';
 
 import { SECONDS_IN_DAY, SECONDS_IN_HOUR, timestampNow } from '../../common/utils/time';
@@ -32,10 +32,10 @@ import {
   PriceResponseDto,
   TimestampKeyPrice,
 } from './dto';
-import { GetCurrentPricesResponseDto } from './dto/get.current.prices.response.dto';
+import { GetCurrentPricesResponseDto } from './dto/get-current-prices-response.dto';
+import { AssetCurrentPriceEntity } from './entities/asset-current-price.entity';
+import { AssetPriceEntity } from './entities/asset-price.entity';
 import { AssetEntity } from './entities/asset.entity';
-import { AssetCurrentPriceEntity } from './entities/asset_current_price.entity';
-import { AssetPriceEntity } from './entities/asset_price.entity';
 import { getStepCount, interpolation } from './helpers';
 import { PriceRangePeriod, TimeframeFrequentlyInMin, TimePeriodInDays } from './prices.enum';
 import {

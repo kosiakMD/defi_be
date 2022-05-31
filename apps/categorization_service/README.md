@@ -1,6 +1,7 @@
 # Categorization Tool Service
 
 ## Table Of Contents
+
 1. [Installation](#Installation)
 2. [Backing Services](#Backing-Services)
 3. [Backing Services](#Backing-Services)
@@ -19,12 +20,15 @@ yarn categorization_service-build
 ### Backing Services
 
 #### Start Services
+
 ```bash
 docker-compose -f apps/categorization_service/docker-compose.yml up -d
 ```
 
 #### Stop Services
-Add ```--volume``` option if you want to clean up the data.
+
+Add `--volume` option if you want to clean up the data.
+
 ```bash
 docker-compose -f apps/categorization_service/docker-compose.yml down
 ```
@@ -32,27 +36,37 @@ docker-compose -f apps/categorization_service/docker-compose.yml down
 ### DB migrations
 
 #### Migrations Up
+
 ##### Local Development
+
 ```bash
 npm run categorization_service-migration:run-dev
 ```
+
 ##### Environment
+
 ```bash
 npm run categorization_service-migration:run
 ```
 
 #### Migration Down
+
 ##### Local Development
+
 ```bash
 npm run categorization_service-migration:revert-dev
 ```
+
 ##### Environment
+
 ```bash
 npm run categorization_service-migration:revert
 ```
 
 #### Create New Migration
+
 ##### Local Development
+
 ```bash
 npm run categorization_service-migration:generate-dev -- -n ${YOUR_MIGRATION_NAME}
 ```
@@ -65,30 +79,34 @@ npm run categorization_service-start:dev
 ```
 
 ### Swagger API
+
 http://localhost:3000/api
 
 ### Docs
 
 #### Responsibilities
-* fetch data from aggregators
-* parse websites of protocols
-* fetch ABI and source code of contracts from explorers
-* compare contracts based on ABI and source code
+
+- fetch data from aggregators
+- parse websites of protocols
+- fetch ABI and source code of contracts from explorers
+- compare contracts based on ABI and source code
 
 #### Technical Details
+
 Categorization Tool Service uses Bull Queue based on Redis to process tasks. These are types of tasks which are currently supported:
 
-* **fetch_protocols** - fetch protocols data from aggregators (defilama, vfat.tools, multifarm.fi)
-* **parse_protocols_main_page** - parse protocols websites for app, docs, github links
-* **parse_protocols_app_page** - parse app links for docs and github links
-* **parse_protocols_docs_page** - parse docs links for contract addresses
-* **parse_protocols_github_page** - fetch .vy and .sol files from github
-* **crawl_html** - crawl html for app and docs links
-* **fetch_abi** - fetch ABI and ABI Code for the contracts
-* **analyse_contracts** - match contract ABI
-* **analyse_contracts_against_templates** - match contract ABI
+- **fetch_protocols** - fetch protocols data from aggregators (defilama, vfat.tools, multifarm.fi)
+- **parse_protocols_main_page** - parse protocols websites for app, docs, github links
+- **parse_protocols_app_page** - parse app links for docs and github links
+- **parse_protocols_docs_page** - parse docs links for contract addresses
+- **parse_protocols_github_page** - fetch .vy and .sol files from github
+- **crawl_html** - crawl html for app and docs links
+- **fetch_abi** - fetch ABI and ABI Code for the contracts
+- **analyse_contracts** - match contract ABI
+- **analyse_contracts_against_templates** - match contract ABI
 
 All the tasks are processed sequentially (it might be changed in the future). It is possible to trigger each individual task via API:
+
 ```bash
 curl http://localhost:3000/command?command=$TASK_NAME -H "content-type:application/json"
 ```
@@ -98,6 +116,7 @@ To trigger executing all tasks in the described order use **start_fetching** as 
 ### Additional Notes
 
 #### Select contracts analysis result
+
 ```sql
 with filtered_contracts_analysis AS (
     select c1.abi,

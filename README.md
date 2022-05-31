@@ -19,7 +19,7 @@ master -> develop -> ...
 - <i>$user_name</i> - Git user name
 - <i>$description</i> - a short descriptor of the task <b>OR</b> JIRA ticket number
 - <i>$type</i> - type of work
-  - <i><b>TypeEnum</b></i>: feature | bugfix | hotfix | config
+    - <i><b>TypeEnum</b></i>: feature | bugfix | hotfix | config
 
 branch_name = <i>$user_name</i> / <i>$type:<b>TypeEnum</b></i> / <i>$description</i>
 
@@ -31,7 +31,7 @@ example: `luck-skywalker/bugfix/destroy-Death-star`
 
 ## Services:
 
-### API Gateway [link](./apps/api_gateway)
+### API Gateway [link](./apps/gateway_service)
 
 <b>Should be run the last one as it depends on all the rest</b>
 
@@ -92,7 +92,8 @@ start production mode `npm start:prod`
 
 ### Coding conventions
 
-We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency on [Prettier](https://prettier.io/) rules
+We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency
+on [Prettier](https://prettier.io/) rules
 
 - `npm run lint` - run ESLint; could be run from the project root or service root pointwise;
 
@@ -100,7 +101,9 @@ We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and d
   could be run from the project root or service root pointwise;
 
 ### Migrations
-We use TypeORM migrations in order to generate or create migrations by hand. If you want to create a migration: 
+
+We use TypeORM migrations in order to generate or create migrations by hand. If you want to create a migration:
+
 - Create a new entity or modify existing one. Be aware that entity should always have '.entity.ts' file format;
 - Create a build for your particular service or entire project;
 - `npm run migration:generate -- -n yourMigrationName` for generating new migration;
@@ -134,16 +137,19 @@ Run Linter checking `npm run lint`
 
 ### Start project
 
-We use different npm scripts to start the project locally. It's usually the same for all services: 
+We use different npm scripts to start the project locally. It's usually the same for all services:
+
 - `npm run ${serviceName}:${mode}` { serviceName: integration-start | lambda_vault-start, mode: dev | debug }
 
 Examples:
+
 - `npm run integration-start:dev`
 - `npm run lambda_vault-start:debug`
 
 ### Coding conventions
 
-We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency on [Prettier](https://prettier.io/) rules
+We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency
+on [Prettier](https://prettier.io/) rules
 
 - `npm run lint` - run ESLint; could be run from the project root or service root pointwise;
 
@@ -166,23 +172,26 @@ Run test `npm run test`
 
 Run Linter checking `npm run lint`
 
-
 ### Access Documentation
 
 To get API documentation of each service need to run each service and get by link path `/api`, e.g. `localhost:3000/api`
 
 ### Docker Compose
+
 To read environments from AWS READ .env FROM AWS Systems Manager - Parameter Store and crete .env files
+
 ```shell
 [sudo] docker-compose -f docker-compose-env.yml up
 ```
 
 To start backed with docker compose run (gateway: http://localhost:3000):
+
 ```shell
 [sudo] docker-compose up
 ```
 
 To start web with docker compose run (url: http://localhost:3333):
+
 ```shell
 [sudo] docker-compose -f docker-compose-web.yml up
 ```
@@ -192,17 +201,17 @@ To start web with docker compose run (url: http://localhost:3333):
 `.env` files should use next rules / values:
 
 - hosts to access other services (instead of localhost):
-  * `redis`
-  * `price-service`
-  * `account-service`
-  * `integration-service`
+    - `redis`
+    - `price-service`
+    - `account-service`
+    - `integration-service`
 - `SERVICE_HOST` should be empty
 - next ports should be used:
-  * `web`: 3000
-  * `gateway-service`: 3001
-  * `price-service`: 3002
-  * `account-service`: 3003
-  * `integration-service`: 3004
+    - `web`: 3000
+    - `gateway-service`: 3001
+    - `price-service`: 3002
+    - `account-service`: 3003
+    - `integration-service`: 3004
 
 To clean up containers run:
 

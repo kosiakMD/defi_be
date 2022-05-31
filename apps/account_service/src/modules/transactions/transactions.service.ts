@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { plainToClass } from 'class-transformer';
-import { getManager, In, Repository } from 'typeorm';
-import { EntityManager } from 'typeorm/entity-manager/EntityManager';
+import { EntityManager, getManager, In, Repository } from 'typeorm';
 
 import { Inject, LoggerService, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -16,10 +15,10 @@ import { getAbsoluteChainIds } from '@app/common/utils/chains';
 
 import { Covalent } from '../../common/interfaces/covalent.interface';
 import { CovalentService } from '../../common/providers/3rdparty/covalent.service';
-import { BscScanService } from '../../common/providers/chainRelated/scans/bsc-scan.service';
-import { EtherScanService } from '../../common/providers/chainRelated/scans/ether-scan.service';
-import { ScanApiService } from '../../common/providers/chainRelated/scans/scan.api.service';
-import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
+import { BscScanService } from '../../common/providers/chain-related/scans/bsc-scan.service';
+import { EtherScanService } from '../../common/providers/chain-related/scans/ether-scan.service';
+import { ScanApiService } from '../../common/providers/chain-related/scans/scan-api.service';
+import { Web3Provider } from '../../common/providers/chain-related/web3.provider';
 import { excludeSecondArray, getUniqueAndToLowerCaseArrayData } from '../../common/utils';
 
 import { BlacklistService } from '../blacklists/blacklist.service';

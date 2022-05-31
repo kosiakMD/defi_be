@@ -21,7 +21,7 @@ export const AbiCompoundTemplate = {
 */
 
 // SPDX-License-Identifier: MIT
-// File: @openzeppelin/contracts/GSN/Context.sol
+// File: @openzeppelin/contracts/gSN/context.sol
 
 
 pragma solidity ^0.6.0;
@@ -47,7 +47,7 @@ abstract contract Context {
     }
 }
 
-// File: @openzeppelin/contracts/token/ERC20/IERC20.sol
+// File: @openzeppelin/contracts/token/eRC20/iERC20.sol
 
 
 pragma solidity ^0.6.0;
@@ -94,7 +94,7 @@ interface IERC20 {
      * transaction ordering. One possible solution to mitigate this race
      * condition is to first reduce the spender's allowance to 0 and set the
      * desired value afterwards:
-     * https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
+     * https://github.com/ethereum/eIPs/issues/20#issuecomment-263524729
      *
      * Emits an {Approval} event.
      */
@@ -126,7 +126,7 @@ interface IERC20 {
     event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
-// File: @openzeppelin/contracts/math/SafeMath.sol
+// File: @openzeppelin/contracts/math/safe-math.sol
 
 
 pragma solidity ^0.6.0;
@@ -206,7 +206,7 @@ library SafeMath {
     function mul(uint256 a, uint256 b) internal pure returns (uint256) {
         // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
         // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        // See: https://github.com/open-zeppelin/openzeppelin-contracts/pull/522
         if (a == 0) {
             return 0;
         }
@@ -287,7 +287,7 @@ library SafeMath {
     }
 }
 
-// File: @openzeppelin/contracts/utils/Address.sol
+// File: @openzeppelin/contracts/utils/address.sol
 
 
 pragma solidity ^0.6.2;
@@ -328,7 +328,7 @@ library Address {
      * @dev Replacement for Solidity's \`transfer\`: sends \`amount\` wei to
      * \`recipient\`, forwarding all available gas and reverting on errors.
      *
-     * https://eips.ethereum.org/EIPS/eip-1884[EIP1884] increases the gas cost
+     * https://eips.ethereum.org/eIPS/eip-1884[EIP1884] increases the gas cost
      * of certain opcodes, possibly making contracts go over the 2300 gas limit
      * imposed by \`transfer\`, making them unable to receive funds via
      * \`transfer\`. {sendValue} removes this limitation.
@@ -430,7 +430,7 @@ library Address {
     }
 }
 
-// File: @openzeppelin/contracts/token/ERC20/ERC20.sol
+// File: @openzeppelin/contracts/token/eRC20/eRC20.sol
 
 
 pragma solidity ^0.6.0;
@@ -738,7 +738,7 @@ contract ERC20 is Context, IERC20 {
     function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual { }
 }
 
-// File: @openzeppelin/contracts/token/ERC20/SafeERC20.sol
+// File: @openzeppelin/contracts/token/eRC20/safe-eRC20.sol
 
 
 pragma solidity ^0.6.0;
@@ -814,7 +814,7 @@ library SafeERC20 {
     }
 }
 
-// File: @openzeppelin/contracts/access/Ownable.sol
+// File: @openzeppelin/contracts/access/ownable.sol
 
 
 pragma solidity ^0.6.0;
@@ -883,7 +883,7 @@ contract Ownable is Context {
     }
 }
 
-// File: contracts/BIFI/interfaces/beefy/IStrategy.sol
+// File: contracts/bIFI/interfaces/beefy/iStrategy.sol
 
 
 pragma solidity ^0.6.0;
@@ -896,7 +896,7 @@ interface IStrategy {
     function harvest() external;
 }
 
-// File: contracts/BIFI/vaults/BeefyVaultV2.sol
+// File: contracts/bIFI/vaults/beefyVault-v2.sol
 
 
 pragma solidity ^0.6.0;

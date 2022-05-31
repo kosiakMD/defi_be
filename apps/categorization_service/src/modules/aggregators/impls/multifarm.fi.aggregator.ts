@@ -138,7 +138,7 @@ export class MultifarmFiAggregator implements IAggregator {
     const page = await this.browser.loadPage(pageUrl);
     const websiteUrl = await page.evaluate(() => {
       const link = document.querySelector('p > span > a');
-      return link?.getAttribute('href') || 'N/A';
+      return link?.getAttribute('href') || 'N/a';
     });
     this.logger.debug(`extracted website url from [${pageUrl}] - [${websiteUrl}]`);
     await page.close();

@@ -7,7 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TerminusModule } from '@nestjs/terminus';
 import { WinstonModule } from 'nest-winston';
 
-import { getWinstonParams } from '@app/common/Logger/logger.config';
+import { getWinstonParams } from '@app/common/logger/logger.config';
 import { CacheService } from '@app/common/services/cache.service';
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';

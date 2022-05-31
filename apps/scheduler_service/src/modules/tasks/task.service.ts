@@ -17,7 +17,6 @@ import { TaskRepository } from './repositories/task.repository';
 export class TaskService implements OnApplicationBootstrap {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-
     @InjectRepository(TaskRepository)
     private readonly taskRepository: TaskRepository,
     private httpService: HttpService,
@@ -51,7 +50,7 @@ export class TaskService implements OnApplicationBootstrap {
   }
 
   /**
-   * Search/List crons
+   * Search/list crons
    * TODO: pagination
    */
   public async search(query: any): Promise<any[]> {
@@ -60,7 +59,7 @@ export class TaskService implements OnApplicationBootstrap {
   }
 
   /**
-   * Search/List crons
+   * Search/list crons
    * TODO: pagination
    */
   public async update(id: number, body: TaskUpdateDto): Promise<any> {

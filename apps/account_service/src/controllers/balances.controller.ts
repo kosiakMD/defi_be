@@ -93,7 +93,7 @@ export class BalancesController {
       'terra1qqu376azltyc5wnsje5qgwru5mtj2yqdhj0cwl',
     ],
   })
-  // TODO: DTO should be declared here
+  // TODO: dto should be declared here
   getUserDelegations(@Query() query) {
     return this.balancesService.getUserDelegations(notEmpty(getUniqList(query.addresses)));
   }

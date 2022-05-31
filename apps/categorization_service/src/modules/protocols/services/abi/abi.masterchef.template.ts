@@ -59,7 +59,7 @@ export const AbiMasterchefTemplate = {
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-// https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/SignedSafeMath.sol
+// https://github.com/open-zeppelin/openzeppelin-contracts/blob/master/contracts/utils/math/signedSafe-math.sol
 library SignedSafeMath {
     int256 constant private _INT256_MIN = -2**255;
 
@@ -76,7 +76,7 @@ library SignedSafeMath {
     function mul(int256 a, int256 b) internal pure returns (int256) {
         // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
         // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        // See: https://github.com/open-zeppelin/openzeppelin-contracts/pull/522
         if (a == 0) {
             return 0;
         }

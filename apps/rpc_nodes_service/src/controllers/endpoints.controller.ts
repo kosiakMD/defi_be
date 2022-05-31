@@ -13,10 +13,9 @@ import {
 import { ApiBody, ApiResponse, ApiTags, PartialType } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common/logger/logger.service';
 
-import { FindOneParamsDto } from '../common/dto/FindOneParams.dto';
-import { ListQueryDto } from '../common/dto/ListQuery.dto';
+import { ListQueryDto } from '../common/dto/list-query.dto';
 
 import { EndpointCreateDto } from '../modules/endpoints/dto/endpoint.create.dto';
 import { EndpointDto } from '../modules/endpoints/dto/endpoint.dto';
@@ -24,6 +23,7 @@ import { EndpointUpdateDto } from '../modules/endpoints/dto/endpoint.update.dto'
 import { EndpointsListDto } from '../modules/endpoints/dto/endpoints.list.dto';
 import { EndpointEntity } from '../modules/endpoints/endpoint.entity';
 import { EndpointsService } from '../modules/endpoints/services/endpoints.service';
+import { FindOneParamsDto } from './find-one-params.dto';
 
 @ApiTags('Endpoints')
 @CacheTTL(0.03)

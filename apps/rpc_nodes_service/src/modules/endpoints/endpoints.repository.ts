@@ -2,7 +2,7 @@ import { EntityRepository, Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 
-import { ListQueryDto } from '../../common/dto/ListQuery.dto';
+import { ListQueryDto } from '../../common/dto/list-query.dto';
 
 import { EndpointCreateDto } from './dto/endpoint.create.dto';
 import { EndpointUpdateDto } from './dto/endpoint.update.dto';

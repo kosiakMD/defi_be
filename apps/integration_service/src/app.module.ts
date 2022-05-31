@@ -7,20 +7,20 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { Logger } from '@app/common';
-import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { getWinstonParams } from '@app/common/logger/logger.config';
 import { LogRequestMiddleware } from '@app/common/middlewares';
-import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
+import { HeadersContextMiddleware } from '@app/common/middlewares/headers-context.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
-import { IntegrationsModule } from './modules/integrations/integrations.module';
-import { JobsModule } from './modules/jobs/jobs.module';
-import { ProtocolModule } from './modules/protocols/protocol.module';
-import { ThegraphModule } from './modules/subgraphs/thegraph.module';
-import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.tokens.module';
+import { IntegrationsModule } from './modules/integration/integrations.module';
+import { JobsModule } from './modules/job/jobs.module';
+import { ProtocolModule } from './modules/protocol/protocol.module';
+import { ThegraphModule } from './modules/subgraph/thegraph.module';
+import { TemporaryTokensModule } from './modules/temporary-tokens/temporary-tokens.module';
 
 @Module({
   imports: [

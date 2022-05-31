@@ -1,4 +1,4 @@
-import { IntegrationsResponseV2Dto } from 'apps/integration_service/src/modules/integrations/dto/integrations.dto';
+import { IntegrationsResponseV2Dto } from 'apps/integration_service/src/modules/integration/dto/integrations.dto';
 
 import {
   ChainAbbrEnum,

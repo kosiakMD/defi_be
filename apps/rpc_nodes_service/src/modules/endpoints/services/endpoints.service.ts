@@ -1,12 +1,12 @@
-import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/CallsStatistic.dto';
+import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/calls-statistic.dto';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger';
+import { Logger } from '@app/common/logger';
 
-import { ListQueryDto } from '../../../common/dto/ListQuery.dto';
+import { ListQueryDto } from '../../../common/dto/list-query.dto';
 
 import { EndpointCreateDto } from '../dto/endpoint.create.dto';
 import { EndpointUpdateDto } from '../dto/endpoint.update.dto';

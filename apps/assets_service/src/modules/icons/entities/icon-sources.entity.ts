@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/Base.entity';
+import { BaseEntity } from '@app/common/entities/base.entity';
 
 @Entity({ name: 'icon_sources' })
 export class IconSourceEntity extends BaseEntity {

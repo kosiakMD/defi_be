@@ -1,6 +1,6 @@
 import BigNumber from 'bignumber.js';
 
-import { UniswapLikeSubgraph } from '../../modules/subgraphs/subgraphs/uniswap-like-subgraph.service';
+import { UniswapLikeSubgraph } from '../../modules/subgraph/subgraphs/uniswap-like-subgraph.service';
 
 export type Chain = number;
 

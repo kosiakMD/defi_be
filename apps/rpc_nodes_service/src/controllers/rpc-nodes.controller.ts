@@ -14,10 +14,10 @@ import {
 import { ApiBody, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common/logger/logger.service';
 
-import { RPCCallDto } from '../common/dto/RPCCall.dto';
-import { RPCResponse } from '../common/dto/RPCResponse.dto';
+import { RPCCallDto } from '../common/dto/rpc-call.dto';
+import { RPCResponse } from '../common/dto/rpc-response.dto';
 
 import { RPCParamsDto } from '../modules/rpc_nodes/dto/rpc-params.dto';
 import { RPCNodesService } from '../modules/rpc_nodes/rpc-nodes.service';

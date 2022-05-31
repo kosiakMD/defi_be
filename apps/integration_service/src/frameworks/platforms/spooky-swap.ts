@@ -1,0 +1,63 @@
+import { Inject } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { ChainIdEnum, Logger } from '@app/common';
+
+import { FeatureEnum } from '../support/enums';
+import { IMasterChefMeta, MasterChef } from '../support/evm/protocols/yield/master-chef';
+import { MasterChefAceLab } from '../support/evm/protocols/yield/master-chef-ace-lab';
+import { RootPlatform } from '../support/root-platform';
+
+export class SpookySwap extends RootPlatform {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
+    protected readonly moduleRef: ModuleRef,
+  ) {
+    super();
+  }
+
+  async register() {
+    this.registerMeta({
+      name: this.constructor.name,
+      slug: this.constructor.name,
+      links: {
+        logo: 'https://icons.llama.fi/spookyswap.jpg',
+        discord: 'https://discord.gg/spookyswap',
+        telegram: 'https://t.me/spookySwap-community',
+        twitter: 'spookyswap',
+        url: 'https://spookyswap.finance/',
+        github: 'SpookySwap',
+      },
+    });
+
+    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
+      chain: ChainIdEnum.ftm,
+      name: 'Farms',
+      feature: FeatureEnum.staking,
+      address: '0x2b2929E785374c651a81A63878Ab22742656DcDd',
+      // dynamic link generators
+      links: {
+        // link to the farms home page
+        // home: 'https://spookyswap.finance/farms',
+        // generate a link to a specific opportunity page
+        getOpportunityLink: () => `https://spookyswap.finance/farms`,
+        // generate a link to buy the deposit token (if available)
+        // getTokenLink: (token) => `https://spookyswap.finance/swap?outputCurrency=${token}`,
+        // // generate a link to get liquidity for the token
+        // getLiquidityLink: (tokenA: string, tokenB: string) =>
+        //   `https://spookyswap.finance/add/${tokenA}/${tokenB}`,
+      },
+    });
+
+    await this.registerProtocol<IMasterChefMeta>(MasterChefAceLab, {
+      chain: ChainIdEnum.ftm,
+      name: 'AceLab',
+      feature: FeatureEnum.staking,
+      address: '0x2352b745561e7e6FCD03c093cE7220e3e126ace0',
+      links: {
+        getOpportunityLink: () => `https://spookyswap.finance/pools`,
+      },
+    });
+  }
+}

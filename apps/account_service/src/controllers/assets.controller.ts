@@ -1,8 +1,8 @@
-import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
+import { SearchResultsEntryDto } from 'apps/gateway_service/src/common/dto/search-results-entry.dto';
 import {
   SearchParams,
   SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/interfaces/search.interface';
+} from 'apps/gateway_service/src/search/interfaces/search.interface';
 import { Response } from 'express';
 
 import {

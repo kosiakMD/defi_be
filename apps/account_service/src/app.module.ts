@@ -12,12 +12,12 @@ import { APP_FILTER } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
+import { getWinstonParams } from '@app/common/logger/logger.config';
 import { LogRequestMiddleware } from '@app/common/middlewares';
-import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
+import { HeadersContextMiddleware } from '@app/common/middlewares/headers-context.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';

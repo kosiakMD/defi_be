@@ -250,17 +250,8 @@ export class IntegrationsServiceV3Decorator {
                     : [],
                 };
                 return;
-              } else if (
-                feature === FeatureEnum.borrowing ||
-                feature === FeatureEnum.lending ||
-                feature === FeatureEnum.claimable
-              ) {
-                const positionField =
-                  feature === FeatureEnum.lending
-                    ? 'supplied'
-                    : feature === FeatureEnum.borrowing
-                    ? 'borrowed'
-                    : 'rewarded';
+              } else if (feature === FeatureEnum.borrowing || feature === FeatureEnum.lending) {
+                const positionField = feature === FeatureEnum.lending ? 'supplied' : 'borrowed';
                 const featureItems = IntegrationsServiceV3Decorator.lendingToV2(
                   position[positionField],
                 );
@@ -278,6 +269,26 @@ export class IntegrationsServiceV3Decorator {
                     : totalValue,
                   items: [...(v2WalletChain[feature]?.items || []), ...featureItems] || [],
                 };
+              } else if (feature === FeatureEnum.claimable) {
+                v2WalletChain[FeatureEnum.claimable] = { totalValue: 0, items: [] };
+                v2WalletChain[FeatureEnum.claimable].items = position.rewarded.map((reward) => {
+                  const claimableV2 = plainToClass(IntegrationClaimableTokenDto, reward.token);
+
+                  claimableV2.claimableData = {
+                    balance: reward.amount,
+                    value: reward.value,
+                  };
+                  v2Response.data.total = safelyAddDecimals(
+                    v2Response.data.total,
+                    claimableV2.claimableData.value,
+                  );
+
+                  v2WalletChain[FeatureEnum.claimable].totalValue = safelyAddDecimals(
+                    v2WalletChain[FeatureEnum.claimable].totalValue,
+                    claimableV2.claimableData.value,
+                  );
+                  return claimableV2;
+                });
               }
             });
           });

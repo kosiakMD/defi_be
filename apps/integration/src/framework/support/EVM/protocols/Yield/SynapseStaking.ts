@@ -12,6 +12,7 @@ import { CurrentPricesPayload } from '../../../../../common/dto';
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
+import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
   ISupplyTokenMinimal,
@@ -19,7 +20,7 @@ import {
 } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { updateSynapseLpTokens } from '../Liquidity/SynapseLiquidity';
-import { MasterChef } from './MasterChef';
+import { IMasterChefPoolInfo, MasterChef } from './MasterChef';
 
 export class SynapseStaking extends MasterChef {
   constructor(
@@ -109,5 +110,37 @@ export class SynapseStaking extends MasterChef {
       this.logger.error(err.message, err.stack, 'SynapseStaking');
       return tokens;
     }
+  }
+
+  protected formatStakingOpportunityMinimal(
+    poolInfo: IMasterChefPoolInfo,
+    totalStaked: string,
+    context: { [key: string]: any },
+  ): IStakingFeatureMinimal {
+    const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
+
+    const rewardPerSecond = new BigNumber(context.rewardPerSecond) //
+      .times(rewardShare) // percentage of total reward for this pool
+      .toString();
+
+    return {
+      id: `${this.meta.address}::${poolInfo.poolId}`,
+      chain: this.meta.chain,
+      feature: this.meta.feature,
+      supplied: [
+        {
+          token: {
+            address: poolInfo.stakedToken,
+          },
+          totalSupplied: totalStaked,
+        },
+      ],
+      rewarded: [
+        {
+          token: { address: context.rewardToken },
+          rewardPerSecond,
+        },
+      ],
+    };
   }
 }

@@ -14,7 +14,7 @@
     "test-monorepo": "yarn integration-test",
     "lint": "eslint \"**/{src,apps,libs,test}/**/*.ts\"",
     "lint-fix": "eslint \"**/{src,apps,libs,test}/**/*.ts\" --fix",
-    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+    "format": "prettier --write \\\"apps/**/*.ts\\\" \\\"libraries/**/*.ts\\\"",
     "format-check": "prettier \"./**/src/**/*.ts\" \"./**/test/**/*.ts\" --check",
     "common-build": "nest build common",
     "gateway-prebuild": "yarn --cwd ./apps/api_gateway run prebuild",

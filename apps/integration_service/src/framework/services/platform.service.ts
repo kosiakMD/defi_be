@@ -17,6 +17,7 @@ import { ApeSwap } from '../platforms/ApeSwap';
 import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { Belt } from '../platforms/Belt';
+import { Benqi } from '../platforms/Benqi';
 import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
@@ -100,6 +101,7 @@ export class PlatformService implements OnApplicationBootstrap {
       Synapse,
       MakerDAO,
       IronBank,
+      Benqi,
     });
   }
 

@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, ChainIdEnum, Logger } from '@app/common';
+import { ZERO_ADDRESS } from '@app/common/constant';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -13,6 +14,11 @@ import { INamedFunctionPredicates, INamedFunctions } from '../../interfaces';
 import { BlockScan } from './BlockScan.service';
 import { BlockScout } from './BlockScout.service';
 import { LocalFile } from './LocalFile.service';
+
+export const logicContractAddress =
+  '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc';
+export const beaconContractAddress =
+  '0xa3f0ad74e5423aebfd80d3ef4346578335a9a72aeaee59ff6cb3582b35133d50';
 
 export class AbiService {
   constructor(
@@ -31,14 +37,31 @@ export class AbiService {
     return this.getOrSet(ONE_DAY, this.getCacheKey(address, chain), async () => {
       const abi = await this.loadAbi(address, chain);
 
-      if (this.isEIP897Proxy(abi)) {
-        return this.handleAsEIP897Proxy(address, chain, abi);
-      } else if (this.isEIP1967Proxy(abi)) {
-        return this.handleAsEIP1967Proxy(address, chain);
-      }
+      const proxyAddress = await this.checkForProxyAddress(address, chain, abi);
 
-      return abi;
+      return proxyAddress ? this.fetchAbi(proxyAddress, chain) : abi;
     });
+  }
+
+  private async checkForProxyAddress(
+    address: Address,
+    chain: ChainId,
+    abi: AbiItem[],
+  ): Promise<Address | null> {
+    const possibleEIP897ProxyAddress = await this.attemptEIP897ProxyAddress(address, chain, abi);
+    if (possibleEIP897ProxyAddress) return possibleEIP897ProxyAddress;
+
+    const possibleEIP1967ProxyAddress = await this.attemptEIP1967ProxyAddress(address, chain);
+    if (possibleEIP1967ProxyAddress) return possibleEIP1967ProxyAddress;
+
+    const possibleCustomComptrollerAddress = await this.attemptCustomComptrollerProxyAddress(
+      address,
+      chain,
+      abi,
+    );
+    if (possibleCustomComptrollerAddress) return possibleCustomComptrollerAddress;
+
+    return null;
   }
 
   async parseFunctionsFromAddress(
@@ -104,45 +127,49 @@ export class AbiService {
     throw new Error(`Unable to find appropriate ABI ${chain}/${address}`);
   }
 
-  // https://eips.ethereum.org/EIPS/eip-1967
-  private isEIP1967Proxy(abi: AbiItem[]): boolean {
-    return abi.some(
-      (item) =>
-        item.name === 'implementation' && item.outputs.some((output) => output.type === 'address'),
-    );
+  private async attemptEIP1967ProxyAddress(address: Address, chain: ChainId) {
+    try {
+      const web = this.multicall.web3(chain);
+
+      const rawTargets = await Promise.all([
+        web.eth.getStorageAt(address, logicContractAddress),
+        web.eth.getStorageAt(address, beaconContractAddress),
+      ]);
+
+      const targets = rawTargets.map((rawTarget) =>
+        web.utils.numberToHex(web.utils.hexToNumberString(rawTarget)),
+      );
+
+      return targets.find((target) => this.isNonZeroAddress(target));
+    } catch (e) {
+      return null;
+    }
   }
-  private async handleAsEIP1967Proxy(address: Address, chain: ChainId) {
-    const web = this.multicall.web3(chain);
-    const target = web.utils.numberToHex(
-      web.utils.hexToNumberString(
-        await web.eth.getStorageAt(
-          address,
-          // TODO: I don't know if this is a constant or not. This is the value for Lido on moonriver
-          // gotten from https://moonriver.moonscan.io/address/0xffc7780c34b450d917d557e728f033033cb4fa8c#code
-          // bytes32 internal constant _IMPLEMENTATION_SLOT of ERC1967Upgrade.sol
-          // False positive: https://snowtrace.io/address/0xb3c68d69E95B095ab4b33B4cB67dBc0fbF3Edf56#readContract
-          '0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc',
-        ),
-      ),
-    );
-    return this.fetchAbi(target, chain);
+
+  private async attemptEIP897ProxyAddress(address: Address, chain: ChainId, abi: AbiItem[]) {
+    try {
+      const implementation: AbiItem = abi.find((item) => item.name === 'implementation');
+      const contract = new DynamicContract(address);
+      const target = await this.multicall.call(contract.createCall(implementation), chain);
+      return this.isNonZeroAddress(target) ? target : null;
+    } catch (e) {
+      return null;
+    }
   }
-  // https://eips.ethereum.org/EIPS/eip-897
-  private isEIP897Proxy(abi: AbiItem[]): boolean {
-    return (
-      abi.some((item) => item.name === 'proxyType') &&
-      abi.some(
-        (item) =>
-          item.name === 'implementation' &&
-          item.outputs.some((output) => output.type === 'address'),
-      )
-    );
+
+  async attemptCustomComptrollerProxyAddress(address: Address, chain: ChainId, abi: AbiItem[]) {
+    try {
+      const implementation: AbiItem = abi.find((item) => item.name === 'comptrollerImplementation');
+      const contract = new DynamicContract(address);
+      const target = await this.multicall.call(contract.createCall(implementation), chain);
+      return this.isNonZeroAddress(target) ? target : null;
+    } catch (e) {
+      return null;
+    }
   }
-  private async handleAsEIP897Proxy(address: Address, chain: ChainId, abi: AbiItem[]) {
-    const implementation: AbiItem = abi.find((item) => item.name === 'implementation');
-    const contract = new DynamicContract(address);
-    const [target] = await this.multicall.callArray([contract.createCall(implementation)], chain);
-    return this.fetchAbi(target, chain);
+
+  isNonZeroAddress(address: string) {
+    return address !== ZERO_ADDRESS && address !== '0x0';
   }
 
   private getCacheKey(address: Address, chain: ChainId) {

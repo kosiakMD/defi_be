@@ -250,7 +250,11 @@ export class IntegrationsServiceV3Decorator {
                     : [],
                 };
                 return;
-              } else if (feature === FeatureEnum.borrowing || feature === FeatureEnum.lending) {
+              } else if (
+                feature === FeatureEnum.borrowing ||
+                feature === FeatureEnum.lending ||
+                feature === FeatureEnum.claimable
+              ) {
                 const positionField =
                   feature === FeatureEnum.lending
                     ? 'supplied'

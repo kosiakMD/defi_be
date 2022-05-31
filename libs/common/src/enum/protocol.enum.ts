@@ -47,6 +47,7 @@ export enum ProjectEnum {
   rocketpool = 'rocketpool',
   quarry = 'quarry',
   muesliswap = 'muesliswap',
+  benqi = 'benqi',
 }
 
 export enum YearnProtocolEnum {
@@ -286,4 +287,5 @@ export const ProtocolNameEnum = {
   marsEcosystem: 'MarsEcosystem',
   mdex: 'Mdex',
   yelFinance: 'YelFinance',
+  benqi: 'Benqi',
 };

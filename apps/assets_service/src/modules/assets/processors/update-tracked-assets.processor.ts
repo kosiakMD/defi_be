@@ -9,7 +9,7 @@ import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceSource } from '../../prices/types/price-source.type';
-import { AssetsRepository } from '../repositories/assets.repository';
+import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { CoingeckoAssetsProvider } from '../services/tracked-assets/strategies/coingecko-assets.provider';
 import { CoinmarketcapAssetsProvider } from '../services/tracked-assets/strategies/coinmarketcap-assets.provider';
 import { TrackedAssetsProvider } from '../services/tracked-assets/strategies/tracked-assets.provider';
@@ -21,7 +21,7 @@ export class UpdateTrackedAssetsProcessor {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @InjectQueue(QueueName.ASSETS) private readonly assetsQueue: Queue,
-    private readonly assetRepository: AssetsRepository,
+    private readonly assetsRepository: AssetsCachedRepository,
     coingekoProvider: CoingeckoAssetsProvider,
     coinmarketcapProvider: CoinmarketcapAssetsProvider,
   ) {

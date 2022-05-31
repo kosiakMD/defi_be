@@ -4,16 +4,17 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/logger/logger.service';
 
-import { AssetEntity } from '../../entities/asset.entity';
-import { AaveStrategy } from './strategies/aave.strategy';
-import { CompoundStrategy } from './strategies/compound.strategy';
-import { CurveStrategy } from './strategies/curve.strategy';
-import { ElipsisStrategy } from './strategies/elipsis.strategy';
-import { StakedSohmStrategy } from './strategies/staked-sohm.strategy';
-import { StakedSushiStrategy } from './strategies/staked-sushi.strategy';
-import { TerraStrategy } from './strategies/terra.strategy';
-import { UniswapStrategy } from './strategies/uniswap.strategy';
-import { YearnStrategy } from './strategies/yearn.strategy';
+import { AssetReference } from '../../../../common/types';
+
+import { AssetDto } from '../../dto/asset.dto';
+import {
+  AssetAnalyser,
+  AssetAnalysis,
+  UNKNOWN_ASSET,
+} from './analysers/common/base.asset-analyser';
+import { AssetPriceProvider, ComplexAsset } from './analysers/common/price.provider';
+import { SaberAssetAnalyser } from './analysers/saber.asset-analyser';
+import { UniswapV2AssetAnalyser } from './analysers/uniswapv2.asset-analyser';
 
 @Injectable()
 export class SpecificAssetsService {
@@ -22,49 +23,113 @@ export class SpecificAssetsService {
     private readonly moduleRef: ModuleRef,
   ) {}
 
-  private tokenStrategies = [
-    UniswapStrategy,
-    CompoundStrategy,
-    AaveStrategy,
-    CurveStrategy,
-    ElipsisStrategy,
-    StakedSohmStrategy,
-    StakedSushiStrategy,
-    TerraStrategy,
-    YearnStrategy,
-  ];
+  private assetAnalysers = [UniswapV2AssetAnalyser, SaberAssetAnalyser];
 
-  public async getUnderlyingAssetsIfExists(processingAsset: AssetEntity): Promise<AssetEntity[]> {
-    const resultsPromises = [];
+  async analyseAsset(asset: AssetReference): Promise<AssetAnalysis> {
+    const analysis = await Promise.all(
+      this.assetAnalysers
+        .map((analyser) => this.moduleRef.get(analyser))
+        .map((analyser) => this.analyseAssetByAnalyser(analyser, asset)),
+    );
 
+    // TODO: Check that only one analysis could provide underlying tokens
+    return analysis.reduce(mergeAssetAnalysis);
+  }
+
+  private async analyseAssetByAnalyser(analyser: AssetAnalyser, asset: AssetReference) {
     try {
-      for (const TokenStrategy of this.tokenStrategies) {
-        const tknStrategy = this.moduleRef.get(TokenStrategy);
-        // TODO: it would be good to know which strategy found underlying tokens
-        // will be done in Max `get reserves` ticket
-        resultsPromises.push(tknStrategy.attemptToLoadUnderlyingTokens(processingAsset));
+      if (!(await analyser.canCheckAsset(asset))) {
+        return UNKNOWN_ASSET;
       }
-      const results = await Promise.allSettled(resultsPromises);
-      const underlyingAssets = [];
-      results.forEach((result) => {
-        if (this.isFulfilled(result)) {
-          result.value.forEach((token: string) => {
-            const underlyingAsset = new AssetEntity();
-            underlyingAsset.address = token;
-            underlyingAsset.chainId = processingAsset.chainId;
-            underlyingAssets.push(underlyingAsset);
-          });
-        } else {
-          this.logger.debug(`Error to get undelying tokens`, result.reason);
-        }
-      });
 
-      return underlyingAssets;
+      return await analyser.checkAsset(asset);
     } catch (e) {
-      this.logger.error(e);
+      this.logger.error(
+        `Error analysing asset: ${asset.address} chain: ${asset.chainId}. Error: ${e}`,
+      );
+      return UNKNOWN_ASSET;
     }
   }
 
-  private isFulfilled = <T>(input: PromiseSettledResult<T>): input is PromiseFulfilledResult<T> =>
-    input.status === 'fulfilled';
+  // TODO: Update this one, should return prices not work with DTO and refactor this
+  async updateSpecificAssetsPrices(assets: AssetDto[]): Promise<AssetDto[]> {
+    const assetsWithoutPrices = assets.filter((asset) => !asset.price);
+    if (!assetsWithoutPrices) {
+      return assets;
+    }
+
+    const assetsChainMap = assetsWithoutPrices.reduce((map, asset) => {
+      const chainAssets = map.get(asset.chainId) || [];
+      map.set(asset.chainId, chainAssets.concat([asset]));
+      return map;
+    }, new Map<number, AssetDto[]>());
+
+    // TODO: Fix this, not everything is price provider
+    const priceProviders: AssetPriceProvider[] = this.assetAnalysers.map((analyser) =>
+      this.moduleRef.get(analyser),
+    );
+
+    for (const chainId of assetsChainMap.keys()) {
+      const chainAssets = assetsChainMap.get(chainId);
+      for (const priceProvider of priceProviders) {
+        // TODO: Refactor this one
+        const priceProviderAssets = chainAssets.filter((dto) =>
+          dto.categories
+            .map(({ code }) => code)
+            .some((code) => priceProvider.canHandleCategory(code)),
+        );
+
+        if (priceProviderAssets.length) {
+          await this.updateSpecificAssetsPricesForChain(
+            chainId,
+            priceProviderAssets,
+            priceProvider,
+          );
+        }
+      }
+    }
+
+    return assets;
+  }
+
+  private async updateSpecificAssetsPricesForChain(
+    chainId: number,
+    dtos: AssetDto[],
+    provider: AssetPriceProvider,
+  ) {
+    const assets = dtos.map<ComplexAsset>((dto) => ({
+      address: dto.address,
+      decimals: dto.decimals,
+      underlying: dto.underlying?.map(({ underlyingAsset }) => ({
+        address: underlyingAsset.address,
+        decimals: underlyingAsset.decimals,
+        price: underlyingAsset.price,
+      })),
+    }));
+
+    const prices = await provider.getPrices(chainId, assets);
+
+    for (const dto of dtos) {
+      const price = prices.find(({ asset }) => asset.address === dto.address);
+      dto.price = price?.price;
+    }
+  }
+}
+
+// TODO: Move to class instead of interface
+function mergeAssetAnalysis(one: AssetAnalysis, two: AssetAnalysis): AssetAnalysis {
+  if (!one || !one.done) {
+    return { ...two };
+  }
+
+  if (!two || !two.done) {
+    return { ...one };
+  }
+
+  return {
+    done: true,
+    metadata: { ...one.metadata, ...two.metadata },
+    underlying: [...one.underlying, ...two.underlying],
+    categories: [...one.categories, ...two.categories],
+  };
 }

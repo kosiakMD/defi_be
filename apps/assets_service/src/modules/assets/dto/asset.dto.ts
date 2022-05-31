@@ -52,7 +52,7 @@ export class AssetDto {
 
   @Expose()
   @ApiProperty({ type: [AssetCategoryDto] })
-  categories: AssetCategoryDto[];
+  categories: AssetCategoryDto[] = [];
 
   @Expose()
   @ApiProperty({ type: [AssetHistoricalPriceDto] })

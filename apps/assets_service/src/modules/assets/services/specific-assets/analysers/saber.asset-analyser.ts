@@ -1,0 +1,80 @@
+import { StableSwap } from '@saberhq/stableswap-sdk';
+import { TokenAccountLayout, u64 } from '@saberhq/token-utils';
+import * as web3 from '@solana/web3.js';
+
+import { Injectable } from '@nestjs/common';
+
+import { decimalsDivider, toBN } from '@app/common/utils';
+import { Web3SolanaProviderService } from '@app/common/web3provider';
+
+import { AssetReference } from '../../../../../common/types';
+
+import { AssetAnalyser, AssetAnalysis, UNKNOWN_ASSET } from './common/base.asset-analyser';
+import { AssetPrice, AssetPriceProvider, ComplexAsset } from './common/price.provider';
+import { SolanaAssetAnalyser } from './common/solana.asset-analyser';
+
+@Injectable()
+export class SaberAssetAnalyser
+  extends SolanaAssetAnalyser
+  implements AssetAnalyser, AssetPriceProvider
+{
+  constructor(web3Provider: Web3SolanaProviderService) {
+    super(web3Provider);
+  }
+
+  async checkAsset(asset: AssetReference): Promise<AssetAnalysis> {
+    const connection = this.web3Provider.getInstanceByChainId(asset.chainId);
+    const token = await StableSwap.load(connection, new web3.PublicKey(asset.address));
+    if (!token) {
+      return UNKNOWN_ASSET;
+    }
+
+    const { tokenA, tokenB } = token.state;
+    return {
+      done: true,
+      categories: [],
+      underlying: [tokenA.mint.toString(), tokenB.mint.toString()],
+    };
+  }
+
+  canHandleCategory(code: string): boolean {
+    return code === 'saber-lp';
+  }
+
+  getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]> {
+    const promises = assets.map((asset) => this.calculatePrice(chainId, asset));
+    return Promise.all(promises);
+  }
+
+  private async calculatePrice(chainId: number, asset: ComplexAsset): Promise<AssetPrice> {
+    const connection = this.web3Provider.getInstanceByChainId(chainId);
+    const token = await StableSwap.load(connection, new web3.PublicKey(asset.address));
+
+    const { tokenA, tokenB, poolTokenMint } = token.state;
+    const [reserveA, reserveB, supply] = await Promise.all([
+      connection.getAccountInfo(tokenA.reserve),
+      connection.getAccountInfo(tokenB.reserve),
+      await connection.getTokenSupply(poolTokenMint),
+    ]);
+
+    const reserveAAmount = u64.fromBuffer(TokenAccountLayout.decode(reserveA.data).amount);
+    const reserveBAmount = u64.fromBuffer(TokenAccountLayout.decode(reserveB.data).amount);
+
+    const [underlyingAssetA, underlyingAssetB] = asset.underlying;
+
+    const assetAValue = toBN(reserveAAmount.toString())
+      .dividedBy(decimalsDivider(underlyingAssetA.decimals))
+      .multipliedBy(underlyingAssetA.price);
+
+    const assetBValue = toBN(reserveBAmount.toString())
+      .dividedBy(decimalsDivider(underlyingAssetB.decimals))
+      .multipliedBy(underlyingAssetB.price);
+
+    const totalValue = assetAValue.plus(assetBValue);
+    const price = totalValue.multipliedBy(asset.decimals).dividedBy(toBN(supply.value));
+    return {
+      asset: { chainId, address: asset.address },
+      price: price.toNumber(),
+    };
+  }
+}

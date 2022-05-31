@@ -1,4 +1,3 @@
-import { toDecimals } from 'apps/account/src/common/utils';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
@@ -15,6 +14,7 @@ import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
 import { concatStrings } from '@app/common/utils';
+import { toDecimals } from '@app/common/utils/number';
 import { toChunkedArray } from '@app/common/utils/transform';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';

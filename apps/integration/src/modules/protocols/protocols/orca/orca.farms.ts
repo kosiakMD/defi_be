@@ -1,5 +1,4 @@
 import { Connection } from '@solana/web3.js';
-import { toDecimals } from 'apps/account/src/common/utils';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
@@ -23,6 +22,7 @@ import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 import { concatStrings } from '@app/common/utils';
+import { toDecimals } from '@app/common/utils/number';
 import { toChunkedArray } from '@app/common/utils/transform';
 
 import { Web3Provider } from '../../../chains/web3.provider';

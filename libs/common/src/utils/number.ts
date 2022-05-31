@@ -1,5 +1,9 @@
 import BigNumber from 'bignumber.js';
 
+export function toDecimals(amount: number, decimals: number): number {
+  return amount * Math.pow(10, -decimals);
+}
+
 type Decimals = string | number;
 
 export const toBN = (number): BigNumber => new BigNumber(number);

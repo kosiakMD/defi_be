@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { TimestampPriceDto } from './price.timestamp.dto';
+import { TimestampPriceDto } from './price-timestamp.dto';
 
 export class HistoricalPriceDto {
   @ApiProperty({

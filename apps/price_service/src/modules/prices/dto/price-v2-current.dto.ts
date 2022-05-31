@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { CurrentPriceV2DetailedDto } from './price.v2.current.detailed.dto';
+import { CurrentPriceV2DetailedDto } from './price-v2-current-detailed.dto';
 
 export class CurrentPriceV2Dto {
   @ApiProperty({ type: CurrentPriceV2DetailedDto, required: false })

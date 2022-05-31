@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { splitToNumberArray } from '@app/common/utils/transform';
 
-import { PriceQueryDto } from './price.query.dto';
+import { PriceQueryDto } from './price-query.dto';
 
 export class HistoricalPriceQueryDto extends PriceQueryDto {
   @IsOptional()

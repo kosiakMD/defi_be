@@ -32,10 +32,10 @@ import {
   PriceResponseDto,
   TimestampKeyPrice,
 } from './dto';
-import { GetCurrentPricesResponseDto } from './dto/get.current.prices.response.dto';
+import { GetCurrentPricesResponseDto } from './dto/get-current-prices-response.dto';
+import { AssetCurrentPriceEntity } from './entities/asset-current-price.entity';
+import { AssetPriceEntity } from './entities/asset-price.entity';
 import { AssetEntity } from './entities/asset.entity';
-import { AssetCurrentPriceEntity } from './entities/asset_current_price.entity';
-import { AssetPriceEntity } from './entities/asset_price.entity';
 import { getStepCount, interpolation } from './helpers';
 import { PriceRangePeriod, TimeframeFrequentlyInMin, TimePeriodInDays } from './prices.enum';
 import {

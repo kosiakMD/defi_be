@@ -35,7 +35,7 @@ import {
   PoolInterface,
   PoolsQuery,
   PoolsQueryInterface,
-} from '../../subgraphs/maker-dAOSubgraph';
+} from '../../subgraphs/maker-dao-subgraph';
 
 type IBorrowTokenMinimal = IBorrowTokenMinimalBase<{ rate: number }>;
 

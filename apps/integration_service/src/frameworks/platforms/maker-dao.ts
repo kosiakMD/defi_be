@@ -6,7 +6,7 @@ import { ChainIdEnum, Logger } from '@app/common';
 
 import { FeatureEnum } from '../support/enums';
 import { MakerVault, MakerVaultInterface } from '../support/evm/protocols/lending/maker-vault';
-import { endpoints } from '../support/evm/subgraphs/maker-dAOSubgraph';
+import { endpoints } from '../support/evm/subgraphs/maker-dao-subgraph';
 import { RootPlatform } from '../support/root-platform';
 
 export class MakerDAO extends RootPlatform {

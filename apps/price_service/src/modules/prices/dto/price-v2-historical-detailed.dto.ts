@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { TimestampPriceDto } from './price.timestamp.dto';
-import { PriceV2DetailedBaseDto } from './price.v2.detailed.base.dto';
+import { TimestampPriceDto } from './price-timestamp.dto';
+import { PriceV2DetailedBaseDto } from './price-v2-detailed-base.dto';
 
 export class HistoricalPriceV2DetailedDto extends PriceV2DetailedBaseDto {
   @ApiProperty({

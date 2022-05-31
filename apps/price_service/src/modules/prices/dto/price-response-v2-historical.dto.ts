@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PriceBaseResponseDto } from './price.response.base.dto';
-import { HistoricalPriceV2Dto } from './price.v2.historical.dto';
+import { PriceBaseResponseDto } from './price-response-base.dto';
+import { HistoricalPriceV2Dto } from './price-v2-historical.dto';
 
 export class HistoricalPriceV2ResponseDto extends PriceBaseResponseDto {
   @ApiProperty({

@@ -18,7 +18,7 @@ import {
   PricesPayload,
   PriceTimestampRequestDto,
 } from '../modules/prices/dto';
-import { PriceUpdateResponseDto } from '../modules/prices/dto/price.update.responseDto';
+import { PriceUpdateResponseDto } from '../modules/prices/dto/price-update-response.dto';
 import { PriceService } from '../modules/prices/prices.service';
 
 @Controller('prices')

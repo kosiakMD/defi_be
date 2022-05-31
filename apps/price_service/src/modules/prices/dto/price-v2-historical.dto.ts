@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { HistoricalPriceV2DetailedDto } from './price.v2.historical.detailed.dto';
+import { HistoricalPriceV2DetailedDto } from './price-v2-historical-detailed.dto';
 
 export class HistoricalPriceV2Dto {
   @ApiProperty({ type: HistoricalPriceV2DetailedDto, required: false })

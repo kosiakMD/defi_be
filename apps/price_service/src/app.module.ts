@@ -5,7 +5,7 @@ import { APP_FILTER } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { Logger, LoggerModule } from '@app/common/Logger';
+import { Logger } from '@app/common/Logger';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
@@ -53,7 +53,6 @@ import { PricesModule } from './modules/prices/prices.module';
     PricesModule,
     HealthModule,
     LookupModule,
-    LoggerModule,
   ].sort(),
   providers: [
     ...interceptorsOrder,

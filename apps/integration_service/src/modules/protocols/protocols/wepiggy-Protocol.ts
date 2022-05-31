@@ -40,7 +40,7 @@ import { ComptrollerAbis } from './wepiggy/contracts/comptroller';
 import { DistributionAbis } from './wepiggy/contracts/distribution';
 import { LensAbis } from './wepiggy/contracts/lens';
 import { OracleAbis } from './wepiggy/contracts/oracle';
-import { PTokenAbis } from './wepiggy/contracts/pToken';
+import { PTokenAbis } from './wepiggy/contracts/p-token.abi';
 import { contracts, nativePTokens, wpcAddress, zeroAddress } from './wepiggy/wepiggy.constants';
 import { APY, BalanceInfo } from './wepiggy/wepiggy.interfaces';
 

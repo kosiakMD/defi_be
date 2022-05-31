@@ -45,7 +45,7 @@ import {
   ICompoundHttpCToken,
   ICompoundHttpToken,
 } from './compound/compound.interfaces';
-import { CToken } from './compound/contracts/cToken';
+import { CToken } from './compound/contracts/c-token';
 import { CompoundLens } from './compound/contracts/compound-lens';
 
 @Injectable()

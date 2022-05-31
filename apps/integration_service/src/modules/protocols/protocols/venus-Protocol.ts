@@ -42,7 +42,7 @@ import { OracleAbis } from './venus/contracts/oracle';
 import { PoolAbis } from './venus/contracts/pool';
 import { TokenAbis } from './venus/contracts/token';
 import { UnitrollerAbis } from './venus/contracts/unitroller';
-import { VTokenAbis } from './venus/contracts/vToken';
+import { VTokenAbis } from './venus/contracts/v-token.abi';
 import { venusAddresses } from './venus/venus.constants';
 import { APY, BalanceInfo } from './venus/venus.interfaces';
 

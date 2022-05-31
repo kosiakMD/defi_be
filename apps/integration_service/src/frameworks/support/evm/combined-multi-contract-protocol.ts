@@ -13,7 +13,7 @@ import {
   TokenMap,
 } from '../interfaces';
 import { AbiService } from './abi-module/abi-service';
-import { EVMCore } from './eVMCore';
+import { EVMCore } from './evm-core';
 
 export interface CombinedMultiContractProtocolMeta extends IProtocolMeta {
   address: Address;

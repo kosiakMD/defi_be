@@ -32,7 +32,7 @@ import {
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens-supplied.interface';
 import { AbiService } from '../../abi-module/abi-service';
-import { EVMCore } from '../../eVMCore';
+import { EVMCore } from '../../evm-core';
 
 export interface IronBankMeta extends IProtocolMeta {
   apiEndpoint: string;

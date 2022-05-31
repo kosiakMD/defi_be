@@ -29,7 +29,7 @@ import {
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens-supplied.interface';
 import { AbiService } from '../../abi-module/abi-service';
-import { EVMCore } from '../../evmcore';
+import { EVMCore } from '../../evm-core';
 import {
   GraphQLResponse,
   PoolInterface,

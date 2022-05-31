@@ -22,7 +22,7 @@ import {
   ISupplyTokenOpportunity,
   ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens-supplied.interface';
-import { EVMCore } from '../../eVMCore';
+import { EVMCore } from '../../evm-core';
 import {
   BALANCES_QUERY,
   IUniswapBalanceSubgraphResponse,

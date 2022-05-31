@@ -12,7 +12,7 @@ import {
   IWalletUserEntry,
 } from '../interfaces';
 import { AbiService } from './abi-module/abi-service';
-import { EVMCore } from './eVMCore';
+import { EVMCore } from './evm-core';
 
 interface IEVMMeta extends IProtocolMeta {
   name: string;

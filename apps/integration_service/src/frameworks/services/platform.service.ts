@@ -29,7 +29,7 @@ import { IronBank } from '../platforms/iron-bank';
 import { Kava } from '../platforms/kava';
 import { KnightSwap } from '../platforms/knight-swap';
 import { Lido } from '../platforms/lido';
-import { MakerDAO } from '../platforms/maker-dAO';
+import { MakerDAO } from '../platforms/maker-dao';
 // import { LimeSwap } from '../platforms/lime-swap';
 import { MarsEcosystem } from '../platforms/mars-ecosystem';
 import { Mdex } from '../platforms/mdex';

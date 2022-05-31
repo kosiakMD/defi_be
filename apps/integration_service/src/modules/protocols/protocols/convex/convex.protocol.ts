@@ -20,10 +20,10 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import BasicProtocol from '../basic-protocol';
-import { ConvexCurveLpStaking } from './convex.curve-lp.staking';
-import { ConvexCvxCRVStaking } from './convex.cvx-crv.staking';
-import { ConvexCvxLockedStaking } from './convex.cvx-locked-staking';
-import { ConvexCvxStaking } from './convex.cvx.staking';
+import { ConvexCurveLpStaking } from './convex-curve-lp.staking';
+import { ConvexCvxCRVStaking } from './convex-cvx-crv.staking';
+import { ConvexCvxLockedStaking } from './convex-cvx-locked-staking';
+import { ConvexCvxStaking } from './convex-cvx.staking';
 
 @Injectable()
 export class ConvexProtocol extends BasicProtocol {

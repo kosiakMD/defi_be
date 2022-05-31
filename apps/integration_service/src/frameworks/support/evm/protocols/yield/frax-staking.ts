@@ -32,7 +32,7 @@ import {
 } from '../../../interfaces/feature-staking.interface';
 import { ERC20Token } from '../../../interfaces/tokens-common.interface';
 import { AbiService } from '../../abi-module/abi-service';
-import { EVMCore } from '../../eVMCore';
+import { EVMCore } from '../../evm-core';
 
 export interface IFraxStakingMeta extends IProtocolMeta {
   feature: FeatureEnum.staking;

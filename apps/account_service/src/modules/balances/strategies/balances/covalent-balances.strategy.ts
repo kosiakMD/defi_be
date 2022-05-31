@@ -6,12 +6,12 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger, TokenBalance } from '@app/common';
 import { getAbsoluteChainId, getInternalChainId } from '@app/common/utils/chains';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { Covalent } from '../../../common/interfaces/covalent.interface';
-import { CovalentService } from '../../../common/providers/3rdparty/covalent.service';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
-import { replaceIncorrectTokenAddress } from '../../../common/utils/token';
+import { BalancesLoadingStrategy } from '../../../../common/interfaces';
+import { Covalent } from '../../../../common/interfaces/covalent.interface';
+import { CovalentService } from '../../../../common/providers/3rdparty/covalent.service';
+import { BaseBalanceStrategy } from '../../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../../common/types';
+import { replaceIncorrectTokenAddress } from '../../../../common/utils/token';
 
 export class CovalentBalancesStrategy
   extends BaseBalanceStrategy

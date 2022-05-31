@@ -60,8 +60,8 @@
   - apps/price_service/**/*
 
 📚 Common Libraries:
-  - libs/common/*
-  - libs/common/**/*
+  - libraries/common/*
+  - libraries/common/**/*
 
 👷 Job:
   - jobs/*

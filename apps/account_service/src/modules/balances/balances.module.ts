@@ -20,19 +20,19 @@ import { BlacklistModule } from '../blacklists/blacklist.module';
 import { ChainsModule } from '../chains/chains.module';
 import { MulticallModule } from '../multicall/multicall.module';
 import { BalancesService } from './balances.service';
-import { CardanoBalancesStrategy } from './strategies/cardano-balances.strategy';
-import { CosmosBalancesStrategy } from './strategies/cosmos-balances.strategy';
-import { CovalentBalancesStrategy } from './strategies/covalent-balances.strategy';
+import { CardanoBalancesStrategy } from './strategies/balances/cardano-balances.strategy';
+import { CosmosBalancesStrategy } from './strategies/balances/cosmos-balances.strategy';
+import { CovalentBalancesStrategy } from './strategies/balances/covalent-balances.strategy';
+import { KavaBalancesStrategy } from './strategies/balances/kava-balances.strategy';
+import { NetworkBalancesStrategy } from './strategies/balances/network-balances.strategy';
+import { OsmosisBalancesStrategy } from './strategies/balances/osmosis-balances.strategy';
+import { RoninBalancesStrategy } from './strategies/balances/ronin-balances.strategy';
+import { SecretBalancesStrategy } from './strategies/balances/secret-balances.strategy';
+import { SolanaBalancesStrategy } from './strategies/balances/solana-balances.strategy';
+import { TerraBalancesStrategy } from './strategies/balances/terra-balances.strategy';
 import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
 import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
 import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
-import { KavaBalancesStrategy } from './strategies/kava-balances.strategy';
-import { NetworkBalancesStrategy } from './strategies/network-balances.strategy';
-import { OsmosisBalancesStrategy } from './strategies/osmosis-balances.strategy';
-import { RoninBalancesStrategy } from './strategies/ronin-balances.strategy';
-import { SecretBalancesStrategy } from './strategies/secret-balances.strategy';
-import { SolanaBalancesStrategy } from './strategies/solana-balances.strategy';
-import { TerraBalancesStrategy } from './strategies/terra-balances.strategy';
 
 @Module({
   imports: [

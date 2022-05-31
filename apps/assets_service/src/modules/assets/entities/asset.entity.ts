@@ -64,4 +64,7 @@ export class AssetEntity extends BaseEntity {
 
   @OneToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset, { cascade: true })
   public underlying: AssetUnderlyingEntity[];
+
+  // TODO: it's used but no info - need to provide
+  prices: any;
 }

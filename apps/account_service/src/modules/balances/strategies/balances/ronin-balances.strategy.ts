@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { Balance } from '../../../common/interfaces/ronin.interface';
-import { RoninService } from '../../../common/providers/3rdparty/ronin.service';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
+import { BalancesLoadingStrategy } from '../../../../common/interfaces';
+import { Balance } from '../../../../common/interfaces/ronin.interface';
+import { RoninService } from '../../../../common/providers/3rdparty/ronin.service';
+import { BaseBalanceStrategy } from '../../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../../common/types';
 
-import type { TokenBalance } from '../balances.interfaces';
+import type { TokenBalance } from '../../balances.interfaces';
 
 @Injectable()
 export class RoninBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {

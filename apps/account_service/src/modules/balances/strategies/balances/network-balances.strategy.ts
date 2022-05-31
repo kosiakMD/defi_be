@@ -9,15 +9,15 @@ import { Logger } from '@app/common';
 import { COIN_ADDRESS } from '@app/common/constant';
 import { retry } from '@app/common/utils/retry';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { Web3Provider } from '../../../common/providers/chain-related/web3.provider';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
-import { chunkArray, insertAtPosition } from '../../../common/utils';
+import { BalancesLoadingStrategy } from '../../../../common/interfaces';
+import { Web3Provider } from '../../../../common/providers/chain-related/web3.provider';
+import { BaseBalanceStrategy } from '../../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../../common/types';
+import { chunkArray, insertAtPosition } from '../../../../common/utils';
 
-import { ChainsService } from '../../chains/chains.service';
-import { TokenBalance } from '../balances.interfaces';
-import { BalancesContract } from '../contracts/balances.contract';
+import { ChainsService } from '../../../chains/chains.service';
+import { TokenBalance } from '../../balances.interfaces';
+import { BalancesContract } from '../../contracts/balances.contract';
 
 export class NetworkBalancesStrategy
   extends BaseBalanceStrategy

@@ -29,10 +29,10 @@
     ],
     "paths": {
       "@app/common": [
-        "libs/common/src"
+        "libraries/common/src"
       ],
       "@app/common/*": [
-        "libs/common/src/*"
+        "libraries/common/src/*"
       ]
     }
   }

@@ -5,7 +5,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/dynamic.contract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';

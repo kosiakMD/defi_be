@@ -12,7 +12,7 @@ import { Address, ChainAbbrEnum, ChainDto, ChainIdEnum, ChainNameEnum, Logger } 
 import { BaseData } from '@app/common/dto/base-data';
 import { CallData } from '@app/common/dto/call-data';
 import { normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/dynamic.contract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/uniswap-v2-pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 

@@ -3,9 +3,9 @@ import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
 
-import { CallData } from '@app/common/dto/CallData';
+import { CallData } from '@app/common/dto/call-data';
 import { decimalsDivider, toBN } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';

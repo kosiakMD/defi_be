@@ -1,6 +1,6 @@
 import { Address } from '@app/common';
 import { CallData } from '@app/common/dto/call-data';
-import { DynamicContract } from '@app/common/web3provider/contracts/dynamic.contract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {

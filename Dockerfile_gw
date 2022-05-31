@@ -35,4 +35,4 @@ RUN touch /usr/src/app/dist/apps/gateway_service/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/api_gateway/src/main"]
+CMD ["dist/apps/gateway_service/src/main"]

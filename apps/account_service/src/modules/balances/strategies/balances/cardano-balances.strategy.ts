@@ -7,11 +7,11 @@ import { Injectable } from '@nestjs/common';
 
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
+import { BalancesLoadingStrategy } from '../../../../common/interfaces';
+import { BaseBalanceStrategy } from '../../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../../common/types';
 
-import type { TokenBalance } from '../balances.interfaces';
+import type { TokenBalance } from '../../balances.interfaces';
 
 @Injectable()
 export class CardanoBalancesStrategy

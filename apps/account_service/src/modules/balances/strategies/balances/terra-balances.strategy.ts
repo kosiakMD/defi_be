@@ -6,13 +6,13 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { Web3Provider } from '../../../common/providers/chain-related/web3.provider';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
+import { BalancesLoadingStrategy } from '../../../../common/interfaces';
+import { Web3Provider } from '../../../../common/providers/chain-related/web3.provider';
+import { BaseBalanceStrategy } from '../../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../../common/types';
 
-import { blackListTerraTokens } from '../../blacklists/black-list-terra-tokens';
-import { TokenBalance } from '../balances.interfaces';
+import { blackListTerraTokens } from '../../../blacklists/black-list-terra-tokens';
+import { TokenBalance } from '../../balances.interfaces';
 
 export class TerraBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
   constructor(

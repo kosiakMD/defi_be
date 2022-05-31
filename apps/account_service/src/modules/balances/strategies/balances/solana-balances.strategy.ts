@@ -10,12 +10,12 @@ import { Logger } from '@app/common';
 import { SOL_COIN_ADDRESS } from '@app/common/constant';
 import { AccountInfo } from '@app/common/dto/solana';
 
-import { BalancesLoadingStrategy } from '../../../common/interfaces';
-import { Web3Provider } from '../../../common/providers/chain-related/web3.provider';
-import { BaseBalanceStrategy } from '../../../common/services/base-balance.strategy';
-import { BalancesRequest } from '../../../common/types';
+import { BalancesLoadingStrategy } from '../../../../common/interfaces';
+import { Web3Provider } from '../../../../common/providers/chain-related/web3.provider';
+import { BaseBalanceStrategy } from '../../../../common/services/base-balance.strategy';
+import { BalancesRequest } from '../../../../common/types';
 
-import { TokenBalance } from '../balances.interfaces';
+import { TokenBalance } from '../../balances.interfaces';
 
 export class SolanaBalancesStrategy extends BaseBalanceStrategy implements BalancesLoadingStrategy {
   constructor(

@@ -1,6 +1,6 @@
 import { equals } from 'class-validator';
 
-import { DynamicContract } from '@app/common/web3provider/contracts/dynamic.contract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature.staking.interface';

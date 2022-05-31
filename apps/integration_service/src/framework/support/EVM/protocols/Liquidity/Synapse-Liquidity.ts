@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainIdEnum, CurrentPricesPayload, FeatureEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { DynamicContract } from '@app/common/web3provider/contracts/dynamic.contract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
 import { Ownable } from '@app/common/web3provider/contracts/ownable';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';

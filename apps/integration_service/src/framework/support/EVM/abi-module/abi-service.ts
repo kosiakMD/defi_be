@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainId, ChainIdEnum, Logger } from '@app/common';
-import { DynamicContract } from '@app/common/web3provider/contracts/dynamic.contract';
+import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { INamedFunctionPredicates, INamedFunctions } from '../../interfaces';

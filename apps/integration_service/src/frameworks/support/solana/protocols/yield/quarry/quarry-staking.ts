@@ -12,8 +12,8 @@ import { Logger } from '@app/common';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
-import { AccountService } from '../../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../../modules/microservice/price.service';
 import { IRootProtocol, TokenMap } from '../../../../interfaces';
 import { IStakingFeatureUserEntry } from '../../../../interfaces/feature-staking.interface';
 import { QUARRY_QUARRY_LAYOUT } from '../../../schemas/quarry';

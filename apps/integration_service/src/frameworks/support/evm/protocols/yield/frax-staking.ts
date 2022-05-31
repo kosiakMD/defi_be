@@ -19,10 +19,10 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { CurrentPricesPayload } from '../../../../../common/dto';
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
-import { Puppeteer } from '../../../../../modules/microservices/puppeteer';
-import UniswapProtocolV3 from '../../../../../modules/protocols/protocols/uniswap-protocol-v3';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
+import { Puppeteer } from '../../../../../modules/microservice/puppeteer';
+import UniswapProtocolV3 from '../../../../../modules/protocol/protocols/uniswap-protocol-v3';
 import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IUserDataProtocolResponse } from '../../../interfaces';
 import {

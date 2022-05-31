@@ -10,8 +10,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
 import {

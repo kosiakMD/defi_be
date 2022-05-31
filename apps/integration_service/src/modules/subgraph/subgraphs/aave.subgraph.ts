@@ -6,8 +6,8 @@ import { ConfigService } from '@nestjs/config';
 
 import { ChainDto, ChainIdEnum } from '@app/common';
 
-import { IReserve } from '../../protocols/protocols/aave/aave.interfaces';
-import { getReservesQuery } from '../../protocols/protocols/aave/queries/reserves.query';
+import { IReserve } from '../../protocol/protocols/aave/aave.interfaces';
+import { getReservesQuery } from '../../protocol/protocols/aave/queries/reserves.query';
 
 @Injectable()
 export class AaveSubgraph {

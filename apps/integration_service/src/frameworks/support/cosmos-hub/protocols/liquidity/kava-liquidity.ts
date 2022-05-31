@@ -10,8 +10,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { IRootProtocol, TokenMap } from '../../../interfaces';
 import {
   IPoolFeatureEntryOpportunity,

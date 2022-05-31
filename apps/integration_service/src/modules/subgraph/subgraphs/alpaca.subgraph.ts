@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';
 
-import { AlpacaUser } from '../../protocols/protocols/alpaca/interfaces/alpaca.interfaces';
+import { AlpacaUser } from '../../protocol/protocols/alpaca/interfaces/alpaca.interfaces';
 
 @Injectable()
 export class AlpacaSubgraph {

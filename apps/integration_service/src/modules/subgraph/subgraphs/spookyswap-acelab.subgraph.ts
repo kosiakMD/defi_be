@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common/types';
 
-import { AceLabUser } from '../../protocols/protocols/spookyswap/spookyswap/acelab-user.interfaces';
+import { AceLabUser } from '../../protocol/protocols/spookyswap/spookyswap/acelab-user.interfaces';
 
 @Injectable()
 export class SpookyswapAceLabSubgraph {

@@ -9,8 +9,8 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { CurrentPricesPayload } from '../../../../../common/dto';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { ERC20Token } from '../../../interfaces/tokens-common.interface';
 import {

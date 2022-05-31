@@ -4,8 +4,8 @@ import { HttpService } from '@nestjs/axios';
 
 import { Logger } from '@app/common';
 
-import { AccountService } from '../../../modules/microservices/account.service';
-import { PriceService } from '../../../modules/microservices/price.service';
+import { AccountService } from '../../../modules/microservice/account.service';
+import { PriceService } from '../../../modules/microservice/price.service';
 import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 import { RootProtocolCacheable } from '../root-protocol-cacheable';
 

@@ -12,8 +12,8 @@ import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { FailedCacheDataException } from '../../../exceptions';
 import { IProtocolMeta } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';

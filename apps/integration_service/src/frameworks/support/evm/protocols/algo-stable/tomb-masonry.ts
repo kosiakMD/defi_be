@@ -8,8 +8,8 @@ import { CallData } from '@app/common/dto/call-data';
 import { equals, normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,

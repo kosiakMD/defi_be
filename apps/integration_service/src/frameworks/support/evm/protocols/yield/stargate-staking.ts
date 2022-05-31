@@ -7,8 +7,8 @@ import { CurrentPricesPayload, Logger } from '@app/common';
 import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import { IStakingFeatureMinimal } from '../../../interfaces/feature-staking.interface';
 import { ERC20Token } from '../../../interfaces/tokens-common.interface';

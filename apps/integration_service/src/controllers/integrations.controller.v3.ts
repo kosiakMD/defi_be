@@ -17,7 +17,7 @@ import {
   IOpportunityResponse,
   IUserEntryResponse,
 } from '../frameworks/support/interfaces/responses.interface';
-import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
+import { IntegrationsResponseV2Dto } from '../modules/integration/dto/integrations.dto';
 
 const SortedProtocolNames = Object.fromEntries(
   Object.entries(ProtocolNameEnum).sort(([a], [b]) => (a.toLowerCase() > b.toLowerCase() ? 1 : -1)),

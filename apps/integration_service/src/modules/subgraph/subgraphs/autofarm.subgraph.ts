@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common/types';
 
-import { AutofarmUser } from '../../protocols/protocols/autofarm/autofarm.interfaces';
+import { AutofarmUser } from '../../protocol/protocols/autofarm/autofarm.interfaces';
 
 @Injectable()
 export class AutofarmSubgraph {

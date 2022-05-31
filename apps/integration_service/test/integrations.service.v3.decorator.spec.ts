@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 
 import { FeatureEnum } from '@app/common';
 
-import { IntegrationsServiceV3Decorator } from '../src/modules/integrations/integrations.service.v3.decorator';
+import { IntegrationsServiceV3Decorator } from '../src/modules/integration/integrations.service.v3.decorator';
 import { v3mockResponseData } from './mocks/v3-mock-response';
 
 describe('toV2Response should', () => {

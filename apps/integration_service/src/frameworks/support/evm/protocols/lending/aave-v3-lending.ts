@@ -11,8 +11,8 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,

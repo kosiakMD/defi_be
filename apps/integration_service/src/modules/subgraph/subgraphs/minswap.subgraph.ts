@@ -7,8 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import {
   MinswapStaked,
   MinswapStakingResponse,
-} from '../../protocols/helpers/cardano/cardano.interface';
-import { FARMS_BY_ADDRESS_QUERY } from '../../protocols/protocols/minswap/minswap.queries';
+} from '../../protocol/helpers/cardano/cardano.interface';
+import { FARMS_BY_ADDRESS_QUERY } from '../../protocol/protocols/minswap/minswap.queries';
 
 @Injectable()
 export class MinswapSubgraph {

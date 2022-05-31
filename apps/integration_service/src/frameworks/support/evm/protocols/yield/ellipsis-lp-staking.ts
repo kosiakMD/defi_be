@@ -13,8 +13,8 @@ import { absoluteValue, dataFrom, equals, normalizeDecimals, startsWith } from '
 import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
+import { AccountService } from '../../../../../modules/microservice/account.service';
+import { PriceService } from '../../../../../modules/microservice/price.service';
 import { CurveAssetsManager } from '../../../assets/curve-assets.manager';
 import { FeatureEnum } from '../../../enums';
 import { MissingTokenException } from '../../../exceptions';

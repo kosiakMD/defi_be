@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainIdEnum } from '@app/common';
 
-import { IYearnUser } from '../../protocols/protocols/yearn/yearn.interfaces';
+import { IYearnUser } from '../../protocol/protocols/yearn/yearn.interfaces';
 
 @Injectable()
 export class YearnV1Subgraph {

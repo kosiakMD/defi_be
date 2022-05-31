@@ -10,11 +10,11 @@ import { Address, ChainDto, ChainIdEnum, Logger } from '@app/common';
 import {
   getLiquidityPositionsQuery,
   getPairsQuery,
-} from '../../protocols/protocols/sushiswap/queries/exchange.query';
+} from '../../protocol/protocols/sushiswap/queries/exchange.query';
 import {
   ISushiSwapLiquidityPair,
   ISushiSwapUsers,
-} from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
+} from '../../protocol/protocols/sushiswap/sushiswap.interfaces';
 
 @Injectable()
 export class SushiSwapExchangeSubgraph {

@@ -7,8 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, ChainIdEnum, Logger } from '@app/common';
 
-import { getSushiBarPositionsQuery } from '../../protocols/protocols/sushiswap/queries/sushibar.query';
-import { ISushiSwapSushiSwapBarResponse } from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
+import { getSushiBarPositionsQuery } from '../../protocol/protocols/sushiswap/queries/sushibar.query';
+import { ISushiSwapSushiSwapBarResponse } from '../../protocol/protocols/sushiswap/sushiswap.interfaces';
 
 @Injectable()
 export class SushiSwapSushiBarSubgraph {

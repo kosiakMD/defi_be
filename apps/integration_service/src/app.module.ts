@@ -16,9 +16,9 @@ import { HeadersContextMiddleware } from '@app/common/middlewares/headers-contex
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
-import { IntegrationsModule } from './modules/integrations/integrations.module';
-import { JobsModule } from './modules/jobs/jobs.module';
-import { ProtocolModule } from './modules/protocols/protocol.module';
+import { IntegrationsModule } from './modules/integration/integrations.module';
+import { JobsModule } from './modules/job/jobs.module';
+import { ProtocolModule } from './modules/protocol/protocol.module';
 import { ThegraphModule } from './modules/subgraph/thegraph.module';
 import { TemporaryTokensModule } from './modules/temporary-tokens/temporary-tokens.module';
 

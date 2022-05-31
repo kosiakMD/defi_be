@@ -7,8 +7,8 @@ import { ConfigService } from '@nestjs/config';
 import {
   Staked,
   SundaeSwapStakingResponse,
-} from '../../protocols/helpers/cardano/cardano.interface';
-import { FARMS_BY_ADDRESS_QUERY } from '../../protocols/protocols/sundaeswap/sundaeswap.queries';
+} from '../../protocol/helpers/cardano/cardano.interface';
+import { FARMS_BY_ADDRESS_QUERY } from '../../protocol/protocols/sundaeswap/sundaeswap.queries';
 
 @Injectable()
 export class SundaeSwapSubgraph {

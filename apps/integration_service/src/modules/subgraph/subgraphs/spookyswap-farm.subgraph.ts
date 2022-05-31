@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';
 
-import { MasterchefUser } from '../../protocols/protocols/spookyswap/spookyswap/masterchef-user.interfaces';
+import { MasterchefUser } from '../../protocol/protocols/spookyswap/spookyswap/masterchef-user.interfaces';
 
 @Injectable()
 export class SpookyswapFarmSubgraph {

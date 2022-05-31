@@ -7,8 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, ChainIdEnum, Logger } from '@app/common';
 
-import { getLendingPositionsQuery } from '../../protocols/protocols/sushiswap/queries/bentobox.query';
-import { ISushiSwapBentoBoxUsers } from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
+import { getLendingPositionsQuery } from '../../protocol/protocols/sushiswap/queries/bentobox.query';
+import { ISushiSwapBentoBoxUsers } from '../../protocol/protocols/sushiswap/sushiswap.interfaces';
 
 @Injectable()
 export class SushiSwapBentoBoxSubgraph {

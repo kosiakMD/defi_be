@@ -7,8 +7,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, ChainIdEnum, Logger } from '@app/common';
 
-import { getMasterChefPositionsQuery } from '../../protocols/protocols/sushiswap/queries/masterchef.query';
-import { ISushiSwapMasterChef } from '../../protocols/protocols/sushiswap/sushiswap.interfaces';
+import { getMasterChefPositionsQuery } from '../../protocol/protocols/sushiswap/queries/masterchef.query';
+import { ISushiSwapMasterChef } from '../../protocol/protocols/sushiswap/sushiswap.interfaces';
 
 @Injectable()
 export class SushiSwapMasterChefSubgraph {

@@ -29,7 +29,7 @@ import { concatStrings, decimalsDivider } from '@app/common/utils';
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { PriceService } from '../../../microservices/price.service';
-import { TraderjoeAbis } from './contracts/traderjoe.abis';
+import { TraderJoeAbi } from './contracts/trader-joe.abi';
 
 @Injectable()
 export class TraderJoeStaking {
@@ -93,7 +93,7 @@ export class TraderJoeStaking {
       for (const pool of pools.items) {
         calls.set(TraderJoeStaking.pendingTokensLabel(address, pool.address, pool.poolId), {
           address: pool.address,
-          abi: TraderjoeAbis.userInfo,
+          abi: TraderJoeAbi.userInfo,
           input: {
             data: [pool.poolId, address],
           },
@@ -148,7 +148,7 @@ export class TraderJoeStaking {
         TraderJoeStaking.pendingTokensLabel(d.userAddress, d.contract, d.poolId),
         {
           address: d.contract,
-          abi: TraderjoeAbis.pendingTokens,
+          abi: TraderJoeAbi.pendingTokens,
           input: {
             data: [d.poolId, d.userAddress],
           },

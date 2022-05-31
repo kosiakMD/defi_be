@@ -34,8 +34,8 @@ import { MulticallProvider } from '../../../chains/multicall/multicall.provider'
 import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { JTokenAbis } from './contracts/jToken.abis';
-import { JoetrollerAbis } from './contracts/joetroller.abis';
+import { JTokenAbi } from './contracts/j-token.abi';
+import { JoeTrollerAbi } from './contracts/joe-troller.abi';
 import { OracleAbis } from './contracts/price-oracle.abis';
 import { RewardDistributorAbis } from './contracts/reward-distributor.abis';
 import { TraderJoeAddresses } from './trader-joe.constants';
@@ -393,7 +393,7 @@ export class TraderJoeLending {
     const calls: Map<string, CallData> = new Map<string, CallData>();
 
     jTokens.forEach((jTokenAddress) => {
-      const jTokenContract = new JTokenAbis(jTokenAddress);
+      const jTokenContract = new JTokenAbi(jTokenAddress);
       calls.set(
         this.getBalanceOfUnderlyingLabel(jTokenAddress, address),
         jTokenContract.balanceOfUnderlying(address),
@@ -420,7 +420,7 @@ export class TraderJoeLending {
   }
 
   async getJTokenList(): Promise<string[]> {
-    const joetrollerContract = new JoetrollerAbis(TraderJoeAddresses.joetroller);
+    const joetrollerContract = new JoeTrollerAbi(TraderJoeAddresses.joetroller);
 
     const call: Map<string, CallData> = new Map<string, CallData>([
       [this.getJTokenListLabel(TraderJoeAddresses.joetroller), joetrollerContract.getAllMarkets()],
@@ -580,7 +580,7 @@ export class TraderJoeLending {
   async getTotalSupplyAndBorrows(jTokens: string[]) {
     const calls = new Map<string, CallData>();
     jTokens.forEach((jTokenAddress) => {
-      const jTokenContract = new JTokenAbis(jTokenAddress);
+      const jTokenContract = new JTokenAbi(jTokenAddress);
 
       calls.set(this.getTotalBorrowsLabel(jTokenAddress), jTokenContract.totalBorrowsCurrent());
       calls.set(this.getTotalSupplyLabel(jTokenAddress), jTokenContract.totalSupply());
@@ -654,43 +654,43 @@ export class TraderJoeLending {
   }
 
   getJTokenListLabel(contract: string): string {
-    return concatStrings(JoetrollerAbis.getAllMarkets.name, contract);
+    return concatStrings(JoeTrollerAbi.getAllMarkets.name, contract);
   }
 
   getBalanceOfUnderlyingLabel(contract: string, address: string): string {
-    return concatStrings(JTokenAbis.balanceOfUnderlying.name, contract, address);
+    return concatStrings(JTokenAbi.balanceOfUnderlying.name, contract, address);
   }
 
   getBalanceOfLabel(contract: string, address: string): string {
-    return concatStrings(JTokenAbis.balanceOf.name, contract, address);
+    return concatStrings(JTokenAbi.balanceOf.name, contract, address);
   }
 
   getUnderlyingLabel(contract: string, address: string): string {
-    return concatStrings(JTokenAbis.underlying.name, contract, address);
+    return concatStrings(JTokenAbi.underlying.name, contract, address);
   }
 
   getBorrowBalanceLabel(contract: string, address: string): string {
-    return concatStrings(JTokenAbis.borrowBalanceCurrent.name, contract, address);
+    return concatStrings(JTokenAbi.borrowBalanceCurrent.name, contract, address);
   }
 
   getExchangeRateLabel(jTokenAddress: string): string {
-    return concatStrings(JTokenAbis.exchangeRateCurrent.name, jTokenAddress);
+    return concatStrings(JTokenAbi.exchangeRateCurrent.name, jTokenAddress);
   }
 
   getBorrowRateLabel(jTokenAddress: string): string {
-    return concatStrings(JTokenAbis.borrowRatePerSec.name, jTokenAddress);
+    return concatStrings(JTokenAbi.borrowRatePerSec.name, jTokenAddress);
   }
 
   getSupplyRateLabel(jTokenAddress: string): string {
-    return concatStrings(JTokenAbis.supplyRatePerSec.name, jTokenAddress);
+    return concatStrings(JTokenAbi.supplyRatePerSec.name, jTokenAddress);
   }
 
   getTotalBorrowsLabel(jTokenAddress: string): string {
-    return concatStrings(JTokenAbis.totalBorrowsCurrent.name, jTokenAddress);
+    return concatStrings(JTokenAbi.totalBorrowsCurrent.name, jTokenAddress);
   }
 
   getTotalSupplyLabel(jTokenAddress: string): string {
-    return concatStrings(JTokenAbis.totalSupply.name, jTokenAddress);
+    return concatStrings(JTokenAbi.totalSupply.name, jTokenAddress);
   }
 
   getSupplySpeedLabel(jTokenAddress: string, rewardType: number) {

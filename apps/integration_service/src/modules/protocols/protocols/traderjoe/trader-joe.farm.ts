@@ -24,7 +24,7 @@ import { toDecimals } from '../../../../common/utils/util';
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
 import { PriceService } from '../../../microservices/price.service';
-import { TraderjoeAbis } from './contracts/traderjoe.abis';
+import { TraderJoeAbi } from './contracts/trader-joe.abi';
 
 @Injectable()
 export class TraderJoeFarm {
@@ -107,7 +107,7 @@ export class TraderJoeFarm {
     const totalSupplyCall = new Map<string, ICallData>();
     totalSupplyCall.set(address, {
       address: address,
-      abi: TraderjoeAbis.totalSupply,
+      abi: TraderJoeAbi.totalSupply,
       input: {
         data: [],
       },
@@ -121,7 +121,7 @@ export class TraderJoeFarm {
   }
 
   private async getBalanceOf(userAddress: string) {
-    const xJOEContract = new TraderjoeAbis(this.xJOEAddress);
+    const xJOEContract = new TraderJoeAbi(this.xJOEAddress);
 
     const balanceCall = new Map<string, ICallData>([
       [userAddress, xJOEContract.balanceOf(userAddress)],

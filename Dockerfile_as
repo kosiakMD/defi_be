@@ -3,12 +3,16 @@ FROM node:14.17 as development
 #Uncomment for MacOS M1
 #ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 
-# Install development dependencies
+# 
+
+
+development dependencies
 WORKDIR /usr/src/app
 COPY package*.json ./
 COPY yarn.lock ./
 
 RUN yarn install --loglevel verbose
+RUN yarn assets-prestart-fix
 
 # Additional packages for Docker
 # needed to be modified depending on the target platform - where the mage is going to be run
@@ -34,6 +38,7 @@ COPY package*.json ./
 COPY yarn.lock ./
 
 RUN yarn install --only=production
+RUN yarn assets-prestart-fix
 
 # Additional packages for Docker
 # needed to be modified depending on the target platform - where the mage is going to be run

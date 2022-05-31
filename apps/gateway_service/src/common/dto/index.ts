@@ -5,7 +5,7 @@ import { DetailedResponse } from '../interfaces';
 
 export * from './base-data.dto';
 export * from './contract-approval.dto';
-export * from './eRC20-token.dto';
+export * from './erc20-token.dto';
 export * from './ethereum-address.dto';
 
 export class DetailedResponseDto<T> implements DetailedResponse<T> {

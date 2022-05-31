@@ -38,7 +38,7 @@ import { AaveStrategy } from './services/specific-assets/strategies/aave.strateg
 import { CompoundStrategy } from './services/specific-assets/strategies/compound.strategy';
 import { CurveStrategy } from './services/specific-assets/strategies/curve.strategy';
 import { ElipsisStrategy } from './services/specific-assets/strategies/elipsis.strategy';
-import { StakedSohmStrategy } from './services/specific-assets/strategies/staked-sOHM.strategy';
+import { StakedSohmStrategy } from './services/specific-assets/strategies/staked-sohm.strategy';
 import { StakedSushiStrategy } from './services/specific-assets/strategies/staked-sushi.strategy';
 import { TerraStrategy } from './services/specific-assets/strategies/terra.strategy';
 import { UniswapStrategy } from './services/specific-assets/strategies/uniswap.strategy';

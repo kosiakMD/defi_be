@@ -4,7 +4,6 @@ import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
-import { ZERO_ADDRESS } from '@app/common/constant';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -29,6 +28,9 @@ import { SingleContractProtocol } from '../../SingleContractProtocol';
 
 export interface ILiquityStakingMeta extends IProtocolMeta {
   address: Address;
+  context: {
+    rewardBToken: Address;
+  };
 }
 
 export type ILiquityStakingFeatureMinimal = BaseWithTokens<
@@ -45,9 +47,6 @@ export type ILiquityStakingFeatureUserEntry = BaseWithTokens<
   ISupplyTokenUserEntry,
   IRewardTokenUserEntry[]
 >;
-/**
- * @notice nearly Standard Masterchef however no poolLength is available onchain
- */
 export class LiquityStaking extends SingleContractProtocol<
   ILiquityStakingFeatureMinimal,
   ILiquityStakingFeatureOpportunity,
@@ -67,10 +66,10 @@ export class LiquityStaking extends SingleContractProtocol<
 
   protected functionPredicates: INamedFunctionPredicates = {
     stakedToken: () => (item) => item.name === 'lqtyToken',
-    rewardToken: () => (item) => item.name === 'lusdToken', // secondary reward token is native ETH 0x000
+    rewardAToken: () => (item) => item.name === 'lusdToken', // secondary reward token is native ETH 0x000
     balance: () => (item) => item.name === 'stakes',
-    pendingETH: () => (item) => item.name === 'getPendingETHGain',
-    pendingLUSD: () => (item) => item.name === 'getPendingLUSDGain',
+    pendingRewardA: () => (item) => item.name === 'getPendingLUSDGain',
+    pendingRewardB: () => (item) => item.name === 'getPendingETHGain',
     totalStaked: () => (item) => item.name === 'totalLQTYStaked',
   };
 
@@ -86,10 +85,10 @@ export class LiquityStaking extends SingleContractProtocol<
         },
         rewarded: [
           {
-            token: { address: context.rewardToken.toLowerCase() },
+            token: { address: context.rewardAToken.toLowerCase() },
           },
           {
-            token: { address: ZERO_ADDRESS },
+            token: { address: context.rewardBToken.toLowerCase() },
           },
         ],
       },
@@ -115,17 +114,18 @@ export class LiquityStaking extends SingleContractProtocol<
     pools: ILiquityStakingFeatureOpportunity[],
   ): Promise<ILiquityStakingFeatureUserEntry[]> {
     const contract = new DynamicContract(this.meta.address);
-    const [balance, pendingETH, pendingLUSD] = await this.multicall.callArray(
+    const [balance, pendingRewardA, pendingRewardB] = await this.multicall.callArray(
       [
         contract.createCall(this.functions.balance, address),
-        contract.createCall(this.functions.pendingETH, address),
-        contract.createCall(this.functions.pendingLUSD, address),
+        contract.createCall(this.functions.pendingRewardA, address),
+        contract.createCall(this.functions.pendingRewardB, address),
       ],
       this.meta.chain,
     );
 
     return pools.map((pool) => {
       const amount = normalizeDecimals(balance, pool.supply.token.decimals);
+      if (!amount) return null;
 
       return {
         ...pool,
@@ -135,7 +135,11 @@ export class LiquityStaking extends SingleContractProtocol<
           value: amount * pool.supply.token.price,
         },
         rewarded: pool.rewarded.map((reward) => {
-          const amountRaw = reward.token.address === ZERO_ADDRESS ? pendingETH : pendingLUSD;
+          const amountRaw =
+            reward.token.address === this.meta.context.rewardBToken
+              ? pendingRewardB
+              : pendingRewardA;
+
           const amount = normalizeDecimals(amountRaw, reward.token.decimals);
           return {
             ...reward,

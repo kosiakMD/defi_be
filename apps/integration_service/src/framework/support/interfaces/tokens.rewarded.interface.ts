@@ -6,7 +6,7 @@ export interface IRewardRates {
   month: number;
   year: number;
 }
-export interface IRewardTokenMinimal<TExtra = void> extends ITokenMinimal<TExtra> {
+export interface IRewardTokenMinimal<TExtra = unknown> extends ITokenMinimal<TExtra> {
   // TODO: Discuss: should this be 'rate' and time frame block/second/year
   // or should this be standardized somehow i.e. 'perSecond'
   // always perSecond sounds nice, but there are instances where thats difficult
@@ -25,7 +25,7 @@ export interface IRewardTokenMinimal<TExtra = void> extends ITokenMinimal<TExtra
   rewardedForTokenAddress?: string;
   rewardedForLendingSide?: 'supplied' | 'borrowed';
 }
-export interface IRewardTokenOpportunity<TExtra = void> extends ITokenOpportunity<TExtra> {
+export interface IRewardTokenOpportunity<TExtra = unknown> extends ITokenOpportunity<TExtra> {
   harvests: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price
   apy: IRewardRates; // estimated APY based on APR compounded daily
@@ -36,7 +36,7 @@ export interface IRewardTokenOpportunity<TExtra = void> extends ITokenOpportunit
   rewardedForLendingSide?: 'supplied' | 'borrowed';
 }
 
-export interface IRewardTokenUserEntry<TExtra = void> extends ITokenUserEntry<TExtra> {
+export interface IRewardTokenUserEntry<TExtra = unknown> extends ITokenUserEntry<TExtra> {
   // TODO: lockPolicy: null | vested | locked
   harvests: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price

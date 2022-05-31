@@ -196,7 +196,7 @@ export abstract class RootProtocolCacheable<
       // get pool list from longer term cache
       const list = await this.cache.get<string[]>(this.poolListCacheKey);
 
-      if (!list?.length) {
+      if (!list?.length || true) {
         // If protocol pool list is not available, then
         // refetch all the pools and cache for the next user
         // (Only would likely be used for new deploys, or failed background job)

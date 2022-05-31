@@ -9,7 +9,6 @@ COPY package*.json ./
 COPY yarn.lock ./
 
 RUN yarn install --loglevel verbose
-RUN yarn assets-prestart-fix
 
 # Additional packages for Docker
 # needed to be modified depending on the target platform - where the mage is going to be run
@@ -35,7 +34,6 @@ COPY package*.json ./
 COPY yarn.lock ./
 
 RUN yarn install --only=production
-RUN yarn assets-prestart-fix
 
 # Additional packages for Docker
 # needed to be modified depending on the target platform - where the mage is going to be run
@@ -53,6 +51,8 @@ WORKDIR /usr/src/app
 
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
+RUN sed '/"type": "module"/d' node_modules/@saberhq/solana-contrib/package.json -i
+RUN sed '/"type": "module"/d' node_modules/@saberhq/option-utils/package.json -i
 #COPY --from=development /usr/src/app/apps/assets_service/config/.env /dist/apps/assets_service/.env
 
 RUN touch /usr/src/app/dist/apps/assets_service/.env

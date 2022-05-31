@@ -39,6 +39,14 @@ configMaps:
   config:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi
+  limits:
+    cpu: 100m
+    memory: 200Mi
+
 secrets:
 - mailer
 - redis

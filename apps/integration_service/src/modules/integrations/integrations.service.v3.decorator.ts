@@ -289,12 +289,18 @@ export class IntegrationsServiceV3Decorator {
           v2WalletChain[FeatureEnum.lockedBalances].items =
             v3WalletChain.positions.lockedBalances.map((v3LockedPos) => {
               const v2Locked = plainToClass(LockedToken, {
-                address: v3LockedPos.supplied[0].token.address,
+                address: v3LockedPos.id,
                 name: v3LockedPos.supplied[0].token.name,
                 symbol: v3LockedPos.supplied[0].token.symbol,
                 decimals: v3LockedPos.supplied[0].token.decimals,
+                tokens: v3LockedPos.supplied.map((s) => ({
+                  ...s.token,
+                  balance: s.amount,
+                  value: s.value,
+                })),
                 locked: plainToClass(BalanceData, {
                   balance: +v3LockedPos.supplied[0].amount,
+                  unlocked: v3LockedPos.supplied[0].lockedEnd,
                 }),
               });
               v2Locked.totalBalance = v2Locked.locked.balance;

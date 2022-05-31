@@ -20,12 +20,14 @@ import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
+import { Defiswap } from '../platforms/DefiSwap';
 import { Ellipsis } from '../platforms/Ellipsis';
 import { Evodefi } from '../platforms/Evodefi';
 import { Frax } from '../platforms/Frax';
 import { Goose } from '../platforms/Goose';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
+// import { Kyberswap } from '../platforms/KyberSwap';
 import { Lido } from '../platforms/Lido';
 import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
@@ -96,6 +98,8 @@ export class PlatformService {
       Stargate,
       Synapse,
       Spiritswap,
+      // Kyberswap,
+      Defiswap,
     });
   }
 

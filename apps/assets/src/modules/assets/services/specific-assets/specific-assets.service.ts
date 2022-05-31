@@ -74,7 +74,7 @@ export class SpecificAssetsService {
       for (const priceProvider of priceProviders) {
         // TODO: Refactor this one
         const priceProviderAssets = chainAssets.filter((dto) =>
-          dto.categories
+          (dto.categories || [])
             .map(({ code }) => code)
             .some((code) => priceProvider.canHandleCategory(code)),
         );

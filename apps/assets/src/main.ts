@@ -1,5 +1,3 @@
-import { config } from 'aws-sdk';
-
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -16,7 +14,6 @@ import {
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';
-import { AwsConfigService } from './config/aws/aws.config.service';
 
 const logger = createLogger(logFileDir);
 
@@ -34,14 +31,6 @@ async function bootstrap() {
   initPrefix(app);
   initPipes(app);
   initSwagger(app);
-
-  const awsConfigService = app.get(AwsConfigService);
-
-  config.update({
-    accessKeyId: awsConfigService.awsKeyId,
-    secretAccessKey: awsConfigService.awsSecretAccessKey,
-    region: awsConfigService.region,
-  });
 
   await initListening(app);
 }

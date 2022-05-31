@@ -1,9 +1,9 @@
 // eslint-disable-next-line max-classes-per-file
-import { SearchResultType } from 'apps/api_gateway/src/search/interfaces/search.enum';
+import { SearchResultType } from 'apps/gateway_service/src/search/interfaces/search.enum';
 import {
   SearchParams,
   SearchResultsAssetEntry,
-} from 'apps/api_gateway/src/search/interfaces/search.interface';
+} from 'apps/gateway_service/src/search/interfaces/search.interface';
 import { plainToClass } from 'class-transformer';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';

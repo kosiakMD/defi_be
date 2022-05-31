@@ -19,7 +19,7 @@ master -> develop -> ...
 - <i>$user_name</i> - Git user name
 - <i>$description</i> - a short descriptor of the task <b>OR</b> JIRA ticket number
 - <i>$type</i> - type of work
-  - <i><b>TypeEnum</b></i>: feature | bugfix | hotfix | config
+    - <i><b>TypeEnum</b></i>: feature | bugfix | hotfix | config
 
 branch_name = <i>$user_name</i> / <i>$type:<b>TypeEnum</b></i> / <i>$description</i>
 
@@ -31,7 +31,7 @@ example: `luck-skywalker/bugfix/destroy-Death-star`
 
 ## Services:
 
-### API Gateway [link](./apps/api_gateway)
+### API Gateway [link](./apps/gateway_service)
 
 <b>Should be run the last one as it depends on all the rest</b>
 
@@ -92,7 +92,8 @@ start production mode `npm start:prod`
 
 ### Coding conventions
 
-We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency on [Prettier](https://prettier.io/) rules
+We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency
+on [Prettier](https://prettier.io/) rules
 
 - `npm run lint` - run ESLint; could be run from the project root or service root pointwise;
 
@@ -147,7 +148,8 @@ Examples:
 
 ### Coding conventions
 
-We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency on [Prettier](https://prettier.io/) rules
+We do Linting by using [ESLint](https://eslint.org/) linter with TS plugin and dependency
+on [Prettier](https://prettier.io/) rules
 
 - `npm run lint` - run ESLint; could be run from the project root or service root pointwise;
 
@@ -199,17 +201,17 @@ To start web with docker compose run (url: http://localhost:3333):
 `.env` files should use next rules / values:
 
 - hosts to access other services (instead of localhost):
-  - `redis`
-  - `price-service`
-  - `account-service`
-  - `integration-service`
+    - `redis`
+    - `price-service`
+    - `account-service`
+    - `integration-service`
 - `SERVICE_HOST` should be empty
 - next ports should be used:
-  - `web`: 3000
-  - `gateway-service`: 3001
-  - `price-service`: 3002
-  - `account-service`: 3003
-  - `integration-service`: 3004
+    - `web`: 3000
+    - `gateway-service`: 3001
+    - `price-service`: 3002
+    - `account-service`: 3003
+    - `integration-service`: 3004
 
 To clean up containers run:
 

@@ -5,7 +5,7 @@ import { ChainIdEnum } from '../common/enum';
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';
 
-import { ProfitAndLossResponseDTO } from './dto/profitandloss.response.dto';
+import { ProfitAndLossResponseDto } from './dto/profit-and-loss-response.dto';
 
 @ApiTags('Analytic')
 @Controller('v1/analytic')
@@ -38,8 +38,8 @@ export class AnalyticController extends BaseService implements IBaseService {
     example: '0x1af067552304c2369037125466eeec6debe30b31',
     required: true,
   })
-  @ApiResponse({ status: HttpStatus.OK, type: ProfitAndLossResponseDTO })
-  async getProfitAndLossValues(@Query() query): Promise<ProfitAndLossResponseDTO> {
+  @ApiResponse({ status: HttpStatus.OK, type: ProfitAndLossResponseDto })
+  async getProfitAndLossValues(@Query() query): Promise<ProfitAndLossResponseDto> {
     return this.requestProxy(this.url + 'v1/analytic', 'GET', { params: query });
   }
 }

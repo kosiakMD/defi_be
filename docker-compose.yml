@@ -137,7 +137,7 @@ services:
       - SERVICE_PORT=${GATEWAY_SERVICE_PORT:-3001}
     env_file:
       - '.env'
-      - 'apps/api_gateway/config/.env'
+      - 'apps/gateway_service/config/.env'
 
   scheduler-service:
     image: node:14

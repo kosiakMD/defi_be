@@ -22,7 +22,7 @@ import {
 import { ERC20Token } from '@app/common/jobs/token';
 import { getUniqList } from '@app/common/utils';
 
-import { FeatureEnum } from '../../../../api_gateway/src/common/enum/feature.enum';
+import { FeatureEnum } from '../../../../gateway_service/src/common/enum/feature.enum';
 import { PancakeSwap } from '../../framework/platforms/pancake-swap';
 import { PlatformService } from '../../framework/services/platform.service';
 import { IClaimableFeatureUser } from '../../framework/support/interfaces/feature.claimable.interface';

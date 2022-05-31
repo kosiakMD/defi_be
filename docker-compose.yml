@@ -1,22 +1,21 @@
-version: "3.9"
+version: '3.9'
 
 services:
   init-read-env:
     image: public.ecr.aws/u0p0n5o0/envread:latest
     environment:
       - ENV_READER_PRIORITY=local
-    env_file:
-      .env
+    env_file: .env
     volumes:
       - ./apps:/apps
 
   redis:
-    image: "bitnami/redis:latest"
+    image: 'bitnami/redis:latest'
     container_name: redis
     volumes:
       - ./docker/data/redis:/bitnami/redis/data
     ports:
-      - "6379:6379"
+      - '6379:6379'
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
 
@@ -24,9 +23,9 @@ services:
     image: postgres
     container_name: postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
-    - ./docker/data/pgsql:/var/lib/postgresql/data
+      - ./docker/data/pgsql:/var/lib/postgresql/data
     environment:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -36,7 +35,7 @@ services:
     image: node:14
     container_name: price-service
     ports:
-      - "${PRICE_SERVICE_PORT:-3002}:${PRICE_SERVICE_PORT:-3002}"
+      - '${PRICE_SERVICE_PORT:-3002}:${PRICE_SERVICE_PORT:-3002}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -47,19 +46,19 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn price-start:dev"
+    command: 'yarn price-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${PRICE_SERVICE_PORT:-3002}
     env_file:
-      - ".env"
-      - "apps/price_service/config/.env"
+      - '.env'
+      - 'apps/price_service/config/.env'
 
   account-service:
     image: node:14
     container_name: account-service
     ports:
-      - "${ACCOUNT_SERVICE_PORT:-3003}:${ACCOUNT_SERVICE_PORT:-3003}"
+      - '${ACCOUNT_SERVICE_PORT:-3003}:${ACCOUNT_SERVICE_PORT:-3003}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -72,13 +71,13 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn account-start:dev"
+    command: 'yarn account-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
-      - ".env"
-      - "apps/account_service/config/.env"
+      - '.env'
+      - 'apps/account_service/config/.env'
 
   integration-service:
     build:
@@ -86,7 +85,7 @@ services:
       dockerfile: docker/integration-service.dev.Dockerfile
     container_name: integration-service
     ports:
-      - "${INTEGRATION_SERVICE_PORT:-3004}:${INTEGRATION_SERVICE_PORT:-3004}"
+      - '${INTEGRATION_SERVICE_PORT:-3004}:${INTEGRATION_SERVICE_PORT:-3004}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -101,21 +100,21 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn integration-start:dev"
+    command: 'yarn integration-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${INTEGRATION_SERVICE_PORT:-3004}
       - PRICE_SERVICE_URL=${PRICE_SERVICE_HOST}:${PRICE_SERVICE_PORT:-3002}
       - ACCOUNT_SERVICE_URL=${ACCOUNT_SERVICE_HOST}:${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
-      - "apps/integration_service/config/.env"
-      - ".env"
+      - 'apps/integration_service/config/.env'
+      - '.env'
 
   gateway-service:
     image: node:14
     container_name: gateway-service
     ports:
-      - "${GATEWAY_SERVICE_PORT:-3001}:${GATEWAY_SERVICE_PORT:-3001}"
+      - '${GATEWAY_SERVICE_PORT:-3001}:${GATEWAY_SERVICE_PORT:-3001}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -132,20 +131,19 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn gateway-start:dev"
+    command: 'yarn gateway-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${GATEWAY_SERVICE_PORT:-3001}
     env_file:
-      - ".env"
-      - "apps/api_gateway/config/.env"
-
+      - '.env'
+      - 'apps/api_gateway/config/.env'
 
   scheduler-service:
     image: node:14
     container_name: scheduler-service
     ports:
-      - "${SCHEDULER_SERVICE_PORT:-3007}:${SCHEDULER_SERVICE_PORT:-3007}"
+      - '${SCHEDULER_SERVICE_PORT:-3007}:${SCHEDULER_SERVICE_PORT:-3007}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -156,13 +154,13 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn scheduler-start:dev"
+    command: 'yarn scheduler-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${SCHEDULER_SERVICE_PORT:-3007}
     env_file:
-      - ".env"
-      - "apps/scheduler_service/config/.env"
+      - '.env'
+      - 'apps/scheduler_service/config/.env'
 
   # rpc-nodes-service:
   #   image: node:14
@@ -191,7 +189,7 @@ services:
     image: node:14
     container_name: assets-service
     ports:
-      - "${ASSETS_SERVICE_PORT:-6066}:${ASSETS_SERVICE_PORT:-6066}"
+      - '${ASSETS_SERVICE_PORT:-6066}:${ASSETS_SERVICE_PORT:-6066}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -202,19 +200,19 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn assets-start:dev"
+    command: 'yarn assets-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
     env_file:
-      - ".env"
-      - "apps/assets_service/config/.env"
+      - '.env'
+      - 'apps/assets_service/config/.env'
 
   opportunities-service:
     image: node:14
     container_name: opportunities-service
     ports:
-      - "${OPPORTUNITIES_SERVICE_PORT:-3006}:${OPPORTUNITIES_SERVICE_PORT:-3006}"
+      - '${OPPORTUNITIES_SERVICE_PORT:-3006}:${OPPORTUNITIES_SERVICE_PORT:-3006}'
     working_dir: /usr/src/app
     depends_on:
       init-read-env:
@@ -225,11 +223,11 @@ services:
         condition: service_started
     volumes:
       - .:/usr/src/app
-    command: "yarn opportunities-start:dev"
+    command: 'yarn opportunities-start:dev'
     restart: always
     environment:
       - SERVICE_PORT=${OPPORTUNITIES_SERVICE_PORT:-3006}
       - INTEGRATION_SERVICE_URL=${INTEGRATION_SERVICE_HOST}:${INTEGRATION_SERVICE_PORT:-3004}
     env_file:
-      - ".env"
-      - "apps/opportunities_service/config/.env"
+      - '.env'
+      - 'apps/opportunities_service/config/.env'

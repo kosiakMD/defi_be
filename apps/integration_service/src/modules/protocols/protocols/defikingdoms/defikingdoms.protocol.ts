@@ -7,7 +7,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import BasicProtocol from '../basicProtocol';
+import BasicProtocol from '../basic-protocol';
 import { DefiKingdomsLocked } from './defikingdoms.locked';
 import { DefiKingdomsPools } from './defikingdoms.pools';
 import { DefiKingdomsStaking } from './defikingdoms.staking';

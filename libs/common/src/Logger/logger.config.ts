@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 
 import { EnvEnum } from '@app/common';
-import { LogConfig, winstonParams } from '@app/common/Logger/winston';
+import { LogConfig, winstonParams } from '@app/common/logger/winston';
 
 export const getAwsConfig = (configService: ConfigService): LogConfig['awsConfig'] => ({
   region: configService.get<string>('AWS_REGION'),

@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class PoolAbis extends MultiCallAbiProxy {
+export class PoolAbis extends MulticallAbiProxy {
   static readonly pendingXVS: AbiItem = {
     constant: true,
     inputs: [

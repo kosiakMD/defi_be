@@ -14,8 +14,8 @@ import {
 } from '@app/common';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { normalizeDecimals } from '@app/common/utils';
-import { CauldronContract } from '@app/common/web3provider/contracts/protocols/abracadabra/AbracadabraMarket';
-import { BentoBox } from '@app/common/web3provider/contracts/protocols/abracadabra/BentoBox';
+import { CauldronContract } from '@app/common/web3provider/contracts/protocols/abracadabra/abracadabra-market';
+import { BentoBox } from '@app/common/web3provider/contracts/protocols/abracadabra/bento-box';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { Asset } from '../../../../../common/interfaces/transactions.interfaces';

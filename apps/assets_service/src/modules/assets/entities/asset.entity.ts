@@ -1,6 +1,6 @@
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, Unique } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/Base.entity';
+import { BaseEntity } from '@app/common/entities/base.entity';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';

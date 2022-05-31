@@ -11,7 +11,7 @@ export class LinksDto {
   @Expose()
   @ApiProperty({
     example:
-      'https://lh3.googleusercontent.com/RYF4Gc-9EcE7g_sbl3Aiaux5jkuq9DAe6pRe9PC7FUkFpsUAT1y3CLW-v75uJmKOXM2ST0WH-tnMvSPuvfCzBJLKY64FbthSSZwD=s120',
+      'https://lh3.googleusercontent.com/rYF4Gc-9EcE7g_sbl3Aiaux5jkuq9DAe6pRe9PC7FUkFpsUAT1y3CLW-v75uJmKOXM2ST0WH-tnMvSPuvfCzBJLKY64FbthSSZwD=s120',
   })
   image: string = null;
 
@@ -27,14 +27,14 @@ export class LinksDto {
   telegramUrl: string = null;
 
   @Expose()
-  @ApiProperty({ example: 'https://en.wikipedia.org/wiki/Leet' })
+  @ApiProperty({ example: 'https://en.wikipedia.org/wiki/leet' })
   wikiUrl: string = null;
 
   @Expose()
   @ApiProperty({ example: 'https://discord.gg/angryapearmy' })
   discordUrl: string = null;
 
-  //todo this is link to the asset, probably it should be moved to asset DTO
+  //todo this is link to the asset, probably it should be moved to asset dto
   @Expose()
   @ApiProperty({
     required: false,

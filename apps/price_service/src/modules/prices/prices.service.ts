@@ -11,9 +11,9 @@ import { ConfigService } from '@nestjs/config';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { ChainIdEnum, CurrencyIdEnum } from '@app/common/enum';
 import { PriceSourcePriority } from '@app/common/enum/price.enum';
+import { Logger } from '@app/common/logger/logger.service';
 import { dateToTimestamp, roundToNearestHour } from '@app/common/utils/dates';
 
 import { SECONDS_IN_DAY, SECONDS_IN_HOUR, timestampNow } from '../../common/utils/time';

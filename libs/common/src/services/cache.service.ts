@@ -1,6 +1,6 @@
 import { Cache, CachingConfig, StoreConfig } from 'cache-manager';
 
-import { Injectable, Inject, CACHE_MANAGER } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class CacheService {

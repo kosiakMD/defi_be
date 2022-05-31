@@ -6,7 +6,7 @@ import { Web3ProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AssetsController } from '../../controllers/assets.controller';
-import { WETH } from '../approvals/contracts/WETH';
+import { WETHContract } from '../approvals/contracts/weth.contract';
 import { ChainsModule } from '../chains/chains.module';
 import { AssetsPoolsService } from './assets.pools.service';
 import { AssetsService } from './assets.service';
@@ -28,7 +28,13 @@ import { AssetsRepository } from './repositories/assets.repository';
     forwardRef(() => ChainsModule),
   ],
   controllers: [AssetsController],
-  providers: [WETH, AssetsService, AssetsPoolsService, MulticallAggregator, Web3ProviderService],
+  providers: [
+    WETHContract,
+    AssetsService,
+    AssetsPoolsService,
+    MulticallAggregator,
+    Web3ProviderService,
+  ],
   exports: [AssetsService],
 })
 export class AssetsModule {}

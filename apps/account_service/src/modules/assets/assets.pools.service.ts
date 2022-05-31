@@ -3,7 +3,7 @@ import { getManager } from 'typeorm';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common/logger/logger.service';
 
 import { getCurrentDate } from '../../common/utils/time';
 

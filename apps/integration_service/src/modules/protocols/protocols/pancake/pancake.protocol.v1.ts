@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enum';
 
 import { AccountService } from '../../../microservices/account.service';
@@ -10,7 +10,7 @@ import { PriceService } from '../../../microservices/price.service';
 import { PancakeSubgraph } from '../../../subgraphs/subgraphs/pancake.subgraph';
 import { LiquidityPools } from '../../features/liquidity-pools';
 import { Mapper } from '../../helpers/mappers/mapper';
-import DataProviderProtocol from '../dataProviderProtocol';
+import DataProviderProtocol from '../data-provider-protocol';
 
 @Injectable()
 export default class PancakeProtocolV1 extends DataProviderProtocol {

@@ -3,8 +3,8 @@ import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { Address, ProtocolNameEnum } from '@app/common';
 
-import { ProtocolParams } from '../common/DTO/features.dto';
-import { IntegrationsResponseDto } from '../common/DTO/integrations.dto';
+import { ProtocolParams } from '../common/dto/features.dto';
+import { IntegrationsResponseDto } from '../common/dto/integrations.dto';
 import { ChainIdEnum, UniswapProtocolEnum } from '../common/enum';
 import { BaseService } from '../common/services/base.service';
 

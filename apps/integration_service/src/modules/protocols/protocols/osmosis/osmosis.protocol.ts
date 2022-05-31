@@ -4,20 +4,20 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  ProtocolNameEnum,
+  Address,
   ChainAbbrEnum,
+  ChainDto,
   FeatureEnum,
   Logger,
   ProjectEnum,
-  Address,
-  ChainDto,
+  ProtocolNameEnum,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import AbstractProtocol from '../abstractProtocol';
-import DataProviderProtocol from '../dataProviderProtocol';
+import AbstractProtocol from '../abstract-protocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { OsmosisLocked } from './osmosis.locked';
 import { OsmosisPools } from './osmosis.pools';
 
@@ -32,6 +32,7 @@ export default class OsmosisProtocol extends DataProviderProtocol implements Abs
   };
 
   protected dataProvider;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     protected readonly logger: Logger,

@@ -4,10 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { RootPlatform } from '../support/RootPlatform';
-import { QuarryStaking } from '../support/Solana/protocols/Yield/Quarry/QuarryStaking';
-import { IQuarryMeta } from '../support/Solana/protocols/Yield/Quarry/interfaces';
 import { FeatureEnum } from '../support/enums';
+import { RootPlatform } from '../support/root-platform';
+import { IQuarryMeta } from '../support/solana/protocols/yield/quarry/interfaces';
+import { QuarryStaking } from '../support/solana/protocols/yield/quarry/quarry-staking';
 
 export class Quarry extends RootPlatform {
   constructor(
@@ -29,7 +29,7 @@ export class Quarry extends RootPlatform {
     });
 
     const endpointQuarry =
-      'https://raw.githubusercontent.com/QuarryProtocol/rewarder-list-build/master/mainnet-beta/all-rewarders-with-info.json';
+      'https://raw.githubusercontent.com/quarry-protocol/rewarder-list-build/master/mainnet-beta/all-rewarders-with-info.json';
 
     await this.registerProtocol<IQuarryMeta>(QuarryStaking, {
       chain: ChainIdEnum.sol,

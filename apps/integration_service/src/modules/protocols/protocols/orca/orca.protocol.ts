@@ -10,7 +10,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { Mapper } from '../../helpers/mappers/mapper';
-import DataProviderProtocol from '../dataProviderProtocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { OrcaFarms } from './orca.farms';
 import { OrcaPools } from './orca.pools';
 

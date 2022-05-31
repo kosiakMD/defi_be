@@ -4,7 +4,7 @@ import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
 import { Address, ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
-import { AirdropPositionDto, BaseDataAirdrop } from '@app/common/dto/baseDataAirdrop';
+import { AirdropPositionDto, BaseDataAirdrop } from '@app/common/dto/base-data-airdrop';
 import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
 import { Web3ProviderService } from '@app/common/web3provider';
 

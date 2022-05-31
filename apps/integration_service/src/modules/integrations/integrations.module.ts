@@ -12,11 +12,11 @@ import { IntegrationsController } from '../../controllers/integrations.controlle
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
 import { IntegrationsControllerV3 } from '../../controllers/integrations.controller.v3';
 import { PlatformService } from '../../framework/services/platform.service';
-import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
+import { AbiModule } from '../../framework/support/evm/abi-module/abi.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ProtocolModule } from '../protocols/protocol.module';
-import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
+import { ProjectsInfoEntity } from './entities/projects-info.entity';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
 import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decorator';

@@ -3,7 +3,7 @@ import { Expose, Transform, Type } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 
 import {
-  APYDto,
+  ApyDto,
   ChainIdEnum,
   PancakeProtocolEnum,
   ProjectEnum,
@@ -51,8 +51,8 @@ export class LiquidityPoolsResponseDto {
   reserveUsd: number;
 
   @Expose()
-  @ApiProperty({ type: APYDto })
-  apy: APYDto;
+  @ApiProperty({ type: ApyDto })
+  apy: ApyDto;
 
   @Expose()
   @ApiProperty({ type: ImpermanentLossDto })

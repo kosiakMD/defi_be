@@ -1,6 +1,5 @@
 import { Cache } from 'cache-manager';
-import { Repository } from 'typeorm';
-import { EntityManager } from 'typeorm/entity-manager/EntityManager';
+import { EntityManager, Repository } from 'typeorm';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

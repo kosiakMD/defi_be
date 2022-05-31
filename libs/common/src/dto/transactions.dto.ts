@@ -1,7 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import { ProtocolTypeEnum } from '@app/common/enum';
 
-import { BaseData } from './BaseData';
+import { BaseData } from './base-data';
 
 export type TokenSymbol = string;
 

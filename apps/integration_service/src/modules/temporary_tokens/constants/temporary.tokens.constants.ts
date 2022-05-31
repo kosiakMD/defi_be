@@ -1,4 +1,4 @@
-//TODO: did't add variables to env file and env validation file because this code is unnecessary currently
+//tODO: did't add variables to env file and env validation file because this code is unnecessary currently
 export const COIN_GECKO_250_MARKET_TOP_URL =
   'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250';
 export const COIN_GECKO_COINS_LIST_URL =

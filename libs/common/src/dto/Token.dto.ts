@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Address } from '@app/common/types';
 
 import { Token } from '../interfaces';
-import EthereumAddressDto from './EthereumAddress.dto';
+import EthereumAddressDto from './ethereum-address.dto';
 
 export default class TokenDto implements Token {
   @ApiProperty({ type: Number, example: 1 })

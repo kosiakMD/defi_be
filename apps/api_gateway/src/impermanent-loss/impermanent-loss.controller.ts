@@ -3,7 +3,7 @@ import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { BaseService } from '../common/services/base.service';
 
-import { ImpermanentLossDto, ImpermanentLossResponseDto } from './dto/impermanentLoss.dto';
+import { ImpermanentLossDto, ImpermanentLossResponseDto } from './dto/impermanent-loss.dto';
 
 @ApiTags('Impermanent loss')
 @Controller('v1/impermanent-loss')

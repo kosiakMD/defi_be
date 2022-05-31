@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { IAssetResponseDto } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
-import LiquidityPoolTokenDto from '@app/common/dto/LiquidityPoolToken.dto';
+import LiquidityPoolTokenDto from '@app/common/dto/liquidity-pool-token.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { Address, BalancesResponse } from '@app/common/types';
 import { chunk } from '@app/common/utils';

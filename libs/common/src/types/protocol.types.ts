@@ -1,5 +1,4 @@
-import { FeatureEnum } from '../enum';
-import { ChainAbbrEnum } from '../enum';
+import { ChainAbbrEnum, FeatureEnum } from '../enum';
 import { FeatureDtoType, Features } from './features.types';
 
 export type ProtocolFeaturesInfo = {

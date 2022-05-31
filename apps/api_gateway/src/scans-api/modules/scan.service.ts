@@ -4,8 +4,8 @@ import { map } from 'rxjs/operators';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { ChainAbbrEnum, ChainIdEnum, ResultStatus } from '@app/common/enum';
+import { Logger } from '@app/common/logger/logger.service';
 
 import { Transaction } from '../../transactions/interfaces/transactions.interfaces';
 import { TransactionsDetailedResponseDto } from '../dto/scans-api.dto';

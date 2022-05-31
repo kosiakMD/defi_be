@@ -4,7 +4,7 @@ ingress:
 
 configMaps:
   common:
-    PRICE_SERVICE_MAIN_COIN_ADDRESS: "0x0000000000000000000000000000000000000000"
+    PRICE_SERVICE_MAIN_COIN_ADDRESS: '0x0000000000000000000000000000000000000000'
     MAIL_HIRE_FROM: mail@defiyield.app
     MAIL_HIRE_TO: hr@defiyield.app
     MAIL_QUESTION_FROM: mail@defiyield.app
@@ -40,11 +40,11 @@ configMaps:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
-- mailer
-- redis
-- bscscan
-- etherscan
-- logs
-- sentry
-- solana
-- gas
+  - mailer
+  - redis
+  - bscscan
+  - etherscan
+  - logs
+  - sentry
+  - solana
+  - gas

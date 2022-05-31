@@ -1,3 +1,3 @@
-export * from './HeadersContext.middleware';
-export * from './LogRequest.middleware';
-export * from './Proxy.middleware';
+export * from './headers-context.middleware';
+export * from './log-request.middleware';
+export * from './proxy.middleware';

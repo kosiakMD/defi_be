@@ -5,16 +5,16 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ChainIdEnum, Logger } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 
+import { FeatureEnum } from '../support/enums';
 import {
   ILidoEVMMeta,
   LidoStaking as EVMLidoStaking,
-} from '../support/EVM/protocols/Yield/LidoStaking';
-import { RootPlatform } from '../support/RootPlatform';
+} from '../support/evm/protocols/yield/lido-staking';
+import { RootPlatform } from '../support/root-platform';
 import {
   ILidoSolanaMeta,
   LidoStaking as SolanaLidoStaking,
-} from '../support/Solana/protocols/Yield/LidoStaking';
-import { FeatureEnum } from '../support/enums';
+} from '../support/solana/protocols/yield/lido-staking';
 
 export class Lido extends RootPlatform {
   constructor(
@@ -79,7 +79,7 @@ export class Lido extends RootPlatform {
      *
      * @todo Coming Soon
      * For some reason all the deployed addresses for matic/polygon are on eth mainnet...
-     * https://github.com/Shard-Labs/PoLido/blob/main/mainnet-deployment-info.json
+     * https://github.com/shard-Labs/po-lido/blob/main/mainnet-deployment-info.json
      */
     // await this.registerProtocol(EVMLidoStaking, {
     //   chain: ChainIdEnum.plg,
@@ -95,8 +95,8 @@ export class Lido extends RootPlatform {
     /**
      * Website: https://lido.fi/solana
      * Docs: https://docs.solana.lido.fi/
-     * Staking Contract: https://solanabeach.io/address/7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6trKn1Y7ARj
-     * Deposit TX: https://solanabeach.io/tx/n6FpfeiXtsZEE2ZRVEgjbJ5WwpLWLHYD9fUW4WP2BxGnjpwfQdbbATTFro4kvBSicQz1o56ZUUEuJTkUxWLsbkV
+     * Staking Contract: https://solanabeach.io/address/7dHbWXmci3dT8UFYWYZweBLXgycu7Y3iL6tr-kn1Y7ARj
+     * Deposit TX: https://solanabeach.io/tx/n6FpfeiXtsZEE2ZRVEgjbJ5WwpLWLHYD9fUW4WP2BxGnjpwfQdbbATTFro4kvBSicQz1o56ZUUEuJTkUxWLsbk-v
      */
     await this.registerProtocol<ILidoSolanaMeta>(SolanaLidoStaking, {
       chain: ChainIdEnum.sol,

@@ -26,6 +26,7 @@ import {
   ResultStatus,
   SpookySwapProtocolEnum,
 } from '@app/common';
+import { BaseDataAirdrop } from '@app/common/dto/base-data-airdrop';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataLocked } from '@app/common/dto/base.data.locked.dto';
@@ -34,7 +35,6 @@ import { BaseDataMint } from '@app/common/dto/base.data.mint';
 import { BaseDataShortFarm } from '@app/common/dto/base.data.short.farm';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { BaseLeverageFarming } from '@app/common/dto/base.leverage.farming.dto';
-import { BaseDataAirdrop } from '@app/common/dto/baseDataAirdrop';
 import { ChainIdEnum } from '@app/common/enum';
 import { UnderlyingStakingLp } from '@app/common/jobs/staking';
 
@@ -54,17 +54,17 @@ import { AccountService } from '../microservices/account.service';
 import { PriceService } from '../microservices/price.service';
 import { FeatureHandleDto, RawFeaturesDto } from './dto/protocols.dto';
 import { tokenDictionary } from './helpers/protocols.dictionaries';
-import AaveProtocolV2 from './protocols/aaveProtocolV2';
+import AaveProtocolV2 from './protocols/aave-protocol-v2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
+import AlpacaProtocol from './protocols/alpaca-protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
-import AlpacaProtocol from './protocols/alpacaProtocol';
 import { AnchorProtocol } from './protocols/anchor/anchor.protocol';
 import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
-import AutofarmProtocol from './protocols/autofarmProtocol';
+import AutofarmProtocol from './protocols/autofarm-protocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
-import BasicProtocol from './protocols/basicProtocol';
-import { BeefyProtocol } from './protocols/beefyProtocol';
-import { CompoundProtocol } from './protocols/compoundProtocol';
+import BasicProtocol from './protocols/basic-protocol';
+import { BeefyProtocol } from './protocols/beefy-protocol';
+import { CompoundProtocol } from './protocols/compound-protocol';
 import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
@@ -79,27 +79,27 @@ import OrcaProtocol from './protocols/orca/orca.protocol';
 import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
 import PancakeProtocol from './protocols/pancake/pancake.protocol';
 import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
-import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
-import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
+import { PangolinV2Protocol } from './protocols/pangolin/pangolin-v2.protocol';
+import QuickswapProtocol from './protocols/quickswap/quickswap-protocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
 import SaberProtocol from './protocols/saber/saber.protocol';
-import SpookySwapProtocol from './protocols/spookyswap/spookyswapProtocol';
+import SpookySwapProtocol from './protocols/spookyswap/spookyswap-protocol';
 import { StaderProtocol } from './protocols/stader/stader.protocol';
 import SundaeSwapProtocol from './protocols/sundaeswap/sundaeswap.protocol';
-import SushiswapProtocolV2 from './protocols/sushiswapProtocolV2';
+import SushiswapProtocolV2 from './protocols/sushiswap-protocol-v2';
 import { TerraswapProtocol } from './protocols/terraswap/terraswap.protocol';
 import TraderJoeProtocol from './protocols/traderjoe/trader-joe.protocol';
 import { TrisolarisProtocol } from './protocols/trisolaris/trisolaris.protocol';
-import UniswapProtocolV2 from './protocols/uniswapLike/uniswapProtocolV2';
-import UniswapProtocolV3 from './protocols/uniswapProtocolV3';
-import VenusProtocol from './protocols/venusProtocol';
+import UniswapProtocolV2 from './protocols/uniswap-like/uniswap-protocol-v2';
+import UniswapProtocolV3 from './protocols/uniswap-protocol-v3';
+import VenusProtocol from './protocols/venus-protocol';
 import ViperswapProtocol from './protocols/viperswap/viperswap.protocol';
 import { VVSProtocol } from './protocols/vvs/vvs.protocol';
-import WePiggyProtocol from './protocols/wepiggyProtocol';
+import WePiggyProtocol from './protocols/wepiggy-protocol';
 import { WingRidersProtocol } from './protocols/wingriders/wingriders.protocol';
 import { WonderlandProtocol } from './protocols/wonderland/wonderland.protocol';
-import YearnProtocolV1 from './protocols/yearnProtocolV1';
-import YearnProtocolV2 from './protocols/yearnProtocolV2';
+import YearnProtocolV1 from './protocols/yearn-protocol-v1';
+import YearnProtocolV2 from './protocols/yearn-protocol-v2';
 
 @Injectable()
 export class ProtocolService {

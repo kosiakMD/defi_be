@@ -18,9 +18,9 @@ import { Asset } from '../../../../../common/interfaces/transactions.interfaces'
 
 import { AccountService } from '../../../../microservices/account.service';
 import { PriceService } from '../../../../microservices/price.service';
-import { OlympusBondDepositoryV2 } from '../contracts/OlympusBondDepositoryV2';
-import { IIndexesFor, INote } from '../contracts/OlympusBondDepositoryV2.interfaces';
-import { gOhmContract } from '../contracts/gOhmContract';
+import { gOhmContract } from '../contracts/g-ohm-contract';
+import { OlympusBondDepositoryV2 } from '../contracts/olympus-bond-depository-v2';
+import { IIndexesFor, INote } from '../contracts/olympus-bond-depository-v2.interfaces';
 import {
   GOVERNANCE_OHM,
   OHM_ADDRESS,

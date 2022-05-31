@@ -1,7 +1,7 @@
 import BigNumber from 'bignumber.js';
 import { AbiItem } from 'web3-utils';
 
-import { CallData } from '@app/common/dto/CallData';
+import { CallData } from '@app/common/dto/call-data';
 
 export function decodeOutput(abi: AbiItem, outputResult) {
   // if there is one output, it doesn't have a name (check abi)

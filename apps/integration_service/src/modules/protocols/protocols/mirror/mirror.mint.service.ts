@@ -6,7 +6,7 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainDto, FeatureEnum, Logger, ProjectEnum, ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { BaseDataMint, IntegrationMintPositionDto } from '@app/common/dto/base.data.mint';
 import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
 

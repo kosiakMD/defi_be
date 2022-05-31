@@ -5,6 +5,7 @@ export interface ERC20TokenMinimal {
 export interface ERC20TokenWithUnderlingMinimal extends ERC20TokenMinimal {
   underlying: ERC20TokenMinimal[];
 }
+
 // TODO: This needs to match asset service interface
 export interface ERC20Token extends ERC20TokenMinimal {
   // ERC20 Standard
@@ -22,7 +23,7 @@ export interface ERC20Token extends ERC20TokenMinimal {
   value?: number;
   balance?: number;
 
-  // LP/Wrapped/Underlying token extras
+  // LP/wrapped/underlying token extras
   reserve?: number;
   position?: number;
   underlying?: ERC20Token[];
@@ -36,10 +37,12 @@ export interface ITokenMinimal<TExtra = void> {
 export interface ITokenOpportunity<TExtra = void> extends ITokenMinimal<TExtra> {
   token: ERC20Token; // full erc20 token with price
 }
+
 export interface ITokenUserEntry<TExtra = void> extends ITokenOpportunity<TExtra> {
   amount: number; // user balance
   value: number; // balance * price
 }
+
 export interface IBaseApy {
   variableApy?: number;
   stableApy?: number;

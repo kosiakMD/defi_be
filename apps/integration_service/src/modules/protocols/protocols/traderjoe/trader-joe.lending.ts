@@ -15,9 +15,9 @@ import {
   LendingErcToken,
   LendingPositionDto,
 } from '@app/common';
-import { CallData } from '@app/common/dto/CallData';
 import { BaseDataClaimable } from '@app/common/dto/base.data.claimable.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { CallData } from '@app/common/dto/call-data';
 import {
   FeatureEnum,
   ProjectEnum,
@@ -36,8 +36,8 @@ import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { JTokenAbis } from './contracts/jToken.abis';
 import { JoetrollerAbis } from './contracts/joetroller.abis';
-import { OracleAbis } from './contracts/priceOracle.abis';
-import { RewardDistributorAbis } from './contracts/rewardDistributor.abis';
+import { OracleAbis } from './contracts/price-oracle.abis';
+import { RewardDistributorAbis } from './contracts/reward-distributor.abis';
 import { TraderJoeAddresses } from './trader-joe.constants';
 import { APY, BalanceInfo } from './trader-joe.interfaces';
 

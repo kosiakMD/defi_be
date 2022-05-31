@@ -13,12 +13,12 @@ import {
   ProtocolNameEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { CallData } from '@app/common/dto/CallData';
-import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
 import { BaseDataHealth } from '@app/common/dto/base.data.health.dto';
 import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
+import { CallData } from '@app/common/dto/call-data';
+import { HealthFactorDto } from '@app/common/dto/health-factor.dto';
 import { normalizeDecimals } from '@app/common/utils';
-import { CauldronContract } from '@app/common/web3provider/contracts/protocols/abracadabra/AbracadabraMarket';
+import { CauldronContract } from '@app/common/web3provider/contracts/protocols/abracadabra/abracadabra-market';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { BaseData } from '../../../../../common/interfaces/transactions.interfaces';

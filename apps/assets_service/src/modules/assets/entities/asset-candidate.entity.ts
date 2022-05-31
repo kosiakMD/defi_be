@@ -1,6 +1,6 @@
 import { Column, Entity, Unique } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/Base.entity';
+import { BaseEntity } from '@app/common/entities/base.entity';
 
 @Unique(['address', 'chainId'])
 @Entity({ name: 'assets_candidate' })

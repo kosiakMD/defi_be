@@ -1,4 +1,4 @@
-import { ChainIdEnum, CurrencyIdEnum, Address } from '@app/common';
+import { Address, ChainIdEnum, CurrencyIdEnum } from '@app/common';
 
 export interface IPriceRequestCurrent {
   address: Address;

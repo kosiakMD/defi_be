@@ -14,7 +14,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import BasicProtocol from './../basicProtocol';
+import BasicProtocol from './../basic-protocol';
 import { WonderlandStaking } from './features/wonderland.staking';
 
 export class WonderlandProtocol extends BasicProtocol {
@@ -28,7 +28,6 @@ export class WonderlandProtocol extends BasicProtocol {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-
     // Features
     private readonly stakingFeature: WonderlandStaking,
   ) {

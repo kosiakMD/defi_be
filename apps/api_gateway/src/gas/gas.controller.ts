@@ -5,9 +5,9 @@ import { CACHE_MANAGER, Controller, Get, HttpStatus, Inject } from '@nestjs/comm
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
-import { GasHistoryDto, GasPriceDto } from '@app/common/dto/Gas.dto';
+import { GasHistoryDto, GasPriceDto } from '@app/common/dto/gas.dto';
 import { GasHistory, GasPrice } from '@app/common/interfaces';
+import { Logger } from '@app/common/logger/logger.service';
 
 import { GasService } from './gas.service';
 

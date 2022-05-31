@@ -12,8 +12,8 @@ import {
   ProtocolTypeEnum,
 } from '@app/common';
 import { CVX_REWARD_POOL_ADDRESS } from '@app/common/constant/protocols/convex.constants';
-import { CallData } from '@app/common/dto/CallData';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
+import { CallData } from '@app/common/dto/call-data';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
 import {
   ClaimableDto,
@@ -22,7 +22,7 @@ import {
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { normalizeDecimals } from '@app/common/utils';
-import { CvxRewardPool } from '@app/common/web3provider/contracts/protocols/convex/CvxRewardPool';
+import { CvxRewardPool } from '@app/common/web3provider/contracts/protocols/convex/cvx-reward-pool';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { IStakingFetcher } from './convex.interfaces';

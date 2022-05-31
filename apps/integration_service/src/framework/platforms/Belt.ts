@@ -4,10 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, ChainIdEnum, Logger } from '@app/common';
 
-import { MasterBelt } from '../support/EVM/protocols/Yield/MasterBelt';
-import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { MasterBelt } from '../support/evm/protocols/yield/master-belt';
 import { IProtocolMeta } from '../support/interfaces';
+import { RootPlatform } from '../support/root-platform';
 
 interface IMasterChefMeta extends IProtocolMeta {
   address: Address;
@@ -32,10 +32,10 @@ export class Belt extends RootPlatform {
       name: this.constructor.name,
       slug: this.constructor.name,
       links: {
-        telegram: 'https://t.me/BeltFinance',
-        twitter: 'https://twitter.com/BELT_Finance',
+        telegram: 'https://t.me/belt-finance',
+        twitter: 'https://twitter.com/bELT_Finance',
         url: 'https://belt.fi/',
-        github: 'https://github.com/BeltFi/',
+        github: 'https://github.com/belt-fi/',
       },
     });
 

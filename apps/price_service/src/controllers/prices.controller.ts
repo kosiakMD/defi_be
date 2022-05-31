@@ -2,7 +2,7 @@ import { Body, Controller, Get, HttpStatus, Inject, Post } from '@nestjs/common'
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common/logger/logger.service';
 
 import {
   CurrentPriceResponseDto,

@@ -3,7 +3,7 @@ import { join } from 'path';
 
 import { ConfigFactory, ConfigModuleOptions } from '@nestjs/config';
 
-import { createLogger } from '../Logger/winston';
+import { createLogger } from '../logger/winston';
 
 // TODO add dependencies from env names as new string enum literal?
 const envFiles = [

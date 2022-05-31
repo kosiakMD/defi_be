@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class TraderjoeAbis extends MultiCallAbiProxy {
+export class TraderjoeAbis extends MulticallAbiProxy {
   static readonly getReserves: AbiItem = {
     inputs: [],
     name: 'getReserves',

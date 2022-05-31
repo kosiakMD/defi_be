@@ -15,7 +15,7 @@ import {
   ProjectEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { BaseDataLocked, LockedToken } from '@app/common/dto/base.data.locked.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';

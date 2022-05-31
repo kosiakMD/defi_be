@@ -11,50 +11,50 @@ import { getChainById } from '@app/common/utils';
 
 import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 
-import { AaveV3 } from '../platforms/AaveV3';
-import { AlchemixV2 } from '../platforms/AlchemixV2';
-import { ApeSwap } from '../platforms/ApeSwap';
-import { BabySwap } from '../platforms/BabySwap';
-import { BalancerV2 } from '../platforms/BalancerV2';
-import { Belt } from '../platforms/Belt';
-import { BiSwap } from '../platforms/BiSwap';
-import { CafeSwap } from '../platforms/CafeSwap';
-import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
-import { CubFinance } from '../platforms/CubFinance';
-import { Ellipsis } from '../platforms/Ellipsis';
-import { Evodefi } from '../platforms/Evodefi';
-import { Frax } from '../platforms/Frax';
-import { Goose } from '../platforms/Goose';
-import { IronBank } from '../platforms/IronBank';
-import { Kava } from '../platforms/Kava';
-import { KnightSwap } from '../platforms/KnightSwap';
-import { Lido } from '../platforms/Lido';
-import { MakerDAO } from '../platforms/MakerDAO';
-// import { LimeSwap } from '../platforms/LimeSwap';
-import { MarsEcosystem } from '../platforms/MarsEcosystem';
-import { Mdex } from '../platforms/Mdex';
-import { Mojitoswap } from '../platforms/Mojitoswap';
-import { PaintSwap } from '../platforms/PaintSwap';
-import { PancakeSwap } from '../platforms/PancakeSwap';
-import { Quarry } from '../platforms/Quarry';
-import { QuickSwap } from '../platforms/QuickSwap';
-import { RocketPool } from '../platforms/RocketPool';
-import { RuneFarm } from '../platforms/RuneFarm';
-import { Solend } from '../platforms/Solend';
-import { SpookySwap } from '../platforms/SpookySwap';
-import { Stargate } from '../platforms/Stargate';
-import { Synapse } from '../platforms/Synapse';
-import { TombFinance } from '../platforms/TombFinance';
-import { TreeDefi } from '../platforms/TreeDefi';
-import { WaultFinance } from '../platforms/WaultFinance';
-import { YelFinance } from '../platforms/YelFinance';
-import { RootPlatform } from '../support/RootPlatform';
+import { AaveV3 } from '../platforms/aave-v3';
+import { AlchemixV2 } from '../platforms/alchemix-v2';
+import { ApeSwap } from '../platforms/ape-swap';
+import { BabySwap } from '../platforms/baby-swap';
+import { BalancerV2 } from '../platforms/balancer-v2';
+import { Belt } from '../platforms/belt';
+import { BiSwap } from '../platforms/bi-swap';
+import { CafeSwap } from '../platforms/cafe-swap';
+import { CheesecakeSwap } from '../platforms/cheesecake-swap';
+import { CubFinance } from '../platforms/cub-finance';
+import { Ellipsis } from '../platforms/ellipsis';
+import { Evodefi } from '../platforms/evodefi';
+import { Frax } from '../platforms/frax';
+import { Goose } from '../platforms/goose';
+import { IronBank } from '../platforms/iron-bank';
+import { Kava } from '../platforms/kava';
+import { KnightSwap } from '../platforms/knight-swap';
+import { Lido } from '../platforms/lido';
+import { MakerDAO } from '../platforms/maker-dAO';
+// import { LimeSwap } from '../platforms/lime-swap';
+import { MarsEcosystem } from '../platforms/mars-ecosystem';
+import { Mdex } from '../platforms/mdex';
+import { Mojitoswap } from '../platforms/mojitoswap';
+import { PaintSwap } from '../platforms/paint-swap';
+import { PancakeSwap } from '../platforms/pancake-swap';
+import { Quarry } from '../platforms/quarry';
+import { QuickSwap } from '../platforms/quick-swap';
+import { RocketPool } from '../platforms/rocket-pool';
+import { RuneFarm } from '../platforms/rune-farm';
+import { Solend } from '../platforms/solend';
+import { SpookySwap } from '../platforms/spooky-swap';
+import { Stargate } from '../platforms/stargate';
+import { Synapse } from '../platforms/synapse';
+import { TombFinance } from '../platforms/tomb-finance';
+import { TreeDefi } from '../platforms/tree-defi';
+import { WaultFinance } from '../platforms/wault-finance';
+import { YelFinance } from '../platforms/yel-finance';
 import { IPlatformMeta } from '../support/interfaces';
 import {
   IOpportunityResponse,
   IUserEntryResponse,
   StandardResponse,
 } from '../support/interfaces/responses.interface';
+import { RootPlatform } from '../support/root-platform';
 
 @Injectable()
 export class PlatformService implements OnApplicationBootstrap {
@@ -105,6 +105,7 @@ export class PlatformService implements OnApplicationBootstrap {
 
   platforms: Map<string, ClassConstructor<RootPlatform>> = new Map();
   platformsInitialized: Map<string, RootPlatform> = new Map();
+
   protected async registerPlatforms(platforms: { [key: string]: ClassConstructor<RootPlatform> }) {
     Object.entries(platforms)
       .sort(([nameA], [nameB]) => (nameA > nameB ? 1 : -1))

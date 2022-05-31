@@ -1,5 +1,5 @@
-import { StakingPositionDto } from '../DTO/StakingPosition.dto';
-import { LiquidityPoolFeature } from '../DTO/integrations.dto';
+import { LiquidityPoolFeature } from '../dto/integrations.dto';
+import { StakingPositionDto } from '../dto/staking-position.dto';
 import { StakingPosition } from '../interfaces';
 
 export type FeatureName = string;

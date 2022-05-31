@@ -20,7 +20,7 @@ import { Asset } from '../../../../../common/interfaces/transactions.interfaces'
 
 import { AccountService } from '../../../../microservices/account.service';
 import { PriceService } from '../../../../microservices/price.service';
-import { WMemoContract } from '../contracts/WMemoContract';
+import { WMemoContract } from '../contracts/wMemo-contract';
 import { MEMO_ADDRESS, TIME_ADDRESS, WRAPPED_MEMO_ADDRESS } from '../wonderland.constants';
 
 @Injectable()

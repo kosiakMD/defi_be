@@ -1,4 +1,4 @@
-import { ChainAbbrEnum, NftProjectEnum, ChainIdEnum, Address } from '@app/common';
+import { Address, ChainAbbrEnum, ChainIdEnum, NftProjectEnum } from '@app/common';
 
 import { ChainsDto, CollectionChainsDto } from '../dto/nft';
 

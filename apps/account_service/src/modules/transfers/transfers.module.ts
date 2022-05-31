@@ -8,13 +8,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 
 import { TransfersController } from '../../controllers/transfers.controller';
-import { WETH } from '../approvals/contracts/WETH';
+import { WETHContract } from '../approvals/contracts/weth.contract';
 import { AssetService } from '../assets/asset.service';
 import { ChainsModule } from '../chains/chains.module';
-import { ScansApiModule } from '../scans.api.module';
+import { ScansApiModule } from '../scans-api.module';
 import { TransferEntityNew } from './entities/transfers.entity';
-import { TransfersBlocksSubgraph } from './transfers.blocks.subgraph';
-import { TransfersDbService } from './transfers.db.service';
+import { TransfersBlocksSubgraph } from './transfers-blocks.subgraph';
+import { TransfersDbService } from './transfers-db.service';
 import { TransfersService } from './transfers.service';
 
 @Module({
@@ -40,7 +40,7 @@ import { TransfersService } from './transfers.service';
   controllers: [TransfersController],
   providers: [
     PriceService,
-    WETH,
+    WETHContract,
     AssetService,
     TransfersDbService,
     TransfersBlocksSubgraph,

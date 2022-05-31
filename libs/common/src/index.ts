@@ -3,5 +3,5 @@ export * from './dto';
 export * from './enum';
 export * from './types';
 export * from './interfaces';
-export * from './Logger';
+export * from './logger';
 export * from './middlewares';

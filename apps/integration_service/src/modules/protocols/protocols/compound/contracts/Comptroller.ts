@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class Comptroller extends MultiCallAbiProxy {
+export class Comptroller extends MulticallAbiProxy {
   static readonly compAccrued: AbiItem = {
     constant: true,
     inputs: [{ internalType: 'address', name: '', type: 'address' }],

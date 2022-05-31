@@ -7,8 +7,8 @@ import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { GasHistory } from '@app/common/interfaces';
+import { Logger } from '@app/common/logger/logger.service';
 
 import { GasPriceDto } from './dto/gas.price.dto';
 

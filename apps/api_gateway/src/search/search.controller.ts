@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { SearchResultsDto } from '../common/DTO/SearchResults.dto';
+import { SearchResultsDto } from '../common/dto/search-results.dto';
 
 import { AddressSuggestionDto } from './dto/address-suggestion.dto';
 import { SearchQueryDto } from './dto/search-query.dto';

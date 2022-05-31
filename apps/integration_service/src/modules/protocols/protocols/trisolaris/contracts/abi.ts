@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class TrisolarisAbi extends MultiCallAbiProxy {
+export class TrisolarisAbi extends MulticallAbiProxy {
   static userInfo: AbiItem = {
     inputs: [
       { internalType: 'uint256', name: '', type: 'uint256' },

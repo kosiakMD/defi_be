@@ -4,9 +4,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { FraxStaking, IFraxStakingMeta } from '../support/EVM/protocols/Yield/FraxStaking';
-import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { FraxStaking, IFraxStakingMeta } from '../support/evm/protocols/yield/frax-staking';
+import { RootPlatform } from '../support/root-platform';
 
 export class Frax extends RootPlatform {
   constructor(

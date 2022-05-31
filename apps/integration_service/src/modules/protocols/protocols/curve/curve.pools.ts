@@ -17,7 +17,7 @@ import {
   ProtocolTypeEnum,
   TokenBalance,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { BaseDataLp } from '@app/common/dto/base.data.lp.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';

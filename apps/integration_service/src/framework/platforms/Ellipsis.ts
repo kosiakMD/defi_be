@@ -4,16 +4,18 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
+import { FeatureEnum } from '../support/enums';
 import {
   EllipsisLiquidity,
   IEllipsisLiquidityMeta,
-} from '../support/EVM/protocols/Liquidity/EllipsisLiquidity';
+} from '../support/evm/protocols/liquidity/ellipsis-liquidity';
 import {
   EllipsisLpStaking,
   IEllipsisLPStakingMeta,
-} from '../support/EVM/protocols/Yield/EllipsisLpStaking';
-import { RootPlatform } from '../support/RootPlatform';
-import { FeatureEnum } from '../support/enums';
+} from '../support/evm/protocols/yield/ellipsis-lp-staking';
+import { RootPlatform } from '../support/root-platform';
+
+// import { EllipsisLpStaking, IEllipsisLPStakingMeta } from './ellipsis-lp-staking';
 
 export class Ellipsis extends RootPlatform {
   constructor(
@@ -47,7 +49,7 @@ export class Ellipsis extends RootPlatform {
         },
       },
       context: {
-        aprUrl: 'https://api.ellipsis.finance/api/getAPRs',
+        aprUrl: 'https://api.ellipsis.finance/api/get-aPRs',
       },
     });
 
@@ -62,7 +64,7 @@ export class Ellipsis extends RootPlatform {
         },
       },
       context: {
-        aprUrl: 'https://api.ellipsis.finance/api/getAPRs',
+        aprUrl: 'https://api.ellipsis.finance/api/get-aPRs',
       },
     });
   }

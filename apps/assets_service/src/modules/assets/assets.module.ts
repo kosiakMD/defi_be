@@ -4,7 +4,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
-import { Web3ProviderService } from '@app/common/web3provider/web3.provider.service';
+import { Web3ProviderService } from '@app/common/web3provider/web3-provider.service';
 
 import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
@@ -38,8 +38,8 @@ import { AaveStrategy } from './services/specific-assets/strategies/aave.strateg
 import { CompoundStrategy } from './services/specific-assets/strategies/compound.strategy';
 import { CurveStrategy } from './services/specific-assets/strategies/curve.strategy';
 import { ElipsisStrategy } from './services/specific-assets/strategies/elipsis.strategy';
-import { StakedSOHMStrategy } from './services/specific-assets/strategies/stakedSOHM.strategy';
-import { StakedSushiStrategy } from './services/specific-assets/strategies/stakedSushi.strategy';
+import { StakedSohmStrategy } from './services/specific-assets/strategies/staked-sOHM.strategy';
+import { StakedSushiStrategy } from './services/specific-assets/strategies/staked-sushi.strategy';
 import { TerraStrategy } from './services/specific-assets/strategies/terra.strategy';
 import { UniswapStrategy } from './services/specific-assets/strategies/uniswap.strategy';
 import { YearnStrategy } from './services/specific-assets/strategies/yearn.strategy';
@@ -62,7 +62,7 @@ const specificAssetsStrategies = [
   AaveStrategy,
   CurveStrategy,
   ElipsisStrategy,
-  StakedSOHMStrategy,
+  StakedSohmStrategy,
   StakedSushiStrategy,
   TerraStrategy,
   YearnStrategy,

@@ -4,9 +4,9 @@ import { ApiBody, ApiResponse, ApiTags, PartialType } from '@nestjs/swagger';
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';
 
-import { EndpointDto } from './dto/Endpoint.dto';
-import { ListQueryDto } from './dto/ListQuery.dto';
+import { EndpointDto } from './dto/endpoint.dto';
 import { EndpointsListDto } from './dto/endpoints.list.dto';
+import { ListQueryDto } from './dto/list-query.dto';
 
 @ApiTags('RPCEndpoints')
 @Controller('v1/rpc-endpoints')

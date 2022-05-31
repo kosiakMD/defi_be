@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Address, Pool, PoolAPY, PoolToken, PoolTokenDto, PoolTokenId } from '@app/common';
 
 import { ChainIdEnum, ProjectEnum } from '../enum';
-import { PoolAPYDTO } from './APY.dto';
+import { PoolAPYDTO } from './apy.dto';
 
 class IL implements IL {
   @ApiProperty({ type: Number, example: 1.0611280730220551 })

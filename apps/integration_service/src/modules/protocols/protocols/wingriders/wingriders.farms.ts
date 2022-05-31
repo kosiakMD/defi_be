@@ -7,7 +7,7 @@ import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainDto, FeatureEnum, ProtocolTypeEnum, ProjectEnum } from '@app/common';
+import { ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
@@ -116,7 +116,7 @@ export class WingRidersFarms {
   }
 
   private async fetchUtxoBy(address: string): Promise<IUtxo[]> {
-    const url = `${this.explorerApi}/api/bulk/paymentCredentials/utxo`;
+    const url = `${this.explorerApi}/api/bulk/payment-credentials/utxo`;
     const data = {
       limit: 500,
       paymentCredentials: [WRT_POOL_CONTRACT_HASH],
@@ -137,7 +137,7 @@ export class WingRidersFarms {
   }
 
   private async fetchUserFarmingRewards(address: string): Promise<IFarmingRewards[]> {
-    const url = `${this.aggregatorApi}/userFarmingRewards`;
+    const url = `${this.aggregatorApi}/userFarming-rewards`;
     const data = {
       ownerPubKeyHashHex: this.cardanoUtils.addressToBlake224(address),
     };

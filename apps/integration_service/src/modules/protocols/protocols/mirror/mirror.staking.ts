@@ -16,7 +16,7 @@ import {
   ProtocolTypeEnum,
   TerraswapProtocolEnum,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { BaseDataShortFarm } from '@app/common/dto/base.data.short.farm';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';

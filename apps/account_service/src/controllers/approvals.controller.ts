@@ -6,8 +6,8 @@ import { ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ContractApprovalResponse } from '@app/common/interfaces';
 
 import { ContractApprovalResponseDto } from '../common/dto';
-import { GetAllApprovalsDto } from '../common/dto/GetAllApprovals.dto';
-import { ApprovalsSortFieldsEnum } from '../common/enum/ApprovalsSortFields.enum';
+import { GetAllApprovalsDto } from '../common/dto/get-all-approvals.dto';
+import { ApprovalsSortFieldsEnum } from '../common/enum/approvals-sort-fields.enum';
 
 import { ApprovalsService } from '../modules/approvals/approvals.service';
 

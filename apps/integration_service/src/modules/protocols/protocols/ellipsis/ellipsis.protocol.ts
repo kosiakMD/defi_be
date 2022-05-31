@@ -9,7 +9,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { Mapper } from '../../helpers/mappers/mapper';
-import DataProviderProtocol from '../dataProviderProtocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { EllipsisPools } from './ellipsis.pools';
 import { EllipsisStaking } from './ellipsis.staking';
 

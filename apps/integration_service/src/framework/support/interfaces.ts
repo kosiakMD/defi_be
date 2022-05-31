@@ -19,9 +19,9 @@ import {
   IPoolFeatureEntryUserEntry,
 } from './interfaces/feature.pool.interface';
 import {
+  IStakingFeatureMinimal,
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
-  IStakingFeatureMinimal,
 } from './interfaces/feature.staking.interface';
 import { BaseWithTokens } from './interfaces/new.interfaces';
 import type { ERC20Token } from './interfaces/tokens.common.interface';
@@ -36,7 +36,7 @@ export interface IPlatformMeta {
   // Human Readable Name (Display Name)
   name: string;
 
-  // Platform Slug/Key. Used in URL's and filenames
+  // Platform Slug/key. Used in URL's and filenames
   slug: string;
 
   // All enabled features for this platform
@@ -46,6 +46,7 @@ export interface IPlatformMeta {
   // Social Media Links
   links: IPlatformLinks;
 }
+
 export interface IProtocolMeta {
   id?: string; // todo: should be required
   name: string;
@@ -83,6 +84,7 @@ export interface IChainUserEntry {
   total: number;
   chain: ChainDto;
 }
+
 export interface IPlatformUserEntry {
   address: Address;
   total: number;
@@ -115,7 +117,9 @@ export type IUserDataPlatformResponse = GenericDataResponse<IPlatformUserEntry[]
 // common required platform interface
 export interface IRootPlatform {
   getMeta(): IPlatformMeta;
+
   cachePoolData;
+
   getPoolData?(chains: ChainId[]): Promise<IPoolDataPlatformResponse>; // return all pools
   getUsersData?(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse>;
 }
@@ -152,6 +156,7 @@ export interface IRootProtocol<TProtocolMeta extends IProtocolMeta = IProtocolMe
   // filters pool data to only include user positions
   getUsersData?(addresses: Address[]): Promise<IUserDataProtocolResponse<IWalletUserEntry>>;
 }
+
 export interface IChainGroupedWallet {
   chain: ChainDto;
   features: FeatureEnum[];

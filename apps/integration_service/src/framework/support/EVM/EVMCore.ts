@@ -4,15 +4,15 @@ import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { chunk, keepAddressesByChainId, normalizeDecimals } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
-import { UniswapV2Pair } from '@app/common/web3provider/contracts/UniswapV2Pair';
+import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
+import { UniswapV2Pair } from '@app/common/web3provider/contracts/uniswap-v2-pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../modules/microservices/account.service';
 import { PriceService } from '../../../modules/microservices/price.service';
-import { RootProtocolCacheable } from '../RootProtocolCacheable';
 import { IProtocolMeta, IWalletMinimal, IWalletOpportunity, IWalletUserEntry } from '../interfaces';
 import { ERC20Token } from '../interfaces/tokens.common.interface';
+import { RootProtocolCacheable } from '../root-protocol-cacheable';
 
 export abstract class EVMCore<
   TMinimalType extends IWalletMinimal,

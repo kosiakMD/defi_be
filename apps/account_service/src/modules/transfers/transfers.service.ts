@@ -1,9 +1,9 @@
 import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
 import { CHAIN_ID_BSC, CHAIN_ID_ETH } from '@app/common/constant';
 import { ResultStatus } from '@app/common/enum';
+import { Logger } from '@app/common/logger/logger.service';
 import { Address } from '@app/common/types';
 
 import { EtherscanTransfer } from '../../common/interfaces/ether.scan.interfaces';
@@ -15,10 +15,10 @@ import {
   TransfersResponse,
   TransferWithTokenAndPrices,
 } from '../../common/interfaces/transfers.common.interfaces';
-import { BscScanService } from '../../common/providers/chainRelated/scans/bsc-scan.service';
-import { EtherScanService } from '../../common/providers/chainRelated/scans/ether-scan.service';
-import { PolygonScanService } from '../../common/providers/chainRelated/scans/polygon-scan.service';
-import { ScanApiService } from '../../common/providers/chainRelated/scans/scan.api.service';
+import { BscScanService } from '../../common/providers/chain-related/scans/bsc-scan.service';
+import { EtherScanService } from '../../common/providers/chain-related/scans/ether-scan.service';
+import { PolygonScanService } from '../../common/providers/chain-related/scans/polygon-scan.service';
+import { ScanApiService } from '../../common/providers/chain-related/scans/scan-api.service';
 import { HistoricalPricesMap } from '../../common/providers/microservices/price/dto/price.response.dto';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 import {
@@ -39,8 +39,8 @@ import {
 } from './dto/transfers.dto';
 import { TransferEntity, TransferEntityNew } from './entities/transfers.entity';
 import { ResponseData as BlocksResponseData } from './interfaces/transfers.block.interface';
-import { TransfersBlocksSubgraph } from './transfers.blocks.subgraph';
-import { TransfersDbService } from './transfers.db.service';
+import { TransfersBlocksSubgraph } from './transfers-blocks.subgraph';
+import { TransfersDbService } from './transfers-db.service';
 
 // TODO: delete redundant methods
 export class TransfersService {

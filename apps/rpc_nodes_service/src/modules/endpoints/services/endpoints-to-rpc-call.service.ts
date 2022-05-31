@@ -1,4 +1,4 @@
-import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/CallsStatistic.dto';
+import { CallsStatistic } from 'apps/rpc_nodes_service/src/common/dto/calls-statistic.dto';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
@@ -7,9 +7,9 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger';
+import { Logger } from '@app/common/logger';
 
-import { SortDirectionEnum } from '../../../common/enum/SortDirection.enum';
+import { SortDirectionEnum } from '../../../common/enum/sort-direction.enum';
 
 import { EndpointEntity } from '../endpoint.entity';
 import { EndpointsSortFieldEnum, EndpointsSuccessScore } from '../endpoints.enums';
@@ -19,6 +19,7 @@ import { EndpointToRPCCall, SuccessScore } from '../endpoints.types';
 @Injectable()
 export class EndpointsToRPCCallService {
   private readonly endpointsToRPCCall = new Map<number, EndpointToRPCCall[]>();
+
   constructor(
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
     private readonly configService: ConfigService,

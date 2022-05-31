@@ -4,20 +4,20 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  MarinadeProtocolEnum,
+  Address,
   ChainAbbrEnum,
+  ChainDto,
   FeatureEnum,
   Logger,
+  MarinadeProtocolEnum,
   ProjectEnum,
-  Address,
-  ChainDto,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import AbstractProtocol from '../abstractProtocol';
-import DataProviderProtocol from '../dataProviderProtocol';
+import AbstractProtocol from '../abstract-protocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { MarinadePools } from './marinade.pools';
 import { MarinadeStaking } from './marinade.staking';
 
@@ -32,6 +32,7 @@ export class MarinadeProtocol extends DataProviderProtocol implements AbstractPr
   };
 
   protected dataProvider;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     protected readonly logger: Logger,

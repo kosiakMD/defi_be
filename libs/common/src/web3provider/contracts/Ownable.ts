@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class Ownable extends MultiCallAbiProxy {
+export class Ownable extends MulticallAbiProxy {
   static readonly owner: AbiItem = {
     inputs: [],
     name: 'owner',

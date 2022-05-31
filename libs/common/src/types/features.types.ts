@@ -4,7 +4,7 @@ import {
   LiquidityPoolFeatureDto,
   StakingPositionFeatureDto,
 } from '@app/common/dto';
-import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
+import { HealthFactorDto } from '@app/common/dto/health-factor.dto';
 import { LiquidityPoolFeature } from '@app/common/dto/liquidity.pool.dto';
 import { StakingProjectDto } from '@app/common/dto/transactions.dto';
 

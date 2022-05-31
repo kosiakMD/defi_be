@@ -1,7 +1,7 @@
 import { Controller, Get, HttpStatus, Query } from '@nestjs/common';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
+import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/opportunity-search-query.dto';
 import { OpportunityListDto } from '@app/common/dto/opportunities/opportunity.list.dto';
 
 import { BaseService } from '../common/services/base.service';

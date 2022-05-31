@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class JewelAbis extends MultiCallAbiProxy {
+export class JewelAbis extends MulticallAbiProxy {
   static readonly lockOf: AbiItem = {
     type: 'function',
     stateMutability: 'view',

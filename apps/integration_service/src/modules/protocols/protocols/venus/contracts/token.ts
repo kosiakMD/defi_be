@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class TokenAbis extends MultiCallAbiProxy {
+export class TokenAbis extends MulticallAbiProxy {
   static readonly balanceOf: AbiItem = {
     constant: true,
     inputs: [

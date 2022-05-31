@@ -103,7 +103,7 @@ export class ErrorResponseDto extends ResponseMetaDto {
   @ApiProperty({
     type: String,
     example:
-      '/v2/protocols/UniswapV2/?addresses=0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85&chains=1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9%2C10%2C11',
+      '/v2/protocols/uniswap-v2/?addresses=0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85&chains=1%2C2%2C3%2C4%2C5%2C6%2C7%2C8%2C9%2C10%2C11',
   })
   path: string;
 

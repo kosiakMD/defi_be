@@ -1,4 +1,4 @@
-import { ProtocolName } from '../enum/projectEnum';
+import { ProtocolName } from '../enum/project.enum';
 
 export interface ProtocolParams {
   protocolName: ProtocolName;

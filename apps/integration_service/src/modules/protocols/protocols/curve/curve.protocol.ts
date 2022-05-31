@@ -9,13 +9,13 @@ import {
   FeatureEnum,
   Logger,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { ProjectEnum } from '@app/common/enum';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import BasicProtocol from '../basicProtocol';
+import BasicProtocol from '../basic-protocol';
 import { CurvePools } from './curve.pools';
 import { CurveStaking } from './curve.staking';
 

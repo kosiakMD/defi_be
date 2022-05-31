@@ -14,7 +14,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import BasicProtocol from './../basicProtocol';
+import BasicProtocol from './../basic-protocol';
 import { AbracadabraBorrowing } from './features/abracadabra.borrowing';
 import { AbracadabraClaimable } from './features/abracadabra.claimable';
 import { AbracadabraStaking } from './features/abracadabra.staking';
@@ -70,7 +70,6 @@ export class AbracadabraProtocol extends BasicProtocol {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-
     // Features
     private readonly borrowingFeature: AbracadabraBorrowing,
     private readonly claimableFeature: AbracadabraClaimable,

@@ -13,17 +13,17 @@ import {
   ProtocolNameEnum,
   ProtocolTypeEnum,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import BasicProtocol from '../basicProtocol';
-import { ConvexCurveLpStaking } from './convex.curveLP.staking';
+import BasicProtocol from '../basic-protocol';
+import { ConvexCurveLpStaking } from './convex.curve-lp.staking';
+import { ConvexCvxCRVStaking } from './convex.cvx-crv.staking';
+import { ConvexCvxLockedStaking } from './convex.cvx-locked-staking';
 import { ConvexCvxStaking } from './convex.cvx.staking';
-import { ConvexCvxCRVStaking } from './convex.cvxCRV.staking';
-import { ConvexCvxLockedStaking } from './convex.cvxLockedStaking';
 
 @Injectable()
 export class ConvexProtocol extends BasicProtocol {

@@ -4,10 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { IMasterChefMeta } from '../support/EVM/protocols/Yield/MasterChef';
-import { MasterChefMdex } from '../support/EVM/protocols/Yield/MasterChefMdex';
-import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { IMasterChefMeta } from '../support/evm/protocols/yield/master-chef';
+import { MasterChefMdex } from '../support/evm/protocols/yield/master-chef-mdex';
+import { RootPlatform } from '../support/root-platform';
 
 export class Mdex extends RootPlatform {
   constructor(
@@ -22,11 +22,11 @@ export class Mdex extends RootPlatform {
       name: this.constructor.name,
       slug: this.constructor.name,
       links: {
-        discord: 'https://discord.com/invite/3TYDPktjqC',
-        telegram: 'https://t.me/MdexEN',
-        twitter: 'https://twitter.com/Mdextech',
+        discord: 'https://discord.com/invite/3TYDPktjq-c',
+        telegram: 'https://t.me/mdex-eN',
+        twitter: 'https://twitter.com/mdextech',
         url: 'https://mdex.com/',
-        github: 'https://github.com/mdexSwap',
+        github: 'https://github.com/mdex-swap',
       },
     });
 

@@ -1,4 +1,4 @@
-import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/DTO/SearchResultsEntry.dto';
+import { SearchResultsEntryDto } from 'apps/api_gateway/src/common/dto/search-results-entry.dto';
 import {
   SearchParams,
   SearchResultsAssetEntry,

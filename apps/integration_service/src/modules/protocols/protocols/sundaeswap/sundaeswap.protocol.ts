@@ -4,20 +4,20 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
-  SundaeProtocolEnum,
+  Address,
   ChainAbbrEnum,
+  ChainDto,
   FeatureEnum,
   Logger,
   ProjectEnum,
-  Address,
-  ChainDto,
+  SundaeProtocolEnum,
 } from '@app/common';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import AbstractProtocol from '../abstractProtocol';
-import DataProviderProtocol from '../dataProviderProtocol';
+import AbstractProtocol from '../abstract-protocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { SundaeSwapFarms } from './sundaeswap.farms';
 import { SundaeSwapPools } from './sundaeswap.pools';
 
@@ -32,6 +32,7 @@ export class SundaeSwapProtocol extends DataProviderProtocol implements Abstract
   };
 
   protected dataProvider;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER)
     protected readonly logger: Logger,

@@ -1,6 +1,6 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '../../../multicall.abi.proxy';
+import { MulticallAbiProxy } from '../../../multicall-abi.proxy';
 
 /**
  * This is called the Aave Generic Token, since its aim is to be the common
@@ -8,7 +8,7 @@ import { MultiCallAbiProxy } from '../../../multicall.abi.proxy';
  * something to be Variable or Stable specific,
  * extend from this, and use that instead
  */
-export class AToken extends MultiCallAbiProxy {
+export class AToken extends MulticallAbiProxy {
   static readonly underlyingAssetAddress: AbiItem = {
     constant: true,
     inputs: [],

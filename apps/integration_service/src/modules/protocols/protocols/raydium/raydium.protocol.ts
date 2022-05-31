@@ -10,7 +10,7 @@ import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { LiquidityPools } from '../../features/liquidity-pools';
 import { Mapper } from '../../helpers/mappers/mapper';
-import DataProviderProtocol from '../dataProviderProtocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { RaydiumStaking } from './raydium.staking';
 
 @Injectable()

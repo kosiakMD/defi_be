@@ -10,12 +10,12 @@ import {
   Logger,
   ProjectEnum,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import BasicProtocol from '../basicProtocol';
+import BasicProtocol from '../basic-protocol';
 import { AstroportBootstrap } from './astroport.bootstrap';
 import { AstroportLockdrop } from './astroport.lockdrop';
 import { AstroportPools } from './astroport.pools';

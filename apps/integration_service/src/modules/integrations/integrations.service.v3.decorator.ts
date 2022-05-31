@@ -12,7 +12,7 @@ import {
   ProtocolDataDto,
   ProtocolName,
 } from '@app/common';
-import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
+import { HealthFactorDto } from '@app/common/dto/health-factor.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
@@ -23,7 +23,7 @@ import { ERC20Token } from '@app/common/jobs/token';
 import { getUniqList } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../../api_gateway/src/common/enum/feature.enum';
-import { PancakeSwap } from '../../framework/platforms/PancakeSwap';
+import { PancakeSwap } from '../../framework/platforms/pancake-swap';
 import { PlatformService } from '../../framework/services/platform.service';
 import { IClaimableFeatureUser } from '../../framework/support/interfaces/feature.claimable.interface';
 import { IPoolFeatureEntryUserEntry } from '../../framework/support/interfaces/feature.pool.interface';

@@ -56,7 +56,7 @@ export class NftService {
           wallet: address,
           name: 'Super Shiba #9119',
           imageUrl:
-            'https://lh3.googleusercontent.com/rEbgZYOxhKbjLR6nOJwKsPQKCAEmjJxguTKCZ27vHbHm1v3a4NrwYnUqNzaqq_zFjnC6PytLz5hQ3VC4HABPZ_KPzu478JvvzGFVBw',
+            'https://lh3.googleusercontent.com/rEbgZYOxhKbjLR6nOJwKsPQKCAEmjJxguTKCZ27vHbHm1v3a4NrwYnUq-nzaqq_zFjnC6PytLz5hQ3VC4HABPZ_KPzu478JvvzGFVBw',
           imageSvg: 'SVG element',
           price: 0.05,
           priceUsd: 34,
@@ -75,11 +75,11 @@ export class NftService {
             links: {
               site: 'https://supershibas.io/',
               image:
-                'https://lh3.googleusercontent.com/RYF4Gc-9EcE7g_sbl3Aiaux5jkuq9DAe6pRe9PC7FUkFpsUAT1y3CLW-v75uJmKOXM2ST0WH-tnMvSPuvfCzBJLKY64FbthSSZwD=s120',
+                'https://lh3.googleusercontent.com/rYF4Gc-9EcE7g_sbl3Aiaux5jkuq9DAe6pRe9PC7FUkFpsUAT1y3CLW-v75uJmKOXM2ST0WH-tnMvSPuvfCzBJLKY64FbthSSZwD=s120',
               bannerImage:
                 'https://lh3.googleusercontent.com/j2V_S-FYmgoWnuba61apC1EPKfdzI-uIfoD6psHatOuWNXTeVHve8AZqBrt8Ze6P-u5UK12Rr1WK6o1h2DObXa7n2sKVws-aOg7hzqs=s2500',
               telegramUrl: 'https://t.me/durov',
-              wikiUrl: 'https://en.wikipedia.org/wiki/Leet',
+              wikiUrl: 'https://en.wikipedia.org/wiki/leet',
               discordUrl: 'https://discord.gg/angryapearmy',
               permalink: 'https://opensea.io/assets/0xb30182ac9d2b14b7b773c52ac22a511652ee4f75/493',
             },

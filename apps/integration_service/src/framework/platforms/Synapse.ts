@@ -4,10 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { SynapseLiquidity } from '../support/EVM/protocols/Liquidity/SynapseLiquidity';
-import { SynapseStaking } from '../support/EVM/protocols/Yield/SynapseStaking';
-import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { SynapseLiquidity } from '../support/evm/protocols/liquidity/synapse-liquidity';
+import { SynapseStaking } from '../support/evm/protocols/yield/synapse-staking';
+import { RootPlatform } from '../support/root-platform';
 
 export class Synapse extends RootPlatform {
   constructor(

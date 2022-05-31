@@ -20,8 +20,8 @@ import { Asset } from '../../../../../common/interfaces/transactions.interfaces'
 
 import { AccountService } from '../../../../microservices/account.service';
 import { PriceService } from '../../../../microservices/price.service';
-import { gOhmContract } from '../contracts/gOhmContract';
-import { wsOhmContract } from '../contracts/wsOhmContract';
+import { gOhmContract } from '../contracts/g-ohm-contract';
+import { wsOhmContract } from '../contracts/ws-ohm-contract';
 import {
   GOVERNANCE_OHM,
   OHM_ADDRESS,
@@ -40,6 +40,7 @@ export class OlympusStaking {
   private wsOhmBalanceLabel(address) {
     return `${address}-${WRAPPED_STAKED_OHM_ADDRESS}`;
   }
+
   private gOhmBalanceLabel(address) {
     return `${address}-${GOVERNANCE_OHM}`;
   }

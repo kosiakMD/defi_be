@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/Base.entity';
+import { BaseEntity } from '@app/common/entities/base.entity';
 import { IChainMetadata } from '@app/common/interfaces/chain.metadata.interface';
 
 @Entity('chains')

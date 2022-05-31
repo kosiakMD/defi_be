@@ -16,8 +16,8 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import AbstractProtocol from '../abstractProtocol';
-import DataProviderProtocol from '../dataProviderProtocol';
+import AbstractProtocol from '../abstract-protocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { WingRidersFarms } from './wingriders.farms';
 import { WingRidersPools } from './wingriders.pools';
 

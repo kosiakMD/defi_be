@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PartnerBaseDto } from '@app/common/dto/PartnerBase.dto';
+import { PartnerBaseDto } from '@app/common/dto/partner-base.dto';
 
-import { LinksDto } from '../../common/DTO/Links.dto';
+import { LinksDto } from '../../common/dto/links.dto';
 
 import { FilesCountDto } from './files.count.dto';
 

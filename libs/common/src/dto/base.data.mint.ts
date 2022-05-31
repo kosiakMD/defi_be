@@ -2,7 +2,7 @@
 import { plainToClass } from 'class-transformer';
 
 import { ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
 
 export class BaseDataMint extends BaseData<ProtocolTypeEnum.mint> {

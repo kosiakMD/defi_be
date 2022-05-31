@@ -14,7 +14,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import BasicProtocol from './../basicProtocol';
+import BasicProtocol from './../basic-protocol';
 import { OlympusBonding } from './features/olympus.bonding';
 import { OlympusStaking } from './features/olympus.staking';
 
@@ -29,7 +29,6 @@ export class OlympusProtocol extends BasicProtocol {
 
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
-
     // Features
     private readonly stakingFeature: OlympusStaking,
     private readonly bondingFeature: OlympusBonding,

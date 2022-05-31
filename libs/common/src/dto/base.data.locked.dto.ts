@@ -1,6 +1,6 @@
 // eslint-disable-next-line max-classes-per-file
 import { ProtocolTypeEnum } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { IntegrationERC20TokenDto } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
 

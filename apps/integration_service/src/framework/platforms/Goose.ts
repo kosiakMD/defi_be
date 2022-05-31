@@ -4,9 +4,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
-import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { IMasterChefMeta, MasterChef } from '../support/evm/protocols/yield/master-chef';
+import { RootPlatform } from '../support/root-platform';
 
 export class Goose extends RootPlatform {
   constructor(

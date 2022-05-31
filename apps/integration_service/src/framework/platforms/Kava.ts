@@ -5,17 +5,18 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { KavaClaimable } from '../support/CosmosHub/protocols/Claimable/KavaClaimable';
-import { KavaLending } from '../support/CosmosHub/protocols/Lending/KavaLending';
-import { KavaLiquidity } from '../support/CosmosHub/protocols/Liquidity/KavaLiquidity';
-import { IKavaMeta as IKavaMetaClaimable } from '../support/CosmosHub/protocols/interfaces/Kava/KavaClaimable';
-import { IKavaMeta as IKavaMetaLending } from '../support/CosmosHub/protocols/interfaces/Kava/KavaLending';
-import { IKavaMeta as IKavaMetaLiquidity } from '../support/CosmosHub/protocols/interfaces/Kava/KavaLiquidity';
-import { RootPlatform } from '../support/RootPlatform';
+import { KavaClaimable } from '../support/cosmos-hub/protocols/claimable/kava-claimable';
+import { IKavaMeta as IKavaMetaClaimable } from '../support/cosmos-hub/protocols/interfaces/kava/kava-claimable';
+import { IKavaMeta as IKavaMetaLending } from '../support/cosmos-hub/protocols/interfaces/kava/kava-lending';
+import { IKavaMeta as IKavaMetaLiquidity } from '../support/cosmos-hub/protocols/interfaces/kava/kava-liquidity';
+import { KavaLending } from '../support/cosmos-hub/protocols/lending/kava-lending';
+import { KavaLiquidity } from '../support/cosmos-hub/protocols/liquidity/kava-liquidity';
 import { FeatureEnum } from '../support/enums';
+import { RootPlatform } from '../support/root-platform';
 
 export class Kava extends RootPlatform {
   private KAVA_API: string;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly moduleRef: ModuleRef,

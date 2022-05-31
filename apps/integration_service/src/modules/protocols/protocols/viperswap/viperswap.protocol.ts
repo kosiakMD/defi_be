@@ -7,7 +7,7 @@ import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import BasicProtocol from '../basicProtocol';
+import BasicProtocol from '../basic-protocol';
 import { ViperswapLocked } from './viperswap.locked';
 import { ViperswapPools } from './viperswap.pools';
 import { ViperswapStaking } from './viperswap.staking';

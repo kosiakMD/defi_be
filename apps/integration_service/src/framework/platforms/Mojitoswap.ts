@@ -4,14 +4,14 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
+import { FeatureEnum } from '../support/enums';
 import {
   IUniswapVaultMeta,
   UniswapV2Liquidity,
-} from '../support/EVM/protocols/Liquidity/UniswapV2Liquidity';
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
-import { MojitoVault } from '../support/EVM/protocols/Yield/MojitoVault';
-import { RootPlatform } from '../support/RootPlatform';
-import { FeatureEnum } from '../support/enums';
+} from '../support/evm/protocols/liquidity/uniswap-v2-liquidity';
+import { MasterChef } from '../support/evm/protocols/yield/master-chef';
+import { MojitoVault } from '../support/evm/protocols/yield/mojito-vault';
+import { RootPlatform } from '../support/root-platform';
 
 export class Mojitoswap extends RootPlatform {
   constructor(

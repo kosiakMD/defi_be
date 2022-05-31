@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AuditDto } from '@app/common/dto/Audit.dto';
-import { SafeTokenDto } from '@app/common/dto/SafeToken.dto';
+import { AuditDto } from '@app/common/dto/audit.dto';
+import { SafeTokenDto } from '@app/common/dto/safe-token.dto';
 
 import { PartnerAuditDto } from './partner.audit.dto';
 

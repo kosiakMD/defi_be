@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class UnitrollerAbis extends MultiCallAbiProxy {
+export class UnitrollerAbis extends MulticallAbiProxy {
   static readonly mintedVAIs: AbiItem = {
     constant: true,
     inputs: [

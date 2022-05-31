@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { NetworkBaseDto } from '@app/common/dto/NetworkBase.dto';
+import { NetworkBaseDto } from '@app/common/dto/network-base.dto';
 
 import { AuditedByDto } from './audited.by.dto';
 import { ScamLinksDto } from './scam.links.dto';

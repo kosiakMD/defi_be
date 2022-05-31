@@ -4,9 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ProtocolDataDto, ServiceEnum } from '@app/common';
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common/logger/logger.service';
 import { isSomeAddress } from '@app/common/utils';
-import { Web3NameService } from '@app/common/web3provider/web3.name.service';
+import { Web3NameService } from '@app/common/web3provider/web3-name.service';
 
 import { BaseService } from '../common/services/base.service';
 

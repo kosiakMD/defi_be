@@ -4,7 +4,7 @@ import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Address } from '@app/common';
-import { BaseListQueryDto } from '@app/common/dto/BaseListQuery.dto';
+import { BaseListQueryDto } from '@app/common/dto/base-list-query.dto';
 import { NftAssetSortFieldEnum } from '@app/common/enum/nft/nft.enums';
 import { splitToArray, unifyAddress, unifyAddresses } from '@app/common/utils';
 

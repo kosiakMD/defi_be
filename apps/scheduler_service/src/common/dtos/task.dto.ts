@@ -7,7 +7,7 @@ import { CronExpression, HttpMethod, URLEndpoint } from '../interfaces/task.inte
 
 export class TaskCreateDto {
   @IsNotEmpty()
-  //IsUrl misses localhost and docker host names
+  //is-url misses localhost and docker host names
   // @IsUrl()
   @IsString()
   @ApiProperty({

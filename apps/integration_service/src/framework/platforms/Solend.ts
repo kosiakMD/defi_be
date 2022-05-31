@@ -4,9 +4,9 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { RootPlatform } from '../support/RootPlatform';
-import { ISolendingMeta, SoLending } from '../support/Solana/protocols/Lending/SoLending';
 import { FeatureEnum } from '../support/enums';
+import { RootPlatform } from '../support/root-platform';
+import { ISolendingMeta, SoLending } from '../support/solana/protocols/lending/so-lending';
 
 export class Solend extends RootPlatform {
   constructor(
@@ -32,7 +32,7 @@ export class Solend extends RootPlatform {
       name: 'Solana Lending',
       feature: FeatureEnum.lending,
       baseApiUrl: 'https://api.solend.fi/v1',
-      address: 'So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo', //Program address
+      address: 'So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo', //program address
     });
   }
 }

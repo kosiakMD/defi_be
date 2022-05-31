@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';
+import { MulticallAbiProxy } from '@app/common/web3provider/multicall-abi.proxy';
 
-export class SushiSwapRewarder extends MultiCallAbiProxy {
+export class SushiSwapRewarder extends MulticallAbiProxy {
   static readonly pendingToken: AbiItem = {
     inputs: [
       { internalType: 'uint256', name: '_pid', type: 'uint256' },

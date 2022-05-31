@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
-import type { RootProtocol } from './RootProtocol';
 import type { IWalletMinimal } from './interfaces';
 import type { ERC20TokenMinimal } from './interfaces/tokens.common.interface';
+import type { RootProtocol } from './root-protocol';
 
 /**
  * Failed to find any opportunitiy data

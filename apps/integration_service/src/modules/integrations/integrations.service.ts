@@ -18,13 +18,12 @@ import { CurrencyDto } from '@app/common/dto/currency.dto';
 import { ChainIdEnum, ResultStatus } from '@app/common/enum';
 import { NotifyBase } from '@app/common/jobs/notify.dto';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { keepAddressesByChainId } from '@app/common/utils';
-import { getChainById } from '@app/common/utils';
+import { getChainById, keepAddressesByChainId } from '@app/common/utils';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
 
 import { ProtocolService } from '../protocols/protocol.service';
-import BasicProtocol from '../protocols/protocols/basicProtocol';
+import BasicProtocol from '../protocols/protocols/basic-protocol';
 import { ProtocolBasicInfo, ProtocolDataDto } from './dto/features.dto';
 import {
   IntChainsDataDto,

@@ -1,10 +1,16 @@
 // eslint-disable-next-line max-classes-per-file
-import { Exclude, Expose, Type } from 'class-transformer';
-import { ERC20TokenDto } from './index';
+import { Exclude, Expose, Type } from "class-transformer";
+import { ERC20TokenDto } from "./index";
 
-import { FeatureEnum } from '@app/common/enum';
-import { FeatureResult, Features, IntegrationClaimableTokenDto, LendingPositionDto, LeverageFarmingPosition, } from '@app/common';
-import { HealthFactorDto } from './HealthFactor.dto';
+import { FeatureEnum } from "@app/common/enum";
+import {
+  FeatureResult,
+  Features,
+  IntegrationClaimableTokenDto,
+  LendingPositionDto,
+  LeverageFarmingPosition
+} from "@app/common";
+import { HealthFactorDto } from "./health-factor.dto";
 
 export class PoolTokenDto {
   address: string = null;
@@ -77,7 +83,7 @@ export class IntegrationFeaturesDataDto implements IntegrationFeaturesData {
   @Exclude()
   errors: string[] | string[][] | string[][][] | any[] = []; // any[] for [[[Error], Error], [Error]].flat()
   @Expose()
-  // eslint-disable-next-line prettier/prettier
+    // eslint-disable-next-line prettier/prettier
   [FeatureEnum.pools]?: FeatureResult<any>;
   @Expose()
   [FeatureEnum.staking]?: FeatureResult<any/*StakingPositionFeatureDto*/>;

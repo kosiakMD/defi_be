@@ -9,7 +9,7 @@ import { Address } from '@app/common';
 import { IContractInfo, IQuickswapResponse } from './quickswap.interfaces';
 
 const stakingListUrl =
-  'https://raw.githubusercontent.com/QuickSwap/interface-v2/master/src/constants/stake.json';
+  'https://raw.githubusercontent.com/quick-swap/interface-v2/master/src/constants/stake.json';
 
 interface IMinimalQuickswapHttpResult {
   stakingRewardAddress: Address;

@@ -1,7 +1,7 @@
-import { struct, u8, blob } from '@solana/buffer-layout';
+import { blob, struct, u8 } from '@solana/buffer-layout';
 
-import { LastUpdateLayout } from './LastUpdate';
-import { publicKey, uint64, uint128 } from './layout.util';
+import { LastUpdateLayout } from './last-update';
+import { publicKey, uint128, uint64 } from './layout.util';
 
 const ReserveLayout = struct([
   u8('version'),

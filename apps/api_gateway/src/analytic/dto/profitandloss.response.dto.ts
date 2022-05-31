@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-import { DetailedResponseDto } from '../../common/DTO';
+import { DetailedResponseDto } from '../../common/dto';
 import { ResultStatus } from '../../common/enum';
 
 import { ProfitAndLossResponse } from './profitandloss.response';

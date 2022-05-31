@@ -1,8 +1,8 @@
 import { AbiItem } from 'web3-utils';
 
-import { MultiCallAbiProxy } from '../multicall.abi.proxy';
+import { MulticallAbiProxy } from '../multicall-abi.proxy';
 
-export class ERC20 extends MultiCallAbiProxy {
+export class ERC20 extends MulticallAbiProxy {
   static readonly totalSupply: AbiItem = {
     inputs: [],
     name: 'totalSupply',

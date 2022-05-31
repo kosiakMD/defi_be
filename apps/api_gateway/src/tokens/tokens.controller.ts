@@ -7,9 +7,9 @@ import { ConfigService } from '@nestjs/config';
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
-import TokenDto from '@app/common/dto/Token.dto';
+import TokenDto from '@app/common/dto/token.dto';
 import { Token } from '@app/common/interfaces';
+import { Logger } from '@app/common/logger/logger.service';
 
 import { BaseService } from '../common/services/base.service';
 

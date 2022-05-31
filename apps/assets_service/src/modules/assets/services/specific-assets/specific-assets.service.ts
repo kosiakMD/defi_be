@@ -2,15 +2,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { Logger } from '@app/common/logger/logger.service';
 
 import { AssetEntity } from '../../entities/asset.entity';
 import { AaveStrategy } from './strategies/aave.strategy';
 import { CompoundStrategy } from './strategies/compound.strategy';
 import { CurveStrategy } from './strategies/curve.strategy';
 import { ElipsisStrategy } from './strategies/elipsis.strategy';
-import { StakedSOHMStrategy } from './strategies/stakedSOHM.strategy';
-import { StakedSushiStrategy } from './strategies/stakedSushi.strategy';
+import { StakedSohmStrategy } from './strategies/staked-sohm.strategy';
+import { StakedSushiStrategy } from './strategies/staked-sushi.strategy';
 import { TerraStrategy } from './strategies/terra.strategy';
 import { UniswapStrategy } from './strategies/uniswap.strategy';
 import { YearnStrategy } from './strategies/yearn.strategy';
@@ -28,7 +28,7 @@ export class SpecificAssetsService {
     AaveStrategy,
     CurveStrategy,
     ElipsisStrategy,
-    StakedSOHMStrategy,
+    StakedSohmStrategy,
     StakedSushiStrategy,
     TerraStrategy,
     YearnStrategy,

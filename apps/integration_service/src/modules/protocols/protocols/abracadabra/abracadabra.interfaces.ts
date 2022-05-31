@@ -1,5 +1,5 @@
 import { Address, ChainDto } from '@app/common';
-import { ERC20Token } from '@app/common/dto/ERC20Token';
+import { ERC20Token } from '@app/common/dto/erc20-token';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
@@ -14,5 +14,5 @@ export class Cauldron {
   borrowAsset: ERC20Token; // borrow token
   borrowPrice: number;
   collateralizationRate: number; // COLLATERIZATION_RATE
-  apy: number; //accrueInfo
+  apy: number; //accrue-info
 }

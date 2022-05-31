@@ -6,7 +6,7 @@ import { ChainAbbrEnum, ProjectEnum, TraderjoeProtocolEnum } from '@app/common/e
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import BasicProtocol from '../basicProtocol';
+import BasicProtocol from '../basic-protocol';
 import { TraderJoeFarm } from './trader-joe.farm';
 import { TraderJoeLending } from './trader-joe.lending';
 import { TraderJoePools } from './trader-joe.pools';

@@ -9,7 +9,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { LiquidityPools } from '../../features/liquidity-pools';
-import DataProviderProtocol from '../dataProviderProtocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { PancakeV2Staking } from './pancake-v2.staking';
 
 @Injectable()

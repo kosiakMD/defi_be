@@ -4,10 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { StargateLiquidity } from '../support/EVM/protocols/Liquidity/StargateLiquidity';
-import { StargateStaking } from '../support/EVM/protocols/Yield/StargateStaking';
-import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
+import { StargateLiquidity } from '../support/evm/protocols/liquidity/stargate-liquidity';
+import { StargateStaking } from '../support/evm/protocols/yield/stargate-staking';
+import { RootPlatform } from '../support/root-platform';
 
 export class Stargate extends RootPlatform {
   constructor(

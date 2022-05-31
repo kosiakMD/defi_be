@@ -10,14 +10,14 @@ import {
   ProjectEnum,
   VVSProtocolEnum,
 } from '@app/common';
-import { BaseData } from '@app/common/dto/BaseData';
+import { BaseData } from '@app/common/dto/base-data';
 import { handlePromiseAllSettled } from '@app/common/helpers/promises';
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { PancakeSubgraph } from '../../../subgraphs/subgraphs/pancake.subgraph';
 import { Mapper } from '../../helpers/mappers/mapper';
-import DataProviderProtocol from '../dataProviderProtocol';
+import DataProviderProtocol from '../data-provider-protocol';
 import { VVSPools } from './vvs.pools';
 import { VVSStaking } from './vvs.staking';
 

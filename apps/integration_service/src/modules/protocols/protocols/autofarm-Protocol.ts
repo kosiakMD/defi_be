@@ -9,7 +9,7 @@ import { BaseData } from '../../../common/interfaces/transactions.interfaces';
 import { Web3Provider } from '../../chains/web3.provider';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
-import { AutofarmSubgraph } from '../../subgraphs/subgraphs/autofarm.subgraph';
+import { AutofarmSubgraph } from '../../subgraph/subgraphs/autofarm.subgraph';
 import AbstractProtocol from './abstract-protocol';
 import { AutofarmApiService } from './autofarm/autofarm.api.service';
 import { AutofarmStaking } from './autofarm/autofarm.staking';

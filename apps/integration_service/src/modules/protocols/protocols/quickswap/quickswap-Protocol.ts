@@ -32,7 +32,7 @@ import { Asset, BaseData } from '../../../../common/interfaces/transactions.inte
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { QuickswapSubgraph } from '../../../subgraphs/subgraphs/quickswap.subgraph';
+import { QuickswapSubgraph } from '../../../subgraph/subgraphs/quickswap.subgraph';
 import { Mapper } from '../../helpers/mappers/mapper';
 import AbstractProtocol from '../abstract-protocol';
 import BasicProtocol from '../basic-protocol';

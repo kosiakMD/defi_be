@@ -1,6 +1,4 @@
 import { Address } from '@app/common';
-import { normalizeDecimals } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { RootProtocolCacheable } from '../RootProtocolCacheable';
@@ -56,45 +54,5 @@ export abstract class SubgraphsContractProtocol<
 
   protected async updateTokenData(tokens: any) {
     return tokens;
-  }
-
-  protected async getTokens(addresses: string[]): Promise<[string, any][]> {
-    const { data: tokens } = await this.accountService.getAssets(addresses, [this.meta.chain]);
-    const { prices } = await this.priceService.getTokenPricesFetch(addresses, this.meta.chain);
-
-    const calls = new Map();
-    tokens.forEach((token: any) => {
-      const contract = new ERC20(token.address);
-      calls.set(token.address, contract.totalSupply());
-    });
-    const results = await this.multicall.handleInBatches(calls, this.meta.chain);
-
-    return tokens.map((token: any) => [
-      token.address,
-      {
-        address: token.address,
-        name: token.name,
-        symbol: token.symbol,
-        chainId: token.chain,
-        decimals: token.decimals,
-        totalSupply: results.has(token.address)
-          ? normalizeDecimals(results.get(token.address).output.data, token.decimals)
-          : null,
-        price: Number(prices[token.address]),
-        underlying: token.underlyingAssets?.map((u) => {
-          return {
-            address: u.address,
-            name: u.name,
-            symbol: u.symbol,
-            totalSupply: results.has(u.address)
-              ? normalizeDecimals(results.get(u.address).output.data, token.decimals)
-              : null,
-            chainId: u.chainId,
-            decimals: u.decimals,
-            price: Number(prices[u.address]),
-          };
-        }),
-      },
-    ]);
   }
 }

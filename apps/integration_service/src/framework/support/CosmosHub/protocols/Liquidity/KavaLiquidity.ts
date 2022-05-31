@@ -13,9 +13,12 @@ import { normalizeDecimals } from '@app/common/utils';
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IRootProtocol } from '../../../interfaces';
-import { IPoolFeatureEntryOpportunity, IPoolFeatureEntryUserEntry, } from '../../../interfaces/feature.pool.interface';
+import {
+  IPoolFeatureEntryOpportunity,
+  IPoolFeatureEntryUserEntry,
+} from '../../../interfaces/feature.pool.interface';
 import { IRewardTokenUserEntry } from '../../../interfaces/tokens.rewarded.interface';
-import { ISupplyTokenUserEntry, } from '../../../interfaces/tokens.supplied.interface';
+import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 import {
   IKavaDeposits,

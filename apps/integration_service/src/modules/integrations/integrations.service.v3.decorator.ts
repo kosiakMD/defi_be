@@ -385,12 +385,15 @@ export class IntegrationsServiceV3Decorator {
     liquidityV2.lpToken = plainToClass(ERC20Token, liquidityV3.token);
     // this are 'supplied' tokens
     liquidityV2.tokens = liquidityV3.supplied.map((v3Supplied) => {
-      return plainToClass(PoolTokenDto, {
+      const token = plainToClass(PoolTokenDto, {
         ...v3Supplied.token,
         reserve: v3Supplied.token.reserve,
         value: v3Supplied.value,
         balance: v3Supplied.amount,
       });
+      if (!token.positionInPool) delete token.positionInPool;
+      if (!token.weight) delete token.weight;
+      return token;
     });
 
     liquidityV2.stats.tvl = liquidityV3.supplied.reduce((p, c) => {

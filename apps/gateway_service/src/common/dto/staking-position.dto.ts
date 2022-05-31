@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ClaimAbleToken, ERC20Token, PoolToken, Transaction } from '../interfaces';
 import { ClaimAbleTokenDto } from './claimable-token.dto';
-import { ERC20TokenDto } from './eRC20-token.dto';
+import { ERC20TokenDto } from './erc20-token.dto';
 import PoolTokenDto from './pool-token.dto';
 import { TransactionDto } from './transaction.dto';
 

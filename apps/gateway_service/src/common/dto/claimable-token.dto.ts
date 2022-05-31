@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { ClaimAbleToken } from '../interfaces';
-import { ERC20TokenDto } from './eRC20-token.dto';
+import { ERC20TokenDto } from './erc20-token.dto';
 
 export class ClaimAbleTokenDto extends ERC20TokenDto implements ClaimAbleToken {
   @ApiProperty({ type: String, example: '78945' })

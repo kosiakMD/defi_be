@@ -4,7 +4,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ChainIdEnum, ProjectEnum } from '@app/common/enum';
 
 import { Address, LPToken, PoolTokenBase, RewardToken, Vault } from '../interfaces';
-import { VaultAPYDTO } from './aPY.dto';
+import { VaultAPYDTO } from './apy.dto';
 import LiquidityPoolTokenDto from './liquidity-pool-token.dto';
 import { TokenCommonDTO } from './token-common.dto';
 

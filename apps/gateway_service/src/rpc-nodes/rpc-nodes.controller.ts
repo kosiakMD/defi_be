@@ -16,12 +16,12 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { RPCParamsDto } from '../common/dto/rPCParams.dto';
+import { RPCParamsDto } from '../common/dto/rpc-params.dto';
 import { IBaseService } from '../common/interfaces/base-service.interface';
 import { BaseService } from '../common/services/base.service';
 
-import { RPCCallDto } from './dto/rPCCall.dto';
-import { RPCResponse } from './dto/rPCResponse.dto';
+import { RPCCallDto } from './dto/rpc-call.dto';
+import { RPCResponse } from './dto/rpc-response.dto';
 
 @ApiTags('RPC-call')
 @Controller('v1/rpc-call')

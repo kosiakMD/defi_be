@@ -3,7 +3,7 @@ import { IsEthereumAddress, IsInt, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Address, ContractApproval, ERC20Token } from '../interfaces';
-import { ERC20TokenDto } from './eRC20-token.dto';
+import { ERC20TokenDto } from './erc20-token.dto';
 
 export default class ContractApprovalDto implements ContractApproval {
   @ApiProperty({ type: String })

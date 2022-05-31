@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 import { LiquidityPosition, PlatformPoolToken } from '../interfaces';
-import { ERC20TokenDto } from './eRC20-token.dto';
+import { ERC20TokenDto } from './erc20-token.dto';
 import { LiquidityPoolDto } from './liquidity-pool.dto';
 import { PlatformPoolTokenDto } from './platform-pool-token.dto';
 

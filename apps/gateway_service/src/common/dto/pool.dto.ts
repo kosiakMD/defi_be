@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ChainIdEnum, ProjectEnum } from '../enum';
 import { Address, Pool, PoolAPY, PoolToken, PoolTokenId } from '../interfaces';
-import { PoolAPYDTO } from './aPY.dto';
+import { PoolAPYDTO } from './apy.dto';
 import PoolTokenDto from './pool-token.dto';
 
 class IL implements IL {

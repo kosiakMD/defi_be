@@ -34,7 +34,7 @@ pipeline {
                     docker.withRegistry(DOCKER_REGISTRY_URL, DOCKER_CREDENTIALS) {
                         DOCKER_REGISTRY = DOCKER_REGISTRY_URL.replace("https://", "")
                         DOCKER_TAG = sh(script: "git log --pretty=tformat:'%h' -n1 ./apps/${env.SERVICE_FOLDER}", returnStdout: true).trim().take(7)
-                        DOCKER_IMAGE = docker.build("${env.SERVICE_FOLDER}:${env.DOCKER_TAG}", "-f ./${params.DOCKERFILE_NAME} .")
+                        DOCKER_IMAGE = docker.build("${env.SERVICE_FOLDER}:${DOCKER_TAG}", "-f ./${params.DOCKERFILE_NAME} .")
                     }
                 }
             }

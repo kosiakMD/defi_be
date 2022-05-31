@@ -4,7 +4,6 @@ pipeline {
     agent any
     parameters {
         string(name: "BRANCH_NAME", description: "Git branch to build Docker image", defaultValue: "develop", trim: true)
-        string(name: "DOCKERFILE_NAME", description: "Dockerfile name to build Docker image", defaultValue: "Dockerfile_rs", trim: true)
         string(name: "REPLICAS", description: "Default amount of replicas", defaultValue: "3", trim: true)
         string(name: "TEMPLATE", description: "Default chart template", defaultValue: "1.0.5", trim: true)
     }
@@ -25,7 +24,8 @@ pipeline {
         DOCKER_TAG          = ""
         DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         DOCKER_CREDENTIALS  = "ecr:${env.AWS_REGION}:defiyield-aws"
-        SERVICE_FOLDER = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
+        SERVICE_FOLDER      = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
+        DOCKERFILE_NAME     = "Dockerfile_${env.SERVICE_FOLDER}"
     }
     stages {
         stage("Build") {

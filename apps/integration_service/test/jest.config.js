@@ -10,7 +10,7 @@ module.exports = {
   testEnvironment: 'node',
 
   moduleNameMapper: {
-    '^@app/common$': ['<rootDir>../../../libraries/common/src'],
-    '^@app/common/(.*)$': ['<rootDir>../../../libraries/common/src/$1'],
+    '^@app/common$': ['<rootDir>../../../libs/common/src'],
+    '^@app/common/(.*)$': ['<rootDir>../../../libs/common/src/$1'],
   },
 };

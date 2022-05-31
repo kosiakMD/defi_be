@@ -9,7 +9,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { ChainsModule } from '../chains/chains.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
-import { ThegraphModule } from '../subgraphs/thegraph.module';
+import { ThegraphModule } from '../subgraph/thegraph.module';
 import { LiquidityPools } from './features/liquidity-pools';
 import { CardanoService } from './helpers/cardano/cardano.service';
 import { Mapper } from './helpers/mappers/mapper';
@@ -20,7 +20,7 @@ import { AbracadabraBorrowing } from './protocols/abracadabra/features/abracadab
 import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadabra.claimable';
 import { AbracadabraStaking } from './protocols/abracadabra/features/abracadabra.staking';
 import AlpacaProtocol from './protocols/alpaca-protocol';
-import { AlpacaApiService } from './protocols/alpaca/alpaca.api.service';
+import { AlpacaApiService } from './protocols/alpaca/alpaca-api.service';
 import { AnchorLending } from './protocols/anchor/anchor.lending';
 import { AnchorPools } from './protocols/anchor/anchor.pools';
 import { AnchorProtocol } from './protocols/anchor/anchor.protocol';

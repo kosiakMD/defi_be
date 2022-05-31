@@ -33,11 +33,11 @@ import { BaseData } from '../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
-import { AaveSubgraph } from '../../subgraphs/subgraphs/aave.subgraph';
+import { AaveSubgraph } from '../../subgraph/subgraphs/aave.subgraph';
 import { Mapper } from '../helpers/mappers/mapper';
+import { AaveLocalMulticall } from './aave/aave-local.multicall';
 import { RAY } from './aave/aave.constants';
 import { IReserve } from './aave/aave.interfaces';
-import { AaveLocalMulticall } from './aave/aave.local.multicall';
 import DataProviderProtocol from './data-provider-protocol';
 
 @Injectable()

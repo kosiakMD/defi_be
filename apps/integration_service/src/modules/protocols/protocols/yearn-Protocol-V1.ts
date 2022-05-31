@@ -16,7 +16,7 @@ import {
 import { Web3Provider } from '../../chains/web3.provider';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
-import { YearnV1Subgraph } from '../../subgraphs/subgraphs/yearn.v1.subgraph';
+import { YearnV1Subgraph } from '../../subgraph/subgraphs/yearn-v1.subgraph';
 import { YearnProtocolBase } from './yearn/yearn-protocol-base';
 
 @Injectable()

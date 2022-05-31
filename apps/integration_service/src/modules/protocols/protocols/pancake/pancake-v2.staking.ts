@@ -28,12 +28,13 @@ import { MulticallService } from '../../../chains/multicall/multicall.service';
 import {
   Balance,
   Pancakev2MainStakingSubgraph,
-} from '../../../subgraphs/subgraphs/pancakev2.main.staking.subgraph';
+} from '../../../subgraph/subgraphs/pancakev2-main-staking.subgraph';
 import { PancakeAbis } from './contracts/pancake.abis';
 
 @Injectable()
 export class PancakeV2Staking {
   private readonly multicall: MulticallService;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,

@@ -22,7 +22,7 @@ import { BaseData } from '../../../../common/interfaces/transactions.interfaces'
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { PangolinSubgraph } from '../../../subgraphs/subgraphs/pangolin.subgraph';
+import { PangolinSubgraph } from '../../../subgraph/subgraphs/pangolin.subgraph';
 import { Mapper } from '../../helpers/mappers/mapper';
 import AbstractProtocol from '../abstract-protocol';
 import UniswapLikeProtocol from './uniswap-like-protocol';

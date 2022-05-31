@@ -40,8 +40,8 @@ import { Web3Provider } from '../../chains/web3.provider';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
 import AbstractProtocol from './abstract-protocol';
-import { AlpacaApiService } from './alpaca/alpaca.api.service';
-import { LocalMultiCall } from './alpaca/alpaca.local.multi.call';
+import { AlpacaApiService } from './alpaca/alpaca-api.service';
+import { LocalMultiCall } from './alpaca/alpaca-local.multi.call';
 import {
   alpacaDebtTokens,
   alpacaFactoriesMap,

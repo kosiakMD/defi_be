@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { NotifyPayloadFeaturesDto } from '../../common/dto';
 
-import { SavePoolsResponseDto } from './dto/save.pools.response.dto';
+import { SavePoolsResponseDto } from './dto/save-pools-response.dto';
 
 @Injectable()
 export class JobsService {

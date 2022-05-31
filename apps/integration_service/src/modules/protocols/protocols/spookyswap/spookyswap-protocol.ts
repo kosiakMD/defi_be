@@ -33,18 +33,18 @@ import {
   IntegrationStakingPositionDto,
   LPToken,
   StakingPositionResponseDto,
-} from '../../../../common/dto/integrations.dto';
+} from '../../../../common/dto';
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import { Web3Provider } from '../../../chains/web3.provider';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { SpookyswapAceLabSubgraph } from '../../../subgraphs/subgraphs/spookyswap.acelab.subgraph';
-import { SpookyswapFarmSubgraph } from '../../../subgraphs/subgraphs/spookyswap.farm.subgraph';
+import { SpookyswapAceLabSubgraph } from '../../../subgraph/subgraphs/spookyswap-acelab.subgraph';
+import { SpookyswapFarmSubgraph } from '../../../subgraph/subgraphs/spookyswap-farm.subgraph';
 import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../data-provider-protocol';
 import { acelabMap, booMap, farmsMap, xBooMap } from './helpers/multicall.helpers';
-import { SpookyswapLocalMultiCall } from './spookyswap.local.multi.call';
+import { SpookyswapLocalMulticall } from './spookyswap.local.multicall';
 
 @Injectable()
 export class SpookyswapProtocol extends DataProviderProtocol {
@@ -116,7 +116,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     const pools = await this.getCachedPools(chain);
 
     const web3Provider = this.web3Provider.getForChain(chain.abbr);
-    const multicall = new SpookyswapLocalMultiCall(web3Provider, this.logger);
+    const multicall = new SpookyswapLocalMulticall(web3Provider, this.logger);
 
     const farmPromise = this.getSpookyswapFarmV2(addresses, pools, chain.id, multicall);
     const acelabPromise = this.getSpookyswapAceLabV2(addresses, pools, chain.id, multicall);
@@ -215,7 +215,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     originAddressesArray: Address[],
     pools: NotifyPools,
     chainId: ChainIdEnum,
-    multicall: SpookyswapLocalMultiCall,
+    multicall: SpookyswapLocalMulticall,
   ): Promise<any> {
     const pricedRewardToken = pools.items
       .flatMap((item) => item.tokens)
@@ -303,7 +303,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     originAddressesArray: Address[],
     pools: NotifyPools,
     chainId: ChainIdEnum,
-    multicall: SpookyswapLocalMultiCall,
+    multicall: SpookyswapLocalMulticall,
   ): Promise<any> {
     const spookyswapUsers = await this.spookyswapAceLabSubgraph.getMasterchefData(
       originAddressesArray,
@@ -427,7 +427,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     }
 
     const web3Provider = this.web3Provider.getForChain(chain.abbr);
-    const multicall = new SpookyswapLocalMultiCall(web3Provider, this.logger);
+    const multicall = new SpookyswapLocalMulticall(web3Provider, this.logger);
 
     const results = await Promise.allSettled([
       this.getLiquidityPositions(originAddressesArray, pools, chain),
@@ -475,7 +475,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     originAddressesArray: Address[],
     pools: NotifyPools,
     chainId: ChainIdEnum,
-    multicall: SpookyswapLocalMultiCall,
+    multicall: SpookyswapLocalMulticall,
   ): Promise<StakingPositionResponseDto[]> {
     const farmPromise = this.getSpookyswapFarm(originAddressesArray, pools, chainId, multicall);
     const acelabPromise = this.getSpookyswapAceLab(originAddressesArray, pools, chainId, multicall);
@@ -564,7 +564,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     originAddressesArray: Address[],
     pools: NotifyPools,
     chainId: ChainIdEnum,
-    multicall: SpookyswapLocalMultiCall,
+    multicall: SpookyswapLocalMulticall,
   ): Promise<StakingPositionResponseDto> {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 
@@ -655,7 +655,7 @@ export class SpookyswapProtocol extends DataProviderProtocol {
     originAddressesArray: Address[],
     pools: NotifyPools,
     chainId: ChainIdEnum,
-    multicall: SpookyswapLocalMultiCall,
+    multicall: SpookyswapLocalMulticall,
   ): Promise<StakingPositionResponseDto> {
     const stakingPositions: IntegrationStakingPositionDto[] = [];
 

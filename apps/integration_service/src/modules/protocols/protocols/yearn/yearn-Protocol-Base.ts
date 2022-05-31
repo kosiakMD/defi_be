@@ -17,17 +17,14 @@ import { BaseDataLending } from '@app/common/dto/base.data.lending.dto';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { decimalsDivider } from '@app/common/utils';
 
-import {
-  IntegrationERC20TokenDto,
-  IntegrationStakingPositionDto,
-} from '../../../../common/dto/integrations.dto';
+import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '../../../../common/dto';
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import { Web3Provider } from '../../../chains/web3.provider';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { YearnV1Subgraph } from '../../../subgraphs/subgraphs/yearn.v1.subgraph';
-import { YearnV2Subgraph } from '../../../subgraphs/subgraphs/yearn.v2.subgraph';
+import { YearnV1Subgraph } from '../../../subgraph/subgraphs/yearn-v1.subgraph';
+import { YearnV2Subgraph } from '../../../subgraph/subgraphs/yearn-v2.subgraph';
 import BasicProtocol from '../basic-protocol';
 import { YearnLocalMultiCall } from './yearn-local-multi-call';
 import { IVaultPosition, IVaultV1Position } from './yearn.interfaces';

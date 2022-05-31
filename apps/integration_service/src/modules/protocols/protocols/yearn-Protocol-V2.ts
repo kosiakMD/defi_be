@@ -28,7 +28,7 @@ import { Asset } from '../../../common/interfaces/transactions.interfaces';
 import { Web3Provider } from '../../chains/web3.provider';
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
-import { YearnV2Subgraph } from '../../subgraphs/subgraphs/yearn.v2.subgraph';
+import { YearnV2Subgraph } from '../../subgraph/subgraphs/yearn-v2.subgraph';
 import RegistryAdapterIronBank from './yearn/contracts/registery-adapter-iron-bank';
 import { YearnProtocolBase } from './yearn/yearn-protocol-base';
 import { ironBankAddressByChain } from './yearn/yearn.constants';

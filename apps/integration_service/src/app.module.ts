@@ -19,8 +19,8 @@ import { HealthController } from './controllers/health.controller';
 import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { ProtocolModule } from './modules/protocols/protocol.module';
-import { ThegraphModule } from './modules/subgraphs/thegraph.module';
-import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.tokens.module';
+import { ThegraphModule } from './modules/subgraph/thegraph.module';
+import { TemporaryTokensModule } from './modules/temporary-tokens/temporary-tokens.module';
 
 @Module({
   imports: [

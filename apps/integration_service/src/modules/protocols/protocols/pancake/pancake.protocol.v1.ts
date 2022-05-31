@@ -7,7 +7,7 @@ import { ChainAbbrEnum, PancakeProtocolEnum, ProjectEnum } from '@app/common/enu
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { PancakeSubgraph } from '../../../subgraphs/subgraphs/pancake.subgraph';
+import { PancakeSubgraph } from '../../../subgraph/subgraphs/pancake.subgraph';
 import { LiquidityPools } from '../../features/liquidity-pools';
 import { Mapper } from '../../helpers/mappers/mapper';
 import DataProviderProtocol from '../data-provider-protocol';

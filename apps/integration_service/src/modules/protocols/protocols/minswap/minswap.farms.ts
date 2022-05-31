@@ -5,7 +5,7 @@ import { plainToClass } from 'class-transformer';
 
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 
-import { ChainDto, Address, FeatureEnum, ProtocolTypeEnum, ProjectEnum } from '@app/common';
+import { Address, ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
@@ -13,7 +13,7 @@ import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
-import { MinswapSubgraph } from '../../../subgraphs/subgraphs/minswap.subgraph';
+import { MinswapSubgraph } from '../../../subgraph/subgraphs/minswap.subgraph';
 import { MIN_REWARDS_TOKEN } from '../../helpers/cardano/cardano.constants';
 import { CardanoService } from '../../helpers/cardano/cardano.service';
 

@@ -33,7 +33,7 @@ import { Web3Provider } from '../../../chains/web3.provider';
 import { PriceService } from '../../../microservices/price.service';
 import { abi } from '../../constants/abi';
 import { FeesSn1Data, FeesSn2Data } from './fee.interfaces';
-import { LiquidityPool } from './liquidity.pool.dto';
+import { LiquidityPool } from './liquidity-pool.dto';
 
 type BaseInfo = Omit<BaseData, 'protocolType'>;
 

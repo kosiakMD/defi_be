@@ -16,8 +16,8 @@ import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/dto/liquidity.po
 import { ProtocolFeaturesInfo } from '../../../../common/types/protocol.types';
 import { getUniqueAndToLowerCaseArrayData, groupBy } from '../../../../common/utils/util';
 
-import { SubgraphResponseDto } from '../../../subgraphs/dto/subgraph.response.dto';
-import { UniswapLikeSubgraph } from '../../../subgraphs/subgraphs/uniswap-like-subgraph.service';
+import { SubgraphResponseDto } from '../../../subgraph/dto/subgraph.response.dto';
+import { UniswapLikeSubgraph } from '../../../subgraph/subgraphs/uniswap-like-subgraph.service';
 import { RawFeaturesDto } from '../../dto/protocols.dto';
 import { Mapper } from '../../helpers/mappers/mapper';
 import { BasicProtocol } from '../basic-protocol';

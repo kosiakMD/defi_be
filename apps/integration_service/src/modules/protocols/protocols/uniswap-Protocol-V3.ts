@@ -29,7 +29,7 @@ import {
 
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
-import { UniswapV3Subgraph } from '../../subgraphs/subgraphs/uniswap.v3.subgraph';
+import { UniswapV3Subgraph } from '../../subgraph/subgraphs/uniswap-v3.subgraph';
 import DataProviderProtocol from './data-provider-protocol';
 import { NonfungiblePositionManager } from './uniswapV3/contracts/nonfungible-position-manager';
 import { UniswapV3Factory } from './uniswapV3/contracts/uniswap-v3-factory';

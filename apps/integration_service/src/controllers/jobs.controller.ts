@@ -3,7 +3,7 @@ import { ApiBody, ApiResponse } from '@nestjs/swagger';
 
 import { NotifyPayloadFeaturesDto } from '../common/dto';
 
-import { SavePoolsResponseDto } from '../modules/jobs/dto/save.pools.response.dto';
+import { SavePoolsResponseDto } from '../modules/jobs/dto/save-pools-response.dto';
 import { JobsService } from '../modules/jobs/jobs.service';
 
 @Controller('v1/jobs')

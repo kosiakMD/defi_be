@@ -11,9 +11,9 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { IntegrationsController } from '../../controllers/integrations.controller';
 import { IntegrationsControllerV2 } from '../../controllers/integrations.controller.v2';
 import { IntegrationsControllerV3 } from '../../controllers/integrations.controller.v3';
-import { PlatformService } from '../../framework/services/platform.service';
-import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
-import { AbiModule } from '../../framework/support/evm/abi-module/abi.module';
+import { PlatformService } from '../../frameworks/services/platform.service';
+import { CurveAssetsManager } from '../../frameworks/support/assets/curve-assets.manager';
+import { AbiModule } from '../../frameworks/support/evm/abi-module/abi.module';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ProtocolModule } from '../protocols/protocol.module';
 import { ProjectsInfoEntity } from './entities/projects-info.entity';

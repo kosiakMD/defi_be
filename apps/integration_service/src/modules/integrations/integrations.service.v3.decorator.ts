@@ -23,12 +23,12 @@ import { ERC20Token } from '@app/common/jobs/token';
 import { getUniqList } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../../gateway_service/src/common/enum/feature.enum';
-import { PancakeSwap } from '../../framework/platforms/pancake-swap';
-import { PlatformService } from '../../framework/services/platform.service';
-import { IClaimableFeatureUser } from '../../framework/support/interfaces/feature.claimable.interface';
-import { IPoolFeatureEntryUserEntry } from '../../framework/support/interfaces/feature.pool.interface';
-import { IStakingFeatureUserEntry } from '../../framework/support/interfaces/feature.staking.interface';
-import { IUserEntryResponse } from '../../framework/support/interfaces/responses.interface';
+import { PancakeSwap } from '../../frameworks/platforms/pancake-swap';
+import { PlatformService } from '../../frameworks/services/platform.service';
+import { IClaimableFeatureUser } from '../../frameworks/support/interfaces/feature-claimable.interface';
+import { IPoolFeatureEntryUserEntry } from '../../frameworks/support/interfaces/feature-pool.interface';
+import { IStakingFeatureUserEntry } from '../../frameworks/support/interfaces/feature-staking.interface';
+import { IUserEntryResponse } from '../../frameworks/support/interfaces/responses.interface';
 import {
   IntChainsDataDto,
   IntegrationsResponseV2Dto,

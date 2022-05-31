@@ -41,12 +41,12 @@ import { Asset } from '../../../common/interfaces/transactions.interfaces';
 
 import { AccountService } from '../../microservices/account.service';
 import { PriceService } from '../../microservices/price.service';
-import { SushiSwapBentoBoxSubgraph } from '../../subgraphs/subgraphs/sushiswap.bentobox.subgraph';
-import { SushiSwapExchangeSubgraph } from '../../subgraphs/subgraphs/sushiswap.exchange.subgraph';
-import { SushiSwapMasterChefSubgraph } from '../../subgraphs/subgraphs/sushiswap.masterchef.subgraph';
-import { SushiSwapMasterChefV2Subgraph } from '../../subgraphs/subgraphs/sushiswap.masterchef.v2.subgraph';
-import { SushiSwapMiniChefSubgraph } from '../../subgraphs/subgraphs/sushiswap.minichef.subgraph';
-import { SushiSwapSushiBarSubgraph } from '../../subgraphs/subgraphs/sushiswap.sushibar.subgraph';
+import { SushiSwapBentoBoxSubgraph } from '../../subgraph/subgraphs/sushiswap-bentobox.subgraph';
+import { SushiSwapExchangeSubgraph } from '../../subgraph/subgraphs/sushiswap-exchange.subgraph';
+import { SushiSwapMasterChefV2Subgraph } from '../../subgraph/subgraphs/sushiswap-masterchef-v2.subgraph';
+import { SushiSwapMasterChefSubgraph } from '../../subgraph/subgraphs/sushiswap-masterchef.subgraph';
+import { SushiSwapMiniChefSubgraph } from '../../subgraph/subgraphs/sushiswap-minichef.subgraph';
+import { SushiSwapSushiBarSubgraph } from '../../subgraph/subgraphs/sushiswap-sushibar.subgraph';
 import BasicProtocol from './basic-protocol';
 import { SushiSwapRewarder } from './sushiswap/contracts/rewarder';
 import { SushiSwapMasterChefAbi } from './sushiswap/contracts/sushiswap.masterchef';

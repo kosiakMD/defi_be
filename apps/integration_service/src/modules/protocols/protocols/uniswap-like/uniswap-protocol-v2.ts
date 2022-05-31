@@ -6,7 +6,7 @@ import { ChainAbbrEnum, ProjectEnum, UniswapProtocolEnum } from '@app/common/enu
 
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { UniswapSubgraph } from '../../../subgraphs/subgraphs/uniswap.subgraph';
+import { UniswapSubgraph } from '../../../subgraph/subgraphs/uniswap.subgraph';
 import { Mapper } from '../../helpers/mappers/mapper';
 import AbstractProtocol from '../abstract-protocol';
 import UniswapLikeProtocol from './uniswap-like-protocol';

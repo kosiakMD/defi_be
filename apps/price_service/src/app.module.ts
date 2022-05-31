@@ -8,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
-import { Logger, LoggerModule } from '@app/common/logger';
+import { Logger } from '@app/common/logger';
 import { getWinstonParams } from '@app/common/logger/logger.config';
 import { LogRequestMiddleware } from '@app/common/middlewares';
 import { HeadersContextMiddleware } from '@app/common/middlewares/headers-context.middleware';
@@ -53,7 +53,6 @@ import { PricesModule } from './modules/prices/prices.module';
     PricesModule,
     HealthModule,
     LookupModule,
-    LoggerModule,
   ].sort(),
   providers: [
     ...interceptorsOrder,

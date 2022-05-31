@@ -22,13 +22,13 @@ import {
   PoolTokenDto,
   StakingPositionResponseDto,
 } from '../../../../common/dto/integrations.dto';
-import { CurrentPricesPayload } from '../../../../common/dto/price.response.dto';
+import { CurrentPricesPayload } from '../../../../common/dto/price-response.dto';
 import { Asset, ERC20Token } from '../../../../common/interfaces/transactions.interfaces';
 
 import { Web3Provider } from '../../../chains/web3.provider';
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
-import { AutofarmSubgraph } from '../../../subgraphs/subgraphs/autofarm.subgraph';
+import { AutofarmSubgraph } from '../../../subgraph/subgraphs/autofarm.subgraph';
 import { AutofarmApiService } from './autofarm.api.service';
 import { AutofarmApiPools, AutofarmUser, StakingInterface } from './autofarm.interfaces';
 import { AutofarmLocalMultiCall } from './autofarm.local.multi.call';

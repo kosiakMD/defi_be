@@ -11,12 +11,12 @@ import {
   ProtocolParams,
 } from '@app/common';
 
-import { PlatformService } from '../framework/services/platform.service';
-import { IPlatformMeta } from '../framework/support/interfaces';
+import { PlatformService } from '../frameworks/services/platform.service';
+import { IPlatformMeta } from '../frameworks/support/interfaces';
 import {
   IOpportunityResponse,
   IUserEntryResponse,
-} from '../framework/support/interfaces/responses.interface';
+} from '../frameworks/support/interfaces/responses.interface';
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 
 const SortedProtocolNames = Object.fromEntries(

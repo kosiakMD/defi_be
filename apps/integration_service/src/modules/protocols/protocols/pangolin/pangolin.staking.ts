@@ -27,13 +27,14 @@ import { toDecimals } from '../../../../common/utils/util';
 
 import { MulticallProvider } from '../../../chains/multicall/multicall.provider';
 import { MulticallService } from '../../../chains/multicall/multicall.service';
-import { Pancakev2MainStakingSubgraph } from '../../../subgraphs/subgraphs/pancakev2.main.staking.subgraph';
+import { Pancakev2MainStakingSubgraph } from '../../../subgraph/subgraphs/pancakev2-main-staking.subgraph';
 import { Abis } from './abis';
 import { PangolinAddresses } from './pangolin.addresses';
 
 @Injectable()
 export class PangolinStaking {
   private readonly multicall: MulticallService;
+
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -42,6 +43,7 @@ export class PangolinStaking {
   ) {
     this.multicall = multicallProvider.getForChain(ChainAbbrEnum.avax);
   }
+
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseData[]> {
     const cacheKey = `${chain.id}_${PangolinProtocolEnum.pangolin}_${FeatureEnum.staking}`;
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);

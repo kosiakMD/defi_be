@@ -4,8 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { HeadersContextMiddleware, LogRequestMiddleware } from '@app/common';
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
-import { getWinstonParams } from '@app/common/logger/logger.config';
 
 import config from './config';
 import { StatusController } from './controllers/status.controller';

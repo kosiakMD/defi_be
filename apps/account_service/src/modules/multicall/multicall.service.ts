@@ -5,7 +5,7 @@ import { Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { TokenPrices } from '@app/common';
-import { Logger } from '@app/common/logger/logger.service';
+import { Logger } from '@app/common/Logger/Logger.service';
 
 export type TokenPricesMap = Map<string, TokenPrices[]>;
 

@@ -4,7 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
 import { HeadersContextMiddleware, LogRequestMiddleware } from '@app/common';
-import { getWinstonParams } from '@app/common/logger/logger.config';
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 
 import { AppController } from './controllers/app.controller';
 import { QueueManagementController } from './controllers/queue.management.controller';

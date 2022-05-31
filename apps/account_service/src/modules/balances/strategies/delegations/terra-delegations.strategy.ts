@@ -14,7 +14,7 @@ import { isTerraAddress, normalizeDecimals } from '@app/common/utils';
 
 import { PriceService } from '../../../../common/providers/microservices/price/price.service';
 
-import { StaderAddresses } from '../../../../../../integration_service/src/modules/protocol/protocols/stader/stader.addresses';
+import { StaderAddresses } from '../../../../../../integration_service/src/modules/protocols/protocols/stader/stader.addresses';
 import { AssetsEntity } from '../../../assets/entities/assets.entity';
 import { DelegationsStrategy } from './delegation.strategy';
 

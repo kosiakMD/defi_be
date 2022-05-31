@@ -1,5 +1,5 @@
 import { EntityRepository, ILike, Repository } from 'typeorm';
-import { FindConditions } from 'typeorm/find-options/findConditions';
+import { FindConditions } from 'typeorm/find-options/FindConditions';
 
 import { ChainIdEnum } from '@app/common/enum';
 

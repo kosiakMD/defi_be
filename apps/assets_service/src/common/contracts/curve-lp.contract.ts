@@ -2,9 +2,9 @@ import { MultiCall } from '@indexed-finance/multicall';
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
+import { Logger } from '@app/common/Logger/Logger.service';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import { MulticallMethodsEnum } from '@app/common/jobs/multicall.methods.enum';
-import { Logger } from '@app/common/logger/logger.service';
 
 import { CURVE_LP_ABI } from '../abis/curver-lp.abi';
 

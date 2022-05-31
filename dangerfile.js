@@ -35,11 +35,8 @@ const packageLockfileChanged = danger.git.modified_files.includes('package-lock.
 // }
 // if yarn
 const yarnLockfileChanged = danger.git.modified_files.includes('yarn.lock');
-if (
-  (yarnLockfileChanged && !packageLockfileChanged) ||
-  (!yarnLockfileChanged && packageLockfileChanged)
-) {
-  const message = 'Changes were made to package.json, but not to yarn.lock';
-  const idea = 'Perhaps you need to run `yarn install`?';
-  warn(`${message} - <i>${idea}</i>`);
+if (yarnLockfileChanged && !packageLockfileChanged || !yarnLockfileChanged && packageLockfileChanged) {
+	const message = 'Changes were made to package.json, but not to yarn.lock';
+	const idea = 'Perhaps you need to run `yarn install`?';
+	warn(`${message} - <i>${idea}</i>`);
 }

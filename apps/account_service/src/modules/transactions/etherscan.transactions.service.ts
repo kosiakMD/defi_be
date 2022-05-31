@@ -4,12 +4,12 @@ import {
   Transaction,
   TransactionsResponse,
 } from '../../common/interfaces/transactions.common.interfaces';
-import { EtherScanApi } from '../../common/providers/chain-related/scans/ether-scan-api';
-import { Web3Service } from '../../common/providers/chain-related/web3.service';
+import { EtherscanApi } from '../../common/providers/chainRelated/scans/etherscan.api';
+import { Web3Service } from '../../common/providers/chainRelated/web3.service';
 
 export class EtherscanTransactionsService {
   constructor(
-    private readonly etherscan: EtherScanApi,
+    private readonly etherscan: EtherscanApi,
     private readonly web3Service: Web3Service,
   ) {}
 

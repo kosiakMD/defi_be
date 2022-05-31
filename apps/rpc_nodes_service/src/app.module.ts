@@ -15,12 +15,12 @@ import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
+import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { SentryLogInterceptor } from '@app/common/interceptors/sentry-log.interceptor';
-import { getWinstonParams } from '@app/common/logger/logger.config';
 import { LogRequestMiddleware } from '@app/common/middlewares';
-import { HeadersContextMiddleware } from '@app/common/middlewares/headers-context.middleware';
+import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { EndpointsController } from './controllers/endpoints.controller';

@@ -1,4 +1,4 @@
-import parallelLimit from 'async/parallel-limit';
+import parallelLimit from 'async/parallelLimit';
 import type { Page } from 'puppeteer';
 
 import { Inject, Injectable, Logger } from '@nestjs/common';

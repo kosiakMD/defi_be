@@ -1,4 +1,4 @@
-import { doWhilst, eachLimit } from 'async';
+import { eachLimit, doWhilst } from 'async';
 import { detailedDiff } from 'deep-object-diff';
 import * as stringSimilarity from 'string-similarity';
 
@@ -66,7 +66,7 @@ export class ContractsAnalysisServiceV1 {
             tvl: f.tvl,
           },
         }))
-        .sort((a, b) => b.abiCodeSimilarity - a.abiCodeSimilarity), //dESC by abiCodeSimilarity
+        .sort((a, b) => b.abiCodeSimilarity - a.abiCodeSimilarity), //DESC by abiCodeSimilarity
     };
   }
 

@@ -1,8 +1,9 @@
-version: '3.9'
+version: "3.9"
 
 services:
   init-read-env:
-    image: public.ecr.aws/u0p0n5o0/envread:latest
-    env_file: .env
-    volumes:
-      - ./apps:/apps
+      image: public.ecr.aws/u0p0n5o0/envread:latest
+      env_file:
+        .env
+      volumes:
+          - ./apps:/apps

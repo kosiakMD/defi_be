@@ -2,10 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/opportunity-search-query.dto';
+import { Logger } from '@app/common/Logger';
+import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
+import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
-import { PaginationResult } from '@app/common/dto/pagination-result.dto';
-import { Logger } from '@app/common/logger';
 
 import { InternalV2Adapter } from '../adapters/internal.v2.adapter';
 import { InternalV3Adapter } from '../adapters/internal.v3.adapter';

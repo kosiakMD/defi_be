@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/base.entity';
+import { BaseEntity } from '@app/common/entities/Base.entity';
 
 @Entity({ name: 'assets_category' })
 export class AssetCategoryEntity extends BaseEntity {

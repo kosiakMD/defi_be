@@ -1,40 +1,40 @@
 // eslint-disable-next-line max-classes-per-file
-import { SearchResultType } from 'apps/gateway_service/src/search/interfaces/search.enum';
+import { SearchResultType } from 'apps/api_gateway/src/search/interfaces/search.enum';
 import {
   SearchParams,
   SearchResultsAssetEntry,
-} from 'apps/gateway_service/src/search/interfaces/search.interface';
+} from 'apps/api_gateway/src/search/interfaces/search.interface';
 import { plainToClass } from 'class-transformer';
 
 import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common/Logger/Logger.service';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { ChainIdEnum, ChainNameEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
-import { Logger } from '@app/common/logger/logger.service';
 import { Address, Chains } from '@app/common/types';
-import { AToken } from '@app/common/web3provider/contracts/protocols/aave/a-token';
-import { VariableDebtToken } from '@app/common/web3provider/contracts/protocols/aave/variable-debt-token';
-import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/compound-token';
-import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/token-vault';
+import { AToken } from '@app/common/web3provider/contracts/protocols/aave/AToken';
+import { VariableDebtToken } from '@app/common/web3provider/contracts/protocols/aave/VariableDebtToken';
+import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/CompoundToken';
+import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/TokenVault';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { Web3Provider } from '../../common/providers/chain-related/web3.provider';
+import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 
-import { CURVE_METAPOOL_ARBI_ABI } from '../approvals/abis/curve-metapool-arbi-abi';
-import { CurveProviderAbi } from '../approvals/abis/curve-provider-abi';
-import { CURVE_REGISTRY_ABI } from '../approvals/abis/curve-registry-abi';
-import { CurveLpContract } from '../approvals/contracts/curve-lp.contract';
-import { CurveRegistryContract } from '../approvals/contracts/curve-registry.contract';
-import { EllipsisLpContract } from '../approvals/contracts/ellipsis-lp.contract';
-import { ERC20Contract } from '../approvals/contracts/erc20.contract';
-import { MinterContract } from '../approvals/contracts/minter.contract';
-import { Univ2LpContract } from '../approvals/contracts/univ2-lp.contract';
+import { CURVE_METAPOOL_ARBI_ABI } from '../approvals/abis/CURVE_METAPOOL_ARBI';
+import { CURVE_REGISTRY_ABI } from '../approvals/abis/CURVE_REGISTRY';
+import { CurveProviderAbi } from '../approvals/abis/CurveProviderAbi';
+import { CURVE_LP } from '../approvals/contracts/CURVE_LP';
+import { CURVE_REGISTRY } from '../approvals/contracts/CURVE_REGISTRY';
+import { ELLIPSIS_LP } from '../approvals/contracts/ELLIPSIS_LP';
+import { ERC20 } from '../approvals/contracts/ERC20';
+import { MINTER } from '../approvals/contracts/MINTER';
+import { UNIV2LP } from '../approvals/contracts/UNIV2LP';
 import { ChainsService } from '../chains/chains.service';
-import { MinimalStakedTokenCheck } from './contracts/minimal-staked-token-check';
+import { MinimalStakedTokenCheck } from './contracts/MinimalStakedTokenCheck';
 import { AssetDto, AssetResponseDto, AssetTrackDto, AssetWithUnderlying } from './dto/asset.dto';
 import { AssetsPoolsDto, AssetsPoolsPostResponseDto } from './dto/assets.pools.dto';
 import { AssetsEntity } from './entities/assets.entity';
@@ -49,7 +49,6 @@ export class AssetsService {
     private readonly multicall: MulticallAggregator,
     private readonly chainsService: ChainsService,
   ) {}
-
   async queryAllAssets(): Promise<AssetDto[]> {
     const storedAssets: AssetsEntity[] = await this.assetRepository.findAll();
     return storedAssets.map((asset) =>
@@ -83,7 +82,7 @@ export class AssetsService {
 
       let assets = await this.assetRepository.findAllByAddressesAndChains(
         // Only lowercase all EVM addresses
-        // TODO: Checksum/validation
+        // TODO: Checksum/Validation
         addresses.map((a) => (a.toLowerCase().startsWith('0x') ? a.toLowerCase() : a)),
         chains,
       );
@@ -146,7 +145,7 @@ export class AssetsService {
       };
     } else {
       // bind asset to LP token contract because it extends from ERC20 by default
-      const assetContract = new ERC20Contract(assetAddress, chainProvider);
+      const assetContract = new ERC20(assetAddress, chainProvider);
       return await assetContract.getContractData();
     }
   }
@@ -382,7 +381,7 @@ export class AssetsService {
   }
 
   private async attemptUniswapLikePair(asset: AssetsEntity) {
-    const assetContract = new Univ2LpContract(
+    const assetContract = new UNIV2LP(
       asset.address,
       await this.web3Provider.getInstanceByChainId(asset.chain),
     );
@@ -404,9 +403,9 @@ export class AssetsService {
 
   private async attemptEllipsisLikePair(asset: AssetsEntity) {
     const chainProvider = await this.web3Provider.getInstanceByChainId(asset.chain);
-    const assetContract = new EllipsisLpContract(asset.address, chainProvider);
+    const assetContract = new ELLIPSIS_LP(asset.address, chainProvider);
     const minterAddress = await assetContract.minter();
-    const minterContract = new MinterContract(minterAddress, chainProvider, this.logger);
+    const minterContract = new MINTER(minterAddress, chainProvider, this.logger);
 
     const underlyingCoins = await minterContract.getCoinsArray();
 
@@ -469,7 +468,7 @@ export class AssetsService {
       const registries = await this.getCurveRegistries(asset.chain);
       const registriesResp = await Promise.all(
         registries.map(async (address) => {
-          let contract = new CurveRegistryContract(
+          let contract = new CURVE_REGISTRY(
             address,
             await this.web3Provider.getInstanceByChainId(asset.chain),
             CURVE_REGISTRY_ABI,
@@ -480,7 +479,7 @@ export class AssetsService {
             pool = await contract.getPoolFromLpToken(asset.address);
             if (pool === ZERO_ADDRESS) return;
           } catch (e) {
-            contract = new CurveRegistryContract(
+            contract = new CURVE_REGISTRY(
               address,
               await this.web3Provider.getInstanceByChainId(asset.chain),
               CURVE_METAPOOL_ARBI_ABI,
@@ -500,7 +499,7 @@ export class AssetsService {
       }
     }
 
-    let curveLpPool = new CurveLpContract(
+    let curveLpPool = new CURVE_LP(
       asset.address,
       this.logger,
       await this.web3Provider.getInstanceByChainId(asset.chain),
@@ -514,7 +513,7 @@ export class AssetsService {
     }
 
     if (minter && minter !== ZERO_ADDRESS) {
-      curveLpPool = new CurveLpContract(
+      curveLpPool = new CURVE_LP(
         minter,
         this.logger,
         await this.web3Provider.getInstanceByChainId(asset.chain),

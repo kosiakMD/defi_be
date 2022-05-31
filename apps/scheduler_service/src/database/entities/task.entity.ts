@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/base.entity';
+import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { HttpMethod, TaskInterface, URLEndpoint } from '../../common/interfaces/task.interfaces';
 

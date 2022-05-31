@@ -1,9 +1,9 @@
 import { plainToClass } from 'class-transformer';
 import { Brackets, EntityRepository, Repository, SelectQueryBuilder } from 'typeorm';
 
-import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/opportunity-search-query.dto';
+import { PaginationResult } from '@app/common/dto/PaginationResult.dto';
+import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityCreateDto } from '@app/common/dto/opportunities/opportunity.create.dto';
-import { PaginationResult } from '@app/common/dto/pagination-result.dto';
 import {
   IChainStats,
   IFeatureStats,
@@ -173,7 +173,6 @@ export class OpportunityRepository extends Repository<OpportunityEntity> {
         .setParameters(parameters);
     });
   }
-
   /**
    * Gets the list of chains & the number of pools on each chain
    */

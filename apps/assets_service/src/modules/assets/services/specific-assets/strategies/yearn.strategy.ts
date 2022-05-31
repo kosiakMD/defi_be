@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/token-vault';
+import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/TokenVault';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AssetEntity } from '../../../entities/asset.entity';

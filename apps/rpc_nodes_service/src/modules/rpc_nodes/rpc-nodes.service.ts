@@ -8,8 +8,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common/Logger';
 import { HEADER_REQUEST_ID } from '@app/common/constant';
-import { Logger } from '@app/common/logger';
 
 import { EndpointsSuccessScore } from '../endpoints/endpoints.enums';
 import { EndpointsToRPCCallService } from '../endpoints/services/endpoints-to-rpc-call.service';
@@ -17,7 +17,6 @@ import { EndpointsToRPCCallService } from '../endpoints/services/endpoints-to-rp
 @Injectable()
 export class RPCNodesService {
   private readonly maxRetries: number;
-
   constructor(
     protected httpService: HttpService,
     private readonly configService: ConfigService,
@@ -26,7 +25,6 @@ export class RPCNodesService {
   ) {
     this.maxRetries = Number(this.configService.get('RPC_NODES_MAX_RETRIES'));
   }
-
   private async makeRPCCall(
     target: string,
     request: Request,
@@ -57,7 +55,6 @@ export class RPCNodesService {
         );
     });
   }
-
   async proxyRPCCall({ chainId, archive, request, response }): Promise<void> {
     const endpointsToRPCCall = this.endpointsToRPCCallService.getEndpointsToRPCCall(
       chainId,

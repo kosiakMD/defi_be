@@ -1,4 +1,4 @@
-import { CallsStatistic } from '../../common/dto/calls-statistic.dto';
+import { CallsStatistic } from '../../common/dto/CallsStatistic.dto';
 
 import { EndpointEntity } from './endpoint.entity';
 import { EndpointsSuccessScore } from './endpoints.enums';

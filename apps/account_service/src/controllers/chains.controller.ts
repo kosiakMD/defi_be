@@ -8,7 +8,7 @@ import {
   PartialType,
 } from '@nestjs/swagger';
 
-import { CreateChainDto } from '../common/dto/create-chain.dto';
+import { CreateChainDto } from '../common/dto/CreateChain.dto';
 
 import { ChainsService } from '../modules/chains/chains.service';
 

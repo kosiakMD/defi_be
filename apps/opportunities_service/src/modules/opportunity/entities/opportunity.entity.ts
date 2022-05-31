@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne } from 'typeorm';
 
 import { InvestmentTokensDto } from '@app/common/dto/opportunities/investment.tokens.dto';
-import { BaseEntity } from '@app/common/entities/base.entity';
+import { BaseEntity } from '@app/common/entities/Base.entity';
 import { VaultTypeEnum } from '@app/common/enum/opportunities/opportunity.enums';
 
 import { FarmEntity } from './farm.entity';

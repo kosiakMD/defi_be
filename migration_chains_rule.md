@@ -9,8 +9,11 @@ chain_id = 27 -> chain_id = 24;
 
 chain_id = 25 -> migrate cosmos assets;
 
+
 chain_id = 26 -> migrate kava assets;
 
+
 chain_id = 27 -> migrate osmosis assets;
+
 
 chain_id = 28 -> migrate secret assets;

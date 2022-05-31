@@ -6,8 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, CurrencyId, ERC20Token, RequestErrorHandler } from '@app/common';
+import { Logger } from '@app/common/Logger/Logger.service';
 import { ETH_BNB_ADDRESS } from '@app/common/constant';
-import { Logger } from '@app/common/logger/logger.service';
 
 import {
   NO_DB_BNB_TOKENS,
@@ -93,7 +93,7 @@ export class PriceService {
     const url = `${host}${port ? ':' + port : ''}`;
     const getPricesPath = this.configService.get<string>('PRICES_PATH');
     this.getPricesUrl = `${url}/${getPricesPath}/v2`;
-    this.getNonLpTokensUrl = `${url}/${getPricesPath}/nonLp-tokens`;
+    this.getNonLpTokensUrl = `${url}/${getPricesPath}/nonLpTokens`;
     this.getBatchPriceUrl = `${url}/${getPricesPath}/batch`;
     this.fetchTimestampPricesUrl = `${url}/${getPricesPath}/timestamp`;
     this.fetchPricesUrl = `${url}/${getPricesPath}/fetch`;

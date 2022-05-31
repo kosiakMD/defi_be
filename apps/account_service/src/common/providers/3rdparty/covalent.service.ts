@@ -5,8 +5,8 @@ import { HttpException, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { Logger } from '@app/common/Logger/Logger.service';
 import { CurrencyEnum } from '@app/common/enum';
-import { Logger } from '@app/common/logger/logger.service';
 import { Address } from '@app/common/types';
 
 import { Covalent } from '../../interfaces/covalent.interface';

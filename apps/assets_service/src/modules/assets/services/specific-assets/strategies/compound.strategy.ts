@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/compound-token';
+import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/CompoundToken';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AssetEntity } from '../../../entities/asset.entity';

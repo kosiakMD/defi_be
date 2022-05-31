@@ -5,7 +5,7 @@ import { CacheModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Web3Provider } from '../../common/providers/chain-related/web3.provider';
+import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 
 import { ChainsController } from '../../controllers/chains.controller';

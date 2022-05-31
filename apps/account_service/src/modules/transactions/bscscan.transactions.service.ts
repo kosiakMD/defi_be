@@ -4,14 +4,14 @@ import {
   Transaction,
   TransactionsResponse,
 } from '../../common/interfaces/transactions.common.interfaces';
-import { BscScanApi } from '../../common/providers/chain-related/scans/bsc-scan-api';
-import { Web3Service } from '../../common/providers/chain-related/web3.service';
+import { BscscanApi } from '../../common/providers/chainRelated/scans/bscscan.api';
+import { Web3Service } from '../../common/providers/chainRelated/web3.service';
 
 import { ChainsService } from '../chains/chains.service';
 
 export class BscscanTransactionsService {
   constructor(
-    private readonly bscscan: BscScanApi,
+    private readonly bscscan: BscscanApi,
     private readonly web3Service: Web3Service,
     private readonly chainsService: ChainsService,
   ) {}

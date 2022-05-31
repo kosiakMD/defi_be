@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { IntegrationClaimableTokenDto } from '@app/common';
 
-import { Stats } from '../../modules/integration/dto/integrations.dto';
+import { Stats } from '../../modules/integrations/dto/integrations.dto';
 
 @Exclude()
 export class PoolTokenDto {

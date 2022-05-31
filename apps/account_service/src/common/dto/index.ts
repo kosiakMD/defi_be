@@ -6,11 +6,11 @@ import { ResultStatus } from '@app/common/enum';
 import { DetailedResponse } from '../interfaces';
 
 export * from './contracts/contract.approval.response.dto';
-export * from './contracts/contract-approval-detailed-response.dto';
-export * from './contracts/contract-project.dto';
-export * from './contracts/contract-approval.dto';
-export * from './erc20-token.dto';
-export * from './ethereum-address.dto';
+export * from './contracts/contract.approval.detailed.response.dto';
+export * from './contracts/contract.project.dto';
+export * from './contracts/contract.approval.dto';
+export * from './ERC20Token.dto';
+export * from './EthereumAddress.dto';
 export * from '../../modules/nft/dto/base.collection.dto';
 export * from '../../modules/nft/dto/collection.dto';
 export * from '../../modules/nft/dto/collection.stats.dto';

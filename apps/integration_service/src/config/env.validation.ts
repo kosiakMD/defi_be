@@ -9,8 +9,8 @@ import {
 } from '@app/common/config/components';
 import { rpcValidation } from '@app/common/config/components/rpcs.config';
 
-import { blockscanConfig } from './components/block-scan';
-import { dataSourceConfig } from './components/data-sources';
+import { blockscanConfig } from './components/blockscan';
+import { dataSourceConfig } from './components/dataSources';
 
 export const validationSchema = Joi.object({
   ...appValidation,

@@ -166,7 +166,7 @@ export class InternalV3Adapter implements IOpportunityAdapter {
   private getTotalApr(item: any) {
     let totalApr = 0;
     if ('supplied' in item) {
-      // TODO: supplyApy is for AaveV3. Remove when reward dto gets finalized
+      // TODO: supplyApy is for AaveV3. Remove when reward DTO gets finalized
       totalApr += item.supplied.reduce((acc, r) => acc + (r.apr?.year || r.apy?.supplyApy || 0), 0);
     }
 

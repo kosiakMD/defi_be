@@ -1,6 +1,6 @@
 import { Column, Entity } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/base.entity';
+import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { PriceSourceStrategy } from '../enums/price-source-strategy.enum';
 

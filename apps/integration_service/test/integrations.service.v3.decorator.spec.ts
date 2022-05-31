@@ -1,6 +1,7 @@
-import { FeatureEnum } from '@app/common';
+import { Test } from '@nestjs/testing';
 
-import { IntegrationsServiceV3Decorator } from '../src/modules/integration/integrations.service.v3.decorator';
+import { FeatureEnum } from '@app/common';
+import { IntegrationsServiceV3Decorator } from '../src/modules/integrations/integrations.service.v3.decorator';
 import { v3mockResponseData } from './mocks/v3-mock-response';
 
 describe('toV2Response should', () => {
@@ -67,7 +68,7 @@ describe('toV2Response should', () => {
   });
 
   it('To map correct value to first borrow item', () => {
-    expect(firstBorrowItem.value).toBe(0.02548556455775072);
+    expect(firstBorrowItem.value).toBe( 0.02548556455775072);
   });
 
   it('To map correct apy to first borrow item', () => {
@@ -81,6 +82,7 @@ describe('toV2Response should', () => {
   it('To map correct address to first borrow item token', () => {
     expect(firstBorrowItem.token.address).toBe('SLNDpmoWTVADgEdndyvWzroNL7zSi1dF9PC3xHGtPwp');
   });
+
 
   // Staking
   it('To calculate total staking value correctly', () => {
@@ -96,9 +98,7 @@ describe('toV2Response should', () => {
   });
 
   it('Staking token to have correct address', () => {
-    expect(firstStakingItem.stakingToken.address).toBe(
-      '0xf3bc6fc080ffcc30d93df48bfa2aa14b869554bb',
-    );
+    expect(firstStakingItem.stakingToken.address).toBe('0xf3bc6fc080ffcc30d93df48bfa2aa14b869554bb');
   });
 
   it('Staking token to have correct price', () => {
@@ -118,9 +118,7 @@ describe('toV2Response should', () => {
   });
 
   it('Staking token to have correct tokens address', () => {
-    expect(firstStakingItem.stakingToken.tokens[0].address).toBe(
-      '0xe0e514c71282b6f4e823703a39374cf58dc3ea4f',
-    );
+    expect(firstStakingItem.stakingToken.tokens[0].address).toBe('0xe0e514c71282b6f4e823703a39374cf58dc3ea4f');
   });
 
   it('Staking to have correct rewards length', () => {

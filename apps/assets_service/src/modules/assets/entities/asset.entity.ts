@@ -1,6 +1,6 @@
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, Unique } from 'typeorm';
 
-import { BaseEntity } from '@app/common/entities/base.entity';
+import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
 import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';
@@ -64,7 +64,4 @@ export class AssetEntity extends BaseEntity {
 
   @OneToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset, { cascade: true })
   public underlying: AssetUnderlyingEntity[];
-
-  // TODO: it's used but no info - need to provide
-  prices: any;
 }

@@ -30,9 +30,9 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
-#COPY --from=development /usr/src/app/apps/gateway_service/config/.env /dist/apps/gateway_service/.env
-RUN touch /usr/src/app/dist/apps/gateway_service/.env
+#COPY --from=development /usr/src/app/apps/api_gateway/config/.env /dist/apps/api_gateway/.env
+RUN touch /usr/src/app/dist/apps/api_gateway/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/gateway_service/src/main"]
+CMD ["dist/apps/api_gateway/src/main"]

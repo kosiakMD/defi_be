@@ -37,7 +37,7 @@ export class CardanoService {
    * Assets list **doesn't** include native coin ADA
    *
    * @param stakeAddress - Bech32 stake address
-   * @link https://docs.blockfrost.io/#tag/cardano-Accounts/paths/~1accounts~1{stake_address}~1addresses~1assets/get
+   * @link https://docs.blockfrost.io/#tag/Cardano-Accounts/paths/~1accounts~1{stake_address}~1addresses~1assets/get
    * @returns Assets associated with the account addresses
    */
   public async assetsFromStakeAddress(stakeAddress: string): Promise<AssetsBalance> {
@@ -48,7 +48,7 @@ export class CardanoService {
    * accounts - Obtain information about a specific stake account.
    *
    * @param stakeAddress - Bech32 stake address
-   * @link https://docs.blockfrost.io/#tag/cardano-Accounts/paths/~1accounts~1{stake_address}/get
+   * @link https://docs.blockfrost.io/#tag/Cardano-Accounts/paths/~1accounts~1{stake_address}/get
    * @returns Information about a specific stake account.
    */
   public async obtainInformationAboutStakedAccount(stakeAddress: string): Promise<AccountBalance> {

@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
+import { createLogger } from '@app/common/Logger/winston';
 import {
   initContext,
   initListening,
@@ -13,7 +14,6 @@ import {
   initSentry,
   initSwagger,
 } from '@app/common/bootstrap';
-import { createLogger } from '@app/common/logger/winston';
 
 import { AppModule } from './app.module';
 import { logFileDir } from './config';

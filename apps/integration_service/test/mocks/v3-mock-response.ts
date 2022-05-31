@@ -1,6 +1,6 @@
 import { ChainAbbrEnum, ChainNameEnum, FeatureEnum } from '@app/common';
 
-import { IUserEntryResponse } from '../../src/frameworks/support/interfaces/responses.interface';
+import { IUserEntryResponse } from '../../src/framework/support/interfaces/responses.interface';
 
 // this data should match v2 mock response data for same request, please update both
 export const v3mockResponseData: IUserEntryResponse = {

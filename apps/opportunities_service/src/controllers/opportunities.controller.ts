@@ -2,13 +2,14 @@ import { Controller, Get, HttpStatus, Inject, Param, Post, Query } from '@nestjs
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/opportunity-search-query.dto';
+import { Logger } from '@app/common/Logger/Logger.service';
+import { OpportunitySearchQueryDto } from '@app/common/dto/opportunities/OpportunitySearchQuery.dto';
 import { OpportunityDto } from '@app/common/dto/opportunities/opportunity.dto';
 import { OpportunityListDto } from '@app/common/dto/opportunities/opportunity.list.dto';
-import { Logger } from '@app/common/logger/logger.service';
+
+import { FindOneParamsDto } from '../common/dto/FindOneParams.dto';
 
 import { OpportunityService } from '../modules/opportunity/services/opportunity.service';
-import { FindOneParamsDto } from './find-one-params.dto';
 
 @ApiTags('Opportunities')
 @Controller('opportunities')

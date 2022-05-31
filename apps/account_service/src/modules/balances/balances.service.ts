@@ -18,7 +18,7 @@ import { retry } from '@app/common/utils/retry';
 
 import { BLACKLISTED_TOKENS } from '../../common/constant';
 import { BalancesLoadingStrategy } from '../../common/interfaces';
-import { Web3Provider } from '../../common/providers/chain-related/web3.provider';
+import { Web3Provider } from '../../common/providers/chainRelated/web3.provider';
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 import { excludeSecondArray } from '../../common/utils';
 
@@ -33,20 +33,20 @@ import {
   TokenBalance,
 } from './balances.interfaces';
 import { AccountReturns, ReturnsResponse, TokenChange } from './dto/balance.dto';
-import { CardanoBalancesStrategy } from './strategies/balances/cardano-balances.strategy';
-import { CosmosBalancesStrategy } from './strategies/balances/cosmos-balances.strategy';
-import { CovalentBalancesStrategy } from './strategies/balances/covalent-balances.strategy';
-import { KavaBalancesStrategy } from './strategies/balances/kava-balances.strategy';
-import { NetworkBalancesStrategy } from './strategies/balances/network-balances.strategy';
-import { OsmosisBalancesStrategy } from './strategies/balances/osmosis-balances.strategy';
-import { RoninBalancesStrategy } from './strategies/balances/ronin-balances.strategy';
-import { SecretBalancesStrategy } from './strategies/balances/secret-balances.strategy';
-import { SolanaBalancesStrategy } from './strategies/balances/solana-balances.strategy';
-import { TerraBalancesStrategy } from './strategies/balances/terra-balances.strategy';
+import { CardanoBalancesStrategy } from './strategies/cardano.balances.strategy';
+import { CosmosBalancesStrategy } from './strategies/cosmos.balances.strategy';
+import { CovalentBalancesStrategy } from './strategies/covalent.strategy';
 import { CardanoDelegationsStrategy } from './strategies/delegations/cardano-delegations.strategy';
 import { DelegationsStrategy } from './strategies/delegations/delegation.strategy';
 import { SolanaDelegationsStrategy } from './strategies/delegations/solana-delegations.strategy';
 import { TerraDelegationsStrategy } from './strategies/delegations/terra-delegations.strategy';
+import { KavaBalancesStrategy } from './strategies/kava.balances.strategy';
+import { NetworkBalancesStrategy } from './strategies/network.strategy';
+import { OsmosisBalancesStrategy } from './strategies/osmosis.balances.strategy';
+import { RoninBalancesStrategy } from './strategies/ronin.balances.strategy';
+import { SecretBalancesStrategy } from './strategies/secret.balances.strategy';
+import { SolanaBalancesStrategy } from './strategies/solana.balances.strategy';
+import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
 
 type PartialBalancesResponse = {
   address: Address;

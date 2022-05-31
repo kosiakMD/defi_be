@@ -7,9 +7,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PricesController } from '../../controllers/prices.controller';
 import { LookupModule } from '../lookup/lookup.module';
 import { PriceRepository } from '../repositories/price.repository';
-import { AssetCurrentPriceEntity } from './entities/asset-current-price.entity';
-import { AssetPriceEntity } from './entities/asset-price.entity';
 import { AssetEntity } from './entities/asset.entity';
+import { AssetCurrentPriceEntity } from './entities/asset_current_price.entity';
+import { AssetPriceEntity } from './entities/asset_price.entity';
 import { PriceService } from './prices.service';
 
 @Module({

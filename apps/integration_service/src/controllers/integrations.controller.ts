@@ -5,10 +5,10 @@ import { ChainsParam } from '@app/common/decorators';
 import { ErrorResponseDto, FeaturesResponseDto } from '@app/common/dto';
 import { ChainIdEnum, ProtocolNameEnum } from '@app/common/enum';
 
-import { IntegrationsResponseDto } from '../modules/integration/dto/integrations.dto';
-import { IntegrationsService } from '../modules/integration/integrations.service';
-import { IntegrationsServiceV3Decorator } from '../modules/integration/integrations.service.v3.decorator';
-import { ProtocolParams } from '../modules/integration/interfaces/integrations.interface';
+import { IntegrationsResponseDto } from '../modules/integrations/dto/integrations.dto';
+import { IntegrationsService } from '../modules/integrations/integrations.service';
+import { IntegrationsServiceV3Decorator } from '../modules/integrations/integrations.service.v3.decorator';
+import { ProtocolParams } from '../modules/integrations/interfaces/integrations.interface';
 
 @ApiTags('Protocols')
 @Controller('v1/protocols')

@@ -81,7 +81,7 @@ export interface UniswapSubgraphLikeData {
   subgraphStaking?: Map<string, any>;
 }
 
-// export interface ClaimAbleToken extends Erc20Token {
+// export interface ClaimAbleToken extends ERC20Token {
 //   claimed?: string;
 //   claimable?: string;
 //   priceUSD?: number;
@@ -91,7 +91,7 @@ export interface UniswapSubgraphLikeData {
 //   address: string;
 //   poolId?: string;
 //   staked: string;
-//   lpToken?: Erc20Token;
+//   lpToken?: ERC20Token;
 //   rewardToken: ClaimAbleToken;
 //   stakingToken?: StakingErcToken | LPToken;
 //   liquidityPoolTokens?: PoolToken[];

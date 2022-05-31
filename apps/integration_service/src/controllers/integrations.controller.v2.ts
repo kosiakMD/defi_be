@@ -11,9 +11,9 @@ import {
   ProtocolParams,
 } from '@app/common';
 
-import { IntegrationsResponseV2Dto } from '../modules/integration/dto/integrations.dto';
-import { IntegrationsService } from '../modules/integration/integrations.service';
-import { IntegrationsServiceV3Decorator } from '../modules/integration/integrations.service.v3.decorator';
+import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
+import { IntegrationsService } from '../modules/integrations/integrations.service';
+import { IntegrationsServiceV3Decorator } from '../modules/integrations/integrations.service.v3.decorator';
 
 @ApiTags('Protocols')
 @Controller('v2/protocols')

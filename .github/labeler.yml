@@ -48,8 +48,8 @@
   - apps/integration_service/**/*
 
 🚪 Gateway Service:
-  - apps/gateway_service/*
-  - apps/gateway_service/**/*
+  - apps/api_gateway/*
+  - apps/api_gateway/**/*
 
 👤 Account Service:
   - apps/account_service/*
@@ -60,8 +60,8 @@
   - apps/price_service/**/*
 
 📚 Common Libraries:
-  - libraries/common/*
-  - libraries/common/**/*
+  - libs/common/*
+  - libs/common/**/*
 
 👷 Job:
   - jobs/*

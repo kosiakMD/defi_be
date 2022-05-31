@@ -6,7 +6,7 @@ import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import { MulticallMethodsEnum } from '@app/common/jobs/multicall.methods.enum';
 import { Logger } from '@app/common/logger/logger.service';
 
-import { CURVE_LP_ABI } from '../abis/cURVE_LP_ABI';
+import { CURVE_LP_ABI } from '../abis/curve-lp-abi';
 
 export class CurveLpContract {
   protected contract;

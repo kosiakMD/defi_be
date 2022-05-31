@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
-import { ERC20_ABI } from '../abis/eRC20';
+import { ERC20_ABI } from '../abis/erc20-abi';
 
 export class ERC20Contract {
   protected contract;

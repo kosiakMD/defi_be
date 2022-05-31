@@ -4,7 +4,7 @@ import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { chunk, keepAddressesByChainId, normalizeDecimals } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
+import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { UniswapV2Pair } from '@app/common/web3provider/contracts/uniswap-v2-pair';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 

@@ -16,7 +16,7 @@ import { ChainIdEnum, ChainNameEnum, ResultStatus } from '@app/common/enum';
 import { DetailedResponse, PoolAssetsQueryResp } from '@app/common/interfaces';
 import { Logger } from '@app/common/logger/logger.service';
 import { Address, Chains } from '@app/common/types';
-import { AToken } from '@app/common/web3provider/contracts/protocols/aave/aToken';
+import { AToken } from '@app/common/web3provider/contracts/protocols/aave/a-token';
 import { VariableDebtToken } from '@app/common/web3provider/contracts/protocols/aave/variable-debt-token';
 import { CompoundToken } from '@app/common/web3provider/contracts/protocols/compound/compound-token';
 import { TokenVault } from '@app/common/web3provider/contracts/protocols/yearn/token-vault';
@@ -24,9 +24,9 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { Web3Provider } from '../../common/providers/chain-related/web3.provider';
 
-import { CURVE_METAPOOL_ARBI_ABI } from '../approvals/abis/cURVE_METAPOOL_ARBI';
-import { CURVE_REGISTRY_ABI } from '../approvals/abis/cURVE_REGISTRY';
+import { CURVE_METAPOOL_ARBI_ABI } from '../approvals/abis/curve-metapool-arbi-abi';
 import { CurveProviderAbi } from '../approvals/abis/curve-provider-abi';
+import { CURVE_REGISTRY_ABI } from '../approvals/abis/curve-registry-abi';
 import { CurveLpContract } from '../approvals/contracts/curve-lp.contract';
 import { CurveRegistryContract } from '../approvals/contracts/curve-registry.contract';
 import { EllipsisLpContract } from '../approvals/contracts/ellipsis-lp.contract';

@@ -6,7 +6,7 @@ import { Address, ChainNameEnum } from '@app/common';
 
 import { Web3Provider } from '../../../common/providers/chain-related/web3.provider';
 
-import { ERC20_ABI } from '../../../modules/approvals/abis/eRC20';
+import { ERC20_ABI } from '../../../modules/approvals/abis/erc20-abi';
 import { Balance } from '../../interfaces/ronin.interface';
 
 @Injectable()

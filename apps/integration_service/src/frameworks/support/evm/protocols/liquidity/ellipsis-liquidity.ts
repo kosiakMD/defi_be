@@ -9,7 +9,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/call-data';
 import { concatStrings, dataFrom, equals, normalizeDecimals, startsWith } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
+import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';

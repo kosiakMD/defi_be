@@ -24,7 +24,7 @@ import { chunk } from '@app/common/utils';
 import { normalizeDecimals } from '@app/common/utils/number';
 import { getKey } from '@app/common/utils/string';
 import { Web3ProviderService } from '@app/common/web3provider';
-import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
+import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { IntegrationERC20TokenDto, IntegrationStakingPositionDto } from '../../../../common/dto';

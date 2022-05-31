@@ -4,7 +4,7 @@ import { AbiItem } from 'web3-utils';
 import { CURVE_MAIN_COIN_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import { Logger } from '@app/common/logger/logger.service';
 
-import { MinterAbi } from '../abis/mINTER_ABI';
+import { MinterAbi } from '../abis/minter-abi';
 
 export class MinterContract {
   protected contract;

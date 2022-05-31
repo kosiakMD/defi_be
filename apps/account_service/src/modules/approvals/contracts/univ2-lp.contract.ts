@@ -1,7 +1,7 @@
 import Web3 from 'web3';
 import { AbiItem } from 'web3-utils';
 
-import { UNIV2LP_ABI } from '../abis/univ2-lp';
+import { UNIV2LP_ABI } from '../abis/univ2-lp-abi';
 import { ERC20Contract } from './erc20.contract';
 
 export class Univ2LpContract extends ERC20Contract {

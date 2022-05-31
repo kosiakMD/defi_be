@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { ZERO_ADDRESS } from '@app/common/constant';
-import { AToken } from '@app/common/web3provider/contracts/protocols/aave/aToken';
+import { AToken } from '@app/common/web3provider/contracts/protocols/aave/a-token';
 import { VariableDebtToken } from '@app/common/web3provider/contracts/protocols/aave/variable-debt-token';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 

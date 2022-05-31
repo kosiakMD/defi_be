@@ -8,7 +8,7 @@ import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/call-data';
 import { endsWith, normalizeDecimals, startsWith } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/dynamic-contract';
-import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
+import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';

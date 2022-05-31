@@ -1,6 +1,6 @@
 import { Address } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
-import { ERC20 } from '@app/common/web3provider/contracts/eRC20';
+import { ERC20 } from '@app/common/web3provider/contracts/erc20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import {

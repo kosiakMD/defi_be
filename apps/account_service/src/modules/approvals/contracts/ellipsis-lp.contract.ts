@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 
-import { EllipsisLpAbi } from '../abis/eLLIPSIS_LP_ABI';
+import { EllipsisLpAbi } from '../abis/ellipsis-lp-abi';
 import { ERC20Contract } from './erc20.contract';
 
 export class EllipsisLpContract extends ERC20Contract {

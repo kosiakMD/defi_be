@@ -25,7 +25,7 @@ import { Asset } from '../../../common/interfaces/transactions.interfaces';
 import {
   calculatePositionAmounts,
   calculateTokensOwed,
-} from '../../../common/utils/uniswap-v3-position-math';
+} from '../../../common/utils/uniswap-v3-position.util';
 
 import { AccountService } from '../../microservice/account.service';
 import { PriceService } from '../../microservice/price.service';

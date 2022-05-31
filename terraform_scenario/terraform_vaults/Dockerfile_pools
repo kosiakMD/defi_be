@@ -6,8 +6,6 @@ ADD ./nest-cli.json ./
 ADD ./package.json ./
 ADD ./tsconfig.json ./
 ADD ./tsconfig.build.json ./
-RUN apk update
-RUN apk add --no-cache git openssh
 RUN npm install --global yarn
 RUN yarn install
 #ARG function_name

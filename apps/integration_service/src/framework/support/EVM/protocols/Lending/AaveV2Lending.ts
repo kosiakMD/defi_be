@@ -1,11 +1,10 @@
-import { AaveSubgraph } from 'apps/integration_service/src/modules/subgraphs/subgraphs/aave.subgraph';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, Logger } from '@app/common';
+import { Address, ChainIdEnum, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
@@ -85,7 +84,6 @@ export class AaveV2Lending
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
-    private readonly subgraph: AaveSubgraph,
     protected priceService: PriceService,
   ) {
     super();
@@ -96,6 +94,8 @@ export class AaveV2Lending
 
   protected poolFunctionPredicates: INamedFunctionPredicates = {
     getUserAccountData: () => (item) => item.name === 'getUserAccountData',
+    getReserveData: () => (item) => item.name === 'getReserveData',
+    getReservesList: () => (item) => item.name === 'getReservesList',
   };
 
   protected balanceOfFunction: INamedFunctionPredicates = {
@@ -108,37 +108,81 @@ export class AaveV2Lending
   };
 
   async getCacheableOpportunityData(): Promise<Aave2LendingFeatureMinimal[]> {
-    const incentivesContract = new DynamicContract(this.meta.incentives);
+    const rewardTokens = [];
+    if (this.meta.incentives) {
+      const incentivesContract = new DynamicContract(this.meta.incentives);
 
-    const rewardTokenCall = incentivesContract.createCall(this.incentivesFunctions.rewardToken);
+      const rewardTokenCall = incentivesContract.createCall(this.incentivesFunctions.rewardToken);
 
-    const rewardToken = await this.multicall.call(rewardTokenCall, this.meta.chain);
-    const reserves: AaveV2Reserve[] = (await this.subgraph.getReserves(this.meta.chain)) as any;
+      rewardTokens.push({
+        token: {
+          address: (await this.multicall.call(rewardTokenCall, this.meta.chain)).toLowerCase(),
+        },
+      });
+    }
+    const poolContract = new DynamicContract(this.meta.address);
 
-    return reserves.map(
-      ({
-        aToken,
-        sToken,
-        vToken,
-        underlyingAsset,
-        variableBorrowRate,
-        stableBorrowRate,
-        liquidityRate,
-        totalCurrentVariableDebt,
-        totalPrincipalStableDebt,
-        totalATokenSupply,
-      }) => {
+    const reserveListCall = poolContract.createCall(this.poolFunctions.getReservesList);
+
+    const reservesList = await this.multicall.call(reserveListCall, this.meta.chain);
+    const reserveDataCalls = [];
+
+    reservesList.forEach((reserveAddress) => {
+      reserveDataCalls.push(
+        poolContract.createCall(this.poolFunctions.getReserveData, reserveAddress),
+      );
+    });
+
+    const reserveData = await this.multicall.callArray(reserveDataCalls, this.meta.chain);
+
+    const reserveTotalSuppliedCalls = [];
+    const variableDebtCalls = [];
+    const stableDebtCalls = [];
+
+    reserveData.forEach(({ aTokenAddress, stableDebtTokenAddress, variableDebtTokenAddress }) => {
+      const aTokenContract = new ERC20(aTokenAddress);
+      reserveTotalSuppliedCalls.push(aTokenContract.totalSupply());
+
+      const vTokenContract = new ERC20(variableDebtTokenAddress);
+      variableDebtCalls.push(vTokenContract.totalSupply());
+
+      const sTokenContract = new ERC20(stableDebtTokenAddress);
+      stableDebtCalls.push(sTokenContract.totalSupply());
+    });
+    const [aTokenSupply, vTokenSupply, sTokenSupply] = await Promise.all([
+      this.multicall.callArray(reserveTotalSuppliedCalls, this.meta.chain),
+      this.multicall.callArray(variableDebtCalls, this.meta.chain),
+      this.multicall.callArray(stableDebtCalls, this.meta.chain),
+    ]);
+
+    return reserveData.map(
+      (
+        {
+          aTokenAddress,
+          stableDebtTokenAddress,
+          variableDebtTokenAddress,
+          currentLiquidityRate,
+          currentVariableBorrowRate,
+          currentStableBorrowRate,
+        },
+        index,
+      ) => {
+        const underlyingAsset = reservesList[index];
+        const totalATokenSupply = aTokenSupply[index];
+        const totalCurrentVariableDebt = vTokenSupply[index];
+        const totalPrincipalStableDebt = sTokenSupply[index];
+
         const borrowRate = {};
         this.updateBorrowRateField(
           'variableApy',
-          variableBorrowRate,
+          currentVariableBorrowRate,
           totalCurrentVariableDebt,
           borrowRate,
         );
 
         this.updateBorrowRateField(
           'stableApy',
-          stableBorrowRate,
+          currentStableBorrowRate,
           totalPrincipalStableDebt,
           borrowRate,
         );
@@ -146,16 +190,16 @@ export class AaveV2Lending
         return {
           feature: this.meta.feature,
           chain: this.meta.chain,
-          id: aToken.id,
-          sTokenAddress: sToken.id,
-          vTokenAddress: vToken.id,
+          id: aTokenAddress,
+          sTokenAddress: stableDebtTokenAddress,
+          vTokenAddress: variableDebtTokenAddress,
           supplied: [
             {
               token: { address: underlyingAsset.toLowerCase() },
               totalSupplied: totalATokenSupply.toString(),
               apy: {
-                year: new BigNumber(liquidityRate) //
-                  .dividedBy(RAY)
+                year: new BigNumber(currentLiquidityRate) //
+                  .dividedBy(27)
                   .toNumber(),
               },
             },
@@ -169,11 +213,7 @@ export class AaveV2Lending
               apy: borrowRate,
             },
           ],
-          rewarded: [
-            {
-              token: { address: rewardToken.toLowerCase() },
-            },
-          ],
+          rewarded: rewardTokens,
         };
       },
     );
@@ -187,15 +227,17 @@ export class AaveV2Lending
 
     this.poolFunctions = await this.abiService.parseFunctionsFromAddress(
       '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9',
-      1,
+      ChainIdEnum.eth,
       this.poolFunctionPredicates,
     );
 
-    this.incentivesFunctions = await this.abiService.parseFunctionsFromAddress(
-      '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
-      1,
-      this.incentivesFunctionsPredicates,
-    );
+    if (this.meta.incentives) {
+      this.incentivesFunctions = await this.abiService.parseFunctionsFromAddress(
+        '0xd784927Ff2f95ba542BfC824c8a8a98F3495f6b5',
+        ChainIdEnum.eth,
+        this.incentivesFunctionsPredicates,
+      );
+    }
 
     this.logger.log(
       `${this.meta.chain}/${this.meta.address} found ${Object.keys(this.poolFunctions).length}/${
@@ -440,7 +482,9 @@ export class AaveV2Lending
     assetAddresses: string[],
     userAddress: string,
   ): Promise<BigNumber> {
-    const blacklistedRewardAssetAddress = '0x3356ec1efa75d9d150da1ec7d944d9edf73703b7';
+    const blacklistedRewardAssetAddresses = {
+      [ChainIdEnum.eth]: ['0x3356ec1efa75d9d150da1ec7d944d9edf73703b7'],
+    };
     const incentivesContract = new DynamicContract(this.meta.incentives);
 
     return (
@@ -448,7 +492,9 @@ export class AaveV2Lending
         [
           incentivesContract.createCall(
             this.incentivesFunctions.getRewardsBalance,
-            assetAddresses.filter((x) => x !== blacklistedRewardAssetAddress),
+            assetAddresses.filter(
+              (x) => !blacklistedRewardAssetAddresses[this.meta.chain]?.includes(x.toLowerCase()),
+            ),
             userAddress,
           ),
         ],

@@ -4,12 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { IAaveV2Meta } from '../support/EVM/protocols/Lending/AaveV2Lending';
-import { NereusLending } from '../support/EVM/protocols/Lending/NereusLending';
+import { AaveV2Lending, IAaveV2Meta } from '../support/EVM/protocols/Lending/AaveV2Lending';
+import { MasterChefNeureus } from '../support/EVM/protocols/Yield/MasterChefNeureus';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
-import { MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
-import { MasterChefNeureus } from '../support/EVM/protocols/Yield/MasterChefNeureus';
 
 export class Nereus extends RootPlatform {
   constructor(
@@ -30,7 +28,7 @@ export class Nereus extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IAaveV2Meta>(NereusLending, {
+    await this.registerProtocol<IAaveV2Meta>(AaveV2Lending, {
       chain: ChainIdEnum.avax,
       name: 'Lending - Nereus',
       feature: FeatureEnum.lending,

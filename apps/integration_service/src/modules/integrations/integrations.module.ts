@@ -16,7 +16,6 @@ import { AbiModule } from '../../framework/support/EVM/AbiModule/abi.module';
 import { CurveAssetsManager } from '../../framework/support/assets/curve.assets.manager';
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { ProtocolModule } from '../protocols/protocol.module';
-import { AaveSubgraph } from '../subgraphs/subgraphs/aave.subgraph';
 import { ProjectsInfoEntity } from './entities/projectsInfo.entity';
 import { FeaturesService } from './features.service';
 import { IntegrationsService } from './integrations.service';
@@ -53,7 +52,6 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
     CurveAssetsManager,
-    AaveSubgraph,
   ].sort(),
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })

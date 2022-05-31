@@ -129,6 +129,7 @@ export class MasterChefNeureus extends MasterChef {
     const poolInfos: IMasterChefPoolInfo[] = await this.fetchPoolInfos(poolIds);
 
     const tokens = await this.getRegisteredTokens(poolInfos.map((x) => x.poolId));
+    const poolInfoWithStakedToken = poolInfos.map((x, i) => ({ ...x, stakedToken: tokens[i] }));
 
     const totalStakedCalls = tokens.map((token) => {
       const lpContract = new ERC20(token);
@@ -137,7 +138,7 @@ export class MasterChefNeureus extends MasterChef {
 
     const totalStakedPerPool = await this.multicall.callArray(totalStakedCalls, this.meta.chain);
 
-    return poolInfos.map((poolInfo, poolIdx) => {
+    return poolInfoWithStakedToken.map((poolInfo, poolIdx) => {
       return this.formatStakingOpportunityMinimal(
         poolInfo,
         totalStakedPerPool[poolIdx].toString(), // totalStaked

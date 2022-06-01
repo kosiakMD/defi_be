@@ -35,7 +35,7 @@ export interface ProtocolMetadata {
   features: string[];
 }
 export interface SearchParams {
-  address?: string;
+  addresses?: string[];
   text?: string;
   limit?: number;
 }

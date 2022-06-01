@@ -35,9 +35,9 @@ export class AssetsController {
 
   @Get('/search')
   @ApiQuery({
-    name: 'address',
-    type: String,
-    description: 'address to search assets by address',
+    name: 'addresses',
+    type: [String],
+    description: 'address array to search assets by addresses',
     example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
     required: false,
   })

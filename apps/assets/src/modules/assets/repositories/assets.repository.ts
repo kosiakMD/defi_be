@@ -37,11 +37,13 @@ export class AssetsRepository extends Repository<AssetEntity> {
     });
   }
 
-  async findAssetsByParams({ address, text, limit }: SearchParams): Promise<AssetEntity[]> {
+  async findAssetsByParams({ addresses = [], text, limit }: SearchParams): Promise<AssetEntity[]> {
     const commonConditions: FindConditions<AssetEntity> = { isTracked: true, disabled: false };
     const conditions: FindConditions<AssetEntity>[] = [];
-    if (address) {
-      conditions.push({ ...commonConditions, address: ILike(address) });
+    if (addresses.length) {
+      addresses.forEach((address) =>
+        conditions.push({ ...commonConditions, address: ILike(address) }),
+      );
     }
     if (text) {
       conditions.push({ ...commonConditions, name: ILike(`%${text}%`) });

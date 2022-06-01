@@ -23,7 +23,7 @@ import {
 
 @Injectable()
 export class SearchService extends BaseService {
-  private readonly accountUrl: string;
+  private readonly assetsUrl: string;
   private readonly integrationUrl: string;
 
   constructor(
@@ -34,7 +34,7 @@ export class SearchService extends BaseService {
   ) {
     super(logger, httpService, configService);
 
-    this.accountUrl = this.getServiceUrl(ServiceEnum.Account);
+    this.assetsUrl = this.getServiceUrl(ServiceEnum.Assets);
     this.integrationUrl = this.getServiceUrl(ServiceEnum.Integration);
   }
 
@@ -50,16 +50,20 @@ export class SearchService extends BaseService {
   public async search(query: SearchQueryDto): Promise<SearchResults> {
     const { text, limit } = query;
     try {
-      const addresses = await this.getAddressSuggestions({ text });
-      if (addresses.length > 0) {
-        this.logger.debug(`Resolved addresses ${addresses}`);
-        const promises = addresses.map(({ address }) =>
-          this.getSearchEntries({ address, text, limit }),
-        );
-        const searchResultEntries = (await Promise.all(promises)).flatMap(({ entries }) => entries);
+      const addressesSuggestions = await this.getAddressSuggestions({ text });
+      if (addressesSuggestions.length > 0) {
+        this.logger.debug(`Resolved addresses ${addressesSuggestions}`);
+        const addresses = addressesSuggestions.map(({ address }) => address);
+        const { entries: searchResultEntries } = await this.getSearchEntries({
+          addresses,
+          text,
+          limit,
+        });
         const entries = [
           ...searchResultEntries,
-          ...addresses.map((addressSuggestion) => this.getAddressSearchEntry(addressSuggestion)),
+          ...addressesSuggestions.map((addressSuggestion) =>
+            this.getAddressSearchEntry(addressSuggestion),
+          ),
         ];
         return { entries };
       }
@@ -88,7 +92,7 @@ export class SearchService extends BaseService {
     ];
     const postfix = text.toLowerCase().slice(-4);
     promises = promises.concat([
-      ...(postfix === '.eth'
+      ...(postfix === '.eth' || text.toLowerCase() === 'eth'
         ? []
         : [this.web3NameService.resolveNameResponseWithName(text.toUpperCase())]),
       this.web3NameService.resolveNameResponseWithName(text.toLowerCase()),
@@ -107,12 +111,11 @@ export class SearchService extends BaseService {
   }
 
   private async getSearchEntries(params: SearchParams): Promise<SearchResults> {
-    const assetsSearchUrl = new URL('v1/assets/search', this.accountUrl);
+    const assetsSearchUrl = new URL('v1/assets/search', this.assetsUrl);
     const protocolsSearchUrl = new URL('v1/protocols', this.integrationUrl);
     const promises = [
       this.requestProxy(assetsSearchUrl.toString(), 'GET', { params }),
       this.requestProxy(protocolsSearchUrl.toString()),
-      // this.requestProxy(`{this.integrationUrl}/v1`),
     ];
     const searchResults = await Promise.all(promises);
     const assetsSearchResults: SearchResultsBaseEntry[] = searchResults.shift();

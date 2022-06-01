@@ -1,5 +1,5 @@
 export interface SearchParams {
-  address?: string;
+  addresses?: string[];
   text?: string;
   limit?: number;
 }

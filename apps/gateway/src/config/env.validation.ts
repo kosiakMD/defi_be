@@ -23,6 +23,11 @@ export const validationSchema = Joi.object({
   ACCOUNT_SERVICE_PORT: Joi.number() //
     .allow('')
     .required(),
+  // ASSETS
+  ASSETS_SERVICE_HOST: Joi.string().required(),
+  ASSETS_SERVICE_PORT: Joi.number() //
+    .allow('')
+    .required(),
   // OPPORTUNITIES SERVICE
   OPPORTUNITIES_SERVICE_HOST: Joi.string() //
     .required(),

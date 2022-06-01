@@ -35,6 +35,10 @@ export enum NereusProtocolEnum {
   nereus = 'Nereus',
 }
 
+export enum GeistProtocolEnum {
+  geist = 'Geist',
+}
+
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',
@@ -89,4 +93,5 @@ export const ProtocolNameEnum = {
   ...AnchorProtocolEnum,
   ...AaveV3ProtocolEnum,
   ...NereusProtocolEnum,
+  ...GeistProtocolEnum,
 };

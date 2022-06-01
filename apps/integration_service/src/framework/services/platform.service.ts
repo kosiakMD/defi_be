@@ -25,6 +25,7 @@ import { CubFinance } from '../platforms/CubFinance';
 import { Ellipsis } from '../platforms/Ellipsis';
 import { Evodefi } from '../platforms/Evodefi';
 import { Frax } from '../platforms/Frax';
+import { Geist } from '../platforms/Geist';
 import { Goose } from '../platforms/Goose';
 import { IronBank } from '../platforms/IronBank';
 import { Kava } from '../platforms/Kava';
@@ -102,6 +103,7 @@ export class PlatformService {
       IronBank,
       AaveV2,
       Nereus,
+      Geist,
     });
   }
 

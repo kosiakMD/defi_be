@@ -199,7 +199,7 @@ export class AaveV2Lending
               totalSupplied: totalATokenSupply.toString(),
               apy: {
                 year: new BigNumber(currentLiquidityRate) //
-                  .dividedBy(27)
+                  .dividedBy(RAY)
                   .toNumber(),
               },
             },

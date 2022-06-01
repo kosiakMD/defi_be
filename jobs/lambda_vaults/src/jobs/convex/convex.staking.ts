@@ -7,8 +7,9 @@ import { Address, ChainIdEnum, FeatureEnum, Logger, ProtocolNameEnum } from '@ap
 import { WETH_ADDRESS, ZERO_ADDRESS } from '@app/common/constant';
 import {
   CONVEX_BOOSTER,
-  CRVCVX_REWARD_POOL_ADDRESS,
   CRV_ADDRESS,
+  CRVCVX_REWARD_POOL_ADDRESS,
+  CRYPTO_FACTORY,
   CRYPTO_SWAP_REGISTRY,
   CURVE_REGISTRY,
   CVX_ADDRESS,
@@ -31,6 +32,7 @@ import { ConvexBooster } from '@app/common/web3provider/contracts/protocols/conv
 import { CryptoSwapRegistry } from '@app/common/web3provider/contracts/protocols/convex/CryptoSwapRegistry';
 import { CvxRewardPool } from '@app/common/web3provider/contracts/protocols/convex/CvxRewardPool';
 import { VirtualBalanceRewardPool } from '@app/common/web3provider/contracts/protocols/convex/VirtualBalanceRewardPool';
+import { CurveCryptoFactory } from '@app/common/web3provider/contracts/protocols/curve/CurveCryptoFactory';
 import { CurveFactory } from '@app/common/web3provider/contracts/protocols/curve/CurveFactory';
 import { CurveRegistry } from '@app/common/web3provider/contracts/protocols/curve/CurveRegistry';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
@@ -41,6 +43,7 @@ import { PriceService } from '../../microservices/price.service';
 import { SettingsService } from '../../store/service/settings.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
+import { CurveLpAbi } from '../curve/abis/CurveLpAbi';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
 import {
   FeatureMappingDbItem,
@@ -467,7 +470,9 @@ export class ConvexStaking
   private async getUnderlyingBalances(
     stakingPositions: IntegrationStakingPositionDto[],
   ): Promise<[Map<any, any>, Set<any>]> {
-    const addresses = stakingPositions.map((t) => t.extra.lpToken.toLowerCase());
+    const addresses = stakingPositions
+      .filter((position) => position.stakingToken.tokens?.length)
+      .map((t) => t.extra.lpToken.toLowerCase());
     const balances = new Map();
     const [cryptoSwapPools, mainPools, factoryPools] = await Promise.all([
       this.getCryptoSwapRegistryPoolsFromLp(addresses),
@@ -476,13 +481,26 @@ export class ConvexStaking
       this.getFactoryPoolsPoolsFromLp(addresses),
     ]);
 
+    const nonRegistryLpTokens = [];
+
     addresses.forEach((lpToken) => {
+      const map =
+        mainPools.get(lpToken) ?? cryptoSwapPools.get(lpToken) ?? factoryPools.get(lpToken);
+      if (!map.size) nonRegistryLpTokens.push(lpToken);
+
       balances.set(
         lpToken,
         // Get Balance info in order of precedence
         mainPools.get(lpToken) ?? cryptoSwapPools.get(lpToken) ?? factoryPools.get(lpToken),
       );
     });
+
+    if (nonRegistryLpTokens.length) {
+      const nonRegistryPools = await this.getCryptoFactoryPoolsBalances(nonRegistryLpTokens);
+      nonRegistryPools.forEach((value, key) => {
+        balances.set(key, value);
+      });
+    }
 
     // 'factory' tokens need price to be calulated based on reserves
     // of LP instead of totalSupply Of Token. this is becuase the
@@ -494,7 +512,7 @@ export class ConvexStaking
     // aren't reliable and totalSupply ust be used. The one exception here
     // is '0x3b6831c0077a1e44ed0a21841c3bc4dc11bce833' which is hardcoded below
     const calculatePriceFromTotalSupply = new Set(
-      Array.from(factoryPools.entries()).flatMap(([lp, map]) => {
+      Array.from(balances.entries()).flatMap(([lp, map]) => {
         if (!map.size) return [];
         if (mainPools.has(lp)) return [];
         if (cryptoSwapPools.get(lp)) return [];
@@ -504,6 +522,44 @@ export class ConvexStaking
     calculatePriceFromTotalSupply.add('0x3b6831c0077a1e44ed0a21841c3bc4dc11bce833');
 
     return [balances, calculatePriceFromTotalSupply];
+  }
+
+  private async getCryptoFactoryPoolsBalances(lpAddresses: string[]) {
+    const minters = await this.multicallService.handleInBatches(
+      lpAddresses.reduce((resp, address) => {
+        const curveLp = new CurveLpAbi(address);
+        resp.set(address, curveLp.minter());
+        return resp;
+      }, new Map()),
+      this.chain,
+    );
+
+    const stakingPositions = lpAddresses.map((address) =>
+      this.mapping.find((position) => position.extra.lpToken === address),
+    );
+
+    const cryptoFactoryContract = new CurveCryptoFactory(CRYPTO_FACTORY);
+    const balancesResp = await this.multicallService.handleInBatches(
+      stakingPositions.reduce((resp, position) => {
+        const minterAddress = minters.get(position.extra.lpToken).output.data;
+        resp.set(`${position.extra.lpToken}`, cryptoFactoryContract.getBalances(minterAddress));
+        return resp;
+      }, new Map()),
+      this.chain,
+    );
+
+    const resultMap = new Map();
+
+    stakingPositions.forEach((position) => {
+      const balanceMap = new Map();
+      const balances = balancesResp.get(position.extra.lpToken).output.data;
+      position.stakingToken.tokens.forEach((token) => {
+        balanceMap.set(token.address, balances[token.positionInPool].toString());
+      });
+      return resultMap.set(position.extra.lpToken, balanceMap);
+    });
+
+    return resultMap;
   }
 
   private async getFactoryPoolsPoolsFromLp(addresses: Address[]) {
@@ -763,9 +819,11 @@ export class ConvexStaking
       token.underlyingAssets?.length &&
       (data instanceof IntegrationPoolTokenDto || data instanceof IntegrationERC20TokenDto)
     ) {
-      data.tokens = token.underlyingAssets.map((token) =>
-        this.convertTokenClassType(IntegrationPoolTokenDto, token),
-      );
+      data.tokens = token.underlyingAssets.map((token) => {
+        const converted = this.convertTokenClassType(IntegrationPoolTokenDto, token);
+        converted.positionInPool = token.positionInPool;
+        return converted;
+      });
     }
 
     return data;

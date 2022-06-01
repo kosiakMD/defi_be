@@ -44,8 +44,8 @@ resources:
     cpu: 100m
     memory: 200Mi
   limits:
-    cpu: 100m
-    memory: 200Mi
+    cpu: 200m
+    memory: 400Mi
 
 secrets:
   - database-assets

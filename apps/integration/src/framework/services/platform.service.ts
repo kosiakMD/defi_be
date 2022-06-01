@@ -78,7 +78,7 @@ export class PlatformService implements OnApplicationBootstrap {
       CheesecakeSwap,
       RuneFarm,
       Evodefi,
-      // LimeSwap,
+      // LimeSwap, // TODO: mark as rugged/scam. remove from explore opportunities, may still show user positions
       BalancerV2,
       AaveV3,
       Frax,

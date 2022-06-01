@@ -5,7 +5,7 @@ import {
   ChainNameEnum,
   FeatureEnum,
   ProjectEnum,
-  SolendProtocolEnum,
+  ProtocolV3NameEnum,
 } from '@app/common';
 
 // this data should match v3 mock response data for same request, please update both
@@ -15,7 +15,7 @@ export const v2mockResponseData: IntegrationsResponseV2Dto = {
     protocol: {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
-      name: SolendProtocolEnum.solend,
+      name: ProtocolV3NameEnum.solend,
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       project: ProjectEnum.solend,

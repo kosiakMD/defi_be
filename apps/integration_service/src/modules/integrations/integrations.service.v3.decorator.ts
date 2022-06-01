@@ -426,7 +426,7 @@ export class IntegrationsServiceV3Decorator {
     liquidityV2.address = liquidityV3.id;
     liquidityV2.lpToken = plainToClass(ERC20Token, rest);
     liquidityV2.tokens = plainToClass(PoolTokenDto, underlying);
-    liquidityV2.tokens.forEach((token) => {
+    liquidityV2.tokens?.forEach((token) => {
       if (!token.positionInPool) delete token.positionInPool;
       if (!token.weight) delete token.weight;
       return token;

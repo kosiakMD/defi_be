@@ -32,6 +32,8 @@ configMaps:
     OPPORTUNITIES_SERVICE_HOST: http://opportunities
     OPPORTUNITIES_SERVICE_PORT: 80
     RPC_SERVICE_HOST: http://rpc
+    ASSETS_SERVICE_HOST: http://assets
+    ASSETS_SERVICE_PORT: 80
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug

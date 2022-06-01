@@ -4,7 +4,7 @@ import { HeadersExitInterceptor } from '@app/common/interceptors/headers-exit.in
 
 import { HeadersEntryInterceptor } from './headers-entry.interceptor';
 import { ResponseInterceptor } from './response.interceptor';
-import { SentryInterceptor } from './sentry.interceptor';
+import { SentryLogInterceptor } from './sentry-log.interceptor';
 
 export const interceptorsOrder = [
   {
@@ -13,7 +13,7 @@ export const interceptorsOrder = [
   },
   {
     provide: APP_INTERCEPTOR,
-    useClass: SentryInterceptor,
+    useClass: SentryLogInterceptor,
   },
   {
     provide: APP_INTERCEPTOR,

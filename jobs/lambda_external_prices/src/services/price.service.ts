@@ -1,4 +1,4 @@
-import { PricesPayload } from 'apps/price_service/src/modules/prices/dto';
+import { PricesPayload } from 'apps/price/src/modules/prices/dto';
 import axios from 'axios';
 
 import { ChainIdEnum, CurrencyEnum, PriceResponseDto } from '@app/common';

@@ -1,0 +1,114 @@
+import { Controller, Get, HttpStatus, Param, Query } from '@nestjs/common';
+import { ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
+
+import {
+  Address,
+  AddressesArray,
+  ChainIdEnum,
+  ChainsArray,
+  ErrorResponseDto,
+  ProtocolNameEnum,
+  ProtocolParams,
+} from '@app/common';
+
+import { PlatformService } from '../framework/services/platform.service';
+import { IPlatformMeta } from '../framework/support/interfaces';
+import {
+  IOpportunityResponse,
+  IUserEntryResponse,
+} from '../framework/support/interfaces/responses.interface';
+import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
+
+const SortedProtocolNames = Object.fromEntries(
+  Object.entries(ProtocolNameEnum).sort(([a], [b]) => (a.toLowerCase() > b.toLowerCase() ? 1 : -1)),
+);
+
+@ApiTags('Protocols')
+@Controller('v3/protocols')
+export class IntegrationsControllerV3 {
+  constructor(private readonly platformService: PlatformService) {}
+
+  @Get('/')
+  async getProtocolList(): Promise<{ data: IPlatformMeta[] }> {
+    return {
+      data: await this.platformService.getProtocolList(),
+    };
+  }
+
+  @ApiResponse({ status: 200 })
+  @Get('/sync')
+  async cacheAllPools(): Promise<any> {
+    return this.platformService.cacheOpportunities();
+  }
+
+  @ApiParam({
+    name: 'protocolName',
+    enum: SortedProtocolNames,
+    example: ProtocolNameEnum.SpookySwap,
+  })
+  @ApiQuery({
+    name: 'chains',
+    example: [ChainIdEnum.eth, ChainIdEnum.ftm, ChainIdEnum.sol, ChainIdEnum.osmosis].join(','),
+  })
+  @ApiQuery({
+    name: 'addresses',
+    example: '0x5853ed4f26a3fcea565b3fbc698bb19cdf6deb85',
+  })
+  @ApiResponse({ status: HttpStatus.OK, type: IntegrationsResponseV2Dto })
+  @ApiResponse({ status: HttpStatus.INTERNAL_SERVER_ERROR, type: ErrorResponseDto })
+  @Get('/:protocolName/')
+  async getUserPositionsForProtocol(
+    @Param() { protocolName }: ProtocolParams,
+    @ChainsArray('chains') chains: ChainIdEnum[],
+    @AddressesArray('addresses') addresses: Address[],
+  ): Promise<IUserEntryResponse> {
+    return this.platformService.getUserPositionsForPlatform(protocolName, chains, addresses);
+  }
+
+  @ApiParam({
+    name: 'protocolName',
+    enum: SortedProtocolNames,
+    example: ProtocolNameEnum.SpookySwap,
+  })
+  @ApiQuery({
+    name: 'chains',
+    example: [ChainIdEnum.eth, ChainIdEnum.ftm, ChainIdEnum.sol, ChainIdEnum.osmosis].join(','),
+  })
+  @ApiResponse({ status: 200, type: IntegrationsResponseV2Dto })
+  @Get('/:protocolName/opportunities')
+  async getOpportunitiesForProtocol(
+    @Param() { protocolName }: ProtocolParams,
+    @ChainsArray('chains') chains: ChainIdEnum[],
+  ): Promise<IOpportunityResponse> {
+    return this.platformService.getOpportunitiesForPlatform(protocolName, chains);
+  }
+
+  @ApiParam({
+    name: 'protocolName',
+    enum: SortedProtocolNames,
+    example: ProtocolNameEnum.SpookySwap,
+  })
+  @ApiQuery({
+    name: 'debug',
+    type: Boolean,
+    required: false,
+    example: true,
+  })
+  @ApiQuery({
+    name: 'chains',
+    example: [ChainIdEnum.eth, ChainIdEnum.ftm, ChainIdEnum.sol, ChainIdEnum.osmosis].join(','),
+  })
+  @ApiResponse({ status: 200, type: IntegrationsResponseV2Dto })
+  @Get('/:protocolName/sync')
+  async cacheAvailablePools(
+    @Param() { protocolName }: ProtocolParams,
+    @ChainsArray('chains') chains: ChainIdEnum[],
+    @Query() { debug }: { debug?: string },
+  ): Promise<any> {
+    return this.platformService.cacheOpportunitiesForPlatform(
+      protocolName,
+      chains,
+      debug === 'true',
+    );
+  }
+}

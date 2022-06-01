@@ -53,7 +53,7 @@ services:
       - SERVICE_PORT=${PRICE_SERVICE_PORT:-3002}
     env_file:
       - ".env"
-      - "apps/price_service/config/.env"
+      - "apps/price/config/.env"
 
   account-service:
     image: node:14
@@ -78,7 +78,7 @@ services:
       - SERVICE_PORT=${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
       - ".env"
-      - "apps/account_service/config/.env"
+      - "apps/account/config/.env"
 
   integration-service:
     build:
@@ -108,7 +108,7 @@ services:
       - PRICE_SERVICE_URL=${PRICE_SERVICE_HOST}:${PRICE_SERVICE_PORT:-3002}
       - ACCOUNT_SERVICE_URL=${ACCOUNT_SERVICE_HOST}:${ACCOUNT_SERVICE_PORT:-3003}
     env_file:
-      - "apps/integration_service/config/.env"
+      - "apps/integration/config/.env"
       - ".env"
 
   gateway-service:
@@ -138,7 +138,7 @@ services:
       - SERVICE_PORT=${GATEWAY_SERVICE_PORT:-3001}
     env_file:
       - ".env"
-      - "apps/api_gateway/config/.env"
+      - "apps/gateway/config/.env"
 
 
   scheduler-service:
@@ -162,7 +162,7 @@ services:
       - SERVICE_PORT=${SCHEDULER_SERVICE_PORT:-3007}
     env_file:
       - ".env"
-      - "apps/scheduler_service/config/.env"
+      - "apps/scheduler/config/.env"
 
   # rpc-nodes-service:
   #   image: node:14
@@ -185,7 +185,7 @@ services:
   #     - SERVICE_PORT=${RPC_NODES_SERVICE_PORT:-3005}
   #   env_file:
   #     - ".env"
-  #     - "apps/rpc_nodes_service/config/.env"
+  #     - "apps/rpc/config/.env"
 
   assets-service:
     image: node:14
@@ -208,7 +208,7 @@ services:
       - SERVICE_PORT=${ASSETS_SERVICE_PORT:-3005}
     env_file:
       - ".env"
-      - "apps/assets_service/config/.env"
+      - "apps/assets/config/.env"
 
   opportunities-service:
     image: node:14
@@ -232,4 +232,4 @@ services:
       - INTEGRATION_SERVICE_URL=${INTEGRATION_SERVICE_HOST}:${INTEGRATION_SERVICE_PORT:-3004}
     env_file:
       - ".env"
-      - "apps/opportunities_service/config/.env"
+      - "apps/opportunities/config/.env"

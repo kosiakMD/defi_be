@@ -47,15 +47,12 @@ export enum ProjectEnum {
   rocketpool = 'rocketpool',
   quarry = 'quarry',
   muesliswap = 'muesliswap',
+  benqi = 'benqi',
 }
 
 export enum YearnProtocolEnum {
   YearnV1 = 'YearnV1',
   YearnV2 = 'YearnV2',
-}
-
-export enum AaveProtocolEnum {
-  AaveV2 = 'AaveV2',
 }
 
 export enum AbracadabraProtocolEnum {
@@ -216,94 +213,20 @@ export enum AaveV3ProtocolEnum {
   aaveV3 = 'AaveV3',
 }
 
-export enum LidoProtocolEnum {
-  lido = 'Lido',
-}
-
-export enum KavaProtocolEnum {
-  kava = 'Kava',
-}
-
-export enum FraxProtocolEnum {
-  frax = 'Frax',
-}
-
-export enum BiSwapProtocolEnum {
-  biswap = 'BiSwap',
-}
-
-export enum MdexProtocolEnum {
-  mdex = 'Mdex',
-}
-
-export enum KnightSwapProtocolEnum {
-  knightswap = 'KnightSwap',
-}
-
-export enum BeltProtocolEnum {
-  belt = 'Belt',
-}
-
-export enum MarsEcosystemProtocolEnum {
-  marsEcosystem = 'MarsEcosystem',
-}
-
-export enum GooseProtocolEnum {
-  goose = 'Goose',
-}
-
-export enum BabySwapProtocolEnum {
-  babySwap = 'BabySwap',
-}
-
-export enum YelFinanceEnum {
-  yelFinance = 'YelFinance',
-}
-
 export enum WingRidersProtocolEnum {
   wingriders = 'WingRiders',
-}
-
-export enum StargateProtocolEnum {
-  stargate = 'Stargate',
-}
-
-export enum SynapseProtocolEnum {
-  synapse = 'Synapse',
-}
-
-export enum IronBankProtocolEnum {
-  ironbank = 'IronBank',
-}
-
-export enum RocketPoolProtocolEnum {
-  rocketpool = 'rocketpool',
-}
-
-export enum QuarryProtocolEnum {
-  quarry = 'quarry',
 }
 
 export enum MuesliSwapProtocolEnum {
   muesliswap = 'MuesliSwap',
 }
 
-export enum NereusProtocolEnum {
-  nereus = 'Nereus',
-}
-
-export enum GeistProtocolEnum {
-  geist = 'Geist',
-}
-
-export enum BlizzProtocolEnum {
-  blizz = 'Blizz',
-}
-
 export const ProtocolNameEnum = {
-  ...AaveProtocolEnum,
+  ...AaveV3ProtocolEnum,
   ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
+  ...AnchorProtocolEnum,
+  ...AstroportProtocolEnum,
   ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,
   ...BeefyProtocolEnum,
@@ -312,55 +235,56 @@ export const ProtocolNameEnum = {
   ...CurveProtocolEnum,
   ...DefiKingdomsProtocolEnum,
   ...EllipsisProtocolEnum,
+  ...MarinadeProtocolEnum,
+  ...MinswapProtocolEnum,
+  ...MirrorProtocolEnum,
   ...MojitoswapProtocolEnum,
+  ...MuesliSwapProtocolEnum,
   ...OlympusProtocolEnum,
+  ...OrcaProtocolEnum,
+  ...OsmosisProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,
   ...RaydiumProtocolEnum,
   ...SaberProtocolEnum,
+  ...SolendProtocolEnum,
   ...SpookySwapProtocolEnum,
+  ...StaderProtocolEnum,
+  ...SundaeProtocolEnum,
   ...SushiSwapProtocolEnum,
+  ...TerraswapProtocolEnum,
   ...TraderjoeProtocolEnum,
+  ...TrisolarisProtocolEnum,
   ...UniswapProtocolEnum,
   ...VVSProtocolEnum,
   ...VenusProtocolEnum,
   ...ViperswapProtocolEnum,
   ...WePiggyProtocolEnum,
+  ...WingRidersProtocolEnum,
   ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
-  ...TrisolarisProtocolEnum,
-  ...OrcaProtocolEnum,
-  ...SundaeProtocolEnum,
-  ...AnchorProtocolEnum,
-  ...TerraswapProtocolEnum,
-  ...AstroportProtocolEnum,
-  ...MarinadeProtocolEnum,
-  ...MinswapProtocolEnum,
-  ...MirrorProtocolEnum,
-  ...StaderProtocolEnum,
-  ...OsmosisProtocolEnum,
-  ...SolendProtocolEnum,
-  ...LidoProtocolEnum,
-  ...AaveV3ProtocolEnum,
-  ...FraxProtocolEnum,
-  ...BiSwapProtocolEnum,
-  ...MdexProtocolEnum,
-  ...KnightSwapProtocolEnum,
-  ...BeltProtocolEnum,
-  ...MarsEcosystemProtocolEnum,
-  ...BabySwapProtocolEnum,
-  ...GooseProtocolEnum,
-  ...YelFinanceEnum,
-  ...KavaProtocolEnum,
-  ...WingRidersProtocolEnum,
-  ...SynapseProtocolEnum,
-  ...StargateProtocolEnum,
-  ...IronBankProtocolEnum,
-  ...RocketPoolProtocolEnum,
-  ...QuarryProtocolEnum,
-  ...MuesliSwapProtocolEnum,
-  ...NereusProtocolEnum,
-  ...GeistProtocolEnum,
-  ...BlizzProtocolEnum,
+  // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
+  IronBank: 'IronBank',
+  MakerDAO: 'MakerDAO',
+  Quarry: 'Quarry',
+  RocketPool: 'RocketPool',
+  Stargate: 'Stargate',
+  Synapse: 'Synapse',
+  babySwap: 'BabySwap',
+  belt: 'Belt',
+  biswap: 'BiSwap',
+  frax: 'Frax',
+  goose: 'Goose',
+  kava: 'Kava',
+  knightswap: 'KnightSwap',
+  lido: 'Lido',
+  marsEcosystem: 'MarsEcosystem',
+  mdex: 'Mdex',
+  yelFinance: 'YelFinance',
+  benqi: 'Benqi',
+  nereus: 'Nereus',
+  geist: 'Geist',
+  blizz: 'Blizz',
+  AaveV2: 'AaveV2',
 };

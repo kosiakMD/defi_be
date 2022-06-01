@@ -7,6 +7,7 @@ module "lambda" {
   lambda_options_memory_size = "256"
   lambda_options_timeout     = "60"
   schedule                   = var.schedule_minutes
+  vpc                        = var.vpc
   environment_variables = {
     "DB_HOST" = data.aws_ssm_parameter.DB_HOST.value,
     "DB_PORT" = data.aws_ssm_parameter.DB_PORT.value,

@@ -44,5 +44,4 @@ async function bootstrap(): Promise<void> {
 
 bootstrap().catch((e) => {
   logger.error(e, undefined, 'Bootstrap');
-  throw e;
 });

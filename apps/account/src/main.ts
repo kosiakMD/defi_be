@@ -38,5 +38,4 @@ async function bootstrap() {
 
 bootstrap().catch((e) => {
   logger.error(e, undefined, 'Bootstrap');
-  throw e;
 });

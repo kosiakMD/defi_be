@@ -90,8 +90,8 @@ export class AlchemixV2Vaults
   readonly lidoEthRatesUrl = `https://stake.lido.fi/api/steth-apr`;
 
   /*******
-   *   //temp solution until assets-service is live. The protocol uses same APR for stETH and wstETH
-   *   //so we need this array to identify if it's a Lido token.
+   * temp solution until assets-service is live. The protocol uses same APR for stETH and wstETH
+   *   so we need this array to identify if it's a Lido token.
    */
   readonly lidoLPTokens = [
     `0xae7ab96520de3a18e5e111b5eaab095312d7fe84`,
@@ -183,7 +183,7 @@ export class AlchemixV2Vaults
       const matchedYearnPool = yearnPoolMap.get(poolAddress.toLowerCase());
 
       if (matchedYearnPool && matchedYearnPool.apy) {
-        poolData.set(poolAddress, apyToApr(Number(matchedYearnPool.apy.net_apy) * 100, 365));
+        poolData.set(poolAddress, apyToApr(Number(matchedYearnPool.apy.net_apy), 365));
         return;
       }
 
@@ -192,7 +192,7 @@ export class AlchemixV2Vaults
       );
 
       if (lidoMatchedAddress && lidoMatchedAddress.length > 0) {
-        poolData.set(poolAddress, +lidoRateResponse.data);
+        poolData.set(poolAddress, +lidoRateResponse.data / 100);
         return;
       }
 
@@ -346,7 +346,7 @@ export class AlchemixV2Vaults
 
           const suppliedEntity: ISupplyTokenUserEntry = {
             tvl: suppliedOpportunity.tvl,
-            apy: suppliedOpportunity.apy,
+            apy: { supplyApy: suppliedOpportunity.apy?.supplyApy * 100 },
             token: suppliedOpportunity.token,
             totalSupplied: suppliedOpportunity.totalSupplied,
             amount: tokensSupplied,

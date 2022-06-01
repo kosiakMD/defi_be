@@ -12,7 +12,10 @@ variable "ecr_repository_name" {
   description = "ECR repository used in Lambda function"
   type        = string
 }
-
+variable "vpc" {
+  type = string
+  default = "false"
+}
 variable "docker_image_tag" {
   type = string
 }

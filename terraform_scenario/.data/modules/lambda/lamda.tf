@@ -14,6 +14,11 @@ module "lambda_function_container_image" {
 #  environment_variables = {
 #    Serverless = "Terraform"
 #  }
+  vpc_subnet_ids         = upper(var.vpc) == "TRUE" || upper(var.vpc) == "YES" ? [data.aws_subnet.lambda_vpn_subnet_id.id] : []
+  vpc_security_group_ids = upper(var.vpc) == "TRUE" || upper(var.vpc) == "YES" ? [data.aws_security_group.lambda_sg.id] : []
+#  vpc_security_group_ids = ["sg-0061c968a9e3716db"]
+#  vpc_security_group_ids = [data.aws_vpc.lambda_vpc.default_security_group_id]
+  attach_network_policy = upper(var.vpc) == "TRUE" || upper(var.vpc) == "YES" ? true : false
 }
 
 data "aws_iam_policy" "service_policy" {

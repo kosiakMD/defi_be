@@ -39,6 +39,10 @@ export enum GeistProtocolEnum {
   geist = 'Geist',
 }
 
+export enum BlizzProtocolEnum {
+  blizz = 'Blizz',
+}
+
 export enum PancakeProtocolEnum {
   pancakeV1 = 'PancakeV1',
   pancakeV2 = 'PancakeV2',

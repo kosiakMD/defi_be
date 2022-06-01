@@ -19,6 +19,7 @@ import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { Belt } from '../platforms/Belt';
 import { BiSwap } from '../platforms/BiSwap';
+import { Blizz } from '../platforms/Blizz';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CubFinance } from '../platforms/CubFinance';
@@ -104,6 +105,7 @@ export class PlatformService {
       AaveV2,
       Nereus,
       Geist,
+      Blizz,
     });
   }
 

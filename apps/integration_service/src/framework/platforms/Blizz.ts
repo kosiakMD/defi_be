@@ -8,7 +8,7 @@ import { AaveV2Lending, IAaveV2Meta } from '../support/EVM/protocols/Lending/Aav
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 
-export class Geist extends RootPlatform {
+export class Blizz extends RootPlatform {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     protected readonly moduleRef: ModuleRef,
@@ -21,19 +21,19 @@ export class Geist extends RootPlatform {
       name: this.constructor.name,
       slug: this.constructor.name,
       links: {
-        url: 'https://geist.finance/markets',
-        logo: 'https://icons.llama.fi/geist-finance.jpg',
-        telegram: 'https://t.me/geist_finance',
-        discord: 'https://discord.com/invite/b6cXdZRNSK',
-        twitter: 'https://twitter.com/GeistFinance',
+        url: 'https://blizz.finance/',
+        logo: 'https://icons.llama.fi/blizz-finance.png',
+        telegram: 'https://t.me/blizz_finance_support',
+        discord: 'https://discord.com/invite/aFtXkSWn5h',
+        twitter: 'https://twitter.com/BlizzFinance',
       },
     });
 
     await this.registerProtocol<IAaveV2Meta>(AaveV2Lending, {
-      chain: ChainIdEnum.ftm,
+      chain: ChainIdEnum.avax,
       name: 'Lending - Blizz',
       feature: FeatureEnum.lending,
-      address: '0x9FAD24f572045c7869117160A571B2e50b10d068',
+      address: '0x70BbE4A294878a14CB3CDD9315f5EB490e346163',
     });
   }
 }

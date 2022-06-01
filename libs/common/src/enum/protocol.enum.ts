@@ -289,11 +289,15 @@ export enum MuesliSwapProtocolEnum {
 }
 
 export enum NereusProtocolEnum {
-  Nereus = 'Nereus',
+  nereus = 'Nereus',
 }
 
 export enum GeistProtocolEnum {
-  Geist = 'Geist',
+  geist = 'Geist',
+}
+
+export enum BlizzProtocolEnum {
+  blizz = 'Blizz',
 }
 
 export const ProtocolNameEnum = {
@@ -358,4 +362,5 @@ export const ProtocolNameEnum = {
   ...MuesliSwapProtocolEnum,
   ...NereusProtocolEnum,
   ...GeistProtocolEnum,
+  ...BlizzProtocolEnum,
 };

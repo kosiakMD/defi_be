@@ -10,9 +10,9 @@ import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceSource } from '../../prices/types/price-source.type';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
-import { CoingeckoAssetsProvider } from '../services/tracked-assets/strategies/coingecko-assets.provider';
-import { CoinmarketcapAssetsProvider } from '../services/tracked-assets/strategies/coinmarketcap-assets.provider';
-import { TrackedAssetsProvider } from '../services/tracked-assets/strategies/tracked-assets.provider';
+import { CoingeckoAssetsProvider } from '../services/tracked-assets/coingecko-assets.provider';
+import { CoinmarketcapAssetsProvider } from '../services/tracked-assets/coinmarketcap-assets.provider';
+import { TrackedAssetsProvider } from '../services/tracked-assets/tracked-assets.provider';
 
 @Processor(QueueName.ASSETS)
 export class UpdateTrackedAssetsProcessor {

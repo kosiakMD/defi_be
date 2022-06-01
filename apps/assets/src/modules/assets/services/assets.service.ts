@@ -28,7 +28,7 @@ import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { AssetsRepository } from '../repositories/assets.repository';
-import { SpecificAssetsService } from './specific-assets/specific-assets.service';
+import { AssetAnalyserService } from './asset-analyser.service';
 
 @Injectable()
 export class AssetsService extends CrudService<AssetsRepository> {
@@ -41,7 +41,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     @InjectRepository(AssetsCandidateRepository)
     private readonly assetsCandidateRepository: AssetsCandidateRepository,
     private readonly priceService: PriceService,
-    private readonly specificAssetsService: SpecificAssetsService,
+    private readonly assetAnalyserService: AssetAnalyserService,
   ) {
     super(AssetsCachedRepository);
   }
@@ -66,7 +66,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const assets = this.getAllNestedAssets(dtos);
     const prices = await this.priceService.getPrices(assets);
     this.updateDtosWithPrices(dtos, prices);
-    return this.specificAssetsService.updateSpecificAssetsPrices(dtos);
+    return this.assetAnalyserService.updateSpecificAssetsPrices(dtos);
   }
 
   private getAllNestedAssets(dtos: AssetDto[]): AssetReference[] {

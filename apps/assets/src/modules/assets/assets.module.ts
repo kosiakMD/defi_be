@@ -1,18 +1,19 @@
 import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { ConfigHostModule } from '@nestjs/config/dist/config-host.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';
 
+import { AwsModule } from '../../aws/aws.module';
 import { AssetsController } from '../../controllers/assets.controller';
 import { AssetsCategoryModule } from '../assets-category/assets-category.module';
 import { AssetCategoryEntity } from '../assets-category/entities/asset-category.entity';
 import { AssetsCategoryRepository } from '../assets-category/repositories/assets-category.repository';
-import { IconsModule } from '../icons/icons.module';
 import { AssetHistoricalPriceEntity } from '../prices/entities/asset-historical-price.entity';
-import { PriceService } from '../prices/price.service';
 import { PricesModule } from '../prices/prices.module';
 import { AssetsHistoricalPriceRepository } from '../prices/repositories/asset-historical-price.repository';
 import { AssetCandidateEntity } from './entities/asset-candidate.entity';
@@ -24,55 +25,26 @@ import { UpdateTrackedAssetsProcessor } from './processors/update-tracked-assets
 import { AssetsCandidateRepository } from './repositories/assets-candidate.repository';
 import { AssetsCachedRepository } from './repositories/assets.cached-repository';
 import { AssetsRepository } from './repositories/assets.repository';
+import { assetAnalysers } from './services/analysers/registry';
+import { AssetAnalyserService } from './services/asset-analyser.service';
 import { AssetsService } from './services/assets.service';
-import { MetadataService } from './services/metadata/metadata.service';
-import { CardanoMetadataStrategy } from './services/metadata/strategies/cardano.strategy';
-import { CosmosMetadataStrategy } from './services/metadata/strategies/cosmos.strategy';
-import { EVMMetaDataStrategy } from './services/metadata/strategies/evm.strategy';
-import { SolanaMetadataStrategy } from './services/metadata/strategies/solana.strategy';
-import { TerraMetadataStrategy } from './services/metadata/strategies/terra.strategy';
-import { SaberAssetAnalyser } from './services/specific-assets/analysers/saber.asset-analyser';
-import { UniswapV2AssetAnalyser } from './services/specific-assets/analysers/uniswapv2.asset-analyser';
-import { SpecificAssetsService } from './services/specific-assets/specific-assets.service';
-import { AaveStrategy } from './services/specific-assets/strategies/aave.strategy';
-import { CompoundStrategy } from './services/specific-assets/strategies/compound.strategy';
-import { CurveStrategy } from './services/specific-assets/strategies/curve.strategy';
-import { ElipsisStrategy } from './services/specific-assets/strategies/elipsis.strategy';
-import { StakedSOHMStrategy } from './services/specific-assets/strategies/stakedSOHM.strategy';
-import { StakedSushiStrategy } from './services/specific-assets/strategies/stakedSushi.strategy';
-import { TerraStrategy } from './services/specific-assets/strategies/terra.strategy';
-import { UniswapStrategy } from './services/specific-assets/strategies/uniswap.strategy';
-import { YearnStrategy } from './services/specific-assets/strategies/yearn.strategy';
-import { CoingeckoAssetsProvider } from './services/tracked-assets/strategies/coingecko-assets.provider';
-import { CoinmarketcapAssetsProvider } from './services/tracked-assets/strategies/coinmarketcap-assets.provider';
+import { IconsService } from './services/icons.service';
+import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
+import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
 
 const trackedAssetsProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProvider];
 
-const metadataStrategies = [
-  CardanoMetadataStrategy,
-  CosmosMetadataStrategy,
-  EVMMetaDataStrategy,
-  SolanaMetadataStrategy,
-  TerraMetadataStrategy,
-];
-
-const specificAssetsStrategies = [
-  UniswapStrategy,
-  CompoundStrategy,
-  AaveStrategy,
-  CurveStrategy,
-  ElipsisStrategy,
-  StakedSOHMStrategy,
-  StakedSushiStrategy,
-  TerraStrategy,
-  YearnStrategy,
-];
-
-const assetAnalysers = [UniswapV2AssetAnalyser, SaberAssetAnalyser];
-
 @Module({
   imports: [
-    HttpModule,
+    AwsModule,
+    HttpModule.registerAsync({
+      imports: [ConfigHostModule],
+      useFactory: async (configService: ConfigService) => ({
+        timeout: configService.get<number>('http.timeout'),
+        maxRedirects: configService.get<number>('http.maxRedirects'),
+      }),
+      inject: [ConfigService],
+    }),
     CommonModule,
     BullModule.registerQueue({
       name: QueueName.ASSETS,
@@ -97,24 +69,20 @@ const assetAnalysers = [UniswapV2AssetAnalyser, SaberAssetAnalyser];
       AssetInvalidAddressEntity,
       AssetUnderlyingEntity,
     ]),
-    IconsModule,
     PricesModule,
     AssetsCategoryModule,
   ],
   controllers: [AssetsController],
   providers: [
     ...trackedAssetsProviders,
-    ...metadataStrategies,
-    ...specificAssetsStrategies,
     ...assetAnalysers,
     AssetsCachedRepository,
+    IconsService,
     AssetsService,
-    MetadataService,
-    PriceService,
-    SpecificAssetsService,
+    AssetAnalyserService,
     AssetsProcessor,
     UpdateTrackedAssetsProcessor,
   ],
-  exports: [AssetsService],
+  exports: [],
 })
 export class AssetsModule {}

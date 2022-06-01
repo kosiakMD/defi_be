@@ -6,7 +6,7 @@ import { ConfigService } from '@nestjs/config';
 
 import { CacheService } from '@app/common/services/cache.service';
 
-import { Chain } from '../types/chain.type';
+import { Chain } from '../types';
 
 @Injectable()
 export class ChainService {

@@ -25,3 +25,39 @@ provider "aws" {
 }
 
 data "aws_caller_identity" "current" {}
+#data "aws_vpc" "lambda_vpc" {
+#  #  default = var.env == "staging" ? false : true
+#  filter {
+#    name = "tag:Name"
+#    values = var.env == "staging" ? ["staging"] : ["default"]
+#  }
+#}
+data "aws_vpc" "lambda_vpc" {
+  #  default = var.env == "staging" ? false : true
+  filter {
+    name = "tag:Name"
+    values = var.aws_region == "us-west-2" ? ["staging"] : ["lambda-vpc"]
+  }
+}
+#env_region
+
+data "aws_subnet" "lambda_vpn_subnet_id" {
+  filter {
+    name   = "vpc-id"
+    values = [data.aws_vpc.lambda_vpc.id]
+  }
+  #  filter {
+  #    name   = "tag:Name"
+  #    values = ["subnet-public3-us-west-2c"]
+  #  }
+  availability_zone_id = "*-az1"
+}
+
+data "aws_security_group" "lambda_sg" {
+#    filter {
+#      name   = "tag:Name"
+#      values = ["4lambda"]
+#    }
+  vpc_id = data.aws_vpc.lambda_vpc.id
+  name = "4lambda"
+}

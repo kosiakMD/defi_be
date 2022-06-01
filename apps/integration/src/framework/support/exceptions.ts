@@ -22,6 +22,15 @@ export class MissingTokenException extends Error {
 }
 
 /**
+ * Underlying tokens are absent or wrong
+ */
+export class MissingUnderlyingException extends Error {
+  constructor(token: ERC20TokenMinimal, chain: number) {
+    super(`Failed to to find underlying tokens for lp token: ${chain}/${token.address}`);
+  }
+}
+
+/**
  * Failed to get minimal cacheable pool data
  */
 export class FailedCacheDataException extends Error {

@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
-import { normalizeDecimals } from '@app/common/utils';
+import { concatStrings, normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -43,7 +43,6 @@ export class SpiritStaking extends MasterChef {
   protected incentivesFunctionsPredicates: INamedFunctionPredicates = {
     balanceOf: () => (item) => item.name === 'balanceOf',
     earned: () => (item) => item.name === 'earned',
-    derivedSupply: () => (item) => item.name === 'derivedSupply',
     totalSupply: () => (item) => item.name === 'totalSupply',
   };
 
@@ -65,19 +64,15 @@ export class SpiritStaking extends MasterChef {
     const callsQ = new Map(
       registeredTokens.flatMap((r) => {
         const contract = new DynamicContract(r);
-        return [
-          [
-            `${r} ${this.incentivesFunctionsPredicates.totalSupply.name}`,
-            contract.createCall(abiTotalSupply),
-          ],
-        ];
+        return [[this.totalSupplyLable(r), contract.createCall(abiTotalSupply)]];
       }),
     );
 
     const dataPools = await this.multicall.handleInBatches(callsQ, this.meta.chain);
 
     return listPools.map((pool, idx) => {
-      const dataDerivedSupply = dataPools.get(`${registeredTokens[idx]} totalSupply`).output.data;
+      const dataDerivedSupply = dataPools.get(this.totalSupplyLable(registeredTokens[idx])).output
+        .data;
       return {
         id: registeredTokens[idx],
         chain: this.meta.chain,
@@ -110,8 +105,8 @@ export class SpiritStaking extends MasterChef {
       pools.flatMap((p) => {
         const contract = new DynamicContract(p.id);
         return [
-          [`${p.id} ${address} ${abiEarned.name}`, contract.createCall(abiEarned, address)],
-          [`${p.id} ${address} ${abiBalanceOf.name}`, contract.createCall(abiBalanceOf, address)],
+          [this.earnedInfoLable(p.id, address), contract.createCall(abiEarned, address)],
+          [this.balanceInfoLable(p.id, address), contract.createCall(abiBalanceOf, address)],
         ];
       }),
     );
@@ -134,8 +129,8 @@ export class SpiritStaking extends MasterChef {
     const rewardToken = usersPool.rewarded[0];
     const lpToken = usersPool.supplied[0];
 
-    const userBalance = data.get(`${usersPool.id} ${address} balanceOf`).output.data;
-    const userReward = data.get(`${usersPool.id} ${address} earned`).output.data;
+    const userBalance = data.get(this.balanceInfoLable(usersPool.id, address)).output.data;
+    const userReward = data.get(this.earnedInfoLable(usersPool.id, address)).output.data;
 
     if (userBalance.toString() === '0') {
       return;
@@ -175,5 +170,17 @@ export class SpiritStaking extends MasterChef {
       balance: balance,
       value: balance * poolToken.price,
     };
+  }
+
+  totalSupplyLable(lpToken) {
+    return concatStrings(lpToken, this.incentivesFunctionsPredicates.totalSupply.name);
+  }
+
+  earnedInfoLable(poolId, address) {
+    return concatStrings(poolId, address, this.incentivesFunctionsPredicates.earned.name);
+  }
+
+  balanceInfoLable(poolId, address) {
+    return concatStrings(poolId, address, this.incentivesFunctionsPredicates.balanceOf.name);
   }
 }

@@ -29,31 +29,6 @@ export class DefiSwapLiquidity extends SingleContractProtocol<
   IPoolFeatureOpportunity,
   IPoolFeatureUser
 > {
-  protected async fetchUserData(
-    address: string,
-    pools: IPoolFeatureOpportunity[],
-  ): Promise<IPoolFeatureUser[]> {
-    const calls: Map<string, CallData> = new Map<string, CallData>();
-    pools.forEach((pool) => {
-      calls.set(
-        userBalanceLabel(pool.token.address, address),
-        plainToClass(CallData, {
-          address: pool.token.address,
-          abi: ERC20.balanceOf,
-          input: {
-            data: [address],
-          },
-        }),
-      );
-    });
-    const userBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
-    return pools
-      .map((p) => {
-        return this.formatUserData(address, p, userBalances);
-      })
-      .filter((u) => u !== undefined);
-  }
-
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
@@ -103,6 +78,31 @@ export class DefiSwapLiquidity extends SingleContractProtocol<
         ],
       };
     });
+  }
+
+  protected async fetchUserData(
+    address: string,
+    pools: IPoolFeatureOpportunity[],
+  ): Promise<IPoolFeatureUser[]> {
+    const calls: Map<string, CallData> = new Map<string, CallData>();
+    pools.forEach((pool) => {
+      calls.set(
+        userBalanceLabel(pool.token.address, address),
+        plainToClass(CallData, {
+          address: pool.token.address,
+          abi: ERC20.balanceOf,
+          input: {
+            data: [address],
+          },
+        }),
+      );
+    });
+    const userBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
+    return pools
+      .map((p) => {
+        return this.formatUserData(address, p, userBalances);
+      })
+      .filter((u) => u !== undefined);
   }
 
   protected async fetchRegisteredPools(poolIds: number[]): Promise<string[]> {

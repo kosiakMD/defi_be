@@ -51,20 +51,29 @@ export class SpiritLiquidity extends SingleContractProtocol<
   }): Promise<IPoolFeatureMinimal[]> {
     const poolIds = Array.from(Array(context.allPairsLength.toNumber()).keys());
     const registeredTokens: Address[] = await this.fetchRegisteredTokens(poolIds);
-    const results = registeredTokens.map((registeredToken) => {
+
+    const totalStakedPerPool = await this.multicall.callArray(
+      registeredTokens.map((p) => {
+        const lp = new ERC20(p);
+        return lp.totalSupply();
+      }),
+      this.meta.chain,
+    );
+
+    const results = registeredTokens.map((t, idx) => {
       return {
-        id: registeredToken,
+        id: t,
         chain: this.meta.chain,
         feature: this.meta.feature,
         token: {
-          address: registeredToken,
+          address: t,
         },
         supplied: [
           {
             token: {
-              address: registeredToken,
+              address: t,
             },
-            totalSupplied: null,
+            totalSupplied: totalStakedPerPool[idx].toString(),
           },
         ],
       };

@@ -34,28 +34,27 @@ export class Defiswap extends RootPlatform {
       address: '0x9DEB29c9a4c7A88a3C0257393b7f3335338D9A9D',
     });
 
-    //locked staking for 1 year
     await this.registerProtocol(DefiSwapLocked, {
       chain: ChainIdEnum.eth,
       name: 'Locked - DefiSwap - 1 year',
       feature: FeatureEnum.lockedBalances,
       address: '0x6aba3E56AEb3b95aD64161103D793fAc5F6ce4F7',
     });
-    //locked staking for 2 year
+
     await this.registerProtocol(DefiSwapLocked, {
       chain: ChainIdEnum.eth,
       name: 'Locked - DefiSwap - 2 years',
       feature: FeatureEnum.lockedBalances,
       address: '0x26388d599A677C6A8BCc4c113F0A34e6Ced9493D',
     });
-    //locked staking for 3 year
+
     await this.registerProtocol(DefiSwapLocked, {
       chain: ChainIdEnum.eth,
       name: 'Locked - DefiSwap - 3 years',
       feature: FeatureEnum.lockedBalances,
       address: '0x0A3c6EEC8408bdED9000DA65AfdB8a8fDA99E253',
     });
-    //locked staking for 4 year
+
     await this.registerProtocol(DefiSwapLocked, {
       chain: ChainIdEnum.eth,
       name: 'Locked - DefiSwap - 4 years',

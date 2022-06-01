@@ -57,13 +57,5 @@ export class Spiritswap extends RootPlatform {
       feature: FeatureEnum.pools,
       address: '0xef45d134b73241eda7703fa787148d9c9f4950b0',
     });
-
-    // await this.registerProtocol(SpiritLending, {
-    //   chain: ChainIdEnum.ftm,
-    //   name: 'Lending - Spiritswap',
-    //   feature: FeatureEnum.lending,
-    //   address: '0x550c720D32D47A0Cb471d29b2fdF009F884d45dA',
-    //   // address: '0x892701d128d63c9856a9eb5d967982f78fd3f2ae',
-    // });
   }
 }

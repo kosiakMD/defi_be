@@ -53,37 +53,37 @@ export class KyberStaking extends MasterChef {
     );
     const rewardTokensList = await this.multicall.callArray(rewardTokensListCalls, this.meta.chain);
 
-    return Array.from(poolsList.values()).map((pool: any, idx) => {
-      return {
-        id: pool.stakeToken.toLowerCase(),
-        idPool: idx,
-        chain: this.meta.chain,
-        feature: this.meta.feature,
-        supplied: [
-          {
-            token: {
-              address: pool.stakeToken.toLowerCase(),
-            },
-            totalSupplied: pool.totalStake.toString(),
+    return Array.from(poolsList.values()).map((pool: any, idx) => ({
+      id: pool.stakeToken.toLowerCase(),
+      idPool: idx,
+      chain: this.meta.chain,
+      feature: this.meta.feature,
+      supplied: [
+        {
+          token: {
+            address: pool.stakeToken.toLowerCase(),
           },
-        ],
-        rewarded: [
-          {
-            token: {
-              address: rewardTokensList[idx].toLowerCase(),
-            },
+          totalSupplied: pool.totalStake.toString(),
+        },
+      ],
+      rewarded: [
+        {
+          token: {
+            address: rewardTokensList[idx].toLowerCase(),
           },
-        ],
-      };
-    });
+        },
+      ],
+    }));
   }
 
-  protected async fetchRegisteredPools(poolIds: number[]): Promise<any> {
+  protected async fetchRegisteredPools(
+    poolIds: number[],
+  ): Promise<Map<string, { totalStake: number; stakeToken: string }>> {
     const registeredPoolsCalls = poolIds.map((poolId) =>
       this.getMainContract().createCall(this.functions.getPoolInfo, poolId),
     );
-    const registeredTokens = await this.multicall.callArray(registeredPoolsCalls, this.meta.chain);
-    return new Map(registeredTokens.map((t) => [t.stakeToken.toLowerCase(), t]));
+    const registeredPools = await this.multicall.callArray(registeredPoolsCalls, this.meta.chain);
+    return new Map(registeredPools.map((t) => [t.stakeToken.toLowerCase(), t]));
   }
 
   protected async fetchUserData(

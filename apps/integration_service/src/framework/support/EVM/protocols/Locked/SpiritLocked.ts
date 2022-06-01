@@ -37,6 +37,17 @@ export class SpiritLocked
   >
   implements IRootProtocol
 {
+  constructor(
+    protected abiService: AbiService,
+    protected multicall: MulticallAggregator,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
+    @Inject(CACHE_MANAGER) protected cache: Cache,
+    protected accountService: AccountService,
+    protected priceService: PriceService,
+  ) {
+    super();
+  }
+
   protected functionPredicates: INamedFunctionPredicates = {
     locked: () => (item) => item.name === 'locked',
     token: () => (item) => item.name === 'token',
@@ -131,16 +142,5 @@ export class SpiritLocked
         ],
       },
     ];
-  }
-
-  constructor(
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-  ) {
-    super();
   }
 }

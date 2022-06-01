@@ -4,7 +4,7 @@ import { cloneDeep } from 'lodash';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Address, Logger } from '@app/common';
+import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -35,6 +35,17 @@ export class DefiSwapLocked
   >
   implements IRootProtocol
 {
+  constructor(
+    protected abiService: AbiService,
+    protected multicall: MulticallAggregator,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
+    @Inject(CACHE_MANAGER) protected cache: Cache,
+    protected accountService: AccountService,
+    protected priceService: PriceService,
+  ) {
+    super();
+  }
+
   protected functionPredicates: INamedFunctionPredicates = {
     token: () => (item) => item.name === 'token',
     totalStaked: () => (item) => item.name === 'totalStaked',
@@ -45,17 +56,7 @@ export class DefiSwapLocked
     address: string,
     pools: IStakingFeatureOpportunity[],
   ): Promise<IStakingFeatureUserEntry[]> {
-    const contract = this.getMainContract();
-    const calls = new Map([
-      [
-        `${address} ${pools[0].supplied[0].token.address}`,
-        contract.createCall(this.functions.getPersonalStakes, address),
-      ],
-    ]);
-    const multiCallsUserBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
-    const userBalances = multiCallsUserBalances.get(
-      `${address} ${pools[0].supplied[0].token.address}`,
-    ).output.data;
+    const userBalances = await this.getUsersBalance(address, pools[0].supplied[0].token.address);
 
     const poolsList = userBalances['0'].map((l, idx) => ({
       ...pools[0],
@@ -65,17 +66,25 @@ export class DefiSwapLocked
 
     const test = poolsList
       .map((p) => {
-        return this.formatUserData(address, p);
+        return this.formatUserData(p);
       })
       .filter((ub) => ub !== undefined);
     return test;
   }
 
-  protected formatUserData(
-    address: Address,
-    pool: IStakingFeatureOpportunity,
-    // data: Map<string, CallData>,
-  ): IStakingFeatureUserEntry {
+  async getUsersBalance(address: string, tokenAddress: string) {
+    const contract = this.getMainContract();
+    const calls = new Map([
+      [
+        `${address} ${tokenAddress}`,
+        contract.createCall(this.functions.getPersonalStakes, address),
+      ],
+    ]);
+    const multiCallsUserBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
+    return multiCallsUserBalances.get(`${address} ${tokenAddress}`).output.data;
+  }
+
+  protected formatUserData(pool: IStakingFeatureOpportunity): IStakingFeatureUserEntry {
     const usersPool = cloneDeep(pool);
     const lpToken = usersPool.supplied[0];
 
@@ -117,16 +126,5 @@ export class DefiSwapLocked
         ],
       },
     ];
-  }
-
-  constructor(
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-  ) {
-    super();
   }
 }

@@ -41,6 +41,7 @@ export interface ITokenUserEntry<TExtra = unknown> extends ITokenOpportunity<TEx
   value: number; // balance * price
 }
 export interface IBaseApy {
+  year?: number;
   variableApy?: number;
   stableApy?: number;
 }

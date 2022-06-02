@@ -246,6 +246,9 @@ export const ProtocolV3NameEnum = {
   mdex: 'Mdex',
   solend: 'Solend',
   yelFinance: 'YelFinance',
+  nereus: 'Nereus',
+  geist: 'Geist',
+  blizz: 'Blizz',
 };
 
 export const ProtocolNameEnum = {

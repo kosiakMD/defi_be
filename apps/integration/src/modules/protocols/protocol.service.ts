@@ -53,7 +53,6 @@ import { AccountService } from '../microservices/account.service';
 import { PriceService } from '../microservices/price.service';
 import { FeatureHandleDto, RawFeaturesDto } from './dto/protocols.dto';
 import { tokenDictionary } from './helpers/protocols.dictionaries';
-import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { alpacaDebtTokens } from './protocols/alpaca/contracts/alpaca.abi';
 import AlpacaProtocol from './protocols/alpacaProtocol';
@@ -104,7 +103,6 @@ export class ProtocolService {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
     private readonly accountService: AccountService,
     private readonly priceService: PriceService,
-    private readonly aaveProtocolV2: AaveProtocolV2,
     private readonly alpacaProtocol: AlpacaProtocol,
     private readonly abracadabraProtocol: AbracadabraProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
@@ -146,7 +144,6 @@ export class ProtocolService {
     private readonly muesliSwapProtocol: MuesliSwapProtocol,
   ) {
     this.protocols = [
-      aaveProtocolV2,
       abracadabraProtocol,
       alpacaProtocol,
       anchorProtocol,

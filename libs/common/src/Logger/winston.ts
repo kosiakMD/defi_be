@@ -7,7 +7,8 @@ import * as Transport from 'winston-transport';
 import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
-import { EnvEnum } from '@app/common';
+import { EnvEnum, LogLevelEnum } from '@app/common';
+import { ctx } from '@app/common/helpers/context';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 
@@ -81,9 +82,23 @@ export const winstonParams = ({
     );
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const infoFormat = winston.format(<T>(info, _opts) => {
+    const context = ctx();
+    const reqId = info.reqId || context?.reqId;
+    const sessionId = info.sessionId || context?.sessionId || undefined;
+    if (reqId || sessionId) {
+      info.meta = {
+        reqId,
+        sessionId,
+      };
+    }
+    return info as T;
+  });
+
   return {
     level: level,
-    format: winston.format.json(),
+    format: winston.format.combine(infoFormat(), winston.format.json()),
     defaultMeta: Object.assign({ service: serviceName }, defaultMeta),
     transports,
   };
@@ -123,8 +138,8 @@ export const createJobLogger = (workFolder: string): LoggerService => {
 
   return WinstonModule.createLogger({
     // TODO: for custom logger
-    level: process.env.LOG_LEVEL || 'info',
-    format: winston.format.json(),
+    level: process.env.LOG_LEVEL || LogLevelEnum.info,
+    format: winston.format.combine(winston.format.json()),
     defaultMeta: { env: process.env.ENV, service: process.env.SERVICE_NAME },
     transports: transports,
   });

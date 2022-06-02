@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum } from '@app/common';
+import { ChainIdEnum, ChainWrappedTokens } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
 import { CurveAddresses } from '@app/common/constant/curve.addresses';
 import { CallData } from '@app/common/dto/CallData';
@@ -25,8 +25,10 @@ import { PriceService } from '../../microservices/price.service';
 import { StoreService } from '../../store/store.service';
 import { TrackedVault } from '../../store/tracked.vault.entity';
 import { TrackedVaultsMap } from '../data/tracked.vaults.map';
+import { CurveLpAbi } from './abis/CurveLpAbi';
 import { CurveProviderAbi } from './abis/CurveProviderAbi';
 import { CurveRegistryAbi } from './abis/CurveRegistryAbi';
+import { ERC20Abi } from './abis/ERC20Abi';
 import { additionalGaugeContractsMap } from './additional.gauge.contracts.map';
 import { CurveGaugeInterface, CurveGaugesBase } from './curve.gauges.base';
 import { LocalMultiCall } from './local.multicall';
@@ -87,6 +89,59 @@ export class CurveGaugesAvax extends CurveGaugesBase {
     });
 
     return lpFactoryGaugesMap;
+  }
+
+  getCallsMap(lpTokensMinters: Map<string, string>) {
+    const calls = new Map();
+
+    this.mapping.forEach((staking) => {
+      // Registry uses pool address for most calls
+      const stakingTokenContract = new CurveLpAbi(staking.stakingToken.address);
+      const stakingPool =
+        lpTokensMinters.get(staking.stakingToken.address) ?? staking.stakingToken.address;
+      const curvePool = new CurveLpAbi(stakingPool);
+
+      staking.stakingToken.tokens.forEach((token) => {
+        calls.set(
+          this.getPoolBalances(stakingPool, token.positionInPool),
+          curvePool.balances(token.positionInPool),
+        );
+      });
+
+      calls.set(
+        this.getTotalSupplyLabel(staking.stakingToken.address),
+        stakingTokenContract.totalSupply(),
+      );
+
+      calls.set(
+        this.getGaugeLpPoolBalanceOf(staking.stakingToken.address),
+        stakingTokenContract.balanceOf(staking.address),
+      );
+
+      staking.stakingToken.tokens?.forEach((coin) => {
+        if (coin.tokens?.length) {
+          const underlyingStakingPool = lpTokensMinters.get(coin.address) ?? coin.address;
+          const underlyingCurvePool = new CurveLpAbi(underlyingStakingPool);
+
+          calls.set(this.getVirtualPrice(coin.address), underlyingCurvePool.getVirtualPrice());
+
+          coin.tokens.forEach((token) => {
+            calls.set(
+              this.getPoolBalances(underlyingStakingPool, token.positionInPool),
+              underlyingCurvePool.balances(token.positionInPool),
+            );
+          });
+        }
+
+        const lpTokenContract = new ERC20Abi(
+          coin.address === ZERO_ADDRESS
+            ? ChainWrappedTokens[coin.symbol.toUpperCase()]
+            : coin.address,
+        );
+        calls.set(this.getTotalSupplyLabel(coin.address), lpTokenContract.totalSupply());
+      });
+    });
+    return calls;
   }
 
   async getRegistryPoolsLpTokens(

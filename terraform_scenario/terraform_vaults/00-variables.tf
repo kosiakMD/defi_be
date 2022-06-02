@@ -8,3 +8,7 @@ variable "image_tag" {
   type    = string
   default = "latest"
 }
+variable "vpc" {
+  type = string
+  default = "No"
+}

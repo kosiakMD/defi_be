@@ -6,6 +6,7 @@ ADD ./nest-cli.json ./
 ADD ./package.json ./
 ADD ./tsconfig.json ./
 ADD ./tsconfig.build.json ./
+RUN yum install git -y
 RUN npm install --global yarn
 RUN yarn install
 #ARG function_name

@@ -7,6 +7,7 @@ module "lambda" {
   lambda_options_memory_size = "750"
   lambda_options_timeout     = "300"
   schedule                   = var.schedule_minutes
+  vpc                        = var.vpc
   environment_variables = {
     "INTEGRATION_SERVICE_URL"    = data.aws_ssm_parameter.INTEGRATION_SERVICE_URL.value,
     "ACCOUNT_SERVICE_URL"        = data.aws_ssm_parameter.ACCOUNT_SERVICE_URL.value,

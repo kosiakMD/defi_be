@@ -1,6 +1,9 @@
 import { AsyncLocalStorage } from 'async_hooks';
 
 export interface RequestContext {
+  reqId?: string;
+  sessionId?: string;
+
   [key: string]: string;
 }
 

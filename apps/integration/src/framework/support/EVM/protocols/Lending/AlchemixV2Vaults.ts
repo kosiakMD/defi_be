@@ -307,9 +307,11 @@ export class AlchemixV2Vaults
 
         const debtToken = pools[0].borrow.token;
 
-        const borrowedSharePerUser = toDecimals(
-          multicallResults.get(this.callLabel(`accounts`, address)).output.data.debt,
-          debtToken.decimals,
+        const borrowedSharePerUser = Math.abs(
+          toDecimals(
+            multicallResults.get(this.callLabel(`accounts`, address)).output.data.debt,
+            debtToken.decimals,
+          ),
         );
 
         const borrowedTotal = borrowedSharePerUser * debtToken.price;

@@ -27,11 +27,11 @@ export class KyberStaking extends MasterChef {
   }
 
   functionPredicates: INamedFunctionPredicates = {
-    getPoolInfo: () => (item) => item.name === 'getPoolInfo',
+    poolInfo: () => (item) => item.name === 'getPoolInfo',
     poolLength: () => (item) => item.name === 'poolLength',
     pendingRewards: () => (item) => item.name === 'pendingRewards',
     getRewardTokens: () => (item) => item.name === 'getRewardTokens',
-    rewardTokens: () => (item) => item.name === 'rewardTokens',
+    rewardToken: () => (item) => item.name === 'rewardTokens',
     userInfo: () => (item) => item.name === 'getUserInfo',
   };
 
@@ -42,7 +42,7 @@ export class KyberStaking extends MasterChef {
     const poolsList = await this.fetchRegisteredPools(poolIds);
 
     const rewardTokensListCalls = poolIds.map((poolId) =>
-      this.getMainContract().createCall(this.functions.rewardTokens, poolId),
+      this.getMainContract().createCall(this.functions.rewardToken, poolId),
     );
     const rewardTokensList = await this.multicall.callArray(rewardTokensListCalls, this.meta.chain);
 
@@ -72,7 +72,7 @@ export class KyberStaking extends MasterChef {
     poolIds: number[],
   ): Promise<Map<string, { totalStake: number; stakeToken: string }>> {
     const registeredPoolsCalls = poolIds.map((poolId) =>
-      this.getMainContract().createCall(this.functions.getPoolInfo, poolId),
+      this.getMainContract().createCall(this.functions.poolInfo, poolId),
     );
     const registeredPools = await this.multicall.callArray(registeredPoolsCalls, this.meta.chain);
     return new Map(registeredPools.map((t) => [t.stakeToken.toLowerCase(), t]));

@@ -31,21 +31,21 @@ export class Spiritswap extends RootPlatform {
 
     await this.registerProtocol<IMasterChefMeta>(MasterChef, {
       chain: ChainIdEnum.ftm,
-      name: 'Farms - Masterchef - Spiritswap',
+      name: 'Farms - Masterchef - SpiritSwap',
       feature: FeatureEnum.staking,
       address: '0x9083ea3756bde6ee6f27a6e996806fbd37f6f093',
     });
 
     await this.registerProtocol(SpiritLocked, {
       chain: ChainIdEnum.ftm,
-      name: 'Locked - Spiritswap',
-      feature: FeatureEnum.lockedBalances,
+      name: 'Locked - SpiritSwap',
+      feature: FeatureEnum.staking,
       address: '0x2FBFf41a9efAEAE77538bd63f1ea489494acdc08',
     });
 
     await this.registerProtocol(SpiritStaking, {
       chain: ChainIdEnum.ftm,
-      name: 'Farms - Spiritswap',
+      name: 'Farms - SpiritSwap',
       feature: FeatureEnum.staking,
       address: '0x420b17f69618610DE18caCd1499460EFb29e1d8f',
       context: { rewardToken: '0x5cc61a78f164885776aa610fb0fe1257df78e59b' },
@@ -53,7 +53,7 @@ export class Spiritswap extends RootPlatform {
 
     await this.registerProtocol(SpiritLiquidity, {
       chain: ChainIdEnum.ftm,
-      name: 'Luquidity - Spiritswap',
+      name: 'Luquidity - SpiritSwap',
       feature: FeatureEnum.pools,
       address: '0xef45d134b73241eda7703fa787148d9c9f4950b0',
     });

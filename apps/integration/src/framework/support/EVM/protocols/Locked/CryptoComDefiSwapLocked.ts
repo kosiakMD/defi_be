@@ -27,7 +27,7 @@ export type IStakingFeatureMinimalDefi = BaseWithTokens<
   void
 >;
 
-export class DefiSwapLocked
+export class CryptoComDefiSwapLocked
   extends SingleContractProtocol<
     IStakingFeatureMinimalDefi,
     IStakingFeatureOpportunity,
@@ -56,22 +56,22 @@ export class DefiSwapLocked
     address: string,
     pools: IStakingFeatureOpportunity[],
   ): Promise<IStakingFeatureUserEntry[]> {
-    const { 0: lockedEnd, 1: balance } = await this.getUsersBalance(
+    const { 0: unlockTime, 1: balance } = await this.getUsersBalance(
       address,
       pools[0].supplied[0].token.address,
     );
 
-    const poolsList = lockedEnd.map((l, idx) => ({
+    const poolsList = unlockTime.map((l, idx) => ({
       ...pools[0],
       balance: balance[idx],
-      lockedEnd: l,
+      unlockTime: l,
     }));
 
     return poolsList
       .map((p) => {
         return this.formatUserData(p);
       })
-      .filter((ub) => ub !== undefined);
+      .filter((ub) => !!ub);
   }
 
   async getUsersBalance(address: string, tokenAddress: string) {
@@ -97,7 +97,7 @@ export class DefiSwapLocked
     Object.assign(usersPool.supplied[0], {
       amount: balanceNormalized,
       value: balanceNormalized * lpToken.token.price,
-      unlocked: usersPool['lockedEnd'] * 1000, //ms
+      unlockTime: usersPool['unlockTime'] * 1000, //ms
     });
 
     return usersPool as IStakingFeatureUserEntry;

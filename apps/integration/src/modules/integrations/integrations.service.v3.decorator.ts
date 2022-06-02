@@ -162,6 +162,7 @@ export class IntegrationsServiceV3Decorator {
                 v2WalletChain[FeatureEnum.staking].totalValue,
                 v2Staking.stakingToken.value,
               );
+              v2Staking.stakingToken.unlockTime = v3StakingPos.supplied[0].unlockTime;
               v2Staking.rewards.forEach((r) => {
                 if (r.claimableData.value) {
                   v2Response.data.total = safelyAddDecimals(
@@ -291,40 +292,6 @@ export class IntegrationsServiceV3Decorator {
               }
             });
           });
-        }
-
-        if (v3WalletChain.positions.lockedBalances) {
-          v2WalletChain[FeatureEnum.lockedBalances] = {
-            totalValue: 0,
-            items: [],
-          };
-
-          v2WalletChain[FeatureEnum.lockedBalances].items =
-            v3WalletChain.positions.lockedBalances.map((v3StakingPos) => {
-              const v2Staking = IntegrationsServiceV3Decorator.stakingToV2(v3StakingPos);
-              v2Response.data.total = safelyAddDecimals(
-                v2Response.data.total,
-                v2Staking.stakingToken.value,
-              );
-              v2WalletChain[FeatureEnum.lockedBalances].totalValue = safelyAddDecimals(
-                v2WalletChain[FeatureEnum.lockedBalances].totalValue,
-                v2Staking.stakingToken.value,
-              );
-              v2Staking.stakingToken.unlocked = v3StakingPos.supplied[0].unlocked;
-              v2Staking.rewards?.forEach((r) => {
-                if (r.claimableData.value) {
-                  v2Response.data.total = safelyAddDecimals(
-                    v2Response.data.total,
-                    r.claimableData.value,
-                  );
-                  v2WalletChain[FeatureEnum.lockedBalances].totalValue = safelyAddDecimals(
-                    v2WalletChain[FeatureEnum.lockedBalances].totalValue,
-                    r.claimableData.value,
-                  );
-                }
-              });
-              return v2Staking;
-            });
         }
 
         v2WalletChain.features = [...new Set(v2WalletChain.features)];

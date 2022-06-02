@@ -65,9 +65,6 @@ export class KyberLiquidity extends SingleContractProtocol<
       id: poolInfo.toLowerCase(),
       chain: this.meta.chain,
       feature: this.meta.feature,
-      token: {
-        address: poolInfo,
-      },
       supplied: [
         {
           token: {
@@ -101,7 +98,7 @@ export class KyberLiquidity extends SingleContractProtocol<
       .map((p) => {
         return this.formatUserData(address, p, userBalances);
       })
-      .filter((u) => u !== undefined);
+      .filter((u) => !!u);
   }
 
   protected async fetchRegisteredPools(poolIds: number[]): Promise<string[]> {

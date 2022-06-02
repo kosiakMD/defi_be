@@ -24,7 +24,7 @@ import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.inter
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export class DefiSwapLiquidity extends SingleContractProtocol<
+export class CryptoComDefiSwapLiquidity extends SingleContractProtocol<
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser
@@ -62,12 +62,9 @@ export class DefiSwapLiquidity extends SingleContractProtocol<
 
     return poolsList.map((poolInfo, idx) => {
       return {
-        id: poolInfo,
+        id: `${this.meta.address}::${idx}`,
         chain: this.meta.chain,
         feature: this.meta.feature,
-        token: {
-          address: poolInfo,
-        },
         supplied: [
           {
             token: {
@@ -102,7 +99,7 @@ export class DefiSwapLiquidity extends SingleContractProtocol<
       .map((p) => {
         return this.formatUserData(address, p, userBalances);
       })
-      .filter((u) => u !== undefined);
+      .filter((u) => !!u);
   }
 
   protected async fetchRegisteredPools(poolIds: number[]): Promise<string[]> {

@@ -3,5 +3,4 @@ export enum FeatureEnum {
   staking = 'staking', // +
   claimable = 'claimable', // +
   lending = 'lending', // +
-  lockedBalances = 'lockedBalances',
 }

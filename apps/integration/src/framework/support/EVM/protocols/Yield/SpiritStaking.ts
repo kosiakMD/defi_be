@@ -1,5 +1,6 @@
 import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
+import { AbiItem } from 'web3-utils';
 
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -46,7 +47,7 @@ export class SpiritStaking extends MasterChef {
     totalSupply: () => (item) => item.name === 'totalSupply',
   };
 
-  private abiQauges;
+  private abiQauges: AbiItem[];
 
   protected async fetchOpportunityData(context: {
     [key: string]: any;
@@ -117,7 +118,7 @@ export class SpiritStaking extends MasterChef {
       .map((p) => {
         return this.fromatUserData(address, p, userDataInfo);
       })
-      .filter((ub) => ub !== undefined);
+      .filter((ub) => !!ub);
   }
 
   protected fromatUserData(

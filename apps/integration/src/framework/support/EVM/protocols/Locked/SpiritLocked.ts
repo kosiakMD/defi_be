@@ -71,7 +71,7 @@ export class SpiritLocked
       .map((p) => {
         return this.formatUserData(address, p, userBalances);
       })
-      .filter((ub) => ub !== undefined);
+      .filter((ub) => !!ub);
   }
 
   protected formatUserData(
@@ -96,7 +96,7 @@ export class SpiritLocked
     Object.assign(usersPool.supplied[0], {
       amount: balanceNormalized,
       value: balanceNormalized * lpToken.token.price,
-      unlocked: +userBalance.end.toString() * 1000,
+      unlockTime: +userBalance.end.toString() * 1000,
     });
 
     return usersPool as IStakingFeatureUserEntry;

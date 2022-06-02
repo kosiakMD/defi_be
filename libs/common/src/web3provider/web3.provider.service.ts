@@ -11,6 +11,7 @@ export type Web3Interface = Web3;
 
 @Injectable()
 export class Web3ProviderService {
+  // TODO: This should be Web3 not any
   private readonly providers = new Map<ChainIdEnum, any>();
   private readonly multicallContracts = new Map<ChainIdEnum, MulticallContract>();
 

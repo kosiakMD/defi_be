@@ -54,10 +54,10 @@ export abstract class BeefyStakingBase
   feature = FeatureEnum.staking;
   protocol = ProtocolNameEnum.Beefy;
   placeholder: string;
-
   protected mapping = [];
   protected dbMapping: DbMapping;
 
+  private readonly RETRY_CALL_IN_MS = 2000;
   protected readonly api: BeefyApiService;
   protected readonly accountService: AccountService;
   protected readonly settingService: SettingsService; // TODO: Only required to satisfy JobBase (not used for staking)
@@ -208,7 +208,16 @@ export abstract class BeefyStakingBase
       callGroup.flatMap((call) => this.multicall(call)),
     );
 
-    const [data] = handlePromiseAllSettled(responsesRaw);
+    const [data, errors] = handlePromiseAllSettled(responsesRaw);
+
+    if (errors.length > 0) {
+      this.logger.warn(
+        `Couldn't process some of Beefy on chain: ${this.chain} pools:\n${errors.reduce(
+          (acc, curr) => `${acc}${curr}\n`,
+          '',
+        )}`,
+      );
+    }
 
     const responses = new Map();
     for (const callData of data) {

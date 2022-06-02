@@ -1,4 +1,4 @@
-import { CallData } from 'apps/integration_service/src/common/dto';
+import { CallData } from 'apps/integration/src/common/dto';
 import { AbiItem } from 'web3-utils';
 
 import { MultiCallAbiProxy } from '@app/common/web3provider/multicall.abi.proxy';

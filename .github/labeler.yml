@@ -44,20 +44,20 @@
   - apps/swap*/**/*
 
 🎌 Integration Service:
-  - apps/integration_service/*
-  - apps/integration_service/**/*
+  - apps/integration/*
+  - apps/integration/**/*
 
 🚪 Gateway Service:
-  - apps/api_gateway/*
-  - apps/api_gateway/**/*
+  - apps/gateway/*
+  - apps/gateway/**/*
 
 👤 Account Service:
-  - apps/account_service/*
-  - apps/account_service/**/*
+  - apps/account/*
+  - apps/account/**/*
 
 🏷️ Price Service:
-  - apps/price_service/*
-  - apps/price_service/**/*
+  - apps/price/*
+  - apps/price/**/*
 
 📚 Common Libraries:
   - libs/common/*

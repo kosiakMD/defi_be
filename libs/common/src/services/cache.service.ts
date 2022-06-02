@@ -17,20 +17,38 @@ export class CacheService {
     }
 
     const loaded = await load();
-    await this.cache.set(key, loaded, options);
+    if (loaded !== undefined && loaded !== null) {
+      await this.cache.set(key, loaded, options);
+    }
 
     return loaded;
   }
 
+  public get<T = any>(key: string): Promise<T> {
+    return this.cache.get<T>(key);
+  }
+
   public async mget<T = any>(keys: string[]): Promise<T[]> {
+    if (!keys.length) {
+      return [];
+    }
+
     const response = await this.cache.store.mget(...keys);
     return response as T[];
+  }
+
+  public async set<T = any>(key: string, value: T, options?: CachingConfig): Promise<T> {
+    return this.cache.set(key, value, options);
   }
 
   public async mset<T = any>(
     values: { key: string; value: T }[],
     options: Partial<StoreConfig> = {},
   ): Promise<void> {
+    if (!values.length) {
+      return;
+    }
+
     const cacheArray = values.reduce((arr, curr) => arr.concat([curr.key, curr.value]), []);
     await this.cache.store.mset(...cacheArray, options);
   }

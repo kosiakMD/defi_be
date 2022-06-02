@@ -65,3 +65,9 @@ export const regex = (name: string, regex: RegExp): RegExpMatchArray => {
 export const equals = (nameOne: string, nameTwo: string): boolean => {
   return nameOne.toLowerCase() === nameTwo.toLowerCase();
 };
+
+export const stringToHex = (string: string) =>
+  string
+    .split('')
+    .map((ch) => Number(ch.charCodeAt(0)).toString(16))
+    .join('');

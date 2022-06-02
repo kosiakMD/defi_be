@@ -84,6 +84,7 @@ export enum SortFieldEnum {
 
 export enum ServiceEnum {
   Account = 'Account',
+  Assets = 'Assets',
   Integration = 'Integration',
   Price = 'Price',
   Opportunities = 'Opportunities',

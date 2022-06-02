@@ -1,11 +1,11 @@
 {
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/api_gateway/src",
+  "sourceRoot": "apps/gateway/src",
   "monorepo": true,
-  "root": "apps/api_gateway",
+  "root": "apps/gateway",
   "compilerOptions": {
     "webpack": false,
-    "tsConfigPath": "apps/api_gateway/tsconfig.app.json"
+    "tsConfigPath": "apps/gateway/tsconfig.app.json"
   },
   "projects": {
     "common": {
@@ -17,122 +17,122 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
-    "api_gateway": {
+    "gateway": {
       "type": "application",
-      "root": "apps/api_gateway",
+      "root": "apps/gateway",
       "entryFile": "main",
-      "sourceRoot": "apps/api_gateway/src",
+      "sourceRoot": "apps/gateway/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/api_gateway/tsconfig.app.json",
+        "tsConfigPath": "apps/gateway/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/api_gateway"
+            "outDir": "./dist/apps/gateway"
           }
         ]
       }
     },
-    "account_service": {
+    "account": {
       "type": "application",
-      "root": "apps/account_service",
+      "root": "apps/account",
       "entryFile": "main",
-      "sourceRoot": "apps/account_service/src",
+      "sourceRoot": "apps/account/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/account_service/tsconfig.app.json",
+        "tsConfigPath": "apps/account/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/account_service"
+            "outDir": "./dist/apps/account"
           }
         ]
       }
     },
-    "integration_service": {
+    "integration": {
       "type": "application",
-      "root": "apps/integration_service",
+      "root": "apps/integration",
       "entryFile": "main",
-      "sourceRoot": "apps/integration_service/src",
+      "sourceRoot": "apps/integration/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/integration_service/tsconfig.app.json",
+        "tsConfigPath": "apps/integration/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/integration_service"
+            "outDir": "./dist/apps/integration"
           }
         ]
       }
     },
-    "price_service": {
+    "price": {
       "type": "application",
-      "root": "apps/price_service",
+      "root": "apps/price",
       "entryFile": "main",
-      "sourceRoot": "apps/price_service/src",
+      "sourceRoot": "apps/price/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/price_service/tsconfig.app.json",
+        "tsConfigPath": "apps/price/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/price_service"
+            "outDir": "./dist/apps/price"
           }
         ]
       }
     },
-    "assets_service": {
+    "assets": {
       "type": "application",
-      "root": "apps/assets_service",
+      "root": "apps/assets",
       "entryFile": "main",
-      "sourceRoot": "apps/assets_service/src",
+      "sourceRoot": "apps/assets/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/assets_service/tsconfig.app.json",
+        "tsConfigPath": "apps/assets/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/assets_service"
+            "outDir": "./dist/apps/assets"
           }
         ]
       }
     },
-    "rpc_nodes_service": {
+    "rpc": {
       "type": "application",
-      "root": "apps/rpc_nodes_service",
+      "root": "apps/rpc",
       "entryFile": "main",
-      "sourceRoot": "apps/rpc_nodes_service/src",
+      "sourceRoot": "apps/rpc/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/rpc_nodes_service/tsconfig.app.json",
+        "tsConfigPath": "apps/rpc/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/rpc_nodes_service"
+            "outDir": "./dist/apps/rpc"
           }
         ]
       }
     },
-    "opportunities_service": {
+    "opportunities": {
       "type": "application",
-      "root": "apps/opportunities_service",
+      "root": "apps/opportunities",
       "entryFile": "main",
-      "sourceRoot": "apps/opportunities_service/src",
+      "sourceRoot": "apps/opportunities/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/opportunities_service/tsconfig.app.json",
+        "tsConfigPath": "apps/opportunities/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/opportunities_service"
+            "outDir": "./dist/apps/opportunities"
           }
         ]
       }
     },
-    "scheduler_service": {
+    "scheduler": {
       "type": "application",
-      "root": "apps/scheduler_service",
+      "root": "apps/scheduler",
       "entryFile": "main",
-      "sourceRoot": "apps/scheduler_service/src",
+      "sourceRoot": "apps/scheduler/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/scheduler_service/tsconfig.app.json",
+        "tsConfigPath": "apps/scheduler/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/scheduler_service"
+            "outDir": "./dist/apps/scheduler"
           }
         ]
       }
@@ -236,32 +236,32 @@
         "tsConfigPath": "jobs/lambda_protocol_prices/tsconfig.app.json"
       }
     },
-    "categorization_service": {
+    "categorization": {
       "type": "application",
-      "root": "apps/categorization_service",
+      "root": "apps/categorization",
       "entryFile": "main",
-      "sourceRoot": "apps/categorization_service/src",
+      "sourceRoot": "apps/categorization/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/categorization_service/tsconfig.app.json",
+        "tsConfigPath": "apps/categorization/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/categorization_service"
+            "outDir": "./dist/apps/categorization"
           }
         ]
       }
     },
-    "nft_service": {
+    "nft": {
       "type": "application",
-      "root": "apps/nft_service",
+      "root": "apps/nft",
       "entryFile": "main",
-      "sourceRoot": "apps/nft_service/src",
+      "sourceRoot": "apps/nft/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/nft_service/tsconfig.app.json",
+        "tsConfigPath": "apps/nft/tsconfig.app.json",
         "assets": [
           {
             "include": "../config/*",
-            "outDir": "./dist/apps/nft_service"
+            "outDir": "./dist/apps/nft"
           }
         ]
       }

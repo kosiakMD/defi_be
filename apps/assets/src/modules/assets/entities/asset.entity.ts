@@ -1,9 +1,9 @@
+import { Exclude } from 'class-transformer';
 import { Column, Entity, JoinTable, ManyToMany, OneToMany, Unique } from 'typeorm';
 
 import { BaseEntity } from '@app/common/entities/Base.entity';
 
 import { AssetCategoryEntity } from '../../assets-category/entities/asset-category.entity';
-import { AssetHistoricalPriceEntity } from '../../prices/entities/asset-historical-price.entity';
 import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetUnderlyingEntity } from './asset-underlying.entity';
 
@@ -31,12 +31,15 @@ export class AssetEntity extends BaseEntity {
   @Column({ type: Number, nullable: true })
   public rank?: number;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: Boolean, default: false })
   public isTracked: boolean;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: 'json', nullable: false, default: {} })
   public metadata: AssetMetadata;
 
+  @Exclude({ toPlainOnly: true })
   @Column({ type: Boolean, nullable: false, default: false })
   public disabled: boolean;
 
@@ -57,10 +60,6 @@ export class AssetEntity extends BaseEntity {
     },
   })
   public categories: AssetCategoryEntity[];
-
-  @OneToMany(() => AssetHistoricalPriceEntity, (historicalPrice) => historicalPrice.asset)
-  // TODO: Remove this reference from entity
-  public historicalPrices: AssetHistoricalPriceEntity[];
 
   @OneToMany(() => AssetUnderlyingEntity, (underlying) => underlying.asset, { cascade: true })
   public underlying: AssetUnderlyingEntity[];

@@ -4,7 +4,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common/Logger/Logger.service';
 
-import { AssetReference } from '../../../common/types';
+import { AssetReference } from '../../../common/types/asset-reference';
 
 import { AssetDto } from '../dto/asset.dto';
 import { AssetAnalyser, AssetAnalysisResult } from './analysers/core/asset.analyser';
@@ -78,6 +78,7 @@ export class AssetAnalyserService {
             chainId,
             priceProviderAssets,
             priceProvider,
+            assets,
           );
         }
       }
@@ -90,15 +91,19 @@ export class AssetAnalyserService {
     chainId: number,
     dtos: AssetDto[],
     provider: AssetPriceProvider,
+    allAssets: AssetDto[],
   ) {
     const assets = dtos.map<ComplexAsset>((dto) => ({
       address: dto.address,
       decimals: dto.decimals,
-      underlying: dto.underlying?.map(({ underlyingAsset }) => ({
-        address: underlyingAsset.address,
-        decimals: underlyingAsset.decimals,
-        price: underlyingAsset.price,
-      })),
+      underlying: dto.underlying?.map(({ address }) => {
+        const underlyingAsset = allAssets.find((dto) => dto.address === address);
+        return {
+          address: underlyingAsset.address,
+          decimals: underlyingAsset.decimals,
+          price: underlyingAsset.price,
+        };
+      }),
     }));
 
     const prices = await provider.getPrices(chainId, assets);

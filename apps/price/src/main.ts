@@ -42,6 +42,4 @@ async function bootstrap(): Promise<void> {
   await initListening(app);
 }
 
-bootstrap().catch((e) => {
-  logger.error(e, undefined, 'Bootstrap');
-});
+bootstrap();

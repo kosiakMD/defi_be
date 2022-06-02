@@ -35,6 +35,7 @@ export class IntegrationERC20TokenDto extends ERC20Token {
   value?: number = null;
   balance?: number = null;
   tokens?: Array<IntegrationPoolTokenDto | UnderlyingStakingLp> = [];
+  unlocked?: number;
 }
 
 export class CurveIntegrationERC20TokenDto extends ERC20Token {

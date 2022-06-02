@@ -31,6 +31,7 @@ export interface ISupplyTokenUserEntry extends ITokenUserEntry {
   tvl: number; // number of tokens * token price
   apy?: ISupplyApy;
   ltv?: number;
+  unlocked?: number;
 }
 interface ISupplyApy extends IBaseApy {
   supplyApy?: number;

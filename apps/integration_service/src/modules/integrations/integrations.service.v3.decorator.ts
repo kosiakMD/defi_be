@@ -13,7 +13,6 @@ import {
   ProtocolName,
 } from '@app/common';
 import { HealthFactorDto } from '@app/common/dto/HealthFactor.dto';
-import { BalanceData, LockedToken } from '@app/common/dto/base.data.locked.dto';
 import { ChainIdEnum } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
@@ -287,24 +286,30 @@ export class IntegrationsServiceV3Decorator {
           };
 
           v2WalletChain[FeatureEnum.lockedBalances].items =
-            v3WalletChain.positions.lockedBalances.map((v3LockedPos) => {
-              const v2Locked = plainToClass(LockedToken, {
-                address: v3LockedPos.id,
-                name: v3LockedPos.supplied[0].token.name,
-                symbol: v3LockedPos.supplied[0].token.symbol,
-                decimals: v3LockedPos.supplied[0].token.decimals,
-                tokens: v3LockedPos.supplied.map((s) => ({
-                  ...s.token,
-                  balance: s.amount,
-                  value: s.value,
-                })),
-                locked: plainToClass(BalanceData, {
-                  balance: +v3LockedPos.supplied[0].amount,
-                  unlocked: v3LockedPos.supplied[0].lockedEnd,
-                }),
+            v3WalletChain.positions.lockedBalances.map((v3StakingPos) => {
+              const v2Staking = IntegrationsServiceV3Decorator.stakingToV2(v3StakingPos);
+              v2Response.data.total = safelyAddDecimals(
+                v2Response.data.total,
+                v2Staking.stakingToken.value,
+              );
+              v2WalletChain[FeatureEnum.lockedBalances].totalValue = safelyAddDecimals(
+                v2WalletChain[FeatureEnum.lockedBalances].totalValue,
+                v2Staking.stakingToken.value,
+              );
+              v2Staking.stakingToken.unlocked = v3StakingPos.supplied[0].unlocked;
+              v2Staking.rewards?.forEach((r) => {
+                if (r.claimableData.value) {
+                  v2Response.data.total = safelyAddDecimals(
+                    v2Response.data.total,
+                    r.claimableData.value,
+                  );
+                  v2WalletChain[FeatureEnum.lockedBalances].totalValue = safelyAddDecimals(
+                    v2WalletChain[FeatureEnum.lockedBalances].totalValue,
+                    r.claimableData.value,
+                  );
+                }
               });
-              v2Locked.totalBalance = v2Locked.locked.balance;
-              return v2Locked;
+              return v2Staking;
             });
         }
 
@@ -407,17 +412,6 @@ export class IntegrationsServiceV3Decorator {
 
     return claimableV2;
   }
-
-  // static lockedToV2(lockedV3: ILockedFeatureUser): any {
-  //   const test = plainToClass(BaseDataLocked, {
-  //     chain: lockedV3.chain,
-  //     protocolType: FeatureEnum.staking,
-  //     feature: FeatureEnum.lockedBalances,
-  //     items: [],
-  //   });
-
-  //   return test;
-  // }
 
   static liquidityToV2(liquidityV3: IPoolFeatureEntryUserEntry): LiquidityPoolFeature {
     const supplied = liquidityV3.supplied[0];

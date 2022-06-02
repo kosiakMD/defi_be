@@ -148,6 +148,7 @@ export class SpiritLiquidity extends SingleContractProtocol<
         ...tokenSupplied,
         amount: balanceNormalized,
         value: amountUSD.toNumber(),
+        totalSupplied: tokenSupplied.token.totalSupply,
       };
       return result;
     });

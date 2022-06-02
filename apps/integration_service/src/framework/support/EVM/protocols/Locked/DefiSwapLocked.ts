@@ -56,20 +56,22 @@ export class DefiSwapLocked
     address: string,
     pools: IStakingFeatureOpportunity[],
   ): Promise<IStakingFeatureUserEntry[]> {
-    const userBalances = await this.getUsersBalance(address, pools[0].supplied[0].token.address);
+    const { 0: lockedEnd, 1: balance } = await this.getUsersBalance(
+      address,
+      pools[0].supplied[0].token.address,
+    );
 
-    const poolsList = userBalances['0'].map((l, idx) => ({
+    const poolsList = lockedEnd.map((l, idx) => ({
       ...pools[0],
-      balance: userBalances['1'][idx],
+      balance: balance[idx],
       lockedEnd: l,
     }));
 
-    const test = poolsList
+    return poolsList
       .map((p) => {
         return this.formatUserData(p);
       })
       .filter((ub) => ub !== undefined);
-    return test;
   }
 
   async getUsersBalance(address: string, tokenAddress: string) {
@@ -95,7 +97,7 @@ export class DefiSwapLocked
     Object.assign(usersPool.supplied[0], {
       amount: balanceNormalized,
       value: balanceNormalized * lpToken.token.price,
-      lockedEnd: usersPool['lockedEnd'] * 1000, //ms
+      unlocked: usersPool['lockedEnd'] * 1000, //ms
     });
 
     return usersPool as IStakingFeatureUserEntry;

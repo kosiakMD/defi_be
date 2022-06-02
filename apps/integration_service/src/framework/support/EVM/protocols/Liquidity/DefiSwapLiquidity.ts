@@ -147,6 +147,7 @@ export class DefiSwapLiquidity extends SingleContractProtocol<
         ...tokenSupplied,
         amount: balanceNormalized,
         value: amountUSD.toNumber(),
+        totalSupplied: tokenSupplied.token.totalSupply,
       };
       return result;
     });

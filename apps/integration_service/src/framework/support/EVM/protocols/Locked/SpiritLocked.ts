@@ -96,7 +96,7 @@ export class SpiritLocked
     Object.assign(usersPool.supplied[0], {
       amount: balanceNormalized,
       value: balanceNormalized * lpToken.token.price,
-      lockedEnd: +userBalance.end.toString() * 1000,
+      unlocked: +userBalance.end.toString() * 1000,
     });
 
     return usersPool as IStakingFeatureUserEntry;

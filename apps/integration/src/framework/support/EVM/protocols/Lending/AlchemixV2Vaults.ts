@@ -358,6 +358,8 @@ export class AlchemixV2Vaults
           supplyTokens.push(suppliedEntity);
         });
 
+        if (supplyTokens.length === 0) return;
+
         results.get(address).push({
           id: supplyTokens[0].token.address,
           feature: FeatureEnum.lending,

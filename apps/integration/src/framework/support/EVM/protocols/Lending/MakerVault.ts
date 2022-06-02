@@ -176,7 +176,7 @@ export class MakerVault extends EVMCore<
 
     const maker = await Maker.create('http', {
       plugins: [McdPlugin],
-      url: this.configService.get('ETHEREUM_URL'),
+      url: this.configService.get('ETH_URL'),
     });
 
     const manager = maker.service('mcd:cdpManager');

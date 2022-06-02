@@ -1,4 +1,4 @@
-import { CurrentPricesPayload } from 'apps/integration_service/src/common/dto';
+import { CurrentPricesPayload } from 'apps/integration/src/common/dto';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';

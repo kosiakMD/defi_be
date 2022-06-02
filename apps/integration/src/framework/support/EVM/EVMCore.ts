@@ -161,11 +161,16 @@ export abstract class EVMCore<
    * advantage in averaging that price across dexes)
    */
 
+  protected getLpTokenContract(token: string) {
+    return new UniswapV2Pair(token);
+  }
+
   async updateUniswapLikeTokensData(tokens: any[], prices: CurrentPricesPayload) {
     const calls = new Map();
     tokens.forEach((token: any) => {
       if (token.underlyingAssets?.length !== 2) return;
-      const contract = new UniswapV2Pair(token.address);
+      // const contract = new UniswapV2Pair(token.address);
+      const contract = this.getLpTokenContract(token.address);
       calls.set(`${token.address}.totalSupply()`, contract.totalSupply());
       calls.set(`${token.address}.getReserves()`, contract.getReserves());
       calls.set(`${token.address}.token0()`, contract.token0());

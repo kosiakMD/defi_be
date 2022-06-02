@@ -116,12 +116,12 @@ export class SpiritStaking extends MasterChef {
 
     return pools
       .map((p) => {
-        return this.fromatUserData(address, p, userDataInfo);
+        return this.formatUserData(address, p, userDataInfo);
       })
       .filter((ub) => !!ub);
   }
 
-  protected fromatUserData(
+  protected formatUserData(
     address: Address,
     pool: IStakingFeatureOpportunity,
     data: Map<string, CallData>,

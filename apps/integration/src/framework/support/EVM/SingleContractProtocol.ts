@@ -131,8 +131,9 @@ export abstract class SingleContractProtocol<
         addresses.map(async (address) => {
           const userPools = await this.fetchUserData(address, pools);
           // An array of undefined values can be obtained
-          if (userPools.filter((data) => data).length) {
-            results.get(address).push(...userPools);
+          const filteredPools = userPools.filter((data) => data);
+          if (filteredPools.length) {
+            results.get(address).push(...filteredPools);
           }
         }),
       );

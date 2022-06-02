@@ -30,6 +30,7 @@ import { IronBank } from '../platforms/IronBank';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
 import { Lido } from '../platforms/Lido';
+import { Liquity } from '../platforms/Liquity';
 import { MakerDAO } from '../platforms/MakerDAO';
 // import { LimeSwap } from '../platforms/LimeSwap';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
@@ -102,6 +103,7 @@ export class PlatformService implements OnApplicationBootstrap {
       MakerDAO,
       IronBank,
       Benqi,
+      Liquity,
     });
   }
 

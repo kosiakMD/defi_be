@@ -4,8 +4,7 @@ export interface IClaimableTokenOpportunity {
   token: ERC20Token;
 }
 
-export interface IClaimableTokenUserEntry {
-  token: ERC20Token;
+export interface IClaimableTokenUserEntry extends IClaimableTokenOpportunity {
   amount: number;
   value: number;
 }

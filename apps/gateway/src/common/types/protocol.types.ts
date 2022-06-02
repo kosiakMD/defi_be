@@ -1,5 +1,6 @@
 // export type ProtocolFeatures = Record<ChainAbbrEnum, FeatureEnum[]>;
-import { ChainAbbrEnum } from '../enum';
+import { ChainAbbrEnum } from '@app/common';
+
 import { FeatureEnum } from '../enum/feature.enum';
 import { FeatureDto } from './features.types';
 

@@ -40,6 +40,4 @@ async function bootstrap() {
   await initListening(app);
 }
 
-bootstrap().catch((e) => {
-  logger.error(e, undefined, 'Bootstrap');
-});
+bootstrap();

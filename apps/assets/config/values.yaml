@@ -55,3 +55,4 @@ secrets:
   - tokenlist
   - aws-assets
   - sentry
+  - logs

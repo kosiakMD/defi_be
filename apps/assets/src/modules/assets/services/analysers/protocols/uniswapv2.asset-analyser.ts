@@ -1,4 +1,3 @@
-import { AssetReference } from 'apps/assets/src/common/types';
 import { AbiItem } from 'web3-utils';
 
 import { Injectable } from '@nestjs/common';
@@ -9,6 +8,7 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';
+import { AssetReference } from '../../../../../common/types/asset-reference';
 
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';

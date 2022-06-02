@@ -10,8 +10,9 @@ export const toBN = (number): BigNumber => new BigNumber(number);
 
 export const decimalsDivider = (decimals: Decimals): BigNumber => toBN(10).pow(decimals);
 
-export const normalizeDecimals = (number: string, decimals: Decimals): number => {
-  return toBN(number) //
+export const normalizeDecimals = (number: string | BigNumber, decimals: Decimals): number => {
+  const num = number instanceof BigNumber ? number : toBN(number);
+  return num //
     .dividedBy(decimalsDivider(decimals))
     .toNumber();
 };

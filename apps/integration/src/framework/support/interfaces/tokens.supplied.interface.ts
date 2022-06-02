@@ -10,14 +10,14 @@ import {
 // numbers are stringified BigNumbers, etc
 // The matching interface (without 'Raw') will be the filled
 // values (decimal value, full token details, etc)
-export interface ISupplyTokenMinimal<TExtra = void> extends ITokenMinimal<TExtra> {
+export interface ISupplyTokenMinimal<TExtra = unknown> extends ITokenMinimal<TExtra> {
   weight?: string;
   totalSupplied?: string; // number of tokens staked (we won't have prices here)
   rate?: { [key: string]: string };
   ltv?: string;
 }
 
-export interface ISupplyTokenOpportunity<TExtra = void> extends ITokenOpportunity<TExtra> {
+export interface ISupplyTokenOpportunity<TExtra = unknown> extends ITokenOpportunity<TExtra> {
   weight?: number;
   totalSupply?: number; // number of total supply of tokens (in case of lp token)
   totalSupplied?: number; // number of tokens staked
@@ -26,7 +26,7 @@ export interface ISupplyTokenOpportunity<TExtra = void> extends ITokenOpportunit
   ltv?: number;
 }
 
-export interface ISupplyTokenUserEntry<TExtra = void> extends ITokenUserEntry<TExtra> {
+export interface ISupplyTokenUserEntry<TExtra = unknown> extends ITokenUserEntry<TExtra> {
   totalSupplied?: number; // number of tokens staked
   tvl: number; // number of tokens * token price
   apy?: ISupplyApy;

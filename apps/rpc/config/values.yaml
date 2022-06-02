@@ -19,6 +19,14 @@ configMaps:
     BODY_LIMIT: 10mb
     URL_LIMIT: 10mb
 
+resources:
+  requests:
+    cpu: 200m
+    memory: 400Mi
+  limits:
+    cpu: 400m
+    memory: 1Gi
+
 secrets:
   - databaserpc
   - redis

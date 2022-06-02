@@ -1,6 +1,4 @@
-import { AssetReference } from 'apps/assets/src/common/types';
 import { Queue } from 'bull';
-import { plainToClass } from 'class-transformer';
 
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
@@ -14,13 +12,12 @@ import { JobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
+import { AssetReference } from '../../../common/types/asset-reference';
 
 import { AssetAvgPrice, PriceService } from '../../prices/price.service';
 import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
 import { AssetCandidateRequest } from '../dto/asset-candidate.request';
-import { AssetCategoryDto } from '../dto/asset-category.dto';
 import { AssetHistoricalPriceDto } from '../dto/asset-historical-price.dto';
-import { AssetUnderlyingDto } from '../dto/asset-underlying.dto';
 import { AssetDto } from '../dto/asset.dto';
 import { GetAssetRequest } from '../dto/get-asset.request';
 import { SearchResultsEntryDto } from '../dto/search-results-entry.dto';
@@ -28,6 +25,8 @@ import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCandidateRepository } from '../repositories/assets-candidate.repository';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { AssetsRepository } from '../repositories/assets.repository';
+import { HistoricalPriceRequest } from '../types/historical-price-request.type';
+import { mapAssetsToPlain } from '../utils/cache-mapping';
 import { AssetAnalyserService } from './asset-analyser.service';
 
 @Injectable()
@@ -46,20 +45,17 @@ export class AssetsService extends CrudService<AssetsRepository> {
     super(AssetsCachedRepository);
   }
 
-  public async getAsset(request: GetAssetRequest): Promise<AssetDto> {
-    const [response] = await this.getBulkAssets([request]);
-    return response;
+  public async getAsset(request: GetAssetRequest): Promise<AssetDto[]> {
+    return this.getBulkAssets([request]);
   }
 
   public async getBulkAssets(requests: GetAssetRequest[]): Promise<AssetDto[]> {
     const validRequests = requests.filter(({ address }) => isSomeAddress(address));
-    const assets = await this.getAssets(validRequests);
-    // TODO: Historical prices are not handled
-    // TODO: Add mapping, not expose everything (e.g. created at)
-    // TODO: This mapping code looks ugly, it should be extracted into mapper or use https://www.npmjs.com/package/@automapper/nestjs
-    const dtos = assets.map((asset) => this.mapAssetToDto(asset));
+    const assets = mapAssetsToPlain(await this.getAssets(validRequests));
 
-    return this.addPrices(dtos);
+    await this.updateAssetsWithHistoricalPrices(requests, assets);
+
+    return this.addPrices(assets);
   }
 
   private async addPrices(dtos: AssetDto[]): Promise<AssetDto[]> {
@@ -73,22 +69,10 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const getKey = (ar: AssetReference) => `${ar.chainId}_${ar.address}`;
     const map = new Map<string, AssetReference>();
     for (const dto of dtos) {
-      const assets = this.getDtoNestedAssets(dto);
-      for (const asset of assets) {
-        const key = getKey(asset);
-        map.set(key, asset);
-      }
+      const key = getKey(dto);
+      map.set(key, dto);
     }
     return [...map.values()];
-  }
-
-  private getDtoNestedAssets(dto: AssetDto): AssetReference[] {
-    return [
-      { chainId: dto.chainId, address: dto.address },
-      ...(dto.underlying || [])
-        .map(({ underlyingAsset }) => this.getDtoNestedAssets(underlyingAsset))
-        .flat(),
-    ];
   }
 
   private updateDtosWithPrices(dtos: AssetDto[], prices: AssetAvgPrice[]) {
@@ -102,23 +86,16 @@ export class AssetsService extends CrudService<AssetsRepository> {
       ({ asset }) => asset.address === dto.address && asset.chainId === dto.chainId,
     );
     dto.price = assetPrice?.price;
-    if (!dto.underlying?.length) {
-      return;
-    }
-    this.updateDtosWithPrices(
-      dto.underlying.map(({ underlyingAsset }) => underlyingAsset),
-      prices,
-    );
+    return;
   }
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
-    if (assets.length === requests.length) {
-      return assets;
-    }
 
     const unknownAssetsRequests = this.excludeFoundAssets(requests, assets);
-    this.processAssets(unknownAssetsRequests);
+    if (unknownAssetsRequests.length) {
+      this.processAssets(unknownAssetsRequests);
+    }
 
     return assets;
   }
@@ -146,27 +123,27 @@ export class AssetsService extends CrudService<AssetsRepository> {
     });
   }
 
-  private mapAssetToDto(asset: AssetEntity) {
-    return plainToClass(AssetDto, {
-      ...asset,
-      categories: asset.categories?.map((assetCategory) =>
-        plainToClass(AssetCategoryDto, assetCategory),
-      ),
-      ...(asset.historicalPrices
-        ? {
-            historicalPrices: asset.historicalPrices.map((historicalPrice) =>
-              plainToClass(AssetHistoricalPriceDto, historicalPrice),
-            ),
-          }
-        : {}),
-      ...(asset.underlying
-        ? {
-            underlying: asset.underlying.map((underlyingAsset) =>
-              plainToClass(AssetUnderlyingDto, underlyingAsset),
-            ),
-          }
-        : {}),
-    });
+  private async updateAssetsWithHistoricalPrices(
+    requests: GetAssetRequest[],
+    assets: AssetDto[],
+  ): Promise<AssetDto[]> {
+    const historicalPricesRequests = getHistoricalPricesRequests(requests, assets);
+    if (!historicalPricesRequests.length) {
+      return assets;
+    }
+    const historicalPrices = (
+      await this.assetsHistoricalPriceRepository.getPrices(historicalPricesRequests)
+    ).reduce((priceMap, { asset, price, timestamp }) => {
+      const prices = priceMap.get(asset.id) || [];
+      prices.push({
+        price: price,
+        timestamp: timestamp,
+      });
+      priceMap.set(asset.id, prices);
+      return priceMap;
+    }, new Map<number, AssetHistoricalPriceDto[]>());
+    assets.forEach((asset) => (asset.historicalPrices = historicalPrices.get(asset.id) || []));
+    return assets;
   }
 
   public async search(searchParams: SearchParams): Promise<SearchResultsEntryDto[]> {
@@ -198,4 +175,25 @@ export class AssetsService extends CrudService<AssetsRepository> {
     await this.assetsCandidateRepository.save(assetsCandidateEntity);
     this.logger.log('Saved assets candidate', { chainId, address });
   }
+}
+
+function getHistoricalPricesRequests(
+  requests: GetAssetRequest[],
+  assets: AssetDto[],
+): HistoricalPriceRequest[] {
+  return requests //
+    .filter((request) => request.pricesAt?.length)
+    .flatMap((request) => {
+      const asset = assets.find(
+        (a) => a.address === request.address && a.chainId === request.chainId,
+      );
+      return asset
+        ? [
+            {
+              assetId: asset.id,
+              pricesAt: request.pricesAt,
+            },
+          ]
+        : [];
+    });
 }

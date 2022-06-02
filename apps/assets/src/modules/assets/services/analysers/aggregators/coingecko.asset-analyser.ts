@@ -1,11 +1,12 @@
 /* eslint-disable camelcase */
-import { AssetReference } from 'apps/assets/src/common/types';
 import { CoinGeckoClient } from 'coingecko-api-v3';
 
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
+
+import { AssetReference } from '../../../../../common/types/asset-reference';
 
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 

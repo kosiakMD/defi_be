@@ -5,7 +5,6 @@ import { SearchParams } from '../common/interfaces/search.interfaces';
 
 import { AssetCandidateRequest } from '../modules/assets/dto/asset-candidate.request';
 import { GetAssetRequest } from '../modules/assets/dto/get-asset.request';
-import { GetAssetResponse } from '../modules/assets/dto/get-asset.response';
 import { GetAssetsRequest } from '../modules/assets/dto/get-assets.request';
 import { GetAssetsResponse } from '../modules/assets/dto/get-assets.response';
 import { SearchResultsEntryDto } from '../modules/assets/dto/search-results-entry.dto';
@@ -17,10 +16,10 @@ export class AssetsController {
   constructor(private readonly assetsService: AssetsService) {}
 
   @Get('/')
-  @ApiResponse({ status: HttpStatus.OK, type: GetAssetResponse })
-  async get(@Query() query: GetAssetRequest): Promise<GetAssetResponse> {
-    const response = new GetAssetResponse();
-    response.asset = await this.assetsService.getAsset(query);
+  @ApiResponse({ status: HttpStatus.OK, type: GetAssetsResponse })
+  async get(@Query() query: GetAssetRequest): Promise<GetAssetsResponse> {
+    const response = new GetAssetsResponse();
+    response.assets = await this.assetsService.getAsset(query);
     return response;
   }
 

@@ -7,44 +7,6 @@ export enum ChainIdEnum {
   avax = 6,
 }
 
-export enum ChainPrefixEnum {
-  eth = 'eth',
-  bnb = 'bnb',
-  plg = 'plg',
-  ftm = 'ftm',
-  arbi = 'arbi',
-  avax = 'avax',
-}
-
-export enum AbsoluteChainIdEnum {
-  eth = 1,
-  bnb = 56,
-  plg = 137,
-  ftm = 250,
-  arbi = 42161,
-  avax = 43114,
-}
-
-export enum ChainNameEnum {
-  ETH = 'ethereum', // remove from enum
-  eth = 'ethereum',
-  BNB = 'binance', // remove from enum
-  bnb = 'binance',
-  plg = 'polygon',
-  ftm = 'fantom',
-  arbi = 'arbitrum',
-  avax = 'avalanche',
-}
-
-export enum ChainAbbrEnum {
-  eth = 'eth',
-  bnb = 'bnb',
-  plg = 'plg',
-  ftm = 'ftm',
-  arbi = 'arbi',
-  avax = 'avax',
-}
-
 export enum ProjectEnum {
   sushiswap = 'sushiswap',
   uniswap = 'uniswap',
@@ -56,26 +18,6 @@ export enum UniswapProtocolEnum {
   uniswapV1 = 'UniswapV1',
   protocolV2 = 'UniswapV2',
   uniswapV2 = 'UniswapV2',
-}
-
-export enum SushiSwapProtocolEnum {
-  protocolV1 = 'SushiSwapV1',
-  sushiswapV1 = 'SushiSwapV1',
-  protocolV2 = 'SushiSwapV2',
-  sushiswapV2 = 'SushiSwapV2',
-  protocolV3 = 'SushiSwapV3',
-  sushiswapV3 = 'SushiSwapV3',
-}
-
-export enum PancakeProtocolEnum {
-  protocolV1 = 'PancakeV1',
-  pancakeV1 = 'PancakeV1',
-  protocolV2 = 'PancakeV2',
-  pancakeV2 = 'PancakeV2',
-}
-
-export enum QuickswapProtocolEnum {
-  quickswap = 'QuickSwap',
 }
 
 export enum ResultStatus {

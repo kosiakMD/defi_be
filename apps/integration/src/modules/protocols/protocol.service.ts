@@ -63,7 +63,6 @@ import { AstroportProtocol } from './protocols/astroport/astroport.protocol';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import BasicProtocol from './protocols/basicProtocol';
-import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
 import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
@@ -112,7 +111,6 @@ export class ProtocolService {
     private readonly abracadabraProtocol: AbracadabraProtocol,
     private readonly autofarmProtocol: AutofarmProtocol,
     private readonly badgerProtocol: BadgerProtocol,
-    private readonly beefyProtocol: BeefyProtocol,
     private readonly compoundProtocol: CompoundProtocol,
     private readonly convexProtocol: ConvexProtocol,
     private readonly curveProtocol: CurveProtocol,
@@ -157,7 +155,6 @@ export class ProtocolService {
       anchorProtocol,
       autofarmProtocol,
       badgerProtocol,
-      beefyProtocol,
       compoundProtocol,
       convexProtocol,
       curveProtocol,

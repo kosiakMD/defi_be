@@ -39,7 +39,7 @@ export class BeefyProtocol extends BasicProtocol {
     ChainAbbrEnum.plg,
   ];
   readonly project = ProjectEnum.beefy;
-  readonly name = ProtocolNameEnum.Beefy;
+  readonly name = ProtocolNameEnum.Convex; // ?
   readonly displayName = 'Beefy Finance';
   readonly features = {
     [ChainAbbrEnum.arbi]: [FeatureEnum.staking],

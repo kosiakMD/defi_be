@@ -163,8 +163,8 @@ export abstract class EVMCore<
 
   async updateUniswapLikeTokensData(tokens: any[], prices: CurrentPricesPayload) {
     const calls = new Map();
-    tokens.forEach((token: any) => {
-      if (token.underlyingAssets?.length !== 2) return;
+    for (const token of tokens) {
+      if (token.underlyingAssets?.length !== 2) continue;
       const contract = new UniswapV2Pair(token.address);
       calls.set(`${token.address}.totalSupply()`, contract.totalSupply());
       calls.set(`${token.address}.getReserves()`, contract.getReserves());
@@ -174,7 +174,8 @@ export abstract class EVMCore<
         const c = new ERC20(asset.address);
         calls.set(`${asset.address}.totalSupply()`, c.totalSupply());
       });
-    });
+    }
+
     const results = await this.multicall.handleInBatches(calls, this.meta.chain);
     tokens.forEach((token: any) => {
       if (token.underlyingAssets?.length !== 2) return;

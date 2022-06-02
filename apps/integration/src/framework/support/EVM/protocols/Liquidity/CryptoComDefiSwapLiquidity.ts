@@ -14,7 +14,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { INamedFunctionPredicates } from '../../../interfaces';
+import { INamedFunctionPredicates, TokenMap } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
@@ -52,29 +52,52 @@ export class CryptoComDefiSwapLiquidity extends SingleContractProtocol<
     const poolIds = Array.from(Array(context.allPoolsLength.toNumber()).keys());
     const poolsList = await this.fetchRegisteredPools(poolIds);
 
-    const totalStakedPerPool = await this.multicall.callArray(
-      poolsList.map((p) => {
-        const lp = new ERC20(p);
-        return lp.totalSupply();
-      }),
-      this.meta.chain,
-    );
-
-    return poolsList.map((poolInfo, idx) => {
+    return poolsList.map((poolInfo) => {
       return {
-        id: `${this.meta.address}::${idx}`,
+        id: poolInfo,
         chain: this.meta.chain,
         feature: this.meta.feature,
         supplied: [
-          {
-            token: {
-              address: poolInfo,
-            },
-            totalSupplied: totalStakedPerPool[idx].toString(),
-          },
+          // Will fill in during hydration
         ],
       };
     });
+  }
+
+  protected formatOpportunity(
+    opportunity: IPoolFeatureMinimal,
+    tokens: TokenMap,
+  ): void | IPoolFeatureOpportunity {
+    // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
+    const base: any = {
+      feature: opportunity.feature,
+      id: opportunity.id,
+      chain: opportunity.chain,
+      links: this.generateLinks(opportunity),
+      meta: opportunity.meta,
+      interactive: opportunity.interactive,
+    };
+
+    const lpToken = tokens.get(opportunity.id);
+
+    // If there are no underlying tokens for this liquidity pool, skip for now
+    // asset service will fetch details if possible and fill in at a later time
+    if (!lpToken.underlying) return;
+
+    const receipt = this.formatOpportunityReceiptToken(opportunity, lpToken, tokens);
+    if (receipt) {
+      base.token = receipt;
+    }
+
+    // fill & format supplied tokens
+    base.supplied = lpToken.underlying?.map((token) => {
+      return {
+        token,
+        tvl: token.reserve * token.price,
+      };
+    });
+
+    return base;
   }
 
   protected async fetchUserData(
@@ -95,9 +118,14 @@ export class CryptoComDefiSwapLiquidity extends SingleContractProtocol<
       );
     });
     const userBalances = await this.multicall.handleInBatches(calls, this.meta.chain);
+
     return pools
       .map((p) => {
-        return this.formatUserData(address, p, userBalances);
+        try {
+          return this.formatUserData(address, p, userBalances);
+        } catch (err) {
+          this.logger.warn(err);
+        }
       })
       .filter((u) => !!u);
   }
@@ -120,33 +148,22 @@ export class CryptoComDefiSwapLiquidity extends SingleContractProtocol<
       return;
     }
     const balanceNormalized = normalizeDecimals(userBalance.toString(), pool.token.decimals);
+
     const token = {
       ...pool.token,
       amount: balanceNormalized,
       value: balanceNormalized * pool.token.price,
     };
 
-    const poolShare = new BN(balanceNormalized).div(pool.supplied[0].token.totalSupply);
-    const supplied: ISupplyTokenUserEntry[] = pool.supplied.map((tokenSupplied) => {
-      const amountUSD = new BN(balanceNormalized).times(tokenSupplied.token.price);
-
-      tokenSupplied.token.underlying = tokenSupplied.token.underlying.map((token) => {
-        const tokenBalance = poolShare.times(token.reserve);
-        const tokenBalanceUSD = tokenBalance.times(token.price);
-        return {
-          ...token,
-          balance: tokenBalance.toNumber(),
-          value: tokenBalanceUSD.toNumber(),
-        };
-      });
-
-      const result: ISupplyTokenUserEntry = {
-        ...tokenSupplied,
-        amount: balanceNormalized,
-        value: amountUSD.toNumber(),
-        totalSupplied: tokenSupplied.token.totalSupply,
+    const poolShare = new BN(balanceNormalized).div(pool.token.totalSupply);
+    const supplied: ISupplyTokenUserEntry[] = pool.supplied.map((token) => {
+      const tokenBalance = poolShare.times(token.token.reserve);
+      const tokenBalanceUSD = tokenBalance.times(token.token.price);
+      return {
+        ...token,
+        amount: tokenBalance.toNumber(),
+        value: tokenBalanceUSD.toNumber(),
       };
-      return result;
     });
 
     return {

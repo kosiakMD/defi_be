@@ -20,7 +20,6 @@ import {
   LiquidityPoolFeatureDto,
   LiquidityPosition,
   Logger,
-  PancakeProtocolEnum,
   ProtocolName,
   QuickswapProtocolEnum,
   ResultStatus,
@@ -75,8 +74,6 @@ import { MuesliSwapProtocol } from './protocols/muesliswap/muesliswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
 import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
-import PancakeProtocol from './protocols/pancake/pancake.protocol';
-import PancakeProtocolV1 from './protocols/pancake/pancake.protocol.v1';
 import { PangolinV2Protocol } from './protocols/pangolin/pangolinV2.protocol';
 import QuickswapProtocol from './protocols/quickswap/quickswapProtocol';
 import RaydiumProtocol from './protocols/raydium/raydium.protocol';
@@ -118,8 +115,6 @@ export class ProtocolService {
     private readonly curveProtocol: CurveProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
     private readonly olympusProtocol: OlympusProtocol,
-    private readonly pancakeProtocolV1: PancakeProtocolV1,
-    private readonly pancakeProtocolV2: PancakeProtocol,
     private readonly pangolinProtocolV2: PangolinV2Protocol,
     private readonly quickswapProtocol: QuickswapProtocol,
     private readonly raydiumProtocol: RaydiumProtocol,
@@ -164,8 +159,6 @@ export class ProtocolService {
       defiKingdomsProtocol,
       olympusProtocol,
       orcaProtocol,
-      pancakeProtocolV1,
-      pancakeProtocolV2,
       pangolinProtocolV2,
       quickswapProtocol,
       raydiumProtocol,
@@ -372,7 +365,6 @@ export class ProtocolService {
         protocol.name !== AlpacaProtocolEnum.alpaca &&
         protocol.name !== AutofarmProtocolEnum.autofarm &&
         protocol.name !== SpookySwapProtocolEnum.SpookySwap &&
-        protocol.name !== PancakeProtocolEnum.pancakeV2 &&
         protocol.name !== QuickswapProtocolEnum.quickswap
       ) {
         await this.handleStakingMissedData(stakingPositions, chainId);

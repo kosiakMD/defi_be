@@ -21,8 +21,8 @@ import { Benqi } from '../platforms/Benqi';
 import { BiSwap } from '../platforms/BiSwap';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
+import { CryptoComDefiswap } from '../platforms/CryptoComDefiSwap';
 import { CubFinance } from '../platforms/CubFinance';
-import { Defiswap } from '../platforms/DefiSwap';
 import { Ellipsis } from '../platforms/Ellipsis';
 import { Evodefi } from '../platforms/Evodefi';
 import { Frax } from '../platforms/Frax';
@@ -104,7 +104,7 @@ export class PlatformService implements OnApplicationBootstrap {
       Synapse,
       Spiritswap,
       Kyberswap,
-      Defiswap,
+      CryptoComDefiswap,
       MakerDAO,
       IronBank,
       Benqi,

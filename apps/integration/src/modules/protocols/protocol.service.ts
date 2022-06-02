@@ -68,11 +68,9 @@ import { CompoundProtocol } from './protocols/compoundProtocol';
 import { ConvexProtocol } from './protocols/convex/convex.protocol';
 import CurveProtocol from './protocols/curve/curve.protocol';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
-import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
-import MojitoswapProtocol from './protocols/mojitoswap/mojitoswap.protocol';
 import { MuesliSwapProtocol } from './protocols/muesliswap/muesliswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
@@ -119,8 +117,6 @@ export class ProtocolService {
     private readonly convexProtocol: ConvexProtocol,
     private readonly curveProtocol: CurveProtocol,
     private readonly defiKingdomsProtocol: DefiKingdomsProtocol,
-    private readonly ellipsisProtocol: EllipsisProtocol,
-    private readonly mojitoswapProtocol: MojitoswapProtocol,
     private readonly olympusProtocol: OlympusProtocol,
     private readonly pancakeProtocolV1: PancakeProtocolV1,
     private readonly pancakeProtocolV2: PancakeProtocol,
@@ -166,8 +162,6 @@ export class ProtocolService {
       convexProtocol,
       curveProtocol,
       defiKingdomsProtocol,
-      ellipsisProtocol,
-      mojitoswapProtocol,
       olympusProtocol,
       orcaProtocol,
       pancakeProtocolV1,

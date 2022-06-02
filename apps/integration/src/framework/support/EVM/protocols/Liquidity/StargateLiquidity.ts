@@ -22,6 +22,7 @@ import {
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
+import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
@@ -145,11 +146,26 @@ export class StargateLiquidity extends SingleContractProtocol<
     const balanceRaw = data.get(`${address}.${pool.id}`)?.output.data;
     const balance = normalizeDecimals(balanceRaw, pool.supplied[0].token.decimals);
     if (!balance) return;
-    const underlying = pool.supplied[0].token.underlying[0];
-    pool.supplied[0]['amount'] = underlying.balance = balance;
-    pool.supplied[0]['value'] = underlying.value = balance * pool.supplied[0].token.price;
 
-    return pool as IPoolFeatureUser;
+    const value = balance * pool.supplied[0].token.price;
+
+    const supplied: ISupplyTokenUserEntry[] = pool.supplied.map((tokenSupplied) => {
+      return {
+        token: tokenSupplied.token.underlying[0],
+        amount: balance,
+        value,
+        tvl: tokenSupplied.tvl,
+      };
+    });
+
+    return {
+      ...pool,
+      token: {
+        ...pool.token,
+        amount: balance,
+      },
+      supplied,
+    };
   }
 }
 

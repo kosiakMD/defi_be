@@ -25,6 +25,7 @@ import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
+  ISupplyTokenUserEntry,
 } from '../../../interfaces/tokens.supplied.interface';
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
@@ -160,14 +161,28 @@ export class SynapseLiquidity extends SingleContractProtocol<
     const balance = normalizeDecimals(balanceRaw, pool.supplied[0].token.decimals);
     if (!balance) return;
     const poolShare = balance / pool.supplied[0].token.totalSupply;
-    pool.supplied[0]['amount'] = balance; // user balance
-    pool.supplied[0]['value'] = pool.supplied[0].token.underlying.reduce((value, underlying) => {
-      underlying.balance = poolShare * underlying.reserve;
-      underlying.value = underlying.balance * underlying.price;
-      value += underlying.value;
-      return value;
-    }, 0);
-    return pool as IPoolFeatureUser;
+
+    const supplied: ISupplyTokenUserEntry[] = pool.supplied[0].token.underlying.map(
+      (underlying) => {
+        return {
+          tvl: underlying.reserve * underlying.price,
+          amount: poolShare * underlying.reserve,
+          value: poolShare * underlying.reserve * underlying.price,
+          token: {
+            ...underlying,
+          },
+        };
+      },
+    );
+
+    return {
+      ...pool,
+      token: {
+        ...pool.token,
+        amount: balance,
+      },
+      supplied,
+    };
   }
 }
 

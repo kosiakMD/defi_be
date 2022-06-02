@@ -4,6 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
+import {
+  ICakePoolMeta,
+  PancakeLiquidity,
+} from '../support/EVM/protocols/Liquidity/PancakeLiquidity';
 import { CakeVault, ICakeVaultMeta } from '../support/EVM/protocols/Yield/CakeVault';
 import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
 import { MasterChefPancakeV2 } from '../support/EVM/protocols/Yield/MasterChefPancakeV2';
@@ -28,6 +32,18 @@ export class PancakeSwap extends RootPlatform {
         logo: 'https://icons.llama.fi/pancakeswap.jpg',
         twitter: 'PancakeSwap',
       },
+    });
+
+    await this.registerProtocol<ICakePoolMeta>(PancakeLiquidity, {
+      chain: ChainIdEnum.bnb,
+      name: 'Liquidity - Mojitoswap',
+      feature: FeatureEnum.pools,
+      ammSubgraphUrl: 'https://bsc.streamingfast.io/subgraphs/name/pancakeswap/exchange-v2',
+      wrappedTokenAddress: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c',
+      minUSDPairReserve: 75000,
+      // works not stable with bigger number
+      pairsPerQuery: 100,
+      balanceCallsPerQuery: 1000,
     });
 
     // TODO: This single pool has not yet been implemented

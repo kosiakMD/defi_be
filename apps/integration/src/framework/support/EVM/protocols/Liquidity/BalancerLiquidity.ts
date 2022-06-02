@@ -13,12 +13,13 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
-import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
+import { IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import {
+  IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
-import { BaseWithTokens } from '../../../interfaces/new.interfaces';
+import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
@@ -34,18 +35,6 @@ import {
 import { SubgraphsContractProtocol } from '../../SubgraphsContractProtocol';
 
 type UsersDataResponse = Map<Address, Array<{ balance: string; address: Address }>>;
-type ERC20TokenMinimal = {
-  address: string;
-  underlying?: {
-    address: string;
-    reserve: string;
-  }[];
-};
-
-interface IBalancerSupplyTokenMinimal extends ISupplyTokenMinimal {
-  token: ERC20TokenMinimal;
-}
-
 export interface IBalancerPoolMeta extends IProtocolMeta {
   context: {
     endpoint: string;
@@ -55,11 +44,9 @@ export interface IBalancerPoolMeta extends IProtocolMeta {
   feature: FeatureEnum.pools;
 }
 
-type IBalancerPoolMinimal = BaseWithTokens<IBalancerSupplyTokenMinimal[], void, void, void>;
-
 export class BalancerLiquidity
   extends SubgraphsContractProtocol<
-    IBalancerPoolMinimal,
+    IPoolFeatureMinimal,
     IPoolFeatureOpportunity,
     IPoolFeatureUser,
     IBalancerPoolMeta
@@ -77,15 +64,11 @@ export class BalancerLiquidity
     super();
   }
 
-  async initialize() {
-    //
-  }
-
   get GQLEndpoint(): string {
     return new URL(this.meta.context.networkId, this.meta.context.endpoint).toString();
   }
 
-  async getCacheableOpportunityData(): Promise<IBalancerPoolMinimal[]> {
+  async getCacheableOpportunityData(): Promise<IPoolFeatureMinimal[]> {
     const $data = this.httpService
       .post<IBalancerPoolsResponse>(this.GQLEndpoint, {
         query: POOL_QUERY,
@@ -96,8 +79,46 @@ export class BalancerLiquidity
         toArray(),
       );
 
-    const data = await firstValueFrom($data);
-    return data;
+    return await firstValueFrom($data);
+  }
+
+  protected formatOpportunitySuppliedToken(
+    supplied: ISupplyTokenMinimal,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    const totalSupplied = +supplied.totalSupplied; // already normalized;
+    const apy = this.formatSupplyApy?.(supplied);
+    return {
+      token,
+      apy,
+      totalSupplied,
+      tvl: totalSupplied * token.price,
+    };
+  }
+
+  protected formatOpportunityReceiptToken(
+    opportunity: IPoolFeatureMinimal,
+    token: ERC20Token,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    tokens: Map<Address, ERC20Token>,
+  ) {
+    if (!token) {
+      return null;
+    }
+
+    const totalSupplied = +opportunity.token.totalSupplied; // already normalized;
+    if (!token.price) {
+      token.price =
+        opportunity.supplied.reduce((prev, next) => {
+          const token = tokens.get(next.token.address);
+          return prev + +next.totalSupplied * (token?.price || 0);
+        }, 0) / totalSupplied;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { underlying, ...rest } = token;
+
+    return { ...rest, totalSupplied };
   }
 
   protected formatUserData(
@@ -113,28 +134,20 @@ export class BalancerLiquidity
 
       const poolClone = cloneDeep(pool);
 
-      const supplied: ISupplyTokenUserEntry[] = poolClone.supplied.map((position) => {
-        const amountBN = new BN(balance);
-        const amountUSD = amountBN.times(position.token.price);
-        const poolShare = amountBN.div(poolClone.supplied[0].token.totalSupply);
+      const amountBN = new BN(balance);
+      const poolShare = amountBN.div(poolClone.token.totalSupplied);
 
-        position.token.underlying = position.token.underlying.map((token) => {
-          const tokenBalance = poolShare.times(token.reserve);
-          const tokenBalanceUSD = tokenBalance.times(token.price);
-          return {
-            ...token,
-            balance: tokenBalance.toNumber(),
-            value: tokenBalanceUSD.toNumber(),
-          };
-        });
-
-        const result: ISupplyTokenUserEntry = {
-          ...position,
-          amount: amountBN.toNumber(),
-          value: amountUSD.toNumber(),
+      const supplied: ISupplyTokenUserEntry[] = poolClone.supplied.map((supply) => {
+        const amount = poolShare.times(supply.totalSupplied);
+        return {
+          ...supply,
+          amount: amount.toNumber(),
+          value: amount.times(supply.token.price).toNumber(),
         };
-        return result;
       });
+
+      poolClone.token.amount = amountBN.toNumber();
+      poolClone.token.value = amountBN.times(poolClone.token.price).toNumber();
 
       result.push({ ...poolClone, supplied });
     }
@@ -163,78 +176,24 @@ export class BalancerLiquidity
         toArray(),
       );
     const data = await firstValueFrom($data);
-    const userData = new Map(data.map((b) => [b.address, b.liquidity]));
-    return userData;
+    return new Map(data.map((b) => [b.address, b.liquidity]));
   }
 
-  protected formatOpportunity(
-    opportunity: IBalancerPoolMinimal,
-    tokens: TokenMap,
-  ): IPoolFeatureOpportunity {
-    if (opportunity.supplied.some((t) => !tokens.has(t.token.address))) {
-      const message = `Failed to resolve some tokens for pool - ${opportunity.chain}/${opportunity.id}`;
-      throw new Error(message);
-    }
-    const supplied = opportunity.supplied.map((poolToken) =>
-      this.formatSuppliedToken(poolToken, tokens),
-    );
-
-    return {
-      id: opportunity.id,
-      chain: opportunity.chain,
-      feature: this.meta.feature,
-      supplied: supplied,
-    };
-  }
-
-  protected formatSuppliedToken(
-    poolToken: IBalancerSupplyTokenMinimal,
-    tokens: TokenMap,
-  ): ISupplyTokenOpportunity {
-    const underlying = poolToken.token.underlying?.map((token) => {
-      return {
-        ...tokens.get(token.address),
-        reserve: Number(token.reserve),
-      };
-    });
-
-    const token = tokens.get(poolToken.token.address);
-    token.underlying = underlying;
-    if (token.price === 0) {
-      const tvl = underlying.reduce(
-        (prev, next) => prev.plus(new BN(next.reserve).times(next.price)),
-        new BN(0),
-      );
-      token.price = tvl.div(poolToken.totalSupplied).toNumber();
-    }
-
-    return {
-      token,
-      totalSupplied: +poolToken.totalSupplied,
-      tvl: +poolToken.totalSupplied * token.price,
-    };
-  }
-
-  /** TODO: need to move out reserve from TMinimal  */
-  private toFeatureEntryMinimal(pool: Pool): IBalancerPoolMinimal {
+  private toFeatureEntryMinimal(pool: Pool): IPoolFeatureMinimal {
     return {
       id: pool.address,
       chain: this.meta.chain,
       feature: this.meta.feature,
-      supplied: [
-        {
-          token: {
-            address: pool.address,
-            underlying: pool.tokens.map((token) => {
-              return {
-                address: token.address,
-                reserve: token.balance,
-              };
-            }),
-          },
-          totalSupplied: pool.totalShares,
-        },
-      ],
+      token: {
+        address: pool.address,
+        totalSupplied: pool.totalShares,
+      },
+      supplied: pool.tokens.map((token) => {
+        return {
+          token: { address: token.address },
+          totalSupplied: token.balance,
+        };
+      }),
     };
   }
 }

@@ -5,17 +5,20 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { formatAddress } from '@app/common/utils';
+
 import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
+import { AssetReference } from '../../../common/types';
 
 import { AssetsCategoryRepository } from '../../assets-category/repositories/assets-category.repository';
-import { IconsService } from '../../icons/icons.service';
 import { AssetUnderlyingEntity } from '../entities/asset-underlying.entity';
 import { AssetEntity } from '../entities/asset.entity';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
-import { MetadataService } from '../services/metadata/metadata.service';
-import { SpecificAssetsService } from '../services/specific-assets/specific-assets.service';
+import { AssetIcon } from '../services/analysers/core/asset.analyser';
+import { AssetAnalyserService } from '../services/asset-analyser.service';
+import { IconsService } from '../services/icons.service';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
 @Processor(QueueName.ASSETS)
@@ -25,9 +28,8 @@ export class AssetsProcessor {
     private readonly assetsRepository: AssetsCachedRepository,
     @InjectRepository(AssetsCategoryRepository)
     private readonly assetsCategoryRepository: AssetsCategoryRepository,
-    private readonly metadataService: MetadataService,
     private readonly iconsService: IconsService,
-    private readonly specificAssetsService: SpecificAssetsService,
+    private readonly assetAnalyserService: AssetAnalyserService,
   ) {}
 
   @Process({
@@ -37,6 +39,8 @@ export class AssetsProcessor {
   })
   public async handleMetadataJob(job: Job<AssetProcessingRequest>) {
     try {
+      // TODO: Make this one nicer
+      job.data.address = formatAddress(job.data.address);
       const { address, chainId } = job.data;
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
@@ -65,36 +69,40 @@ export class AssetsProcessor {
         return await this.updateAsset(savedAsset, assetRequest);
       }
 
-      const assetMetadata = await this.metadataService.getMetadata(address, chainId);
+      const asset = await this.assetAnalyserService.analyseAsset({ chainId, address });
+      if (!asset) {
+        this.logger.warn(
+          `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} cannot be analysed`,
+        );
+        return;
+      }
+
       const processingAsset = new AssetEntity();
 
       processingAsset.address = address;
       processingAsset.chainId = chainId;
-      processingAsset.symbol = assetMetadata.symbol;
-      processingAsset.name = assetMetadata.name;
-      processingAsset.decimals = assetMetadata.decimals;
-      processingAsset.rank = rank;
-      processingAsset.isTracked = isTracked || false;
+      processingAsset.symbol = asset.symbol;
+      processingAsset.name = asset.name;
+      processingAsset.decimals = asset.decimals;
+      processingAsset.rank = asset.rank || rank;
+      processingAsset.isTracked = asset.isTracked || isTracked || false;
       processingAsset.underlying = [];
+      processingAsset.metadata = asset.metadata || {};
 
-      processingAsset.icon = await this.loadAssetIcons(processingAsset);
+      processingAsset.icon = await this.loadAssetIcons({ chainId, address }, asset.icons);
 
-      const analysis = await this.specificAssetsService.analyseAsset(processingAsset);
-      if (analysis.done) {
-        processingAsset.metadata = analysis.metadata;
-        processingAsset.categories = await this.assetsCategoryRepository.findOrCreate(
-          analysis.categories,
-        );
+      processingAsset.categories = await this.assetsCategoryRepository.findOrCreate(
+        asset.categories,
+      );
 
-        for (const underlyingAddress of analysis.underlying) {
-          const underlying = new AssetUnderlyingEntity();
-          underlying.position = analysis.underlying.indexOf(underlyingAddress);
-          underlying.underlyingAsset = await this.processAsset({
-            address: underlyingAddress,
-            chainId,
-          });
-          processingAsset.underlying.push(underlying);
-        }
+      for (const underlyingAddress of asset.underlying) {
+        const underlying = new AssetUnderlyingEntity();
+        underlying.position = asset.underlying.indexOf(underlyingAddress);
+        underlying.underlyingAsset = await this.processAsset({
+          address: underlyingAddress,
+          chainId,
+        });
+        processingAsset.underlying.push(underlying);
       }
 
       return await this.assetsRepository.save(processingAsset);
@@ -104,15 +112,11 @@ export class AssetsProcessor {
     }
   }
 
-  private async loadAssetIcons(asset: AssetEntity) {
-    const icons = await this.iconsService.loadAssetIcons({
-      symbol: asset.symbol,
-      chainId: asset.chainId,
-      address: asset.address,
-    });
+  private async loadAssetIcons(asset: AssetReference, icons: AssetIcon[]) {
+    const savedIcons = await this.iconsService.uploadAssetIcons(asset, icons);
 
     // NOTE: Largest loaded icon is selected
-    const largestIcon = icons.reduce(
+    const largestIcon = savedIcons.reduce(
       (largest, current) => (current.fileSize >= largest.fileSize ? current : largest),
       { url: null, fileSize: 0 },
     );
@@ -132,10 +136,7 @@ export class AssetsProcessor {
     if (request.isTracked && !asset.isTracked) {
       asset.isTracked = request.isTracked;
     }
-    if (!asset.icon) {
-      // TODO: Enable this one and refresh from time to time
-      asset.icon = await this.loadAssetIcons(asset);
-    }
+    // TODO: Reload asset icon in case expired
     return await this.assetsRepository.save(asset);
   }
 }

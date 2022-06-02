@@ -1,52 +1,43 @@
-import { Connection, PublicKey } from '@solana/web3.js';
+import { Connection, GetProgramAccountsConfig, PublicKey } from '@solana/web3.js';
 import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
-import { cloneDeep } from 'lodash';
-import { map } from 'rxjs/operators';
+import { chunk, cloneDeep } from 'lodash';
 
-import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import {
-  Address,
-  ChainDto,
-  FeatureEnum,
-  Logger,
-  ProtocolTypeEnum,
-  RaydiumProtocolEnum,
-} from '@app/common';
+import { Address, ChainDto, FeatureEnum, ProtocolTypeEnum, RaydiumProtocolEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyStaking } from '@app/common/jobs/notify.dto';
-import { RaydiymFarm } from '@app/common/jobs/raydiym.farm';
+import { RaydiumFarm } from '@app/common/jobs/raydium.farm';
+import {
+  FARM_FILTERS_V3,
+  FARM_FILTERS_V3_1,
+  FARM_FILTERS_V4,
+  FARM_FILTERS_V5,
+} from '@app/common/jobs/raydium.farm-filters';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
-import { decimalsDivider, keepSolAddresses } from '@app/common/utils';
+import { decimalsDivider, keepSolAddresses, normalizeDecimals } from '@app/common/utils';
 
 import { Web3Provider } from '../../../chains/web3.provider';
+import { PriceService } from '../../../microservices/price.service';
 
 @Injectable()
 export class RaydiumStaking {
   private web3: Connection;
-  private rpcUrl: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
-    private readonly configService: ConfigService,
-    private readonly httpService: HttpService,
+    private readonly priceService: PriceService,
     private readonly web3Provider: Web3Provider,
   ) {
-    this.web3 = web3Provider.instanceSol();
-    this.rpcUrl = this.configService.get('SOL_URL');
+    this.web3 = this.web3Provider.instanceSol();
   }
 
   public async getData(addresses: Address[], chain: ChainDto): Promise<BaseDataStaking[]> {
     addresses = keepSolAddresses(addresses);
-    if (addresses.length === 0) {
-      return [];
-    }
+    if (addresses.length === 0) return [];
+
     const cacheKey = `${chain.id}_${RaydiumProtocolEnum.raydium}_${FeatureEnum.staking}`;
     const cachedPools: NotifyStaking = await this.cache.get(cacheKey);
     if (!cachedPools) {
@@ -69,15 +60,21 @@ export class RaydiumStaking {
         }),
       ]),
     );
+    const assets = cachedPools.items.map((cpi) => {
+      return [
+        ...cpi.stakingToken.tokens.map((t) => t.address),
+        ...cpi.rewards.map((t) => t.address),
+      ];
+    });
 
-    const balances = await this.getBalances(addresses, [
-      RaydiymFarm.version3.programId,
-      RaydiymFarm.version5.programId,
-    ]);
+    const assetSet = new Set(assets.flat());
+    const { prices } = await this.priceService.getTokenPrices([...assetSet], chain.id);
+
+    const balances = await this.getBalances(addresses);
 
     for (const b of balances) {
-      const vault = cachedPoolsMap.get(b.poolId);
-      // TODO: add fusion (version 5 vaults here)
+      const vault = cachedPoolsMap.get(b.poolId.toString());
+
       if (!vault || (new BN(b.depositBalance).isZero() && new BN(b.rewardDebt).isZero())) continue;
 
       const stakingPosition: IntegrationStakingPositionDto = cloneDeep(vault);
@@ -85,18 +82,25 @@ export class RaydiumStaking {
       const userShare = balance.div(new BN(vault.stakingToken.totalSupply));
       stakingPosition.staked = b.depositBalance.toString();
       stakingPosition.stakingToken.balance = balance.toNumber();
+
       stakingPosition.stakingToken.tokens.forEach((t) => {
+        const tokenPrice = t.price ?? prices[t.address] ?? 0;
         t.balance = userShare.toNumber() * t.reserve;
-        t.value = t.price * t.balance;
+        t.value = tokenPrice * t.balance;
       });
-      stakingPosition.rewards[0].claimableData.balance = getPendingValueV3(
-        stakingPosition,
-        b.rewardDebt,
-      );
-      stakingPosition.rewards[0].claimableData.value =
-        stakingPosition.rewards[0].claimableData.balance * stakingPosition.rewards[0].price;
+
+      stakingPosition.rewards.forEach((reward, index) => {
+        const pendingRewards = this.pendingRewards(stakingPosition, b, index);
+        const balance = normalizeDecimals(pendingRewards, reward.decimals);
+        const tokenPrice = reward.price ?? prices[reward.address] ?? 0;
+
+        reward.claimableData.balance = balance;
+        reward.claimableData.value = balance * tokenPrice;
+        return reward;
+      });
+
       stakingPosition.extra = undefined;
-      baseDataStakingMap.get(b.stakerOwner).items.push(stakingPosition);
+      baseDataStakingMap.get(b.stakerOwner.toString()).items.push(stakingPosition);
     }
 
     return Array.from(baseDataStakingMap.values());
@@ -104,108 +108,93 @@ export class RaydiumStaking {
 
   // TODO: this approach works a bit slow for more then 2 addresses
   // TODO: need to cache all account balances in cache and get balance from it
-  private async getBalances(addresses: Address[], programs: string[]) {
-    const options = {
-      jsonrpc: '2.0',
-      method: 'getProgramAccounts',
-      offset: 40,
-      encoding: 'base64',
-    };
-    const addressesFilters = addresses.map((a) => {
-      return {
-        memcmp: {
-          bytes: new PublicKey(a).toBase58(),
-          offset: options.offset,
-        },
-      };
-    });
-    const payloadIndexData: { programId; userAddress }[] = [];
-    const requestPayload = [];
-    programs.forEach((p) => {
-      const programId = new PublicKey(p).toBase58();
-      addressesFilters.forEach((af) => {
-        requestPayload.push({
-          jsonrpc: options.jsonrpc,
-          method: options.method,
-          id: payloadIndexData.length,
-          params: [
-            programId,
-            {
-              filters: [af],
-              encoding: options.encoding,
-            },
-          ],
-        });
-        payloadIndexData.push({
-          programId: programId,
-          userAddress: af.memcmp.bytes,
-        });
+  private async getBalances(addresses: Address[]): Promise<StakeBalance[]> {
+    const programs = [
+      RaydiumFarm.version3.programId,
+      RaydiumFarm.version4.programId,
+      RaydiumFarm.version5.programId,
+      RaydiumFarm.version3.programId,
+    ];
+
+    const filters = [FARM_FILTERS_V3, FARM_FILTERS_V4, FARM_FILTERS_V5, FARM_FILTERS_V3_1];
+    const layouts = [
+      RaydiumFarm.version3.userInfoLayout,
+      RaydiumFarm.version4.userInfoLayout,
+      RaydiumFarm.version5.userInfoLayout,
+      RaydiumFarm.version31.userInfoLayout,
+    ];
+
+    const requests = addresses.flatMap((address) => {
+      return programs.map((programId, index) => {
+        const filter: GetProgramAccountsConfig = {
+          commitment: 'confirmed',
+          encoding: 'base64',
+          filters: filters[index](address),
+        };
+        return this.web3.getProgramAccounts(new PublicKey(programId), filter);
       });
     });
 
-    const rpcResponse = await this.httpService
-      .post(this.rpcUrl, requestPayload)
-      .pipe(map((response) => response.data))
-      .toPromise();
+    const rpcResponse = await Promise.all(requests);
+    const chunked = chunk(rpcResponse, programs.length);
 
-    const balances: StakeBalance[] = [];
-    rpcResponse.forEach((item) => {
-      const indexData = payloadIndexData[item.id];
-      item.result.forEach((res) => {
-        const decoded = this.decodeAccountData(res.account.data, indexData.programId);
-        balances.push({
-          state: decoded.state,
-          poolId: decoded.poolId.toString(),
-          stakerOwner: decoded.stakerOwner.toString(),
-          depositBalance: decoded.depositBalance,
-          rewardDebt: decoded.rewardDebt,
-          rewardDebtB: decoded.rewardDebtB,
-          programId: indexData.programId,
-        });
-      });
-    });
+    const balances = [];
+
+    for (let i = 0; i < chunked.length; i++) {
+      const userPosition = chunked[i];
+      for (let j = 0; j < userPosition.length; j++) {
+        const userDataByProgram = userPosition[j];
+        if (userDataByProgram.length > 0) {
+          for (const data of userDataByProgram) {
+            let layout = layouts[j];
+            if (j === 2 && data.account.data.length === RaydiumFarm.version4.userInfoLayout.span) {
+              layout = RaydiumFarm.version4.userInfoLayout;
+            }
+
+            const decoded = layout.decode(data.account.data);
+            const version = RaydiumFarm.version3.programId === programs[j] ? 3 : 5;
+            balances.push({
+              ...decoded,
+              version,
+            });
+          }
+        }
+      }
+    }
 
     return balances;
   }
 
-  private decodeAccountData(data: string[], programId: string) {
-    let layout;
-    switch (programId) {
-      case RaydiymFarm.version3.programId:
-        layout = RaydiymFarm.version3.userInfoLayout;
-        break;
-      case RaydiymFarm.version4.programId:
-        layout = RaydiymFarm.version4.userInfoLayout;
-        break;
-      case RaydiymFarm.version5.programId:
-        layout = RaydiymFarm.version5.userInfoLayout;
-        break;
-      default:
-        return null;
+  private pendingRewards(
+    staking: IntegrationStakingPositionDto,
+    balance: StakeBalance,
+    position: number,
+  ): string {
+    const decimalsDivider = balance.version === 5 ? 1e15 : 1e9;
+    let rewardPerSecond = '0';
+    const rewardDebt = position === 0 ? balance.rewardDebt : balance.rewardDebtB;
+    if (position === 0) {
+      rewardPerSecond = staking.extra.farmInfo.rewardPerShareNet || staking.extra.farmInfo.perShare;
+    } else {
+      rewardPerSecond = staking.extra.farmInfo.perShareB;
     }
 
-    return layout.decode(Buffer.from(data[0], 'base64'));
+    const pendingReward = new BN(balance.depositBalance) //
+      .times(rewardPerSecond)
+      .div(decimalsDivider)
+      .minus(rewardDebt);
+
+    return pendingReward.toString();
   }
 }
 
 interface StakeBalance {
+  version: number;
   state: BN;
-  poolId: string;
+  poolId: PublicKey;
   programId: string;
-  stakerOwner: string;
+  stakerOwner: PublicKey;
   depositBalance: BN;
   rewardDebt: BN;
   rewardDebtB: BN;
-}
-
-function getPendingValueV3(stakingPosition: IntegrationStakingPositionDto, rewardDebt): number {
-  const balanceBN = new BN(stakingPosition.stakingToken.balance);
-  const rewardPerShareBN = new BN(stakingPosition.extra.farmInfo.rewardPerShareNet).div(
-    decimalsDivider(9),
-  );
-  const rewardDebtBN = new BN(rewardDebt).div(decimalsDivider(stakingPosition.rewards[0].decimals));
-  return balanceBN
-    .multipliedBy(rewardPerShareBN) //
-    .minus(rewardDebtBN)
-    .toNumber();
 }

@@ -29,9 +29,9 @@ async function bootstrap() {
   initSentry();
   initContext(app);
   initLogger(app);
-  initSwagger(app);
   initPrefix(app);
   initPipes(app);
+  initSwagger(app);
 
   await initListening(app);
 }

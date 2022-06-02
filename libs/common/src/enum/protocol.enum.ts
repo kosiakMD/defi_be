@@ -209,9 +209,6 @@ export enum StaderProtocolEnum {
 export enum OsmosisProtocolEnum {
   osmosis = 'Osmosis',
 }
-export enum SolendProtocolEnum {
-  solend = 'Solend',
-}
 
 export enum AaveV3ProtocolEnum {
   aaveV3 = 'AaveV3',
@@ -225,9 +222,33 @@ export enum MuesliSwapProtocolEnum {
   muesliswap = 'MuesliSwap',
 }
 
+// V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
+// if unsure if it should be in v3 protocolEnum or v2 protocolEnum, put it in v2
+export const ProtocolV3NameEnum = {
+  ...AaveV3ProtocolEnum,
+  IronBank: 'IronBank',
+  MakerDAO: 'MakerDAO',
+  Quarry: 'Quarry',
+  RocketPool: 'RocketPool',
+  Stargate: 'Stargate',
+  Synapse: 'Synapse',
+  babySwap: 'BabySwap',
+  belt: 'Belt',
+  biswap: 'BiSwap',
+  frax: 'Frax',
+  goose: 'Goose',
+  solend: 'Solend',
+  kava: 'Kava',
+  knightswap: 'KnightSwap',
+  lido: 'Lido',
+  marsEcosystem: 'MarsEcosystem',
+  mdex: 'Mdex',
+  yelFinance: 'YelFinance',
+  benqi: 'Benqi',
+};
+
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
-  ...AaveV3ProtocolEnum,
   ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
   ...AnchorProtocolEnum,
@@ -253,7 +274,6 @@ export const ProtocolNameEnum = {
   ...QuickswapProtocolEnum,
   ...RaydiumProtocolEnum,
   ...SaberProtocolEnum,
-  ...SolendProtocolEnum,
   ...SpookySwapProtocolEnum,
   ...StaderProtocolEnum,
   ...SundaeProtocolEnum,
@@ -269,23 +289,5 @@ export const ProtocolNameEnum = {
   ...WingRidersProtocolEnum,
   ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
-  // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
-  IronBank: 'IronBank',
-  MakerDAO: 'MakerDAO',
-  Quarry: 'Quarry',
-  RocketPool: 'RocketPool',
-  Stargate: 'Stargate',
-  Synapse: 'Synapse',
-  babySwap: 'BabySwap',
-  belt: 'Belt',
-  biswap: 'BiSwap',
-  frax: 'Frax',
-  goose: 'Goose',
-  kava: 'Kava',
-  knightswap: 'KnightSwap',
-  lido: 'Lido',
-  marsEcosystem: 'MarsEcosystem',
-  mdex: 'Mdex',
-  yelFinance: 'YelFinance',
-  benqi: 'Benqi',
+  ...ProtocolV3NameEnum,
 };

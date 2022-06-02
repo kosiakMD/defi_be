@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 import bech32 from 'bech32';
-import { isAddress as isETHAddress } from 'web3-utils';
+import { isAddress as isETHAddress, toChecksumAddress } from 'web3-utils';
 
 import { Address } from '@app/common';
 import { ZERO_ADDRESS } from '@app/common/constant';
@@ -152,6 +152,6 @@ export function isSomeAddress(address: string) {
   return false;
 }
 
-export function keepCardanoAddresses(addresses: Address[]): Address[] {
-  return addresses.filter((address) => address.match(/^addr1.*/));
+export function formatAddress(address: string): string {
+  return isETHAddress(address) ? toChecksumAddress(address) : address;
 }

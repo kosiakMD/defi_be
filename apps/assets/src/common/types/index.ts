@@ -1,3 +1,3 @@
-export * from './asset-metadata.type';
-export * from './asset-reference.type';
-export * from './chain.type';
+export * from './asset-reference';
+export * from './chain';
+export * from './utils';

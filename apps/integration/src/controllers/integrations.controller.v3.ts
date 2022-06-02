@@ -9,7 +9,9 @@ import {
   ErrorResponseDto,
   ProtocolNameEnum,
   ProtocolParams,
+  ProtocolV3NameEnum,
 } from '@app/common';
+import { sortKeys } from '@app/common/utils';
 
 import { PlatformService } from '../framework/services/platform.service';
 import { IPlatformMeta } from '../framework/support/interfaces';
@@ -19,9 +21,7 @@ import {
 } from '../framework/support/interfaces/responses.interface';
 import { IntegrationsResponseV2Dto } from '../modules/integrations/dto/integrations.dto';
 
-const SortedProtocolNames = Object.fromEntries(
-  Object.entries(ProtocolNameEnum).sort(([a], [b]) => (a.toLowerCase() > b.toLowerCase() ? 1 : -1)),
-);
+const SortedProtocolNames = sortKeys(ProtocolV3NameEnum);
 
 @ApiTags('Protocols')
 @Controller('v3/protocols')

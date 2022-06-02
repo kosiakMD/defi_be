@@ -1,4 +1,3 @@
-import { Chain } from 'apps/assets/src/common/types/chain.type';
 import * as debank from 'debank-open-api';
 
 import { Inject, Logger } from '@nestjs/common';
@@ -10,6 +9,7 @@ import { delay } from '@app/common/helpers/delay';
 import { chunkRunAsync } from '@app/common/utils';
 
 import { ChainService } from '../../../common/services/chain.service';
+import { Chain } from '../../../common/types';
 
 import { AssetEntity } from '../../assets/entities/asset.entity';
 import { AssetsRepository } from '../../assets/repositories/assets.repository';

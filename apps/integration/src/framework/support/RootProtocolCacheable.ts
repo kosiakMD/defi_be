@@ -192,8 +192,7 @@ export abstract class RootProtocolCacheable<
    */
 
   async getPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
-    // TODO: Dont let me merge this!
-    return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list` + Math.random(), async () => {
+    return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list`, async () => {
       // get pool list from longer term cache
       const list = await this.cache.get<string[]>(this.poolListCacheKey);
 

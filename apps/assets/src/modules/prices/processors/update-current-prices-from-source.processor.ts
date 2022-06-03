@@ -6,7 +6,6 @@ import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { JobName } from '../../../common/enum/job-name.enum';
-import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 
 import { PriceService } from '../price.service';
@@ -26,15 +25,13 @@ export class UpdateCurrentPricesFromSourceProcessor {
   async handle(job: Job<PriceSource>) {
     try {
       await this.process(job.data);
-
-      await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (e) {
       this.logger.error(
         `Error processing price job: ${job.name} for source ${
           job.data?.sourceId
         }. Error: ${e.toString()}`,
       );
-      await job.moveToFailed({ message: e.toString() });
+      throw e;
     }
   }
 

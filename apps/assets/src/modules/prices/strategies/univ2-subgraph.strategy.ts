@@ -1,3 +1,4 @@
+import { doWhilst } from 'async';
 import BigNumber from 'bignumber.js';
 import { firstValueFrom } from 'rxjs';
 
@@ -27,6 +28,11 @@ type TheGraphResponse = {
     ];
     tokens: Token[];
   };
+  errors?: [
+    {
+      message: string;
+    },
+  ];
 };
 
 type Config = {
@@ -37,6 +43,8 @@ type Config = {
   maxItems?: number;
   chunkSize?: number;
   requestDelay?: number;
+  priceAlias?: string;
+  derivedAlias?: string;
 };
 
 export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
@@ -48,58 +56,80 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
   }
 
   public async fetchPrices(priceSource: PriceSource<Config>): Promise<AssetPrice[]> {
-    const { maxItems = 2000, chunkSize = 1000, requestDelay = 1000 } = priceSource.config;
+    const { maxItems = 5000, chunkSize = 1000, requestDelay = 1000 } = priceSource.config;
 
     let prices: AssetPrice[] = [];
 
     let skip = 0;
-    while (skip < maxItems) {
-      await delay(requestDelay);
-
-      const chunkPrices = await this.getChunkPrices(priceSource, chunkSize, skip);
-      prices = prices.concat(chunkPrices);
-
-      skip += chunkSize;
-    }
-
+    await doWhilst(
+      async () => this.getChunkPrices(priceSource, chunkSize, skip),
+      async (chunkPrices) => {
+        await delay(requestDelay);
+        prices = prices.concat(chunkPrices);
+        skip += chunkPrices.length;
+        return skip < maxItems && chunkPrices.length;
+      },
+    );
     return prices;
   }
 
   private async getChunkPrices(priceSource: PriceSource<Config>, chunkSize: number, skip: number) {
     const { sourceId, config } = priceSource;
     const { chainId, subgraphUrl, coinSymbol = 'ETH', orderBy = 'tradeVolumeUSD' } = config;
+    const priceAlias = config.priceAlias || `${coinSymbol.toLowerCase()}Price`;
+    const derivedAlias = config.derivedAlias || `derived${coinSymbol}`;
 
-    const {
-      data: {
-        data: {
-          tokens,
-          bundles: [bundle],
-        },
-      },
-    } = await firstValueFrom(
-      this.httpService.post<TheGraphResponse>(subgraphUrl, {
-        query: gql`
+    let response;
+    try {
+      response = await firstValueFrom(
+        this.httpService.post<TheGraphResponse>(
+          subgraphUrl,
+          {
+            query: gql`
           query GetPrices($first: Int, $skip: Int) {
             bundles {
-              price: ${coinSymbol.toLowerCase()}Price
+              price: ${priceAlias}
             }
             tokens (
               first: $first,
               skip: $skip,
               orderBy: ${orderBy},
               orderDirection: desc
+              where: { ${derivedAlias}_not: "0" }
             ) {
               id
               name
-              derived: derived${coinSymbol}
+              derived: ${derivedAlias}
             }
           }
         `,
-        variables: { skip, first: chunkSize },
-      }),
-    );
+            variables: { skip, first: chunkSize },
+          },
+          { timeout: 15000 },
+        ),
+      );
+    } catch (e) {
+      if (e.message.indexOf('timeout') >= 0) {
+        //sometimes subgraph doesn't respond in time
+        //to keep already retrieved items we just abort requests to the subgraph
+        //next time it may change, and we can retrieve all items then
+        this.logger.warn(`request error: [${e.message}]`);
+        return [];
+      }
+      throw e;
+    }
+    const {
+      data: { data, errors },
+    } = response;
+    if (errors && errors.length) {
+      throw Error(errors.map((e) => e.message).join('; '));
+    }
+    const {
+      tokens,
+      bundles: [bundle],
+    } = data;
 
-    const baseDerived = new BigNumber(bundle.price);
+    const baseDerived = new BigNumber(bundle?.price);
     return tokens.map((token) => this.parseToken(sourceId, chainId, token, baseDerived));
   }
 

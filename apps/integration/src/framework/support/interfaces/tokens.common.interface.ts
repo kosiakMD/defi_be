@@ -28,19 +28,20 @@ export interface ERC20Token extends ERC20TokenMinimal {
   underlying?: ERC20Token[];
 }
 
-export interface ITokenMinimal<TExtra = void> {
+export interface ITokenMinimal<TExtra = unknown> {
   token: ERC20TokenMinimal; // just address
   extra?: TExtra;
 }
 
-export interface ITokenOpportunity<TExtra = void> extends ITokenMinimal<TExtra> {
+export interface ITokenOpportunity<TExtra = unknown> extends ITokenMinimal<TExtra> {
   token: ERC20Token; // full erc20 token with price
 }
-export interface ITokenUserEntry<TExtra = void> extends ITokenOpportunity<TExtra> {
+export interface ITokenUserEntry<TExtra = unknown> extends ITokenOpportunity<TExtra> {
   amount: number; // user balance
   value: number; // balance * price
 }
 export interface IBaseApy {
+  year?: number;
   variableApy?: number;
   stableApy?: number;
 }

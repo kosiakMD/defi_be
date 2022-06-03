@@ -23,7 +23,6 @@ import { ERC20Token } from '@app/common/jobs/token';
 import { getUniqList } from '@app/common/utils';
 
 import { FeatureEnum } from '../../../../gateway/src/common/enum/feature.enum';
-import { PancakeSwap } from '../../framework/platforms/PancakeSwap';
 import { PlatformService } from '../../framework/services/platform.service';
 import { IClaimableFeatureUser } from '../../framework/support/interfaces/feature.claimable.interface';
 import { IPoolFeatureEntryUserEntry } from '../../framework/support/interfaces/feature.pool.interface';
@@ -39,7 +38,7 @@ import { IntegrationsService } from './integrations.service';
 
 @Injectable()
 export class IntegrationsServiceV3Decorator {
-  protocolsV3Exceptions = new Set([PancakeSwap.name]);
+  protocolsV3Exceptions = new Set([]);
 
   constructor(
     @Inject(CACHE_MANAGER) private readonly cache: Cache,

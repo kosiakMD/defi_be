@@ -223,6 +223,7 @@ export enum MuesliSwapProtocolEnum {
 export const ProtocolV3NameEnum = {
   ...AaveV3ProtocolEnum,
   IronBank: 'IronBank',
+  Liquity: 'Liquity',
   MakerDAO: 'MakerDAO',
   Quarry: 'Quarry',
   RocketPool: 'RocketPool',
@@ -230,18 +231,21 @@ export const ProtocolV3NameEnum = {
   Synapse: 'Synapse',
   babySwap: 'BabySwap',
   belt: 'Belt',
+  benqi: 'Benqi',
   biswap: 'BiSwap',
   frax: 'Frax',
   goose: 'Goose',
-  solend: 'Solend',
   kava: 'Kava',
   knightswap: 'KnightSwap',
   lido: 'Lido',
   marsEcosystem: 'MarsEcosystem',
   mdex: 'Mdex',
+  solend: 'Solend',
   yelFinance: 'YelFinance',
-  benqi: 'Benqi',
-  beefy: 'Beefy',
+  beefyFinance: 'BeefyFinance',
+  nereus: 'Nereus',
+  geist: 'Geist',
+  blizz: 'Blizz',
 };
 
 export const ProtocolNameEnum = {
@@ -285,5 +289,7 @@ export const ProtocolNameEnum = {
   ...WingRidersProtocolEnum,
   ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
+
+  // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
   ...ProtocolV3NameEnum,
 };

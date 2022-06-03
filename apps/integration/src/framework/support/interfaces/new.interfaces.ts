@@ -27,7 +27,12 @@ type BorrowNone = { borrowed?: never; borrow?: never };
 type BorrowSingle<TBorrowToken> = { borrowed?: never; borrow: TBorrowToken };
 type BorrowArray<TBorrowToken> = { borrowed: TBorrowToken; borrow?: never };
 
-export type BaseWithTokens<TSupply, TReward, TBorrow, TExtra = void> = BaseWithExtra<TExtra> &
+export type BaseWithTokens<
+  TSupply,
+  TReward = void,
+  TBorrow = void,
+  TExtra = void,
+> = BaseWithExtra<TExtra> &
   (TSupply extends void
     ? SupplyNone
     : TSupply extends any[]

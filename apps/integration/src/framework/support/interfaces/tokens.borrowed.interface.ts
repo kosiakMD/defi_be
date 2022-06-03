@@ -5,19 +5,19 @@ import {
   ITokenUserEntry,
 } from './tokens.common.interface';
 
-export interface IBorrowTokenMinimal<TExtra = void> extends ITokenMinimal<TExtra> {
+export interface IBorrowTokenMinimal<TExtra = unknown> extends ITokenMinimal<TExtra> {
   totalBorrowed: string;
   rate?: { [key: string]: string };
 }
 
 // TODO: Review if this makes sense. no current lending/borrowing protocols
-export interface IBorrowTokenOpportunity<TExtra = void> extends ITokenOpportunity<TExtra> {
+export interface IBorrowTokenOpportunity<TExtra = unknown> extends ITokenOpportunity<TExtra> {
   totalBorrowed?: number;
   tvl: number;
   apy?: IBorrowApy;
 }
 
-export interface IBorrowTokenUserEntity<TExtra = void> extends ITokenUserEntry<TExtra> {
+export interface IBorrowTokenUserEntity<TExtra = unknown> extends ITokenUserEntry<TExtra> {
   tvl: number;
   apy?: IBorrowApy;
 }

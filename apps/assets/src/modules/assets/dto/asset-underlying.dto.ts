@@ -2,13 +2,11 @@ import { Exclude, Expose } from 'class-transformer';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { AssetDto } from './asset.dto';
-
 @Exclude()
 export class AssetUnderlyingDto {
-  @Expose()
-  @ApiProperty({ type: () => AssetDto })
-  underlyingAsset: AssetDto;
+  @Exclude({ toPlainOnly: true })
+  @ApiProperty({ type: () => String })
+  address: string;
 
   @Expose()
   @ApiProperty({ type: String })

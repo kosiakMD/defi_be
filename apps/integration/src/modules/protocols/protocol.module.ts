@@ -14,7 +14,6 @@ import { LiquidityPools } from './features/liquidity-pools';
 import { CardanoService } from './helpers/cardano/cardano.service';
 import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
-import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { AbracadabraBorrowing } from './protocols/abracadabra/features/abracadabra.borrowing';
 import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadabra.claimable';
@@ -184,7 +183,6 @@ const MuesliSwap = [MuesliSwapProtocol, MuesliSwapStaking];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
-  AaveProtocolV2,
   AlpacaProtocol,
   CompoundProtocol,
   PangolinProtocol,

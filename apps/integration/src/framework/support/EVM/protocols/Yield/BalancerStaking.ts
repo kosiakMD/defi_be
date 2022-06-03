@@ -197,6 +197,10 @@ export class BalancerStaking
     return base;
   }
 
+  protected singlePoolCacheKey(poolId: number | string) {
+    return `${this.meta.feature}_${this.meta.chain}_${poolId}`;
+  }
+
   private formatOpportunityToken(
     supplied: IBalancerSupplyTokenMinimal,
     token: ERC20Token,

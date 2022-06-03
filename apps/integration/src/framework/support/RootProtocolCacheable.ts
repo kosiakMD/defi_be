@@ -77,7 +77,7 @@ export abstract class RootProtocolCacheable<
     return `pool_list_${this.protocolId}`;
   }
 
-  private singlePoolCacheKey(poolId: number | string) {
+  protected singlePoolCacheKey(poolId: number | string) {
     return `${this.meta.chain}_${poolId}`;
   }
 
@@ -190,6 +190,7 @@ export abstract class RootProtocolCacheable<
    *
    * @returns [Opportunities[], errors[]]
    */
+
   async getPoolData(): Promise<IPoolDataProtocolResponse<TOpportunity>> {
     // TODO: Dont let me merge this!
     return this.getOrSet(60, `${this.protocolId}_hydrated_pool_list` + Math.random(), async () => {

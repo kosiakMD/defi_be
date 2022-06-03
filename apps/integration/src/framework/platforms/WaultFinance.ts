@@ -4,7 +4,8 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import { IMasterChefMeta } from '../support/EVM/protocols/Yield/MasterChef';
+import { WaultFinanceStaking } from '../support/EVM/protocols/Yield/WaultFinanceStaking';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 
@@ -27,7 +28,7 @@ export class WaultFinance extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
+    await this.registerProtocol<IMasterChefMeta>(WaultFinanceStaking, {
       chain: ChainIdEnum.bnb,
       name: 'Farms - Masterchef',
       feature: FeatureEnum.staking,

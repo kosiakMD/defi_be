@@ -19,6 +19,14 @@ export interface Pool {
 }
 
 export interface Staked {
+  rewards: {
+    asset: Asset;
+    quantity: string;
+  }[];
+  rewardsMatured: {
+    asset: Asset;
+    quantity: string;
+  }[];
   assetID: string;
   earned: string;
   quantity: string;

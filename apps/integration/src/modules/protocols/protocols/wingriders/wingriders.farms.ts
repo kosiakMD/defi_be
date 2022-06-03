@@ -62,7 +62,8 @@ export class WingRidersFarms {
       cachedPools.items.map((item) => [item.address, item]),
     );
 
-    const wrt = await this.cardanoUtils.getTokenInfo(WRT_REWARDS_TOKEN);
+    const tokens = await this.cardanoUtils.getTokenInfo([WRT_REWARDS_TOKEN]);
+    const wrt = tokens.get(WRT_REWARDS_TOKEN);
 
     for await (const address of baseDataStakingMap.keys()) {
       const stakingItems = baseDataStakingMap.get(address).items;

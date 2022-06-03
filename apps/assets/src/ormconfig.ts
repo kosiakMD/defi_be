@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
-dotenv.config({ path: 'dist/apps/assets/config/.env' });
+dotenv.config({ path: 'dist/apps/assets/.env' });
 
 export default {
   type: 'postgres',

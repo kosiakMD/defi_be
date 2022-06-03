@@ -70,7 +70,10 @@ export const winstonParams = ({
 }: LogConfig): WinstonModuleOptions => {
   const transports: Transport[] = createBaseTransports(logErrorFile, logCombineLog);
 
-  if (AWS_CW_LOGS_ENVIRONMENTS.includes(environment)) {
+  const logToCloudWatch =
+    Boolean(process.env.LOG_IN_CW) && process.env.LOG_IN_CW.toLowerCase() === 'true';
+
+  if (logToCloudWatch && AWS_CW_LOGS_ENVIRONMENTS.includes(environment)) {
     transports.push(
       new CloudWatchTransport({
         logGroupName: `dy-${environment}-service/${identifier}`,

@@ -24,11 +24,7 @@ import {
   IBorrowTokenUserEntity,
 } from '../../../interfaces/tokens.borrowed.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import {
-  IRewardTokenMinimal,
-  IRewardTokenOpportunity,
-  IRewardTokenUserEntry,
-} from '../../../interfaces/tokens.rewarded.interface';
+import { IRewardTokenMinimal } from '../../../interfaces/tokens.rewarded.interface';
 import {
   ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
@@ -36,14 +32,14 @@ import {
 } from '../../../interfaces/tokens.supplied.interface';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 import {
-  UserLendingMap,
-  IKavaMeta,
-  IKavaRepositoryResponse,
+  IHardParameterResponse,
   IKavaDenomAmount,
   IKavaLendingResponse,
+  IKavaMeta,
+  IKavaRepositoryResponse,
   IncentiveParametersResponse,
   InterestRateResponse,
-  IHardParameterResponse,
+  UserLendingMap,
 } from '../interfaces/Kava/KavaLending';
 
 type DenomInterestRate = [string, { borrowAPR: string; supplyAPR: string }];
@@ -192,7 +188,6 @@ export class KavaLending
     const pool = pools.find((x) => x.id === this.KAVA_LENDING_KEY);
     const supplied: ISupplyTokenUserEntry[] = [];
     const borrowed: IBorrowTokenUserEntity[] = [];
-    const rewarded: IRewardTokenUserEntry[] = [];
 
     for (const userData of lending) {
       if (userData.type === 'supplied') {

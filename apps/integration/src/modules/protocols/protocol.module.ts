@@ -14,7 +14,6 @@ import { LiquidityPools } from './features/liquidity-pools';
 import { CardanoService } from './helpers/cardano/cardano.service';
 import { Mapper } from './helpers/mappers/mapper';
 import { ProtocolService } from './protocol.service';
-import AaveProtocolV2 from './protocols/aaveProtocolV2';
 import { AbracadabraProtocol } from './protocols/abracadabra/abracadabra.protocol';
 import { AbracadabraBorrowing } from './protocols/abracadabra/features/abracadabra.borrowing';
 import { AbracadabraClaimable } from './protocols/abracadabra/features/abracadabra.claimable';
@@ -49,9 +48,6 @@ import { DefiKingdomsLocked } from './protocols/defikingdoms/defikingdoms.locked
 import { DefiKingdomsPools } from './protocols/defikingdoms/defikingdoms.pools';
 import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol';
 import { DefiKingdomsStaking } from './protocols/defikingdoms/defikingdoms.staking';
-import { EllipsisPools } from './protocols/ellipsis/ellipsis.pools';
-import EllipsisProtocol from './protocols/ellipsis/ellipsis.protocol';
-import { EllipsisStaking } from './protocols/ellipsis/ellipsis.staking';
 import { MarinadePools } from './protocols/marinade/marinade.pools';
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import { MarinadeStaking } from './protocols/marinade/marinade.staking';
@@ -141,7 +137,6 @@ const Convex = [
   ConvexCvxLockedStaking,
 ];
 const Pangolin = [PangolinV2Protocol, PangolinStaking, PangolinPools];
-const Ellipsis = [EllipsisProtocol, EllipsisStaking, EllipsisPools];
 const Wonderland = [WonderlandProtocol, WonderlandStaking];
 const Olympus = [OlympusProtocol, OlympusStaking, OlympusBonding];
 const TraderJoe = [
@@ -189,7 +184,6 @@ const MuesliSwap = [MuesliSwapProtocol, MuesliSwapStaking];
 
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
-  AaveProtocolV2,
   AlpacaProtocol,
   BeefyProtocol,
   CompoundProtocol,
@@ -215,7 +209,6 @@ const ProtocolList = [
   ...Convex,
   ...Curve,
   ...DefiKingdoms,
-  ...Ellipsis,
   ...Mirror,
   ...Mojitoswap,
   ...Olympus,

@@ -4,7 +4,7 @@ import { FindConditions } from 'typeorm/find-options/FindConditions';
 import { ChainIdEnum } from '@app/common/enum';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
-import { AssetReference } from '../../../common/types';
+import { AssetReference } from '../../../common/types/asset-reference';
 
 import { AssetEntity } from '../entities/asset.entity';
 

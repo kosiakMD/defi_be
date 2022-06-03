@@ -13,12 +13,14 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
+import { MissingTokenException } from '../../../exceptions';
 import { IProtocolMeta, IRootProtocol, TokenMap } from '../../../interfaces';
 import {
   IStakingFeatureOpportunity,
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
+import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import { IRewardTokenMinimal } from '../../../interfaces/tokens.rewarded.interface';
 import {
   ISupplyTokenMinimal,
@@ -84,10 +86,6 @@ export class BalancerStaking
     super();
   }
 
-  initialize(): Promise<void> {
-    return void 0;
-  }
-
   get GQLEndpoint(): string {
     return new URL(this.meta.context.networkId, this.meta.context.endpoint).toString();
   }
@@ -107,8 +105,7 @@ export class BalancerStaking
         toArray(),
       );
 
-    const data = await firstValueFrom($data);
-    return data;
+    return await firstValueFrom($data);
   }
 
   protected formatUserData(
@@ -127,7 +124,7 @@ export class BalancerStaking
       const supplied: ISupplyTokenUserEntry[] = poolClone.supplied.map((position) => {
         const amountBN = new BN(balance);
         const amountUSD = amountBN.times(position.token.price);
-        const poolShare = amountBN.div(poolClone.supplied[0].totalSupplied);
+        const poolShare = amountBN.div(position.totalSupplied);
 
         position.token.underlying = position.token.underlying?.map((token) => {
           const tokenBalance = poolShare.times(token.reserve);
@@ -174,56 +171,56 @@ export class BalancerStaking
         toArray(),
       );
     const data = await firstValueFrom($data);
-    const userData = new Map(data.map((b) => [b.address, b.yields]));
-    return userData;
+    return new Map(data.map((b) => [b.address, b.yields]));
   }
 
   protected formatOpportunity(
     opportunity: IBalancerStakingMinimal,
     tokens: TokenMap,
   ): IStakingFeatureOpportunity {
-    if (opportunity.supplied.some((t) => !tokens.has(t.token.address))) {
-      const message = `Failed to resolve some tokens for pool - ${opportunity.chain}/${opportunity.id}`;
-      throw new Error(message);
-    }
-    const supplied = opportunity.supplied.map((poolToken) =>
-      this.formatSuppliedToken(poolToken, tokens),
-    );
-
-    return {
+    const base: any = {
+      feature: opportunity.feature,
       id: opportunity.id,
       chain: opportunity.chain,
-      feature: this.meta.feature,
-      supplied: supplied,
-      rewarded: [],
+      links: this.generateLinks(opportunity),
     };
-  }
 
-  private formatSuppliedToken(
-    poolToken: IBalancerSupplyTokenMinimal,
-    tokens: TokenMap,
-  ): ISupplyTokenOpportunity {
-    const underlying = poolToken.token.underlying?.map((token) => {
-      return {
-        ...tokens.get(token.address),
-        reserve: Number(token.reserve),
-      };
+    base.supplied = opportunity.supplied.map((poolToken) => {
+      const token = tokens.get(poolToken.token.address);
+      if (!token) {
+        throw new MissingTokenException(poolToken.token, opportunity, this.meta.chain);
+      }
+
+      return this.formatOpportunityToken(poolToken, token, tokens);
     });
 
-    const token = tokens.get(poolToken.token.address);
-    token.underlying = underlying;
-    if (token.price === 0) {
-      const tvl = underlying.reduce(
-        (prev, next) => prev.plus(new BN(next.reserve).times(next.price)),
-        new BN(0),
-      );
-      token.price = tvl.div(poolToken.totalSupplied).toNumber();
+    return base;
+  }
+
+  private formatOpportunityToken(
+    supplied: IBalancerSupplyTokenMinimal,
+    token: ERC20Token,
+    tokens: TokenMap,
+  ): ISupplyTokenOpportunity {
+    const totalSupplied = +supplied.totalSupplied;
+    const apy = this.formatSupplyApy?.(supplied);
+
+    token.underlying = supplied.token.underlying?.map((token) => ({
+      ...tokens.get(token.address),
+      reserve: +token.reserve,
+    }));
+
+    if (!token.price) {
+      token.price =
+        token.underlying.reduce((prev, next) => prev + next.reserve * next.price, 0) /
+        totalSupplied;
     }
 
     return {
       token,
-      totalSupplied: +poolToken.totalSupplied,
-      tvl: +poolToken.totalSupplied * token.price,
+      apy,
+      totalSupplied,
+      tvl: totalSupplied * token.price,
     };
   }
 

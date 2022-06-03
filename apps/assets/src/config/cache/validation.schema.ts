@@ -7,6 +7,6 @@ export const cacheValidationSchema = {
     .allow('')
     .required(),
   REDIS_CACHE_TTL: Joi.number().default(900),
-  // TODO: how long do we need to keep assets in cache? may be infinite or half of year is enough?
-  REDIS_ASSETS_CACHE_TTL: Joi.number().default(180 * 24 * 60 * 60),
+  // 1 month to keep asset in cache
+  REDIS_ASSETS_CACHE_TTL: Joi.number().default(30 * 24 * 60 * 60),
 };

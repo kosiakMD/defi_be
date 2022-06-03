@@ -9,6 +9,7 @@ describe('toV2Response should', () => {
   let result;
   let wallet;
   let firstLendingItem;
+  let firstPoolItem;
   let firstBorrowItem;
   let firstStakingItem;
 
@@ -18,17 +19,28 @@ describe('toV2Response should', () => {
     firstLendingItem = wallet.chains[0][FeatureEnum.lending].items[0];
     firstBorrowItem = wallet.chains[0][FeatureEnum.borrowing].items[0];
     firstStakingItem = wallet.chains[0][FeatureEnum.staking].items[0];
+    firstPoolItem = wallet.chains[0][FeatureEnum.pools].items[0];
   });
 
   // Total
   it('To calculate total wallet value correctly', () => {
-    expect(result.data.total).toBe(0.17531920252570293);
+    expect(result.data.total).toBe(1.98364219638093);
+  });
+
+  // Pools
+  it('To remove positionInPool field if it equals null', () => {
+    expect(firstPoolItem.tokens[0].positionInPool).toBeUndefined();
+  });
+
+  it('Don`t remove weight field if it not equals null', () => {
+    expect(firstPoolItem.tokens[0].weight).toBe(50);
   });
 
   // Lending
   it('To calculate total lending value correctly', () => {
     expect(wallet.chains[0][FeatureEnum.lending].totalValue).toBe(0.15332893952);
   });
+
 
   it('To map correct balance to first lending item', () => {
     expect(firstLendingItem.balance).toBe(0.001517139);

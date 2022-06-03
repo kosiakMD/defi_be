@@ -2,39 +2,34 @@ import { Job } from 'bull';
 
 import { Process, Processor } from '@nestjs/bull';
 import { Inject, LoggerService } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 
-import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
-import { HistoricalPriceJobData } from '../types/historical-price-job-data.type';
+import { PriceService } from '../price.service';
 
 @Processor(QueueName.ASSETS)
 export class AssetsHistoricalPricesProcessor {
   constructor(
-    private configService: ConfigService,
+    private readonly priceService: PriceService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    @InjectRepository(AssetsHistoricalPriceRepository)
-    private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
   ) {}
 
-  @Process('historicalPrices')
+  @Process(JobName.HISTORICAL_PRICES)
   async handlePriceJob(job: Job) {
     try {
-      await this.processingJob(job.data);
-      return JobCompleteStates.SUCCESS;
+      this.logger.debug(`Create Historical Prices Job job.id: ${job.id}`);
+      await this.createHistoricalPrices();
+      await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (error) {
-      this.logger.error(`Error to process historical price job.id: ${job.id}`);
-      this.logger.error(error);
-      return JobCompleteStates.FAILURE;
+      this.logger.error(`Error to process price job.id: ${job.id}, ${error.message}`);
+      await job.moveToFailed({ message: error.toString() });
     }
   }
 
-  private async processingJob(jobData: HistoricalPriceJobData): Promise<void> {
-    // TODO: Not implemented
-    this.logger.log(`Running historical price processing: ${jobData.assetId}`);
+  private async createHistoricalPrices() {
+    await this.priceService.saveHistoricalPricesFromCurrentOnes();
   }
 }

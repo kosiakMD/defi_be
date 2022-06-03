@@ -37,6 +37,7 @@ export class BlockScout {
   ) {
     // Endpoints
     this.endpoints[ChainIdEnum.kcc] = config.get('BLOCKSCOUT_KCC_URL');
+    this.endpoints[ChainIdEnum.metis] = config.get('BLOCKSCOUT_METIS_URL');
   }
 
   endpoints = {};

@@ -1,5 +1,7 @@
+import { json, urlencoded } from 'express';
 import * as fs from 'fs';
 
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
@@ -46,6 +48,10 @@ async function bootstrap() {
   initSwagger(app);
   initPipes(app);
   initPrefix(app);
+
+  const configService = app.get<ConfigService>(ConfigService);
+  app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));
+  app.use(urlencoded({ extended: true, limit: configService.get<string>('URL_LIMIT') }));
 
   await initListening(app);
 }

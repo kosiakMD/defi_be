@@ -4,7 +4,6 @@ import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
-import { AaveSubgraph } from './subgraphs/aave.subgraph';
 import { AlpacaSubgraph } from './subgraphs/alpaca.subgraph';
 import { AutofarmSubgraph } from './subgraphs/autofarm.subgraph';
 import { BlocksSubgraph } from './subgraphs/blocks.subgraph';
@@ -47,7 +46,6 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     }),
   ],
   providers: [
-    AaveSubgraph,
     BlocksSubgraph,
     PancakeSubgraph,
     PangolinSubgraph,
@@ -71,7 +69,6 @@ import { YearnV2Subgraph } from './subgraphs/yearn.v2.subgraph';
     MinswapSubgraph,
   ],
   exports: [
-    AaveSubgraph,
     AlpacaSubgraph,
     BlocksSubgraph,
     PancakeSubgraph,

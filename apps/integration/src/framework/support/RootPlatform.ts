@@ -133,7 +133,16 @@ export abstract class RootPlatform implements IRootPlatform {
 
     this.logger.log(`Trying to get user data for: ${this.meta.name}`);
 
-    const resolvedProtocols = await Promise.all(promises);
+    const resolvedProtocolsResults = await Promise.allSettled(promises);
+    const resolvedProtocols = [];
+    resolvedProtocolsResults.forEach((r) => {
+      if (r.status === 'fulfilled') {
+        resolvedProtocols.push(r.value);
+      } else {
+        errors.push(r.reason);
+      }
+    });
+    // errors.push(...(protocolErrors as any[]));
 
     this.logger.log(`Formatting fetched data for: ${this.meta.name}`);
 

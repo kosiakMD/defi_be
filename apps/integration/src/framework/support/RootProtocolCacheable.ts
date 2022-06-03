@@ -284,7 +284,7 @@ export abstract class RootProtocolCacheable<
               break;
             }
             default: {
-              this.logger.error(err.message, this.constructor.name);
+              this.logger.error(err.message, err.stack, this.constructor.name);
               errors.push(err);
               break;
             }

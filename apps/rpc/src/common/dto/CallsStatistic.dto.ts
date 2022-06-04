@@ -32,11 +32,11 @@ export class CallsStatistic {
 
   @ApiProperty({ type: Number, required: true, example: 12 })
   @IsNumber()
-  fail: number;
+  fail = 0;
 
   @ApiProperty({ type: Number, required: true, example: 144 })
   @IsNumber()
-  success: number;
+  success = 0;
 
   @ApiProperty({ type: Number, required: true, example: 132 })
   @IsNumber()

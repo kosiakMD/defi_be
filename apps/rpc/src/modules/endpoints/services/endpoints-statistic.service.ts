@@ -72,7 +72,7 @@ export class EndpointsStatisticService implements OnModuleInit {
   public getEndpointByPriority(chainId: number, archive: boolean): EndpointEntity[] {
     const endpoints = this.endpointsMap.get(chainId) || [];
     return endpoints
-      .filter((endpoint) => endpoint.endpoint.archived === archive)
+      .filter((endpoint) => !archive || endpoint.endpoint.archived === archive)
       .map(({ endpoint }) => endpoint);
   }
 
@@ -96,8 +96,8 @@ export class EndpointsStatisticService implements OnModuleInit {
       const updatedEndpointStatistics = [];
       for await (const endpointStatistic of endpointStatistics) {
         const { endpoint } = endpointStatistic;
-        const successScores = await this.getEndpointSuccessScoreFromCache(endpoint);
-        endpointStatistic.callsStatistic = new CallsStatistic(successScores);
+        const scores = await this.getEndpointSuccessScoreFromCache(endpoint);
+        endpointStatistic.callsStatistic = new CallsStatistic(scores);
         updatedEndpointStatistics.push(endpointStatistic);
       }
       const orderedEndpointStatistics = updatedEndpointStatistics.sort(

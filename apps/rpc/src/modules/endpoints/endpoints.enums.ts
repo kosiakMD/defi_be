@@ -1,4 +1,4 @@
-export enum EndpointsSortFieldEnum {
+export enum EndpointSortField {
   ENDPOINT = 'endpoint',
   CHAIN_ID = 'chain_id',
   PRIORITY = 'priority',
@@ -7,7 +7,7 @@ export enum EndpointsSortFieldEnum {
   IS_ENABLED = 'is_enabled',
 }
 
-export enum EndpointsSuccessScore {
+export enum EndpointCallScore {
   success = 1,
   fail = -1,
 }

@@ -16,8 +16,7 @@
     "@ethersproject/providers": "5.4.5",
     "@indexed-finance/multicall": "^2.0.0",
     "rxjs": "^7.3.0",
-    "web3": "^1.6.0",
-    "winston-aws-cloudwatch": "^3.0.0"
+    "web3": "^1.6.0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",

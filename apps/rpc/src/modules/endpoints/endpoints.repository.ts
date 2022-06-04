@@ -11,16 +11,22 @@ import { EndpointEntity } from './endpoint.entity';
 @Injectable()
 @EntityRepository(EndpointEntity)
 export class EndpointsRepository extends Repository<EndpointEntity> {
-  async getList(queryParams: ListQueryDto, getAll = true): Promise<EndpointEntity[]> {
+  getAll(): Promise<EndpointEntity[]> {
+    return this.find({
+      where: {
+        isEnabled: true,
+      },
+    });
+  }
+
+  async getList(queryParams: ListQueryDto): Promise<EndpointEntity[]> {
     const { limit, page, sortDirection, sortField } = queryParams;
     const queryBuilder = this.createQueryBuilder('public.endpoints');
-    if (!getAll) {
-      queryBuilder.where('is_enabled IS TRUE');
-    }
     queryBuilder
-      .offset((page - 1) * limit) //
+      .offset((page - 1) * limit)
       .limit(limit)
       .orderBy(sortField, sortDirection);
+
     return queryBuilder.getMany();
   }
 
@@ -30,8 +36,8 @@ export class EndpointsRepository extends Repository<EndpointEntity> {
 
   async insertOne(endpointData: EndpointCreateDto): Promise<EndpointEntity> {
     const { endpoint, chainId } = endpointData;
-    const existenEndpoint = await this.findOne({ where: [{ endpoint, chainId }] });
-    if (existenEndpoint) {
+    const existingEndpoint = await this.findOne({ where: [{ endpoint, chainId }] });
+    if (existingEndpoint) {
       throw Error(`Endpoint '${endpoint}' exists on chainId '${chainId}'`);
     }
     return this.save(endpointData);

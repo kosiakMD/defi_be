@@ -1,13 +1,14 @@
 import { CallsStatistic } from '../../common/dto/CallsStatistic.dto';
 
 import { EndpointEntity } from './endpoint.entity';
-import { EndpointsSuccessScore } from './endpoints.enums';
+import { EndpointCallScore } from './endpoints.enums';
 
 export type SuccessScore = {
-  value: EndpointsSuccessScore;
+  value: EndpointCallScore;
   timestamp: number;
 };
-export type EndpointToRPCCall = {
+
+export type EndpointStatistic = {
   callsStatistic: CallsStatistic;
-  endpointsEntity: EndpointEntity;
+  endpoint: EndpointEntity;
 };

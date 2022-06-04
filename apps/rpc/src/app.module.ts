@@ -32,6 +32,7 @@ import { RpcModule } from './modules/rpc/rpc.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(configuration(config)),
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -44,7 +45,6 @@ import { RpcModule } from './modules/rpc/rpc.module';
       inject: [ConfigService],
       isGlobal: true,
     }),
-    ConfigModule.forRoot(configuration(config)),
     TracingModule.forRoot({ serviceName: 'rpc-nodes-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],

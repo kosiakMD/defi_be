@@ -14,15 +14,19 @@ export const validationSchema = Joi.object({
   ...redisValidation,
   ENDPOINTS_SUCCESS_RATE_TTL: Joi.number()
     .integer()
+    .optional()
     .default(300 * 1000),
   ENDPOINTS_SUCCESS_RATE_MAX_ITEMS_NUM: Joi.number() //
     .integer()
+    .optional()
     .default(100),
   ENDPOINTS_SUCCESS_RATE_HISTORY_TTL: Joi.number()
     .integer()
+    .optional()
     .default(60 * 60 * 1000),
   RPC_NODES_MAX_RETRIES: Joi.number() //
     .integer()
+    .optional()
     .default(3),
   BODY_LIMIT: Joi.string() //
     .default('10mb'),

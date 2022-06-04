@@ -3,7 +3,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
-import { EndpointsSortFieldEnum } from '../../modules/endpoints/endpoints.enums';
+import { EndpointSortField } from '../../modules/endpoints/endpoints.enums';
 import { SortDirectionEnum } from '../enum/SortDirection.enum';
 
 export class ListQueryDto {
@@ -34,14 +34,14 @@ export class ListQueryDto {
   sortDirection = SortDirectionEnum.ASC;
 
   @ApiProperty({
-    enum: EndpointsSortFieldEnum,
+    enum: EndpointSortField,
     enumName: 'EndpointsSortFieldEnum',
-    example: EndpointsSortFieldEnum.ENDPOINT,
-    default: EndpointsSortFieldEnum.ENDPOINT,
+    example: EndpointSortField.ENDPOINT,
+    default: EndpointSortField.ENDPOINT,
     required: false,
   })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
-  sortField = EndpointsSortFieldEnum.ENDPOINT;
+  sortField = EndpointSortField.ENDPOINT;
 }

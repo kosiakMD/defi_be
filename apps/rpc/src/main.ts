@@ -45,9 +45,9 @@ async function bootstrap() {
   initSentry();
   initContext(app);
   initLogger(app);
+  initPrefix(app);
   initSwagger(app);
   initPipes(app);
-  initPrefix(app);
 
   const configService = app.get<ConfigService>(ConfigService);
   app.use(json({ limit: configService.get<string>('BODY_LIMIT') }));

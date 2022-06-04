@@ -45,7 +45,7 @@ export const configuration = ({
   validationOptions,
   load,
 }: Config): ConfigModuleOptions => ({
-  cache: false,
+  cache: true,
   isGlobal: true,
   load,
   envFilePath: envFiles.map((file) => envFilePath(envFileDir, file)),

@@ -32,7 +32,7 @@ export class MINTER {
           return value === CURVE_MAIN_COIN_ADDRESS ? ZERO_ADDRESS : value.toLowerCase();
         });
     } catch (e) {
-      this.logger.error(e, 'getCoinsArray');
+      this.logger.error('Get Curve coins failed', e);
       throw e;
     }
   }

@@ -5,7 +5,7 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { formatAddress } from '@app/common/utils';
+import { formatAddress, formatError } from '@app/common/utils';
 
 import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
@@ -45,13 +45,13 @@ export class AssetsProcessor {
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
-      const asset: AssetEntity = await this.processAsset(job.data);
+      const asset = await this.processAsset(job.data);
       this.logger.debug(
-        `Asset id: ${asset.id} chainId: ${chainId} address: ${address} is processed`,
+        `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (e) {
-      this.logger.error(`Error to progress job: ${job.id}. Error: ${e}`);
+      this.logger.error(`Error to progress job: ${job.id}`, e);
       await job.moveToFailed({ message: e.toString() });
     }
   }
@@ -71,11 +71,11 @@ export class AssetsProcessor {
 
       const asset = await this.assetAnalyserService.analyseAsset({ chainId, address });
       if (!asset) {
-        this.logger.warn(
-          `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} cannot be analysed`,
-        );
+        this.logger.warn(`Asset chainId: ${chainId} address: ${address} cannot be analysed`);
         return;
       }
+
+      this.logger.log(`Asset analysis result: ${JSON.stringify(asset)}`);
 
       const processingAsset = new AssetEntity();
 
@@ -95,7 +95,7 @@ export class AssetsProcessor {
         asset.categories,
       );
 
-      for (const underlyingAddress of asset.underlying) {
+      for (const underlyingAddress of asset.underlying || []) {
         const underlying = new AssetUnderlyingEntity();
         underlying.position = asset.underlying.indexOf(underlyingAddress);
         underlying.underlyingAsset = await this.processAsset({
@@ -107,7 +107,10 @@ export class AssetsProcessor {
 
       return await this.assetsRepository.save(processingAsset);
     } catch (error) {
-      this.logger.error(`Error to process asset data ${JSON.stringify(assetRequest)}`);
+      this.logger.error('Error to process asset data', {
+        request: assetRequest,
+        error: formatError(error),
+      });
       throw error;
     }
   }
@@ -124,7 +127,6 @@ export class AssetsProcessor {
   }
 
   private async updateAsset(asset: AssetEntity, request: AssetProcessingRequest) {
-    // TODO: Invalidate / update cache?
     asset.metadata = {
       ...asset.metadata,
       ...request.metadata,
@@ -133,10 +135,10 @@ export class AssetsProcessor {
     if (request.rank && asset.rank !== request.rank) {
       asset.rank = request.rank;
     }
+    // TODO: Handle case when asset should have price but not be shown in balances
     if (request.isTracked && !asset.isTracked) {
       asset.isTracked = request.isTracked;
     }
-    // TODO: Reload asset icon in case expired
     return await this.assetsRepository.save(asset);
   }
 }

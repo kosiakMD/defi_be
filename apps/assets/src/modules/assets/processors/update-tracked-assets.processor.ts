@@ -36,7 +36,7 @@ export class UpdateTrackedAssetsProcessor {
 
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (e) {
-      this.logger.error(`Error processing tracked assets job: ${job.name}. Error: ${e.toString()}`);
+      this.logger.error(`Error processing tracked assets job: ${job.name}`, e);
       await job.moveToFailed({ message: e.toString() });
     }
   }
@@ -54,9 +54,7 @@ export class UpdateTrackedAssetsProcessor {
         });
       }
     } catch (e) {
-      this.logger.error(
-        `Error processing tracked assets provider ${provider.name()}. Error: ${e.toString()}`,
-      );
+      this.logger.error(`Error processing tracked assets provider ${provider.name()}`, e);
     }
   }
 }

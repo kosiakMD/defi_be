@@ -27,9 +27,8 @@ export class UpdateCurrentPricesFromSourceProcessor {
       await this.process(job.data);
     } catch (e) {
       this.logger.error(
-        `Error processing price job: ${job.name} for source ${
-          job.data?.sourceId
-        }. Error: ${e.toString()}`,
+        `Error processing price job: ${job.name} for source ${job.data?.sourceId}`,
+        e,
       );
       throw e;
     }

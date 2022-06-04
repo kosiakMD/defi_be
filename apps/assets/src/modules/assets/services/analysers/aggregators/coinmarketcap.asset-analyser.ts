@@ -1,12 +1,14 @@
+import axios from 'axios';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AssetReference } from '../../../../../common/types';
 
+import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 
 @Injectable()
@@ -22,36 +24,70 @@ export class CoinmarketcapAssetAnalyser implements AssetAnalyser {
   }
 
   async analyseAsset({ address }: AssetReference): Promise<AssetAnalysisResult> {
+    const response = await this.searchCmcAsset(address);
+    if (!response) {
+      return;
+    }
+
+    const { data } = response;
+    if (!data || !Object.keys(data || {}).length) {
+      return;
+    }
+
+    const coinmarketcapId = Object.keys(data)[0];
+    const { name, symbol, logo, tags } = data[coinmarketcapId];
+    const isStableCoin = tags.some((tag) => tag?.indexOf('stablecoin') >= 0);
+
+    return {
+      name,
+      symbol,
+      isTracked: true,
+      categories: isStableCoin ? [AssetCategory.Stablecoin] : [],
+      icons: [{ source: 'coinmarketcap', url: logo }],
+      metadata: {
+        coinmarketcapId,
+      },
+    };
+  }
+
+  private async searchCmcAsset(address: string): Promise<CoinmarketcapResponse> {
+    const apiKey = this.config.get('COINMARKETCAP_API_KEY');
+    if (!apiKey) {
+      throw new Error('Coinmarketcap API key not provided');
+    }
+
     try {
-      const apiKey = this.config.get('COINMARKETCAP_API_KEY');
-      if (!apiKey) {
-        this.logger.error('Coinmarketcap API key not provided in icon load source config');
-        return;
-      }
-
-      const {
-        data: { data },
-      } = await firstValueFrom(
-        this.httpService.get('https://pro-api.coinmarketcap.com/v2/cryptocurrency/info', {
-          // NOTE: For coins try to find by symbol not by address
-          params: { address },
-          headers: {
-            ['X-CMC_PRO_API_KEY']: apiKey,
+      const { data } = await firstValueFrom(
+        this.httpService.get<CoinmarketcapResponse>(
+          'https://pro-api.coinmarketcap.com/v2/cryptocurrency/info',
+          {
+            // NOTE: For coins try to find by symbol not by address
+            params: { address },
+            headers: {
+              ['X-CMC_PRO_API_KEY']: apiKey,
+            },
           },
-        }),
+        ),
       );
-
-      if (!data || !Object.keys(data || {}).length) {
-        return;
-      }
-
-      // TODO: Add more data here
-      const { logo } = data[Object.keys(data)[0]];
-      return {
-        icons: [{ source: 'coinmarketcap', url: logo }],
-      };
+      return data;
     } catch (e) {
-      this.logger.warn('Error coinmarketcap loading icons', { address }, e);
+      if (axios.isAxiosError(e)) {
+        if (e.response.status === HttpStatus.BAD_REQUEST) {
+          return null;
+        }
+      }
+      throw e;
     }
   }
 }
+
+type CoinmarketcapAsset = {
+  name?: string;
+  symbol?: string;
+  tags?: string[];
+  logo?: string;
+};
+
+type CoinmarketcapResponse = {
+  data: { [key: string]: CoinmarketcapAsset };
+};

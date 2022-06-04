@@ -1,4 +1,8 @@
-import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import axios from 'axios';
+import { firstValueFrom } from 'rxjs';
+
+import { HttpService } from '@nestjs/axios';
+import { HttpStatus, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, ChainNameEnum } from '@app/common';
@@ -9,15 +13,23 @@ import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 
 @Injectable()
 export class TrustWalletAssetAnalyser implements AssetAnalyser {
-  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    private readonly httpService: HttpService,
+  ) {}
 
   canAnalyseAsset() {
     return true;
   }
 
-  analyseAsset({ chainId, address }: AssetReference): AssetAnalysisResult {
+  async analyseAsset({ chainId, address }: AssetReference): Promise<AssetAnalysisResult> {
     const trustWalletChain = this.getTrustWalletChain(chainId);
     if (!trustWalletChain) {
+      return;
+    }
+
+    const url = `https://assets-cdn.trustwallet.com/blockchains/${trustWalletChain}/assets/${address}/logo.png`;
+    if (!(await this.urlExists(url))) {
       return;
     }
 
@@ -25,7 +37,7 @@ export class TrustWalletAssetAnalyser implements AssetAnalyser {
       icons: [
         {
           source: 'trust-wallet',
-          url: `https://assets-cdn.trustwallet.com/blockchains/${trustWalletChain}/assets/${address}/logo.png`,
+          url,
         },
       ],
     };
@@ -44,5 +56,19 @@ export class TrustWalletAssetAnalyser implements AssetAnalyser {
         // So we only override once that are not matching
         return ChainNameEnum[ChainIdEnum[chainId]];
     }
+  }
+
+  private async urlExists(url: string): Promise<boolean> {
+    try {
+      await firstValueFrom(this.httpService.head(url));
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        if (e.response.status !== HttpStatus.NOT_FOUND) {
+          return false;
+        }
+      }
+      throw e;
+    }
+    return true;
   }
 }

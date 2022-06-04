@@ -12,7 +12,7 @@ import { JobName } from '../../../common/enum/job-name.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 import { SearchResultType } from '../../../common/enum/search-result-type.enum';
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
-import { AssetReference } from '../../../common/types/asset-reference';
+import { AssetReference } from '../../../common/types';
 
 import { AssetAvgPrice, PriceService } from '../../prices/price.service';
 import { AssetsHistoricalPriceRepository } from '../../prices/repositories/asset-historical-price.repository';
@@ -115,7 +115,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {
     requests.map((request) => {
-      this.logger.log('Send asset for processing', request);
+      this.logger.log(`Send asset for processing: ${JSON.stringify(request)}`);
       return this.assetsQueue.add(JobName.ASSET_METADATA, {
         address: request.address,
         chainId: request.chainId,

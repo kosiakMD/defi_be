@@ -26,7 +26,7 @@ export class AssetsHistoricalPricesCleanerProcessor {
       await this.clearPrices();
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (error) {
-      this.logger.error(`Error to process historical price job.id: ${job.id}, ${error.message}`);
+      this.logger.error(`Error to process historical price job.id: ${job.id}`, error);
       await job.moveToFailed({ message: error.toString() });
     }
   }

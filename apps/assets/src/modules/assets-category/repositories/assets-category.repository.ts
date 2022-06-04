@@ -11,7 +11,7 @@ export class AssetsCategoryRepository extends Repository<AssetCategoryEntity> {
   }
 
   async findOrCreate(codes: string[]): Promise<AssetCategoryEntity[]> {
-    if (!codes.length) {
+    if (!codes?.length) {
       return [];
     }
 

@@ -8,12 +8,13 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';
-import { AssetReference } from '../../../../../common/types/asset-reference';
+import { AssetReference } from '../../../../../common/types';
 
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
 import { AssetPrice, AssetPriceProvider, ComplexAsset } from '../core/price.provider';
 
+// TODO: Fix error crash here
 @Injectable()
 export class UniswapV2AssetAnalyser
   extends EVMAssetAnalyser
@@ -84,7 +85,8 @@ export class UniswapV2AssetAnalyser
         .multipliedBy(asset1.price);
 
       const totalValue = asset0Value.plus(asset1Value);
-      const price = totalValue.multipliedBy(asset.decimals).dividedBy(totalSupply);
+      const price = totalValue.multipliedBy(decimalsDivider(asset.decimals)).dividedBy(totalSupply);
+
       prices.push({
         asset: { chainId, address: asset.address },
         price: price.toNumber(),

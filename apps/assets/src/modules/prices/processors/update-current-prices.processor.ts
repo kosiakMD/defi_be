@@ -40,7 +40,7 @@ export class UpdateCurrentPricesProcessor {
 
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (e) {
-      this.logger.error(`Error processing prices job: ${job.name}. Error: ${e.toString()}`);
+      this.logger.error(`Error processing prices job: ${job.name}`, e);
       await job.moveToFailed({ message: e.toString() });
     }
   }

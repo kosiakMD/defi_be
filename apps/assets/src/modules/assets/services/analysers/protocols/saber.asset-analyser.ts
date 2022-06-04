@@ -1,5 +1,5 @@
 import { StableSwap } from '@saberhq/stableswap-sdk';
-import { TokenAccountLayout, u64 } from '@saberhq/token-utils';
+import { Token, TokenAccountLayout, u64 } from '@saberhq/token-utils';
 import * as web3 from '@solana/web3.js';
 
 import { Injectable } from '@nestjs/common';
@@ -30,10 +30,12 @@ export class SaberAssetAnalyser
     }
 
     const { tokenA, tokenB, poolTokenMint } = token.state;
-    const tokenMint = await connection.getTokenSupply(poolTokenMint);
+    const { name, symbol, decimals } = await Token.load(connection, poolTokenMint);
 
     return {
-      decimals: tokenMint?.value?.decimals,
+      name,
+      symbol,
+      decimals,
       categories: ['saber-lp'],
       underlying: [tokenA.mint.toString(), tokenB.mint.toString()],
     };
@@ -73,7 +75,10 @@ export class SaberAssetAnalyser
       .multipliedBy(underlyingAssetB.price);
 
     const totalValue = assetAValue.plus(assetBValue);
-    const price = totalValue.multipliedBy(asset.decimals).dividedBy(toBN(supply.value.amount));
+    const price = totalValue
+      .multipliedBy(decimalsDivider(asset.decimals))
+      .dividedBy(toBN(supply.value.amount));
+
     return {
       asset: { chainId, address: asset.address },
       price: price.toNumber(),

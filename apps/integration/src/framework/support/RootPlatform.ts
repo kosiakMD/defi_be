@@ -72,7 +72,7 @@ export abstract class RootPlatform implements IRootPlatform {
   getMeta(): IPlatformMeta {
     // Loop through all supported protocols
     // dedupe & merge
-    this.logger.log(`Start getting meta for: ${this.meta.name}`);
+    this.logger.debug(`Start getting meta for: ${this.meta.name}`);
 
     const features = new Map<ChainId, Set<FeatureEnum>>();
     this.protocols.forEach((protocol) => {
@@ -94,7 +94,7 @@ export abstract class RootPlatform implements IRootPlatform {
       links: this.meta.links || {},
     };
 
-    this.logger.log(`Finish getting meta for: ${this.meta.name}`);
+    this.logger.debug(`Finish getting meta for: ${this.meta.name}`);
   }
 
   async getUsersData(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse> {
@@ -112,11 +112,19 @@ export abstract class RootPlatform implements IRootPlatform {
       }
       const validAddressesForChain = keepAddressesByChainId(addresses, chain.id);
 
+      const started = Date.now();
       if (validAddressesForChain?.length) {
         promises.push(
           protocol
             .getUsersData(validAddressesForChain)
             .then(({ data: wallets, errors: userErrors }) => {
+              this.logger.log({
+                message: `Protocol data loaded`,
+                platform: this.meta.name,
+                chainId: chain.id,
+                address: validAddressesForChain,
+                execution: Date.now() - started,
+              });
               errors.push(...userErrors);
               return { chain, features, wallets, errors };
             }),
@@ -302,7 +310,7 @@ export abstract class RootPlatform implements IRootPlatform {
     chain: ChainIdEnum,
     resolvedProtocols: IChainGroupedWallet[],
   ): IChainUserEntry {
-    this.logger.log(`Start merging data: ${this.meta.name}`);
+    this.logger.debug(`Start merging data: ${this.meta.name}`);
 
     const positions: IWalletUserEntry[] = [];
     const features = new Set<Partial<FeatureEnum>>();
@@ -323,7 +331,7 @@ export abstract class RootPlatform implements IRootPlatform {
       }
     });
 
-    this.logger.log(`Finish merging data: ${this.meta.name}`);
+    this.logger.debug(`Finish merging data: ${this.meta.name}`);
 
     return {
       // group positions by feature  { staking: [....], lending: [...] }

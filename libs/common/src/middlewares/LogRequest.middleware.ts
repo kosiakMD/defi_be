@@ -32,8 +32,6 @@ export class LogRequestMiddleware implements NestMiddleware {
       }),
     );
 
-    // this.logger.setExContext(req, res);
-
     this.logger.log(
       {
         reqId: reqId || 'unknown',

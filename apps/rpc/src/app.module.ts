@@ -1,15 +1,7 @@
 import * as redisStore from 'cache-manager-redis-store';
 
 import { HttpTracingModule, TracingModule } from '@narando/nest-xray';
-import {
-  CacheModule,
-  Inject,
-  LoggerService,
-  MiddlewareConsumer,
-  Module,
-  NestModule,
-  OnModuleInit,
-} from '@nestjs/common';
+import { CacheModule, Inject, LoggerService, Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { TerminusModule } from '@nestjs/terminus';
@@ -19,8 +11,6 @@ import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { SentryLogInterceptor } from '@app/common/interceptors/sentry-log.interceptor';
-import { LogRequestMiddleware } from '@app/common/middlewares';
-import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { EndpointsController } from './controllers/endpoints.controller';
@@ -77,12 +67,10 @@ import { RpcModule } from './modules/rpc/rpc.module';
     },
   ],
 })
-export class AppModule implements OnModuleInit, NestModule {
+export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
-  configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
-  }
+  // NOTE: We should not log RPC requests / responses as they could be large
 
   onModuleInit(): void {
     const { ENV, SERVICE_NAME, SERVICE_PORT, SERVICE_HOST } = process.env;

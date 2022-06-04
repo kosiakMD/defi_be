@@ -12,7 +12,7 @@ configMaps:
     ARBITRUM_URL: https://arb1.arbitrum.io/rpc
   logs:
     LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
+    LOG_LEVEL: info
     NODE_ENV: development
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
   config: 

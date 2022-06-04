@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainId } from '@app/common';
 import { Logger } from '@app/common/Logger';
 
 import { ListQueryDto } from '../../../common/dto/ListQuery.dto';
@@ -13,26 +14,23 @@ import { EndpointUpdateDto } from '../dto/endpoint.update.dto';
 import { EndpointsListDto } from '../dto/endpoints.list.dto';
 import { EndpointEntity } from '../endpoint.entity';
 import { EndpointsRepository } from '../endpoints.repository';
-import { EndpointToRPCCall } from '../endpoints.types';
-import { EndpointsToRPCCallService } from './endpoints-to-rpc-call.service';
+import { EndpointStatistic } from '../endpoints.types';
+import { EndpointsStatisticService } from './endpoints-statistic.service';
 
 @Injectable()
 export class EndpointsService {
   constructor(
     @InjectRepository(EndpointsRepository)
     private readonly endpointsRepository: EndpointsRepository,
-    private readonly endpointsToRPCCallService: EndpointsToRPCCallService,
+    private readonly endpointsStatisticService: EndpointsStatisticService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
   ) {}
 
   async getEndpointsList(query: ListQueryDto): Promise<EndpointsListDto> {
     const endpoints = await this.endpointsRepository.getList(query);
-    const endpointsToRPCCall = await this.endpointsToRPCCallService.getAllEndpointsToRPCCall();
+    const endpointsMap = await this.endpointsStatisticService.getEndpointsMap();
     const items = endpoints.map((endpoint) => {
-      const callsStatistic = this.getEndpointSuccessRateFromEndpointsToRPCCall(
-        endpoint,
-        endpointsToRPCCall,
-      );
+      const callsStatistic = this.getEndpointStatisticFromMap(endpointsMap, endpoint);
       return Object.assign(endpoint, { callsStatistic });
     });
     return { items };
@@ -43,11 +41,8 @@ export class EndpointsService {
     if (!endpoint) {
       throw new Error(`Not found! endpoint id: ${endpointId}`);
     }
-    const endpointsToRPCCall = await this.endpointsToRPCCallService.getAllEndpointsToRPCCall();
-    const callsStatistic = this.getEndpointSuccessRateFromEndpointsToRPCCall(
-      endpoint,
-      endpointsToRPCCall,
-    );
+    const endpointsMap = await this.endpointsStatisticService.getEndpointsMap();
+    const callsStatistic = this.getEndpointStatisticFromMap(endpointsMap, endpoint);
     return Object.assign(endpoint, { callsStatistic });
   }
 
@@ -66,19 +61,14 @@ export class EndpointsService {
     await this.endpointsRepository.deleteItem(endpointId);
   }
 
-  private getEndpointSuccessRateFromEndpointsToRPCCall(
+  private getEndpointStatisticFromMap(
+    endpointsToRPCCall: Map<ChainId, EndpointStatistic[]>,
     endpoint: EndpointEntity,
-    endpointsToRPCCall: Map<number, EndpointToRPCCall[]>,
   ): CallsStatistic {
-    let callsStatistic = new CallsStatistic();
-    const endpointToRPCCall = (endpointsToRPCCall.get(endpoint.chainId) || []).find(
-      (endpointToRPCCall) => endpointToRPCCall.endpointsEntity.id === endpoint.id,
+    const chainEndpoints = endpointsToRPCCall.get(endpoint.chainId) || [];
+    const endpointStatistic = chainEndpoints.find(
+      (endpointToRPCCall) => endpointToRPCCall.endpoint.id === endpoint.id,
     );
-    if (endpointToRPCCall) {
-      callsStatistic = endpointToRPCCall.callsStatistic;
-    } else {
-      this.logger.warn(`No cached endpoint id: ${endpoint.id} to get success rate!`);
-    }
-    return callsStatistic;
+    return endpointStatistic?.callsStatistic;
   }
 }

@@ -60,7 +60,8 @@ export class RpcService {
   ): Promise<boolean> {
     return new Promise((ok) => {
       const started = Date.now();
-      this.logger.debug(`Proxying RPC request to '${target}'`);
+      // TODO: Comment that out as cannot switch log level (to be reverted)
+      // this.logger.debug(`Proxying RPC request to '${target}'`);
       firstValueFrom(this.httpService.post(target, request.body)).then(
         ({ data, status }) => {
           const took = Date.now() - started;

@@ -116,7 +116,7 @@ export class EndpointsStatisticService implements OnModuleInit {
 
   public async syncEndpointsFromDatabase(): Promise<any> {
     const newEndpointMap = new Map<ChainId, EndpointStatistic[]>();
-    const endpoints = await this.endpointsRepository.getAll();
+    const endpoints = await this.endpointsRepository.getEnabled();
     endpoints.forEach((endpoint: EndpointEntity) => {
       const prevEndpoints = this.endpointsMap.get(endpoint.chainId);
       const prevEndpoint = prevEndpoints?.find(

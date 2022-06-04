@@ -11,7 +11,7 @@ import { EndpointEntity } from './endpoint.entity';
 @Injectable()
 @EntityRepository(EndpointEntity)
 export class EndpointsRepository extends Repository<EndpointEntity> {
-  getAll(): Promise<EndpointEntity[]> {
+  getEnabled(): Promise<EndpointEntity[]> {
     return this.find({
       where: {
         isEnabled: true,

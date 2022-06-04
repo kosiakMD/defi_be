@@ -72,7 +72,8 @@ export abstract class RootPlatform implements IRootPlatform {
   getMeta(): IPlatformMeta {
     // Loop through all supported protocols
     // dedupe & merge
-    this.logger.debug(`Start getting meta for: ${this.meta.name}`);
+    // TODO: Comment that out as cannot switch log level (to be reverted)
+    // this.logger.debug(`Start getting meta for: ${this.meta.name}`);
 
     const features = new Map<ChainId, Set<FeatureEnum>>();
     this.protocols.forEach((protocol) => {
@@ -94,7 +95,8 @@ export abstract class RootPlatform implements IRootPlatform {
       links: this.meta.links || {},
     };
 
-    this.logger.debug(`Finish getting meta for: ${this.meta.name}`);
+    // TODO: Comment that out as cannot switch log level (to be reverted)
+    // this.logger.debug(`Finish getting meta for: ${this.meta.name}`);
   }
 
   async getUsersData(chains: ChainId[], addresses: Address[]): Promise<IUserDataPlatformResponse> {
@@ -310,7 +312,8 @@ export abstract class RootPlatform implements IRootPlatform {
     chain: ChainIdEnum,
     resolvedProtocols: IChainGroupedWallet[],
   ): IChainUserEntry {
-    this.logger.debug(`Start merging data: ${this.meta.name}`);
+    // TODO: Comment that out as cannot switch log level (to be reverted)
+    // this.logger.debug(`Start merging data: ${this.meta.name}`);
 
     const positions: IWalletUserEntry[] = [];
     const features = new Set<Partial<FeatureEnum>>();
@@ -331,7 +334,8 @@ export abstract class RootPlatform implements IRootPlatform {
       }
     });
 
-    this.logger.debug(`Finish merging data: ${this.meta.name}`);
+    // TODO: Comment that out as cannot switch log level (to be reverted)
+    // this.logger.debug(`Finish merging data: ${this.meta.name}`);
 
     return {
       // group positions by feature  { staking: [....], lending: [...] }

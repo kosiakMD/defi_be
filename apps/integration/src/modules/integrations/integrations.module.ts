@@ -64,20 +64,23 @@ export class IntegrationsModule implements OnModuleInit {
   ) {}
 
   onModuleInit(): void {
+    // TODO: This is test code to measure performance (to be removed)
     this.httpService.axiosRef.interceptors.request.use((config) => {
-      this.logger.log({
-        message: 'Http call started',
-        method: config.method,
-        url: config.url,
-        params: config.params,
-      });
+      // this.logger.log({
+      //   message: 'Http call started',
+      //   method: config.method,
+      //   url: config.url,
+      //   params: config.params,
+      // });
+      // (config as any).started = Date.now();
       (config as any).started = Date.now();
       return config;
     });
 
+    // TODO: This is test code to measure performance (to be removed)
     this.httpService.axiosRef.interceptors.response.use((config) => {
-      this.logger.log({
-        message: 'Http call completed',
+      this.logger.debug({
+        message: `Http call completed ${config.config.url}`,
         method: config.config.method,
         url: config.config.url,
         params: config.config.params,

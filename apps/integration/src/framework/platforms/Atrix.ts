@@ -2,10 +2,11 @@ import { Inject } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
+import { ChainIdEnum, Logger } from '@app/common';
 
 import { RootPlatform } from '../support/RootPlatform';
 import { AtrixStaking, IAtrixSolanaMeta } from '../support/Solana/protocols/Yield/AtrixStaking';
+import { FeatureEnum } from '../support/enums';
 
 export class Atrix extends RootPlatform {
   constructor(
@@ -35,7 +36,7 @@ export class Atrix extends RootPlatform {
       name: 'Atrix - Staking',
       feature: FeatureEnum.staking,
       context: {
-        programID: 'BLDDrex4ZSWBgPYaaH6CQCzkJXWfzCiiur9cSFJT8t3x',
+        program: 'BLDDrex4ZSWBgPYaaH6CQCzkJXWfzCiiur9cSFJT8t3x',
       },
     });
   }

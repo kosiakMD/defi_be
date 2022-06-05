@@ -17,3 +17,12 @@ export const HARVESTER_ACCOUNT_LAYOUT = struct([
   u64('earnedRewards'),
   publicKey('authority'),
 ]);
+
+export const FARM_ACCOUNT_LAYOUT = struct([
+  blob(8),
+  publicKey('base'),
+  u8('bump'),
+  publicKey('stakeMint'),
+  publicKey('farmStakeTokenAccount'),
+  publicKey('authority'),
+]);

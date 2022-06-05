@@ -14,6 +14,7 @@ import { ErrorWithHttpInfo } from '../../common/types/error-with-http-info';
 import { AaveV3 } from '../platforms/AaveV3';
 import { AlchemixV2 } from '../platforms/AlchemixV2';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { Atrix } from '../platforms/Atrix';
 import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { Belt } from '../platforms/Belt';
@@ -102,6 +103,7 @@ export class PlatformService implements OnApplicationBootstrap {
       MakerDAO,
       IronBank,
       Benqi,
+      Atrix,
     });
   }
 

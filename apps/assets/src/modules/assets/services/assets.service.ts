@@ -30,6 +30,7 @@ import { mapAssetsToPlain } from '../utils/cache-mapping';
 import { AssetAnalyserService } from './asset-analyser.service';
 
 @Injectable()
+// TODO: Return underlying assets reserves
 export class AssetsService extends CrudService<AssetsRepository> {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
@@ -151,8 +152,9 @@ export class AssetsService extends CrudService<AssetsRepository> {
     return assets.map((asset) => ({
       type: SearchResultType.ASSET,
       icon: asset.icon,
-      name: asset.name,
+      name: asset.displayName || asset.symbol || asset.name,
       metadata: {
+        rank: asset.rank,
         address: asset.address,
         chainId: asset.chainId,
         symbol: asset.symbol,

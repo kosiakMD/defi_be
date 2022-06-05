@@ -143,6 +143,7 @@ export class EndpointsStatisticService implements OnModuleInit {
     return `endpoint_score_${chainId}_${endpoint}`;
   }
 
+  // TODO: We don't count response time
   private filterOutdatedEndpointScores(endpointSuccessScores: SuccessScore[]): SuccessScore[] {
     const now = Date.now();
     return endpointSuccessScores.filter(

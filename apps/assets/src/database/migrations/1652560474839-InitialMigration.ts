@@ -17,7 +17,7 @@ export class InitialMigration1652560474839 implements MigrationInterface {
       `CREATE TABLE "assets_prices" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "price" numeric NOT NULL, "source_id" integer NOT NULL, "timestamp" TIMESTAMP NOT NULL DEFAULT now(), "asset_id" integer NOT NULL, CONSTRAINT "UQ_e3d0b08353051a0a8f12c6e02fa" UNIQUE ("asset_id", "timestamp"), CONSTRAINT "PK_3523fd29cc0531fcc6eb60aa1eb" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
-      `CREATE TABLE "assets_underlying" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "position" integer NOT NULL, "asset_id" integer, "underlying_asset_id" integer, CONSTRAINT "UQ_c0c706eaa48b9cbc7d6e0799b1e" UNIQUE ("asset_id", "underlying_asset_id"), CONSTRAINT "PK_917e47014b0b6dab464ad76740a" PRIMARY KEY ("id"))`,
+      `CREATE TABLE "assets_underlying" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "position" integer NOT NULL, "asset_id" integer NOT NULL, "underlying_asset_id" integer NOT NULL, CONSTRAINT "UQ_c0c706eaa48b9cbc7d6e0799b1e" UNIQUE ("asset_id", "underlying_asset_id"), CONSTRAINT "PK_917e47014b0b6dab464ad76740a" PRIMARY KEY ("id"))`,
     );
     await queryRunner.query(
       `CREATE TABLE "assets" ("id" SERIAL NOT NULL, "created_at" TIMESTAMP NOT NULL DEFAULT now(), "updated_at" TIMESTAMP NOT NULL DEFAULT now(), "address" character varying NOT NULL, "name" character varying, "symbol" character varying, "icon" character varying, "chain_id" integer NOT NULL, "decimals" integer NOT NULL, "rank" integer, "is_tracked" boolean NOT NULL DEFAULT false, "disabled" boolean NOT NULL DEFAULT false, CONSTRAINT "UQ_40af782413d845fe859848c71ca" UNIQUE ("address", "chain_id"), CONSTRAINT "PK_da96729a8b113377cfb6a62439c" PRIMARY KEY ("id"))`,
@@ -47,7 +47,7 @@ export class InitialMigration1652560474839 implements MigrationInterface {
       `ALTER TABLE "assets_prices" ADD CONSTRAINT "FK_af3d211483e97a5ff71360f9a53" FOREIGN KEY ("asset_id") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
     await queryRunner.query(
-      `ALTER TABLE "assets_underlying" ADD CONSTRAINT "FK_a2daa4b2242b88d9fe9f0c9b5c1" FOREIGN KEY ("asset_id") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,
+      `ALTER TABLE "assets_underlying" ADD CONSTRAINT "FK_a2daa4b2242b88d9fe9f0c9b5c1" FOREIGN KEY ("asset_id") REFERENCES "assets"("id") ON DELETE CASCADE ON UPDATE CASCADE`,
     );
     await queryRunner.query(
       `ALTER TABLE "assets_underlying" ADD CONSTRAINT "FK_d230ddf0cdb0079ac0035c9f1c5" FOREIGN KEY ("underlying_asset_id") REFERENCES "assets"("id") ON DELETE NO ACTION ON UPDATE NO ACTION`,

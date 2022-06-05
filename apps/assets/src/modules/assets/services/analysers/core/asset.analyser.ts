@@ -1,5 +1,7 @@
 import { AssetReference, ObjectOrPromise } from '../../../../../common/types';
 
+import { AssetMetadata } from '../../../types/asset-metadata.type';
+
 export interface AssetAnalyser {
   canAnalyseAsset(asset: AssetReference): ObjectOrPromise<boolean>;
   analyseAsset(asset: AssetReference): ObjectOrPromise<AssetAnalysisResult>;
@@ -16,14 +18,15 @@ type AssetAnalysis = {
   symbol?: string;
   decimals?: number;
 
+  displayName?: string;
+
   isTracked?: boolean;
-  rank?: number;
 
   icons?: AssetIcon[];
 
   categories?: string[];
   underlying?: string[];
-  metadata?: any;
+  metadata?: AssetMetadata;
 };
 
 export type AssetAnalysisResult = AssetAnalysis | undefined;

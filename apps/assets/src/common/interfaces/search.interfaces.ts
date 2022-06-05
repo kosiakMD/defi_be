@@ -1,5 +1,7 @@
+import { Address } from '@app/common';
+
 export interface SearchParams {
-  addresses?: string[];
+  addresses?: Address[];
   text?: string;
   limit?: number;
 }

@@ -37,7 +37,11 @@ export class AssetsController {
     name: 'addresses',
     type: [String],
     description: 'address array to search assets by addresses',
-    example: '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
+    example: [
+      '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
+      '0xcd2e72aebe2a203b84f46deec948e6465db51c75',
+    ],
+    isArray: true,
     required: false,
   })
   @ApiQuery({
@@ -51,7 +55,7 @@ export class AssetsController {
     name: 'limit',
     type: Number,
     description: 'maximal number of search result entries',
-    example: 30,
+    example: 5,
     required: false,
   })
   @ApiResponse({ status: HttpStatus.OK, type: [SearchResultsEntryDto] })

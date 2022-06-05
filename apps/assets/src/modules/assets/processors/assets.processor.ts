@@ -5,7 +5,8 @@ import { Inject, LoggerService } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { formatAddress, formatError } from '@app/common/utils';
+import { Address } from '@app/common';
+import { formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 
 import { JobName } from '../../../common/enum/job-name.enum';
 import { JobCompleteStates } from '../../../common/enum/job-states.enum';
@@ -19,6 +20,7 @@ import { AssetsCachedRepository } from '../repositories/assets.cached-repository
 import { AssetIcon } from '../services/analysers/core/asset.analyser';
 import { AssetAnalyserService } from '../services/asset-analyser.service';
 import { IconsService } from '../services/icons.service';
+import { AssetMetadata } from '../types/asset-metadata.type';
 import { AssetProcessingRequest } from '../types/asset-processing.request';
 
 @Processor(QueueName.ASSETS)
@@ -39,9 +41,11 @@ export class AssetsProcessor {
   })
   public async handleMetadataJob(job: Job<AssetProcessingRequest>) {
     try {
-      // TODO: Make this one nicer
-      job.data.address = formatAddress(job.data.address);
-      const { address, chainId } = job.data;
+      const data = {
+        ...job.data,
+        address: formatAddress(job.data.address),
+      };
+      const { address, chainId } = data;
       this.logger.debug(
         `Received job ${job.id}. Start getting metadata address: ${address}, chainId: ${chainId}`,
       );
@@ -49,10 +53,10 @@ export class AssetsProcessor {
       this.logger.debug(
         `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );
-      await job.moveToCompleted(JobCompleteStates.SUCCESS);
+      return JobCompleteStates.SUCCESS;
     } catch (e) {
       this.logger.error(`Error to progress job: ${job.id}`, e);
-      await job.moveToFailed({ message: e.toString() });
+      throw e;
     }
   }
 
@@ -60,7 +64,7 @@ export class AssetsProcessor {
     try {
       this.logger.debug(`Process asset data ${JSON.stringify(assetRequest)}`);
 
-      const { address, chainId, rank, isTracked } = assetRequest;
+      const { address, chainId, isTracked } = assetRequest;
       const savedAsset = await this.assetsRepository.findOneByAddressAndChain(address, chainId);
       if (savedAsset) {
         this.logger.debug(
@@ -84,7 +88,7 @@ export class AssetsProcessor {
       processingAsset.symbol = asset.symbol;
       processingAsset.name = asset.name;
       processingAsset.decimals = asset.decimals;
-      processingAsset.rank = asset.rank || rank;
+      processingAsset.rank = this.calculateRank(address, asset.metadata);
       processingAsset.isTracked = asset.isTracked || isTracked || false;
       processingAsset.underlying = [];
       processingAsset.metadata = asset.metadata || {};
@@ -105,8 +109,12 @@ export class AssetsProcessor {
         processingAsset.underlying.push(underlying);
       }
 
+      // It's only possible to calculate display name after underlying loaded
+      processingAsset.displayName = this.buildDisplayName(processingAsset);
+
       return await this.assetsRepository.save(processingAsset);
     } catch (error) {
+      // TODO: We should handle invalid addresses here after few retries they should go to invalid addresses table
       this.logger.error('Error to process asset data', {
         request: assetRequest,
         error: formatError(error),
@@ -126,15 +134,55 @@ export class AssetsProcessor {
     return largestIcon.url;
   }
 
+  private calculateRank(address: Address, metadata: AssetMetadata) {
+    if (isZeroAddress(address)) {
+      // Coins should be at the top
+      return 1;
+    }
+
+    const { marketCapRank, coingeckoRank, coingeckoId, coinmarketcapId } = metadata;
+    // NOTE: If market cap present return it
+    if (marketCapRank) {
+      return marketCapRank;
+    }
+
+    // NOTE: If coingeko rank present return it
+    if (coingeckoRank) {
+      return coingeckoRank;
+    }
+
+    // If asset found in CMC or coingecko assign some rank to it
+    if (coinmarketcapId || coingeckoId) {
+      return 10000;
+    }
+
+    // No rank
+    return null;
+  }
+
+  private buildDisplayName(asset: AssetEntity): string {
+    if (asset.underlying?.length) {
+      let displayName = asset.underlying
+        .map(({ underlyingAsset }) => this.buildDisplayName(underlyingAsset))
+        .join('/');
+
+      if (asset.isLpToken) {
+        displayName += ' LP';
+      }
+
+      return displayName;
+    }
+
+    return asset.symbol?.toUpperCase() || asset.name;
+  }
+
   private async updateAsset(asset: AssetEntity, request: AssetProcessingRequest) {
     asset.metadata = {
       ...asset.metadata,
       ...request.metadata,
     };
 
-    if (request.rank && asset.rank !== request.rank) {
-      asset.rank = request.rank;
-    }
+    asset.rank = this.calculateRank(asset.address, asset.metadata);
     // TODO: Handle case when asset should have price but not be shown in balances
     if (request.isTracked && !asset.isTracked) {
       asset.isTracked = request.isTracked;

@@ -6,7 +6,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { CacheService } from '@app/common/services/cache.service';
 import { chunkRunAsync } from '@app/common/utils';
 
-import { AssetReference } from '../../common/types/asset-reference';
+import { AssetReference } from '../../common/types';
 
 import { AssetEntity } from '../assets/entities/asset.entity';
 import { AssetsRepository } from '../assets/repositories/assets.repository';
@@ -182,7 +182,7 @@ function getPriceMap(prices: AssetAvgPrice[]) {
 const getPriceMapKey = ({ chainId, address }: AssetReference) => `${chainId}_${address}`;
 
 const getSourcePricesCacheKey = ({ chainId, address }: AssetReference) =>
-  `asset_source_prices_${chainId}_${address}`;
+  `asset_source_prices_${chainId}_${address.toLowerCase()}`;
 
 const getAvgPriceCacheKey = ({ chainId, address }: AssetReference) =>
-  `asset_avg_price_${chainId}_${address}`;
+  `asset_avg_price_${chainId}_${address.toLowerCase()}`;

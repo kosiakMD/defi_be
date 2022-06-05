@@ -17,7 +17,7 @@ export class AssetsHistoricalPricesProcessor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {}
 
-  @Process(JobName.HISTORICAL_PRICES)
+  @Process(JobName.UPDATE_HISTORICAL_PRICES)
   async handlePriceJob(job: Job) {
     try {
       this.logger.debug(`Create Historical Prices Job job.id: ${job.id}`);

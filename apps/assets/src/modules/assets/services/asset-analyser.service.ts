@@ -2,6 +2,7 @@ import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { ChainId } from '@app/common';
 import { formatError } from '@app/common/utils';
 
 import { AssetReference } from '../../../common/types';
@@ -101,7 +102,7 @@ export class AssetAnalyserService {
   }
 
   private async updateSpecificAssetsPricesForChain(
-    chainId: number,
+    chainId: ChainId,
     dtos: AssetDto[],
     provider: AssetPriceProvider,
     allAssets: AssetDto[],
@@ -157,17 +158,25 @@ function mergeAssetAnalysis(
 
   return {
     // TODO: Refactor this one
-    name: one.name || two.name,
-    symbol: one.symbol || two.symbol,
-    decimals: one.decimals !== undefined && one.decimals !== null ? one.decimals : two.decimals,
+    name: getNotEmpty(one.name, two.name),
+    symbol: getNotEmpty(one.symbol, two.symbol),
+    displayName: getNotEmpty(one.displayName, two.displayName),
+    decimals: getNotEmpty(one.decimals, two.decimals),
     // TODO: This one is wrong we should sum them up
-    rank: one.rank || two.rank,
     isTracked: one.isTracked || two.isTracked,
     metadata: { ...one.metadata, ...two.metadata },
-    underlying: mergeArrays(one.underlying, two.underlying),
+    underlying: getNotEmptyArray(one.underlying, two.underlying),
     categories: mergeArrays(one.categories, two.categories),
     icons: mergeArrays(one.icons, two.icons),
   };
+}
+
+function getNotEmpty<T = any>(one: T, two: T): T {
+  return one !== undefined && one !== null ? one : two;
+}
+
+function getNotEmptyArray<T = any>(one: T[], two: T[]): T[] {
+  return one?.length > 0 ? one : two;
 }
 
 function mergeArrays<T = any>(one: T[], two: T[]): T[] {

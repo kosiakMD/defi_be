@@ -6,6 +6,7 @@ import { EVMMetaDataStrategy } from './chains/evm.asset-analyser';
 import { SolanaAssetAnalyser } from './chains/solana.asset-analyser';
 import { TerraAssetAnalyser } from './chains/terra.asset-analyser';
 import { TrustWalletAssetAnalyser } from './icons/trust-wallet.asset-analyser';
+import { EvmCoinAssetAnalyser } from './others/evm-coin.asset-analyser';
 import { SaberAssetAnalyser } from './protocols/saber.asset-analyser';
 import { UniswapV2AssetAnalyser } from './protocols/uniswapv2.asset-analyser';
 
@@ -18,6 +19,8 @@ export const assetAnalysers = [
   EVMMetaDataStrategy,
   SolanaAssetAnalyser,
   TerraAssetAnalyser,
+
+  EvmCoinAssetAnalyser,
 
   TrustWalletAssetAnalyser,
 

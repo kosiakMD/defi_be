@@ -163,8 +163,8 @@ export class AssetsController {
   @ApiQuery({
     name: 'limit',
     type: Number,
-    description: 'maximal number of rearch result entries',
-    example: 30,
+    description: 'maximal number of search result entries',
+    example: 5,
     required: false,
   })
   @ApiResponse({ status: 200, type: [SearchResultsEntryDto] })

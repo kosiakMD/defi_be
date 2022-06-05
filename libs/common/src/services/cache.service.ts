@@ -12,7 +12,7 @@ export class CacheService {
     options?: CachingConfig,
   ): Promise<T> {
     const cached = await this.cache.get<T>(key);
-    if (cached !== undefined) {
+    if (cached !== undefined && cached !== null) {
       return cached;
     }
 

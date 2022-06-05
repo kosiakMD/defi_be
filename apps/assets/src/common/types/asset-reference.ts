@@ -1,4 +1,6 @@
+import { Address, ChainId } from '@app/common';
+
 export type AssetReference = {
-  chainId: number;
-  address: string;
+  chainId: ChainId;
+  address: Address;
 };

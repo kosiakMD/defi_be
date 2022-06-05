@@ -1,10 +1,9 @@
-import { EntityRepository, ILike, Repository } from 'typeorm';
-import { FindConditions } from 'typeorm/find-options/FindConditions';
+import { Brackets, EntityRepository, ILike, Repository } from 'typeorm';
 
 import { ChainIdEnum } from '@app/common/enum';
 
 import { SearchParams } from '../../../common/interfaces/search.interfaces';
-import { AssetReference } from '../../../common/types/asset-reference';
+import { AssetReference } from '../../../common/types';
 
 import { AssetEntity } from '../entities/asset.entity';
 
@@ -38,26 +37,34 @@ export class AssetsRepository extends Repository<AssetEntity> {
   }
 
   async findAssetsByParams({ addresses = [], text, limit }: SearchParams): Promise<AssetEntity[]> {
-    const commonConditions: FindConditions<AssetEntity> = { isTracked: true, disabled: false };
-    const conditions: FindConditions<AssetEntity>[] = [];
-    if (addresses.length) {
-      addresses.forEach((address) =>
-        conditions.push({ ...commonConditions, address: ILike(address) }),
+    const queryBuilder = this.createQueryBuilder('assets')
+      .select()
+      .where('is_tracked')
+      .andWhere('disabled is false');
+
+    if (text || addresses.length > 0) {
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          if (text) {
+            qb.orWhere('name ilike :text', { text: `%${text}%` })
+              .orWhere('symbol ilike :text', { text: `%${text}%` })
+              .orWhere('display_name ilike :text', { text: `%${text}%` });
+          }
+
+          // TODO: Or seems to be not working here
+          addresses.forEach((address) =>
+            qb.orWhere('address ilike :address', { address: `%${address}%` }),
+          );
+        }),
       );
     }
-    if (text) {
-      conditions.push({ ...commonConditions, name: ILike(`%${text}%`) });
-      conditions.push({ ...commonConditions, symbol: ILike(`%${text}%`) });
-    }
 
-    return this.find({
-      where: conditions,
-      order: {
-        rank: 'ASC',
-        name: 'ASC',
-        symbol: 'ASC',
-      },
-      take: limit || 30,
-    });
+    return queryBuilder
+      .limit(limit || 5)
+      .orderBy('rank', 'ASC', 'NULLS LAST')
+      .addOrderBy('display_name', 'ASC')
+      .addOrderBy('symbol', 'ASC')
+      .addOrderBy('name', 'ASC')
+      .getMany();
   }
 }

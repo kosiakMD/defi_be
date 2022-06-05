@@ -9,6 +9,7 @@ import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AssetReference } from '../../../../../common/types';
 
+import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { AssetPrice, AssetPriceProvider, ComplexAsset } from '../core/price.provider';
 import { SolanaBaseAssetAnalyser } from '../core/solana-base.asset-analyser';
@@ -36,13 +37,13 @@ export class SaberAssetAnalyser
       name,
       symbol,
       decimals,
-      categories: ['saber-lp'],
+      categories: [AssetCategory.SaberLP, AssetCategory.LpToken],
       underlying: [tokenA.mint.toString(), tokenB.mint.toString()],
     };
   }
 
   canHandleCategory(code: string): boolean {
-    return code === 'saber-lp';
+    return code === AssetCategory.SaberLP;
   }
 
   getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]> {

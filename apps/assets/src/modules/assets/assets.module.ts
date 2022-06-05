@@ -31,8 +31,13 @@ import { AssetsService } from './services/assets.service';
 import { IconsService } from './services/icons.service';
 import { CoingeckoAssetsProvider } from './services/tracked-assets/coingecko-assets.provider';
 import { CoinmarketcapAssetsProvider } from './services/tracked-assets/coinmarketcap-assets.provider';
+import { EVMCoinProvider } from './services/tracked-assets/evm-coin.provider';
 
-const trackedAssetsProviders = [CoingeckoAssetsProvider, CoinmarketcapAssetsProvider];
+const trackedAssetsProviders = [
+  CoingeckoAssetsProvider,
+  CoinmarketcapAssetsProvider,
+  EVMCoinProvider,
+];
 
 @Module({
   imports: [

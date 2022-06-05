@@ -35,6 +35,7 @@ export class CoingeckoAssetsProvider implements TrackedAssetsProvider {
       for (const [chain, address] of Object.entries(platforms)) {
         const chainId = chainIdMap.get(chain);
         if (chainId && address) {
+          // TODO: We do not include coingeko rank here, could be issue
           candidates.push({ chainId, address, metadata: { coingeckoId: id } });
         }
       }

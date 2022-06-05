@@ -6,6 +6,7 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Logger } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+import { COIN_ADDRESS } from '@app/common/constant';
 import { delay } from '@app/common/helpers/delay';
 import { gql } from '@app/common/utils';
 
@@ -130,7 +131,19 @@ export class Univ2SubgraphStrategy extends BaseStrategy<Config> {
     } = data;
 
     const baseDerived = new BigNumber(bundle?.price);
-    return tokens.map((token) => this.parseToken(sourceId, chainId, token, baseDerived));
+    const prices = tokens.map((token) => this.parseToken(sourceId, chainId, token, baseDerived));
+
+    if (skip === 0) {
+      const coinPrice: AssetPrice = {
+        sourceId,
+        chainId,
+        address: COIN_ADDRESS,
+        price: Number(baseDerived),
+      };
+      prices.push(coinPrice);
+    }
+
+    return prices;
   }
 
   private parseToken(

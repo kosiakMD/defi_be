@@ -108,7 +108,6 @@ export class PriceService {
 
       // TODO: This is temporary solution. To be reverted until we have better.
       const requestId = RequestContext.currentContext.req.header(HEADER_REQUEST_ID);
-      this.logger.error('REUQEST!!!!!!!!! ' + requestId);
 
       return await this.httpService
         .post(this.fetchPricesUrl, request, {

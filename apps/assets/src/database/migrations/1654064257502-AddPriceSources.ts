@@ -1,6 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class addPriceSources1654064257502 implements MigrationInterface {
+export class AddPriceSources1654064257502 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await this.down(queryRunner); //remove existing setup if any
     // --------------------------------------   other types   ------------------------------------- //

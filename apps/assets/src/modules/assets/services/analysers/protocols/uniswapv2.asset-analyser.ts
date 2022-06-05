@@ -10,6 +10,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { UNIV2LP_ABI } from '../../../../../common/abis/univ2-lp.abi';
 import { AssetReference } from '../../../../../common/types';
 
+import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
 import { AssetPrice, AssetPriceProvider, ComplexAsset } from '../core/price.provider';
@@ -45,7 +46,7 @@ export class UniswapV2AssetAnalyser
 
     const [token0, token1, factory] = response;
     return {
-      categories: ['uniswapv2-pair'],
+      categories: [AssetCategory.UniSwapV2LikeLP, AssetCategory.LpToken],
       underlying: [token0, token1],
       metadata: {
         factory,
@@ -54,7 +55,7 @@ export class UniswapV2AssetAnalyser
   }
 
   canHandleCategory(code: string): boolean {
-    return code === 'uniswapv2-pair';
+    return code === AssetCategory.UniSwapV2LikeLP;
   }
 
   async getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]> {

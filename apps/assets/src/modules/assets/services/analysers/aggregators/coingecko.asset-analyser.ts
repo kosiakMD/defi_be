@@ -47,13 +47,12 @@ export class CoingeckoAssetAnalyser implements AssetAnalyser {
       categories = [],
     } = coingeckoAsset;
 
-    const isStableCoin = categories.some((category) => STABLECOIN_CATEGORIES.includes(category));
+    const isStableCoin = categories?.some((category) => STABLECOIN_CATEGORIES.includes(category));
 
     return {
       name,
       symbol,
       isTracked: true,
-      rank: market_cap_rank || coingecko_rank,
       categories: isStableCoin ? [AssetCategory.Stablecoin] : [],
       icons: Object.entries(image).map(([key, value]) => ({
         source: 'coingecko',
@@ -62,6 +61,7 @@ export class CoingeckoAssetAnalyser implements AssetAnalyser {
       })),
       metadata: {
         coingeckoId: id,
+        marketCapRank: market_cap_rank,
         coingeckoRank: coingecko_rank,
       },
     };

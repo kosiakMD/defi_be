@@ -74,7 +74,7 @@ export class PricesController {
         message: 'Asset price has been successfully updated',
       };
     } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Error updating current prices', error);
       throw error;
     }
   }
@@ -82,6 +82,11 @@ export class PricesController {
   @Post('/fetch')
   @ApiOkResponse({ type: CurrentPriceResponseDto })
   postFetch(@Body() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
-    return this.priceService.fetchPrices(query);
+    try {
+      return this.priceService.fetchPrices(query);
+    } catch (error) {
+      this.logger.error('Error fetching current prices', error);
+      throw error;
+    }
   }
 }

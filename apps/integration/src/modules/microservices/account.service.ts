@@ -1,8 +1,10 @@
 import { Cache } from 'cache-manager';
+import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { IAssetResponseDto } from '@app/common';
 import { DetailedResponseDto } from '@app/common/dto';
@@ -12,6 +14,8 @@ import { Address, BalancesResponse } from '@app/common/types';
 import { chunk } from '@app/common/utils';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
+
+import { logExecutionTime } from './utils';
 
 @Injectable()
 export class AccountService {
@@ -23,6 +27,7 @@ export class AccountService {
   private saveAssetsUnderlyingUrl: string;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private httpService: HttpService,
     private configService: ConfigService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
@@ -43,10 +48,16 @@ export class AccountService {
     chains?: ChainIdEnum[],
     assets?: Address[],
   ): Promise<BalancesResponse> {
-    const data = await this.httpService
-      .get(this.getBalanceUrl, { params: { addresses, chains, assets } })
-      .toPromise();
-    return data.data;
+    const { data } = await logExecutionTime(
+      this.logger,
+      `Get Balances for ${addresses.length} addressed, ${assets.length} assets, ${chains.length} chain`,
+      () =>
+        firstValueFrom(
+          this.httpService.get(this.getBalanceUrl, { params: { addresses, chains, assets } }),
+        ),
+    );
+
+    return data;
   }
 
   async getBalancesPost(
@@ -54,10 +65,14 @@ export class AccountService {
     chains?: ChainIdEnum[],
     assets?: Address[],
   ): Promise<BalancesResponse> {
-    const data = await this.httpService
-      .post(this.getBalanceUrl, { addresses, chains, assets })
-      .toPromise();
-    return data.data;
+    const { data } = await logExecutionTime(
+      this.logger,
+      `Get (POST) Balances for ${addresses.length} addressed, ${assets.length} assets, ${chains.length} chain`,
+      () =>
+        firstValueFrom(this.httpService.post(this.getBalanceUrl, { addresses, chains, assets })),
+    );
+
+    return data;
   }
 
   async getAssets(
@@ -70,11 +85,18 @@ export class AccountService {
       const dataArray = await Promise.all(
         // TODO: move max chunk size into env or constants
         chunk(addresses, 250).map(async (addressChunk) => {
-          const data = await this.httpService
-            .get(this.getAssetsUrl, { params: { addresses: addressChunk, chains: chainIds } })
-            .toPromise();
+          const { data } = await logExecutionTime(
+            this.logger,
+            `Get Assets for ${addresses.length} assets, ${chainIds.length} chain`,
+            () =>
+              firstValueFrom(
+                this.httpService.get(this.getAssetsUrl, {
+                  params: { addresses: addressChunk, chains: chainIds },
+                }),
+              ),
+          );
 
-          return data.data;
+          return data;
         }),
       );
 
@@ -94,13 +116,15 @@ export class AccountService {
     if (cachedResult) {
       return cachedResult;
     } else {
-      const data = await this.httpService
-        .post(this.getAssetsUrl, { address, chain: chainId })
-        .toPromise();
+      const { data } = await logExecutionTime(
+        this.logger,
+        `Get Tracked Asset ${address} chain ${chainId}`,
+        () => firstValueFrom(this.httpService.post(this.getAssetsUrl, { address, chain: chainId })),
+      );
 
-      await this.cache.set(cacheKey, data.data, { ttl: this.cacheTTLInSeconds });
+      await this.cache.set(cacheKey, data, { ttl: this.cacheTTLInSeconds });
 
-      return data.data;
+      return data;
     }
   }
 

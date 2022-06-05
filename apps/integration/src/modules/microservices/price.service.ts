@@ -1,13 +1,16 @@
-import { map } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, CurrencyIdEnum } from '@app/common';
 import { ChainIdEnum } from '@app/common/enum';
 
-import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto/price.response.dto';
+import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
+
+import { logExecutionTime } from './utils';
 
 @Injectable()
 export class PriceService {
@@ -15,6 +18,7 @@ export class PriceService {
   private readonly getPriceUrlFetch: string;
 
   constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
   ) {
@@ -23,26 +27,27 @@ export class PriceService {
     this.getPriceUrlFetch = `${url}/v1/prices/fetch`;
   }
 
+  /**
+   * @deprecated Use getTokenPricesFetch
+   * **/
   async getTokenPrices(
     addressesArray: Address[],
     chain: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     const addresses = addressesArray.join(',');
-    return this.httpService
-      .post<PriceResponseDto<CurrentPricesPayload>>(this.getPricesUrl, {
-        chain,
-        addresses,
-      })
-      .pipe(map((response) => response.data))
-      .toPromise()
-      .catch(() => {
-        const pricePayload: CurrentPricesPayload = {};
+    const { data } = await logExecutionTime(
+      this.logger,
+      `Get Prices for ${addressesArray.length} addressed`,
+      () =>
+        firstValueFrom(
+          this.httpService.post<PriceResponseDto<CurrentPricesPayload>>(this.getPricesUrl, {
+            chain,
+            addresses,
+          }),
+        ),
+    );
 
-        addressesArray.forEach((item) => {
-          pricePayload[`${item}`] = 0;
-        });
-        return { chain: undefined, currency: undefined, prices: pricePayload };
-      });
+    return data;
   }
 
   async getTokenPricesFetch(
@@ -50,21 +55,19 @@ export class PriceService {
     chainId: ChainIdEnum,
   ): Promise<PriceResponseDto<CurrentPricesPayload>> {
     const addresses = addressesArray.join(',');
-    return this.httpService
-      .post<PriceResponseDto<CurrentPricesPayload>>(this.getPriceUrlFetch, {
-        chain: chainId,
-        addresses,
-        currency: CurrencyIdEnum.usd,
-      })
-      .pipe(map((response) => response.data))
-      .toPromise()
-      .catch(() => {
-        const pricePayload: CurrentPricesPayload = {};
+    const { data } = await logExecutionTime(
+      this.logger,
+      `Fetch Prices for ${addressesArray.length} addressed`,
+      () =>
+        firstValueFrom(
+          this.httpService.post<PriceResponseDto<CurrentPricesPayload>>(this.getPriceUrlFetch, {
+            chain: chainId,
+            addresses,
+            currency: CurrencyIdEnum.usd,
+          }),
+        ),
+    );
 
-        addressesArray.forEach((item) => {
-          pricePayload[`${item}`] = null;
-        });
-        return { chain: undefined, currency: undefined, prices: pricePayload };
-      });
+    return data;
   }
 }

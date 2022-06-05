@@ -1,12 +1,12 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule, HttpService } from '@nestjs/axios';
-import { CacheModule, Inject, Module, OnModuleInit } from '@nestjs/common';
+import { HttpModule } from '@nestjs/axios';
+import { CacheModule, Inject, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common';
+import { HeadersContextMiddleware, Logger, LogRequestMiddleware } from '@app/common';
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -57,37 +57,11 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
   ].sort(),
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })
-export class IntegrationsModule implements OnModuleInit {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
-    private readonly httpService: HttpService,
-  ) {}
+export class IntegrationsModule implements NestModule {
+  constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
-  onModuleInit(): void {
-    // TODO: This is test code to measure performance (to be removed)
-    this.httpService.axiosRef.interceptors.request.use((config) => {
-      // this.logger.log({
-      //   message: 'Http call started',
-      //   method: config.method,
-      //   url: config.url,
-      //   params: config.params,
-      // });
-      // (config as any).started = Date.now();
-      (config as any).started = Date.now();
-      return config;
-    });
-
-    // TODO: This is test code to measure performance (to be removed)
-    this.httpService.axiosRef.interceptors.response.use((config) => {
-      this.logger.debug({
-        message: `Http call completed ${config.config.url}`,
-        method: config.config.method,
-        url: config.config.url,
-        params: config.config.params,
-        status: config.status,
-        execution: Date.now() - config.config['started'],
-      });
-      return config;
-    });
+  // TODO: This is test code to measure performance (to be removed)
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
   }
 }

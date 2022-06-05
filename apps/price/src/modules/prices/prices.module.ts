@@ -4,6 +4,8 @@ import { CacheModule, forwardRef, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CacheService } from '@app/common/services/cache.service';
+
 import { PricesController } from '../../controllers/prices.controller';
 import { LookupModule } from '../lookup/lookup.module';
 import { PriceRepository } from '../repositories/price.repository';
@@ -30,7 +32,7 @@ import { PriceService } from './prices.service';
     TypeOrmModule.forFeature([AssetPriceEntity, AssetEntity, AssetCurrentPriceEntity]),
   ],
   controllers: [PricesController],
-  providers: [PriceService, PriceRepository],
+  providers: [PriceService, PriceRepository, CacheService],
   exports: [PriceService],
 })
 export class PricesModule {}

@@ -65,14 +65,22 @@ export class RpcService {
       firstValueFrom(this.httpService.post(target, request.body)).then(
         ({ data, status }) => {
           const took = Date.now() - started;
-          this.logger.log(`Proxying RPC request to '${target}' successful. Took ${took}`);
+          this.logger.log({
+            message: `Proxying RPC request to '${target}' successful. Took ${took}`,
+            target,
+            took,
+          });
           response.status(status).json(data);
           ok(true);
         },
         (error) => {
           const took = Date.now() - started;
           this.logger.error(
-            `Proxying RPC request to '${target}' failed. Error: ${error.message}. Took ${took}`,
+            {
+              message: `Proxying RPC request to '${target}' failed. Error: ${error.message}. Took ${took}`,
+              target,
+              took,
+            },
             error,
           );
           ok(false);

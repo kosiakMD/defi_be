@@ -12547,6 +12547,11 @@ nestjs-pgpromise@^1.4.3:
   dependencies:
     pg-promise "^10.11.1"
 
+nestjs-request-context@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/nestjs-request-context/-/nestjs-request-context-1.0.0.tgz#e24f5db8b18e5712b281cd153f5cdca33606f22b"
+  integrity sha512-+Wzvt7E63rD8Z7iB5smKTXqMQIikuS5sEJZC3ZhOAD0jS5eWtMy77pcZaOwVPLoqDymHKFdoRg2c5hnMyze9dg==
+
 netmask@^2.0.1:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/netmask/-/netmask-2.0.2.tgz#8b01a07644065d536383835823bc52004ebac5e7"

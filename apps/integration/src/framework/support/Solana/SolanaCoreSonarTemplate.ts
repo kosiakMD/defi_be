@@ -1,7 +1,8 @@
 import { Cache } from 'cache-manager';
 import { filter, firstValueFrom, mergeMap, toArray } from 'rxjs';
 
-import { ConfigService, HttpService } from '@nestjs/config';
+import { HttpService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { Address, Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';

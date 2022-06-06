@@ -38,7 +38,7 @@ export class RocketPool extends RootPlatform {
       address: '0xae78736cd615f374d3085123a210448e74fc6393',
       context: {
         /** @TODO is it safe to use address like this? */
-        sourceAPR: 'https://stake.rocketpool.net/assets/index.3d9e3062.js',
+        sourceAPR: 'https://stake.rocketpool.net/assets/index.70553dc9.js',
         stakedToken: ZERO_ADDRESS,
       },
     });

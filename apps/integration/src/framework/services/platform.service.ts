@@ -59,6 +59,7 @@ import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { YelFinance } from '../platforms/YelFinance';
+import { YetiFinance } from '../platforms/YetiFinance';
 import { Zenlink } from '../platforms/Zenlink';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
@@ -110,6 +111,7 @@ export class PlatformService implements OnApplicationBootstrap {
       RocketPool,
       Stargate,
       Synapse,
+      YetiFinance,
       MakerDAO,
       IronBank,
       Benqi,

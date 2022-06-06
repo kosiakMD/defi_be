@@ -58,6 +58,9 @@ export class Lido extends RootPlatform {
      * Docs: unknown
      * Staking Contract: https://moonriver.moonscan.io/address/0xffc7780c34b450d917d557e728f033033cb4fa8c
      * Deposit TX: unknown
+     *
+     * @notice this displays as Kusama on the Lido website, however its in fact on moonriver
+     * (moonriver is the EVM layer on kusama)
      */
     await this.registerProtocol<ILidoEVMMeta>(EVMLidoStaking, {
       chain: ChainIdEnum.mriver,
@@ -74,23 +77,25 @@ export class Lido extends RootPlatform {
     /**
      * Website: https://lido.fi/polygon
      * Docs: unknown
-     * Staking Contract: unknown
-     * Deposit TX: unknown
+     * Staking Contract: https://etherscan.io/token/0x9ee91F9f426fA633d227f7a9b000E28b9dfd8599
+     * Deposit TX: https://etherscan.io/tx/0x88ee796a99e6bfbb24af9f5953526e1a7b1c5703828ff8e1929562f6fafdb181
      *
      * @todo Coming Soon
      * For some reason all the deployed addresses for matic/polygon are on eth mainnet...
      * https://github.com/Shard-Labs/PoLido/blob/main/mainnet-deployment-info.json
      */
-    // await this.registerProtocol(EVMLidoStaking, {
-    //   chain: ChainIdEnum.plg,
-    //   name: 'Lido',
-    //   feature: FeatureEnum.staking,
-    //   address: '', // proxy
-    //   data: {
-    //     // native eth
-    //     stakedToken: '',
-    //   },
-    // });
+    await this.registerProtocol<ILidoEVMMeta>(EVMLidoStaking, {
+      chain: ChainIdEnum.eth,
+      name: 'Lido - Polygon',
+      feature: FeatureEnum.staking,
+      address: '0x9ee91F9f426fA633d227f7a9b000E28b9dfd8599', // proxy
+      context: {
+        // native eth
+        stakedToken: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0',
+        statsApi: 'https://polygon.lido.fi/api/stats',
+        statsProcessor: (data: any): number => data.apr / 100,
+      },
+    });
 
     /**
      * Website: https://lido.fi/solana

@@ -96,6 +96,7 @@ export class LidoStaking
     [key: string]: any;
   }): Promise<IStakingFeatureMinimalSingle[]> {
     // TODO: does this refresh enough?
+
     const { data } = await firstValueFrom(this.httpService.get(this.meta.context.statsApi));
     const apr = this.meta.context.statsProcessor(data);
 

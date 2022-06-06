@@ -31,6 +31,7 @@ export interface ISupplyTokenUserEntry<TExtra = unknown> extends ITokenUserEntry
   tvl: number; // number of tokens * token price
   apy?: ISupplyApy;
   ltv?: number;
+  unlockTime?: number;
 }
 interface ISupplyApy extends IBaseApy {
   supplyApy?: number;

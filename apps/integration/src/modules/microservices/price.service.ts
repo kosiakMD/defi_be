@@ -10,10 +10,11 @@ import { ChainIdEnum } from '@app/common/enum';
 
 import { CurrentPricesPayload, PriceResponseDto } from '../../common/dto';
 
+import { PriceServiceInterface } from './price.service.interface';
 import { logExecutionTime } from './utils';
 
 @Injectable()
-export class PriceService {
+export class PriceService implements PriceServiceInterface {
   private readonly getPricesUrl: string;
   private readonly getPriceUrlFetch: string;
 

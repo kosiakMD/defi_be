@@ -73,10 +73,6 @@ export class FraxStaking extends EVMCore<
     super();
   }
 
-  async initialize() {
-    return void 0;
-  }
-
   private async getGitHubParseAddresses() {
     try {
       const extractedText = await this.browser.extractText(

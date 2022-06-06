@@ -1,6 +1,5 @@
 import { CurrentPricesPayload } from 'apps/integration/src/common/dto/price.response.dto';
 import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { chunk, keepAddressesByChainId, normalizeDecimals } from '@app/common/utils';
@@ -22,7 +21,6 @@ export abstract class EVMCore<
 > extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
-  protected abstract cache: Cache;
 
   // TODO: use new asset service :)
   protected abstract accountService: AccountService;
@@ -161,11 +159,16 @@ export abstract class EVMCore<
    * advantage in averaging that price across dexes)
    */
 
+  protected getLpTokenContract(token: string) {
+    return new UniswapV2Pair(token);
+  }
+
   async updateUniswapLikeTokensData(tokens: any[], prices: CurrentPricesPayload) {
     const calls = new Map();
     tokens.forEach((token: any) => {
       if (token.underlyingAssets?.length !== 2) return;
-      const contract = new UniswapV2Pair(token.address);
+      // const contract = new UniswapV2Pair(token.address);
+      const contract = this.getLpTokenContract(token.address);
       calls.set(`${token.address}.totalSupply()`, contract.totalSupply());
       calls.set(`${token.address}.getReserves()`, contract.getReserves());
       calls.set(`${token.address}.token0()`, contract.token0());

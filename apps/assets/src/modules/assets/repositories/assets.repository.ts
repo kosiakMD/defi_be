@@ -46,9 +46,10 @@ export class AssetsRepository extends Repository<AssetEntity> {
       queryBuilder.andWhere(
         new Brackets((qb) => {
           if (text) {
-            qb.orWhere('name ilike :text', { text: `%${text}%` })
-              .orWhere('symbol ilike :text', { text: `%${text}%` })
-              .orWhere('display_name ilike :text', { text: `%${text}%` });
+            qb.orWhere('name ilike :text', { text: `%${text}%` }).orWhere(
+              'display_name ilike :text',
+              { text: `%${text}%` },
+            );
           }
 
           // TODO: Or seems to be not working here

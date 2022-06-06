@@ -246,9 +246,9 @@ export class IntegrationsService {
               response.data.total += baseData.total;
             }
           }
-          if (Number.isNaN(baseData.total)) {
+          if (Number.isNaN(baseData.total) || typeof baseData.total === 'string') {
             this.logger.warn(
-              `Failed to calculate integration - Total Value is NaN - (${protocolName}) - ${existedChainData.chain.abbr}`,
+              `Failed to calculate integration total - (${protocolName}) - ${existedChainData.chain.abbr}`,
             );
           }
 

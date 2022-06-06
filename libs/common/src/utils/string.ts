@@ -1,3 +1,5 @@
+import { chunk } from './array';
+
 export function camelize(...texts: string[]): string {
   let result = '';
   texts.forEach((text, index) => {
@@ -71,3 +73,8 @@ export const stringToHex = (string: string) =>
     .split('')
     .map((ch) => Number(ch.charCodeAt(0)).toString(16))
     .join('');
+export const hexToString = (hex: string) => {
+  return chunk(hex.split(''), 2)
+    .map((ch) => String.fromCharCode(Number(`0x${ch.join('')}`)))
+    .join('');
+};

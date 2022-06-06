@@ -1,7 +1,5 @@
 import { Cache } from 'cache-manager';
-import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -12,12 +10,7 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
-import {
-  INamedFunctionPredicates,
-  IProtocolMeta,
-  IRootProtocol,
-  TokenMap,
-} from '../../../interfaces';
+import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
   IRewardTokenMinimal,
@@ -32,14 +25,13 @@ import {
 import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export interface ILidoEVMMeta extends IProtocolMeta {
+export interface IYetiStabilityPoolMeta extends IProtocolMeta {
+  address: Address;
   feature: FeatureEnum.staking;
   name: string;
-  address: Address;
   context: {
     stakedToken: Address;
-    statsApi: string;
-    statsProcessor: (data: any) => number;
+    rewardToken: Address;
   };
 }
 
@@ -47,7 +39,7 @@ type IStakingFeatureMinimalSingle = BaseWithTokens<
   ISupplyTokenMinimal,
   IRewardTokenMinimal,
   void,
-  { apr: number } | void
+  void
 >;
 
 // User-less opportunities (getOpportunities)
@@ -55,7 +47,7 @@ type IStakingFeatureOpportunitySingle = BaseWithTokens<
   ISupplyTokenOpportunity,
   IRewardTokenOpportunity,
   void,
-  any
+  void
 >;
 
 // User Info (getUserPositions)
@@ -63,15 +55,15 @@ type IStakingFeatureUserEntrySingle = BaseWithTokens<
   ISupplyTokenUserEntry,
   IRewardTokenUserEntry,
   void,
-  any
+  void
 >;
 
-export class LidoStaking
+export class YetiStabilityPool
   extends SingleContractProtocol<
     IStakingFeatureMinimalSingle,
     IStakingFeatureOpportunitySingle,
     IStakingFeatureUserEntrySingle,
-    ILidoEVMMeta
+    IYetiStabilityPoolMeta
   >
   implements IRootProtocol
 {
@@ -82,24 +74,30 @@ export class LidoStaking
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
     protected priceService: PriceService,
-    protected httpService: HttpService,
   ) {
     super();
+    if (this.updateFunctionPredicates) {
+      this.updateFunctionPredicates();
+    }
   }
 
+  protected updateFunctionPredicates?(): void;
+
   functionPredicates: INamedFunctionPredicates = {
-    balanceOf: () => (item) => item.name === 'balanceOf',
-    totalSupply: () => (item) => item.name === 'totalSupply',
+    balanceOf: () => (item) => item.name === 'deposits',
+    totalSupply: () => (item) => item.name === 'getTotalYUSDDeposits',
+    pendingRewards: () => (item) => item.name === 'getDepositorYETIGain',
   };
 
-  async fetchOpportunityData(context: {
-    [key: string]: any;
-  }): Promise<IStakingFeatureMinimalSingle[]> {
-    // TODO: does this refresh enough?
-
-    const { data } = await firstValueFrom(this.httpService.get(this.meta.context.statsApi));
-    const apr = this.meta.context.statsProcessor(data);
-
+  /**
+   * fetches all available pools on this protocol
+   *
+   * @param context hardcoded data & some multicall/web3 data
+   * @returns full pools array
+   */
+  protected async fetchOpportunityData(
+    context: Record<string, any>,
+  ): Promise<IStakingFeatureMinimalSingle[]> {
     return [
       {
         id: this.meta.address,
@@ -110,66 +108,22 @@ export class LidoStaking
           totalSupplied: context.totalSupply.toString(),
         },
         reward: {
-          token: { address: context.stakedToken },
+          token: { address: context.rewardToken },
         },
-        meta: { apr },
       },
     ];
-  }
-
-  protected formatOpportunity(
-    opportunity: IStakingFeatureMinimalSingle,
-    tokens: TokenMap,
-  ): void | IStakingFeatureOpportunitySingle {
-    const stakedToken = tokens.get(opportunity.supply.token.address);
-    if (!stakedToken) return;
-    const totalSupplied = normalizeDecimals(opportunity.supply.totalSupplied, stakedToken.decimals);
-    const tvl = totalSupplied * stakedToken.price;
-
-    const apr = {
-      day: opportunity.meta.apr / 365,
-      week: opportunity.meta.apr / 52,
-      month: opportunity.meta.apr / 12,
-      year: opportunity.meta.apr,
-    };
-
-    return {
-      feature: opportunity.feature,
-      id: opportunity.id,
-      chain: opportunity.chain,
-      supply: {
-        token: stakedToken,
-        totalSupplied,
-        tvl,
-      },
-      reward: {
-        token: stakedToken,
-        apr: apr,
-        apy: apr, // due to how the rewards work, compounding is impossible
-        harvests: {
-          day: (apr.day * tvl) / stakedToken.price,
-          week: (apr.week * tvl) / stakedToken.price,
-          month: (apr.month * tvl) / stakedToken.price,
-          year: (apr.year * tvl) / stakedToken.price,
-        },
-      },
-    };
   }
 
   protected balanceOfLabel(address: Address, user: Address) {
     return `${address}.balanceOf(${user})`;
   }
 
-  /**
-   * Fetch all required data for the users. Ideally a single multicall or subgraph request,
-   * but the flexibility is here as long as a single object with all the required data is returned
-   *
-   * @param addresses user addresses
-   * @param pools requested pools
-   * @returns
-   */
+  protected pendingRewardsLabel(address: Address, user: Address): string {
+    return `${address}.pendingRewards(${user})`;
+  }
+
   protected async fetchUserData(
-    address: Address,
+    address: string,
     pools: IStakingFeatureOpportunitySingle[],
   ): Promise<IStakingFeatureUserEntrySingle[]> {
     const contract = this.getMainContract();
@@ -179,6 +133,10 @@ export class LidoStaking
       calls.set(
         this.balanceOfLabel(pool.id, address),
         contract.createCall(this.functions.balanceOf, address),
+      );
+      calls.set(
+        this.pendingRewardsLabel(pool.id, address),
+        contract.createCall(this.functions.pendingRewards, address),
       );
     });
 
@@ -202,8 +160,12 @@ export class LidoStaking
     const {
       output: { data: balanceRaw },
     } = data.get(this.balanceOfLabel(pool.id, address));
+    const {
+      output: { data: rewardRaw },
+    } = data.get(this.pendingRewardsLabel(pool.id, address));
     // TODO: Object.values(userInfo) and find index instead of assuming .amount ?
     const balance = normalizeDecimals(balanceRaw.toString(), pool.supply.token.decimals);
+    const reward = normalizeDecimals(rewardRaw.toString(), pool.supply.token.decimals);
 
     if (!balance) return;
 
@@ -214,7 +176,10 @@ export class LidoStaking
     });
 
     // TODO: no rewards at this moment
-    Object.assign(pool.reward, { amount: 0, value: 0 });
+    Object.assign(pool.reward, {
+      amount: reward,
+      value: reward * pool.reward.token.price,
+    });
 
     // TODO: what is the best way to extend the opportunity type to become a userEntry type
     // without forcing a cast like this (only a few fields are added amount, value)

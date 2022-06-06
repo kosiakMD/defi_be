@@ -53,7 +53,6 @@ export const objectToMap = (objectInstance: Record<string, any>): Map<string, an
   new Map(Object.entries(objectInstance));
 
 export const sortKeys = <T extends { [k: string]: unknown }>(obj: T): T => {
-  // Object.entries<T>(obj).sort(([a], [b]) => (a.toLowerCase() > b.toLowerCase() ? 1 : -1)),
   const a = Object.entries(obj);
   return Object.fromEntries(a) as T;
 };

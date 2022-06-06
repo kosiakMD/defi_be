@@ -24,6 +24,7 @@ import { Blizz } from '../platforms/Blizz';
 import { CafeSwap } from '../platforms/CafeSwap';
 import { CheesecakeSwap } from '../platforms/CheesecakeSwap';
 import { CherrySwap } from '../platforms/CherrySwap';
+import { CryptoComDefiSwap } from '../platforms/CryptoComDefiSwap';
 import { CubFinance } from '../platforms/CubFinance';
 import { DfynNetwork } from '../platforms/DfynNetwork';
 import { Ellipsis } from '../platforms/Ellipsis';
@@ -34,6 +35,7 @@ import { Goose } from '../platforms/Goose';
 import { IronBank } from '../platforms/IronBank';
 import { Kava } from '../platforms/Kava';
 import { KnightSwap } from '../platforms/KnightSwap';
+import { KyberSwap } from '../platforms/KyberSwap';
 import { Lido } from '../platforms/Lido';
 import { Liquity } from '../platforms/Liquity';
 import { MakerDAO } from '../platforms/MakerDAO';
@@ -41,6 +43,7 @@ import { MakerDAO } from '../platforms/MakerDAO';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
+import { MuesliSwap } from '../platforms/MuesliSwap';
 import { Nereus } from '../platforms/Nereus';
 import { Netswap } from '../platforms/Netswap';
 import { PaintSwap } from '../platforms/PaintSwap';
@@ -51,6 +54,7 @@ import { RocketPool } from '../platforms/RocketPool';
 import { RuneFarm } from '../platforms/RuneFarm';
 import { SashimiSwap } from '../platforms/SashimiSwap';
 import { Solend } from '../platforms/Solend';
+import { SpiritSwap } from '../platforms/SpiritSwap';
 import { SpookySwap } from '../platforms/SpookySwap';
 import { Stargate } from '../platforms/Stargate';
 import { Swapr } from '../platforms/Swapr';
@@ -59,6 +63,7 @@ import { TombFinance } from '../platforms/TombFinance';
 import { TreeDefi } from '../platforms/TreeDefi';
 import { WaultFinance } from '../platforms/WaultFinance';
 import { YelFinance } from '../platforms/YelFinance';
+import { YetiFinance } from '../platforms/YetiFinance';
 import { Zenlink } from '../platforms/Zenlink';
 import { RootPlatform } from '../support/RootPlatform';
 import { IPlatformMeta } from '../support/interfaces';
@@ -100,6 +105,7 @@ export class PlatformService implements OnApplicationBootstrap {
       Mojitoswap,
       BiSwap,
       Mdex,
+      MuesliSwap,
       KnightSwap,
       Belt,
       MarsEcosystem,
@@ -110,6 +116,10 @@ export class PlatformService implements OnApplicationBootstrap {
       RocketPool,
       Stargate,
       Synapse,
+      SpiritSwap,
+      KyberSwap,
+      CryptoComDefiSwap,
+      YetiFinance,
       MakerDAO,
       IronBank,
       Benqi,

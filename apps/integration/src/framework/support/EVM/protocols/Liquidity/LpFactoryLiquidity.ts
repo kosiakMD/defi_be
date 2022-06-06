@@ -124,27 +124,19 @@ export class LpFactoryLiquidity extends SingleContractProtocol<
       value: balanceNormalized * pool.token.price,
     };
     const poolShare = new BN(balanceNormalized).div(pool.supplied[0].token.totalSupply);
-    const supplied: ISupplyTokenUserEntry[] = pool.supplied.map((tokenSupplied) => {
-      const amountUSD = new BN(balanceNormalized).times(tokenSupplied.token.price);
 
-      tokenSupplied.token.underlying = tokenSupplied.token.underlying?.map((token) => {
-        const tokenBalance = poolShare.times(token.reserve);
-        const tokenBalanceUSD = tokenBalance.times(token.price);
+    const supplied: ISupplyTokenUserEntry[] = pool.supplied[0].token.underlying.map(
+      (underlying) => {
         return {
-          ...token,
-          balance: tokenBalance.toNumber(),
-          value: tokenBalanceUSD.toNumber(),
+          tvl: pool.supplied[0].tvl,
+          amount: poolShare.toNumber() * underlying.reserve,
+          value: poolShare.toNumber() * underlying.reserve * underlying.price,
+          token: {
+            ...underlying,
+          },
         };
-      });
-
-      const result: ISupplyTokenUserEntry = {
-        ...tokenSupplied,
-        amount: balanceNormalized,
-        value: amountUSD.toNumber(),
-        totalSupplied: tokenSupplied.token.totalSupply,
-      };
-      return result;
-    });
+      },
+    );
 
     return {
       ...pool,

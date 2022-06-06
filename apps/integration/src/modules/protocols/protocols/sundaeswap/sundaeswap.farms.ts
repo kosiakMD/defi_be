@@ -1,5 +1,4 @@
-import { toDecimals } from 'apps/integration/src/common/utils/util';
-import BigNumber from 'bignumber.js';
+import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
@@ -9,12 +8,22 @@ import { ChainDto, Address, FeatureEnum, SundaeProtocolEnum, ProtocolTypeEnum } 
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';
-import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
+import {
+  IntegrationStakingPositionDto,
+  IntegrationSundaeClaimableTokenDto,
+} from '@app/common/jobs/staking';
+import { normalizeDecimals } from '@app/common/utils';
 
 import { BaseData } from '../../../../common/interfaces/transactions.interfaces';
 
 import { SundaeSwapSubgraph } from '../../../subgraphs/subgraphs/sundaeswap.subgraph';
-import { SUNDAE_REWARDS_TOKEN } from '../../helpers/cardano/cardano.constants';
+import {
+  CLAP_REWARDS_TOKEN,
+  NMKR_REWARDS_TOKEN,
+  SUNDAE_REWARDS_TOKEN,
+  WMT_REWARDS_TOKEN,
+  YUMMI_REWARDS_TOKEN,
+} from '../../helpers/cardano/cardano.constants';
 import { Staked } from '../../helpers/cardano/cardano.interface';
 import { CardanoService } from '../../helpers/cardano/cardano.service';
 
@@ -55,16 +64,22 @@ export class SundaeSwapFarms {
       cachedPools.items.map((item) => [item.address, item]),
     );
 
-    const sundae = await this.cardanoUtils.getTokenInfo(SUNDAE_REWARDS_TOKEN);
+    const rewardTokens = await this.cardanoUtils.getTokenInfo([
+      SUNDAE_REWARDS_TOKEN,
+      WMT_REWARDS_TOKEN,
+      YUMMI_REWARDS_TOKEN,
+      CLAP_REWARDS_TOKEN,
+      NMKR_REWARDS_TOKEN,
+    ]);
 
     for (const address of addresses) {
       const farms: Staked[] = await this.sundaeSwapSubgraph.getAccountFarms(address);
       const mapFarms = this.transformFarmArrayToMap(farms);
 
-      for (const [poolId, staking] of mapFarms.entries()) {
+      for (const [poolId, farms] of mapFarms.entries()) {
         const poolPosition = pools.get(poolId);
         if (!poolPosition) continue;
-        const stakingBalance = staking.reduce((prev, stacked) => prev + +stacked.quantity, 0);
+        const stakingBalance = farms.reduce((prev, stacked) => prev + +stacked.quantity, 0);
         poolPosition.stats.share = this.cardanoUtils.calculatePoolShare(
           stakingBalance,
           poolPosition,
@@ -75,24 +90,44 @@ export class SundaeSwapFarms {
         stackingItem.stakingToken.tokens = this.cardanoUtils.mapTokens(poolPosition);
         stackingItem.rewards = [];
 
-        for (const reward of staking) {
-          stackingItem.rewards.push({
-            price: sundae.price,
-            address: sundae.address,
-            symbol: sundae.symbol,
-            name: sundae.name,
-            decimals: sundae.decimals,
-            claimableData: {
-              balance: toDecimals(reward.earned, sundae.decimals),
-              value: new BigNumber(toDecimals(reward.earned, sundae.decimals)) //
-                .times(sundae.price)
-                .toNumber(),
-              nextRewardAt: reward.nextRewardAt.format,
-            },
+        for (const position of farms) {
+          const currentRewards: [string, number][] = position.rewards.map((r) => {
+            return [r.asset.assetId, +r.quantity];
           });
+          const poolShare = new BN(
+            normalizeDecimals(position.quantity, poolPosition.lpToken.decimals),
+          ).div(poolPosition.lpToken.totalSupply);
+
+          const sundaeSwapStakingRewardPosition: IntegrationSundaeClaimableTokenDto = {
+            tokens: poolPosition.tokens.map((token) => {
+              const balance = poolShare.times(token.reserve);
+              const value = balance.times(token.price);
+              return {
+                ...token,
+                balance: balance.toNumber(),
+                value: value.toNumber(),
+              };
+            }),
+            nextRewardAt: position.nextRewardAt.format,
+            rewards: currentRewards
+              .map(([assetId, earned]) => {
+                const token = rewardTokens.get(assetId.replace(/\./, ''));
+                if (!token) return;
+                const claimableToken: any = {
+                  ...token,
+                  claimableData: {
+                    balance: normalizeDecimals(earned.toString(), token.decimals),
+                    value: normalizeDecimals(earned.toString(), token.decimals) * token.price,
+                  },
+                };
+                return claimableToken;
+              })
+              .filter(Boolean),
+          };
+          stackingItem.sundaeRewards.push(sundaeSwapStakingRewardPosition);
         }
 
-        stackingItem.stats.poolApy = staking[0].pool.apr;
+        stackingItem.stats.poolApy = farms[0].pool.apr;
         stackingItem.stats.tvl = poolPosition.stats.tvl;
 
         baseDataStakingMap.get(address).items.push(this.cardanoUtils.cleanUpItem(stackingItem));

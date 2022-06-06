@@ -48,7 +48,11 @@ export class CoinmarketcapAssetsProvider implements TrackedAssetsProvider {
       const { name: chain, token_address: address } = platform || {};
       const chainId = chainIdMap.get(chain);
       if (chainId && address) {
-        candidates.push({ chainId, address, rank, metadata: { coinmarketcapId: id.toString() } });
+        candidates.push({
+          chainId,
+          address,
+          metadata: { coinmarketcapId: id.toString(), marketCapRank: rank },
+        });
       }
     }
 

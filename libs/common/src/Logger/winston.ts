@@ -1,41 +1,21 @@
-import { hostname } from 'os';
 import { join } from 'path';
 import * as winston from 'winston';
-import CloudWatchTransport from 'winston-aws-cloudwatch';
 import * as Transport from 'winston-transport';
 
 import { LoggerService } from '@nestjs/common';
 import { utilities, WinstonModule, WinstonModuleOptions } from 'nest-winston';
 
-import { EnvEnum, LogLevelEnum } from '@app/common';
+import { LogLevelEnum } from '@app/common';
 import { ctx } from '@app/common/helpers/context';
 
 import { ensureDotEnvInitiated } from '../config/configuration';
 
-const AWS_CW_LOGS_ENVIRONMENTS: EnvEnum[] = [
-  EnvEnum.development,
-  EnvEnum.production,
-  EnvEnum.staging,
-];
-
 export type LogConfig = {
-  identifier: string;
   logErrorFile?: string;
   logCombineLog?: string;
   serviceName: string;
-  environment: EnvEnum;
   level?: string;
   defaultMeta?: Record<string, any>;
-  awsConfig: {
-    accessKeyId: string;
-    secretAccessKey: string;
-    region: string;
-  };
-};
-
-const formatLog = (item) => {
-  // return JSON.stringify({ ...item, level: 'test' }); // for tests reason
-  return JSON.stringify(item);
 };
 
 const createBaseTransports = (logErrorFile?: string, logCombineLog?: string): Transport[] => {
@@ -59,35 +39,13 @@ const createBaseTransports = (logErrorFile?: string, logCombineLog?: string): Tr
 };
 
 export const winstonParams = ({
-  identifier,
   logErrorFile,
   logCombineLog,
   serviceName,
-  environment,
   level = 'info',
-  awsConfig,
   defaultMeta,
 }: LogConfig): WinstonModuleOptions => {
   const transports: Transport[] = createBaseTransports(logErrorFile, logCombineLog);
-
-  const logToCloudWatch =
-    Boolean(process.env.LOG_IN_CW) && process.env.LOG_IN_CW.toLowerCase() === 'true';
-
-  if (logToCloudWatch && AWS_CW_LOGS_ENVIRONMENTS.includes(environment)) {
-    transports.push(
-      new CloudWatchTransport({
-        logGroupName: `dy-${environment}-service/${identifier}`,
-        logStreamName: `${hostname()}_${Date.now()}`,
-        createLogGroup: true,
-        createLogStream: true,
-        submissionInterval: 2000,
-        submissionRetryCount: 1,
-        batchSize: 20,
-        awsConfig,
-        formatLog,
-      }) as Transport,
-    );
-  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const infoFormat = winston.format(<T>(info, _opts) => {
@@ -117,18 +75,11 @@ export const createLogger = (workFolder: string): LoggerService => {
   ensureDotEnvInitiated(workFolder);
 
   const config: LogConfig = {
-    identifier: process.env.IDENTIFIER,
     logErrorFile: join(workFolder, process.env.LOG_ERROR_FILE),
     logCombineLog: join(workFolder, process.env.LOG_COMBINED_FILE),
     serviceName: process.env.SERVICE_NAME,
     level: process.env.LOG_LEVEL,
-    environment: process.env.NODE_ENV as EnvEnum,
     defaultMeta: { env: process.env.ENV, service: process.env.SERVICE_NAME },
-    awsConfig: {
-      region: process.env.AWS_REGION,
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
   };
 
   return WinstonModule.createLogger(winstonParams(config));

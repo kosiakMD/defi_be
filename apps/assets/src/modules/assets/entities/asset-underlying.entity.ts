@@ -7,14 +7,14 @@ import { AssetEntity } from './asset.entity';
 @Unique(['asset', 'underlyingAsset'])
 @Entity({ name: 'assets_underlying' })
 export class AssetUnderlyingEntity extends BaseEntity {
-  @ManyToOne(() => AssetEntity, (asset) => asset.underlying)
+  @ManyToOne(() => AssetEntity, (asset) => asset.underlying, { nullable: false })
   @JoinColumn({
     name: 'asset_id',
     referencedColumnName: 'id',
   })
   asset: AssetEntity;
 
-  @ManyToOne(() => AssetEntity)
+  @ManyToOne(() => AssetEntity, { nullable: false })
   @JoinColumn({
     name: 'underlying_asset_id',
     referencedColumnName: 'id',

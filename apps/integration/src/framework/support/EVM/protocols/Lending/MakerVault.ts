@@ -174,18 +174,26 @@ export class MakerVault extends EVMCore<
       addresses.map((addr) => [addr, [] as ILendingFeatureUserEntry[]]),
     );
 
-    const maker = await Maker.create('http', {
-      plugins: [McdPlugin],
-      url: `https://mainnet.infura.io/v3/d38bddd842b94305a23f91596991a9eb`,
-    });
+    const maker = await this.getMakerSDK();
 
+    // https://etherscan.io/address/0x5ef30b9986345249bc32d8928B7ee64DE9435E39#readContract
+    // get 'count' for proxy address => first => .....
     const manager = maker.service('mcd:cdpManager');
+    // better approach, use getIds: https://etherscan.io/address/0x36a724Bd100c39f0Ea4D3A20F7097eE01A8Ff573#readContract
+    // pass above (cdpManager,address) as arguments
 
     const rawResults = await Promise.all(
       addresses.map(async (address) => {
         const positions = [];
+        // get proxy from here: 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4
+        // https://etherscan.io/address/0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4#readContract
+
+        // gem is deposit token
+        // id is number 9167 (id for specific vault)
+        // ilk is name
         const proxyAddress = await maker.service('proxy').getProxyAddress(address);
         if (!proxyAddress) return { address, positions };
+
         const data: MakerDAOCdpId[] = await manager.getCdpIds(proxyAddress ?? address);
 
         const vaults = await this.mapCdpIdsToVaults(data, manager);
@@ -221,6 +229,18 @@ export class MakerVault extends EVMCore<
     });
 
     return { data: results, errors: [] };
+  }
+
+  private async getMakerSDK() {
+    try {
+      return await Maker.create('http', {
+        plugins: [McdPlugin],
+        // url: this.configService.get('MAKERDAO_ETH_URL'),
+        url: 'https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/eth/mainnet/archive',
+      });
+    } catch (err) {
+      throw new Error(`Failed to initialize Maker.js: ${err}`);
+    }
   }
 
   private async mapCdpIdsToVaults(cdpIds: MakerDAOCdpId[], manager: any): Promise<Vault[]> {

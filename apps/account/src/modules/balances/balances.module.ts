@@ -1,4 +1,5 @@
 import * as redisStore from 'cache-manager-redis-store';
+import { RequestContextModule } from 'nestjs-request-context';
 
 import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
@@ -42,6 +43,7 @@ import { TerraBalancesStrategy } from './strategies/terra.balances.strategy';
     MulticallModule,
     AssetsModule,
     BlacklistModule,
+    RequestContextModule,
     CacheModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({

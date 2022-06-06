@@ -4,7 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { EndpointEntity } from './endpoint.entity';
 import { EndpointsRepository } from './endpoints.repository';
-import { EndpointsToRPCCallService } from './services/endpoints-to-rpc-call.service';
+import { EndpointsStatisticService } from './services/endpoints-statistic.service';
 import { EndpointsService } from './services/endpoints.service';
 
 @Module({
@@ -13,7 +13,7 @@ import { EndpointsService } from './services/endpoints.service';
     ScheduleModule.forRoot(),
   ],
   controllers: [],
-  providers: [EndpointsService, EndpointsToRPCCallService],
-  exports: [EndpointsService, EndpointsToRPCCallService],
+  providers: [EndpointsService, EndpointsStatisticService],
+  exports: [EndpointsService, EndpointsStatisticService],
 })
 export class EndpointsModule {}

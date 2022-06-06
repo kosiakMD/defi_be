@@ -1,10 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, LoggerService } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
-import { Logger } from '@app/common/Logger/Logger.service';
+import { ChainId } from '@app/common';
+import { formatError } from '@app/common/utils';
 
-import { AssetReference } from '../../../common/types/asset-reference';
+import { AssetReference } from '../../../common/types';
 
 import { AssetDto } from '../dto/asset.dto';
 import { AssetAnalyser, AssetAnalysisResult } from './analysers/core/asset.analyser';
@@ -17,7 +18,7 @@ export class AssetAnalyserService {
   private priceProviders: AssetPriceProvider[] = [];
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private readonly moduleRef: ModuleRef,
   ) {}
 
@@ -39,11 +40,24 @@ export class AssetAnalyserService {
         return;
       }
 
-      return await analyser.analyseAsset(asset);
+      const analysis = await analyser.analyseAsset(asset);
+      if (analysis) {
+        this.logger.debug(
+          `Asset analyser ${analyser.constructor.name} results: ${JSON.stringify(analysis)}`,
+        );
+      } else {
+        this.logger.debug(
+          `Asset analyser ${analyser.constructor.name} does not recognize ${JSON.stringify(asset)}`,
+        );
+      }
+
+      return analysis;
     } catch (e) {
-      this.logger.error(
-        `Error analysing asset: ${asset.address} chain: ${asset.chainId}. Error: ${e}`,
-      );
+      this.logger.error(`Error analysing asset by ${analyser.constructor.name}`, {
+        asset,
+        // TODO: This should be supported by logger
+        error: formatError(e),
+      });
     }
   }
 
@@ -88,7 +102,7 @@ export class AssetAnalyserService {
   }
 
   private async updateSpecificAssetsPricesForChain(
-    chainId: number,
+    chainId: ChainId,
     dtos: AssetDto[],
     provider: AssetPriceProvider,
     allAssets: AssetDto[],
@@ -130,6 +144,10 @@ function mergeAssetAnalysis(
   one: AssetAnalysisResult,
   two: AssetAnalysisResult,
 ): AssetAnalysisResult {
+  if (!one && !two) {
+    return;
+  }
+
   if (!one) {
     return { ...two };
   }
@@ -140,17 +158,25 @@ function mergeAssetAnalysis(
 
   return {
     // TODO: Refactor this one
-    name: one.name || two.metadata,
-    symbol: one.symbol || two.symbol,
-    decimals: one.decimals !== undefined && one.decimals !== null ? one.decimals : two.decimals,
+    name: getNotEmpty(one.name, two.name),
+    symbol: getNotEmpty(one.symbol, two.symbol),
+    displayName: getNotEmpty(one.displayName, two.displayName),
+    decimals: getNotEmpty(one.decimals, two.decimals),
     // TODO: This one is wrong we should sum them up
-    rank: one.rank || two.rank,
     isTracked: one.isTracked || two.isTracked,
     metadata: { ...one.metadata, ...two.metadata },
-    underlying: mergeArrays(one.underlying, two.underlying),
+    underlying: getNotEmptyArray(one.underlying, two.underlying),
     categories: mergeArrays(one.categories, two.categories),
     icons: mergeArrays(one.icons, two.icons),
   };
+}
+
+function getNotEmpty<T = any>(one: T, two: T): T {
+  return one !== undefined && one !== null ? one : two;
+}
+
+function getNotEmptyArray<T = any>(one: T[], two: T[]): T[] {
+  return one?.length > 0 ? one : two;
 }
 
 function mergeArrays<T = any>(one: T[], two: T[]): T[] {

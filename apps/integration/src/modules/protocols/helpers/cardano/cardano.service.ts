@@ -8,8 +8,6 @@ import { BalancesResponse, ChainIdEnum } from '@app/common';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import { IntegrationStakingPositionDto } from '@app/common/jobs/staking';
 
-import { Asset } from '../../../../common/interfaces/transactions.interfaces';
-
 import { AccountService } from '../../../microservices/account.service';
 import { PriceService } from '../../../microservices/price.service';
 import { BLAKE_224_LENGTH } from './cardano.constants';
@@ -94,16 +92,29 @@ export class CardanoService {
     return this.addressHashToBlake224(this.addressToHash(address));
   }
 
-  async getTokenInfo(token: string): Promise<Asset & { price: number }> {
-    const result = await Promise.all([
-      this.priceService.getTokenPrices([token], ChainIdEnum.cardano),
-      this.accountService.getAssets([token], [ChainIdEnum.cardano]),
+  async getTokenInfo(tokens: string[]): Promise<Map<string, Record<string, any>>> {
+    const addresses = tokens.map((address) => address.replace(/\./, ''));
+
+    const [{ prices }, { data }] = await Promise.all([
+      this.priceService.getTokenPrices(addresses, ChainIdEnum.cardano),
+      this.accountService.getAssets(addresses, [ChainIdEnum.cardano]),
     ]);
 
-    const tokenPrice = result[0].prices[token];
-    const tokenInfo = result[1].data[0];
-
-    return { ...tokenInfo, price: tokenPrice };
+    const ERC20Token: [string, Record<string, any>][] = data.map((token) => {
+      return [
+        token.address,
+        {
+          address: token.address,
+          name: token.name,
+          symbol: token.symbol,
+          decimals: token.decimals,
+          totalSupply: token.totalSupply,
+          chainId: token.chainId,
+          price: Number(prices[token.address]),
+        },
+      ];
+    });
+    return new Map(ERC20Token);
   }
 
   calculatePoolShare(walletBalance: number, poolPosition: LiquidityPoolFeature): number {

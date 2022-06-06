@@ -30,8 +30,12 @@ export class IconsService {
 
   public async uploadAssetIcons(
     asset: AssetReference,
-    icons: AssetIcon[],
+    icons: AssetIcon[] = [],
   ): Promise<SavedAssetIcon[]> {
+    if (!icons.length) {
+      return [];
+    }
+
     this.logger.debug(`Loading icons for ${asset.address}`);
 
     const promises = icons.map((icon) => this.processAndUploadImage(asset, icon));
@@ -56,15 +60,14 @@ export class IconsService {
 
       const webpStream = responseStream.pipe(sharp().webp());
 
-      const sourceLowercase = source.toLowerCase();
       return await this.awsService.uploadFile({
         bucket: this.awsConfigService.rootBucket,
-        key: `${chainName}/${address}/${sourceLowercase}${label ? `-${label}` : ''}.webp`,
+        key: `${chainName}/${address}/${source}${label ? `-${label}` : ''}.webp`.toLowerCase(),
         contentType: 'image/webp',
         content: webpStream,
       });
     } catch (e) {
-      this.logger.error(`Processing and upload asset logo failed ${url}. Error: ${e}`);
+      this.logger.error(`Processing and upload asset logo failed ${url}`, e);
     }
   }
 }

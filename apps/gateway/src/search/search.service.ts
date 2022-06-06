@@ -48,19 +48,20 @@ export class SearchService extends BaseService {
   }
 
   public async search(query: SearchQueryDto): Promise<SearchResults> {
-    const { text, limit } = query;
+    const { text /*, limit*/ } = query;
     try {
       const addressesSuggestions = await this.getAddressSuggestions({ text });
       if (addressesSuggestions.length > 0) {
         this.logger.debug(`Resolved addresses ${addressesSuggestions}`);
-        const addresses = addressesSuggestions.map(({ address }) => address);
-        const { entries: searchResultEntries } = await this.getSearchEntries({
-          addresses,
-          text,
-          limit,
-        });
+        // Temp disabling, will be enabled next release
+        // const addresses = addressesSuggestions.map(({ address }) => address);
+        // const { entries: searchResultEntries } = await this.getSearchEntries({
+        //   addresses,
+        //   text,
+        //   limit,
+        // });
         const entries = [
-          ...searchResultEntries,
+          // ...searchResultEntries,
           ...addressesSuggestions.map((addressSuggestion) =>
             this.getAddressSearchEntry(addressSuggestion),
           ),
@@ -70,7 +71,9 @@ export class SearchService extends BaseService {
     } catch (error) {
       this.logger.debug(`Error to resolve address ${error}`);
     }
-    return this.getSearchEntries({ text, limit });
+    // Temp disabling, will be enabled next release
+    //return this.getSearchEntries({ text, limit });
+    return { entries: [] };
   }
 
   private getAddressSearchEntry(metadata: AddressMetadata): SearchResultsAddressEntry {

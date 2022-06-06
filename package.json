@@ -36,15 +36,17 @@
     "assets-lint": "eslint \"./apps/assets/{src,config,test}/**/*.ts\"",
     "assets-prebuild": "yarn yarn --cwd ./apps/assets run prebuild",
     "assets-build": "nest build assets",
-    "assets-typeorm": "ts-node --project ./apps/assets/tsconfig.app.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js -f 'apps/assets/ormconfig.ts'",
-    "assets-typeorm:generate": "yarn assets-typeorm migration:generate",
-    "assets-typeorm:run": "yarn assets-typeorm migration:run",
-    "assets-typeorm:revert": "yarn assets-typeorm migration:revert",
     "assets-prestart-fix": "sh ./apps/assets/require_es_module_fix.sh",
     "assets-start": "yarn assets-prestart-fix && nest start assets",
     "assets-start:dev": "yarn assets-prestart-fix && nest start assets --watch",
     "assets-start:debug": "yarn assets-prestart-fix && nest start assets --debug --watch",
     "assets-start:prod": "yarn assets-prestart-fix && nest start assets",
+    "assets-migration:generate-dev": "ts-node --project ./apps/assets/tsconfig.app.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate -f 'apps/assets/ormconfig-dev.ts'",
+    "assets-migration:create": "ts-node --project ./apps/assets/tsconfig.app.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:create -f 'apps/assets/ormconfig-dev.ts'",
+    "assets-migration:run-dev": "ts-node --project ./apps/assets/tsconfig.app.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run -f 'apps/assets/ormconfig-dev.ts'",
+    "assets-migration:revert-dev": "ts-node --project ./apps/assets/tsconfig.app.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -f 'apps/assets/ormconfig-dev.ts'",
+    "assets-migration:run": "node ./node_modules/typeorm/cli.js migration:run -f 'dist/apps/assets/src/ormconfig.js'",
+    "assets-migration:revert": "node ./node_modules/typeorm/cli.js migration:revert -f 'dist/apps/assets/src/ormconfig.js'",
     "integration-format": "yarn --cwd ./apps/integration run format",
     "integration-lint": "eslint \"./apps/integration/{src,config}/**/*.ts\"",
     "integration-prebuild": "yarn yarn --cwd ./apps/integration run prebuild",
@@ -347,6 +349,7 @@
     "nestjs-agenda": "^2.0.0",
     "nestjs-config": "^1.4.7",
     "nestjs-pgpromise": "^1.4.3",
+    "nestjs-request-context": "^1.0.0",
     "nodemailer": "^6.6.1",
     "p-limit": "^3.1.0",
     "pg": "^8.5.1",
@@ -363,7 +366,6 @@
     "typeorm-naming-strategies": "^4.1.0",
     "uuid": "^8.3.2",
     "web3": "^1.6.0",
-    "winston": "^3.3.3",
-    "winston-aws-cloudwatch": "^3.0.0"
+    "winston": "^3.3.3"
   }
 }

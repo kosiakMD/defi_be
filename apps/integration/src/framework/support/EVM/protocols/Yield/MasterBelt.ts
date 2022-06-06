@@ -1,3 +1,4 @@
+import BigNumber from 'bignumber.js';
 import { equals } from 'class-validator';
 
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -57,6 +58,38 @@ export class MasterBelt extends MasterChef {
       stakedToken: Object.values(pool)[lpTokenIdx].toString().toLowerCase(),
       allocPoint: parseInt(Object.values(pool)[allocPointIdx].toString(), 10),
     }));
+  }
+
+  protected formatStakingOpportunityMinimal(
+    poolInfo: IMasterChefPoolInfo,
+    totalStaked: string,
+    context: { [key: string]: any },
+  ): IStakingFeatureMinimal {
+    const rewardShare = poolInfo.allocPoint / context.totalAllocPoint;
+
+    const rewardPerSecond = new BigNumber(context.rewardPerSecond) //
+      .times(rewardShare) // percentage of total reward for this pool
+      .toString();
+
+    return {
+      id: `${this.meta.address}::${poolInfo.poolId}`,
+      chain: this.meta.chain,
+      feature: this.meta.feature,
+      supplied: [
+        {
+          token: {
+            address: poolInfo.stakedToken,
+          },
+          totalSupplied: totalStaked,
+        },
+      ],
+      rewarded: [
+        {
+          token: { address: context.rewardToken },
+          rewardPerSecond,
+        },
+      ],
+    };
   }
 
   protected getUserInfoAmountKey(): string {

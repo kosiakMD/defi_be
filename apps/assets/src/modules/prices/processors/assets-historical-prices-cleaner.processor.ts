@@ -19,15 +19,15 @@ export class AssetsHistoricalPricesCleanerProcessor {
     private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
   ) {}
 
-  @Process(JobName.CLEAR_PRICES)
+  @Process(JobName.CLEAR_HISTORICAL_PRICES)
   async handlePriceJob(job: Job) {
     try {
       this.logger.log(`Process Clear Historical Price job.id: ${job.id}`);
       await this.clearPrices();
-      await job.moveToCompleted(JobCompleteStates.SUCCESS);
+      return JobCompleteStates.SUCCESS;
     } catch (error) {
-      this.logger.error(`Error to process historical price job.id: ${job.id}, ${error.message}`);
-      await job.moveToFailed({ message: error.toString() });
+      this.logger.error(`Error to process historical price job.id: ${job.id}`, error);
+      throw error;
     }
   }
 

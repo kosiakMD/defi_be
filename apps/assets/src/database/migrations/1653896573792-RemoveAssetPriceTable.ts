@@ -3,9 +3,6 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 export class RemoveAssetPriceTable1653896573792 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP TABLE "assets_prices"`);
-    await queryRunner.query(
-      `ALTER TABLE "assets_prices" DROP CONSTRAINT "FK_af3d211483e97a5ff71360f9a53"`,
-    );
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {

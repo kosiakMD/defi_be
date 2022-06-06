@@ -29,6 +29,10 @@ export class AssetDto {
   symbol?: string;
 
   @Expose()
+  @ApiProperty({ type: String, nullable: true })
+  displayName?: string;
+
+  @Expose()
   @ApiProperty({ type: Number })
   price?: number;
 

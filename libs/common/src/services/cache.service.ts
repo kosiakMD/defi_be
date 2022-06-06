@@ -17,7 +17,7 @@ export class CacheService {
     }
 
     const loaded = await load();
-    if (loaded !== undefined && loaded !== null) {
+    if (loaded !== undefined) {
       await this.cache.set(key, loaded, options);
     }
 
@@ -45,11 +45,12 @@ export class CacheService {
     values: { key: string; value: T }[],
     options: Partial<StoreConfig> = {},
   ): Promise<void> {
-    if (!values.length) {
+    const validValues = values.filter(({ value }) => value !== undefined);
+    if (!validValues.length) {
       return;
     }
 
-    const cacheArray = values.reduce((arr, curr) => arr.concat([curr.key, curr.value]), []);
+    const cacheArray = validValues.reduce((arr, curr) => arr.concat([curr.key, curr.value]), []);
     await this.cache.store.mset(...cacheArray, options);
   }
 }

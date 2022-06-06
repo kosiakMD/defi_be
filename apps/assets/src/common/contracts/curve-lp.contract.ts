@@ -31,7 +31,7 @@ export class CURVE_LP {
           return address === CURVE_MAIN_COIN_ADDRESS ? ZERO_ADDRESS : address.toLowerCase();
         });
     } catch (e) {
-      this.logger.error(e, 'getCoinsForLpToken');
+      this.logger.error('Get Curve coins for LP failed', e);
       throw e;
     }
   }

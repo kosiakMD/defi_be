@@ -22,6 +22,7 @@ export class Benqi extends RootPlatform {
       slug: this.constructor.name,
       links: {
         url: 'https://benqi.fi/',
+        logo: 'https://icons.llama.fi/benqi.jpg',
         twitter: 'BenqiFinance',
       },
     });

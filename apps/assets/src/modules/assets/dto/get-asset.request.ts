@@ -3,6 +3,8 @@ import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
+import { formatAddress } from '@app/common/utils';
+
 export class GetAssetRequest {
   @ApiProperty({
     type: Number,
@@ -23,6 +25,7 @@ export class GetAssetRequest {
   })
   @IsString()
   @IsNotEmpty()
+  @Transform(({ value }) => formatAddress(value))
   address: string;
 
   @ApiProperty({

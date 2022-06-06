@@ -6,9 +6,12 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, CoingeckoPlatformEnum } from '@app/common';
 
-import { AssetReference } from '../../../../../common/types/asset-reference';
+import { AssetReference } from '../../../../../common/types';
 
+import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
+
+const STABLECOIN_CATEGORIES = ['Stablecoins', 'USD Stablecoin'];
 
 @Injectable()
 export class CoingeckoAssetAnalyser implements AssetAnalyser {
@@ -24,23 +27,43 @@ export class CoingeckoAssetAnalyser implements AssetAnalyser {
   }
 
   async analyseAsset({ chainId, address }: AssetReference): Promise<AssetAnalysisResult> {
-    try {
-      const coingeckoChainId = CoingeckoPlatformEnum[ChainIdEnum[chainId]];
-      const { image } = await this.coinGeckoClient.contract({
-        id: coingeckoChainId as any,
-        contract_address: address,
-      });
+    const coingeckoChainId = CoingeckoPlatformEnum[ChainIdEnum[chainId]];
+    const coingeckoAsset = await this.coinGeckoClient.contract({
+      id: coingeckoChainId as any,
+      contract_address: address,
+    });
 
-      // TODO: Add more data here
-      return {
-        icons: Object.entries(image).map(([key, value]) => ({
-          source: 'coingecko',
-          label: key,
-          url: value,
-        })),
-      };
-    } catch (e) {
-      this.logger.warn('Error coingecko loading icons', { chainId, address }, e);
+    if (!coingeckoAsset || !coingeckoAsset.id) {
+      return;
     }
+
+    const {
+      id,
+      image,
+      market_cap_rank,
+      coingecko_rank,
+      symbol,
+      name,
+      categories = [],
+    } = coingeckoAsset;
+
+    const isStableCoin = categories?.some((category) => STABLECOIN_CATEGORIES.includes(category));
+
+    return {
+      name,
+      symbol,
+      isTracked: true,
+      categories: isStableCoin ? [AssetCategory.Stablecoin] : [],
+      icons: Object.entries(image).map(([key, value]) => ({
+        source: 'coingecko',
+        label: key,
+        url: value,
+      })),
+      metadata: {
+        coingeckoId: id,
+        marketCapRank: market_cap_rank,
+        coingeckoRank: coingecko_rank,
+      },
+    };
   }
 }

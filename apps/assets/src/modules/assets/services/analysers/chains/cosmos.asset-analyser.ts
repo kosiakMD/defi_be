@@ -16,7 +16,7 @@ import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 @Injectable()
 export class CosmosAssetAnalyser implements AssetAnalyser {
   private readonly osmosisUrl = 'https://api-osmosis.imperator.co/tokens/v2/all';
-  private readonly osmosis1Url = 'https://api-utility.cosmostation.io/v1//ibc/tokens/osmosis-1';
+  private readonly osmosis1Url = 'https://api-utility.cosmostation.io/v1/ibc/tokens/osmosis-1';
   private readonly mintScanUrl = 'https://api.mintscan.io/v1/assets';
   private readonly kavaUrl = 'https://api-utility.cosmostation.io/v1/ibc/tokens/kava-9';
 

@@ -4,7 +4,10 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, Logger } from '@app/common';
 
-import { IMasterChefMeta, MasterChef } from '../support/EVM/protocols/Yield/MasterChef';
+import {
+  IUniswapVaultMeta,
+  UniswapV2Liquidity,
+} from '../support/EVM/protocols/Liquidity/UniswapV2Liquidity';
 import { RootPlatform } from '../support/RootPlatform';
 import { FeatureEnum } from '../support/enums';
 
@@ -26,11 +29,18 @@ export class Netswap extends RootPlatform {
       },
     });
 
-    await this.registerProtocol<IMasterChefMeta>(MasterChef, {
+    // await this.registerProtocol<IMasterChefMeta>(MasterChef, {
+    //   chain: ChainIdEnum.metis,
+    //   name: 'Farms - Netswap',
+    //   feature: FeatureEnum.staking,
+    //   address: '0x9d1dbB49b2744A1555EDbF1708D64dC71B0CB052',
+    // });
+
+    await this.registerProtocol<IUniswapVaultMeta>(UniswapV2Liquidity, {
       chain: ChainIdEnum.metis,
-      name: 'Farms - Netswap',
-      feature: FeatureEnum.staking,
-      address: '0x9d1dbB49b2744A1555EDbF1708D64dC71B0CB052',
+      name: 'Liquidity - Netswap',
+      feature: FeatureEnum.pools,
+      ammSubgraphUrl: 'https://api.netswap.io/graph/subgraphs/name/netswap/exchange',
     });
   }
 }

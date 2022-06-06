@@ -145,7 +145,7 @@ configMaps:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
   logs:
     LOG_AWS_ENABLED: true
-    LOG_LEVEL: debug
+    LOG_LEVEL: info
     NODE_ENV: development
 
 resources:

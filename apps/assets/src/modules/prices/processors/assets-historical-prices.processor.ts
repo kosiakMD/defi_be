@@ -17,14 +17,14 @@ export class AssetsHistoricalPricesProcessor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
   ) {}
 
-  @Process(JobName.HISTORICAL_PRICES)
+  @Process(JobName.UPDATE_HISTORICAL_PRICES)
   async handlePriceJob(job: Job) {
     try {
       this.logger.debug(`Create Historical Prices Job job.id: ${job.id}`);
       await this.createHistoricalPrices();
       await job.moveToCompleted(JobCompleteStates.SUCCESS);
     } catch (error) {
-      this.logger.error(`Error to process price job.id: ${job.id}, ${error.message}`);
+      this.logger.error(`Error to process price job.id: ${job.id}`, error);
       await job.moveToFailed({ message: error.toString() });
     }
   }

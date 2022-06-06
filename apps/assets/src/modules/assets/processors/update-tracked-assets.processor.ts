@@ -12,6 +12,7 @@ import { PriceSource } from '../../prices/types/price-source.type';
 import { AssetsCachedRepository } from '../repositories/assets.cached-repository';
 import { CoingeckoAssetsProvider } from '../services/tracked-assets/coingecko-assets.provider';
 import { CoinmarketcapAssetsProvider } from '../services/tracked-assets/coinmarketcap-assets.provider';
+import { EVMCoinProvider } from '../services/tracked-assets/evm-coin.provider';
 import { TrackedAssetsProvider } from '../services/tracked-assets/tracked-assets.provider';
 
 @Processor(QueueName.ASSETS)
@@ -24,8 +25,9 @@ export class UpdateTrackedAssetsProcessor {
     private readonly assetsRepository: AssetsCachedRepository,
     coingekoProvider: CoingeckoAssetsProvider,
     coinmarketcapProvider: CoinmarketcapAssetsProvider,
+    evmCoinProvider: EVMCoinProvider,
   ) {
-    this.trackedAssetsProviders.push(coingekoProvider, coinmarketcapProvider);
+    this.trackedAssetsProviders.push(coingekoProvider, coinmarketcapProvider, evmCoinProvider);
   }
 
   @Process(JobName.UPDATE_TRACKED_ASSETS)
@@ -34,10 +36,10 @@ export class UpdateTrackedAssetsProcessor {
       const jobs = this.trackedAssetsProviders.map((provider) => this.handleProvider(provider));
       await Promise.all(jobs);
 
-      await job.moveToCompleted(JobCompleteStates.SUCCESS);
+      return JobCompleteStates.SUCCESS;
     } catch (e) {
-      this.logger.error(`Error processing tracked assets job: ${job.name}. Error: ${e.toString()}`);
-      await job.moveToFailed({ message: e.toString() });
+      this.logger.error(`Error processing tracked assets job: ${job.name}`, e);
+      throw e;
     }
   }
 
@@ -54,9 +56,7 @@ export class UpdateTrackedAssetsProcessor {
         });
       }
     } catch (e) {
-      this.logger.error(
-        `Error processing tracked assets provider ${provider.name()}. Error: ${e.toString()}`,
-      );
+      this.logger.error(`Error processing tracked assets provider ${provider.name()}`, e);
     }
   }
 }

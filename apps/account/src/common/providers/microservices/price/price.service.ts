@@ -1,3 +1,4 @@
+import { RequestContext } from 'nestjs-request-context';
 import { map, tap } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
@@ -7,7 +8,7 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, CurrencyId, ERC20Token, RequestErrorHandler } from '@app/common';
 import { Logger } from '@app/common/Logger/Logger.service';
-import { ETH_BNB_ADDRESS } from '@app/common/constant';
+import { ETH_BNB_ADDRESS, HEADER_REQUEST_ID } from '@app/common/constant';
 
 import {
   NO_DB_BNB_TOKENS,
@@ -17,12 +18,7 @@ import {
 } from '../../../constant/tokens';
 import { PriceServiceResponse } from '../../../interfaces/prices.comon.interfaces';
 import { isEthChain } from '../../../utils/web3';
-import {
-  CurrentTokensPricesDto,
-  FetchPricesRequestDto,
-  FetchTimestampPricesRequestDto,
-  PriceCurrentRequestDto,
-} from './dto/price.dto';
+import { FetchPricesRequestDto, FetchTimestampPricesRequestDto } from './dto/price.dto';
 import {
   CurrentPricesPayload,
   HistoricalPrices,
@@ -30,7 +26,6 @@ import {
   PriceResponseDto,
   PricesDto,
 } from './dto/price.response.dto';
-import { CurrentPricesPayloadNew } from './prices.interfaces';
 
 function changeTokenArray(fromArray: ERC20Token[], toArray: string[]): void {
   fromArray.forEach((token) => toArray.push(token.address));
@@ -99,37 +94,6 @@ export class PriceService {
     this.fetchPricesUrl = `${url}/${getPricesPath}/fetch`;
   }
 
-  async getTokenPricesWithLp(
-    addressesArray: Address[],
-    chain: number,
-    internal?: number,
-  ): Promise<PriceResponseDto<CurrentPricesPayloadNew>> {
-    // TODO: do we need this?
-    PriceService.mapAddressArray(addressesArray, chain, internal);
-
-    const request = new PriceCurrentRequestDto(addressesArray, chain, undefined);
-
-    try {
-      this.logger.time(this.getPricesUrl);
-      const result = await this.httpService
-        .post(this.getPricesUrl, request)
-        .pipe(map((response) => response.data))
-        .toPromise();
-      this.logger.timeEnd(this.getPricesUrl);
-      return result;
-    } catch (e) {
-      e.response && this.logger.error(e.response.data);
-      this.logger.error(e);
-      // TODO: do we need 0 if error? it's tricky
-      const pricePayload: CurrentPricesPayloadNew = {};
-
-      addressesArray.forEach((item) => {
-        pricePayload[`${item}`] = new CurrentTokensPricesDto();
-      });
-      return new PriceResponseDto<CurrentPricesPayloadNew>(undefined, undefined, pricePayload);
-    }
-  }
-
   async fetchTokenPrices(
     addressesArray: Address[],
     chain: number,
@@ -142,8 +106,15 @@ export class PriceService {
     try {
       this.logger.time(timerKey);
 
+      // TODO: This is temporary solution. To be reverted until we have better.
+      const requestId = RequestContext.currentContext.req.header(HEADER_REQUEST_ID);
+
       return await this.httpService
-        .post(this.fetchPricesUrl, request)
+        .post(this.fetchPricesUrl, request, {
+          headers: {
+            [HEADER_REQUEST_ID]: requestId,
+          },
+        })
         .pipe(
           tap({
             next: () => this.logger.timeEnd(timerKey),

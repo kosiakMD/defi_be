@@ -56,3 +56,10 @@ secrets:
   - aws-assets
   - sentry
   - logs
+
+initContainer:
+  enabled: true
+  name: ctmigration
+  image: ""
+  spec:
+    command: [ "node", "./node_modules/typeorm/cli.js", "migration:run", "-f", "dist/apps/assets/src/ormconfig.js" ]

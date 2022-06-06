@@ -54,7 +54,8 @@ export class MinswapFarms {
       cachedPools.items.map((item) => [item.address, item]),
     );
 
-    const min = await this.cardanoUtils.getTokenInfo(MIN_REWARDS_TOKEN);
+    const tokens = await this.cardanoUtils.getTokenInfo([MIN_REWARDS_TOKEN]);
+    const min = tokens.get(MIN_REWARDS_TOKEN);
 
     for (const address of addresses) {
       const farms = await this.minswapSubgraph.getAccountFarms(address);

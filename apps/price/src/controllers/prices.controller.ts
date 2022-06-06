@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Inject, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Inject, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -74,17 +74,7 @@ export class PricesController {
         message: 'Asset price has been successfully updated',
       };
     } catch (error) {
-      this.logger.error(error);
-      throw error;
-    }
-  }
-
-  @Get('/current')
-  async getAllCurrentPrices() {
-    try {
-      return await this.priceService.getAllAssetsCurrentPrices();
-    } catch (error) {
-      this.logger.error(error);
+      this.logger.error('Error updating current prices', error);
       throw error;
     }
   }
@@ -92,6 +82,11 @@ export class PricesController {
   @Post('/fetch')
   @ApiOkResponse({ type: CurrentPriceResponseDto })
   postFetch(@Body() query: PriceQueryDto): Promise<PriceResponseDto<PricesPayload>> {
-    return this.priceService.fetchPrices(query);
+    try {
+      return this.priceService.fetchPrices(query);
+    } catch (error) {
+      this.logger.error('Error fetching current prices', error);
+      throw error;
+    }
   }
 }

@@ -15,6 +15,7 @@ import { AaveV2 } from '../platforms/AaveV2';
 import { AaveV3 } from '../platforms/AaveV3';
 import { AlchemixV2 } from '../platforms/AlchemixV2';
 import { ApeSwap } from '../platforms/ApeSwap';
+import { AutoFarm } from '../platforms/AutoFarm';
 import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
 import { BeefyFinance } from '../platforms/BeefyFinance';
@@ -134,6 +135,7 @@ export class PlatformService implements OnApplicationBootstrap {
       SashimiSwap,
       Liquity,
       Zenlink,
+      AutoFarm,
     });
   }
 

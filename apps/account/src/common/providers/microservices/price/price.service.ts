@@ -1,8 +1,7 @@
 import { RequestContext } from 'nestjs-request-context';
 import { map, tap } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

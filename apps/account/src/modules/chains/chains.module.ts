@@ -1,7 +1,6 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
-import { CacheModule, forwardRef, Module } from '@nestjs/common';
+import { CacheModule, forwardRef, HttpModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 

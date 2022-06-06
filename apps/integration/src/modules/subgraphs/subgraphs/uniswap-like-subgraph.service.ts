@@ -1,8 +1,7 @@
 // import gql from 'graphql-tag';
 import { map } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common/types';
@@ -23,6 +22,7 @@ export interface ResponseData {
 @Injectable()
 export class UniswapLikeSubgraph {
   protected readonly subgraphUrl: string;
+
   constructor(
     protected readonly configService: ConfigService,
     protected readonly httpService: HttpService,

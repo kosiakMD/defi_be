@@ -1,8 +1,7 @@
 import { plainToClass } from 'class-transformer';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {
@@ -97,9 +96,11 @@ export class CompoundProtocol extends BasicProtocol {
   private suppliedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
     return `supplied_${account.address}_${token.address}`;
   }
+
   private borrowedLabel(account: ICompoundHttpAccount, token: ICompoundHttpToken): string {
     return `borrowed_${account.address}_${token.address}`;
   }
+
   private claimableLabel(account): string {
     return `claimable_${account.id}`;
   }

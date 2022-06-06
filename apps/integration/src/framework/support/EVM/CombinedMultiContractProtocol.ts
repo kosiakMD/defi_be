@@ -1,4 +1,4 @@
-import { HttpService } from '@nestjs/axios';
+import { HttpService } from '@nestjs/common';
 
 import { Address } from '@app/common';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
@@ -40,12 +40,15 @@ export abstract class CombinedMultiContractProtocol<
   mainContractFunctions: INamedFunctions = {};
 
   protected abstract fetchOpportunityData(context: { [key: string]: any }): Promise<TMinimalType[]>;
+
   protected abstract formatOpportunity(
     pool: TMinimalType,
     tokens: TokenMap,
   ): TOpportunityType | void;
+
   // TODO: Type. The output on this, is the 'data' input on formatUserData
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]);
+
   // TODO: type; data: any is the return value from getAsyncUserData
   protected abstract formatUserData(
     address: Address,

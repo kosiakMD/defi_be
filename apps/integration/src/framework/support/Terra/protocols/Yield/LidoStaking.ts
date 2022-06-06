@@ -3,8 +3,7 @@ import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { AccountBalance, Address, ChainIdEnum, Logger } from '@app/common';
@@ -175,6 +174,7 @@ export class LidoStaking
       year: apr,
     };
   }
+
   private getApyBreakdown(apy: number) {
     const apr = apyToApr(apy, 365); // assuming compounds daily
     const breakdown = this.getAprBreakdown(apr);

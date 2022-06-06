@@ -3,8 +3,7 @@ import { AccountInfo, PublicKey } from '@solana/web3.js';
 import { Cache } from 'cache-manager';
 import { filter, firstValueFrom, mergeMap, toArray } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -21,10 +20,10 @@ import { SolanaCoreSonarTemplate } from '../../../SolanaCoreSonarTemplate';
 import { fetchYieldsMerge, fetchYieldsQuarry } from './YieldsQuarry';
 import {
   IQuarryMeta,
-  IQuarryStakingFeatureMinimal,
-  IQuarryStakingFeatureOpportunity,
   IQuarryOpportunityResponse,
   IQuarryProtocol,
+  IQuarryStakingFeatureMinimal,
+  IQuarryStakingFeatureOpportunity,
 } from './interfaces';
 
 export class QuarryStaking
@@ -47,6 +46,7 @@ export class QuarryStaking
   ) {
     super();
   }
+
   LIMIT_DATA = 100;
 
   async getCacheableOpportunityData(): Promise<IQuarryStakingFeatureMinimal[]> {

@@ -1,7 +1,6 @@
 import { map } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
@@ -27,6 +26,7 @@ export class CoingeckoService {
     private httpService: HttpService,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: Logger,
   ) {}
+
   async get250MarketTop(): Promise<CoinsMarketsTop[]> {
     try {
       this.logger.time(`request: ${COIN_GECKO_250_MARKET_TOP_URL}`);

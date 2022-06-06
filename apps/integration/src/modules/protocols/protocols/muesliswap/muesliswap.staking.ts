@@ -2,11 +2,10 @@ import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainDto, Address, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
+import { Address, ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { stringToHex } from '@app/common/utils';

@@ -3,11 +3,10 @@ import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import { ChainDto, FeatureEnum, ProtocolTypeEnum, ProjectEnum } from '@app/common';
+import { ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';
 import { NotifyPools } from '@app/common/jobs/notify.dto';
 import { LiquidityPoolFeature } from '@app/common/jobs/pools';

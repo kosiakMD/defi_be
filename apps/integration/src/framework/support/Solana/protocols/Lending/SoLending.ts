@@ -4,8 +4,7 @@ import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -15,23 +14,23 @@ import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
-import { IPoolDataProtocolResponse, IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
-  ILendingFeatureUserEntry,
-} from '../../../interfaces/feature.lending.interface';
+  IPoolDataProtocolResponse,
+  IProtocolMeta,
+  IRootProtocol,
+  IUserDataProtocolResponse
+} from '../../../interfaces';
+import { ILendingFeatureUserEntry } from '../../../interfaces/feature.lending.interface';
 import {
-  IBorrowTokenUserEntity,
+  IBorrowTokenMinimal,
   IBorrowTokenOpportunity,
-  IBorrowTokenMinimal
+  IBorrowTokenUserEntity
 } from '../../../interfaces/tokens.borrowed.interface';
+import { IRewardTokenMinimal, IRewardTokenOpportunity } from '../../../interfaces/tokens.rewarded.interface';
 import {
-  IRewardTokenMinimal,
-  IRewardTokenOpportunity
-} from '../../../interfaces/tokens.rewarded.interface';
-import {
+  ISupplyTokenMinimal,
   ISupplyTokenOpportunity,
-  ISupplyTokenUserEntry,
-  ISupplyTokenMinimal
+  ISupplyTokenUserEntry
 } from '../../../interfaces/tokens.supplied.interface';
 import { ObligationParser } from '../../Schemas/Solend/Obligation';
 import { ReserveParser } from '../../Schemas/Solend/Reserve';
@@ -39,29 +38,23 @@ import { SolanaCore } from '../../SolanaCore';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 
 export interface ISolendingMeta extends IProtocolMeta {
-  baseApiUrl: string, address: string
+  baseApiUrl: string,
+  address: string
 }
 
-type SolendLendingFeatureEntryMinimal = BaseWithTokens<
-  (ISupplyTokenMinimal & { reserveAddress: string })[],
+type SolendLendingFeatureEntryMinimal = BaseWithTokens<(ISupplyTokenMinimal & { reserveAddress: string })[],
   (IRewardTokenMinimal & { reserveAddress: string, apy: string })[],
-  (IBorrowTokenMinimal & { reserveAddress: string })[]
->;
-type SolendLendingFeatureOpportunity = BaseWithTokens<
-  (ISupplyTokenOpportunity & { reserveAddress: string })[],
+  (IBorrowTokenMinimal & { reserveAddress: string })[]>;
+type SolendLendingFeatureOpportunity = BaseWithTokens<(ISupplyTokenOpportunity & { reserveAddress: string })[],
   (IRewardTokenOpportunity & { reserveAddress: string })[],
-  (IBorrowTokenOpportunity & { reserveAddress: string })[]
->;
+  (IBorrowTokenOpportunity & { reserveAddress: string })[]>;
 
 export class SoLending
-  extends SolanaCore<
-    SolendLendingFeatureEntryMinimal,
+  extends SolanaCore<SolendLendingFeatureEntryMinimal,
     SolendLendingFeatureOpportunity,
     ILendingFeatureUserEntry,
-    ISolendingMeta
-  >
-  implements IRootProtocol
-{
+    ISolendingMeta>
+  implements IRootProtocol {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
@@ -69,13 +62,13 @@ export class SoLending
     protected priceService: PriceService,
     protected web3Service: Web3SolanaProviderService,
     protected httpService: HttpService,
-    protected configService: ConfigService,
+    protected configService: ConfigService
   ) {
     super();
   }
 
   async getCacheableOpportunityData(): Promise<SolendLendingFeatureEntryMinimal[]> {
-    const { markets, assets } = await this.getConfig()
+    const { markets, assets } = await this.getConfig();
     const assetSymbolToAddressMap = this.createSymbolToAddressMap(assets);
 
     const reserveAddressToDetailsMap: Map<string, any> =
@@ -88,15 +81,18 @@ export class SoLending
       feature: FeatureEnum.lending,
       supplied: market.reserves.map((reserve) => ({
         token: {
-          address: assetSymbolToAddressMap.get(reserve.asset),
+          address: assetSymbolToAddressMap.get(reserve.asset)
         },
         reserveAddress: reserve.address,
-        totalSupplied: reserveAddressToDetailsMap?.get(reserve.address)?.reserve?.collateral
-          ?.mintTotalSupply.toString(),
+        totalSupplied: reserveAddressToDetailsMap?.get(reserve.address)
+                                                 ?.reserve
+                                                 ?.collateral
+                                                 ?.mintTotalSupply
+                                                 .toString()
       })),
       rewarded: reserveAddressToDetailsMap ? market.reserves.reduce((acc, reserve) => {
         const reserveDetails = reserveAddressToDetailsMap.get(reserve.address);
-        if(!reserveDetails) {
+        if (!reserveDetails) {
           return acc;
         }
 
@@ -104,22 +100,25 @@ export class SoLending
           ...acc,
           ...reserveDetails.rewards.map(({ side, rewardMint, apy }) => ({
             token: {
-              address: rewardMint,
+              address: rewardMint
             },
             rewardedForLendingSide: side === 'borrow' ? 'borrowed' : 'supplied',
             rewardedForTokenAddress: assetSymbolToAddressMap.get(reserve.asset),
             apy
-          })),
+          }))
         ];
       }, []) : [],
       borrowed: market.reserves.map((reserve) => ({
         token: {
-          address: assetSymbolToAddressMap.get(reserve.asset),
+          address: assetSymbolToAddressMap.get(reserve.asset)
         },
         reserveAddress: reserve.address,
-        totalBorrowed: reserveAddressToDetailsMap?.get(reserve.address)?.reserve?.liquidity
-          ?.borrowedAmountWads.toString(),
-      })),
+        totalBorrowed: reserveAddressToDetailsMap?.get(reserve.address)
+                                                 ?.reserve
+                                                 ?.liquidity
+                                                 ?.borrowedAmountWads
+                                                 .toString()
+      }))
     }));
   }
 
@@ -127,109 +126,112 @@ export class SoLending
     return this.getOrSet(60 * 60 * 24, 'solend_config_response', async () => {
       return (
         await firstValueFrom(
-          this.httpService.get(this.meta.baseApiUrl + '/config/?deployment=production'),
+          this.httpService.get(this.meta.baseApiUrl + '/config/?deployment=production')
         )
       ).data;
     });
   }
 
   async getFormattedPoolData(): Promise<IPoolDataProtocolResponse<SolendLendingFeatureOpportunity>> {
-    const { data: markets, errors } = await this.getPoolData()
-
+    const { data: markets, errors } = await this.getPoolData();
 
     return {
       data: markets.flatMap(market => {
         return [
           ...market.supplied.map(supplied => {
-            const rewarded = market.rewarded.filter(r => r.rewardedForLendingSide === 'supplied' && r.rewardedForTokenAddress === supplied.token.address)
+            const rewarded = market.rewarded.filter(r => r.rewardedForLendingSide === 'supplied' && r.rewardedForTokenAddress === supplied.token.address);
             return {
               ...market,
               id: `${market.id}::${supplied.token.address}`,
-              supplied: [supplied],
+              supplied: [ supplied ],
               rewarded,
               borrowed: [] //; hide borrowed details for opportunity data
-            }
+            };
           })
-        ]
+        ];
       }),
       errors
-    }
+    };
   }
 
   private async getReserveAddressToDetailsMap(): Promise<Map<string, any> | undefined> {
-    const config = await this.getConfig()
-      const markets = config.markets;
-      const reserveAddresses = markets.reduce(
-        (acc, market) => [...acc, ...market.reserves.map(({ address }) => address)],
-        [],
-      );
-      const reserveDetailsPromises = reserveAddresses.map(x => {
-        return firstValueFrom(this.httpService.get(this.meta.baseApiUrl + '/reserves/?ids=' + x)).catch(() => null)
-      });
+    const config = await this.getConfig();
+    const markets = config.markets;
+    const reserveAddresses = markets.reduce(
+      (acc, market) => [ ...acc, ...market.reserves.map(({ address }) => address) ],
+      []
+    );
+    const reserveDetailsPromises = reserveAddresses.map(x => {
+      return firstValueFrom(this.httpService.get(this.meta.baseApiUrl + '/reserves/?ids=' + x))
+        .catch(() => null);
+    });
 
-      let reserveDetails;
-      const notFoundReserveIndexes = [];
+    let reserveDetails;
+    const notFoundReserveIndexes = [];
 
-     try {
+    try {
       const cacheKey = 'solend_reserves_response';
       const cached = await this.cache.get<Map<string, any>>(cacheKey);
       if (cached) reserveDetails = cached;
 
-
       reserveDetails = (await Promise.all(reserveDetailsPromises)).filter((x, index) => {
-        if(!x) {
+        if (!x) {
           notFoundReserveIndexes.push(index);
         }
         return x;
-      }).map(x => x.data.results[0]);
+      })
+                                                                  .map(x => x.data.results[0]);
 
-        await this.cache.set(cacheKey, reserveDetails);
-     } catch(e) {
-       this.logger.error(e);
-       return;
-     }
+      await this.cache.set(cacheKey, reserveDetails);
+    } catch (e) {
+      this.logger.error(e);
+      return;
+    }
 
-       return this.createMapFromArrays(reserveAddresses.filter((_, index) => !notFoundReserveIndexes.includes(index)), reserveDetails);
+    return this.createMapFromArrays(reserveAddresses.filter((_,
+      index) => !notFoundReserveIndexes.includes(index)), reserveDetails);
   }
 
   protected formatOpportunity(
     opportunity: SolendLendingFeatureEntryMinimal,
-    tokens: Map<string, any>,
+    tokens: Map<string, any>
   ): void | SolendLendingFeatureOpportunity {
     const tokenAddressToTvlMap = new Map();
 
-    const supplied = opportunity.supplied.filter(x => tokens.has(x.token.address)).map((poolToken) => {
-      const token = tokens.get(poolToken.token.address);
-      const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals)
-      const tvl = new BN(token.price).multipliedBy(new BN(totalSupplied))
-                                     .toNumber();
+    const supplied = opportunity.supplied.filter(x => tokens.has(x.token.address))
+                                .map((poolToken) => {
+                                  const token = tokens.get(poolToken.token.address);
+                                  const totalSupplied = normalizeDecimals(poolToken.totalSupplied, token.decimals);
+                                  const tvl = new BN(token.price).multipliedBy(new BN(totalSupplied))
+                                                                 .toNumber();
 
-      tokenAddressToTvlMap.set(poolToken.token.address, tvl);
+                                  tokenAddressToTvlMap.set(poolToken.token.address, tvl);
 
-      return {
-        token,
-        totalSupplied,
-        reserveAddress: poolToken.reserveAddress,
-        tvl,
-      };
-    });
+                                  return {
+                                    token,
+                                    totalSupplied,
+                                    reserveAddress: poolToken.reserveAddress,
+                                    tvl
+                                  };
+                                });
 
-    const borrowed = opportunity.borrowed.filter(x => tokens.has(x.token.address)).map((poolToken) => {
-      const token = tokens.get(poolToken.token.address);
-      const totalBorrowed = normalizeDecimals(poolToken.totalBorrowed, token.decimals);
+    const borrowed = opportunity.borrowed.filter(x => tokens.has(x.token.address))
+                                .map((poolToken) => {
+                                  const token = tokens.get(poolToken.token.address);
+                                  const totalBorrowed = normalizeDecimals(poolToken.totalBorrowed, token.decimals);
 
-      const tvl = new BN(token.price).multipliedBy(new BN(totalBorrowed))
-                                     .toNumber();
+                                  const tvl = new BN(token.price).multipliedBy(new BN(totalBorrowed))
+                                                                 .toNumber();
 
-      tokenAddressToTvlMap.set(poolToken.token.address, tvl);
+                                  tokenAddressToTvlMap.set(poolToken.token.address, tvl);
 
-      return {
-        token,
-        totalBorrowed,
-        reserveAddress: poolToken.reserveAddress,
-        tvl,
-      };
-    });
+                                  return {
+                                    token,
+                                    totalBorrowed,
+                                    reserveAddress: poolToken.reserveAddress,
+                                    tvl
+                                  };
+                                });
 
     return {
       feature: opportunity.feature,
@@ -237,45 +239,46 @@ export class SoLending
       chain: opportunity.chain,
       supplied,
       borrowed,
-      rewarded: opportunity.rewarded.filter(x => tokens.has(x.token.address)).map((poolToken) => {
+      rewarded: opportunity.rewarded.filter(x => tokens.has(x.token.address))
+                           .map((poolToken) => {
 
-        const token = tokens.get(poolToken.token.address);
-        const apyPercentage = +poolToken.apy / 100;
+                             const token = tokens.get(poolToken.token.address);
+                             const apyPercentage = +poolToken.apy / 100;
 
-        const apyBreakdown = {
-          day: apyPercentage / 365,
-          week: apyPercentage / 52,
-          month: apyPercentage / 12,
-          year: apyPercentage,
-        };
+                             const apyBreakdown = {
+                               day: apyPercentage / 365,
+                               week: apyPercentage / 52,
+                               month: apyPercentage / 12,
+                               year: apyPercentage
+                             };
 
-        const rewardedForTvl = tokenAddressToTvlMap.get(poolToken.rewardedForTokenAddress);
+                             const rewardedForTvl = tokenAddressToTvlMap.get(poolToken.rewardedForTokenAddress);
 
-        return {
-          token,
-          rewardedForTokenAddress: poolToken.rewardedForTokenAddress,
-          rewardedForLendingSide: poolToken.rewardedForLendingSide,
-          reserveAddress: poolToken.reserveAddress,
-          harvests: {
-            day: (apyBreakdown.day * rewardedForTvl) / token.price,
-            week: (apyBreakdown.week * rewardedForTvl) / token.price,
-            month: (apyBreakdown.month * rewardedForTvl) / token.price,
-            year: (apyBreakdown.year * rewardedForTvl) / token.price,
-          },
-          apy: apyBreakdown,
-          apr: apyBreakdown
-        };
-      }),
+                             return {
+                               token,
+                               rewardedForTokenAddress: poolToken.rewardedForTokenAddress,
+                               rewardedForLendingSide: poolToken.rewardedForLendingSide,
+                               reserveAddress: poolToken.reserveAddress,
+                               harvests: {
+                                 day: (apyBreakdown.day * rewardedForTvl) / token.price,
+                                 week: (apyBreakdown.week * rewardedForTvl) / token.price,
+                                 month: (apyBreakdown.month * rewardedForTvl) / token.price,
+                                 year: (apyBreakdown.year * rewardedForTvl) / token.price
+                               },
+                               apy: apyBreakdown,
+                               apr: apyBreakdown
+                             };
+                           })
 
     };
   }
 
   async getUsersData(
-    addresses: string[],
+    addresses: string[]
   ): Promise<IUserDataProtocolResponse<ILendingFeatureUserEntry>> {
     const { data: pools, errors } = await this.getPoolData();
     const wallets: Map<string, ILendingFeatureUserEntry[]> = new Map();
-    const combinedErrors = [...errors];
+    const combinedErrors = [ ...errors ];
 
     try {
       const reserveAddressToDetailsMap = await this.getReserveAddressToDetailsMap();
@@ -289,23 +292,21 @@ export class SoLending
           const obligationAddress = await PublicKey.createWithSeed(
             new PublicKey(userAddress),
             seed,
-            new PublicKey(this.meta.address),
+            new PublicKey(this.meta.address)
           );
 
-          const poolTokensAddressesToOpportunityMap: Map<
-            string,
-            (IBorrowTokenOpportunity | ISupplyTokenOpportunity) & { reserveAddress: string }
-          > = this.createMapFromArrays(
+          const poolTokensAddressesToOpportunityMap: Map<string,
+            (IBorrowTokenOpportunity | ISupplyTokenOpportunity) & { reserveAddress: string }> = this.createMapFromArrays(
             [
               ...pool.borrowed.map((x) => x.token.address),
-              ...pool.supplied.map((x) => x.token.address),
+              ...pool.supplied.map((x) => x.token.address)
             ],
-            [...pool.borrowed, ...pool.supplied],
+            [ ...pool.borrowed, ...pool.supplied ]
           );
 
           const rawObligation = await this.web3Service
-            .getInstanceByChainId(ChainIdEnum.sol)
-            .getAccountInfo(obligationAddress);
+                                          .getInstanceByChainId(ChainIdEnum.sol)
+                                          .getAccountInfo(obligationAddress);
 
           if (!rawObligation) {
             continue;
@@ -318,20 +319,20 @@ export class SoLending
           for (const borrow of obligation.info.borrows as any) {
 
             const rawBorrowReserve = await this.web3Service
-              .getInstanceByChainId(ChainIdEnum.sol)
-              .getAccountInfo((borrow as any).borrowReserve);
+                                               .getInstanceByChainId(ChainIdEnum.sol)
+                                               .getAccountInfo((borrow as any).borrowReserve);
 
             const borrowReserve = ReserveParser(rawBorrowReserve);
             const borrowedTokenAddress = borrowReserve.info.liquidity.mintPubkey.toString();
             const borrowedOpportunity =
-            poolTokensAddressesToOpportunityMap.get(borrowedTokenAddress) as IBorrowTokenOpportunity & { reserveAddress: string };
+              poolTokensAddressesToOpportunityMap.get(borrowedTokenAddress) as IBorrowTokenOpportunity & { reserveAddress: string };
 
             const borrowReserveDetailsFromApi = reserveAddressToDetailsMap?.get(borrowedOpportunity.reserveAddress);
             const normalizedBorrowedAmount = normalizeDecimals(borrow.borrowedAmountWads.toString(), borrowedOpportunity.token.decimals + 18);
 
             const valueBorrowed = borrowedOpportunity.token.price ? new BN(normalizedBorrowedAmount).multipliedBy(borrowedOpportunity.token.price)
                                                                                                     .toNumber()
-                                                                  : normalizeDecimals(borrow.marketValue.toString(), 18);
+              : normalizeDecimals(borrow.marketValue.toString(), 18);
 
             totalValueBorrowed += valueBorrowed;
 
@@ -340,9 +341,10 @@ export class SoLending
               tvl: borrowedOpportunity.tvl,
               token: borrowedOpportunity.token,
               amount: normalizedBorrowedAmount,
-              value: valueBorrowed,
+              value: valueBorrowed
             });
-          };
+          }
+          ;
 
           const supplied: ISupplyTokenUserEntry[] = [];
 
@@ -351,8 +353,8 @@ export class SoLending
           for (const deposit of obligation.info.deposits as any) {
 
             const rawDepositReserve = await this.web3Service
-              .getInstanceByChainId(ChainIdEnum.sol)
-              .getAccountInfo((deposit as any).depositReserve);
+                                                .getInstanceByChainId(ChainIdEnum.sol)
+                                                .getAccountInfo((deposit as any).depositReserve);
             const depositReserve = ReserveParser(rawDepositReserve);
             const depositTokenAddress = depositReserve.info.liquidity.mintPubkey.toString();
             // eslint-disable-next-line prettier/prettier
@@ -364,14 +366,14 @@ export class SoLending
 
             const normalizedDepositAmount = normalizeDecimals(
               deposit.depositedAmount.toString(),
-              depositOpportunity.token.decimals,
+              depositOpportunity.token.decimals
             );
 
             const depositValue = depositOpportunity.token.price ? new BN(normalizedDepositAmount).multipliedBy(depositOpportunity.token.price)
                                                                                                  .toNumber()
-                                                                : normalizeDecimals(deposit.marketValue.toString(), 18);
+              : normalizeDecimals(deposit.marketValue.toString(), 18);
 
-            if(depositValue > 0) {
+            if (depositValue > 0) {
               totalValueSuppliedFactoredByLiquidationThreshold += new BN(depositValue).multipliedBy(depositReserve.info.config.liquidationThreshold)
                                                                                       .dividedBy(new BN(100))
                                                                                       .toNumber();
@@ -384,9 +386,10 @@ export class SoLending
               value: depositValue,
               totalSupplied: depositOpportunity.totalSupplied,
               tvl: depositOpportunity.token.price ? new BN(depositOpportunity.token.price).multipliedBy(new BN(totalSuppliedByAllUsers))
-                                                                                          .toNumber() : 0,
+                                                                                          .toNumber() : 0
             });
-          };
+          }
+          ;
 
           userPositions.push({
             id: 'solend-lending',
@@ -396,7 +399,7 @@ export class SoLending
             rewarded: [],
             supplied,
             debtRatio: new BN(totalValueSuppliedFactoredByLiquidationThreshold).dividedBy(new BN(totalValueBorrowed ? totalValueBorrowed : 1))
-                                                                               .toNumber(),
+                                                                               .toNumber()
           });
         }
 
@@ -406,14 +409,14 @@ export class SoLending
       combinedErrors.push(err);
     }
 
-    return { data: wallets, errors: combinedErrors};
+    return { data: wallets, errors: combinedErrors };
   }
 
   private createSymbolToAddressMap(assets) {
-    return new Map(assets.map(x => [x.symbol, x.mintAddress]))
+    return new Map(assets.map(x => [ x.symbol, x.mintAddress ]));
   }
 
-  private createMapFromArrays<T,G>(array1: T[], array2: G[]) {
-    return new Map<T,G>(array1.map((x,i) => [x, array2[i]]))
+  private createMapFromArrays<T, G>(array1: T[], array2: G[]) {
+    return new Map<T, G>(array1.map((x, i) => [ x, array2[i] ]));
   }
 }

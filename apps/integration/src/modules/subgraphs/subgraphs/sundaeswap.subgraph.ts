@@ -1,7 +1,6 @@
-import { map, firstValueFrom } from 'rxjs';
+import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import {

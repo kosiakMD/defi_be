@@ -3,8 +3,7 @@ import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
@@ -35,6 +34,7 @@ import {
 import { SubgraphsContractProtocol } from '../../SubgraphsContractProtocol';
 
 type UsersDataResponse = Map<Address, Array<{ balance: string; address: Address }>>;
+
 export interface IBalancerPoolMeta extends IProtocolMeta {
   context: {
     endpoint: string;

@@ -1,7 +1,6 @@
 import { Cache } from 'cache-manager';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
@@ -55,6 +54,7 @@ export class StakingRewards extends MultiContractProtocol<
   protected callLabel(address: Address, genericName: string) {
     return `${address}.${genericName}()`;
   }
+
   protected balanceOfLabel(address: Address, user: Address) {
     return `${address}.balanceOf(${user})`;
   }

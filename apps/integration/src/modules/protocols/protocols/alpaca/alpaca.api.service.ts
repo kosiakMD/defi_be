@@ -1,7 +1,6 @@
 import { map } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpService, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -20,6 +19,7 @@ export class AlpacaApiService {
   ) {
     this.alpacaApiUrl = this.configService.get<string>('ALPACA_API_URL');
   }
+
   async getLeverageFarmingData(owner: string): Promise<AlpacaApiResponse[]> {
     const response = await this.httpService
       .get(this.alpacaApiUrl, { params: { owner: owner } })

@@ -1,5 +1,4 @@
-import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { HttpService, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { UniswapLikeSubgraph } from './uniswap-like-subgraph.service';

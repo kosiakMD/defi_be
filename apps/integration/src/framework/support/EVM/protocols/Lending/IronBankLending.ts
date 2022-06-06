@@ -3,8 +3,7 @@ import { Cache } from 'cache-manager';
 import { equals } from 'class-validator';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { ChainIdEnum, FeatureEnum, Logger } from '@app/common';
@@ -86,6 +85,7 @@ export class IronBankLending
       };
     });
   }
+
   protected formatOpportunitySuppliedToken(
     supplied: any,
     token: ERC20Token,

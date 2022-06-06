@@ -1,6 +1,6 @@
 import { Cache } from 'cache-manager';
 
-import { HttpService } from '@nestjs/axios';
+import { HttpService } from '@nestjs/common';
 
 import { Address, Logger } from '@app/common';
 
@@ -29,7 +29,9 @@ export abstract class SingleContractProtocol<
   protected abstract accountService: AccountService;
   protected abstract priceService: PriceService;
   protected abstract httpService: HttpService;
+
   protected abstract fetchUserData(addresses: Address[]): Promise<Map<Address, any[]>>;
+
   protected abstract formatUserData(
     address: string,
     pool: TOpportunityType[],

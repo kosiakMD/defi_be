@@ -6,8 +6,7 @@ import {
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
@@ -119,6 +118,7 @@ export class MuesliSwapMilkPools extends CardanoCore<
   protected getHarvestBreakdown(): { apr: null; apy: null } {
     return { apr: null, apy: null };
   }
+
   protected getYieldBreakdown(): { apr: null; apy: null } {
     return { apr: null, apy: null };
   }
@@ -130,6 +130,7 @@ export class MuesliSwapMilkPools extends CardanoCore<
   private async fetchMilkPools(): Promise<IMuesliSwapStakingPool[]> {
     return this.get(`https://staking.muesliswap.com/tokens-info`);
   }
+
   private async fetchStakingRewards(address: string): Promise<IMuesliSwapStakingRewards[]> {
     return this.get(`https://staking.muesliswap.com/my-rewards`, {
       pkh: this.cardanoUtils.addressToBlake224(address),

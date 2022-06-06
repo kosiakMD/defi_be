@@ -2,7 +2,7 @@ import { JSONPath } from 'jsonpath-plus';
 import puppeteer from 'puppeteer';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/axios';
+import { HttpService } from '@nestjs/common';
 
 import { Address } from '@app/common';
 
@@ -70,6 +70,7 @@ export abstract class MultiContractProtocol<
 
   // TODO: Type. The output on this, is the 'data' input on formatUserData
   protected abstract fetchUserData(addresses: Address[], pools: TOpportunityType[]): Promise<any>;
+
   // TODO: type; data: any is the return value from getAsyncUserData
   protected abstract formatUserData(
     address: Address,
@@ -112,6 +113,7 @@ export abstract class MultiContractProtocol<
       new Error('Failed to decode ABI').stack,
     );
   }
+
   async getCacheableOpportunityData(): Promise<TMinimalType[]> {
     return this.fetchOpportunityData(this.meta.context ?? {});
   }

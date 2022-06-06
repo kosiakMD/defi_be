@@ -43,6 +43,7 @@ import { MakerDAO } from '../platforms/MakerDAO';
 import { MarsEcosystem } from '../platforms/MarsEcosystem';
 import { Mdex } from '../platforms/Mdex';
 import { Mojitoswap } from '../platforms/Mojitoswap';
+import { MuesliSwap } from '../platforms/MuesliSwap';
 import { Nereus } from '../platforms/Nereus';
 import { Netswap } from '../platforms/Netswap';
 import { PaintSwap } from '../platforms/PaintSwap';
@@ -104,6 +105,7 @@ export class PlatformService implements OnApplicationBootstrap {
       Mojitoswap,
       BiSwap,
       Mdex,
+      MuesliSwap,
       KnightSwap,
       Belt,
       MarsEcosystem,

@@ -1,6 +1,5 @@
 import { CurrentPricesPayload } from 'apps/integration/src/common/dto/price.response.dto';
 import BigNumber from 'bignumber.js';
-import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { chunk, keepAddressesByChainId, normalizeDecimals } from '@app/common/utils';
@@ -22,7 +21,6 @@ export abstract class EVMCore<
 > extends RootProtocolCacheable<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   // Common Services (Injected)
   protected abstract logger: Logger;
-  protected abstract cache: Cache;
 
   // TODO: use new asset service :)
   protected abstract accountService: AccountService;

@@ -15,22 +15,23 @@ import { chunk } from '@app/common/utils';
 
 import { Asset } from '../../common/interfaces/transactions.interfaces';
 
+import { AccountServiceInterface } from './account.service.interface';
 import { logExecutionTime } from './utils';
 
 @Injectable()
-export class AccountService {
-  private readonly cacheTTLInSeconds: number;
+export class AccountService implements AccountServiceInterface {
+  protected readonly cacheTTLInSeconds: number;
 
-  private getBalanceUrl: string;
-  private getAssetsUrl: string;
-  private saveAssetsUrl: string;
-  private saveAssetsUnderlyingUrl: string;
+  protected getBalanceUrl: string;
+  protected getAssetsUrl: string;
+  protected saveAssetsUrl: string;
+  protected saveAssetsUnderlyingUrl: string;
 
   constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
-    private httpService: HttpService,
-    private configService: ConfigService,
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected readonly logger: LoggerService,
+    protected httpService: HttpService,
+    protected configService: ConfigService,
+    @Inject(CACHE_MANAGER) protected readonly cache: Cache,
   ) {
     this.cacheTTLInSeconds =
       this.configService.get<number>('BLACKLISTED_CACHE_TTL_IN_SECONDS') || 300;
@@ -156,7 +157,7 @@ export class AccountService {
    * @param callback data to cache
    * @returns data
    */
-  private async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
+  protected async getOrSet<T>(ttl: number, key: string, callback: () => Promise<T>): Promise<T> {
     const cached = await this.cache.get<T>(key);
     if (cached) return cached;
 

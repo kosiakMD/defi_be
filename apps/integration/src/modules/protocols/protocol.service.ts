@@ -69,7 +69,6 @@ import DefiKingdomsProtocol from './protocols/defikingdoms/defikingdoms.protocol
 import MarinadeProtocol from './protocols/marinade/marinade.protocol';
 import MinswapProtocol from './protocols/minswap/minswap.protocol';
 import { MirrorProtocol } from './protocols/mirror/mirror.protocol';
-import { MuesliSwapProtocol } from './protocols/muesliswap/muesliswap.protocol';
 import { OlympusProtocol } from './protocols/olympus/olympus.protocol';
 import OrcaProtocol from './protocols/orca/orca.protocol';
 import OsmosisProtocol from './protocols/osmosis/osmosis.protocol';
@@ -141,7 +140,6 @@ export class ProtocolService {
     private readonly staderProtocol: StaderProtocol,
     private readonly osmosisProtocol: OsmosisProtocol,
     private readonly wingridersProtocol: WingRidersProtocol,
-    private readonly muesliSwapProtocol: MuesliSwapProtocol,
   ) {
     this.protocols = [
       abracadabraProtocol,
@@ -182,7 +180,6 @@ export class ProtocolService {
       staderProtocol,
       osmosisProtocol,
       wingridersProtocol,
-      muesliSwapProtocol,
     ];
   }
 

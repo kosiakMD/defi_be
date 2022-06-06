@@ -225,7 +225,7 @@ export enum MuesliSwapProtocolEnum {
 // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
 // if unsure if it should be in v3 protocolEnum or v2 protocolEnum, put it in v2
 export const ProtocolV3NameEnum = {
-  ...AaveV3ProtocolEnum,
+  aaveV3: 'AaveV3',
   IronBank: 'IronBank',
   Liquity: 'Liquity',
   MakerDAO: 'MakerDAO',

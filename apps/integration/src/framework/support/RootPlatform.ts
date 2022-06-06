@@ -112,7 +112,16 @@ export abstract class RootPlatform implements IRootPlatform {
       if (!chains.includes(chain.id) || !protocol.getUsersData) {
         return;
       }
+
       const validAddressesForChain = keepAddressesByChainId(addresses, chain.id);
+
+      if (validAddressesForChain.length !== addresses.length) {
+        this.logger.warn(
+          `${addresses.length - validAddressesForChain.length} Addresses removed from ${
+            this.meta.name
+          }`,
+        );
+      }
 
       const started = Date.now();
       if (validAddressesForChain?.length) {

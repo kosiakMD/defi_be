@@ -3,8 +3,8 @@ import { Cache } from 'cache-manager';
 import { Address, Logger } from '@app/common';
 import { aprToApy, normalizeDecimals } from '@app/common/utils';
 
-import { AccountService } from '../../modules/microservices/account.service';
-import { PriceService } from '../../modules/microservices/price.service';
+import { AccountServiceInterface } from '../../modules/microservices/account.service.interface';
+import { PriceServiceInterface } from '../../modules/microservices/price.service.interface';
 import { RootProtocol } from './RootProtocol';
 import { MissingOpportunityException, MissingTokenException } from './exceptions';
 import {
@@ -44,8 +44,8 @@ export abstract class RootProtocolCacheable<
   protected abstract logger: Logger;
   protected abstract cache: Cache;
   // TODO: use new asset service :)
-  protected abstract accountService: AccountService;
-  protected abstract priceService: PriceService;
+  protected abstract accountService: AccountServiceInterface;
+  protected abstract priceService: PriceServiceInterface;
 
   // 1. get cacheable data
   // 2. cache above data
@@ -359,6 +359,7 @@ export abstract class RootProtocolCacheable<
    */
   protected async getTokens(addresses: Address[]): Promise<[Address, any][]> {
     const { data: tokens } = await this.accountService.getAssets(addresses, [this.meta.chain]);
+
     const { prices } = await this.priceService.getTokenPricesFetch(addresses, this.meta.chain);
 
     return tokens.map((token: any) => [

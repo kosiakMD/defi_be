@@ -5,6 +5,9 @@ import { CacheModule, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { CardanoService } from '../protocols/helpers/cardano/cardano.service';
+import { MuesliSwapAccountService } from './MuesliSwapAccountService';
+import { MuesliSwapPriceService } from './MuesliSwapPriceService';
 import { AccountService } from './account.service';
 import { PriceService } from './price.service';
 import { Puppeteer } from './puppeteer';
@@ -25,7 +28,23 @@ import { Puppeteer } from './puppeteer';
       inject: [ConfigService],
     }),
   ],
-  providers: [AccountService, PriceService, Puppeteer],
-  exports: [AccountService, PriceService, Puppeteer],
+  providers: [
+    // Account Services
+    AccountService,
+    MuesliSwapAccountService,
+    // Price Services
+    PriceService,
+    MuesliSwapPriceService,
+    Puppeteer,
+    CardanoService,
+  ],
+  exports: [
+    AccountService,
+    MuesliSwapAccountService,
+    PriceService,
+    MuesliSwapPriceService,
+    Puppeteer,
+    CardanoService,
+  ],
 })
 export class MicroservicesModule {}

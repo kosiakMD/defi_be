@@ -36,6 +36,7 @@ export class BeefyFinance extends RootPlatform {
       context: {
         chainEndpoint: 'bsc',
         vaultEndpoint: 'https://api.beefy.finance/vaults',
+        apyEndpoint: 'https://api.beefy.finance/apy',
       },
     });
 
@@ -47,6 +48,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'polygon',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -58,6 +60,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'celo',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -69,6 +72,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'arbitrum',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -80,6 +84,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'avax',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -91,6 +96,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'cronos',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -102,6 +108,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'fantom',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -113,6 +120,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'one',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
 
@@ -124,6 +132,7 @@ export class BeefyFinance extends RootPlatform {
     //   context: {
     //     chainEndpoint: 'moonriver',
     //     vaultEndpoint: 'https://api.beefy.finance/vaults',
+    // apyEndpoint: 'https://api.beefy.finance/apy',
     //   },
     // });
   }

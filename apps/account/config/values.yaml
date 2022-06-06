@@ -13,14 +13,14 @@ configMaps:
   blocks:
     BLOCKS_SUBGRAPH_URL: https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks
   links:
-    #ETHEREUM_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    #ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
-    ETHEREUM_URL: http://rpc/v1/rpc-call/1
-    ETH_URL: http://rpc/v1/rpc-call/1
-    #BINANCE_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
-    #BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
-    BINANCE_URL: http://rpc/v1/rpc-call/2
-    BSC_URL: http://rpc/v1/rpc-call/2
+    ETHEREUM_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+    ETH_URL: https://eth-trace.gateway.pokt.network/v1/lb/619fad2eb2d0dd003950f26b
+    #ETHEREUM_URL: http://rpc/v1/rpc-call/1
+    #ETH_URL: http://rpc/v1/rpc-call/1
+    BINANCE_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
+    BSC_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/bsc/mainnet/archive
+    #BINANCE_URL: http://rpc/v1/rpc-call/2
+    #BSC_URL: http://rpc/v1/rpc-call/2
     #POLYGON_URL: https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/polygon/mainnet/archive
     #POLYGON_rpc-call_URL: https://polygon-rpc-call.com/
     POLYGON_URL: http://rpc/v1/rpc-call/3

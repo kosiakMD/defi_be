@@ -63,10 +63,6 @@ export enum AbracadabraProtocolEnum {
   abracadabra = 'Abracadabra',
 }
 
-export enum BeefyProtocolEnum {
-  Beefy = 'Beefy',
-}
-
 export enum ConvexProtocolEnum {
   Convex = 'Convex',
 }
@@ -246,6 +242,7 @@ export const ProtocolV3NameEnum = {
   mdex: 'Mdex',
   solend: 'Solend',
   yelFinance: 'YelFinance',
+  beefyFinance: 'BeefyFinance',
   nereus: 'Nereus',
   geist: 'Geist',
   blizz: 'Blizz',
@@ -259,7 +256,6 @@ export const ProtocolNameEnum = {
   ...AstroportProtocolEnum,
   ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,
-  ...BeefyProtocolEnum,
   ...CompoundProtocolEnum,
   ...ConvexProtocolEnum,
   ...CurveProtocolEnum,

@@ -17,6 +17,7 @@ import { AlchemixV2 } from '../platforms/AlchemixV2';
 import { ApeSwap } from '../platforms/ApeSwap';
 import { BabySwap } from '../platforms/BabySwap';
 import { BalancerV2 } from '../platforms/BalancerV2';
+import { BeefyFinance } from '../platforms/BeefyFinance';
 import { Belt } from '../platforms/Belt';
 import { Benqi } from '../platforms/Benqi';
 import { BiSwap } from '../platforms/BiSwap';
@@ -121,6 +122,7 @@ export class PlatformService implements OnApplicationBootstrap {
       MakerDAO,
       IronBank,
       Benqi,
+      BeefyFinance,
       AaveV2,
       Nereus,
       Geist,

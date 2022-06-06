@@ -34,7 +34,6 @@ import { AutofarmStaking } from './protocols/autofarm/autofarm.staking';
 import AutofarmProtocol from './protocols/autofarmProtocol';
 import BadgerProtocol from './protocols/badger/badger.protocol';
 import { BadgerStaking } from './protocols/badger/badger.staking';
-import { BeefyProtocol } from './protocols/beefyProtocol';
 import { CompoundProtocol } from './protocols/compoundProtocol';
 import { ConvexCurveLpStaking } from './protocols/convex/convex.curveLP.staking';
 import { ConvexCvxStaking } from './protocols/convex/convex.cvx.staking';
@@ -185,7 +184,6 @@ const MuesliSwap = [MuesliSwapProtocol, MuesliSwapStaking];
 // TODO to add a new Protocol just add it here and at ProtocolService constructor
 const ProtocolList = [
   AlpacaProtocol,
-  BeefyProtocol,
   CompoundProtocol,
   PangolinProtocol,
   RaydiumProtocol,

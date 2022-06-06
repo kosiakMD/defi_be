@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { AccountService } from './account.service';
+import { AssetsService } from './assets.service';
 import { PriceService } from './price.service';
 import { Puppeteer } from './puppeteer';
 
@@ -25,7 +26,7 @@ import { Puppeteer } from './puppeteer';
       inject: [ConfigService],
     }),
   ],
-  providers: [AccountService, PriceService, Puppeteer],
-  exports: [AccountService, PriceService, Puppeteer],
+  providers: [AssetsService, AccountService, PriceService, Puppeteer],
+  exports: [AssetsService, AccountService, PriceService, Puppeteer],
 })
 export class MicroservicesModule {}

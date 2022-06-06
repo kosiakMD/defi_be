@@ -162,6 +162,7 @@ export class IntegrationsServiceV3Decorator {
                 v2WalletChain[FeatureEnum.staking].totalValue,
                 v2Staking.stakingToken.value,
               );
+              v2Staking.stakingToken.unlockTime = v3StakingPos.supplied[0].unlockTime;
               v2Staking.rewards.forEach((r) => {
                 if (r.claimableData.value) {
                   v2Response.data.total = safelyAddDecimals(
@@ -185,7 +186,7 @@ export class IntegrationsServiceV3Decorator {
           v2WalletChain[FeatureEnum.pools].items = v3WalletChain.positions.pools.map(
             (liquidityV3: IPoolFeatureEntryUserEntry) => {
               const liquidityV2 = IntegrationsServiceV3Decorator.liquidityToV2(liquidityV3);
-              liquidityV2.tokens?.map((token) => {
+              liquidityV2.tokens.map((token) => {
                 if (token.value) {
                   v2Response.data.total = safelyAddDecimals(v2Response.data.total, token.value);
                   v2WalletChain[FeatureEnum.pools].totalValue = safelyAddDecimals(
@@ -294,6 +295,7 @@ export class IntegrationsServiceV3Decorator {
         }
 
         v2WalletChain.features = [...new Set(v2WalletChain.features)];
+
         return v2WalletChain;
       });
       return v2Wallet;

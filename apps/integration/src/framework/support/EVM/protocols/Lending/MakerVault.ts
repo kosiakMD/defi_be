@@ -1,6 +1,5 @@
-import Maker from '@makerdao/dai';
-import { McdPlugin } from '@makerdao/dai-plugin-mcd';
 import { Cache } from 'cache-manager';
+import { ethers } from 'ethers';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -9,13 +8,14 @@ import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Address, Logger } from '@app/common';
-import { normalizeDecimals } from '@app/common/utils';
+import { chunk, normalizeDecimals } from '@app/common/utils';
+import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FailedCacheDataException } from '../../../exceptions';
-import { IProtocolMeta } from '../../../interfaces';
+import { INamedFunctionPredicates, IProtocolMeta } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
   IBorrowTokenMinimal as IBorrowTokenMinimalBase,
@@ -58,24 +58,9 @@ export type ILendingFeatureUserEntry = BaseWithTokens<
   { name: string }
 > & { debtRatio: number };
 
-interface MakerDAOVault {
-  collateralAmount: string; // amount of collateral tokens
-  collateralValue: string; // value in USD, using current price feed values
-  debtValue: string; // amount of Dai debt
-  collateralizationRatio: string; // collateralValue / debt
-  liquidationPrice: string; // vault becomes unsafe at this price
-  isSafe: boolean;
-}
-interface Vault {
+interface RawVaultInterface {
   id: number;
-  ilk: string; // maker dao vault name
-  supplyAmount: number;
-  borrowAmount: number;
-  debtRatio: number;
-}
-
-interface MakerDAOCdpId {
-  id: number;
+  urn: string;
   ilk: string;
 }
 
@@ -84,6 +69,11 @@ export interface MakerVaultInterface extends IProtocolMeta {
     subgraph: string;
   };
 }
+
+const PROXY_REGISTRY = '0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4';
+const GET_CDPS = '0x36a724Bd100c39f0Ea4D3A20F7097eE01A8Ff573';
+const CDP_MANAGER = '0x5ef30b9986345249bc32d8928B7ee64DE9435E39';
+const VAT = '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b';
 
 export class MakerVault extends EVMCore<
   ILendingFeatureEntryMinimal,
@@ -174,48 +164,42 @@ export class MakerVault extends EVMCore<
       addresses.map((addr) => [addr, [] as ILendingFeatureUserEntry[]]),
     );
 
-    const maker = await this.getMakerSDK();
+    // keyed per user address
+    const proxies = await this.getProxyAddresses(addresses);
+    // keyed per user address
+    const cdps = await this.getRawVaults(proxies);
 
-    // https://etherscan.io/address/0x5ef30b9986345249bc32d8928B7ee64DE9435E39#readContract
-    // get 'count' for proxy address => first => .....
-    const manager = maker.service('mcd:cdpManager');
-    // better approach, use getIds: https://etherscan.io/address/0x36a724Bd100c39f0Ea4D3A20F7097eE01A8Ff573#readContract
-    // pass above (cdpManager,address) as arguments
+    const urns = await this.getUrns(cdps);
 
     const rawResults = await Promise.all(
       addresses.map(async (address) => {
         const positions = [];
-        // get proxy from here: 0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4
-        // https://etherscan.io/address/0x4678f0a6958e4D2Bc4F1BAF7Bc52E8F3564f3fE4#readContract
 
-        // gem is deposit token
-        // id is number 9167 (id for specific vault)
-        // ilk is name
-        const proxyAddress = await maker.service('proxy').getProxyAddress(address);
-        if (!proxyAddress) return { address, positions };
-
-        const data: MakerDAOCdpId[] = await manager.getCdpIds(proxyAddress ?? address);
-
-        const vaults = await this.mapCdpIdsToVaults(data, manager);
+        const vaults = urns.get(address);
 
         vaults.forEach((vault) => {
-          const pool = poolsByIlk.get(vault.ilk);
+          const pool = poolsByIlk.get(vault.name);
+          const supply = normalizeDecimals(vault.ink, 18); // always 18
+          const borrow = normalizeDecimals(vault.art, 18) * normalizeDecimals(vault.rate, 27); // always 18
+          //   // Filter out old/empty vaults
+          if (!supply && !borrow) return;
 
-          // Filter out old/empty vaults
-          if (!vault.supplyAmount && !vault.borrowAmount) return;
+          const spot =
+            (normalizeDecimals(vault.spot, 27) * pool.borrow.token.price * supply) /
+            (borrow * pool.borrow.token.price);
 
           positions.push({
             ...pool,
-            debtRatio: vault.debtRatio,
+            debtRatio: spot,
             supply: {
               ...pool.supply,
-              amount: vault.supplyAmount,
-              value: vault.supplyAmount * pool.supply.token.price,
+              amount: supply,
+              value: supply * pool.supply.token.price,
             },
             borrow: {
               ...pool.borrow,
-              amount: vault.borrowAmount,
-              value: vault.borrowAmount * pool.borrow.token.price,
+              amount: borrow,
+              value: borrow * pool.borrow.token.price,
             },
           });
         });
@@ -230,29 +214,145 @@ export class MakerVault extends EVMCore<
 
     return { data: results, errors: [] };
   }
-
-  private async getMakerSDK() {
+  private async getUrns(cdps: Map<Address, RawVaultInterface[]>) {
     try {
-      return await Maker.create('http', {
-        plugins: [McdPlugin],
-        // url: this.configService.get('MAKERDAO_ETH_URL'),
-        url: 'https://speedy-nodes-nyc.moralis.io/173c906bbd79b4c01dc6034b/eth/mainnet/archive',
+      const { functions } = await this.getContract(VAT, {
+        urns: () => (item) => item.name === 'urns',
+        ilks: () => (item) => item.name === 'ilks',
       });
+
+      const provider = new ethers.providers.JsonRpcProvider(
+        (this.multicall.web3(this.meta.chain).currentProvider as any).host,
+      );
+      const urnPromises = [];
+      const ilkPromises = [];
+      const contract = new ethers.Contract(VAT, [functions.urns, functions.ilks], provider);
+      cdps.forEach((vaults) => {
+        vaults.forEach((vault) => {
+          urnPromises.push(contract.urns(vault.ilk, vault.urn));
+          ilkPromises.push(contract.ilks(vault.ilk)); // TODO: this is shared by pool
+        });
+      });
+
+      const urnResults = await Promise.allSettled(urnPromises);
+      const ilkResults = await Promise.allSettled(ilkPromises);
+      const output = new Map();
+
+      let idx = 0;
+      cdps.forEach((vaults, address) => {
+        const user = [];
+        vaults.forEach((vault) => {
+          const ilkResult = ilkResults[idx];
+          const urnResult = urnResults[idx++];
+          if (urnResult.status !== 'fulfilled' || ilkResult.status !== 'fulfilled') return;
+          const { ink, art } = urnResult.value;
+          const { Art, rate, spot, line, dust } = ilkResult.value;
+          user.push({
+            id: vault.id,
+            ilk: vault.ilk,
+            urn: vault.urn,
+            name: this.ilkToName(vault.ilk),
+            ink: ink.toString(), // user colateral
+            art: art.toString(), // normalized user debt
+            Art, // total normalized debt
+            rate: rate.toString(), // debt multiplier
+            spot: spot.toString(), // collateral price with safety margin, i.e. the maximum stablecoin allowed per unit of collateral
+            line: line.toString(), // the debt ceiling for a specific collateral type.
+            dust, // the minimum possible debt of a Vault.
+          });
+        });
+        output.set(address, user);
+      });
+
+      return output;
     } catch (err) {
-      throw new Error(`Failed to initialize Maker.js: ${err}`);
+      throw new Error('Failed to get users Urn details');
     }
   }
 
-  private async mapCdpIdsToVaults(cdpIds: MakerDAOCdpId[], manager: any): Promise<Vault[]> {
-    const vaults: MakerDAOVault[] = await Promise.all(cdpIds.map((d) => manager.getCdp(d.id)));
-    return vaults.map(
-      (vault, idx): Vault => ({
-        id: cdpIds[idx].id,
-        ilk: cdpIds[idx].ilk,
-        supplyAmount: parseFloat(vault.collateralAmount.toString()), // amount of collateral tokens
-        borrowAmount: parseFloat(vault.debtValue.toString()), // amount of Dai debt
-        debtRatio: parseFloat(vault.collateralizationRatio.toString()), // collateralValue / debt
-      }),
+  private async getRawVaults(
+    proxies: Map<Address, Address>,
+  ): Promise<Map<Address, RawVaultInterface[]>> {
+    try {
+      const { functions } = await this.getContract(GET_CDPS, {
+        getCdps: () => (item) => item.name === 'getCdpsAsc',
+      });
+
+      const promises = [];
+      const provider = new ethers.providers.JsonRpcProvider(
+        (this.multicall.web3(this.meta.chain).currentProvider as any).host,
+      );
+      const contract = new ethers.Contract(GET_CDPS, [functions.getCdps], provider);
+      proxies.forEach((proxy) => {
+        promises.push(contract.getCdpsAsc(CDP_MANAGER, proxy));
+      });
+      const results = await Promise.allSettled(promises);
+      const output = new Map();
+      let idx = 0;
+      proxies.forEach((proxy, address) => {
+        const result = results[idx++];
+        if (result.status !== 'fulfilled') return;
+
+        const { ids, urns, ilks } = result.value;
+        const vaults = ids.reduce((acc, id, idx) => {
+          acc.push({ id, urn: urns[idx], ilk: ilks[idx] });
+          return acc;
+        }, [] as RawVaultInterface[]);
+
+        output.set(address, vaults);
+      });
+      return output;
+    } catch (err) {
+      throw new Error('Failed to get users ids/urns/ilks');
+    }
+  }
+
+  private async getProxyAddresses(addresses: Address[]): Promise<Map<Address, Address>> {
+    try {
+      const calls = new Map();
+      const { functions, contract } = await this.getContract(PROXY_REGISTRY, {
+        proxy: () => (item) => item.name === 'proxies',
+      });
+
+      addresses.forEach((address) => {
+        calls.set(address, contract.createCall(functions.proxy, address));
+      });
+      const results = await this.multicall.handleInBatches(calls, this.meta.chain);
+
+      const output = new Map();
+      addresses.forEach((address) => {
+        output.set(address, results.get(address).output.data.toString());
+      });
+
+      return output;
+    } catch {
+      throw new Error('Failed to resolve proxy addresses');
+    }
+  }
+
+  private ilkToName(ilk: Address) {
+    return (
+      chunk(ilk.slice(2).split(''), 2)
+        .map((ch) => String.fromCharCode(Number(`0x${ch.join('')}`)))
+        .join('')
+        // eslint-disable-next-line no-control-regex
+        .replace(/(\x00)+$/, '')
     );
+  }
+
+  private async getContract<
+    T extends INamedFunctionPredicates,
+    U extends { [key in keyof T]: any },
+  >(address: Address, predicates: T): Promise<{ functions: U; contract: DynamicContract }> {
+    const functions = await this.abiService.parseFunctionsFromAddress(
+      address,
+      this.meta.chain,
+      predicates,
+    );
+
+    return {
+      functions: functions as U,
+      contract: new DynamicContract(PROXY_REGISTRY),
+    };
   }
 }

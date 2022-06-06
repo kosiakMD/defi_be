@@ -1,3 +1,5 @@
+import Web3 from 'web3';
+
 import { Injectable } from '@nestjs/common';
 
 import { ChainIdEnum } from '@app/common';
@@ -86,7 +88,7 @@ export class MulticallAggregator {
     return results;
   }
 
-  web3(chain) {
+  web3(chain): Web3 {
     return this.provider.getInstanceByChainId(chain);
   }
 }

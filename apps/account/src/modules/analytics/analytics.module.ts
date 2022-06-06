@@ -1,5 +1,4 @@
-import { HttpModule } from '@nestjs/axios';
-import { Module } from '@nestjs/common';
+import { HttpModule, Module } from '@nestjs/common';
 
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 

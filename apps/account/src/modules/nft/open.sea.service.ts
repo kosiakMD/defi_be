@@ -6,8 +6,7 @@ import { isEthereumAddress } from 'class-validator';
 import { RateLimiter } from 'limiter';
 import { map } from 'rxjs/operators';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject, OnModuleInit } from '@nestjs/common';
+import { CACHE_MANAGER, HttpService, Inject, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

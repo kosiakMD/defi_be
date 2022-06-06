@@ -18,7 +18,7 @@ import { FailedCacheDataException } from '../../../exceptions';
 import { INamedFunctionPredicates, IProtocolMeta } from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import {
-  IBorrowTokenMinimal as IBorrowTokenMinimalBase,
+  IBorrowTokenMinimal,
   IBorrowTokenOpportunity,
   IBorrowTokenUserEntity,
 } from '../../../interfaces/tokens.borrowed.interface';
@@ -37,21 +37,21 @@ import {
   PoolsQueryInterface,
 } from '../../Subgraphs/MakerDAOSubgraph';
 
-type IBorrowTokenMinimal = IBorrowTokenMinimalBase<{ rate: number }>;
+type ICustomBorrowTokenMinimal = IBorrowTokenMinimal<{ rate: number }>;
 
-export type ILendingFeatureEntryMinimal = BaseWithTokens<
+type ILendingFeatureEntryMinimal = BaseWithTokens<
   ISupplyTokenMinimal,
   void,
-  IBorrowTokenMinimal,
+  ICustomBorrowTokenMinimal,
   { name: string }
 >;
-export type ILendingFeatureOpportunity = BaseWithTokens<
+type ILendingFeatureOpportunity = BaseWithTokens<
   ISupplyTokenOpportunity,
   void,
   IBorrowTokenOpportunity,
   { name: string }
 >;
-export type ILendingFeatureUserEntry = BaseWithTokens<
+type ILendingFeatureUserEntry = BaseWithTokens<
   ISupplyTokenUserEntry,
   void,
   IBorrowTokenUserEntity,
@@ -149,7 +149,7 @@ export class MakerVault extends EVMCore<
   /**
    * @override
    */
-  protected formatBorrowApy(borrow: IBorrowTokenMinimal) {
+  protected formatBorrowApy(borrow: ICustomBorrowTokenMinimal) {
     return { variableApy: borrow.extra.rate };
   }
 

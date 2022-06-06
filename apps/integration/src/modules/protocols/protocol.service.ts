@@ -834,14 +834,14 @@ export class ProtocolService {
           baseData.items.forEach((poolFeature) => {
             poolFeature.tokens.forEach((poolToken) => {
               this.setTokenPriceAndValue(baseData.chain.id, poolToken, chainAssetPrices);
-              baseData.total += poolToken.value;
+              baseData.total += Number(poolToken.value);
             });
 
             poolFeature.rewards?.forEach((reward) => {
               reward.price =
                 chainAssetPrices.get(baseData.chain.id).get(reward.address) ?? reward.price;
               reward.claimableData.value = Number(reward.claimableData.balance) * reward.price;
-              baseData.total += reward.claimableData.value;
+              baseData.total += Number(reward.claimableData.value);
             });
           });
         } else if (baseData instanceof BaseDataClaimable) {
@@ -849,7 +849,7 @@ export class ProtocolService {
           baseData.items.forEach((token) => {
             token.price = chainAssetPrices.get(baseData.chain.id).get(token.address) ?? token.price;
             token.claimableData.value = token.price * Number(token.claimableData.balance);
-            baseData.total += token.claimableData.value;
+            baseData.total += Number(token.claimableData.value);
           });
         } else if (baseData instanceof BaseDataStaking) {
           baseData.total = 0;
@@ -865,7 +865,7 @@ export class ProtocolService {
                   Number(reward.claimableData.lockedBalance) * reward.price;
                 baseData.locked += reward.claimableData.lockedValue;
               }
-              baseData.total += reward.claimableData.value;
+              baseData.total += Number(reward.claimableData.value);
             });
 
             if (stakingPosition.stakingToken.tokens?.length) {
@@ -883,7 +883,7 @@ export class ProtocolService {
                       `Failed to get price for token ${poolToken.address} - ${baseData.chain.id}`,
                     );
                   }
-                  baseData.total += poolToken.value || 0;
+                  baseData.total += Number(poolToken.value || 0);
                 }
               });
             } else {
@@ -897,7 +897,7 @@ export class ProtocolService {
                   stakingPosition.stakingToken,
                   chainAssetPrices,
                 );
-                baseData.total += stakingPosition.stakingToken.value;
+                baseData.total += Number(stakingPosition.stakingToken.value);
               }
             }
           });
@@ -908,7 +908,7 @@ export class ProtocolService {
               chainAssetPrices.get(baseData.chain.id).get(lendingPosition.token.address) ??
               lendingPosition.token.price;
             lendingPosition.value = lendingPosition.balance * lendingPosition.token.price;
-            baseData.total += lendingPosition.value;
+            baseData.total += Number(lendingPosition.value);
           });
         } else if (baseData instanceof BaseLeverageFarming) {
           baseData.total = 0;
@@ -933,7 +933,7 @@ export class ProtocolService {
               chainAssetPrices,
             );
             leverageFarming.earned = leverageTotal - leverageFarming.borrowToken.value;
-            baseData.total += leverageFarming.earned;
+            baseData.total += Number(leverageFarming.earned);
             leverageFarming.debtRatio = (leverageFarming.borrowToken.value / leverageTotal) * 100;
           });
         } else if (baseData instanceof BaseDataLocked) {
@@ -952,13 +952,13 @@ export class ProtocolService {
                   ? (item.locked.value += underlying.value)
                   : (item.unlocked.value += underlying.value);
               });
-              baseData.total += item.locked ? item.locked.value : item.unlocked.value;
+              baseData.total += Number(item.locked ? item.locked.value : item.unlocked.value);
             } else {
               item.price = chainAssetPrices.get(baseData.chain.id).get(item.address) ?? item.price;
               item.locked.value = item.price * Number(item.locked.balance);
               item.unlocked.value = item.price * Number(item.unlocked.balance);
               item.totalValue = item.locked.value + item.unlocked.value;
-              baseData.total += item.totalValue;
+              baseData.total += Number(item.totalValue);
             }
           });
         } else if (baseData instanceof BaseDataMint) {
@@ -967,7 +967,7 @@ export class ProtocolService {
             const { mintedToken, collateral } = item;
             this.setTokenPriceAndValue(baseData.chain.id, mintedToken, chainAssetPrices);
             this.setTokenPriceAndValue(baseData.chain.id, collateral, chainAssetPrices);
-            baseData.total += collateral.value - mintedToken.value;
+            baseData.total += Number(collateral.value - mintedToken.value);
           });
         } else if (baseData instanceof BaseDataShortFarm) {
           baseData.total = 0;
@@ -979,13 +979,13 @@ export class ProtocolService {
               chainAssetPrices.get(baseData.chain.id).get(rewards[0].address) ?? rewards[0].price;
             rewards[0].claimableData.value =
               Number(rewards[0].claimableData.balance) * rewards[0].price;
-            baseData.total += (rewards[0].claimableData.value || 0) + locked.value;
+            baseData.total += (Number(rewards[0].claimableData.value) || 0) + Number(locked.value);
           });
         } else if (baseData instanceof BaseDataAirdrop) {
           baseData.total = 0;
           baseData.items.forEach((item) => {
             this.setTokenPriceAndValue(baseData.chain.id, item.token, chainAssetPrices);
-            baseData.total += item.token.value;
+            baseData.total += Number(item.token.value);
           });
         }
       } catch (e) {

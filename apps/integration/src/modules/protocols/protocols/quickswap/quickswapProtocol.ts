@@ -432,7 +432,7 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
           balance: claimableDataBalance,
           value: new BigNumber(claimableDataBalance) //
             .times(rawRewardPrice)
-            .toString(),
+            .toNumber(),
         },
       });
 
@@ -508,7 +508,7 @@ export class QuickswapProtocol extends BasicProtocol implements AbstractProtocol
               balance: claimableDataBalance,
               value: new BigNumber(claimableDataBalance) //
                 .times(price)
-                .toString(),
+                .toNumber(),
             },
           }),
         );

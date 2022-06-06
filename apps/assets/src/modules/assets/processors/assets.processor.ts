@@ -134,7 +134,7 @@ export class AssetsProcessor {
     return largestIcon.url;
   }
 
-  private calculateRank(address: Address, metadata: AssetMetadata) {
+  private calculateRank(address: Address, metadata: AssetMetadata = {}) {
     if (isZeroAddress(address)) {
       // Coins should be at the top
       return 1;

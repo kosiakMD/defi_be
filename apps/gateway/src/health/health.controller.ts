@@ -10,7 +10,7 @@ import {
 } from '@nestjs/terminus';
 
 import { AddVersionDecorator } from '@app/common/decorators/add-version.decorator';
-import { HealthStatusEnum } from '@app/common/enum';
+import { HealthStatusEnum, ServiceEnum } from '@app/common/enum';
 
 import { HealthServicesResponse200Dto } from './dto/health.services.response.200.dto';
 import { HealthServicesResponse503Dto } from './dto/health.services.response.503.dto';
@@ -63,11 +63,16 @@ export class HealthController {
       error: {},
       details: {},
     };
-    const services = await Promise.all<HealthCheckResult>([
-      this.serviceHealthIndicator.isAccountHealthy(),
-      this.serviceHealthIndicator.isIntegrationHealthy(),
-      this.serviceHealthIndicator.isPriceHealthy(),
-    ]);
+    const services = await Promise.all<HealthCheckResult>(
+      Object.values(ServiceEnum).map((serviceName) =>
+        this.serviceHealthIndicator.isServiceHealthy(serviceName),
+      ),
+      // [
+      //   this.serviceHealthIndicator.isAccountHealthy(),
+      //   this.serviceHealthIndicator.isIntegrationHealthy(),
+      //   this.serviceHealthIndicator.isPriceHealthy(),
+      // ]
+    );
     services.forEach((service) => {
       // TODO: For short variant of info: { [serviceName]: [status: 'ok' | 'error']}
       // Object.keys(service.info).forEach((key) => {

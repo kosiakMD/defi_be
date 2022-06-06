@@ -35,11 +35,17 @@ export class ServiceHealthIndicator extends HealthIndicator {
     super();
 
     this.getAccountStatusUrl = this.getServiceUrl(ServiceEnum.Account);
+    this.getPriceStatusUrl = this.getServiceUrl(ServiceEnum.Assets);
     this.getIntegrationStatusUrl = this.getServiceUrl(ServiceEnum.Integration);
+    this.getPriceStatusUrl = this.getServiceUrl(ServiceEnum.Opportunities);
     this.getPriceStatusUrl = this.getServiceUrl(ServiceEnum.Price);
-    this.getAccountStatusUrl = this.getServiceUrl('ACCOUNT');
-    this.getIntegrationStatusUrl = this.getServiceUrl('INTEGRATION');
-    this.getPriceStatusUrl = this.getServiceUrl('PRICE');
+    // this.getAccountStatusUrl = this.getServiceUrl('ACCOUNT');
+    // this.getIntegrationStatusUrl = this.getServiceUrl('INTEGRATION');
+    // this.getPriceStatusUrl = this.getServiceUrl('PRICE');
+  }
+
+  public async isServiceHealthy(serviceName: ServiceEnum): Promise<HealthCheckResult> {
+    return this.healthyRequest(serviceName);
   }
 
   public async isAccountHealthy(): Promise<HealthCheckResult> {
@@ -63,7 +69,7 @@ export class ServiceHealthIndicator extends HealthIndicator {
     return `${url}/${getStatusUrl}`;
   }
 
-  private async isServiceHealthy(getStatusUrl: string): Promise<HealthCheckResult> {
+  private async getServiceHealthy(getStatusUrl: string): Promise<HealthCheckResult> {
     try {
       this.logger.time('request: ' + getStatusUrl);
       const data = await this.httpService
@@ -81,7 +87,7 @@ export class ServiceHealthIndicator extends HealthIndicator {
   private async healthyRequest(serviceName: ServiceEnum): Promise<HealthCheckResult> {
     try {
       const getStatusUrl = this[`get${serviceName}StatusUrl`];
-      return await this.isServiceHealthy(getStatusUrl);
+      return await this.getServiceHealthy(getStatusUrl);
     } catch (e) {
       this.logger.error(e, 'healthyRequest', 'ServiceHealthIndicator');
       Sentry.captureException(e, {

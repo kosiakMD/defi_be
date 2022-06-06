@@ -19,9 +19,6 @@ export class CallsStatistic {
     });
 
     const total = this.success + this.fail;
-    if (total <= 0) {
-      this.rating = 0;
-    }
     // NOTE: If number of calls is low give it some chance to execute
     if (total <= 5) {
       this.rating = 1;

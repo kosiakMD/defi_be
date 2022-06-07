@@ -126,7 +126,6 @@ import { VaultsModule } from './vaults/vaults.module';
     // 	provide: APP_INTERCEPTOR,
     // 	useClass: CacheInterceptor,
     // },
-    ServiceHealthIndicator,
     SearchService,
     Web3NameService,
   ],

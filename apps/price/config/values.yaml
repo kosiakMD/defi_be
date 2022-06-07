@@ -1,6 +1,9 @@
 ingress:
   enabled: true
   host: price.staging.defyield.xyz
+  annotations: { }
+  certificate_arn: arn:aws:acm:us-west-2:625623467395:certificate/a19eacc1-004c-4ce4-ab7f-fcb0f3d911b8
+  wafv2_acl_arn: arn:aws:wafv2:us-west-2:625623467395:regional/webacl/defiyield-backend-staging/fc7890fc-a9e4-45e7-a0b3-a926eb624d3d
 
 configMaps:
   db:

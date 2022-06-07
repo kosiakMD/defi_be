@@ -43,6 +43,11 @@ export enum ProjectEnum {
   kava = 'kava',
   solend = 'solend',
   wingriders = 'wingriders',
+  ironbank = 'ironbank',
+  rocketpool = 'rocketpool',
+  quarry = 'quarry',
+  muesliswap = 'muesliswap',
+  benqi = 'benqi',
 }
 
 export enum YearnProtocolEnum {
@@ -204,74 +209,54 @@ export enum StaderProtocolEnum {
 export enum OsmosisProtocolEnum {
   osmosis = 'Osmosis',
 }
-export enum SolendProtocolEnum {
-  solend = 'Solend',
-}
 
 export enum AaveV3ProtocolEnum {
   aaveV3 = 'AaveV3',
-}
-
-export enum LidoProtocolEnum {
-  lido = 'Lido',
-}
-
-export enum KavaProtocolEnum {
-  kava = 'Kava',
-}
-
-export enum FraxProtocolEnum {
-  frax = 'Frax',
-}
-
-export enum BiSwapProtocolEnum {
-  biswap = 'BiSwap',
-}
-
-export enum MdexProtocolEnum {
-  mdex = 'Mdex',
-}
-
-export enum KnightSwapProtocolEnum {
-  knightswap = 'KnightSwap',
-}
-
-export enum BeltProtocolEnum {
-  belt = 'Belt',
-}
-
-export enum MarsEcosystemProtocolEnum {
-  marsEcosystem = 'MarsEcosystem',
-}
-
-export enum GooseProtocolEnum {
-  goose = 'Goose',
-}
-
-export enum BabySwapProtocolEnum {
-  babySwap = 'BabySwap',
-}
-
-export enum YelFinanceEnum {
-  yelFinance = 'YelFinance',
 }
 
 export enum WingRidersProtocolEnum {
   wingriders = 'WingRiders',
 }
 
-export enum StargateProtocolEnum {
-  stargate = 'Stargate',
+export enum MuesliSwapProtocolEnum {
+  muesliswap = 'MuesliSwap',
 }
 
-export enum SynapseProtocolEnum {
-  synapse = 'Synapse',
-}
+// V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
+// if unsure if it should be in v3 protocolEnum or v2 protocolEnum, put it in v2
+export const ProtocolV3NameEnum = {
+  aaveV3: 'AaveV3',
+  IronBank: 'IronBank',
+  Liquity: 'Liquity',
+  MakerDAO: 'MakerDAO',
+  Quarry: 'Quarry',
+  RocketPool: 'RocketPool',
+  Stargate: 'Stargate',
+  Synapse: 'Synapse',
+  babySwap: 'BabySwap',
+  belt: 'Belt',
+  benqi: 'Benqi',
+  biswap: 'BiSwap',
+  frax: 'Frax',
+  goose: 'Goose',
+  kava: 'Kava',
+  knightswap: 'KnightSwap',
+  lido: 'Lido',
+  marsEcosystem: 'MarsEcosystem',
+  mdex: 'Mdex',
+  solend: 'Solend',
+  yelFinance: 'YelFinance',
+  nereus: 'Nereus',
+  geist: 'Geist',
+  blizz: 'Blizz',
+};
 
 export const ProtocolNameEnum = {
   ...AaveProtocolEnum,
   ...AbracadabraProtocolEnum,
   ...AlpacaProtocolEnum,
+  ...AnchorProtocolEnum,
+  ...AstroportProtocolEnum,
   ...AutofarmProtocolEnum,
   ...BadgerProtocolEnum,
   ...BeefyProtocolEnum,
@@ -280,48 +265,35 @@ export const ProtocolNameEnum = {
   ...CurveProtocolEnum,
   ...DefiKingdomsProtocolEnum,
   ...EllipsisProtocolEnum,
+  ...MarinadeProtocolEnum,
+  ...MinswapProtocolEnum,
+  ...MirrorProtocolEnum,
   ...MojitoswapProtocolEnum,
+  ...MuesliSwapProtocolEnum,
   ...OlympusProtocolEnum,
+  ...OrcaProtocolEnum,
+  ...OsmosisProtocolEnum,
   ...PancakeProtocolEnum,
   ...PangolinProtocolEnum,
   ...QuickswapProtocolEnum,
   ...RaydiumProtocolEnum,
   ...SaberProtocolEnum,
   ...SpookySwapProtocolEnum,
+  ...StaderProtocolEnum,
+  ...SundaeProtocolEnum,
   ...SushiSwapProtocolEnum,
+  ...TerraswapProtocolEnum,
   ...TraderjoeProtocolEnum,
+  ...TrisolarisProtocolEnum,
   ...UniswapProtocolEnum,
   ...VVSProtocolEnum,
   ...VenusProtocolEnum,
   ...ViperswapProtocolEnum,
   ...WePiggyProtocolEnum,
+  ...WingRidersProtocolEnum,
   ...WonderlandProtocolEnum,
   ...YearnProtocolEnum,
-  ...TrisolarisProtocolEnum,
-  ...OrcaProtocolEnum,
-  ...SundaeProtocolEnum,
-  ...AnchorProtocolEnum,
-  ...TerraswapProtocolEnum,
-  ...AstroportProtocolEnum,
-  ...MarinadeProtocolEnum,
-  ...MinswapProtocolEnum,
-  ...MirrorProtocolEnum,
-  ...StaderProtocolEnum,
-  ...OsmosisProtocolEnum,
-  ...SolendProtocolEnum,
-  ...LidoProtocolEnum,
-  ...AaveV3ProtocolEnum,
-  ...FraxProtocolEnum,
-  ...BiSwapProtocolEnum,
-  ...MdexProtocolEnum,
-  ...KnightSwapProtocolEnum,
-  ...BeltProtocolEnum,
-  ...MarsEcosystemProtocolEnum,
-  ...BabySwapProtocolEnum,
-  ...GooseProtocolEnum,
-  ...YelFinanceEnum,
-  ...KavaProtocolEnum,
-  ...WingRidersProtocolEnum,
-  ...SynapseProtocolEnum,
-  ...StargateProtocolEnum,
+
+  // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
+  ...ProtocolV3NameEnum,
 };

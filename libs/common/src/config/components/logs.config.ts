@@ -12,8 +12,9 @@ export const logsConfig = registerAs('logs', () => ({
 
 export const logsValidation = {
   LOG_ERROR_FILE: Joi.string() //
-    .pattern(logFileRE)
-    .required(),
+    .optional()
+    .allow('')
+    .pattern(logFileRE),
   LOG_COMBINED_FILE: Joi.string() //
     .pattern(logFileRE)
     .required(),

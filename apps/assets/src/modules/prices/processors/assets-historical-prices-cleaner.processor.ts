@@ -1,0 +1,37 @@
+import { Job } from 'bull';
+
+import { Process, Processor } from '@nestjs/bull';
+import { Inject, LoggerService } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
+
+import { JobName } from '../../../common/enum/job-name.enum';
+import { JobCompleteStates } from '../../../common/enum/job-states.enum';
+import { QueueName } from '../../../common/enum/queue-name.enum';
+
+import { AssetsHistoricalPriceRepository } from '../repositories/asset-historical-price.repository';
+
+@Processor(QueueName.ASSETS)
+export class AssetsHistoricalPricesCleanerProcessor {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
+    @InjectRepository(AssetsHistoricalPriceRepository)
+    private readonly assetsHistoricalPriceRepository: AssetsHistoricalPriceRepository,
+  ) {}
+
+  @Process(JobName.CLEAR_HISTORICAL_PRICES)
+  async handlePriceJob(job: Job) {
+    try {
+      this.logger.log(`Process Clear Historical Price job.id: ${job.id}`);
+      await this.clearPrices();
+      return JobCompleteStates.SUCCESS;
+    } catch (error) {
+      this.logger.error(`Error to process historical price job.id: ${job.id}`, error);
+      throw error;
+    }
+  }
+
+  public async clearPrices(): Promise<void> {
+    await this.assetsHistoricalPriceRepository.clearPrices();
+  }
+}

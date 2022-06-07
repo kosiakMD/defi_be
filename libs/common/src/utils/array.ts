@@ -15,3 +15,17 @@ export function filterByEnum<T = Array<string | number>>(value: Array<T>, enumNa
 }
 
 export const notEmpty = <T = any>(arr): T[] => arr.filter((x) => x);
+
+export async function chunkRunAsync<T, R>(
+  array: T[],
+  chunkSize: number,
+  func: (input: T[]) => Promise<R>,
+) {
+  const responses: R[] = [];
+  for (let index = 0; index < array.length; index += chunkSize) {
+    const chunk = array.slice(index, index + chunkSize);
+    const response = await func(chunk);
+    responses.push(response);
+  }
+  return responses;
+}

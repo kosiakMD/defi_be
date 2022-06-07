@@ -30,9 +30,9 @@ ENV NODE_ENV production
 WORKDIR /usr/src/app
 COPY --from=pre-production /usr/src/app/node_modules ./node_modules
 COPY --from=development /usr/src/app/dist ./dist
-#COPY --from=development /usr/src/app/apps/nft_service/config/.env /dist/apps/nft_service/.env
-RUN touch /usr/src/app/dist/apps/nft_service/.env
+#COPY --from=development /usr/src/app/apps/nft/config/.env /dist/apps/nft/.env
+RUN touch /usr/src/app/dist/apps/nft/.env
 
 # Configure application startup command
 ENTRYPOINT ["node"]
-CMD ["dist/apps/nft_service/src/main"]
+CMD ["dist/apps/nft/src/main"]

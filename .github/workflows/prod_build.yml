@@ -37,3 +37,9 @@ jobs:
         uses: borales/actions-yarn@v2.3.0
         with:
           cmd: build-monorepo
+
+      - name: 'Run tests'
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: test-monorepo
+

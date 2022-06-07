@@ -29,4 +29,8 @@ export class LoggerModule extends WinstonModule {
     const logger = winston.createLogger(loggerOpts);
     return new Logger(logger);
   }
+
+  constructor() {
+    super();
+  }
 }

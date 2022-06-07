@@ -17,6 +17,7 @@ import { ChainIdEnum } from '@app/common/enum';
 import { LiquidityPoolFeature, PoolTokenDto } from '@app/common/jobs/pools';
 import {
   IntegrationClaimableTokenDto,
+  IntegrationLockedBalanceTokenDto,
   IntegrationStakingPositionDto,
 } from '@app/common/jobs/staking';
 import { ERC20Token } from '@app/common/jobs/token';
@@ -146,38 +147,64 @@ export class IntegrationsServiceV3Decorator {
         });
 
         if (v3WalletChain.positions.staking) {
+          const locked = [];
+          const staking = [];
+
+          v3WalletChain.positions.staking.forEach((v3StakingPos) => {
+            if (v3StakingPos.supplied[0].unlockTime) {
+              locked.push(v3StakingPos);
+            } else {
+              staking.push(v3StakingPos);
+            }
+          });
+
           v2WalletChain[FeatureEnum.staking] = {
             totalValue: 0,
             items: [],
           };
+          v2WalletChain[FeatureEnum.staking].items = staking.map((v3StakingPos) => {
+            const v2Staking = IntegrationsServiceV3Decorator.stakingToV2(v3StakingPos);
+            v2Response.data.total = safelyAddDecimals(
+              v2Response.data.total,
+              v2Staking.stakingToken.value,
+            );
+            v2WalletChain[FeatureEnum.staking].totalValue = safelyAddDecimals(
+              v2WalletChain[FeatureEnum.staking].totalValue,
+              v2Staking.stakingToken.value,
+            );
+            v2Staking.stakingToken.unlockTime = v3StakingPos.supplied[0].unlockTime;
+            v2Staking.rewards.forEach((r) => {
+              if (r.claimableData.value) {
+                v2Response.data.total = safelyAddDecimals(
+                  v2Response.data.total,
+                  r.claimableData.value,
+                );
+                v2WalletChain[FeatureEnum.staking].totalValue = safelyAddDecimals(
+                  v2WalletChain[FeatureEnum.staking].totalValue,
+                  r.claimableData.value,
+                );
+              }
+            });
+            return v2Staking;
+          });
 
-          v2WalletChain[FeatureEnum.staking].items = v3WalletChain.positions.staking.map(
-            (v3StakingPos) => {
-              const v2Staking = IntegrationsServiceV3Decorator.stakingToV2(v3StakingPos);
-              v2Response.data.total = safelyAddDecimals(
-                v2Response.data.total,
-                v2Staking.stakingToken.value,
+          if (locked.length > 0) {
+            v2WalletChain.features.push(FeatureEnum.lockedBalances);
+            v2WalletChain[FeatureEnum.lockedBalances] = {
+              totalValue: 0,
+              items: [],
+            };
+
+            v2WalletChain[FeatureEnum.lockedBalances].items = locked.map((v3StakingPos) => {
+              const v2LockedBalances =
+                IntegrationsServiceV3Decorator.lockedBalanceToV2(v3StakingPos);
+              v2WalletChain[FeatureEnum.lockedBalances].totalValue = safelyAddDecimals(
+                v2WalletChain[FeatureEnum.lockedBalances].totalValue,
+                v2LockedBalances.totalValue,
               );
-              v2WalletChain[FeatureEnum.staking].totalValue = safelyAddDecimals(
-                v2WalletChain[FeatureEnum.staking].totalValue,
-                v2Staking.stakingToken.value,
-              );
-              v2Staking.stakingToken.unlockTime = v3StakingPos.supplied[0].unlockTime;
-              v2Staking.rewards.forEach((r) => {
-                if (r.claimableData.value) {
-                  v2Response.data.total = safelyAddDecimals(
-                    v2Response.data.total,
-                    r.claimableData.value,
-                  );
-                  v2WalletChain[FeatureEnum.staking].totalValue = safelyAddDecimals(
-                    v2WalletChain[FeatureEnum.staking].totalValue,
-                    r.claimableData.value,
-                  );
-                }
-              });
-              return v2Staking;
-            },
-          );
+              return v2LockedBalances;
+            });
+          }
         }
 
         if (v3WalletChain.positions.pools) {
@@ -398,6 +425,20 @@ export class IntegrationsServiceV3Decorator {
     };
 
     return claimableV2;
+  }
+
+  static lockedBalanceToV2(v3ItemPlain): IntegrationLockedBalanceTokenDto {
+    const supplied = v3ItemPlain.supplied[0];
+    const lockedBalanceV2 = plainToClass(IntegrationLockedBalanceTokenDto, supplied.token);
+    lockedBalanceV2.locked = {
+      unlockTime: supplied.unlockTime,
+      balance: supplied.amount,
+      value: supplied.value,
+    };
+    lockedBalanceV2.totalBalance = lockedBalanceV2.locked.balance;
+    lockedBalanceV2.totalValue = lockedBalanceV2.locked.value;
+
+    return lockedBalanceV2;
   }
 
   static liquidityToV2(liquidityV3: IPoolFeatureEntryUserEntry): LiquidityPoolFeature {

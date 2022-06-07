@@ -74,7 +74,6 @@ export class BeefyVault
   >
   implements IRootProtocol
 {
-  protected accountService: AccountService;
   protected functionPredicates: INamedFunctionPredicates = {
     decimals: () => (item) => item.name === 'decimals',
     balanceOf: () => (item) => item.name === 'balanceOf',
@@ -87,6 +86,7 @@ export class BeefyVault
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
+    protected accountService: AccountService,
     protected assetsService: AssetsService,
     protected priceService: PriceService,
     protected httpService: HttpService,

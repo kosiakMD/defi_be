@@ -30,15 +30,15 @@ import { Abis } from './contracts/abis';
 export class AutofarmStaking {
   private readonly masterChiefAddresses = new Map([
     [ChainIdEnum.avax, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
-    [ChainIdEnum.bnb, '0x0895196562c7868c5be92459fae7f877ed450452'],
-    [ChainIdEnum.cro, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
-    [ChainIdEnum.celo, '0xdd11b66b90402f294a017c4688509c364312303f'],
-    [ChainIdEnum.ftm, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
-    [ChainIdEnum.harm, '0x9c57658139afb41949cebc07d806f37d29d13eea'],
-    [ChainIdEnum.heco, '0x96a29c4bce3126266983f535b41c30dba80d5d99'],
-    [ChainIdEnum.mriver, '0xfada8cc923514f1d7b0586ad554b4a0cead4680e'],
-    [ChainIdEnum.okex, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
-    [ChainIdEnum.plg, '0x89d065572136814230a55ddeeddec9df34eb0b76'],
+    // [ChainIdEnum.bnb, '0x0895196562c7868c5be92459fae7f877ed450452'],
+    // [ChainIdEnum.cro, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
+    // [ChainIdEnum.celo, '0xdd11b66b90402f294a017c4688509c364312303f'],
+    // [ChainIdEnum.ftm, '0x76b8c3ecdf99483335239e66f34191f11534cbaa'],
+    // [ChainIdEnum.harm, '0x9c57658139afb41949cebc07d806f37d29d13eea'],
+    // [ChainIdEnum.heco, '0x96a29c4bce3126266983f535b41c30dba80d5d99'],
+    // [ChainIdEnum.mriver, '0xfada8cc923514f1d7b0586ad554b4a0cead4680e'],
+    // [ChainIdEnum.okex, '0x864a0b7f8466247a0e44558d29cdc37d4623f213'],
+    // [ChainIdEnum.plg, '0x89d065572136814230a55ddeeddec9df34eb0b76'],
   ]);
   private readonly autofarmVault = '0x763a05bdb9f8946d8c3fa72d1e0d3f5e68647e5c';
 

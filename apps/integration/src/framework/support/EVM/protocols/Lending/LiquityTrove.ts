@@ -49,7 +49,7 @@ export type ILiquityStakingFeatureUserEntry = BaseWithTokens<
   ISupplyTokenUserEntry,
   void,
   IBorrowTokenUserEntity
->;
+> & { debtRatio: number };
 export class LiquityTrove extends SingleContractProtocol<
   ILiquityStakingFeatureMinimal,
   ILiquityStakingFeatureOpportunity,
@@ -109,18 +109,26 @@ export class LiquityTrove extends SingleContractProtocol<
 
     if (!supplyBalance) return [];
 
+    const supplyValue = supplyBalance * pool.supply.token.price;
+    const borrowValue = borrowBalance * pool.borrow.token.price;
+    const totalCollateralRatio = pool.supply.totalSupplied / pool.borrow.totalBorrowed;
+    // 110% under normal operation, 150% in recovery mode
+    const minimumCollateralRatio = totalCollateralRatio < 1.5 ? 1.5 : 1.1;
+    const debtRatio = (supplyValue * (1 / minimumCollateralRatio)) / borrowValue;
+
     return [
       {
         ...pool,
+        debtRatio,
         supply: {
           ...pool.supply,
           amount: supplyBalance,
-          value: supplyBalance * pool.supply.token.price,
+          value: supplyValue,
         },
         borrow: {
           ...pool.borrow,
           amount: borrowBalance,
-          value: borrowBalance * pool.borrow.token.price,
+          value: borrowValue,
         },
       },
     ];

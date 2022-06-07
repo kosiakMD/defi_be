@@ -32,6 +32,7 @@ import {
   PriceResponseDto,
   TimestampKeyPrice,
 } from './dto';
+import { GetCurrentPricesResponseDto } from './dto/get.current.prices.response.dto';
 import { AssetEntity } from './entities/asset.entity';
 import { AssetCurrentPriceEntity } from './entities/asset_current_price.entity';
 import { AssetPriceEntity } from './entities/asset_price.entity';
@@ -295,6 +296,18 @@ export class PriceService {
         { address, value: assetPrice.value },
         { ttl: this.cacheTTLInSeconds },
       );
+    });
+  }
+
+  async getAllAssetsCurrentPrices() {
+    return (await this.priceRepository.getAllCurrentPrices()).map((row) => {
+      return plainToClass(GetCurrentPricesResponseDto, {
+        address: row.address,
+        value: row.value,
+        chainId: row.chain_id,
+        updatedAt: row.updated_at,
+        sourceId: row.source_id || PriceSourcePriority.chain,
+      });
     });
   }
 

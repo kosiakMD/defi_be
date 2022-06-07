@@ -23,6 +23,15 @@ export class PriceRepository {
       RETURNING *`);
   }
 
+  async getAllCurrentPrices() {
+    return await getManager().query(`
+      SELECT a.address, a.chain_id, ap.value, ap.source_id, ap.updated_at
+          FROM prices.asset a
+          JOIN prices.asset_current_price ap
+            ON a.id = ap.asset_id
+            `);
+  }
+
   async getCurrentPricesByAddressesAndChain(addresses: string[], chain: ChainIdEnum) {
     return await getManager().query(`
         SELECT a.address, ap.value

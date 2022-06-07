@@ -129,7 +129,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ServiceHealthIndicator,
     SearchService,
     Web3NameService,
-  ].sort(),
+  ],
 })
 export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}

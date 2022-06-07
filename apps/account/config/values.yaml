@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: devaccount.defiyield.app
+  host: account.staging.defyield.xyz
 
 configMaps:
   amm:
@@ -118,14 +118,14 @@ configMaps:
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: development
+    NODE_ENV: staging
   params:
     ETH_BALANCES_CHECKER_BATCH_SIZE: 2000
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
 secrets:
   - database
-  - redis
+  - redis_stage
   - bscscan
   - etherscan
   - logs

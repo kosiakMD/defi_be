@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: devassets.defiyield.app
+  host: account.staging.defyield.xyz
 
 configMaps:
   rpc:

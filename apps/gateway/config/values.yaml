@@ -1,6 +1,6 @@
 ingress:
   enabled: true
-  host: devgateway.defiyield.app
+  host: gateway.staging.defyield.xyz
 
 configMaps:
   common:
@@ -37,7 +37,7 @@ configMaps:
   logs:
     LOG_AWS_ENABLED: true
     LOG_LEVEL: debug
-    NODE_ENV: development
+    NODE_ENV: staging
   config:
     AWS_XRAY_DAEMON_ADDRESS: xray-service.default:2000
 
@@ -51,7 +51,7 @@ resources:
 
 secrets:
 - mailer
-- redis
+- redis_stage
 - bscscan
 - etherscan
 - logs

@@ -24,7 +24,7 @@ pipeline {
         DOCKER_TAG          = ""
         DOCKER_REGISTRY_URL = "https://625623467395.dkr.ecr.${env.AWS_REGION}.amazonaws.com"
         DOCKER_CREDENTIALS  = "ecr:${env.AWS_REGION}:defiyield-aws"
-        SERVICE_FOLDER      = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 4)
+        SERVICE_FOLDER      = JOB_BASE_NAME.substring(0,JOB_BASE_NAME.length() - 6)
         DOCKERFILE_NAME     = "Dockerfile_${env.SERVICE_FOLDER}"
     }
     stages {

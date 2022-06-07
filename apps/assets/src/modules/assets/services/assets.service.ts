@@ -2,6 +2,7 @@ import { Queue } from 'bull';
 
 import { InjectQueue } from '@nestjs/bull';
 import { Inject, Injectable, LoggerService } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -42,6 +43,7 @@ export class AssetsService extends CrudService<AssetsRepository> {
     private readonly assetsCandidateRepository: AssetsCandidateRepository,
     private readonly priceService: PriceService,
     private readonly assetAnalyserService: AssetAnalyserService,
+    private readonly config: ConfigService,
   ) {
     super(AssetsCachedRepository);
   }
@@ -93,18 +95,19 @@ export class AssetsService extends CrudService<AssetsRepository> {
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
 
-    const unknownAssetsRequests = this.excludeFoundAssets(requests, assets);
-    if (unknownAssetsRequests.length) {
-      this.processAssets(unknownAssetsRequests);
+    const assetsToProcess = this.excludeFoundAssets(requests, assets);
+    if (assetsToProcess.length) {
+      this.processAssets(assetsToProcess);
     }
 
     return assets;
   }
 
   private excludeFoundAssets(requests: GetAssetRequest[], assets: AssetEntity[]) {
-    return requests.filter(
-      (request) => !assets.some((asset) => this.isRequestMatchingAsset(request, asset)),
-    );
+    return requests.filter((request) => {
+      const foundAsset = assets.find((a) => this.isRequestMatchingAsset(request, a));
+      return request.forceUpdate || !foundAsset || this.isAssetOutdated(foundAsset);
+    });
   }
 
   private isRequestMatchingAsset(request: GetAssetRequest, asset: AssetEntity) {
@@ -114,12 +117,19 @@ export class AssetsService extends CrudService<AssetsRepository> {
     );
   }
 
+  private isAssetOutdated(asset: AssetEntity): boolean {
+    return (
+      Date.now() - asset.updatedAt.getTime() >= this.config.get<number>('REPROCESS_ASSET_PERIOD_MS')
+    );
+  }
+
   private async processAssets(requests: GetAssetRequest[]): Promise<void> {
     requests.map((request) => {
       this.logger.log(`Send asset for processing: ${JSON.stringify(request)}`);
       return this.assetsQueue.add(JobName.ASSET_METADATA, {
         address: request.address,
         chainId: request.chainId,
+        forceUpdate: request.forceUpdate,
       });
     });
   }

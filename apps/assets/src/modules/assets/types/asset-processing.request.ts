@@ -5,4 +5,5 @@ export type AssetProcessingRequest = {
   address: string;
   isTracked?: boolean;
   metadata?: AssetMetadata;
+  forceUpdate?: boolean;
 };

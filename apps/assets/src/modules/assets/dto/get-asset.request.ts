@@ -34,4 +34,11 @@ export class GetAssetRequest {
     required: false,
   })
   pricesAt?: number[];
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Flag to forcefully re-process (re-fetch) asset data',
+    required: false,
+  })
+  forceUpdate?: boolean = false;
 }

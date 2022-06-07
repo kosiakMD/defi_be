@@ -41,6 +41,9 @@ export const validationSchema = Joi.object({
     .default(7 * 60), // in seconds
   ASSETS_HISTORICAL_PRICE_JOB_INTERVAL: Joi.number() //
     .default(15 * 60), // in seconds
+  REPROCESS_ASSET_PERIOD_MS: Joi.number() //
+    .optional()
+    .default(0),
   ...databaseValidationSchema,
   ...cacheValidationSchema,
   ...awsValidationSchema,

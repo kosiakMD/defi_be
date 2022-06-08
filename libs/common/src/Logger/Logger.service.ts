@@ -37,7 +37,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
   }
 
   static time(idMessage: string | LogMessage): number {
-    const start = new Date().getTime();
+    const start = Date.now();
     const [id] = Logger.getTimeInfo(idMessage);
     Logger.times.set(id, start);
     return start;
@@ -53,7 +53,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     if (!start) {
       return Logger.logger.warn(`!Timer ${id} does not exist`);
     }
-    const finish = new Date().getTime();
+    const finish = Date.now();
     Logger.times.delete(msg);
     const diff = finish - start;
     Logger.logger.debug(
@@ -72,7 +72,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
   // }
 
   public time(idMessage: string | LogMessage): number {
-    const start = new Date().getTime();
+    const start = Date.now();
     const [id] = Logger.getTimeInfo(idMessage);
     this.times.set(id, start);
     return start;
@@ -88,7 +88,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     if (!start) {
       return this.warn(`!!Timer ${id} does not exist`);
     }
-    const finish = new Date().getTime();
+    const finish = Date.now();
     this.times.delete(id);
     const diff = finish - start;
     this.debug(

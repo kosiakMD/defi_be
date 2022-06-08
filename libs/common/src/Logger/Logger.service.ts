@@ -84,7 +84,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
     context?: string | Record<string, string | number>,
   ): number {
     const [id, msg] = Logger.getTimeInfo(idMessage, message);
-    const start = Logger.times.get(id);
+    const start = this.times.get(id);
     if (!start) {
       return this.warn(`!!Timer ${id} does not exist`);
     }

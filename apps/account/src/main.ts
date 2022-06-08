@@ -6,6 +6,7 @@ import {
   initContext,
   initListening,
   initLogger,
+  initMiddlewares,
   initPipes,
   initPrefix,
   initSentry,

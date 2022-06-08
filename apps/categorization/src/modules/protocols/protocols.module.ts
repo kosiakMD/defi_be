@@ -1,7 +1,8 @@
-import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { Puppeteer } from '../../utils';
 import { ChainsRepository } from '../database/repositories/chains.repo';
@@ -23,7 +24,7 @@ import { ContractsAnalysisServiceV1 } from './services/contracts.analysis.servic
 import { ContractsService } from './services/contracts.service';
 import { GithubService } from './services/github.service';
 import { CheckTypeDoc } from './services/utils/check_type_docs';
-import { MainPageStrategy, AppPageStrategy } from './strategies';
+import { AppPageStrategy, MainPageStrategy } from './strategies';
 import { GeneralPageParsing } from './strategies/contract';
 
 @Module({

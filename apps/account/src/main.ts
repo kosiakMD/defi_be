@@ -27,6 +27,7 @@ async function bootstrap() {
   });
 
   initSentry();
+  initMiddlewares(app);
   initContext(app);
   initLogger(app);
   initPrefix(app);

@@ -12,7 +12,6 @@ import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
 import { LogRequestMiddleware } from '@app/common/middlewares';
-import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 
 import config from './config';
 import { HealthController } from './controllers/health.controller';
@@ -61,7 +60,7 @@ import { TemporaryTokensModule } from './modules/temporary_tokens/temporary.toke
     TemporaryTokensModule,
     IntegrationsModule,
     JobsModule,
-  ].sort(),
+  ],
   controllers: [HealthController],
   providers: [
     ...interceptorsOrder,
@@ -75,7 +74,7 @@ export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
+    consumer.apply(LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {

@@ -1,6 +1,7 @@
 export * from './context.bootstrap';
 export * from './listening.bootstrap';
 export * from './logger.bootstrap';
+export * from './middlewares.bootstrap';
 export * from './pipes.bootstrap';
 export * from './prefix.bootstrap';
 export * from './sentry.bootstrap';

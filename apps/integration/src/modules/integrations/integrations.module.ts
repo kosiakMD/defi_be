@@ -1,9 +1,10 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { HttpModule } from '@app/common';
 import { Web3ProviderService, Web3SolanaProviderService } from '@app/common/web3provider';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
@@ -41,7 +42,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     ProtocolModule,
     AbiModule,
     TypeOrmModule.forFeature([ProjectsInfoEntity]),
-  ].sort(),
+  ],
   providers: [
     IntegrationsService,
     FeaturesService,
@@ -51,7 +52,7 @@ import { IntegrationsServiceV3Decorator } from './integrations.service.v3.decora
     Web3SolanaProviderService,
     IntegrationsServiceV3Decorator,
     CurveAssetsManager,
-  ].sort(),
+  ],
   controllers: [IntegrationsController, IntegrationsControllerV2, IntegrationsControllerV3],
 })
 export class IntegrationsModule {}

@@ -2,7 +2,8 @@ import BigNumber from 'bignumber.js';
 import { classToClass } from 'class-transformer';
 import { AbiItem } from 'web3-utils';
 
-import { HttpService, Inject, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Inject, Injectable } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import {

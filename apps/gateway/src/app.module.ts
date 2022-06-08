@@ -13,12 +13,12 @@ import { TerminusModule } from '@nestjs/terminus';
 import { ApiVersionGuard } from '@nestjsx/api-version';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { Logger, LogRequestMiddleware } from '@app/common';
+import { HttpModule, Logger, LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 import configuration from '@app/common/config/configuration';
 import { interceptorsOrder } from '@app/common/interceptors';
 import { AllExceptionsFilter } from '@app/common/interceptors/all-exceptions.filter';
-import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
+// import { HeadersContextMiddleware } from '@app/common/middlewares/HeadersContext.middleware';
 import { Web3NameService } from '@app/common/web3provider/web3.name.service';
 
 import { AnalyticController } from './analytic/analytic.controller';
@@ -63,6 +63,7 @@ import { VaultsModule } from './vaults/vaults.module';
       inject: [ConfigService],
     }),
     ConfigModule.forRoot(configuration(config)),
+    HttpModule,
     TracingModule.forRoot({ serviceName: 'api-gateway-service' }),
     WinstonModule.forRootAsync({
       imports: [ConfigModule],
@@ -86,7 +87,7 @@ import { VaultsModule } from './vaults/vaults.module';
     ScansApiModule,
     MailModule,
     ImpermanentLossModule,
-  ].sort(),
+  ],
   controllers: [
     HealthController,
     AnalyticController,
@@ -109,7 +110,7 @@ import { VaultsModule } from './vaults/vaults.module';
     TokensController,
     OpportunitiesController,
     RPCNodesController,
-  ].sort(),
+  ],
   providers: [
     ...interceptorsOrder,
     {
@@ -134,7 +135,7 @@ export class AppModule implements OnModuleInit, NestModule {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
+    consumer.apply(/*HeadersContextMiddleware,*/ LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {

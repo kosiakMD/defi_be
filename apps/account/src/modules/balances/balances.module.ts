@@ -1,9 +1,11 @@
 import * as redisStore from 'cache-manager-redis-store';
 import { RequestContextModule } from 'nestjs-request-context';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { CardanoService } from '../../common/providers/3rdparty/cardano.service';
 import { CosmosService } from '../../common/providers/3rdparty/cosmos/cosmos.service';

@@ -1,7 +1,9 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+
+import { HttpModule } from '@app/common';
 
 import { AlpacaSubgraph } from './subgraphs/alpaca.subgraph';
 import { AutofarmSubgraph } from './subgraphs/autofarm.subgraph';

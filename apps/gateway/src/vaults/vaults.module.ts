@@ -1,6 +1,7 @@
-import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+
+import { HttpModule } from '@app/common';
 
 import { VaultsController } from './vaults.controller';
 

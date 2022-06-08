@@ -1,7 +1,8 @@
 import { firstValueFrom, from, map } from 'rxjs';
 import { filter, toArray } from 'rxjs/operators';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 
 import { Address } from '@app/common';
 

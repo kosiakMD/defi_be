@@ -1,6 +1,8 @@
-import { CacheModule, HttpModule, Module } from '@nestjs/common';
+import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { ApprovalsController } from '../../controllers/approvals.controller';
 import { BlacklistModule } from '../blacklists/blacklist.module';

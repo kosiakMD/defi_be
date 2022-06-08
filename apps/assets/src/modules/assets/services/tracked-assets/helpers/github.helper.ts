@@ -31,4 +31,13 @@ export class GithubService {
     );
     return data.tree.map(({ path }) => path);
   }
+
+  public async getFileContent(owner: string, repo: string, tree: string): Promise<string> {
+    const { data } = await firstValueFrom(
+      this.httpService.get(`${this.apiUrl}/repos/${owner}/${repo}/contents/${tree}`, {
+        headers: this.headers,
+      }),
+    );
+    return Buffer.from(data.content, 'base64').toString();
+  }
 }

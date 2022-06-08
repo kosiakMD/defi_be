@@ -69,6 +69,7 @@ export class YetiFinance extends RootPlatform {
         // sourceAPR: 'https://api.yeti.finance/v1/Collaterals', // Collaterals APY
         borrowedToken: '0x111111111111ed1d73f860f57b2798b683f2d325', // YUSD Stablecoin
         troveManager: '0x000000000000614c27530d24B5f039EC15A61d8d', // TroveManager
+        apyEndpoint: 'https://api.yeti.finance/v1/Collaterals',
       },
     });
   }

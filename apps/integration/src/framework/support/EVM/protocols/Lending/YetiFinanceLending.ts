@@ -1,5 +1,6 @@
 import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
+import { firstValueFrom, map } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
 import { CACHE_MANAGER, Inject } from '@nestjs/common';
@@ -55,7 +56,7 @@ export interface YetiFinanceMeta extends IProtocolMeta {
   address: string;
   feature: FeatureEnum.lending;
   context: {
-    // sourceAPR: string;
+    apyEndpoint: string;
     borrowedToken: string;
     troveManager: string;
   };
@@ -135,9 +136,7 @@ export class YetiFinanceLending
         supply: {
           token: { address: token.toLowerCase() },
           totalSupplied: total.toString(),
-          rate: {
-            supplyRate: '0',
-          },
+          rate: {},
         },
         borrow: {
           token: { address: this.meta.context.borrowedToken },
@@ -148,6 +147,40 @@ export class YetiFinanceLending
     });
 
     return list;
+  }
+
+  protected async updateRealTimeData(
+    opportunities: ILendingFeatureEntryMinimal[],
+    tokens: Map<string, any>,
+  ): Promise<ILendingFeatureEntryMinimal[]> {
+    const apy = await this.getYetiAPY();
+
+    opportunities.forEach((opportunity) => {
+      const token = tokens.get(opportunity.supply.token.address);
+      if (!token) return;
+      const underlyingKey: string = token.underlying?.[0]?.symbol;
+      const tokenKey: string = token.symbol.endsWith('.e')
+        ? token.symbol.replace(/\.e/, '')
+        : token.symbol;
+
+      if (apy[underlyingKey]?.APY?.value >= 0) {
+        opportunity.supply.rate.apy = apy[underlyingKey]?.APY?.value;
+      } else if (apy[tokenKey]?.APY?.value >= 0) {
+        opportunity.supply.rate.apy = apy[tokenKey]?.APY?.value;
+      } else {
+        opportunity.supply.rate.apy = '0';
+      }
+    });
+    return opportunities;
+  }
+
+  private async getYetiAPY() {
+    const ttl = 60 * 15;
+    const key = 'yeti_finance_lending_apy';
+    return this.getOrSet(ttl, key, () => {
+      const $data = this.httpService.get(this.meta.context.apyEndpoint).pipe(map((r) => r.data));
+      return firstValueFrom($data);
+    });
   }
 
   protected formatOpportunity(
@@ -168,6 +201,14 @@ export class YetiFinanceLending
       supply: this.formatOpportunitySuppliedToken(opportunity.supply, supplyToken),
       borrow: this.formatOpportunityBorrowedToken(opportunity.borrow, borrowToken),
       meta: opportunity.meta,
+    };
+  }
+
+  protected formatSupplyApy(supplied: ISupplyTokenMinimal): any {
+    return {
+      supplyApy: {
+        year: supplied.rate?.apy || 0,
+      },
     };
   }
 

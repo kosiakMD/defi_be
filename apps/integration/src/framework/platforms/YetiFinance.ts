@@ -8,6 +8,7 @@ import {
   YetiFinanceLending,
   YetiFinanceMeta,
 } from '../support/EVM/protocols/Lending/YetiFinanceLending';
+import { IYetiCurveMeta, YetiCurve } from '../support/EVM/protocols/Yield/YetiCurve';
 import { IYetiStabilityPoolMeta } from '../support/EVM/protocols/Yield/YetiStabilityPool';
 import { YetiStabilityPool } from '../support/EVM/protocols/Yield/YetiStabilityPool';
 import {
@@ -45,6 +46,17 @@ export class YetiFinance extends RootPlatform {
       address: '0xfffffffffff5d3627294fec5081ce5c5d7fa6451', // StabilityPool
       context: {
         stakedToken: '0x111111111111ed1d73f860f57b2798b683f2d325', // YUSD Stablecoin
+        rewardToken: '0x77777777777d4554c39223c354a05825b2e8faa3', // Yeti Finance
+      },
+    });
+
+    await this.registerProtocol<IYetiCurveMeta>(YetiCurve, {
+      chain: ChainIdEnum.avax,
+      name: 'YetiCurve',
+      feature: FeatureEnum.staking,
+      address: '0xd8a4aa01d54c8fdd104eac28b9c975f0663e75d8', // YetiCurve
+      context: {
+        stakedToken: '0x1da20ac34187b2d9c74f729b85acb225d3341b25', // YUSD Stablecoin
         rewardToken: '0x77777777777d4554c39223c354a05825b2e8faa3', // Yeti Finance
       },
     });

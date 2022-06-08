@@ -61,6 +61,7 @@ export interface AssembledAssetInterface {
   price?: number;
   rank?: number;
   icon?: string;
+  position?: number;
 
   // lp metadata
   // position:

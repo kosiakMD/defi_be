@@ -249,7 +249,9 @@ export class YetiFinanceLending
     }
 
     let ltv = 0;
-
+    /**
+     * TODO: split curve supply with different positions
+     */
     for (const { supply, meta } of pools) {
       const supplied: ISupplyTokenUserEntry = { amount: 0, value: 0, ...supply };
       const amountRow = supplyMap.get(supplied.token.address);

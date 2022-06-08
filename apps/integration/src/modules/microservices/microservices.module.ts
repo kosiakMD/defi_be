@@ -23,6 +23,7 @@ import { SolanaAssetService } from './solana.asset.service';
 import { SonarAssetService } from './sonar.asset.service';
 import { SynapseAssetService } from './synapse.asset.service';
 import { UniswapV2AssetService } from './uniswap.asset.service';
+import { YetiAssetService } from './yeti.asset.service';
 
 @Module({
   imports: [
@@ -50,7 +51,7 @@ import { UniswapV2AssetService } from './uniswap.asset.service';
     UniswapV2AssetService,
     SolanaAssetService,
     SonarAssetService,
-
+    YetiAssetService,
     // Account Services
     AccountService,
     MuesliSwapAccountService,
@@ -74,7 +75,7 @@ import { UniswapV2AssetService } from './uniswap.asset.service';
     MuesliSwapAssetService,
     SolanaAssetService,
     SonarAssetService,
-
+    YetiAssetService,
     SynapseAssetService,
     UniswapV2AssetService,
     PriceService,

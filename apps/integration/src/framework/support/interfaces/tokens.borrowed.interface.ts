@@ -1,9 +1,5 @@
-import {
-  IBaseApy,
-  ITokenMinimal,
-  ITokenOpportunity,
-  ITokenUserEntry,
-} from './tokens.common.interface';
+import { IRewardRates } from './rewards.interface';
+import { ITokenMinimal, ITokenOpportunity, ITokenUserEntry } from './tokens.common.interface';
 
 export interface IBorrowTokenMinimal<TExtra = unknown> extends ITokenMinimal<TExtra> {
   totalBorrowed: string;
@@ -14,14 +10,12 @@ export interface IBorrowTokenMinimal<TExtra = unknown> extends ITokenMinimal<TEx
 export interface IBorrowTokenOpportunity<TExtra = unknown> extends ITokenOpportunity<TExtra> {
   totalBorrowed?: number;
   tvl: number;
-  apy?: IBorrowApy;
+  apy?: IRewardRates;
+  apr?: IRewardRates;
 }
 
 export interface IBorrowTokenUserEntity<TExtra = unknown> extends ITokenUserEntry<TExtra> {
   tvl: number;
-  apy?: IBorrowApy;
-}
-
-interface IBorrowApy extends IBaseApy {
-  borrowApy?: number;
+  apy?: IRewardRates;
+  apr?: IRewardRates;
 }

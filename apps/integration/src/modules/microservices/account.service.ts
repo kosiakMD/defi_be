@@ -80,7 +80,7 @@ export class AccountService implements AccountServiceInterface {
     addresses: Address[],
     chainIds?: ChainIdEnum[],
   ): Promise<DetailedResponseDto<Asset[]>> {
-    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}_1`;
+    const cacheKey = `getAssets_${addresses.join(',')}_${chainIds.join(',')}`;
 
     return this.getOrSet(this.cacheTTLInSeconds, cacheKey, async () => {
       const dataArray = await Promise.all(

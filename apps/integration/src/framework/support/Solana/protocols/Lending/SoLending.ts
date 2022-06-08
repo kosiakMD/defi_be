@@ -334,10 +334,10 @@ export class SoLending
                                                                                                     .toNumber()
               : normalizeDecimals(borrow.marketValue.toString(), 18);
 
-            totalValueBorrowed += valueBorrowed;
+            totalValueBorrowed += valueBorrowed
 
             borrowed.push({
-              apy: { variableApy: +borrowReserveDetailsFromApi?.rates?.borrowInterest },
+              apy: { year: +borrowReserveDetailsFromApi?.rates?.borrowInterest },
               tvl: borrowedOpportunity.tvl,
               token: borrowedOpportunity.token,
               amount: normalizedBorrowedAmount,
@@ -380,7 +380,7 @@ export class SoLending
             }
 
             supplied.push({
-              apy: { variableApy: +depositReserveDetailsFromApi?.rates?.supplyInterest },
+              apy: { year: +depositReserveDetailsFromApi?.rates?.supplyInterest },
               token: depositOpportunity.token,
               amount: normalizedDepositAmount,
               value: depositValue,

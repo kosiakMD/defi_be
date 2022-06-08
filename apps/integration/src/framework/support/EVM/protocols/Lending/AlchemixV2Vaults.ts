@@ -257,7 +257,7 @@ export class AlchemixV2Vaults
         totalSupplied,
         tvl,
         pricePerShare: pricePerShare,
-        apy: { supplyApy: apy },
+        apy: { year: apy },
       },
     };
   }
@@ -346,7 +346,7 @@ export class AlchemixV2Vaults
 
           const suppliedEntity: ISupplyTokenUserEntry = {
             tvl: suppliedOpportunity.tvl,
-            apy: { supplyApy: suppliedOpportunity.apy?.supplyApy * 100 },
+            apy: { year: suppliedOpportunity.apy.year },
             token: suppliedOpportunity.token,
             totalSupplied: suppliedOpportunity.totalSupplied,
             amount: tokensSupplied,

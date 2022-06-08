@@ -28,9 +28,9 @@ import {
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
+import { IRewardRates } from '../../../interfaces/rewards.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
-  IRewardRates,
   IRewardTokenMinimal,
   IRewardTokenOpportunity,
 } from '../../../interfaces/tokens.rewarded.interface';

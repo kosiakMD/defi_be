@@ -1,11 +1,6 @@
+import { IRewardRates } from './rewards.interface';
 import { ITokenMinimal, ITokenOpportunity, ITokenUserEntry } from './tokens.common.interface';
 
-export interface IRewardRates {
-  day: number;
-  week: number;
-  month: number;
-  year: number;
-}
 export interface IRewardTokenMinimal<TExtra = unknown> extends ITokenMinimal<TExtra> {
   // TODO: Discuss: should this be 'rate' and time frame block/second/year
   // or should this be standardized somehow i.e. 'perSecond'
@@ -26,7 +21,7 @@ export interface IRewardTokenMinimal<TExtra = unknown> extends ITokenMinimal<TEx
   rewardedForLendingSide?: 'supplied' | 'borrowed';
 }
 export interface IRewardTokenOpportunity<TExtra = unknown> extends ITokenOpportunity<TExtra> {
-  harvests: IRewardRates; // number of harvestable tokens per time period
+  harvests?: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price
   apy: IRewardRates; // estimated APY based on APR compounded daily
   aprMax?: IRewardRates; // max rates for pools with boost
@@ -38,7 +33,7 @@ export interface IRewardTokenOpportunity<TExtra = unknown> extends ITokenOpportu
 
 export interface IRewardTokenUserEntry<TExtra = unknown> extends ITokenUserEntry<TExtra> {
   // TODO: lockPolicy: null | vested | locked
-  harvests: IRewardRates; // number of harvestable tokens per time period
+  harvests?: IRewardRates; // number of harvestable tokens per time period
   apr: IRewardRates; // calculated APR based on emission rate & current token price
   apy: IRewardRates; // estimated APY based on APR compounded daily
   rewardedForTokenAddress?: string;

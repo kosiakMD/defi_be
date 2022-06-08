@@ -1,14 +1,17 @@
 module "lambda" {
+  for_each = toset(var.chain_ids)
+#  ["1,2", "3,4", "5,6", "7,8,9,10,11", "12,13,14,15,16,17,18,19,20", "22,27"]
   source                     = "../.data/modules/lambda"
   aws_region                 = var.env_region
   ecr_repository_name        = "${var.environment}_${var.lambda_name}"
   docker_image_tag           = var.image_tag
-  lambda_name                = "${var.environment}_${var.lambda_name}"
+  lambda_name                = replace("${var.environment}_${var.lambda_name}_${each.key}", ",", "_")
   lambda_options_memory_size = "750"
   lambda_options_timeout     = "300"
   schedule                   = var.schedule_minutes
   vpc                        = var.vpc
   environment_variables = {
+    "CHAIN_IDS"                  = each.key,
     "INTEGRATION_SERVICE_URL"    = data.aws_ssm_parameter.INTEGRATION_SERVICE_URL.value,
     "ACCOUNT_SERVICE_URL"        = data.aws_ssm_parameter.ACCOUNT_SERVICE_URL.value,
     "AUTOFARM_API_CELO_URL"      = data.aws_ssm_parameter.AUTOFARM_API_CELO_URL.value,
@@ -59,7 +62,6 @@ module "lambda" {
     "WINGRIDERS_AGGREGATOR_URL"  = data.aws_ssm_parameter.WINGRIDERS_AGGREGATOR_URL.value,
     "WINGRIDERS_EXPLORER_URL"    = data.aws_ssm_parameter.WINGRIDERS_EXPLORER_URL.value,
     "CARDANO_BLOCKFROST_API_KEY" = data.aws_ssm_parameter.CARDANO_BLOCKFROST_API_KEY.value,
-    "CHAIN_IDS"                  = data.aws_ssm_parameter.CHAIN_IDS.value,
   }
 }
 

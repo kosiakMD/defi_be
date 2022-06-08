@@ -4,6 +4,9 @@ variable "env_region" {}
 variable "schedule_minutes" {}
 variable "tf_state_bucket" {}
 variable "lambda_name" {}
+variable "chain_ids" {
+  type = list(string)
+}
 variable "image_tag" {
   type    = string
   default = "latest"

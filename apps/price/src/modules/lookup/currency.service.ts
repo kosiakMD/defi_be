@@ -17,6 +17,7 @@ import {
   Logger,
   PriceResponseDto,
 } from '@app/common';
+import { CARDANO_COIN_ADDRESS } from '@app/common/constant';
 
 import { SECONDS_IN_HOUR } from '../../common/utils/time';
 
@@ -114,14 +115,18 @@ export class CurrencyService {
     const FTM = '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83';
     // Chain 6
     const AVAX = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7';
+    // chain 22
+    const ADA = CARDANO_COIN_ADDRESS;
 
-    const [ethPrices, bscPrices, plgPrices, ftmPrices, avaxPrices] = await Promise.allSettled([
-      this.fetchPrices(ChainIdEnum.eth, [BTC, ETH]),
-      this.fetchPrices(ChainIdEnum.bnb, [BNB]),
-      this.fetchPrices(ChainIdEnum.plg, [MATIC]),
-      this.fetchPrices(ChainIdEnum.ftm, [FTM]),
-      this.fetchPrices(ChainIdEnum.avax, [AVAX]),
-    ]);
+    const [ethPrices, bscPrices, plgPrices, ftmPrices, avaxPrices, adaPrices] =
+      await Promise.allSettled([
+        this.fetchPrices(ChainIdEnum.eth, [BTC, ETH]),
+        this.fetchPrices(ChainIdEnum.bnb, [BNB]),
+        this.fetchPrices(ChainIdEnum.plg, [MATIC]),
+        this.fetchPrices(ChainIdEnum.ftm, [FTM]),
+        this.fetchPrices(ChainIdEnum.avax, [AVAX]),
+        this.fetchPrices(ChainIdEnum.cardano, [ADA]),
+      ]);
 
     this.addCryptoPriceToCurrencyLayerResponse(quotes, 'USDETH', ETH, ethPrices, errors);
     this.addCryptoPriceToCurrencyLayerResponse(quotes, 'USDBTC', BTC, ethPrices, errors);
@@ -129,6 +134,7 @@ export class CurrencyService {
     this.addCryptoPriceToCurrencyLayerResponse(quotes, 'USDMATIC', MATIC, plgPrices, errors);
     this.addCryptoPriceToCurrencyLayerResponse(quotes, 'USDFTM', FTM, ftmPrices, errors);
     this.addCryptoPriceToCurrencyLayerResponse(quotes, 'USDAVAX', AVAX, avaxPrices, errors);
+    this.addCryptoPriceToCurrencyLayerResponse(quotes, 'USDADA', ADA, adaPrices, errors);
 
     return plainToClass(CurrencyResponseDto, {
       // remap all keys to remove USD (USDEUR => EUR, USDBTC => BTC)

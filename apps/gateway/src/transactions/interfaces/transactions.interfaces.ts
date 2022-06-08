@@ -21,7 +21,3 @@ export interface Transaction {
   gas: gas;
   blockTimestamp: string;
 }
-
-export interface TransactionsResponse {
-  [address: string]: Transaction[];
-}

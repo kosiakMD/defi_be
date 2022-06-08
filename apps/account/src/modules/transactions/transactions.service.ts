@@ -87,6 +87,7 @@ export class TransactionsService implements OnModuleInit {
       const dbTsxNew: TransactionsNewEntity[] = await this.transactionRepository.find({
         where: { address: In(addresses), isVisible: true, chainId: In(chains) },
         order: { timestamp: 'ASC' },
+        take: 1000,
       });
       response.data = plainToClass(TransactionNewDto, dbTsxNew);
       return response;

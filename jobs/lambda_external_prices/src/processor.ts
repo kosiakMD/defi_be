@@ -21,6 +21,7 @@ import { CoingeckoRequestContracts, CoingeckoRequestIds } from './interfaces/coi
 import { AssetsApiDto, AssetsService } from './services/assets.service';
 import { CoingeckoService } from './services/coingecko.service';
 import { DebankService } from './services/debank.service';
+import { MuesliSwapService } from './services/muesliswap/muesliswap.service';
 import { CurrentPriceInterface, PriceService } from './services/price.service';
 import { SundaeSwapService } from './services/sundaeswap.service';
 import { WingRidersService } from './services/wingriders.service';
@@ -32,6 +33,7 @@ export async function process(): Promise<void> {
   try {
     logger.info(`External prices job started`);
     const wingRidersService = new WingRidersService();
+    const muesliSwapService = new MuesliSwapService();
 
     const allAssets = await AssetsService.getAllAssets();
     logger.info(`Assets total ${allAssets.length} assets from asset service`);
@@ -133,12 +135,16 @@ export async function process(): Promise<void> {
           price: lp * ADAToken.price,
           chainId: ChainIdEnum.cardano,
           currencyId: CurrencyIdEnum.usd,
-          sourceId: PriceSourcePriority.muesliswap,
+          sourceId: PriceSourcePriority.sundaeswap,
         });
       }
     }
 
-    chainsPrices = chainsPrices.concat(cardanoPrices, await wingRidersService.getPrices());
+    chainsPrices = chainsPrices.concat(
+      await muesliSwapService.getPrices(),
+      cardanoPrices,
+      await wingRidersService.getPrices(),
+    );
 
     await PriceService.saveAssetsPrices(chainsPrices);
     logger.info(`${chainsPrices.length} prices stored`);

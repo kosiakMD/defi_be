@@ -1,6 +1,7 @@
 import { AbiItem } from 'web3-utils';
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { CallData } from '@app/common/dto/CallData';
 import { decimalsDivider, toBN } from '@app/common/utils';
@@ -21,26 +22,16 @@ export class UniswapV2AssetAnalyser
   extends EVMAssetAnalyser
   implements AssetAnalyser, AssetPriceProvider
 {
-  constructor(private readonly multicall: MulticallAggregator) {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger,
+    private readonly multicall: MulticallAggregator,
+  ) {
     super();
   }
 
   async analyseAsset(asset: AssetReference): Promise<AssetAnalysisResult> {
-    const token0Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token0');
-    const token1Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token1');
-    const factoryAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'factory');
-
-    const contract = new DynamicContract(asset.address);
-    const response = await this.multicall.callArray(
-      [
-        contract.createCall(token0Abi),
-        contract.createCall(token1Abi),
-        contract.createCall(factoryAbi),
-      ],
-      asset.chainId,
-    );
-
-    if (response.some((value) => !value)) {
+    const response = await this.fetchAssetData(asset);
+    if (!response || response.some((value) => !value)) {
       return;
     }
 
@@ -95,5 +86,34 @@ export class UniswapV2AssetAnalyser
     }
 
     return prices;
+  }
+
+  private async fetchAssetData(asset: AssetReference) {
+    const token0Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token0');
+    const token1Abi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'token1');
+    const factoryAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'factory');
+
+    const contract = new DynamicContract(asset.address);
+    try {
+      return await this.multicall.callArray(
+        [
+          contract.createCall(token0Abi),
+          contract.createCall(token1Abi),
+          contract.createCall(factoryAbi),
+        ],
+        asset.chainId,
+      );
+    } catch (e) {
+      if (
+        e.message.indexOf('execution reverted') < 0 &&
+        e.message.indexOf('VM execution error') < 0 &&
+        e.message.indexOf("Returned values aren't valid") < 0
+      ) {
+        throw e;
+      }
+      this.logger.warn(
+        `could not fetch token data, error: [${e.message}], analysis will be skipped`,
+      );
+    }
   }
 }

@@ -2,7 +2,8 @@ import { ChainsService } from 'apps/account/src/modules/chains/chains.service';
 import { firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-import { HttpService, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 
 import type { Address } from '@app/common/types';
 

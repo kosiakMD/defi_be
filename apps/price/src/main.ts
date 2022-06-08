@@ -9,6 +9,7 @@ import {
   initContext,
   initListening,
   initLogger,
+  initMiddlewares,
   initPipes,
   initPrefix,
   initSentry,
@@ -29,6 +30,7 @@ async function bootstrap(): Promise<void> {
   });
 
   initSentry();
+  initMiddlewares(app);
   initContext(app);
   initLogger(app);
   initPrefix(app);

@@ -1,5 +1,7 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { CovalentService } from '../../common/providers/3rdparty/covalent.service';
 import { BscscanApi } from '../../common/providers/chainRelated/scans/bscscan.api';

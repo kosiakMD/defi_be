@@ -2,7 +2,7 @@ import { JSONPath } from 'jsonpath-plus';
 import puppeteer from 'puppeteer';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 
 import { Address } from '@app/common';
 

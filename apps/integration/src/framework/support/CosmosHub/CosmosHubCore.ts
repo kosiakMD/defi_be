@@ -1,6 +1,6 @@
 import { Cache } from 'cache-manager';
 
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 
 import { Logger } from '@app/common';
 

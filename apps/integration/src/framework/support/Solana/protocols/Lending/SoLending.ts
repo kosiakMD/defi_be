@@ -4,7 +4,8 @@ import { BigNumber as BN } from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 

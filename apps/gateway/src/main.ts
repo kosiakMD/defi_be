@@ -9,6 +9,7 @@ import {
   initContext,
   initListening,
   initLogger,
+  initMiddlewares,
   initPipes,
   initSentry,
   initSwagger,
@@ -30,6 +31,7 @@ async function bootstrap() {
   });
 
   initSentry();
+  initMiddlewares(app);
   initContext(app);
   initLogger(app);
   initSwagger(app);

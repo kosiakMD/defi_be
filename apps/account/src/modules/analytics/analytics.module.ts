@@ -1,4 +1,6 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+
+import { HttpModule } from '@app/common';
 
 import { PriceService } from '../../common/providers/microservices/price/price.service';
 

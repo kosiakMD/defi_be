@@ -3,7 +3,8 @@ import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';

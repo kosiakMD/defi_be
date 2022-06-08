@@ -3,7 +3,7 @@ import { Inject, LoggerService, MiddlewareConsumer, Module, OnModuleInit } from 
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { WINSTON_MODULE_NEST_PROVIDER, WinstonModule } from 'nest-winston';
 
-import { HeadersContextMiddleware, LogRequestMiddleware } from '@app/common';
+import { LogRequestMiddleware } from '@app/common';
 import { getWinstonParams } from '@app/common/Logger/logger.config';
 
 import { NftController } from './controllers/nft.controller';
@@ -36,7 +36,7 @@ export class AppModule implements OnModuleInit {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService) {}
 
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(HeadersContextMiddleware, LogRequestMiddleware).forRoutes('*');
+    consumer.apply(LogRequestMiddleware).forRoutes('*');
   }
 
   onModuleInit(): void {

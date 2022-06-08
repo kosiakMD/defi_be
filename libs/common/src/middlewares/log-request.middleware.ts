@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 
-import { Inject, Injectable, NestMiddleware, Scope } from '@nestjs/common';
+import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 import { Logger } from '@app/common';
@@ -12,18 +12,18 @@ import {
   HEADER_TIMESTAMP_EXIT,
 } from '@app/common/constant';
 
-// @Injectable()
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class LogRequestMiddleware implements NestMiddleware {
   constructor(@Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: Logger) {}
 
   use(req: Request, res: Response, next: NextFunction): void {
-    const { originalUrl } = req;
+    const originalUrl = req.originalUrl + req.params ? JSON.stringify(req.params) : '';
+    const msg = req.originalUrl;
     this.logger.time(originalUrl);
     const reqId = req.get(HEADER_REQUEST_ID);
     const sessionId = req.get(HEADER_SESSION_ID);
     res.once('finish', () =>
-      this.logger.timeEnd(originalUrl, {
+      this.logger.timeEnd(originalUrl, msg, {
         reqId,
         sessionId,
         timestampEntry: req.get(HEADER_TIMESTAMP_ENTRY) || res.get(HEADER_TIMESTAMP_ENTRY),

@@ -1,5 +1,7 @@
-import { HttpModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { TemporaryTokensController } from '../../controllers/temporary.tokens.controller';
 import { TemporaryTokensEntity } from './entities/temporary.tokens.entity';

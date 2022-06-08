@@ -1,7 +1,7 @@
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
 
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 
 import { Address, ChainIdEnum, Logger } from '@app/common';

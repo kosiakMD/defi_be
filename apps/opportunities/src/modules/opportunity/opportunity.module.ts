@@ -1,10 +1,11 @@
 import * as redisStore from 'cache-manager-redis-store';
 
-import { HttpModule } from '@nestjs/axios';
 import { CacheModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { MicroservicesModule } from '../microservices/microservices.module';
 import { MultifarmGraphqlService } from './adapters/multifarm/multifarm.graphql.service';

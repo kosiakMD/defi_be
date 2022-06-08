@@ -1,9 +1,10 @@
-import { HttpModule } from '@nestjs/axios';
 import { BullModule } from '@nestjs/bull';
 import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { ConfigHostModule } from '@nestjs/config/dist/config-host.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { HttpModule } from '@app/common';
 
 import { CommonModule } from '../../common/common.module';
 import { QueueName } from '../../common/enum/queue-name.enum';

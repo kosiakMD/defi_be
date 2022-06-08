@@ -3,7 +3,8 @@ import { plainToClass } from 'class-transformer';
 import { cloneDeep } from 'lodash';
 import { firstValueFrom } from 'rxjs';
 
-import { CACHE_MANAGER, HttpService, Inject, Injectable } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 
 import { Address, ChainDto, FeatureEnum, ProjectEnum, ProtocolTypeEnum } from '@app/common';
 import { BaseDataStaking } from '@app/common/dto/base.data.staking.dto';

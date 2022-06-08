@@ -1,4 +1,4 @@
-import { HttpService } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
 
 import { Address } from '@app/common';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';

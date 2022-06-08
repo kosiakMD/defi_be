@@ -15,8 +15,10 @@ export const validationSchema = Joi.object({
     .required(),
   COINMARKETCAP_TOKEN_LIST_URL: Joi.string() //
     .required(),
+  COINMARKETCAP_GET_TOKENS_LIMIT: Joi.number() //
+    .default(1000),
   COINMARKETCAP_TOKEN_LIST_LIMIT: Joi.number() //
-    .default(10000),
+    .default(15000),
   COINMARKETCAP_API_KEY: Joi.string() //
     .required(),
   USE_REDIS_TO_GET_ASSETS: Joi.boolean() //
@@ -41,6 +43,9 @@ export const validationSchema = Joi.object({
     .default(7 * 60), // in seconds
   ASSETS_HISTORICAL_PRICE_JOB_INTERVAL: Joi.number() //
     .default(15 * 60), // in seconds
+  REPROCESS_ASSET_PERIOD_MS: Joi.number() //
+    .optional()
+    .default(0),
   ...databaseValidationSchema,
   ...cacheValidationSchema,
   ...awsValidationSchema,

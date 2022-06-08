@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Inject, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiResponse } from '@nestjs/swagger';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
@@ -75,6 +75,17 @@ export class PricesController {
       };
     } catch (error) {
       this.logger.error('Error updating current prices', error);
+      throw error;
+    }
+  }
+
+  // TODO: Get rid of this endpoint
+  @Get('/current')
+  async getAllCurrentPrices() {
+    try {
+      return await this.priceService.getAllAssetsCurrentPrices();
+    } catch (error) {
+      this.logger.error(error);
       throw error;
     }
   }

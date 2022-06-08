@@ -55,6 +55,19 @@ export class IntegrationClaimableTokenDto extends ERC20Token {
   apr?: number;
 }
 
+export class LockedBalanceDto {
+  balance: number = null;
+  value: number = null;
+  unlockTime: number = null;
+}
+
+export class IntegrationLockedBalanceTokenDto extends ERC20Token {
+  locked?: LockedBalanceDto = plainToClass(LockedBalanceDto, {});
+  price?: number = null;
+  totalBalance: number;
+  totalValue: number;
+}
+
 export class Stats {
   tvl: number = null;
   poolApy: number = null;

@@ -9,7 +9,6 @@ import { Address } from '@app/common';
 import { formatAddress, formatError, isZeroAddress } from '@app/common/utils';
 
 import { JobName } from '../../../common/enum/job-name.enum';
-import { JobCompleteStates } from '../../../common/enum/job-states.enum';
 import { QueueName } from '../../../common/enum/queue-name.enum';
 import { AssetReference } from '../../../common/types';
 
@@ -53,9 +52,8 @@ export class AssetsProcessor {
       this.logger.debug(
         `Asset chainId: ${chainId} address: ${address} is processed, id: ${asset?.id || ''}`,
       );
-      return JobCompleteStates.SUCCESS;
     } catch (e) {
-      this.logger.error(`Error to progress job: ${job.id}`, e);
+      this.logger.error(`Error to progress job [${job.id}]: ${e.message}, ${e.stack}`);
       throw e;
     }
   }
@@ -70,8 +68,15 @@ export class AssetsProcessor {
         this.logger.debug(
           `Asset id: ${savedAsset.id} chainId: ${chainId} address: ${address} found, updating`,
         );
-        return await this.updateAsset(savedAsset, assetRequest);
+        if (!assetRequest.forceUpdate) {
+          //if forceUpdate flag is provided we don't need to update the asset
+          //because we are going to re-process it
+          await this.updateAsset(savedAsset, assetRequest);
+          return savedAsset;
+        }
       }
+
+      const processingAsset = savedAsset || new AssetEntity();
 
       const asset = await this.assetAnalyserService.analyseAsset({ chainId, address });
       if (!asset) {
@@ -80,8 +85,6 @@ export class AssetsProcessor {
       }
 
       this.logger.log(`Asset analysis result: ${JSON.stringify(asset)}`);
-
-      const processingAsset = new AssetEntity();
 
       processingAsset.address = address;
       processingAsset.chainId = chainId;

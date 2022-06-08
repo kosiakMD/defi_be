@@ -50,7 +50,8 @@ data "aws_subnet" "lambda_vpn_subnet_id" {
   #    name   = "tag:Name"
   #    values = ["subnet-public3-us-west-2c"]
   #  }
-  availability_zone_id = "*-az1"
+#  availability_zone_id = "*-az1"
+  availability_zone_id = var.aws_region == "us-west-2" ? "*-az4" : "*-az1"
 }
 
 data "aws_security_group" "lambda_sg" {

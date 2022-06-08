@@ -2,6 +2,7 @@ import { AxiosResponse } from 'axios';
 import { map } from 'rxjs/operators';
 
 import { HttpService } from '@nestjs/axios';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 import { Address } from '@app/common';

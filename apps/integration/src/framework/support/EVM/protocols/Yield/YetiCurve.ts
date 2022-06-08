@@ -11,7 +11,12 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 import { AccountService } from '../../../../../modules/microservices/account.service';
 import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
-import { INamedFunctionPredicates, IProtocolMeta, IRootProtocol } from '../../../interfaces';
+import {
+  INamedFunctionPredicates,
+  IProtocolMeta,
+  IRootProtocol,
+  TokenMap,
+} from '../../../interfaces';
 import { BaseWithTokens } from '../../../interfaces/new.interfaces';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
 import {
@@ -78,12 +83,7 @@ export class YetiCurve
     protected priceService: PriceService,
   ) {
     super();
-    if (this.updateFunctionPredicates) {
-      this.updateFunctionPredicates();
-    }
   }
-
-  protected updateFunctionPredicates?(): void;
 
   functionPredicates: INamedFunctionPredicates = {
     userInfo: () => (item) => startsWith(item.name, 'userInf'),
@@ -95,12 +95,6 @@ export class YetiCurve
     reserve: () => (item) => item.name === 'get_balances',
   };
 
-  /**
-   * fetches all available pools on this protocol
-   *
-   * @param context hardcoded data & some multicall/web3 data
-   * @returns full pools array
-   */
   protected async fetchOpportunityData(
     context: Record<string, any>,
   ): Promise<IStakingFeatureMinimalSingle[]> {
@@ -175,11 +169,7 @@ export class YetiCurve
 
     if (!tokenAmount) return;
 
-    const supply = {
-      ...pool.supply,
-      amount: tokenAmount,
-      value: tokenAmount * pool.supply.token.price,
-    };
+    const supply = this.modifyUserEntrySupplied(pool.supply, tokenAmount);
 
     const reward = {
       ...pool.reward,
@@ -190,6 +180,7 @@ export class YetiCurve
     return { ...pool, supply, reward };
   }
 
+  // TODO remove it once assets service will done
   protected async getTokens(addresses: string[]): Promise<[string, ERC20Token][]> {
     const tokens = await super.getTokens(addresses);
 
@@ -211,5 +202,43 @@ export class YetiCurve
     });
 
     return tokens;
+  }
+
+  // TODO remove it once assets service will done
+  protected getOpportunityTVL(opportunity: IStakingFeatureMinimalSingle, tokens: TokenMap): number {
+    const token = tokens.get(opportunity.supply.token.address);
+    const totalSupplied = normalizeDecimals(opportunity.supply.totalSupplied, token.decimals);
+    const tvl = token.underlying.reduce((prev, next) => prev + next.totalSupply * next.price, 0);
+    token.price = tvl / totalSupplied;
+
+    return tvl;
+  }
+
+  // TODO remove it once assets service will done
+  protected formatOpportunitySuppliedToken(
+    supplied: ISupplyTokenMinimal<unknown>,
+    token: ERC20Token,
+  ): ISupplyTokenOpportunity {
+    const totalSupplied = normalizeDecimals(supplied.totalSupplied, token.decimals);
+    const apy = this.formatSupplyApy?.(supplied);
+    token.totalSupply = totalSupplied;
+    return {
+      token,
+      apy,
+      tvl: totalSupplied * token.price,
+    };
+  }
+
+  protected modifyUserEntrySupplied(supplied: ISupplyTokenOpportunity, balance: number) {
+    const poolShare = balance / supplied.token.totalSupply;
+    supplied.token.underlying?.forEach((underlying) => {
+      underlying.balance = underlying.totalSupply * poolShare;
+      underlying.value = underlying.balance * underlying.price;
+    });
+
+    return Object.assign(supplied, {
+      amount: balance,
+      value: balance * supplied.token.price,
+    });
   }
 }

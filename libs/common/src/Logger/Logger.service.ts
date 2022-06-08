@@ -54,7 +54,7 @@ export class Logger extends WinstonLogger implements NestLoggerService {
       return Logger.logger.warn(`!Timer ${id} does not exist`);
     }
     const finish = Date.now();
-    Logger.times.delete(msg);
+    Logger.times.delete(id);
     const diff = finish - start;
     Logger.logger.debug(
       {

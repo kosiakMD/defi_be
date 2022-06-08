@@ -15,8 +15,10 @@ export const validationSchema = Joi.object({
     .required(),
   COINMARKETCAP_TOKEN_LIST_URL: Joi.string() //
     .required(),
+  COINMARKETCAP_GET_TOKENS_LIMIT: Joi.number() //
+    .default(1000),
   COINMARKETCAP_TOKEN_LIST_LIMIT: Joi.number() //
-    .default(10000),
+    .default(15000),
   COINMARKETCAP_API_KEY: Joi.string() //
     .required(),
   USE_REDIS_TO_GET_ASSETS: Joi.boolean() //

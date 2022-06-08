@@ -25,8 +25,8 @@ export class CoinmarketcapAssetsProvider implements TrackedAssetsProvider {
 
   async getTrackedAssetsCandidates(): Promise<AssetProcessingRequest[]> {
     const chainIdMap = await this.getCoinmarketcapChainMap();
-    const batchSize = this.config.get<number>('COINMARKETCAP_GET_TOKENS_LIMIT') || 1000;
-    const maxTokens = this.config.get<number>('COINMARKETCAP_TOKEN_LIST_LIMIT') || 5000;
+    const batchSize = this.config.get<number>('COINMARKETCAP_GET_TOKENS_LIMIT'); //1000 by default
+    const maxTokens = this.config.get<number>('COINMARKETCAP_TOKEN_LIST_LIMIT'); //15000 by default
 
     const candidates: AssetProcessingRequest[] = [];
 

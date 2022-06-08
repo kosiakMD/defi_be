@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 
 import { HttpService } from '@nestjs/axios';
@@ -11,8 +12,6 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
@@ -39,8 +38,7 @@ export class DfynNetworkVault extends MultiContractProtocol<
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();

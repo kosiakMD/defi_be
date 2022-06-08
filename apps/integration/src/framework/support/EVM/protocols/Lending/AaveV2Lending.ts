@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
@@ -10,8 +11,6 @@ import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContr
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { MissingTokenException } from '../../../exceptions';
 import {
@@ -83,8 +82,7 @@ export class AaveV2Lending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
   ) {
     super();
   }

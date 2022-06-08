@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
@@ -67,8 +68,7 @@ export class KavaLending
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();

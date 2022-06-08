@@ -1,19 +1,11 @@
 import { BigNumber as BN } from 'bignumber.js';
-import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 
-import { HttpService } from '@nestjs/axios';
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Address, Logger } from '@app/common';
+import { Address } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { concatStrings, normalizeDecimals } from '@app/common/utils';
 import { ERC20 } from '@app/common/web3provider/contracts/ERC20';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
@@ -21,26 +13,13 @@ import {
   IPoolFeatureUser,
 } from '../../../interfaces/feature.pool.interface';
 import { ISupplyTokenUserEntry } from '../../../interfaces/tokens.supplied.interface';
-import { AbiService } from '../../AbiModule/AbiService';
 import { SingleContractProtocol } from '../../SingleContractProtocol';
 
-export class LpFactoryLiquidity extends SingleContractProtocol<
+export abstract class LpFactoryLiquidity extends SingleContractProtocol<
   IPoolFeatureMinimal,
   IPoolFeatureOpportunity,
   IPoolFeatureUser
 > {
-  constructor(
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-    protected httpService: HttpService,
-  ) {
-    super();
-  }
-
   functionPredicates: INamedFunctionPredicates = {
     allPools: () => (item) => item.name === 'allPools',
     allPoolsLength: () => (item) => item.name === 'allPoolsLength',

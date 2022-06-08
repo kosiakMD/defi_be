@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 import { plainToClass } from 'class-transformer';
 import { cloneDeep } from 'lodash';
@@ -13,8 +14,6 @@ import { gql, normalizeDecimals } from '@app/common/utils';
 import { toChunkedArray } from '@app/common/utils/transform';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { MissingTokenException, MissingUnderlyingException } from '../../../exceptions';
 import {
   IProtocolMeta,
@@ -87,8 +86,7 @@ export class PancakeLiquidity
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
     protected multicall: MulticallAggregator,
   ) {
@@ -96,11 +94,12 @@ export class PancakeLiquidity
   }
 
   async getCacheableOpportunityData(): Promise<IPoolFeatureMinimal[]> {
-    const { prices } = await this.priceService.getTokenPricesFetch(
-      [this.meta.wrappedTokenAddress],
+    const wrappedToken = await this.assetService.getAsset(
+      this.meta.wrappedTokenAddress,
       this.meta.chain,
     );
-    const wrappedTokenPrice = prices[this.meta.wrappedTokenAddress];
+
+    const wrappedTokenPrice = wrappedToken.price;
     if (!wrappedTokenPrice) {
       throw new Error(`Not possible to get wrapped token price ${this.meta.wrappedTokenAddress}.`);
     }

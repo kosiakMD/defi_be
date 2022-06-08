@@ -1,7 +1,6 @@
-import { HttpService } from '@nestjs/axios';
-
 import { Address } from '@app/common';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
+import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
 import {
   INamedFunctionPredicates,
@@ -27,9 +26,9 @@ export abstract class CombinedMultiContractProtocol<
   TProtocolMeta extends CombinedMultiContractProtocolMeta = CombinedMultiContractProtocolMeta,
 > extends EVMCore<TMinimalType, TOpportunityType, TUserEntryType, TProtocolMeta> {
   protected abstract abiService: AbiService;
-  protected abstract httpService: HttpService;
   // User Defined
   protected abstract functionPredicates: INamedFunctionPredicates;
+  protected abstract multicall: MulticallAggregator;
 
   functions: INamedFunctions = {};
   functionsPerPool: Map<string, INamedFunctions> = new Map<string, INamedFunctions>();

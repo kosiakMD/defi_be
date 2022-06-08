@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BN from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, mergeMap, toArray } from 'rxjs';
@@ -9,8 +10,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Logger } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IClaimableFeatureOpportunity,
@@ -40,8 +39,7 @@ export class KavaClaimable
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
   ) {
     super();

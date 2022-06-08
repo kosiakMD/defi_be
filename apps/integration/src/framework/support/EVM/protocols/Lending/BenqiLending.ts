@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 
@@ -12,8 +13,6 @@ import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregat
 
 import { toDecimals } from '../../../../../common/utils/util';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import {
   INamedFunctionPredicates,
@@ -70,8 +69,7 @@ export class BenqiLending
     protected multicall: MulticallAggregator,
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
   ) {
     super();
   }

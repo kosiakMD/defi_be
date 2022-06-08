@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import { PublicKey } from '@solana/web3.js';
+import { SolanaAssetService } from 'apps/integration/src/modules/microservices/solana.asset.service';
 import BigNumber from 'bignumber.js';
 import { Cache } from 'cache-manager';
 import { firstValueFrom } from 'rxjs';
@@ -14,7 +15,6 @@ import { normalizeDecimals } from '@app/common/utils';
 import { Web3SolanaProviderService } from '@app/common/web3provider';
 
 import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { FeatureEnum } from '../../../enums';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
@@ -50,7 +50,7 @@ export class LidoStaking
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
     protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: SolanaAssetService,
     protected web3Service: Web3SolanaProviderService,
     protected httpService: HttpService,
     protected configService: ConfigService,

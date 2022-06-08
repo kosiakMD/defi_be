@@ -1,18 +1,11 @@
-import { Cache } from 'cache-manager';
 import { cloneDeep } from 'lodash';
 import { AbiItem } from 'web3-utils';
 
-import { CACHE_MANAGER, Inject } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-
-import { Address, Logger } from '@app/common';
+import { Address } from '@app/common';
 import { CallData } from '@app/common/dto/CallData';
 import { concatStrings, normalizeDecimals } from '@app/common/utils';
 import { DynamicContract } from '@app/common/web3provider/contracts/DynamicContract';
-import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { INamedFunctionPredicates } from '../../../interfaces';
 import {
   IStakingFeatureMinimal,
@@ -20,21 +13,9 @@ import {
   IStakingFeatureUserEntry,
 } from '../../../interfaces/feature.staking.interface';
 import { ERC20Token } from '../../../interfaces/tokens.common.interface';
-import { AbiService } from '../../AbiModule/AbiService';
 import { MasterChef } from './MasterChef';
 
 export class SpiritStaking extends MasterChef {
-  constructor(
-    protected abiService: AbiService,
-    protected multicall: MulticallAggregator,
-    @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
-    @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
-  ) {
-    super(abiService, multicall, logger, cache, accountService, priceService);
-  }
-
   functionPredicates: INamedFunctionPredicates = {
     tokens: () => (item) => item.name === 'tokens',
     length: () => (item) => item.name === 'length',

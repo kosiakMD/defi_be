@@ -1,3 +1,4 @@
+import { FakeAssetService } from 'apps/integration/src/modules/microservices/fake.asset.service';
 import { Cache } from 'cache-manager';
 import { firstValueFrom, map, mergeMap, toArray } from 'rxjs';
 
@@ -8,8 +9,6 @@ import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { Address, FeatureEnum, Logger } from '@app/common';
 import { MulticallAggregator } from '@app/common/web3provider/multicall.aggregator';
 
-import { AccountService } from '../../../../../modules/microservices/account.service';
-import { PriceService } from '../../../../../modules/microservices/price.service';
 import { IProtocolMeta, IRootProtocol, IUserDataProtocolResponse } from '../../../interfaces';
 import {
   IPoolFeatureMinimal,
@@ -41,8 +40,7 @@ export class UniswapV2Liquidity
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) protected logger: Logger,
     @Inject(CACHE_MANAGER) protected cache: Cache,
-    protected accountService: AccountService,
-    protected priceService: PriceService,
+    protected assetService: FakeAssetService,
     protected httpService: HttpService,
     // only used to get totalSupply
     protected multicall: MulticallAggregator,

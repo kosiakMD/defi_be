@@ -218,13 +218,10 @@ export enum WingRidersProtocolEnum {
   wingriders = 'WingRiders',
 }
 
-export enum MuesliSwapProtocolEnum {
-  muesliswap = 'MuesliSwap',
-}
-
 // V3 Protocols can just be inlined here as they are _only_ used in the swagger docs
 // if unsure if it should be in v3 protocolEnum or v2 protocolEnum, put it in v2
 export const ProtocolV3NameEnum = {
+  muesliswap: 'MuesliSwap',
   aaveV3: 'AaveV3',
   IronBank: 'IronBank',
   Liquity: 'Liquity',
@@ -269,7 +266,6 @@ export const ProtocolNameEnum = {
   ...MinswapProtocolEnum,
   ...MirrorProtocolEnum,
   ...MojitoswapProtocolEnum,
-  ...MuesliSwapProtocolEnum,
   ...OlympusProtocolEnum,
   ...OrcaProtocolEnum,
   ...OsmosisProtocolEnum,

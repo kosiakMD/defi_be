@@ -33,6 +33,12 @@
       ],
       "@app/common/*": [
         "libs/common/src/*"
+      ],
+      "@sdk/assets": [
+        "libs/assets/src"
+      ],
+      "@sdk/assets/*": [
+        "libs/assets/src/*"
       ]
     }
   }

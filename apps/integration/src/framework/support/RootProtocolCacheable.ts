@@ -1,9 +1,9 @@
+import { AssetServiceInterface } from '@sdk/assets/interfaces';
 import { Cache } from 'cache-manager';
 
 import { Address, Logger } from '@app/common';
 import { aprToApy, normalizeDecimals } from '@app/common/utils';
 
-import { AssetServiceInterface } from '../../modules/microservices/asset.service.interface';
 import { RootProtocol } from './RootProtocol';
 import { MissingOpportunityException, MissingTokenException } from './exceptions';
 import {
@@ -377,8 +377,6 @@ export abstract class RootProtocolCacheable<
    * @param tokens map of all tokens (and token details) keyed by token address
    */
   protected formatOpportunity(opportunity: TMinimal, tokens: TokenMap): void | TOpportunity {
-    const tvl = this.getOpportunityTVL(opportunity, tokens);
-
     // const base: Partial<TOpportunity> = { // TODO: 'token' isn't yet on TOpportunity
     const base: any = {
       feature: opportunity.feature,
@@ -420,6 +418,7 @@ export abstract class RootProtocolCacheable<
     }
 
     // fill & format reward tokens
+    const tvl = this.getOpportunityTVL(opportunity, tokens);
     if ('rewarded' in opportunity) {
       base.rewarded = opportunity.rewarded.map((poolToken) => {
         const token = tokens.get(poolToken.token.address);

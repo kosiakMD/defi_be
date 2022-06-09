@@ -101,7 +101,6 @@ export class AssetsService extends CrudService<AssetsRepository> {
 
   private async getAssets(requests: GetAssetRequest[]): Promise<AssetEntity[]> {
     const assets = await this.assetsRepository.findManyByAddressesAndChainIds(requests);
-
     const assetsToProcess = this.excludeFoundAssets(requests, assets);
     if (assetsToProcess.length) {
       this.processAssets(assetsToProcess);

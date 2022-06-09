@@ -1,8 +1,11 @@
+import { Injectable } from '@nestjs/common';
+
 import { AccountService } from './account.service';
 import { FakeAssetService } from './fake.asset.service';
 import { PriceService } from './price.service';
 import { SynapseStrategy } from './strategies/synapse.asset.strategy';
 
+@Injectable()
 export class SynapseAssetService extends FakeAssetService {
   constructor(
     protected accountService: AccountService,

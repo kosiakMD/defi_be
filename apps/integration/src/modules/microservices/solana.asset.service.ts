@@ -1,4 +1,8 @@
-/* eslint-disable max-classes-per-file */
+import {
+  AssembledAssetInterface,
+  AssetRequestObjectInterface,
+  AssetServiceInterface,
+} from '@sdk/assets/interfaces';
 import { firstValueFrom } from 'rxjs';
 
 import { HttpService } from '@nestjs/axios';
@@ -9,11 +13,6 @@ import { Address, ChainIdEnum } from '@app/common';
 import { normalizeDecimals } from '@app/common/utils';
 
 import { AccountService } from './account.service';
-import {
-  AssembledAssetInterface,
-  AssetRequestInterface,
-  AssetServiceInterface,
-} from './asset.service.interface';
 import { PriceService } from './price.service';
 import { TokenDataStrategy } from './strategies/strategy.interface';
 
@@ -32,7 +31,9 @@ export class SolanaAssetService implements AssetServiceInterface {
     return asset;
   }
 
-  async getAssets(requests: AssetRequestInterface[]): Promise<[string, AssembledAssetInterface][]> {
+  async getAssets(
+    requests: AssetRequestObjectInterface[],
+  ): Promise<[string, AssembledAssetInterface][]> {
     return this.getSolanaTokens(requests.map((a) => a.address));
   }
 

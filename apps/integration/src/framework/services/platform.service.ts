@@ -279,7 +279,7 @@ export class PlatformService implements OnApplicationBootstrap {
         data: {
           count: cached.flat().length,
           message: `${platformName} opportunities have been cached`,
-          raw: cached,
+          minimal: cached,
           hydrated: pools,
         },
       };

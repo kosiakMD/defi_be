@@ -23,7 +23,6 @@ export class SynapseStrategy extends UniswapV2LpStrategy implements TokenDataStr
     prices: any,
     chain: number,
   ): Promise<{ tokens: any[]; prices: any }> {
-    return { tokens, prices };
     if (chain === ChainIdEnum.eth) {
       return super.fillMissingData(tokens, prices, chain);
     }

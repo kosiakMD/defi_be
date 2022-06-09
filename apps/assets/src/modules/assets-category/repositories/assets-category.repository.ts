@@ -27,15 +27,11 @@ export class AssetsCategoryRepository extends Repository<AssetCategoryEntity> {
       return categories;
     }
 
-    const newCategories = await this.save(
-      unknownCodes.map((code) => {
-        const category = new AssetCategoryEntity();
-        category.code = code;
-        category.name = getDefaultCategoryName(code);
-        return category;
-      }),
-    );
-
-    return categories.concat(newCategories);
+    return unknownCodes.map((code) => {
+      const category = new AssetCategoryEntity();
+      category.code = code;
+      category.name = getDefaultCategoryName(code);
+      return category;
+    });
   }
 }

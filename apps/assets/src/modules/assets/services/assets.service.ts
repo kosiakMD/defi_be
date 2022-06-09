@@ -65,7 +65,14 @@ export class AssetsService extends CrudService<AssetsRepository> {
     const assets = this.getAllNestedAssets(dtos);
     const prices = await this.priceService.getPrices(assets);
     this.updateDtosWithPrices(dtos, prices);
-    return this.assetAnalyserService.updateSpecificAssetsPrices(dtos);
+    const assetsUpdatedWithPrices = await this.assetAnalyserService.updateSpecificAssetsPrices(
+      dtos,
+    );
+    // TODO: improve this dependencies
+    const dtosToUpdatePricesInCache = assetsUpdatedWithPrices //
+      .filter(({ underlying }) => underlying.some(({ reserve }) => reserve));
+    this.priceService.saveSpecificAssetPrices(dtosToUpdatePricesInCache);
+    return assetsUpdatedWithPrices;
   }
 
   private getAllNestedAssets(dtos: AssetDto[]): AssetReference[] {

@@ -14,7 +14,11 @@ import { AssetReference } from '../../../../../common/types';
 import { AssetCategory } from '../../../enums/asset-category.enum';
 import { AssetAnalyser, AssetAnalysisResult } from '../core/asset.analyser';
 import { EVMAssetAnalyser } from '../core/evm.asset-analyser';
-import { AssetPrice, AssetPriceProvider, ComplexAsset } from '../core/price.provider';
+import {
+  AssetPriceWithUnderlyingReserves,
+  AssetPriceProvider,
+  ComplexAsset,
+} from '../core/price.provider';
 
 // TODO: Fix error crash here
 @Injectable()
@@ -49,7 +53,10 @@ export class UniswapV2AssetAnalyser
     return code === AssetCategory.UniSwapV2LikeLP;
   }
 
-  async getPrices(chainId: number, assets: ComplexAsset[]): Promise<AssetPrice[]> {
+  async getPrices(
+    chainId: number,
+    assets: ComplexAsset[],
+  ): Promise<AssetPriceWithUnderlyingReserves[]> {
     const getReservesAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'getReserves');
     const totalSupplyAbi: AbiItem = this.findAbiItem(UNIV2LP_ABI, 'totalSupply');
 
@@ -60,13 +67,24 @@ export class UniswapV2AssetAnalyser
 
     const responses = await this.multicall.callArray(calls, chainId);
 
-    const prices: AssetPrice[] = [];
+    const prices: AssetPriceWithUnderlyingReserves[] = [];
 
     for (let index = 0; index < assets.length; index++) {
       const asset = assets[index];
       const [asset0, asset1] = asset.underlying;
       const { _reserve0, _reserve1 } = responses[2 * index];
       const totalSupply = responses[2 * index + 1];
+
+      const assetReference = { chainId, address: asset.address };
+
+      if (!asset0?.price || !asset1?.price) {
+        prices.push({
+          asset: assetReference,
+          price: null,
+          reserves: [_reserve0, _reserve1],
+        });
+        continue;
+      }
 
       const asset0Value = toBN(_reserve0)
         .dividedBy(decimalsDivider(asset0.decimals))
@@ -80,8 +98,9 @@ export class UniswapV2AssetAnalyser
       const price = totalValue.multipliedBy(decimalsDivider(asset.decimals)).dividedBy(totalSupply);
 
       prices.push({
-        asset: { chainId, address: asset.address },
+        asset: assetReference,
         price: price.toNumber(),
+        reserves: [_reserve0, _reserve1],
       });
     }
 
